@@ -128,9 +128,6 @@
 /obj/structure/alien/resin/wall,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"tZ" = (
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 "ul" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
@@ -191,9 +188,6 @@
 /obj/structure/bed/nest,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"ya" = (
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 "yF" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/resin/wall,
@@ -214,10 +208,6 @@
 /obj/structure/alien/weeds,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"zv" = (
-/obj/structure/alien/weeds,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 "zy" = (
 /obj/structure/alien/resin/wall,
 /obj/structure/alien/weeds,
@@ -226,6 +216,21 @@
 "zz" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/xeno/larva,
+/turf/open/misc/dirt/jungle,
+/area/ruin/powered)
+"zN" = (
+/obj/structure/alien/weeds,
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/misc/dirt/jungle,
+/area/ruin/powered)
+"zO" = (
+/obj/structure/alien/weeds,
+/obj/effect/zone_mobs/bug/boss,
+/turf/open/misc/dirt/jungle,
+/area/ruin/powered)
+"zP" = (
+/obj/structure/alien/weeds,
+/obj/effect/zone_mobs/bug,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "AC" = (
@@ -304,9 +309,6 @@
 /obj/structure/alien/egg/burst,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"II" = (
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 "KR" = (
 /obj/structure/alien/weeds,
 /obj/structure/table/wood/fancy,
@@ -353,10 +355,6 @@
 /obj/structure/flora/junglebush/large,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"UV" = (
-/obj/structure/alien/weeds,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 "VK" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/misc/dirt/jungle,
@@ -380,26 +378,6 @@
 /obj/structure/flora/ausbushes/stalkybush,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"zN" = (
-/obj/structure/alien/weeds,
-/obj/structure/closet/crate/zone_loot/research/rare,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"zO" = (
-/obj/structure/alien/weeds,
-/obj/effect/zone_mobs/bug/boss,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"zP" = (
-/obj/structure/alien/weeds,
-/obj/effect/zone_mobs/bug,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"zQ" = (
-/obj/structure/alien/weeds,
-/obj/effect/zone_mobs/bug,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
 
 (1,1,1) = {"
 Wb
@@ -408,9 +386,9 @@ Wb
 Wb
 iF
 iF
-II
-II
-tZ
+oB
+oB
+oB
 eB
 Wb
 Wb
@@ -427,9 +405,9 @@ iF
 iF
 RG
 Yq
-II
+oB
 Wj
-II
+oB
 Wb
 Wb
 Wb
@@ -443,11 +421,11 @@ zi
 zi
 zi
 vt
-zQ
-zv
-II
-II
-II
+zP
+mW
+oB
+oB
+oB
 Wb
 Wb
 Wb
@@ -462,9 +440,9 @@ NK
 zy
 zy
 zy
-ya
+oB
 TY
-II
+oB
 Wb
 Wb
 Wb
@@ -473,15 +451,15 @@ Wb
 iF
 vt
 wc
-UV
-UV
+mW
+mW
 zP
-UV
+mW
 vg
 zy
-zv
-II
-II
+mW
+oB
+oB
 fZ
 Wb
 Wb
@@ -493,30 +471,30 @@ wc
 AI
 fj
 ce
-UV
-UV
+mW
+mW
 zy
 zy
 zy
 zy
-II
-II
+oB
+oB
 Wb
 "}
 (7,1,1) = {"
 iF
 sw
 vt
-UV
+mW
 Lh
-UV
+mW
 yF
 Gt
 yF
 lh
 lS
 zy
-II
+oB
 qK
 Wb
 "}
@@ -526,9 +504,9 @@ iF
 vt
 mW
 zN
-UV
+mW
 yF
-UV
+mW
 yF
 dj
 Du
@@ -550,9 +528,9 @@ yF
 Gk
 AE
 zy
-UV
-II
-II
+mW
+oB
+oB
 "}
 (10,1,1) = {"
 Wb
@@ -562,14 +540,14 @@ vt
 oX
 yF
 yF
-UV
+mW
 yF
-UV
+mW
 zy
 vt
-UV
+mW
 VK
-II
+oB
 "}
 (11,1,1) = {"
 Wb
@@ -579,13 +557,13 @@ vt
 yF
 yF
 EC
-UV
+mW
 yF
 Gt
 zy
 cO
-UV
-UV
+mW
+mW
 TY
 "}
 (12,1,1) = {"
@@ -593,17 +571,17 @@ Wb
 iF
 iF
 vt
-UV
+mW
 gU
 AI
-UV
+mW
 zP
-UV
+mW
 kd
 AC
 wl
-UV
-II
+mW
+oB
 "}
 (13,1,1) = {"
 Wb
@@ -618,8 +596,8 @@ yF
 yF
 zy
 nn
-UV
-UV
+mW
+mW
 eA
 "}
 (14,1,1) = {"
@@ -627,10 +605,10 @@ Wb
 iF
 vt
 uo
-UV
-UV
-UV
-UV
+mW
+mW
+mW
+mW
 bB
 vW
 zy
@@ -644,9 +622,9 @@ Wb
 iF
 DP
 FA
-UV
+mW
 Hh
-UV
+mW
 wg
 xY
 yF
@@ -661,13 +639,13 @@ Wb
 iF
 sw
 Ee
-UV
+mW
 AI
-UV
-UV
+mW
+mW
 TS
 yF
-UV
+mW
 Ne
 eG
 zy
@@ -684,7 +662,7 @@ yF
 yF
 yF
 yF
-UV
+mW
 MJ
 ul
 yV
@@ -696,12 +674,12 @@ Wb
 iF
 jI
 vt
-UV
-UV
-UV
-UV
-UV
-UV
+mW
+mW
+mW
+mW
+mW
+mW
 zy
 vt
 jI
@@ -732,9 +710,9 @@ Wb
 iF
 iF
 vt
-UV
-UV
-UV
+mW
+mW
+mW
 KR
 zy
 iF

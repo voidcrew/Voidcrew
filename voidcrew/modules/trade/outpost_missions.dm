@@ -48,18 +48,13 @@
 	if(generation_failed)
 		return
 
-	// The pay: one free item off the shelf. Rolled from the SKU list so the
-	// reward is always something the shop actually sells.
-	var/list/reward_pool = list()
-	for(var/datum/shop_sku/sku as anything in shop.skus)
-		if(sku.item_path)
-			reward_pool += sku.item_path
-	if(!length(reward_pool))
+	// The pay: kit off the shelf, assembled to the difficulty band and floored
+	// by what the ask itself fetches at this trader's own buyback window. A
+	// contract for five glacial cores has to beat carrying those same cores
+	// twenty steps to the counter, or there is no reason to take it.
+	voucher_count = 0
+	if(!shop.roll_contract_reward(src, shop.get_counter_value(required_type, required_amount)))
 		generation_failed = TRUE
-		return
-	mission_reward = pick(reward_pool)
-	// Hard asks can upgrade the pay to something off the back shelf instead
-	shop.maybe_attach_exclusive(src)
 
 /// Rolls the ask off the shop's request table. Override for themed asks.
 /datum/mission/outpost_supply/proc/pick_request()
@@ -82,7 +77,8 @@
 /datum/mission/outpost_supply/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Supply Request: [item_text]"
-	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader and a [get_reward_summary()] comes off the shelf, free."
+	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader. \
+		Pays [get_contract_pay_summary()], straight off the shelf."
 
 /**
  * # Angler's Request
@@ -127,7 +123,63 @@
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Angler's Request: [item_text]"
 	desc = "[author] wants [item_text], line-caught and fresh. Bring a rod. \
-		Hand the catch to any outpost trader or your own mission pad and a [get_reward_summary()] comes off the shelf, free."
+		Hand the catch to any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
+
+/**
+ * # Kitchen Order
+ *
+ * "Roux at the diner is short-handed and the counter case is empty. Cook."
+ *
+ * A cooking-shaped supply request posted only by outposts that run a kitchen
+ * stall (see the general shop's extra_offer_mix). The ask is real cooking:
+ * dishes only count when a player's own hands made them (TRAIT_FOOD_CHEF_MADE
+ * from a grill, oven, fryer or the crafting menu) at the ordered recipe depth —
+ * factory food is refused, and so are plates bought off the diner's own
+ * counter (see deliver/cooked and TRAIT_SOURCE_OUTPOST_KITCHEN).
+ */
+/datum/mission/outpost_supply/cook
+	/// Minimum crafting_complexity (FOOD_COMPLEXITY_*) for a dish to count
+	var/min_complexity = FOOD_COMPLEXITY_2
+
+/datum/mission/outpost_supply/cook/get_archetype()
+	return "cooking"
+
+/datum/mission/outpost_supply/cook/generate_details()
+	..()
+	if(generation_failed)
+		return
+	// Barnaby hosts the board, but the order sheet is signed by the cook next door
+	var/datum/outpost_shop/vendor/diner/stall_type = /datum/outpost_shop/vendor/diner
+	author = initial(stall_type.trader_name)
+
+/datum/mission/outpost_supply/cook/pick_request()
+	var/static/list/cook_asks = list(
+		list("name" = "hot meals for the counter", "amount" = 2, "min_complexity" = FOOD_COMPLEXITY_2, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "hot meals for the counter", "amount" = 3, "min_complexity" = FOOD_COMPLEXITY_2, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "proper dinners for the evening rush", "amount" = 2, "min_complexity" = FOOD_COMPLEXITY_3, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "proper dinners for the evening rush", "amount" = 3, "min_complexity" = FOOD_COMPLEXITY_3, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "a showstopper dish for the window case", "amount" = 1, "min_complexity" = FOOD_COMPLEXITY_4, "difficulty" = MISSION_DIFFICULTY_HARD),
+	)
+	var/list/ask = pick(cook_asks)
+	required_type = /obj/item/food
+	required_name = ask["name"]
+	required_amount = ask["amount"]
+	difficulty = ask["difficulty"]
+	min_complexity = ask["min_complexity"]
+
+/datum/mission/outpost_supply/cook/build_objectives()
+	var/datum/mission_objective/deliver/cooked/ask = new
+	ask.required_name = required_name
+	ask.required_amount = required_amount
+	ask.min_complexity = min_complexity
+	add_objective(ask)
+
+/datum/mission/outpost_supply/cook/update_text()
+	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
+	name = "Kitchen Order: [item_text]"
+	desc = "[author] at the diner is buying [item_text] — cooked by an actual person, \
+		[min_complexity >= FOOD_COMPLEXITY_4 ? "and it had better be worth the window" : "no factory food"]. \
+		Hand the plates to any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
 
 // ===== OFFER MANAGEMENT (lives on the outpost) =====
 

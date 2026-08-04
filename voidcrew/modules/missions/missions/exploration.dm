@@ -40,5 +40,4 @@
 	var/list/data = ..()
 	data["target_x"] = target.target_x
 	data["target_y"] = target.target_y
-	data["target_zone_name"] = target_zone_name
 	return data

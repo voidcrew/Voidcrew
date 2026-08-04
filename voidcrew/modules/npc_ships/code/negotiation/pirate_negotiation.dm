@@ -37,6 +37,15 @@
 	/// Item demand - display name for the item
 	var/demanded_item_name = ""
 
+	/// TRUE when the target's accounts came back empty and we hailed them anyway.
+	/// Credits are off the table entirely; only cargo settles this.
+	var/barter_only = FALSE
+	/// How many impatience warnings we've sent, so the barter demand can escalate
+	/// once the crew has stalled past the first one.
+	var/warnings_sent = 0
+	/// Whether the barter demand has already been raised for stalling (once only).
+	var/barter_escalated = FALSE
+
 	/// Faction dialog handler for personality
 	var/datum/pirate_faction_dialog/dialog
 
@@ -62,6 +71,11 @@
 	pirate_ship = pirate
 	player_ship = player
 	holopad = pad
+
+	// The AI flags a hail raised against an empty account - that negotiation is
+	// settled in cargo, not credits.
+	var/datum/ai_controller/npc_ship/hailing_controller = pirate.ai_controller
+	barter_only = !!hailing_controller?.blackboard[BB_NPC_BROKE_BARTER]
 
 	// Get faction dialog type from pirate ship
 	var/dialog_type = pirate.negotiation_dialog_type || /datum/pirate_faction_dialog
@@ -181,6 +195,18 @@
  * Also picks a random item demand as an alternative.
  */
 /datum/pirate_negotiation/proc/calculate_demand()
+	// Barter negotiations skip the credit maths entirely - we already scanned this
+	// ship and found nothing worth taking, so quoting them a price would just be a
+	// demand they cannot meet.
+	if(barter_only)
+		demanded_credits = 0
+		var/list/barter_demand = length(pirate_ship.fixed_item_demand) ? pirate_ship.fixed_item_demand : pick_pirate_item_demand()
+		if(barter_demand && length(barter_demand) >= 3)
+			demanded_item_type = barter_demand[1]
+			demanded_item_quantity = barter_demand[2]
+			demanded_item_name = barter_demand[3]
+		return
+
 	var/base_demand = 0
 
 	// Factor 1: Player ship wealth (25% of their balance) - expensive!
@@ -194,6 +220,13 @@
 			if(NPC_COMBAT_IDLE, NPC_COMBAT_SCANNING)
 				base_demand *= 0.8  // Cheaper to pay before combat
 				preemptive = TRUE
+			if(NPC_COMBAT_HAILING)
+				// A yellow-band shakedown is bidding against its own siphon, which
+				// takes the same 25% by force if the crew stonewalls it. Undercut
+				// that so answering the hail is the cheaper way out.
+				if(controller.hail_escalates_to_siphon())
+					base_demand *= 0.8
+					preemptive = TRUE
 			if(NPC_COMBAT_ENGAGING)
 				base_demand *= 1.0  // Standard rate
 			if(NPC_COMBAT_COMBAT)
@@ -235,6 +268,11 @@
 	// Calculate what we're demanding
 	calculate_demand()
 
+	// A barter negotiation with nothing to ask for has no way to succeed, so don't
+	// open one - let the caller fall through to the boarding path instead.
+	if(barter_only && !demanded_item_type)
+		return FALSE
+
 	// Tell the pirate AI to pause
 	var/datum/ai_controller/npc_ship/controller = pirate_ship.ai_controller
 	if(controller)
@@ -263,7 +301,10 @@
 	SEND_SIGNAL(player_ship, COMSIG_SHIP_HAILED, src)
 
 	// Pirate announces their demands
-	pirate_say(dialog.get_demand_line(demanded_credits, demanded_item_quantity, demanded_item_name))
+	if(barter_only)
+		pirate_say(dialog.get_barter_demand_line(demanded_item_quantity, demanded_item_name))
+	else
+		pirate_say(dialog.get_demand_line(demanded_credits, demanded_item_quantity, demanded_item_name))
 
 	// After a brief pause, warn about escape attempts
 	addtimer(CALLBACK(src, PROC_REF(say_escape_warning)), 3 SECONDS)
@@ -366,7 +407,36 @@
 /datum/pirate_negotiation/proc/send_timeout_warning(seconds_remaining)
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
 		return
+
+	warnings_sent++
+
+	// Stalling a barter costs you. Once you've let a warning go by without putting
+	// anything on the pad, the price of walking away goes up by a unit.
+	if(try_escalate_barter_demand())
+		return
+
 	pirate_say(dialog.get_impatience_line(seconds_remaining))
+
+/**
+ * Raise a barter demand when the crew stalls past the first impatience warning
+ * without handing anything over. Happens at most once per negotiation.
+ * Returns TRUE if the demand was escalated (and announced).
+ */
+/datum/pirate_negotiation/proc/try_escalate_barter_demand()
+	if(!barter_only || barter_escalated)
+		return FALSE
+	if(warnings_sent < NEGOTIATION_BARTER_ESCALATE_WARNING)
+		return FALSE
+	// Handing over part of the demand counts as cooperating - don't punish that.
+	if(items_received > 0)
+		return FALSE
+
+	barter_escalated = TRUE
+	demanded_item_quantity += NEGOTIATION_BARTER_ESCALATE_AMOUNT
+
+	pirate_say(dialog.get_barter_escalation_line(get_remaining_items(), demanded_item_name))
+	player_ship?.ship_notify("[pirate_ship.name] has raised their demand to [demanded_item_quantity] [demanded_item_name].", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
+	return TRUE
 
 // ========== PAYMENT HANDLING ==========
 
@@ -376,6 +446,13 @@
  */
 /datum/pirate_negotiation/proc/process_credit_payment()
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
+		return FALSE
+
+	// We scanned their accounts and came up empty - this one is settled in cargo.
+	if(barter_only)
+		if(COOLDOWN_FINISHED(src, rejection_message_cooldown))
+			pirate_say("Keep your pocket change. I want [get_remaining_items()] [demanded_item_name].")
+			COOLDOWN_START(src, rejection_message_cooldown, 2 SECONDS)
 		return FALSE
 
 	// Deduct from player account

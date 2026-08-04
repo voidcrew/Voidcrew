@@ -1488,14 +1488,14 @@
 	name = "Silk Spinner"
 	// Keep the numbers in sync with VESTIGE_SILK_SPIN_TIME / _COOLDOWN / _MAX_WEBS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Spin a sticky snare onto any open floor within reach. Three-second spin, eight seconds between casts, and you have to hold still while the thread sets. Your own tread never catches in your webs. Anyone else has even odds of sticking at each step, and stray shots usually foul in the weave. The Loom holds eight threads at once — spin a ninth and the oldest lets go. Fire burns silk fast."
+	desc = "Spin a sticky snare onto open floor within reach, holding still while the thread sets. Your own tread never catches; anyone else has even odds of sticking at each step, and stray shots foul in the weave. Only so many hold at once, and the oldest lets go for the newest. Fire burns silk fast."
 	grant_text = "Your fingertips feel the weight of thread that isn't there yet."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_spin
 
 /datum/vestige_boon/spell/silk_spinner/master_weaver
 	name = "Master Weaver"
 	// Keep the numbers in sync with VESTIGE_SILK_SPIN_TIME_MASTER / _COOLDOWN_MASTER / _MAX_WEBS_MASTER
-	desc = "You spin in a second and a half now, five seconds between casts, and the Loom holds twelve threads. You can also spin over one of your own snares to draw it into a sealed weft: a solid wall of silk that stops bodies and air, including yours. It is still silk, though. Fire eats it, and a patient blade cuts it apart."
+	desc = "You spin much faster now, and the Loom holds more threads. You can also spin over one of your own snares to draw it into a sealed weft: a solid wall of silk that stops bodies and air, including yours. It is still silk, though. Fire eats it, and a patient blade cuts it apart."
 	grant_text = "Now you can see how the threads are supposed to cross."
 	upgrades_from = /datum/vestige_boon/spell/silk_spinner
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_spin/master_weaver
@@ -1506,7 +1506,7 @@
 	name = "Venom Fang"
 	// Keep the numbers in sync with VESTIGE_FANG_COOLDOWN / _DURATION / _STAMINA_TICK / _TOX_TICK
 	// (5 stamina + 2 toxin per second over 8 seconds = 40 / 16 totals)
-	desc = "A bite you carry in your palm. Touch a living thing to poison it: forty stamina and sixteen toxin damage over eight seconds, all the way down. Twenty seconds between bites."
+	desc = "A bite you carry in your palm. Touch a living thing to poison it — stamina and toxin both, draining steadily, all the way down."
 	grant_text = "Something needle-fine settles into the pad of each finger and waits."
 	spell_type = /datum/action/cooldown/spell/touch/vestige_venom_fang
 
@@ -1514,7 +1514,7 @@
 	name = "Withering Fang"
 	// Keep the numbers in sync with VESTIGE_FANG_WITHER_COOLDOWN / _WITHER_DURATION / _WITHER_SLOW
 	// (5 stamina + 2 toxin per second over 12 seconds = 60 / 24 totals)
-	desc = "A bite you carry in your palm, held a little longer. Twelve seconds of venom: sixty stamina and twenty-four toxin damage. While it runs they move heavy — slowed at every step, but never stopped outright. Fourteen seconds between bites."
+	desc = "A bite you carry in your palm, held a little longer. More venom in it, and while it runs they move heavy: slowed at every step, but never stopped outright."
 	grant_text = "The needles in your fingers grow a second, slower barb."
 	upgrades_from = /datum/vestige_boon/spell/venom_fang
 	spell_type = /datum/action/cooldown/spell/touch/vestige_venom_fang/withering
@@ -1524,7 +1524,7 @@
 /datum/vestige_boon/spell/silk_line
 	name = "Silk Line"
 	// Keep the numbers in sync with VESTIGE_LINE_RANGE / VESTIGE_LINE_COOLDOWN
-	desc = "Cast a dragline at anything solid up to seven tiles out — a wall, a window, anything dense and bolted down — and reel yourself to it in one straight rush. If something solid is in the way, that is where you stop instead. Twenty seconds to respool."
+	desc = "Cast a dragline at anything solid in reach — a wall, a window, anything dense and bolted down — and reel yourself to it in one straight rush. If something solid is in the way, that is where you stop instead."
 	grant_text = "Something coils tight at the base of your wrist, like a spinneret you don't have."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_line
 
@@ -1532,7 +1532,7 @@
 
 /datum/vestige_boon/spider_grace
 	name = "Eight-Legged Grace"
-	desc = "Nothing to cast — the Weaver just re-strings your footing. Every hunting web parts for you like a beaded curtain, whether it is yours, hers, or the wild's, and wet decking grips your feet like dry board. Two limits: a sealed weft is a wall, not a web, so it stops you too, and soap and lube will still put you on the floor. This is worked into the body, not the soul, so a new body has to be taught again."
+	desc = "Nothing to cast — the Weaver just re-strings your footing. Every hunting web parts for you, whoever spun it, and wet decking grips your feet like dry board. A sealed weft is a wall, not a web, so it still stops you, and soap will still put you on the floor. This is in the body, not the soul, so a new body has to be taught again."
 	grant_text = "Your footing settles, like you are standing on more legs than you have."
 	radial_icon = 'icons/effects/web.dmi'
 	radial_icon_state = "cobweb1"
@@ -1596,7 +1596,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_silk_spin
 	name = "Silk Spinner"
-	desc = "Spin a sticky snare onto your own tile or one next to you. Three-second spin, and you have to stand still for it. Your own tread never catches in your weave. Holds eight threads at once — a ninth frays the oldest."
+	desc = "Spin a sticky web on your tile or one next to you. Takes a few seconds standing still, and your own webs never catch you. Only so many hold at once, and the oldest frays for the newest."
 	button_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "spider_web"
 	background_icon_state = "bg_alien"
@@ -1621,7 +1621,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_silk_spin/master_weaver
 	name = "Master Weaver's Silk"
-	desc = "Spin a sticky snare in a second and a half, or spin over one of your own snares to draw it into a sealed weft: a wall of silk that stops bodies and air, yours included. Holds twelve threads at once."
+	desc = "Spin a sticky web much faster, or spin over one of your own to seal it into a wall that stops bodies and air, yours included. More of them hold at once."
 	button_icon_state = "spider_wall"
 	cooldown_time = VESTIGE_SILK_COOLDOWN_MASTER
 	spin_time = VESTIGE_SILK_SPIN_TIME_MASTER
@@ -1819,7 +1819,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_venom_fang
 	name = "Venom Fang"
-	desc = "Touch a living target to poison them. Deals 5 stamina and 2 toxin damage per second for 8 seconds."
+	desc = "Touch someone to poison them. Drains their stamina and eats at them for a while."
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "venom_fang"
 	background_icon_state = "bg_alien"
@@ -1837,7 +1837,7 @@
 
 /datum/action/cooldown/spell/touch/vestige_venom_fang/withering
 	name = "Withering Fang"
-	desc = "Touch a living target to poison them. Deals 5 stamina and 2 toxin damage per second for 12 seconds and slows their movement while it runs."
+	desc = "Touch someone to poison them. Drains their stamina and eats at them for longer, and slows them down while it runs."
 	cooldown_time = VESTIGE_FANG_WITHER_COOLDOWN
 	venom_type = /datum/status_effect/vestige_fang_venom/withering
 
@@ -1953,7 +1953,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_silk_line
 	name = "Silk Line"
-	desc = "Cast a line of silk at solid purchase up to 7 tiles out — a wall, a window, anything dense and bolted down — and reel yourself to it in one straight rush. Anything solid in the way is where you land instead."
+	desc = "Fire a silk line at a wall, window or anything else solid in reach and reel yourself to it. Anything in the way is where you stop."
 	button_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "spider_ropes"
 	background_icon_state = "bg_alien"

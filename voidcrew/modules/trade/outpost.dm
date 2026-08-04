@@ -23,6 +23,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	area_flags = UNIQUE_AREA | NOTELEPORT
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
+	repels_megafauna = TRUE // voidcrew/area/megafauna_ban.dm
 
 // Each zone variant loads its own interior (split from the old shared
 // trader_outpost.dmm on 2026-07-06). Base type is abstract: no mappath.
@@ -272,7 +273,17 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/get_dock_description()
 	return "Trader [shop?.trader_name || name] (hangar berth)"
 
+/// The hangar deck holds a berthed ship down on its own — /area/voidcrew/trader_outpost
+/// and its hangar are STANDARD_GRAVITY.
+/obj/structure/overmap/trader_outpost/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/trader_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	// dock() refuses interdicted ships only after a berth below is claimed
+	// and the ship is locked into ACTING - refuse up front instead
+	if(acting.is_interdicted)
+		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		return
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
 		return
@@ -322,7 +333,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 

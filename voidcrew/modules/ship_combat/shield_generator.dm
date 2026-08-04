@@ -1514,11 +1514,18 @@
 /obj/machinery/ship_combat/shield_generator/proc/on_console_deleted(datum/source)
 	SIGNAL_HANDLER
 	linked_console_ref = null
-	unlink_ship()
+	// Deliberately keeps the ship link. The console is only the panel; the generator's
+	// membership in ship.linked_shield_generators IS the shield pool. Dropping it here
+	// meant a hull whose weapons console got shot out read as having no shields at all,
+	// and a rebuilt console had nothing left to find.
 
 /// Links to a ship
 /obj/machinery/ship_combat/shield_generator/proc/link_ship(obj/structure/overmap/ship/ship)
 	if(!ship)
+		return
+	// Already ours - re-linking would tear us out of the shared pool and back in,
+	// which drops the whole ship's shields if we happen to be the only active generator.
+	if(linked_ship_ref?.resolve() == ship)
 		return
 	unlink_ship()
 	linked_ship_ref = WEAKREF(ship)
@@ -1704,17 +1711,46 @@
 	if(!our_ship)
 		return
 
+	auto_link_to(our_ship)
+
+/// Links to `our_ship` and to whatever combat console is aboard it.
+/obj/machinery/ship_combat/shield_generator/proc/auto_link_to(obj/structure/overmap/ship/our_ship)
+	if(!our_ship?.shuttle)
+		return
+
 	// Always link to the ship directly (critical for signal registration)
-	if(!linked_ship_ref?.resolve())
-		link_ship(our_ship)
+	link_ship(our_ship)
 
 	// Try to find and link a combat console on this ship
-	if(!linked_console_ref?.resolve())
-		for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
-			for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
-				if(link_console(console))
-					console.link_shield_generator(src)
-					return
+	if(linked_console_ref?.resolve())
+		return
+	for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			console.link_shield_generator(src)
+			return
+
+/**
+ * The Initialize() timer is a single shot that gives up silently, and a map-loaded
+ * generator runs it while its own template is still loading - SSovermap has the ship
+ * but ship.shuttle isn't assigned yet, so the search finds nothing and never retries.
+ * That is why generators mapped onto a hull (only NPC/pirate hulls carry them) could
+ * come up attached to nothing at all. Finish the link when the ship load completes;
+ * the timer stays as the fallback for generators built in-round.
+ */
+/obj/machinery/ship_combat/shield_generator/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
+	. = ..()
+	if(!istype(port))
+		return
+	if(port.current_ship)
+		auto_link_to(port.current_ship)
+		return
+	RegisterSignal(port, COMSIG_VOIDCREW_SHIP_LOADED, PROC_REF(on_ship_loaded), override = TRUE)
+
+/obj/machinery/ship_combat/shield_generator/proc/on_ship_loaded(obj/docking_port/mobile/voidcrew/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_LOADED)
+	if(source.current_ship)
+		auto_link_to(source.current_ship)
 
 // ========== TOOL INTERACTIONS ==========
 

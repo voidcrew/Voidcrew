@@ -41,7 +41,6 @@ A sample of the roster, roughly from routine to serious:
 | Stray cargo pod | A pod containing a random supply crate lands aboard. Free loot. |
 | Ship grey tide | Airlocks in one or two areas bolt open. |
 | Meteor shower / storm | Waves of rock through the hull. The storm opens compartments. |
-| Hull fracture | A stress fracture runs a line through the ship, telegraphed for about fifty seconds, then blows that line out into space. |
 | Immovable rod | A rod passes clean through the ship. |
 | Portal storm | Syndicate shocktroops pour out of portals on your deck. |
 

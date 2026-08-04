@@ -169,6 +169,23 @@
 			// and rebuild them as standard turrets
 			for(var/obj/machinery/porta_turret/syndicate/turret in shuttle_area)
 				turret.toggle_on(FALSE)
+			// Top up the SMES and APC cells. NPC hulls run on free power, so
+			// whatever charge theirs were sitting at is meaningless - and the
+			// requires_power flip above is the moment that stops being true.
+			// Handing over drained buffers would leave the claimer with a dark ship.
+			for(var/obj/machinery/power/smes/unit in shuttle_area)
+				if(QDELETED(unit) || (unit.machine_stat & (BROKEN | EMPED)))
+					continue
+				unit.fill_charge()
+			for(var/obj/machinery/power/apc/apc in shuttle_area)
+				if(QDELETED(apc) || !apc.cell || (apc.machine_stat & (BROKEN | EMPED)))
+					continue
+				apc.set_full_charge()
+				// set_full_charge() only writes the cell; without this the readout
+				// sits on whatever charging state it was last left in until the
+				// APC's own process ticks, which never re-evaluates a full cell.
+				apc.charging = APC_FULLY_CHARGED
+				apc.update_appearance()
 
 	// Remove access requirements from all doors (player ships have open access)
 	npc_ship.clear_door_access()
@@ -197,8 +214,7 @@
 		npc_ship.claimed_captain = claimer.mind
 
 		// Grant the Captain Management action button
-		var/datum/action/innate/captain_management/captain_action = new(claimer, npc_ship)
-		captain_action.Grant(claimer)
+		grant_captain_management(claimer, npc_ship)
 
 	// Log the claim
 	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
@@ -239,14 +255,16 @@
 	data["integrity"] = current_ship.get_integrity_percent()
 	data["overhealth"] = current_ship.get_overhealth_percent()
 
-	// Calculate raw integrity for crash state checks
-	var/raw_percent = current_ship.max_integrity > 0 ? round((current_ship.integrity / current_ship.max_integrity) * 100) : 100
-	data["shipDisabled"] = raw_percent <= 50
-	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
+	// Read the latch rather than re-deriving the band from a percentage. The console and the
+	// ship have to agree on when the hull is disabled, and a second copy of the comparison
+	// drifts the moment the thresholds move - it also loses the hysteresis, so the console
+	// would flicker between states on every tile repaired near the boundary.
+	data["shipDisabled"] = current_ship.integrity_state == SHIP_INTEGRITY_DISABLED
+	data["shipCrashed"] = current_ship.has_crash_landed && current_ship.integrity_state == SHIP_INTEGRITY_DISABLED
 
 	// Repair progress as tile counts - shows exact mass repaired vs needed
 	if(data["shipCrashed"])
-		var/target_integrity = round(0.65 * current_ship.max_integrity)
+		var/target_integrity = round(current_ship.integrity_recovery_threshold())
 		data["repairCurrent"] = max(0, current_ship.integrity - current_ship.crashed_at_integrity)
 		data["repairTotal"] = max(1, target_integrity - current_ship.crashed_at_integrity)
 	else
@@ -319,7 +337,13 @@
 			"desc" = chart.desc,
 			"ref" = REF(chart),
 		))
-	data["heading"] = dir2text(current_ship.get_heading()) || "None"
+	var/drift_direction = current_ship.get_heading()
+	data["heading"] = dir2text(drift_direction) || "None"
+	// Where the ship is actually going, as a dir, as opposed to where the engines
+	// are pushing. tick_move() steps by the SIGN of each velocity axis and nothing
+	// out here slows a hull down, so this is the direction the ship keeps crossing
+	// tiles in with the engines cold. The chart projects its drift track along it.
+	data["driftDirection"] = drift_direction
 	data["speed"] = current_ship.get_speed()
 	data["eta"] = current_ship.get_eta()
 	// Exactly the interval tick_move() is scheduled on, in milliseconds. The chart
@@ -333,22 +357,32 @@
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 	data["autopilot"] = current_ship.get_autopilot_data()
 
-	// What the Dock button will actually do from this tile. It used to only ever
-	// dock into empty space and refused outright when anything shared the tile,
-	// which meant landing on a ruin had to be done from the contact list instead.
-	var/obj/structure/overmap/dock_candidate = get_dock_candidate()
-	var/dock_name = dock_candidate?.get_dock_description()
-	if(!dock_name)
+	// What the Dock button offers from this tile. It used to only ever dock into
+	// empty space and refused outright when anything shared the tile, then only
+	// ever offered the first real candidate found — this lists every one, so a
+	// tile with more than one dockable thing on it lets the crew choose.
+	var/list/dock_candidates = get_dock_candidates()
+	var/list/dock_options = list()
+	if(length(dock_candidates))
+		for(var/obj/structure/overmap/candidate as anything in dock_candidates)
+			dock_options += list(list(
+				"name" = describe_dock_candidate(candidate),
+				"ref" = REF(candidate),
+				"isEmpty" = FALSE,
+			))
+	else
 		// Nebulas aren't a docking target — concealment is the Cloak control's job —
 		// but sitting in one and being told only "empty space" reads as the console
 		// having missed it, so the label says where the empty space is.
-		dock_name = (locate(/obj/structure/overmap/event/nebula) in T) \
+		var/dock_name = (locate(/obj/structure/overmap/event/nebula) in T) \
 			? "empty space (inside nebula)" \
 			: "empty space"
-	data["dockTarget"] = list(
-		"name" = dock_name,
-		"isEmpty" = !dock_candidate,
-	)
+		dock_options += list(list(
+			"name" = dock_name,
+			"ref" = null,
+			"isEmpty" = TRUE,
+		))
+	data["dockOptions"] = dock_options
 
 	// Undock cooldown data (after docking)
 	data["undockCooldown"] = !COOLDOWN_FINISHED(current_ship, undock_cooldown)
@@ -357,6 +391,11 @@
 	// Interdiction undock lockout data
 	data["undockLocked"] = !COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout)
 	data["undockLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, interdiction_undock_lockout)
+
+	// Post-failure hull lockout. Outlives the damage that caused it, so the console has to
+	// name it - otherwise a fully repaired ship reads 100% next to a dead Undock button.
+	data["integrityLockout"] = !COOLDOWN_FINISHED(current_ship, integrity_undock_lockout)
+	data["integrityLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, integrity_undock_lockout)
 
 	// Dock warmup data
 	data["dockWarmup"] = !!current_ship.dock_warmup_timer
@@ -368,6 +407,7 @@
 
 	// Cargo shuttle status - block undock if shuttle is present
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+	cargo_shuttle?.check_stalled() // a delivery that never resolved would block undock forever
 	data["cargoShuttlePresent"] = cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY
 
 	// Interdiction status
@@ -435,6 +475,11 @@
 		data["zone_transition_progress"] = 0
 		data["zone_transition_remaining"] = 0
 		data["zone_transition_target"] = null
+
+	// Standing version of the crossing warning: the band we're in (or headed
+	// into) versus what this hull has researched to meet it. Null while there is
+	// nothing to say. See voidcrew/modules/onboarding/zone_advisory.dm
+	data["zone_advisory"] = current_ship.zone_advisory_state()
 
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		if(QDELETED(E))
@@ -507,24 +552,32 @@
 	return data
 
 /**
- * The object the Dock button will dock into from the ship's current tile, or null
- * when there is nothing here and docking means holding station in empty space.
- *
- * Other vessels are skipped deliberately: ship-to-ship docking is a consensual
- * request/accept handshake, not something the Dock button should trigger by
- * happening to share a tile. Everything else opts in by overriding
+ * What the Dock button would call `object` if offered as an option, or null if it
+ * isn't dockable at all. Ships get their own wording (see describe_dock_target()
+ * in ship_sensors.dm) since docking with one is still a request/accept handshake
+ * rather than an instant dock; everything else opts in by overriding
  * get_dock_description() (see _overmap.dm).
  */
-/obj/machinery/computer/helm/proc/get_dock_candidate()
+/obj/machinery/computer/helm/proc/describe_dock_candidate(obj/structure/overmap/object)
+	if(istype(object, /obj/structure/overmap/ship))
+		var/obj/structure/overmap/ship/other = object
+		return current_ship?.describe_dock_target(other)
+	return object.get_dock_description()
+
+/**
+ * Every object the Dock button could act on from the ship's current tile, or an
+ * empty list when there is nothing here and docking means holding station in
+ * empty space. Order is whatever close_overmap_objects happens to hold — the
+ * console doesn't rank docking options, it just lists them.
+ */
+/obj/machinery/computer/helm/proc/get_dock_candidates()
+	. = list()
 	if(!current_ship)
-		return null
+		return .
 	for(var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
-		if(istype(object, /obj/structure/overmap/ship))
+		if(isnull(describe_dock_candidate(object)))
 			continue
-		if(isnull(object.get_dock_description()))
-			continue
-		return object
-	return null
+		. += object
 
 /**
  * Names an autopilot destination from the ship's own contact set, so the label the
@@ -894,8 +947,27 @@
 					// Dock into whatever is actually here. Previously this refused
 					// outright whenever a ruin or planet shared the tile, so the only
 					// way to land on one was the contact list's Interact button.
-					var/obj/structure/overmap/dock_candidate = get_dock_candidate()
-					if(dock_candidate)
+					var/list/dock_candidates = get_dock_candidates()
+					var/obj/structure/overmap/dock_candidate
+					if(length(dock_candidates))
+						// The client always sends the option it clicked once there is
+						// more than one, but re-validate against close_overmap_objects
+						// rather than trusting the ref on its own — same reason
+						// "act_overmap" above does.
+						var/target_ref = params["target"]
+						if(target_ref)
+							var/obj/structure/overmap/located = locate(target_ref)
+							if(!located || !(located in dock_candidates))
+								say("ERROR: No such contact at this position.")
+								playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+								return
+							dock_candidate = located
+						else if(length(dock_candidates) == 1)
+							dock_candidate = dock_candidates[1]
+						else
+							say("ERROR: Multiple docking options here — choose one from the Dock button.")
+							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+							return
 						if(!current_ship.is_still())
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
 							balloon_alert(usr, "come to a full stop first!")
@@ -904,7 +976,11 @@
 						current_ship.overmap_object_act(usr, dock_candidate)
 						return
 					current_ship.disengage_autopilot("docking", notify = FALSE)
-					say(current_ship.dock_in_empty_space(usr))
+					// Only refusals come back as text; a dock that started is
+					// broadcast to the crew by the ship itself
+					var/dock_result = current_ship.dock_in_empty_space(usr)
+					if(dock_result)
+						say(dock_result)
 					return
 				if("hide_in_nebula")
 					if(!current_ship.can_hide_in_nebula())
@@ -935,14 +1011,29 @@
 			if(action == "undock")
 				// Check if cargo shuttle is still present
 				var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+				cargo_shuttle?.check_stalled() // never let a stranded delivery strand the ship
 				if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
 					say("ERROR: Cannot undock while cargo shuttle is present. Send the cargo shuttle away first.")
 					return
 				current_ship.calculate_avg_fuel()
 				if(current_ship.avg_fuel_amnt < 25 && tgui_alert(usr, "Ship only has ~[round(current_ship.avg_fuel_amnt)]% fuel remaining! Are you sure you want to undock?", name, list("Yes", "No")) != "Yes")
 					return
-				say(current_ship.undock())
+				// As with docking, only refusals come back as text
+				var/undock_result = current_ship.undock()
+				if(undock_result)
+					say(undock_result)
 				return
+		else
+			// DOCKING, UNDOCKING and ACTING have no controls of their own, so every
+			// navigation topic above is unreachable while the ship is in one of them and
+			// used to fall off the end of this switch in total silence. A console that
+			// eats every button without a word is indistinguishable from a broken one -
+			// and until complete_dock() learned to give up (abort_stalled_dock() in
+			// ship.dm) a stalled move really could pin the ship here for good.
+			if(action in list("dock", "undock", "change_heading", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "bluespace_jump", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
+				say("Manoeuvring systems busy: [current_ship.get_state_readout()]. Stand by.")
+				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+			return
 
 
 

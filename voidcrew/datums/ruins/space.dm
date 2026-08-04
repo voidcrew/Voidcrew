@@ -22,3 +22,16 @@
 // the upstream folder — dead entries poison the space-ruin picker.
 /datum/map_template/ruin/space
 	prefix = "_maps/voidcrew/RandomRuins/SpaceRuins/"
+
+// Charlie Station is 112x64. load_level() reserves the ruin plus a maximum-size
+// docking berth on two opposite sides — 112 + 56*2 + 3*2 = 230 wide — but the
+// largest block any reservation z-level can hand out is 222x222 (the band inset
+// by SHUTTLE_TRANSIT_BORDER, less the cordon ring). So it can never be boarded:
+// it surfaced as a normal signal that answered every dock attempt with "Failed to
+// load the location.", leaking a fresh 255x255 reservation z-level per attempt.
+//
+// Keep it out of the pickers until the map is trimmed under 104 wide (or the dock
+// berths are laid out along its short axis, which would fit at 198x182 but changes
+// docking rotation — see the dock rotation invariant before trying that).
+/datum/map_template/ruin/space/oldstation
+	unpickable = TRUE

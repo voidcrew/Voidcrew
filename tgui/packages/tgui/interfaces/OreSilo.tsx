@@ -36,7 +36,7 @@ type UserData = {
   account_holder: string;
   account_assignment: string;
   accesses: string[];
-  chamelon_override: string | null;
+  chameleon_override: string | null;
   silicon_override: string | null;
   id_read_failure: string | null;
 };
@@ -333,7 +333,7 @@ const UserItem = (props: UserData) => {
     account_holder,
     account_assignment,
     accesses,
-    chamelon_override,
+    chameleon_override,
     silicon_override,
     id_read_failure,
   } = props;

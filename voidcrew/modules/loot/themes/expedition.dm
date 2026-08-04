@@ -1,12 +1,12 @@
 // =========================================================================
 // EXPEDITION THEME — prospector and frontier kit (mining camps, crash
-// sites, survey posts, meteor fields). Green keeps you alive, yellow makes
-// you faster, red makes the planet regret you landed. Guarded by
+// sites, survey posts, meteor fields). Common keeps you alive, uncommon
+// makes you faster, prime makes the planet regret you landed. Guarded by
 // territorial fauna: wildlife on planet surfaces, the vacuum-proof asteroid
 // table for airless rocks (the landable meteor storm fields in
 // overmap/events.dm spawn both this theme's caches and asteroid packs at
 // runtime).
-// TODO: review/balance-pass all six tables — first-draft weights and
+// TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -17,9 +17,10 @@
 		/obj/effect/zone_mobs/wildlife/boss,
 		/obj/effect/zone_mobs/asteroid,
 	)
-	loot_green = list(
+	loot_common = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
 		/obj/item/knife/combat/survival = 9,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 8,
 		/obj/item/gps/mining = 8,
 		/obj/item/flashlight/flare = 8,
 		/obj/item/stack/marker_beacon/thirty = 6,
@@ -28,46 +29,44 @@
 		/obj/item/reagent_containers/hypospray/medipen/survival = 4,
 		/obj/item/pickaxe = 4,
 	)
-	loot_yellow = list(
+	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
 		/obj/item/storage/belt/mining/alt = 8,
 		/obj/item/pickaxe/diamond = 7,
 		/obj/item/t_scanner/adv_mining_scanner/lesser = 6,
 		/obj/item/wormhole_jaunter = 6,
+		// wildlife stoppers: the KA is a mining tool first, these are not
+		/obj/item/gun/ballistic/shotgun/riot = 6,
+		/obj/item/gun/ballistic/rifle/boltaction = 5,
 		/obj/item/survivalcapsule = 5,
 		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
 		/obj/item/gun/energy/plasmacutter = 4,
 		/obj/item/ship_parts/misc = 6,
 	)
-	loot_red = list(
+	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
 		/obj/item/clothing/shoes/bhop = 7,
 		/obj/item/resonator = 7,
 		/obj/item/gun/energy/plasmacutter/adv = 6,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 6,
+		/obj/item/gun/energy/laser = 5,
 		/obj/item/kinetic_crusher = 5,
 		/obj/item/clothing/glasses/heat = 4,
 		/obj/item/clothing/suit/hooded/cloak/drake = 2,
-		/obj/item/ship_parts/misc = 6,
+		// the deepest slice of the theme, previously reachable only through
+		// a sealed cache: now the long tail of prime, open to any band
+		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
 	)
-	// Rare tables: surviving stock entries + this theme's uniques at ~4
-	// (see voidcrew/modules/loot/uniques/expedition.dm and the design doc)
-	rare_loot_green = list(
-		/obj/item/gun/energy/recharge/kinetic_accelerator = 8,
-		/obj/item/storage/belt/mining/alt = 6,
-		/obj/item/pinpointer/old_hands_compass = 4,
-		/obj/item/claim_stake = 4,
-	)
-	rare_loot_yellow = list(
-		/obj/item/borg/upgrade/modkit/range = 8,
-		/obj/item/resonator = 6,
-		/obj/item/clothing/suit/hooded/explorer/second_season_duster = 4,
-		/obj/item/pickaxe/divining = 4,
-	)
-	rare_loot_red = list(
-		/obj/item/kinetic_crusher = 8,
-		/obj/item/clothing/suit/hooded/cloak/drake = 5,
-		/obj/item/deepwell_sampler = 4,
-		/obj/item/longwalk_rig = 4,
+	// One-of-a-kind authored prizes, drawn as the fourth tier from any
+	// band (weight = how shallow the item used to sit: 3 was reachable
+	// early, 1 was the bottom of the deepest cache).
+	loot_uniques = list(
+		/obj/item/claim_stake = 3,
+		/obj/item/pinpointer/old_hands_compass = 3,
+		/obj/item/clothing/suit/hooded/explorer/second_season_duster = 2,
+		/obj/item/pickaxe/divining = 2,
+		/obj/item/deepwell_sampler = 1,
+		/obj/item/longwalk_rig = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/expedition
@@ -76,11 +75,6 @@
 	icon_state = "mining"
 	base_icon_state = "mining"
 	theme = /datum/loot_theme/expedition
-
-/obj/structure/closet/crate/zone_loot/expedition/rare
-	name = "prospector's claim chest"
-	desc = "A claim chest with the assay office's wax still on it. Whoever staked this claim struck something."
-	rare = TRUE
 
 /// Planet fauna: territorial wildlife around and inside surface ruins.
 /obj/effect/zone_mobs/wildlife

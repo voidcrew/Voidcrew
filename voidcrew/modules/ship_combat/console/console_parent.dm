@@ -27,8 +27,10 @@
 	var/list/linked_launchers = list()
 	/// List of linked laser turrets (weakrefs)
 	var/list/linked_turrets = list()
-	/// Linked shield generator (weakref)
-	var/datum/weakref/linked_shield_ref
+	/// List of linked shield generators (weakrefs). The ship runs one shared shield
+	/// pool fed by every generator aboard, so this has to be a list - most hulls mount
+	/// two or three and a single slot silently drops all but the last one.
+	var/list/linked_shields = list()
 	/// Global power level for all turrets (0.25 to 2.0)
 	var/turret_power_level = 1
 	/// Is cloaking device active on our ship?
@@ -121,6 +123,11 @@
 		if(turret)
 			turret.unlink_console()
 	linked_turrets.Cut()
+	for(var/datum/weakref/ref in linked_shields)
+		var/obj/machinery/ship_combat/shield_generator/gen = ref.resolve()
+		if(gen)
+			gen.unlink_console()
+	linked_shields.Cut()
 	QDEL_NULL(reticle)
 	current_ship = null
 	return ..()

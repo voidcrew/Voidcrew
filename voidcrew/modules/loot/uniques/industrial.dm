@@ -1,8 +1,8 @@
 /**
  * # Industrial uniques — Helios-Betna Forgeworks certified goods cache
  *
- * Six one-of-a-kind prizes for the industrial rare-loot table
- * (`voidcrew/modules/loot/zone_loot.dm`, `/obj/structure/closet/crate/zone_loot/industrial/rare`).
+ * Six one-of-a-kind prizes for the industrial uniques shelf
+ * (`voidcrew/modules/loot/zone_loot.dm`, `loot_uniques` on /datum/loot_theme/industrial).
  * Design source: `Rare-loot-uniques.md` in the docs vault, "INDUSTRIAL — certified
  * goods cache" section.
  *

@@ -52,62 +52,31 @@ type DisplayProps = {
   active: boolean;
   item: LoadoutItem;
   scale?: number;
-  owned?: boolean;
-  canAfford?: boolean;
 };
 
 export function ItemDisplay(props: DisplayProps) {
   const { act } = useBackend();
-  const { active, item, scale = 3, owned = true, canAfford = true } = props;
-
-  // Determine if this item requires purchase and isn't owned
-  const needsPurchase = item.requires_purchase && !owned;
-  const purchaseCost = item.purchase_cost || 0;
-
-  // Color logic: green if selected, orange if needs purchase and can afford, red if can't afford, default otherwise
-  let buttonColor = 'default';
-  if (active) {
-    buttonColor = 'green';
-  } else if (needsPurchase) {
-    buttonColor = canAfford ? 'orange' : 'red';
-  }
-
-  const handleClick = () => {
-    if (needsPurchase) {
-      // Purchase the item instead of selecting
-      act('purchase_loadout_item', { path: item.path });
-    } else {
-      // Normal select/deselect
-      act('select_item', {
-        path: item.path,
-        deselect: active,
-      });
-    }
-  };
-
-  // Build tooltip
-  let tooltipText = item.name;
-  if (needsPurchase) {
-    tooltipText = canAfford
-      ? `${item.name} - Click to purchase (${purchaseCost} credits)`
-      : `${item.name} - Not enough credits (${purchaseCost} required)`;
-  }
+  const { active, item, scale = 3 } = props;
 
   return (
     <div style={{ position: 'relative' }}>
       <ImageButton
         imageSize={scale * 32}
-        color={buttonColor}
+        color={active ? 'green' : 'default'}
         style={{
           textTransform: 'capitalize',
           zIndex: '1',
-          opacity: needsPurchase && !canAfford ? 0.6 : 1,
         }}
-        tooltip={tooltipText}
+        tooltip={item.name}
         tooltipPosition={'bottom'}
         dmIcon={item.icon}
         dmIconState={item.icon_state}
-        onClick={handleClick}
+        onClick={() =>
+          act('select_item', {
+            path: item.path,
+            deselect: active,
+          })
+        }
       />
       <div
         style={{ position: 'absolute', top: '8px', right: '8px', zIndex: '2' }}
@@ -129,23 +98,6 @@ export function ItemDisplay(props: DisplayProps) {
           </Stack>
         )}
       </div>
-      {needsPurchase && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '4px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: '3',
-          }}
-        >
-          <Icon
-            name="lock"
-            size={1.2}
-            color={canAfford ? 'orange' : 'red'}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -182,21 +134,6 @@ export function ItemListDisplay(props: ListProps) {
   const { loadout_list } = data.character_preferences.misc;
   const itemGroups = sortByGroup(props.items);
 
-  // Voidcrew purchase system data
-  const shipCredits = data.ship_credits || 0;
-  const ownedItems = data.owned_loadout_items || [];
-
-  // Helper to check if an item is owned
-  const isOwned = (item: LoadoutItem) => {
-    if (!item.requires_purchase) return true;
-    return ownedItems.includes(item.path);
-  };
-
-  // Helper to check if player can afford an item
-  const canAfford = (item: LoadoutItem) => {
-    return shipCredits >= (item.purchase_cost || 0);
-  };
-
   return (
     <Stack vertical>
       {itemGroups.length > 1 && <Stack.Item />}
@@ -220,8 +157,6 @@ export function ItemListDisplay(props: ListProps) {
                       active={
                         loadout_list && loadout_list[item.path] !== undefined
                       }
-                      owned={isOwned(item)}
-                      canAfford={canAfford(item)}
                     />
                   </Stack.Item>
                 ))}

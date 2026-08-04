@@ -3,7 +3,7 @@
 /turf/template_noop,
 /area/template_noop)
 "aA" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -40,7 +40,7 @@
 /obj/machinery/door/airlock/external{
 	name = "External Freight Airlock"
 	},
-/obj/machinery/door/firedoor,
+/obj/structure/fans/tiny,
 /obj/effect/turf_decal/stripes{
 	dir = 1
 	},
@@ -152,7 +152,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/d)
 "iv" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -186,7 +186,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/bridge/d)
 "jh" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -317,6 +317,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	id = "NTMSLoad2";
 	name = "on ramp"
@@ -340,7 +341,6 @@
 /obj/effect/turf_decal/stripes{
 	dir = 4
 	},
-/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
@@ -404,11 +404,11 @@
 	id_tag = "ntms_exterior";
 	name = "NTMS-037 Mining Airlock"
 	},
+/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
 "se" = (
@@ -521,6 +521,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
+/obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
 "uY" = (
@@ -715,6 +716,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	dir = 1;
 	id = "NTMSLoad";
@@ -823,7 +825,6 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/blueprints/shuttle,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/bridge/d)
 "CQ" = (
@@ -1112,7 +1113,6 @@
 /obj/machinery/door/airlock/shuttle{
 	name = "Captain's Quarters"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,

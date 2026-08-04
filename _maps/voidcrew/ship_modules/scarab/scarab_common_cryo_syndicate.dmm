@@ -44,6 +44,28 @@
 	color = "#333135"
 	},
 /area/template_noop)
+"i" = (
+/obj/structure/table,
+/obj/item/wrench/medical,
+/obj/structure/sign/departments/medbay/alt/directional/south,
+/obj/item/storage/box/donkpockets{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/food/canned/beans{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/obj/item/food/sosjerky{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/item/food/energybar{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
 "k" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -204,12 +226,6 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/template_noop)
-"H" = (
-/obj/structure/table,
-/obj/item/wrench/medical,
-/obj/structure/sign/departments/medbay/alt/directional/south,
-/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "J" = (
 /obj/structure/cable,
@@ -423,7 +439,7 @@ Y
 B
 O
 P
-H
+i
 "}
 (6,1,1) = {"
 a

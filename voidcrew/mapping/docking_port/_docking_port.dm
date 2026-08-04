@@ -1,4 +1,29 @@
 /**
+ * Frees a shuttle's transit reservation and clears its assignment.
+ *
+ * Every docking port answers a non-forced qdel() with QDEL_HINT_LETMELIVE
+ * (/obj/docking_port/Destroy), and /obj/docking_port/stationary/transit does ALL of
+ * its cleanup - unregistering from SSshuttle.transit_docking_ports, dropping `owner`,
+ * qdel'ing the turf reservation - inside `if(force)`. So the QDEL_NULL() that
+ * expand_shuttle()/remove_shuttle_turfs() used to call here deleted nothing: it nulled
+ * the shuttle's reference and left a live, still-owned transit port sitting on its
+ * reservation. `transit_utilized` is only decremented by the reservation's own
+ * COMSIG_QDELETING handler, so every hull expansion past the bounding box burned
+ * 3-6k turfs of the 22.5k global transit budget permanently, and SSshuttle's orphan
+ * sweep never collected the port because `owner` was still set.
+ *
+ * That budget is what gates check_transit_zone(). Exhaust it and a ship can never
+ * enter transit again - which on the overmap reads as an undock that leaves the hull
+ * parked at the dock it just "left" (see complete_dock() in ship.dm).
+ */
+/proc/release_assigned_transit(obj/docking_port/mobile/shuttle)
+	if(!shuttle)
+		return
+	if(!QDELETED(shuttle.assigned_transit))
+		qdel(shuttle.assigned_transit, force = TRUE) // transit/Destroy() nulls our ref for us
+	shuttle.assigned_transit = null
+
+/**
  * The main docking port that all voidcrew ships should be using.
  */
 /obj/docking_port/mobile/voidcrew
@@ -23,6 +48,17 @@
 
 	///The cryo oversight console for this ship (for custom slot swaps)
 	var/obj/machinery/computer/cryopod/cryo_console
+
+	///Reentrancy latch for initiate_docking(): world.time until which a second move is
+	///refused. Two drivers reach for the same hull (SSshuttle's check() and the overmap
+	///dock/undock timers), and initiate_docking() yields on CHECK_TICK - an overlap
+	///interleaves two half-done turf transplants and strands whatever the loser touched.
+	VAR_PRIVATE/move_lock_until = 0
+
+	///turf -> turf type census of the tiles this hull actually carried to where it now
+	///sits, rebuilt by takeoff() on every move. reconcile_hull_before_move() reads it to
+	///tell a deck tile of ours that lost its skipover from ground we are merely parked on.
+	VAR_PRIVATE/list/carried_hull_types
 
 /obj/docking_port/mobile/voidcrew/Initialize(mapload)
 	. = ..()
@@ -78,6 +114,257 @@
 	if(assigned_transit?.assigned_area)
 		assigned_transit.assigned_area.parallax_movedir = preferred_direction
 
+/**
+ * A voidcrew ship in open flight is SHUTTLE_CALL with destination = null - there is
+ * nothing to ever arrive at. Base check() doesn't know that state: once the undock
+ * timer expires it calls initiate_docking(null) every fire (which runtimed on
+ * `new_dock.get_docked()` and killed the whole SSshuttle fire mid-loop - round 811),
+ * and its arrival tail would park us at SHUTTLE_IDLE, the state postregister()
+ * documents as wiping flight parallax. Settle the timer to the perpetual-flight value
+ * before the base proc's arrival machinery can run.
+ */
+/obj/docking_port/mobile/voidcrew/check()
+	if(mode == SHUTTLE_CALL && isnull(destination) && timeLeft(1) <= 0)
+		timer = INFINITY
+	return ..()
+
+/obj/docking_port/mobile/voidcrew/initiate_docking(obj/docking_port/stationary/new_dock, movement_direction, force = FALSE)
+	if(isnull(new_dock)) // base proc error-returns; no reconcile pass for a non-move
+		return ..()
+	if(world.time < move_lock_until)
+		log_shuttle("[name]: OVERLAPPING initiate_docking refused - move to [new_dock] arrived while another move is still in flight")
+		return DOCKING_BLOCKED
+	move_lock_until = world.time + 30 SECONDS
+	reconcile_hull_before_move()
+	. = ..()
+	move_lock_until = 0
+
+/**
+ * Pre-move audit of every turf inside our own footprint, run before initiate_docking()'s
+ * preflight so repairs land before any per-turf move decisions are made. Two corruption
+ * classes get repaired and logged, both of which otherwise leave hull tiles - and the
+ * engines standing on them - behind at the old location when the ship moves (round 803,
+ * 2026-08-01: all four Delta thrusters stranded on an unloading ruin z this way):
+ *
+ * 1. Area split: a tile sitting in a /area/shuttle/voidcrew instance whose TYPE we own
+ *    but which is not the instance registered in shuttle_areas. area/beforeShuttleMove()
+ *    grants MOVE_AREA purely by instance membership, so a split tile fails every
+ *    membership test while stringifying identically in logs ("Engineering"). Reassign it
+ *    to our instance. Tiles owned by a LIVE other ship (their area's shuttle_port
+ *    resolves to a different port) are left alone - ship-to-ship docking legitimately
+ *    nests one hull inside another's footprint.
+ *
+ * 2. Missing shuttle skipover: fromShuttleMove() refuses to move any turf without
+ *    /turf/baseturf_skipover/shuttle in its baseturfs. Restore the marker the same way
+ *    /datum/map_template/shuttle/load() stamps it at ship load - but only on a tile
+ *    carried_hull_types vouches for as ours, never on ground we are parked on. See
+ *    takeoff() for why the turf's own state cannot tell those two apart.
+ */
+/obj/docking_port/mobile/voidcrew/proc/reconcile_hull_before_move()
+	if(!length(shuttle_areas)) // initial load placement, nothing registered to reconcile against
+		return
+	// Engine-first audit. The per-turf sweep below has silent lanes - round 811's Pill
+	// lost its thruster off a SPACE turf with an INTACT skipover sitting in an ORPHANED
+	// same-name area instance, a state that passes every check in that sweep without a
+	// single log line. An engine's mount is audited directly and repaired
+	// unconditionally: registered area, real deck, skipover, or it gets rebuilt.
+	for(var/obj/machinery/power/shuttle_engine/engine as anything in engine_list)
+		var/turf/mount = get_turf(engine)
+		if(!mount || mount.z != z || !is_in_shuttle_bounds_geometric(engine))
+			continue
+		repair_engine_mount(engine, mount)
+	var/list/own_area_by_type
+	for(var/turf/hull_turf as anything in return_ordered_turfs(x, y, z, dir))
+		if(!hull_turf)
+			continue
+		// Collapsed mount: one of our own engines standing on a tile a move cannot
+		// carry - bare space, or foreign ground adopted at a dock (wasteland dirt,
+		// ruin space). Rebuild it into real hull before the move wedges them apart.
+		if(!isshuttleturf(hull_turf) && restore_collapsed_mount(hull_turf))
+			continue
+		if(isspaceturf(hull_turf))
+			continue
+		var/area/turf_area = hull_turf.loc
+		if(!shuttle_areas[turf_area])
+			if(!istype(turf_area, /area/shuttle/voidcrew))
+				// A non-ship shuttle area (transit, another port's area) holding a real
+				// floor inside our footprint = a previously stranded tile we re-landed
+				// on. Not repairable from here, and it will not travel - log it.
+				if(istype(turf_area, /area/shuttle))
+					log_shuttle("[name]: hull-rect turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] sits in unregistered [turf_area.type] [REF(turf_area)] - it will not move with the ship")
+				continue
+			var/area/shuttle/voidcrew/foreign = turf_area
+			if(foreign.shuttle_port && foreign.shuttle_port != src)
+				log_shuttle("[name]: hull-rect turf [hull_turf] at [AREACOORD(hull_turf)] belongs to live foreign ship area [foreign.type] [REF(foreign)] ([foreign.shuttle_port.name]) - leaving it alone")
+				continue
+			if(isnull(own_area_by_type))
+				own_area_by_type = list()
+				for(var/area/own_area as anything in shuttle_areas)
+					// Ship-to-ship docking absorbs the guest's areas into the host's
+					// shuttle_areas; with two same-class hulls docked, the guest's
+					// instance must never win this map and steal reunified tiles.
+					if(istype(own_area, /area/shuttle/voidcrew))
+						var/area/shuttle/voidcrew/own_voidcrew_area = own_area
+						if(own_voidcrew_area.shuttle_port && own_voidcrew_area.shuttle_port != src)
+							continue
+					own_area_by_type[own_area.type] = own_area
+			var/area/replacement = own_area_by_type[foreign.type]
+			if(!replacement)
+				continue
+			log_shuttle("[name]: hull turf [hull_turf] at [AREACOORD(hull_turf)] was in orphaned area instance [REF(foreign)] of [foreign.type] - reunified into [REF(replacement)] before move")
+			hull_turf.change_area(foreign, replacement)
+			turf_area = replacement
+		if(!shuttle_areas[turf_area])
+			continue
+		if(!isnull(hull_turf.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)))
+			continue
+		// Unmarked ground inside one of our areas is the landing site's, not a deck tile
+		// with a bookkeeping fault, unless we can show we carried this exact turf here.
+		// Stamping the site's floor is how a breached hull sails off a planet with a
+		// square of that planet's dirt riding in the hole.
+		if(carried_hull_types?[hull_turf] != hull_turf.type)
+			log_shuttle("[name]: footprint turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] has no shuttle skipover and is not hull we carried here ([carried_hull_types?[hull_turf] || "never carried"]) - leaving it to the site")
+			continue
+		if(!islist(hull_turf.baseturfs))
+			hull_turf.assemble_baseturfs()
+		hull_turf.insert_baseturf(min(3, hull_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
+		log_shuttle("[name]: hull turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] had no shuttle skipover baseturf - restored before move")
+	// One line per move so a mangled rectangle (transposed dims, drifted offsets) is
+	// visible next to whatever strands: compare stranded coords against this rect.
+	var/list/rect = return_coords()
+	log_shuttle("[name]: pre-move footprint pos=([x],[y],[z]) dir=[dir] w=[width] h=[height] dw=[dwidth] dh=[dheight] rect=([rect[1]],[rect[2]])-([rect[3]],[rect[4]])")
+
+/**
+ * Post-move census of what this hull actually set down, keyed turf -> turf type.
+ *
+ * reconcile_hull_before_move()'s skipover repair has to separate two states that are
+ * indistinguishable by the time it looks at them:
+ *
+ *   - a deck tile of ours that lost its /turf/baseturf_skipover/shuttle to a bookkeeping
+ *     fault, which has to get the marker back or the tile - and whatever is standing on
+ *     it - is left behind on the next move, and
+ *   - the landing site's own ground sitting in one of our areas. A breached tile travels
+ *     as MOVE_AREA without MOVE_TURF, so /area/onShuttleMove() hands our area the
+ *     planet's dirt at that coordinate while the dirt stays the planet's turf. A tile
+ *     breached while already parked lands in the same state from the other direction:
+ *     CopyOnTop() only carries the layers above the marker, so a landed deck tile has
+ *     the site's ground directly under its skipover and ScrapeAway() takes both, leaving
+ *     bare planet floor.
+ *
+ * Both end as unmarked ground in a registered ship area, and stamping either one makes
+ * the hull carry a square of the planet away inside the breach - which is not even hull
+ * as far as integrity is concerned, since get_turf_mass_weight_instance() refuses to
+ * count a turf isshuttleturf() rejects.
+ *
+ * The turf's state cannot tell them apart; its history can. A tile we carried to this
+ * coordinate that is still the type we set down is ours. Anything else belongs to the
+ * site, including the ground a breach scraped down to - a break changes the type, which
+ * is exactly the signal a marker lost to bookkeeping does not produce.
+ */
+/obj/docking_port/mobile/voidcrew/takeoff(list/old_turfs, list/new_turfs, list/moved_atoms, rotation, movement_direction, old_dock, area/fallback_area)
+	. = ..()
+	carried_hull_types = list()
+	for(var/i in 1 to length(old_turfs))
+		if(!(old_turfs[old_turfs[i]] & MOVE_TURF))
+			continue
+		var/turf/landed = new_turfs[i]
+		if(!landed)
+			continue
+		carried_hull_types[landed] = landed.type
+
+/**
+ * An engine of ours standing on bare space inside our own footprint is a collapsed
+ * hull mount: a previous move carried the area and the engine (the engine's
+ * beforeShuttleMove() grants MOVE_CONTENTS whenever MOVE_AREA is set) while the tile
+ * itself failed isshuttleturf() and stayed behind, so the engine arrived standing on
+ * the destination's raw space. It flies fine in that state - round 804 found Kilo,
+ * Goon and CCU engines living in /area/space/nearstation and /area/shuttle/transit -
+ * but the first time the area bookkeeping hiccups too, the engine strands for good.
+ * Rebuild the mount: adopt a neighbouring registered area, then lay plating -
+ * /area/shuttle/place_on_top_react() stamps the shuttle skipover during the
+ * place_on_top(), which is exactly the state a mapped mount loads with.
+ */
+/obj/docking_port/mobile/voidcrew/proc/restore_collapsed_mount(turf/mount_turf)
+	var/obj/machinery/power/shuttle_engine/mounted
+	for(var/obj/machinery/power/shuttle_engine/engine in mount_turf)
+		if(engine.connected_ship_ref?.resolve() == src)
+			mounted = engine
+			break
+	if(!mounted)
+		return FALSE
+	var/area/home = mount_turf.loc
+	if(!shuttle_areas[home])
+		home = null
+		for(var/check_dir in GLOB.cardinals)
+			var/turf/neighbour = get_step(mount_turf, check_dir)
+			var/area/neighbour_area = neighbour?.loc
+			if(neighbour_area && shuttle_areas[neighbour_area])
+				home = neighbour_area
+				break
+		if(!home)
+			return FALSE
+		mount_turf.change_area(mount_turf.loc, home)
+	if(isfloorturf(mount_turf))
+		// A real deck tile that merely lost its skipover marker - keep it, restamp.
+		if(!islist(mount_turf.baseturfs))
+			mount_turf.assemble_baseturfs()
+		mount_turf.insert_baseturf(min(3, mount_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
+		log_shuttle("[name]: engine [mounted] at [AREACOORD(mount_turf)] stood on [mount_turf.type] with no skipover - restamped its mount")
+	else
+		// Bare space or adopted foreign ground - rebuild the mount plating;
+		// /area/shuttle/place_on_top_react() stamps the skipover for us.
+		log_shuttle("[name]: engine [mounted] at [AREACOORD(mount_turf)] stood on [mount_turf.type] - rebuilding its mount into [home.type]")
+		mount_turf.place_on_top(/turf/open/floor/plating/airless)
+	return TRUE
+
+/**
+ * Makes one engine's mount tile fully move-legal before a move: registered area
+ * instance, real deck turf, shuttle skipover. Unlike restore_collapsed_mount() this
+ * runs for EVERY connected engine regardless of what the tile currently is, because
+ * the degenerate states don't announce themselves - destroyed plating keeps both its
+ * baseturfs (so isshuttleturf() still passes on the space turf left behind) and its
+ * area, and an orphaned same-name area instance stringifies identically to the
+ * registered one.
+ */
+/obj/docking_port/mobile/voidcrew/proc/repair_engine_mount(obj/machinery/power/shuttle_engine/engine, turf/mount)
+	var/area/mount_area = mount.loc
+	if(!shuttle_areas[mount_area])
+		// Prefer our own registered instance of the same area type (the orphan-split
+		// case), then any registered cardinal neighbour (adopted foreign ground).
+		var/area/replacement
+		for(var/area/own_area as anything in shuttle_areas)
+			if(own_area.type != mount_area.type)
+				continue
+			if(istype(own_area, /area/shuttle/voidcrew))
+				var/area/shuttle/voidcrew/own_voidcrew_area = own_area
+				if(own_voidcrew_area.shuttle_port && own_voidcrew_area.shuttle_port != src)
+					continue // absorbed guest area from a ship-to-ship dock, not ours
+			replacement = own_area
+			break
+		if(!replacement)
+			for(var/check_dir in GLOB.cardinals)
+				var/turf/neighbour = get_step(mount, check_dir)
+				var/area/neighbour_area = neighbour?.loc
+				if(neighbour_area && shuttle_areas[neighbour_area])
+					replacement = neighbour_area
+					break
+		if(!replacement)
+			log_shuttle("[name]: engine [engine] at [AREACOORD(mount)] sits in unregistered [mount_area.type] [REF(mount_area)] with no registered area adjacent - NOT repairable, it will strand")
+			return FALSE
+		log_shuttle("[name]: engine [engine] at [AREACOORD(mount)] sat in unregistered [mount_area.type] [REF(mount_area)] - mount reassigned to [replacement.type] [REF(replacement)] before move")
+		mount.change_area(mount_area, replacement)
+	if(isspaceturf(mount))
+		// Even with a skipover in its baseturfs this is a collapsed mount - the engine
+		// is standing on nothing. place_on_top_react() stamps a fresh skipover.
+		log_shuttle("[name]: engine [engine] at [AREACOORD(mount)] stood on [mount.type] (baseturfs=[islist(mount.baseturfs) ? jointext(mount.baseturfs, " > ") : "[mount.baseturfs]"]) - rebuilding its mount plating")
+		mount.place_on_top(/turf/open/floor/plating/airless)
+	else if(!isshuttleturf(mount))
+		if(!islist(mount.baseturfs))
+			mount.assemble_baseturfs()
+		mount.insert_baseturf(min(3, mount.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
+		log_shuttle("[name]: engine [engine] at [AREACOORD(mount)] stood on [mount.type] with no skipover - restamped its mount")
+	return TRUE
+
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
 	return ..()
@@ -86,6 +373,26 @@
 	unlink_from_z_level()
 	link_to_z_level()
 	recalculate_shuttle_areas() // this also readds VALID_TERRITORY
+	// Stranded-tile census: any registered area still holding turfs on a z we just
+	// left is the seed of the next thruster loss - name the seed move while the
+	// trail is warm (rounds 803/804: engines died with the site the tiles stayed on).
+	for(var/area/shuttle_area as anything in shuttle_areas)
+		for(var/census_z in 1 to length(shuttle_area.turfs_by_zlevel))
+			if(census_z == z)
+				continue
+			var/stranded_count = length(shuttle_area.get_turfs_by_zlevel(census_z))
+			if(stranded_count)
+				log_shuttle("[name]: [stranded_count] turf(s) of [shuttle_area.type] left stranded on z=[census_z] after moving to z=[z]")
+	// Engine census: the turf census above is blind to a tile that stranded in an
+	// ORPHANED area instance (round 811's Pill) - the engine roster isn't.
+	for(var/obj/machinery/power/shuttle_engine/engine as anything in engine_list)
+		var/turf/engine_turf = get_turf(engine)
+		if(!engine_turf)
+			continue
+		if(engine_turf.z >= z - z_levels_below && engine_turf.z <= z + z_levels_above)
+			continue
+		var/area/engine_area = engine_turf.loc
+		log_shuttle("[name]: engine [engine] left behind at [AREACOORD(engine_turf)] on [engine_turf.type] in [engine_area.type] [REF(engine_area)] after moving to z=[z]")
 	// Moving into transit asserts a preferred_direction scroll on our areas
 	// (shuttle_move.dm); reconcile it with the ship's real speed - a ship with no
 	// thrust should show a still starfield, not a drifting one

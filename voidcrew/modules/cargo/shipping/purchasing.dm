@@ -35,9 +35,8 @@
 		// Actually deduct the cost from the bank account
 		bank_account_holder.synced_bank_account.adjust_money(-price)
 
-		if(spawning_order.paying_account)
-			// VOIDCREW EDIT: SSeconomy.track_purchase() was renamed add_audit_entry(); same args.
-			SSeconomy.add_audit_entry(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
+		// VOIDCREW EDIT: SSeconomy.track_purchase() was renamed add_audit_entry(); same args.
+		SSeconomy.add_audit_entry(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
 		value += price
 		checkout_list -= spawning_order
 		QDEL_NULL(spawning_order.applied_coupon)
@@ -46,9 +45,14 @@
 		order_counts[spawning_order.pack.name] = (order_counts[spawning_order.pack.name] || 0) + 1
 		order_costs[spawning_order.pack.name] = (order_costs[spawning_order.pack.name] || 0) + price
 
-		// Generate the order contents on a random cargo bay turf
+		// Generate the order contents on a random cargo bay turf. Forty-odd packs ship
+		// in a secure crate type, which arrives locked - anyone aboard can toggle it
+		// open, but the crew shouldn't have to unlock cargo they just paid for.
 		var/turf/spawn_turf = pick(cargo_turfs)
-		spawning_order.generate(spawn_turf)
+		var/obj/structure/closet/crate/delivered_crate = spawning_order.generate(spawn_turf)
+		if(delivered_crate?.locked)
+			delivered_crate.locked = FALSE
+			delivered_crate.update_appearance()
 
 		SSblackbox.record_feedback("nested tally", "cargo_imports", 1, list("[price]", "[spawning_order.pack.name]"))
 

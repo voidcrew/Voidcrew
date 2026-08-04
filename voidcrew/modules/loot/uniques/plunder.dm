@@ -1,8 +1,8 @@
 /**
  * # Plunder Uniques — the quartermaster's strongbox
  *
- * Seven one-of-a-kind prizes for the PLUNDER rare loot tables (see
- * voidcrew/modules/loot/themes/plunder.dm — the rare_loot_* tables on
+ * Seven one-of-a-kind prizes for the PLUNDER uniques shelf (see
+ * voidcrew/modules/loot/themes/plunder.dm — the `loot_uniques` shelf on
  * /datum/loot_theme/plunder, read by the quartermaster's strongbox).
  *
  * Sprites live in voidcrew/modules/loot/icons/uniques.dmi (item states) with

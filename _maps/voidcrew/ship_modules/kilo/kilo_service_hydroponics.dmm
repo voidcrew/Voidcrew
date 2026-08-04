@@ -46,6 +46,24 @@
 	},
 /turf/open/floor/grass,
 /area/template_noop)
+"O" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/rack,
+/obj/item/cultivator,
+/obj/item/hatchet,
+/obj/item/secateurs,
+/obj/item/shovel/spade,
+/obj/item/reagent_containers/spray/pestspray,
+/obj/item/reagent_containers/cup/bottle/nutrient/ez,
+/obj/item/reagent_containers/cup/bottle/nutrient/rh,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/canned/beans,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/cup/watering_can,
+/turf/open/floor/grass,
+/area/template_noop)
 "P" = (
 /obj/structure/reagent_dispensers/watertank,
 /obj/item/reagent_containers/cup/bucket,
@@ -82,7 +100,7 @@ W
 "}
 (4,1,1) = {"
 i
-w
+O
 Y
 x
 "}

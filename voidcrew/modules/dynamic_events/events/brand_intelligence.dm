@@ -14,7 +14,7 @@
 /datum/round_event_control/voidcrew/brand_intelligence
 	name = "Brand Intelligence"
 	typepath = /datum/round_event/voidcrew/brand_intelligence
-	weight = 5
+	weight = 3
 	max_occurrences = 1
 	min_players = 2
 	category = EVENT_CATEGORY_AI

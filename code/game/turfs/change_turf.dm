@@ -269,10 +269,26 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		CALCULATE_ADJACENT_TURFS(src, (ispath(oldType, /turf/closed) && isopenturf(src) ? MAKE_ACTIVE : NORMAL_TURF))
 
 /turf/open/AfterChange(flags, oldType)
-	..()
+	// A closed turf holds no gas at all, so the mix we just rolled off our initial_gas_mix is
+	// invented out of nothing, and CHANGETURF_INHERIT_AIR has nothing to inherit from either.
+	// Assimilate_Air() is what's meant to reconcile a fresh turf with its surroundings, but
+	// this early our adjacency list is still empty, so it early-returns and the invented mix
+	// survives - which is how dismantling a wall dumps a full tile of breathable air into
+	// whatever the wall was sealing. Build the adjacency now and throw the invented gas away,
+	// so we take a share of what our neighbours actually have instead.
+	var/sheered_from_closed = ispath(oldType, /turf/closed) && !blocks_air && !planetary_atmos && !(flags & CHANGETURF_IGNORE_AIR)
+	if(sheered_from_closed)
+		flags |= CHANGETURF_RECALC_ADJACENT
+	..(flags, oldType)
 	RemoveLattice()
-	if(!(flags & (CHANGETURF_IGNORE_AIR | CHANGETURF_INHERIT_AIR)))
-		Assimilate_Air()
+	if(sheered_from_closed)
+		// Temperature is deliberately left alone. An emptied turf mix still carries
+		// HEAT_CAPACITY_VACUUM into Assimilate_Air's average, and TCMB there would
+		// flash-freeze the room we just opened into.
+		air.remove_ratio(1)
+	else if(flags & (CHANGETURF_IGNORE_AIR | CHANGETURF_INHERIT_AIR))
+		return
+	Assimilate_Air()
 
 //////Assimilate Air//////
 /turf/open/proc/Assimilate_Air()

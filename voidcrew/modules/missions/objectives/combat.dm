@@ -20,6 +20,8 @@
 /datum/mission_objective/field
 	/// Whether the field spawn has happened at the current target
 	var/spawned = FALSE
+	/// How many times the site has refused to hand over a spawn turf
+	var/spawn_attempts = 0
 
 /datum/mission_objective/field/activate()
 	. = ..()
@@ -28,6 +30,7 @@
 /datum/mission_objective/field/reset()
 	. = ..()
 	spawned = FALSE
+	spawn_attempts = 0
 
 /// Spawns now if possible, otherwise waits for the interior to load
 /datum/mission_objective/field/proc/arm()
@@ -44,16 +47,61 @@
 	if(!spawned && active)
 		do_field_spawn()
 
+/**
+ * Places this objective's things at the site.
+ *
+ * A site that can't offer a clear turf right now is not a site that never
+ * can — the sampler rejects blocked and closed tiles, and a ruin, a landed
+ * ship or a passing storm can hold every roll it makes. Bailing out silently
+ * (which is what this used to do) leaves the contract live on the board with
+ * nothing in the world to find and no beacon to follow: the crew flies out,
+ * searches the whole planet, taps a GPS on the board and gets an empty list,
+ * and the only thing that ever ends it is the 35-minute timeout. Retry, then
+ * fail loudly enough to show up in a round's logs.
+ */
 /datum/mission_objective/field/proc/do_field_spawn()
+	if(spawned)
+		return
 	var/turf/spawn_turf = mission?.target?.get_spawn_turf()
 	if(!spawn_turf)
+		spawn_attempts++
+		if(spawn_attempts < MISSION_FIELD_SPAWN_TRIES)
+			addtimer(CALLBACK(src, PROC_REF(retry_field_spawn)), MISSION_FIELD_SPAWN_RETRY_DELAY)
+			return
+		stack_trace("[mission?.type || "?"]: [type] could not find a spawn turf at [mission?.target?.type || "no target"] in [spawn_attempts] attempts - the contract had nothing to find")
+		mission?.fail("Site survey can't place the objective - contract void.")
 		return
 	spawned = TRUE
 	spawn_field_objects(spawn_turf)
 
+/// Timed re-attempt at a site that had no clear turf a moment ago
+/datum/mission_objective/field/proc/retry_field_spawn()
+	if(spawned || !active || !mission || mission.failed || mission.completed)
+		return
+	if(!mission.target?.is_interior_loaded())
+		// The site unloaded out from under the retry - wait for it to come back
+		// rather than burning attempts on a place that isn't there
+		spawn_attempts--
+		mission.target?.notify_when_loaded()
+		return
+	do_field_spawn()
+
 /// Actually places this objective's things. Override.
 /datum/mission_objective/field/proc/spawn_field_objects(turf/spawn_turf)
 	return
+
+/**
+ * Marks a mob the contract can't finish without, so the planet's fauna sweep
+ * leaves it alone (SSplanet_mobs clears every unclaimed living mob off an empty
+ * planet after its grace period, and does not know a mission put this one here).
+ * Untracked flavour mobs — entourage guards, caged critters — are deliberately
+ * NOT marked: losing those costs nothing and they should age out like any other
+ * wildlife.
+ */
+/datum/mission_objective/field/proc/protect_field_mob(mob/living/protected)
+	if(QDELETED(protected))
+		return
+	ADD_TRAIT(protected, TRAIT_MISSION_FIELD_MOB, INNATE_TRAIT)
 
 /// Open turfs near a spot for scattering extra spawns
 /datum/mission_objective/field/proc/get_nearby_open_turf(turf/around, radius = 2)
@@ -93,6 +141,7 @@
 	target.name = mission.objective_name
 	target.desc += " They look like they're worth something dead."
 	target_mob = target
+	protect_field_mob(target)
 	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(target)
 	// The entourage: untracked muscle around the target. Killing them pays

@@ -1682,11 +1682,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 
 /datum/vestige_boon/spell/machine_communion
 	name = "Machine Communion"
-	desc = "Machines treat you as the station AI, so ID locks stop applying to you. On top of that you get two buttons. \
-		The first is a quickhack list: click anything within nine tiles and pick from blowing it up, cutting its safeties, \
-		bolting or electrifying a door, killing an area's power, bursting its lights, jamming radios, or dumping every cell \
-		a person is carrying into the person. The second talks to the whole room at once — every machine around you \
-		detonates, throws lightning at whoever is nearest, or gets up and fights for you."
+	desc = "Machines treat you as the station AI, so ID locks stop applying. You get a quickhack list for anything in sight — blow it up, bolt or electrify a door, kill an area's power — and a second button that turns every machine in the room loose at once."
 	grant_text = "Something settles in behind your ear and starts listing every powered thing in the room."
 	spell_type = /datum/action/cooldown/spell/machine_communion
 
@@ -1728,8 +1724,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
  */
 /datum/action/cooldown/spell/machine_communion
 	name = "Machine Communion"
-	desc = "Click a machine or a person within nine tiles to open its quickhack list. Each hack has its own cooldown, \
-		from 8 seconds to bolt a door up to 60 to fry everything somebody is carrying."
+	desc = "Click a machine or a person across the room to open its quickhack list. Each hack has its own cooldown."
 	button_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_malf_core"
 	background_icon_state = "bg_tech_blue"
@@ -2286,8 +2281,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/action/cooldown/spell/mass_hack
 	name = "Mass Hack"
-	desc = "Talk to every machine in the room at once, once every couple of minutes. Three options: overload the lot of them, \
-		have them throw lightning at whoever is nearest, or stand them up to fight for you."
+	desc = "Hack every machine in the room at once. Overload them, have them shock whoever is nearest, or stand them up to fight for you."
 	button_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_core"
 	background_icon_state = "bg_tech_blue"

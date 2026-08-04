@@ -3,12 +3,14 @@
  *
  * These ships spawn in any zone and use territorial AI to attack
  * player ships that come within range. The zone determines behavior:
- * - Yellow zone: scan -> lock -> interdict + siphon (economic threat)
+ * - Yellow zone: scan -> hail -> negotiate -> interdict + siphon (economic threat)
  * - Red zone: hail -> negotiate -> boarding waves -> boss (lethal threat)
  */
 /obj/structure/overmap/ship/npc
 	name = "unidentified vessel"
 	desc = "An AI-controlled vessel."
+	/// The commissioning grant is for player crews; an NPC hull's account stays empty.
+	starting_credits = 0
 
 	/// Combat interface for firing weapons
 	var/datum/npc_combat_interface/combat_interface
@@ -241,6 +243,23 @@
 	set_movement_mode(NPC_MOVEMENT_PATROL)
 
 /**
+ * Scales up a freshly spawned NPC ship pirate's health pool.
+ *
+ * NPC ship crew and boarding pod mobs are the same types the ruin zone spawners,
+ * planet spawns and bounty missions use, and those are balanced per zone band -
+ * so the "fighting a ship" difficulty lives here at the spawn site instead of on
+ * the mob definitions. It also picks up bosses that set their health in
+ * Initialize() rather than as a var default.
+ *
+ * Only valid on an undamaged mob: health is rebuilt from the new maxHealth.
+ */
+/proc/scale_npc_ship_pirate_health(mob/living/pirate, multiplier = NPC_PIRATE_CREW_HEALTH_MULT)
+	if(QDELETED(pirate) || multiplier <= 1)
+		return
+	pirate.maxHealth = round(pirate.maxHealth * multiplier)
+	pirate.updatehealth()
+
+/**
  * Spawns crew aboard the ship using per-ship crew configuration.
  * Override crew_min, crew_max, and crew_types in subtypes for different crews.
  */
@@ -284,6 +303,7 @@
 	if(captain_type && length(valid_turfs))
 		var/turf/captain_loc = pick_n_take(valid_turfs)
 		var/mob/living/basic/captain = new captain_type(captain_loc)
+		scale_npc_ship_pirate_health(captain)
 		// Give captain the ship key - stored in contents, drops on death
 		var/obj/item/ship_key/key = new(null, src)
 		key.forceMove(captain)
@@ -297,6 +317,7 @@
 		var/turf/spawn_loc = pick_n_take(valid_turfs)
 		var/mob_type = pick(crew_types)
 		var/mob/living/crewmember = new mob_type(spawn_loc)
+		scale_npc_ship_pirate_health(crewmember)
 		// Track crew and register death signal
 		tracked_crew += crewmember
 		RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
@@ -483,6 +504,18 @@
 		speed[2] *= scale
 
 // ========== MASS CALCULATION OVERRIDE ==========
+
+/**
+ * NPC hulls never remodel themselves, so nothing they lose is construction.
+ *
+ * Without this an NPC pirate would heal as it was taken apart: interdicting one leaves it
+ * docked and IDLE, which is precisely the state a boarding party wrecks it in, and the base
+ * rule would read every breached wall as the owners choosing to have less ship. Its baseline
+ * would track the damage down, integrity would sit at 100%, and update_boarding_state() would
+ * pull can_board back to FALSE with the boarders already aboard.
+ */
+/obj/structure/overmap/ship/npc/hull_baseline_follows_losses()
+	return FALSE
 
 /**
  * Override calculate_mass to use cached value for performance.

@@ -80,7 +80,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/unpowered)
 "A" = (
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/unpowered)
 "B" = (

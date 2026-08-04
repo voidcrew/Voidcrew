@@ -87,12 +87,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"u" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/porta_turret/syndicate/pod,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "v" = (
 /obj/structure/flora/junglebush/large,
 /turf/open/misc/dirt/jungle,
@@ -109,10 +103,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"y" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "A" = (
 /obj/structure/rack,
 /obj/item/ammo_box/magazine/sniper_rounds,
@@ -124,7 +114,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/clothing/shoes/combat,
 /obj/item/clothing/mask/gas/syndicate,
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "E" = (
@@ -176,10 +166,6 @@
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"S" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "T" = (
 /obj/structure/punji_sticks,
 /obj/structure/flora/ausbushes/lavendergrass,
@@ -199,11 +185,6 @@
 /obj/structure/flora/tree/jungle,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"X" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "Y" = (
 /obj/structure/sign/poster/contraband/free_key,
 /turf/closed/wall,
@@ -229,7 +210,7 @@ a
 a
 I
 I
-u
+t
 w
 b
 b
@@ -251,7 +232,7 @@ a
 W
 b
 j
-S
+l
 V
 p
 C
@@ -261,7 +242,7 @@ T
 (5,1,1) = {"
 v
 U
-X
+k
 Z
 l
 F
@@ -274,7 +255,7 @@ n
 Y
 G
 V
-y
+l
 V
 A
 w
@@ -285,7 +266,7 @@ a
 b
 x
 r
-y
+l
 e
 I
 I

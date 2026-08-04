@@ -3,3 +3,5 @@
 <h1>Welcome to Space Station 13!</h1>
 
 <i>This server is running a /tg/station 13 Git build.</i>
+
+<b>New here?</b> The player wiki covers ships, the overmap, missions and everything else Voidcrew adds: <a href="https://wiki.voidcrew-lrp.com">wiki.voidcrew-lrp.com</a>

@@ -390,6 +390,9 @@ export function PreferenceList(props: PreferenceListProps) {
                 key={featureId}
                 label={feature.name}
                 tooltip={feature.description}
+                // The character preview is a native BYOND map control, which always
+                // paints over the browser - a centered tooltip spills left under it.
+                tooltipPosition="bottom-start"
                 verticalAlign="middle"
               >
                 <Stack fill>

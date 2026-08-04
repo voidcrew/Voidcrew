@@ -20,4 +20,9 @@
 #define ZTRAIT_WASTELAND_RUINS "Wasteland Ruins"
 #define ZTRAIT_REEBE_RUINS "Reebe Ruins"
 
+/// Carried by red-band planet surfaces in addition to their own climate trait, so
+/// radiation storms join that planet's random weather rotation. Applied in
+/// /obj/structure/overmap/planet/proc/apply_planet_level_traits().
+#define ZTRAIT_RADSTORM "Weather_Radstorm"
+
 #define QUADRANT_MAP_SIZE 127

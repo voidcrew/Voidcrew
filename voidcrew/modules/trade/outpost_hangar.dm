@@ -35,6 +35,9 @@ GLOBAL_DATUM(outpost_hangar_template, /datum/map_template/outpost_hangar)
 	area_flags = NOTELEPORT
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
+	// The hangar deck is where a beast that stowed away aboard a docking ship
+	// would step out; see voidcrew/area/megafauna_ban.dm
+	repels_megafauna = TRUE
 
 /// Marks the bottom-left tile of a berth's 56x40 landing rect; consumed at load
 /obj/effect/landmark/outpost_berth_dock
@@ -52,6 +55,49 @@ GLOBAL_DATUM(outpost_hangar_template, /datum/map_template/outpost_hangar)
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
+
+// INDESTRUCTIBLE doesn't cover the wrench: /obj/machinery/status_display's
+// wrench_act_secondary deconstructs regardless of resistance flags, and outpost
+// signage that the first visitor can pocket isn't signage.
+/obj/machinery/status_display/outpost_berth/wrench_act_secondary(mob/living/user, obj/item/tool)
+	balloon_alert(user, "bolted to the hull!")
+	return ITEM_INTERACT_BLOCKING
+
+/**
+ * Static hangar signage. The berth pad is 56x40 and ships land dead centre of it,
+ * so a crew stepping off a small hull is standing in the middle of an empty field
+ * with every wall outside view range — these say which way the way out is. Text is
+ * mapper-set and never changes, so no host wiring: unlike the berth display these
+ * are deliberately NOT an /outpost_berth subtype, so link_hangar_contents() leaves
+ * them alone.
+ */
+/obj/machinery/status_display/outpost_sign
+	name = "wayfinding display"
+	desc = "A hangar wayfinding display."
+	current_mode = SD_MESSAGE
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	/// Top line of the sign
+	var/top_line = "EXIT"
+	/// Bottom line of the sign
+	var/bottom_line = "SOUTH SIDE"
+
+/obj/machinery/status_display/outpost_sign/Initialize(mapload, ndir, building)
+	. = ..()
+	set_messages(top_line, bottom_line)
+
+/obj/machinery/status_display/outpost_sign/wrench_act_secondary(mob/living/user, obj/item/tool)
+	balloon_alert(user, "bolted to the hull!")
+	return ITEM_INTERACT_BLOCKING
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign, 32)
+
+/// The sign hung beside the hangar's one airlock, so the exit reads as the exit up close.
+/obj/machinery/status_display/outpost_sign/elevator
+	top_line = "EXIT"
+	bottom_line = "ELEVATOR"
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator, 32)
 
 /**
  * One allocated hangar berth. Owns the reservation, the docking port and the
@@ -72,8 +118,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	var/list/turf/alcove_turfs = list()
 	/// Hangar-side elevator panel
 	var/obj/machinery/outpost_elevator/panel
-	/// Berth number sign
-	var/obj/machinery/status_display/outpost_berth/status_sign
+	/// Berth number signs, one per wall the hangar hangs one on
+	var/list/obj/machinery/status_display/outpost_berth/status_signs = list()
 	/// Bottom-left turf of the loaded hangar template
 	var/turf/hangar_bottom_left
 	/// Whether the ship has actually landed here
@@ -103,7 +149,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	if(panel)
 		panel.berth = null
 		panel = null
-	status_sign = null
+	status_signs = null
 	if(dock)
 		qdel(dock, TRUE) // stationary ports refuse non-forced qdel
 		dock = null
@@ -148,7 +194,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	if(arrival_watchdog)
 		deltimer(arrival_watchdog)
 		arrival_watchdog = null
-	ship.ship_notify("Docked at [outpost.name] — Hangar Berth [berth_number]. The elevator connects to the concourse and the other berths.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("Docked at [outpost.name] — Hangar Berth [berth_number]. Follow the painted arrows to the hangar's south wall; the airlock there leads to the elevator, which connects to the concourse and the other berths.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /datum/outpost_berth/proc/on_ship_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -197,7 +243,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 				panel.outpost = outpost
 				panel.berth = src
 			else if(istype(machine, /obj/machinery/status_display/outpost_berth))
-				status_sign = machine
+				status_signs += machine
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = outpost
@@ -219,7 +265,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	dock.dwidth = 0
 	dock.dheight = 0
 
-	status_sign?.set_messages("BERTH [berth_number]", ship.name)
+	for(var/obj/machinery/status_display/outpost_berth/sign as anything in status_signs)
+		sign.set_messages("BERTH [berth_number]", ship.name)
 	return TRUE
 
 /**

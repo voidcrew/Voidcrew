@@ -72,7 +72,7 @@
 	design_ids = list(
 		"surveyscanner",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/nanite_base
 	id = TECHWEB_NODE_NANITE_BASIC
@@ -101,7 +101,7 @@
 		"relay_repeater_nanites",
 		"red_diag_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/nanite_smart
 	id = TECHWEB_NODE_NANITE_SMART
@@ -116,7 +116,7 @@
 		"sensor_voice_nanites",
 		"voice_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/nanite_mesh
 	id = TECHWEB_NODE_NANITE_MESH
@@ -133,7 +133,7 @@
 		"emp_nanites",
 		"temperature_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 // NEED TO FIX ALL NANITE TECH IDS
 /datum/techweb_node/nanite_bio
@@ -153,7 +153,7 @@
 		"sensor_damage_nanites",
 		"sensor_species_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/nanite_neural
 	id = "nanite_neural"
@@ -169,7 +169,7 @@
 		"good_mood_nanites",
 		"bad_mood_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/nanite_synaptic
 	id = "nanite_synaptic"
@@ -185,7 +185,7 @@
 		"speech_nanites",
 		"hallucination_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/nanite_harmonic
 	id = "nanite_harmonic"
@@ -201,7 +201,7 @@
 		"purging_plus_nanites",
 		"adrenaline_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2750)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/nanite_combat
 	id = "nanite_military"
@@ -215,7 +215,7 @@
 		"viral_nanites",
 		"nanite_sting_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 /datum/techweb_node/nanite_hazard
 	id = "nanite_hazard"
@@ -227,7 +227,7 @@
 		"mindcontrol_nanites",
 		"mitosis_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 /datum/techweb_node/nanite_replication_protocols
 	id = "nanite_replication_protocols"
@@ -240,7 +240,7 @@
 		"tinker_nanites",
 		"offline_nanites",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 	hidden = TRUE
 	experimental = TRUE
 
@@ -250,7 +250,7 @@
 	description = "The technological peak of medical equipment within human space."
 	prereq_ids = list("adv_biotech", "adv_engi")
 	design_ids = list("sleeper")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 // Station-only supply and records consoles. A ship has no station cargo department
 // to file requests with and no station payroll to audit, so they come out of their
@@ -309,7 +309,7 @@
 		"mission_board",
 		"mission_pad",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
 
 /datum/techweb_node/survey_console
 	id = TECHWEB_NODE_SURVEY_CONSOLE
@@ -321,7 +321,7 @@
 	)
 	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	description = "Wait, there's stuff out here?!"
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 40)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
 
 /datum/techweb_node/survey_console_advanced
 	id = TECHWEB_NODE_SURVEY_CONSOLE_ADV
@@ -334,7 +334,7 @@
 		"survey_console_information_upgrade_advanced",
 	)
 	required_surveyed_objects = list(planets = 1, nebulas = 3, electric_storms = 1)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 
 /datum/techweb_node/survey_console_superior
@@ -350,7 +350,7 @@
 		"survey_map_range_upg_superior"
 	)
 	required_surveyed_objects = list(emp_storms = 3, electric_storms = 3, planets = 3)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/survey_console_elite
 	id = TECHWEB_NODE_SURVEY_CONSOLE_ELITE
@@ -364,7 +364,7 @@
 		 "survey_map_range_upg_elite"
 	)
 	required_surveyed_objects = list(stars = 1, planets = 5, asteroids = 2)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 // Radar array — the ship's overmap sensor suite. A dedicated ladder separate
 // from the survey console: each tier widens the active-scan radius, and the
@@ -376,7 +376,7 @@
 	description = "A long-range overmap sensor array. Widens the helm's active-scan radius for charting planets, ruins and outposts."
 	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	design_ids = list()
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
 /datum/techweb_node/radar_array_advanced
 	id = TECHWEB_NODE_RADAR_ARRAY_ADV
@@ -384,7 +384,7 @@
 	description = "Spectral analysis of charted signals. Widens the scan radius further, and identifies what a space ruin actually is as soon as it's charted, no survey needed."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY)
 	design_ids = list()
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/radar_array_elite
 	id = TECHWEB_NODE_RADAR_ARRAY_ELITE
@@ -392,7 +392,7 @@
 	description = "Active vessel tracking. Maximises the scan radius and plots other crews' ships within sensor range. Those contacts disappear as soon as either ship moves out of range."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
 	design_ids = list()
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 // Transporter — the late-game replacement for the drop pod. A drop pod is a one-way
 // crate you fire at a planet; a transporter moves people both ways, from orbit, over
@@ -409,7 +409,7 @@
 		"transporter_transponder",
 	)
 	required_surveyed_objects = list(planets = 3)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/transporter_targeting
 	id = TECHWEB_NODE_TRANSPORTER_TARGETING
@@ -420,7 +420,7 @@
 		"transporter_targeting",
 	)
 	required_surveyed_objects = list(planets = 5, asteroids = 2)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 /datum/techweb_node/transporter_biofilter
 	id = TECHWEB_NODE_TRANSPORTER_BIOFILTER
@@ -430,4 +430,4 @@
 	design_ids = list(
 		"transporter_biofilter",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 30000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)

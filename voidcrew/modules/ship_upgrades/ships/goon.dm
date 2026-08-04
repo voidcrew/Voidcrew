@@ -26,10 +26,17 @@
 //     Don't wall column 12.
 //
 //   goon_lounge       x11-13 y3-5   9 tiles   marker (11,3)
-//     Hull owns the atmos spur at (11,4),(12,4). Keep (13,4) walkable - it is
-//     the only exit tile for the cryopod at (14,4), which was sealed in on the
-//     pre-conversion hull. Keep an opening on the west edge at (11,4) so the
-//     pocket connects to the corridor.
+//     Hull owns the atmos spur at (11,4),(12,4). Keep an opening on the west
+//     edge at (11,4) so the pocket connects to the corridor.
+//     Column 13 is the cryopods' fire escape: NOTHING DENSE on (13,4) or
+//     (13,5). Both pods are walled in on three sides by permanent hull - the
+//     pod at (14,4) by the bridge window, the wall at (14,3) and the pod above
+//     it; the pod at (14,5) by the bridge wall, the pod below it, and its own
+//     north-facing survival-pod window - so column 13 is the ONLY way out of
+//     either. A dense object there seals a spawning player in for good, and
+//     the pod at (14,5) is the one people actually land in. This is not
+//     hypothetical: goon_lounge_mess shipped a griddle on (13,5) and did
+//     exactly that.
 //
 //   goon_cockpit      x17-18 y5-7   6 tiles   marker (17,5)
 //     EVERY module here must ship a helm console. Column 16 (APC, vent,
@@ -350,31 +357,31 @@
 		list(
 			name = "Team Leader",
 			officer = TRUE,
-			outfit = /datum/outfit/job/captain/syndicate,
+			outfit = /datum/outfit/job/captain/syndicate_cutter,
 			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Combat Engineer",
-			outfit = /datum/outfit/job/engineer/syndicate,
+			outfit = /datum/outfit/job/engineer/syndicate_cutter,
 			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Field Medic",
-			outfit = /datum/outfit/job/doctor/syndicate,
+			outfit = /datum/outfit/job/doctor/syndicate_cutter,
 			category = JOB_CAT_MEDICAL,
 			slots = 1,
 		),
 		list(
 			name = "Salvage Operative",
-			outfit = /datum/outfit/job/miner/syndicate,
+			outfit = /datum/outfit/job/miner/syndicate_cutter,
 			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 		list(
 			name = "Operative",
-			outfit = /datum/outfit/job/assistant/syndicate,
+			outfit = /datum/outfit/job/assistant/syndicate_cutter,
 			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),

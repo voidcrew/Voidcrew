@@ -2,10 +2,17 @@
  * # Loot themes
  *
  * One datum per loot theme (armory, plunder, ...), owning everything the
- * theme hands out and everything defending it: the six zone cache tables
+ * theme hands out and everything defending it: the four tier tables
  * consumed by /obj/structure/closet/crate/zone_loot (zone_loot.dm), plus —
- * by file colocation — the theme's crate subtypes and the guard-marker
- * subtypes (/obj/effect/zone_mobs) that watch over them.
+ * by file colocation — the theme's crate subtype and the guard-marker
+ * subtypes (/obj/effect/zone_mobs) that watch over it.
+ *
+ * A theme is ONE pool split by how good the item is, not by where you are.
+ * Overmap zone never selects a table — it only decides how many draws a
+ * cache gets and how the odds lean across the four tiers (see zone_loot.dm).
+ * Every band can reach every tier; deep space just reaches the top of it far
+ * more often. This mirrors how zones already scale planet ore, fauna and
+ * weather (voidcrew/_DEFINES/overmap_zones.dm): amounts and odds, not kinds.
  *
  * Why a datum instead of vars on the crate subtype (the old shape): the
  * cache weights are hand-tuned against outpost shop prices ("the gamble
@@ -29,15 +36,18 @@
 /datum/loot_theme
 	/// Debug/audit label
 	var/name
-	/// Weighted cache tables (typepath -> weight) keyed by spawn zone
-	var/list/loot_green
-	var/list/loot_yellow
-	var/list/loot_red
-	/// Rare-cache tables ("the top of the zone's table"); /rare crates fall
-	/// back to the normal table for zones where these are empty
-	var/list/rare_loot_green
-	var/list/rare_loot_yellow
-	var/list/rare_loot_red
+	/// Weighted tier tables (typepath -> weight). Bread and butter; what a
+	/// cache pays most of the time in any band.
+	var/list/loot_common
+	/// The theme's working kit — worth the trip, still not a story.
+	var/list/loot_uncommon
+	/// The top of the theme: gear a crew reorganizes around. Green reaches
+	/// this rarely, red reaches it constantly.
+	var/list/loot_prime
+	/// One-of-a-kind authored prizes (voidcrew/modules/loot/uniques/). Drawn
+	/// as a fourth tier at low odds; there is deliberately no global
+	/// already-dropped registry, so a long round can repeat one.
+	var/list/loot_uniques
 	/// zone_mobs marker types that fit this theme's ruins — the guard side of
 	/// the same design. Mappers: place these around the theme's caches.
 	var/list/guard_themes

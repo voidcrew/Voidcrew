@@ -16,20 +16,62 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
+"f" = (
+/obj/effect/turf_decal/arrows{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/outpost_hangar)
+"g" = (
+/obj/effect/turf_decal/arrows{
+	dir = 2
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
 "h" = (
 /turf/open/indestructible/plating,
+/area/voidcrew/outpost_hangar)
+"i" = (
+/obj/effect/turf_decal/arrows{
+	dir = 2
+	},
+/obj/machinery/status_display/outpost_sign/directional/east,
+/turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
 "k" = (
 /obj/machinery/light/cold/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
+"l" = (
+/obj/effect/turf_decal/arrows{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/outpost_hangar)
 "o" = (
 /obj/machinery/light/cold/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
+"q" = (
+/obj/effect/turf_decal/arrows{
+	dir = 2
+	},
+/obj/machinery/status_display/outpost_sign/directional/west,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
+"u" = (
+/obj/effect/turf_decal/arrows{
+	dir = 8
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
 "v" = (
 /turf/template_noop,
 /area/template_noop)
+"w" = (
+/obj/machinery/status_display/outpost_sign/elevator/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
 "x" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 2
@@ -38,6 +80,10 @@
 /area/voidcrew/outpost_hangar)
 "A" = (
 /obj/effect/turf_decal/caution,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
+"D" = (
+/obj/machinery/status_display/outpost_sign/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
 "E" = (
@@ -53,6 +99,12 @@
 "H" = (
 /obj/effect/landmark/outpost_elevator_alcove,
 /turf/open/indestructible/light,
+/area/voidcrew/outpost_hangar)
+"I" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/indestructible/plating,
 /area/voidcrew/outpost_hangar)
 "J" = (
 /obj/machinery/light/cold/directional/east,
@@ -72,6 +124,16 @@
 /area/voidcrew/outpost_hangar)
 "P" = (
 /obj/machinery/light/cold/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
+"Q" = (
+/obj/machinery/status_display/outpost_berth/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/outpost_hangar)
+"S" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/outpost_hangar)
 "U" = (
@@ -153,15 +215,7 @@ Y
 Y
 k
 Y
-Y
-Y
-Y
-Y
-Y
-Y
-k
-Y
-Y
+g
 Y
 Y
 Y
@@ -169,15 +223,7 @@ Y
 Y
 k
 Y
-Y
-Y
-Y
-Y
-Y
-Y
-k
-Y
-Y
+g
 Y
 Y
 Y
@@ -185,13 +231,29 @@ Y
 Y
 k
 Y
+q
 Y
 Y
 Y
 Y
 Y
+k
+Y
+g
 Y
 Y
+Y
+Y
+Y
+k
+Y
+g
+Y
+Y
+Y
+g
+Y
+S
 c
 v
 v
@@ -365,7 +427,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -380,7 +442,7 @@ v
 "}
 (6,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -421,7 +483,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -443,37 +505,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -597,7 +659,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -653,7 +715,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -728,7 +790,7 @@ v
 "}
 (12,1,1) = {"
 c
-Y
+D
 x
 h
 h
@@ -829,7 +891,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -844,7 +906,7 @@ v
 "}
 (14,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -885,7 +947,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -907,37 +969,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -1061,7 +1123,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -1117,7 +1179,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -1192,7 +1254,7 @@ v
 "}
 (20,1,1) = {"
 c
-Y
+Q
 x
 h
 h
@@ -1293,7 +1355,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -1308,7 +1370,7 @@ v
 "}
 (22,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -1349,7 +1411,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -1371,37 +1433,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -1525,7 +1587,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -1581,7 +1643,7 @@ h
 h
 h
 h
-h
+I
 Z
 Y
 c
@@ -1641,7 +1703,7 @@ h
 h
 h
 Z
-Y
+S
 c
 v
 v
@@ -1757,7 +1819,7 @@ h
 h
 h
 Z
-Y
+S
 c
 c
 c
@@ -1772,7 +1834,7 @@ c
 "}
 (30,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -1813,8 +1875,8 @@ h
 h
 h
 h
-h
-Z
+f
+g
 O
 c
 b
@@ -1832,47 +1894,47 @@ c
 c
 Y
 x
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
+f
 h
 h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-h
-Z
+f
+g
 A
 F
 b
@@ -1929,9 +1991,9 @@ h
 h
 h
 h
-h
-Z
-Y
+f
+g
+w
 c
 b
 b
@@ -1989,7 +2051,7 @@ h
 h
 h
 Z
-Y
+u
 c
 c
 c
@@ -2105,7 +2167,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -2161,7 +2223,7 @@ h
 h
 h
 h
-h
+l
 Z
 Y
 c
@@ -2221,7 +2283,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -2236,7 +2298,7 @@ v
 "}
 (38,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -2299,37 +2361,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -2393,7 +2455,7 @@ h
 h
 h
 h
-h
+l
 Z
 K
 c
@@ -2453,7 +2515,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -2468,7 +2530,7 @@ v
 "}
 (42,1,1) = {"
 c
-Y
+Q
 x
 h
 h
@@ -2625,7 +2687,7 @@ h
 h
 h
 h
-h
+l
 Z
 Y
 c
@@ -2685,7 +2747,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -2700,7 +2762,7 @@ v
 "}
 (46,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -2763,37 +2825,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -2857,7 +2919,7 @@ h
 h
 h
 h
-h
+l
 Z
 K
 c
@@ -2917,7 +2979,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -2932,7 +2994,7 @@ v
 "}
 (50,1,1) = {"
 c
-Y
+D
 x
 h
 h
@@ -3089,7 +3151,7 @@ h
 h
 h
 h
-h
+l
 Z
 Y
 c
@@ -3149,7 +3211,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -3164,7 +3226,7 @@ v
 "}
 (54,1,1) = {"
 c
-Y
+g
 x
 h
 h
@@ -3227,37 +3289,37 @@ x
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
+f
 h
 h
 h
 h
 h
-h
-h
-h
-h
-h
-h
+f
 h
 h
 h
@@ -3321,7 +3383,7 @@ h
 h
 h
 h
-h
+l
 Z
 K
 c
@@ -3381,7 +3443,7 @@ h
 h
 h
 Z
-Y
+u
 c
 v
 v
@@ -3575,15 +3637,7 @@ Y
 Y
 P
 Y
-Y
-Y
-Y
-Y
-Y
-Y
-P
-Y
-Y
+g
 Y
 Y
 Y
@@ -3591,15 +3645,7 @@ Y
 Y
 P
 Y
-Y
-Y
-Y
-Y
-Y
-Y
-P
-Y
-Y
+g
 Y
 Y
 Y
@@ -3607,13 +3653,29 @@ Y
 Y
 P
 Y
+i
 Y
 Y
 Y
 Y
 Y
+P
+Y
+g
 Y
 Y
+Y
+Y
+Y
+P
+Y
+g
+Y
+Y
+Y
+g
+Y
+u
 c
 v
 v

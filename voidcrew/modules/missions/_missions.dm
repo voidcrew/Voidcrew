@@ -39,6 +39,16 @@
 	var/list/mission_rewards
 	/// Subset of the reward types that count as "rare/exclusive" for UI accent.
 	var/list/rare_reward_types
+	/// For stack-type rewards, units to spawn, keyed by type path. A shop SKU
+	/// sells "plasteel (10 sheets)" for 750cr; without this the contract pays a
+	/// single sheet, because spawning a stack bare gets you the stack's own
+	/// default of one. Absent or 1 leaves that default alone.
+	var/list/reward_amounts
+	/// Multiplier on the difficulty pay band for outpost-board contracts.
+	/// Difficulty alone can't tell "hand over 30 cable coil you already have"
+	/// from "fly to a hostile ruin and kill a named boss" — both roll EASY in
+	/// green space. Archetypes that cost a trip and a fight set this above 1.
+	var/contract_pay_mult = 1
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
 	/// If TRUE, mission completes by handing an item over at the pad/trader.
@@ -47,6 +57,13 @@
 	var/requires_item = FALSE
 	/// Number of trade vouchers awarded on completion (spawned on the mission pad)
 	var/voucher_count = 0
+	/// Research points paid on completion, handed over as a research-notes
+	/// dossier at the turn-in point (the crew slots it into an R&D console).
+	/// Types set their GREEN-zone band; apply_zone_scaling() multiplies it up
+	/// alongside credits.
+	var/research_reward = 0
+	/// Field of study printed on that dossier ("notes of xenofauna")
+	var/research_origin = "field work"
 	/// Set TRUE during generation if the mission couldn't find a valid setup; the caller discards it
 	var/generation_failed = FALSE
 
@@ -78,8 +95,13 @@
 	// ===== TARGET =====
 	/// Where the mission points on the overmap, if anywhere
 	var/datum/mission_target/target
+	/// Zone band (ZONE_*) this offer would rather point at, or null for no
+	/// preference. Set by whoever posts the offer - SSmissions steers boards on
+	/// ships with no combat research toward Neutral space. The target honours it
+	/// where it can and ignores it where it can't, so it never fails generation.
+	var/preferred_zone
 	/// Display name of the target's zone at generation time
-	var/target_zone_name = "Unknown Zone"
+	var/target_zone_name = MISSION_ZONE_UNKNOWN
 	/// Flavor name of the thing being recovered/hunted/planted, if any
 	var/objective_name
 
@@ -104,10 +126,17 @@
 	var/gps_tag_prefix
 	/// Weakrefs of /datum/component/gps/item units this mission's beacon was uploaded to
 	var/list/datum/weakref/linked_gps_units = list()
+	/// Secondary beacons (tag -> weakref) pushed alongside gps_tag by objectives
+	/// that put several marks in the field at once. Held on the shell so a GPS
+	/// linked later still gets the full set and cleanup drops every tag.
+	var/list/aux_gps_beacons
 
-/datum/mission/New(datum/outpost_shop/shop)
+/datum/mission/New(datum/outpost_shop/shop, preferred_zone)
 	. = ..()
 	src.shop = shop
+	// Has to land before generate_mission_details(): setup_target() builds the
+	// target datum, which copies this off us in its own New().
+	src.preferred_zone = preferred_zone
 	posted_at = world.time
 	generate_mission_details()
 
@@ -210,6 +239,8 @@
 	difficulty = row["difficulty"]
 	value_min = round(value_min * row["value_mult"], 10)
 	value_max = round(value_max * row["value_mult"], 10)
+	if(research_reward > 0)
+		research_reward = round(research_reward * row["value_mult"], 50)
 	if(voucher_count > 0)
 		voucher_count += row["voucher_bonus"]
 
@@ -484,6 +515,40 @@
 		objective.on_interior_loaded()
 
 /**
+ * The target's interior is being torn down while the target itself lives on -
+ * an emptied ruin handing its reservation back. Everything this mission put in
+ * there is about to go with the turfs, but that is not the same event as losing
+ * the objective: the site is still on the chart at the same coordinates and the
+ * crew can fly back to it.
+ *
+ * So this rewinds rather than retargets. The watch on whatever is standing in
+ * the dead site is dropped before the wipe can fire it (otherwise the wipe reads
+ * as a destroyed objective and burns a retarget re-rolling to a ruin the crew
+ * has no reason to be at), the objective chain resets, and the field step
+ * re-arms on the load signal - so docking there again lays the job out fresh.
+ *
+ * Anything the crew already carried out is untouched: it isn't in the site, so
+ * the contract is still on its delivery step and nothing here applies.
+ */
+/datum/mission/proc/on_target_interior_unloaded()
+	if(failed || completed || !active)
+		return
+	if(!quest_atom || !is_quest_atom_stranded())
+		return
+
+	UnregisterSignal(quest_atom, COMSIG_QDELETING)
+	quest_atom = null
+	quest_atom_bounds = null
+
+	deactivate_objectives()
+	for(var/datum/mission_objective/objective as anything in objectives)
+		objective.reset()
+	objective_index = 1
+	activate_current_objective()
+	push_waypoint()
+	servant?.ship_notify("[name]: the site powered down before we recovered anything, and our gear went with it. The contract stands - it will be set up again next time you dock at ([target.target_x], [target.target_y]).", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+
+/**
  * Re-picks the target and restarts the objective chain from step one.
  * Free while the mission sits on the board; budgeted while active.
  */
@@ -561,6 +626,27 @@
  */
 /datum/mission/proc/get_wrong_location_reason(atom/reward_anchor)
 	return "This contract can't be turned in here."
+
+/**
+ * The best item in the user's hands to offer this contract: the first that
+ * satisfies the ask outright, or failing that the first that is the right KIND
+ * of goods. The near-miss matters — it lets a refusal name the real shortfall
+ * ("Need 30, only have 12") instead of telling someone holding the goods to go
+ * hold the goods. Returns null when nothing in hand is even close.
+ *
+ * Callers must re-check can_turn_in() on the result; a near-miss comes back too.
+ */
+/datum/mission/proc/pick_offered_item(mob/living/user)
+	if(!isliving(user) || !requires_item)
+		return null
+	var/datum/mission_objective/objective = current_objective()
+	var/obj/item/near_miss
+	for(var/obj/item/held in user.held_items)
+		if(can_turn_in(held))
+			return held
+		if(!near_miss && objective?.matches_ask(held))
+			near_miss = held
+	return near_miss
 
 /**
  * Short archetype tag for UI iconography ("procurement", "bounty", ...).
@@ -647,6 +733,8 @@
 			reward_parts += "[value] credits"
 		if(length(get_reward_types()))
 			reward_parts += get_reward_summary()
+		if(research_reward > 0)
+			reward_parts += "[research_reward] research points"
 		if(voucher_count > 0)
 			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
 		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
@@ -701,7 +789,37 @@
 	linked_gps_units |= WEAKREF(gps_unit)
 	if(quest_atom && !QDELETED(quest_atom))
 		gps_unit.add_mission_signal(gps_tag, quest_atom)
+	for(var/beacon_tag in aux_gps_beacons)
+		var/datum/weakref/beacon_ref = aux_gps_beacons[beacon_tag]
+		var/atom/movable/beacon_target = beacon_ref?.resolve()
+		if(beacon_target)
+			gps_unit.add_mission_signal(beacon_tag, beacon_target)
 	return TRUE
+
+/**
+ * Adds (or re-points) a secondary beacon on every linked GPS unit. Objectives
+ * with several marks in the field at once use this so the crew sees all of
+ * them, instead of one dot that hops between them without saying so.
+ */
+/datum/mission/proc/add_gps_beacon(beacon_tag, atom/movable/beacon_target)
+	if(!beacon_tag || QDELETED(beacon_target))
+		return
+	LAZYSET(aux_gps_beacons, beacon_tag, WEAKREF(beacon_target))
+	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
+		var/datum/component/gps/item/unit = unit_ref.resolve()
+		if(!unit)
+			linked_gps_units -= unit_ref
+			continue
+		unit.add_mission_signal(beacon_tag, beacon_target)
+
+/// Drops one secondary beacon from every linked GPS unit
+/datum/mission/proc/remove_gps_beacon(beacon_tag)
+	if(!beacon_tag)
+		return
+	LAZYREMOVE(aux_gps_beacons, beacon_tag)
+	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
+		var/datum/component/gps/item/unit = unit_ref.resolve()
+		unit?.remove_mission_signal(beacon_tag)
 
 /**
  * (Re)points the beacon at the current quest atom on every linked GPS unit.
@@ -717,14 +835,19 @@
 		unit.add_mission_signal(gps_tag, quest_atom)
 
 /**
- * Removes this mission's beacon from every linked GPS unit.
+ * Removes every beacon this mission pushed - its own and any secondaries -
+ * from every linked GPS unit.
  */
 /datum/mission/proc/clear_gps_signals()
-	if(!gps_tag)
-		return
 	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
 		var/datum/component/gps/item/unit = unit_ref.resolve()
-		unit?.remove_mission_signal(gps_tag)
+		if(!unit)
+			continue
+		if(gps_tag)
+			unit.remove_mission_signal(gps_tag)
+		for(var/beacon_tag in aux_gps_beacons)
+			unit.remove_mission_signal(beacon_tag)
+	aux_gps_beacons = null
 	linked_gps_units.Cut()
 
 // =========================================================================
@@ -759,9 +882,21 @@
 	for(var/reward_type in counts)
 		var/atom/reward_cast = reward_type
 		var/reward_name = initial(reward_cast.name)
-		var/count = counts[reward_type]
+		// A bundled stack counts by its units, so "10× plasteel" not "plasteel"
+		var/count = counts[reward_type] * (LAZYACCESS(reward_amounts, reward_type) || 1)
 		parts += count > 1 ? "[count]× [reward_name]" : reward_name
 	return english_list(parts)
+
+/**
+ * The whole of what an outpost contract pays, goods and scrip together, e.g.
+ * "a laser gun and 2× stimpack + 2 trade vouchers". Board contracts never pay
+ * credits, so the item bundle plus any voucher top-up is the entire settlement.
+ */
+/datum/mission/proc/get_contract_pay_summary()
+	var/list/parts = list(get_reward_summary())
+	if(voucher_count > 0)
+		parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+	return parts.Join(" + ")
 
 /**
  * Distributes mission rewards to the ship account.
@@ -782,7 +917,20 @@
 	var/list/reward_types = get_reward_types()
 	if(length(reward_types) && reward_turf)
 		for(var/reward_type in reward_types)
-			new reward_type(reward_turf)
+			// Stacks carry their bundled count, matching what the shelf sells
+			var/stack_amount = LAZYACCESS(reward_amounts, reward_type)
+			if(stack_amount > 1 && ispath(reward_type, /obj/item/stack))
+				new reward_type(reward_turf, stack_amount)
+			else
+				new reward_type(reward_turf)
+		flash_reward_anchor(reward_anchor)
+
+	// Research payouts are physical: a dossier the crew has to carry to an R&D
+	// console. A ship keeps its techweb on a server disk that may not be
+	// installed (or may have been pulled), so paying an atom is the only channel
+	// that works for every crew - and it can be stolen off the pad like any prize.
+	if(research_reward > 0 && reward_turf)
+		new /obj/item/research_notes(reward_turf, research_reward, research_origin)
 		flash_reward_anchor(reward_anchor)
 
 	// Spawn voucher rewards at the turn-in point
@@ -830,6 +978,20 @@
 	return "label"
 
 /**
+ * Returns the UI color for the band the target sits in. Same scale as the
+ * difficulty tag, since zone and difficulty move together.
+ */
+/datum/mission/proc/get_zone_color()
+	switch(target_zone_name)
+		if(ZONE_NAME_GREEN)
+			return "good"
+		if(ZONE_NAME_YELLOW)
+			return "average"
+		if(ZONE_NAME_RED)
+			return "bad"
+	return "label"
+
+/**
  * Returns the time remaining until mission timeout in deciseconds.
  */
 /datum/mission/proc/get_time_remaining()
@@ -868,8 +1030,9 @@
 	var/list/reward_items = list()
 	for(var/reward_type in get_reward_types())
 		var/atom/reward_cast = reward_type
+		var/stack_amount = LAZYACCESS(reward_amounts, reward_type) || 1
 		reward_items += list(list(
-			"name" = initial(reward_cast.name),
+			"name" = stack_amount > 1 ? "[stack_amount]× [initial(reward_cast.name)]" : initial(reward_cast.name),
 			"icon" = icon2base64(icon(initial(reward_cast.icon), initial(reward_cast.icon_state))),
 			"rare" = (reward_type in rare_reward_types),
 		))
@@ -904,7 +1067,10 @@
 		"difficulty" = difficulty,
 		"difficulty_name" = get_difficulty_name(),
 		"difficulty_color" = get_difficulty_color(),
+		"zone_name" = (target_zone_name == MISSION_ZONE_UNKNOWN) ? null : target_zone_name,
+		"zone_color" = get_zone_color(),
 		"requires_item" = requires_item,
 		"voucher_count" = voucher_count,
+		"research_reward" = research_reward,
 		"archetype" = get_archetype(),
 	)

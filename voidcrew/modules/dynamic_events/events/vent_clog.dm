@@ -42,7 +42,7 @@
 /datum/round_event_control/voidcrew/vent_clog/major
 	name = "Ventilation Clog: Major"
 	typepath = /datum/round_event/voidcrew/vent_clog/major
-	weight = 12
+	weight = 5
 	max_occurrences = 5
 	earliest_start = 10 MINUTES
 	description = "Dangerous pests climb out of a vent aboard the target ship."
@@ -351,7 +351,7 @@
 /datum/round_event_control/voidcrew/vent_clog/critical
 	name = "Ventilation Clog: Critical"
 	typepath = /datum/round_event/voidcrew/vent_clog/critical
-	weight = 8
+	weight = 3
 	max_occurrences = 3
 	earliest_start = 25 MINUTES
 	description = "Really dangerous pests climb out of a vent aboard the target ship."
@@ -401,17 +401,23 @@
  * The grab bag. Anything from a lightgeist to a bear, so the crew have no idea what they
  * are dealing with until it is already out of the vent — which is the entire joke.
  *
- * No zone gate and no size gate on purpose: most of this table is harmless, and the ones
- * that are not are the reason it is funny. It is the one clog that can still surprise a
- * crew who have learned what the other three mean.
+ * It keeps its lack of a size gate, because most of this table is harmless and the
+ * surprise is the point: it is the one clog that can still catch out a crew who have
+ * learned what the other three mean.
+ *
+ * It does NOT keep its lack of a zone gate. Two entries in the table are a bear and a
+ * viscerator, and "surprise, fight a bear" is a fine joke on a crew who have a weapon
+ * locker and know where it is. In the green band it lands on people who are still working
+ * out the airlocks, and the outer ring is supposed to be the one place nothing hurts them.
  */
 /datum/round_event_control/voidcrew/vent_clog/strange
 	name = "Ventilation Clog: Strange"
 	typepath = /datum/round_event/voidcrew/vent_clog/strange
-	weight = 5
+	weight = 3
 	max_occurrences = 2
 	earliest_start = 15 MINUTES
 	description = "Strange creatures climb out of a vent aboard the target ship. Harmfulness varies."
+	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	min_ship_mass = SHIP_MASS_SMALL
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 7

@@ -64,9 +64,13 @@
 /obj/effect/overlay/holo_pad_hologram/pirate/examine(mob/user)
 	. = ..()
 	if(negotiation)
-		. += span_notice("They are demanding [negotiation.demanded_credits] credits.")
-		if(negotiation.demanded_item_type)
-			. += span_notice("OR [negotiation.demanded_item_quantity] [negotiation.demanded_item_name].")
+		if(negotiation.barter_only)
+			// They already scanned the accounts and found nothing - cargo only.
+			. += span_notice("They are demanding [negotiation.demanded_item_quantity] [negotiation.demanded_item_name]. They won't take credits.")
+		else
+			. += span_notice("They are demanding [negotiation.demanded_credits] credits.")
+			if(negotiation.demanded_item_type)
+				. += span_notice("OR [negotiation.demanded_item_quantity] [negotiation.demanded_item_name].")
 		if(negotiation.items_received > 0)
 			. += span_notice("Items delivered: [negotiation.items_received]/[negotiation.demanded_item_quantity]")
 		. += span_notice("Click to respond.")
@@ -149,8 +153,10 @@
 	// Build choices list - just credits, items, and refuse
 	var/list/choices = list()
 
-	// Pay credits option
-	choices["Pay [negotiation.demanded_credits] cr"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_yes")
+	// Pay credits option - not offered on a barter, where they've already scanned
+	// the accounts empty and will only take goods.
+	if(!negotiation.barter_only)
+		choices["Pay [negotiation.demanded_credits] cr"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_yes")
 
 	// Give items option (if item demand exists)
 	if(negotiation.demanded_item_type)
@@ -212,7 +218,10 @@
 		return
 
 	if(!length(negotiation.tribute_pads))
-		to_chat(user, span_warning("No mission pad found on your ship! You'll need to pay with credits."))
+		if(negotiation.barter_only)
+			to_chat(user, span_warning("No mission pad found on your ship! There's no way to hand anything over - they're going to board you."))
+		else
+			to_chat(user, span_warning("No mission pad found on your ship! You'll need to pay with credits."))
 		return
 
 	var/remaining = negotiation.get_remaining_items()
@@ -228,7 +237,13 @@
 	if(!negotiation)
 		return
 
-	to_chat(user, span_boldwarning("You refuse to pay. Combat will resume!"))
+	// Say what refusing actually buys you here - a yellow-band shakedown has no
+	// guns behind it, they just take the money out of the accounts themselves.
+	var/datum/ai_controller/npc_ship/controller = negotiation.pirate_ship?.ai_controller
+	if(controller?.hail_escalates_to_siphon())
+		to_chat(user, span_boldwarning("You refuse to pay. They'll take it from your accounts by force!"))
+	else
+		to_chat(user, span_boldwarning("You refuse to pay. Combat will resume!"))
 	negotiation.end_negotiation(success = FALSE, reason = "refused")
 
 /**

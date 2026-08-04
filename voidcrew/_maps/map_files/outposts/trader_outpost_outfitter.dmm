@@ -293,6 +293,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/trader_outpost)
+"cg" = (
+/obj/machinery/vending/hotdog,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "cp" = (
 /obj/machinery/light/directional/north,
 /turf/open/indestructible/plating,
@@ -545,6 +549,10 @@
 /obj/structure/closet/crate/wooden,
 /obj/effect/turf_decal/delivery,
 /turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"zl" = (
+/obj/machinery/vending/snack,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "zN" = (
 /obj/machinery/light/directional/east,
@@ -1684,7 +1692,7 @@ xo
 Sb
 aY
 aU
-ai
+zl
 ai
 eD
 ai
@@ -1712,7 +1720,7 @@ xo
 TH
 uy
 ac
-ai
+cg
 xa
 ai
 ai

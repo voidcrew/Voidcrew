@@ -63,7 +63,7 @@
 /area/ruin/space/has_grav/powered/aesthetic)
 "p" = (
 /obj/effect/zone_mobs/wildlife/boss,
-/obj/structure/closet/crate/zone_loot/wardrobe/rare,
+/obj/structure/closet/crate/zone_loot/wardrobe,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/space/has_grav/powered/aesthetic)
 "q" = (

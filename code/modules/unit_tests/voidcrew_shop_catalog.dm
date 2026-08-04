@@ -59,6 +59,15 @@
 				TEST_FAIL("[shop_type] requests [request["type"]], which is not a spawnable movable")
 			if((request["amount"] || 0) < 1)
 				TEST_FAIL("[shop_type] requests [request["amount"]] of [request["type"]]")
+			// A stack ask is settled off ONE stack (deliver/can_turn_in), so an
+			// amount above that stack's max_amount is unpayable: the contract
+			// posts, accepts, and then refuses every hand-over forever. The
+			// outfitter shipped a 60-coil ask against MAXCOIL 30 this way.
+			if(ispath(request["type"], /obj/item/stack))
+				var/obj/item/stack/asked = request["type"]
+				var/ceiling = initial(asked.max_amount)
+				if(request["amount"] > ceiling)
+					TEST_FAIL("[shop_type] requests [request["amount"]] of [request["type"]], but that stack caps at [ceiling] - the contract can never be turned in")
 		qdel(shop)
 
 	// Assign rather than `+=`: DM's list addition drops the associations, which

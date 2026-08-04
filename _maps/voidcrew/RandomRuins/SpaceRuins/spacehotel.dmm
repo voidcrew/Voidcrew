@@ -1,7 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
 /obj/effect/zone_mobs/robot/boss,
-/obj/structure/closet/crate/zone_loot/wardrobe/rare,
+/obj/structure/closet/crate/zone_loot/wardrobe,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hotel)
 "ab" = (

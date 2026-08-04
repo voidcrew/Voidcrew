@@ -850,6 +850,10 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"Cj" = (
+/obj/machinery/vending/hotdog,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
 "Cq" = (
 /obj/structure/closet/crate{
 	name = "intake crate";
@@ -2121,7 +2125,7 @@ aa
 vK
 aO
 iQ
-aO
+Cj
 Pi
 aO
 aO

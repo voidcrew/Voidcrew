@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
 "ab" = (

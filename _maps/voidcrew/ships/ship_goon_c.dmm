@@ -31,6 +31,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
+/obj/machinery/holopad,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/bridge/c)
 "bq" = (
@@ -73,10 +74,22 @@
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
 	piping_layer = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
+"cN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/c)
+"dg" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/medbay/c)
 "eu" = (
 /obj/machinery/cryopod,
 /obj/machinery/computer/cryopod{
@@ -211,13 +224,6 @@
 "mV" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/medbay/c)
-"nN" = (
-/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
-/obj/docking_port/mobile/voidcrew/goon/c{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/c)
 "og" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/effect/turf_decal/stripes/white/line{
@@ -356,7 +362,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/medbay/c)
@@ -384,6 +392,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/medbay/c)
+"GS" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/bridge/c)
 "HT" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 4
@@ -619,6 +633,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"YR" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Boarding Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/goon/c{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/goon/commons/c)
 
 (1,1,1) = {"
 IZ
@@ -662,7 +686,7 @@ OT
 (4,1,1) = {"
 mV
 Te
-DI
+cN
 Og
 DI
 Pm
@@ -687,7 +711,7 @@ Pm
 "}
 (6,1,1) = {"
 IZ
-mV
+dg
 DI
 Og
 DI
@@ -738,7 +762,7 @@ JO
 MU
 "}
 (10,1,1) = {"
-MU
+YR
 qO
 bf
 iR
@@ -837,7 +861,7 @@ iY
 iY
 aA
 Vs
-Vs
+GS
 IZ
 IZ
 "}
@@ -860,7 +884,7 @@ IZ
 IZ
 Vs
 vK
-nN
+vK
 vK
 Vs
 IZ

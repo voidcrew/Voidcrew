@@ -34,7 +34,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "aR" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -247,6 +247,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	id = "NTMSLoad2";
 	name = "on ramp"
@@ -379,6 +380,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "mb" = (
@@ -496,7 +498,6 @@
 /obj/machinery/door/airlock/shuttle{
 	name = "Captain's Quarters"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -530,7 +531,6 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/blueprints/shuttle,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/bridge/a)
 "sI" = (
@@ -776,11 +776,11 @@
 	id_tag = "ntms_exterior";
 	name = "NTMS-037 Mining Airlock"
 	},
+/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
 "AL" = (
@@ -811,7 +811,7 @@
 /obj/machinery/door/airlock/external{
 	name = "External Freight Airlock"
 	},
-/obj/machinery/door/firedoor,
+/obj/structure/fans/tiny,
 /obj/effect/turf_decal/stripes{
 	dir = 1
 	},
@@ -900,6 +900,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	dir = 1;
 	id = "NTMSLoad";
@@ -1027,7 +1028,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/bridge/a)
 "IE" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -1152,7 +1153,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/a)
 "Oh" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -1264,12 +1265,12 @@
 	id_tag = "ntms_exterior";
 	name = "NTMS-037 Mining Airlock"
 	},
+/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
 "Tr" = (
@@ -1445,7 +1446,6 @@
 	},
 /obj/effect/decal/cleanable/greenglow,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)

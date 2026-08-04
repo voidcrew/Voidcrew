@@ -1,31 +1,30 @@
 /**
- * Ritual: Mockery of Heroes / Mockery of Treasure — galaxy-scoped ports of TG's RPG Titles
- * and RPG Loot (code/modules/events/wizard/rpgtitles.dm, rpgloot.dm).
+ * Ritual: Mockery of Heroes — galaxy-scoped port of TG's RPG Titles
+ * (code/modules/events/wizard/rpgtitles.dm).
  *
  * He has decided the galaxy is a story about adventurers. He is not paying it a compliment.
  *
- * These two are the only events on the ramp whose underlying machinery is already
- * station-independent, so they are the only two where the port is mostly a matter of scope
- * declaration and voice. /datum/rpgtitle_controller works off GLOB.alive_player_list and
- * /datum/rpgloot_controller iterates world items; neither touches a z-level, an area, or a
- * station global. Reimplementing the fantasy-component wiring here would create a second
- * copy to drift out of sync for no benefit, so both upstream controllers are reused.
+ * This is the one event on the ramp whose underlying machinery is already
+ * station-independent, so the port is mostly a matter of scope declaration and voice.
+ * /datum/rpgtitle_controller works off GLOB.alive_player_list and touches no z-level, area
+ * or station global. Reimplementing the fantasy-component wiring here would create a second
+ * copy to drift out of sync for no benefit, so the upstream controller is reused.
  *
- * Changed from the originals:
- * - Both gain a can_spawn_event() guard against their controller already existing. TG does
- *   not check, so a second firing would install a second controller with a second set of
- *   global signal registrations. TG gets away with it via max_occurrences = 1; belt and
- *   braces here because the lich's ritual clock is a different caller.
- * - Titles uses a small /datum/rpgtitle_controller/lich subtype that guards two unchecked
- *   null dereferences in the upstream signal handlers (see below). The behaviour is
- *   otherwise the parent's.
- * - Both gain galaxy announcements in Ilthuun's voice. The originals fire silently.
+ * Changed from the original:
+ * - A can_spawn_event() guard against the controller already existing. TG does not check,
+ *   so a second firing would install a second controller with a second set of global signal
+ *   registrations. TG gets away with it via max_occurrences = 1; belt and braces here
+ *   because the lich's ritual clock is a different caller.
+ * - A small /datum/rpgtitle_controller/lich subtype guards two unchecked null dereferences
+ *   in the upstream signal handlers (see below). The behaviour is otherwise the parent's.
+ * - A galaxy announcement in Ilthuun's voice. The original fires silently.
  *
- * Not fixed, and worth knowing: RPG Loot renames and re-rolls every item in the world,
- * including the stock inside NPC trader outposts. That is inherent to what the event is —
- * it is declared EVENT_SCOPE_GALAXY precisely because it cannot be confined to a hull — and
- * it is cosmetic-plus-stat-jitter rather than damage, so it does not violate the
- * outposts-are-never-harmed rule. It is still the widest-reaching thing on this roster.
+ * Its sibling, TG's RPG Loot (rpgloot.dm), was ported here as "Mockery of Treasure" and has
+ * been REMOVED. It renamed and re-rolled the stats of every item in the galaxy, permanently
+ * and irreversibly, including the stock inside NPC trader outposts — the single stickiest
+ * thing the lich did to anybody. Rites do not touch the crew's property; see the roster
+ * policy in lich_events.dm. Titles survives the cut because it is a label under a mob, it
+ * costs nobody an item, and it dies with the round.
  */
 
 /**
@@ -87,36 +86,4 @@
 		with the numbers, so that everyone can see exactly how much of a hero you are. \
 		Mine is blank.",
 		"Mockery of Heroes",
-	)
-
-/datum/round_event_control/voidcrew/lich/mockery_of_treasure
-	name = "Ritual: Mockery of Treasure"
-	typepath = /datum/round_event/voidcrew/lich/mockery_of_treasure
-	description = "Every object in the galaxy acquires a fantastical name and a quality roll."
-	max_occurrences = 1
-	event_scope = EVENT_SCOPE_GALAXY
-	min_wizard_trigger_potency = 4
-	max_wizard_trigger_potency = 7
-
-/// One controller only; a second would double-register COMSIG_GLOB_ATOM_AFTER_POST_INIT.
-/datum/round_event_control/voidcrew/lich/mockery_of_treasure/can_spawn_event(players_amt, allow_magic = FALSE)
-	. = ..()
-	if(!.)
-		return FALSE
-	return isnull(GLOB.rpgloot_controller)
-
-/datum/round_event/voidcrew/lich/mockery_of_treasure
-	announce_when = 1
-
-/datum/round_event/voidcrew/lich/mockery_of_treasure/start()
-	if(GLOB.rpgloot_controller)
-		return
-	GLOB.rpgloot_controller = new /datum/rpgloot_controller
-
-/datum/round_event/voidcrew/lich/mockery_of_treasure/announce(fake)
-	lich_announce_galaxy(
-		"Grave goods. All of it. Every hammer, every mug, every gun you are so proud of has \
-		only ever been waiting for a grave. I have given each piece the name it will be \
-		catalogued under. Do try to get a good one.",
-		"Mockery of Treasure",
 	)

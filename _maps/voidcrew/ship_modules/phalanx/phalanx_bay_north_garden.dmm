@@ -1,17 +1,5 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"j" = (
-/obj/machinery/vending/hydroseeds,
-/turf/open/floor/grass,
-/area/template_noop)
-"k" = (
-/obj/machinery/biogenerator,
-/turf/open/floor/grass,
-/area/template_noop)
-"B" = (
-/obj/structure/flora/bush/flowers_yw,
-/turf/open/floor/grass,
-/area/template_noop)
-"H" = (
+"b" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/watering_can,
 /obj/item/plant_analyzer{
@@ -22,6 +10,25 @@
 	pixel_x = -4;
 	pixel_y = 3
 	},
+/obj/item/hatchet,
+/obj/item/secateurs,
+/obj/item/shovel/spade,
+/obj/item/storage/bag/plants,
+/obj/item/reagent_containers/spray/pestspray,
+/obj/item/reagent_containers/cup/bottle/nutrient/ez,
+/obj/item/reagent_containers/cup/bottle/nutrient/rh,
+/turf/open/floor/grass,
+/area/template_noop)
+"j" = (
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/grass,
+/area/template_noop)
+"k" = (
+/obj/machinery/biogenerator,
+/turf/open/floor/grass,
+/area/template_noop)
+"B" = (
+/obj/structure/flora/bush/flowers_yw,
 /turf/open/floor/grass,
 /area/template_noop)
 "J" = (
@@ -63,7 +70,7 @@
 
 (1,1,1) = {"
 Q
-H
+b
 O
 "}
 (2,1,1) = {"

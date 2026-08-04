@@ -8,6 +8,10 @@
 #define MISSION_DIFFICULTY_MEDIUM 2
 #define MISSION_DIFFICULTY_HARD 3
 
+/// target_zone_name before a target has resolved a zone band. Missions with no
+/// overmap target keep this forever, so the board hides the zone tag on it.
+#define MISSION_ZONE_UNKNOWN "Unknown Zone"
+
 // Default config
 #define DEFAULT_AVAILABLE_MISSIONS 5
 #define DEFAULT_MAX_ACTIVE_MISSIONS 3
@@ -18,6 +22,22 @@
 #define MISSION_REFRESH_COOLDOWN (5 MINUTES)
 /// Unaccepted board offers older than this are rotated out by SSmissions
 #define MISSION_BOARD_EXPIRY (20 MINUTES)
+
+/**
+ * Chance (percent) that any one offer generated for a ship WITHOUT Shuttle
+ * Warfare Systems research is steered into the Neutral band.
+ *
+ * A crew with no shields and no guns cannot survive a contract that sends them
+ * into Contested or Lawless space, and the board is the main thing telling a new
+ * crew where to fly - so an unarmed ship's board should mostly point at work it
+ * can actually do. Not 100: the deep-band offers that still show through are
+ * what advertises the pay (and the vouchers) waiting once they research combat
+ * gear, and a board that never mentions the rest of the map teaches nothing.
+ * The preference is a bias, never a guarantee - a target list with nothing in
+ * the Neutral band falls back to the normal roll (see
+ * /datum/mission_target/proc/filter_by_preferred_zone).
+ */
+#define MISSION_UNARMED_GREEN_BIAS_PROB 70
 
 // Overmap bounds for exploration missions (relative coords, 1 to OVERMAP_SIZE)
 // Avoid edges (1 tile border) and some buffer
@@ -30,6 +50,16 @@
 
 /// How many times a retargeting mission may re-pick its target while active
 #define MAX_MISSION_RETARGETS 2
+
+/// How many times a field objective asks its site for a spawn turf before giving up
+#define MISSION_FIELD_SPAWN_TRIES 6
+/// Gap between those attempts
+#define MISSION_FIELD_SPAWN_RETRY_DELAY (15 SECONDS)
+
+/// Mobs a contract depends on. SSplanet_mobs sweeps every unclaimed living mob
+/// off an empty planet after its grace period; without this it takes the marked
+/// specimen, the poacher squad and the stranded survivor with it.
+#define TRAIT_MISSION_FIELD_MOB "mission_field_mob"
 
 // Results of offering an item to a mission's current objective
 #define MISSION_ITEM_REFUSED 0

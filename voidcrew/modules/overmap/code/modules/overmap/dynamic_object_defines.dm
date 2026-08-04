@@ -31,16 +31,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /obj/structure/overmap/planet/Initialize(mapload)
 	. = ..()
 	GLOB.overmap_planets += src
-	if(planet)
-		var/datum/overmap/planet/planet_info = new planet
-		name = planet_info.name
-		desc = planet_info.desc
-		icon_state = planet_info.icon_state
-		color = planet_info.color
-		weather_type = planet_info.weather_controller_type
-		if(isnull(parallax_theme)) // context-aware parallax: the planet datum carries the theme
-			parallax_theme = planet_info.parallax_theme
-		qdel(planet_info)
+	apply_planet_identity()
 
 /obj/structure/overmap/planet/Destroy()
 	GLOB.overmap_planets -= src
@@ -164,7 +155,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	qdel(src)
 	return TRUE
 
-/obj/structure/overmap/planet/empty/remove_mapzone()
+// `throttled` unused: clear_to_uninitialized_space() is always unqueued bystander
+// work and never waits behind a planet job (see worldgen_yield())
+/obj/structure/overmap/planet/empty/remove_mapzone(throttled = TRUE)
 	if(mapzone)
 		mapzone.clear_to_uninitialized_space()
 		mapzone.taken = FALSE
@@ -205,6 +198,56 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 		reset_reserve_dock(reserve_dock, primary_docking_turf)
 	if(!second_dock_taken)
 		reset_reserve_dock(reserve_dock_secondary, secondary_docking_turf)
+
+/**
+ * Which pair of reserve docks a cargo shuttle would use to berth alongside `ship_shuttle`:
+ * the dock that ship is parked on, and the free one the shuttle gets laid against.
+ *
+ * Returns list("ship_dock" = ..., "cargo_dock" = ..., "index" = 1|2) on success, or
+ * list("error" = "<crew-facing reason>") when there is no such pair.
+ *
+ * Both the cargo console's up-front refusal and the arrival itself ask this, so the
+ * button's enabled state and what actually happens after the warmup cannot disagree.
+ * An encounter only has two reserve docks and ship-to-ship docking claims BOTH of them
+ * (dock_ships_directly() in ship.dm), so any crew docked to another ship has nowhere to
+ * put a cargo shuttle - which used to be discoverable only after the full 30-second
+ * warmup had been spent building and then destroying one.
+ *
+ * * cargo_claim - the dock index a cargo shuttle is already holding, if any. It claims its
+ * berth when the order is placed and keeps it through the flight, so it has to be able to
+ * ask this again on arrival without reading its own claim as somebody else's ship.
+ */
+/obj/structure/overmap/planet/empty/proc/get_cargo_berth(obj/docking_port/mobile/ship_shuttle, cargo_claim = 0)
+	if(!ship_shuttle)
+		return list("error" = "Ship docking port not found")
+	var/first_taken = first_dock_taken && cargo_claim != 1
+	var/second_taken = second_dock_taken && cargo_claim != 2
+	if(first_taken && reserve_dock?.get_docked() == ship_shuttle)
+		if(second_taken)
+			return list("error" = "Docking ports occupied by another ship")
+		return list("ship_dock" = reserve_dock, "cargo_dock" = reserve_dock_secondary, "index" = 2)
+	if(second_taken && reserve_dock_secondary?.get_docked() == ship_shuttle)
+		if(first_taken)
+			return list("error" = "Docking ports occupied by another ship")
+		return list("ship_dock" = reserve_dock_secondary, "cargo_dock" = reserve_dock, "index" = 1)
+	return list("error" = "Ship docking port not found")
+
+/**
+ * The encounter's other reserve dock, when something is physically parked on it.
+ *
+ * A ship arriving into an encounter someone else is already sitting in has no way to
+ * reach the ship-to-ship handshake - a docked ship leaves the overmap tile, so it is no
+ * longer a contact anyone can act on - and would otherwise be berthed at the default
+ * port on the far side of the level. This is what lets that arrival dock against them.
+ *
+ * * excluding - The dock the arriving ship has already claimed.
+ */
+/obj/structure/overmap/planet/empty/proc/get_occupied_reserve_dock(obj/docking_port/stationary/excluding)
+	if(reserve_dock && reserve_dock != excluding && reserve_dock.get_docked())
+		return reserve_dock
+	if(reserve_dock_secondary && reserve_dock_secondary != excluding && reserve_dock_secondary.get_docked())
+		return reserve_dock_secondary
+	return null
 
 /// Restores a single free reserve dock to its default size/orientation at the given turf
 /obj/structure/overmap/planet/empty/proc/reset_reserve_dock(obj/docking_port/stationary/dock, turf/home_turf)

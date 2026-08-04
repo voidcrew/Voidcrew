@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/obj/structure/closet/crate/zone_loot/expedition/rare,
+/obj/structure/closet/crate/zone_loot/expedition,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "ab" = (

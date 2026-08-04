@@ -515,8 +515,10 @@
 
 // ===== MYSTERY CARGO =====
 // The gamble channel, sold over the counter: sealed caches rolling the zone
-// loot tables. The crate pins its table to the spawn turf — bought at the
-// Undertow, it rolls red-band loot.
+// loot tables. The crate pins its band to the spawn turf — bought at the
+// Undertow, it rolls on lawless odds. The reinforced one is not a different
+// table, just a fuller crate; nothing here is unobtainable from a cache
+// found in the field.
 
 /datum/shop_sku/black_market/mystery_cache
 	category = "Mystery Cargo"
@@ -531,7 +533,7 @@
 	category = "Mystery Cargo"
 	name = "reinforced cache"
 	desc = "The good crate. The one from the back room. Even Vex looks curious when one moves."
-	item_path = /obj/structure/closet/crate/zone_loot/syndicate/rare
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate/reinforced
 	price_vouchers = 4
 	stock_min = 1
 	stock_max = 1

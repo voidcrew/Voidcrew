@@ -44,10 +44,13 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 |---|---|---|---|
 | Halcyon | The Potting Shed | Fern | Seeds, growing supplies, the botany starter pack |
 | Halcyon | Pike's Bait & Tackle | Pike | Rods, bait and tackle, beside an indoor pond |
+| Halcyon | The Chowder Pot | Roux | The diner — hot meals in tiers, galley staples, buys home cooking |
 | Quartermain | The Skunkworks | Boffin | Research and fabrication gear, robotics and xenobiology starter packs |
 | Quartermain | The Fitting Bay | Wick | Civilian through advanced MODsuits |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
+
+**The Chowder Pot** at Halcyon is the waystation diner, and the menu is a quality ladder with real teeth. *Counter grub* is cheap factory food — it fills you up and does nothing else. The *blue plate specials* and the *chef's table* come off Roux's own pass, and a meal an actual cook made gives a genuine mood lift that scales with the depth of the recipe, so the expensive plate really does eat better than the hot dog. The *pantry* shelf stocks the raw staples a ship galley cannot print — flour, rice, milk, eggs, butter, enzyme, meat, even monkey cubes — which makes Halcyon the place to provision a working kitchen. Roux also **buys** home-cooked dishes, hand-made pies and whole cakes over the counter. She pays for real cooking only: vending-machine food is refused, and so are her own plates coming back around.
 
 **The Fitting Bay** at Quartermain has a **MOD fitting bench** — a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. It will not convert a suit from one theme to another. For the tier Wick won't touch — syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules — go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
 
@@ -56,6 +59,8 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 Halcyon and Quartermain both have a **neural schematic imprinter**, which burns a weapon schematic into your memory for the round and shreds the paper. The Undertow does not have one, so a red-tier schematic bought from Vex has to be imprinted elsewhere. See [Money & Trade](money-and-trade.md).
 
 Every outpost has a free **first-aid locker** and a heavy-duty **recovery sleeper**. The locker is an ordinary closet and taking the supplies is expected; the sleeper is fixed machinery and hitting it is not.
+
+Nobody goes hungry at a market, either: Halcyon has the diner, Sarge sells field rations off a **Mess Tin** shelf at Quartermain (with snack and hot-dog machines beside the coffee corner), and the Dregs runs a heat-lamp **Greasy Spoon** menu at the Undertow next to its own hot-dog machine.
 
 Quartermain, and only Quartermain, has **rental stash lockers**. Swipe an ID, pay 150 credits, and it is yours for the round — indestructible, unpryable, and immune to an emag. The lock is the entire product.
 
@@ -90,7 +95,7 @@ More on what is inside them is on [Ruins](ruins.md).
 
 The main trader's **Contracts** menu is a second, separate mission board. Four offers stay posted, and they pay in **goods off that trader's own shelves** rather than money, which makes them worth taking when your account is empty.
 
-The mix is supply requests, salvage and kill contracts on ruins, and courier runs hauling a sealed freight pod to a *different* outpost. Halcyon also posts angling requests, because it has a fishing stall.
+The mix is supply requests, salvage and kill contracts on ruins, and courier runs hauling a sealed freight pod to a *different* outpost. Halcyon also posts angling requests and **kitchen orders**, because it has a fishing stall and a diner. A kitchen order wants dishes cooked by an actual person at a stated recipe depth — factory food is refused at turn-in, and so are plates bought off Roux's own counter, so somebody on your crew genuinely has to cook.
 
 Pay quality follows difficulty by reaching deeper into the shop: easy contracts off the core shelf, medium off the rotating stock, and the hardest out of a back room of items that trader **never sells at any price**. Chasing a trader's board is the only way to get those.
 

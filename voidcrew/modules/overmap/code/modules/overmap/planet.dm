@@ -30,6 +30,13 @@
 	/// The overmap zone band this planet belongs to. Its terrain is scaled to this, so
 	/// it is kept across relocations rather than re-rolled from wherever it lands.
 	var/zone_band
+	/// Whether the lobby pre-build pass generates this planet's surface before the round
+	/// starts. Set on one planet of each type; the rest of the round's planets stay
+	/// unloaded contacts so extra planets cost nothing but overmap tiles until visited.
+	var/prebuild_at_roundstart = FALSE
+	/// Suffix telling this planet apart from the others of its type ("II", "III"...).
+	/// Null when the round only has one of each. Applied in apply_planet_identity().
+	var/designation
 	/// Key identifying this planet's SSplanet_mobs tracker while it is loaded
 	var/planet_key
 	/// Stoppable timer id for the unload countdown
@@ -41,10 +48,42 @@
 /obj/structure/overmap/planet/get_contact_variant()
 	return planet ? initial(planet.chart_variant) : null
 
+/**
+ * Copies the planet datum's identity - name, description, appearance, weather, parallax -
+ * onto the overmap contact.
+ *
+ * Called from Initialize(), and again by hand from SSovermap.setup_planets(): SSovermap
+ * initializes before SSatoms, so a marker it spawns does not run Initialize() until
+ * SSatoms drains its queue, and until then it would sit on the chart as a nameless "weak
+ * energy signature". Both paths go through here so the designation suffix survives the
+ * second copy instead of being overwritten by the datum's bare name.
+ */
+/obj/structure/overmap/planet/proc/apply_planet_identity()
+	if(!planet)
+		return
+	var/datum/overmap/planet/planet_info = new planet
+	name = designation ? "[planet_info.name] [designation]" : planet_info.name
+	desc = planet_info.desc
+	icon_state = planet_info.icon_state
+	color = planet_info.color
+	weather_type = planet_info.weather_controller_type
+	if(isnull(parallax_theme)) // context-aware parallax: the planet datum carries the theme
+		parallax_theme = planet_info.parallax_theme
+	qdel(planet_info)
+	// Planets never carry a display_name of their own, and the base Initialize() latches
+	// it from name before the copy above runs - leaving it on "weak energy signature".
+	display_name = name
+
 /// Whether this is a real terrain planet (surface + caves) rather than a flat encounter
 /// like empty space or a crashed ship, which have no areas to generate into.
 /obj/structure/overmap/planet/proc/is_terrain_planet()
 	return planet && initial(planet.surface_area)
+
+/// Terrain planets pull a landed ship down with the surface areas' own gravity
+/// (/area/overmap_encounter/planetoid is STANDARD_GRAVITY). Flat encounters —
+/// empty space, crashed ships, weak signals — are just space with a dock in it.
+/obj/structure/overmap/planet/has_ambient_gravity()
+	return is_terrain_planet()
 
 /**
   * Load a level for a ship that's visiting the level.
@@ -109,6 +148,13 @@
 		// space is stood up for routine ship-to-ship and cargo docking, and making that
 		// wait behind somebody else's planet would be far worse than the work it saves.
 		var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template, zone_band = SSovermap.get_zone_band_for_turf(get_turf(src)))
+		// A failed build must drop the loading flag on its way out: this branch has
+		// no worldgen-queue watchdog, so a wedged flag reads "survey in progress"
+		// for the rest of the round with nothing left to ever clear it.
+		if(length(dynamic_encounter_values) < 3 || !dynamic_encounter_values[1] || !dynamic_encounter_values[2])
+			loading = FALSE
+			log_mapping("SSovermap: dynamic encounter build failed for '[display_name || name]' at ([x],[y]) - dock aborted")
+			return "Dock site failed to initialize, try again."
 		mapzone = dynamic_encounter_values[1]
 		reserve_dock = dynamic_encounter_values[2]
 		reserve_dock_secondary = dynamic_encounter_values[3]
@@ -136,6 +182,7 @@
 	var/ruin_trait = planet_info.ruin_type
 	var/weather_trait = planet_info.weather_trait
 	var/area/surface_area_type = planet_info.surface_area
+	var/turf/ground_baseturf = planet_info.baseturf
 	qdel(planet_info)
 
 	if(isnull(zone_band))
@@ -144,6 +191,12 @@
 	var/list/surface_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
 	if(ruin_trait)
 		surface_traits[ruin_trait] = TRUE
+	// What a removed turf falls back to. Without this the level has no ZTRAIT_BASETURF and
+	// ChangeTurf bottoms every baseturfs chain out in /turf/open/space - a broken ruin floor
+	// or a dug-up patch of dirt becomes a hole into vacuum on the ground. See
+	// /datum/overmap/planet/baseturf.
+	if(ground_baseturf)
+		surface_traits[ZTRAIT_BASETURF] = ground_baseturf
 
 	var/datum/space_level/surface_level
 	var/datum/map_zone/zone = SSovermap.find_free_mapzone()
@@ -182,6 +235,10 @@
 
 	populate_planet_level(surface_level)
 
+	// Before ruins, not after: seedRuins() reads NO_RUINS while it picks placements, and a
+	// flag set afterwards would be too late to move anything.
+	reserve_dock_strip(surface_level)
+
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type)
 	generate_ruin_terrain(surface_level)
 	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
@@ -212,6 +269,34 @@
 
 	SSweather.set_z_level_weather_trait(level, weather_trait)
 
+	// Red-band planets carry radiation storms on top of their own climate, so both sit in
+	// the level's random-weather rotation and SSweather picks between them by probability
+	// (see /datum/weather/rad_storm/planetary).
+	//
+	// This has to run AFTER set_z_level_weather_trait(): that proc strips every
+	// random-weather trait off the level before setting the one it was handed, which is
+	// also what clears this trait from a recycled z-level that used to be a red planet.
+	if(zone_band == ZONE_RED)
+		add_random_weather_trait(level, ZTRAIT_RADSTORM)
+
+/**
+ * Adds one more random-weather trait to a level that already has its climate trait set,
+ * and re-registers the level so SSweather picks the new type up.
+ *
+ * set_z_level_weather_trait() only handles the single climate trait; anything a planet
+ * carries in addition to that goes through here.
+ */
+/obj/structure/overmap/planet/proc/add_random_weather_trait(datum/space_level/level, weather_trait)
+	if(!weather_trait)
+		return
+	level.traits[weather_trait] = TRUE
+	var/list/trait_levels = SSmapping.z_trait_levels[weather_trait]
+	if(!trait_levels)
+		trait_levels = list()
+		SSmapping.z_trait_levels[weather_trait] = trait_levels
+	trait_levels |= list(level.z_value)
+	SSweather.update_z_level(level)
+
 /**
  * Runs terrain population over every area on a planet z-level.
  *
@@ -235,6 +320,42 @@
 			var/area/overmap_encounter/planetoid/planetoid_area = planet_area
 			planetoid_area.zone_band = zone_band
 		planet_area.RunTerrainPopulation()
+
+/**
+ * Y coordinate of the top of the strip the reserve docks occupy, clearance included.
+ *
+ * Both docks sit side by side along the bottom edge of the footprint, anchored
+ * RESERVE_DOCK_DEFAULT_PADDING + 1 in from the corner - see create_docking_ports().
+ * adjust_dock_to_shuttle() may rotate a port to fit a shuttle, but every rotation case
+ * re-anchors on one of the port's own corners and swaps its height and width together, so
+ * a rotated port covers the same rectangle it started in. This line therefore bounds every
+ * turf a docked ship can end up on.
+ */
+/obj/structure/overmap/planet/proc/get_dock_strip_top_y(datum/space_level/zlevel)
+	return zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_RUIN_CLEARANCE
+
+/**
+ * Flags the docking strip along the bottom of the planet NO_RUINS, so ruins only seed
+ * above where ships park.
+ *
+ * try_to_place() rejects any placement whose footprint touches a NO_RUINS turf - the same
+ * mechanism ruins use to keep off each other. Without it a ruin can land squarely on a
+ * berth, and since an arriving shuttle overwrites the turfs it lands on, the ruin is
+ * destroyed by the first ship to visit, taking its loot and mobs with it.
+ *
+ * The full width of the strip is taken rather than the two dock rectangles alone. They run
+ * from low_x + 4 to low_x + 118 of a footprint that is at least PLANET_MIN_SIZE across, and
+ * the slivers left either side are a handful of turfs wide - nothing fits in them anyway.
+ */
+/obj/structure/overmap/planet/proc/reserve_dock_strip(datum/space_level/surface_level)
+	var/strip_top_y = min(get_dock_strip_top_y(surface_level), surface_level.high_y)
+	var/turf/strip_bottom_left = locate(surface_level.low_x, surface_level.low_y, surface_level.z_value)
+	var/turf/strip_top_right = locate(surface_level.high_x, strip_top_y, surface_level.z_value)
+	if(!strip_bottom_left || !strip_top_right)
+		return
+	for(var/turf/reserved as anything in block(strip_bottom_left, strip_top_right))
+		reserved.turf_flags |= NO_RUINS
+		CHECK_TICK
 
 /**
  * Seeds ruins on the surface, using the same budget and ore-vent preset the preloaded
@@ -376,6 +497,11 @@
 	return "[display_name || name] (planetfall)"
 
 /obj/structure/overmap/planet/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	// dock() refuses interdicted ships only after the dock slot below is claimed
+	// and the ship is locked into ACTING - refuse up front instead
+	if(acting.is_interdicted)
+		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		return
 	if(concerned || unloading)
 		to_chat(user, "<span class='notice'>Too much traffic, try again later!</span>")
 		return
@@ -415,7 +541,11 @@
 
 		if(!is_survey)
 			adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
-		to_chat(user, "<span class='notice'>[acting.dock(src, dock_to_use)]</span>") //If a value is returned from load_level(), say that, otherwise, commence docking
+		// dock() only returns a string when it refuses; a successful start is
+		// announced to the whole crew by ship_notify()
+		var/dock_result = acting.dock(src, dock_to_use)
+		if(dock_result)
+			to_chat(user, span_notice("[dock_result]"))
 	concerned = FALSE
 	// For request docking
 	if (optional_partner)
@@ -458,33 +588,39 @@
 	unloading = TRUE
 	concerned = TRUE //Prevent someone to act with this while it reloads
 
-	// Teardown is as expensive as generation and just as unwelcome alongside it: the
-	// contents sweep in clear_reservation() cannot yield, so landing it in the middle
-	// of somebody else's build stalls both.
-	if(!SSovermap.worldgen_claim(src, "planet teardown ([display_name || name])"))
-		unloading = FALSE
-		concerned = FALSE
-		return
+	// TERRAIN teardown is as expensive as generation and just as unwelcome alongside
+	// it: the contents sweep in clear_reservation() cannot yield, so landing it in the
+	// middle of somebody else's build stalls both - queue it. Flat encounters (weak
+	// signals, crashed ships) are cheap by comparison and, by design rule, may never
+	// wait behind a planet build: while a queued wait holds `unloading`, any ship
+	// arriving at this tile reads "Orbit is being recalculated" for minutes.
+	var/queue_teardown = is_terrain_planet()
+	if(queue_teardown)
+		if(!SSovermap.worldgen_claim(src, "planet teardown ([display_name || name])"))
+			unloading = FALSE
+			concerned = FALSE
+			return
 
-	// No ship can have docked while we queued - ship_act() bails on unloading - but a
-	// ghost role, a drop pod or a transporter beam is enough to put someone back down
-	// there, and we are about to delete every atom on the level.
-	if(!can_release_interior())
-		SSovermap.worldgen_release(src)
-		unloading = FALSE
-		concerned = FALSE
-		return
+		// No ship can have docked while we queued - ship_act() bails on unloading - but a
+		// ghost role, a drop pod or a transporter beam is enough to put someone back down
+		// there, and we are about to delete every atom on the level.
+		if(!can_release_interior())
+			SSovermap.worldgen_release(src)
+			unloading = FALSE
+			concerned = FALSE
+			return
 
 	if(planet_key)
 		SSplanet_mobs.unregister_planet(planet_key)
 		planet_key = null
 
 	remove_docks()
-	remove_mapzone() //Take a lot of time
+	remove_mapzone(throttled = queue_teardown) //Take a lot of time
 
 	// Released here rather than at the end: the relocation below only moves a token
 	// around the overmap grid and has no business holding up the next build.
-	SSovermap.worldgen_release(src)
+	if(queue_teardown)
+		SSovermap.worldgen_release(src)
 
 	// Back to an undiscovered contact somewhere else in the same band. The band is kept
 	// so a planet the crew rated as red-zone dangerous doesn't quietly turn into a green
@@ -508,9 +644,11 @@
 	unloading = FALSE
 	concerned = FALSE
 
-/obj/structure/overmap/planet/proc/remove_mapzone()
+/// `throttled` = whether the sweep shares the queued worldgen job's tick budget;
+/// unqueued flat-encounter teardowns pass FALSE - see worldgen_yield().
+/obj/structure/overmap/planet/proc/remove_mapzone(throttled = TRUE)
 	if(mapzone)
-		mapzone.clear_reservation()
+		mapzone.clear_reservation(throttled)
 		mapzone.taken = FALSE
 		mapzone = null
 

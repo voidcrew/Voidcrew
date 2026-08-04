@@ -62,6 +62,18 @@
 /obj/structure/overmap/proc/get_dock_description()
 	return null
 
+/**
+ * Whether a ship parked at this object is standing in gravity that comes from the
+ * location rather than from its own deck plating — a planet surface, an outpost deck.
+ *
+ * Ship gravity is `default_gravity` on the shuttle areas, so anything that switches
+ * the ship's plating off is only meaningful where the ship is the sole source of
+ * gravity. FALSE is the right default: space, ruins, wrecks and other ships all
+ * leave a docked crew weightless the moment their own plating quits.
+ */
+/obj/structure/overmap/proc/has_ambient_gravity()
+	return FALSE
+
 // Empty planets inherit ship_act from parent planet class to enable proper docking
 
 /obj/structure/overmap/Initialize(mapload)

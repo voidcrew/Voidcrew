@@ -1409,7 +1409,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/meta/kitchen)
 "do" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4
 	},
 /turf/closed/wall/mineral/titanium,
@@ -1965,7 +1965,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/meta/cargo)
 "CQ" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4
 	},
 /turf/closed/wall/mineral/titanium,
@@ -2041,7 +2041,7 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/meta/engineering)
 "Vi" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4
 	},
 /turf/closed/wall/mineral/titanium,

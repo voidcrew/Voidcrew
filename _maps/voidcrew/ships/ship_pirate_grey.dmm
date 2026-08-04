@@ -120,7 +120,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "dd" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/pirate_grey)
 "de" = (
@@ -136,7 +135,6 @@
 	},
 /obj/structure/sign/poster/contraband/random/directional/north,
 /obj/structure/cable,
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "ei" = (
@@ -471,7 +469,6 @@
 /area/shuttle/voidcrew/pirate_grey)
 "qE" = (
 /obj/effect/mapping_helpers/broken_floor,
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "qU" = (
@@ -841,9 +838,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Am" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter{
-	dir = 8
-	},
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "AE" = (
@@ -1089,9 +1083,6 @@
 /area/shuttle/voidcrew/pirate_grey)
 "GI" = (
 /obj/machinery/light/small/directional/west,
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter{
-	dir = 4
-	},
 /obj/machinery/power/terminal{
 	dir = 8
 	},
@@ -1378,9 +1369,6 @@
 /area/shuttle/voidcrew/pirate_grey)
 "RX" = (
 /obj/effect/mapping_helpers/burnt_floor,
-/obj/effect/mob_spawn/ghost_role/human/pirate/grey/shitter{
-	dir = 8
-	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Sb" = (

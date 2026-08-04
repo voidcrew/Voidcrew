@@ -1,9 +1,9 @@
 // =========================================================================
 // RESEARCH THEME — the Eventide Exotics Annex config (rare_biolab ruin) and
-// every lab/anomaly ruin. Xenoscience: green = lab consumables / minor
-// science gear, yellow = solid research and engineering prizes, red =
+// every lab/anomaly ruin. Xenoscience: common = lab consumables / minor
+// science gear, uncommon = solid research and engineering prizes, prime =
 // bluespace and exotic tech. Guarded by loose specimens (the bug markers).
-// TODO: review/balance-pass all six tables — first-draft weights and
+// TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -13,7 +13,7 @@
 	theme_skus = list(
 		/datum/shop_sku/outfitter/carbine_blueprint,
 	)
-	loot_green = list(
+	loot_common = list(
 		/obj/item/storage/box/beakers = 10,
 		/obj/item/storage/box/monkeycubes = 10,
 		/obj/item/stack/sheet/mineral/plasma/five = 8,
@@ -22,9 +22,11 @@
 		/obj/item/petri_dish = 6,
 		/obj/item/experi_scanner = 5,
 		/obj/item/research_notes/loot/tiny = 5,
+		// containment sidearm: every lab that kept specimens kept one
+		/obj/item/gun/energy/e_gun/mini = 5,
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
 	)
-	loot_yellow = list(
+	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/plasma/thirty = 10,
 		/obj/item/stock_parts/capacitor/adv = 8,
 		/obj/item/stock_parts/micro_laser/high = 8,
@@ -33,12 +35,14 @@
 		/obj/item/slime_extract/gold = 5,
 		/obj/item/clothing/glasses/night = 5,
 		/obj/item/research_notes/loot/small = 5,
+		/obj/item/gun/energy/laser/retro = 6,
+		/obj/item/gun/energy/recharge/ebow = 4,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
 		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/science = 7,
 	)
-	loot_red = list(
+	loot_prime = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 10,
 		/obj/item/stock_parts/capacitor/super = 8,
 		/obj/item/stock_parts/micro_laser/ultra = 8,
@@ -47,41 +51,33 @@
 		/obj/item/slime_extract/adamantine = 5,
 		/obj/item/research_notes/loot/medium = 5,
 		/obj/item/clothing/shoes/bhop = 4,
+		/obj/item/gun/energy/xray = 4,
+		// finished blueprint gun, prime only: the annex built its own
+		/obj/item/gun/energy/laser/carbine = 4,
 		/obj/item/gun/energy/temperature = 4,
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
 		/obj/item/assembly/signaler/anomaly/grav = 3,
 		/obj/item/storage/backpack/holding = 2,
-		/obj/item/ship_parts/science = 10,
-	)
-	// Rare tables: surviving stock entries + this theme's uniques at ~4
-	// (see voidcrew/modules/loot/uniques/research.dm and the design doc)
-	rare_loot_green = list(
-		/obj/item/stack/sheet/mineral/plasma/thirty = 8,
-		/obj/item/stock_parts/capacitor/adv = 6,
-		/obj/item/clothing/glasses/science/calibration_prism = 4,
-		/obj/item/book/annex_notebook = 4,
-	)
-	// The weight-2 arcana below are the retired icemoon-portal wizard shelf's
-	// tech-flavored half, rehomed here by owner request: unstable
-	// transmutation (polymorph), recharging magic (charge), and a contained
-	// singularity on a stick.
-	rare_loot_yellow = list(
-		/obj/item/stock_parts/capacitor/super = 8,
-		/obj/item/slime_extract/bluespace = 6,
-		/obj/item/reagent_containers/cup/beaker/entangled = 4,
-		/obj/item/research_notes/loot/big = 4,
-		/obj/item/displacer_fork = 4,
-		/obj/item/gun/magic/wand/polymorph = 2,
-		/obj/item/book/granter/action/spell/charge = 2,
-	)
-	rare_loot_red = list(
-		/obj/item/stack/ore/bluespace_crystal/refined = 8,
+		// the deepest slice of the theme, previously reachable only through
+		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
-		/obj/item/storage/backpack/holding = 5,
-		/obj/item/clothing/gloves/fingerless/chronal_splint = 4,
-		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 4,
+		/obj/item/research_notes/loot/big = 4,
+		/obj/item/gun/energy/lasercannon = 3,
+		/obj/item/book/granter/action/spell/charge = 2,
+		/obj/item/gun/magic/wand/polymorph = 2,
 		/obj/item/research_notes/loot/genius = 2,
 		/obj/item/singularityhammer = 2,
+	)
+	// One-of-a-kind authored prizes, drawn as the fourth tier from any
+	// band (weight = how shallow the item used to sit: 3 was reachable
+	// early, 1 was the bottom of the deepest cache).
+	loot_uniques = list(
+		/obj/item/book/annex_notebook = 3,
+		/obj/item/clothing/glasses/science/calibration_prism = 3,
+		/obj/item/displacer_fork = 2,
+		/obj/item/reagent_containers/cup/beaker/entangled = 2,
+		/obj/item/clothing/gloves/fingerless/chronal_splint = 1,
+		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/research
@@ -90,11 +86,6 @@
 	icon_state = "scicrate"
 	base_icon_state = "scicrate"
 	theme = /datum/loot_theme/research
-
-/obj/structure/closet/crate/zone_loot/research/rare
-	name = "priority specimen cache"
-	desc = "A specimen-transfer cache flagged for priority extraction. Whatever's inside outranked the staff."
-	rare = TRUE
 
 /// Infested nests: giant spiders. Webs sold separately.
 /obj/effect/zone_mobs/bug

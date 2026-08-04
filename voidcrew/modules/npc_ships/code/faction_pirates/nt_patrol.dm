@@ -311,6 +311,15 @@
 		"Per Directive 7-C, your outstanding compliance fine is %CREDITS% credits. Surrender of %QUANTITY% %ITEM% will also be accepted as remediation in kind.",
 		"Your options, per corporate policy: remit %CREDITS% credits, or transfer %QUANTITY% %ITEM% to our custody. Choose promptly - processing windows are billed.",
 	)
+	barter_demand_lines = list(
+		"Your accounts cannot cover the assessed fine. Directive 7-C permits remediation in kind. Transfer %QUANTITY% %ITEM% to our custody.",
+		"Insufficient funds on file. This incident may still be resolved by surrendering %QUANTITY% %ITEM% for destruction.",
+		"We are unable to collect a fine from an empty account. Surrender %QUANTITY% %ITEM% and the file closes.",
+	)
+	barter_escalation_lines = list(
+		"Processing delay noted. Your remediation requirement is now %QUANTITY% %ITEM%.",
+		"The compliance window is billed by the minute. Revised requirement: %QUANTITY% %ITEM%.",
+	)
 	acceptance_lines = list(
 		"Payment processed. This incident is resolved. Nanotrasen thanks you for your cooperation.",
 		"Remediation received. Your compliance record has been annotated accordingly. You are free to proceed.",

@@ -86,6 +86,19 @@
 	light_range = 2
 	light_power = 1
 
+/**
+ * Fallout ground. Mechanically identical to lit sand - the hazard is the emitters
+ * standing on it, not the turf - but it lights itself nuclear green instead of
+ * neutral. Planet surfaces are lit almost entirely by their own ground, so the
+ * colour break against the surrounding wasteland is what marks a contaminated
+ * zone as dangerous from off-screen, before anything has been irradiated.
+ * Used by /datum/biome/nuclear.
+ */
+/turf/open/misc/asteroid/sand/lit/nuclear
+	name = "contaminated sand"
+	desc = "Sand baked into brittle grey glass. Loose grit glows faintly green where it has been disturbed."
+	light_color = LIGHT_COLOR_NUCLEAR
+
 /turf/open/misc/asteroid/sand/dark
 	icon_state = "desert6"
 
@@ -96,6 +109,12 @@
 /turf/open/misc/asteroid/sand/dark/lit
 	light_range = 2
 	light_power = 1
+
+/// Darker patches of the same fallout ground - see /turf/open/misc/asteroid/sand/lit/nuclear.
+/turf/open/misc/asteroid/sand/dark/lit/nuclear
+	name = "contaminated sand"
+	desc = "Sand baked into brittle grey glass. Loose grit glows faintly green where it has been disturbed."
+	light_color = LIGHT_COLOR_NUCLEAR
 
 /turf/open/misc/asteroid/sand/beach
 	planetary_atmos = TRUE

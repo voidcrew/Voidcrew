@@ -254,7 +254,7 @@
 /area/ruin/space/has_grav/powered)
 "bF" = (
 /obj/effect/zone_mobs/pirate/boss,
-/obj/structure/closet/crate/zone_loot/plunder/rare,
+/obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "cb" = (
@@ -356,6 +356,10 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
+"lj" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "mX" = (
 /obj/structure/closet/crate/wooden,
 /obj/item/stack/spacecash/c1000{
@@ -390,6 +394,10 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"sZ" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "tw" = (
 /obj/item/coin/gold/doubloon{
@@ -968,7 +976,7 @@ WC
 an
 sK
 Hx
-an
+lj
 OX
 aM
 aV
@@ -1085,7 +1093,7 @@ aA
 aw
 rS
 eB
-an
+lj
 aZ
 aV
 aV
@@ -1337,7 +1345,7 @@ aA
 av
 hU
 aY
-ay
+sZ
 ij
 av
 aV

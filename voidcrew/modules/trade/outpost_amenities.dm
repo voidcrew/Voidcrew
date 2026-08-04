@@ -40,13 +40,35 @@
 /**
  * The house sleeper: same machine, torpedo-rated housing. Free to use —
  * the "safe harbor between fights" identity, made of metal.
+ *
+ * `controls_inside` is the whole point: a solo pilot has nobody outside to
+ * press the buttons, and the default sleeper closes the occupant's own UI.
+ * The board is kept (not nulled) so `apply_default_parts()` actually runs and
+ * the chem list gets populated — sleepers with no servo offer zero chems.
+ * It still can't be stripped for parts: `deconstructable` is FALSE, so
+ * `/obj/machinery/sleeper/Initialize` deletes the board after parts apply.
  */
 /obj/machinery/sleeper/outpost
 	name = "outpost recovery sleeper"
 	desc = "A heavy-duty sleeper bolted straight into the station frame. The upholstery has seen things."
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	circuit = null
+	controls_inside = TRUE
+	circuit = /obj/item/circuitboard/machine/sleeper/outpost
+
+/**
+ * Tier-3 servo, tier-1 bin: full damage-type coverage (libital/aiuri/convermol
+ * /multiver) without reaching the tier-4 omnizine, and the stock 20u per-chem
+ * cap. A patch-up station between fights, not a fountain. Never built by
+ * players — it exists so the mapped machine gets the right parts.
+ */
+/obj/item/circuitboard/machine/sleeper/outpost
+	build_path = /obj/machinery/sleeper/outpost
+	req_components = list(
+		/datum/stock_part/matter_bin = 1,
+		/datum/stock_part/servo/tier3 = 1,
+		/obj/item/stack/cable_coil = 1,
+		/obj/item/stack/sheet/glass = 2)
 
 /obj/machinery/sleeper/outpost/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(attacking_item.force)

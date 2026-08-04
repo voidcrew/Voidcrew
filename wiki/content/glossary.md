@@ -20,7 +20,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Active scan** | A one-minute-cooldown sensor sweep that charts contacts beyond visual range onto your navigation list. Range grows with radar research. |
 | **Star chart** | A one-use slate bought from traders that charts every contact in one whole zone at once, including storms your own sensors cannot detect. |
 | **Rumor chart** | Bought intel naming one rare ruin. Decrypting it at the helm spawns that ruin and marks it gold on the map. |
-| **Dread signal** | A vestige ruin's overmap contact, marked in red. They surface one at a time as the round ages. |
+| **Dread signal** | A vestige ruin's overmap contact, marked in red and named for the patron inside (e.g. "Sister Havel", "the Weaver"). They surface one at a time as the round ages. |
 | **Nebula** | A harmless overmap cloud of one specific gas. A ram scoop harvests it, and it is the only place a ship can hide. See [Gas Economy](gas-economy.md). |
 | **Asteroid storm** | A landable rock field. Flying through one damages your hull; docking with it lets you mine it. See [Mining](mining.md). |
 | **Encounter** | Any interior the game builds on demand when you dock — a planet surface, a ruin, an asteroid field, or a patch of empty space. |

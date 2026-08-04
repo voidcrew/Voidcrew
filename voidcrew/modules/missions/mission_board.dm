@@ -59,6 +59,12 @@
 /**
  * Tapping a handheld GPS on the console uploads the active missions' objective
  * beacons to that specific unit.
+ *
+ * A contract can be linked and still have nothing to point at: the beacon tracks
+ * the objective's physical mark, and field objectives don't place theirs until
+ * the site's interior loads. Reporting the link as an upload in that state reads
+ * as a broken GPS, so the three cases are called apart - signals on the unit, a
+ * link with no mark out there yet, and nothing linked at all.
  */
 /obj/machinery/computer/mission_board/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	var/datum/component/gps/item/gps_unit = tool.GetComponent(/datum/component/gps/item)
@@ -70,16 +76,19 @@
 		balloon_alert(user, "console not on a ship!")
 		return ITEM_INTERACT_BLOCKING
 
-	var/uploaded = 0
+	var/linked = 0
 	for(var/datum/mission/mission as anything in ship.active_missions)
 		if(QDELETED(mission))
 			continue
 		if(mission.link_gps_unit(gps_unit))
-			uploaded++
+			linked++
 
-	if(uploaded)
-		balloon_alert(user, "[uploaded] beacon[uploaded > 1 ? "s" : ""] uploaded")
+	var/live_beacons = LAZYLEN(gps_unit.linked_mission_signals)
+	if(live_beacons)
+		balloon_alert(user, "[live_beacons] beacon[live_beacons > 1 ? "s" : ""] linked")
 		playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
+	else if(linked)
+		balloon_alert(user, "linked - no objective marked yet")
 	else
 		balloon_alert(user, "no beacons to upload!")
 	return ITEM_INTERACT_SUCCESS

@@ -10,7 +10,7 @@
 /datum/round_event_control/voidcrew/scrubber_overflow
 	name = "Scrubber Overflow: Normal"
 	typepath = /datum/round_event/voidcrew/scrubber_overflow
-	weight = 10
+	weight = 5
 	max_occurrences = 3
 	category = EVENT_CATEGORY_JANITORIAL
 	description = "The scrubbers release a tide of mostly harmless froth."
@@ -28,7 +28,7 @@
 /datum/round_event_control/voidcrew/scrubber_overflow/threatening
 	name = "Scrubber Overflow: Threatening"
 	typepath = /datum/round_event/voidcrew/scrubber_overflow/threatening
-	weight = 4
+	weight = 2
 	max_occurrences = 1
 	earliest_start = 35 MINUTES
 	/// Rolls the genuinely dangerous reagent table often enough to hurt — keep out of the safe ring.
@@ -43,7 +43,7 @@
 /datum/round_event_control/voidcrew/scrubber_overflow/catastrophic
 	name = "Scrubber Overflow: Catastrophic"
 	typepath = /datum/round_event/voidcrew/scrubber_overflow/catastrophic
-	weight = 2
+	weight = 1
 	max_occurrences = 1
 	earliest_start = 45 MINUTES
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)

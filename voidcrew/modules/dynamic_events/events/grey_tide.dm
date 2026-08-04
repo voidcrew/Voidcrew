@@ -12,6 +12,7 @@
 /datum/round_event_control/voidcrew/grey_tide
 	name = "Ship Grey Tide"
 	typepath = /datum/round_event/voidcrew/grey_tide
+	weight = 4
 	max_occurrences = 2
 	min_players = 2
 	category = EVENT_CATEGORY_ENGINEERING

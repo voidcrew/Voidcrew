@@ -31,6 +31,63 @@
 #define OVERMAP_SHIP_DOCKING "docking"
 #define OVERMAP_SHIP_UNDOCKING "undocking"
 
+/**
+ * Hull integrity states.
+ *
+ * A latch, not a recomputed comparison. Integrity is derived from turf mass, and mass
+ * moves a tile at a time - so a bare "is the percentage under X" test flips back and
+ * forth across the boundary all through a repair, and anything hung off that test fires
+ * once per flip. Each of these is entered exactly once per transition, and leaving one
+ * needs a different threshold than entering it did (see the ..._FRACTION defines).
+ */
+/// Hull is sound, or damaged but not yet alarming.
+#define SHIP_INTEGRITY_NOMINAL 0
+/// Hull is failing. Klaxon loop is running; the ship still flies.
+#define SHIP_INTEGRITY_CRITICAL 1
+/// Hull has failed. Ship is dead in the water until repaired past the recovery threshold.
+#define SHIP_INTEGRITY_DISABLED 2
+
+/**
+ * Hull damage bands, as fractions of the damage allowance (see integrity_damage_allowance()).
+ *
+ * The allowance is how much mass a hull may lose before it is disabled. Expressing the
+ * other two bands as fractions *of the allowance* rather than of max_integrity is what
+ * gives the state machine its hysteresis: a hull drops out of NOMINAL at 0.8 of its
+ * allowance and only climbs back at 0.7, so the tile that trips the alarm is never also
+ * the tile that clears it.
+ */
+/// Share of the allowance that must be lost before the critical klaxon starts.
+#define SHIP_INTEGRITY_CRITICAL_FRACTION 0.8
+/// Share of the allowance the hull must be repaired back inside to clear an alarm.
+#define SHIP_INTEGRITY_RECOVERY_FRACTION 0.7
+/// Share of a hull's baseline mass it may lose before being disabled.
+#define SHIP_INTEGRITY_ALLOWANCE_FRACTION 0.5
+/**
+ * Floor on the damage allowance, in mass.
+ *
+ * Percentage bands alone are hostile to very small hulls: a scratch-built survey hull can
+ * mass under 30, which puts half of it inside a single explosion and makes one welded wall
+ * a double-digit swing. Below ~120 mass this floor takes over from the fraction, so a shack
+ * has to lose essentially all of itself rather than half. It does not bind on any shipped
+ * hull - the smallest, the medieval pirate sloop, masses 127.
+ */
+#define SHIP_INTEGRITY_MIN_ALLOWANCE 60
+
+/**
+ * How long a hull is held at its berth after an integrity failure.
+ *
+ * Armed the moment the hull latches into SHIP_INTEGRITY_DISABLED, not when it is patched up.
+ * This is a floor on how quickly a wreck can be back in the void, not an extra wait tacked
+ * onto the end of repairs: a crew that welds fast sits out whatever is left of it, and a crew
+ * that spends longer than this rebuilding leaves the moment the alarm clears. Repairing to
+ * 100% does not clear it - the ship is whole, the clamps are still on.
+ *
+ * Deliberately not the interdiction lockout, which also freezes hull construction (see
+ * can_operate() in construction_console.dm and survey_expand() in hull_survey.dm). Sharing
+ * that cooldown would lock the crew out of the repairs this timer exists to make them do.
+ */
+#define SHIP_INTEGRITY_UNDOCK_LOCKOUT (3 MINUTES)
+
 // Space ruin spawning configuration
 /// Maximum number of space ruins to spawn on the overmap
 #define MAX_OVERMAP_SPACE_RUINS 24

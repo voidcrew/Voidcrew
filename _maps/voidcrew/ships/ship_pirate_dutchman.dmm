@@ -1,25 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"ac" = (
-/obj/docking_port/mobile/voidcrew/pirate_dutchman{
-	dir = 2;
-	port_direction = 2;
-	preferred_direction = 2
-	},
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"ad" = (
-/obj/structure/railing{
-	color = "#4C3117";
-	dir = 5;
-	name = "wooden railing"
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood/airless,
-/area/template_noop)
 "af" = (
 /turf/template_noop,
 /area/template_noop)
@@ -43,7 +22,6 @@
 /obj/structure/chair/wood{
 	dir = 1
 	},
-/obj/effect/mob_spawn/ghost_role/human/pirate/skeleton/gunner,
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
@@ -343,7 +321,6 @@
 	})
 "gP" = (
 /obj/effect/turf_decal/siding/wood,
-/obj/effect/mob_spawn/ghost_role/human/pirate/skeleton/captain,
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
@@ -534,17 +511,6 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"tt" = (
-/obj/structure/railing{
-	color = "#4C3117";
-	dir = 8;
-	name = "wooden railing"
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood/airless,
-/area/template_noop)
 "tH" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -727,17 +693,6 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"Bf" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/structure/railing{
-	color = "#4C3117";
-	dir = 9;
-	name = "wooden railing"
-	},
-/turf/open/floor/wood/airless,
-/area/template_noop)
 "BP" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
@@ -775,6 +730,19 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
+"Dz" = (
+/obj/structure/railing{
+	color = "#4C3117";
+	dir = 5;
+	name = "wooden railing"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "Ew" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -796,7 +764,7 @@
 	requires_power = 0
 	})
 "EU" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/floor/carpet/royalblack/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
@@ -879,6 +847,19 @@
 	pixel_y = 2
 	},
 /turf/open/floor/carpet/royalblack/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"JQ" = (
+/obj/structure/railing{
+	color = "#4C3117";
+	dir = 8;
+	name = "wooden railing"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -1065,6 +1046,19 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
+"Tn" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/railing{
+	color = "#4C3117";
+	dir = 9;
+	name = "wooden railing"
+	},
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "Vm" = (
 /obj/structure/railing/corner{
 	color = "#4C3117";
@@ -1086,6 +1080,19 @@
 "VF" = (
 /obj/machinery/ship_combat/interdictor,
 /turf/open/floor/carpet/royalblack/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"Wv" = (
+/obj/structure/railing{
+	color = "#4C3117";
+	dir = 4;
+	name = "wooden railing"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -1129,23 +1136,14 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"Ys" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/skeleton,
+"YA" = (
+/obj/docking_port/mobile/voidcrew/pirate_dutchman{
+	dir = 2
+	},
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"YJ" = (
-/obj/structure/railing{
-	color = "#4C3117";
-	dir = 4;
-	name = "wooden railing"
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood/airless,
-/area/template_noop)
 "YT" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
@@ -1446,8 +1444,8 @@ Yr
 WR
 "}
 (10,1,1) = {"
-Bf
-tt
+Tn
+JQ
 an
 ao
 WB
@@ -1473,7 +1471,7 @@ Jp
 WR
 "}
 (11,1,1) = {"
-ac
+YA
 WB
 ak
 WB
@@ -1490,7 +1488,7 @@ WS
 Gr
 QM
 dc
-Ys
+WB
 WB
 Gr
 sf
@@ -1500,8 +1498,8 @@ gq
 WR
 "}
 (12,1,1) = {"
-ad
-YJ
+Dz
+Wv
 am
 aB
 WB

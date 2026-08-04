@@ -107,7 +107,7 @@
 	last_operation_success = FALSE
 	return FALSE
 
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/relocate_docking_port(obj/machinery/door/airlock/new_airlock)
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/relocate_docking_port(obj/machinery/door/new_door)
 	last_operation_message = "Outpost docking pads are fixed."
 	last_operation_success = FALSE
 	return FALSE

@@ -114,6 +114,21 @@
 /obj/machinery/light/cold/directional/west,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
+"eT" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/obj/docking_port/mobile/voidcrew/goon/b{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
 "fh" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Emergency Shuttle Infirmary"
@@ -142,6 +157,14 @@
 "fR" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/b)
+"gR" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/medbay/b)
 "hF" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/machinery/light/cold/directional/east,
@@ -286,18 +309,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/b)
-"zO" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/docking_port/mobile/voidcrew/goon/b{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/b)
 "AC" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/b)
@@ -368,6 +386,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
+/obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/white{
 	color = "#7C68C6"
 	},
@@ -527,6 +546,14 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
+"PC" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
 "Ql" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
@@ -535,6 +562,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
+"Rb" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
 "Rg" = (
 /obj/structure/closet/supplypod/drop_pod,
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -598,6 +629,8 @@
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
 	piping_layer = 4
 	},
 /turf/open/floor/mineral/titanium/blue,
@@ -692,7 +725,7 @@ Md
 (4,1,1) = {"
 cm
 OT
-aa
+Rb
 ui
 aa
 aX
@@ -717,7 +750,7 @@ aX
 "}
 (6,1,1) = {"
 IZ
-cm
+gR
 aa
 ui
 aa
@@ -768,7 +801,7 @@ Th
 Dq
 "}
 (10,1,1) = {"
-dg
+eT
 Rg
 sg
 wg
@@ -867,7 +900,7 @@ fR
 fR
 JH
 Tk
-Tk
+PC
 IZ
 IZ
 "}
@@ -890,7 +923,7 @@ IZ
 IZ
 Tk
 KM
-zO
+KM
 KM
 Tk
 IZ

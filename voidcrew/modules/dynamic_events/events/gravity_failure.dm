@@ -18,7 +18,7 @@
 /datum/round_event_control/voidcrew/gravity_failure
 	name = "Gravity Generator Failure"
 	typepath = /datum/round_event/voidcrew/gravity_failure
-	weight = 25
+	weight = 10
 	max_occurrences = 3
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING
@@ -28,6 +28,11 @@
 	min_ship_mass = SHIP_MASS_SMALL
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 4
+	/// The plating is only what keeps the crew down out in space. Landed on a planet or
+	/// berthed in an outpost hangar, gravity comes from the ground the ship is standing on,
+	/// and cutting the deck would have the crew floating around a hull that is sitting in a
+	/// gravity well. Those ships are simply not valid targets - see has_ambient_gravity().
+	requires_zero_g = TRUE
 
 /datum/round_event/voidcrew/gravity_failure
 	announce_when = 1
@@ -40,8 +45,17 @@
 	/// Areas that were already weightless when we started are left out and stay that way.
 	var/list/area/suppressed_areas = list()
 
+/**
+ * TRUE while the target is standing in gravity that isn't its own — landed on a planet,
+ * berthed in an outpost hangar. The control refuses to pick such a ship in the first
+ * place, but the gap between selection and start() is a ten-second admin window plus
+ * three ticks, and a ship on final approach can land inside it.
+ */
+/datum/round_event/voidcrew/gravity_failure/proc/in_ambient_gravity()
+	return target_valid() && target_ship.docked?.has_ambient_gravity()
+
 /datum/round_event/voidcrew/gravity_failure/announce(fake)
-	if(!target_valid())
+	if(!target_valid() || in_ambient_gravity())
 		return
 	target_ship.ship_event_announce(
 		"Fault on the gravity bus. Deck plating is dropping out across the ship. Secure loose equipment and hold onto something.",
@@ -51,6 +65,9 @@
 
 /datum/round_event/voidcrew/gravity_failure/start()
 	if(!target_valid())
+		return
+	if(in_ambient_gravity()) // Landed since selection; there is no ship gravity to cut here.
+		kill()
 		return
 	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
 		if(QDELETED(ship_area) || (ship_area.area_flags & NO_GRAVITY))
@@ -64,6 +81,22 @@
 
 	refresh_crew_gravity()
 	target_ship.play_ship_sound('sound/effects/empulse.ogg', 40)
+
+/**
+ * A crew that runs for the nearest planet or outpost lands out of the fault: the ground
+ * under the hull holds them down whatever the plating is doing, so keeping the flag set
+ * would only mean a hull that stays weightless while parked in a gravity well. Ending
+ * early here is also the fix for the flag outliving the fault — the areas keep it until
+ * something clears it, and a landing is exactly when nobody would think to look.
+ */
+/datum/round_event/voidcrew/gravity_failure/tick()
+	if(!in_ambient_gravity())
+		return
+	var/was_suppressing = length(suppressed_areas)
+	restore_gravity() // Ahead of kill(), which would do it anyway, so the announcement is true when it goes out.
+	if(was_suppressing && target_valid())
+		target_ship.ship_event_announce("Gravity is back to normal now that we're down. Secure anything that came loose.", "Gravity Alert")
+	kill()
 
 /datum/round_event/voidcrew/gravity_failure/end()
 	restore_gravity()

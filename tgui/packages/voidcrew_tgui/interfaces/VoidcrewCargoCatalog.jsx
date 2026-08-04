@@ -95,7 +95,7 @@ export function VoidcrewCargoCatalog(props) {
 
   return (
     <>
-      {showContents && (
+      {!!showContents && (
         <CatalogPackInfo
           packs={packs}
           name={showContents}
@@ -259,13 +259,12 @@ function CatalogList(props) {
               <Stack.Item grow textAlign="left">
                 {pack.name}
               </Stack.Item>
-              {(!!pack.small_item || !!pack.access || !!pack.contraband) && (
+              {/* No 'Restricted' lock marker: ship crates never arrive locked. */}
+              {(!!pack.small_item || !!pack.contraband) && (
                 <Stack.Item>
                   <Stack reverse>
                     {!!pack.small_item &&
                       tooltipIcon('Small Item', 'compress-alt', 'purple')}
-                    {!!pack.access &&
-                      tooltipIcon('Restricted', 'lock', 'average')}
                     {!!pack.contraband &&
                       tooltipIcon('Contraband', 'pastafarianism', 'bad')}
                   </Stack>

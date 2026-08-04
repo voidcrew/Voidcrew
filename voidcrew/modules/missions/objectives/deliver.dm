@@ -40,6 +40,9 @@
 			return FALSE
 	return TRUE
 
+/datum/mission_objective/deliver/matches_ask(obj/item/item)
+	return item && required_type && istype(item, required_type)
+
 /datum/mission_objective/deliver/describe_turn_in_failure(obj/item/item)
 	if(!item)
 		return "No item provided."
@@ -95,6 +98,9 @@
 	if(bound_item.mission_ref?.resolve() != mission)
 		return FALSE
 	return bound_item.binding_serial == mission.binding_serial
+
+/datum/mission_objective/deliver/bound/matches_ask(obj/item/item)
+	return istype(item, /obj/item/mission_recovery)
 
 /datum/mission_objective/deliver/bound/describe_turn_in_failure(obj/item/item)
 	if(!item)
@@ -177,4 +183,39 @@
 		var/obj/item/fish/offered_fish = item
 		if(offered_fish.weight < min_weight)
 			return "Too small - [required_name] means [min_weight / 1000] kg or better."
+	return ..()
+
+// =========================================================================
+// COOKED DISH — the diner's ask
+// =========================================================================
+
+/**
+ * Real cooking, counted one plate at a time. A dish only counts if somebody's
+ * own hands made it — TRAIT_FOOD_CHEF_MADE comes off the grill, the oven, the
+ * fryer and the crafting menu, never off factory packaging — and if its recipe
+ * runs at least min_complexity deep. The outpost diner's own plates carry the
+ * same trait from TRAIT_SOURCE_OUTPOST_KITCHEN alone and are refused, so a
+ * Kitchen Order can't be settled off Roux's own counter.
+ */
+/datum/mission_objective/deliver/cooked
+	required_type = /obj/item/food
+	required_name = "cooked meals"
+	/// Minimum crafting_complexity (FOOD_COMPLEXITY_*) for a dish to count
+	var/min_complexity = FOOD_COMPLEXITY_2
+
+/datum/mission_objective/deliver/cooked/can_turn_in(obj/item/item)
+	if(!..())
+		return FALSE
+	if(!HAS_TRAIT_NOT_FROM(item, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
+		return FALSE
+	var/obj/item/food/dish = item
+	return dish.crafting_complexity >= min_complexity
+
+/datum/mission_objective/deliver/cooked/describe_turn_in_failure(obj/item/item)
+	if(item && istype(item, required_type))
+		if(!HAS_TRAIT_NOT_FROM(item, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
+			return "Factory-made won't do - the order wants a dish cooked by hand."
+		var/obj/item/food/dish = item
+		if(dish.crafting_complexity < min_complexity)
+			return "Too simple - the order wants real cooking, not a snack."
 	return ..()

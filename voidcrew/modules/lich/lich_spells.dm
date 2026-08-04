@@ -39,7 +39,7 @@
  * ## Power calibration
  *
  * Measured against upstream fireball, which already sits in this theme's
- * `rare_loot_red` at weight 1 as a granter book: fireball is ~65 damage plus an
+ * `loot_prime` at weight 1 as a granter book: fireball is ~65 damage plus an
  * explosion, plus fire, on a 6 second cooldown. The bolt here is 45 to a single
  * target with no structural damage on a 7 second cooldown, and it *heals* the
  * undead it hits. Two thralls at 45 HP for 45 seconds is well under the paper
@@ -645,7 +645,7 @@
 // (code/game/objects/items/granters/magic/_spell_granter.dm:32).
 //
 // Known upstream interaction, not worked around: `granter/action/spell/random`
-// (already in this theme's rare_loot_yellow at weight 1) picks from
+// (already in this theme's loot_prime at weight 1) picks from
 // `subtypesof(/obj/item/book/granter/action/spell)`, and `true_random` picks
 // from all non-blacklisted spell schools. These three are therefore in both
 // pools. The odds are slim and "the random spellbook turned out to be lich work"

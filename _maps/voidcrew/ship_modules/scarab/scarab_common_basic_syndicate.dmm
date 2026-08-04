@@ -51,6 +51,22 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"l" = (
+/obj/effect/turf_decal/tile/green/half{
+	dir = 1
+	},
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/dark/smooth_edge{
+	dir = 1
+	},
+/area/template_noop)
 "m" = (
 /obj/effect/turf_decal/tile/green/half{
 	dir = 1
@@ -329,7 +345,7 @@ K
 (5,1,1) = {"
 T
 x
-m
+l
 O
 P
 H

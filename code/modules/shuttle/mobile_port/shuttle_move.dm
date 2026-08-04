@@ -1,7 +1,14 @@
-i/// This is the main proc. Despite what the name suggests,
+/// This is the main proc. Despite what the name suggests,
 /// it instantly moves our mobile port to stationary port `new_dock`.
 /obj/docking_port/mobile/proc/initiate_docking(obj/docking_port/stationary/new_dock, movement_direction, force=FALSE)
 	// Crashing this ship with NO SURVIVORS
+
+	// Voidcrew: check() calls this with `destination`, which is legitimately null for a
+	// ship in open flight - and a null dock used to runtime on the line below, killing
+	// the whole SSshuttle fire mid-loop (round 811: Scarab/Kilo/Delta and the
+	// shuttle-purchase flow all hit it). Hand check() the error code it already handles.
+	if(isnull(new_dock))
+		return DOCKING_NULL_DESTINATION
 
 	if(new_dock.get_docked() == src)
 		remove_ripples()
@@ -131,6 +138,19 @@ i/// This is the main proc. Despite what the name suggests,
 			if(underlying_area)
 				underlying_areas[underlying_area] = TRUE
 			areas_to_move[old_area] = TRUE
+
+		// Voidcrew: a registered hull tile that will not travel is how ships lose
+		// engines and deck sections (rounds 803/804) - say exactly why before it
+		// happens. Fires for the moving port's own registered areas, and for ANY
+		// tile carrying one of our engines: round 811's Pill lost its thruster off
+		// a space turf in an orphaned same-name area, which the registered-area
+		// filter and the space-turf filter both silently waved through.
+		if(!(move_mode & MOVE_TURF))
+			var/obj/machinery/power/shuttle_engine/mounted = locate() in oldT
+			if(mounted && !(mounted in engine_list))
+				mounted = null
+			if(mounted || (!isspaceturf(oldT) && shuttle_areas[old_area]))
+				log_shuttle("[name]: preflight will leave hull turf [oldT] ([oldT.type]) at [AREACOORD(oldT)] behind[mounted ? " WITH ENGINE [mounted]" : ""] - move_mode=[move_mode], area=[old_area.type] [REF(old_area)] (registered=[shuttle_areas[old_area] ? "yes" : "NO"]), baseturfs=[islist(oldT.baseturfs) ? jointext(oldT.baseturfs, " > ") : "[oldT.baseturfs]"]")
 
 		old_turfs[oldT] = move_mode
 

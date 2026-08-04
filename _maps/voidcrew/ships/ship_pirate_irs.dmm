@@ -246,14 +246,6 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
-"hS" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/irs/auditor{
-	dir = 4
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
 "hW" = (
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/effect/turf_decal/bot/left,
@@ -2390,6 +2382,12 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
+"ZK" = (
+/obj/machinery/shuttle_scrambler/ship_siphon,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
 
 (1,1,1) = {"
 WR
@@ -2500,7 +2498,7 @@ WR
 hK
 hK
 ZE
-hS
+aT
 SQ
 hK
 Ni
@@ -2695,7 +2693,7 @@ WR
 Rh
 LV
 ev
-mA
+ZK
 pO
 YJ
 sH

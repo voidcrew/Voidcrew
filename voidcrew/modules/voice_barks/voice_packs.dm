@@ -6,9 +6,13 @@
 	if(!sound_path)
 		return null
 	if(group_path)
-		return sound(group_path + "/" + sound_path)
-	else
-		return sound(sound_path)
+		sound_path = group_path + "/" + sound_path
+	// These are dynamic (text) sound references, so a bad path is not a compile error -
+	// it just silently plays nothing. Catch it at boot instead.
+	if(!fexists(sound_path))
+		stack_trace("Voice pack sound file [sound_path] does not exist")
+		return null
+	return sound(sound_path)
 
 /proc/gen_voice_packs()
 	if(!fexists(VOICE_PACKS_FILE))

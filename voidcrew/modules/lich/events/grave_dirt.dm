@@ -4,6 +4,13 @@
  *
  * The deck of one ship turns into turned earth. Standing on it burns. Get on top of something.
  *
+ * "Ship-scoped" is about plumbing, not blast radius: when the ritual clock fires this rite it
+ * runs one instance per crewed hull via fire_ritual_on_every_ship() (lich_site.dm), so in
+ * actual play every crew that is flying with people aboard gets it at the same time. The
+ * per-ship instance is what keeps one crew's rite from touching another's — separate
+ * lifecycle, separate tracked overlays, separate end(). The single-ship path you get from the
+ * "Events: Force Dynamic Event" admin verb is the testing path, not the live one.
+ *
  * TG's event is one line: `SSweather.run_weather(/datum/weather/floor_is_lava)`. That is not
  * reusable here and the reason is worth spelling out, because "just run the weather datum"
  * is the obvious wrong answer:
@@ -39,9 +46,10 @@
  * - Damage lands on every living mob aboard, not only ones with minds. The fork's weather
  *   patch excludes ordinary fauna for performance across whole planets; a ship holds a
  *   handful of mobs and "the floor burns everything standing on it" is the legible rule.
- * - Overlays are tracked against the area datums they were applied to, so end() can strip
- *   exactly what it added even if the ship has been destroyed in the meantime. Shuttle areas
- *   persist and travel with the ship; their turfs do not, which is why nothing here caches a turf.
+ * - The paint is re-asserted every tick rather than applied once at start(), and the area list
+ *   is re-read from the shuttle every tick rather than cached. That machinery now lives on the
+ *   base event as build/refresh/remove_rite_overlays() (lich_events.dm), shared with the other
+ *   hazard rites, and the argument for it is written up there.
  */
 /datum/round_event_control/voidcrew/lich/grave_dirt
 	name = "Ritual: The Floor Is Grave-Dirt"
@@ -53,9 +61,7 @@
 	 *
 	 * Safe to repeat: it is ship-scoped, it self-terminates after about a minute, the only
 	 * lasting cost is burn damage that heals with ordinary medical care, and the counterplay
-	 * (stand on something) never stops working. Consecutive firings tend to land on
-	 * different hulls anyway, since the framework's per-ship event cooldown pushes the
-	 * weighted target pick towards crews that have not just been hit.
+	 * (stand on something) never stops working.
 	 */
 	max_occurrences = 20
 	event_scope = EVENT_SCOPE_SHIP
@@ -71,10 +77,6 @@
 	end_when = 38
 	/// Fire damage per application. The weather datum's figure.
 	var/burn_per_tick = 3
-	/// Areas the overlay was applied to, so it can be removed from exactly those.
-	var/list/area/dirtied_areas = list()
-	/// The appearances added, one per plane offset, so removal is exact.
-	var/list/mutable_appearance/dirt_overlays = list()
 
 /datum/round_event/voidcrew/lich/grave_dirt/announce(fake)
 	if(!target_valid())
@@ -93,13 +95,15 @@
 	if(!target_valid())
 		kill()
 		return
-	apply_dirt_overlays()
+	build_rite_overlays("lava", COLOR_VIBRANT_LIME, overlay_layer = ABOVE_OPEN_TURF_LAYER, overlay_plane = FLOOR_PLANE)
+	refresh_rite_overlays()
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		to_chat(victim, span_userdanger("The floor is grave-dirt! Get on top of something!"))
 
 /datum/round_event/voidcrew/lich/grave_dirt/tick()
 	if(!target_valid())
 		return
+	refresh_rite_overlays()
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		if(QDELETED(victim) || !can_burn(victim))
 			continue
@@ -107,7 +111,7 @@
 
 /datum/round_event/voidcrew/lich/grave_dirt/end()
 	// Runs whether or not the ship survived — the overlays are tracked against the areas.
-	remove_dirt_overlays()
+	remove_rite_overlays()
 	if(!target_valid())
 		return
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
@@ -141,36 +145,3 @@
 		if(blocker.density)
 			return FALSE // They got on top of something. That is the counterplay.
 	return TRUE
-
-/// Draws the green dirt overlay onto every one of the ship's areas, one appearance per plane offset.
-/datum/round_event/voidcrew/lich/grave_dirt/proc/apply_dirt_overlays()
-	dirt_overlays = list()
-	for(var/offset in 0 to SSmapping.max_plane_offset)
-		var/mutable_appearance/dirt = mutable_appearance(
-			'icons/effects/weather_effects.dmi',
-			"lava",
-			ABOVE_OPEN_TURF_LAYER,
-			plane = FLOOR_PLANE,
-			offset_const = offset,
-		)
-		dirt.color = COLOR_VIBRANT_LIME
-		dirt_overlays += dirt
-
-	if(!length(dirt_overlays))
-		return
-	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
-		if(QDELETED(ship_area))
-			continue
-		ship_area.overlays += dirt_overlays
-		dirtied_areas += ship_area
-
-/// Strips exactly the overlays this event added, from exactly the areas it added them to.
-/datum/round_event/voidcrew/lich/grave_dirt/proc/remove_dirt_overlays()
-	if(!length(dirt_overlays))
-		return
-	for(var/area/ship_area as anything in dirtied_areas)
-		if(QDELETED(ship_area))
-			continue
-		ship_area.overlays -= dirt_overlays
-	dirtied_areas = null
-	dirt_overlays = null

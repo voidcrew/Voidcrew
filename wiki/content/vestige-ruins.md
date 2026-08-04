@@ -9,7 +9,7 @@ Voidcrew has no roundstart antagonists. Nobody is handed a traitor uplink or a c
 
 ## Finding one
 
-Vestige ruins never seed naturally at roundstart. They arrive one at a time as the shift ages: the first about twenty minutes in, another every fifteen minutes after that, each theme appearing at most once. Every arrival is announced to the galaxy, and the site shows up on sensors as a red **dread signal**, distinct from the gold of a rare ruin.
+Vestige ruins never seed naturally at roundstart. They arrive one at a time as the shift ages: the first about twenty minutes in, another every fifteen minutes after that, each theme appearing at most once. Every arrival is announced to the galaxy, and the site shows up on sensors as a **dread signal** marked in red, distinct from the gold of a rare ruin — named for the patron aboard from the moment it surfaces, so you always know who you're looking at before you dock.
 
 Unlike ordinary [ruins](ruins.md), a dread signal never moves and never cycles into something else. The interior unloads when everyone leaves, but the signal stays exactly where it is for the rest of the round — so once you have found your patron, you can always go back to it.
 
@@ -17,7 +17,7 @@ There are fourteen themes: the Chrysalis, the Scarlet Sepulcher, the Gloaming, t
 
 ## The patron
 
-Inside is a **vestige**: something that used to be someone. Sister Havel in the Sepulcher, the Stranger in the Gloaming, the Scrivener in the Athenaeum, the Hollow Master in the Silent Dojo, and elsewhere the Curator, the Weaver, the Dowager, the Understudy, the Unfed, the Mourner, the Stain, the Magister's Echo, the Watcher Behind Glass and the Vestige of Hive Wren.
+Inside is a **vestige**: something that used to be someone. The Vestige of Hive Wren in the Chrysalis, Sister Havel in the Scarlet Sepulcher, the Stranger in the Gloaming, the Magister's Echo in the Athenaeum, the Scrivener in the Reliquary, the Mourner in the Wake, the Hollow Master in the Silent Dojo, the Watcher Behind Glass in the Aperture, the Unfed in the Roost, the Curator in the Menagerie, the Understudy in the Facsimile, the Dowager in the Comb, the Stain in the Shambles, and the Weaver in the Loom.
 
 They cannot be killed and cannot be moved. Touching one opens a small menu:
 

@@ -105,7 +105,8 @@
 
 /obj/item/research_notes/Initialize(mapload, value, origin_type)
 	. = ..()
-	if(value)
+	// Explicitly check for null, not truthiness: a passed-in 0 must mean "worthless", not "use the default".
+	if(!isnull(value))
 		src.value = value
 	if(origin_type)
 		src.origin_type = origin_type

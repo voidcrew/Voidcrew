@@ -32,6 +32,12 @@
 	var/feature_spawn_chance = 0.1
 
 /datum/biome/cave
+	/**
+	 * Every cave biome must set this. The default is lavaland rock, which mines into
+	 * low-pressure basalt sitting on a lava baseturf - correct only on a lava planet,
+	 * and silently wrong (unbreathable mined tiles) everywhere else. Pair it with a
+	 * wall whose baseturf matches this biome's own open_turf_types.
+	 */
 	var/closed_turf_types =  list(/turf/closed/mineral/random/volcanic = 1)
 	open_turf_types = list(/turf/open/misc/asteroid = 1)
 

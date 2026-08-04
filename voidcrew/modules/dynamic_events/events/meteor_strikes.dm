@@ -108,15 +108,20 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 /**
  * === Micrometeoroid shower (TG: Major Space Dust) ===
  *
- * The safe one. Grit strips paint and cracks the odd window; the point is the noise
- * and a bit of hull repair, so it is the only debris event allowed in the green band.
+ * The mild one. Grit strips paint and cracks the odd window; the point is the noise and
+ * a bit of hull repair rather than the damage.
+ *
+ * Still not a green-band event. Mild is not the same as nothing: it is glass to replace
+ * and plating to weld, and the green ring is where a crew is learning which end of the
+ * ship is which. Nothing that costs materials belongs there.
  */
 /datum/round_event_control/voidcrew/meteor_strike/micrometeoroids
 	name = "Micrometeoroid Shower"
 	typepath = /datum/round_event/voidcrew/meteor_strike/micrometeoroids
-	weight = 40
+	weight = 12
 	max_occurrences = 4
 	description = "Grit and sand pit the target ship's hull."
+	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	/// Grit still cracks windows and scores plating. On a Pill-class that is the whole
 	/// pressure envelope, so even the harmless one leaves the smallest hulls alone.
 	min_ship_mass = SHIP_MASS_SMALL
@@ -152,7 +157,7 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 /datum/round_event_control/voidcrew/meteor_strike/shower
 	name = "Meteor Shower"
 	typepath = /datum/round_event/voidcrew/meteor_strike/shower
-	weight = 20
+	weight = 5
 	max_occurrences = 3
 	earliest_start = 20 MINUTES
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
@@ -195,8 +200,12 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 /datum/round_event_control/voidcrew/meteor_strike/storm
 	name = "Meteor Storm"
 	typepath = /datum/round_event/voidcrew/meteor_strike/storm
-	weight = 10
-	max_occurrences = 2
+	// Admin-only. Twenty-four hull-opening rocks over three minutes, and its own
+	// announcement says we cannot clear the field — the crew is told, correctly, that
+	// there is nothing to do. Damage control after the fact is not counterplay. The
+	// lighter meteor events survive because their warnings name an action worth taking.
+	weight = 0
+	max_occurrences = 0
 	earliest_start = 35 MINUTES
 	min_crew_aboard = 2
 	allowed_zones = list(ZONE_RED)
@@ -239,7 +248,7 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 /datum/round_event_control/voidcrew/stray_meteor
 	name = "Stray Meteor"
 	typepath = /datum/round_event/voidcrew/stray_meteor
-	weight = 25
+	weight = 6
 	max_occurrences = 4
 	earliest_start = 15 MINUTES
 	category = EVENT_CATEGORY_SPACE

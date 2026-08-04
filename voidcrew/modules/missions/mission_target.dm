@@ -17,10 +17,15 @@
 	/// Cached relative overmap coordinates of the target
 	var/target_x = 0
 	var/target_y = 0
+	/// Zone band (ZONE_*) this target prefers to sit in, copied off the mission.
+	/// Null = no preference, which is what every target that isn't generated for
+	/// a specific ship's board gets.
+	var/preferred_zone
 
 /datum/mission_target/New(datum/mission/mission)
 	..()
 	src.mission = mission
+	preferred_zone = mission?.preferred_zone
 
 /datum/mission_target/Destroy()
 	unhook()
@@ -77,6 +82,25 @@
 /datum/mission_target/proc/refresh_coords()
 	return
 
+/**
+ * Narrows a resolved candidate list down to the objects sitting in
+ * preferred_zone, if a preference was asked for and anything matches.
+ *
+ * This is a preference and never a filter that can fail: with no preference set,
+ * no live zone controller, or nothing in the wanted band, the full list comes
+ * back untouched. A board offer would rather point somewhere dangerous than not
+ * exist, and the shallow-band bias is there to shape what a new crew usually
+ * sees, not to guarantee it.
+ */
+/datum/mission_target/proc/filter_by_preferred_zone(list/candidates)
+	if(isnull(preferred_zone) || !length(candidates) || !SSovermap_zones?.zones_active)
+		return candidates
+	var/list/matching = list()
+	for(var/atom/movable/candidate as anything in candidates)
+		if(SSovermap_zones.get_zone_type(get_turf(candidate)) == preferred_zone)
+			matching += candidate
+	return length(matching) ? matching : candidates
+
 /// Helper: relative overmap coords of an overmap object
 /datum/mission_target/proc/cache_coords_from(atom/movable/object)
 	if(!object)
@@ -95,8 +119,15 @@
 /datum/mission_target/space_ruin/resolve()
 	var/obj/structure/overmap/space_ruin/previous = ruin
 	unhook()
-	var/list/candidates = list()
-	var/list/unclaimed = list()
+	// Three tiers, worst case last. The two preferences are NOT equally weighted,
+	// which an earlier version of this got wrong by folding them into one set:
+	// double-booking a ruin is cosmetic, but pointing a contract at a site that
+	// is currently occupied is self-destructing, and the boards hold enough
+	// offers to keep most of the sector claimed at any moment - so a combined
+	// set empties out constantly and drops straight through to "anything".
+	var/list/candidates = list() // legal at all
+	var/list/cold = list() // ...and nobody is standing in it
+	var/list/cold_unclaimed = list() // ...and no other contract wants it
 	for(var/obj/structure/overmap/space_ruin/candidate as anything in GLOB.space_ruin_signals)
 		if(QDELETED(candidate))
 			continue
@@ -109,16 +140,31 @@
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
 		candidates += candidate
+		// A ruin is only ever loaded because somebody is there or has just left.
+		// Picking one spawns the objective into the deck the accepting crew is
+		// already standing on, and then their undock runs the recycle that tears
+		// that site down behind them - the job is to fly nowhere, and leaving
+		// voids it.
+		if(candidate.loaded)
+			continue
+		cold += candidate
 		if(candidate.mission_claims <= 0)
-			unclaimed += candidate
+			cold_unclaimed += candidate
 	if(!length(candidates))
 		return FALSE
-	// Prefer ruins no other mission is already pointed at; double-book only when
-	// every candidate is taken
-	ruin = pick(length(unclaimed) ? unclaimed : candidates)
+	var/list/pool = candidates
+	if(length(cold_unclaimed))
+		pool = cold_unclaimed
+	else if(length(cold))
+		pool = cold
+	// Applied last, to the pool the occupancy tiers already settled on: a cold
+	// unclaimed ruin in the wrong band still beats a hot one in the right band.
+	pool = filter_by_preferred_zone(pool)
+	ruin = pick(pool)
 	ruin.mission_claims++
 	cache_coords_from(ruin)
 	RegisterSignal(ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
+	RegisterSignal(ruin, COMSIG_VOIDCREW_RUIN_UNLOADING, PROC_REF(on_ruin_unloading))
 	return TRUE
 
 /datum/mission_target/space_ruin/is_valid()
@@ -127,7 +173,7 @@
 /datum/mission_target/space_ruin/unhook()
 	if(ruin)
 		ruin.mission_claims = max(ruin.mission_claims - 1, 0)
-		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED))
+		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED, COMSIG_VOIDCREW_RUIN_UNLOADING))
 		ruin = null
 
 /datum/mission_target/space_ruin/get_zone_type()
@@ -138,10 +184,12 @@
 /datum/mission_target/space_ruin/is_interior_loaded()
 	return ruin?.loaded
 
+/// override: see the planet target's copy - a re-arming field objective can hook
+/// this a second time
 /datum/mission_target/space_ruin/notify_when_loaded()
 	if(!ruin)
 		return
-	RegisterSignal(ruin, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_ruin_loaded))
+	RegisterSignal(ruin, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_ruin_loaded), override = TRUE)
 
 /datum/mission_target/space_ruin/proc/on_ruin_loaded(datum/source)
 	SIGNAL_HANDLER
@@ -178,6 +226,15 @@
 		bottom_left.z,
 	)
 
+/**
+ * The ruin emptied out and gave its interior back, but the signal is still on
+ * the chart at the same coordinates. Distinct from on_ruin_deleted(): the
+ * target is intact, so the mission rewinds instead of re-rolling.
+ */
+/datum/mission_target/space_ruin/proc/on_ruin_unloading(datum/source)
+	SIGNAL_HANDLER
+	mission?.on_target_interior_unloaded()
+
 /// The ruin was abandoned and is respawning elsewhere
 /datum/mission_target/space_ruin/proc/on_ruin_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -193,9 +250,10 @@
 	var/obj/structure/overmap/planet/planet
 	/// Optional /datum/overmap/planet typepath filter: when set, resolve() only
 	/// accepts planets of exactly that type ("the lava planet"). Null = any
-	/// planet, the original behavior. NOTE: with one planet of each type per
-	/// round, a filtered RE-resolve (retarget) finds nothing — the previous
-	/// planet is excluded — so filtered missions should use the FAIL loss policy.
+	/// planet, the original behavior. NOTE: a filtered RE-resolve (retarget)
+	/// excludes the previous planet, so it only finds anything while the round
+	/// runs more than one planet of that type (SSovermap.dynamic_planets_per_type).
+	/// Filtered missions should still use the FAIL loss policy.
 	var/wanted_planet
 
 /datum/mission_target/planet/resolve()
@@ -214,7 +272,7 @@
 		candidates += candidate
 	if(!length(candidates))
 		return FALSE
-	planet = pick(candidates)
+	planet = pick(filter_by_preferred_zone(candidates))
 	cache_coords_from(planet)
 	RegisterSignal(planet, COMSIG_QDELETING, PROC_REF(on_planet_deleted))
 	// Planets never delete on unload - they relocate. Track the move so the
@@ -238,10 +296,12 @@
 /datum/mission_target/planet/is_interior_loaded()
 	return planet?.loaded && planet.mapzone
 
+/// override: a field objective that couldn't place its spawn re-hooks this, and
+/// the hook may or may not still be live from the first arm()
 /datum/mission_target/planet/notify_when_loaded()
 	if(!planet)
 		return
-	RegisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
+	RegisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded), override = TRUE)
 
 /datum/mission_target/planet/proc/on_planet_loaded(datum/source)
 	SIGNAL_HANDLER
@@ -251,6 +311,24 @@
 /**
  * A random clear surface turf, sampled from the planet's z-level with a
  * margin so objectives never land in the map border or the dock aprons.
+ *
+ * The southern floor is the important one. Both reserve docks sit along the
+ * bottom of the footprint, and a shuttle landing GIBS every living thing
+ * standing on the turfs it lands on (/turf/proc/toShuttleMove) and deletes
+ * anything anchored. Field objectives spawn BEFORE the crew touches down —
+ * either at approach on an already-loaded planet, or from the interior-loaded
+ * signal that load_level() fires before the dock move — so a specimen placed
+ * in that strip is destroyed by the very ship that came to collect it. Ruins
+ * are already kept out of it (reserve_dock_strip() -> NO_RUINS); objective
+ * spawns need the same clearance.
+ *
+ * Shuttle areas are rejected for the mirror-image reason. A landed ship copies
+ * its turfs over the surface, and those tiles are open, undense and perfectly
+ * samplable — so with somebody else already parked on the planet the specimen
+ * can materialise inside their hull, and their takeoff carries it off the world
+ * (/mob/onShuttleMove). Nothing dies and nothing fails: the beacon simply stops
+ * being on the crew's z-level, and the surface has nothing on it. SSplanet_mobs
+ * skips these turfs for its own spawns already.
  */
 /datum/mission_target/planet/get_spawn_turf()
 	if(!planet?.mapzone || !length(planet.mapzone.z_levels))
@@ -259,13 +337,21 @@
 	if(!level)
 		return null
 	var/margin = 12
+	var/min_x = level.low_x + margin
+	var/max_x = level.high_x - margin
+	var/min_y = level.low_y + margin
+	var/max_y = level.high_y - margin
+	// Clear the berths, but never at the cost of leaving nothing to sample
+	var/above_docks = planet.get_dock_strip_top_y(level) + 1
+	if(above_docks < max_y)
+		min_y = max(min_y, above_docks)
+	if(min_x > max_x || min_y > max_y)
+		return null
 	for(var/_ in 1 to 40)
-		var/turf/candidate = locate(
-			rand(level.low_x + margin, level.high_x - margin),
-			rand(level.low_y + margin, level.high_y - margin),
-			level.z_value,
-		)
+		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), level.z_value)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
+			continue
+		if(istype(get_area(candidate), /area/shuttle))
 			continue
 		if(candidate.is_blocked_turf(exclude_mobs = TRUE))
 			continue
@@ -323,7 +409,7 @@
 /datum/mission_target/coords/resolve()
 	if(!SSovermap_zones)
 		return FALSE
-	zone_type = text2num(pick_weight(zone_weights)) || ZONE_GREEN
+	zone_type = pick_zone_band()
 	var/datum/overmap_zone/zone = SSovermap_zones.get_zone_datum(zone_type)
 	if(!zone || !length(zone.turfs))
 		return FALSE
@@ -341,6 +427,19 @@
 		target_y = rel_y
 		return TRUE
 	return FALSE
+
+/**
+ * The band this contract points at. A coordinate target has no object to filter,
+ * so the preference is applied to the roll instead: take the preferred band
+ * outright when the type's own table lists it, otherwise roll the table as
+ * normal. Types that deliberately never offer a band (a deep-space survey with
+ * no Neutral entry) keep that shape - the preference can only pick from what the
+ * type already advertises.
+ */
+/datum/mission_target/coords/proc/pick_zone_band()
+	if(!isnull(preferred_zone) && zone_weights["[preferred_zone]"] > 0)
+		return preferred_zone
+	return text2num(pick_weight(zone_weights)) || ZONE_GREEN
 
 /datum/mission_target/coords/get_zone_type()
 	return zone_type
@@ -365,7 +464,7 @@
 	outpost = null
 	if(!length(candidates))
 		return FALSE
-	outpost = pick(candidates)
+	outpost = pick(filter_by_preferred_zone(candidates))
 	cache_coords_from(outpost)
 	RegisterSignal(outpost, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
 	return TRUE

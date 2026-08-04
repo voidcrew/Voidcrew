@@ -25,7 +25,7 @@
 	typepath = /datum/round_event/voidcrew/disease_outbreak
 	max_occurrences = 1
 	min_players = 2
-	weight = 5
+	weight = 2
 	category = EVENT_CATEGORY_HEALTH
 	description = "A classic virus will infect one member of the target ship's crew."
 	min_wizard_trigger_potency = 2
@@ -179,7 +179,7 @@
 	name = "Disease Outbreak: Advanced"
 	typepath = /datum/round_event/voidcrew/disease_outbreak/advanced
 	category = EVENT_CATEGORY_HEALTH
-	weight = 2
+	weight = 1
 	earliest_start = 15 MINUTES
 	description = "An advanced disease will infect one member of the target ship's crew."
 	allowed_zones = list(ZONE_RED)

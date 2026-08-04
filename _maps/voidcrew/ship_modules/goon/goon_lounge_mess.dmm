@@ -1,9 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "b" = (
 /obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/structure/table,
-/obj/machinery/coffeemaker,
+/obj/machinery/griddle,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"c" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/closet/secure_closet/freezer/fridge/all_access,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "n" = (
@@ -17,7 +25,6 @@
 /area/template_noop)
 "v" = (
 /obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/machinery/griddle,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "x" = (
@@ -27,13 +34,10 @@
 /obj/item/reagent_containers/condiment/saltshaker,
 /obj/item/reagent_containers/condiment/peppermill,
 /obj/effect/spawner/random/food_or_drink/snack,
+/obj/machinery/coffeemaker,
 /obj/machinery/light{
 	dir = 4
 	},
-/turf/open/floor/mineral/titanium/purple,
-/area/template_noop)
-"z" = (
-/obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "A" = (
@@ -42,12 +46,6 @@
 /obj/structure/chair/sofa/corp/left{
 	dir = 1
 	},
-/turf/open/floor/mineral/titanium/purple,
-/area/template_noop)
-"E" = (
-/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
-/obj/structure/closet/secure_closet/freezer/fridge/all_access,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "F" = (
@@ -61,13 +59,13 @@
 /area/template_noop)
 
 (1,1,1) = {"
-E
+c
 u
 A
 "}
 (2,1,1) = {"
 b
-z
+n
 F
 "}
 (3,1,1) = {"

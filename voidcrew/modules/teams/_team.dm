@@ -24,6 +24,10 @@
 /datum/team/voidcrew/remove_member(datum/mind/member)
 	. = ..()
 
+	// Off the roster is off the bridge - retire any Ship Management button they held for us
+	if(ship && member.current)
+		remove_captain_management(member.current, ship)
+
 	// Remove this team from the member's list
 	LAZYREMOVE(member.ship_teams, src)
 

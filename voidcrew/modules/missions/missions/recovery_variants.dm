@@ -62,9 +62,10 @@
 /datum/mission/recovery/survey/update_text()
 	name = "Survey Contract: [objective_name]"
 	desc = "Our probes seeded [chain ? chain.points_total : 3] survey pylons through the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Calibrate them one at a time. Calibration is loud and something always turns up, so go armed. The last pylon prints the survey core; bring that back to the mission pad. \
+		They all go down together, spread across the site, and you can take them in any order. Calibration is loud and something always turns up, so go armed. \
+		The last pylon you finish prints the survey core; bring that back to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the active pylon's beacon ([gps_tag])."
+		Tap a GPS unit on the mission board to receive a beacon for every pylon still standing ([gps_tag])."
 
 /datum/mission/recovery/survey/waypoint_label()
 	return "Survey: [objective_name]"

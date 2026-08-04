@@ -1009,13 +1009,13 @@
 
 /datum/vestige_boon/spell/dragon_breath
 	name = "Dragonfire"
-	desc = "The smallest mouthful of my fire, lent to your little lungs. A corridor's length of flame, and it sticks to whatever it touches. Everything I ever ate, I cooked first."
+	desc = "A mouthful of my fire, lent to your little lungs. A corridor's length of flame, and it sticks to whatever it touches."
 	grant_text = "Your next breath goes out warmer than it came in, and the one after that is warmer still."
 	spell_type = /datum/action/cooldown/mob_cooldown/fire_breath/vestige
 
 /datum/vestige_boon/spell/dragon_breath/consuming
 	name = "Consuming Flame"
-	desc = "The same fire, fed properly. It reaches further, it burns harder, and for a few seconds after you breathe it refuses to burn you at all. Cook something, then walk in after it."
+	desc = "The same fire, fed properly. It reaches further, it burns harder, and for a few seconds after you breathe it refuses to burn you at all."
 	grant_text = "Fire suddenly looks like somewhere you could comfortably stand."
 	upgrades_from = /datum/vestige_boon/spell/dragon_breath
 	spell_type = /datum/action/cooldown/mob_cooldown/fire_breath/vestige/consuming
@@ -1030,7 +1030,7 @@
 
 /datum/vestige_boon/spell/wing_gust/hurricane
 	name = "Hurricane Beat"
-	desc = "The wingbeat grown into weather. It reaches further, keeps them down longer, sweeps the loose clutter off the deck, and blows out any fire that happens to be burning on you at the time."
+	desc = "The wingbeat grown into weather. It reaches further, keeps them down longer, sweeps the loose clutter off the deck, and blows out any fire burning on you."
 	grant_text = "The ache in your shoulders deepens into something that feels almost like muscle."
 	upgrades_from = /datum/vestige_boon/spell/wing_gust
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_wing_gust/hurricane
@@ -1039,7 +1039,7 @@
 
 /datum/vestige_boon/spell/carrion_feast
 	name = "Carrion Feast"
-	desc = "The oldest meal there is. Kneel over a corpse and take back the strength it isn't using anymore. I have eaten moons, and every one of them tasted like this."
+	desc = "Kneel over a corpse and take back the strength it isn't using anymore."
 	grant_text = "Your stomach turns over once — and then, horribly, settles."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_carrion_feast
 
@@ -1065,7 +1065,7 @@
  */
 /datum/action/cooldown/mob_cooldown/fire_breath/vestige
 	name = "Dragonfire"
-	desc = "Breathe a short line of clinging flame at a target. It stops at the first thing the ship puts in its way."
+	desc = "Breathe a short line of clinging fire at a target. It stops at the first wall or door in the way."
 	background_icon_state = "bg_demon"
 	overlay_icon_state = "bg_demon_border"
 	cooldown_time = VESTIGE_BREATH_COOLDOWN
@@ -1090,7 +1090,7 @@
  */
 /datum/action/cooldown/mob_cooldown/fire_breath/vestige/consuming
 	name = "Consuming Flame"
-	desc = "Breathe a longer, hungrier line of flame. For a few seconds after, fire — including your own — won't burn you."
+	desc = "Breathe a longer line of clinging fire. For a few seconds after, fire can't burn you."
 	cooldown_time = VESTIGE_CONSUMING_COOLDOWN
 	fire_range = VESTIGE_CONSUMING_RANGE
 	fire_damage = VESTIGE_CONSUMING_DAMAGE
@@ -1147,7 +1147,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_wing_gust
 	name = "Wing Gust"
-	desc = "A single beat of unseen wings: everyone nearby is hurled back off their feet, stopping at whatever they hit."
+	desc = "Knocks everyone nearby off their feet and throws them away from you."
 	button_icon = 'icons/effects/magic.dmi'
 	button_icon_state = "tornado"
 	background_icon_state = "bg_demon"
@@ -1208,7 +1208,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_wing_gust/hurricane
 	name = "Hurricane Beat"
-	desc = "A hurricane's worth of wingbeat: everyone nearby is hurled back and floored, loose items are swept away, and any fire on you is blown out."
+	desc = "Knocks everyone nearby off their feet and throws them away from you, sweeps up loose items, and puts out any fire on you."
 	cooldown_time = VESTIGE_HURRICANE_COOLDOWN
 	aoe_radius = VESTIGE_HURRICANE_RADIUS
 	throw_range = VESTIGE_HURRICANE_THROW
@@ -1257,7 +1257,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast
 	name = "Carrion Feast"
-	desc = "Feed on an adjacent organic corpse: a few seconds of grisly work that closes your wounds. Any given body only ever feeds one feast."
+	desc = "Eat an adjacent corpse to heal. Takes a few seconds, and each body only feeds one feast."
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "carrion_feast"
 	background_icon_state = "bg_demon"
@@ -1338,7 +1338,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/marrow
 	name = "Marrow Feast"
-	desc = "Feed on an adjacent organic corpse, down to the marrow: heals more, restores blood and stamina, and thickens your hide for a while after."
+	desc = "Eat an adjacent corpse to heal more, restore blood and stamina, and toughen your hide for a while. Each body only feeds one feast."
 	cooldown_time = VESTIGE_MARROW_COOLDOWN
 	heal_amount = VESTIGE_MARROW_HEAL
 

@@ -324,7 +324,7 @@
 // on equip, no suit or antag datum required.
 /datum/vestige_boon/item/master_blade
 	name = "The Master's Blade"
-	desc = "The clan's energy katana. It cuts hard, parries well, and right-clicking a spot dashes you to it. Three dashes stored at a time, and they recharge."
+	desc = "The clan's energy katana. It cuts hard, parries well, and right-clicking a spot dashes you to it. A few dashes stored at a time, and they recharge."
 	grant_text = "A hilt finds your hand like it had been waiting there."
 	item_type = /obj/item/energy_katana
 
@@ -337,7 +337,7 @@
 	name = "The Clan's Stars"
 	// Keep the count in sync with VESTIGE_CLAN_STAR_CHARGES (initial values
 	// must be constant, so no define interpolation here)
-	desc = "Call a real Spider Clan throwing star into your hand out of nothing. They embed where they hit, and the sting drops people from exhaustion long before it kills them. Three stars come one after another, and then the clan makes you wait a minute for the next three."
+	desc = "Call a real Spider Clan throwing star into your hand out of nothing. They embed where they hit, and the sting drops people from exhaustion long before it kills them. A few come one after another, then the clan makes you wait for more."
 	grant_text = "Your empty hand closes on a weight that wasn't there a moment ago."
 	spell_type = /datum/action/cooldown/spell/vestige_clan_stars
 
@@ -351,7 +351,7 @@
  */
 /datum/action/cooldown/spell/vestige_clan_stars
 	name = "The Clan's Stars"
-	desc = "Call a throwing star into your free hand. Three come one after another, then the clan takes a minute to hand over three more."
+	desc = "Put a throwing star in your free hand. A few come one after another, then the clan takes a while to hand over more."
 	// The star's own sprite, so the button and the thing in your hand match
 	button_icon = 'icons/obj/weapons/thrown.dmi'
 	button_icon_state = "throwingstar"
@@ -397,7 +397,7 @@
 
 /datum/vestige_boon/spell/veiling_smoke
 	name = "The Veiling Smoke"
-	desc = "Drop a smoke charge at your feet and fill the room with dense smoke. It doesn't poison anyone or do any damage - it just blocks line of sight."
+	desc = "Drop a smoke charge at your feet and fill the room with dense smoke. It doesn't poison anyone or do any damage, it just blocks line of sight."
 	grant_text = "Someone shows you the trick once. Your hands pick it up immediately."
 	spell_type = /datum/action/cooldown/spell/vestige_veiling_smoke
 
@@ -433,7 +433,7 @@
  */
 /datum/action/cooldown/spell/vestige_veiling_smoke
 	name = "Veiling Smoke"
-	desc = "Drop a smoke charge at your feet, flooding the area with dense but harmless smoke."
+	desc = "Drop a smoke charge at your feet. The smoke is thick but harmless."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
 	button_icon_state = "smoke"
 	background_icon_state = "bg_agent"
@@ -459,7 +459,7 @@
  */
 /datum/action/cooldown/spell/teleport/radius_turf/vestige_vanishing_smoke
 	name = "Vanishing Smoke"
-	desc = "Drop a smoke charge where you're standing and teleport a few tiles away as it goes off."
+	desc = "Drop a smoke charge at your feet and teleport a few tiles away as it goes off."
 	button_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	button_icon_state = "ninja_phase"
 	background_icon_state = "bg_agent"
@@ -494,7 +494,7 @@
  */
 /datum/action/cooldown/spell/vestige_soundless_step
 	name = "Soundless Step"
-	desc = "Take up the clan's walking stance, silencing your footsteps. Use again to set the stance down."
+	desc = "Silences your footsteps. Use again to turn it off."
 	button_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	button_icon_state = "ninja_cloak"
 	background_icon_state = "bg_agent"
@@ -511,7 +511,7 @@
 // TRAIT_NO_SLIP_ALL stays with the heretics; space lube still wins)
 /datum/action/cooldown/spell/vestige_soundless_step/weightless
 	name = "Weightless Step"
-	desc = "Take up the perfected walking stance: silent footsteps, and no slipping on water or ice. Use again to set the stance down."
+	desc = "Silences your footsteps and stops you slipping on water or ice. Use again to turn it off."
 	stance_traits = list(TRAIT_SILENT_FOOTSTEPS, TRAIT_NO_SLIP_WATER, TRAIT_NO_SLIP_ICE)
 
 /datum/action/cooldown/spell/vestige_soundless_step/cast(mob/living/cast_on)

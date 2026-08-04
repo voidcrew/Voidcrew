@@ -24,8 +24,11 @@
  *   whatever now sits at those coordinates.
  * - The two sibling controls in TG's file are NOT ported. Change Faces (shuffle real_names)
  *   is a Face/Off gag with no necromantic reading, and Change Minds is mass mindswap — a
- *   round-warping effect that the contract's ramp already covers with Whispers of the Green
- *   and Tongues of the Dead, and which would collide badly with track C's thrall mechanic.
+ *   round-warping effect that would collide badly with track C's thrall mechanic, and that
+ *   sticks to a player in a way the roster no longer allows (see lich_events.dm).
+ *
+ * This rite itself is a one-shot shuffle and nothing else: it moves people, they walk back.
+ * Nothing about them is changed and there is nothing to undo.
  */
 /datum/round_event_control/voidcrew/lich/bodysnatch
 	name = "Ritual: Bodysnatch"

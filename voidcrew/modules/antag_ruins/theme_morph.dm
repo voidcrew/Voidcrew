@@ -763,13 +763,13 @@
 
 /datum/vestige_boon/spell/mimic_form
 	name = "Borrowed Shape"
-	desc = "Point at any ordinary object next to you and I will teach you to BE it — the shape, the name, the little dents and all. You can even creep around in it, slowly. One hit given or taken and the role is over, and it takes a while before you can put the shape back on. Up close you do look a bit damp. I am working on the damp."
+	desc = "Point at any ordinary object next to you and I will teach you to BE it, dents and all. You can even creep around in it, slowly. One hit given or taken and the role is over. Up close you do look a bit damp. I am working on the damp."
 	grant_text = "Your outline goes soft for a moment, waiting to be told what it is."
 	spell_type = /datum/action/cooldown/spell/shapeshift/vestige_mimic
 
 /datum/vestige_boon/spell/mimic_form/flawless
 	name = "Perfect Facsimile"
-	desc = "My best work. No — YOUR best work, I only coached. The damp is gone, I fixed the damp, nobody mentions the damp anymore. You move at very nearly your own pace, and anyone can put their nose right up against you and find nothing wrong. Swapping shapes is almost instant now, too."
+	desc = "My best work. No — YOUR best work, I only coached. The damp is gone, I fixed the damp. You move at very nearly your own pace, anyone can put their nose right up against you and find nothing wrong, and swapping shapes is almost instant now."
 	grant_text = "The last tell dries up. You are bone dry and completely convincing."
 	upgrades_from = /datum/vestige_boon/spell/mimic_form
 	spell_type = /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless
@@ -778,13 +778,13 @@
 
 /datum/vestige_boon/spell/devour
 	name = "The Gullet"
-	desc = "A pocket! Inside! I made you a pocket on the inside. Swallow something — nothing too big yet, I am still widening it — and it stays down there, past any pat-down or scanner, until you ask for it back. It comes back in one piece. Slightly damp. Yes, the damp again."
+	desc = "A pocket! Inside! I made you a pocket on the inside. Swallow something and it stays down there, past any pat-down or scanner, until you ask for it back. It comes back in one piece. Slightly damp."
 	grant_text = "Something in your throat unhinges, politely, and waits."
 	spell_type = /datum/action/cooldown/spell/vestige_devour
 
 /datum/vestige_boon/spell/devour/gluttony
 	name = "Bottomless Gullet"
-	desc = "Wider! Three things at once now, and bigger ones — I practiced on furniture. And if what you swallow happens to be food, the gullet patches you up a little on the way down."
+	desc = "Wider! Several things at once now, and bigger ones — I practiced on furniture. And if what you swallow happens to be food, the gullet patches you up a little on the way down."
 	grant_text = "Your new pocket yawns. It isn't picky anymore."
 	upgrades_from = /datum/vestige_boon/spell/devour
 	spell_type = /datum/action/cooldown/spell/vestige_devour/gluttony
@@ -793,7 +793,7 @@
 
 /datum/vestige_boon/spell/ambush_instinct
 	name = "Ambush Instinct"
-	desc = "The oldest trick there is: the thing that was standing still and suddenly isn't. A short pounce — three tiles, I counted — that knocks whoever you land on flat, and for a moment afterward your next melee hit lands much harder. Works best right after being a crate, but standing very still does the job too."
+	desc = "The oldest trick there is: the thing that was standing still and suddenly isn't. A short pounce that knocks whoever you land on flat, and for a moment afterward your next melee hit lands much harder."
 	grant_text = "Your weight settles onto the balls of your feet."
 	spell_type = /datum/action/cooldown/mob_cooldown/charge/vestige_pounce
 
@@ -801,7 +801,7 @@
 
 /datum/vestige_boon/rubber_bones
 	name = "Rubber Bones"
-	desc = "I loosened everything. Don't ask how, you wouldn't enjoy the answer. Strip down — all the way down, the ducting insists — and you can pour yourself through the vents the way I do. Climbing gets quick and short falls stop hurting. Fair warning: this is in the meat, not the soul. Get yourself a new body and I will have to loosen that one too."
+	desc = "I loosened everything. Don't ask how. Strip all the way down — the ducting insists — and you can pour yourself through the vents the way I do. Climbing gets quick and short falls stop hurting. This is in the meat, not the soul, so a new body has to be loosened again."
 	grant_text = "Every joint in you loosens by a degree no anatomy chart allows."
 	radial_icon = 'icons/obj/antags/abductor.dmi'
 	radial_icon_state = "vent"
@@ -875,7 +875,7 @@
  */
 /datum/action/cooldown/spell/shapeshift/vestige_mimic
 	name = "Borrowed Shape"
-	desc = "Click an ordinary object next to you to become a copy of it. You can creep around slowly, but you can't do anything else. Striking or being struck ends it, and a broken shape takes time before you can wear it again. Press the ability again to shrug it off."
+	desc = "Click a nearby object to turn into a copy of it. You can creep around slowly, but nothing else. Any hit breaks the disguise, and a broken shape takes time to wear again. Use again to drop it."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "chameleon_skin"
 	background_icon_state = "bg_changeling"
@@ -902,7 +902,7 @@
 
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless
 	name = "Perfect Facsimile"
-	desc = "Click an ordinary object next to you to become a copy of it, at very nearly walking pace and with no tell when examined. Striking or being struck ends it. Press the ability again to shrug it off."
+	desc = "Click a nearby object to turn into a copy of it, at near walking speed and with no tell when examined. Any hit breaks the disguise. Use again to drop it."
 	button_icon_state = "transform"
 	cooldown_time = VESTIGE_MIMIC_FLAWLESS_REFORM
 	possible_shapes = list(/mob/living/basic/vestige_mimic/flawless)
@@ -1193,7 +1193,7 @@
  */
 /datum/action/cooldown/spell/vestige_devour
 	name = "The Gullet"
-	desc = "Swallow the item in your active hand into an internal stash, or cast with an empty hand to bring something back up. It comes back intact. Slightly damp."
+	desc = "Swallow the item in your active hand. Use with an empty hand to bring it back up, intact and slightly damp."
 	button_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "regurgitate"
 	background_icon_state = "bg_changeling"
@@ -1216,7 +1216,7 @@
 
 /datum/action/cooldown/spell/vestige_devour/gluttony
 	name = "Bottomless Gullet"
-	desc = "Swallow the item in your active hand, up to bulky and three items deep, or cast with an empty hand to bring one back up. Swallowing food heals you a little on the way down."
+	desc = "Swallow several items, bulky ones included. Use with an empty hand to bring one back up. Swallowed food heals you a little."
 	button_icon = 'icons/mob/actions/actions_slime.dmi'
 	button_icon_state = "slimeconsume"
 	gullet_slots = VESTIGE_GLUTTONY_SLOTS
@@ -1418,7 +1418,7 @@
  */
 /datum/action/cooldown/mob_cooldown/charge/vestige_pounce
 	name = "Ambush Instinct"
-	desc = "Pounce a short distance at a target. Whoever you land on is floored, and for a moment after the leap your next melee strike lands savagely hard."
+	desc = "Leap a short distance at a target. They're knocked down, and your next melee hit lands much harder."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "feral_mode_on"
 	background_icon_state = "bg_changeling"

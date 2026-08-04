@@ -340,6 +340,10 @@
 /obj/machinery/light/small/red/directional/west,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"jh" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
 "jI" = (
 /obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/iron/cafeteria,
@@ -471,6 +475,10 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
+"xd" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
 "xB" = (
 /obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/carpet,
@@ -481,7 +489,7 @@
 /area/ruin/space/has_grav/powered)
 "yI" = (
 /obj/effect/zone_mobs/wildlife/boss,
-/obj/structure/closet/crate/zone_loot/expedition/rare,
+/obj/structure/closet/crate/zone_loot/expedition,
 /obj/effect/turf_decal/box,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
@@ -721,6 +729,10 @@
 "PW" = (
 /obj/structure/dresser,
 /turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"RI" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Sa" = (
 /obj/item/kirbyplants/random,
@@ -974,7 +986,7 @@ am
 aZ
 aZ
 ax
-ag
+RI
 ag
 aA
 ax
@@ -1068,7 +1080,7 @@ aN
 aN
 aN
 aS
-aL
+xd
 Ys
 aL
 PW
@@ -1180,7 +1192,7 @@ ax
 tk
 vN
 ay
-aZ
+jh
 aZ
 aZ
 ax
@@ -1600,7 +1612,7 @@ ax
 UV
 uD
 uD
-aZ
+jh
 hD
 ae
 ax

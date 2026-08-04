@@ -18,6 +18,9 @@
 /area/template_noop)
 "t" = (
 /obj/structure/closet/crate/secure,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
 /obj/effect/spawner/random/maintenance/three,
 /obj/effect/turf_decal/delivery,
 /obj/machinery/light{

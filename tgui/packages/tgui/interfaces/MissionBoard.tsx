@@ -43,12 +43,15 @@ type Mission = {
   active: BooleanLike;
   requires_item?: BooleanLike;
   voucher_count?: number;
+  research_reward?: number;
   target_x?: number;
   target_y?: number;
   visited?: BooleanLike;
   difficulty: number;
   difficulty_name: string;
   difficulty_color: string;
+  zone_name: string | null;
+  zone_color: string;
 };
 
 type PadItem = {
@@ -391,8 +394,9 @@ type MissionCardProps = {
 
 /**
  * Renders a mission's full payout — credits, each item in the reward bundle
- * (rare picks accented), and vouchers — as " + "-joined segments. `full` spells
- * out "credits" for the detail view; the compact form says "cr".
+ * (rare picks accented), research points and vouchers — as " + "-joined
+ * segments. `full` spells out "credits" for the detail view; the compact form
+ * says "cr".
  */
 const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
   const { mission, full } = props;
@@ -422,6 +426,14 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
           />
         )}
         {item.name}
+      </Box>,
+    );
+  }
+  if (mission.research_reward) {
+    segments.push(
+      <Box as="span" bold color="teal">
+        {mission.research_reward}
+        {full ? ' research points' : ' RP'}
       </Box>,
     );
   }
@@ -464,9 +476,15 @@ const MissionCard = (props: MissionCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={mission.name}
       buttons={
         <Box inline>
+          {!!mission.zone_name && (
+            <Box inline color={mission.zone_color} mr={1}>
+              [{mission.zone_name}]
+            </Box>
+          )}
           <Box inline color={mission.difficulty_color} mr={1}>
             [{mission.difficulty_name}]
           </Box>
@@ -593,6 +611,7 @@ const BountyCard = (props: BountyCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={
         <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
           <Box as="span" color={bounty.was_abandoned ? 'gray' : 'red'} mr={1}>
@@ -894,6 +913,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                   {createdBounty.pending_offers.map((offer) => (
                     <Stack.Item key={offer.ship_ref}>
                       <Section
+                        className="MissionBoard__card"
                         title={offer.ship_name}
                         buttons={
                           <Stack>
@@ -1058,6 +1078,7 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={
         <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
           {bounty.name}

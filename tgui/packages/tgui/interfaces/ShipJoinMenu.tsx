@@ -20,14 +20,29 @@ type ShipJoinMenuData = {
   player_name: string;
   ships: ActiveShip[];
   can_requisition: BooleanLike;
+  wiki_url: string | null;
 };
 
 export const ShipJoinMenu = () => {
-  const { data } = useBackend<ShipJoinMenuData>();
-  const { player_name, ships, can_requisition } = data;
+  const { act, data } = useBackend<ShipJoinMenuData>();
+  const { player_name, ships, can_requisition, wiki_url } = data;
 
   return (
-    <Window title={`Welcome, ${player_name}`} width={500} height={520}>
+    <Window
+      title={`Welcome, ${player_name}`}
+      width={500}
+      height={520}
+      buttons={
+        <Button
+          icon="book"
+          disabled={!wiki_url}
+          tooltip={wiki_url ? 'Open the wiki in your browser' : undefined}
+          onClick={() => act('open_wiki')}
+        >
+          Wiki
+        </Button>
+      }
+    >
       <Window.Content>
         <Stack vertical fill>
           {/* Purchase Ship Section */}

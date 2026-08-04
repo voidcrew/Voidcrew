@@ -69,6 +69,13 @@
 /datum/ship_join_menu/ui_state(mob/user)
 	return GLOB.always_state
 
+/datum/ship_join_menu/ui_static_data(mob/user)
+	var/list/data = list()
+	// Grey the button out client-side rather than handing out a button that
+	// only ever errors - same rule the lobby wiki button follows.
+	data["wiki_url"] = CONFIG_GET(string/wikiurl)
+	return data
+
 /datum/ship_join_menu/ui_data(mob/user)
 	var/list/data = list()
 
@@ -112,6 +119,14 @@
 	. = TRUE
 
 	switch(action)
+		if("open_wiki")
+			var/wiki_url = CONFIG_GET(string/wikiurl)
+			if(!wiki_url)
+				return FALSE
+			// Hands the link to the player's own browser; TGUI itself has no way
+			// out to an external site.
+			DIRECT_OUTPUT(user, link(wiki_url))
+
 		if("purchase_ship")
 			// Close this menu and open the ship shop - hull, theme and modules all
 			// live in the one UI that shows you what you're buying

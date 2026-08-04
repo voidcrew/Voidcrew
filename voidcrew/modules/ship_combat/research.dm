@@ -106,6 +106,28 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
+// ========== SHIP READINESS QUERIES ==========
+// Everything above is gated behind one node, which makes that node a clean
+// stand-in for "this crew can defend itself": no ship_combat, no console, no
+// shields, no guns, no interdictor. The mission boards and the zone advisory
+// both read it to decide how much hand-holding a ship still needs.
+
+/**
+ * Whether this ship has researched Shuttle Warfare Systems.
+ *
+ * Deliberately the gate node rather than a specific weapon: researching it is
+ * the point at which a crew can start building any of this, and a crew that has
+ * it has stopped being a target that cannot answer. Note this reads the techweb
+ * on the ship's own R&D server, so a hull that has not had its server powered
+ * and linked yet reads as unresearched - which is the right answer for a warning
+ * about whether the crew can actually put shields up.
+ */
+/obj/structure/overmap/ship/proc/has_ship_combat_research()
+	var/datum/techweb/web = get_research_web()
+	if(!web)
+		return FALSE
+	return TECHWEB_NODE_SHIP_COMBAT in web.researched_nodes
+
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console

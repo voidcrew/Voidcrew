@@ -54,22 +54,30 @@
 	savefile_key = "voice_pack"
 	category = PREFERENCE_CATEGORY_NON_CONTEXTUAL
 
-/datum/preference/choiced/voice_pack/compile_ui_data(mob/user, value)
-	var/datum/voice_pack/voicepack = GLOB.voice_pack_list[value]
-	if(!voicepack)
-		return "Unknown"
-	return voicepack.group_name + ": " + voicepack.name
-
+/// Only packs the player can actually pick. Hidden packs (mob/radio barks) exist in
+/// GLOB.voice_pack_list for atoms to use, but the voice screen never lists them, so
+/// leaving them in here just puts unselectable entries in the dropdown.
 /datum/preference/choiced/voice_pack/init_possible_values()
-	return assoc_to_keys(GLOB.voice_pack_list)
+	var/list/values = list()
+	for(var/voice_pack_id in GLOB.voice_pack_list)
+		var/datum/voice_pack/voicepack = GLOB.voice_pack_list[voice_pack_id]
+		if(voicepack.hidden)
+			continue
+		values += voice_pack_id
+	return values
 
-/datum/preference/choiced/voice_pack/is_valid(value)
-	if(!istext(value))
-		return FALSE
-	var/datum/voice_pack/voicepack = GLOB.voice_pack_list[value]
-	if(!voicepack)
-		return FALSE
-	return !voicepack.hidden
+/// The dropdown stores raw ids, so hand the UI the same "Group: Name" labels the
+/// voice screen shows. Without this it renders the bare ids instead.
+/datum/preference/choiced/voice_pack/compile_constant_data()
+	var/list/data = ..()
+
+	var/list/display_names = list()
+	for(var/voice_pack_id in get_choices())
+		var/datum/voice_pack/voicepack = GLOB.voice_pack_list[voice_pack_id]
+		display_names[voice_pack_id] = "[voicepack.group_name]: [voicepack.name]"
+	data[CHOICED_PREFERENCE_DISPLAY_NAMES] = display_names
+
+	return data
 
 /datum/preference/choiced/voice_pack/apply_to_human(mob/living/carbon/human/target, value)
 	target.set_bark_voice_pack(value)

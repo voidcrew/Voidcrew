@@ -5,11 +5,6 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"b" = (
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
-/mob/living/basic/skeleton/plasmaminer/jackhammer,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "d" = (
 /obj/effect/mob_spawn/ghost_role/human/skeleton,
 /turf/open/misc/dirt/jungle,
@@ -21,11 +16,6 @@
 "f" = (
 /obj/structure/flora/grass/jungle/b,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"g" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
-/turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "h" = (
 /obj/effect/decal/cleanable/blood/tracks,
@@ -43,7 +33,7 @@
 "k" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/item/book/granter/crafting_recipe/boneyard_notes,
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "l" = (
@@ -85,11 +75,6 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"x" = (
-/obj/item/slime_cookie/black,
-/mob/living/basic/skeleton/templar,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "y" = (
 /obj/item/slime_cookie/black,
 /obj/structure/flora/grass/jungle/b,
@@ -99,14 +84,13 @@
 /obj/structure/statue/bone/rib,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
-"B" = (
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
-/obj/structure/flora/rock/jungle,
-/turf/open/misc/dirt/jungle,
+"A" = (
+/obj/item/food/meat/slab/human/mutant/skeleton,
+/obj/effect/zone_mobs/undead/boss,
+/turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
-"C" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
+"B" = (
+/obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "D" = (
@@ -137,18 +121,14 @@
 /mob/living/basic/skeleton/plasmaminer/jackhammer,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"J" = (
-/mob/living/basic/ghost,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"K" = (
-/mob/living/basic/skeleton/templar,
-/obj/structure/flora/grass/jungle/b,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "L" = (
 /obj/item/crusher_trophy/legion_skull,
 /turf/open/misc/dirt/jungle,
+/area/ruin/unpowered)
+"M" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/zone_mobs/undead,
+/turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "P" = (
 /obj/structure/fluff/drake_statue,
@@ -158,11 +138,6 @@
 /obj/item/stack/sheet/bone,
 /obj/item/crusher_trophy/legion_skull,
 /obj/structure/flora/grass/jungle/b,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"R" = (
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
-/obj/item/stack/sheet/bone,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "S" = (
@@ -183,7 +158,10 @@
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "W" = (
-/obj/structure/spawner/skeleton,
+/obj/structure/spawner/skeleton{
+	max_mobs = 8;
+	spawn_time = 300
+	},
 /obj/item/food/meat/slab/human/mutant/skeleton,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
@@ -204,22 +182,11 @@
 /obj/structure/statue/bone/rib,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"A" = (
-/obj/structure/spawner/skeleton,
-/obj/item/food/meat/slab/human/mutant/skeleton,
-/obj/effect/zone_mobs/undead/boss,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"M" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/zone_mobs/undead,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 D
 m
-b
+d
 m
 a
 Q
@@ -240,12 +207,12 @@ W
 l
 S
 m
-J
+m
 d
 j
 q
 q
-x
+S
 m
 L
 U
@@ -262,7 +229,7 @@ h
 M
 h
 E
-g
+h
 G
 F
 H
@@ -282,10 +249,10 @@ L
 y
 v
 w
-C
+E
 "}
 (5,1,1) = {"
-K
+f
 e
 L
 d
@@ -294,7 +261,7 @@ m
 Z
 m
 Z
-R
+U
 Z
 m
 z

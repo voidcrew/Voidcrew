@@ -1,3 +1,29 @@
+/**
+ * Lobby button that opens the server wiki in the player's browser.
+ *
+ * Sits at the left end of the bottom button row, next to the poll button. New players
+ * spend their first minutes on this screen, so it is the one place a wiki link is
+ * guaranteed to be seen before they pick a ship.
+ */
+/atom/movable/screen/lobby/button/bottom/wiki
+	name = "Open the Wiki"
+	icon_state = "wiki"
+	base_icon_state = "wiki"
+	screen_loc = "TOP:-122,CENTER:-54"
+
+/atom/movable/screen/lobby/button/bottom/wiki/SlowInit()
+	. = ..()
+	//No URL configured means there is nothing to open - grey the button out instead of
+	//handing people a button that only ever errors at them.
+	if(!CONFIG_GET(string/wikiurl))
+		set_button_status(FALSE)
+
+/atom/movable/screen/lobby/button/bottom/wiki/Click(location, control, params)
+	. = ..()
+	if(!.)
+		return
+	usr.client?.wiki()
+
 /datum/latejoin_menu/ui_interact(mob/dead/new_player/user, datum/tgui/ui)
 	user.select_ship() //override ui_interact and send to our latejoin menu instead
 	return TRUE
@@ -169,24 +195,8 @@
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
 
-	// Check for custom slot swap on this job (only applies if the spawning player made the swap)
-	var/list/custom_slot_swap = null
-	if(joined_ship.shuttle.cryo_console && character.client?.ckey)
-		custom_slot_swap = joined_ship.shuttle.cryo_console.get_custom_slot_for_job(job)
-		// Only use the swap if this player made it
-		if(custom_slot_swap && custom_slot_swap["ckey"] != character.client.ckey)
-			custom_slot_swap = null
-
 	SSjob.equip_rank(character, job, character.client)
 	job.after_latejoin_spawn(character)
-
-	// Apply custom slot loadout if swapped by this player
-	if(custom_slot_swap)
-		var/slot_index = custom_slot_swap["slot_index"]
-		var/list/custom_loadout = GLOB.custom_slot_manager.get_slot_loadout(character.client.ckey, slot_index)
-		if(length(custom_loadout))
-			apply_custom_slot_loadout(character, custom_loadout)
-			to_chat(character, span_notice("Your custom slot '[custom_slot_swap["slot_name"]]' loadout has been applied."))
 
 	SSticker.minds += character.mind
 	character.client.init_verbs() // init verbs for the late join
@@ -224,54 +234,15 @@
 
 	// Grant captain management action if spawning as captain (officer job)
 	if(job.officer && humanc)
-		var/datum/action/innate/captain_management/captain_action = new(humanc, joined_ship)
-		captain_action.Grant(humanc)
+		grant_captain_management(humanc, joined_ship)
 
 	// Show ship memo after spawn (with a small delay so they're fully loaded in)
 	if(joined_ship.memo && humanc)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_ship_memo_to_player), humanc, joined_ship), 3 SECONDS)
 
-	return TRUE
-
-/**
- * Apply custom slot loadout items to a character
- * This is called after normal job equip when a cryo console has swapped the job to use a custom slot
- */
-/proc/apply_custom_slot_loadout(mob/living/carbon/human/character, list/loadout_list)
-	if(!istype(character) || !length(loadout_list))
-		return FALSE
-
-	var/list/loadout_datums = loadout_list_to_datums(loadout_list)
-	if(!length(loadout_datums))
-		return FALSE
-
-	var/update = NONE
-
-	for(var/datum/loadout_item/item as anything in loadout_datums)
-		// Try to equip each loadout item
-		var/obj/item/spawned = new item.item_path(character.loc)
-		if(spawned)
-			// Try to put in the appropriate slot
-			if(!character.equip_to_appropriate_slot(spawned))
-				// If can't equip to slot, try backpack storage
-				var/stored = FALSE
-				if(character.back?.atom_storage)
-					stored = character.back.atom_storage.attempt_insert(spawned, character, override = TRUE)
-				// If still not stored, put in hands
-				if(!stored)
-					character.put_in_hands(spawned)
-
-			// Handle any special on_equip behavior
-			update |= item.on_equip_item(
-				equipped_item = spawned,
-				preference_source = character.client?.prefs,
-				preference_list = loadout_list,
-				equipper = character,
-				visuals_only = FALSE,
-			)
-
-	if(update)
-		character.update_clothing(update)
+	// First spawn of the round gets the orientation briefing, a beat after the
+	// memo (voidcrew/modules/onboarding/orientation.dm)
+	try_show_orientation_briefing(character)
 
 	return TRUE
 

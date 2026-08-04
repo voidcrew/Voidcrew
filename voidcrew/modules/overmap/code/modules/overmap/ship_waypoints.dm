@@ -85,6 +85,93 @@
 	qdel(waypoint)
 
 /**
+ * # Fleet beacons
+ *
+ * A few sites announce themselves to the whole galaxy the moment they surface —
+ * the Verdigris, the Grand Colosseum, a contested cache — and chart themselves
+ * onto every helm so nobody has to go hunting for a thing that just shouted its
+ * own coordinates. That push was a one-shot walk of SSovermap.simulated_ships at
+ * surface time, which silently excluded every ship built AFTER it: a mid-round
+ * hull requisition, a commissioned hull, a respawn into a fresh vessel. Those
+ * crews came up with an empty Events list for a site the rest of the fleet had
+ * been looking at for twenty minutes.
+ *
+ * So a broadcasting site registers here rather than firing once and forgetting.
+ * The push becomes repeatable in both directions: a new ship asks the register
+ * for a copy of everything currently broadcasting (receive_fleet_waypoints,
+ * called from setup_from_template), and a site that is defeated or retires
+ * deregisters so latecomers stop being told about it.
+ */
+GLOBAL_LIST_EMPTY(overmap_fleet_beacons)
+
+/obj/structure/overmap
+	/// Label this site's fleet-wide waypoint carries on the helm. Set on the
+	/// handful of sites that broadcast themselves; null everywhere else, which is
+	/// what broadcast_fleet_waypoint() refuses on.
+	var/fleet_waypoint_name
+	/// Helm category the fleet waypoint is grouped under.
+	var/fleet_waypoint_category = "Events"
+
+/// Dedup key for this site's fleet waypoint. Per-instance, so two caches in one
+/// round chart separately.
+/obj/structure/overmap/proc/fleet_waypoint_key()
+	return "beacon_[REF(src)]"
+
+/**
+ * Starts broadcasting: charts this site on every helm in the fleet right now,
+ * and registers so ships created later get it too. Idempotent — re-calling
+ * refreshes the existing waypoints in place rather than stacking new ones.
+ */
+/obj/structure/overmap/proc/broadcast_fleet_waypoint()
+	if(!fleet_waypoint_name)
+		CRASH("broadcast_fleet_waypoint() on [type], which sets no fleet_waypoint_name")
+	GLOB.overmap_fleet_beacons |= src
+	if(!SSovermap)
+		return
+	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
+		if(QDELETED(ship))
+			continue
+		push_fleet_waypoint(ship)
+
+/// Charts this site onto one ship's helm. The single-ship half of the broadcast,
+/// so the register can replay it for a ship that did not exist at surface time.
+/obj/structure/overmap/proc/push_fleet_waypoint(obj/structure/overmap/ship/ship)
+	var/list/coords = get_relative_overmap_coords()
+	ship.add_waypoint(
+		fleet_waypoint_key(),
+		fleet_waypoint_name,
+		coords ? coords[1] : 0,
+		coords ? coords[2] : 0,
+		fleet_waypoint_category,
+		track_target = src,
+	)
+
+/**
+ * Stops broadcasting: deregisters and clears the waypoint off every helm that
+ * has it. Safe to call twice, and safe to call on a site that never broadcast.
+ */
+/obj/structure/overmap/proc/clear_fleet_waypoint()
+	GLOB.overmap_fleet_beacons -= src
+	if(!SSovermap)
+		return
+	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
+		if(QDELETED(ship))
+			continue
+		ship.remove_waypoint(fleet_waypoint_key())
+
+/**
+ * Charts every site currently broadcasting onto this ship. Called once as the
+ * ship registers into SSovermap.simulated_ships, which is what makes a hull
+ * built mid-round see the same galaxy the rest of the fleet does.
+ */
+/obj/structure/overmap/ship/proc/receive_fleet_waypoints()
+	for(var/obj/structure/overmap/beacon as anything in GLOB.overmap_fleet_beacons)
+		if(QDELETED(beacon))
+			GLOB.overmap_fleet_beacons -= beacon
+			continue
+		beacon.push_fleet_waypoint(src)
+
+/**
  * Returns this overmap object's position as list(x, y) in relative overmap
  * coordinates (1 to OVERMAP_SIZE), or null if it isn't anywhere.
  * Works while docked too: get_turf resolves through the holder object.

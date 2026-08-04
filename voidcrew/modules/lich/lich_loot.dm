@@ -11,7 +11,7 @@
  * ## Power calibration
  *
  * The occult theme's ceiling is `/obj/item/his_grace` at weight 1 in
- * `rare_loot_red` (voidcrew/modules/loot/themes/occult.dm:89) — a deliberate
+ * `loot_prime` (voidcrew/modules/loot/themes/occult.dm) — a deliberate
  * crown-jewel jackpot, and a permanent, escalating, round-warping one. Nothing
  * here is that. Everything here is:
  *  - bounded (the phylactery is one draught and then it is glass),
@@ -19,8 +19,8 @@
  *    the wearer — it is a hat that skeletons ignore, not a licence),
  *  - or a retune of gear that already sits in this theme's tables (the robe and
  *    crown are wizard garb with a modest armour bump and real cold protection;
- *    `/obj/item/clothing/suit/armor/riot/knight` is already loot_red weight 5,
- *    and `/obj/item/gun/magic/staff/chaos` is already rare_loot_red weight 2).
+ *    `/obj/item/clothing/suit/armor/riot/knight` is already loot_prime weight 5,
+ *    and `/obj/item/gun/magic/staff/chaos` is already loot_prime weight 2).
  * The staff's siphon is the one genuinely new capability, and it is capped, on a
  * cooldown, and does nothing at all against the undead — which is to say it does
  * nothing on four fifths of the map it drops in.
@@ -42,6 +42,12 @@
  * belt-and-braces second call from the site is harmless. It prefers a mapped
  * `/obj/effect/landmark/lich/loot_spot` and falls back to the turf of whatever
  * it was handed.
+ *
+ * `disperse_verdigris(mob/living/slayer)` is the second half of the payout and is
+ * called from the same place, immediately after. It is the galaxy's share: one of
+ * his three spells, granted outright to every living player in the galaxy. Also
+ * idempotent (GLOB.lich_dispersal_done). See its own header for why the reward is
+ * galaxy-wide when the loot is not.
  *
  * Sprites come from `voidcrew/modules/lich/icons/lich_garb.dmi` (track F). The
  * state names this file asks for are listed beside each item.
@@ -85,6 +91,8 @@
 
 /// Set once the sanctum has been paid out, so a doubled death call can't double the hoard.
 GLOBAL_VAR_INIT(lich_hoard_dropped, FALSE)
+/// Set once his magic has been handed out, so a doubled death call can't hand it out twice.
+GLOBAL_VAR_INIT(lich_dispersal_done, FALSE)
 
 // =========================================================================
 // LANDMARK
@@ -183,6 +191,143 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	if(marked)
 		return marked
 	return get_turf(drop_near)
+
+// =========================================================================
+// THE DISPERSAL
+// The rest of the payout: what happens to everyone who wasn't in the room.
+// =========================================================================
+
+/**
+ * The three spells his magic scatters into, which are the same three the codices
+ * teach (lich_spells.dm). Deliberately the same set and not a wider pool: these
+ * three are the ones costed against upstream fireball, they need no wizard garb,
+ * and reusing them means the hoard books stay worth carrying home — a raider who
+ * was dispersed the bolt can still read his way to the other two.
+ */
+GLOBAL_LIST_INIT(lich_dispersal_spells, list(
+	/datum/action/cooldown/spell/conjure/limit_summons/raise_thrall,
+	/datum/action/cooldown/spell/pointed/projectile/verdigris_bolt,
+	/datum/action/cooldown/spell/grave_mirage,
+))
+
+/**
+ * Hands one of Ilthuun's spells to every living player in the galaxy. Call once,
+ * from wherever the boss dies, right after drop_lich_hoard().
+ *
+ * ## Why this is galaxy-wide when the hoard is not
+ *
+ * The ritual clock is galaxy-wide and involuntary: a crew three sectors away that
+ * never went near the lair still ate grave-dirt floors and lost its languages for
+ * an hour. The regalia is the raid's payment and stays on the sanctum floor where
+ * only the boarding party can reach it; this is everyone else's, and it is the
+ * reason a crew that can't mount a raid still wants the raid to happen.
+ *
+ * It is strictly a DEATH reward. No ritual on the roster may hand the crew power
+ * while he is alive — see the note in events/lich_events.dm. A ported Summon Magic
+ * used to sit at potency 5-7 and was removed for exactly that reason: arming the
+ * galaxy for free on the way to him is the same payout with the incentive pointed
+ * backwards.
+ *
+ * Granted to the mind, like a codex does, so it survives a body swap or a cloning
+ * for the rest of the round.
+ *
+ * Returns how many players were given something.
+ */
+/proc/disperse_verdigris(mob/living/slayer)
+	if(GLOB.lich_dispersal_done)
+		return 0
+	GLOB.lich_dispersal_done = TRUE
+
+	var/granted = 0
+	// Same galaxy sweep the Babel port uses (events/tongues_of_the_dead.dm): every
+	// carbon with a client, alive, anywhere. Silicons and ghosts have no use for a
+	// spell action and are skipped by the type filter.
+	for(var/mob/living/carbon/recipient in GLOB.player_list)
+		if(QDELETED(recipient) || isnull(recipient.mind) || recipient.stat == DEAD)
+			continue
+		var/spell_type = pick_dispersal_spell(recipient)
+		if(!spell_type)
+			continue // Already knows all three. Nothing left to give them.
+		var/datum/action/cooldown/spell/learned = new spell_type(recipient.mind)
+		learned.Grant(recipient)
+		granted++
+		to_chat(recipient, span_greentext("Green light passes through you and leaves you cold. You know how to cast [learned.name]."))
+		playsound(recipient, 'sound/effects/magic/RATTLEMEBONES2.ogg', 40, TRUE)
+		recipient.log_message("was granted [learned.name] by the Verdigris dispersal", LOG_ATTACK, color = "orange")
+
+	log_game("LICH: dispersal granted a spell to [granted] player(s); Ilthuun slain by [slayer ? key_name(slayer) : "unknown"].")
+	return granted
+
+/// A spell from the pool this mob doesn't already have, or null if it has them all.
+/// Shuffled rather than picked at random so a recipient who somehow knows two of
+/// the three still reliably gets the third instead of rolling for it.
+/proc/pick_dispersal_spell(mob/living/recipient)
+	for(var/spell_type as anything in shuffle(GLOB.lich_dispersal_spells))
+		if(locate(spell_type) in recipient.actions)
+			continue
+		return spell_type
+	return null
+
+// =========================================================================
+// THE LEAVINGS
+// Everything his rituals put in the galaxy, and the death that takes it back.
+// =========================================================================
+
+/**
+ * Weakrefs to every item a ritual has left lying in the galaxy.
+ *
+ * Ossuary Rain drops an ossuary's worth of real gear into a compartment — the table
+ * has a skull helmet, bone armour and a bone axe in it — and none of it is meant to
+ * be a payout. A rite is pressure; it is not allowed to quietly function as a supply
+ * drop. So everything a rite leaves in the world is registered here and crumbles the
+ * moment Ilthuun stops. The only things of his that outlive him are what the raiding
+ * party takes off the sanctum floor and the spell the dispersal puts in your head.
+ *
+ * Any future rite that spawns an item must register it here. That is the whole of the
+ * bookkeeping, and it is why the roster can afford rites that drop things at all.
+ *
+ * Weakrefs, not hard refs: an item registered here may be eaten by a fire, a
+ * recycler or a hull breach long before he dies, and the registry must never be the
+ * reason a destroyed object cannot be collected.
+ */
+GLOBAL_LIST_EMPTY(lich_leavings)
+
+/// Marks an item as a ritual leaving. Safe to call on anything, including nulls.
+/proc/register_lich_leaving(obj/item/leaving)
+	if(QDELETED(leaving))
+		return
+	GLOB.lich_leavings += WEAKREF(leaving)
+
+/**
+ * Crumbles every registered leaving to dust. Called from the boss's death path.
+ *
+ * Deletes rather than unequips: `/obj/item/Destroy()` takes an item out of whatever
+ * slot or hand is holding it (items.dm:290-296), so an item someone is wearing or
+ * carrying goes to dust cleanly instead of being left in a broken slot.
+ *
+ * Only the wearer is told, individually. A rain of sixty bones going at once would
+ * bury a compartment's chat in identical lines, so items lying on the floor leave
+ * ash and nothing else; his death broadcast is what explains the galaxy-wide sweep.
+ *
+ * Returns how many items were taken back.
+ */
+/proc/crumble_lich_leavings()
+	var/crumbled = 0
+	for(var/datum/weakref/leaving_ref as anything in GLOB.lich_leavings)
+		var/obj/item/leaving = leaving_ref?.resolve()
+		if(QDELETED(leaving))
+			continue
+		var/turf/dust_turf = get_turf(leaving)
+		if(ismob(leaving.loc))
+			var/mob/holder = leaving.loc
+			to_chat(holder, span_warning("[leaving] goes grey, gives up, and blows off you as dust."))
+		if(dust_turf)
+			new /obj/effect/decal/cleanable/ash(dust_turf)
+		qdel(leaving)
+		crumbled++
+	GLOB.lich_leavings = list()
+	log_game("LICH: [crumbled] ritual leaving(s) crumbled on Ilthuun's death.")
+	return crumbled
 
 // =========================================================================
 // GARB — verdigris robe

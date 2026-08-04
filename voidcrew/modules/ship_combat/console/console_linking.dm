@@ -129,15 +129,15 @@
 		var/obj/machinery/ship_combat/shield_generator/gen = tool.buffer
 
 		// Check if already linked
-		var/obj/machinery/ship_combat/shield_generator/current_shield = linked_shield_ref?.resolve()
-		if(current_shield == gen)
-			balloon_alert(user, "already linked")
-			return ITEM_INTERACT_BLOCKING
+		for(var/datum/weakref/ref in linked_shields)
+			if(ref.resolve() == gen)
+				balloon_alert(user, "already linked")
+				return ITEM_INTERACT_BLOCKING
 
 		// Link the generator
 		if(link_shield_generator(gen))
 			balloon_alert(user, "shield generator linked")
-			to_chat(user, span_notice("Linked [gen] to [src]."))
+			to_chat(user, span_notice("Linked [gen] to [src]. Total generators: [length(linked_shields)]"))
 		else
 			balloon_alert(user, "link failed")
 
@@ -250,16 +250,26 @@
 	return TRUE
 
 /// Links a shield generator to this console
+/// Generators accumulate rather than replace each other - they all feed the ship's
+/// single shield pool, and the console is just the panel that drives it.
 /obj/machinery/computer/camera_advanced/ship_combat/proc/link_shield_generator(obj/machinery/ship_combat/shield_generator/gen)
 	if(!gen)
 		return FALSE
 
-	// Unlink any existing generator
-	var/obj/machinery/ship_combat/shield_generator/old_gen = linked_shield_ref?.resolve()
-	if(old_gen)
-		old_gen.unlink_console()
+	// Drop stale refs while we look for this one. Iterate a copy - removing from the
+	// list we are walking makes the index skip the entry after each removal.
+	for(var/datum/weakref/ref in linked_shields.Copy())
+		var/obj/machinery/ship_combat/shield_generator/existing = ref.resolve()
+		if(!existing)
+			linked_shields -= ref
+			continue
+		if(existing == gen)
+			return TRUE
 
-	linked_shield_ref = WEAKREF(gen)
+	linked_shields += WEAKREF(gen)
+	// Tell the generator too, or it keeps reporting itself as unlinked to anyone
+	// examining it no matter how many times they multitool it onto the console.
+	gen.link_console(src)
 
 	// Link to our ship
 	if(current_ship)

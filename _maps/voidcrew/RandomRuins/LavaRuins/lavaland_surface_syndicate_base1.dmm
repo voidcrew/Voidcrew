@@ -2518,7 +2518,7 @@
 /turf/open/floor/iron,
 /area/ruin/syndicate_lava_base/engineering)
 "yv" = (
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/circuit/red,
 /area/ruin/syndicate_lava_base/main)
 "yA" = (

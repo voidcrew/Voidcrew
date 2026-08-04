@@ -1,8 +1,8 @@
 /**
  * # EXPEDITION uniques — prospector's claim chest
  *
- * Six unique prizes for the expedition rare-loot table
- * (voidcrew/modules/loot/zone_loot.dm, `/obj/structure/closet/crate/zone_loot/expedition/rare`).
+ * Six unique prizes for the expedition uniques shelf
+ * (voidcrew/modules/loot/zone_loot.dm, `loot_uniques` on /datum/loot_theme/expedition).
  * Tiers: green = "nice find," yellow = build-around, red = round-changing.
  * None of this is antag gear — these are found-in-the-world prizes for
  * anyone working a planet.
@@ -11,7 +11,7 @@
  * duplicators (Helios pattern stamp, any future replicator) refuse to copy
  * it — see that define's doc comment.
  *
- * Wired into the expedition rare table in
+ * Wired into the expedition uniques shelf in
  * voidcrew/modules/loot/themes/expedition.dm.
  */
 

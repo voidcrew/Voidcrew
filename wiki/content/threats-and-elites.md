@@ -61,7 +61,7 @@ They will never turn up as generic loot guards, they are banned from the zone ga
 
 ## The Verdigris
 
-An hour into a shift, if there are enough people alive to field a raid party, a **necrotic signal** surfaces in Contested or Lawless space and the galaxy is told about it. Inside is Ilthuun, the Verdigris Lich. There is one per round.
+An hour and a half into a shift, if there are enough people alive to field a raid party, a **necrotic signal** surfaces in Contested or Lawless space and the galaxy is told about it. Inside is Ilthuun, the Verdigris Lich. There is one per round.
 
 From the moment he arrives he is working. Every four minutes his potency climbs by one — capped at seven — and one ritual fires somewhere in the galaxy. The ramp is real and it does not stop on its own:
 

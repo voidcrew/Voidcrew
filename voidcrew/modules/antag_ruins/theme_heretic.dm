@@ -300,7 +300,7 @@
 // records exactly what upstream coupling forced the copy.
 /datum/vestige_boon/spell/ashen_passage
 	name = "Ashen Passage"
-	desc = "Turn into ash and drift through walls for a moment. It doesn't last long, and it takes a minute and a half to recharge."
+	desc = "Turn into ash and drift through walls for a moment. It doesn't last long, and it is slow to recharge."
 	grant_text = "Your edges loosen. Walls stop looking solid."
 	spell_type = /datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/vestige
 
@@ -308,7 +308,7 @@
 // cast chain, the drift simply holds for 5 seconds instead of 1.1.
 /datum/vestige_boon/spell/ashen_passage/walk
 	name = "Ashen Walk"
-	desc = "The same drift, but it holds for much longer - long enough to cross a whole corridor instead of one wall. The recharge drops to a minute."
+	desc = "The same drift, but it holds long enough to cross a whole corridor instead of one wall, and it recharges faster."
 	grant_text = "The ash holds together for a lot longer now."
 	upgrades_from = /datum/vestige_boon/spell/ashen_passage
 	spell_type = /datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/long/vestige
@@ -321,13 +321,13 @@
 
 /datum/vestige_boon/spell/rusted_grasp
 	name = "Rusted Grasp"
-	desc = "Rust your hand, then touch something with it. People lose stamina and start slurring, airlocks lose power for about a minute, machines corrode visibly, and iron walls and floors rust through - reinforced ones included. Forty-five seconds between uses."
+	desc = "Rust your hand, then touch something with it. People lose stamina and start slurring, airlocks lose power for a while, machines corrode visibly, and iron walls and floors rust through, reinforced ones included."
 	grant_text = "Red rust settles into the creases of your palm."
 	spell_type = /datum/action/cooldown/spell/touch/vestige_rusted_grasp
 
 /datum/vestige_boon/spell/rusted_grasp/second_reading
 	name = "Second Reading"
-	desc = "The grasp, improved. It rusts titanium hull plating as well as iron, wrecks most machines in one touch, and knocks people down for a moment. Thirty seconds between uses instead of forty-five."
+	desc = "The grasp, improved. It rusts titanium hull plating as well as iron, wrecks most machines in one touch, knocks people down for a moment, and comes back faster."
 	grant_text = "The rust on your palm darkens and sets deeper."
 	upgrades_from = /datum/vestige_boon/spell/rusted_grasp
 	spell_type = /datum/action/cooldown/spell/touch/vestige_rusted_grasp/second_reading
@@ -386,7 +386,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_rusted_grasp
 	name = "Rusted Grasp"
-	desc = "Touch something to rust it. Saps the living, depowers airlocks for about a minute, corrodes machines and structures, and rusts iron walls and floors, reinforced ones included."
+	desc = "Touch something to rust it. Drains people, cuts airlock power for a while, and corrodes machines, structures and iron walls."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "mansus_grasp"
 	background_icon_state = "bg_heretic"
@@ -414,7 +414,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_rusted_grasp/second_reading
 	name = "Second Reading"
-	desc = "Touch something to rust it. Saps and briefly knocks down the living, depowers airlocks for about a minute, wrecks machines outright, and rusts titanium hull plating as readily as iron."
+	desc = "Touch something to rust it. Drains and briefly knocks down people, cuts airlock power for a while, wrecks machines outright, and rusts titanium hull plating too."
 	button_icon_state = "corrode"
 	cooldown_time = 30 SECONDS
 	rust_strength = 3
@@ -518,7 +518,7 @@
  */
 /datum/action/cooldown/spell/pointed/rust_construction/vestige
 	name = "Iron Refusal"
-	desc = "Command a floor to stand up as a wall of rusted iron. Anyone on it is knocked aside as it rises."
+	desc = "Raise a floor tile into a wall of rusted iron. Anyone standing on it is shoved aside."
 	background_icon_state = "bg_heretic"
 	overlay_icon_state = "bg_heretic_border"
 	cooldown_time = 20 SECONDS

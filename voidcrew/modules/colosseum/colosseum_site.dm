@@ -133,6 +133,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	desc = "A huge stone arena carved into a bedrock shard, tougher than anything you're carrying. The standing broadcast invites all comers: fight, wager, or watch."
 	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
 	icon_state = "colosseum_token"
+	fleet_waypoint_name = "Grand Colosseum"
 
 	/// Which template datum to load (set before open_venue)
 	var/template_type = /datum/map_template/colosseum
@@ -185,7 +186,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /obj/structure/overmap/colosseum/Destroy()
 	if(GLOB.colosseum_site == src)
 		GLOB.colosseum_site = null
-	clear_waypoints()
+	clear_fleet_waypoint()
 	QDEL_NULL(controller)
 	QDEL_NULL(radio)
 	signup_console = null
@@ -228,10 +229,6 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	priority_announce(message, title, sender_override = "Grand Colosseum Master of Games")
 	radio?.talk_into(src, message, RADIO_CHANNEL_WIDEBAND)
 
-/// Unique helm-waypoint key for the venue.
-/obj/structure/overmap/colosseum/proc/waypoint_key()
-	return "colosseum_[REF(src)]"
-
 /// Human-readable overmap grid position for announcements.
 /obj/structure/overmap/colosseum/proc/coords_text()
 	var/list/coords = get_relative_overmap_coords()
@@ -253,24 +250,13 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	// The boards loaded before the controller existed and parked themselves
 	update_status_displays()
 
-	var/list/coords = get_relative_overmap_coords()
 	broadcast_galaxy("The Grand Colosseum has surfaced at [coords_text()]! Prizes for contestants, wagering and drinks for everyone else. Dock and register at the concourse.")
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.add_waypoint(waypoint_key(), "Grand Colosseum", coords ? coords[1] : 0, coords ? coords[2] : 0, "Events", track_target = src)
+	// Registers as well as pushes: the venue stands for the rest of the round, so
+	// a hull built later still gets told where the door is.
+	broadcast_fleet_waypoint()
 	notify_ghosts("The Grand Colosseum has surfaced at [coords_text()]!", source = src, header = "Grand Colosseum")
 	log_game("Grand Colosseum surfaced at overmap [coords_text()].")
 	return TRUE
-
-/// Removes the venue waypoint from every ship's helm readout.
-/obj/structure/overmap/colosseum/proc/clear_waypoints()
-	if(!SSovermap)
-		return
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.remove_waypoint(waypoint_key())
 
 // ===== INTERIOR LOAD / LINK =====
 
@@ -593,7 +579,17 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /obj/structure/overmap/colosseum/get_dock_description()
 	return "[name] (arena berth)"
 
+/// The venue is carved into a bedrock shard and its areas are STANDARD_GRAVITY —
+/// a ship berthed here is held down by the rock, not by its own plating.
+/obj/structure/overmap/colosseum/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/colosseum/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	// dock() refuses interdicted ships only after a berth below is claimed
+	// and the ship is locked into ACTING - refuse up front instead
+	if(acting.is_interdicted)
+		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		return
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
 		return
@@ -643,7 +639,11 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 

@@ -22,8 +22,11 @@
 /datum/round_event_control/voidcrew/heart_attack
 	name = "Random Heart Attack"
 	typepath = /datum/round_event/voidcrew/heart_attack
-	weight = 20
-	max_occurrences = 2
+	// Admin-only. This event has no announcement, no telegraph and no way to avoid it:
+	// a crewmember simply starts dying, and a ship without a defib and someone trained
+	// to use it has no answer at all. Kept for admin use; never rolled naturally.
+	weight = 0
+	max_occurrences = 0
 	category = EVENT_CATEGORY_HEALTH
 	description = "A random crewmember's heart gives out."
 	min_wizard_trigger_potency = 6
@@ -115,7 +118,11 @@
 /datum/round_event_control/voidcrew/brain_trauma
 	name = "Spontaneous Brain Trauma"
 	typepath = /datum/round_event/voidcrew/brain_trauma
-	weight = 25
+	// Admin-only. Fires silently and the trauma outlives the event — the victim is stuck
+	// with it until someone finds mannitol or cuts their skull open. Nothing about that is
+	// a thing the crew can play against, so it does not belong in the ambient roster.
+	weight = 0
+	max_occurrences = 0
 	category = EVENT_CATEGORY_HEALTH
 	description = "A crewmember gains a random trauma."
 	min_wizard_trigger_potency = 2

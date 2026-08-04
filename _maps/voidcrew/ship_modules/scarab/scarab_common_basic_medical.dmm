@@ -28,6 +28,17 @@
 /obj/effect/spawner/random/food_or_drink/donkpockets,
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
+"j" = (
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
 "k" = (
 /obj/structure/chair{
 	dir = 4
@@ -291,7 +302,7 @@ K
 (5,1,1) = {"
 T
 x
-m
+j
 O
 P
 H

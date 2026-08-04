@@ -27,19 +27,8 @@
 	else
 		CRASH("Invalid outfit passed to equip_outfit_and_loadout ([outfit])")
 
-	// VOIDCREW: Check for active custom slot loadout first - if player has active slot, use that
-	// Only check for custom slot override during actual spawn (not visuals_only preview)
-	var/list/item_details = null
-	if(!visuals_only)
-		// Try to get ckey from preferences parent (client) or from the mob's client
-		var/player_ckey = preference_source.parent?.ckey || src.client?.ckey
-		if(player_ckey)
-			item_details = get_active_custom_slot_loadout(player_ckey)
-
-	// Fall back to current preferences if no active slot loadout
-	if(!item_details)
-		item_details = preference_source.read_preference(/datum/preference/loadout)
-	var/list/loadout_datums = loadout_list_to_datums(item_details)
+	var/list/preference_list = preference_source.read_preference(/datum/preference/loadout)
+	var/list/loadout_datums = loadout_list_to_datums(preference_list)
 	// Slap our things into the outfit given
 	for(var/datum/loadout_item/item as anything in loadout_datums)
 		if(!item.is_equippable(src, item_details?[item.item_path] || list()))

@@ -14,8 +14,11 @@
 /datum/round_event_control/voidcrew/immovable_rod
 	name = "Immovable Rod"
 	typepath = /datum/round_event/voidcrew/immovable_rod
-	weight = 6
-	max_occurrences = 1
+	// Admin-only. announce_when is 5 and start_when is 4, so the warning lands a tick AFTER
+	// the rod has already crossed the hull, and the warning is a punchline rather than an
+	// instruction. Whoever was standing in its path is dead before they are told anything.
+	weight = 0
+	max_occurrences = 0
 	earliest_start = 30 MINUTES
 	min_crew_aboard = 2
 	category = EVENT_CATEGORY_SPACE

@@ -35,6 +35,7 @@
 	categories = list(
 		"Top Shelf",
 		"House Cellar",
+		"Greasy Spoon",
 		"Oddities",
 	)
 	sku_types = list(
@@ -48,6 +49,12 @@
 		/datum/shop_sku/dregs/bitters,
 		/datum/shop_sku/dregs/fernet,
 		/datum/shop_sku/dregs/party_keg,
+		// Greasy Spoon — whatever's under the heat lamp
+		/datum/shop_sku/dregs/fry_basket,
+		/datum/shop_sku/dregs/pizza_slice,
+		/datum/shop_sku/dregs/monkey_kebab,
+		/datum/shop_sku/dregs/meat_pie,
+		/datum/shop_sku/dregs/donk_box,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/dregs/rotating/kong,
@@ -81,6 +88,7 @@
 		),
 		TRADER_LINE_IDLE = list(
 			"We have beer, and we have questions I won't ask.",
+			"Kitchen's whatever's under the heat lamp. The heat lamp is load-bearing.",
 			"The regulars are pirates, the pirates are regular. It evens out.",
 			"Vex doesn't drink. Says it's bad for the margins. Tragic, really.",
 			"Someone paid their tab in raw telecrystal once. Kept the lights on for a month.",
@@ -160,6 +168,54 @@
 	price_credits = 400
 	stock_min = 1
 	stock_max = 2
+
+// ===== GREASY SPOON =====
+// Bar food. It exists so nobody has to drink on an empty stomach, and it is
+// exactly as good as it needs to be for that job and no better.
+
+/datum/shop_sku/dregs/fry_basket
+	category = "Greasy Spoon"
+	name = "basket of fries"
+	desc = "Fried in oil that remembers better days. Still hot, which around here counts as a guarantee."
+	item_path = /obj/item/food/fries
+	price_credits = 50
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/dregs/pizza_slice
+	category = "Greasy Spoon"
+	name = "reheated pizza slice"
+	desc = "A slice off a pie whose origin Dram describes as 'a pizza'. Reheated at least once, possibly per customer."
+	item_path = /obj/item/food/pizzaslice/meat
+	price_credits = 60
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/dregs/monkey_kebab
+	category = "Greasy Spoon"
+	name = "mystery meat kebab"
+	desc = "The mystery is monkey. Everyone knows the mystery is monkey. Asking just makes the queue slower."
+	item_path = /obj/item/food/kebab/monkey
+	price_credits = 80
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/dregs/meat_pie
+	category = "Greasy Spoon"
+	desc = "House meat pie. The meat is a category, not an animal."
+	item_path = /obj/item/food/pie/meatpie
+	price_credits = 120
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/dregs/donk_box
+	category = "Greasy Spoon"
+	name = "box of donk-pockets"
+	desc = "Six factory donk-pockets, the official cuisine of people being shot at. Microwave not included."
+	item_path = /obj/item/storage/box/donkpockets
+	price_credits = 220
+	stock_min = 1
+	stock_max = 3
 
 // ===== ODDITIES (rotating shelf) =====
 

@@ -47,6 +47,7 @@
 	dir = 8;
 	pixel_x = 5
 	},
+/obj/machinery/holopad,
 /obj/machinery/light/floor,
 /obj/structure/fans/tiny,
 /obj/machinery/door/window{
@@ -79,7 +80,6 @@
 /obj/item/reagent_containers/cup/beaker/large,
 /obj/item/reagent_containers/cup/beaker/large,
 /obj/item/reagent_containers/cup/beaker/large,
-/obj/item/blueprints/shuttle,
 /obj/structure/window/reinforced/tinted,
 /obj/structure/window/reinforced/tinted{
 	dir = 4

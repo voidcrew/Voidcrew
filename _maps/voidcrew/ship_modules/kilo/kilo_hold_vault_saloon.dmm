@@ -14,6 +14,9 @@
 /obj/structure/closet/crate/secure{
 	name = "strongbox"
 	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey,
 /obj/item/stack/spacecash/c50,

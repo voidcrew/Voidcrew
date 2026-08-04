@@ -145,15 +145,6 @@
 	},
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
-"n" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/dollhouse/white,
-/area/template_noop)
 "o" = (
 /obj/structure/closet/secure_closet/medical1,
 /obj/machinery/light/small{
@@ -174,6 +165,23 @@
 	dir = 2
 	},
 /turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 
 (1,1,1) = {"
@@ -196,7 +204,7 @@ l
 "}
 (4,1,1) = {"
 m
-n
+O
 o
 p
 "}

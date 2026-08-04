@@ -2,7 +2,7 @@
  * # Armory uniques — sealed ordnance cache
  *
  * Six one-off prizes for the ARMORY loot tables (voidcrew/modules/loot/zone_loot.dm,
- * see /obj/structure/closet/crate/zone_loot/armory and its /rare variant). Each item
+ * see /obj/structure/closet/crate/zone_loot/armory). Each item
  * carries a bespoke mechanic rather than a stat bump, per the design catalog at
  * obsidian/voidcrew/Rare-loot-uniques.md ("ARMORY — sealed ordnance cache").
  *

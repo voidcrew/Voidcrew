@@ -205,6 +205,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
+/obj/machinery/holopad,
 /obj/item/newspaper{
 	pixel_x = -7;
 	pixel_y = 6
@@ -363,6 +364,16 @@
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/medbay/d)
+"vc" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/goon/d{
+	dir = 2
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/commons/d)
 "vn" = (
 /obj/item/pillow/random{
 	pixel_x = 5;
@@ -456,6 +467,15 @@
 	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
 	},
 /area/shuttle/voidcrew/goon/engineering/d)
+"zk" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/bridge/d)
 "zs" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -488,13 +508,6 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
-"Cm" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/docking_port/mobile/voidcrew/goon/d{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/d)
 "CD" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_lounge"
@@ -532,6 +545,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/d)
+"Ep" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/medbay/d)
 "EB" = (
 /turf/closed/wall/mineral/titanium/dollhouse{
 	name = "cream wall";
@@ -718,7 +740,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/medbay/d)
@@ -782,6 +806,8 @@
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
 	piping_layer = 4
 	},
 /turf/open/floor/iron/dollhouse,
@@ -802,6 +828,10 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
+"Yn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
 "Yy" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Emergency Shuttle Engineering"
@@ -881,7 +911,7 @@ rd
 (4,1,1) = {"
 GR
 Rq
-Eh
+Yn
 IG
 Eh
 mL
@@ -906,7 +936,7 @@ mL
 "}
 (6,1,1) = {"
 IZ
-GR
+Ep
 Eh
 IG
 Eh
@@ -957,7 +987,7 @@ Om
 Mx
 "}
 (10,1,1) = {"
-Mx
+vc
 Un
 ZV
 hZ
@@ -1056,7 +1086,7 @@ ga
 ga
 jI
 EB
-EB
+zk
 IZ
 IZ
 "}
@@ -1079,7 +1109,7 @@ IZ
 IZ
 EB
 fe
-Cm
+fe
 fe
 EB
 IZ

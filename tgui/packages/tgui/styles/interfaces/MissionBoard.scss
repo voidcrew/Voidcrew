@@ -1,0 +1,29 @@
+// tgui-core lays a Section header out as a title span with the `buttons` slot
+// absolutely positioned against the right edge, so the two never negotiate for
+// space -- a long title simply runs underneath the buttons. Mission and bounty
+// titles are generated from mission/ship names and routinely get long enough to
+// collide with the reward summary sitting in that slot.
+//
+// Applied to the card Sections in MissionBoard.tsx, this turns the header into a
+// flex row: the title takes the slack and wraps onto a second line when it runs
+// out, and the reward column keeps to the right without ever being overlapped.
+.MissionBoard__card > .Section__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-m);
+
+  > .Section__titleText {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  > .Section__buttons {
+    position: static;
+    flex: 0 1 auto;
+    // Never let the reward column starve the title of room.
+    max-width: 60%;
+    margin-top: 0;
+    text-align: right;
+  }
+}

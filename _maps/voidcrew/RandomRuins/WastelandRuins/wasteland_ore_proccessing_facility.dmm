@@ -436,7 +436,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "AA" = (
-/obj/structure/closet/crate/zone_loot/industrial/rare,
+/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "AB" = (

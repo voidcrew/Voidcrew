@@ -81,7 +81,7 @@ const WalletHeader = (props: {
 }) => {
   const { held_vouchers, account_credits } = props;
   return (
-    <Box inline color="label">
+    <Box inline nowrap color="label" fontSize={1} fontWeight="normal">
       Carrying{' '}
       <Box inline bold color="purple">
         {held_vouchers}
@@ -140,7 +140,7 @@ const PriceTag = (props: { sku: CatalogSku }) => {
       )}
       {sku.price_credits > 0 && (
         <>
-          {discounted && (
+          {!!discounted && (
             <Box
               inline
               color="label"
@@ -202,7 +202,7 @@ const SkuRow = (props: {
               −{sku.discount_pct}%
             </Box>
           )}{' '}
-          {shelfTag && (
+          {!!shelfTag && (
             <Box inline color={shelfTag.color} fontSize="0.8em" bold>
               {shelfTag.label}
             </Box>
@@ -426,28 +426,36 @@ export const TraderShop = (props) => {
             <Section
               fill
               title={
-                <Tabs>
-                  <Tabs.Tab
-                    selected={tab === 'buy'}
-                    onClick={() => setTab('buy')}
-                  >
-                    {trader_name}&apos;s Stock
-                  </Tabs.Tab>
-                  {hasBuybacks && (
-                    <Tabs.Tab
-                      selected={tab === 'sell'}
-                      onClick={() => setTab('sell')}
-                    >
-                      {trader_name} Buys
-                    </Tabs.Tab>
-                  )}
-                </Tabs>
-              }
-              buttons={
-                <WalletHeader
-                  held_vouchers={held_vouchers}
-                  account_credits={account_credits}
-                />
+                // Tabs are block-level, so they can't go in `buttons` company:
+                // Section positions `buttons` at its static position, which
+                // lands below a block title and overlaps the separator rule.
+                // Lay the header out as one flex row instead.
+                <Stack align="center">
+                  <Stack.Item grow>
+                    <Tabs mt={0} mb={0}>
+                      <Tabs.Tab
+                        selected={tab === 'buy'}
+                        onClick={() => setTab('buy')}
+                      >
+                        {trader_name}&apos;s Stock
+                      </Tabs.Tab>
+                      {!!hasBuybacks && (
+                        <Tabs.Tab
+                          selected={tab === 'sell'}
+                          onClick={() => setTab('sell')}
+                        >
+                          {trader_name} Buys
+                        </Tabs.Tab>
+                      )}
+                    </Tabs>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <WalletHeader
+                      held_vouchers={held_vouchers}
+                      account_credits={account_credits}
+                    />
+                  </Stack.Item>
+                </Stack>
               }
             >
               {tab === 'sell' && hasBuybacks ? (

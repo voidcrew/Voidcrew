@@ -60,20 +60,37 @@ SUBSYSTEM_DEF(missions)
 
 	// Fill up to default count
 	var/missions_needed = DEFAULT_AVAILABLE_MISSIONS - length(ship.available_missions)
+	// Asked once and reused: the lookup walks the hull for an R&D server the
+	// first time it misses, and five offers is five walks.
+	var/unarmed = !ship.has_ship_combat_research()
 	for(var/i in 1 to missions_needed)
-		var/datum/mission/new_mission = generate_random_mission()
+		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed))
 		if(new_mission)
 			ship.available_missions += new_mission
 
 /**
+ * The zone band the next offer should prefer, rolled per offer.
+ *
+ * A ship with no Shuttle Warfare Systems research has nothing to fight or tank
+ * with, so most of its board points at Neutral space. Rolled per offer rather
+ * than per board so the five slots come out mixed - see
+ * MISSION_UNARMED_GREEN_BIAS_PROB for why it isn't all five.
+ */
+/datum/controller/subsystem/missions/proc/roll_offer_zone_preference(unarmed)
+	if(!unarmed)
+		return null
+	return prob(MISSION_UNARMED_GREEN_BIAS_PROB) ? ZONE_GREEN : null
+
+/**
  * Generates a random mission based on weighted selection.
  * Returns a new mission datum, or null if none available.
+ * * preferred_zone - ZONE_* band the offer should aim at where it can, or null
  */
-/datum/controller/subsystem/missions/proc/generate_random_mission()
+/datum/controller/subsystem/missions/proc/generate_random_mission(preferred_zone)
 	var/mission_type = get_weighted_mission_type()
 	if(!mission_type)
 		return null
-	return create_mission(mission_type)
+	return create_mission(mission_type, preferred_zone)
 
 /**
  * Selects a random mission type based on weight.
@@ -109,10 +126,10 @@ SUBSYSTEM_DEF(missions)
  * Creates a new mission of the specified type.
  * * mission_type - The type path of the mission to create
  */
-/datum/controller/subsystem/missions/proc/create_mission(mission_type)
+/datum/controller/subsystem/missions/proc/create_mission(mission_type, preferred_zone)
 	if(!mission_type)
 		return null
-	var/datum/mission/mission = new mission_type()
+	var/datum/mission/mission = new mission_type(null, preferred_zone)
 	// Some mission types (e.g. recovery) can fail generation if no valid target exists
 	if(mission.generation_failed)
 		qdel(mission)
@@ -135,8 +152,9 @@ SUBSYSTEM_DEF(missions)
 	ship.available_missions = list()
 
 	// Generate new missions
+	var/unarmed = !ship.has_ship_combat_research()
 	for(var/i in 1 to DEFAULT_AVAILABLE_MISSIONS)
-		var/datum/mission/new_mission = generate_random_mission()
+		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed))
 		if(new_mission)
 			ship.available_missions += new_mission
 

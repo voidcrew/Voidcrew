@@ -362,8 +362,17 @@
 /obj/effect/turf_decal/bot,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
+"hn" = (
+/obj/machinery/smartfridge/food,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
 "hy" = (
 /obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"hS" = (
+/obj/machinery/processor,
+/obj/machinery/light/warm/dim/directional/south,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "hY" = (
@@ -419,10 +428,26 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"lm" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
 "mf" = (
 /obj/machinery/newscaster/directional/north{
 	name = "Halcyon street feed"
 	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"mg" = (
+/obj/structure/sink/kitchen/directional/north,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "mN" = (
@@ -432,6 +457,16 @@
 /area/voidcrew/trader_outpost)
 "nx" = (
 /turf/open/water/outpost_pond,
+/area/voidcrew/trader_outpost)
+"pE" = (
+/obj/structure/table/reinforced,
+/obj/item/plate{
+	pixel_x = -2
+	},
+/obj/item/kitchen/rollingpin{
+	pixel_y = 6
+	},
+/turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "qm" = (
 /obj/machinery/smartfridge/food,
@@ -481,6 +516,13 @@
 	},
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
+"ud" = (
+/obj/structure/closet/crate/freezer{
+	name = "cold-crate"
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
 "ul" = (
 /obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 2
@@ -493,6 +535,13 @@
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"uX" = (
+/obj/machinery/oven/range,
+/obj/item/reagent_containers/cup/soup_pot{
+	pixel_y = 8
 	},
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
@@ -532,6 +581,10 @@
 	desc = "Unclaimed since before anyone can remember. Nobody opens it. That would end the mystery."
 	},
 /obj/effect/turf_decal/bot,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"yU" = (
+/obj/machinery/deepfryer,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "yZ" = (
@@ -603,9 +656,28 @@
 	},
 /turf/open/indestructible/grass,
 /area/voidcrew/trader_outpost)
+"EV" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	name = "menu";
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
 "Fi" = (
 /obj/machinery/seed_extractor,
 /turf/open/indestructible/grass,
+/area/voidcrew/trader_outpost)
+"FV" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/food_or_drink/snack,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "Gb" = (
 /obj/machinery/vending/coffee,
@@ -619,6 +691,17 @@
 "Hn" = (
 /obj/machinery/light/warm/dim/directional/west,
 /turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"Hv" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/tray{
+	pixel_y = 2
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 7;
+	pixel_y = -4
+	},
+/turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "HH" = (
 /obj/effect/turf_decal/tile/green/fourcorners,
@@ -637,6 +720,10 @@
 "Ic" = (
 /obj/machinery/light/warm/directional/west,
 /turf/open/indestructible/grass,
+/area/voidcrew/trader_outpost)
+"Iu" = (
+/obj/machinery/griddle,
+/turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "Jo" = (
 /obj/structure/table/glass,
@@ -691,6 +778,10 @@
 /mob/living/basic/outpost_trader/potting_shed,
 /turf/open/indestructible/grass,
 /area/voidcrew/trader_outpost)
+"Ov" = (
+/mob/living/basic/outpost_trader/diner_cook,
+/turf/open/indestructible/light,
+/area/voidcrew/trader_outpost)
 "Ow" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/indestructible/plating,
@@ -701,6 +792,13 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"PM" = (
+/obj/structure/noticeboard/directional/north{
+	name = "specials board";
+	desc = "Chalk on slate over corkboard. Today's special is whatever the convoy brought in, in Roux's handwriting."
+	},
+/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Qs" = (
 /obj/effect/turf_decal/tile/green/half/contrasted{
@@ -747,6 +845,10 @@
 	pixel_y = 4
 	},
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"Tt" = (
+/obj/structure/chair/stool/bar/directional/south,
+/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Tv" = (
 /turf/open/indestructible/grass{
@@ -1353,12 +1455,12 @@ ai
 ul
 aV
 ja
-ag
 Vo
-Vo
-Hn
-ag
-ao
+Jo
+az
+pE
+ai
+mg
 aG
 ab
 ab
@@ -1379,13 +1481,13 @@ ai
 ai
 Vn
 ak
-ag
-aW
+PM
 HU
 HU
-ag
-ag
-lb
+Tt
+FV
+ai
+Iu
 aG
 ab
 ab
@@ -1406,13 +1508,13 @@ ai
 ai
 ul
 ak
-ag
-ag
-ag
-ag
-ag
 aE
-gq
+ag
+ag
+Tt
+EV
+Ov
+uX
 aG
 ab
 ab
@@ -1434,12 +1536,12 @@ ai
 HH
 au
 au
+aW
 ag
 ag
-ag
-ag
-ag
-Jo
+Hv
+YV
+hS
 aG
 ab
 ab
@@ -1463,10 +1565,10 @@ au
 au
 ag
 ag
-ag
-ag
-jW
-ag
+Tt
+lm
+ai
+yU
 aG
 ab
 ab
@@ -1489,11 +1591,11 @@ ul
 ak
 fZ
 Gb
-bQ
-qG
-CP
-ag
 aU
+aA
+hn
+ai
+ud
 aG
 ab
 ab

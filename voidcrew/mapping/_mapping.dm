@@ -20,9 +20,11 @@
 	// PRELOADED planets: generated in full at boot by loadWorld() below, one surface +
 	// one cave z-level each, held in memory for the whole round whether or not a single
 	// crew ever lands on them. All zeroed on purpose — the round's planet supply comes
-	// from dynamic markers instead (SSovermap.setup_planets), which generate their
-	// surface on first visit. Raise a count here only to pin a specific planet type to
-	// a pre-generated, fully seeded z-pair, and budget ~2 z-levels of memory for it.
+	// from dynamic markers instead (SSovermap.dynamic_planets_per_type, one set of every
+	// type per pass), which generate their surface on first visit. Raise a count here only
+	// to pin a specific planet type to a pre-generated, fully seeded z-pair, and budget ~2
+	// z-levels of memory for it. Note it REPLACES the dynamic supply for that type rather
+	// than adding to it: setup_planets() drops every dynamic marker of a preloaded type.
 	var/lava_planet_count = 0
 	var/ice_planet_count = 0
 	var/jungle_planet_count = 0
@@ -37,6 +39,29 @@
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
 	return ..()
+
+/**
+ * TRUE if a turf block of this size could ever be reserved, on a completely empty
+ * reservation z-level.
+ *
+ * request_turf_block_reservation() answers "no room right now" by adding a fresh
+ * reservation z-level and retrying - so a block that is merely too big for any
+ * z-level makes it allocate a whole new 255x255 level, fail again, and return null,
+ * leaking that level permanently. Every retry leaks another one. Callers that build
+ * their reservation size from map template dimensions must check here first.
+ *
+ * Only turfs in [SHUTTLE_TRANSIT_BORDER, maxx - SHUTTLE_TRANSIT_BORDER] are ever
+ * flagged UNUSED_RESERVATION_TURF (see initialize_reserved_level), and
+ * calculate_cordon_turfs() demands an unused ring one turf outside the block on
+ * every side - so the block itself must start at BORDER + 1 and its far cordon
+ * column must still land on BORDER's mirror. That leaves maxx - 2*BORDER - 1.
+ */
+/datum/controller/subsystem/mapping/proc/reservation_can_ever_fit(width, height)
+	if(width < 1 || height < 1)
+		return FALSE
+	var/max_width = world.maxx - (SHUTTLE_TRANSIT_BORDER * 2) - 1
+	var/max_height = world.maxy - (SHUTTLE_TRANSIT_BORDER * 2) - 1
+	return width <= max_width && height <= max_height
 
 /**
  * Deals out a zone band (ZONE_GREEN/YELLOW/RED) for the next roundstart planet.
@@ -81,13 +106,13 @@
 	var/list/FailedZs = list()
 	var/z_count = 1
 	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
+		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/basalt/lava_land_surface/lit), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/basalt/lava_land_surface/lit)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("lava [i]" = p)
 
 	for(var/i in 1 to ice_planet_count)
-		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/snow/icemoon/breathable/lit), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/snow/icemoon/breathable/lit)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("ice [i]" = p)
@@ -96,19 +121,19 @@
 	// schedules storms on them like it already does for lava/ice (their /datum/overmap/planet
 	// entries always declared these weather types, but the roundstart z-levels never got the traits)
 	for(var/i in 1 to jungle_planet_count)
-		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM)))
+		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM, ZTRAIT_BASETURF = /turf/open/misc/dirt/jungle/lit), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM, ZTRAIT_BASETURF = /turf/open/misc/dirt/jungle/lit)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("jungle [i]" = p)
 
 	for(var/i in 1 to beach_planet_count)
-		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM)))
+		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/sand/beach/lit), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM, ZTRAIT_BASETURF = /turf/open/misc/asteroid/sand/beach/lit)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("beach [i]" = p)
 
 	for(var/i in 1 to wasteland_planet_count)
-		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM)))
+		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM, ZTRAIT_BASETURF = /turf/open/misc/wasteland/lit), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM, ZTRAIT_BASETURF = /turf/open/misc/wasteland/lit)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("wasteland [i]" = p)

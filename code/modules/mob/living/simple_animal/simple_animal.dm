@@ -216,6 +216,7 @@
 /mob/living/simple_animal/Destroy()
 	GLOB.simple_animals[AIStatus] -= src
 	SSnpcpool.currentrun -= src
+	SSidlenpcpool.currentrun -= src // voidcrew: same deal, an in-flight idle scan would hold us past Destroy
 
 	return ..()
 

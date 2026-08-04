@@ -23,8 +23,17 @@
 	///The area type for the planet's z-level. Planets that set this build real terrain;
 	///anything else (empty space, crashed ships) is a flat encounter.
 	var/area/surface_area
-	///The surface turf
-	var/turf/surface = /turf/open/space/basic
+	///The ground this planet is made of, published as the z-level's ZTRAIT_BASETURF.
+	///Anything that removes a turf - digging, an explosion, a ruin wall coming down,
+	///a shuttle leaving - bottoms out here. Null (flat encounters: empty space, crashed
+	///ships) leaves the bottom as space, which is correct for those. On a planet it is
+	///NOT: /turf/open/floor/plating and most dirt/grass/sand turfs declare a baseturfs
+	///chain ending in /turf/baseturf_bottom, which ChangeTurf resolves to open space
+	///unless the z-level names a replacement. Every ruin floor and half the biome ground
+	///on a planet without this opens a hole into vacuum when broken.
+	///Use the LIT variant of the planet's ground: surfaces here are lit almost entirely
+	///by their own turfs, so an unlit baseturf reads as a black pit.
+	var/turf/baseturf
 	///Weather controller for planet specific weather
 	var/datum/weather/weather_controller_type
 	///Z-level trait for weather audio (e.g. ZTRAIT_ASHSTORM, ZTRAIT_SNOWSTORM)
@@ -49,7 +58,7 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/lava
 	surface_area = /area/overmap_encounter/planetoid/lava
-	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
+	baseturf = /turf/open/misc/asteroid/basalt/lava_land_surface/lit
 	weather_controller_type = /datum/weather/particle/ash_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
@@ -65,7 +74,10 @@
 	mapgen = /datum/map_generator/planet_generator/snow
 	target_area = /area/overmap_encounter/planetoid/ice
 	surface_area = /area/overmap_encounter/planetoid/ice
-	surface = /turf/open/misc/asteroid/snow/icemoon
+	// NOT plain /turf/open/misc/asteroid/snow/icemoon: that one's own baseturf is
+	// /turf/open/openspace/icemoon, so it would drop diggers through the floor of a
+	// single-z planet.
+	baseturf = /turf/open/misc/asteroid/snow/icemoon/breathable/lit
 	weather_controller_type = /datum/weather/snow_storm
 	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
@@ -81,7 +93,7 @@
 	mapgen = /datum/map_generator/planet_generator/beach
 	target_area = /area/overmap_encounter/planetoid/beach
 	surface_area = /area/overmap_encounter/planetoid/beach
-	surface = /turf/open/misc/asteroid/sand/beach/lit
+	baseturf = /turf/open/misc/asteroid/sand/beach/lit
 	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/beach
@@ -96,7 +108,7 @@
 	mapgen = /datum/map_generator/planet_generator
 	target_area = /area/overmap_encounter/planetoid/jungle
 	surface_area = /area/overmap_encounter/planetoid/jungle
-	surface = /turf/open/misc/dirt/jungle
+	baseturf = /turf/open/misc/dirt/jungle/lit
 	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/jungle
@@ -111,7 +123,7 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/wasteland
 	surface_area = /area/overmap_encounter/planetoid/wasteland
-	surface = /turf/open/misc/wasteland/lit
+	baseturf = /turf/open/misc/wasteland/lit
 	weather_controller_type = /datum/weather/sand_storm
 	weather_trait = ZTRAIT_SANDSTORM
 	planet_template = /datum/planet/wasteland

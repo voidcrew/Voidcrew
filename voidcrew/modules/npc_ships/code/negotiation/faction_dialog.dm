@@ -15,6 +15,10 @@
 	// Dialog line lists - will pick randomly from these
 	var/list/greetings = list("Attention vessel. This is your only warning.")
 	var/list/demand_lines = list("Pay us %CREDITS% credits, or bring me %QUANTITY% %ITEM%. Your choice.")
+	/// Said when the target's accounts scanned empty, so we're asking for cargo instead.
+	var/list/barter_demand_lines = list("Your accounts are empty, so we'll take goods instead. %QUANTITY% %ITEM% on the pad, and we leave.")
+	/// Said when the crew stalls on a barter without handing anything over.
+	var/list/barter_escalation_lines = list("You're wasting my time. The price is %QUANTITY% %ITEM% now. Move.")
 	var/list/acceptance_lines = list("Wise choice. You may pass.")
 	var/list/rejection_lines = list("Then you've chosen death.")
 	var/list/timeout_lines = list("Your time is up!")
@@ -35,6 +39,24 @@
 /datum/pirate_faction_dialog/proc/get_demand_line(credits, item_quantity, item_name)
 	var/line = pick(demand_lines)
 	line = replacetextEx(line, "%CREDITS%", "[credits]")
+	line = replacetextEx(line, "%QUANTITY%", "[item_quantity]")
+	line = replacetextEx(line, "%ITEM%", "[item_name]")
+	return line
+
+/**
+ * Get a demand line for a cargo-only barter (target had no credits to take).
+ */
+/datum/pirate_faction_dialog/proc/get_barter_demand_line(item_quantity, item_name)
+	var/line = pick(barter_demand_lines)
+	line = replacetextEx(line, "%QUANTITY%", "[item_quantity]")
+	line = replacetextEx(line, "%ITEM%", "[item_name]")
+	return line
+
+/**
+ * Get a line for when a stalled barter demand gets raised.
+ */
+/datum/pirate_faction_dialog/proc/get_barter_escalation_line(item_quantity, item_name)
+	var/line = pick(barter_escalation_lines)
 	line = replacetextEx(line, "%QUANTITY%", "[item_quantity]")
 	line = replacetextEx(line, "%ITEM%", "[item_name]")
 	return line
@@ -103,6 +125,15 @@
 		"Your outstanding balance is %CREDITS% credits. Or provide %QUANTITY% %ITEM% for immediate compliance.",
 		"Total amount due: %CREDITS% credits. We will also accept %QUANTITY% %ITEM% as payment in kind.",
 	)
+	barter_demand_lines = list(
+		"Your accounts hold nothing collectable. We are proceeding to asset forfeiture. Surrender %QUANTITY% %ITEM%.",
+		"Audit complete: no liquid funds. Settle the balance in kind. %QUANTITY% %ITEM%, on the pad.",
+		"You cannot pay in credits, so we will collect in goods. %QUANTITY% %ITEM% closes this file.",
+	)
+	barter_escalation_lines = list(
+		"Late filing penalty applied. The assessment is now %QUANTITY% %ITEM%.",
+		"Your delay has been added to the balance. %QUANTITY% %ITEM%. Do not make it three.",
+	)
 	acceptance_lines = list(
 		"Payment received. Your account has been noted as compliant. For now.",
 		"Transaction complete. The IRS thanks you for your... cooperation.",
@@ -152,6 +183,15 @@
 		"Surrender %CREDITS% credits... or bring us %QUANTITY% %ITEM%... or join our eternal crew...",
 		"The curse demands %CREDITS% in gold... or %QUANTITY% %ITEM%... Pay, or be damned...",
 		"%CREDITS% credits... or %QUANTITY% %ITEM%... A small price to avoid our fate...",
+	)
+	barter_demand_lines = list(
+		"No gold in your coffers... then we take cargo... %QUANTITY% %ITEM%, and we sail on...",
+		"Empty hold, empty pockets... Bring us %QUANTITY% %ITEM% and keep your souls...",
+		"Coin means nothing to the dead anyway... %QUANTITY% %ITEM%... that will do...",
+	)
+	barter_escalation_lines = list(
+		"You stall... The dead do not stall... %QUANTITY% %ITEM% now...",
+		"Our patience is long, but it is not endless... %QUANTITY% %ITEM%...",
 	)
 	acceptance_lines = list(
 		"Your tribute is... acceptable. Sail on, living one. For now...",
@@ -204,6 +244,15 @@
 		"We need %CREDITS% credits! Or like %QUANTITY% %ITEM%, whatever works!",
 		"%CREDITS% credits or %QUANTITY% %ITEM%! Come on, hand it over!",
 	)
+	barter_demand_lines = list(
+		"lmao ur broke. fine, just give us %QUANTITY% %ITEM% and we'll go",
+		"no creds? whatever, we'll take stuff. %QUANTITY% %ITEM% on the pad",
+		"ok so you got nothing. cool cool. %QUANTITY% %ITEM% then, hand it over",
+	)
+	barter_escalation_lines = list(
+		"BRO. it's %QUANTITY% %ITEM% now. you did that",
+		"tick tock! price went up, %QUANTITY% %ITEM%, lets GO",
+	)
 	acceptance_lines = list(
 		"NICE! Thanks buddy, you're cool. Grey tide approved!",
 		"Aight bet, we're out. Stay robust!",
@@ -253,6 +302,15 @@
 		"Render unto us %CREDITS% credits in tribute, or bring %QUANTITY% %ITEM%! Or face trial by combat!",
 		"The Order demands %CREDITS% credits! Or %QUANTITY% %ITEM%! Pay, or be vanquished!",
 		"%CREDITS% credits, peasant! Or %QUANTITY% %ITEM%! Such is the price of safe passage!",
+	)
+	barter_demand_lines = list(
+		"Thy coffers are bare! Very well - tribute in goods, then. %QUANTITY% %ITEM%, and thou may pass!",
+		"A pauper's vessel! The Order accepts %QUANTITY% %ITEM% in place of coin!",
+		"No purse to empty, so we shall take from thy hold. %QUANTITY% %ITEM%!",
+	)
+	barter_escalation_lines = list(
+		"Thou dost dawdle! The tribute is now %QUANTITY% %ITEM%!",
+		"Test not our honour with delay! %QUANTITY% %ITEM%, and be quick!",
 	)
 	acceptance_lines = list(
 		"Your tribute is accepted. Go with honor, traveler.",
@@ -304,6 +362,15 @@
 		"%CREDITS% credits. Or %QUANTITY% %ITEM%. The Dynasty does not ask twice.",
 		"You will pay %CREDITS% credits. Or provide %QUANTITY% %ITEM%. This is not a request.",
 	)
+	barter_demand_lines = list(
+		"Destitute. How disappointing. Then the Dynasty will take goods. %QUANTITY% %ITEM%.",
+		"You have no money worth the counting. Provide %QUANTITY% %ITEM% instead.",
+		"Your accounts are beneath notice. Your hold, perhaps less so. %QUANTITY% %ITEM%.",
+	)
+	barter_escalation_lines = list(
+		"You keep the Dynasty waiting. The price is %QUANTITY% %ITEM% now.",
+		"Delay is its own insult. %QUANTITY% %ITEM%. Do not test us further.",
+	)
 	acceptance_lines = list(
 		"Adequate. You may proceed. Do not test our patience again.",
 		"The Dynasty accepts. You are dismissed.",
@@ -354,6 +421,15 @@
 		"The acquisition cost is %CREDITS% credits. Alternatively, %QUANTITY% %ITEM% is acceptable.",
 		"%CREDITS% credits. Or %QUANTITY% %ITEM%. A small investment in your continued biological function.",
 	)
+	barter_demand_lines = list(
+		"No liquid funds located. Switching to physical asset recovery. Provide %QUANTITY% %ITEM%.",
+		"Your accounts are not viable. Material compensation will suffice: %QUANTITY% %ITEM%.",
+		"Credit transfer is not an option here. Transfer %QUANTITY% %ITEM% to our custody instead.",
+	)
+	barter_escalation_lines = list(
+		"Delay has been priced in. The requirement is now %QUANTITY% %ITEM%.",
+		"Your hesitation has adjusted the terms. %QUANTITY% %ITEM%. Comply.",
+	)
 	acceptance_lines = list(
 		"Transaction complete. Interdyne thanks you for your cooperation.",
 		"Payment received. You may proceed. This interaction is concluded.",
@@ -403,6 +479,15 @@
 		"Offer %CREDITS% credits to the Collective... Or %QUANTITY% %ITEM%... We require... sustenance.",
 		"%CREDITS% credits... Or %QUANTITY% %ITEM%... The Collective demands this resonance.",
 		"Your tribute: %CREDITS% credits... Or %QUANTITY% %ITEM%... The crystals hunger.",
+	)
+	barter_demand_lines = list(
+		"You carry no wealth we can take... Then give us matter instead... %QUANTITY% %ITEM%...",
+		"Your accounts are hollow... but your hold is not... %QUANTITY% %ITEM%...",
+		"Credits mean nothing to the crystals... %QUANTITY% %ITEM% will feed them...",
+	)
+	barter_escalation_lines = list(
+		"You delay, and the hunger grows... %QUANTITY% %ITEM% now...",
+		"The Collective has waited long enough... %QUANTITY% %ITEM%...",
 	)
 	acceptance_lines = list(
 		"The Collective is... satisfied. You may continue your trajectory.",

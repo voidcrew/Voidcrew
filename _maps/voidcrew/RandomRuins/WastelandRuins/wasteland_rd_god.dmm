@@ -2,6 +2,18 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
+"b" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"c" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"e" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
 "k" = (
 /turf/open/misc/dirt/jungle/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
@@ -26,26 +38,6 @@
 /turf/open/misc/dirt/jungle/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
 
-"b" = (
-/obj/structure/closet/crate/zone_loot/research/rare,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
-"c" = (
-/obj/effect/zone_mobs/robot/boss,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
-"e" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
-"f" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
-"g" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
 (1,1,1) = {"
 a
 a
@@ -339,7 +331,7 @@ a
 a
 k
 k
-f
+e
 k
 k
 k
@@ -392,7 +384,7 @@ k
 k
 k
 k
-g
+e
 k
 k
 k

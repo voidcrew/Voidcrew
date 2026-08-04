@@ -3,11 +3,23 @@
  *
  * A ship has no maintenance shelter, so hull-edge compartments are exposed while
  * interior compartments provide protection from the passing radiation front.
+ *
+ * ADMIN-ONLY. Radiation storms are red-band planet weather now — see
+ * /datum/weather/rad_storm/planetary in voidcrew/datums/weather.dm.
+ *
+ * The reason is the shelter rule above. It reads well and it is the best part of the
+ * event, but on the hulls this actually targeted it frequently had no answer: a
+ * small ship is mostly hull edge, so all_areas_exposed was the common case and the
+ * fallback is a flat 65% chance per pulse with nowhere to stand. On a planet the same
+ * idea has three real answers instead — go underground, return to the ship, or wear
+ * rad-protective clothing — and it arrives on the planet's own weather schedule, so it
+ * belongs to a place the crew chose to visit rather than following them around.
  */
 /datum/round_event_control/voidcrew/radiation_storm
 	name = "Radiation Storm"
 	typepath = /datum/round_event/voidcrew/radiation_storm
-	max_occurrences = 1
+	weight = 0
+	max_occurrences = 0
 	category = EVENT_CATEGORY_SPACE
 	description = "A radiation front irradiates crew in the target ship's hull-edge compartments."
 	min_wizard_trigger_potency = 3

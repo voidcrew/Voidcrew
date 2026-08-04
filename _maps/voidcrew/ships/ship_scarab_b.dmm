@@ -47,6 +47,12 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/cmos_office/b)
+"dh" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/engines/b)
 "dF" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
@@ -89,6 +95,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
+"fx" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/cargo_bay/b)
 "fP" = (
 /obj/item/radio/intercom/directional/west,
 /obj/effect/turf_decal/bot,
@@ -497,6 +509,12 @@
 /obj/effect/turf_decal/tile/dark_green/full,
 /turf/open/floor/iron/dark/textured_large,
 /area/shuttle/voidcrew/scarab/dormitories/b)
+"rY" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/engines/b)
 "sk" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -1100,6 +1118,12 @@
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/cmos_office/b)
+"IZ" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/dormitories/b)
 "Ja" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/emcloset/anchored,
@@ -1917,7 +1941,7 @@ jY
 lN
 uT
 uT
-lN
+dh
 jY
 "}
 (3,1,1) = {"
@@ -2010,7 +2034,7 @@ jY
 "}
 (7,1,1) = {"
 jY
-nC
+rY
 xd
 OE
 lN
@@ -2561,7 +2585,7 @@ jY
 (32,1,1) = {"
 jY
 jY
-Gm
+IZ
 CS
 dV
 Gm

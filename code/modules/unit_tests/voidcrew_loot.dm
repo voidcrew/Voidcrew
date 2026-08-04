@@ -4,20 +4,22 @@
  * Guards the invariants the 2026-07 loot audit found broken by hand:
  *
  * 1. Table hygiene: every loot theme (voidcrew/modules/loot/themes/) has all
- *    six tables populated with sane weighted entries, every guard table
- *    holds real mobs, and — hard design rule — NO megafauna anywhere in the
- *    zone system (that includes this fork's /mob/living/basic/boss tier).
+ *    four tiers populated with sane weighted entries, no entry appears in
+ *    two tiers of the same theme, every guard table holds real mobs, and —
+ *    hard design rule — NO megafauna anywhere in the zone system (that
+ *    includes this fork's /mob/living/basic/boss tier).
  * 2. Reachability: every authored cache/marker subtype is actually placed in
  *    a shipped ruin .dmm, sold as a shop SKU, or spawned at runtime — so
  *    "fully authored, sprited, and unobtainable" (the wardrobe-rare bug)
  *    can't happen silently again.
  * 3. Guarding: every ruin map that carries a cache carries a guard marker
- *    (or a hand-placed setpiece: an elite, or a whitelisted megafauna),
- *    every map with a /rare cache carries a /boss-tier guard, and megafauna
- *    only ever appear in the enumerated legacy boss-arena ruins — never as
- *    generic cache guards in new maps.
+ *    (or a hand-placed setpiece: an elite, or a whitelisted megafauna), and
+ *    megafauna only ever appear in the enumerated legacy boss-arena ruins —
+ *    never as generic cache guards in new maps.
  * 4. Rumor charts: every chart points at a registered template whose map
- *    actually contains caches (including a rare one) and guards.
+ *    actually contains caches and a /boss-tier guard. Charts are the paid
+ *    channel, so their ruins are the one place a boss is mandatory rather
+ *    than a mapper's call.
  */
 
 /// Ruin maps root scanned by the reachability test
@@ -31,7 +33,12 @@
 		return
 	for(var/theme_path in GLOB.loot_themes)
 		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
-		for(var/table_name in list("loot_green", "loot_yellow", "loot_red", "rare_loot_green", "rare_loot_yellow", "rare_loot_red"))
+		// tier -> the tier that already claimed it, so a cross-tier duplicate
+		// names both sides. Tiers are working pools inside ONE cache now, not
+		// per-band tables: an entry in two of them can be drawn twice by the
+		// same crate, breaking the no-replacement guarantee.
+		var/list/claimed_by = list()
+		for(var/table_name in list("loot_common", "loot_uncommon", "loot_prime", "loot_uniques"))
 			var/list/table = theme.vars[table_name]
 			if(!length(table))
 				TEST_FAIL("[theme_path] has an empty [table_name] table")
@@ -42,6 +49,11 @@
 				var/weight = table[entry]
 				if(!isnum(weight) || weight <= 0)
 					TEST_FAIL("[theme_path].[table_name] entry [entry] has bad weight [weight]")
+				var/already = claimed_by["[entry]"]
+				if(already)
+					TEST_FAIL("[theme_path] lists [entry] in both [already] and [table_name] — one cache could roll it twice")
+				else
+					claimed_by["[entry]"] = table_name
 		for(var/guard in theme.guard_themes)
 			if(!ispath(guard, /obj/effect/zone_mobs))
 				TEST_FAIL("[theme_path].guard_themes entry [guard] is not a zone_mobs marker")
@@ -78,7 +90,6 @@
 	var/static/list/runtime_spawned = list(
 		// meteor storm fields spawn these (overmap/events.dm)
 		/obj/structure/closet/crate/zone_loot/expedition,
-		/obj/structure/closet/crate/zone_loot/expedition/rare,
 		/obj/effect/zone_mobs/asteroid,
 		// the collapsing icemoon portal can spawn any crate + wave; listed
 		// here are only the ones with no mapped placements otherwise
@@ -133,10 +144,6 @@
 
 	var/list/crate_types = subtypesof(/obj/structure/closet/crate/zone_loot)
 	var/list/marker_types = subtypesof(/obj/effect/zone_mobs)
-	var/list/rare_crate_types = list()
-	for(var/obj/structure/closet/crate/zone_loot/crate_path as anything in crate_types)
-		if(initial(crate_path.rare))
-			rare_crate_types += crate_path
 
 	// ---- reachability: authored means obtainable ----
 	for(var/spawnable_path in crate_types + marker_types)
@@ -169,15 +176,6 @@
 		var/has_setpiece = has_megafauna || findtext(text, "/mob/living/simple_animal/hostile/asteroid/elite")
 		if(!findtext(text, "/obj/effect/zone_mobs") && !has_setpiece)
 			TEST_FAIL("[map_file] places a loot cache but no zone_mobs guard marker or hand-placed setpiece")
-		var/has_rare = FALSE
-		for(var/rare_path in rare_crate_types)
-			if(has_path(text, rare_path))
-				has_rare = TRUE
-				break
-		if(has_rare)
-			var/has_boss = findtext(text, "/boss,") || findtext(text, "/boss{") || findtext(text, "/boss)")
-			if(!has_boss && !has_setpiece)
-				TEST_FAIL("[map_file] places a /rare cache but no /boss marker or hand-placed setpiece — top loot must be guarded")
 
 	// ---- rumor charts point at real, stocked, guarded ruins ----
 	for(var/datum/shop_sku/ruin_chart/chart_path as anything in subtypesof(/datum/shop_sku/ruin_chart))
@@ -203,19 +201,44 @@
 		var/map_path = "[initial(template_path.prefix)][initial(template_path.suffix)]"
 		var/text = map_texts[map_path]
 		TEST_ASSERT_NOTNULL(text, "[chart_path] points at [map_path], which the map scan never found")
-		var/chart_has_cache = FALSE
-		var/chart_has_rare = FALSE
+		// Chart ruins are the paid channel: 3000-4800cr, one buyer per ruin
+		// ever. There is no "rare cache" to guarantee any more, so what the
+		// money buys is DENSITY in a guaranteed band — several caches, all
+		// rolling the same tables everyone else rolls, behind a boss.
+		var/chart_caches = 0
 		for(var/crate_path in crate_types)
-			if(!has_path(text, crate_path))
-				continue
-			chart_has_cache = TRUE
-			if(crate_path in rare_crate_types)
-				chart_has_rare = TRUE
-		if(!chart_has_cache)
+			if(has_path(text, crate_path))
+				chart_caches++
+		if(!chart_caches)
 			TEST_FAIL("[map_path] (rumor chart [chart_path]) contains no zone loot caches — the chart sells an empty prize")
-		if(!chart_has_rare)
-			TEST_FAIL("[map_path] (rumor chart [chart_path]) contains no /rare cache — every chart ruin should carry its themed rare")
 		if(!findtext(text, "/obj/effect/zone_mobs"))
 			TEST_FAIL("[map_path] (rumor chart [chart_path]) has no zone_mobs guards")
+		var/chart_has_boss = findtext(text, "/boss,") || findtext(text, "/boss{") || findtext(text, "/boss)")
+		var/chart_setpiece = findtext(text, "/mob/living/simple_animal/hostile/megafauna") \
+			|| findtext(text, "/mob/living/basic/boss") \
+			|| findtext(text, "/mob/living/simple_animal/hostile/asteroid/elite")
+		if(!chart_has_boss && !chart_setpiece)
+			TEST_FAIL("[map_path] (rumor chart [chart_path]) has no /boss marker or hand-placed setpiece — a bought ruin must be defended")
 
 #undef VOIDCREW_RUIN_MAP_ROOT
+
+/**
+ * # Outpost megafauna ban
+ *
+ * The other half of the megafauna containment rule above: outposts are
+ * permanent, unbreachable and unfleeable, so a megafauna that walks into one
+ * off a docked ship never leaves. voidcrew/area/megafauna_ban.dm removes them
+ * at the area boundary — but only for areas that carry the flag, so a new
+ * outpost area (or a flag lost in a merge) silently reopens the hole.
+ */
+/datum/unit_test/voidcrew_outpost_megafauna_ban
+
+/datum/unit_test/voidcrew_outpost_megafauna_ban/Run()
+	var/list/warded = list(
+		/area/voidcrew/trader_outpost,
+		/area/voidcrew/outpost_hangar,
+		/area/voidcrew/player_outpost,
+	)
+	for(var/area/area_path as anything in warded)
+		if(!initial(area_path.repels_megafauna))
+			TEST_FAIL("[area_path] does not set repels_megafauna — a megafauna that reaches it can stay there for the rest of the round")

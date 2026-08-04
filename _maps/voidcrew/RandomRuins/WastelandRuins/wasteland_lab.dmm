@@ -935,7 +935,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Yl" = (
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /obj/structure/fluff/paper/stack{
 	dir = 5
 	},

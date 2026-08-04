@@ -324,7 +324,7 @@
 
 /datum/vestige_boon/spell/shadow_walk/umbral
 	name = "Umbral Passage"
-	desc = "The shadow walk, improved. It heals you twice as fast while you're under, works in dimmer light than before, and leaves you briefly quick enough to dodge bullets when you surface."
+	desc = "The shadow walk, improved. It heals you faster while you're under, works in dimmer light than before, and leaves you briefly quick enough to dodge bullets when you surface."
 	grant_text = "You sink deeper into the dark than the walk ever let you before, and it doesn't push back."
 	upgrades_from = /datum/vestige_boon/spell/shadow_walk
 	spell_type = /datum/action/cooldown/spell/jaunt/shadow_walk/vestige_umbral
@@ -337,7 +337,7 @@
  */
 /datum/action/cooldown/spell/jaunt/shadow_walk/vestige_umbral
 	name = "Umbral Passage"
-	desc = "Sink into darkness and move through it unseen. Heals you faster, holds in dimmer light, and leaves you briefly very hard to hit when you come out."
+	desc = "Slip into darkness and move through it unseen, healing as you go. Works in dimmer light, and you're hard to hit for a moment after you come out."
 	light_threshold = 0.35
 	jaunt_type = /obj/effect/dummy/phased_mob/shadow/vestige_umbral
 
@@ -377,7 +377,7 @@
  */
 /datum/action/cooldown/spell/pointed/terrorize/vestige_dread
 	name = "Creeping Dread"
-	desc = "Project terror into a victim standing in the dark, and into everyone else standing in the dark around them."
+	desc = "Terrify someone standing in the dark, and everyone else standing in the dark around them."
 	cooldown_time = 30 SECONDS
 
 /datum/action/cooldown/spell/pointed/terrorize/vestige_dread/cast(mob/living/carbon/human/cast_on)
@@ -396,7 +396,7 @@
 
 /datum/vestige_boon/spell/snuff
 	name = "Snuff"
-	desc = "Put out every working light around you at once. Not shorted, not overloaded - just out. They stay out until someone fits new tubes."
+	desc = "Put out every working light around you at once. Not shorted, not overloaded — just out. They stay out until someone fits new tubes."
 	grant_text = "The nearest light dims for a moment, as if it has just remembered it is mortal."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_snuff
 
@@ -450,7 +450,7 @@
  */
 /datum/action/cooldown/spell/vestige_darkheal
 	name = "Heart of Darkness"
-	desc = "Draw the surrounding dark into your wounds to close them. Only works where it's dark."
+	desc = "Heal your wounds using the surrounding dark. Only works where it's dark."
 	button_icon = 'icons/mob/actions/actions_revenant.dmi'
 	button_icon_state = "blight"
 	background_icon_state = "bg_alien"

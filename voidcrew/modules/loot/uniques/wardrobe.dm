@@ -1,7 +1,7 @@
 /**
  * # WARDROBE uniques — couturier's trunk
  *
- * Five unique loot items for the wardrobe (`rare_loot_wardrobe`) zone-loot
+ * Five unique loot items for the wardrobe (`loot_uniques`) zone-loot
  * tables (voidcrew/modules/loot/themes/wardrobe.dm). Identity loot: nothing
  * here is a bigger number, every piece is a mechanic. All of them carry
  * TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so duplicators (Helios

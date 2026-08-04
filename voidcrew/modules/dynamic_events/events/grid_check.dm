@@ -7,7 +7,7 @@
 /datum/round_event_control/voidcrew/grid_check
 	name = "Ship Grid Check"
 	typepath = /datum/round_event/voidcrew/grid_check
-	weight = 10
+	weight = 5
 	max_occurrences = 3
 	category = EVENT_CATEGORY_ENGINEERING
 	description = "Turns off all APCs aboard the target ship for a while, or until they are manually rebooted."

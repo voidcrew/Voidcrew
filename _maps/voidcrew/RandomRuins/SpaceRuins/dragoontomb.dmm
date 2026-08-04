@@ -195,7 +195,7 @@
 /area/ruin/unpowered/no_grav)
 "jx" = (
 /obj/effect/zone_mobs/wildlife/boss,
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /obj/structure/stone_tile/block,
 /obj/structure/stone_tile/cracked{
 	dir = 1

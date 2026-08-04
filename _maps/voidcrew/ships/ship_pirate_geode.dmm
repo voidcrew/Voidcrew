@@ -188,9 +188,6 @@
 /obj/machinery/light/small/blacklight/directional{
 	dir = 1
 	},
-/obj/effect/mob_spawn/ghost_role/human/pirate/lustrous/captain{
-	color = "#4f98ff"
-	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
@@ -323,9 +320,6 @@
 /obj/effect/turf_decal/weather/dirt{
 	dir = 8
 	},
-/obj/effect/mob_spawn/ghost_role/human/pirate/lustrous{
-	color = "#4f98ff"
-	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
@@ -376,9 +370,6 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 4
-	},
-/obj/effect/mob_spawn/ghost_role/human/pirate/lustrous/gunner{
-	color = "#4f98ff"
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_geode{
@@ -823,7 +814,7 @@
 	requires_power = 0
 	})
 "HJ" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/misc/dirt/station,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0

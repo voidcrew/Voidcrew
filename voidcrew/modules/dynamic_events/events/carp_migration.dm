@@ -20,12 +20,16 @@
 /datum/round_event_control/voidcrew/carp_migration
 	name = "Carp Migration"
 	typepath = /datum/round_event/voidcrew/carp_migration
-	weight = 15
+	weight = 6
 	max_occurrences = 4
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	description = "A school of space carp crosses the target ship."
 	requires_flying = TRUE
+	/// Not a green-band event: two in five ticks launch a carp frozen inside a rock, which
+	/// comes through the hull rather than past it. Hostile boarders plus a breach to weld
+	/// is not what the outer ring is for.
+	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	/// Carp that get inside have to be fought in a corridor. On a hull with one room the
 	/// first breach puts a carp on top of everybody at once.
 	min_ship_mass = SHIP_MASS_SMALL

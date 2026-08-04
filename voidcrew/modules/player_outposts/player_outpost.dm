@@ -522,7 +522,17 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// button will ask, not that the outpost will say yes.
 	return "[name] (hangar berth)"
 
+/// Outpost shells are STANDARD_GRAVITY, and adopted turfs inherit that, so a berthed
+/// ship stays weighted regardless of what its own plating is doing.
+/obj/structure/overmap/dynamic/player_outpost/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	// dock() refuses interdicted ships only after a dock slot below is claimed
+	// and the ship is locked into ACTING - refuse up front instead
+	if(acting.is_interdicted)
+		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		return
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
 		return
@@ -589,7 +599,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 	concerned = FALSE
 
 	if(optional_partner)

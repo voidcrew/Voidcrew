@@ -2,8 +2,8 @@
  * # Site Operation Objectives
  *
  * Field work inside (or defended against) a mission site: planting the quest
- * item, calibrating pylon chains, walking a survivor out, and holding a claim
- * beacon against the sector.
+ * item, calibrating pylon chains, containing an anomaly, walking a survivor
+ * out, and holding a claim beacon against the sector.
  */
 
 // =========================================================================
@@ -36,6 +36,22 @@
 // PYLON CHAIN — calibrate N pylons, each one answered by a wave
 // =========================================================================
 
+/// How far the survey points scatter from the first one
+#define PYLON_SCATTER_RADIUS 14
+/// Closest two survey points may sit, so the site reads as a spread
+#define PYLON_MIN_SPACING 5
+
+/**
+ * Every survey point goes down at once, clustered around one spot, each with
+ * its own GPS beacon.
+ *
+ * This used to place a single pylon and only spawn the next one when that one
+ * finished, at a fresh get_spawn_turf() - which is uniformly random across the
+ * whole site. On a planet target that put the next probe anywhere on a 128x128
+ * surface, and the only thing pointing at it was one GPS mark that moved
+ * without announcing where to. From the crew's side, calibrating a pylon
+ * looked like it spawned nothing at all.
+ */
 /datum/mission_objective/field/pylon_chain
 	/// Pylons to calibrate before the core prints
 	var/points_total = 3
@@ -43,25 +59,102 @@
 	var/points_done = 0
 	/// zone_mobs theme path answering each calibration (set by the mission)
 	var/wave_theme
+	/// Every pylon placed at the current target, in placement order
+	var/list/pylons
+
+/datum/mission_objective/field/pylon_chain/Destroy()
+	drop_beacons()
+	pylons = null
+	return ..()
+
+/datum/mission_objective/field/pylon_chain/deactivate()
+	drop_beacons()
+	return ..()
 
 /datum/mission_objective/field/pylon_chain/reset()
 	. = ..()
 	points_done = 0
+	pylons = null
 
 /datum/mission_objective/field/pylon_chain/spawn_field_objects(turf/spawn_turf)
-	place_pylon(spawn_turf)
+	pylons = list()
+	for(var/turf/spot as anything in pick_spawn_spots(spawn_turf))
+		place_pylon(spot)
+	light_beacons()
 
-/// Drops the next pylon and points the mission beacon at it
+/**
+ * Turfs for the whole set: the site's own spawn turf, then open ground around
+ * it, spaced out and kept inside the target. Falls back to crowding them near
+ * the anchor rather than returning short - a chain with fewer pylons than
+ * points_total can never be finished.
+ */
+/datum/mission_objective/field/pylon_chain/proc/pick_spawn_spots(turf/anchor)
+	var/list/spots = list(anchor)
+	var/datum/mission_target/target = mission?.target
+	var/list/candidates = list()
+	for(var/turf/open/tile in RANGE_TURFS(PYLON_SCATTER_RADIUS, anchor))
+		if(isspaceturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		if(target && !target.contains_turf(tile))
+			continue
+		candidates += tile
+	while(length(spots) < points_total && length(candidates))
+		var/turf/candidate = pick_n_take(candidates)
+		var/too_close = FALSE
+		for(var/turf/taken as anything in spots)
+			if(get_dist(candidate, taken) < PYLON_MIN_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+		spots += candidate
+	// Cramped site: take whatever's open rather than hand back a short set
+	while(length(spots) < points_total)
+		spots += get_nearby_open_turf(anchor, 3)
+	return spots
+
+/// Puts one survey pylon down and files it under the chain
 /datum/mission_objective/field/pylon_chain/proc/place_pylon(turf/spawn_turf)
 	if(!spawn_turf)
 		return
 	var/obj/structure/mission_survey_pylon/pylon = new(spawn_turf)
-	pylon.name = "survey pylon ([points_done + 1]/[points_total])"
+	pylon.name = "survey pylon [length(pylons) + 1] of [points_total]"
 	pylon.objective_ref = WEAKREF(src)
-	mission.register_quest_atom(pylon)
+	pylons += pylon
+
+/// The first pylon still waiting on calibration
+/datum/mission_objective/field/pylon_chain/proc/next_pylon()
+	for(var/obj/structure/mission_survey_pylon/pylon as anything in pylons)
+		if(!QDELETED(pylon) && !pylon.calibrated)
+			return pylon
+	return null
 
 /**
- * A pylon finished calibrating: the ruin answers, and the survey advances.
+ * Points the mission's own beacon at the next pylon (that one is also the
+ * quest atom the shell watches) and gives every other uncalibrated pylon a
+ * beacon of its own, so the GPS shows the whole site at once.
+ */
+/datum/mission_objective/field/pylon_chain/proc/light_beacons()
+	drop_beacons()
+	var/obj/structure/mission_survey_pylon/lead = next_pylon()
+	if(!lead || !mission)
+		return
+	mission.register_quest_atom(lead)
+	for(var/i in 1 to length(pylons))
+		var/obj/structure/mission_survey_pylon/pylon = pylons[i]
+		if(QDELETED(pylon) || pylon.calibrated || pylon == lead)
+			continue
+		mission.add_gps_beacon("[mission.gps_tag]-[i]", pylon)
+
+/// Drops every secondary pylon beacon this objective pushed
+/datum/mission_objective/field/pylon_chain/proc/drop_beacons()
+	if(!mission?.gps_tag)
+		return
+	for(var/i in 1 to length(pylons))
+		mission.remove_gps_beacon("[mission.gps_tag]-[i]")
+
+/**
+ * A pylon finished calibrating: the site answers, and the survey advances.
  * Called by the pylon structure.
  */
 /datum/mission_objective/field/pylon_chain/proc/on_pylon_calibrated(obj/structure/mission_survey_pylon/pylon, mob/living/user)
@@ -76,11 +169,12 @@
 	mission.forget_quest_atom(pylon)
 
 	if(points_done < points_total)
-		place_pylon(mission.target?.get_spawn_turf() || get_turf(pylon))
+		light_beacons()
 		mission.push_waypoint()
-		notify_crew("Pylon [points_done]/[points_total] calibrated. Next pylon's beacon is live ([mission.gps_tag]).")
+		notify_crew("Pylon [points_done]/[points_total] calibrated. [points_total - points_done] still standing on the site ([mission.gps_tag]).")
 		return
 
+	drop_beacons()
 	// Survey complete: the last pylon prints the core
 	var/obj/item/mission_recovery/core = new(pylon.drop_location())
 	core.name = "[mission.objective_name] core"
@@ -94,7 +188,102 @@
 	if(!spawned)
 		var/datum/mission_target/target = mission?.target
 		return target ? "Pylons at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
-	return "Calibrate pylon [points_done + 1]/[points_total]"
+	return "Calibrate the survey pylons ([points_done]/[points_total])"
+
+#undef PYLON_SCATTER_RADIUS
+#undef PYLON_MIN_SPACING
+
+// =========================================================================
+// CONTAIN ANOMALY — put it down the way science says, keep what falls out
+// =========================================================================
+
+/**
+ * Manifests a stabilized anomaly inside the target and waits for the crew to
+ * neutralize it (upstream loop: analyzer reads frequency + code, signaler
+ * matches them, anomalyNeutralize() drops the core and deletes the anomaly).
+ *
+ * The anomaly is deliberately NOT the mission's quest atom - the shell's
+ * destruction watch would read a successful neutralization as a lost objective.
+ * This objective keeps its own reference and hands the shell the CORE instead,
+ * which is what the beacon should point at and what the crew can actually lose.
+ */
+/datum/mission_objective/field/contain_anomaly
+	/// Anomaly typepath manifested at the site
+	var/anomaly_type = /obj/effect/anomaly/flux
+	/// Core typepath its neutralization sheds — also the delivery ask
+	var/core_type = /obj/item/assembly/signaler/anomaly/flux
+	/// Display name for progress text (the mission's rolled name)
+	var/anomaly_name = "anomaly"
+	/// The live anomaly
+	var/obj/effect/anomaly/anomaly
+
+/datum/mission_objective/field/contain_anomaly/deactivate()
+	if(anomaly)
+		UnregisterSignal(anomaly, COMSIG_QDELETING)
+		destabilize()
+		anomaly = null
+	return ..()
+
+/**
+ * Undoes the contract's stabilization. Whatever ended the objective that
+ * ISN'T a neutralization — timeout, abandon, retarget — has to hand the
+ * anomaly its clock back, or the site keeps a deathless anomaly parked in it
+ * for as long as the ruin stays loaded.
+ */
+/datum/mission_objective/field/contain_anomaly/proc/destabilize()
+	if(QDELETED(anomaly) || !anomaly.immortal)
+		return
+	anomaly.immortal = FALSE
+	anomaly.name = initial(anomaly.name)
+	anomaly.move_chance = initial(anomaly.move_chance)
+	anomaly.death_time = world.time + anomaly.lifespan
+	anomaly.countdown?.start()
+
+/datum/mission_objective/field/contain_anomaly/reset()
+	. = ..()
+	anomaly = null
+
+/datum/mission_objective/field/contain_anomaly/spawn_field_objects(turf/spawn_turf)
+	anomaly = new anomaly_type(spawn_turf)
+	// Contract anomalies do not expire on their own — the crew has to come and
+	// put it down, however long the flight takes. stabilize() kills the
+	// countdown's authority (immortal) and pins the anomaly so it can't wander
+	// out of the site; stopping the countdown effect keeps it from displaying a
+	// deadline that no longer applies.
+	anomaly.stabilize(anchor = TRUE)
+	anomaly.countdown?.stop()
+	RegisterSignal(anomaly, COMSIG_QDELETING, PROC_REF(on_anomaly_gone))
+	notify_crew("Containment target is live and holding at the site. Read its field with an analyzer, then match that frequency and code on a signaler to neutralize it.")
+
+/**
+ * The anomaly is gone. A proper neutralization has already dropped its core on
+ * the deck by the time this fires, so the core's presence is what separates a
+ * finished job from a bomb thrown at the problem.
+ */
+/datum/mission_objective/field/contain_anomaly/proc/on_anomaly_gone(datum/source)
+	SIGNAL_HANDLER
+	anomaly = null
+	if(completed || !active || !mission || mission.failed || mission.completed)
+		return
+	var/turf/where = get_turf(source)
+	var/obj/item/assembly/signaler/anomaly/core
+	if(where)
+		core = locate(core_type) in where
+	if(!core)
+		mission.handle_quest_loss("Containment target destabilized without shedding a core.")
+		return
+	core.desc += " Flagged for collection under a standing research contract."
+	mission.register_quest_atom(core)
+	notify_crew("Core shed and stable. Bring it to the mission pad.")
+	complete()
+
+/datum/mission_objective/field/contain_anomaly/get_progress_string()
+	if(!spawned)
+		var/datum/mission_target/target = mission?.target
+		return target ? "Containment target at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
+	if(QDELETED(anomaly))
+		return "Containment target lost"
+	return "Neutralize the [anomaly_name]"
 
 // =========================================================================
 // ESCORT — bring the survivor back breathing
@@ -127,6 +316,7 @@
 
 /datum/mission_objective/field/escort/spawn_field_objects(turf/spawn_turf)
 	survivor = new survivor_type(spawn_turf)
+	protect_field_mob(survivor)
 	RegisterSignal(survivor, COMSIG_LIVING_DEATH, PROC_REF(on_survivor_death))
 	mission.register_quest_atom(survivor)
 	notify_crew("Survivor beacon locked ([mission.gps_tag]). They're alive - go get them.")

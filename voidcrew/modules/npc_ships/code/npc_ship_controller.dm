@@ -426,6 +426,21 @@
 		if(target.engaging_pirate_ref?.resolve() == our_ship)
 			target.engaging_pirate_ref = null
 
+	// Silence the holopads if we drop a target mid-hail. Every way an encounter can
+	// fall apart - out of range, line of sight lost, target cloaked or crashed,
+	// another pirate taking over - funnels through here, and only the escalate and
+	// zone-transition paths silenced the ring themselves. Anything else left every
+	// pad aboard ringing with no pirate left to answer, since get_hailing_pirates()
+	// only lists ships still in HAILING and still targeting them.
+	// Two pirates can't hail the same ship at once (see is_target_being_hailed), so
+	// our own state is enough to know the ring is ours to stop.
+	if(target && !QDELETED(target) && get_combat_state() == NPC_COMBAT_HAILING)
+		target.stop_hail_ringing()
+
+	// Barter mode is a property of one encounter, not of us - don't carry an empty
+	// wallet finding over onto whoever we target next.
+	clear_blackboard_key(BB_NPC_BROKE_BARTER)
+
 	set_target(null)
 	set_combat_state(NPC_COMBAT_IDLE)
 
@@ -476,6 +491,13 @@
 		clear_target()
 		// Target is now on our "paid" list (handled by negotiation datum)
 	else
+		// A yellow-band shakedown has nothing but the siphon behind it - no guns,
+		// no boarders. Refuse it, stall it out or run, and they take the money
+		// themselves: acquire_lock hands off to SIPHONING once the lock lands.
+		if(hail_escalates_to_siphon())
+			set_combat_state(NPC_COMBAT_ENGAGING)
+			return
+
 		// Double flee attempt = straight to ship combat (player was already warned)
 		if(reason == "player_moved")
 			set_combat_state(NPC_COMBAT_COMBAT)
@@ -513,20 +535,60 @@
 // ========== PHASED BOARDING COMBAT SYSTEM ==========
 
 /**
- * Start the boarding phase after negotiation fails.
- * This initiates the wave-based combat system instead of immediate ship combat.
+ * The zone a raid against `target` is judged in.
+ *
+ * Always read from the *target's* turf, never our own. Pirates engage from up to
+ * territory_range tiles away, so anywhere near a band boundary the attacker and the
+ * victim routinely sit in different rings - and it is the victim's position that
+ * decides what is allowed to happen to them, not the attacker's. Reading our own
+ * turf here is what silently cancelled yellow raids whenever the pirate happened to
+ * be parked a tile or two outside the band.
  */
+/datum/ai_controller/npc_ship/proc/get_raid_zone(obj/structure/overmap/ship/target)
+	if(QDELETED(target))
+		target = get_target()
+	if(QDELETED(target))
+		return null
+	return SSovermap_zones.get_zone(get_turf(target))
+
 /**
- * TRUE if this ship is currently raiding from the lawless (red) band.
+ * TRUE if the target we are raiding is in the lawless (red) band.
  * Red runs the full wave gauntlet plus a boss; everywhere else gets the
  * lighter single-wave raid.
  */
 /datum/ai_controller/npc_ship/proc/is_red_zone_raid()
+	return get_raid_zone()?.zone_type == ZONE_RED
+
+/**
+ * TRUE if the thing waiting at the end of this hail is the data siphon rather
+ * than guns or a boarding party - i.e. a yellow-band shakedown.
+ *
+ * Weapons and boarding pods are both barred outside red, so a hail there that
+ * the crew ignores or refuses can only be made good on out of their accounts.
+ *
+ * Read live off the target's band rather than cached when the hail opens: we sit
+ * up to territory_range tiles away and either of us can drift over a band line
+ * mid-negotiation.
+ */
+/datum/ai_controller/npc_ship/proc/hail_escalates_to_siphon()
+	if(blackboard[BB_NPC_BROKE_BARTER])
+		return FALSE // nothing in the accounts to drain - this one ends in boarders
+	if(is_red_zone_raid())
+		return FALSE // red settles it with guns
 	var/obj/structure/overmap/ship/npc/ship = get_ship()
-	if(!ship)
-		return FALSE
-	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(get_turf(ship))
-	return zone?.zone_type == ZONE_RED
+	return ship?.siphon_goal_percent > 0 // customs assesses fines, it doesn't siphon
+
+/**
+ * TRUE if the target has reached somewhere we are not allowed to touch them -
+ * i.e. they actually escaped, as opposed to merely standing on the other side of
+ * a band line from us. Green forbids both weapons and interdiction, so it is the
+ * only genuine sanctuary.
+ */
+/datum/ai_controller/npc_ship/proc/target_reached_sanctuary(obj/structure/overmap/ship/target)
+	var/datum/overmap_zone/zone = get_raid_zone(target)
+	if(!zone)
+		return FALSE // unknown position isn't proof of escape; other checks handle a lost target
+	return zone.zone_type == ZONE_GREEN
 
 /**
  * How many boarding waves to run before the boss phase, for the band we're

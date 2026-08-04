@@ -735,7 +735,7 @@
 	// Keep the numbers in sync with VESTIGE_INSTRUMENT_STUN_RECHARGE /
 	// VESTIGE_INSTRUMENT_CUFF_TIME (initial values must be constant, so no
 	// define interpolation here)
-	desc = "A handling tool with two settings. The first stuns a target on contact, then takes eight seconds to recharge. The second spends three seconds fabricating restraints around a target's wrists, and they are very hard to get off again. Specimens arrive in better condition when they are not chased."
+	desc = "A handling tool with two settings. The first stuns a target on contact. The second spends a few seconds fabricating restraints around their wrists, and they are very hard to get off again. Specimens arrive in better condition when they are not chased."
 	grant_text = "A cool alien weight settles into your hand, already humming."
 	item_type = /obj/item/melee/baton/vestige_instrument
 
@@ -744,7 +744,7 @@
 	// Keep the numbers in sync with VESTIGE_INSTRUMENT_STUN_RECHARGE_PERFECTED
 	// / VESTIGE_INSTRUMENT_SLEEP_TIME (initial values must be constant, so no
 	// define interpolation here)
-	desc = "The tool you already carry, revised in place. The stun recharge drops to five seconds, and a third setting is added: sleep induction, which puts a target to sleep for thirty seconds but only works on someone already down."
+	desc = "The tool you already carry, revised in place. The stun recharges faster, and a third setting is added: sleep induction, which only works on someone already down."
 	grant_text = "Your instrument reworks itself in your grip, and comes back humming at a slightly more confident pitch."
 	upgrades_from = /datum/vestige_boon/item/alien_baton
 	item_type = /obj/item/melee/baton/vestige_instrument/perfected
@@ -776,7 +776,7 @@
 	name = "Recall Anchor"
 	// Keep the duration in sync with VESTIGE_ANCHOR_RECALL_COOLDOWN
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Plant a tag where you stand, then pull yourself back to it from anywhere on the same world. The pull spends five seconds winding up, and anything that moves you during those five seconds breaks it. Landing it costs a minute of recharge, and it still respects local teleport wards. Moving the tag is free. Right-click the ability to plant or move it."
+	desc = "Plant a tag where you stand, then pull yourself back to it from anywhere on the same world. The pull takes a while to wind up, and anything that moves you breaks it. It still respects local teleport wards. Moving the tag is free. Right-click the ability to plant or move it."
 	grant_text = "A sense of exactly where you last stood settles into the back of your head."
 	spell_type = /datum/action/cooldown/spell/vestige_recall_anchor
 
@@ -784,7 +784,7 @@
 	name = "Paired Anchor"
 	// Keep the duration in sync with VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The pull takes a passenger now: whatever living thing you have grabbed, or that is riding on your back, arrives with you. Recharge drops to forty seconds. Specimens transported this way arrive in measurably better condition than specimens dragged the whole way."
+	desc = "The pull takes a passenger now: whatever living thing you have grabbed, or that is riding on your back, arrives with you, and it recharges quicker. Specimens transported this way arrive in measurably better condition than specimens dragged the whole way."
 	grant_text = "The tag learns a second signature."
 	upgrades_from = /datum/vestige_boon/spell/anchor_tag
 	spell_type = /datum/action/cooldown/spell/vestige_recall_anchor/paired
@@ -800,7 +800,7 @@
 	// Keep the numbers in sync with VESTIGE_NULL_FIELD_RADIUS /
 	// VESTIGE_NULL_FIELD_DURATION (initial values must be constant, so no
 	// define interpolation here)
-	desc = "Silence every voice within three paces of you for twenty seconds. Yours keeps working. It does no damage and makes no noise doing it — most procedures go smoother without commentary."
+	desc = "Silence every voice close around you for a while. Yours keeps working. It does no damage and makes no noise doing it — most procedures go smoother without commentary."
 	grant_text = "You find you know exactly how to take a room's voice away."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_null_field
 
@@ -821,7 +821,7 @@
  */
 /datum/vestige_boon/gland_graft
 	name = "The Gift"
-	desc = "A replicator gland grafted in where your heart used to be. It ejects foreign implants, regrows failing organs and limbs, and replaces lost blood — enthusiastically, and usually via the mouth. Your original heart is handed back at installation. It does not survive a change of bodies, but reapplication is free."
+	desc = "A replicator gland grafted in where your heart used to be. It ejects foreign implants, regrows failing organs and limbs, and replaces lost blood, usually via the mouth. It does not survive a change of bodies, but reapplication is free."
 	grant_text = "Something turns over in your chest twice and settles into a rhythm that isn't quite yours."
 	radial_icon = 'icons/obj/antags/abductor.dmi'
 	radial_icon_state = "health"
@@ -1110,7 +1110,7 @@
  */
 /datum/action/cooldown/spell/vestige_recall_anchor
 	name = "Recall Anchor"
-	desc = "Cast to return to your planted anchor tag: the pull takes five seconds to wind up, and breaks if anything moves you. Right-click the ability to plant the tag where you stand, or move it. A landed pull recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
+	desc = "Teleport back to your anchor tag. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "vortex_recall"
 	background_icon_state = "bg_alien"
@@ -1269,7 +1269,7 @@
 
 /datum/action/cooldown/spell/vestige_recall_anchor/paired
 	name = "Paired Anchor"
-	desc = "Cast to return to your planted anchor tag, carrying whoever you are grabbing or carrying; the pull still takes five seconds to wind up and still breaks if anything moves you. Right-click the ability to plant or move the tag. A landed pull recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
+	desc = "Teleport back to your anchor tag, bringing whoever you're grabbing or carrying. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
 	cooldown_time = VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
 
 // Grabbed-or-willing, by this fork's own teleport grammar: a pulled living
@@ -1338,7 +1338,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_null_field
 	name = "Null Field"
-	desc = "Silence every voice within three paces of you for twenty seconds. Yours still works."
+	desc = "Silences everyone close around you for a while. You can still talk."
 	button_icon = 'icons/mob/actions/actions_mime.dmi'
 	button_icon_state = "mime_speech"
 	background_icon_state = "bg_alien"

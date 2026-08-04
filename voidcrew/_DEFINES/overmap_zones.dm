@@ -92,6 +92,45 @@
 #define ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW 20
 #define ZONE_PLANET_MOB_UPGRADE_PROB_RED 40
 
+/**
+ * How many structure spawners (tendrils, monster nests, demonic portals) a planet may
+ * seed, per zone. These are NOT managed by SSplanet_mobs: they are permanent terrain and
+ * each holds a standing group of mobs for the whole round, so the per-planet fauna cap
+ * does not bound them. Without a budget the raw biome roll seeds ~20 of them on a lava
+ * planet - roughly 60 permanent hostiles on top of the 15 SSplanet_mobs allows.
+ */
+#define ZONE_PLANET_SPAWNER_BUDGET_GREEN 3
+#define ZONE_PLANET_SPAWNER_BUDGET_YELLOW 5
+#define ZONE_PLANET_SPAWNER_BUDGET_RED 8
+
+/// Minimum tiles between two structure spawners on a planet. Keeps the budget spread out
+/// instead of letting the whole allowance land in one corner of the map.
+#define ZONE_PLANET_SPAWNER_SPACING 24
+
+/**
+ * How many anomalies a planet may seed, per zone.
+ *
+ * Anomalies used to be a ship-scoped dynamic event, which made them something that
+ * happened TO a crew in their own corridors with nowhere to stand back to. On a planet
+ * the same object reads the opposite way: it is stationary, it is visible from across
+ * open ground, and the crew chose to walk over there. Approaching one is a decision, and
+ * a crew carrying a neutralizer (Anomaly Research, tier 3) gets a core out of it.
+ *
+ * Green stays empty for the same reason it seeds no megafauna: it is where a crew takes
+ * its first landing.
+ */
+#define ZONE_PLANET_ANOMALY_BUDGET_GREEN 0
+#define ZONE_PLANET_ANOMALY_BUDGET_YELLOW 2
+#define ZONE_PLANET_ANOMALY_BUDGET_RED 3
+
+/// Minimum tiles between two planet anomalies, so a budget of 3 is three separate finds
+/// rather than one lethal clearing.
+#define ZONE_PLANET_ANOMALY_SPACING 20
+
+/// Cap on random turf draws while placing the anomaly budget. A planet whose open ground
+/// is nearly all taken simply seeds fewer than its budget rather than spinning.
+#define PLANET_ANOMALY_PLACEMENT_ATTEMPTS 400
+
 /// Multiplier on ore mined per planet rock wall (mineralAmt), per zone — green stays baseline (x1). Applied in /turf/closed/mineral/proc/zone_scaled_ore_amount()
 #define ZONE_PLANET_ORE_MULT_YELLOW 1.5
 #define ZONE_PLANET_ORE_MULT_RED 2

@@ -414,7 +414,7 @@
 
 /datum/vestige_boon/spell/mourning_touch/last_breath
 	name = "Steal the Last Breath"
-	desc = "Touch a living person with a bare palm to chill them to the bone and take the strength out of their legs - and the breath they were saving with it. They're left gasping and unable to make a sound for a few seconds."
+	desc = "The same touch, and it takes the breath they were saving with it. They're left gasping and unable to make a sound for a few seconds."
 	grant_text = "Something settles into your palm alongside the cold, and holds its breath."
 	upgrades_from = /datum/vestige_boon/spell/mourning_touch
 	spell_type = /datum/action/cooldown/spell/touch/vestige_mourning_touch/last_breath
@@ -427,7 +427,7 @@
 
 /datum/vestige_boon/spell/widows_walk
 	name = "Widow's Walk"
-	desc = "Phase out of the world for a few seconds and walk through walls. You can only start the walk standing within arm's reach of a corpse, holy ground blocks it, and coming back is slow and loud."
+	desc = "Phase out of the world and walk through walls. You can only start the walk standing within arm's reach of a corpse, holy ground blocks it, and coming back is slow and loud."
 	grant_text = "For a second you can't feel the floor under you at all."
 	spell_type = /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk
 
@@ -439,7 +439,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_overload
 	name = "Overcharge the Lights"
-	desc = "Overloads all lights nearby, making them flare and shock anyone close to them."
+	desc = "Overload every light nearby, making them flare and shock anyone standing close."
 	button_icon = 'icons/mob/actions/actions_revenant.dmi'
 	button_icon_state = "overload_lights"
 	background_icon_state = "bg_revenant"
@@ -489,7 +489,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_overload/requiem
 	name = "Extinguish the Lie"
-	desc = "Overloads all lights nearby, making them flare and shock anyone close — and the lights it bursts stay dark until someone fits a new tube."
+	desc = "Overload every light nearby, making them flare and shock anyone standing close. The ones that burst stay dark until someone fits a new tube."
 	cooldown_time = 30 SECONDS
 
 /datum/action/cooldown/spell/aoe/vestige_overload/requiem/overload_shock(obj/machinery/light/to_shock, mob/living/caster)
@@ -508,7 +508,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_mourning_touch
 	name = "Mourner's Touch"
-	desc = "Touch a living target with a bare palm to sap their stamina and drop their body temperature. The chill has a floor, so it slows them down rather than freezing them solid."
+	desc = "Touch someone bare-handed to drain their stamina and chill them. The cold slows them down, but won't freeze them."
 	button_icon = 'icons/mob/actions/actions_revenant.dmi'
 	button_icon_state = "blight"
 	background_icon_state = "bg_revenant"
@@ -554,7 +554,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_mourning_touch/last_breath
 	name = "Steal the Last Breath"
-	desc = "Touch someone with a bare palm to chill them and drop their legs out from under them, and take their breath with it. Leaves them gasping and unable to make a sound for a few seconds."
+	desc = "Touch someone bare-handed to chill them, drop them off their feet, and leave them gasping and unable to speak for a few seconds."
 	cooldown_time = 20 SECONDS
 	draw_message = span_notice("Cold gathers in your palm, and something in it holds its breath.")
 
@@ -578,7 +578,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_last_rites
 	name = "Last Rites"
-	desc = "Dishevels the area around you: cabinets and morgue trays swing open, glass cracks, floor tiles lift, and every light flickers."
+	desc = "Throws the room around: cabinets and morgue trays swing open, glass cracks, floor tiles lift, and every light flickers."
 	button_icon = 'icons/mob/actions/actions_revenant.dmi'
 	button_icon_state = "defile"
 	background_icon_state = "bg_revenant"
@@ -654,7 +654,7 @@
  */
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk
 	name = "Widow's Walk"
-	desc = "Phase out of the world and walk through walls. You can only start the walk within arm's reach of a corpse, and coming back is slow and loud."
+	desc = "Phase out of the world and walk through walls. You have to start next to a corpse, and coming back is slow and loud."
 	background_icon_state = "bg_revenant"
 	overlay_icon_state = "bg_revenant_border"
 	sound = 'sound/effects/ghost2.ogg'

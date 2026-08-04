@@ -41,7 +41,7 @@
 	requires_power = 0
 	})
 "ae" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/pirate_interdyne{
 	requires_power = 0

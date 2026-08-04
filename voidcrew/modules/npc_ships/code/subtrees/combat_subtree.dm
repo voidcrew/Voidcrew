@@ -10,7 +10,8 @@
  * - HAILING: Hailing target, waiting for them to answer (20 sec grace period)
  * - ENGAGING: Acquiring weapon lock on target
  * - COMBAT: Actively firing weapons and using interdictor
- * - SIPHONING: Yellow zone - interdict + siphon only (no weapons/boarding)
+ * - SIPHONING: Yellow zone - interdict + siphon only (no weapons/boarding).
+ *              Reached only after a hail the crew ignored, refused or stalled out.
  * - RETREATING: All weapons destroyed, trying to escape
  * - NEGOTIATING: In active negotiation with target, combat paused
  *

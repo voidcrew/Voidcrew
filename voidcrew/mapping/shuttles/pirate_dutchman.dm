@@ -41,8 +41,13 @@
 /obj/docking_port/mobile/voidcrew/pirate_dutchman
 	name = "Dutchman-class Ghostship"
 	area_type = /area/shuttle/voidcrew/pirate_dutchman
-	port_direction = 4
-	preferred_direction = 8
+	// The galleon has no airlock - the whole deck is open to space - so the port sits on
+	// the bowsprit tip at (11,25), aimed inboard. That is the bow, hence NORTH.
+	port_direction = 1
+	// 21 abeam against 25 fore to aft, so adjust_reserve_dock_to_shuttle's aspect-ratio
+	// guess comes out EAST. This must match it or the ship spins 270 degrees on every
+	// dock. It was SOUTH on the map instance and WEST here, and did exactly that.
+	preferred_direction = 4
 
 /// AREAS ///
 
