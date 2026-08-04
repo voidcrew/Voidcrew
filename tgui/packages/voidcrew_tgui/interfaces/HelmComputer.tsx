@@ -2623,7 +2623,7 @@ const ContactMark = (props: {
             colour={colour}
           />
         )}
-        {labelled && (
+        {!!labelled && (
           // Sits inside the counter-scale group, so this is a constant size on
           // screen at every zoom. One SVG unit is only ~1.3 screen pixels here,
           // which is why the old 5.2 rendered at about six pixels.

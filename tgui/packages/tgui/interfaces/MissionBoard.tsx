@@ -414,7 +414,7 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
   for (const item of items) {
     segments.push(
       <Box as="span" bold color={item.rare ? 'orange' : 'average'}>
-        {item.icon && (
+        {!!item.icon && (
           <img
             src={`data:image/png;base64,${item.icon}`}
             style={{
@@ -505,7 +505,7 @@ const MissionCard = (props: MissionCardProps) => {
         <RewardSummary mission={mission} full />
       </Box>
 
-      {isActive && (
+      {!!isActive && (
         <>
           <LabeledList>
             <LabeledList.Item label="Time Remaining">
@@ -521,7 +521,7 @@ const MissionCard = (props: MissionCardProps) => {
                 {mission.time_remaining_text}
               </ProgressBar>
             </LabeledList.Item>
-            {mission.progress && (
+            {!!mission.progress && (
               <LabeledList.Item label="Progress">
                 {mission.progress}
               </LabeledList.Item>
@@ -872,7 +872,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
   return (
     <>
       {/* Show created bounty */}
-      {createdBounty && (
+      {!!createdBounty && (
         <Section
           title="Your Bounty"
           buttons={
@@ -902,7 +902,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
           </LabeledList>
 
           {/* Show pending offers to approve/reject */}
-          {createdBounty.pending_offers &&
+          {!!createdBounty.pending_offers &&
             createdBounty.pending_offers.length > 0 && (
               <Box mt={1}>
                 <Divider />
@@ -974,7 +974,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
       )}
 
       {/* Show claimed bounty */}
-      {claimedBounty && (
+      {!!claimedBounty && (
         <Section
           title="Accepted Contract"
           buttons={

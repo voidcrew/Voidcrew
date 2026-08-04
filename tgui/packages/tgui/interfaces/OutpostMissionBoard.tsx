@@ -84,7 +84,7 @@ const RewardLine = (props: { offer: Offer }) => {
   for (const item of items) {
     segments.push(
       <Box as="span" bold color={item.rare ? 'orange' : 'teal'}>
-        {item.icon && (
+        {!!item.icon && (
           <img
             src={`data:image/png;base64,${item.icon}`}
             style={{
