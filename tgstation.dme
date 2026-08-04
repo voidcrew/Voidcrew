@@ -6904,6 +6904,8 @@
 #include "voidcrew\modules\cyberware\cyberware_base.dm"
 #include "voidcrew\modules\cyberware\cyberware_component.dm"
 #include "voidcrew\modules\cyberware\cyberware_stealth.dm"
+#include "voidcrew\modules\cyberware\parlor_fixtures.dm"
+#include "voidcrew\modules\cyberware\ripperdoc_catalog.dm"
 #include "voidcrew\modules\cyberware\ware_arm_utility.dm"
 #include "voidcrew\modules\cyberware\ware_legend.dm"
 #include "voidcrew\modules\cyberware\ware_military_arms.dm"

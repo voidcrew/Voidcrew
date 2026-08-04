@@ -312,8 +312,8 @@
 	do_sparks(3, FALSE, src)
 	patient.flash_act(visual = 1)
 	if(chrome.tier >= CYBERWARE_TIER_4)
-		visible_message(span_notice("The parlor's neon stutters for a moment."))
-		// TODO(W4): flicker the actual parlor fixtures once the map exists.
+		visible_message(span_notice("The parlor's neon stutters as the rig pulls the current it needs."))
+		flicker_parlor_lights()
 	addtimer(CALLBACK(src, PROC_REF(play_ripperdoc_bark), CRADLE_BARK_DONE, chrome.tier), 1.5 SECONDS)
 	wake_patient(patient)
 
@@ -424,12 +424,23 @@
 	patient.log_message("bought a chrome tune-up at [src]", LOG_GAME)
 	SStgui.update_uis(src)
 
+/// A T4 install pulls hard enough that the parlor's mood lighting browns out
+/// with it — every mapped fixture near the cradle flickers, and the CHROME
+/// sign stutters. Pure theatre, and the whole point of doing it at the parlor.
+/obj/machinery/chrome_cradle/proc/flicker_parlor_lights()
+	for(var/obj/machinery/light/fixture in view(6, src))
+		fixture.flicker(rand(3, 6))
+	for(var/obj/machinery/chrome_sign/sign in view(6, src))
+		sign.flicker()
+
 // ---- Ripperdoc barks ---------------------------------------------------
 
 /**
- * The parlor voice, tier-keyed. W4 overrides this to route through the
- * Splice NPC's trader_lines; until then the rig itself talks. T4 installs
- * run silent by design — the only line comes after the boot chime.
+ * The parlor voice, tier-keyed. Routed through the Splice NPC when one is in
+ * view of the cradle — the ripperdoc talks you through the work — and falls
+ * back to the rig's own speaker anywhere else (a cradle bought and mapped off
+ * an outpost still has a bedside manner). T4 installs run silent by design;
+ * the only line comes after the boot chime.
  */
 /obj/machinery/chrome_cradle/proc/play_ripperdoc_bark(stage, tier)
 	var/line
@@ -451,8 +462,12 @@
 					line = "Done. Walk it off before you trust it."
 				if(CYBERWARE_TIER_4)
 					line = "...Don't waste that."
-	if(line)
-		say(line)
+	if(!line)
+		return
+	for(var/mob/living/basic/outpost_trader/ripperdoc/splice in view(7, src))
+		splice.say(line)
+		return
+	say(line)
 
 // ---- UI ----------------------------------------------------------------
 
