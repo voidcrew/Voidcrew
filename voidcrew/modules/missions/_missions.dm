@@ -726,6 +726,11 @@
 	// Distribute rewards
 	distribute_rewards(reward_anchor)
 
+	// Standing with the posting trader (board contracts only; see trader_favor.dm)
+	var/favor_gain = get_favor_reward()
+	if(favor_gain > 0 && servant && shop)
+		shop.grant_favor(servant, favor_gain)
+
 	// Notify ship
 	if(servant)
 		var/list/reward_parts = list()
@@ -737,6 +742,8 @@
 			reward_parts += "[research_reward] research points"
 		if(voucher_count > 0)
 			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+		if(favor_gain > 0 && shop)
+			reward_parts += "+[favor_gain] standing with [shop.favor_trader_name()]"
 		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
 		servant.ship_notify("[name] completed! Reward: [reward_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
@@ -1073,4 +1080,6 @@
 		"voucher_count" = voucher_count,
 		"research_reward" = research_reward,
 		"archetype" = get_archetype(),
+		"favor_reward" = get_favor_reward(),
+		"favor_trader" = shop ? shop.favor_trader_name() : null,
 	)

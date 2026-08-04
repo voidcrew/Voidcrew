@@ -393,3 +393,76 @@
 	desc = "A pond sunk straight into the deck plating. The fish are real and the water is warmer than you'd expect. Nobody has confirmed the koi."
 	baseturfs = /turf/open/water/outpost_pond
 	planetary_atmos = FALSE
+
+// =========================================================================
+// FIXED KITCHEN GEAR
+// =========================================================================
+
+/**
+ * The cook's line and the shop fridges. Stock tg kitchen machines are built to be
+ * taken apart — a crowbar alone reduces a griddle or a range to a frame, since
+ * both pass ignore_panel to default_deconstruction_crowbar — and none of them
+ * register aggression, so the diner could be stripped to bare frames without the
+ * turrets ever reacting. These are the same machines with the outpost's own
+ * construction rules applied.
+ *
+ * Cooking is untouched: only the tool and part-swap paths are closed, so a visiting
+ * chef can still use every one of them normally. Contents are fair game as ever —
+ * food walking out of a fridge is restocking economics, the same call the med
+ * alcove makes.
+ */
+/obj/machinery/griddle/outpost
+	desc = "A flat-top griddle welded to the deck frame. The house owns it; you're welcome to cook on it."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/griddle/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/oven/range/outpost
+	desc = "A gas range bolted into the deck frame. Runs hot, runs constantly, and isn't going anywhere."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/oven/range/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/processor/outpost
+	desc = "An industrial food processor anchored to the deck frame. Keep hands clear of the intake."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/processor/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/deepfryer/outpost
+	desc = "A deep fryer plumbed straight into the deck. The oil is changed more often than you'd expect."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/deepfryer/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/microwave/outpost
+	desc = "A microwave bolted to the counter. Scratched, scorched, and still working."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/microwave/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/smartfridge/food/outpost
+	desc = "A refrigerated storage unit welded to the deck. Take what you're buying."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/smartfridge/food/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/smartfridge/organ/outpost
+	desc = "A refrigerated organ locker welded to the deck. The Undertow does not discuss its supply chain."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/smartfridge/organ/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)

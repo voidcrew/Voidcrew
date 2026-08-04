@@ -85,7 +85,7 @@
 /turf/closed/indestructible/reinforced/titanium/outpost,
 /area/voidcrew/trader_outpost)
 "aq" = (
-/obj/machinery/smartfridge/food,
+/obj/machinery/smartfridge/food/outpost,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ar" = (
@@ -363,7 +363,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "hn" = (
-/obj/machinery/smartfridge/food,
+/obj/machinery/smartfridge/food/outpost,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "hy" = (
@@ -371,7 +371,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "hS" = (
-/obj/machinery/processor,
+/obj/machinery/processor/outpost,
 /obj/machinery/light/warm/dim/directional/south,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
@@ -469,7 +469,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "qm" = (
-/obj/machinery/smartfridge/food,
+/obj/machinery/smartfridge/food/outpost,
 /turf/open/indestructible/grass,
 /area/voidcrew/trader_outpost)
 "qq" = (
@@ -539,7 +539,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "uX" = (
-/obj/machinery/oven/range,
+/obj/machinery/oven/range/outpost,
 /obj/item/reagent_containers/cup/soup_pot{
 	pixel_y = 8
 	},
@@ -584,7 +584,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "yU" = (
-/obj/machinery/deepfryer,
+/obj/machinery/deepfryer/outpost,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "yZ" = (
@@ -722,7 +722,7 @@
 /turf/open/indestructible/grass,
 /area/voidcrew/trader_outpost)
 "Iu" = (
-/obj/machinery/griddle,
+/obj/machinery/griddle/outpost,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "Jo" = (

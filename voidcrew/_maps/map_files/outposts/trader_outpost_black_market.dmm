@@ -611,7 +611,7 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "pr" = (
-/obj/machinery/smartfridge/organ,
+/obj/machinery/smartfridge/organ/outpost,
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 1
 	},

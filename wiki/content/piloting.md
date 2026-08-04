@@ -27,14 +27,16 @@ Heading and position sit in the corner of the chart. The ship's name at the top 
 
 ## Flying
 
-Thrust is set with the compass rose: eight direction buttons and a square **brake** in the middle. A direction starts a continuous burn that runs until you press it again, pick another direction, or brake. Braking costs no fuel — you only pay to speed up.
+The compass rose commands a **course**: eight direction buttons and a square **brake** in the middle. Press a direction and the ship handles the rest — it sheds any drift working against you, burns up to cruising speed, then cuts the engines and coasts, holding the course on momentum alone. The button stays lit while the course is held, even with the engines cold. Press the lit button to drop the course and coast free. The brake always brakes, whatever the ship is doing; press it again mid-brake to release it.
 
-The vertical slider beside the rose is the **throttle**, 1 to 100 percent. It sets how hard the engines burn, which is both how fast you accelerate and how fast you empty your tanks. Drag it, or focus it and use the arrow keys to step by 5. A diagonal burn puts half the thrust on each axis, so cutting a corner is not free speed.
+The vertical slider beside the rose is the **throttle**, 1 to 100 percent. It sets how hard the engines burn *and* the cruising speed the ship settles at — full throttle is flat out, half throttle cruises at half speed on a fraction of the fuel. Drag it mid-flight and the ship adjusts on the spot: raising it starts a top-up burn, lowering it sheds the difference for free. A diagonal burn puts half the thrust on each axis, so cutting a corner is not free speed.
+
+You can also fly from the keyboard. Click the **wasd** switch in the corner of the Helm panel to take manual control: while it shows *live*, **WASD** or the **arrow keys** command a course (hold two together for a diagonal), **Space** brakes, and **X** cuts the engines to coast — and your character stays put, because the console keeps those keys for itself. The console only holds your keys while its window is the one you are typing at: click into the game world and you walk around as normal, with the switch reading *armed* until you click back in. Click the switch off or close the console to drop manual control entirely.
 
 !!! tip "Nothing stops you automatically"
-    Space has no friction. If you set a burn and walk away from the console, the ship keeps accelerating and keeps going. Brake before you expect to arrive.
+    Space has no friction. Once the ship reaches cruising speed the engines go cold and it costs nothing to keep going — but keep going it will, forever, until you brake or command something else. Fuel is only ever spent changing your speed, never keeping it.
 
-Burning toward a tile in a different zone band starts a **zone transition**: the engines cut, the ship holds still for ten seconds, then crosses. The brake cancels it and leaves you where you were.
+Burning toward a tile in a different zone band starts a **zone transition**: the engines cut, the ship holds still for ten seconds, then crosses and resumes your course by itself on the far side. The brake cancels the crossing and leaves you where you were.
 
 ## The navigation chart
 
@@ -46,7 +48,7 @@ The drawer beside the chart has four tabs. **Contacts** lists every mark you kno
 
 ## Autopilot
 
-Right-click a destination and choose **Set course**. The autopilot flies with the same headings and throttle you would use, so it burns the same fuel and sits out the same zone transitions — it steers, it does not teleport.
+Right-click a destination and choose **Set course**. The autopilot flies with the same headings and throttle you would use, so it burns the same fuel and sits out the same zone transitions — it steers, it does not teleport. On a planet, ruin or outpost the same menu offers **Travel & dock**, which flies there and starts the docking approach the moment it arrives. Both commands also appear as buttons under the selected contact in the drawer.
 
 It routes around storms, asteroid fields and known hostile vessels, but only around things **this ship has actually seen**. It also halves cruise speed while flying into tiles you have never laid eyes on, so it has time to react to what turns up.
 
@@ -75,7 +77,7 @@ Markers also arrive from elsewhere: accepted [missions](missions.md), bounties a
 
 ## Docking
 
-Come to a **full stop** first — the Dock button refuses while you are moving. It labels itself with whatever is actually under you, so you can see whether you are about to land on a planet, a ruin, an outpost, or hold station in empty space. Docking runs a ten-second warmup and cannot be started while you are interdicted.
+Make a **slow approach** — at up to half speed (30 tiles per minute) the Dock button finishes the stop for you; any faster and it refuses until you brake. It labels itself with whatever is actually under you, so you can see whether you are about to land on a planet, a ruin, an outpost, or hold station in empty space. Docking runs a ten-second warmup and cannot be started while you are interdicted.
 
 Docking at a **planet** loads its surface and puts your ship down on it. With an upgraded orbital survey console you can choose where on the surface you land instead of taking the default berth.
 

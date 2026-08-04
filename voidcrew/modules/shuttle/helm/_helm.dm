@@ -353,6 +353,13 @@
 	data["est_thrust"] = current_ship.est_thrust
 	data["burnDirection"] = current_ship.burn_direction
 	data["burnPercentage"] = current_ship.burn_percentage
+	// The course being held, as distinct from the burn: the compass rose lights
+	// from this, and it stays lit while the ship cruises with the engines cold.
+	data["commandedCourse"] = current_ship.commanded_course
+	// The throttle's cruise ceiling and the dock assist's own, converted to
+	// tiles/min for the readout (speeds are stored in tiles per decisecond).
+	data["cruiseTargetSpeed"] = round(current_ship.max_speed * 600 * current_ship.burn_percentage / 100, 0.1)
+	data["dockAssistMaxSpeed"] = round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION, 0.1)
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 	data["autopilot"] = current_ship.get_autopilot_data()
@@ -888,28 +895,56 @@
 					// Touching the helm takes the ship off autopilot. Quietly — the
 					// crew just did it on purpose and doesn't need to be told.
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
-					// Toggle off if clicking same direction
-					if(new_direction == current_ship.burn_direction)
-						current_ship.change_heading(BURN_NONE)
+					// Toggle off if clicking the course already held — back to a coast
+					if(new_direction == current_ship.commanded_course)
+						current_ship.command_course(BURN_NONE)
 					else
-						current_ship.change_heading(new_direction)
+						current_ship.command_course(new_direction)
+					return
+				if("set_course")
+					// Keyboard flight: non-toggling, so a held key holds the course
+					// instead of strobing it on and off. The dir comes off the wire —
+					// only real courses (or 0 to coast) get through.
+					var/new_direction = text2num(params["dir"])
+					if(isnull(new_direction) || !(new_direction in list(0, NORTH, SOUTH, EAST, WEST, NORTH|EAST, NORTH|WEST, SOUTH|EAST, SOUTH|WEST)))
+						return
+					current_ship.disengage_autopilot("manual heading", notify = FALSE)
+					current_ship.command_course(new_direction)
 					return
 				if("autopilot")
-					// Chart coordinates arrive relative; the ship works in absolute
-					// turf coordinates.
-					var/dest_x = text2num(params["x"])
-					var/dest_y = text2num(params["y"])
-					if(isnull(dest_x) || isnull(dest_y))
-						return
-					dest_x = round(dest_x)
-					dest_y = round(dest_y)
-					var/label = describe_autopilot_destination(dest_x, dest_y)
-					var/result = current_ship.engage_autopilot(
-						dest_x + OVERMAP_LEFT_SIDE_COORD - 1,
-						dest_y + OVERMAP_SOUTH_SIDE_COORD - 1,
-						label,
-						usr,
-					)
+					// Travel & dock: a contact row can ask for the course to end in a
+					// docking approach. The ref comes off the wire, so it only counts
+					// when it resolves to a dockable non-ship overmap object (ships
+					// keep their consensual request/accept handshake) — anything else
+					// degrades to a plain course to the clicked tile.
+					var/obj/structure/overmap/dock_target
+					if(params["dock"])
+						var/obj/structure/overmap/located = locate(params["target"])
+						if(istype(located) && !istype(located, /obj/structure/overmap/ship) && !isnull(located.get_dock_description()))
+							dock_target = located
+					var/result
+					if(dock_target)
+						// Plot to the target's LIVE position — its .x/.y are already
+						// the absolute turf coordinates engage_autopilot() takes. The
+						// label is the console's own naming, never client text (see
+						// describe_autopilot_destination above for why).
+						result = current_ship.engage_autopilot(dock_target.x, dock_target.y, describe_dock_candidate(dock_target), usr, dock_target)
+					else
+						// Chart coordinates arrive relative; the ship works in absolute
+						// turf coordinates.
+						var/dest_x = text2num(params["x"])
+						var/dest_y = text2num(params["y"])
+						if(isnull(dest_x) || isnull(dest_y))
+							return
+						dest_x = round(dest_x)
+						dest_y = round(dest_y)
+						var/label = describe_autopilot_destination(dest_x, dest_y)
+						result = current_ship.engage_autopilot(
+							dest_x + OVERMAP_LEFT_SIDE_COORD - 1,
+							dest_y + OVERMAP_SOUTH_SIDE_COORD - 1,
+							label,
+							usr,
+						)
 					say(result)
 					playsound(src, findtext(result, "ERROR") ? 'sound/machines/terminal/terminal_error.ogg' : 'sound/machines/ping.ogg', 40)
 					return
@@ -921,6 +956,11 @@
 				if("change_burn_percentage")
 					var/new_percentage = clamp(text2num(params["percentage"]), 1, 100)
 					current_ship.burn_percentage = new_percentage
+					// The throttle doubles as the cruise target, so a held course is
+					// re-commanded against the new number: cutting it trims speed off
+					// on the spot (free, like braking), raising it starts the top-up.
+					if(current_ship.commanded_course != BURN_NONE && current_ship.state == OVERMAP_SHIP_FLYING && !current_ship.zone_transitioning)
+						current_ship.command_course(current_ship.commanded_course)
 					return
 				if("stop")
 					current_ship.disengage_autopilot("manual override", notify = FALSE)
@@ -928,11 +968,13 @@
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
 						return
-					// Toggle between no thrust and active braking
-					if(current_ship.burn_direction == BURN_NONE)
-						current_ship.change_heading(BURN_STOP)
+					// Brake always brakes — burning, cruising or coasting, the first
+					// press is BURN_STOP. Only a second press while already braking
+					// releases back to a coast.
+					if(current_ship.burn_direction == BURN_STOP)
+						current_ship.command_course(BURN_NONE)
 					else
-						current_ship.change_heading(BURN_NONE)
+						current_ship.command_course(BURN_STOP)
 					return
 				if("bluespace_jump")
 					if(calibrating)
@@ -947,6 +989,19 @@
 					// Dock into whatever is actually here. Previously this refused
 					// outright whenever a ruin or planet shared the tile, so the only
 					// way to land on one was the contact list's Interact button.
+					//
+					// Auto-stop assist: a slow approach is close enough — the console
+					// finishes the stop itself rather than bouncing the crew to the
+					// brake button. Above the assist ceiling the refusal stands, or
+					// Dock would double as a crash-stop from full cruise. Runs before
+					// the candidate/empty-space split because it is the only stillness
+					// gate either path has - dock_in_empty_space() never had its own.
+					if(!current_ship.is_still())
+						if(MAGNITUDE(current_ship.speed[1], current_ship.speed[2]) > current_ship.max_speed * DOCK_ASSIST_SPEED_FRACTION)
+							say("ERROR: Too fast for a docking approach — slow below [round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION)] tiles/min.")
+							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+							return
+						current_ship.full_stop()
 					var/list/dock_candidates = get_dock_candidates()
 					var/obj/structure/overmap/dock_candidate
 					if(length(dock_candidates))
@@ -967,10 +1022,6 @@
 						else
 							say("ERROR: Multiple docking options here — choose one from the Dock button.")
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
-							return
-						if(!current_ship.is_still())
-							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
-							balloon_alert(usr, "come to a full stop first!")
 							return
 						current_ship.disengage_autopilot("docking", notify = FALSE)
 						current_ship.overmap_object_act(usr, dock_candidate)
@@ -1030,7 +1081,7 @@
 			// eats every button without a word is indistinguishable from a broken one -
 			// and until complete_dock() learned to give up (abort_stalled_dock() in
 			// ship.dm) a stalled move really could pin the ship here for good.
-			if(action in list("dock", "undock", "change_heading", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "bluespace_jump", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
+			if(action in list("dock", "undock", "change_heading", "set_course", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "bluespace_jump", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
 				say("Manoeuvring systems busy: [current_ship.get_state_readout()]. Stand by.")
 				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 			return

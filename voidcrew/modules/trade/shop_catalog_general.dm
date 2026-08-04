@@ -24,6 +24,7 @@
 		"Colonial Registry",
 		"Intel & Charts",
 		"Barter Deals",
+		"Back Room",
 	)
 	sku_types = list(
 		// Survival & EVA
@@ -99,6 +100,12 @@
 	rare_pool = list(
 		/datum/shop_sku/general/rare/bluespace_bodybag,
 		/datum/shop_sku/general/rare/drill,
+	)
+	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	favor_sku_types = list(
+		/datum/shop_sku/favor/pike_ledger,
+		/datum/shop_sku/favor/field_contract_pad,
+		/datum/shop_sku/favor/freight_beacon,
 	)
 	// Charts are a mix — any outpost can end up holding the coordinates for
 	// anywhere. Named ruins are dealt without repeats across all three shops.
@@ -677,3 +684,23 @@
 	barter_amount = 10
 	stock_min = 2
 	stock_max = 4
+
+// ===== BACK ROOM =====
+// Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// per crew per round. Priced above the rare shelf on purpose — standing opens
+// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+
+/datum/shop_sku/favor/pike_ledger
+	item_path = /obj/item/pike_ledger
+	price_credits = 3200
+	price_vouchers = 2
+
+/datum/shop_sku/favor/field_contract_pad
+	item_path = /obj/item/field_contract_pad
+	price_credits = 3600
+	price_vouchers = 2
+
+/datum/shop_sku/favor/freight_beacon
+	item_path = /obj/item/freight_beacon
+	price_credits = 2400
+	price_vouchers = 1

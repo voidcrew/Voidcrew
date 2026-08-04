@@ -180,7 +180,7 @@
 		player_ship?.ship_notify("[pirate_ship?.name] has interdicted your ship! Tribute demand increased from [old_demand] to [demanded_credits] credits!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 	else
 		// Second attempt - they didn't learn, open fire
-		pirate_say(dialog.get_movement_betrayal_line())
+		pirate_say(dialog.get_movement_betrayal_line(is_siphon_shakedown()))
 
 		// Announce to player ship
 		player_ship?.ship_notify("[pirate_ship?.name] is opening fire - you tried to flee twice!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
@@ -189,6 +189,17 @@
 		end_negotiation(success = FALSE, reason = "player_moved")
 
 // ========== NEGOTIATION FLOW ==========
+
+/**
+ * TRUE when the threat behind this negotiation is the data siphon rather than
+ * guns or a boarding party - a yellow-band shakedown.
+ *
+ * Read live off the AI, the same call it makes when it escalates, so the dialog
+ * can never promise a broadside the band forbids the pirate from firing.
+ */
+/datum/pirate_negotiation/proc/is_siphon_shakedown()
+	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
+	return controller?.hail_escalates_to_siphon()
 
 /**
  * Calculate the tribute demand based on player wealth, combat state, and faction.
@@ -382,9 +393,9 @@
 		player_ship?.ship_notify("[pirate_ship.name] has accepted tribute and is disengaging.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	else
 		if(reason == "timeout")
-			pirate_say(dialog.get_timeout_line())
+			pirate_say(dialog.get_timeout_line(is_siphon_shakedown()))
 		else if(reason == "refused")
-			pirate_say(dialog.get_rejection_line())
+			pirate_say(dialog.get_rejection_line(is_siphon_shakedown()))
 		// else silent failure (destroyed, etc.)
 
 	// Send signal
@@ -565,7 +576,7 @@
 		return  // Negotiation ended before warning
 	if(!dialog)
 		return
-	pirate_say(dialog.get_escape_warning_line())
+	pirate_say(dialog.get_escape_warning_line(is_siphon_shakedown()))
 
 // ========== MISSION PAD LINKING ==========
 

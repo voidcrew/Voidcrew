@@ -27,6 +27,15 @@
 	var/list/movement_betrayal_lines = list("You tried that already! All weapons, FIRE!")
 	var/list/escape_warning_lines = list("And don't even think about running. Try to move or target us, and we'll gun you down.")
 
+	// Yellow-band shakedown variants. Weapons are barred outside red, so the threat
+	// behind these negotiations is the data siphon - the lines above would promise a
+	// broadside the pirate cannot fire. Picked instead whenever the negotiation
+	// reports itself as a shakedown; see /datum/pirate_negotiation/is_siphon_shakedown.
+	var/list/siphon_rejection_lines = list("Fine. We'll take it out of your accounts ourselves.")
+	var/list/siphon_timeout_lines = list("Time's up. We're taking it directly.")
+	var/list/siphon_movement_betrayal_lines = list("You tried that already! Hold them still and start the drain!")
+	var/list/siphon_escape_warning_lines = list("And don't try running. Move on us and we'll just take the money ourselves.")
+
 /**
  * Get a greeting line when hailing begins.
  */
@@ -69,15 +78,18 @@
 
 /**
  * Get a rejection line when player refuses.
+ *
+ * siphon_shakedown: TRUE for a yellow-band shakedown, where refusing means the
+ * pirate drains the accounts rather than opening fire.
  */
-/datum/pirate_faction_dialog/proc/get_rejection_line()
-	return pick(rejection_lines)
+/datum/pirate_faction_dialog/proc/get_rejection_line(siphon_shakedown = FALSE)
+	return pick(siphon_shakedown ? siphon_rejection_lines : rejection_lines)
 
 /**
  * Get a timeout line when patience runs out.
  */
-/datum/pirate_faction_dialog/proc/get_timeout_line()
-	return pick(timeout_lines)
+/datum/pirate_faction_dialog/proc/get_timeout_line(siphon_shakedown = FALSE)
+	return pick(siphon_shakedown ? siphon_timeout_lines : timeout_lines)
 
 /**
  * Get an impatience line with seconds remaining.
@@ -95,14 +107,14 @@
 /**
  * Get a line when player tries to move a second time (full betrayal).
  */
-/datum/pirate_faction_dialog/proc/get_movement_betrayal_line()
-	return pick(movement_betrayal_lines)
+/datum/pirate_faction_dialog/proc/get_movement_betrayal_line(siphon_shakedown = FALSE)
+	return pick(siphon_shakedown ? siphon_movement_betrayal_lines : movement_betrayal_lines)
 
 /**
  * Get an escape warning line (said after demand to warn about movement).
  */
-/datum/pirate_faction_dialog/proc/get_escape_warning_line()
-	return pick(escape_warning_lines)
+/datum/pirate_faction_dialog/proc/get_escape_warning_line(siphon_shakedown = FALSE)
+	return pick(siphon_shakedown ? siphon_escape_warning_lines : escape_warning_lines)
 
 // ========== FACTION SUBTYPES ==========
 
@@ -164,6 +176,23 @@
 		"Any attempt to flee or engage our vessels will be considered an act of tax terrorism.",
 		"Do not attempt evasion. Our enforcement drones will pursue and eliminate.",
 	)
+	siphon_rejection_lines = list(
+		"Refusal noted. Switching to direct account levy.",
+		"You've chosen the hard way. We'll garnish it at the source.",
+		"Non-compliance recorded. Your accounts are now subject to seizure.",
+	)
+	siphon_timeout_lines = list(
+		"Your payment window has closed. Automatic collection begins now.",
+		"Time's up. We'll debit the balance ourselves.",
+	)
+	siphon_movement_betrayal_lines = list(
+		"Repeat evasion attempt logged. Levy the accounts.",
+		"You were warned. Direct seizure authorized.",
+	)
+	siphon_escape_warning_lines = list(
+		"Do not attempt evasion. We can pull the funds whether you cooperate or not.",
+		"Running only changes how we collect, not whether we do.",
+	)
 
 /**
  * Skeleton - The Flying Dutchman
@@ -222,6 +251,23 @@
 	escape_warning_lines = list(
 		"Flee... and the curse will find you... There is no escape from the Dutchman...",
 		"Do not attempt to run... The dead are patient... and relentless...",
+	)
+	siphon_rejection_lines = list(
+		"Then we take it from your coffers ourselves... You'll not miss it...",
+		"So be it... The gold comes to us either way...",
+		"A foolish choice... We'll empty your accounts and sail on...",
+	)
+	siphon_timeout_lines = list(
+		"Your silence costs you... We take the gold ourselves now...",
+		"The Dutchman waits no longer... Your coffers are ours...",
+	)
+	siphon_movement_betrayal_lines = list(
+		"Twice you flee... Hold them fast, and take every coin...",
+		"You'll not slip away... Drain them dry...",
+	)
+	siphon_escape_warning_lines = list(
+		"Run if you like... The gold sails to us all the same...",
+		"You cannot outrun a debt... We'll pull it from your coffers ourselves...",
 	)
 
 /**
@@ -283,6 +329,23 @@
 		"Don't even THINK about running bro, we got toolboxes and we're not afraid to use them!",
 		"Try to dip and we'll robust you SO hard!",
 	)
+	siphon_rejection_lines = list(
+		"Bro really? Fine, we're just hacking your account then.",
+		"Your loss! We'll take it ourselves, nerd!",
+		"Aight, siphon time. Should've just paid.",
+	)
+	siphon_timeout_lines = list(
+		"TOO SLOW! We're draining your account!",
+		"That's it, I'm bored. Taking it myself!",
+	)
+	siphon_movement_betrayal_lines = list(
+		"AGAIN?! Okay that's IT! Hold em still, I'm siphoning!",
+		"You just don't learn! Draining you dry!",
+	)
+	siphon_escape_warning_lines = list(
+		"Don't even THINK about running bro, we'll just yoink the credits.",
+		"Try to dip and we take it out of your account anyway!",
+	)
 
 /**
  * Medieval - Space Knights
@@ -341,6 +404,23 @@
 	escape_warning_lines = list(
 		"Flee not, coward! Any attempt to escape shall be met with righteous fury!",
 		"A knight never runs, and neither shall you. Stay your engines, or face our wrath!",
+	)
+	siphon_rejection_lines = list(
+		"So be it! We shall levy the tribute ourselves!",
+		"You have chosen... poorly. Take what is owed!",
+		"Then the Order collects by its own hand!",
+	)
+	siphon_timeout_lines = list(
+		"The time for parley has ended! Seize the tribute!",
+		"Your hesitation dishonors us both! We take what we are owed!",
+	)
+	siphon_movement_betrayal_lines = list(
+		"TWICE you show cowardice?! Hold them fast and take the tribute!",
+		"Your dishonor knows no bounds! Empty their coffers!",
+	)
+	siphon_escape_warning_lines = list(
+		"Flee not, knave! The tribute shall be taken from thy coffers regardless!",
+		"A knight never runs. Run, and we simply help ourselves to thy purse!",
 	)
 
 /**
@@ -401,6 +481,23 @@
 		"Do not presume to flee from your betters. The Dynasty's reach is absolute.",
 		"Attempt to run, and we will make an example of you. The Dynasty does not tolerate cowardice.",
 	)
+	siphon_rejection_lines = list(
+		"How dare you. Very well - the Dynasty will help itself.",
+		"Insolence. We will take it from your accounts directly.",
+		"You refuse? Then you have no say in how much we take.",
+	)
+	siphon_timeout_lines = list(
+		"We do not wait for commoners. Take it from their accounts.",
+		"Your indecision bores us. Begin the withdrawal.",
+	)
+	siphon_movement_betrayal_lines = list(
+		"Twice you insult the Dynasty?! Hold them and empty their accounts!",
+		"Your insolence knows no bounds! Take everything we are owed!",
+	)
+	siphon_escape_warning_lines = list(
+		"Do not presume to flee. Your accounts are already within our reach.",
+		"Run if you must. The Dynasty will simply collect without your cooperation.",
+	)
 
 /**
  * Interdyne - Ex-Pharmacists / Corporate
@@ -460,6 +557,23 @@
 		"Evasion protocols are inadvisable. Our targeting systems have already achieved lock.",
 		"Any attempt to flee will trigger immediate termination protocols. Compliance is optimal.",
 	)
+	siphon_rejection_lines = list(
+		"Non-compliance detected. Switching to direct account extraction.",
+		"Rejected. Funds will be recovered without your authorization.",
+		"Your refusal has been noted. Beginning unassisted transfer.",
+	)
+	siphon_timeout_lines = list(
+		"Negotiation window expired. Initiating direct fund recovery.",
+		"Compliance window exceeded. Extracting payment automatically.",
+	)
+	siphon_movement_betrayal_lines = list(
+		"Second evasion attempt logged. Immobilize and begin extraction.",
+		"Continued non-compliance detected. Direct account access authorized.",
+	)
+	siphon_escape_warning_lines = list(
+		"Evasion is inadvisable. Our systems can reach your accounts from here.",
+		"Flight does not prevent collection. It only removes your say in the amount.",
+	)
 
 /**
  * Lustrous - Ethereal/Bluespace Entities
@@ -518,4 +632,21 @@
 	escape_warning_lines = list(
 		"Do not attempt to phase away... The Collective perceives all trajectories...",
 		"Flight is... meaningless... We exist in all frequencies... You cannot escape...",
+	)
+	siphon_rejection_lines = list(
+		"Then the Collective takes what it requires... directly...",
+		"Your refusal changes nothing... The wealth flows to us either way...",
+		"So be it. We will draw it from your accounts ourselves...",
+	)
+	siphon_timeout_lines = list(
+		"Your silence speaks volumes... We take it now...",
+		"The resonance fades... The Collective collects...",
+	)
+	siphon_movement_betrayal_lines = list(
+		"Twice you try to phase away... Hold them, and draw it out...",
+		"Your resistance is... irritating. We take the wealth directly.",
+	)
+	siphon_escape_warning_lines = list(
+		"Do not attempt to phase away... Your accounts resonate within our reach...",
+		"Flight is meaningless... The wealth comes to us regardless...",
 	)

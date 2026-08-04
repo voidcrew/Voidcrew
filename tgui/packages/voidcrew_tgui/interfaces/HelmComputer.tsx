@@ -13,6 +13,10 @@
  * in DM at all; we glide the camera and the token over exactly `moveIntervalMs`
  * — the same interval the move timer is scheduled on — so each authoritative
  * jump reads as continuous flight.
+ *
+ * Flight is fly-by-wire: the rose — or W/A/S/D at the keyboard — commands a
+ * course, and the ship sheds contrary drift, burns up to its cruise speed and
+ * coasts holding it. See the key handler in Faceplate.
  */
 import {
   createContext,
@@ -23,6 +27,8 @@ import {
   useState,
 } from 'react';
 import { Input } from 'tgui-core/components';
+import { globalEvents } from 'tgui-core/events';
+import { acquireHotKey, releaseHotKey } from 'tgui-core/hotkeys';
 import { type BooleanLike } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
@@ -160,6 +166,8 @@ type Autopilot = {
   label: string | null;
   /** Why the last course ended, shown until a new one is plotted. */
   status: string | null;
+  /** The plotted course ends in a docking approach, not just an arrival. */
+  dockOnArrival?: BooleanLike;
   destX?: number;
   destY?: number;
   remaining?: number;
@@ -217,6 +225,16 @@ type Data = {
   moveIntervalMs: number;
   burnDirection: number;
   burnPercentage: number;
+  /**
+   * The course the pilot has commanded, as BYOND dir bits, or 0 for none.
+   * Outlives the burn: while cruising the engines are cold but this still
+   * carries the direction the ship is holding. The rose lights from this.
+   */
+  commandedCourse: number;
+  /** Tiles/min the throttle is currently trimming the cruise toward. */
+  cruiseTargetSpeed: number;
+  /** Tiles/min at or below which Dock auto-stops the ship. Server enforces the same. */
+  dockAssistMaxSpeed: number;
 
   sensorRange: number;
   scanCooldown: BooleanLike;
@@ -288,6 +306,30 @@ const DIR_VECTOR: Record<number, [number, number]> = {
   6: [1, -1],
   10: [-1, -1],
 };
+
+/** Keyboard steering: event.code → the compass bit that key presses. */
+const KEY_AXIS: Record<string, number> = {
+  KeyW: DIR.N,
+  ArrowUp: DIR.N,
+  KeyS: DIR.S,
+  ArrowDown: DIR.S,
+  KeyD: DIR.E,
+  ArrowRight: DIR.E,
+  KeyA: DIR.W,
+  ArrowLeft: DIR.W,
+};
+
+/**
+ * Keycodes the manual-control toggle takes away from the game while armed.
+ *
+ * tgui forwards letter keys to the BYOND client as movement/hotkey macros —
+ * that is how you walk around with a UI focused — so steering on W/A/S/D
+ * without acquiring them flies the ship AND marches the pilot into a wall.
+ * X (swap hands in game) rides along for the coast key. Arrows and Space are
+ * in tgui's default acquired set and never reach the game from a focused
+ * window, which is why they are absent here.
+ */
+const STEER_KEYCODES = [87, 65, 83, 68, 88]; // W A S D X
 
 /**
  * The chart's contact taxonomy.
@@ -396,6 +438,15 @@ const deciToClock = (ds: number) => clockOf(deciToSeconds(ds) * 1000);
 /** Contacts are keyed by ref where they have one; live ship tracks don't. */
 const contactKey = (contact: Pick<Contact, 'ref' | 'name' | 'x' | 'y'>) =>
   contact.ref ?? `${contact.name}-${contact.x}-${contact.y}`;
+
+/**
+ * Whether "Travel & dock" can be offered on a contact: only the kinds a ship
+ * can actually berth into, and only from a distance — on top of one, the Dock
+ * button already does the job.
+ */
+const DOCKABLE_KINDS: ContactKind[] = ['planet', 'ruin', 'outpost'];
+const canTravelDock = (contact: Contact) =>
+  DOCKABLE_KINDS.includes(contact.kind) && contact.dist > 0 && !!contact.target;
 
 /**
  * Port of overmap_delta_to_compass() in ship_waypoints.dm — the 0.4142 is
@@ -595,8 +646,9 @@ export const HelmComputer = () => {
 };
 
 const Faceplate = () => {
-  const { data } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const { shipCrashed, repairCurrent, repairTotal } = data;
+  const locked = useLocked();
   const rootRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [dockMenu, setDockMenu] = useState<{
@@ -657,6 +709,154 @@ const Faceplate = () => {
     });
   };
 
+  /**
+   * Whether the keyboard is currently steering the ship. Off, every key does
+   * what it always did — including walking your character, which is exactly
+   * why steering can't simply be always-on: tgui forwards letters to the game,
+   * so unarmed W/A/S/D would fly the ship and march the pilot at once. The
+   * switch lives in the Helm panel's caption; closing the console or losing
+   * flight state disarms it.
+   */
+  const [manualControl, setManualControl] = useState(false);
+
+  // The key handler below registers once, so it reads the live gate state
+  // through this ref rather than closing over one render's worth of it.
+  // Abandoned is its own gate: useLocked() deliberately unlocks an abandoned
+  // ship so the claim button works, but every mouse control sits behind the
+  // claim overlay — the keyboard must not steer past it unclaimed.
+  const keyGuards = useRef({
+    manual: false,
+    locked: true,
+    flying: false,
+    crashed: false,
+    abandoned: false,
+  });
+  keyGuards.current = {
+    manual: manualControl,
+    locked,
+    flying: data.state === 'flying',
+    crashed: !!shipCrashed,
+    abandoned: !!data.isAbandoned,
+  };
+
+  // Manual control is an in-flight mode: a docked, crashed or spectating
+  // console hands the keyboard back rather than sitting on dead keys.
+  const canManualControl = !locked && data.state === 'flying' && !shipCrashed;
+  useEffect(() => {
+    if (manualControl && !canManualControl) setManualControl(false);
+  }, [manualControl, canManualControl]);
+
+  /**
+   * Whether this window currently has the keyboard. The manual-control claim
+   * only exists inside the window's own input handling — unfocused, keystrokes
+   * go straight to the BYOND client and walk the pilot as normal, whatever the
+   * switch says — so the switch reads "live" only while this is true, and
+   * "armed" while it merely waits for the window to be clicked back into.
+   * tgui-core's focus signal is debounced, so focus hopping between elements
+   * inside the window doesn't flicker it.
+   */
+  const [windowFocused, setWindowFocused] = useState(() => document.hasFocus());
+  useEffect(() => {
+    const onFocusChange = (focused: boolean) => setWindowFocused(focused);
+    globalEvents.on('window-focus-change', onFocusChange);
+    return () => globalEvents.off('window-focus-change', onFocusChange);
+  }, []);
+
+  /**
+   * While armed, take the steering letters away from the game so the pilot's
+   * character stands fast. Acquire/release is tgui's own claim mechanism —
+   * preventDefault can't do this job, because the passthrough that forwards
+   * keys to BYOND has usually already run by the time this handler sees the
+   * event. Paired exactly: armed acquires, the cleanup releases on disarm and
+   * on unmount, so a closed console never leaves W/A/S/D dead.
+   */
+  useEffect(() => {
+    if (!manualControl) return;
+    for (const code of STEER_KEYCODES) acquireHotKey(code);
+    return () => {
+      for (const code of STEER_KEYCODES) releaseHotKey(code);
+    };
+  }, [manualControl]);
+
+  /**
+   * Keyboard steering, live only while manual control is armed (the switch in
+   * the Helm panel's caption — see the acquisition effect above for why it
+   * can't be always-on). W/A/S/D and the arrow keys command a course from the
+   * union of the held movement keys (opposite keys cancel on their axis);
+   * Space brakes, and pressing it again while braking coasts — the server owns
+   * that toggle; X cuts straight to coast. Tap-to-command rather than
+   * hold-to-thrust: velocity persists in space, so a held key would add
+   * nothing over a press, and the commanded course lives server-side until it
+   * is replaced — which is why releasing a key sends nothing.
+   *
+   * Stands down over any typing surface (the rename field must never steer
+   * the ship), over modifier chords, and behind anything that consumed the
+   * key first — the throttle's own arrow handling preventDefaults, and this
+   * defers to it. preventDefault here is limited to keys actually handled, so
+   * Space and the arrows keep their scroll behaviour wherever this declines.
+   */
+  useEffect(() => {
+    // Effect-closure state, same lifetime as a ref since this registers once.
+    // Cleared on window blur so a key released while the client is unfocused
+    // can't stay "held" forever.
+    const held = new Set<string>();
+    const courseOfHeld = () => {
+      let dir = 0;
+      for (const code of held) dir |= KEY_AXIS[code] ?? 0;
+      if ((dir & DIR.N) !== 0 && (dir & DIR.S) !== 0) dir &= ~(DIR.N | DIR.S);
+      if ((dir & DIR.E) !== 0 && (dir & DIR.W) !== 0) dir &= ~(DIR.E | DIR.W);
+      return dir;
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      const guards = keyGuards.current;
+      if (!guards.manual) return;
+      if (guards.locked || !guards.flying || guards.crashed || guards.abandoned)
+        return;
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      if (event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (event.code === 'Space') {
+        event.preventDefault();
+        if (!event.repeat) act('stop');
+        return;
+      }
+      if (event.code === 'KeyX') {
+        event.preventDefault();
+        if (!event.repeat) act('set_course', { dir: 0 });
+        return;
+      }
+      if (!(event.code in KEY_AXIS)) return;
+      event.preventDefault();
+      if (event.repeat || held.has(event.code)) return;
+      held.add(event.code);
+      const dir = courseOfHeld();
+      // Zero means the new key cancelled a held one out. Command nothing
+      // rather than a coast the pilot didn't ask for.
+      if (dir) act('set_course', { dir });
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      held.delete(event.code);
+    };
+    const onBlur = () => held.clear();
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+    };
+    // act is the stable module-level sendAct, so this registers exactly once.
+  }, [act]);
+
   return (
     <MenuControl.Provider value={openMenu}>
       <DockMenuControl.Provider value={openDockPicker}>
@@ -708,10 +908,40 @@ const Faceplate = () => {
             <Drawer />
           </Panel>
 
-          <Panel rect={GEOMETRY.THROT} label="Throttle">
+          <Panel rect={GEOMETRY.THROT} label="Throttle" aux="cruise">
             <Throttle />
           </Panel>
-          <Panel rect={GEOMETRY.ROSE} label="Helm">
+          <Panel
+            rect={GEOMETRY.ROSE}
+            label="Helm"
+            action={
+              <button
+                type="button"
+                className={`Helm__btn Helm__wellAction ${
+                  manualControl
+                    ? windowFocused
+                      ? 'Helm--on'
+                      : 'Helm--armed'
+                    : ''
+                }`}
+                disabled={!canManualControl}
+                title={
+                  !manualControl
+                    ? 'Steer from the keyboard: WASD and arrows fly, Space brakes, X coasts. Your character stands fast while it is on.'
+                    : windowFocused
+                      ? 'Keyboard is steering the ship — click to hand W/A/S/D back to your character'
+                      : 'Armed — steering resumes when this console window is focused. Right now your keys move your character as normal.'
+                }
+                onClick={() => setManualControl(!manualControl)}
+              >
+                {manualControl
+                  ? windowFocused
+                    ? 'wasd · live'
+                    : 'wasd · armed'
+                  : 'wasd'}
+              </button>
+            }
+          >
             <HelmRose />
           </Panel>
           <Panel rect={GEOMETRY.VELOC} label="Velocity">
@@ -752,9 +982,12 @@ const Panel = (props: {
   rect: Rect;
   label?: string;
   aux?: string;
+  /** Right-aligned control in the caption bar — the label row is the only
+   * chrome a well owns, so a panel-scoped switch lives there or nowhere. */
+  action?: React.ReactNode;
   children;
 }) => {
-  const { rect, label, aux, children } = props;
+  const { rect, label, aux, action, children } = props;
   return (
     <div className="Helm__panel" style={panelStyle(rect)}>
       <div className={`Helm__well ${label ? 'Helm__well--labelled' : ''}`}>
@@ -762,6 +995,7 @@ const Panel = (props: {
           <div className="Helm__wellLabel">
             {label}
             {!!aux && <span className="Helm__wellAux">/ {aux}</span>}
+            {action}
           </div>
         )}
         {children}
@@ -997,7 +1231,9 @@ const AlertStrip = () => {
   if (data.autopilot?.engaged) {
     alerts.push([
       'info',
-      `Autopilot — ${data.autopilot.label ?? 'plotted course'} in ${data.autopilot.remaining ?? 0}`,
+      `Autopilot — ${data.autopilot.label ?? 'plotted course'} in ${data.autopilot.remaining ?? 0}${
+        data.autopilot.dockOnArrival ? ' · docking on arrival' : ''
+      }`,
     ]);
   }
   if (data.hiddenInNebula) {
@@ -2623,7 +2859,7 @@ const ContactMark = (props: {
             colour={colour}
           />
         )}
-        {labelled && (
+        {!!labelled && (
           // Sits inside the counter-scale group, so this is a constant size on
           // screen at every zoom. One SVG unit is only ~1.3 screen pixels here,
           // which is why the old 5.2 rendered at about six pixels.
@@ -2788,20 +3024,36 @@ const ContactMenu = (props: {
     });
   }
 
+  const blocked =
+    state !== 'flying'
+      ? 'Requires flight'
+      : shipDisabled
+        ? 'Systems offline'
+        : !canThrust
+          ? 'No engine power'
+          : undefined;
+
   if (!here) {
-    const blocked =
-      state !== 'flying'
-        ? 'Requires flight'
-        : shipDisabled
-          ? 'Systems offline'
-          : !canThrust
-            ? 'No engine power'
-            : undefined;
     items.push({
       label: contact ? `Set course · ${contact.name}` : 'Set course here',
       hint: blocked ?? 'Routes around known hazards',
       disabled: locked || !!blocked,
       onClick: () => act('autopilot', { x: tile.x, y: tile.y }),
+    });
+  }
+
+  if (contact && canTravelDock(contact)) {
+    items.push({
+      label: `Travel & dock · ${contact.name}`,
+      hint: blocked ?? 'Flies there, then begins docking',
+      disabled: locked || !!blocked,
+      onClick: () =>
+        act('autopilot', {
+          x: tile.x,
+          y: tile.y,
+          dock: 1,
+          target: contact.target,
+        }),
     });
   }
 
@@ -3331,6 +3583,48 @@ const ContactList = () => {
                       </button>
                     )}
                   </span>
+                  {/*
+                   * The same course actions the right-click menu leads with,
+                   * surfaced on the selected row — a context menu is an
+                   * invisible affordance, and these are the two things a
+                   * navigator actually does from the register. stopPropagation
+                   * keeps a button press from re-toggling the selection.
+                   */}
+                  {selected === key && !locked && (
+                    <div className="Helm__rowActions">
+                      {contact.dist > 0 && (
+                        <button
+                          type="button"
+                          className="Helm__btn"
+                          title="Autopilot flies there — routes around known hazards"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            act('autopilot', { x: contact.x, y: contact.y });
+                          }}
+                        >
+                          Set course
+                        </button>
+                      )}
+                      {!!canTravelDock(contact) && (
+                        <button
+                          type="button"
+                          className="Helm__btn"
+                          title="Flies there, then begins docking"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            act('autopilot', {
+                              x: contact.x,
+                              y: contact.y,
+                              dock: 1,
+                              target: contact.target,
+                            });
+                          }}
+                        >
+                          Travel &amp; dock
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -3563,7 +3857,7 @@ const Throttle = () => {
         className="Helm__throttleTrack"
         role="slider"
         tabIndex={locked ? -1 : 0}
-        aria-label="Burn percentage"
+        aria-label="Cruise throttle"
         aria-valuemin={1}
         aria-valuemax={100}
         aria-valuenow={burnPercentage}
@@ -3645,10 +3939,22 @@ const ROSE_CELLS: [string, number, number][] = [
   ['Southeast', DIR.SE, 135],
 ];
 
+/**
+ * The steering rose. Direction cells light from the COMMANDED course, not the
+ * burn: fly-by-wire holds the course after the engines cut, so a lit cell over
+ * a cold burn means the ship is cruising that way. Clicking the lit cell
+ * coasts; the centre cell is always brake.
+ */
 const HelmRose = () => {
   const { act, data } = useBackend<Data>();
-  const { burnDirection, canThrust, shipDisabled, state, zone_transitioning } =
-    data;
+  const {
+    burnDirection,
+    commandedCourse,
+    canThrust,
+    shipDisabled,
+    state,
+    zone_transitioning,
+  } = data;
   const locked = useLocked();
 
   const flyable = state === 'flying' && !shipDisabled && !locked;
@@ -3659,13 +3965,15 @@ const HelmRose = () => {
       <div className="Helm__roseGrid">
         {ROSE_CELLS.map(([name, direction, rotation]) => {
           const isStop = direction === BURN_STOP;
-          const lit = burnDirection === direction;
+          const lit = isStop
+            ? burnDirection === BURN_STOP
+            : commandedCourse === direction;
           return (
             <button
               key={name}
               type="button"
               className={`Helm__dirBtn ${isStop ? 'Helm--stop' : ''} ${lit ? 'Helm--lit' : ''}`}
-              aria-label={isStop ? 'Brake' : `Set heading ${name.toLowerCase()}`}
+              aria-label={isStop ? 'Brake' : `Fly ${name.toLowerCase()}`}
               title={
                 isStop
                   ? zone_transitioning
@@ -3673,7 +3981,9 @@ const HelmRose = () => {
                     : burnDirection === BURN_STOP
                       ? 'Braking — click to coast'
                       : 'Brake'
-                  : name
+                  : lit
+                    ? `Flying ${name.toLowerCase()} — click to coast`
+                    : `Fly ${name.toLowerCase()} — drift is shed automatically`
               }
               disabled={isStop ? !flyable && !zone_transitioning : !canMove}
               onClick={() =>
@@ -3697,8 +4007,25 @@ const HelmRose = () => {
 
 const VelocityCluster = () => {
   const { data } = useBackend<Data>();
-  const { speed = 0, heading, eta, burnPercentage, burnDirection } = data;
+  const {
+    speed = 0,
+    heading,
+    eta,
+    burnPercentage,
+    burnDirection,
+    commandedCourse,
+    cruiseTargetSpeed,
+  } = data;
   const drift = useDrift(useContacts());
+
+  // CRUISE is derived, not sent: a commanded course with the burn out and way
+  // on the ship is, by definition, the coast phase of fly-by-wire.
+  const courseVector =
+    commandedCourse !== BURN_NONE && burnDirection === BURN_NONE && speed > 0
+      ? DIR_VECTOR[commandedCourse]
+      : undefined;
+  const showCruiseTarget =
+    Number.isFinite(cruiseTargetSpeed) && cruiseTargetSpeed > 0;
 
   return (
     <div className="Helm__velocity">
@@ -3714,9 +4041,11 @@ const VelocityCluster = () => {
               ? 'Brake'
               : burnDirection !== BURN_NONE
                 ? heading
-                : drift
-                  ? `Coast ${bearingOf(drift.vector[0], drift.vector[1])}`
-                  : 'Hold'}
+                : courseVector
+                  ? `Cruise ${bearingOf(courseVector[0], courseVector[1])}`
+                  : drift
+                    ? `Coast ${bearingOf(drift.vector[0], drift.vector[1])}`
+                    : 'Hold'}
           </span>
         </div>
         {/* The tile clock, not an arrival time — see the HUD copy of it. */}
@@ -3726,10 +4055,19 @@ const VelocityCluster = () => {
             {eta || '—'}
           </span>
         </div>
-        <div className="Helm__metric">
+        <div
+          className="Helm__metric"
+          title="Throttle sets both the burn intensity and the cruise speed the ship holds"
+        >
           <span className="Helm__k">Throttle</span>
           <span className="Helm__v" style={{ fontSize: '1cqw' }}>
             {burnPercentage}%
+            {!!showCruiseTarget && (
+              <span style={{ fontSize: '0.8cqw', color: '#7d8f94' }}>
+                {' '}
+                → {cruiseTargetSpeed.toFixed(1)} t/min
+              </span>
+            )}
           </span>
         </div>
       </div>
@@ -3792,11 +4130,18 @@ const OpsRow = () => {
     calibrating,
     dockOptions,
     speed,
+    dockAssistMaxSpeed,
   } = data;
   const locked = useLocked();
   const openDockPicker = useContext(DockMenuControl);
   const flyable = state === 'flying' && !shipDisabled && !locked;
-  const moving = !!speed;
+  // Dock assist: at or below the limit the ship kills its remaining way itself
+  // before the warmup starts — the server enforces the same threshold, this
+  // gate just keeps the button honest about it. A server that doesn't send the
+  // limit falls back to 0 here, which is the old dead-stop rule.
+  const dockSpeedLimit = dockAssistMaxSpeed ?? 0;
+  const tooFastToDock = speed > dockSpeedLimit;
+  const autoStopping = speed > 0 && !tooFastToDock;
 
   const options = dockOptions ?? [];
   const multipleDockOptions = options.length > 1;
@@ -3846,6 +4191,31 @@ const OpsRow = () => {
     return 'Clear moorings and get underway';
   };
 
+  const dockReason = () => {
+    if (dockWarmup) return `Docking in ${deciToSeconds(dockWarmupRemaining)}s`;
+    if (manoeuvring) return manoeuvringLabel;
+    if (tooFastToDock) {
+      return dockSpeedLimit > 0
+        ? `Slow below ${dockSpeedLimit} tiles/min to make a docking approach`
+        : multipleDockOptions
+          ? 'Come to a full stop to dock'
+          : `Come to a full stop to dock with ${dockName}`;
+    }
+    if (multipleDockOptions) {
+      return autoStopping
+        ? `Auto-stop, then choose from ${options.length} docking options here`
+        : `Choose from ${options.length} docking options here`;
+    }
+    if (primaryDockOption?.isEmpty) {
+      return autoStopping
+        ? 'Auto-stop and hold position here in empty space'
+        : 'Hold position here in empty space';
+    }
+    return autoStopping
+      ? `Auto-stop and dock with ${dockName}`
+      : `Dock with ${dockName}`;
+  };
+
   return (
     <div className="Helm__ops">
       <OpsButton
@@ -3892,27 +4262,13 @@ const OpsRow = () => {
         path="M12 3v10m0 0l-3-3m3 3l3-3M4 17h16v4H4z"
         disabled={
           !flyable ||
-          moving ||
+          tooFastToDock ||
           !!dockWarmup ||
           !!zone_transitioning ||
           !!hiddenInNebula
         }
         state={dockWarmup ? 'armed' : undefined}
-        title={
-          dockWarmup
-            ? `Docking in ${deciToSeconds(dockWarmupRemaining)}s`
-            : manoeuvring
-              ? manoeuvringLabel
-              : moving
-                ? multipleDockOptions
-                  ? 'Come to a full stop to dock'
-                  : `Come to a full stop to dock with ${dockName}`
-                : multipleDockOptions
-                  ? `Choose from ${options.length} docking options here`
-                  : primaryDockOption?.isEmpty
-                    ? 'Hold position here in empty space'
-                    : `Dock with ${dockName}`
-        }
+        title={dockReason()}
         onClick={(event) =>
           multipleDockOptions ? openDockPicker(event) : runDock(primaryDockOption)
         }

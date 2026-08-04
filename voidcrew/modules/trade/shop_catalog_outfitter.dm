@@ -41,6 +41,7 @@
 		"Intel & Charts",
 		"Blueprints",
 		"Barter Deals",
+		"Back Room",
 	)
 	sku_types = list(
 		// Armor
@@ -145,6 +146,12 @@
 		/datum/shop_sku/outfitter/rare/compact_defib,
 		/datum/shop_sku/outfitter/rare/ion_rifle,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
+	)
+	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	favor_sku_types = list(
+		/datum/shop_sku/favor/skunkworks_cell,
+		/datum/shop_sku/favor/fitter_gauntlets,
+		/datum/shop_sku/favor/maneuvering_harness,
 	)
 	// Sarge buys serviceable salvage — arms and armor off whoever stopped
 	// needing them — plus field materials off planet megafauna and crust
@@ -788,3 +795,23 @@
 	barter_amount = 10
 	stock_min = 1
 	stock_max = 2
+
+// ===== BACK ROOM =====
+// Sarge's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// per crew per round. Priced above the rare shelf on purpose — standing opens
+// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+
+/datum/shop_sku/favor/skunkworks_cell
+	item_path = /obj/item/stock_parts/power_store/cell/skunkworks
+	price_credits = 4200
+	price_vouchers = 2
+
+/datum/shop_sku/favor/fitter_gauntlets
+	item_path = /obj/item/clothing/gloves/tinkerer/fitter
+	price_credits = 3600
+	price_vouchers = 2
+
+/datum/shop_sku/favor/maneuvering_harness
+	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
+	price_credits = 3800
+	price_vouchers = 2

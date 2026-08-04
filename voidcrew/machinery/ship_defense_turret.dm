@@ -44,7 +44,13 @@
 	integrity_failure = 0.1
 	armor_type = /datum/armor/machinery_ship_defense_turret
 
-	faction = list(FACTION_NEUTRAL, FACTION_SILICON, FACTION_TURRET)
+	// Deliberately NOT FACTION_NEUTRAL, which the station turrets carry. FACTION_NEUTRAL is
+	// the default on /mob, so every creature that never bothered to set a faction - bears,
+	// polar bears, migos, geese, ants - would count as friendly. That cuts both ways through
+	// in_faction(): the turret refuses to shoot them, and both AI targeting paths refuse to
+	// let them fight back, so the turret is invulnerable to exactly the wildlife it exists
+	// to shoot. Bots and other turrets are still spared by the two factions left here.
+	faction = list(FACTION_SILICON, FACTION_TURRET)
 
 	/// Swings from a creature needed to knock this out. Each one deals a flat share of max_integrity.
 	var/mob_hits_to_disable = 3
@@ -266,6 +272,13 @@
 	ricochets_max = 0
 	ricochet_chance = 0
 	reflectable = FALSE
+	// The turret is sunk into hull plating and fires along the outside of its own ship, so
+	// most of what sits between the muzzle and a target is the ship itself - a corner of
+	// plating on a diagonal shot, an airlock, a window, a crate someone left on the pad.
+	// Phasing through all of it means the turret never burns holes in the hull it is bolted
+	// to and never loses a shot to a wall the target is walking past. Nothing in this set is
+	// a creature, so the crew-safety rules in can_hit_target() are unaffected.
+	projectile_phasing = PASSTABLE | PASSGLASS | PASSGRILLE | PASSCLOSEDTURF | PASSMACHINE | PASSSTRUCTURE | PASSDOORS
 
 /obj/projectile/beam/ship_defense/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE, cross_failed = FALSE)
 	// Deliberately not exempting direct_target: if the thing we were aimed at stopped

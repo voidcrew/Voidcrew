@@ -19,7 +19,7 @@ type CatalogSku = {
   name: string;
   desc: string;
   category: string;
-  shelf: 'core' | 'rotating' | 'rare';
+  shelf: 'core' | 'rotating' | 'rare' | 'favor';
   icon: string | null;
   price_credits: number;
   final_credits: number;
@@ -27,6 +27,8 @@ type CatalogSku = {
   discount_pct: number;
   price_text: string;
   barter: BooleanLike;
+  favor_required: number;
+  crew_limit: number;
 };
 
 type StockState = {
@@ -34,6 +36,18 @@ type StockState = {
   stock: number;
   can_buy: BooleanLike;
   denial: string | null;
+  final_credits: number;
+  crew_remaining: number | null;
+  favor_locked: BooleanLike;
+};
+
+type FavorStanding = {
+  points: number;
+  tier: number;
+  tier_name: string;
+  discount_pct: number;
+  next_at: number;
+  trader: string;
 };
 
 type LedgerEntry = {
@@ -68,12 +82,39 @@ type Data = {
   account_credits: number | null;
   stock_states: StockState[];
   ledger_states: LedgerState[];
+  favor?: FavorStanding;
 };
 
 const SHELF_TAGS = {
   rotating: { label: 'LIMITED', color: 'average' },
   rare: { label: 'RARE FIND', color: 'purple' },
+  favor: { label: 'BACK ROOM', color: 'orange' },
 } as const;
+
+const StandingHeader = (props: { favor: FavorStanding }) => {
+  const { favor } = props;
+  const tierColor =
+    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
+  return (
+    <Box inline nowrap color="label" fontSize={1} fontWeight="normal">
+      <Box inline bold color={tierColor}>
+        {favor.tier_name}
+      </Box>
+      {favor.discount_pct > 0 && (
+        <Box inline color="good">
+          {' '}
+          −{favor.discount_pct}%
+        </Box>
+      )}
+      {favor.next_at > 0 && (
+        <Box inline color="label">
+          {' '}
+          ({favor.points}/{favor.next_at})
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 const WalletHeader = (props: {
   held_vouchers: number;
@@ -116,8 +157,8 @@ const ProductImage = (props: { icon: string | null }) => {
   );
 };
 
-const PriceTag = (props: { sku: CatalogSku }) => {
-  const { sku } = props;
+const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
+  const { sku, finalCredits } = props;
   if (sku.barter) {
     return (
       <Box inline bold color="teal">
@@ -125,7 +166,9 @@ const PriceTag = (props: { sku: CatalogSku }) => {
       </Box>
     );
   }
-  const discounted = sku.discount_pct > 0 && sku.price_credits > 0;
+  // Struck-through whenever the buyer's real price beats the sticker —
+  // authored special or their crew's favor discount, whichever applied
+  const discounted = sku.price_credits > 0 && finalCredits < sku.price_credits;
   return (
     <Box inline textAlign="right">
       {sku.price_vouchers > 0 && (
@@ -150,7 +193,7 @@ const PriceTag = (props: { sku: CatalogSku }) => {
             </Box>
           )}{' '}
           <Box inline bold color="gold">
-            {sku.final_credits} cr
+            {finalCredits} cr
           </Box>
         </>
       )}
@@ -170,17 +213,24 @@ const SkuRow = (props: {
 }) => {
   const { act } = useBackend<Data>();
   const { sku, live, barred } = props;
+  const isFavor = sku.shelf === 'favor';
   const stock = live?.stock ?? 0;
-  const soldOut = stock <= 0;
+  // The back room never runs a shared shelf dry — its scarcity is the
+  // per-crew cap, shown in the stock column instead
+  const soldOut = isFavor
+    ? (live?.crew_remaining ?? 0) <= 0 && live?.crew_remaining !== null
+    : stock <= 0;
+  const locked = !!live?.favor_locked;
   const shelfTag = SHELF_TAGS[sku.shelf as keyof typeof SHELF_TAGS];
+  const finalCredits = live?.final_credits ?? sku.final_credits;
 
   const buyButton = (
     <Button
       disabled={!live?.can_buy}
-      icon="cart-shopping"
+      icon={locked ? 'lock' : 'cart-shopping'}
       onClick={() => act('buy', { ref: sku.ref })}
     >
-      {soldOut ? 'Sold out' : 'Buy'}
+      {locked ? 'Locked' : soldOut ? 'Sold out' : 'Buy'}
     </Button>
   );
 
@@ -189,7 +239,7 @@ const SkuRow = (props: {
       align="center"
       py={0.5}
       className="candystripe"
-      opacity={soldOut ? 0.5 : 1}
+      opacity={soldOut || locked ? 0.5 : 1}
     >
       <Stack.Item>
         <ProductImage icon={sku.icon} />
@@ -206,6 +256,11 @@ const SkuRow = (props: {
             <Box inline color={shelfTag.color} fontSize="0.8em" bold>
               {shelfTag.label}
             </Box>
+          )}{' '}
+          {isFavor && sku.favor_required > 0 && (
+            <Box inline color="label" fontSize="0.8em">
+              needs {sku.favor_required} standing
+            </Box>
           )}
         </Box>
         <Box color="label" fontSize="0.85em">
@@ -213,10 +268,16 @@ const SkuRow = (props: {
         </Box>
       </Stack.Item>
       <Stack.Item textAlign="right" minWidth="90px">
-        <PriceTag sku={sku} />
+        <PriceTag sku={sku} finalCredits={finalCredits} />
       </Stack.Item>
       <Stack.Item color="label" minWidth="30px" textAlign="center">
-        x{stock}
+        {isFavor ? (
+          <Box color={soldOut ? 'bad' : 'label'}>
+            yours: {live?.crew_remaining ?? sku.crew_limit}
+          </Box>
+        ) : (
+          <>x{stock}</>
+        )}
       </Stack.Item>
       <Stack.Item>
         {live?.denial && !barred && !soldOut ? (
@@ -394,6 +455,7 @@ export const TraderShop = (props) => {
     account_credits,
     catalog = [],
     ledger = [],
+    favor,
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
@@ -449,6 +511,15 @@ export const TraderShop = (props) => {
                       )}
                     </Tabs>
                   </Stack.Item>
+                  {!!favor && (
+                    <Stack.Item>
+                      <Tooltip
+                        content={`Standing with ${favor.trader}: run their contract board to earn more. Trusted opens the back room.`}
+                      >
+                        <StandingHeader favor={favor} />
+                      </Tooltip>
+                    </Stack.Item>
+                  )}
                   <Stack.Item>
                     <WalletHeader
                       held_vouchers={held_vouchers}
