@@ -208,12 +208,12 @@ export const ChromeCradle = (props) => {
         )}
         {!has_occupant && (
           <NoticeBox info>
-            The chair is empty. Climb on and click the frame to shut the rig.
+            The slab is empty. Drag yourself onto it to lie back.
           </NoticeBox>
         )}
         {!!has_occupant && !occupant_is_user && (
           <NoticeBox>
-            {occupant_name} is on the chair. The rig takes orders from its
+            {occupant_name} is on the slab. The rig takes orders from its
             occupant only — you can eject the parts tray.
           </NoticeBox>
         )}
@@ -244,7 +244,7 @@ export const ChromeCradle = (props) => {
               {busy_action === 'install' ? 'Installing…' : 'Removing…'}
             </ProgressBar>
             <Box mt={0.5} color="label" fontSize={0.85}>
-              Hold still. Opening the frame cancels the cycle — nothing is
+              Hold still. Leaving the slab cancels the cycle — nothing is
               lost, the ware goes to the tray.
             </Box>
           </Section>
@@ -388,7 +388,7 @@ export const ChromeCradle = (props) => {
             ))}
           </Section>
         )}
-        <Section title="Frame">
+        <Section title="Slab">
           <Stack align="center">
             <Stack.Item grow>
               <Box color="label" fontSize={0.9}>
@@ -417,15 +417,17 @@ export const ChromeCradle = (props) => {
                 </Button>
               </Stack.Item>
             )}
-            <Stack.Item>
-              <Button
-                icon="door-open"
-                tooltip="Opens the frame. Cancels any running cycle and dumps the tray."
-                onClick={() => act('open_frame')}
-              >
-                Open Frame
-              </Button>
-            </Stack.Item>
+            {!!has_occupant && (
+              <Stack.Item>
+                <Button
+                  icon="person-walking-arrow-right"
+                  tooltip="Gets the patient off the slab. Cancels any running cycle — the ware goes to the tray."
+                  onClick={() => act('get_up')}
+                >
+                  {occupant_is_user ? 'Get Up' : 'Unbuckle Patient'}
+                </Button>
+              </Stack.Item>
+            )}
           </Stack>
         </Section>
       </Window.Content>

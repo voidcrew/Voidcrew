@@ -7,18 +7,18 @@
  * legit rig besides a real organ-manipulation operation.
  *
  * Outpost furniture rules apply: no power draw, indestructible, tools bounce
- * off, attacking it is aggression. Occupancy is the sealed-chamber idiom
- * (open_machine/close_machine) like the imprinter next door, but the UI is
- * NOT contained-state: bystanders may look on and pop the tray. This is a
- * PvP server, so consent is structural — Install, Remove and Tune-up can only
- * ever be initiated by the occupant, on their own conscious, unrestrained
- * body. Forced-buckle chrome robbery dies right there. A sequence commits
- * only at its very end; opening the frame mid-cycle cancels cleanly with the
- * ware safe in the tray.
+ * off, attacking it is aggression. The patient lies ON TOP of the slab —
+ * buckled, stasis-bed style, never sealed inside anything — and bystanders
+ * may look on and pop the tray. This is a PvP server, so consent is
+ * structural — Install, Remove and Tune-up can only ever be initiated by the
+ * occupant, on their own conscious, unrestrained body. Forced-buckle chrome
+ * robbery dies right there. A sequence commits only at its very end; getting
+ * up (or being hauled off) mid-cycle cancels cleanly with the ware safe in
+ * the tray.
  *
  * Evicted incumbents go to the machine tray, never the floor, and the tray
  * ejects on demand (anyone adjacent — a logged-off occupant can't hold your
- * chrome hostage) and dumps automatically when the frame opens.
+ * chrome hostage).
  */
 
 /// Bark stages for play_ripperdoc_bark(); W4 wires these to the Splice NPC.
@@ -28,16 +28,18 @@
 
 /obj/machinery/chrome_cradle
 	name = "chrome cradle"
-	desc = "An operating chair under a six-armed surgical rig, upholstery split and re-taped. The arms twitch when you get close, like they're sizing you up."
-	icon = 'voidcrew/modules/cyberware/icons/cyberware_machines.dmi'
-	icon_state = "cradle"
-	base_icon_state = "cradle"
-	density = TRUE
+	desc = "A salvaged alien operating slab wired into a six-armed surgical rig, the original owners' spines long since scrubbed off the alloy. The arms twitch when you get close, like they're sizing you up."
+	icon = 'icons/obj/antags/abductor.dmi'
+	icon_state = "bed"
+	// A slab, not a cabinet: you walk onto it and lie down. Buckling IS the
+	// occupancy — nothing is ever sealed inside.
+	density = FALSE
 	anchored = TRUE
+	can_buckle = TRUE
+	buckle_lying = 90
+	buckle_dir = SOUTH
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	occupant_typecache = list(/mob/living/carbon)
-	state_open = TRUE
 	// Works for the occupant while they're strapped down flat.
 	interaction_flags_atom = parent_type::interaction_flags_atom | INTERACT_ATOM_IGNORE_MOBILITY
 	processing_flags = NONE
@@ -65,12 +67,15 @@
 	for(var/tool_type in blocked_tools)
 		RegisterSignal(src, COMSIG_ATOM_TOOL_ACT(tool_type), PROC_REF(block_tool_act))
 		RegisterSignal(src, COMSIG_ATOM_SECONDARY_TOOL_ACT(tool_type), PROC_REF(block_tool_act))
-	update_appearance()
+	// The patient rides visually on top of the slab, stasis-bed style.
+	AddElement(/datum/element/elevation, pixel_shift = 6)
 
 /obj/machinery/chrome_cradle/Destroy()
 	cancel_sequence()
-	if(occupant || length(tray))
-		dump_inventory_contents()
+	var/turf/drop_turf = drop_location()
+	if(drop_turf)
+		for(var/obj/item/organ/ware as anything in tray)
+			ware.forceMove(drop_turf)
 	tray.Cut()
 	return ..()
 
@@ -82,78 +87,49 @@
 
 /obj/machinery/chrome_cradle/examine(mob/user)
 	. = ..()
-	. += span_notice("Climb on (or drag someone on) and click it to shut the rig. The occupant runs their own install from inside — the rig takes orders from nobody else.")
-	. += span_notice("Tune-ups run [CYBERWARE_TUNEUP_FEE] cr: EMP-scrambled and damaged chrome comes back to spec. Load cash into the frame or pay by ID.")
+	. += span_notice("Drag yourself (or a patient) onto the slab to lie back on it. The occupant runs their own install from the slab — the rig takes orders from nobody else.")
+	. += span_notice("Tune-ups run [CYBERWARE_TUNEUP_FEE] cr: EMP-scrambled and damaged chrome comes back to spec. Load cash into the slab or pay by ID.")
 	if(loaded_credits)
-		. += span_notice("The frame holds <b>[loaded_credits] cr</b> in loaded cash.")
+		. += span_notice("The slab's cash slot holds <b>[loaded_credits] cr</b>.")
 	if(length(tray))
 		. += span_notice("The parts tray holds: <b>[english_list(tray)]</b>.")
 
-// ---- Icon --------------------------------------------------------------
+// ---- Occupancy (buckling — the patient lies ON the slab) ----------------
 
-/obj/machinery/chrome_cradle/update_icon_state()
-	if(busy)
-		icon_state = "[base_icon_state]_active"
-	else if(occupant)
-		icon_state = "[base_icon_state]_occupied"
-	else
-		icon_state = base_icon_state
+// Only carbons fit the rig's restraint geometry.
+/obj/machinery/chrome_cradle/is_buckle_possible(mob/living/target, force = FALSE, check_loc = TRUE)
+	if(!iscarbon(target))
+		return FALSE
 	return ..()
 
-// ---- Occupancy ---------------------------------------------------------
+/obj/machinery/chrome_cradle/post_buckle_mob(mob/living/patient)
+	set_occupant(patient)
+	playsound(src, 'sound/effects/servostep.ogg', 40, TRUE)
+	ui_interact(patient)
+	SStgui.update_uis(src)
 
-/obj/machinery/chrome_cradle/mouse_drop_receive(atom/target, mob/user, params)
-	if(!iscarbon(target) || occupant || !state_open)
-		return
-	close_machine(target)
+/obj/machinery/chrome_cradle/post_unbuckle_mob(mob/living/patient)
+	cancel_sequence()
+	eject_cash()
+	if(patient == occupant)
+		set_occupant(null)
+	SStgui.update_uis(src)
 
-/obj/machinery/chrome_cradle/interact(mob/user)
-	if(user == occupant)
-		return ..() // INTERACT_ATOM_UI_INTERACT opens the UI from inside
-	add_fingerprint(user)
-	if(state_open)
-		if(!iscarbon(user))
-			balloon_alert(user, "not rated for you!")
-			return TRUE
-		close_machine(user)
+// The base movable click unbuckles the occupant — on the cradle a click is
+// always the console instead. Getting up is resist, moving, or the UI button;
+// nobody yanks a sedated patient off the slab with a stray click.
+/obj/machinery/chrome_cradle/attack_hand(mob/living/user, list/modifiers)
+	if(occupant)
+		add_fingerprint(user)
+		ui_interact(user)
 		return TRUE
-	// Occupied: bystanders get the read-only UI (and the tray) rather than
-	// popping the frame open by accident; the Open Frame button is in there.
-	ui_interact(user)
-	return TRUE
-
-/obj/machinery/chrome_cradle/relaymove(mob/living/user, direction)
-	open_machine()
-
-// No lock; resisting pops the frame without having to crawl out.
-/obj/machinery/chrome_cradle/container_resist_act(mob/living/user)
-	open_machine()
+	return ..()
 
 /obj/machinery/chrome_cradle/Exited(atom/movable/gone, direction)
 	. = ..()
 	tray -= gone
-	if(gone == occupant)
+	if(busy && gone == busy_ware)
 		cancel_sequence()
-		set_occupant(null)
-		update_appearance()
-	else if(busy && gone == busy_ware)
-		cancel_sequence()
-
-// The chair is dense whether or not anyone's on it.
-/obj/machinery/chrome_cradle/open_machine(drop = TRUE, density_to_set = TRUE)
-	cancel_sequence()
-	eject_cash()
-	. = ..()
-	tray.Cut() // contents just got dumped
-	SStgui.update_uis(src)
-
-/obj/machinery/chrome_cradle/close_machine(atom/movable/target, density_to_set = TRUE)
-	. = ..()
-	if(!occupant)
-		return .
-	playsound(src, 'sound/effects/servostep.ogg', 40, TRUE)
-	ui_interact(occupant)
-	return .
 
 /**
  * Whether the occupant is in a state to consent to chrome work: conscious
@@ -185,7 +161,7 @@
 		return TRUE
 	return ..()
 
-/// Feed physical currency into the frame's cash reserve.
+/// Feed physical currency into the slab's cash reserve.
 /obj/machinery/chrome_cradle/proc/load_cash(obj/item/money, mob/living/user)
 	var/value = money.get_item_credit_value()
 	if(!value)
@@ -224,7 +200,7 @@
 
 // ---- Tray --------------------------------------------------------------
 
-/// Dump the parts tray at the frame's feet, into the requester's hands when
+/// Dump the parts tray at the slab's feet, into the requester's hands when
 /// they're close enough. Deliberately available to ANYONE adjacent, so an
 /// evicted organ can't be held hostage by a logged-off occupant.
 /obj/machinery/chrome_cradle/proc/eject_tray(mob/living/user)
@@ -263,7 +239,6 @@
 	stage_timers += addtimer(CALLBACK(src, PROC_REF(run_sequence_stage)), CYBERWARE_INSTALL_TIME * 0.33, TIMER_STOPPABLE)
 	stage_timers += addtimer(CALLBACK(src, PROC_REF(run_sequence_stage), TRUE), CYBERWARE_INSTALL_TIME * 0.66, TIMER_STOPPABLE)
 	stage_timers += addtimer(CALLBACK(src, PROC_REF(finish_install)), CYBERWARE_INSTALL_TIME, TIMER_STOPPABLE)
-	update_appearance()
 	SStgui.update_uis(src)
 
 /// One servo-thunk beat of the running sequence: sound, patient jitter, and
@@ -327,7 +302,6 @@
 	run_sequence_stage()
 	stage_timers += addtimer(CALLBACK(src, PROC_REF(run_sequence_stage)), CYBERWARE_REMOVAL_TIME * 0.5, TIMER_STOPPABLE)
 	stage_timers += addtimer(CALLBACK(src, PROC_REF(finish_removal)), CYBERWARE_REMOVAL_TIME, TIMER_STOPPABLE)
-	update_appearance()
 	SStgui.update_uis(src)
 
 /obj/machinery/chrome_cradle/proc/finish_removal()
@@ -369,7 +343,6 @@
 	busy_ware = null
 	busy_until = 0
 	busy_duration = 0
-	update_appearance()
 
 /// Ends our sedation early. Only ever clears sleep WE caused — the patient
 /// was conscious at sequence start, that's the consent gate.
@@ -472,7 +445,7 @@
 // ---- UI ----------------------------------------------------------------
 
 /obj/machinery/chrome_cradle/ui_status(mob/user, datum/ui_state/state)
-	// The occupant operates from inside regardless of the frame being shut;
+	// The occupant operates while lying buckled on the slab;
 	// sedation mid-install downgrades them to watching. Everyone else gets
 	// ordinary machine adjacency: view plus the tray, nothing more (ui_act
 	// enforces the rest).
@@ -569,10 +542,11 @@
 	// Off the ui, never a tracked var — ui.close() nulls those.
 	var/mob/living/acting = ui.user
 
-	// Frame and tray controls are open to anyone the ui_status let in.
+	// Slab and tray controls are open to anyone the ui_status let in.
 	switch(action)
-		if("open_frame")
-			open_machine()
+		if("get_up")
+			if(occupant)
+				unbuckle_mob(occupant)
 			return TRUE
 		if("eject_tray")
 			eject_tray(acting)
