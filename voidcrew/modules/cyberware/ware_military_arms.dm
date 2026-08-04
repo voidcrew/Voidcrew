@@ -53,7 +53,8 @@
 		span_notice("[user] cracks open [src]."),
 		span_notice("You crack open [src]."),
 	)
-	for(var/obj/item/ware as anything in contents)
+	// Snapshot: put_in_hands() moves items out of contents mid-loop otherwise.
+	for(var/obj/item/ware as anything in contents.Copy())
 		user.put_in_hands(ware)
 	qdel(src)
 	return TRUE

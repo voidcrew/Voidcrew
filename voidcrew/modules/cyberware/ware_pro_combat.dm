@@ -40,7 +40,7 @@
 /datum/component/cyberware_dodge
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	/// key -> /datum/callback returning that source's live dodge chance.
-	var/list/sources = list()
+	var/list/dodge_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
 
@@ -56,7 +56,7 @@
 	UnregisterSignal(parent, list(COMSIG_ATOM_PRE_BULLET_ACT, COMSIG_MOVABLE_MOVED))
 
 /datum/component/cyberware_dodge/Destroy()
-	sources = null
+	dodge_sources = null
 	return ..()
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: timestamp the movement window.
@@ -79,8 +79,8 @@
 	if(shooter && shooter != source && get_dist(source, shooter) <= 1)
 		return NONE
 	var/best_chance = 0
-	for(var/key in sources)
-		var/datum/callback/chance_callback = sources[key]
+	for(var/key in dodge_sources)
+		var/datum/callback/chance_callback = dodge_sources[key]
 		var/chance = chance_callback?.Invoke()
 		if(isnum(chance))
 			best_chance = max(best_chance, chance)
@@ -116,15 +116,15 @@
 	if(!istype(bearer) || !key || !chance_callback)
 		return
 	var/datum/component/cyberware_dodge/arbiter = bearer.LoadComponent(/datum/component/cyberware_dodge)
-	arbiter.sources[key] = chance_callback
+	arbiter.dodge_sources[key] = chance_callback
 
 /// Removes a keyed dodge source; the arbiter cleans itself up with the last one.
 /proc/cyberware_unregister_dodge_source(mob/living/bearer, key)
 	var/datum/component/cyberware_dodge/arbiter = bearer?.GetComponent(/datum/component/cyberware_dodge)
 	if(!arbiter)
 		return
-	arbiter.sources -= key
-	if(!length(arbiter.sources))
+	arbiter.dodge_sources -= key
+	if(!length(arbiter.dodge_sources))
 		qdel(arbiter)
 
 // ---- Shared ally filter ------------------------------------------------
@@ -508,6 +508,7 @@
 	new /obj/effect/temp_visual/mook_dust(final)
 	playsound(final, 'sound/effects/gravhit.ogg', 50, TRUE)
 
+#undef CYBERWARE_DODGE_MOVE_WINDOW
 #undef CYBERWARE_DEADEYE_TAG_RANGE
 #undef CYBERWARE_DEADEYE_TAG_SHOTS
 #undef CYBERWARE_DEADEYE_TAG_DURATION
