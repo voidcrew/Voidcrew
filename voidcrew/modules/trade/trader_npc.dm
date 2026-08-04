@@ -22,6 +22,10 @@
 #define TRADER_NPC_OPTION_TALK "Talk"
 #define TRADER_NPC_OPTION_CONTRACTS "Contracts"
 
+/// How far a customer may stand from a trader and still be served, in tiles.
+/// Two, so the counter itself doesn't have to be walked around.
+#define TRADER_COUNTER_RANGE 2
+
 /mob/living/basic/outpost_trader
 	name = "trader"
 	desc = "An independent merchant. The prices aren't negotiable, and the turrets are on their side."
@@ -105,7 +109,7 @@
 /mob/living/basic/outpost_trader/examine(mob/user)
 	. = ..()
 	if(shop)
-		. += span_notice("[name] runs the counter at [shop.outpost_name]. Tap them on the shoulder to do business.")
+		. += span_notice("[name] runs the counter at [shop.outpost_name]. Click them from anywhere along the counter to do business.")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
 
@@ -119,6 +123,28 @@
 	// show_radial_menu sleeps; don't hold up the click chain
 	INVOKE_ASYNC(src, PROC_REF(open_trader_menu), user)
 	return TRUE
+
+// Empty-handed clicks from across the counter (see edits/_onclick/ranged_hand.dm).
+// Combat mode is already filtered out upstream, so anything arriving here is a
+// customer, not an assailant.
+/mob/living/basic/outpost_trader/ranged_attack_hand(mob/living/user, list/modifiers)
+	if(get_dist(src, user) > TRADER_COUNTER_RANGE)
+		return FALSE
+	if(!customer_in_reach(user))
+		balloon_alert(user, "no clear line to the counter!")
+		return TRUE
+	INVOKE_ASYNC(src, PROC_REF(open_trader_menu), user)
+	return TRUE
+
+/**
+ * Whether a customer is close enough to do business: within counter range, with
+ * nothing solid in the way. Adjacency isn't enough on its own here — the whole
+ * point is being able to stand on the customer side of a counter.
+ */
+/mob/living/basic/outpost_trader/proc/customer_in_reach(mob/user)
+	if(QDELETED(user) || get_dist(src, user) > TRADER_COUNTER_RANGE)
+		return FALSE
+	return (src in view(TRADER_COUNTER_RANGE, user))
 
 /**
  * The Trade / Talk / Contracts radial. Contracts only shows on the outpost's
@@ -139,7 +165,9 @@
 	)
 	if(isnull(shop_type)) // the main trader also runs the contract ledger
 		options[TRADER_NPC_OPTION_CONTRACTS] = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_quest")
-	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+	// No require_near: that one is hardcoded to adjacency, so check_menu does the
+	// distance test at counter range instead
+	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), tooltips = TRUE)
 	if(!choice || !check_menu(user))
 		return
 	switch(choice)
@@ -151,11 +179,11 @@
 			outpost.ensure_shop_offers()
 			contracts_ui.ui_interact(user)
 
-/// Radial validity: customer still there, still conscious, still adjacent
+/// Radial validity: customer still there, still conscious, still at the counter
 /mob/living/basic/outpost_trader/proc/check_menu(mob/living/user)
 	if(!istype(user))
 		return FALSE
-	if(IS_DEAD_OR_INCAP(user) || !user.Adjacent(src))
+	if(IS_DEAD_OR_INCAP(user) || !customer_in_reach(user))
 		return FALSE
 	return TRUE
 
@@ -221,13 +249,16 @@
 /mob/living/basic/outpost_trader/clinic_doctor
 	shop_type = /datum/outpost_shop/vendor/patchup_clinic
 
-// Halcyon's stalls (shop_catalog_general_vendors.dm)
+// Halcyon's stalls (shop_catalog_general_vendors.dm, shop_catalog_diner.dm)
 
 /mob/living/basic/outpost_trader/potting_shed
 	shop_type = /datum/outpost_shop/vendor/potting_shed
 
 /mob/living/basic/outpost_trader/bait_shop
 	shop_type = /datum/outpost_shop/vendor/bait_shop
+
+/mob/living/basic/outpost_trader/diner_cook
+	shop_type = /datum/outpost_shop/vendor/diner
 
 // The Quartermain's stalls (shop_catalog_outfitter_vendors.dm,
 // shop_catalog_suit_vendor.dm)
@@ -266,7 +297,33 @@
 	return npc
 
 /datum/outpost_trader_ui/ui_state(mob/user)
-	return GLOB.physical_state
+	return GLOB.trader_counter_state
+
+/**
+ * # tgui state: the trader's counter
+ *
+ * physical_state with a longer arm. Upstream only counts a UI as interactive at
+ * one tile, which would grey out every button the moment you stepped back off
+ * the counter, so this promotes the whole counter range to interactive and
+ * keeps the greyed-out-then-closed bands past it.
+ */
+GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
+
+/datum/ui_state/trader_counter/can_use_topic(atom/src_object, mob/user)
+	. = user.shared_ui_interaction(src_object)
+	if(. <= UI_CLOSE)
+		return UI_CLOSE
+	if(!isliving(user))
+		return UI_CLOSE
+	// Obscured by a wall closes it, same as physical_state
+	if(!(src_object in view(user)))
+		return UI_CLOSE
+	var/dist = get_dist(src_object, user)
+	if(dist <= TRADER_COUNTER_RANGE)
+		return min(., UI_INTERACTIVE)
+	if(dist <= 5)
+		return min(., UI_DISABLED)
+	return UI_CLOSE
 
 /**
  * # The storefront window
@@ -583,6 +640,7 @@
 			npc.speak_line(TRADER_LINE_SALE)
 			return TRUE
 
+#undef TRADER_COUNTER_RANGE
 #undef TRADER_NPC_OPTION_TRADE
 #undef TRADER_NPC_OPTION_TALK
 #undef TRADER_NPC_OPTION_CONTRACTS

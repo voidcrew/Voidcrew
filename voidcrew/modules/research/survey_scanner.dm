@@ -117,16 +117,11 @@
 
 /obj/machinery/survey_scanner/RefreshParts()
 	. = ..()
-	for(var/obj/item/stock_parts/matter_bin/matterbins in component_parts)
-		research_power = matterbins.rating
-	for(var/obj/item/stock_parts/servo/manipulators in component_parts)
-		research_gain = manipulators.rating * SURVEY_GAIN_PER_SERVO //9, 18, 27, 36
+	research_power = max(total_part_rating(/datum/stock_part/matter_bin), 1)
+	research_gain = max(total_part_rating(/datum/stock_part/servo), 1) * SURVEY_GAIN_PER_SERVO //9, 18, 27, 36
 
 	//cell drain is cut, not increased - better lasers mean one cell lasts longer.
-	var/parts_energy_rating = 0
-	for(var/obj/item/stock_parts/micro_laser/micro_lasers in component_parts)
-		parts_energy_rating += micro_lasers.rating
-	active_power_usage = initial(active_power_usage) / (1 + parts_energy_rating)
+	active_power_usage = initial(active_power_usage) / (1 + total_part_rating(/datum/stock_part/micro_laser))
 
 /obj/machinery/survey_scanner/attack_hand(mob/living/user, list/modifiers)
 	. = ..()

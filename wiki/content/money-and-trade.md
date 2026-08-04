@@ -59,7 +59,7 @@ Selling at a counter differs from cargo in three ways:
 - Credit payouts go to your ID's account. Voucher payouts appear in your hand.
 - Each ledger entry has limited demand for the round. Once the trader has bought all they want, that line closes until a supply convoy comes through.
 
-Sample lines: Barnaby at the waystation pays 300 credits per five gold ore, 500 per two diamonds, 150 for any fresh fish. Sarge at the depot pays 250 per two goliath hide plates, 400 per three glacial cores. Vex at the black market is the only trader who pays in vouchers — one per five raw telecrystals, one per legion core, two per set of syndicate documents. Traders also buy **gas** by the tank; see [Fuel & Gas](gas-economy.md).
+Sample lines: Barnaby at the waystation pays 300 credits per five gold ore, 500 per two diamonds, 150 for any fresh fish. Roux at the waystation diner pays 60 per home-cooked meal, 120 per hand-made pie and 180 per whole cake — real cooking only, never vending-machine food or her own plates. Sarge at the depot pays 250 per two goliath hide plates, 400 per three glacial cores. Vex at the black market is the only trader who pays in vouchers — one per five raw telecrystals, one per legion core, two per set of syndicate documents. Traders also buy **gas** by the tank; see [Fuel & Gas](gas-economy.md).
 
 ## Blueprints and the imprinter
 

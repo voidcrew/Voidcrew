@@ -74,10 +74,16 @@
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
 	piping_layer = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
+"cN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/c)
 "dg" = (
 /obj/machinery/porta_turret/ship_defense{
 	dir = 1
@@ -337,13 +343,6 @@
 /area/shuttle/voidcrew/goon/bridge/c)
 "AX" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/shuttle/voidcrew/goon/commons/c)
-"Bj" = (
-/obj/machinery/porta_turret/ship_defense{
-	dir = 8
-	},
-/obj/structure/sign/nanotrasen,
-/turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/commons/c)
 "Br" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -687,7 +686,7 @@ OT
 (4,1,1) = {"
 mV
 Te
-DI
+cN
 Og
 DI
 Pm

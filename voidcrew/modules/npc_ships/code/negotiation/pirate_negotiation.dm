@@ -220,6 +220,13 @@
 			if(NPC_COMBAT_IDLE, NPC_COMBAT_SCANNING)
 				base_demand *= 0.8  // Cheaper to pay before combat
 				preemptive = TRUE
+			if(NPC_COMBAT_HAILING)
+				// A yellow-band shakedown is bidding against its own siphon, which
+				// takes the same 25% by force if the crew stonewalls it. Undercut
+				// that so answering the hail is the cheaper way out.
+				if(controller.hail_escalates_to_siphon())
+					base_demand *= 0.8
+					preemptive = TRUE
 			if(NPC_COMBAT_ENGAGING)
 				base_demand *= 1.0  // Standard rate
 			if(NPC_COMBAT_COMBAT)

@@ -19,6 +19,7 @@
 /datum/mission/recovery/outpost
 	weight = 0 // board-posted only
 	mission_limit = 0
+	contract_pay_mult = 1.25 // a run out to a ruin and back
 
 /datum/mission/recovery/outpost/generate_details()
 	if(!shop)
@@ -35,7 +36,7 @@
 		generation_failed = TRUE
 
 /datum/mission/recovery/outpost/update_text()
-	var/reward_name = get_reward_summary()
+	var/reward_name = get_contract_pay_summary()
 	name = "Salvage Order: [objective_name]"
 	desc = "[author] of [shop?.outpost_name || "the outpost"] is paying for the [objective_name] out at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
 		Deliver it to any outpost trader or your own mission pad. \
@@ -50,6 +51,7 @@
 /datum/mission/recovery/kill/outpost
 	weight = 0
 	mission_limit = 0
+	contract_pay_mult = 1.5 // find a named boss at a hostile site and put it down
 
 /datum/mission/recovery/kill/outpost/generate_details()
 	if(!shop)
@@ -66,7 +68,7 @@
 		generation_failed = TRUE
 
 /datum/mission/recovery/kill/outpost/update_text()
-	var/reward_name = get_reward_summary()
+	var/reward_name = get_contract_pay_summary()
 	name = "Kill Contract: [objective_name]"
 	desc = "[author] of [shop?.outpost_name || "the outpost"] wants [objective_name] gone — holed up at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
 		Bring the identification tag to any outpost trader or your own mission pad. \
@@ -84,6 +86,7 @@
 	duration = 35 MINUTES
 	value_min = 0
 	value_max = 0
+	contract_pay_mult = 1.3 // a long haul across the lanes, and pirates know the pod
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL // pod destroyed = contract void
 
 	/// The pod-delivery objective (holds the live pod)
@@ -124,7 +127,7 @@
 	return istype(destination) ? destination.outpost : null
 
 /datum/mission/outpost_courier/update_text()
-	var/reward_name = get_reward_summary()
+	var/reward_name = get_contract_pay_summary()
 	var/obj/structure/overmap/trader_outpost/destination = get_destination()
 	name = "Courier Run: [destination?.name || "lost destination"]"
 	desc = "[author] needs a sealed freight pod hauled to [destination?.name || "its destination"] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \

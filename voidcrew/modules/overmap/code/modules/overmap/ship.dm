@@ -935,8 +935,7 @@
 	claimed_captain = claimer.mind
 
 	// Grant the Captain Management action button
-	var/datum/action/innate/captain_management/captain_action = new(claimer, src)
-	captain_action.Grant(claimer)
+	grant_captain_management(claimer, src)
 
 	// Announce
 	ship_notify("NOTICE: Command authorization restored. New commanding officer: [claimer.real_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

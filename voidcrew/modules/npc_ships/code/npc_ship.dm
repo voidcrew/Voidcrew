@@ -3,7 +3,7 @@
  *
  * These ships spawn in any zone and use territorial AI to attack
  * player ships that come within range. The zone determines behavior:
- * - Yellow zone: scan -> lock -> interdict + siphon (economic threat)
+ * - Yellow zone: scan -> hail -> negotiate -> interdict + siphon (economic threat)
  * - Red zone: hail -> negotiate -> boarding waves -> boss (lethal threat)
  */
 /obj/structure/overmap/ship/npc

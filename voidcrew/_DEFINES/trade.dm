@@ -37,6 +37,47 @@
 /// How often a trader outpost's supply convoy tops the shelves back up
 #define OUTPOST_RESTOCK_INTERVAL (22 MINUTES)
 
+// ===== CONTRACT PAY BANDS =====
+// Outpost contracts settle in goods, not credits, so the bundle a contract pays
+// has to be assembled to hit a credit-equivalent target. These are that target,
+// in shop credits, per difficulty band. Anything below the EASY floor reads as
+// an insult on the board — a 600cr box of shells for a 2000cr haul of cores was
+// the bug these bands exist to prevent.
+// Read these against the shelf ladder they buy from: a lethal shell box is
+// 1200cr, an armor vest 1800, a laser gun or engine heater 3000, a plasma
+// engine board 4800. An easy contract should settle for a real piece of kit, a
+// medium one for a gun or a drive component, a hard one for the back room.
+#define CONTRACT_PAY_EASY_MIN 1400
+#define CONTRACT_PAY_EASY_MAX 2000
+#define CONTRACT_PAY_MEDIUM_MIN 2600
+#define CONTRACT_PAY_MEDIUM_MAX 3800
+#define CONTRACT_PAY_HARD_MIN 5500
+#define CONTRACT_PAY_HARD_MAX 8000
+
+/// A contract must beat selling the same goods over the counter by this much,
+/// or accepting it is strictly worse than walking to the buyback window.
+#define CONTRACT_ASK_PREMIUM 1.6
+
+/// Imputed credit worth of one trade voucher, for valuing voucher-priced stock
+/// and for paying out a bundle's shortfall in scrip instead of money.
+#define VOUCHER_CREDIT_VALUE 1200
+
+/// Credit worth assumed for a back-room exclusive, which no shelf prices
+#define CONTRACT_EXCLUSIVE_VALUE 3600
+
+/// Shortfall below this is just rounding; above it, top the contract up in vouchers
+#define CONTRACT_SHORTFALL_TOLERANCE 600
+
+/// Never hand over more than this many separate items for one contract
+#define CONTRACT_MAX_REWARD_ITEMS 3
+
+/// Trait source for TRAIT_FOOD_CHEF_MADE on dishes sold over an outpost
+/// kitchen's counter (the Chowder Pot's plated shelves). Kept distinct from
+/// player mind-ref sources so the diner's ledger and the Kitchen Order
+/// contracts can refuse the outpost's own plates: they demand the trait from
+/// any source EXCEPT this one (HAS_TRAIT_NOT_FROM).
+#define TRAIT_SOURCE_OUTPOST_KITCHEN "outpost_kitchen"
+
 // Trader hologram speech line categories
 #define TRADER_LINE_GREETING "greeting"
 #define TRADER_LINE_SALE "sale"

@@ -33,6 +33,7 @@
 		"Ship Ordnance",
 		"Security Gear",
 		"Combat Medical",
+		"Mess Tin",
 		"Utility",
 		"Hull Stock",
 		"Fuel & Gas",
@@ -84,6 +85,11 @@
 		/datum/shop_sku/outfitter/stimpack,
 		/datum/shop_sku/outfitter/suture,
 		/datum/shop_sku/outfitter/health_hud,
+		// Mess Tin
+		/datum/shop_sku/outfitter/rations,
+		/datum/shop_sku/outfitter/energy_bar,
+		/datum/shop_sku/outfitter/canned_peaches,
+		/datum/shop_sku/outfitter/hot_sauce,
 		// Utility
 		/datum/shop_sku/outfitter/gas_mask,
 		/datum/shop_sku/outfitter/jaws,
@@ -500,6 +506,44 @@
 	price_credits = 1500
 	stock_min = 1
 	stock_max = 3
+
+// ===== MESS TIN =====
+// Field chow. Nothing here is cooking — it's calories that survive a webbing
+// pouch, a decompression and the customer. Every outpost feeds its lane;
+// the contested lanes eat out of tins.
+
+/datum/shop_sku/outfitter/rations
+	category = "Mess Tin"
+	name = "field ration pack"
+	desc = "A sealed ration pack off the depot's own pallet. The main varies. The crackers do not."
+	item_path = /obj/item/food/rationpack
+	price_credits = 45
+	stock_min = 6
+	stock_max = 12
+
+/datum/shop_sku/outfitter/energy_bar
+	category = "Mess Tin"
+	item_path = /obj/item/food/energybar
+	price_credits = 30
+	stock_min = 6
+	stock_max = 10
+
+/datum/shop_sku/outfitter/canned_peaches
+	category = "Mess Tin"
+	desc = "Peaches in syrup, the contested lanes' most fought-over dessert. Sarge limits them to keep the peace."
+	item_path = /obj/item/food/canned/peaches
+	price_credits = 50
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/outfitter/hot_sauce
+	category = "Mess Tin"
+	name = "bottle of hot sauce"
+	desc = "Morale in a bottle. Makes a ration pack taste like a ration pack with hot sauce on it, which is measurably better."
+	item_path = /obj/item/reagent_containers/condiment/hotsauce
+	price_credits = 40
+	stock_min = 3
+	stock_max = 6
 
 // ===== UTILITY =====
 

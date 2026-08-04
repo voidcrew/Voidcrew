@@ -45,7 +45,18 @@ Corrupted tendrils grow on volcanic worlds. They are nests, not vents — they p
 Ore goes back to the ship in an ore box or a bag; the ship converts it.
 
 - **Ore redemption machine.** Feed it ore, get material sheets that the ship's lathes can spend. Unlike the station version, ship machines have no ID lock — anyone aboard can use one.
+- **How to load it.** There is no insert button. The machine watches one adjacent tile — marked with a blue arrow, by default the one directly behind it — and swallows anything that lands there. Drop loose ore on that tile, or set a whole ore box down on it and the entire contents go in at once. Sheets come out the opposite side, marked in red. If the panel is open you can alt-click to rotate which sides do what.
 - **Which hulls have one.** Most do, and on modular hulls it belongs to a specific fitout: Goon's Prospector Bay (the default in that slot), Delta's Mining Bay, Kilo's Ore Refinery, Phalanx's Muster Deck. The alternatives in those same slots deliberately trade the redemption machine away for salvage or freight gear, so check the module before you buy it.
+
+### If your ship has no redemption machine
+
+A welder will smelt ore straight into sheets, one unit of welder fuel per chunk — iron ore into iron, sand into glass, and most other ores into their metal. **Plasma is the exception.** A welder cannot get hot enough for it, so plasma ore is the one thing you cannot process without a machine. That matters more than it sounds, because plasma sheets are what portable generators burn: a ship with no redemption machine can mine plasma all day and still run out of fuel.
+
+Three ways out of that, cheapest first:
+
+1. **Buy sheets.** The general store's fuel counter stocks solid plasma in twenties. Raw plasma ore is also on the shelf and works out cheaper per sheet, but only buy that if you have a machine to run it through.
+2. **Sell the ore.** Traders take plasma ore on their supply contracts, so it is never worthless even if you cannot use it.
+3. **Build a redemption machine.** Any ship with an autolathe can get there. The autolathe prints a Research & Development Kit from the start with no research needed — 20 iron and 40 glass sheets, both of which a welder can make from ore you dug yourself. That box holds the circuit imprinter, which is the only machine that prints circuit boards. From there, Mining Technology is one cheap step off a free starting node, and it unlocks the redemption machine board. It is a long detour, but it is the permanent fix.
 - **Mining points** ride on your ID, and vent work pays them out directly — you are credited for surveying a vent and again for tapping it. A mining equipment order console spends them, and orders through it are delivered immediately by pod where you stand rather than riding a shuttle. Only a few hulls carry one — Delta's Mining Bay is the one you can buy.
 
 ## Selling it

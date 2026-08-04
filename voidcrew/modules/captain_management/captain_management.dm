@@ -13,24 +13,85 @@
 
 	/// Reference to the ship this action controls
 	var/obj/structure/overmap/ship/managed_ship
+	/// The panel this button opens. Built on first use and reused, so repeated presses
+	/// re-open the same UI instead of leaking a fresh datum holding the ship and owner.
+	var/datum/captain_management_ui/panel
 
 /datum/action/innate/captain_management/New(Target, obj/structure/overmap/ship/ship)
 	. = ..()
 	managed_ship = ship
 
+/datum/action/innate/captain_management/Destroy()
+	managed_ship = null
+	QDEL_NULL(panel)
+	return ..()
+
+/**
+ * A player can hold command of more than one vessel at a time - captaining their own hull
+ * and then claiming a pirate is the normal way it happens - so the button carries the
+ * ship's name. Two buttons both reading "Ship Management" are indistinguishable in the HUD.
+ * Reading the name live here keeps the tooltip correct across renames.
+ */
+/datum/action/innate/captain_management/update_button_name(atom/movable/screen/movable/action_button/button, force = FALSE)
+	name = QDELETED(managed_ship) ? initial(name) : "Ship Management ([managed_ship.name])"
+	return ..()
+
 /datum/action/innate/captain_management/Activate()
-	if(!managed_ship || QDELETED(managed_ship))
+	if(QDELETED(managed_ship))
 		to_chat(owner, span_warning("Your ship no longer exists!"))
-		Remove(owner)
+		qdel(src)
 		return
 
-	// Open TGUI via the UI datum
-	var/datum/captain_management_ui/ui_datum = new(managed_ship, owner)
-	ui_datum.ui_interact(owner)
+	// Command authorization does not outlive the crew roster. The panel refuses every
+	// action once they are off it, so retire the button rather than leave a dead one
+	// sitting in the HUD forever.
+	if(!owner.mind || !(owner.mind in managed_ship.ship_team?.members))
+		to_chat(owner, span_warning("You no longer hold command authorization for [managed_ship.name]."))
+		qdel(src)
+		return
 
-/datum/action/innate/captain_management/Remove(mob/remove_from)
-	managed_ship = null
-	return ..()
+	if(!panel)
+		panel = new(managed_ship, owner)
+	panel.captain = owner
+	panel.ui_interact(owner)
+
+// ===== GRANTING =====
+
+/**
+ * Gives a mob the Ship Management button for a ship, or refreshes the one they already
+ * hold for it. Returns the action.
+ *
+ * Every path that hands out command authority goes through here. Constructing and granting
+ * the action directly stacks another button on the HUD each time: claiming a pirate while
+ * already captaining your own hull left the player holding one button per claim, all named
+ * the same, all still live.
+ */
+/proc/grant_captain_management(mob/captain, obj/structure/overmap/ship/ship)
+	if(!captain || QDELETED(ship))
+		return null
+
+	for(var/datum/action/innate/captain_management/existing in captain.actions)
+		if(existing.managed_ship != ship)
+			continue
+		existing.build_all_button_icons(UPDATE_BUTTON_NAME)
+		return existing
+
+	var/datum/action/innate/captain_management/granted = new(captain, ship)
+	granted.Grant(captain)
+	return granted
+
+/// Retires whatever Ship Management button a mob holds for a given ship.
+/proc/remove_captain_management(mob/captain, obj/structure/overmap/ship/ship)
+	if(!captain || !ship)
+		return
+	// Collected first: qdel removes the action from captain.actions, and mutating the list
+	// mid-loop would skip entries.
+	var/list/retiring = list()
+	for(var/datum/action/innate/captain_management/existing in captain.actions)
+		if(existing.managed_ship == ship)
+			retiring += existing
+	for(var/datum/action/innate/captain_management/doomed as anything in retiring)
+		qdel(doomed)
 
 // ===== UI DATUM =====
 

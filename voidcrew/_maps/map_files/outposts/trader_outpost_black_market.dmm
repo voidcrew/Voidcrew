@@ -850,6 +850,10 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"Cj" = (
+/obj/machinery/vending/hotdog,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
 "Cq" = (
 /obj/structure/closet/crate{
 	name = "intake crate";
@@ -992,10 +996,6 @@
 /obj/structure/table/optable,
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /turf/open/indestructible/hoteltile,
-/area/voidcrew/trader_outpost)
-"KY" = (
-/obj/effect/turf_decal/bot,
-/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "LB" = (
 /obj/effect/turf_decal/bot,
@@ -1194,9 +1194,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"Wy" = (
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
 "WQ" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/effect/turf_decal/delivery/white{
@@ -1228,15 +1225,6 @@
 	dir = 1
 	},
 /turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"YU" = (
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "undertow_bar";
-	dir = 4;
-	name = "Bar Shutters"
-	},
-/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Zo" = (
 /obj/effect/turf_decal/delivery,
@@ -1825,7 +1813,7 @@ MG
 kM
 bL
 jt
-Wy
+aj
 sC
 KQ
 kM
@@ -1877,7 +1865,7 @@ aa
 Sp
 Il
 uC
-KY
+jE
 RM
 fL
 jE
@@ -2007,7 +1995,7 @@ aa
 zr
 fL
 aO
-YU
+Xr
 nG
 hH
 TD
@@ -2137,7 +2125,7 @@ aa
 vK
 aO
 iQ
-aO
+Cj
 Pi
 aO
 aO

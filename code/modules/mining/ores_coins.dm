@@ -158,7 +158,7 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	merge_type = /obj/item/stack/ore/plasma
 
 /obj/item/stack/ore/plasma/welder_act(mob/living/user, obj/item/I)
-	to_chat(user, span_warning("You can't hit a high enough temperature to smelt [src] properly!"))
+	to_chat(user, span_warning("You can't hit a high enough temperature to smelt [src] properly! It needs an ore redemption machine."))
 	return TRUE
 
 /obj/item/stack/ore/silver

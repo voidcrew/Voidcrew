@@ -215,101 +215,146 @@
 			buyback.demand = min(buyback.demand_max, buyback.demand + max(1, round(buyback.demand_max / 2)))
 
 /**
- * Rolls a shop-exclusive item onto a freshly generated hard contract.
- * The exclusive replaces any generic item reward; vouchers/credits stay.
+ * Credit-equivalent worth of a SKU, folding its voucher price in. A lot of the
+ * best stock is priced in vouchers with price_credits left at 0, and reading
+ * credits alone values those at nothing.
  */
-/datum/outpost_shop/proc/maybe_attach_exclusive(datum/mission/mission, chance = 60)
-	if(mission.difficulty != MISSION_DIFFICULTY_HARD || !length(exclusive_rewards))
-		return
-	if(!prob(chance))
-		return
-	mission.mission_reward = pick(exclusive_rewards)
-	// Exclusives always read as rare in the reward UI
-	LAZYADD(mission.rare_reward_types, mission.mission_reward)
+/datum/outpost_shop/proc/get_sku_value(datum/shop_sku/sku)
+	if(!sku)
+		return 0
+	return sku.price_credits + (sku.price_vouchers * VOUCHER_CREDIT_VALUE)
 
 /**
- * Assigns a difficulty-scaled item reward to an outpost-board contract, drawn
- * from this shop's own stock. Payment on these contracts is goods, not money —
- * credits and vouchers come from open-market missions instead, so the reward
- * item IS the pay and must always be set.
- *
- * Quality follows difficulty by reaching deeper shelves: easy contracts pay off
- * the core shelf, medium off the rotating stock, and the hardest pay the
- * back-room exclusives no shelf sells (falling back down the shelves if the
- * shop happens to have none). Returns FALSE only if the shop has no stock at
- * all, so the caller can discard an unfundable contract.
+ * What `amount` units of `item_type` would fetch at this shop's own buyback
+ * window, in credits. This is the floor a delivery contract has to clear: if
+ * carrying the goods twenty steps to the counter pays better than the contract
+ * asking for them, the contract is dead content. 0 when the trader doesn't buy
+ * the good at all, which leaves the difficulty band to set the pay alone.
  */
-/datum/outpost_shop/proc/roll_contract_reward(datum/mission/mission)
-	var/list/core = list()
-	var/list/rotating = list()
-	var/list/rare = list()
-	var/list/all_stock = list()
+/datum/outpost_shop/proc/get_counter_value(item_type, amount = 1)
+	if(!ispath(item_type))
+		return 0
+	for(var/datum/shop_buyback/buyback as anything in buybacks)
+		if(!buyback.item_path)
+			continue
+		if(buyback.match_subtypes ? !ispath(item_type, buyback.item_path) : (item_type != buyback.item_path))
+			continue
+		var/per_sale = buyback.pay_credits + (buyback.pay_vouchers * VOUCHER_CREDIT_VALUE)
+		return round(per_sale * amount / max(1, buyback.amount))
+	return 0
+
+/**
+ * Assigns the item bundle an outpost-board contract pays out, drawn from this
+ * shop's own stock. These contracts settle in goods rather than money, so the
+ * bundle IS the pay and has to be assembled to hit a credit-equivalent target
+ * instead of picked at random — a flat draw over the shelves hands out a 30cr
+ * can of beans and a 4800cr engine board with exactly equal probability.
+ *
+ * The target comes from the difficulty band, floored by what the contracted
+ * goods are worth over this shop's own counter, so accepting a job is never
+ * worse than selling the haul at the buyback window.
+ *
+ * Hard contracts lead with a back-room exclusive no shelf sells. Whatever the
+ * shelves can't cover is settled in trade vouchers, which keeps the "paid in
+ * kit, not cash" premise intact while still landing the pay in band when the
+ * shop has been picked over.
+ *
+ * Returns FALSE only if the shop has no priced stock at all, so the caller can
+ * discard an unfundable contract.
+ * * ask_value - credits the contracted goods fetch over the counter, if known
+ */
+/datum/outpost_shop/proc/roll_contract_reward(datum/mission/mission, ask_value = 0)
+	// The shelves, valued. Assoc so the bundle builder can price a candidate
+	// without walking the SKU list again for every draw.
+	var/list/valued = list()
+	// Bundled stack sizes, so a contract paying "plasteel (10 sheets)" hands
+	// over ten sheets rather than the one a bare stack spawn would give
+	var/list/bundle_sizes = list()
 	for(var/datum/shop_sku/sku as anything in skus)
 		if(!sku.item_path)
 			continue
-		all_stock += sku.item_path
-		switch(sku.shelf)
-			if(SHELF_RARE)
-				rare += sku.item_path
-			if(SHELF_ROTATING)
-				rotating += sku.item_path
-			else
-				core += sku.item_path
+		var/worth = get_sku_value(sku)
+		if(worth <= 0)
+			continue
+		valued[sku.item_path] = worth
+		if(sku.dispense_amount > 1)
+			bundle_sizes[sku.item_path] = sku.dispense_amount
+	if(!length(valued))
+		return FALSE
 
-	// The everyday goods; the fallback whenever a specific shelf is thin
-	var/list/non_rare = core + rotating
-	if(!length(non_rare))
-		non_rare = all_stock
+	var/target
+	switch(mission.difficulty)
+		if(MISSION_DIFFICULTY_HARD)
+			target = rand(CONTRACT_PAY_HARD_MIN, CONTRACT_PAY_HARD_MAX)
+		if(MISSION_DIFFICULTY_MEDIUM)
+			target = rand(CONTRACT_PAY_MEDIUM_MIN, CONTRACT_PAY_MEDIUM_MAX)
+		else
+			target = rand(CONTRACT_PAY_EASY_MIN, CONTRACT_PAY_EASY_MAX)
+	target = round(target * mission.contract_pay_mult)
+	target = max(target, round(ask_value * CONTRACT_ASK_PREMIUM))
 
 	var/list/rewards = list()
 	var/list/rare_rewards = list()
+	var/remaining = target
 
-	switch(mission.difficulty)
-		if(MISSION_DIFFICULTY_HARD)
-			// One back-room prize (exclusive, else a rare-shelf pick) plus a
-			// couple of everyday goods — the "1 rare + 2 common" bundle.
-			var/prize = length(exclusive_rewards) ? pick(exclusive_rewards) : (length(rare) ? pick(rare) : null)
-			if(prize)
-				rewards += prize
-				rare_rewards += prize
-			rewards += pick_rewards(length(rotating) ? rotating : non_rare, 2)
-		if(MISSION_DIFFICULTY_MEDIUM)
-			// A rotating pick and a staple
-			rewards += pick_rewards(length(rotating) ? rotating : non_rare, 1)
-			rewards += pick_rewards(length(core) ? core : non_rare, 1)
-		else
-			// One staple, sometimes two
-			rewards += pick_rewards(length(core) ? core : non_rare, prob(35) ? 2 : 1)
+	// Hard contracts open the back room, and that prize covers most of the target
+	if(mission.difficulty == MISSION_DIFFICULTY_HARD && length(exclusive_rewards))
+		var/prize = pick(exclusive_rewards)
+		rewards += prize
+		rare_rewards += prize
+		remaining -= CONTRACT_EXCLUSIVE_VALUE
 
-	rewards -= null
-	// Guarantee at least one item so the contract is fundable
-	if(!length(rewards))
-		rewards += pick_rewards(all_stock, 1)
-		rewards -= null
+	// Spend the rest down in as few items as possible, so the pay reads as one
+	// good piece of kit instead of a heap of consumables
+	while(remaining > CONTRACT_SHORTFALL_TOLERANCE && length(rewards) < CONTRACT_MAX_REWARD_ITEMS)
+		var/picked = pick_valued_reward(valued, remaining)
+		if(!picked)
+			break
+		rewards += picked
+		remaining -= valued[picked]
+		if(bundle_sizes[picked])
+			LAZYSET(mission.reward_amounts, picked, bundle_sizes[picked])
+		valued -= picked // one of each; a bundle of three identical items reads as filler
+
 	if(!length(rewards))
 		return FALSE
 
 	mission.mission_rewards = rewards
 	mission.rare_reward_types = rare_rewards
+	// Settle the gap in scrip rather than posting a contract that misses its band
+	if(remaining > CONTRACT_SHORTFALL_TOLERANCE)
+		mission.voucher_count += max(1, round(remaining / VOUCHER_CREDIT_VALUE))
 	return TRUE
 
 /**
- * Draws `count` reward typepaths from a pool, preferring distinct picks but
- * repeating once the pool is exhausted (so a one-item pool yields duplicates
- * rather than coming up short).
+ * Draws one item from a valued pool, preferring the dearest thing that still
+ * fits the budget so a bundle spends itself down in few, good items. Randomises
+ * across the top of the affordable range so boards don't repeat the same item
+ * every round, and falls back to the cheapest thing in stock when the budget
+ * won't cover anything, so a thin shop still pays something.
  */
-/datum/outpost_shop/proc/pick_rewards(list/pool, count)
-	var/list/picked = list()
-	if(!length(pool) || count < 1)
-		return picked
-	var/list/bag = pool.Copy()
-	for(var/i in 1 to count)
-		if(!length(bag))
-			bag = pool.Copy()
-		var/choice = pick(bag)
-		bag -= choice
-		picked += choice
-	return picked
+/datum/outpost_shop/proc/pick_valued_reward(list/valued, budget)
+	if(!length(valued))
+		return null
+	// A little overshoot allowance, so a 2000cr budget lands the 2400cr item
+	// rather than falling all the way back to a 600cr one
+	var/ceiling = round(budget * 1.25)
+	var/best = 0
+	for(var/item_path in valued)
+		if(valued[item_path] <= ceiling)
+			best = max(best, valued[item_path])
+	if(!best)
+		// Everything is over budget; take the cheapest thing on the shelf
+		var/cheapest
+		for(var/item_path in valued)
+			if(!cheapest || valued[item_path] < valued[cheapest])
+				cheapest = item_path
+		return cheapest
+	var/list/contenders = list()
+	for(var/item_path in valued)
+		if(valued[item_path] <= ceiling && valued[item_path] >= best * 0.6)
+			contenders += item_path
+	return length(contenders) ? pick(contenders) : null
 
 /**
  * Returns a random personality line for the given TRADER_LINE_* category.
@@ -475,6 +520,9 @@
 		to_chat(user, span_notice("You receive [goods]."))
 	else
 		to_chat(user, span_notice("[goods] is set down at your feet."))
+	// Returned so SKU subtypes can stamp what they hand over (the diner's
+	// plated shelf adds TRAIT_FOOD_CHEF_MADE here — see shop_catalog_diner.dm)
+	return goods
 
 /**
  * The bank account on the user's ID card.

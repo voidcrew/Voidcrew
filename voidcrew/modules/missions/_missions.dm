@@ -39,6 +39,16 @@
 	var/list/mission_rewards
 	/// Subset of the reward types that count as "rare/exclusive" for UI accent.
 	var/list/rare_reward_types
+	/// For stack-type rewards, units to spawn, keyed by type path. A shop SKU
+	/// sells "plasteel (10 sheets)" for 750cr; without this the contract pays a
+	/// single sheet, because spawning a stack bare gets you the stack's own
+	/// default of one. Absent or 1 leaves that default alone.
+	var/list/reward_amounts
+	/// Multiplier on the difficulty pay band for outpost-board contracts.
+	/// Difficulty alone can't tell "hand over 30 cable coil you already have"
+	/// from "fly to a hostile ruin and kill a named boss" — both roll EASY in
+	/// green space. Archetypes that cost a trip and a fight set this above 1.
+	var/contract_pay_mult = 1
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
 	/// If TRUE, mission completes by handing an item over at the pad/trader.
@@ -872,9 +882,21 @@
 	for(var/reward_type in counts)
 		var/atom/reward_cast = reward_type
 		var/reward_name = initial(reward_cast.name)
-		var/count = counts[reward_type]
+		// A bundled stack counts by its units, so "10× plasteel" not "plasteel"
+		var/count = counts[reward_type] * (LAZYACCESS(reward_amounts, reward_type) || 1)
 		parts += count > 1 ? "[count]× [reward_name]" : reward_name
 	return english_list(parts)
+
+/**
+ * The whole of what an outpost contract pays, goods and scrip together, e.g.
+ * "a laser gun and 2× stimpack + 2 trade vouchers". Board contracts never pay
+ * credits, so the item bundle plus any voucher top-up is the entire settlement.
+ */
+/datum/mission/proc/get_contract_pay_summary()
+	var/list/parts = list(get_reward_summary())
+	if(voucher_count > 0)
+		parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+	return parts.Join(" + ")
 
 /**
  * Distributes mission rewards to the ship account.
@@ -895,7 +917,12 @@
 	var/list/reward_types = get_reward_types()
 	if(length(reward_types) && reward_turf)
 		for(var/reward_type in reward_types)
-			new reward_type(reward_turf)
+			// Stacks carry their bundled count, matching what the shelf sells
+			var/stack_amount = LAZYACCESS(reward_amounts, reward_type)
+			if(stack_amount > 1 && ispath(reward_type, /obj/item/stack))
+				new reward_type(reward_turf, stack_amount)
+			else
+				new reward_type(reward_turf)
 		flash_reward_anchor(reward_anchor)
 
 	// Research payouts are physical: a dossier the crew has to carry to an R&D
@@ -1003,8 +1030,9 @@
 	var/list/reward_items = list()
 	for(var/reward_type in get_reward_types())
 		var/atom/reward_cast = reward_type
+		var/stack_amount = LAZYACCESS(reward_amounts, reward_type) || 1
 		reward_items += list(list(
-			"name" = initial(reward_cast.name),
+			"name" = stack_amount > 1 ? "[stack_amount]× [initial(reward_cast.name)]" : initial(reward_cast.name),
 			"icon" = icon2base64(icon(initial(reward_cast.icon), initial(reward_cast.icon_state))),
 			"rare" = (reward_type in rare_reward_types),
 		))

@@ -26,6 +26,9 @@
 "r" = (
 /obj/modular_map_connector,
 /obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
 /obj/item/gun/energy/plasmacutter,
 /obj/item/extraction_pack,
 /obj/item/fulton_core,

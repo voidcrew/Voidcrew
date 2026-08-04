@@ -55,11 +55,8 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/RefreshParts()
-	var/laser_total = 0
-	for(var/obj/item/stock_parts/micro_laser/laser in component_parts)
-		laser_total += laser.rating
 	// Two T1 lasers = x1, two T4 lasers = x4
-	efficiency_multiplier = max(laser_total / 2, 1)
+	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser) / 2, 1)
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/examine(mob/user)
 	. = ..()
@@ -154,10 +151,7 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/RefreshParts()
-	var/laser_total = 0
-	for(var/obj/item/stock_parts/micro_laser/laser in component_parts)
-		laser_total += laser.rating
-	efficiency_multiplier = max(laser_total, 1)
+	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser), 1)
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/examine(mob/user)
 	. = ..()

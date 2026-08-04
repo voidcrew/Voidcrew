@@ -114,18 +114,6 @@
 	},
 /turf/open/floor/grass,
 /area/template_noop)
-"m" = (
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
-/area/template_noop)
 "n" = (
 /obj/machinery/vending/hydroseeds,
 /obj/effect/turf_decal/trimline/green/filled/line{
@@ -141,6 +129,30 @@
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/rack,
+/obj/item/cultivator,
+/obj/item/hatchet,
+/obj/item/secateurs,
+/obj/item/shovel/spade,
+/obj/item/reagent_containers/spray/pestspray,
+/obj/item/reagent_containers/cup/bottle/nutrient/ez,
+/obj/item/reagent_containers/cup/bottle/nutrient/rh,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/canned/beans,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/cup/watering_can,
+/turf/open/floor/iron/white,
 /area/template_noop)
 
 (1,1,1) = {"
@@ -163,7 +175,7 @@ k
 "}
 (4,1,1) = {"
 l
-m
+t
 n
 o
 "}

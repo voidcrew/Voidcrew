@@ -36,12 +36,15 @@
 		/datum/shop_sku/general/flare,
 		/datum/shop_sku/general/glowstick,
 		/datum/shop_sku/general/survival_medipen,
+		/datum/shop_sku/general/oxygen_canister,
+		/datum/shop_sku/general/jetpack,
 		// Tools & Repair
 		/datum/shop_sku/general/toolbelt,
 		/datum/shop_sku/general/big_welder,
 		/datum/shop_sku/general/welding_fuel,
 		/datum/shop_sku/general/light_replacer,
 		/datum/shop_sku/general/holofan,
+		/datum/shop_sku/general/rcd,
 		// Medical
 		/datum/shop_sku/general/medkit,
 		/datum/shop_sku/general/burn_kit,
@@ -56,10 +59,14 @@
 		/datum/shop_sku/general/mesons,
 		/datum/shop_sku/general/ore_bag,
 		/datum/shop_sku/general/mining_scanner,
+		/datum/shop_sku/general/adv_mining_scanner,
 		/datum/shop_sku/general/diamond_pick,
 		// Fuel & Gas
 		/datum/shop_sku/general/plasma_canister,
+		/datum/shop_sku/general/plasma_sheets,
+		/datum/shop_sku/general/plasma_ore,
 		/datum/shop_sku/general/scoop_board,
+		/datum/shop_sku/general/portable_generator,
 		// Galley & Comforts
 		/datum/shop_sku/general/rations,
 		/datum/shop_sku/general/beans,
@@ -122,9 +129,11 @@
 		/datum/shop_buyback/general/pearl_clam,
 	)
 	// Waystation restocking: gentle asks for the outer ring
-	// Pike's fishing stall makes this the outpost that posts angling requests
+	// Pike's stall makes this the outpost that posts angling requests, and
+	// Roux's diner the one that posts kitchen orders
 	extra_offer_mix = list(
 		/datum/mission/outpost_supply/angler = 15,
+		/datum/mission/outpost_supply/cook = 15,
 	)
 	mission_requests = list(
 		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
@@ -170,6 +179,7 @@
 			"They say the deep-ring traders sell terrible things. We sell sensible boots.",
 			"Forty years on this rock and the sun hasn't moved once. Reliable, that.",
 			"The anglers bring me the strangest fish. I pay for all of them. The chowder pot forgives.",
+			"Roux runs the diner counter now. I buy the fish, she does the forgiving. Try the special.",
 			"Bear hide wears like iron and sleeps like a cloud. The bears disagree, of course.",
 			"The pod foragers come back smelling like a spice rack and looking like they lost a fight. I pay them anyway.",
 			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never crack a single one.",
@@ -246,6 +256,24 @@
 	stock_min = 2
 	stock_max = 4
 
+/datum/shop_sku/general/oxygen_canister
+	name = "oxygen canister (full)"
+	desc = "A full canister of breathable oxygen. Wheel it into a compartment that lost its air, crack the valve, and give it a minute. The waystation moves a lot of these."
+	category = "Survival & EVA"
+	item_path = /obj/machinery/portable_atmospherics/canister/oxygen
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/general/jetpack
+	name = "jetpack (oxygen)"
+	desc = "A compressed oxygen tank rigged for propulsion. It will breathe you or fly you, but not both for very long. Standard kit for anyone patching a hull from the outside."
+	category = "Survival & EVA"
+	item_path = /obj/item/tank/jetpack/oxygen
+	price_credits = 2100
+	stock_min = 1
+	stock_max = 2
+
 // ===== TOOLS & REPAIR =====
 
 /datum/shop_sku/general/toolbelt
@@ -281,6 +309,17 @@
 	name = "holofan projector"
 	item_path = /obj/item/holosign_creator/atmos
 	price_credits = 600
+	stock_min = 1
+	stock_max = 2
+
+// The expensive rung on the repair shelf, and the reason ships limp back here
+// instead of to a depot: a breach closes in seconds instead of a welding shift.
+/datum/shop_sku/general/rcd
+	name = "rapid construction device"
+	desc = "Lays and removes walls, floors and airlocks out of stored matter. The fast way to shut a breach while the compartment is still venting. Feed it iron, glass, or compressed matter cartridges."
+	category = "Tools & Repair"
+	item_path = /obj/item/construction/rcd
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
@@ -361,6 +400,14 @@
 	category = "Prospecting"
 	item_path = /obj/item/t_scanner/adv_mining_scanner/lesser
 	price_credits = 450
+
+/datum/shop_sku/general/adv_mining_scanner
+	desc = "The full-range model of the scanner on the shelf beside it: seven tiles of rock instead of four, and it re-sweeps half again as fast. Worth it on a planet where the good seams sit deep."
+	category = "Prospecting"
+	item_path = /obj/item/t_scanner/adv_mining_scanner
+	price_credits = 1500
+	stock_min = 1
+	stock_max = 3
 
 /datum/shop_sku/general/diamond_pick
 	category = "Prospecting"
@@ -463,12 +510,46 @@
 	stock_min = 2
 	stock_max = 3
 
+// Generator fuel. The sheets are the lifeline for any hull with no ore redemption
+// machine aboard — without them a ship that burns its plasma has no way back.
+// The ore is the cheaper option per sheet, but only if you can actually smelt it.
+/datum/shop_sku/general/plasma_sheets
+	name = "solid plasma (20)"
+	desc = "Twenty sheets of solid plasma, the grade portable generators burn. Buy these if your ship has no way to smelt its own ore."
+	category = "Fuel & Gas"
+	item_path = /obj/item/stack/sheet/mineral/plasma
+	dispense_amount = 20
+	price_credits = 500
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/general/plasma_ore
+	name = "plasma ore (15)"
+	desc = "Fifteen chunks of raw plasma ore, cheaper by weight than the refined sheets. You need an ore redemption machine to get anything out of it. A welder will not do the job."
+	category = "Fuel & Gas"
+	item_path = /obj/item/stack/ore/plasma
+	dispense_amount = 15
+	price_credits = 220
+	stock_min = 2
+	stock_max = 4
+
 /datum/shop_sku/general/scoop_board
 	name = "nebula ram scoop board"
 	desc = "The circuit board for a nebula ram scoop. Park inside a nebula and drink your fuel straight out of the cloud. Barnaby keeps them behind the counter with the good stock."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
 	price_credits = 600
+	stock_min = 1
+	stock_max = 2
+
+// Pairs with the solid plasma two shelves over: the ship that can't fix its
+// engine can at least keep the lights and the air handlers running.
+/datum/shop_sku/general/portable_generator
+	name = "portable plasma generator"
+	desc = "A P.A.C.M.A.N. generator that burns solid plasma for power. Bolt it down, wire it to the grid, and it will hold up the essentials while the engine is out. It eats the plasma sheets Barnaby stocks two shelves over."
+	category = "Fuel & Gas"
+	item_path = /obj/machinery/power/port_gen/pacman
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 2
 

@@ -214,8 +214,7 @@
 		npc_ship.claimed_captain = claimer.mind
 
 		// Grant the Captain Management action button
-		var/datum/action/innate/captain_management/captain_action = new(claimer, npc_ship)
-		captain_action.Grant(claimer)
+		grant_captain_management(claimer, npc_ship)
 
 	// Log the claim
 	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
@@ -408,6 +407,7 @@
 
 	// Cargo shuttle status - block undock if shuttle is present
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+	cargo_shuttle?.check_stalled() // a delivery that never resolved would block undock forever
 	data["cargoShuttlePresent"] = cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY
 
 	// Interdiction status
@@ -1011,6 +1011,7 @@
 			if(action == "undock")
 				// Check if cargo shuttle is still present
 				var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+				cargo_shuttle?.check_stalled() // never let a stranded delivery strand the ship
 				if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
 					say("ERROR: Cannot undock while cargo shuttle is present. Send the cargo shuttle away first.")
 					return

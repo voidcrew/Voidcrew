@@ -19,6 +19,9 @@
 /obj/structure/closet/crate/secure{
 	name = "sealed document crate"
 	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/folder/blue,
 /obj/item/stamp,

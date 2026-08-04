@@ -203,6 +203,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 	desc = "A gilded extraction case stamped with the Grand Colosseum's laurels. It extracts on top of your normal extraction case, not instead of it."
 	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
 	icon_state = "tournament_case"
+	// The lockable_storage component rewrites icon_state to
+	// "[base_icon_state]_locked"/"_broken" on every update, so this has to
+	// track our own icon file - inheriting "secure" renders us invisible.
+	base_icon_state = "tournament_case"
 	inhand_icon_state = "tournament_case"
 	lefthand_file = 'voidcrew/modules/colosseum/icons/colosseum_lefthand.dmi'
 	righthand_file = 'voidcrew/modules/colosseum/icons/colosseum_righthand.dmi'

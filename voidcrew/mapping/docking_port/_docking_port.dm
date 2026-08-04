@@ -55,6 +55,11 @@
 	///interleaves two half-done turf transplants and strands whatever the loser touched.
 	VAR_PRIVATE/move_lock_until = 0
 
+	///turf -> turf type census of the tiles this hull actually carried to where it now
+	///sits, rebuilt by takeoff() on every move. reconcile_hull_before_move() reads it to
+	///tell a deck tile of ours that lost its skipover from ground we are merely parked on.
+	VAR_PRIVATE/list/carried_hull_types
+
 /obj/docking_port/mobile/voidcrew/Initialize(mapload)
 	. = ..()
 	RegisterSignal(SSdcs, COMSIG_GLOB_Z_SHIP_PROBE, PROC_REF(respond_to_z_port_probe))
@@ -151,7 +156,9 @@
  *
  * 2. Missing shuttle skipover: fromShuttleMove() refuses to move any turf without
  *    /turf/baseturf_skipover/shuttle in its baseturfs. Restore the marker the same way
- *    /datum/map_template/shuttle/load() stamps it at ship load.
+ *    /datum/map_template/shuttle/load() stamps it at ship load - but only on a tile
+ *    carried_hull_types vouches for as ours, never on ground we are parked on. See
+ *    takeoff() for why the turf's own state cannot tell those two apart.
  */
 /obj/docking_port/mobile/voidcrew/proc/reconcile_hull_before_move()
 	if(!length(shuttle_areas)) // initial load placement, nothing registered to reconcile against
@@ -211,6 +218,13 @@
 			continue
 		if(!isnull(hull_turf.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)))
 			continue
+		// Unmarked ground inside one of our areas is the landing site's, not a deck tile
+		// with a bookkeeping fault, unless we can show we carried this exact turf here.
+		// Stamping the site's floor is how a breached hull sails off a planet with a
+		// square of that planet's dirt riding in the hole.
+		if(carried_hull_types?[hull_turf] != hull_turf.type)
+			log_shuttle("[name]: footprint turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] has no shuttle skipover and is not hull we carried here ([carried_hull_types?[hull_turf] || "never carried"]) - leaving it to the site")
+			continue
 		if(!islist(hull_turf.baseturfs))
 			hull_turf.assemble_baseturfs()
 		hull_turf.insert_baseturf(min(3, hull_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
@@ -219,6 +233,44 @@
 	// visible next to whatever strands: compare stranded coords against this rect.
 	var/list/rect = return_coords()
 	log_shuttle("[name]: pre-move footprint pos=([x],[y],[z]) dir=[dir] w=[width] h=[height] dw=[dwidth] dh=[dheight] rect=([rect[1]],[rect[2]])-([rect[3]],[rect[4]])")
+
+/**
+ * Post-move census of what this hull actually set down, keyed turf -> turf type.
+ *
+ * reconcile_hull_before_move()'s skipover repair has to separate two states that are
+ * indistinguishable by the time it looks at them:
+ *
+ *   - a deck tile of ours that lost its /turf/baseturf_skipover/shuttle to a bookkeeping
+ *     fault, which has to get the marker back or the tile - and whatever is standing on
+ *     it - is left behind on the next move, and
+ *   - the landing site's own ground sitting in one of our areas. A breached tile travels
+ *     as MOVE_AREA without MOVE_TURF, so /area/onShuttleMove() hands our area the
+ *     planet's dirt at that coordinate while the dirt stays the planet's turf. A tile
+ *     breached while already parked lands in the same state from the other direction:
+ *     CopyOnTop() only carries the layers above the marker, so a landed deck tile has
+ *     the site's ground directly under its skipover and ScrapeAway() takes both, leaving
+ *     bare planet floor.
+ *
+ * Both end as unmarked ground in a registered ship area, and stamping either one makes
+ * the hull carry a square of the planet away inside the breach - which is not even hull
+ * as far as integrity is concerned, since get_turf_mass_weight_instance() refuses to
+ * count a turf isshuttleturf() rejects.
+ *
+ * The turf's state cannot tell them apart; its history can. A tile we carried to this
+ * coordinate that is still the type we set down is ours. Anything else belongs to the
+ * site, including the ground a breach scraped down to - a break changes the type, which
+ * is exactly the signal a marker lost to bookkeeping does not produce.
+ */
+/obj/docking_port/mobile/voidcrew/takeoff(list/old_turfs, list/new_turfs, list/moved_atoms, rotation, movement_direction, old_dock, area/fallback_area)
+	. = ..()
+	carried_hull_types = list()
+	for(var/i in 1 to length(old_turfs))
+		if(!(old_turfs[old_turfs[i]] & MOVE_TURF))
+			continue
+		var/turf/landed = new_turfs[i]
+		if(!landed)
+			continue
+		carried_hull_types[landed] = landed.type
 
 /**
  * An engine of ours standing on bare space inside our own footprint is a collapsed

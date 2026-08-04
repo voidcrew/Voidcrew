@@ -113,12 +113,8 @@
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/RefreshParts()
-	var/cap = 0
-	var/eff = 0
-	for(var/obj/item/stock_parts/matter_bin/M in component_parts)
-		cap += M.rating
-	for(var/obj/item/stock_parts/micro_laser/L in component_parts)
-		eff += L.rating
+	var/cap = max(total_part_rating(/datum/stock_part/matter_bin), 1)
+	var/eff = max(total_part_rating(/datum/stock_part/micro_laser), 2)
 	gas_capacity = 5000 * ((cap - 1) ** 2) + 1000
 	efficiency_multiplier = round(((eff / 2) / 2.8) ** 2, 0.1)
 	update_gas_stats()

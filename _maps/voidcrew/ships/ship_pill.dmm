@@ -50,7 +50,7 @@
 	},
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/pill)
-"d" = (
+"J" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -88,7 +88,19 @@
 /obj/item/storage/toolbox/mechanical/old,
 /obj/item/storage/box/stockparts/basic,
 /obj/item/circuitboard/machine/autolathe,
+/obj/item/paper{
+	name = "fuel notes";
+	default_raw_text = "Fuel notes. The generator burns solid plasma sheets and nothing else, so do not try to put ore in it. A welder will smelt iron ore and sand into sheets, but it will not touch plasma. Plasma needs an ore redemption machine and this ship does not have one. If you run dry, build the autolathe from the board in this pile, print the Research and Development Kit from it, and work up to a redemption machine from there. The thirty sheets you start with will not last the trip.";
+	pixel_x = -5;
+	pixel_y = -3
+	},
 /obj/item/clothing/head/utility/welding,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/pill)
 
@@ -102,5 +114,5 @@ b
 c
 "}
 (4,1,1) = {"
-d
+J
 "}

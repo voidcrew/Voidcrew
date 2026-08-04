@@ -234,8 +234,7 @@
 
 	// Grant captain management action if spawning as captain (officer job)
 	if(job.officer && humanc)
-		var/datum/action/innate/captain_management/captain_action = new(humanc, joined_ship)
-		captain_action.Grant(humanc)
+		grant_captain_management(humanc, joined_ship)
 
 	// Show ship memo after spawn (with a small delay so they're fully loaded in)
 	if(joined_ship.memo && humanc)

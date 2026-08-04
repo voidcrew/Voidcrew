@@ -186,16 +186,6 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
-"lV" = (
-/obj/machinery/porta_turret/ship_defense{
-	dir = 8
-	},
-/obj/structure/sign/nanotrasen,
-/turf/closed/wall/mineral/titanium/dollhouse{
-	name = "cream wall";
-	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
-	},
-/area/shuttle/voidcrew/goon/commons/d)
 "mv" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -816,6 +806,8 @@
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
 	piping_layer = 4
 	},
 /turf/open/floor/iron/dollhouse,
@@ -836,6 +828,10 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
+"Yn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
 "Yy" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Emergency Shuttle Engineering"
@@ -915,7 +911,7 @@ rd
 (4,1,1) = {"
 GR
 Rq
-Eh
+Yn
 IG
 Eh
 mL

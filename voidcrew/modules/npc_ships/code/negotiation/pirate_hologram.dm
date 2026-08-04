@@ -237,7 +237,13 @@
 	if(!negotiation)
 		return
 
-	to_chat(user, span_boldwarning("You refuse to pay. Combat will resume!"))
+	// Say what refusing actually buys you here - a yellow-band shakedown has no
+	// guns behind it, they just take the money out of the accounts themselves.
+	var/datum/ai_controller/npc_ship/controller = negotiation.pirate_ship?.ai_controller
+	if(controller?.hail_escalates_to_siphon())
+		to_chat(user, span_boldwarning("You refuse to pay. They'll take it from your accounts by force!"))
+	else
+		to_chat(user, span_boldwarning("You refuse to pay. Combat will resume!"))
 	negotiation.end_negotiation(success = FALSE, reason = "refused")
 
 /**

@@ -447,6 +447,52 @@ const useContacts = (): Contact[] => {
 };
 
 /**
+ * How long the ship needs to reach a tile at the speed it is already carrying.
+ *
+ * Nothing on the helm used to answer this. `eta` from the server is the clock on
+ * the movement timer — the next TILE, not the destination — and the drift track's
+ * own clocks run to a rolling horizon that slides along with the ship, so its
+ * label reads the same number forever. Under thrust the speed changes every
+ * fifth of a second and all of it moves, which is why this only ever looked
+ * broken with the engines cold: coast, and every duration on the console holds
+ * still while the ship keeps crossing tiles.
+ *
+ * tick_move() steps each axis by the SIGN of its velocity, so one interval buys a
+ * tile on BOTH axes at once: the hop count to a tile is its Chebyshev distance,
+ * not the straight-line one the rows report alongside it. Wraparound counts, for
+ * the same reason useDrift() walks it — the map's edges are joined, and the short
+ * way to a contact near the far edge is off the near one.
+ *
+ * It is the honest "at this speed" figure rather than a promise: it assumes the
+ * crew steers the short way and holds the magnitude they have. Deliberately NOT
+ * gated on the current heading — a ship coasting the wrong way still wants to
+ * know what the trip costs before it commits to turning — and absent entirely
+ * with the ship stopped, where there is no answer to give.
+ */
+const useTravelClock = () => {
+  const { data } = useBackend<Data>();
+  const { x, y, chart, moveIntervalMs, state } = data;
+
+  const size = chart?.size ?? 51;
+  // tick_move() flies the band 2..size-1 joined end to end, so the long way
+  // round an axis is (size - 2) - |delta|.
+  const span = size - 2;
+  const axisSteps = (delta: number) => {
+    const direct = Math.abs(delta);
+    const around = span - direct;
+    return around > 0 && around < direct ? around : direct;
+  };
+
+  /** m:ss to reach the tile, or null where the console can't say. */
+  return (tileX: number, tileY: number): string | null => {
+    if (!moveIntervalMs || state !== 'flying') return null;
+    const steps = Math.max(axisSteps(tileX - x), axisSteps(tileY - y));
+    if (!steps) return null;
+    return clockOf(steps * moveIntervalMs);
+  };
+};
+
+/**
  * The selected contact, shared so the chart and the drawer highlight each other:
  * clicking a mark on the map scrolls it into focus in the list, and vice versa.
  */
@@ -454,6 +500,27 @@ const Selection = createContext<{
   selected: string | null;
   select: (key: string) => void;
 }>({ selected: null, select: () => {} });
+
+/**
+ * A request to bring an overmap tile into view. `nonce` is what makes a second
+ * click on the same contact a fresh request — the coordinates alone are
+ * identical, so the chart would never see the request change.
+ */
+type FocusRequest = { x: number; y: number; nonce: number };
+
+/**
+ * Picking a contact out of the register aims the chart at it.
+ *
+ * The camera lives inside Chart, because pan and zoom are the things that own
+ * it, so the register can't move it directly: it posts a tile here and the
+ * chart decides what to do about it. That indirection is what lets the chart
+ * ignore a request for a mark that is already on screen — the common case, and
+ * one where moving the camera would detach it from the ship for no gain.
+ */
+const ChartFocus = createContext<{
+  request: FocusRequest | null;
+  focusOn: (x: number, y: number) => void;
+}>({ request: null, focusOn: () => {} });
 
 /**
  * Where the right-click action menu is pinned and what it was opened on. `key`
@@ -510,11 +577,17 @@ export const HelmComputer = () => {
   const select = (key: string) =>
     setSelected((current) => (current === key ? null : key));
 
+  const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null);
+  const focusOn = (x: number, y: number) =>
+    setFocusRequest((current) => ({ x, y, nonce: (current?.nonce ?? 0) + 1 }));
+
   return (
     <Window width={1216} height={800}>
       <Window.Content fitted>
         <Selection.Provider value={{ selected, select }}>
-          <Faceplate />
+          <ChartFocus.Provider value={{ request: focusRequest, focusOn }}>
+            <Faceplate />
+          </ChartFocus.Provider>
         </Selection.Provider>
       </Window.Content>
     </Window>
@@ -1256,6 +1329,21 @@ const ZOOM_WHEEL_STEP = 1.18;
  */
 const PAN_THRESHOLD = 4;
 
+/**
+ * How far inside the chart's edge a contact has to sit for a click on it to
+ * count as "already in view" and leave the camera alone. A mark half-clipped
+ * against the bezel is on screen in the strict sense and no use to anybody, so
+ * the test insets by a fraction of the well rather than taking its raw bounds.
+ */
+const FOCUS_INSET = 0.08;
+
+/**
+ * The camera's pan onto a selected contact. Long enough to read as travel
+ * across the chart — a cut leaves the crew working out what they are looking at
+ * — and short enough that it is over before the next click.
+ */
+const FOCUS_PAN_MS = 260;
+
 const clamp = (value: number, low: number, high: number) =>
   Math.max(low, Math.min(high, value));
 
@@ -1538,10 +1626,78 @@ const Chart = () => {
   const focusX = anchor ? anchor.x : followX;
   const focusY = anchor ? anchor.y : followY;
 
+  /**
+   * Bring a contact picked in the register onto the chart.
+   *
+   * Anchoring on it is the same thing a drag does, so the Recentre button
+   * appears and says how to get back to the ship. A contact that is already on
+   * screen is left alone: the mark highlights, the camera keeps following the
+   * hull, and nothing lurches under a crew that could see the thing all along.
+   *
+   * Whether it is on screen is measured through the camera's own on-screen
+   * matrix rather than worked back out of the zoom span. The chart is a square
+   * viewBox sliced into a well half again as wide as it is tall, so the tiles
+   * visible per axis differ and the slice crops the top and bottom — the matrix
+   * already accounts for both, and for whatever the window has been resized to.
+   */
+  const { request: focusRequest } = useContext(ChartFocus);
+  const [panEase, setPanEase] = useState(false);
+  const servedFocus = useRef(0);
+  const easeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopPanEase = () => {
+    if (easeTimer.current) clearTimeout(easeTimer.current);
+    easeTimer.current = null;
+    setPanEase(false);
+  };
+
+  useEffect(() => {
+    if (!focusRequest || focusRequest.nonce === servedFocus.current) return;
+    servedFocus.current = focusRequest.nonce;
+
+    const target = { x: toX(focusRequest.x), y: toY(focusRequest.y) };
+    const camera = cameraRef.current;
+    const viewport = viewportRef.current;
+    const svg = camera?.ownerSVGElement;
+    const matrix = camera?.getScreenCTM();
+
+    if (camera && svg && viewport && matrix) {
+      const box = viewport.getBoundingClientRect();
+      const point = svg.createSVGPoint();
+      point.x = target.x;
+      point.y = target.y;
+      const screen = point.matrixTransform(matrix);
+      const inset = Math.min(box.width, box.height) * FOCUS_INSET;
+      if (
+        screen.x >= box.left + inset &&
+        screen.x <= box.right - inset &&
+        screen.y >= box.top + inset &&
+        screen.y <= box.bottom - inset
+      ) {
+        return;
+      }
+    }
+
+    setAnchor(target);
+    setPanEase(true);
+    if (easeTimer.current) clearTimeout(easeTimer.current);
+    easeTimer.current = setTimeout(() => {
+      easeTimer.current = null;
+      setPanEase(false);
+    }, FOCUS_PAN_MS);
+  }, [focusRequest]);
+
+  // A console closed mid-pan would otherwise set state on a dead component.
+  useEffect(() => () => {
+    if (easeTimer.current) clearTimeout(easeTimer.current);
+  }, []);
+
   // An anchored camera doesn't move on its own, so there is nothing to glide and
-  // a transition would only smear the drag a frame behind the cursor.
-  const glide =
-    anchor || teleported || !moveIntervalMs || state !== 'flying'
+  // a transition would only smear the drag a frame behind the cursor. The
+  // exception is the pan onto a selected contact, which is the one time the
+  // anchor itself moves and wants to be seen moving.
+  const glide = panEase
+    ? `transform ${FOCUS_PAN_MS}ms ease-out`
+    : anchor || teleported || !moveIntervalMs || state !== 'flying'
       ? 'none'
       : `transform ${moveIntervalMs}ms linear`;
 
@@ -1603,6 +1759,10 @@ const Chart = () => {
     if (!cameraRef.current) return;
     // Middle-drag is autoscroll in a browser; the BYOND client is one.
     if (event.button === 1) event.preventDefault();
+    // A hand on the chart outranks a pan the console started on its own: left
+    // running, the transition would drag the map a quarter-second behind the
+    // cursor for the rest of the ease.
+    stopPanEase();
     panState.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -1681,6 +1841,16 @@ const Chart = () => {
   // projection, which is deliberately absent under braking.
   const nose = vector ?? DIR_VECTOR[driftDirection];
   const heeling = nose ? (Math.atan2(nose[0], nose[1]) * 180) / Math.PI : 0;
+
+  // Arrival clock for a plotted course, off the planned path's own length rather
+  // than the distance to the destination: the route detours around storms and
+  // standoff bands, and the tiles it spends doing that are tiles the ship flies.
+  // PlottedCourse deliberately draws no per-step clocks, on the grounds that the
+  // destination one lives here — it just never did until now.
+  const courseEta =
+    moveIntervalMs && autopilot?.remaining
+      ? clockOf(autopilot.remaining * moveIntervalMs)
+      : null;
 
   const gridLines: number[] = [];
   for (let i = 0; i <= size; i += 5) gridLines.push(i);
@@ -1997,8 +2167,15 @@ const Chart = () => {
       </div>
       <div className="Helm__hud Helm--tr">
         <div className="Helm__hudBig">{speed?.toFixed(1) ?? '0.0'}</div>
+        {/*
+          `eta` is the movement timer's own clock — the next TILE, not the next
+          anywhere. Calling it ETA next to a chart full of destinations invited
+          exactly one reading, and it is the wrong one: it never counts toward a
+          contact, and at a steady coast it cycles the same figure forever. The
+          arrival clocks live on the contacts themselves (see useTravelClock).
+        */}
         <div className="Helm__hudLine">
-          <span className="Helm__hudKey">SPM · ETA</span> {eta || '—'}
+          <span className="Helm__hudKey">SPM · TILE</span> {eta || '—'}
         </div>
       </div>
       {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
@@ -2014,6 +2191,7 @@ const Chart = () => {
             </span>
             <span className="Helm__courseDist">
               {autopilot.remaining ?? 0} tiles
+              {!!courseEta && ` · ${courseEta}`}
             </span>
             <button
               type="button"
@@ -2521,7 +2699,9 @@ const TransmissionPulse = (props: {
  */
 const ContactReadout = (props: { contact: Contact }) => {
   const { contact } = props;
+  const travelClock = useTravelClock();
   const unknown = contact.kind === 'ship' && !contact.identified;
+  const eta = travelClock(contact.x, contact.y);
 
   return (
     <div className="Helm__readout">
@@ -2536,6 +2716,13 @@ const ContactReadout = (props: { contact: Contact }) => {
         {contact.dist > 0
           ? `${contact.dist} tiles ${contact.bearing}`
           : 'This position'}
+        {/*
+          The trip at the speed the ship is already making, so a crew reading the
+          callout before they commit to a heading knows what it costs. Tiles
+          alone can't say: the same four tiles is twenty seconds or two minutes
+          depending on what the hull is carrying.
+        */}
+        {!!eta && ` · ${eta} out`}
         {contact.integrity != null && ` · hull ${contact.integrity}%`}
         {!!contact.hostile && ' · HOSTILE'}
       </div>
@@ -3025,8 +3212,10 @@ const Drawer = () => {
 const ContactList = () => {
   const { act } = useBackend<Data>();
   const waypoints = useContacts();
+  const travelClock = useTravelClock();
   const locked = useLocked();
   const { selected, select } = useContext(Selection);
+  const { focusOn } = useContext(ChartFocus);
   const openActionMenu = useContext(MenuControl);
 
   if (!waypoints.length) {
@@ -3067,6 +3256,12 @@ const ContactList = () => {
             </div>
             {collapse(groups[category]).map(({ contact, count }) => {
               const key = contactKey(contact);
+              // Time to reach it at the speed the ship already has. Sits on the
+              // meta line rather than beside the bearing: the drawer is under
+              // 300px wide and the name column is the one that gives up the
+              // room, so a second figure on the top line ellipsises the only
+              // thing on the row you can't work out from the chart.
+              const eta = travelClock(contact.x, contact.y);
               return (
                 <div
                   key={key}
@@ -3078,9 +3273,19 @@ const ContactList = () => {
                   title={
                     contact.kind === 'ship' && !contact.identified
                       ? 'Unidentified vessel — right-click for actions, or run a Ships scan to resolve it'
-                      : 'Highlight on the chart · right-click to set course'
+                      : 'Bring it up on the chart · right-click to set course'
                   }
-                  onClick={() => select(key)}
+                  /*
+                   * Highlight it and take the chart to it. A charted contact can
+                   * be anywhere in the sector — the register remembers
+                   * everything the ship has ever seen — so on a list of tiles
+                   * mostly off the far edge of the view, a highlight alone left
+                   * the crew hunting for the mark they had just clicked.
+                   */
+                  onClick={() => {
+                    select(key);
+                    focusOn(contact.x, contact.y);
+                  }}
                   /*
                    * The same menu the chart mark opens, on the same contact. A
                    * course is plotted to the contact's own tile, so for a
@@ -3108,6 +3313,7 @@ const ContactList = () => {
                   <span className="Helm__rowCoord">
                     {String(contact.x).padStart(2, '0')} /{' '}
                     {String(contact.y).padStart(2, '0')}
+                    {!!eta && ` · ${eta} out`}
                     {count > 1 && ' · nearest'}
                     {contact.integrity != null &&
                       ` · hull ${contact.integrity}%`}
@@ -3513,8 +3719,9 @@ const VelocityCluster = () => {
                   : 'Hold'}
           </span>
         </div>
+        {/* The tile clock, not an arrival time — see the HUD copy of it. */}
         <div className="Helm__metric">
-          <span className="Helm__k">ETA</span>
+          <span className="Helm__k">Next tile</span>
           <span className="Helm__v" style={{ fontSize: '1cqw' }}>
             {eta || '—'}
           </span>

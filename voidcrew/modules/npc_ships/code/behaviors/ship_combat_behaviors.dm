@@ -230,28 +230,29 @@
 		// Target has money - proceed based on zone
 		ship.ship_notify("Scan complete. Target has [target_wealth] credits.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
-		// Check zone for branching
+		// Every band opens the same way: hail them and let the crew answer on the
+		// holopad. What differs is what the hail is backed by once the grace period
+		// runs out - red opens fire, yellow drains the accounts with the siphon
+		// (see hail_escalates_to_siphon).
+		if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
+			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
+				target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg', 25)
+				controller.set_combat_state(NPC_COMBAT_HAILING)
+				controller.clear_blackboard_key(BB_NPC_HAILING_START)
+				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+				controller.clear_blackboard_key("hailing_reminder_sent")
+				return AI_BEHAVIOR_DELAY
+
+		// Won't parley, or another pirate already has them on the line - skip the
+		// courtesy. acquire_lock still branches on the band afterwards.
 		var/turf/ship_loc = get_turf(ship)
 		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_loc)
-
-		if(zone?.zone_type != ZONE_RED)
-			// Yellow zone: straight to lock acquisition, then siphon (no hailing)
-			target.ship_notify("Hostile vessel has completed scan and is locking onto your ship!", "SECURITY", SHIP_NOTIFY_DANGER)
-			controller.set_combat_state(NPC_COMBAT_ENGAGING)
-		else
-			// Red zone: hail first (give player chance to respond)
-			if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
-				var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
-				if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
-					target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg', 25)
-					controller.set_combat_state(NPC_COMBAT_HAILING)
-					controller.clear_blackboard_key(BB_NPC_HAILING_START)
-					controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
-					return AI_BEHAVIOR_DELAY
-
-			// Engage directly (or another pirate is already hailing)
+		if(zone?.zone_type == ZONE_RED)
 			target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
-			controller.set_combat_state(NPC_COMBAT_ENGAGING)
+		else
+			target.ship_notify("Hostile vessel has completed scan and is locking onto your ship!", "SECURITY", SHIP_NOTIFY_DANGER)
+		controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
 		// Target is broke. In yellow that isn't a reprieve - the pirate opens a
 		// channel anyway and barters for cargo instead of credits. Refuse or ignore
@@ -321,7 +322,11 @@
  * - Player can escape (moving is OK during hailing)
  * - Player locks weapons → immediate COMBAT
  * - Player fires on pirate → immediate COMBAT
- * - 20 seconds pass without answer → COMBAT
+ * - 20 seconds pass without answer → escalation
+ *
+ * What "escalation" means depends on the hail: red opens fire, a broke target
+ * gets boarded, and a yellow-band shakedown gets its accounts drained by the
+ * siphon. See escalate_to_combat() and hail_escalates_to_siphon().
  */
 /datum/ai_behavior/npc_ship/hailing
 	action_cooldown = 1 SECONDS
@@ -352,11 +357,14 @@
 		ship.ship_notify("Hailing [target.name]. Awaiting response.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 		// Announce to player ship - this is the key notification!
-		// A broke target is being hailed for cargo, so the threat on the other end
-		// of the timer is a boarding party rather than a broadside.
+		// What sits on the other end of the timer depends on the hail: a broke
+		// target gets a boarding party, a yellow-band shakedown gets the siphon,
+		// and red gets a broadside.
 		var/grace_seconds = round(NPC_HAILING_GRACE_PERIOD / 10)
 		if(controller.blackboard[BB_NPC_BROKE_BARTER])
 			target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. [grace_seconds] seconds before they board!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+		else if(controller.hail_escalates_to_siphon())
+			target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. [grace_seconds] seconds before they start draining your accounts!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 		else
 			target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. [grace_seconds] seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
@@ -379,6 +387,8 @@
 			var/remaining_seconds = round(NPC_HAILING_GRACE_PERIOD / 2 / 10)
 			if(controller.blackboard[BB_NPC_BROKE_BARTER])
 				target.ship_notify("[ship.name] is losing patience! [remaining_seconds] seconds until they board!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
+			else if(controller.hail_escalates_to_siphon())
+				target.ship_notify("[ship.name] is losing patience! [remaining_seconds] seconds until they start draining your accounts!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 			else
 				target.ship_notify("[ship.name] is losing patience! [remaining_seconds] seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 
@@ -404,9 +414,13 @@
 
 	// Announce escalation
 	var/barter_hail = controller.blackboard[BB_NPC_BROKE_BARTER]
+	var/siphon_hail = controller.hail_escalates_to_siphon()
 	if(reason == "ignored" && barter_hail)
 		ship.ship_notify("No response from target. Send the boarding party.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 		target.ship_notify("[ship.name] got no answer and is moving to board!", "COMBAT", SHIP_NOTIFY_DANGER)
+	else if(reason == "ignored" && siphon_hail)
+		ship.ship_notify("No response from target. Take it out of their accounts.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship.name] got no answer and is moving to drain your accounts!", "FINANCE", SHIP_NOTIFY_DANGER)
 	else if(reason == "ignored")
 		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER)
@@ -416,6 +430,12 @@
 	else if(reason == "negotiation_failed")
 		ship.ship_notify("Negotiations failed. Engaging target.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER)
+
+	// Yellow-band shakedown: no guns, no boarders, they just take it. Lock up and
+	// acquire_lock hands off to SIPHONING.
+	if(siphon_hail)
+		controller.set_combat_state(NPC_COMBAT_ENGAGING)
+		return
 
 	// Check if we should use phased boarding (only for ignored/negotiation_failed, not aggression)
 	if(reason != "aggression")
@@ -470,8 +490,11 @@
 		// Lock acquired!
 		controller.set_blackboard_key(BB_NPC_TARGET_LOCKED, TRUE)
 
-		// Branch based on the target's band: yellow -> siphon, red -> full combat
-		if(!controller.is_red_zone_raid())
+		// Branch based on the target's band: yellow -> siphon, red -> full combat.
+		// A ship with no siphon goal (customs assesses fines instead) has nothing
+		// to do in SIPHONING, so don't park it there - COMBAT still leaves it the
+		// interdictor, which is all the band allows anyway.
+		if(!controller.is_red_zone_raid() && ship.siphon_goal_percent > 0)
 			controller.set_combat_state(NPC_COMBAT_SIPHONING)
 		else
 			controller.set_combat_state(NPC_COMBAT_COMBAT)

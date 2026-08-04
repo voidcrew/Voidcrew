@@ -22,6 +22,9 @@
 /obj/structure/closet/crate/secure{
 	name = "treasure chest"
 	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/toy/plush/unicorn,
 /obj/item/storage/fancy/heart_box,

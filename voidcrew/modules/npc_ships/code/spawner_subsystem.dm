@@ -4,7 +4,7 @@
  * Manages deterministic spawning of NPC pirate ships.
  * Spawns 3 pirates at round start from a unified faction pool.
  * Any faction can spawn in any zone - the zone determines behavior:
- * - Yellow zone: scan -> lock -> interdict + siphon (economic threat)
+ * - Yellow zone: scan -> hail -> negotiate -> interdict + siphon (economic threat)
  * - Red zone: hail -> negotiate -> boarding waves -> boss (lethal threat)
  * When a pirate is "resolved" (killed, claimed, abandoned), spawns a replacement.
  */

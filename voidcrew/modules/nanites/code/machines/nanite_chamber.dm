@@ -36,9 +36,7 @@
 
 /obj/machinery/nanite_chamber/RefreshParts()
 	. = ..()
-	scan_level = 0
-	for(var/obj/item/stock_parts/scanning_module/P in component_parts)
-		scan_level += P.rating
+	scan_level = max(total_part_rating(/datum/stock_part/scanning_module), 1)
 
 /obj/machinery/nanite_chamber/examine(mob/user)
 	. = ..()

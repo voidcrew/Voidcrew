@@ -40,7 +40,7 @@
 /obj/machinery/door/airlock/external{
 	name = "External Freight Airlock"
 	},
-/obj/machinery/door/firedoor,
+/obj/structure/fans/tiny,
 /obj/effect/turf_decal/stripes{
 	dir = 1
 	},
@@ -317,6 +317,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	id = "NTMSLoad2";
 	name = "on ramp"
@@ -403,11 +404,11 @@
 	id_tag = "ntms_exterior";
 	name = "NTMS-037 Mining Airlock"
 	},
+/obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
 "se" = (
@@ -520,6 +521,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
+/obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
 "uY" = (
@@ -714,6 +716,7 @@
 	id = "kilo_bay";
 	name = "NTMS-037 Bay Blast Door"
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/conveyor{
 	dir = 1;
 	id = "NTMSLoad";
@@ -1110,7 +1113,6 @@
 /obj/machinery/door/airlock/shuttle{
 	name = "Captain's Quarters"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,

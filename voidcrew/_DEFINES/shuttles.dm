@@ -27,3 +27,11 @@
 
 #define CARGO_SHUTTLE_WARMUP (30 SECONDS)
 #define CARGO_SHUTTLE_DEPARTURE_WARMUP (5 SECONDS)
+
+/// How far past its own warmup a cargo shuttle may run before check_stalled() tears it
+/// down. Has to clear the slowest legitimate arrival - a load_level() retry plus the
+/// docking move itself - without leaving a wedged ship parked for long.
+#define CARGO_SHUTTLE_STALL_GRACE (60 SECONDS)
+/// Ceiling on the once-a-second "wait for the encounter to finish loading" retries in
+/// complete_arrival(), so a level that never loads can't spin the warmup forever.
+#define CARGO_SHUTTLE_MAX_LOAD_RETRIES 60

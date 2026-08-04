@@ -212,6 +212,7 @@
 
 	// Shuttle status
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
+	cargo_shuttle?.check_stalled() // a delivery that never resolved reads as "Arriving" forever
 	var/shuttle_state = cargo_shuttle?.state || CARGO_SHUTTLE_AWAY
 	data["shuttle_state"] = shuttle_state
 	data["shuttle_timer"] = cargo_shuttle?.get_remaining_time() || 0

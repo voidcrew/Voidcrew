@@ -489,6 +489,13 @@
 		clear_target()
 		// Target is now on our "paid" list (handled by negotiation datum)
 	else
+		// A yellow-band shakedown has nothing but the siphon behind it - no guns,
+		// no boarders. Refuse it, stall it out or run, and they take the money
+		// themselves: acquire_lock hands off to SIPHONING once the lock lands.
+		if(hail_escalates_to_siphon())
+			set_combat_state(NPC_COMBAT_ENGAGING)
+			return
+
 		// Double flee attempt = straight to ship combat (player was already warned)
 		if(reason == "player_moved")
 			set_combat_state(NPC_COMBAT_COMBAT)
@@ -549,6 +556,25 @@
  */
 /datum/ai_controller/npc_ship/proc/is_red_zone_raid()
 	return get_raid_zone()?.zone_type == ZONE_RED
+
+/**
+ * TRUE if the thing waiting at the end of this hail is the data siphon rather
+ * than guns or a boarding party - i.e. a yellow-band shakedown.
+ *
+ * Weapons and boarding pods are both barred outside red, so a hail there that
+ * the crew ignores or refuses can only be made good on out of their accounts.
+ *
+ * Read live off the target's band rather than cached when the hail opens: we sit
+ * up to territory_range tiles away and either of us can drift over a band line
+ * mid-negotiation.
+ */
+/datum/ai_controller/npc_ship/proc/hail_escalates_to_siphon()
+	if(blackboard[BB_NPC_BROKE_BARTER])
+		return FALSE // nothing in the accounts to drain - this one ends in boarders
+	if(is_red_zone_raid())
+		return FALSE // red settles it with guns
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	return ship?.siphon_goal_percent > 0 // customs assesses fines, it doesn't siphon
 
 /**
  * TRUE if the target has reached somewhere we are not allowed to touch them -

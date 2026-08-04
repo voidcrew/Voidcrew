@@ -5,6 +5,15 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
+"c" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/closet/secure_closet/freezer/fridge/all_access,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
 "n" = (
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
@@ -31,21 +40,12 @@
 	},
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
-"z" = (
-/turf/open/floor/mineral/titanium/purple,
-/area/template_noop)
 "A" = (
 /obj/modular_map_connector,
 /obj/structure/window/reinforced/survival_pod/spawner/directional/west,
 /obj/structure/chair/sofa/corp/left{
 	dir = 1
 	},
-/turf/open/floor/mineral/titanium/purple,
-/area/template_noop)
-"E" = (
-/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
-/obj/structure/closet/secure_closet/freezer/fridge/all_access,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "F" = (
@@ -59,13 +59,13 @@
 /area/template_noop)
 
 (1,1,1) = {"
-E
+c
 u
 A
 "}
 (2,1,1) = {"
 b
-z
+n
 F
 "}
 (3,1,1) = {"
