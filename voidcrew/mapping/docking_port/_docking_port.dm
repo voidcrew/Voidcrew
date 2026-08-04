@@ -287,7 +287,7 @@
 /obj/docking_port/mobile/voidcrew/proc/restore_collapsed_mount(turf/mount_turf)
 	var/obj/machinery/power/shuttle_engine/mounted
 	for(var/obj/machinery/power/shuttle_engine/engine in mount_turf)
-		if(engine.connected_ship_ref?.resolve() == src)
+		if(engine.connected_ship == src)
 			mounted = engine
 			break
 	if(!mounted)

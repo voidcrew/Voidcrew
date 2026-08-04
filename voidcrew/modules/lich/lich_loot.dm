@@ -162,7 +162,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 			remaining = scatter.Copy()
 		new hoard_type(pick_n_take(remaining))
 
-	// VOIDCREW EDIT: RATTLEMEBONES2.ogg was deleted upstream for copyright (tg #96880).
+	// VOIDCREW EDIT: RATTLEMEBONES.ogg was deleted upstream for copyright (tg #96880).
 	playsound(hoard_turf, 'sound/effects/magic/RATTLEMEBONES.ogg', 65, TRUE)
 	hoard_turf.visible_message(span_boldnotice("The green goes out of the room, and leaves his things on the floor."))
 	log_game("LICH: hoard paid out at ([hoard_turf.x], [hoard_turf.y], [hoard_turf.z]).")
@@ -252,7 +252,7 @@ GLOBAL_LIST_INIT(lich_dispersal_spells, list(
 		learned.Grant(recipient)
 		granted++
 		to_chat(recipient, span_greentext("Green light passes through you and leaves you cold. You know how to cast [learned.name]."))
-		playsound(recipient, 'sound/effects/magic/RATTLEMEBONES2.ogg', 40, TRUE)
+		playsound(recipient, 'sound/effects/magic/RATTLEMEBONES.ogg', 40, TRUE)
 		recipient.log_message("was granted [learned.name] by the Verdigris dispersal", LOG_ATTACK, color = "orange")
 
 	log_game("LICH: dispersal granted a spell to [granted] player(s); Ilthuun slain by [slayer ? key_name(slayer) : "unknown"].")

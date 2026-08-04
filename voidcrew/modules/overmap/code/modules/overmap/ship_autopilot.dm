@@ -129,6 +129,8 @@
 #define OVERMAP_PATH_HIGH_Y (OVERMAP_NORTH_SIDE_COORD - 1)
 #define OVERMAP_PATH_SPAN_X (OVERMAP_PATH_HIGH_X - OVERMAP_PATH_LOW_X + 1)
 #define OVERMAP_PATH_SPAN_Y (OVERMAP_PATH_HIGH_Y - OVERMAP_PATH_LOW_Y + 1)
+// The 2026 upstream merge deleted tg's SIGN() macro; this is its old body.
+#define SIGN(x) (((x) > 0) - ((x) < 0))
 
 /obj/structure/overmap/ship
 	/// Whether a course is currently being flown.

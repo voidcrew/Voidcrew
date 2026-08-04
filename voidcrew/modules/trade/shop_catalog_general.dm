@@ -269,7 +269,7 @@
 	name = "jetpack (oxygen)"
 	desc = "A compressed oxygen tank rigged for propulsion. It will breathe you or fly you, but not both for very long. Standard kit for anyone patching a hull from the outside."
 	category = "Survival & EVA"
-	item_path = /obj/item/tank/jetpack/oxygen
+	item_path = /obj/item/tank/jetpack
 	price_credits = 2100
 	stock_min = 1
 	stock_max = 2

@@ -132,7 +132,7 @@
  *
  * A cooking-shaped supply request posted only by outposts that run a kitchen
  * stall (see the general shop's extra_offer_mix). The ask is real cooking:
- * dishes only count when a player's own hands made them (TRAIT_FOOD_CHEF_MADE
+ * dishes only count when a player's own hands made them (TRAIT_HANDMADE
  * from a grill, oven, fryer or the crafting menu) at the ordered recipe depth —
  * factory food is refused, and so are plates bought off the diner's own
  * counter (see deliver/cooked and TRAIT_SOURCE_OUTPOST_KITCHEN).

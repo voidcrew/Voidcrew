@@ -27,11 +27,11 @@
  * again - which is exactly what tg does for a new engine that found no shuttle.
  */
 /obj/machinery/power/shuttle_engine/unsync_ship()
-	var/obj/docking_port/mobile/port = connected_ship_ref?.resolve()
+	var/obj/docking_port/mobile/port = connected_ship
 	if(port)
 		port.engine_list -= src
 		port.current_engine_power -= initial(engine_power)
-	connected_ship_ref = null
+	connected_ship = null
 	// Not while being deleted, and not for an engine a player has deliberately unbolted.
 	if(QDELETED(src) || !anchored)
 		RemoveElement(/datum/element/connect_loc, connections)

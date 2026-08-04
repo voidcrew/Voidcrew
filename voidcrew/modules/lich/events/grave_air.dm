@@ -73,7 +73,7 @@
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		if(QDELETED(victim) || !is_breathing_it(victim))
 			continue
-		victim.adjustToxLoss(GRAVE_AIR_TOXIN, forced = TRUE)
+		victim.adjust_tox_loss(GRAVE_AIR_TOXIN, forced = TRUE)
 		if(prob(12))
 			victim.emote("cough")
 

@@ -191,7 +191,7 @@
 
 /**
  * Real cooking, counted one plate at a time. A dish only counts if somebody's
- * own hands made it — TRAIT_FOOD_CHEF_MADE comes off the grill, the oven, the
+ * own hands made it — TRAIT_HANDMADE comes off the grill, the oven, the
  * fryer and the crafting menu, never off factory packaging — and if its recipe
  * runs at least min_complexity deep. The outpost diner's own plates carry the
  * same trait from TRAIT_SOURCE_OUTPOST_KITCHEN alone and are refused, so a
@@ -206,14 +206,14 @@
 /datum/mission_objective/deliver/cooked/can_turn_in(obj/item/item)
 	if(!..())
 		return FALSE
-	if(!HAS_TRAIT_NOT_FROM(item, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
+	if(!HAS_TRAIT_NOT_FROM(item, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
 		return FALSE
 	var/obj/item/food/dish = item
 	return dish.crafting_complexity >= min_complexity
 
 /datum/mission_objective/deliver/cooked/describe_turn_in_failure(obj/item/item)
 	if(item && istype(item, required_type))
-		if(!HAS_TRAIT_NOT_FROM(item, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
+		if(!HAS_TRAIT_NOT_FROM(item, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
 			return "Factory-made won't do - the order wants a dish cooked by hand."
 		var/obj/item/food/dish = item
 		if(dish.crafting_complexity < min_complexity)

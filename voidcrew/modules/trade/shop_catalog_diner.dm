@@ -9,7 +9,7 @@
  * buying for.
  *
  * The menu is a quality ladder, and the rungs are mechanical, not just priced:
- * - COUNTER GRUB is factory food. No TRAIT_FOOD_CHEF_MADE, so eating it is
+ * - COUNTER GRUB is factory food. No TRAIT_HANDMADE, so eating it is
  *   "meh" — cheap calories, nothing else (see edible.dm get_recipe_complexity).
  * - BLUE PLATE SPECIALS and the CHEF'S TABLE leave the pass with the chef-made
  *   trait added at dispense (the /plated SKU parent below), so they grant the
@@ -183,7 +183,7 @@
 /datum/shop_sku/diner/plated/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	var/atom/movable/goods = ..()
 	if(!isnull(goods))
-		ADD_TRAIT(goods, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
+		ADD_TRAIT(goods, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
 	return goods
 
 // ===== BLUE PLATE SPECIALS =====
@@ -423,7 +423,7 @@
 	price_credits = 300
 
 // ===== ROUX'S ORDER WHEEL (buybacks) =====
-// She pays for real cooking only: TRAIT_FOOD_CHEF_MADE from any source except
+// She pays for real cooking only: TRAIT_HANDMADE from any source except
 // her own pass (see matches below). Payouts all sit below the cheapest plated
 // SKU, so round-tripping her own stock loses money twice over.
 
@@ -442,7 +442,7 @@
 	if(!..())
 		return FALSE
 	// Cooked by an actual person, and not by this kitchen
-	if(!HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
+	if(!HAS_TRAIT_NOT_FROM(offered, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN))
 		return FALSE
 	var/obj/item/food/dish = offered
 	return dish.crafting_complexity >= min_complexity
@@ -459,7 +459,7 @@
 /datum/shop_buyback/diner/pie_case/matches(obj/item/offered)
 	if(!..())
 		return FALSE
-	return HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
+	return HAS_TRAIT_NOT_FROM(offered, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
 
 /datum/shop_buyback/diner/whole_cake
 	name = "whole cake, any kind"
@@ -473,7 +473,7 @@
 /datum/shop_buyback/diner/whole_cake/matches(obj/item/offered)
 	if(!..())
 		return FALSE
-	return HAS_TRAIT_NOT_FROM(offered, TRAIT_FOOD_CHEF_MADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
+	return HAS_TRAIT_NOT_FROM(offered, TRAIT_HANDMADE, TRAIT_SOURCE_OUTPOST_KITCHEN)
 
 // The scavenger's rung: no chef gate, pocket change. Donk Co. pays a standing
 // recall bounty and Roux passes it along, minus handling.

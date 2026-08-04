@@ -436,7 +436,7 @@
 /mob/living/carbon/proc/get_breath_from_internal(volume_needed)
 	if(invalid_internals())
 		// Unexpectely lost breathing apparatus and ability to breathe from the internal air tank.
-		cutoff_internals("invalid internals on breath")
+		cutoff_internals()
 		return
 	if (external)
 		. = external.remove_air_volume(volume_needed)

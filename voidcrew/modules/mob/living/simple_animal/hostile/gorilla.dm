@@ -39,6 +39,6 @@
 		/datum/component/amputating_limbs, \
 		surgery_time = 4 SECONDS, \
 		surgery_verb = "punches", \
-		minimum_stat = UNCONSCIOUS, \
+		minimum_stat = HARD_CRIT, \
 		snip_chance = 50, \
 	)

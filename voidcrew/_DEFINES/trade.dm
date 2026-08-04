@@ -71,7 +71,8 @@
 /// Never hand over more than this many separate items for one contract
 #define CONTRACT_MAX_REWARD_ITEMS 3
 
-/// Trait source for TRAIT_FOOD_CHEF_MADE on dishes sold over an outpost
+/// Trait source for TRAIT_HANDMADE (upstream's rename of the old
+/// TRAIT_FOOD_CHEF_MADE, same "food_made_by_chef" string) on dishes sold over an outpost
 /// kitchen's counter (the Chowder Pot's plated shelves). Kept distinct from
 /// player mind-ref sources so the diner's ledger and the Kitchen Order
 /// contracts can refuse the outpost's own plates: they demand the trait from

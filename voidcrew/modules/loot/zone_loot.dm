@@ -72,12 +72,12 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/rifle/sniper_rifle = /obj/item/ammo_box/magazine/sniper_rounds,
 	/obj/item/gun/ballistic/shotgun/bulldog = /obj/item/ammo_box/magazine/m12g,
 	// internal magazines: loose rounds instead
-	/obj/item/gun/ballistic/revolver = /obj/item/ammo_box/a357,
-	/obj/item/gun/ballistic/revolver/c38/detective = /obj/item/ammo_box/c38,
-	/obj/item/gun/ballistic/revolver/mateba = /obj/item/ammo_box/a357,
-	/obj/item/gun/ballistic/rifle/boltaction = /obj/item/ammo_box/strilka310,
-	/obj/item/gun/ballistic/rifle/boltaction/prime = /obj/item/ammo_box/strilka310,
-	/obj/item/gun/ballistic/rifle/boltaction/surplus = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/revolver = /obj/item/ammo_box/speedloader/c357,
+	/obj/item/gun/ballistic/revolver/c38/detective = /obj/item/ammo_box/speedloader/c38,
+	/obj/item/gun/ballistic/revolver/mateba = /obj/item/ammo_box/speedloader/c357,
+	/obj/item/gun/ballistic/rifle/boltaction = /obj/item/ammo_box/speedloader/strilka310,
+	/obj/item/gun/ballistic/rifle/boltaction/prime = /obj/item/ammo_box/speedloader/strilka310,
+	/obj/item/gun/ballistic/rifle/boltaction/surplus = /obj/item/ammo_box/speedloader/strilka310,
 	// break/pump actions: a box of shells
 	/obj/item/gun/ballistic/shotgun/automatic/combat = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/doublebarrel = /obj/item/storage/box/lethalshot,

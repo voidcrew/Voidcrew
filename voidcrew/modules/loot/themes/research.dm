@@ -51,7 +51,7 @@
 		/obj/item/slime_extract/adamantine = 5,
 		/obj/item/research_notes/loot/medium = 5,
 		/obj/item/clothing/shoes/bhop = 4,
-		/obj/item/gun/energy/xray = 4,
+		/obj/item/gun/energy/laser/xray = 4,
 		// finished blueprint gun, prime only: the annex built its own
 		/obj/item/gun/energy/laser/carbine = 4,
 		/obj/item/gun/energy/temperature = 4,

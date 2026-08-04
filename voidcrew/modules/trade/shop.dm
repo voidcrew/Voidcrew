@@ -521,7 +521,7 @@
 	else
 		to_chat(user, span_notice("[goods] is set down at your feet."))
 	// Returned so SKU subtypes can stamp what they hand over (the diner's
-	// plated shelf adds TRAIT_FOOD_CHEF_MADE here — see shop_catalog_diner.dm)
+	// plated shelf adds TRAIT_HANDMADE here — see shop_catalog_diner.dm)
 	return goods
 
 /**

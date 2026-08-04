@@ -21,7 +21,7 @@
  */
 SUBSYSTEM_DEF(idlenpcpool)
 	name = "Idling NPC Pool"
-	flags = SS_POST_FIRE_TIMING | SS_BACKGROUND | SS_NO_INIT
+	ss_flags = SS_POST_FIRE_TIMING | SS_BACKGROUND | SS_NO_INIT
 	priority = FIRE_PRIORITY_IDLE_NPC
 	// Matches SSnpcpool, so an idle mob reacts to someone walking past it as fast as an
 	// awake one would. Upstream could afford a 6-second scan because it parked mobs on

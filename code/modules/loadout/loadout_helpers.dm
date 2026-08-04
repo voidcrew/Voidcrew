@@ -27,8 +27,8 @@
 	else
 		CRASH("Invalid outfit passed to equip_outfit_and_loadout ([outfit])")
 
-	var/list/preference_list = preference_source.read_preference(/datum/preference/loadout)
-	var/list/loadout_datums = loadout_list_to_datums(preference_list)
+	var/list/item_details = preference_source.read_preference(/datum/preference/loadout)
+	var/list/loadout_datums = loadout_list_to_datums(item_details)
 	// Slap our things into the outfit given
 	for(var/datum/loadout_item/item as anything in loadout_datums)
 		if(!item.is_equippable(src, item_details?[item.item_path] || list()))

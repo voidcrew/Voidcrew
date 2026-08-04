@@ -294,7 +294,7 @@
 	wearer.update_clothing(part.slot_flags | slot_flags)
 	wearer.refresh_obscured()
 	if((part.clothing_flags & (MASKINTERNALS|HEADINTERNALS)) && wearer.invalid_internals())
-		wearer.cutoff_internals("MOD part [part.type] [is_sealed ? "sealed" : "unsealed"]")
+		wearer.cutoff_internals()
 	SEND_SIGNAL(src, COMSIG_MOD_PART_SEALED, part_datum)
 	if(is_sealed)
 		if (!active)
