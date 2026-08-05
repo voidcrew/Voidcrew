@@ -57,7 +57,7 @@ export const NaniteRemoteContent = (props, context) => {
               value={program_name}
               maxLength={14}
               width="130px"
-              onChange={(e, value) =>
+              onChange={(value) =>
                 act('update_name', {
                   name: value,
                 })
@@ -73,7 +73,7 @@ export const NaniteRemoteContent = (props, context) => {
               width="47px"
               step={1}
               stepPixelSize={2}
-              onChange={(e, value) =>
+              onChange={(value) =>
                 act('set_code', {
                   code: value,
                 })
@@ -85,7 +85,7 @@ export const NaniteRemoteContent = (props, context) => {
               <Input
                 value={message}
                 width="270px"
-                onChange={(e, value) =>
+                onChange={(value) =>
                   act('set_message', {
                     value: value,
                   })
@@ -102,7 +102,7 @@ export const NaniteRemoteContent = (props, context) => {
                 width="47px"
                 step={1}
                 stepPixelSize={2}
-                onChange={(e, value) =>
+                onChange={(value) =>
                   act('set_relay_code', {
                     code: value,
                   })

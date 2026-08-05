@@ -197,7 +197,10 @@
 			. = TRUE
 		if("update_new_backup_value")
 			var/backup_value = text2num(params["value"])
-			new_backup_id = backup_value
+			if(isnull(backup_value)) //a null would get sent straight back to the UI's NumberInput, which can't render it
+				return TRUE
+			new_backup_id = clamp(round(backup_value, 1), 1, 100)
+			. = TRUE
 		if("create_backup")
 			var/cloud_id = new_backup_id
 			if(!isnull(cloud_id))

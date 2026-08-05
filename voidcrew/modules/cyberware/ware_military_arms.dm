@@ -303,13 +303,22 @@
  * with NODROP + INDESTRUCTIBLE, so it cannot be disarmed, stolen or broken;
  * Retract() and EMP stow it.
  *
- * Held sprite comes off the cyberware inhand sheets rather than the stock
- * hardlight sword: this is a long blade running forward past the hand out of
- * a forearm housing, not something anybody is gripping.
+ * Every sprite comes off the cyberware sheets rather than the stock hardlight
+ * sword: this is a long blade running forward past the hand out of a forearm
+ * housing, not something anybody is gripping. The held sprite is blade only —
+ * the housing is already on the bearer's arm as the organ's aug_overlay, and
+ * drawing a second one in the hand put a metal brick over their bicep.
+ *
+ * base_icon_state comes along for the ride purely so it cannot disagree with
+ * icon_state; update_icon_state() only consults it when sword_color_icon is
+ * set, which it never is here.
  */
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	name = "mantis blade"
 	desc = "A forearm's length of hardlight ground to a monomolecular edge. It comes out of the housing already swinging."
+	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
+	icon_state = "mantis"
+	base_icon_state = "mantis"
 	inhand_icon_state = "mantis"
 	lefthand_file = 'voidcrew/modules/cyberware/icons/cyberware_lefthand.dmi'
 	righthand_file = 'voidcrew/modules/cyberware/icons/cyberware_righthand.dmi'
