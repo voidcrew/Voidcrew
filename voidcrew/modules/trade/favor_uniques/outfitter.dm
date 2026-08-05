@@ -119,7 +119,9 @@
 	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_SUITSTORE
 	volume = 85 // PROVISIONAL BALANCE — stock harness is 40, standard jetpack 70, captain's steal-objective pack 90
 	drift_force = 2 NEWTONS // PROVISIONAL BALANCE — standard jetpack is 1.5
-	stabilizer_force = 1.8 NEWTONS // PROVISIONAL BALANCE — standard jetpack is 1.2
+	// The 2026 upstream merge dropped stabilizer_force: stabilization is now a plain
+	// on/off (configure_jetpack's `stabilize`), with no separate force to tune. The
+	// harness's "nozzles answer faster" edge lives entirely in drift_force now.
 
 /obj/item/tank/jetpack/oxygen/harness/prototype/Initialize(mapload)
 	. = ..()

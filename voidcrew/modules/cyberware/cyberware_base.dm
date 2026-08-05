@@ -24,16 +24,16 @@
  * Stock augments sit at BODY_ADJ_LAYER, which the character-setup underwear
  * layer paints over — a bra would cover a Cascade spine rig. Chrome instead
  * draws at CYBERWARE_WORN_LAYER: over underwear and undershirts, still under
- * eyes, damage, and every EQUIPPED clothing layer. One override covers the
- * images, the emissive twins and the emissive blockers alike, because they
- * all take their layer from bitflag_to_layer().
+ * eyes, damage, and every EQUIPPED clothing layer. Retargeting the one layer
+ * covers the images, the emissive twins and the emissive blockers alike,
+ * because get_all_overlays() feeds every one of them from this list.
+ *
+ * The 2026 upstream merge replaced the bitflag_to_layer() hook with this assoc
+ * list of [icon state postfix] = [layer]; the pipeline negates the value itself
+ * (bodypart_overlay.dm, get_all_overlays), so it is stored positive here.
  */
 /datum/bodypart_overlay/augment/cyberware
-
-/datum/bodypart_overlay/augment/cyberware/bitflag_to_layer(layer)
-	if(layer == EXTERNAL_ADJACENT)
-		return -CYBERWARE_WORN_LAYER
-	return ..()
+	layers = list(EXTERNAL_ADJACENT = CYBERWARE_WORN_LAYER)
 
 /obj/item/organ/cyberimp/cyberware
 	name = "cyberware"

@@ -198,8 +198,11 @@
 	var/total_moles = environment.total_moles()
 	if(total_moles <= 0)
 		return FALSE
-	var/list/env_gases = environment.gases
-	var/oxygen_moles = env_gases[/datum/gas/oxygen] ? env_gases[/datum/gas/oxygen][MOLES] : 0
-	var/pluoxium_moles = env_gases[/datum/gas/pluoxium] ? env_gases[/datum/gas/pluoxium][MOLES] : 0
+	// The 2026 upstream merge flattened gas_mixture: the old `gases` list-of-lists
+	// indexed by MOLES is now `moles`, a plain gas_id -> moles assoc list. A gas
+	// that isn't present reads null, which is 0 for this arithmetic.
+	var/list/env_gases = environment.moles
+	var/oxygen_moles = env_gases[/datum/gas/oxygen] || 0
+	var/pluoxium_moles = env_gases[/datum/gas/pluoxium] || 0
 	var/oxygen_pp = environment.return_pressure() * ((oxygen_moles + PLUOXIUM_PROPORTION * pluoxium_moles) / total_moles)
 	return oxygen_pp >= CYBERWARE_BREATHABLE_O2_KPA

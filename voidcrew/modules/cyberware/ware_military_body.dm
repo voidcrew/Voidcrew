@@ -307,7 +307,7 @@
 		return
 	if(organ_flags & ORGAN_FAILING)
 		return
-	if(new_stat == CONSCIOUS || new_stat == DEAD)
+	if(new_stat == STABLE || new_stat == DEAD)
 		return
 	if(old_stat == DEAD)
 		return
@@ -334,27 +334,27 @@
 		return
 	if(organ_flags & ORGAN_FAILING)
 		return
-	if(patient.stat == DEAD || patient.stat == CONSCIOUS)
+	if(patient.stat == DEAD || patient.stat == STABLE)
 		return
 	var/needed = (patient.maxHealth * CYBERWARE_LAZARUS_HEAL_TO) - patient.health
 	if(needed > 0)
-		var/oxy_heal = min(needed, patient.getOxyLoss())
+		var/oxy_heal = min(needed, patient.get_oxy_loss())
 		if(oxy_heal > 0)
-			patient.adjustOxyLoss(-oxy_heal, updating_health = FALSE)
+			patient.adjust_oxy_loss(-oxy_heal, updating_health = FALSE)
 			needed -= oxy_heal
-		var/brute = patient.getBruteLoss()
-		var/burn = patient.getFireLoss()
+		var/brute = patient.get_brute_loss()
+		var/burn = patient.get_fire_loss()
 		var/pool = brute + burn
 		if(needed > 0 && pool > 0)
-			patient.adjustBruteLoss(-(needed * (brute / pool)), updating_health = FALSE)
-			patient.adjustFireLoss(-(needed * (burn / pool)), updating_health = FALSE)
+			patient.adjust_brute_loss(-(needed * (brute / pool)), updating_health = FALSE)
+			patient.adjust_fire_loss(-(needed * (burn / pool)), updating_health = FALSE)
 		patient.updatehealth()
 	patient.SetStun(0)
 	patient.SetKnockdown(0)
 	patient.SetImmobilized(0)
 	patient.SetParalyzed(0)
 	patient.SetUnconscious(0)
-	patient.setStaminaLoss(0)
+	patient.set_stamina_loss(0)
 	patient.set_resting(FALSE, silent = TRUE, instant = TRUE)
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 100, TRUE)
 	do_sparks(3, TRUE, patient)
@@ -484,11 +484,14 @@
  * MUST stay that way. DM fills missing arguments from the signature of the
  * proc it actually dispatches to — this one — and callers rely on them:
  * /datum/wound/can_be_applied_to() passes only the limb and old_wound, so
- * dropping the `suggested_wounding_types` default would hand
- * wounding_types_valid() a null list and refuse EVERY bone wound, for
+ * dropping the `suggested_wounding_type` default would hand
+ * wounding_types_valid() a null type and refuse EVERY bone wound, for
  * everybody, silently.
+ *
+ * The 2026 upstream merge made the wounding type singular: the parameter is no
+ * longer a list, and the var it defaults from is `required_wounding_type`.
  */
-/datum/wound_pregen_data/bone/can_be_applied_to(obj/item/bodypart/limb, list/suggested_wounding_types = required_wounding_types, datum/wound/old_wound, random_roll = FALSE, duplicates_allowed = src.duplicates_allowed, care_about_existing_wounds = TRUE)
+/datum/wound_pregen_data/bone/can_be_applied_to(obj/item/bodypart/limb, suggested_wounding_type = required_wounding_type, datum/wound/old_wound, random_roll = FALSE, duplicates_allowed = src.duplicates_allowed, care_about_existing_wounds = TRUE)
 	// Parent first: it is what guarantees limb and limb.owner are real before
 	// we go looking for a trait on the owner.
 	. = ..()
@@ -637,7 +640,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/rigger/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
-	if(new_stat == CONSCIOUS)
+	if(new_stat == STABLE)
 		return
 	drop_uplink(source, reason = "you go under")
 
@@ -668,7 +671,7 @@
 /obj/item/organ/cyberimp/cyberware/rigger/proc/uplink_covers(obj/machinery/computer/helm/console, mob/user)
 	if(QDELETED(console) || console != uplink_console)
 		return FALSE
-	if(!owner || user != owner || owner.stat != CONSCIOUS)
+	if(!owner || user != owner || owner.stat != STABLE)
 		return FALSE
 	if(organ_flags & ORGAN_FAILING)
 		return FALSE

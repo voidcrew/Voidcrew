@@ -795,7 +795,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	RegisterSignal(organ_owner, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_item_equipped))
 	RegisterSignal(organ_owner, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_item_unequipped))
 	RegisterSignal(organ_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	passtable_on(organ_owner, REF(src))
+	// Upstream deleted the passtable_on()/passtable_off() wrappers; the trait they
+	// set is still the mechanism, and REF(src) was already the source key.
+	ADD_TRAIT(organ_owner, TRAIT_PASSTABLE, REF(src))
 	// Whatever they were already holding when the pads went in.
 	for(var/obj/item/held in organ_owner.held_items)
 		guard_item(held)
@@ -806,7 +808,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	. = ..()
 	drop_guards()
 	UnregisterSignal(organ_owner, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM, COMSIG_MOVABLE_MOVED))
-	passtable_off(organ_owner, REF(src))
+	REMOVE_TRAIT(organ_owner, TRAIT_PASSTABLE, REF(src))
 	REMOVE_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/Destroy()

@@ -34,7 +34,10 @@
 /mob/living/carbon/human/check_self_for_injuries()
 	if(!cutting_dead_channel(src))
 		return ..()
-	if(stat >= UNCONSCIOUS)
+	// Upstream folded the old UNCONSCIOUS stat into the TRAIT_KNOCKEDOUT trait, so
+	// the old `stat >= UNCONSCIOUS` is now two tests. Soft crit still reports, same
+	// as before.
+	if(IS_UNCONSCIOUS(src) || stat >= HARD_CRIT)
 		return
 
 	visible_message(span_notice("[src] examines [p_them()]self."))

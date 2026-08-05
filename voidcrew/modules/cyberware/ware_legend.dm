@@ -163,7 +163,7 @@
 
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.adjustStaminaLoss(CYBERWARE_CASCADE_CRASH_STAMINA)
+	owner.adjust_stamina_loss(CYBERWARE_CASCADE_CRASH_STAMINA)
 	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 	owner.visible_message(
@@ -458,7 +458,7 @@
 
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.adjustStaminaLoss(CYBERWARE_REDLINE_CRASH_STAMINA)
+	owner.adjust_stamina_loss(CYBERWARE_REDLINE_CRASH_STAMINA)
 	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),

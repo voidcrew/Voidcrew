@@ -78,7 +78,8 @@
 
 /// Radial validity: still alive, still holding the ledger
 /obj/item/pike_ledger/proc/ledger_radial_check(mob/living/user)
-	if(!istype(user) || IS_DEAD_OR_INCAP(user))
+	// The 2026 upstream merge deleted IS_DEAD_OR_INCAP(); this is its old body.
+	if(!istype(user) || user.incapacitated || user.stat)
 		return FALSE
 	if(loc != user)
 		return FALSE
@@ -279,7 +280,8 @@
 
 /// Order validity between the sleeping prompts: alive, still holding the beacon
 /obj/item/freight_beacon/proc/freight_user_check(mob/living/user)
-	if(!istype(user) || IS_DEAD_OR_INCAP(user))
+	// The 2026 upstream merge deleted IS_DEAD_OR_INCAP(); this is its old body.
+	if(!istype(user) || user.incapacitated || user.stat)
 		return FALSE
 	if(loc != user)
 		return FALSE

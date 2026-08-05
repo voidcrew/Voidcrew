@@ -34,7 +34,7 @@
  *
  * A passive implant that watches the wearer's vitals over COMSIG_MOB_STATCHANGE
  * (sent by /mob/proc/set_stat, code/modules/mob/mob.dm) and fires exactly once,
- * the first time the wearer drops into SOFT_CRIT or HARD_CRIT. UNCONSCIOUS is
+ * the first time the wearer drops into SOFT_CRIT or HARD_CRIT. Sleep is
  * deliberately not a trigger (that's every nap and every sleeper), and neither
  * is going straight to DEAD — a corpse gets no payout, only a customer does.
  *
@@ -93,8 +93,8 @@
 
 	if(triggered)
 		return
-	// Crit only. UNCONSCIOUS alone is sleep/sedation, and DEAD without passing
-	// through crit is an instant kill the policy explicitly doesn't cover.
+	// Crit only. Sleep/sedation is TRAIT_KNOCKEDOUT and never touches stat, and DEAD
+	// without passing through crit is an instant kill the policy explicitly doesn't cover.
 	if(new_stat != SOFT_CRIT && new_stat != HARD_CRIT)
 		return
 	triggered = TRUE
@@ -124,8 +124,8 @@
  * ongoing regulation.
  */
 /obj/item/implant/vex_insurance/proc/stabilize(mob/living/patient)
-	patient.adjustOxyLoss(-VEX_INSURANCE_OXY_HEAL, updating_health = FALSE)
-	patient.adjustToxLoss(-VEX_INSURANCE_TOX_HEAL, updating_health = FALSE)
+	patient.adjust_oxy_loss(-VEX_INSURANCE_OXY_HEAL, updating_health = FALSE)
+	patient.adjust_tox_loss(-VEX_INSURANCE_TOX_HEAL, updating_health = FALSE)
 	patient.heal_overall_damage(brute = VEX_INSURANCE_BRUTE_HEAL, burn = VEX_INSURANCE_BURN_HEAL, updating_health = FALSE)
 	patient.updatehealth()
 	patient.reagents?.add_reagent(/datum/reagent/medicine/epinephrine, VEX_INSURANCE_EPINEPHRINE)

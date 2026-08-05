@@ -31,7 +31,7 @@
  * (`/basic/of_size`, `/basic/not_friends`, ...) inherit this through their own
  * `..()` calls, so the whole basic-mob family honors camo with one hook.
  */
-/datum/targeting_strategy/basic/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+/datum/targeting_strategy/basic/is_valid_target(mob/living/living_mob, atom/the_target, vision_range, datum/ai_controller/controller = null)
 	. = ..()
 	if(!.)
 		return
