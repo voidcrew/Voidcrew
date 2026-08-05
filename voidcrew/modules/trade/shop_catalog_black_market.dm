@@ -158,6 +158,9 @@
 		/obj/item/mod/control/pre_equipped/traitor_elite,
 		/obj/item/mod/control/pre_equipped/empty/ninja,
 		/obj/item/circuitboard/machine/ship_combat/cloak_device,
+		// The one piece of chrome Splice can't get: a prototype drop-leg frame
+		// that never reached his supplier. Hard contracts only.
+		/obj/item/organ/cyberimp/cyberware/piledriver,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(

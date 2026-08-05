@@ -212,6 +212,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	/// The berth host this door belongs to (set by the outpost on interior/hangar load)
 	var/obj/structure/overmap/outpost
 
+// See-through variant for storefronts that want their interior on display —
+// the Chop Shop's parlor door. Same sanctuary armor, glass panes.
+/obj/machinery/door/airlock/outpost/glass
+	name = "outpost glass airlock"
+	desc = "A blast-rated airlock with armored glass panes. You can window-shop through it; you cannot get through it any other way."
+	opacity = FALSE
+	glass = TRUE
+
 /obj/machinery/door/airlock/outpost/Destroy()
 	outpost = null
 	return ..()

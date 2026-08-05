@@ -249,6 +249,9 @@
 /mob/living/basic/outpost_trader/clinic_doctor
 	shop_type = /datum/outpost_shop/vendor/patchup_clinic
 
+/mob/living/basic/outpost_trader/ripperdoc
+	shop_type = /datum/outpost_shop/vendor/ripperdoc
+
 // Halcyon's stalls (shop_catalog_general_vendors.dm, shop_catalog_diner.dm)
 
 /mob/living/basic/outpost_trader/potting_shed

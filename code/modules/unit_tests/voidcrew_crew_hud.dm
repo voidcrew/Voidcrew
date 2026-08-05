@@ -12,8 +12,6 @@
  */
 /datum/unit_test/voidcrew_crew_hud
 
-TEST_FOCUS(/datum/unit_test/voidcrew_crew_hud) //TEMPORARY - remove before commit
-
 /datum/unit_test/voidcrew_crew_hud/Run()
 	var/mob/living/carbon/human/consistent/veteran = allocate(/mob/living/carbon/human/consistent)
 	var/mob/living/carbon/human/consistent/recruit = allocate(/mob/living/carbon/human/consistent)

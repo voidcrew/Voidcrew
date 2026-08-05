@@ -3,6 +3,9 @@
 // every lab/anomaly ruin. Xenoscience: common = lab consumables / minor
 // science gear, uncommon = solid research and engineering prizes, prime =
 // bluespace and exotic tech. Guarded by loose specimens (the bug markers).
+// Cyberware: the two pieces that read as instrumentation rather than
+// augmentation — a bone-conducted sonar transceiver, and the skull jack that
+// patches a helm console straight into a head.
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -12,6 +15,8 @@
 	guard_themes = list(/obj/effect/zone_mobs/bug, /obj/effect/zone_mobs/bug/boss)
 	theme_skus = list(
 		/datum/shop_sku/outfitter/carbine_blueprint,
+		/datum/shop_sku/ripperdoc/doppler,
+		/datum/shop_sku/ripperdoc/rigger,
 	)
 	loot_common = list(
 		/obj/item/storage/box/beakers = 10,
@@ -41,6 +46,9 @@
 		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/science = 7,
+		// lab hardware worn instead of carried: a sonar transceiver socketed
+		// into the bone behind the ear, reading movement through walls
+		/obj/item/organ/cyberimp/cyberware/doppler = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 10,
@@ -67,6 +75,9 @@
 		/obj/item/gun/magic/wand/polymorph = 2,
 		/obj/item/research_notes/loot/genius = 2,
 		/obj/item/singularityhammer = 2,
+		// the annex's own interface work: a skull jack that flies a ship from
+		// anywhere aboard it, as long as the hull still has a helm console
+		/obj/item/organ/cyberimp/cyberware/rigger = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
