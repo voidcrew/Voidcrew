@@ -282,3 +282,34 @@
 
 /// Sound channel for economic scan looping sound
 #define CHANNEL_ECON_SCAN 1010
+
+// ========== ELECTRONIC WARFARE DEFINES ==========
+/// Sent to the TARGET ship when a payload lands: (datum/ew_payload/instance, obj/structure/overmap/ship/attacker)
+#define COMSIG_SHIP_EW_PAYLOAD_STARTED "ship_ew_payload_started"
+/// Sent to the TARGET ship when a payload expires or is purged: (datum/ew_payload/instance)
+#define COMSIG_SHIP_EW_PAYLOAD_ENDED "ship_ew_payload_ended"
+/// Sent to the TARGET ship when its crew purges the intrusion: ()
+#define COMSIG_SHIP_EW_PURGED "ship_ew_purged"
+/// Sent to the ATTACKER ship when its suite is traced: (obj/structure/overmap/ship/target)
+#define COMSIG_SHIP_EW_TRACED "ship_ew_traced"
+
+/// Base power draw while warming up or running a payload (2 kW)
+#define EW_BASE_POWER_COST 2 KILO WATTS
+/// Signature ceiling — reaching it triggers a trace
+#define EW_SIGNATURE_MAX 100
+/// Signature decay per second while idle
+#define EW_SIGNATURE_DECAY 1.5
+/// Suite lockout after being traced
+#define EW_TRACE_LOCKOUT 3 MINUTES
+/// Target immunity window after purging an intrusion
+#define EW_PURGE_HARDENED_TIME 2 MINUTES
+/// NPC crews purge an intrusion on their own after this long
+#define EW_NPC_AUTOPURGE_TIME 45 SECONDS
+
+// EW suite stock part multipliers (per tier above 1)
+/// Capacitor: -15% signature cost per tier
+#define EW_CAPACITOR_SIGNATURE_MULT 0.15
+/// Micro-laser: +20% power efficiency per tier
+#define EW_LASER_EFFICIENCY_MULT 0.20
+/// Servo: -15% warmup time per tier
+#define EW_SERVO_WARMUP_MULT 0.15

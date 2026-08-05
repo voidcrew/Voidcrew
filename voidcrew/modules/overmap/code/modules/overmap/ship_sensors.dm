@@ -192,6 +192,43 @@
 	return TECHWEB_NODE_RADAR_ARRAY_ELITE in web.researched_nodes
 
 /**
+ * Whether we know what another vessel IS, as opposed to merely that something is
+ * out there. TRUE once an active scan has named it, once it has hailed us, once
+ * we have held a weapons lock on it, or continuously at the top radar tier.
+ *
+ * This is the single gate every readout asks, and the reason it lives on the ship
+ * rather than on the contact: identity is not a property of the hull out there,
+ * it is a property of what THIS crew has done about it. A console that answers the
+ * question for itself will always drift out of step with the chart — which is
+ * exactly what the combat console used to do, naming hulls the helm still drew as
+ * anonymous blips.
+ */
+/obj/structure/overmap/ship/proc/knows_vessel(obj/structure/overmap/ship/other)
+	if(!other || other == src)
+		return FALSE
+	return can_scan_ships() || !!identified_ships[REF(other)]
+
+/**
+ * Records another vessel as identified, and drops the contact cache so the name
+ * appears on the helm now rather than up to a second later. Returns TRUE only if
+ * this was new knowledge.
+ *
+ * Anything that amounts to LOOKING at a hull should call this: an active scan, a
+ * received hail, a completed weapons lock. Nothing here is permanent —
+ * get_contact_snapshot rebuilds the set from what is still in contact, so a vessel
+ * that drifts away is forgotten and comes back anonymous (see the file header).
+ */
+/obj/structure/overmap/ship/proc/mark_vessel_identified(obj/structure/overmap/ship/other)
+	if(!other || other == src)
+		return FALSE
+	var/ship_ref = REF(other)
+	if(identified_ships[ship_ref])
+		return FALSE
+	identified_ships[ship_ref] = TRUE
+	contact_snapshot = null
+	return TRUE
+
+/**
  * How the helm's Dock button should name another vessel sharing our tile.
  *
  * Docking with a ship is still the request/accept handshake ship_act() runs on
@@ -203,8 +240,7 @@
 /obj/structure/overmap/ship/proc/describe_dock_target(obj/structure/overmap/ship/other)
 	if(!other || other == src)
 		return null
-	var/known = can_scan_ships() || !!identified_ships[REF(other)]
-	var/label = known ? other.display_name : "unknown vessel"
+	var/label = knows_vessel(other) ? other.display_name : "unknown vessel"
 	return "[label] (request docking)"
 
 /**
@@ -266,11 +302,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	for(var/obj/structure/overmap/ship/other in range(SHIP_VIEW_RANGE, center))
 		if(other == src || other.hidden_in_nebula)
 			continue
-		var/ship_ref = REF(other)
-		if(identified_ships[ship_ref])
-			continue
-		identified_ships[ship_ref] = TRUE
-		found++
+		if(mark_vessel_identified(other))
+			found++
 	// As with static scans, an empty sweep costs nothing and can be retried.
 	if(found > 0)
 		COOLDOWN_START(src, sensor_scan_cooldown, SENSOR_SCAN_COOLDOWN)

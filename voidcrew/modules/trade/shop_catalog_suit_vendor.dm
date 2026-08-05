@@ -32,12 +32,27 @@
 // THE FITTING BAY — Wick, depot suit fitter
 // =========================================================================
 
+/**
+ * Wick: a tailor from the collar up and an engineer from the eyes out. The
+ * waistcoat and laceups are the fitting-room half of the job; the scanner
+ * goggles are the half where he tells you your chassis is two sizes wrong.
+ * The toolbelt is what he actually does the work with.
+ */
+/datum/outfit/fitting_bay_wick
+	name = "Suit fitter"
+	uniform = /obj/item/clothing/under/costume/buttondown/slacks
+	accessory = /obj/item/clothing/accessory/waistcoat
+	glasses = /obj/item/clothing/glasses/meson/engine
+	gloves = /obj/item/clothing/gloves/color/black
+	belt = /obj/item/storage/belt/utility/full
+	shoes = /obj/item/clothing/shoes/laceup
+
 /// Wick, who will not sell you a suit until he has measured you for it
 /datum/outpost_shop/vendor/suit_fitter
 	outpost_name = "\improper The Fitting Bay"
 	outpost_desc = "The depot's modsuit shop, and the only bench in the lanes that'll fit one properly."
 	trader_name = "Wick"
-	trader_outfit = /datum/outfit/job/atmos
+	trader_outfit = /datum/outfit/fitting_bay_wick
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_4"
 	trader_voice_pitch = 1.05

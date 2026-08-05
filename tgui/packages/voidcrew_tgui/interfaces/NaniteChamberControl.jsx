@@ -91,8 +91,9 @@ export const NaniteChamberControlContent = (props, context) => {
                       value={safety_threshold}
                       minValue={0}
                       maxValue={500}
+                      step={1}
                       width="39px"
-                      onChange={(e, value) =>
+                      onChange={(value) =>
                         act('set_safety', {
                           value: value,
                         })
@@ -107,7 +108,7 @@ export const NaniteChamberControlContent = (props, context) => {
                       step={1}
                       stepPixelSize={3}
                       width="39px"
-                      onChange={(e, value) =>
+                      onChange={(value) =>
                         act('set_cloud', {
                           value: value,
                         })
@@ -176,12 +177,12 @@ export const NaniteChamberControlContent = (props, context) => {
                               <LabeledList>
                                 {/* I mean, bruh, this indentation level
                                     is ABSOLUTELY INSANE!!! */}
-                                {program.timer_restart && (
+                                {!!program.timer_restart && (
                                   <LabeledList.Item label="Restart Timer">
                                     {program.timer_restart} s
                                   </LabeledList.Item>
                                 )}
-                                {program.timer_shutdown && (
+                                {!!program.timer_shutdown && (
                                   <LabeledList.Item label="Shutdown Timer">
                                     {program.timer_shutdown} s
                                   </LabeledList.Item>
@@ -234,7 +235,7 @@ export const NaniteChamberControlContent = (props, context) => {
                             </LabeledList>
                           </Section>
                         </Flex.Item>
-                        {program.has_rules && (
+                        {!!program.has_rules && (
                           <Flex.Item>
                             <Section title="Rules" level={2}>
                               {rules.map((rule) => (

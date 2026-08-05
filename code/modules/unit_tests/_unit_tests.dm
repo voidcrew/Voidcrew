@@ -372,6 +372,7 @@
 #include "voidcrew_bitrunning.dm"
 #include "voidcrew_colosseum.dm"
 #include "voidcrew_crew_hud.dm"
+#include "voidcrew_cyberware.dm"
 #include "voidcrew_drug_lab.dm"
 #include "voidcrew_drug_recipe.dm"
 #include "voidcrew_dynamic_events.dm"

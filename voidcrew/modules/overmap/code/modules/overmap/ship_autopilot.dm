@@ -35,6 +35,12 @@
  * transition, or starting from a standstill. Nothing steers between tiles because
  * there is no sub-tile position in DM to steer with.
  *
+ * **Travel & dock.** A course may carry a docking target with it: on arrival the
+ * ship comes to rest and hands the target to overmap_object_act() — the same
+ * ship_act() docking path the helm's Dock button drives — so berth allocation,
+ * access checks and the dock warmup all behave exactly as if the crew had
+ * pressed Dock themselves, and the warmup stays as the crew's abort window.
+ *
  * Interrupts are deliberately not signal registrations: the ship already listens
  * to COMSIG_SHIP_WEAPONS_LOCKED on itself, and NPC subtypes already listen to
  * COMSIG_SHIP_INTERDICTED, so a second registration from here would collide on
@@ -156,6 +162,11 @@
 	var/autopilot_danger_committed = FALSE
 	/// Why the last course ended, shown once on the helm. Cleared on the next engage.
 	var/autopilot_status
+	/// Overmap object to dock with when the course completes, or null for plain
+	/// travel. Validated by the helm at engage time, re-checked on arrival.
+	var/datum/weakref/autopilot_dock_ref
+	/// Who engaged the course, for the arrival dock's feedback messages.
+	var/datum/weakref/autopilot_user_ref
 
 // ---------------------------------------------------------------- grid helpers
 
@@ -397,9 +408,10 @@
 
 /**
  * Plots and begins flying a course to an absolute overmap coordinate. Returns a
- * message for the console to say, whether or not it took.
+ * message for the console to say, whether or not it took. Pass `dock_target` to
+ * end the course in a docking approach — see complete_autopilot().
  */
-/obj/structure/overmap/ship/proc/engage_autopilot(dest_x, dest_y, label, mob/user)
+/obj/structure/overmap/ship/proc/engage_autopilot(dest_x, dest_y, label, mob/user, obj/structure/overmap/dock_target = null)
 	if(state != OVERMAP_SHIP_FLYING)
 		return "ERROR: Autopilot requires the ship to be under way."
 	if(hidden_in_nebula)
@@ -425,6 +437,11 @@
 	autopilot_path = course
 	autopilot_last_plan = world.time
 	autopilot_status = null
+	autopilot_dock_ref = dock_target ? WEAKREF(dock_target) : null
+	autopilot_user_ref = user ? WEAKREF(user) : null
+	// The autopilot owns the ship now; the commanded course (and the rose it
+	// lights on the helm) stands down with the rest of manual control.
+	commanded_course = BURN_NONE
 
 	if(user)
 		log_shuttle("[key_name(user)] engaged autopilot on [name] to ([dest_x], [dest_y])")
@@ -432,6 +449,8 @@
 	schedule_autopilot_poll()
 	autopilot_steer()
 	push_helm_frame()
+	if(dock_target)
+		return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"] — [length(course)] tiles, ending in a docking approach."
 	return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"] — [length(course)] tiles."
 
 /**
@@ -450,6 +469,8 @@
 	autopilot_path = null
 	autopilot_danger_cache = null
 	autopilot_status = reason
+	autopilot_dock_ref = null
+	autopilot_user_ref = null
 	if(autopilot_poll_timer)
 		deltimer(autopilot_poll_timer)
 		autopilot_poll_timer = null
@@ -467,7 +488,8 @@
 	disengage_autopilot(reason)
 
 /// Course flown. Unlike an interrupt this does bring the ship to rest — arriving
-/// is the one case where stopping is the whole point.
+/// is the one case where stopping is the whole point. A course carrying a dock
+/// target then hands it straight to the ship_act() docking path (see the header).
 /obj/structure/overmap/ship/proc/complete_autopilot()
 	autopilot_engaged = FALSE
 	autopilot_path = null
@@ -476,7 +498,22 @@
 		deltimer(autopilot_poll_timer)
 		autopilot_poll_timer = null
 	full_stop()
-	if(ship_team)
+
+	// Compared against the target's LIVE position rather than close_overmap_objects,
+	// which is maintained by enter/exit signals and need not have caught up with the
+	// forceMove that just landed us here. The target validated at engage time can
+	// also be gone or moved by now — then this is just an arrival like any other.
+	var/obj/structure/overmap/dock_target = autopilot_dock_ref?.resolve()
+	var/mob/pilot = autopilot_user_ref?.resolve()
+	autopilot_dock_ref = null
+	autopilot_user_ref = null
+	if(dock_target && !QDELETED(dock_target) && dock_target.x == x && dock_target.y == y)
+		if(ship_team)
+			ship_notify("Autopilot: arrived at [autopilot_label || "the plotted position"] — commencing docking approach.", "AUTOPILOT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		// We just stopped, so overmap_object_act()'s stillness gate passes; it
+		// INVOKE_ASYNCs ship_act, and this runs from a timer, so nothing sleeps here.
+		overmap_object_act(pilot, dock_target)
+	else if(ship_team)
 		ship_notify("Autopilot: arrived at [autopilot_label || "the plotted position"]. Holding station.", "AUTOPILOT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	push_helm_frame()
 
@@ -765,6 +802,7 @@
 		"engaged" = autopilot_engaged,
 		"label" = autopilot_label,
 		"status" = autopilot_status,
+		"dockOnArrival" = !!autopilot_dock_ref,
 		"path" = list(),
 	)
 	if(!autopilot_engaged)

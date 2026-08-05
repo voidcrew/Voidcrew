@@ -3293,15 +3293,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/structure/table/wood,
-/obj/item/toy/plush/lizard_plushie{
-	pixel_x = -6;
-	pixel_y = 4
-	},
-/obj/item/toy/plush/beeplushie{
-	pixel_x = 5;
-	pixel_y = -2
-	},
+/obj/structure/chair/stool/directional/west,
 /obj/structure/sign/picture_frame{
 	pixel_x = -32
 	},
@@ -3747,7 +3739,15 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
 "RT" = (
-/obj/structure/chair/stool/directional/west,
+/obj/structure/table/wood,
+/obj/item/toy/plush/lizard_plushie{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/toy/plush/beeplushie{
+	pixel_x = 5;
+	pixel_y = -2
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8

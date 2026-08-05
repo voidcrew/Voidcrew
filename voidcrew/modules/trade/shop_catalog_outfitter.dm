@@ -18,11 +18,26 @@
  * - Nothing here is meant to be printable on a stock ship autolathe. Every
  *   dead line got replaced by a consumable, hull stock, or a ship part.
  */
+
+/**
+ * Sarge: a quartermaster first and a soldier second, in that order. The brown
+ * QM shirt and the black gloves are the counter job; the militia beret and the
+ * canvas field jacket over them are where the nickname came from. No sidearm —
+ * she sells the guns, she doesn't wave them at customers.
+ */
+/datum/outfit/quartermain_sarge
+	name = "Depot quartermaster"
+	uniform = /obj/item/clothing/under/rank/cargo/qm
+	suit = /obj/item/clothing/suit/jacket/miljacket
+	head = /obj/item/clothing/head/beret/militia
+	gloves = /obj/item/clothing/gloves/color/black
+	shoes = /obj/item/clothing/shoes/jackboots
+
 /datum/outpost_shop/outfitter
 	outpost_name = "\improper Quartermain Depot"
 	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
 	trader_name = "Sarge"
-	trader_outfit = /datum/outfit/job/hos
+	trader_outfit = /datum/outfit/quartermain_sarge
 	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 0.85
@@ -41,6 +56,7 @@
 		"Intel & Charts",
 		"Blueprints",
 		"Barter Deals",
+		"Back Room",
 	)
 	sku_types = list(
 		// Armor
@@ -145,6 +161,12 @@
 		/datum/shop_sku/outfitter/rare/compact_defib,
 		/datum/shop_sku/outfitter/rare/ion_rifle,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
+	)
+	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	favor_sku_types = list(
+		/datum/shop_sku/favor/skunkworks_cell,
+		/datum/shop_sku/favor/fitter_gauntlets,
+		/datum/shop_sku/favor/maneuvering_harness,
 	)
 	// Sarge buys serviceable salvage — arms and armor off whoever stopped
 	// needing them — plus field materials off planet megafauna and crust
@@ -788,3 +810,23 @@
 	barter_amount = 10
 	stock_min = 1
 	stock_max = 2
+
+// ===== BACK ROOM =====
+// Sarge's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// per crew per round. Priced above the rare shelf on purpose — standing opens
+// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+
+/datum/shop_sku/favor/skunkworks_cell
+	item_path = /obj/item/stock_parts/power_store/cell/skunkworks
+	price_credits = 4200
+	price_vouchers = 2
+
+/datum/shop_sku/favor/fitter_gauntlets
+	item_path = /obj/item/clothing/gloves/tinkerer/fitter
+	price_credits = 3600
+	price_vouchers = 2
+
+/datum/shop_sku/favor/maneuvering_harness
+	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
+	price_credits = 3800
+	price_vouchers = 2

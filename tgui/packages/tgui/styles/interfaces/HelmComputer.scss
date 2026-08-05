@@ -201,6 +201,30 @@ $caption: 1.6cqw;
   letter-spacing: 0.1em;
 }
 
+// A control in a well caption (the manual-control switch on the Helm panel).
+// The caption is only $caption tall, so the base button chrome is squeezed to
+// fit inside it; the auto margin holds it against the right edge, clear of the
+// label and aux text. Armed borrows the engine toggle's green.
+.Helm__wellAction {
+  margin-left: auto;
+  padding: 0.05cqw 0.45cqw;
+  font-size: 0.76cqw;
+
+  &.Helm--on {
+    border-color: #24512f;
+    background: rgba(89, 184, 113, 0.12);
+    color: $good;
+  }
+
+  // Armed but the window is unfocused: the claim is idle and the player's keys
+  // are moving their character, so the switch must not read as live.
+  &.Helm--armed {
+    border-color: $amber-dim;
+    background: rgba(242, 163, 65, 0.08);
+    color: $amber;
+  }
+}
+
 // The single content root of a labelled well starts below the caption. Every
 // panel body is either `inset: 0` absolute or the flex `.Helm__pad`, so pushing
 // the direct child's top edge is enough — nothing else needs to know.
@@ -1276,6 +1300,21 @@ $caption: 1.6cqw;
   margin-left: auto;
   padding: 0.14cqw 0.45cqw;
   font-size: 0.76cqw;
+}
+
+// Course actions under the selected register row — the same two things its
+// right-click menu leads with, as visible buttons. Spans the row grid like
+// Helm__rowCoord; the buttons run at the drawer's compact scale.
+.Helm__rowActions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 0.35cqw;
+  margin-top: 0.2cqw;
+
+  .Helm__btn {
+    padding: 0.14cqw 0.45cqw;
+    font-size: 0.76cqw;
+  }
 }
 
 .Helm__empty {

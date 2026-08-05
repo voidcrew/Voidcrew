@@ -6,6 +6,9 @@
 // prize gear on the uniques shelf. Guarded by malfunctioning automation.
 //  - flamethrower/full came over from the retired icemoon-portal jackpot
 //    (see cave_entrance.dm): industrial plant equipment, uncommon-tier.
+//  - cyberware: shop-floor chrome, the kind a plant fits to keep a line
+//    running — omnitool fingers, then the coolant lattice for hot work and
+//    the myomer arms that pull a dead airlock open.
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested. Tune against outpost shop material prices and
 // the Boffin stall parts SKUs in theme_skus.
@@ -21,6 +24,9 @@
 		/datum/shop_sku/skunk/matter_bin,
 		/datum/shop_sku/skunk/high_cell,
 		/datum/shop_sku/skunk/rped,
+		/datum/shop_sku/ripperdoc/fixers,
+		/datum/shop_sku/ripperdoc/coolant,
+		/datum/shop_sku/ripperdoc/gorilla,
 	)
 	loot_common = list(
 		/obj/item/stack/sheet/iron/fifty = 10,
@@ -56,6 +62,9 @@
 		/obj/item/stack/sheet/mineral/gold/fifty = 3,
 		/obj/item/weldingtool/experimental = 3,
 		/obj/item/ship_parts/trade = 8,
+		// the maintenance crew's chrome: driver, wrench and cutters folded
+		// into the knuckles, and faster hands behind them
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers = 4,
 	)
 	loot_prime = list(
 		/obj/item/stack/sheet/plasteel/fifty = 9,
@@ -70,6 +79,10 @@
 		/obj/item/stack/sheet/bluespace_crystal = 4,
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
+		// hot-work and heavy-lift chrome: a body-wide coolant loop, and the
+		// cased myomer arm pair (both halves, one per arm)
+		/obj/item/organ/cyberimp/cyberware/coolant = 3,
+		/obj/item/cyberware_pair_case/gorilla_arms = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

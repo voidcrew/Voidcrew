@@ -102,8 +102,18 @@
 	var/avg_fuel_amnt = 100
 	/// The direction currently being burned (0 = none, direction = thrust, -1 = active braking)
 	var/burn_direction = 0
-	/// Percentage of engine thrust to use (1-100)
-	var/burn_percentage = 50
+	/// Both the engine burn intensity (1-100) and the cruise-speed target as a
+	/// percentage of max_speed — one throttle for how hard to burn and how fast
+	/// to end up going. 100 = flat out.
+	var/burn_percentage = 100
+	/// The course the pilot has commanded via the helm (dir bits), independent of
+	/// burn_direction: it persists while the engines coast at cruise, and
+	/// BURN_NONE means no course is held. Never holds BURN_STOP.
+	var/commanded_course = BURN_NONE
+	/// Course latched when a zone transition seizes the ship, re-commanded when
+	/// the crossing completes so a hand-flown hull doesn't come out the far side
+	/// dead in space.
+	var/zone_resume_burn = BURN_NONE
 	/// Whether we're currently registered with SSfastprocess for thrust
 	var/thrust_processing = FALSE
 
@@ -502,7 +512,11 @@
 	// Handle continuous thrust (only when actively thrusting)
 	if(thrust_processing && burn_direction != BURN_NONE)
 		if(state != OVERMAP_SHIP_FLYING || zone_transitioning)
-			// Stop thrusting if we can't fly
+			// Stop thrusting if we can't fly. Leaving the flying state drops the
+			// commanded course with it; a zone transition doesn't - the latch
+			// (zone_resume_burn) owns the course for the length of the crossing.
+			if(state != OVERMAP_SHIP_FLYING)
+				commanded_course = BURN_NONE
 			burn_direction = BURN_NONE
 		else if(burn_direction == BURN_STOP)
 			// Active braking - decelerate toward zero
@@ -512,6 +526,7 @@
 				burn_engines(null, burn_percentage, seconds_per_tick)
 		else if(can_thrust())
 			burn_engines(burn_direction, burn_percentage, seconds_per_tick)
+			check_cruise()
 		else if(!hidden_in_nebula)
 			// The crew is holding a heading and getting nothing. can_thrust() failing
 			// is invisible from the helm (the gauges can look healthy), so say so.
@@ -649,6 +664,7 @@
 	QDEL_NULL(combat_alarm)
 	// Clean up processing (thrust and/or shields)
 	burn_direction = BURN_NONE
+	commanded_course = BURN_NONE
 	thrust_processing = FALSE
 	autopilot_engaged = FALSE
 	autopilot_path = null
@@ -1377,8 +1393,10 @@
 
 	refresh_engines()
 
-	// Clear thrust when docking
+	// Clear thrust when docking, and the commanded course with it - a berth is
+	// where every course ends
 	burn_direction = BURN_NONE
+	commanded_course = BURN_NONE
 	thrust_processing = FALSE
 	update_ship_processing()
 
@@ -2212,6 +2230,17 @@
 	zone_transition_target = target
 	zone_transition_start_time = world.time
 
+	// Latch the course to re-command on the far side, while the velocity still
+	// exists to read. A braking ship asked to stop - honor it. A commanded ship
+	// gets its course back; a hand-flown coasting hull resumes the course its
+	// velocity was carrying, or it comes out the far side dead in space. The
+	// autopilot never uses the latch: its poll re-steers by itself.
+	if(burn_direction == BURN_STOP)
+		zone_resume_burn = BURN_NONE
+	else
+		zone_resume_burn = commanded_course || get_heading()
+	commanded_course = BURN_NONE
+
 	// Clear thrust when entering zone transition
 	burn_direction = BURN_NONE
 	thrust_processing = FALSE
@@ -2264,9 +2293,18 @@
 	if(target && !QDELETED(src))
 		forceMove(target)
 		check_hazards()
-		ship_notify("Zone transition complete.", "ZONE TRANSITION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		// Re-command the course the crossing latched, so a hand-flown hull
+		// carries on across the boundary the way an autopilot one does.
+		// Autopilot ships skip this: autopilot_steer()'s poll picks the course
+		// back up itself.
+		if(zone_resume_burn != BURN_NONE && !autopilot_engaged && state == OVERMAP_SHIP_FLYING && can_thrust())
+			command_course(zone_resume_burn)
+			ship_notify("Zone transition complete. Resuming course.", "ZONE TRANSITION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		else
+			ship_notify("Zone transition complete.", "ZONE TRANSITION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		update_icon_state()
 		update_screen()
+	zone_resume_burn = BURN_NONE
 
 /**
   * Cancels the zone transition - player pressed stop.
@@ -2284,6 +2322,9 @@
 	zone_transitioning = FALSE
 	zone_transition_target = null
 	zone_transition_start_time = null
+	// The crew pulled out of the crossing; nothing to resume on a far side we
+	// are no longer going to
+	zone_resume_burn = BURN_NONE
 
 	// Reset icon to stationary
 	update_icon_state()
@@ -3166,6 +3207,9 @@
  * for otherwise.
  */
 /obj/structure/overmap/ship/proc/full_stop()
+	// Cleared before the early return below: a still ship can be holding a stale
+	// course, and "full stop" has to kill the course too or the rose stays lit.
+	commanded_course = BURN_NONE
 	if(burn_direction != BURN_NONE)
 		change_heading(BURN_NONE)
 	if(is_still())
@@ -3322,6 +3366,91 @@
 	if(burn_direction != BURN_NONE)
 		thrust_processing = TRUE
 	update_ship_processing()
+
+/// Cruise-speed ceiling the fly-by-wire layer holds, set by the throttle.
+/obj/structure/overmap/ship/proc/cruise_target_speed()
+	return max_speed * burn_percentage / 100
+
+/**
+ * The fly-by-wire entry point every manual control routes through: the pilot
+ * commands a COURSE, and the ship works out what the engines owe it.
+ *
+ * tick_move() reads only the SIGNS of the velocity, so a turn is two different
+ * jobs: zero the axis carrying the ship the wrong way, and burn up the axis
+ * still missing. Both are done here with the same primitives the autopilot
+ * steers with (autopilot_aim_drift()) - deliberate parity rather than a cheat,
+ * so a hand-flown hull turns exactly as well as an automated one and no better.
+ *
+ * The course outlives the burn. Once every commanded axis is moving the right
+ * way and the throttle's cruise target is met, the engines go cold and the ship
+ * coasts - commanded_course stays set, which is what the helm's compass rose
+ * lights from, and check_cruise() is what gets a running burn there.
+ *
+ * BURN_NONE and BURN_STOP drop the course and pass straight through to
+ * change_heading(): coasting and braking are engine states, not courses.
+ */
+/obj/structure/overmap/ship/proc/command_course(direction)
+	if(direction == BURN_NONE || direction == BURN_STOP)
+		commanded_course = BURN_NONE
+		change_heading(direction)
+		push_helm_frame()
+		return
+	if(state != OVERMAP_SHIP_FLYING || zone_transitioning)
+		return
+
+	commanded_course = direction
+	// Where the velocity has to point, axis by axis - the same pattern
+	// autopilot_steer() uses.
+	var/want_x = ((direction & EAST) ? 1 : 0) - ((direction & WEST) ? 1 : 0)
+	var/want_y = ((direction & NORTH) ? 1 : 0) - ((direction & SOUTH) ? 1 : 0)
+	var/burn = autopilot_aim_drift(want_x, want_y)
+	if(burn)
+		// Burn only the axes still missing, exactly as the autopilot does.
+		change_heading(burn)
+	else
+		// Drift already serves every commanded axis. Trim to the cruise target
+		// if the ship came in hot, top up if it came in slow, coast if it's there.
+		// Same 0.1% tolerance as check_cruise(), so a ship already sitting at
+		// cruise isn't sent back to the engines over a float rounding.
+		clamp_speed(cruise_target_speed())
+		if(MAGNITUDE(speed[1], speed[2]) < cruise_target_speed() * 0.999)
+			change_heading(direction)
+		else
+			change_heading(BURN_NONE)
+	// The rose lights from commanded_course; without a push the console waits
+	// for the next tile crossing to hear about it.
+	push_helm_frame()
+
+/**
+ * The cruise governor, run every thrust tick from process().
+ *
+ * A burn integrates thrust every 0.2s with nothing else watching it, so this is
+ * what turns "hold the button" into "reach the commanded speed and coast": the
+ * moment every commanded axis is moving the right way and the throttle's target
+ * is met, the engines are cut and the course rides on velocity alone. It is
+ * also why holding a course no longer burns fuel forever at the speed cap.
+ */
+/obj/structure/overmap/ship/proc/check_cruise()
+	if(commanded_course == BURN_NONE || burn_direction == BURN_NONE || burn_direction == BURN_STOP)
+		return
+	var/want_x = ((commanded_course & EAST) ? 1 : 0) - ((commanded_course & WEST) ? 1 : 0)
+	var/want_y = ((commanded_course & NORTH) ? 1 : 0) - ((commanded_course & SOUTH) ? 1 : 0)
+	// Still turning: an axis isn't carrying the ship the commanded way yet.
+	if(want_x && SIGN(speed[1]) != want_x)
+		return
+	if(want_y && SIGN(speed[2]) != want_y)
+		return
+	// 0.1% under the target counts as arrived. adjust_speed()'s cap rescales the
+	// vector through single-precision floats, so demanding the exact ceiling can
+	// park the magnitude one rounding step under max_speed with the burn never
+	// going cold - the precise forever-burn this governor exists to end.
+	if(MAGNITUDE(speed[1], speed[2]) < cruise_target_speed() * 0.999)
+		return
+	// Up to speed and pointed right: trim off what the last tick overshot by and
+	// go cold. commanded_course stays set - that IS the cruise state.
+	clamp_speed(cruise_target_speed())
+	change_heading(BURN_NONE)
+	push_helm_frame()
 
 /// Global helper to get the ship an atom is currently on
 /// Returns null if the atom is not on a ship

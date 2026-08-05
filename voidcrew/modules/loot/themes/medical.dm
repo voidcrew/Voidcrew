@@ -6,6 +6,9 @@
 // chems, entry cybernetics), prime is the cold-chain stock nobody lived to
 // sign out (top kits, rare chems, tier-2 organs). Guarded by the dead —
 // plague sites keep their patients (undead markers, themes/occult.dm).
+// Cyberware: the surgical end of the parlor roster — a digester, an air
+// bladder, a dialysis loop, and on the cold shelf the two pieces a clinic
+// would only ever have fitted under anaesthetic (pain editor, Lazarus node).
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested. Tune against the outpost shop med prices in
 // theme_skus.
@@ -18,6 +21,11 @@
 		/datum/shop_sku/black_market/tactical_medkit,
 		/datum/shop_sku/outfitter/advanced_medkit,
 		/datum/shop_sku/outfitter/rare/compact_defib,
+		/datum/shop_sku/ripperdoc/gastro,
+		/datum/shop_sku/ripperdoc/second_wind,
+		/datum/shop_sku/ripperdoc/hemoglass,
+		/datum/shop_sku/ripperdoc/dead_channel,
+		/datum/shop_sku/ripperdoc/lazarus,
 	)
 	loot_common = list(
 		/obj/item/storage/medkit/regular = 10,
@@ -35,6 +43,9 @@
 		// the ward's own enforcement locker: a quarantine that stopped
 		// answering was a quarantine somebody had to hold by force
 		/obj/item/gun/energy/e_gun/mini = 5,
+		// cheapest thing on the parlor's shelf and the one piece of chrome a
+		// clinic would actually stock: it replaces a stomach
+		/obj/item/organ/cyberimp/cyberware/gastro = 4,
 	)
 	loot_uncommon = list(
 		/obj/item/storage/medkit/advanced = 10,
@@ -56,6 +67,10 @@
 		/obj/item/organ/liver/cybernetic = 3,
 		/obj/item/organ/lungs/cybernetic = 3,
 		/obj/item/ship_parts/science = 9,
+		// street and pro chrome on the ward's own terms: an emergency air
+		// reserve and a blood filter, both things a med bay would have fitted
+		/obj/item/organ/cyberimp/cyberware/second_wind = 4,
+		/obj/item/organ/cyberimp/cyberware/hemoglass = 3,
 	)
 	loot_prime = list(
 		/obj/item/reagent_containers/hypospray/medipen/atropine = 7,
@@ -71,6 +86,10 @@
 		/obj/item/organ/liver/cybernetic/tier2 = 3,
 		/obj/item/organ/lungs/cybernetic/tier2 = 3,
 		/obj/item/reagent_containers/hypospray/medipen/survival/luxury = 2,
+		// the cold shelf: a pain editor nobody signed for, and the military
+		// node that restarts a heart on its own (4 vouchers over the counter)
+		/obj/item/organ/cyberimp/cyberware/dead_channel = 3,
+		/obj/item/organ/cyberimp/cyberware/lazarus = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
