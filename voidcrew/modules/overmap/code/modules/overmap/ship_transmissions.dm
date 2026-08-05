@@ -87,13 +87,10 @@
 	if(length(comms_log) > COMMS_LOG_LENGTH)
 		comms_log.Cut(1, (length(comms_log) - COMMS_LOG_LENGTH) + 1)
 
-	// Whoever just spoke is no longer an anonymous blip.
-	var/obj/structure/overmap/ship/sender = transmission.sender_ref?.resolve()
-	if(sender && sender != src)
-		identified_ships[REF(sender)] = TRUE
-		// The snapshot is cached for a second; drop it so the name appears with the
-		// message rather than a beat after it.
-		contact_snapshot = null
+	// Whoever just spoke is no longer an anonymous blip. mark_vessel_identified
+	// also drops the cached snapshot, so the name appears with the message rather
+	// than a beat after it.
+	mark_vessel_identified(transmission.sender_ref?.resolve())
 
 	push_helm_frame()
 

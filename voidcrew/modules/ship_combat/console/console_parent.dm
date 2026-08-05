@@ -43,8 +43,6 @@
 	var/selected_missile_type
 	/// Selected approach direction for missiles and lasers (NORTH/SOUTH/EAST/WEST or null for auto)
 	var/selected_approach_direction
-	/// UI theme preference
-	var/theme
 
 	// ===== INTERDICTOR VARIABLES =====
 	/// Linked interdictor machine (weakref)

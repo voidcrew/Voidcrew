@@ -34,6 +34,7 @@
 		"Explosives",
 		"MODsuits",
 		"Ship Systems",
+		"Exploit Software",
 		"Infiltration",
 		"Combat Medical",
 		"Intel & Charts",
@@ -69,6 +70,20 @@
 		/datum/shop_sku/black_market/shield_generator_board,
 		/datum/shop_sku/black_market/interdictor_board,
 		/datum/shop_sku/black_market/data_siphon_board,
+		/datum/shop_sku/black_market/ew_suite_board,
+		// Exploit Software
+		/datum/shop_sku/black_market/ew_lights_out,
+		/datum/shop_sku/black_market/ew_phantom_klaxons,
+		/datum/shop_sku/black_market/ew_door_seize,
+		/datum/shop_sku/black_market/ew_overvolt_doors,
+		/datum/shop_sku/black_market/ew_vent_purge,
+		/datum/shop_sku/black_market/ew_comms_blackout,
+		/datum/shop_sku/black_market/ew_sensor_ghosts,
+		/datum/shop_sku/black_market/ew_system_scramble,
+		/datum/shop_sku/black_market/ew_drive_lockout,
+		/datum/shop_sku/black_market/ew_fire_control_freeze,
+		/datum/shop_sku/black_market/ew_shield_collapse,
+		/datum/shop_sku/black_market/ew_breaker_trip,
 		// Infiltration
 		/datum/shop_sku/black_market/emag,
 		/datum/shop_sku/black_market/thermals,
@@ -117,6 +132,8 @@
 		/datum/shop_sku/black_market/rotating/mod_flamethrower,
 		/datum/shop_sku/black_market/rotating/mod_chameleon,
 		/datum/shop_sku/black_market/rotating/mod_active_sonar,
+		/datum/shop_sku/black_market/rotating/ew_runaway_burn,
+		/datum/shop_sku/black_market/rotating/ew_helm_poltergeist,
 	)
 	rare_pool = list(
 		/datum/shop_sku/black_market/rare/energy_sword,
@@ -385,9 +402,9 @@
 	stock_max = 1
 
 // ===== SHIP SYSTEMS =====
-// All six ship-combat boards are protolathe research designs and only nine of
+// All the ship-combat boards are protolathe research designs and only nine of
 // forty-eight ships can research anything, so most crews have no way to build
-// one. Quartermain covers engines and the laser turret. These three are the
+// one. Quartermain covers engines and the laser turret. This shelf is the
 // defensive and dirty half, and the cloak board is a contract reward only.
 
 /datum/shop_sku/black_market/shield_generator_board
@@ -418,6 +435,129 @@
 	price_vouchers = 3
 	price_credits = 3600
 	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/ew_suite_board
+	category = "Ship Systems"
+	name = "electronic warfare suite board"
+	desc = "The machine board for an electronic warfare suite. Links to a weapons console and runs whatever exploit software you load into it."
+	item_path = /obj/item/circuitboard/machine/ship_combat/ew_suite
+	price_vouchers = 3
+	price_credits = 3200
+	stock_min = 1
+	stock_max = 1
+
+// ===== EXPLOIT SOFTWARE =====
+// Cartridges for the electronic warfare suite, sold by tier. The bottom rung
+// is lathe-printable on a research ship; everything above it is only here.
+// The top tier rides the rotating shelf and only moves for vouchers.
+
+/datum/shop_sku/black_market/ew_lights_out
+	category = "Exploit Software"
+	name = "Blackout exploit cartridge"
+	desc = "Drops every light on the target ship until the payload runs out."
+	item_path = /obj/item/ew_exploit/lights_out
+	price_credits = 500
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/black_market/ew_phantom_klaxons
+	category = "Exploit Software"
+	name = "Phantom Klaxons exploit cartridge"
+	desc = "Sets off the target's fire alarms and drops every firelock on the ship."
+	item_path = /obj/item/ew_exploit/phantom_klaxons
+	price_credits = 550
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/black_market/ew_door_seize
+	category = "Exploit Software"
+	name = "Bolt Override exploit cartridge"
+	desc = "Takes over the target's airlock bolts — drop every door shut, or throw them all open."
+	item_path = /obj/item/ew_exploit/door_seize
+	price_credits = 700
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/black_market/ew_overvolt_doors
+	category = "Exploit Software"
+	name = "Overvolt exploit cartridge"
+	desc = "Runs live current through every airlock on the target for the duration."
+	item_path = /obj/item/ew_exploit/overvolt_doors
+	price_credits = 900
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/ew_vent_purge
+	category = "Exploit Software"
+	name = "Vent Purge exploit cartridge"
+	desc = "Flips every air alarm on the target to siphon and lets the ship pump its own atmosphere out."
+	item_path = /obj/item/ew_exploit/vent_purge
+	price_credits = 1400
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/ew_comms_blackout
+	category = "Exploit Software"
+	name = "Comms Blackout exploit cartridge"
+	desc = "Jams the target ship's internal radio net for a full minute."
+	item_path = /obj/item/ew_exploit/comms_blackout
+	price_credits = 1000
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/ew_sensor_ghosts
+	category = "Exploit Software"
+	name = "Ghost Contacts exploit cartridge"
+	desc = "Feeds three phantom ship contacts into the target's sensor picture."
+	item_path = /obj/item/ew_exploit/sensor_ghosts
+	price_credits = 950
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/ew_system_scramble
+	category = "Exploit Software"
+	name = "Scrambler exploit cartridge"
+	desc = "Knocks the target's interdictor and cloak offline and keeps them down for the duration."
+	item_path = /obj/item/ew_exploit/system_scramble
+	price_credits = 1300
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/ew_drive_lockout
+	category = "Exploit Software"
+	name = "Drive Lockout exploit cartridge"
+	desc = "Cuts the target's engine burn and holds it cut until the payload expires."
+	item_path = /obj/item/ew_exploit/drive_lockout
+	price_credits = 2200
+	stock_min = 0
+	stock_max = 1
+
+/datum/shop_sku/black_market/ew_fire_control_freeze
+	category = "Exploit Software"
+	name = "Fire-Control Freeze exploit cartridge"
+	desc = "Locks the target's launchers and turrets out of firing while it runs."
+	item_path = /obj/item/ew_exploit/fire_control_freeze
+	price_credits = 2400
+	stock_min = 0
+	stock_max = 1
+
+/datum/shop_sku/black_market/ew_shield_collapse
+	category = "Exploit Software"
+	name = "Shield Collapse exploit cartridge"
+	desc = "Forces the target's shields down and blocks a restart for the duration."
+	item_path = /obj/item/ew_exploit/shield_collapse
+	price_credits = 2600
+	stock_min = 0
+	stock_max = 1
+
+/datum/shop_sku/black_market/ew_breaker_trip
+	category = "Exploit Software"
+	name = "Breaker Trip exploit cartridge"
+	desc = "Trips the equipment and lighting breakers on every APC aboard the target."
+	item_path = /obj/item/ew_exploit/breaker_trip
+	price_credits = 1800
+	stock_min = 0
 	stock_max = 1
 
 // ===== INFILTRATION =====
@@ -601,6 +741,20 @@
 	category = "MODsuits"
 	desc = "Pings for living things around you and puts them on your HUD. Everyone in earshot hears the ping too."
 	item_path = /obj/item/mod/module/active_sonar
+	price_vouchers = 2
+
+/datum/shop_sku/black_market/rotating/ew_runaway_burn
+	category = "Exploit Software"
+	name = "Runaway Burn exploit cartridge"
+	desc = "Pins the target's throttle at full burn on its current heading, and nobody aboard can pull it back."
+	item_path = /obj/item/ew_exploit/runaway_burn
+	price_vouchers = 3
+
+/datum/shop_sku/black_market/rotating/ew_helm_poltergeist
+	category = "Exploit Software"
+	name = "Poltergeist exploit cartridge"
+	desc = "Yanks the target's helm onto a new random heading every few seconds."
+	item_path = /obj/item/ew_exploit/helm_poltergeist
 	price_vouchers = 2
 
 // ===== RARE SHOWCASE =====

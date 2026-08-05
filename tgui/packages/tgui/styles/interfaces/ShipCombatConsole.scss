@@ -1,0 +1,1688 @@
+// Ship combat console faceplate.
+//
+// The console is a fixed 1200x760 design frame; every panel is positioned in
+// percentages from the GEOMETRY table in ShipCombatConsole.tsx, and all
+// internal sizing is in `cqw` against the console's own container, so the
+// whole thing scales with the window without a single media query. Same
+// plate/well system as the helm — a player glancing between the two should
+// see two instruments from the same bridge.
+//
+// Colour carries meaning: amber is always the ship's own state (shields,
+// hull, cloak, power, charge), red is the threat and the weapons pointed at
+// it (the target, lock state, fire controls), ice blue is the world outside
+// (non-target contacts, scope grid, bearings). Semantic good/warn/crit sit
+// apart from all three.
+
+$steel-900: #0b0e0f;
+$steel-800: #161c1e;
+$steel-700: #1d2528;
+$steel-600: #2a3438;
+$steel-500: #3a474b;
+$well: #05090a;
+$amber: #f2a341;
+$amber-dim: #8a5f26;
+$red: #e04836;
+$red-dim: #6e2a22;
+$ice: #74c8dd;
+$ice-dim: #3d6a76;
+$label: #7d8f94;
+$good: #59b871;
+$warn: #d9a230;
+$crit: #cf4a38;
+
+$stencil:
+  'Arial Narrow', 'Helvetica Neue', 'Liberation Sans Narrow', sans-serif;
+$mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
+
+.Tac {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  background: $steel-800;
+  color: $label;
+  font-family: $stencil;
+  user-select: none;
+}
+
+// Procedural faceplate. Swapped for the generated PNG when one is present —
+// see FACEPLATE_ASSET in ShipCombatConsole.tsx.
+.Tac__plate {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px),
+    radial-gradient(
+      130% 100% at 50% -10%,
+      #2b3439 0%,
+      #1a2225 45%,
+      #0e1416 100%
+    );
+  background-size: cover;
+
+  &::before {
+    // Seams along the structural panel divisions: horizontal at y=44 and
+    // y=592, vertical at x=232 and x=900. The vertical pair only runs
+    // between the two seam rows — the top rail and the bottom console span
+    // the full width, so a seam through either would cut across a bezel.
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        90deg,
+        transparent 19.2%,
+        rgba(0, 0, 0, 0.5) 19.2% 19.4%,
+        rgba(255, 255, 255, 0.04) 19.4% 19.55%,
+        transparent 19.55%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 74.9%,
+        rgba(0, 0, 0, 0.5) 74.9% 75.1%,
+        rgba(255, 255, 255, 0.04) 75.1% 75.25%,
+        transparent 75.25%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 5.6%,
+        rgba(0, 0, 0, 0.55) 5.6% 5.9%,
+        rgba(255, 255, 255, 0.05) 5.9% 6.1%,
+        transparent 6.1%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 77.7%,
+        rgba(0, 0, 0, 0.55) 77.7% 78%,
+        rgba(255, 255, 255, 0.05) 78% 78.2%,
+        transparent 78.2%
+      );
+    background-repeat: no-repeat;
+    // The vertical layers are sized to the band between the seam rows
+    // (548 of 760px) and positioned so their top edge lands on the upper
+    // seam: a 72.1%-tall layer leaves 212px of slack, and 44px of it is
+    // 20.75%. Percentages, not px, so the plate scales with the window.
+    background-size:
+      100% 72.1%,
+      100% 72.1%,
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 20.75%,
+      0 20.75%,
+      0 0,
+      0 0;
+  }
+
+  &::after {
+    // Brushed grain.
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.75;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.14) 0 1px,
+        transparent 1px 4px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.015) 0 1px,
+        transparent 1px 3px
+      );
+  }
+}
+
+// Generated faceplate in use: the seams, grain and hazard strip are already
+// baked into the art, so drop the procedural ones rather than doubling them
+// up. Stretched to 100% x 100% because its bezels are composited at the same
+// coordinates the panels are positioned from — cover/contain would desync
+// them.
+.Tac__plate--art {
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+// Red rather than the helm's amber: this is the weapons deck, and the strip
+// is the one place the plate itself says so.
+.Tac__hazard {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 0.6cqw;
+  opacity: 0.3;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(224, 72, 54, 0.9) 0 0.7cqw,
+    #14181a 0.7cqw 1.4cqw
+  );
+}
+
+.Tac__panel {
+  position: absolute;
+  z-index: 1;
+}
+
+// A recessed well — the region a generated plate must leave flat and black.
+.Tac__well {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid #000;
+  border-radius: 2px;
+  background: $well;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+// Panel captions live INSIDE the well, not on the bezel above it. The plate's
+// wells are separated by as little as 8px of metal in places — a label in
+// that band lands on the raised lip of the panel above it and on the
+// structural seam, which is illegible however it is coloured. On the flat
+// black of the well it always reads, and the metal stays clean.
+//
+// Every well that carries one is inset by $caption so the caption can never
+// overlap the instrument below it; see .Tac__well--labelled.
+$caption: 1.6cqw;
+
+.Tac__wellLabel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  // A flex container strips leading whitespace from each item, so the space
+  // ahead of the "/" separator is gone whatever the markup says — the gap is
+  // what actually holds the two halves apart.
+  gap: 0.4em;
+  align-items: center;
+  overflow: hidden;
+  height: $caption;
+  padding: 0 0.65cqw;
+  border-bottom: 1px solid rgba(224, 72, 54, 0.09);
+  background: linear-gradient(180deg, #120b0b, $well);
+  color: $label;
+  font-size: 0.85cqw;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.Tac__wellAux {
+  // Secondary, but on black rather than on brushed metal, so it can be
+  // genuinely readable instead of merely present.
+  color: #5c6c70;
+  letter-spacing: 0.1em;
+}
+
+// The single content root of a labelled well starts below the caption. Every
+// panel body is either `inset: 0` absolute or the flex `.Tac__pad`, so
+// pushing the direct child's top edge is enough — nothing else needs to know.
+.Tac__well--labelled > :not(.Tac__wellLabel) {
+  top: $caption;
+}
+
+// The caption already supplies the top breathing room, and the left stack has
+// no slack to spare — HULL is 64px tall including its bezel.
+.Tac__well--labelled > .Tac__pad {
+  padding-top: 0.3cqw;
+  padding-bottom: 0.55cqw;
+}
+
+.Tac__pad {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.7cqw 1cqw;
+}
+
+// ---------------------------------------------------------------- atoms
+
+.Tac__metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6cqw;
+  // Flex items default to min-width: auto, which refuses to shrink below the
+  // content width; the well clips overflow, so a too-wide metric row silently
+  // vanishes past the edge instead of wrapping. min-width: 0 lets it shrink,
+  // and Tac__v ellipsises the rest of the way.
+  min-width: 0;
+}
+
+.Tac__k {
+  color: $label;
+  font-size: 0.85cqw;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.Tac__v {
+  color: $amber;
+  font-family: $mono;
+  font-size: 1.05cqw;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.Tac__bar {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  height: 1.05cqw;
+  border: 1px solid #000;
+  border-radius: 1px;
+  background: #0b1112;
+
+  > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: block;
+    transition: width 0.35s ease;
+  }
+
+  &--thin {
+    height: 0.55cqw;
+    margin-top: 0.25cqw;
+  }
+}
+
+.Tac__ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 9.9%,
+    rgba(0, 0, 0, 0.55) 9.9% 10%
+  );
+}
+
+.Tac__btn {
+  padding: 0.38cqw 0.7cqw;
+  border: 1px solid $steel-600;
+  border-radius: 2px;
+  background: linear-gradient(#232c30, #171e21);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: $label;
+  font-family: $stencil;
+  font-size: 0.9cqw;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $steel-500;
+    color: #cfe0e3;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ice;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  &.Tac--danger {
+    border-color: #5b2820;
+    color: $red;
+  }
+}
+
+.Tac__wideBtn {
+  width: 100%;
+  margin-top: 0.4cqw;
+}
+
+// The two fire keys and ENGAGE FIELD: red, guarded style — the plate's way of
+// saying a click here spends ordnance.
+.Tac__fireKey {
+  flex: 1;
+  padding: 0.5cqw 0.4cqw;
+  border: 1px solid $red-dim;
+  border-radius: 2px;
+  background: linear-gradient(#2c1512, #1a0d0b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: $red;
+  font-family: $stencil;
+  font-size: 1.05cqw;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $red;
+    background: linear-gradient(#3c1b16, #241110);
+    color: #ff7a68;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $red;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+}
+
+.Tac__quiet {
+  margin: auto 0;
+  color: $steel-500;
+  font-size: 0.92cqw;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+.Tac__empty {
+  padding: 0.6cqw 0;
+  color: $steel-500;
+  font-size: 0.92cqw;
+  letter-spacing: 0.1em;
+}
+
+.Tac__note {
+  margin-top: 0.3cqw;
+  color: $label;
+  font-family: $mono;
+  font-size: 0.78cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+// One line of shouting per panel: REFORMING / TRACED / LOCKING / FIELD
+// ACTIVE. Mono and letterspaced so it reads as an annunciator, not a label.
+.Tac__stateLine {
+  overflow: hidden;
+  font-family: $mono;
+  font-size: 1cqw;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__reason {
+  margin-top: 0.25cqw;
+  color: $steel-500;
+  font-size: 0.8cqw;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+// ---------------------------------------------------------------- sliders
+
+.Tac__sliderRow {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5cqw;
+  margin-top: 0.35cqw;
+  min-width: 0;
+}
+
+.Tac__sliderVal {
+  flex: none;
+  min-width: 2.6cqw;
+  color: $amber;
+  font-family: $mono;
+  font-size: 0.9cqw;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.Tac__range {
+  flex: 1;
+  min-width: 0;
+  height: 0.9cqw;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  cursor: ew-resize;
+
+  &::-webkit-slider-runnable-track {
+    height: 0.28cqw;
+    border-radius: 2px;
+    background: linear-gradient(90deg, $amber-dim, $steel-600);
+  }
+
+  &::-webkit-slider-thumb {
+    width: 0.75cqw;
+    height: 0.9cqw;
+    border: 1px solid $steel-500;
+    border-radius: 1px;
+    margin-top: -0.31cqw;
+    background: linear-gradient(#f4e2c8, #ab8a5c);
+    appearance: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid $amber;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+}
+
+// ---------------------------------------------------------------- tier pips
+
+.Tac__tierRow {
+  display: flex;
+  flex: none;
+  gap: 0.7cqw;
+  margin-top: auto;
+  padding-top: 0.3cqw;
+}
+
+.Tac__tiers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.16cqw;
+  white-space: nowrap;
+}
+
+.Tac__tiersLabel {
+  margin-right: 0.2cqw;
+  color: $steel-500;
+  font-size: 0.72cqw;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.Tac__tier {
+  display: inline-block;
+  width: 0.5cqw;
+  height: 0.5cqw;
+  border: 1px solid $amber-dim;
+  background: transparent;
+
+  &.Tac--on {
+    border-color: $amber;
+    background: $amber;
+  }
+}
+
+// ---------------------------------------------------------------- readouts
+
+.Tac__bigRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5cqw;
+  min-width: 0;
+}
+
+.Tac__bigNum {
+  font-family: $mono;
+  font-size: 1.9cqw;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.Tac__bigDen {
+  color: $label;
+  font-size: 1.2cqw;
+}
+
+.Tac__bigUnit {
+  color: $label;
+  font-size: 0.88cqw;
+  letter-spacing: 0.12em;
+}
+
+.Tac__bigState {
+  overflow: hidden;
+  margin-left: auto;
+  font-size: 0.88cqw;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Pinned to the bottom of the well rather than spaced off the number above
+// it. HULL is the tightest panel on the console — a fixed gap leaves the
+// bar's bottom edge riding the rounding.
+.Tac__hullBar {
+  margin-top: auto;
+}
+
+.Tac__disabledMark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  opacity: 0.8;
+  background: $crit;
+}
+
+// Generator lamps. Squares, not dots: they sit beside the tier pips and the
+// two must not read as the same thing.
+.Tac__leds {
+  display: flex;
+  gap: 0.24cqw;
+  align-items: center;
+  margin-left: auto;
+}
+
+.Tac__led {
+  display: inline-block;
+  width: 0.6cqw;
+  height: 0.6cqw;
+  border: 1px solid $steel-600;
+  background: #0b1112;
+
+  &.Tac--on {
+    border-color: #24512f;
+    background: $good;
+    box-shadow: 0 0 0.4cqw rgba(89, 184, 113, 0.5);
+  }
+}
+
+.Tac__flash {
+  color: $crit;
+  font-size: 0.78cqw;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  animation: tac-pulse 1s ease-in-out infinite;
+}
+
+.Tac__execRow {
+  margin-top: 0.35cqw;
+}
+
+.Tac__execLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4cqw;
+  min-width: 0;
+}
+
+.Tac__execName {
+  overflow: hidden;
+  min-width: 0;
+  color: $warn;
+  font-size: 0.85cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__microBar {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 3cqw;
+  height: 0.5cqw;
+  border: 1px solid #000;
+  background: #0b1112;
+  vertical-align: middle;
+
+  > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: block;
+  }
+}
+
+// ---------------------------------------------------------------- top rail
+
+.Tac__ident {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9cqw;
+  height: 100%;
+  padding: 0 1cqw;
+}
+
+.Tac__shipName {
+  // min-width: 0 is what lets a flex item shrink below its content width at
+  // all — without it the name pushes the class readout and the TACTICAL tag
+  // off the end of the plate instead of giving way.
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #d6e2e4;
+  font-size: 1.55cqw;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+// The class collapses before the name gives up a pixel: the name is what the
+// crew reads off the plate, and the class never changes.
+.Tac__shipClass {
+  flex: 0 999 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: $label;
+  font-size: 0.95cqw;
+  letter-spacing: 0.14em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// The console saying which instrument it is. Red because everything red on
+// this plate belongs to the weapons.
+.Tac__tag {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0.1cqw 0.5cqw;
+  border: 1px solid $red-dim;
+  border-radius: 1px;
+  color: $red;
+  font-size: 0.85cqw;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.Tac__zone {
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  height: 100%;
+  padding: 0 1cqw;
+}
+
+.Tac__zoneDot {
+  flex: none;
+  width: 1.1cqw;
+  height: 1.1cqw;
+  border-radius: 50%;
+  box-shadow: 0 0 0.8cqw currentcolor;
+}
+
+// Every zone name ends in " Zone", which is long enough to wrap in a
+// 32px-tall rail and spill out of the well. Clipped so the worst case is an
+// ellipsis rather than text hanging over the faceplate.
+.Tac__zoneName {
+  overflow: hidden;
+  min-width: 0;
+  font-size: 1.02cqw;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.Tac__zoneFlags {
+  display: flex;
+  flex: none;
+  gap: 0.5cqw;
+  margin-left: auto;
+}
+
+.Tac__flag {
+  padding: 0.12cqw 0.5cqw;
+  border: 1px solid currentcolor;
+  border-radius: 1px;
+  font-size: 0.85cqw;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+
+  &.Tac--on {
+    color: $crit;
+  }
+
+  &.Tac--off {
+    color: $steel-500;
+  }
+}
+
+.Tac__alerts {
+  display: flex;
+  align-items: center;
+  gap: 0.7cqw;
+  height: 100%;
+  padding: 0 1cqw;
+  overflow: hidden;
+}
+
+.Tac__alert {
+  flex: none;
+  padding: 0.2cqw 0.6cqw;
+  border: 1px solid currentcolor;
+  border-radius: 1px;
+  font-size: 0.92cqw;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &.Tac--crit {
+    animation: tac-pulse 1.6s ease-in-out infinite;
+    background: rgba(207, 74, 56, 0.1);
+    color: $crit;
+  }
+
+  &.Tac--warn {
+    background: rgba(217, 162, 48, 0.08);
+    color: $warn;
+  }
+
+  &.Tac--info {
+    background: rgba(116, 200, 221, 0.07);
+    color: $ice;
+  }
+}
+
+@keyframes tac-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+// ---------------------------------------------------------------- scope
+
+.Tac__scope {
+  position: absolute;
+  inset: 0;
+
+  svg {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  // The amber rim while a lock is closing: the whole instrument says
+  // "committed" without covering anything a gunner is watching.
+  &.Tac--acquiring::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 2cqw rgba(242, 163, 65, 0.28);
+    animation: tac-pulse 1.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+// The rotating radar wedge. Six seconds per turn, ice, faint — dressing, not
+// data, which is why reduced-motion removes it outright.
+.Tac__sweep {
+  animation: tac-sweep 6s linear infinite;
+}
+
+@keyframes tac-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.Tac__mark {
+  cursor: pointer;
+  // Positions arrive as whole-tile jumps once per server tick; the glide
+  // turns each jump into motion. Slower than the tick would smear two
+  // updates together; this is about a quarter of one.
+  transition: transform 480ms linear;
+
+  &.Tac--dead {
+    cursor: not-allowed;
+  }
+}
+
+.Tac__brackets {
+  animation: tac-brackets 2s ease-in-out infinite;
+}
+
+@keyframes tac-brackets {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+// The amber banner across the scope's top edge when the zone forbids
+// weapons. Persistent, not pulsing: it is a rule, not an emergency.
+.Tac__scopeBanner {
+  position: absolute;
+  top: 0.4cqw;
+  right: 8%;
+  left: 8%;
+  padding: 0.25cqw 0.6cqw;
+  border: 1px solid rgba(242, 163, 65, 0.45);
+  background: rgba(242, 163, 65, 0.08);
+  color: $amber;
+  font-size: 0.9cqw;
+  letter-spacing: 0.18em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.Tac__scopeMsg {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  transform: translateY(-50%);
+  color: $label;
+  font-size: 1.4cqw;
+  letter-spacing: 0.26em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+
+  &.Tac--ice {
+    color: $ice;
+  }
+
+  &.Tac--quiet {
+    color: $steel-500;
+    font-size: 1cqw;
+  }
+}
+
+// The approach-vector picker, bottom-left of the scope. Tiny on purpose: a
+// niche control that must not compete with the contacts above it.
+.Tac__approach {
+  position: absolute;
+  bottom: 0.5cqw;
+  left: 0.6cqw;
+  display: flex;
+  align-items: center;
+  gap: 0.25cqw;
+  padding: 0.2cqw 0.4cqw;
+  border: 1px solid $steel-700;
+  background: rgba(6, 12, 13, 0.82);
+}
+
+.Tac__approachLabel {
+  margin-right: 0.3cqw;
+  color: $steel-500;
+  font-size: 0.72cqw;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.Tac__approachBtn {
+  min-width: 1.5cqw;
+  padding: 0.14cqw 0.3cqw;
+  border: 1px solid $steel-600;
+  border-radius: 1px;
+  background: #0a1011;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.72cqw;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: #b9cace;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $red;
+    outline-offset: 1px;
+  }
+
+  &.Tac--on {
+    border-color: $red-dim;
+    background: rgba(224, 72, 54, 0.12);
+    color: $red;
+  }
+}
+
+// ---------------------------------------------------------------- drawer
+
+.Tac__drawerWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.Tac__tabs {
+  flex: none;
+  display: flex;
+  gap: 0.3cqw;
+  padding: 0.5cqw 0.5cqw 0;
+}
+
+.Tac__tab {
+  position: relative;
+  flex: 1;
+  padding: 0.42cqw 0.2cqw;
+  border: 1px solid #000;
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  background: #0a1011;
+  color: $steel-500;
+  font-family: $stencil;
+  font-size: 0.85cqw;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &.Tac--on {
+    background: #101a1d;
+    color: $ice;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ice;
+    outline-offset: -2px;
+  }
+}
+
+.Tac__badge {
+  display: inline-block;
+  min-width: 1.1cqw;
+  margin-left: 0.3cqw;
+  padding: 0 0.22cqw;
+  border-radius: 1px;
+  background: $warn;
+  color: $steel-900;
+  font-family: $mono;
+  font-size: 0.75cqw;
+
+  // The one badge that means someone else is winning.
+  &--red {
+    background: $red;
+    color: #fff;
+  }
+}
+
+.Tac__drawerBody {
+  flex: 1;
+  padding: 0.6cqw 0.7cqw;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 0.5cqw;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $steel-600;
+  }
+}
+
+.Tac__cat {
+  margin: 0.6cqw 0 0.3cqw;
+  color: $ice-dim;
+  font-size: 0.82cqw;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// The lock-in-progress banner, pinned above everything in the tab.
+.Tac__acqBanner {
+  margin-bottom: 0.5cqw;
+  padding: 0.4cqw 0.5cqw;
+  border: 1px solid $amber-dim;
+  background: rgba(242, 163, 65, 0.07);
+}
+
+.Tac__acqLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4cqw;
+  min-width: 0;
+  color: $amber;
+  font-size: 0.9cqw;
+
+  > span {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// The target dossier: the one contact that matters, pinned at the top.
+.Tac__dossier {
+  margin-bottom: 0.5cqw;
+  padding: 0.5cqw 0.55cqw;
+  border: 1px solid $red-dim;
+  border-left: 2px solid $red;
+  background: rgba(224, 72, 54, 0.06);
+}
+
+.Tac__dossierHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4cqw;
+  min-width: 0;
+  margin-bottom: 0.35cqw;
+}
+
+.Tac__dossierName {
+  overflow: hidden;
+  min-width: 0;
+  color: $red;
+  font-size: 1.1cqw;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.Tac__dossierRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4cqw;
+  margin-top: 0.3cqw;
+  min-width: 0;
+}
+
+.Tac__dossierMeta {
+  margin-top: 0.4cqw;
+  color: $label;
+  font-family: $mono;
+  font-size: 0.82cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.Tac__rangeChips {
+  display: flex;
+  gap: 0.4cqw;
+  margin-top: 0.35cqw;
+}
+
+.Tac__chip {
+  padding: 0.1cqw 0.45cqw;
+  border: 1px solid $steel-600;
+  border-radius: 1px;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.75cqw;
+  letter-spacing: 0.1em;
+
+  &.Tac--on {
+    border-color: $red-dim;
+    background: rgba(224, 72, 54, 0.1);
+    color: $red;
+  }
+}
+
+// A contact row: glyph, name, range, and a micro-readout underneath.
+.Tac__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.15cqw 0.5cqw;
+  padding: 0.35cqw 0.45cqw;
+  border-left: 2px solid transparent;
+  border-radius: 1px;
+  color: $ice;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(116, 200, 221, 0.06);
+  }
+
+  &.Tac--dead {
+    color: $steel-500;
+    cursor: not-allowed;
+
+    &:hover {
+      background: none;
+    }
+  }
+}
+
+.Tac__rowGlyph {
+  display: block;
+  align-self: center;
+  width: 1.35cqw;
+  height: 1.35cqw;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.Tac__rowName {
+  overflow: hidden;
+  color: #c3d4d7;
+  font-size: 0.95cqw;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .Tac--dead & {
+    color: $steel-500;
+  }
+}
+
+.Tac__rowDist {
+  color: $ice;
+  font-family: $mono;
+  font-size: 0.88cqw;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+
+  .Tac--dead & {
+    color: $steel-500;
+  }
+}
+
+.Tac__rowMeta {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.78cqw;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__rowZone {
+  color: $warn;
+}
+
+// ---------------------------------------------------------------- drawer · exploits
+
+.Tac__ewHowTo {
+  padding: 0.4cqw 0.2cqw;
+}
+
+.Tac__ewHint {
+  margin-top: 0.5cqw;
+  color: $label;
+  font-size: 0.85cqw;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.Tac__ewControls {
+  display: flex;
+  gap: 0.4cqw;
+  align-items: center;
+  margin-bottom: 0.4cqw;
+  min-width: 0;
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.Tac__sortBtn {
+  flex: none;
+  min-width: 6.5cqw;
+  font-size: 0.75cqw;
+  letter-spacing: 0.04em;
+}
+
+.Tac__tierFilter {
+  display: flex;
+  gap: 0.3cqw;
+  margin-bottom: 0.5cqw;
+}
+
+.Tac__filterBtn {
+  flex: 1;
+  padding: 0.2cqw 0.3cqw;
+  border: 1px solid $steel-600;
+  border-radius: 1px;
+  background: #0a1011;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.8cqw;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $steel-500;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ice;
+    outline-offset: 1px;
+  }
+
+  // Tier colour rides the inline style; the class only carries the frame.
+  &.Tac--on {
+    border-color: currentcolor;
+    background: rgba(116, 200, 221, 0.07);
+  }
+}
+
+.Tac__ewChip {
+  margin-bottom: 0.45cqw;
+  padding: 0.4cqw 0.5cqw;
+  border: 1px solid $steel-700;
+  border-radius: 1px;
+  background: #080d0e;
+
+  &.Tac--spent {
+    opacity: 0.45;
+  }
+}
+
+.Tac__ewHead {
+  display: flex;
+  align-items: center;
+  gap: 0.4cqw;
+  min-width: 0;
+}
+
+.Tac__tierChip {
+  flex: none;
+  padding: 0 0.3cqw;
+  border: 1px solid currentcolor;
+  border-radius: 1px;
+  font-size: 0.72cqw;
+  font-weight: bold;
+}
+
+.Tac__ewName {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  color: #c3d4d7;
+  font-size: 0.95cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__ewCharges {
+  flex: none;
+  font-family: $mono;
+  font-size: 0.82cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.Tac__glyphBtn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.4cqw;
+  height: 1.4cqw;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  background: none;
+  color: $steel-500;
+  cursor: pointer;
+
+  svg {
+    width: 70%;
+    height: 70%;
+  }
+
+  &:hover {
+    border-color: $steel-600;
+    color: #c3d4d7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ice;
+    outline-offset: 1px;
+  }
+}
+
+.Tac__ewMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4cqw;
+  margin-top: 0.2cqw;
+  color: $label;
+  font-family: $mono;
+  font-size: 0.78cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.Tac__ewStatus {
+  color: $warn;
+  letter-spacing: 0.1em;
+}
+
+.Tac__ewExec {
+  display: flex;
+  gap: 0.3cqw;
+  margin-top: 0.3cqw;
+}
+
+.Tac__execBtn {
+  flex: 1;
+  padding: 0.28cqw 0.3cqw;
+  font-size: 0.8cqw;
+}
+
+// ---------------------------------------------------------------- drawer · defense
+
+.Tac__lockList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3cqw;
+  padding: 0.2cqw 0;
+}
+
+.Tac__lockChip {
+  padding: 0.15cqw 0.5cqw;
+  border: 1px solid $red-dim;
+  border-radius: 1px;
+  background: rgba(224, 72, 54, 0.08);
+  color: $red;
+  font-size: 0.85cqw;
+  letter-spacing: 0.05em;
+}
+
+.Tac__defLine {
+  margin: 0.3cqw 0;
+  font-family: $mono;
+  font-size: 0.9cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+.Tac__payload {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 0.4cqw;
+  margin-bottom: 0.3cqw;
+  padding: 0.3cqw 0.45cqw;
+  border-left: 2px solid $red;
+  background: rgba(224, 72, 54, 0.06);
+}
+
+.Tac__payloadName {
+  overflow: hidden;
+  color: $red;
+  font-size: 0.92cqw;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__payloadSub {
+  grid-row: 2;
+  color: $label;
+  font-size: 0.78cqw;
+}
+
+.Tac__payloadTime {
+  grid-row: 1 / 3;
+  align-self: center;
+  color: $warn;
+  font-family: $mono;
+  font-size: 1cqw;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------------------------------------------------------------- drawer · systems
+
+.Tac__sysRow {
+  display: grid;
+  grid-template-columns: 2.4cqw 1fr auto;
+  gap: 0.1cqw 0.4cqw;
+  align-items: center;
+  padding: 0.28cqw 0.35cqw;
+  border-radius: 1px;
+
+  &:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &.Tac--dead {
+    opacity: 0.55;
+  }
+
+  &--tall {
+    grid-template-rows: auto auto;
+  }
+}
+
+.Tac__sysId {
+  overflow: hidden;
+  color: $label;
+  font-family: $mono;
+  font-size: 0.78cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__sysBody {
+  overflow: hidden;
+  color: #c3d4d7;
+  font-size: 0.88cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Tac__sysDim {
+  color: $label;
+}
+
+.Tac__sysState {
+  color: $label;
+  font-family: $mono;
+  font-size: 0.8cqw;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.Tac__sysTiers {
+  display: flex;
+  grid-column: 2 / -1;
+  gap: 0.6cqw;
+  overflow: hidden;
+}
+
+// ---------------------------------------------------------------- bottom console
+
+.Tac__weaponHead {
+  display: flex;
+  align-items: center;
+  gap: 0.7cqw;
+  min-width: 0;
+}
+
+// Scrolls sideways rather than wrapping: a twelve-tube monitor is a menagerie
+// but the fire keys below must never move.
+.Tac__pips {
+  display: flex;
+  gap: 0.25cqw;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    height: 0.3cqw;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $steel-600;
+  }
+}
+
+.Tac__pip {
+  flex: none;
+  width: 1cqw;
+  height: 1.35cqw;
+}
+
+.Tac__fireRow {
+  display: flex;
+  gap: 0.5cqw;
+  margin-top: auto;
+}
+
+// ---------------------------------------------------------------- ops
+
+.Tac__ops {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45cqw;
+  padding: 0.6cqw;
+}
+
+.Tac__opBtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15cqw;
+  overflow: hidden;
+  padding: 0.25cqw;
+  border: 1px solid $steel-600;
+  border-radius: 2px;
+  background: linear-gradient(#212a2e, #141a1d);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: $label;
+  font-family: $stencil;
+  cursor: pointer;
+
+  svg {
+    width: 1.5cqw;
+    height: 1.5cqw;
+    flex: none;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $steel-500;
+    color: #c3d4d7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $red;
+    outline-offset: 1px;
+  }
+
+  &.Tac--armed {
+    border-color: #6b5216;
+    color: $warn;
+  }
+
+  // Red, not the helm's ice: an active state on THIS console means a weapon
+  // system is live.
+  &.Tac--active {
+    border-color: $red-dim;
+    background: linear-gradient(#2c1512, #1a0d0b);
+    color: $red;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+}
+
+.Tac__opLabel {
+  font-size: 0.85cqw;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.Tac__opSub {
+  overflow: hidden;
+  max-width: 100%;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.72cqw;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------- overlays
+
+.Tac__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 9, 10, 0.92);
+}
+
+.Tac__overlayBox {
+  max-width: 66%;
+  padding: 2.5cqw 3.5cqw;
+  border: 1px solid $red-dim;
+  background: #0d1112;
+  text-align: center;
+}
+
+.Tac__overlayTitle {
+  color: $red;
+  font-size: 2.2cqw;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.Tac__overlayDesc {
+  margin-top: 0.8cqw;
+  color: $label;
+  font-size: 1.1cqw;
+}
+
+// ---------------------------------------------------------------- reduced motion
+
+@media (prefers-reduced-motion: reduce) {
+  .Tac__alert.Tac--crit,
+  .Tac__flash,
+  .Tac__brackets,
+  .Tac__scope.Tac--acquiring::after {
+    animation: none;
+  }
+
+  // The sweep is decoration with no reading attached; a static wedge would
+  // just look broken, so it goes entirely.
+  .Tac__sweep {
+    animation: none;
+    display: none;
+  }
+
+  // Mark glide is set as an inline none-override on first mount, so the
+  // class transition needs !important to lose reliably here.
+  .Tac__mark {
+    transition: none !important;
+  }
+
+  .Tac__bar > i {
+    transition: none;
+  }
+}
+

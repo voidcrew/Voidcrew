@@ -106,6 +106,21 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
+// Electronic warfare — the suite plus the basic exploit software. Stronger
+// exploit tiers are never researchable; the black market is the only source.
+/datum/techweb_node/ship_combat_ew
+	id = TECHWEB_NODE_SHIP_COMBAT_EW
+	display_name = "Electronic Warfare Systems"
+	description = "Intrusion hardware for shuttle warfare. Unlocks the electronic warfare suite and basic exploit software for disrupting a targeted ship's systems. Requires weapons lock to operate."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ew_suite",
+		"ew_exploit_lights_out",
+		"ew_exploit_phantom_klaxons",
+		"ew_exploit_door_seize",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
 // ========== SHIP READINESS QUERIES ==========
 // Everything above is gated behind one node, which makes that node a clean
 // stand-in for "this crew can defend itself": no ship_combat, no console, no
@@ -204,6 +219,16 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
+/datum/design/board/ew_suite
+	name = "Electronic Warfare Suite Board"
+	desc = "Allows for the construction of an electronic warfare suite. Executes exploit software against targeted ships."
+	id = "ew_suite"
+	build_path = /obj/item/circuitboard/machine/ship_combat/ew_suite
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
 // ========== MISSILE FRAME DESIGN ==========
 
 /datum/design/ship_missile_frame
@@ -287,3 +312,55 @@
 
 // Chemical missiles now use standard chemical grenades inserted into missile frames
 // No separate warhead needed - players build grenades and insert them directly
+
+// ========== EW EXPLOIT CARTRIDGE DESIGNS ==========
+// Tier 1 software only. Every stronger exploit is black-market stock and has
+// no design on purpose - the Undertow Exchange is the sole supplier.
+
+/datum/design/ew_exploit_lights_out
+	name = "Exploit Cartridge (Blackout)"
+	desc = "Exploit software that drops every light on a targeted ship until the payload expires."
+	id = "ew_exploit_lights_out"
+	build_type = PROTOLATHE | AWAY_LATHE
+	build_path = /obj/item/ew_exploit/lights_out
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/ew_exploit_phantom_klaxons
+	name = "Exploit Cartridge (Phantom Klaxons)"
+	desc = "Exploit software that sets off a targeted ship's fire alarms and drops its firelocks shipwide."
+	id = "ew_exploit_phantom_klaxons"
+	build_type = PROTOLATHE | AWAY_LATHE
+	build_path = /obj/item/ew_exploit/phantom_klaxons
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/ew_exploit_door_seize
+	name = "Exploit Cartridge (Bolt Override)"
+	desc = "Exploit software that takes over a targeted ship's airlock bolts, dropping them all or throwing them all open."
+	id = "ew_exploit_door_seize"
+	build_type = PROTOLATHE | AWAY_LATHE
+	build_path = /obj/item/ew_exploit/door_seize
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
