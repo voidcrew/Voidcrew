@@ -6,6 +6,11 @@
 // table for airless rocks (the landable meteor storm fields in
 // overmap/events.dm spawn both this theme's caches and asteroid packs at
 // runtime).
+// Cyberware: the mobility and prospecting half of the parlor roster — calf
+// pistons and a drill fist on the way up, surveyor optics and jump pistons at
+// the top. The Skyhook wrist winch is here and NOWHERE else: it is the one
+// piece of chrome Splice has never had on a shelf, so a cache is the only
+// place in the game it exists (the mirror of the black market's Piledriver).
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -16,6 +21,13 @@
 		/obj/effect/zone_mobs/wildlife,
 		/obj/effect/zone_mobs/wildlife/boss,
 		/obj/effect/zone_mobs/asteroid,
+	)
+	theme_skus = list(
+		/datum/shop_sku/ripperdoc/shock_coils,
+		/datum/shop_sku/ripperdoc/rockjaw,
+		/datum/shop_sku/ripperdoc/angler,
+		/datum/shop_sku/ripperdoc/prospector,
+		/datum/shop_sku/ripperdoc/hopper,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
@@ -28,6 +40,9 @@
 		/obj/item/climbing_hook = 5,
 		/obj/item/reagent_containers/hypospray/medipen/survival = 4,
 		/obj/item/pickaxe = 4,
+		// prospector's chrome, cheapest rung: pistons that get you off the
+		// ground fast and hold your footing on bad decking
+		/obj/item/organ/cyberimp/cyberware/shock_coils = 4,
 	)
 	loot_uncommon = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
@@ -42,6 +57,10 @@
 		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
 		/obj/item/gun/energy/plasmacutter = 4,
 		/obj/item/ship_parts/misc = 6,
+		// working chrome for a claim: a drill that folds out of the forearm
+		// and hoppers its own ore, and a harpoon winch for everything else
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw = 4,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/angler = 3,
 	)
 	loot_prime = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
@@ -56,6 +75,11 @@
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
+		// top-end survey chrome: eyes that pulse ore through rock, the wrist
+		// winch that exists nowhere else, and four tiles of standing jump
+		/obj/item/organ/eyes/robotic/cyberware/prospector = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook = 3,
+		/obj/item/organ/cyberimp/cyberware/hopper = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

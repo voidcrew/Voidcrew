@@ -4,6 +4,9 @@
 // trinkets/booze/small cash, uncommon = valuables and serviceable weapons,
 // prime = treasure (big cash, precious mats, prize gear). Guarded by pirate
 // crews.
+// Cyberware: boarding chrome, and it reads as taken off somebody rather than
+// bought — grip pads at uncommon, and in the treasure the blade pair, the
+// folding machine-pistol and the rocket pod.
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -15,6 +18,10 @@
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/bulldog_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
+		/datum/shop_sku/ripperdoc/gecko,
+		/datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/ronin,
+		/datum/shop_sku/ripperdoc/bunker_buster,
 	)
 	loot_common = list(
 		/obj/item/stack/spacecash/c100 = 10,
@@ -42,6 +49,9 @@
 		/obj/item/reagent_containers/cup/glass/bottle/rum/aged = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 7,
+		// boarder's palms: your hands clamp shut on your gun when you go
+		// down, and tables stop being furniture
+		/obj/item/organ/cyberimp/cyberware/gecko = 4,
 	)
 	loot_prime = list(
 		/obj/item/stack/spacecash/c1000 = 9,
@@ -58,6 +68,13 @@
 		/obj/item/clothing/head/costume/pirate/captain = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
 		/obj/item/stack/spacecash/c10000 = 2,
+		// the captain's cut, all of it voucher-grade chrome: the cased blade
+		// pair, the arm gun nobody can disarm you of, and the rocket pod.
+		// Both weapon pieces are parlor-fed — the crate pays what's loaded in
+		// them and no more, so reloads still mean a trip to Splice
+		/obj/item/cyberware_pair_case/mantis_blades = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

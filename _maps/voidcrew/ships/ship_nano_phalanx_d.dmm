@@ -1056,10 +1056,6 @@
 /obj/structure/cable,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
-"qe" = (
-/obj/structure/closet/cabinet,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/d)
 "qf" = (
 /obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
@@ -1766,6 +1762,7 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
 "Bg" = (
+/obj/structure/closet/cabinet,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/dorms/d)
@@ -4936,7 +4933,7 @@ oZ
 oZ
 ZS
 zH
-qe
+do
 rh
 Bg
 Ou

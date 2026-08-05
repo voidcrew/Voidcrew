@@ -249,6 +249,9 @@
 /mob/living/basic/outpost_trader/clinic_doctor
 	shop_type = /datum/outpost_shop/vendor/patchup_clinic
 
+/mob/living/basic/outpost_trader/ripperdoc
+	shop_type = /datum/outpost_shop/vendor/ripperdoc
+
 // Halcyon's stalls (shop_catalog_general_vendors.dm, shop_catalog_diner.dm)
 
 /mob/living/basic/outpost_trader/potting_shed
@@ -365,6 +368,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				"discount_pct" = sku.discount_pct,
 				"price_text" = sku.get_price_text(),
 				"barter" = istype(sku, /datum/shop_sku/barter),
+				"favor_required" = sku.favor_required,
+				"crew_limit" = sku.crew_limit,
 			))
 	data["catalog"] = catalog
 
@@ -392,6 +397,20 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 	data["barred"] = npc.outpost ? npc.outpost.is_user_barred(user) : FALSE
 
+	// The viewer's crew standing with this trader, for the header and the
+	// back-room shelf. Everything favor is per-viewer, so it all rides ui_data.
+	var/obj/structure/overmap/ship/crew_ship = isliving(user) ? get_crew_ship(user) : null
+	if(shop)
+		var/tier = shop.get_favor_tier(crew_ship)
+		data["favor"] = list(
+			"points" = shop.get_favor(crew_ship),
+			"tier" = tier,
+			"tier_name" = shop.get_favor_tier_name(tier),
+			"discount_pct" = shop.get_discount_pct(crew_ship),
+			"next_at" = shop.get_next_tier_threshold(crew_ship),
+			"trader" = shop.favor_trader_name(),
+		)
+
 	// Buyer's wallet snapshot, for the header — vouchers count from the whole
 	// inventory, same as payment accepts them
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
@@ -405,11 +424,20 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	if(shop)
 		for(var/datum/shop_sku/sku as anything in shop.skus)
 			var/denial = isliving(user) ? sku.get_denial_reason(user) : "Unavailable."
+			var/in_supply = sku.shelf == SHELF_FAVOR || sku.stock > 0
 			stock_states += list(list(
 				"ref" = REF(sku),
 				"stock" = sku.stock,
-				"can_buy" = !data["barred"] && sku.stock > 0 && isnull(denial),
+				"can_buy" = !data["barred"] && in_supply && isnull(denial),
 				"denial" = denial,
+				// Per-viewer price: favor discounts depend on who's asking
+				"final_credits" = isliving(user) ? sku.get_credit_price(user) : sku.get_credit_price(),
+				// Favor shelf only: units this crew may still buy this round
+				"crew_remaining" = (sku.shelf == SHELF_FAVOR && sku.crew_limit > 0 && shop) \
+					? max(0, sku.crew_limit - shop.get_crew_purchases(crew_ship, sku.type)) \
+					: null,
+				// TRUE when the standing gate specifically is what's refusing them
+				"favor_locked" = isliving(user) && !isnull(sku.get_favor_denial(user)),
 			))
 	data["stock_states"] = stock_states
 
@@ -531,6 +559,18 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	data["ship_name"] = ship ? ship.name : null
 	data["ship_mission_slots_free"] = ship ? (ship.max_missions - length(ship.active_missions)) : 0
+
+	// Standing with this trader, so the board shows what the contracts build toward
+	if(shop)
+		var/tier = shop.get_favor_tier(ship)
+		data["favor"] = list(
+			"points" = shop.get_favor(ship),
+			"tier" = tier,
+			"tier_name" = shop.get_favor_tier_name(tier),
+			"discount_pct" = shop.get_discount_pct(ship),
+			"next_at" = shop.get_next_tier_threshold(ship),
+			"trader" = shop.favor_trader_name(),
+		)
 
 	var/list/offers = list()
 	if(outpost)

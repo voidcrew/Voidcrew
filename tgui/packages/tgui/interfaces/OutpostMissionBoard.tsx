@@ -36,6 +36,17 @@ type Offer = {
   wanted_text: string;
   archetype: string;
   time_remaining_text: string;
+  favor_reward: number;
+  favor_trader: string | null;
+};
+
+type FavorStanding = {
+  points: number;
+  tier: number;
+  tier_name: string;
+  discount_pct: number;
+  next_at: number;
+  trader: string;
 };
 
 type ShipMission = Offer & {
@@ -54,6 +65,7 @@ type Data = {
   ship_mission_slots_free: number;
   offers: Offer[];
   ship_missions: ShipMission[];
+  favor?: FavorStanding;
 };
 
 const ARCHETYPE_ICONS = {
@@ -84,7 +96,7 @@ const RewardLine = (props: { offer: Offer }) => {
   for (const item of items) {
     segments.push(
       <Box as="span" bold color={item.rare ? 'orange' : 'teal'}>
-        {item.icon && (
+        {!!item.icon && (
           <img
             src={`data:image/png;base64,${item.icon}`}
             style={{
@@ -103,6 +115,13 @@ const RewardLine = (props: { offer: Offer }) => {
     segments.push(
       <Box as="span" bold color="purple">
         {offer.voucher_count} voucher{offer.voucher_count === 1 ? '' : 's'}
+      </Box>,
+    );
+  }
+  if (offer.favor_reward > 0) {
+    segments.push(
+      <Box as="span" bold color="orange">
+        +{offer.favor_reward} standing
       </Box>,
     );
   }
@@ -226,6 +245,7 @@ export const OutpostMissionBoard = (props) => {
     ship_mission_slots_free,
     offers = [],
     ship_missions = [],
+    favor,
   } = data;
 
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
@@ -249,6 +269,28 @@ export const OutpostMissionBoard = (props) => {
           buttons={
             ship_name ? (
               <Box inline color="label">
+                {!!favor && (
+                  <Tooltip
+                    content={`Completing ${favor.trader}'s contracts earns standing: discounts at each tier, back-room stock at Trusted.`}
+                  >
+                    <Box inline>
+                      <Box
+                        inline
+                        bold
+                        color={favor.tier >= 3 ? 'orange' : 'good'}
+                      >
+                        {favor.tier_name}
+                      </Box>
+                      {favor.next_at > 0 && (
+                        <Box inline>
+                          {' '}
+                          ({favor.points}/{favor.next_at})
+                        </Box>
+                      )}
+                      {' · '}
+                    </Box>
+                  </Tooltip>
+                )}
                 {ship_name} · {ship_mission_slots_free} slot
                 {ship_mission_slots_free === 1 ? '' : 's'} free
               </Box>

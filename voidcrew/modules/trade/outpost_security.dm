@@ -212,6 +212,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	/// The berth host this door belongs to (set by the outpost on interior/hangar load)
 	var/obj/structure/overmap/outpost
 
+// See-through variant for storefronts that want their interior on display —
+// the Chop Shop's parlor door. Same sanctuary armor, glass panes.
+/obj/machinery/door/airlock/outpost/glass
+	name = "outpost glass airlock"
+	desc = "A blast-rated airlock with armored glass panes. You can window-shop through it; you cannot get through it any other way."
+	opacity = FALSE
+	glass = TRUE
+
 /obj/machinery/door/airlock/outpost/Destroy()
 	outpost = null
 	return ..()
@@ -259,3 +267,74 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
 		outpost?.register_aggression(hitting_projectile.firer)
 	return ..()
+
+// =========================================================================
+// OUTPOST PROPERTY
+// =========================================================================
+
+/**
+ * Marks fixed machinery as outpost property: it can't be unbolted, unscrewed,
+ * pried apart or stripped for parts, and hitting it is aggression.
+ *
+ * INDESTRUCTIBLE on the type covers damage and nothing else — tool deconstruction
+ * never consults resistance flags, which is the same trap the berth display's
+ * wrench fell into (see outpost_hangar.dm). Blocking on COMSIG_ATOM_TOOL_ACT
+ * closes every route at one point: that signal fires inside tool_act() ahead of
+ * crowbar_act/screwdriver_act/wrench_act, and a blocking return there ends the
+ * click chain before attackby ever runs — so the machines that deconstruct out of
+ * attackby instead (the food processor and the deep fryer both do) need no
+ * special handling here.
+ */
+/datum/element/outpost_property
+
+/datum/element/outpost_property/Attach(datum/target)
+	. = ..()
+	if(!ismachinery(target))
+		return ELEMENT_INCOMPATIBLE
+
+	RegisterSignals(target, list(
+		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+	), PROC_REF(block_tool))
+	RegisterSignal(target, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(block_part_replacer))
+
+	// relay_attackers folds melee, projectiles, thrown items, hulks and mechs into
+	// one signal, so aggression doesn't need a proc per attack route
+	var/atom/movable/property = target
+	property.AddElement(/datum/element/relay_attackers)
+	RegisterSignal(target, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+
+/datum/element/outpost_property/Detach(datum/source, ...)
+	UnregisterSignal(source, list(
+		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_ITEM_INTERACTION,
+		COMSIG_ATOM_WAS_ATTACKED,
+	))
+	return ..()
+
+/datum/element/outpost_property/proc/block_tool(obj/machinery/source, mob/living/user, obj/item/tool)
+	SIGNAL_HANDLER
+	source.balloon_alert(user, "bolted down!")
+	return ITEM_INTERACT_BLOCKING
+
+/**
+ * A bluespace RPED skips the panel_open check in exchange_parts(), so blocking the
+ * screwdriver doesn't keep the parts inside on its own.
+ */
+/datum/element/outpost_property/proc/block_part_replacer(obj/machinery/source, mob/living/user, obj/item/tool)
+	SIGNAL_HANDLER
+	if(!istype(tool, /obj/item/storage/part_replacer))
+		return NONE
+	source.balloon_alert(user, "casing is sealed!")
+	return ITEM_INTERACT_BLOCKING
+
+/// Shoves and stamina hits aren't vandalism; only a real damaging hit is
+/datum/element/outpost_property/proc/on_attacked(obj/machinery/source, atom/attacker, attack_flags)
+	SIGNAL_HANDLER
+	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
+		return
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
+	outpost?.register_aggression(attacker)

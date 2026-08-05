@@ -11,6 +11,9 @@
 //    non-heretics for 5 on a flip). Flavor tax included.
 //  - knife/bloodletter came over from the retired icemoon-portal jackpot
 //    (see cave_entrance.dm): a bleed-stacking knife, prime-tier by right.
+//  - cyberware: one piece only, the Graverobber's Jack. A wrist spike for
+//    reading what a dead skull still has on it belongs in a theme built out
+//    of graves; the rest of the parlor roster does not.
 //  - EXCEPTION to "no antag-tier power" (owner request, 2026-07-21): the
 //    portal's wizard/demon shelf sits at the bottom of prime, His Grace
 //    included. These are the rarest things the theme can pay. A green-band
@@ -27,6 +30,9 @@
 		/obj/effect/zone_mobs/cult/boss,
 		/obj/effect/zone_mobs/undead,
 		/obj/effect/zone_mobs/undead/boss,
+	)
+	theme_skus = list(
+		/datum/shop_sku/ripperdoc/graverobber,
 	)
 	loot_common = list(
 		/obj/item/storage/fancy/candle_box = 10,
@@ -50,6 +56,9 @@
 		/obj/item/toy/cards/deck/tarot/haunted = 4,
 		/obj/item/coin/eldritch = 3,
 		/obj/item/ship_parts/science = 5,
+		// whoever was robbing these graves before you left their tools in
+		// their arm: three seconds a body, and the skull gives up what it kept
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber = 3,
 	)
 	loot_prime = list(
 		/obj/item/stack/sheet/mineral/diamond/five = 8,

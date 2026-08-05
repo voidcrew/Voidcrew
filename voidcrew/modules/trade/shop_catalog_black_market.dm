@@ -17,11 +17,27 @@
  *   shield generator at all. This is that route. Quartermain covers engines and
  *   the laser turret; the defensive and dirty boards are Vex's.
  */
+
+/**
+ * Vex: all black, all business. The tactical turtleneck under the coat is the
+ * tell that the Exchange has never been robbed — whoever tried met someone
+ * dressed for it. The one thing they let themselves show is the gold: a
+ * merchant's chain, worn where a customer can see what dealing here pays.
+ */
+/datum/outfit/undertow_vex
+	name = "Undertow fence"
+	uniform = /obj/item/clothing/under/syndicate
+	suit = /obj/item/clothing/suit/costume/gothcoat
+	neck = /obj/item/clothing/neck/necklace/dope/merchant
+	gloves = /obj/item/clothing/gloves/color/black
+	glasses = /obj/item/clothing/glasses/sunglasses
+	shoes = /obj/item/clothing/shoes/laceup
+
 /datum/outpost_shop/black_market
 	outpost_name = "\improper Undertow Exchange"
 	outpost_desc = "A heavily armored den of fences and quartermasters who don't ask questions. Somehow, nobody has ever managed to rob it."
 	trader_name = "Vex"
-	trader_outfit = /datum/outfit/job/detective
+	trader_outfit = /datum/outfit/undertow_vex
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 0.92
 	// Vex's board also runs the drug-run contract: the only place in the
@@ -41,6 +57,7 @@
 		"Blueprints",
 		"Mystery Cargo",
 		"Sundries",
+		"Back Room",
 	)
 	sku_types = list(
 		// Weapons
@@ -49,6 +66,7 @@
 		/datum/shop_sku/black_market/revolver,
 		/datum/shop_sku/black_market/speedloader,
 		/datum/shop_sku/black_market/suppressor,
+		/datum/shop_sku/black_market/quiet_word_mag,
 		/datum/shop_sku/black_market/combat_knife,
 		/datum/shop_sku/black_market/switchblade,
 		// Explosives
@@ -140,6 +158,11 @@
 		/datum/shop_sku/black_market/rare/energy_shield,
 		/datum/shop_sku/black_market/rare/mod_adrenaline,
 	)
+	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	favor_sku_types = list(
+		/datum/shop_sku/favor/vex_insurance,
+		/datum/shop_sku/favor/quiet_word,
+	)
 	// The consignment window: Vex fences planet exotics and ruin loot at the
 	// best rates in the system. Voucher payouts are strictly planet/danger-gated.
 	buyback_types = list(
@@ -168,6 +191,9 @@
 		/obj/item/mod/control/pre_equipped/traitor_elite,
 		/obj/item/mod/control/pre_equipped/empty/ninja,
 		/obj/item/circuitboard/machine/ship_combat/cloak_device,
+		// The one piece of chrome Splice can't get: a prototype drop-leg frame
+		// that never reached his supplier. Hard contracts only.
+		/obj/item/organ/cyberimp/cyberware/piledriver,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -260,6 +286,15 @@
 	price_credits = 1200
 	stock_min = 2
 	stock_max = 4
+
+// Feeds the back room's Quiet Word (and any 10mm pistol); on the open shelf so
+// the gun stays fed after the one-per-crew purchase is spent
+/datum/shop_sku/black_market/quiet_word_mag
+	category = "Weapons"
+	item_path = /obj/item/ammo_box/magazine/m10mm/quiet_word
+	price_credits = 1000 // PROVISIONAL BALANCE — a shade over the 9mm mag; 10mm hits harder
+	stock_min = 3
+	stock_max = 6
 
 /datum/shop_sku/black_market/combat_knife
 	category = "Weapons"
@@ -855,3 +890,20 @@
 	pay_credits = 300
 	demand_min = 3
 	demand_max = 5
+
+// ===== BACK ROOM =====
+// Vex's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// per crew per round. Priced above the rare shelf on purpose — standing opens
+// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+
+/datum/shop_sku/favor/vex_insurance
+	name = "Vex's insurance policy"
+	desc = "A one-shot casualty implant: the first time your body starts shutting down, it floods you with stabilizer and recalls you to your registered ship. One claim per policy. Vex does not discuss the actuarial tables."
+	item_path = /obj/item/implanter/vex_insurance
+	price_credits = 3000
+	price_vouchers = 3
+
+/datum/shop_sku/favor/quiet_word
+	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine/quiet_word
+	price_credits = 2000
+	price_vouchers = 3

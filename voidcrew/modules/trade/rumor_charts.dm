@@ -153,8 +153,9 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 	if(!ship)
 		return FALSE
 
-	// Validate the credit half before consuming any vouchers
-	var/credit_price = get_credit_price()
+	// Validate the credit half before consuming any vouchers. User passed so
+	// the charge matches the favor-discounted price the UI shows them.
+	var/credit_price = get_credit_price(user)
 	var/datum/bank_account/account
 	if(credit_price > 0)
 		account = get_account(user)

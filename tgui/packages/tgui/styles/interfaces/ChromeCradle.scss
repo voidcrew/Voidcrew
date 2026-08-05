@@ -1,0 +1,755 @@
+// Chrome Cradle console faceplate.
+//
+// A fixed 1200x760 design frame: every panel is positioned in percentages from
+// the GEOMETRY table in ChromeCradle.tsx, over a generated backplate that draws
+// its brackets at the same coordinates. Internal sizing is in px because half
+// the content is 32px BYOND sprites and a 32px sprite in a fluid box is a
+// cropped sprite; the panels scroll instead of the content shrinking.
+//
+// Colour carries meaning and comes straight off the CYBERWARE_COLOR_TIER_*
+// defines: amber is street, ice is pro, magenta is military, lime is legend.
+// Magenta doubles as the parlor's own accent because the sign outside is
+// magenta. Semantic good/warn/crit sit apart from all four.
+
+$ink: #0a070c;
+$well: rgba(9, 6, 11, 0.52);
+$well-solid: #0b070d;
+$edge: rgba(255, 32, 121, 0.2);
+$edge-lit: rgba(255, 32, 121, 0.55);
+$accent: #ff2079;
+$cool: #4dd8e6;
+$gold: #f2c24a;
+$good: #59b871;
+$crit: #cf4a38;
+$warn: #d9a230;
+$label: #9c7a85;
+$text: #e9dee2;
+
+$stencil:
+  'Arial Narrow', 'Helvetica Neue', 'Liberation Sans Narrow', sans-serif;
+$mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
+
+.Cradle {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: $ink;
+  color: $text;
+  font-family: $stencil;
+  user-select: none;
+}
+
+// Procedural fallback for the generated backplate — see PLATE_ASSET in
+// ChromeCradle.tsx. Same red-lit black slab, without the brackets or grain.
+.Cradle__plate {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.16) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(
+      60% 55% at 50% 38%,
+      rgba(188, 34, 48, 0.5) 0%,
+      rgba(120, 18, 32, 0.28) 45%,
+      transparent 100%
+    ),
+    $ink;
+}
+
+// Generated plate in use: its grain and scanlines are already baked into the
+// art. Stretched to 100% x 100% because its brackets are drawn at the same
+// coordinates the panels are positioned from — cover/contain would desync them.
+.Cradle__plate--art {
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.Cradle__panel {
+  position: absolute;
+  z-index: 1;
+}
+
+// A panel interior. Translucent on purpose: the whole look of this console is
+// the parlor's red field reading through the readouts, so the plate is never
+// covered, only tinted.
+.Cradle__well {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid $edge;
+  background: $well;
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.75);
+}
+
+.Cradle__well--labelled {
+  padding-top: 15px;
+}
+
+.Cradle__wellLabel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  padding: 2px 6px 1px;
+  border-bottom: 1px solid rgba(255, 32, 121, 0.16);
+  background: rgba(0, 0, 0, 0.45);
+  color: $accent;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.Cradle__wellAux {
+  margin-left: 6px;
+  color: $label;
+  letter-spacing: 0.12em;
+}
+
+.Cradle__empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 0 18px;
+  color: $label;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+// ---------------------------------------------------------------- top rail
+
+.Cradle__ident,
+.Cradle__bank,
+.Cradle__loadRail {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.Cradle__identTag,
+.Cradle__bankTag,
+.Cradle__loadTag {
+  color: $label;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+
+.Cradle__identName {
+  overflow: hidden;
+  flex: 1;
+  color: $text;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Cradle__identState {
+  padding: 1px 7px;
+  border: 1px solid currentcolor;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+
+  &--good {
+    color: $good;
+  }
+
+  &--warn {
+    color: $warn;
+  }
+
+  &--bad {
+    color: $crit;
+  }
+
+  &--idle {
+    color: $label;
+  }
+}
+
+.Cradle__loadTrack {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.Cradle__loadCell {
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.85);
+}
+
+// Where the budget runs out. Everything right of it is over capacity.
+.Cradle__loadCap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+// The projected delta of whatever is highlighted, hatched so it can never be
+// mistaken for load that is actually being drawn.
+.Cradle__loadGhost {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.42) 0 3px,
+    transparent 3px 6px
+  );
+
+  &--over {
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(207, 74, 56, 0.85) 0 3px,
+      transparent 3px 6px
+    );
+  }
+}
+
+.Cradle__loadValue {
+  color: $text;
+  font-family: $mono;
+  font-size: 13px;
+
+  &--bad {
+    color: $crit;
+  }
+}
+
+.Cradle__loadSlash {
+  margin: 0 2px;
+  color: $label;
+}
+
+.Cradle__brownout {
+  color: $crit;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.16em;
+}
+
+.Cradle__bankValue {
+  color: $gold;
+  font-family: $mono;
+  font-size: 12px;
+}
+
+// ---------------------------------------------------------------- rack
+
+.Cradle__rack {
+  overflow-y: auto;
+  flex: 1;
+  padding: 4px 6px 8px;
+}
+
+.Cradle__group {
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 10px;
+}
+
+.Cradle__groupHead {
+  flex: 0 0 132px;
+  padding-top: 4px;
+  text-align: right;
+}
+
+.Cradle__groupName {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+
+  &--live {
+    color: $accent;
+  }
+}
+
+.Cradle__groupSub {
+  color: $label;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.Cradle__tiles {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+// The "this system takes hardware you don't have" placeholder.
+.Cradle__tileEmpty {
+  width: 42px;
+  height: 42px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.Cradle__tile {
+  position: relative;
+  display: flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid;
+  border-radius: 0;
+  opacity: 0.55;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  }
+
+  // Installed hardware is lit; spare stock in a bag or the tray is not.
+  &--installed {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  &--picked {
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px #fff,
+      0 0 10px rgba(255, 255, 255, 0.35);
+  }
+
+  &--nofit {
+    opacity: 0.3;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 2px;
+      left: 2px;
+      height: 1px;
+      background: $crit;
+      transform: rotate(-32deg);
+    }
+  }
+}
+
+// Corner pip marking a piece as seated in the body. Coloured inline off the
+// ware's tier, so the rack reads as tiers at a glance without any text.
+.Cradle__tileFlag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+}
+
+// How many identical pieces this one tile stands for. Only drawn past one, so
+// the common case stays a clean sprite.
+.Cradle__tileCount {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 2px;
+  font-family: $stencil;
+  font-size: 9px;
+  line-height: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.Cradle__tileFault {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 5px;
+  height: 5px;
+  background: $crit;
+}
+
+// The hover card. Lives inside tgui's own tooltip shell, so it sets no
+// background of its own — only the type.
+.Cradle__hover {
+  max-width: 260px;
+  font-family: $stencil;
+  text-align: left;
+}
+
+.Cradle__hoverName {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.Cradle__hoverMeta {
+  display: flex;
+  flex-wrap: wrap;
+  color: $label;
+  font-size: 9px;
+  gap: 7px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.Cradle__hoverWhere {
+  color: #7d6a70;
+}
+
+.Cradle__hoverPrice {
+  color: $gold;
+  font-family: $mono;
+  font-size: 10px;
+}
+
+.Cradle__hoverFault {
+  color: $crit;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+}
+
+.Cradle__hoverDesc {
+  margin-top: 3px;
+  color: #cabcc1;
+  font-size: 10px;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+// ---------------------------------------------------------------- inspector
+
+.Cradle__detail {
+  display: flex;
+  overflow-y: auto;
+  flex: 1;
+  flex-direction: column;
+  padding: 8px 10px 10px;
+  gap: 8px;
+}
+
+.Cradle__detailHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// Sizing comes from the spritesheet class; this only keeps it from being
+// squeezed by the title beside it.
+.Cradle__detailIcon {
+  flex: none;
+}
+
+.Cradle__detailTitle {
+  overflow: hidden;
+  flex: 1;
+}
+
+.Cradle__detailName {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.Cradle__detailTier {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.Cradle__detailWhere {
+  color: $label;
+}
+
+.Cradle__fault {
+  padding: 3px 6px;
+  border: 1px solid $crit;
+  background: rgba(207, 74, 56, 0.12);
+  color: $crit;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.18em;
+  text-align: center;
+}
+
+.Cradle__stats {
+  display: flex;
+  gap: 6px;
+}
+
+.Cradle__stat {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.Cradle__statValue {
+  font-family: $mono;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.Cradle__statLabel {
+  color: $label;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.Cradle__desc {
+  flex: 1;
+  color: #c9bcc1;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.Cradle__projection {
+  padding: 5px 7px;
+  border-left: 2px solid $cool;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.Cradle__projectionRow {
+  display: flex;
+  justify-content: space-between;
+  color: $label;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.Cradle__projectionValue {
+  color: $text;
+  font-family: $mono;
+
+  &--bad {
+    color: $crit;
+  }
+}
+
+.Cradle__evicts {
+  margin-top: 3px;
+  color: $warn;
+  font-size: 10px;
+  line-height: 1.4;
+
+  &--bad {
+    color: $crit;
+  }
+}
+
+.Cradle__detailActions {
+  display: flex;
+  gap: 6px;
+}
+
+// ---------------------------------------------------------------- ink picker
+
+.Cradle__ink {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 7px;
+  border-left: 2px solid $accent;
+  background: rgba(0, 0, 0, 0.42);
+  gap: 6px;
+}
+
+.Cradle__inkHead {
+  color: $label;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.Cradle__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.Cradle__swatch {
+  width: 26px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 0;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  // The pigment the skin is keyed to right now.
+  &--on {
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px #fff,
+      0 0 8px rgba(255, 255, 255, 0.4);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.25;
+  }
+}
+
+.Cradle__patterns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.Cradle__pattern {
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: $label;
+  font-family: $stencil;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &--on {
+    border-color: $accent;
+    color: $text;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+}
+
+// ---------------------------------------------------------------- buttons
+
+.Cradle__action {
+  flex: 1;
+  padding: 7px 4px;
+  border: 1px solid currentcolor;
+  background: rgba(0, 0, 0, 0.5);
+  color: $label;
+  font-family: $stencil;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &--good {
+    color: $good;
+  }
+
+  &--bad {
+    color: $crit;
+  }
+
+  &--cool {
+    color: $cool;
+  }
+
+  &--plain {
+    color: #b9a9ae;
+  }
+
+  &--off {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.22);
+    cursor: default;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- deck
+
+.Cradle__deck {
+  display: flex;
+  overflow-y: auto;
+  flex: 1;
+  flex-direction: column;
+  padding: 8px 12px;
+  gap: 6px;
+}
+
+.Cradle__progressLabel {
+  display: flex;
+  color: $accent;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+}
+
+.Cradle__progressTime {
+  margin-left: auto;
+  color: $text;
+  font-family: $mono;
+  letter-spacing: 0;
+}
+
+.Cradle__progressTrack {
+  overflow: hidden;
+  height: 14px;
+  border: 1px solid rgba(255, 32, 121, 0.35);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.Cradle__progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 32, 121, 0.45), $accent);
+  transition: width 120ms linear;
+}
+
+.Cradle__note {
+  color: $label;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.Cradle__controls {
+  display: grid;
+  flex: 1;
+  padding: 8px 10px;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+}

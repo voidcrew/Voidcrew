@@ -22,12 +22,27 @@
 // THE SKUNKWORKS — Boffin, depot researcher
 // =========================================================================
 
+/**
+ * Boffin: a research coat that has clearly been in a fire, over the black
+ * jumpsuit of somebody who works with their hands. Green rather than the
+ * standard-issue white — the annex buys its own supplies and nobody here has
+ * ever filed for a replacement. Goggles on, multitool out, permanently.
+ */
+/datum/outfit/skunkworks_boffin
+	name = "Depot researcher"
+	uniform = /obj/item/clothing/under/rank/rnd/roboticist
+	suit = /obj/item/clothing/suit/toggle/labcoat/mad
+	glasses = /obj/item/clothing/glasses/science
+	gloves = /obj/item/clothing/gloves/color/black
+	shoes = /obj/item/clothing/shoes/workboots
+	r_hand = /obj/item/multitool
+
 /// Boffin, who has a workshop, a budget, and a very loose definition of "field testing"
 /datum/outpost_shop/vendor/skunkworks
 	outpost_name = "\improper The Skunkworks"
 	outpost_desc = "The depot's R&D annex."
 	trader_name = "Boffin"
-	trader_outfit = /datum/outfit/job/scientist
+	trader_outfit = /datum/outfit/skunkworks_boffin
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 0.9

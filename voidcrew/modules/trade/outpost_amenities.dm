@@ -186,8 +186,8 @@
 	basic_mob_flags = NONE
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer
 
-	/// Corpse spawner whose outfit builds this loiterer's look
-	var/spawner_path = /obj/effect/mob_spawn/corpse/human/generic_assistant
+	/// Outfit whose worn appearance builds this loiterer's look
+	var/outfit_path = /datum/outfit/job/assistant
 	/// Lines barked when someone takes a swing at them
 	var/list/attacked_lines = list("Hey! Watch it!")
 	/// Rate limit on the attacked bark
@@ -195,7 +195,7 @@
 
 /mob/living/basic/outpost_loiterer/Initialize(mapload)
 	. = ..()
-	apply_dynamic_human_appearance(src, mob_spawn_path = spawner_path)
+	apply_dynamic_human_appearance(src, outfit_path = outfit_path)
 	// Unkillable, not protected: violence against them is pointless, not punished
 	ADD_TRAIT(src, TRAIT_GODMODE, INNATE_TRAIT)
 
@@ -247,11 +247,25 @@
 
 // --- Green: the mechanic haunting Halcyon's repair bay ---
 
+/**
+ * Hi-vis, hard hat, insulated gloves and a welder she has not put down in six
+ * years. Everything here is the compressor job she is permanently mid-way
+ * through — no ID, no radio, nothing that says anyone employs her.
+ */
+/datum/outfit/outpost_mechanic
+	name = "Outpost mechanic"
+	uniform = /obj/item/clothing/under/rank/engineering/engineer/hazard
+	head = /obj/item/clothing/head/utility/hardhat/orange
+	gloves = /obj/item/clothing/gloves/color/yellow
+	belt = /obj/item/storage/belt/utility/full
+	shoes = /obj/item/clothing/shoes/workboots
+	r_hand = /obj/item/weldingtool
+
 /mob/living/basic/outpost_loiterer/mechanic
 	name = "outpost mechanic"
 	desc = "Permanently mid-job. Nobody has ever seen the job finished."
 	gender = FEMALE
-	spawner_path = /obj/effect/mob_spawn/corpse/human/engineer
+	outfit_path = /datum/outfit/outpost_mechanic
 	attacked_lines = list(
 		"Oi! I'm covered in welding fuel, you maniac!",
 		"Swing at the walls if you have to, they're rated for it. I'd rather you didn't swing at me.",
@@ -276,10 +290,23 @@
 
 // --- Yellow: the dockhand who has seen every crew type come through ---
 
+/**
+ * Hazard vest over a cargo sweater and gauntlets rated for dragging things
+ * that don't want to be dragged. The vest is the whole read: on a dock, being
+ * seen before you're run over is the job.
+ */
+/datum/outfit/outpost_dockhand
+	name = "Depot dockhand"
+	uniform = /obj/item/clothing/under/rank/cargo/tech
+	suit = /obj/item/clothing/suit/hazardvest
+	gloves = /obj/item/clothing/gloves/cargo_gauntlet
+	head = /obj/item/clothing/head/soft/black
+	shoes = /obj/item/clothing/shoes/workboots
+
 /mob/living/basic/outpost_loiterer/dockhand
 	name = "depot dockhand"
 	desc = "Loads crates, unloads opinions."
-	spawner_path = /obj/effect/mob_spawn/corpse/human/cargo_tech
+	outfit_path = /datum/outfit/outpost_dockhand
 	attacked_lines = list(
 		"Hey! Take it outside — Sarge charges for cleanup and it comes out of MY pay.",
 		"You hit like a cargo tech. I'd know.",
@@ -304,11 +331,23 @@
 
 // --- Red: the Dregs cantina's bartender, who has poured for worse ---
 
+/**
+ * The Dregs' other apron. Same shirt and slacks as Dram behind the counter,
+ * white apron instead of his blue one — she works the floor, he works the bar,
+ * and the glass in her hand was already clean.
+ */
+/datum/outfit/outpost_cantina_bartender
+	name = "Cantina bartender"
+	uniform = /obj/item/clothing/under/costume/buttondown/slacks/service
+	suit = /obj/item/clothing/suit/apron/chef
+	shoes = /obj/item/clothing/shoes/laceup
+	r_hand = /obj/item/reagent_containers/cup/glass/drinkingglass
+
 /mob/living/basic/outpost_loiterer/bartender
 	name = "cantina bartender"
 	desc = "Pours drinks in a red-zone bar and has never once asked a follow-up question."
 	gender = FEMALE
-	spawner_path = /obj/effect/mob_spawn/corpse/human/bartender
+	outfit_path = /datum/outfit/outpost_cantina_bartender
 	attacked_lines = list(
 		"HEY. You bleed on my bar, you buy the bar.",
 		"Swing again and you're cut off. From drinks AND oxygen, if Vex is feeling helpful.",
@@ -333,10 +372,23 @@
 
 // --- Red: the off-duty pirate who considers the Undertow neutral ground ---
 
+/**
+ * Full kit minus the parts that matter: coat, boots and cutlass, but a bandana
+ * instead of the hat and no armor anywhere. Dressed to be recognized as a
+ * pirate by people who are not currently being robbed by one.
+ */
+/datum/outfit/outpost_off_duty_pirate
+	name = "Off-duty pirate"
+	uniform = /obj/item/clothing/under/costume/pirate
+	suit = /obj/item/clothing/suit/costume/pirate
+	head = /obj/item/clothing/head/costume/pirate/bandana
+	shoes = /obj/item/clothing/shoes/pirate
+	r_hand = /obj/item/claymore/cutlass
+
 /mob/living/basic/outpost_loiterer/off_duty_pirate
 	name = "off-duty pirate"
 	desc = "Off duty, and about as relaxed as a pirate gets. The cutlass is mostly decorative."
-	spawner_path = /obj/effect/mob_spawn/corpse/human/pirate
+	outfit_path = /datum/outfit/outpost_off_duty_pirate
 	attacked_lines = list(
 		"Ha! In the Undertow? Vex would skin you if I were worth skinning.",
 		"Save it for the docks, friend. In here we drink.",
@@ -393,3 +445,76 @@
 	desc = "A pond sunk straight into the deck plating. The fish are real and the water is warmer than you'd expect. Nobody has confirmed the koi."
 	baseturfs = /turf/open/water/outpost_pond
 	planetary_atmos = FALSE
+
+// =========================================================================
+// FIXED KITCHEN GEAR
+// =========================================================================
+
+/**
+ * The cook's line and the shop fridges. Stock tg kitchen machines are built to be
+ * taken apart — a crowbar alone reduces a griddle or a range to a frame, since
+ * both pass ignore_panel to default_deconstruction_crowbar — and none of them
+ * register aggression, so the diner could be stripped to bare frames without the
+ * turrets ever reacting. These are the same machines with the outpost's own
+ * construction rules applied.
+ *
+ * Cooking is untouched: only the tool and part-swap paths are closed, so a visiting
+ * chef can still use every one of them normally. Contents are fair game as ever —
+ * food walking out of a fridge is restocking economics, the same call the med
+ * alcove makes.
+ */
+/obj/machinery/griddle/outpost
+	desc = "A flat-top griddle welded to the deck frame. The house owns it; you're welcome to cook on it."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/griddle/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/oven/range/outpost
+	desc = "A gas range bolted into the deck frame. Runs hot, runs constantly, and isn't going anywhere."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/oven/range/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/processor/outpost
+	desc = "An industrial food processor anchored to the deck frame. Keep hands clear of the intake."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/processor/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/deepfryer/outpost
+	desc = "A deep fryer plumbed straight into the deck. The oil is changed more often than you'd expect."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/deepfryer/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/microwave/outpost
+	desc = "A microwave bolted to the counter. Scratched, scorched, and still working."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/microwave/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/smartfridge/food/outpost
+	desc = "A refrigerated storage unit welded to the deck. Take what you're buying."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/smartfridge/food/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/smartfridge/organ/outpost
+	desc = "A refrigerated organ locker welded to the deck. The Undertow does not discuss its supply chain."
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/smartfridge/organ/outpost/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)

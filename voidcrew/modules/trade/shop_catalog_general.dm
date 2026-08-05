@@ -5,11 +5,27 @@
  * only; the most dangerous thing on the shelf is the chili in the rations.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  */
+
+/**
+ * Barnaby: thirty years on the same side of the same counter. Everything reads
+ * soft and worn rather than professional — the sweater jacket and flat cap are
+ * a shopkeeper's clothes, not a uniform, the reading glasses say he still does
+ * the ledger by hand, and the mug is the bad coffee the shop is famous for.
+ */
+/datum/outfit/halcyon_barnaby
+	name = "Halcyon shopkeep"
+	uniform = /obj/item/clothing/under/suit/tan
+	suit = /obj/item/clothing/suit/toggle/jacket/sweater
+	head = /obj/item/clothing/head/flatcap
+	glasses = /obj/item/clothing/glasses/regular
+	shoes = /obj/item/clothing/shoes/laceup
+	r_hand = /obj/item/reagent_containers/cup/glass/coffee
+
 /datum/outpost_shop/general
 	outpost_name = "\improper Waystation Halcyon"
 	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
-	trader_outfit = /datum/outfit/job/curator
+	trader_outfit = /datum/outfit/halcyon_barnaby
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 1.18
@@ -24,6 +40,7 @@
 		"Colonial Registry",
 		"Intel & Charts",
 		"Barter Deals",
+		"Back Room",
 	)
 	sku_types = list(
 		// Survival & EVA
@@ -99,6 +116,12 @@
 	rare_pool = list(
 		/datum/shop_sku/general/rare/bluespace_bodybag,
 		/datum/shop_sku/general/rare/drill,
+	)
+	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	favor_sku_types = list(
+		/datum/shop_sku/favor/pike_ledger,
+		/datum/shop_sku/favor/field_contract_pad,
+		/datum/shop_sku/favor/freight_beacon,
 	)
 	// Charts are a mix — any outpost can end up holding the coordinates for
 	// anywhere. Named ruins are dealt without repeats across all three shops.
@@ -677,3 +700,23 @@
 	barter_amount = 10
 	stock_min = 2
 	stock_max = 4
+
+// ===== BACK ROOM =====
+// Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// per crew per round. Priced above the rare shelf on purpose — standing opens
+// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+
+/datum/shop_sku/favor/pike_ledger
+	item_path = /obj/item/pike_ledger
+	price_credits = 3200
+	price_vouchers = 2
+
+/datum/shop_sku/favor/field_contract_pad
+	item_path = /obj/item/field_contract_pad
+	price_credits = 3600
+	price_vouchers = 2
+
+/datum/shop_sku/favor/freight_beacon
+	item_path = /obj/item/freight_beacon
+	price_credits = 2400
+	price_vouchers = 1

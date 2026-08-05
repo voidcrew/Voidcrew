@@ -33,6 +33,35 @@
 #define SHELF_ROTATING "rotating"
 /// Rolled from the shop's rare pool; single showcase unit
 #define SHELF_RARE "rare"
+/// The back-room shelf: always listed, locked behind crew standing with the
+/// trader. Supply is per-crew (FAVOR_UNIQUE_CREW_LIMIT), never shared stock.
+#define SHELF_FAVOR "favor"
+
+// ===== TRADER FAVOR =====
+// Standing a crew (ship) earns with a trader by running their board contracts.
+// Tracked per ship on ship.trader_favor, keyed by the outpost's MAIN shop type,
+// so every stall on an outpost honors the same standing. Favor dies with the
+// hull by design (losing the ship costs the crew its reputation too).
+
+// Tier thresholds, in favor points
+#define FAVOR_TIER_REGULAR 3
+#define FAVOR_TIER_PARTNER 7
+#define FAVOR_TIER_TRUSTED 12
+
+// Credit-price discount per tier, in percent. Voucher prices are never
+// discounted: favor is earned from contracts that PAY vouchers, so a voucher
+// discount would double-dip and break the "scrip can't be farmed" doctrine.
+#define FAVOR_DISCOUNT_REGULAR 5
+#define FAVOR_DISCOUNT_PARTNER 10
+#define FAVOR_DISCOUNT_TRUSTED 15
+
+// Favor paid per completed board contract, by difficulty band
+#define FAVOR_GAIN_EASY 1
+#define FAVOR_GAIN_MEDIUM 2
+#define FAVOR_GAIN_HARD 4
+
+/// How many of each favor-shelf unique one crew may buy per round
+#define FAVOR_UNIQUE_CREW_LIMIT 3
 
 /// How often a trader outpost's supply convoy tops the shelves back up
 #define OUTPOST_RESTOCK_INTERVAL (22 MINUTES)

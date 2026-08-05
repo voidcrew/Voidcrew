@@ -9,9 +9,14 @@
  *
  * Balance notes:
  * - No overlap with Barnaby's counter: he keeps the groceries, Fern owns seeds
- *   and grower's supply, Pike owns tackle and the rods. Neither stall stocks
- *   anything a stock ship autolathe prints for free — that ruled out the plant
- *   analyzer, watering can, cultivator, secateurs, aquarium kit and fish case.
+ *   and grower's supply, Pike owns tackle and the rods. Pike's stall stocks
+ *   nothing a stock ship autolathe prints for free — that ruled out the
+ *   aquarium kit and fish case.
+ * - Fern's hand tools ARE autolathe designs, and they're priced like it: pocket
+ *   change, sold for the crew that wants a garden running before they've built
+ *   a lathe or walked back to one. Her tray board is the real sale — it sits
+ *   behind the hydroponics techweb node, so a ship with no R&D bay has no other
+ *   way to add a tray.
  * - Fern's produce and graft buybacks pay pocket change on purpose — it's the
  *   "sell your harvest at the waystation" fantasy, not an economy. Her graft
  *   ledger refuses plain repeated-harvest cuttings so a tray of wheat can't be
@@ -24,12 +29,26 @@
 // THE POTTING SHED — Fern, conservatory keeper
 // =========================================================================
 
+/**
+ * Fern: dressed for soil, not for a shop. Leather waders and leather gloves
+ * are what you wear to work a bed by hand, the straw hat is a joke about
+ * sunlight nobody on a station gets, and the watering can never gets put down.
+ */
+/datum/outfit/potting_shed_fern
+	name = "Conservatory keeper"
+	uniform = /obj/item/clothing/under/rank/civilian/hydroponics
+	suit = /obj/item/clothing/suit/apron/waders
+	gloves = /obj/item/clothing/gloves/botanic_leather
+	head = /obj/item/clothing/head/costume/rice_hat
+	shoes = /obj/item/clothing/shoes/workboots
+	r_hand = /obj/item/reagent_containers/cup/watering_can/wood
+
 /// Fern, who grows real food in real dirt on a metal station and will tell you about it
 /datum/outpost_shop/vendor/potting_shed
 	outpost_name = "\improper The Potting Shed"
 	outpost_desc = "Halcyon's conservatory and seed counter."
 	trader_name = "Fern"
-	trader_outfit = /datum/outfit/job/botanist
+	trader_outfit = /datum/outfit/potting_shed_fern
 	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 1.22
@@ -59,6 +78,15 @@
 		/datum/shop_sku/potting/robust_harvest,
 		/datum/shop_sku/potting/left4zed,
 		/datum/shop_sku/potting/overalls,
+		// Grower's Supply — hand tools
+		/datum/shop_sku/potting/cultivator,
+		/datum/shop_sku/potting/spade,
+		/datum/shop_sku/potting/hatchet,
+		/datum/shop_sku/potting/secateurs,
+		/datum/shop_sku/potting/watering_can,
+		/datum/shop_sku/potting/plant_analyzer,
+		// Grower's Supply — the tray itself
+		/datum/shop_sku/potting/tray_board,
 		// The Apiary
 		/datum/shop_sku/potting/honeycomb,
 		/datum/shop_sku/potting/honey_frame,
@@ -100,6 +128,8 @@
 			"Real dirt. Shipped in eighty crates, one apology to customs at a time.",
 			"The bees know the way to the pond and back. Nobody taught them. I don't ask.",
 			"Bring me grafts with something actually in them. A cutting off a wheat stalk is just a cutting.",
+			"Tray boards are on the shelf behind me. Two bins, a servo, a sheet of glass, and you've got a garden.",
+			"Take the tools while you're here. They're cheap, and I'd rather you weren't pulling weeds with your hands.",
 			"Ash flora seeds off the burning worlds — I pay proper credits. They grow ANYWHERE. It's terrifying. I love them.",
 			"Pike keeps saying fish fertilizer would double my yield. Pike is banned from the conservatory.",
 		),
@@ -216,6 +246,74 @@
 	price_credits = 80
 	stock_min = 1
 	stock_max = 3
+
+// ----- Hand tools -----
+// Every one of these is a service autolathe design, so a ship with a working
+// lathe can print the set for scrap. Priced accordingly: this is the rack you
+// grab on the way out rather than a supply line.
+
+/datum/shop_sku/potting/cultivator
+	category = "Grower's Supply"
+	desc = "A hand rake for turning weeds out of a tray. Fern sells them by the bundle and still finds people pulling weeds by hand."
+	item_path = /obj/item/cultivator
+	price_credits = 30
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/potting/spade
+	category = "Grower's Supply"
+	desc = "For digging a plant out of a tray without killing it, and for repotting whatever you dug up."
+	item_path = /obj/item/shovel/spade
+	price_credits = 30
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/potting/hatchet
+	category = "Grower's Supply"
+	desc = "Chops down a tower cap, splits logs, and harvests anything too woody for bare hands. Fern would like it noted that it is a gardening tool."
+	item_path = /obj/item/hatchet
+	price_credits = 50
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/potting/secateurs
+	category = "Grower's Supply"
+	desc = "Pruning shears sharp enough to take a clean graft off a stem. The cutting keeps whatever trait the parent was carrying."
+	item_path = /obj/item/secateurs
+	price_credits = 50
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/potting/watering_can
+	category = "Grower's Supply"
+	desc = "Holds enough water for a row of trays. Fill it at any sink, or at Pike's pond if you want to hear his opinion about it."
+	item_path = /obj/item/reagent_containers/cup/watering_can
+	price_credits = 40
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/potting/plant_analyzer
+	category = "Grower's Supply"
+	desc = "Reads a plant's stats and traits, and a tray's water, nutrients and pest level. Growing without one works, but you're guessing."
+	item_path = /obj/item/plant_analyzer
+	price_credits = 60
+	stock_min = 3
+	stock_max = 6
+
+// ----- The tray itself -----
+// Unlike the hand tools this one is genuinely gated: the design sits behind the
+// hydroponics techweb node, so it's the only tray a ship without an R&D bay can
+// get hold of. Priced so two boards plus the tools still cost more loose than
+// the botany starter pack in shop_catalog_job_packs.dm.
+
+/datum/shop_sku/potting/tray_board
+	category = "Grower's Supply"
+	name = "hydroponics tray board"
+	desc = "The machine board for a hydroponics tray. Two matter bins, a servo and a sheet of glass and you have a garden, wherever you decided to put it."
+	item_path = /obj/item/circuitboard/machine/hydroponics
+	price_credits = 350
+	stock_min = 2
+	stock_max = 4
 
 // ===== THE APIARY =====
 
@@ -336,12 +434,27 @@
 // PIKE'S BAIT & TACKLE — Pike, resident angler
 // =========================================================================
 
+/**
+ * Pike: overalls, rubber boots and a puffer vest — a man who expects to be
+ * standing in water at some point today, indoors or not. The hat is the
+ * genuine article and he will tell you so; the rod never leaves his hand.
+ * Deliberately not in Fern's waders, since they share a corridor.
+ */
+/datum/outfit/bait_shop_pike
+	name = "Resident angler"
+	uniform = /obj/item/clothing/under/misc/overalls
+	suit = /obj/item/clothing/suit/jacket/puffer/vest
+	gloves = /obj/item/clothing/gloves/fishing
+	head = /obj/item/clothing/head/soft/fishing_hat
+	shoes = /obj/item/clothing/shoes/galoshes
+	r_hand = /obj/item/fishing_rod
+
 /// Pike, who dug a pond into a space station and dares you to say something
 /datum/outpost_shop/vendor/bait_shop
 	outpost_name = "\improper Pike's Bait & Tackle"
 	outpost_desc = "Halcyon's tackle bench, beside the pond."
 	trader_name = "Pike"
-	trader_outfit = /datum/outfit/job/assistant/gimmick/fisher
+	trader_outfit = /datum/outfit/bait_shop_pike
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_3"
 	trader_voice_pitch = 0.95
@@ -357,6 +470,7 @@
 		// Bait & Tackle
 		/datum/shop_sku/bait/hook_box,
 		/datum/shop_sku/bait/line_box,
+		/datum/shop_sku/bait/lure_set,
 		/datum/shop_sku/bait/tackle_box,
 		/datum/shop_sku/bait/worms,
 		/datum/shop_sku/bait/premium_worms,
@@ -435,6 +549,20 @@
 	price_credits = 150
 	stock_min = 1
 	stock_max = 3
+
+// The one purchase that makes fishing for a *particular* fish possible. Lures
+// are unconsumable omni-bait, and each one only interests a specific sort of
+// fish, so the set is what turns the whole thing from luck into a choice.
+// Priced between the cargo goody pack (400) and the box's own shelf price
+// (450) — buying it here means carrying it out today instead of waiting on a
+// supply run.
+/datum/shop_sku/bait/lure_set
+	category = "Bait & Tackle"
+	item_path = /obj/item/storage/box/fishing_lures
+	desc = "One of every artificial lure, instruction sheet still in the lid. Nothing eats them, so a set lasts, but each one only interests a particular sort of fish and every one of them has to be spun while you wait."
+	price_credits = 425
+	stock_min = 1
+	stock_max = 2
 
 /datum/shop_sku/bait/tackle_box
 	category = "Bait & Tackle"

@@ -258,6 +258,11 @@
 	forceMove(planet)
 	state = OVERMAP_SHIP_IDLE
 	docked = planet
+	// The crash ends whatever course the helm was holding - without this the
+	// rose stays lit on a hull embedded in a planet, and a latched zone crossing
+	// would try to fly it out again
+	commanded_course = BURN_NONE
+	zone_resume_burn = BURN_NONE
 
 	// Clean up the temporary dock
 	qdel(crash_dock)

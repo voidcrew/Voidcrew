@@ -31,6 +31,9 @@
 #define OVERMAP_SHIP_DOCKING "docking"
 #define OVERMAP_SHIP_UNDOCKING "undocking"
 
+/// Fraction of max_speed at or below which the helm's Dock button finishes the stop itself; any faster and the approach is refused.
+#define DOCK_ASSIST_SPEED_FRACTION 0.5
+
 /**
  * Hull integrity states.
  *
