@@ -18,11 +18,26 @@
  * - Nothing here is meant to be printable on a stock ship autolathe. Every
  *   dead line got replaced by a consumable, hull stock, or a ship part.
  */
+
+/**
+ * Sarge: a quartermaster first and a soldier second, in that order. The brown
+ * QM shirt and the black gloves are the counter job; the militia beret and the
+ * canvas field jacket over them are where the nickname came from. No sidearm —
+ * she sells the guns, she doesn't wave them at customers.
+ */
+/datum/outfit/quartermain_sarge
+	name = "Depot quartermaster"
+	uniform = /obj/item/clothing/under/rank/cargo/qm
+	suit = /obj/item/clothing/suit/jacket/miljacket
+	head = /obj/item/clothing/head/beret/militia
+	gloves = /obj/item/clothing/gloves/color/black
+	shoes = /obj/item/clothing/shoes/jackboots
+
 /datum/outpost_shop/outfitter
 	outpost_name = "\improper Quartermain Depot"
 	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
 	trader_name = "Sarge"
-	trader_outfit = /datum/outfit/job/hos
+	trader_outfit = /datum/outfit/quartermain_sarge
 	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 0.85

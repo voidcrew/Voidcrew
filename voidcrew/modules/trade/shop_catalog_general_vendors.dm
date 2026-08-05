@@ -29,12 +29,26 @@
 // THE POTTING SHED — Fern, conservatory keeper
 // =========================================================================
 
+/**
+ * Fern: dressed for soil, not for a shop. Leather waders and leather gloves
+ * are what you wear to work a bed by hand, the straw hat is a joke about
+ * sunlight nobody on a station gets, and the watering can never gets put down.
+ */
+/datum/outfit/potting_shed_fern
+	name = "Conservatory keeper"
+	uniform = /obj/item/clothing/under/rank/civilian/hydroponics
+	suit = /obj/item/clothing/suit/apron/waders
+	gloves = /obj/item/clothing/gloves/botanic_leather
+	head = /obj/item/clothing/head/costume/rice_hat
+	shoes = /obj/item/clothing/shoes/workboots
+	r_hand = /obj/item/reagent_containers/cup/watering_can/wood
+
 /// Fern, who grows real food in real dirt on a metal station and will tell you about it
 /datum/outpost_shop/vendor/potting_shed
 	outpost_name = "\improper The Potting Shed"
 	outpost_desc = "Halcyon's conservatory and seed counter."
 	trader_name = "Fern"
-	trader_outfit = /datum/outfit/job/botanist
+	trader_outfit = /datum/outfit/potting_shed_fern
 	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 1.22
@@ -420,12 +434,27 @@
 // PIKE'S BAIT & TACKLE — Pike, resident angler
 // =========================================================================
 
+/**
+ * Pike: overalls, rubber boots and a puffer vest — a man who expects to be
+ * standing in water at some point today, indoors or not. The hat is the
+ * genuine article and he will tell you so; the rod never leaves his hand.
+ * Deliberately not in Fern's waders, since they share a corridor.
+ */
+/datum/outfit/bait_shop_pike
+	name = "Resident angler"
+	uniform = /obj/item/clothing/under/misc/overalls
+	suit = /obj/item/clothing/suit/jacket/puffer/vest
+	gloves = /obj/item/clothing/gloves/fishing
+	head = /obj/item/clothing/head/soft/fishing_hat
+	shoes = /obj/item/clothing/shoes/galoshes
+	r_hand = /obj/item/fishing_rod
+
 /// Pike, who dug a pond into a space station and dares you to say something
 /datum/outpost_shop/vendor/bait_shop
 	outpost_name = "\improper Pike's Bait & Tackle"
 	outpost_desc = "Halcyon's tackle bench, beside the pond."
 	trader_name = "Pike"
-	trader_outfit = /datum/outfit/job/assistant/gimmick/fisher
+	trader_outfit = /datum/outfit/bait_shop_pike
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_3"
 	trader_voice_pitch = 0.95

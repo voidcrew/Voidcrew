@@ -18,11 +18,10 @@ const GEOMETRY = {
   IDENT: { x: 8, y: 6, w: 470, h: 30 },
   LOAD: { x: 486, y: 6, w: 430, h: 30 },
   BANK: { x: 924, y: 6, w: 268, h: 30 },
-  RACK: { x: 10, y: 50, w: 452, h: 556 },
-  BODY: { x: 472, y: 50, w: 276, h: 556 },
-  DETAIL: { x: 758, y: 50, w: 434, h: 556 },
-  STATUS: { x: 10, y: 616, w: 738, h: 136 },
-  CTRL: { x: 758, y: 616, w: 434, h: 136 },
+  RACK: { x: 10, y: 50, w: 586, h: 556 },
+  DETAIL: { x: 606, y: 50, w: 586, h: 556 },
+  STATUS: { x: 10, y: 616, w: 586, h: 136 },
+  CTRL: { x: 606, y: 616, w: 586, h: 136 },
 } satisfies Record<string, Rect>;
 
 /**
@@ -120,7 +119,6 @@ type Data = {
   capacity: number;
   brownout: BooleanLike;
   tuneup_denial: string | null;
-  preview_view: string | null;
   selected: string | null;
   projection: Projection | null;
   ink: Ink | null;
@@ -215,9 +213,6 @@ const Faceplate = () => {
 
       <Panel rect={GEOMETRY.RACK} label="Hardware" aux="by body system">
         <Rack />
-      </Panel>
-      <Panel rect={GEOMETRY.BODY} label="Subject">
-        <Portrait />
       </Panel>
       <Panel rect={GEOMETRY.DETAIL} label="Inspection">
         <Detail />
@@ -507,27 +502,6 @@ const TileCard = (props: { ware: Ware }) => {
         <div className="Cradle__hoverFault">No neural headroom</div>
       )}
       <div className="Cradle__hoverDesc">{ware.desc}</div>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------- portrait
-
-/**
- * Placeholder for the mannequin preview, which is being built on another
- * branch. It holds the middle column's box so the faceplate and the backplate
- * art stay in step — swap it back for the ByondUi map when that work lands.
- */
-const Portrait = () => {
-  return (
-    <div className="Cradle__portrait">
-      <div className="Cradle__stage Cradle__stage--wip">
-        <div className="Cradle__wipTitle">WIP PREVIEWER</div>
-        <div className="Cradle__wipNote">
-          The body view is still being built. Chrome installs and comes out as
-          normal — you just cannot see it on the body from here yet.
-        </div>
-      </div>
     </div>
   );
 };

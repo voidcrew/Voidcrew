@@ -59,22 +59,8 @@
 	var/busy_duration = 0
 	/// TIMER_STOPPABLE handles for every pending stage of the sequence.
 	var/list/stage_timers = list()
-	/// The body preview builder (cradle_preview.dm). One per machine, and never
-	/// shown to anyone directly: it owns the mannequin and composes the look,
-	/// which each viewer receives through their own mirror below.
-	var/atom/movable/screen/map_view/chrome_preview/preview
-	/// viewer mob -> the disposable map_view carrying the preview to that
-	/// viewer's client. One per open console, destroyed on close, and never
-	/// reused: see ensure_preview_mirror() for why the map key must be fresh
-	/// every time.
-	var/list/viewer_mirrors = list()
-#ifdef CRADLE_TRACE
-	/// DEBUG SCAFFOLD: viewer mob -> the last preview_view key ui_data sent
-	/// them, so the trace only fires when it changes. cradle_trace.dm.
-	var/list/cradle_last_sent_key = list()
-#endif
 	/// The ware the occupant has highlighted in the racks: what the detail
-	/// panel describes, and what the mannequin wears as a ghost.
+	/// panel describes.
 	var/obj/item/organ/selected_ware
 
 /obj/machinery/chrome_cradle/Initialize(mapload)
@@ -86,20 +72,9 @@
 		RegisterSignal(src, COMSIG_ATOM_SECONDARY_TOOL_ACT(tool_type), PROC_REF(block_tool_act))
 	// The patient rides visually on top of the slab, stasis-bed style.
 	AddElement(/datum/element/elevation, pixel_shift = 6)
-	// The console's mirror. Minted up front so a rebuild always has somewhere
-	// to land; the mannequin behind it isn't built until somebody actually
-	// lies down. It gets no map key of its own — only per-viewer mirrors are
-	// ever registered to a client.
-	preview = new(null)
 
 /obj/machinery/chrome_cradle/Destroy()
 	cancel_sequence()
-	QDEL_NULL(preview)
-	for(var/mob/viewer as anything in viewer_mirrors)
-		var/atom/movable/screen/map_view/mirror = viewer_mirrors[viewer]
-		if(!QDELETED(mirror))
-			qdel(mirror)
-	viewer_mirrors.Cut()
 	selected_ware = null
 	var/turf/drop_turf = drop_location()
 	if(drop_turf)
@@ -137,7 +112,6 @@
 /obj/machinery/chrome_cradle/post_buckle_mob(mob/living/patient)
 	set_occupant(patient)
 	playsound(src, 'sound/effects/servostep.ogg', 40, TRUE)
-	refresh_preview()
 	ui_interact(patient)
 	SStgui.update_uis(src)
 
@@ -147,7 +121,6 @@
 	if(patient == occupant)
 		set_occupant(null)
 	selected_ware = null
-	refresh_preview()
 	SStgui.update_uis(src)
 
 // The base movable click unbuckles the occupant — on the cradle a click is
@@ -165,7 +138,6 @@
 	tray -= gone
 	if(gone == selected_ware)
 		selected_ware = null
-		refresh_preview()
 	if(busy && gone == busy_ware)
 		cancel_sequence()
 
@@ -322,9 +294,7 @@
 		balloon_alert(patient, "install refused!")
 		playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 40, TRUE)
 		wake_patient(patient)
-		refresh_preview()
 		return
-	refresh_preview()
 	do_sparks(3, FALSE, src)
 	patient.flash_act(visual = 1)
 	if(chrome.tier >= CYBERWARE_TIER_4)
@@ -359,7 +329,6 @@
 		tray += ware
 		balloon_alert(patient, "[ware.name] racked in tray")
 	playsound(src, 'sound/effects/servostep.ogg', 50, TRUE)
-	refresh_preview()
 	SStgui.update_uis(src)
 
 /// Stop a running sequence without committing anything. The ware, if it was
@@ -504,112 +473,9 @@
 /obj/machinery/chrome_cradle/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(ui)
-#ifdef CRADLE_TRACE
-		cradle_trace("ui_interact REUSED-EXISTING-UI user=[user] window=[ui.window?.id] \
-window_visible=[ui.window?.visible] mirror=[viewer_mirrors[user] ? REF(viewer_mirrors[user]) : "NONE"] \
-— note: display_to is NOT called on this path")
-#endif
 		return
 	ui = new(user, src, "ChromeCradle", name)
-#ifdef CRADLE_TRACE
-	cradle_trace("ui_interact NEW-UI user=[user] ([user.type]) client=[user.client ? user.client.ckey : "NO CLIENT"] \
-cradle=[REF(src)] occupant=[occupant] mob_hud=[user.hud_used ? REF(user.hud_used) : "NULL"] \
-hud_offset=[user.hud_used?.current_plane_offset] mob_z=[user.z]")
-#endif
 	ui.open()
-#ifdef CRADLE_TRACE
-	cradle_trace("ui_interact POST-OPEN user=[user] window=[ui.window?.id] window_visible=[ui.window?.visible] \
-window_status=[ui.window?.status] window_is_browser=[ui.window?.is_browser] \
-mirror=[viewer_mirrors[user] ? REF(viewer_mirrors[user]) : "NONE YET"]")
-#endif
-	// A clientless patient — someone logged off strapped down, or an NPC
-	// hauled on — has nowhere to draw the preview, and open() left them no
-	// window to draw it into either.
-	if(user.client && ui.window)
-		var/atom/movable/screen/map_view/mirror = ensure_preview_mirror(user)
-		mirror.display_to(user, ui.window)
-	// Redraw on open rather than trusting whatever the last install left on the
-	// screen object. Closing the console tears the map registration down and
-	// reopening builds a fresh one, and the body may have moved on in between —
-	// surgery elsewhere, damage, a species swap. A console that opens onto a
-	// stale mirror is worse than one that opens onto a fresh one.
-	refresh_preview()
-
-/obj/machinery/chrome_cradle/ui_close(mob/user)
-	. = ..()
-	var/atom/movable/screen/map_view/mirror = viewer_mirrors[user]
-#ifdef CRADLE_TRACE
-	cradle_trace("ui_close user=[user] mirror=[mirror ? REF(mirror) : "NONE"] key=[mirror?.assigned_map || "NONE"] \
-displayed_at=[mirror?.cradle_displayed_at] — tearing the mirror down")
-#endif
-	viewer_mirrors -= user
-	if(!QDELETED(mirror))
-		// Tear the client registration and plane group down while we still
-		// know the viewer — Destroy()'s weakref sweep can miss a logged-out
-		// client and orphan the popup plane group on their hud.
-		mirror.hide_from(user)
-		qdel(mirror)
-
-/**
- * Returns this viewer's mirror of the body preview, minting one on first use.
- * One mirror per viewer per open; ui_close destroys it. Displaying it to the
- * client happens separately — ui_interact for the initial open, and the
- * "preview_mounted" act whenever the interface reports its native map
- * control actually exists (see ui_act).
- */
-/obj/machinery/chrome_cradle/proc/ensure_preview_mirror(mob/user)
-	var/atom/movable/screen/map_view/chrome_mirror/mirror = viewer_mirrors[user]
-	if(!QDELETED(mirror))
-		return mirror
-	// BYOND recycles refs the instant a datum dies, so REF() cannot make a
-	// once-only key — a serial can. A key that never repeats keeps React
-	// remounting the native control on every open (the remount is what
-	// re-creates it: tgui destroys ByondUi controls BY NAME on close) and
-	// keeps dead controls' names from ever colliding with live ones.
-	var/static/mirror_serial = 0
-#ifdef CRADLE_TRACE
-	// A mirror minted anywhere but ui_interact never gets display_to() called on
-	// it -- ui_data calls this proc too. That ships the interface a map key that
-	// was never registered to the client, which is silently fatal.
-	cradle_trace("ensure_preview_mirror MINTING NEW user=[user] existing_viewers=[length(viewer_mirrors)]")
-#endif
-	mirror = new(null)
-	mirror.generate_view("chrome_mirror_[++mirror_serial]_map")
-	mirror.adopt_look(preview.appearance)
-	viewer_mirrors[user] = mirror
-#ifdef CRADLE_TRACE
-	cradle_trace("ensure_preview_mirror MINTED user=[user] mirror=[REF(mirror)] key=[mirror.assigned_map] \
-source_preview=[preview ? REF(preview) : "NULL"] result=[cradle_describe_screen_obj(mirror)]")
-#endif
-	return mirror
-
-/// Pushes the preview's current look into every open viewer's mirror.
-/obj/machinery/chrome_cradle/proc/sync_preview_mirrors()
-	if(QDELETED(preview))
-		return
-	var/list/stale
-	for(var/mob/viewer as anything in viewer_mirrors)
-		var/atom/movable/screen/map_view/chrome_mirror/mirror = viewer_mirrors[viewer]
-		if(QDELETED(mirror))
-			LAZYADD(stale, viewer)
-			continue
-		mirror.adopt_look(preview.appearance)
-	for(var/mob/viewer as anything in stale)
-		viewer_mirrors -= viewer
-
-/// Rebuilds the console's body preview from the current occupant and highlight.
-/// Cheap enough to fire on every hardware change; never on a timer.
-/obj/machinery/chrome_cradle/proc/refresh_preview()
-	preview?.refresh(occupant, selected_ware)
-	sync_preview_mirrors()
-#ifdef CRADLE_TRACE
-	cradle_trace("refresh_preview occupant=[occupant] selected=[selected_ware] \
-source=[cradle_describe_screen_obj(preview)]")
-	for(var/mob/viewer as anything in viewer_mirrors)
-		var/atom/movable/screen/map_view/mirror = viewer_mirrors[viewer]
-		cradle_trace("refresh_preview SYNCED viewer=[viewer] [cradle_describe_screen_obj(mirror)] \
-displayed_at=[mirror?.cradle_displayed_at]")
-#endif
 
 /**
  * Every piece of chrome this console can act on, mapped to where it currently
@@ -804,27 +670,6 @@ displayed_at=[mirror?.cradle_displayed_at]")
 	data["busy_duration"] = busy_duration / 10
 	data["loaded_credits"] = loaded_credits
 	data["tuneup_fee"] = CYBERWARE_TUNEUP_FEE
-	// Only handed over with a body on the slab: with none, the interface drops
-	// the portrait entirely, which unmounts the map control client-side. Each
-	// viewer reads their OWN mirror's key — see ensure_preview_mirror() for
-	// why the key can never be shared or reused.
-	var/atom/movable/screen/map_view/mirror = has_patient ? ensure_preview_mirror(user) : null
-	data["preview_view"] = mirror?.assigned_map
-#ifdef CRADLE_TRACE
-	// ui_data runs about once a second, so only speak up when the key the
-	// interface is told to use actually changes -- or when we are handing out a
-	// key for a view nobody ever registered, which looks exactly like a render
-	// bug from the outside.
-	var/traced_key = mirror?.assigned_map || "NONE"
-	if(cradle_last_sent_key[user] != traced_key)
-		cradle_last_sent_key[user] = traced_key
-		cradle_trace("ui_data KEY-CHANGED user=[user] preview_view=[traced_key] mirror=[mirror ? REF(mirror) : "NULL"] \
-displayed_at=[mirror?.cradle_displayed_at] has_patient=[has_patient] \
-registered_on_client=[(user.client && mirror) ? length(user.client.screen_maps[traced_key]) : "n/a"]")
-	if(mirror && !mirror.cradle_displayed_at)
-		cradle_trace("ui_data WARNING user=[user] sending key=[traced_key] for a view display_to_client NEVER ran on")
-#endif
-
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
 	data["barred"] = outpost?.is_user_barred(patient) ? TRUE : FALSE
 
@@ -844,7 +689,6 @@ registered_on_client=[(user.client && mirror) ? length(user.client.screen_maps[t
 	var/list/available = get_reachable_ware(patient)
 	if(selected_ware && !(selected_ware in available))
 		selected_ware = null
-		refresh_preview()
 	// The rack runs first because stacking identical spares can move the
 	// highlight onto the copy that owns the tile — read it back afterwards or
 	// the console lights up a card that isn't the one on screen.
@@ -888,35 +732,7 @@ registered_on_client=[(user.client && mirror) ? length(user.client.screen_maps[t
 			var/obj/item/organ/ware = locate(params["ref"]) in available
 			// Clicking the highlighted piece again clears it.
 			selected_ware = (ware == selected_ware) ? null : ware
-			refresh_preview()
 			return TRUE
-		if("rotate")
-			preview?.rotate(params["dir"] != "left")
-			sync_preview_mirrors()
-			return TRUE
-		// The interface reports its native map control now exists. Register
-		// (or re-register) this viewer's mirror into it and push the current
-		// look. Registering into a live control is the order every working
-		// map popup in the tree uses, and re-running it also recovers from
-		// show_hud() screen clears (lying down, sedation, F12) and from a
-		// plane group stranded on a stale hud.
-		if("preview_mounted")
-#ifdef CRADLE_TRACE
-			cradle_trace("ui_act preview_mounted user=[acting] client=[acting.client ? acting.client.ckey : "NO CLIENT"] \
-mirror=[viewer_mirrors[acting] ? REF(viewer_mirrors[acting]) : "NONE"] — interface says its control now exists")
-#endif
-			if(acting.client)
-				var/atom/movable/screen/map_view/chrome_mirror/mirror = ensure_preview_mirror(acting)
-				mirror.display_to_client(acting.client)
-			sync_preview_mirrors()
-			return TRUE
-#ifdef CRADLE_TRACE
-		// The interface reporting what it measured and what it winset, so the
-		// client half of the chain lands in the same log as the server half.
-		if("cradle_trace")
-			cradle_trace("CLIENT user=[acting] [copytext(params["line"], 1, 900)]")
-			return TRUE
-#endif
 
 	// Everything below touches a body, and only its owner gets to order that.
 	if(acting != occupant)

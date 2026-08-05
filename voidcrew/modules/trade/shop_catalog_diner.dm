@@ -32,12 +32,25 @@
 // THE CHOWDER POT — Roux, diner cook
 // =========================================================================
 
+/**
+ * Roux: short-order, not haute cuisine. Grilling shorts and a ball cap instead
+ * of a toque, because eleven years over the same pot is hot work and the hat
+ * is about keeping hair out of the food. The ladle is the whole business.
+ */
+/datum/outfit/chowder_pot_roux
+	name = "Diner cook"
+	uniform = /obj/item/clothing/under/rank/civilian/cookjorts
+	suit = /obj/item/clothing/suit/apron/chef
+	head = /obj/item/clothing/head/soft/red
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/kitchen/spoon/soup_ladle
+
 /// Roux, who has run the chowder pot for eleven years and the diner incidentally
 /datum/outpost_shop/vendor/diner
 	outpost_name = "\improper The Chowder Pot"
 	outpost_desc = "Halcyon's diner and short-order counter."
 	trader_name = "Roux"
-	trader_outfit = /datum/outfit/job/cook
+	trader_outfit = /datum/outfit/chowder_pot_roux
 	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_4"
 	trader_voice_pitch = 1.05

@@ -23,12 +23,25 @@
 /// Abstract grouping parent for the Undertow's side businesses
 /datum/outpost_shop/vendor
 
+/**
+ * Dram: shirt, slacks, work apron, and a glass he is always in the middle of
+ * drying. Deliberately the plainest fit on the station — the Undertow is full
+ * of people signalling what they are, and the barkeep signals nothing at all.
+ */
+/datum/outfit/dregs_dram
+	name = "Dregs barkeep"
+	uniform = /obj/item/clothing/under/costume/buttondown/slacks/service
+	suit = /obj/item/clothing/suit/apron
+	head = /obj/item/clothing/head/soft/black
+	shoes = /obj/item/clothing/shoes/laceup
+	r_hand = /obj/item/reagent_containers/cup/glass/drinkingglass
+
 /// Dram, the Dregs' barkeep: an apron, a rag, and no follow-up questions
 /datum/outpost_shop/vendor/dregs_bar
 	outpost_name = "\improper The Dregs"
 	outpost_desc = "The Undertow's cantina."
 	trader_name = "Dram"
-	trader_outfit = /datum/outfit/job/bartender
+	trader_outfit = /datum/outfit/dregs_dram
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_3"
 	trader_voice_pitch = 0.82
@@ -301,12 +314,29 @@
 // PATCH-UP CLINIC — Sawbones, practitioner (license pending since forever)
 // =========================================================================
 
+/**
+ * Sawbones: dressed like a surgeon by someone working from a description. The
+ * scrubs and nitrile gloves are real practice; the head mirror is forty years
+ * obsolete and worn because patients expect a doctor to have one. No coat, no
+ * credentials, and the analyzer never leaves their hand.
+ *
+ * Kept visually clear of Splice two doors down (voidcrew/modules/cyberware) —
+ * different scrubs, different gloves, no leather, no cigarette.
+ */
+/datum/outfit/clinic_sawbones
+	name = "Clinic practitioner"
+	uniform = /obj/item/clothing/under/rank/medical/scrubs/green
+	gloves = /obj/item/clothing/gloves/latex/nitrile
+	head = /obj/item/clothing/head/utility/head_mirror
+	shoes = /obj/item/clothing/shoes/workboots
+	r_hand = /obj/item/healthanalyzer
+
 /// Sawbones, the Patch-Up Clinic's resident professional. Of medicine, probably.
 /datum/outpost_shop/vendor/patchup_clinic
 	outpost_name = "\improper Patch-Up Clinic"
 	outpost_desc = "The Undertow's medbay."
 	trader_name = "Sawbones"
-	trader_outfit = /datum/outfit/job/doctor
+	trader_outfit = /datum/outfit/clinic_sawbones
 	trader_voice_pack = "goon.speak_4"
 	trader_voice_pitch = 1.12
 	categories = list(

@@ -18,6 +18,19 @@
  * The per-shop catalogs (SKU/buyback/line definitions) live in the
  * shop_catalog_*.dm files; this file is the machinery.
  */
+
+/**
+ * The fallback look for a shop that never set trader_outfit — a nondescript
+ * independent merchant. Every shipped shop names its own outfit next to its
+ * catalog; this only exists so a new one that forgets doesn't inherit somebody
+ * else's character.
+ */
+/datum/outfit/outpost_trader_generic
+	name = "Outpost trader"
+	uniform = /obj/item/clothing/under/costume/buttondown/slacks
+	suit = /obj/item/clothing/suit/apron
+	shoes = /obj/item/clothing/shoes/laceup
+
 /datum/outpost_shop
 	/// Display name the outpost takes on the overmap
 	var/outpost_name = "trader outpost"
@@ -26,7 +39,7 @@
 	/// Name the trader NPC introduces themselves with
 	var/trader_name = "Trader"
 	/// Outfit the trader NPC's appearance is dressed in
-	var/trader_outfit = /datum/outfit/job/curator
+	var/trader_outfit = /datum/outfit/outpost_trader_generic
 	/// Pronouns for the trader NPC's emotes/examine (PLURAL = they)
 	var/trader_gender = PLURAL
 	/// Voice bark pack for the trader's spoken lines (see modules/voice_barks)

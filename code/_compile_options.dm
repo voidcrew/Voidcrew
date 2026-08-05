@@ -1,12 +1,3 @@
-// ---------------------------------------------------------------------------
-// DEBUG SCAFFOLD -- Chrome Cradle black-preview trace. Off by default.
-// Uncomment CRADLE_TRACE to arm every probe; leave it commented and the scaffold
-// compiles out entirely. Nothing outside an `#ifdef CRADLE_TRACE` is touched by it.
-//#define CRADLE_TRACE
-/// Where the trace lands. Read it with `type data\cradle_trace.log`.
-#define CRADLE_TRACE_FILE "data/cradle_trace.log"
-// ---------------------------------------------------------------------------
-
 //#define TESTING //By using the testing("message") proc you can create debug-feedback for people with this
 								//uncommented, but not visible in the release version)
 

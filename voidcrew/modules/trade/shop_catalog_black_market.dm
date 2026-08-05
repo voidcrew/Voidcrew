@@ -17,11 +17,27 @@
  *   shield generator at all. This is that route. Quartermain covers engines and
  *   the laser turret; the defensive and dirty boards are Vex's.
  */
+
+/**
+ * Vex: all black, all business. The tactical turtleneck under the coat is the
+ * tell that the Exchange has never been robbed — whoever tried met someone
+ * dressed for it. The one thing they let themselves show is the gold: a
+ * merchant's chain, worn where a customer can see what dealing here pays.
+ */
+/datum/outfit/undertow_vex
+	name = "Undertow fence"
+	uniform = /obj/item/clothing/under/syndicate
+	suit = /obj/item/clothing/suit/costume/gothcoat
+	neck = /obj/item/clothing/neck/necklace/dope/merchant
+	gloves = /obj/item/clothing/gloves/color/black
+	glasses = /obj/item/clothing/glasses/sunglasses
+	shoes = /obj/item/clothing/shoes/laceup
+
 /datum/outpost_shop/black_market
 	outpost_name = "\improper Undertow Exchange"
 	outpost_desc = "A heavily armored den of fences and quartermasters who don't ask questions. Somehow, nobody has ever managed to rob it."
 	trader_name = "Vex"
-	trader_outfit = /datum/outfit/job/detective
+	trader_outfit = /datum/outfit/undertow_vex
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 0.92
 	// Vex's board also runs the drug-run contract: the only place in the

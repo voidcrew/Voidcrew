@@ -5,11 +5,27 @@
  * only; the most dangerous thing on the shelf is the chili in the rations.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  */
+
+/**
+ * Barnaby: thirty years on the same side of the same counter. Everything reads
+ * soft and worn rather than professional — the sweater jacket and flat cap are
+ * a shopkeeper's clothes, not a uniform, the reading glasses say he still does
+ * the ledger by hand, and the mug is the bad coffee the shop is famous for.
+ */
+/datum/outfit/halcyon_barnaby
+	name = "Halcyon shopkeep"
+	uniform = /obj/item/clothing/under/suit/tan
+	suit = /obj/item/clothing/suit/toggle/jacket/sweater
+	head = /obj/item/clothing/head/flatcap
+	glasses = /obj/item/clothing/glasses/regular
+	shoes = /obj/item/clothing/shoes/laceup
+	r_hand = /obj/item/reagent_containers/cup/glass/coffee
+
 /datum/outpost_shop/general
 	outpost_name = "\improper Waystation Halcyon"
 	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
-	trader_outfit = /datum/outfit/job/curator
+	trader_outfit = /datum/outfit/halcyon_barnaby
 	trader_gender = MALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 1.18
