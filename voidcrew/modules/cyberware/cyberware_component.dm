@@ -160,12 +160,18 @@
 // ---- Global helpers ----------------------------------------------------
 
 /// Every installed organ on the target that carries chrome.
+///
+/// The loops in this file are typed rather than `as anything` on purpose:
+/// a hard-deleted organ (SSgarbage hard-deleting a ref it could not collect)
+/// becomes a null in place inside `organs`, and `as anything` skips the
+/// istype filter that would otherwise drop it. These helpers run from ui_data
+/// and from brownout checks, so a runtime here is a per-tick one.
 /proc/get_installed_cyberware(mob/living/carbon/target)
 	RETURN_TYPE(/list)
 	. = list()
 	if(!iscarbon(target))
 		return
-	for(var/obj/item/organ/organ as anything in target.organs)
+	for(var/obj/item/organ/organ in target.organs)
 		if(organ.GetComponent(/datum/component/cyberware))
 			. += organ
 
@@ -179,7 +185,7 @@
 	. = 0
 	if(!iscarbon(target))
 		return
-	for(var/obj/item/organ/organ as anything in target.organs)
+	for(var/obj/item/organ/organ in target.organs)
 		var/datum/component/cyberware/chrome = organ.GetComponent(/datum/component/cyberware)
 		if(chrome)
 			. += chrome.chrome_load
@@ -190,7 +196,7 @@
 	. = CYBERWARE_BASE_CAPACITY
 	if(!iscarbon(target))
 		return
-	for(var/obj/item/organ/organ as anything in target.organs)
+	for(var/obj/item/organ/organ in target.organs)
 		var/datum/component/cyberware/chrome = organ.GetComponent(/datum/component/cyberware)
 		if(chrome)
 			. += chrome.capacity_bonus

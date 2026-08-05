@@ -13,14 +13,12 @@
  * definition, and `..()` calls straight into it). Nothing outside this module
  * changes on disk.
  *
- * These two defines are deliberately NOT #undef'd — Ghostskin in
- * ware_military.dm (included after this file alphabetically) grants and reads
- * the trait.
+ * TRAIT_CYBER_CAMO itself lives in voidcrew/_DEFINES/cyberware.dm, because
+ * the chrome read (cyberware_scan.dm) is included ahead of this file and also
+ * has to know about camo. The range below is deliberately NOT #undef'd —
+ * Ghostskin in ware_military_body.dm is included after this file.
  */
 
-/// Held by a mob while optical camo is bending light around them. Grant with
-/// a source; NPC targeting refuses holders beyond CYBERWARE_CAMO_SPOT_RANGE.
-#define TRAIT_CYBER_CAMO "cyber_camo"
 /// Within this range, NPCs spot a camo'd target anyway — walking through a
 /// fauna pack point-blank is still a bad idea. The PvP/PvE counterplay floor.
 #define CYBERWARE_CAMO_SPOT_RANGE 2

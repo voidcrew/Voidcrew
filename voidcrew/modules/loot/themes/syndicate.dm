@@ -11,6 +11,9 @@
 // l6_saw/sniper/bulldog three (prime-tier) — the same blueprints ride these
 // cache tables at matching tiers. Craft them from the recipe anywhere, once
 // you have the part and a firing pin (modules/weapons_bench/blueprint.dm).
+// Cyberware rides the same two channels: the parlor's smuggling cavity and
+// door spike sit at uncommon, and the three voucher-only pieces an operative
+// would carry (cloak weave, wire, reflex shunt) sit at the bottom of prime.
 // =========================================================================
 
 /datum/loot_theme/syndicate
@@ -29,6 +32,11 @@
 		/datum/shop_sku/outfitter/smg_blueprint,
 		/datum/shop_sku/outfitter/wt550_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
+		/datum/shop_sku/ripperdoc/cargo_cavity,
+		/datum/shop_sku/ripperdoc/icepick,
+		/datum/shop_sku/ripperdoc/slipwire,
+		/datum/shop_sku/ripperdoc/monowire,
+		/datum/shop_sku/ripperdoc/ghostskin,
 	)
 	loot_common = list(
 		/obj/item/soap/syndie = 10,
@@ -54,6 +62,10 @@
 		/obj/item/blueprint/gun/wt550 = 3,
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 8,
+		// courier chrome: a shielded rib compartment scanners read past, and
+		// a wrist spike for door motors and turret IFF
+		/obj/item/organ/cyberimp/cyberware/cargo_cavity = 4,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick = 3,
 	)
 	loot_prime = list(
 		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
@@ -71,6 +83,11 @@
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/automatic/l6_saw = 3,
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
+		// operative chrome, 2-4 vouchers over the counter: the reflex shunt,
+		// the wire, and the refraction weave that drops the moment you swing
+		/obj/item/organ/cyberimp/cyberware/slipwire = 3,
+		/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire = 3,
+		/obj/item/organ/cyberimp/cyberware/ghostskin = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

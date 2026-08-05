@@ -28,7 +28,7 @@
 
 /obj/machinery/chrome_cradle
 	name = "chrome cradle"
-	desc = "A salvaged alien operating slab wired into a six-armed surgical rig, the original owners' spines long since scrubbed off the alloy. The arms twitch when you get close, like they're sizing you up."
+	desc = "A salvaged alien operating slab wired into a six-armed surgical rig. Whatever the original owners used it on has long since been scrubbed off the alloy. The arms twitch when you get close."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "bed"
 	// A slab, not a cabinet: you walk onto it and lie down. Buckling IS the
@@ -59,6 +59,23 @@
 	var/busy_duration = 0
 	/// TIMER_STOPPABLE handles for every pending stage of the sequence.
 	var/list/stage_timers = list()
+	/// The body preview builder (cradle_preview.dm). One per machine, and never
+	/// shown to anyone directly: it owns the mannequin and composes the look,
+	/// which each viewer receives through their own mirror below.
+	var/atom/movable/screen/map_view/chrome_preview/preview
+	/// viewer mob -> the disposable map_view carrying the preview to that
+	/// viewer's client. One per open console, destroyed on close, and never
+	/// reused: see ensure_preview_mirror() for why the map key must be fresh
+	/// every time.
+	var/list/viewer_mirrors = list()
+#ifdef CRADLE_TRACE
+	/// DEBUG SCAFFOLD: viewer mob -> the last preview_view key ui_data sent
+	/// them, so the trace only fires when it changes. cradle_trace.dm.
+	var/list/cradle_last_sent_key = list()
+#endif
+	/// The ware the occupant has highlighted in the racks: what the detail
+	/// panel describes, and what the mannequin wears as a ghost.
+	var/obj/item/organ/selected_ware
 
 /obj/machinery/chrome_cradle/Initialize(mapload)
 	. = ..()
@@ -69,12 +86,27 @@
 		RegisterSignal(src, COMSIG_ATOM_SECONDARY_TOOL_ACT(tool_type), PROC_REF(block_tool_act))
 	// The patient rides visually on top of the slab, stasis-bed style.
 	AddElement(/datum/element/elevation, pixel_shift = 6)
+	// The console's mirror. Minted up front so a rebuild always has somewhere
+	// to land; the mannequin behind it isn't built until somebody actually
+	// lies down. It gets no map key of its own — only per-viewer mirrors are
+	// ever registered to a client.
+	preview = new(null)
 
 /obj/machinery/chrome_cradle/Destroy()
 	cancel_sequence()
+	QDEL_NULL(preview)
+	for(var/mob/viewer as anything in viewer_mirrors)
+		var/atom/movable/screen/map_view/mirror = viewer_mirrors[viewer]
+		if(!QDELETED(mirror))
+			qdel(mirror)
+	viewer_mirrors.Cut()
+	selected_ware = null
 	var/turf/drop_turf = drop_location()
 	if(drop_turf)
-		for(var/obj/item/organ/ware as anything in tray)
+		// Snapshot: forceMove fires Exited(), which cuts the leaving organ out
+		// of tray underneath us and would make a live iteration skip every
+		// other piece — leaving them in contents to be qdel'd with the machine.
+		for(var/obj/item/organ/ware in tray.Copy())
 			ware.forceMove(drop_turf)
 	tray.Cut()
 	return ..()
@@ -87,7 +119,7 @@
 
 /obj/machinery/chrome_cradle/examine(mob/user)
 	. = ..()
-	. += span_notice("Drag yourself (or a patient) onto the slab to lie back on it. The occupant runs their own install from the slab — the rig takes orders from nobody else.")
+	. += span_notice("Drag yourself (or a patient) onto the slab to lie back on it. Whoever's on the slab runs their own install; the rig won't take orders from anyone else.")
 	. += span_notice("Tune-ups run [CYBERWARE_TUNEUP_FEE] cr: EMP-scrambled and damaged chrome comes back to spec. Load cash into the slab or pay by ID.")
 	if(loaded_credits)
 		. += span_notice("The slab's cash slot holds <b>[loaded_credits] cr</b>.")
@@ -105,6 +137,7 @@
 /obj/machinery/chrome_cradle/post_buckle_mob(mob/living/patient)
 	set_occupant(patient)
 	playsound(src, 'sound/effects/servostep.ogg', 40, TRUE)
+	refresh_preview()
 	ui_interact(patient)
 	SStgui.update_uis(src)
 
@@ -113,6 +146,8 @@
 	eject_cash()
 	if(patient == occupant)
 		set_occupant(null)
+	selected_ware = null
+	refresh_preview()
 	SStgui.update_uis(src)
 
 // The base movable click unbuckles the occupant — on the cradle a click is
@@ -128,6 +163,9 @@
 /obj/machinery/chrome_cradle/Exited(atom/movable/gone, direction)
 	. = ..()
 	tray -= gone
+	if(gone == selected_ware)
+		selected_ware = null
+		refresh_preview()
 	if(busy && gone == busy_ware)
 		cancel_sequence()
 
@@ -204,9 +242,10 @@
 /// they're close enough. Deliberately available to ANYONE adjacent, so an
 /// evicted organ can't be held hostage by a logged-off occupant.
 /obj/machinery/chrome_cradle/proc/eject_tray(mob/living/user)
+	list_clear_nulls(tray)
 	if(!length(tray))
 		return
-	for(var/obj/item/organ/ware as anything in tray.Copy())
+	for(var/obj/item/organ/ware in tray.Copy())
 		ware.forceMove(drop_location())
 		if(user)
 			try_put_in_hand(ware, user)
@@ -271,7 +310,7 @@
 	if(!chrome)
 		return
 	// Same-slot incumbents come out into the tray first — never the floor.
-	for(var/obj/item/organ/incumbent as anything in ware.cyberware_get_incumbents(patient))
+	for(var/obj/item/organ/incumbent in ware.cyberware_get_incumbents(patient))
 		incumbent.Remove(patient, special = TRUE)
 		incumbent.forceMove(src)
 		tray += incumbent
@@ -283,7 +322,9 @@
 		balloon_alert(patient, "install refused!")
 		playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 40, TRUE)
 		wake_patient(patient)
+		refresh_preview()
 		return
+	refresh_preview()
 	do_sparks(3, FALSE, src)
 	patient.flash_act(visual = 1)
 	if(chrome.tier >= CYBERWARE_TIER_4)
@@ -318,6 +359,7 @@
 		tray += ware
 		balloon_alert(patient, "[ware.name] racked in tray")
 	playsound(src, 'sound/effects/servostep.ogg', 50, TRUE)
+	refresh_preview()
 	SStgui.update_uis(src)
 
 /// Stop a running sequence without committing anything. The ware, if it was
@@ -361,7 +403,7 @@
 		return "No chrome installed."
 	var/only_brownout = TRUE
 	var/any_repairable = FALSE
-	for(var/obj/item/organ/ware as anything in installed)
+	for(var/obj/item/organ/ware in installed)
 		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 		if(chrome.emp_down || ware.damage > 0)
 			any_repairable = TRUE
@@ -388,7 +430,7 @@
 	if(!charge_fee(patient, CYBERWARE_TUNEUP_FEE, "chrome tune-up"))
 		balloon_alert(patient, "needs [CYBERWARE_TUNEUP_FEE] cr!")
 		return
-	for(var/obj/item/organ/ware as anything in get_installed_cyberware(patient))
+	for(var/obj/item/organ/ware in get_installed_cyberware(patient))
 		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 		chrome.tune_up()
 	do_sparks(2, TRUE, src)
@@ -453,11 +495,298 @@
 		return user.shared_ui_interaction(src)
 	return ..()
 
+/obj/machinery/chrome_cradle/ui_assets(mob/user)
+	return list(
+		get_asset_datum(/datum/asset/simple/chrome_cradle_plate),
+		get_asset_datum(/datum/asset/spritesheet_batched/chrome),
+	)
+
 /obj/machinery/chrome_cradle/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "ChromeCradle", name)
-		ui.open()
+	if(ui)
+#ifdef CRADLE_TRACE
+		cradle_trace("ui_interact REUSED-EXISTING-UI user=[user] window=[ui.window?.id] \
+window_visible=[ui.window?.visible] mirror=[viewer_mirrors[user] ? REF(viewer_mirrors[user]) : "NONE"] \
+— note: display_to is NOT called on this path")
+#endif
+		return
+	ui = new(user, src, "ChromeCradle", name)
+#ifdef CRADLE_TRACE
+	cradle_trace("ui_interact NEW-UI user=[user] ([user.type]) client=[user.client ? user.client.ckey : "NO CLIENT"] \
+cradle=[REF(src)] occupant=[occupant] mob_hud=[user.hud_used ? REF(user.hud_used) : "NULL"] \
+hud_offset=[user.hud_used?.current_plane_offset] mob_z=[user.z]")
+#endif
+	ui.open()
+#ifdef CRADLE_TRACE
+	cradle_trace("ui_interact POST-OPEN user=[user] window=[ui.window?.id] window_visible=[ui.window?.visible] \
+window_status=[ui.window?.status] window_is_browser=[ui.window?.is_browser] \
+mirror=[viewer_mirrors[user] ? REF(viewer_mirrors[user]) : "NONE YET"]")
+#endif
+	// A clientless patient — someone logged off strapped down, or an NPC
+	// hauled on — has nowhere to draw the preview, and open() left them no
+	// window to draw it into either.
+	if(user.client && ui.window)
+		var/atom/movable/screen/map_view/mirror = ensure_preview_mirror(user)
+		mirror.display_to(user, ui.window)
+	// Redraw on open rather than trusting whatever the last install left on the
+	// screen object. Closing the console tears the map registration down and
+	// reopening builds a fresh one, and the body may have moved on in between —
+	// surgery elsewhere, damage, a species swap. A console that opens onto a
+	// stale mirror is worse than one that opens onto a fresh one.
+	refresh_preview()
+
+/obj/machinery/chrome_cradle/ui_close(mob/user)
+	. = ..()
+	var/atom/movable/screen/map_view/mirror = viewer_mirrors[user]
+#ifdef CRADLE_TRACE
+	cradle_trace("ui_close user=[user] mirror=[mirror ? REF(mirror) : "NONE"] key=[mirror?.assigned_map || "NONE"] \
+displayed_at=[mirror?.cradle_displayed_at] — tearing the mirror down")
+#endif
+	viewer_mirrors -= user
+	if(!QDELETED(mirror))
+		// Tear the client registration and plane group down while we still
+		// know the viewer — Destroy()'s weakref sweep can miss a logged-out
+		// client and orphan the popup plane group on their hud.
+		mirror.hide_from(user)
+		qdel(mirror)
+
+/**
+ * Returns this viewer's mirror of the body preview, minting one on first use.
+ * One mirror per viewer per open; ui_close destroys it. Displaying it to the
+ * client happens separately — ui_interact for the initial open, and the
+ * "preview_mounted" act whenever the interface reports its native map
+ * control actually exists (see ui_act).
+ */
+/obj/machinery/chrome_cradle/proc/ensure_preview_mirror(mob/user)
+	var/atom/movable/screen/map_view/chrome_mirror/mirror = viewer_mirrors[user]
+	if(!QDELETED(mirror))
+		return mirror
+	// BYOND recycles refs the instant a datum dies, so REF() cannot make a
+	// once-only key — a serial can. A key that never repeats keeps React
+	// remounting the native control on every open (the remount is what
+	// re-creates it: tgui destroys ByondUi controls BY NAME on close) and
+	// keeps dead controls' names from ever colliding with live ones.
+	var/static/mirror_serial = 0
+#ifdef CRADLE_TRACE
+	// A mirror minted anywhere but ui_interact never gets display_to() called on
+	// it -- ui_data calls this proc too. That ships the interface a map key that
+	// was never registered to the client, which is silently fatal.
+	cradle_trace("ensure_preview_mirror MINTING NEW user=[user] existing_viewers=[length(viewer_mirrors)]")
+#endif
+	mirror = new(null)
+	mirror.generate_view("chrome_mirror_[++mirror_serial]_map")
+	mirror.adopt_look(preview.appearance)
+	viewer_mirrors[user] = mirror
+#ifdef CRADLE_TRACE
+	cradle_trace("ensure_preview_mirror MINTED user=[user] mirror=[REF(mirror)] key=[mirror.assigned_map] \
+source_preview=[preview ? REF(preview) : "NULL"] result=[cradle_describe_screen_obj(mirror)]")
+#endif
+	return mirror
+
+/// Pushes the preview's current look into every open viewer's mirror.
+/obj/machinery/chrome_cradle/proc/sync_preview_mirrors()
+	if(QDELETED(preview))
+		return
+	var/list/stale
+	for(var/mob/viewer as anything in viewer_mirrors)
+		var/atom/movable/screen/map_view/chrome_mirror/mirror = viewer_mirrors[viewer]
+		if(QDELETED(mirror))
+			LAZYADD(stale, viewer)
+			continue
+		mirror.adopt_look(preview.appearance)
+	for(var/mob/viewer as anything in stale)
+		viewer_mirrors -= viewer
+
+/// Rebuilds the console's body preview from the current occupant and highlight.
+/// Cheap enough to fire on every hardware change; never on a timer.
+/obj/machinery/chrome_cradle/proc/refresh_preview()
+	preview?.refresh(occupant, selected_ware)
+	sync_preview_mirrors()
+#ifdef CRADLE_TRACE
+	cradle_trace("refresh_preview occupant=[occupant] selected=[selected_ware] \
+source=[cradle_describe_screen_obj(preview)]")
+	for(var/mob/viewer as anything in viewer_mirrors)
+		var/atom/movable/screen/map_view/mirror = viewer_mirrors[viewer]
+		cradle_trace("refresh_preview SYNCED viewer=[viewer] [cradle_describe_screen_obj(mirror)] \
+displayed_at=[mirror?.cradle_displayed_at]")
+#endif
+
+/**
+ * Every piece of chrome this console can act on, mapped to where it currently
+ * is: "installed", "carried" (hands, pockets, bags) or "tray". Associative so
+ * the rack builder gets the state for free and the ordering stays stable.
+ */
+/obj/machinery/chrome_cradle/proc/get_reachable_ware(mob/living/carbon/patient)
+	var/list/found = list()
+	if(istype(patient))
+		for(var/obj/item/organ/ware in get_installed_cyberware(patient))
+			found[ware] = "installed"
+		for(var/obj/item/organ/ware in patient.get_all_contents())
+			if(ware.owner || !ware.GetComponent(/datum/component/cyberware))
+				continue
+			found[ware] = "carried"
+	// A hard-deleted organ (SSgarbage giving up on a ref it can't collect)
+	// turns into a null IN PLACE inside every list still holding it, and the
+	// tray holds strong refs. Scrub before reading, and use a typed loop so a
+	// null that appears between the scrub and the read is filtered rather than
+	// dereferenced — this proc runs from ui_data, so a runtime here blanks the
+	// whole rack once a second.
+	list_clear_nulls(tray)
+	for(var/obj/item/organ/ware in tray)
+		if(!ware.GetComponent(/datum/component/cyberware))
+			continue
+		found[ware] = "tray"
+	return found
+
+/**
+ * The rack: one row per body system in head-down order, each holding whatever
+ * chrome the console can see for its slots. Empty rows are kept — a system
+ * with nothing to put in it is information too, and it is what makes the rack
+ * read as a body rather than as a list.
+ *
+ * Identical spares stack onto a single card carrying a count, rather than
+ * tiling the same sprite six times across a row. The stack key is everything
+ * the card actually shows, so a damaged or EMP-scrambled copy never hides
+ * inside a clean stack, and an installed piece never merges with a loose one —
+ * they offer different buttons. Since only the representative of a stack has a
+ * tile on screen, a highlight sitting on one of the folded-away copies is
+ * snapped onto that representative here.
+ */
+/obj/machinery/chrome_cradle/proc/build_rack_data(mob/living/carbon/patient, list/available)
+	var/list/grouped = list()
+	/// stack key -> the card every copy in that stack shares.
+	var/list/stack_cards = list()
+	/// stack key -> the one piece of chrome that card addresses.
+	var/list/stack_owners = list()
+	for(var/obj/item/organ/ware in available)
+		var/list/card = build_ware_data(ware, available[ware], patient)
+		var/stack_key = "[ware.type]|[card["state"]]|[card["failing"]]|[card["emp_down"]]|[card["browned_out"]]|[card["damage"]]"
+		var/list/stacked = stack_cards[stack_key]
+		if(stacked)
+			stacked["count"] += 1
+			if(ware == selected_ware)
+				selected_ware = stack_owners[stack_key]
+			continue
+		stack_cards[stack_key] = card
+		stack_owners[stack_key] = ware
+		var/group_id = get_cyberware_group_id(ware)
+		if(!grouped[group_id])
+			grouped[group_id] = list()
+		var/list/bucket = grouped[group_id]
+		bucket += list(card)
+
+	var/list/rows = list()
+	for(var/list/group as anything in GLOB.cyberware_ui_groups)
+		var/group_id = group["id"]
+		rows += list(list(
+			"id" = group_id,
+			"name" = group["name"],
+			"region" = group["region"],
+			"ware" = grouped[group_id] || list(),
+		))
+		grouped -= group_id
+	// A slot with no home in the table still gets shown rather than vanishing.
+	for(var/leftover_id in grouped)
+		rows += list(list(
+			"id" = leftover_id,
+			"name" = "Other Hardware",
+			"region" = "torso",
+			"ware" = grouped[leftover_id],
+		))
+	return rows
+
+/// One rack card: what it is, what it costs the body, what the parlor charges
+/// for it, and whether this occupant can actually take it. `count` starts at
+/// one and is bumped by build_rack_data() for every identical copy it folds in.
+/obj/machinery/chrome_cradle/proc/build_ware_data(obj/item/organ/ware, state, mob/living/carbon/patient)
+	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+	var/list/price = get_cyberware_price(ware)
+	var/installed = state == "installed"
+	return list(
+		"ref" = REF(ware),
+		"name" = ware.name,
+		"desc" = ware.desc,
+		"icon" = get_cyberware_card_icon_key(ware.icon_state),
+		"tier" = chrome ? chrome.tier : CYBERWARE_TIER_1,
+		"load" = chrome ? chrome.chrome_load : 0,
+		"capacity_bonus" = chrome ? chrome.capacity_bonus : 0,
+		"state" = state,
+		"count" = 1,
+		"installed" = installed,
+		"fits" = (installed || !istype(patient)) ? TRUE : (cyberware_insert_check(ware, patient, silent = TRUE) ? TRUE : FALSE),
+		"failing" = (ware.organ_flags & ORGAN_FAILING) ? TRUE : FALSE,
+		"emp_down" = chrome?.emp_down ? TRUE : FALSE,
+		"browned_out" = chrome?.browned_out ? TRUE : FALSE,
+		"damage" = round(ware.damage),
+		"configurable" = istype(ware, /obj/item/organ/cyberimp/cyberware/chromatic_dermis),
+		"price_credits" = price ? price["credits"] : 0,
+		"price_vouchers" = price ? price["vouchers"] : 0,
+		"price_paired" = price ? price["paired"] : FALSE,
+	)
+
+/**
+ * The ink panel: the parlor's stock pigments and patterns, plus where the
+ * highlighted suite currently sits, so the console can show a swatch grid
+ * instead of a blocking prompt. Only offered for a suite already seated in the
+ * occupant's chest — a sachet in a bag has no skin to re-key.
+ */
+/obj/machinery/chrome_cradle/proc/build_ink_data(mob/living/carbon/patient)
+	var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/dermis = selected_ware
+	if(!istype(dermis) || dermis.owner != patient)
+		return null
+	var/list/palette = list()
+	for(var/swatch_name in GLOB.cyberware_ink_palette)
+		palette += list(list(
+			"name" = swatch_name,
+			"hex" = GLOB.cyberware_ink_palette[swatch_name],
+		))
+	var/list/patterns = list()
+	for(var/pattern_name in GLOB.cyberware_ink_patterns)
+		var/list/pattern = GLOB.cyberware_ink_patterns[pattern_name]
+		patterns += list(list(
+			"name" = pattern_name,
+			"blurb" = pattern["blurb"],
+		))
+	return list(
+		"color" = dermis.tattoo_color,
+		"pattern" = dermis.tattoo_pattern,
+		"palette" = palette,
+		"patterns" = patterns,
+	)
+
+/**
+ * Where the occupant's load budget lands if the highlighted piece goes in — or
+ * comes out, when it is already installed — plus whatever that swap would
+ * evict. This is the number the ladder design lives or dies on, so the console
+ * shows it before anything is committed rather than after a refusal.
+ */
+/obj/machinery/chrome_cradle/proc/build_projection(mob/living/carbon/patient, state)
+	if(!istype(patient) || isnull(selected_ware))
+		return null
+	var/datum/component/cyberware/chrome = selected_ware.GetComponent(/datum/component/cyberware)
+	if(!chrome)
+		return null
+	var/projected_load = get_chrome_load(patient)
+	var/projected_capacity = get_chrome_capacity(patient)
+	var/list/evicts = list()
+	if(state == "installed")
+		projected_load -= chrome.chrome_load
+		projected_capacity -= chrome.capacity_bonus
+	else
+		projected_load += chrome.chrome_load
+		projected_capacity += chrome.capacity_bonus
+		for(var/obj/item/organ/incumbent in selected_ware.cyberware_get_incumbents(patient))
+			evicts += incumbent.name
+			var/datum/component/cyberware/incumbent_chrome = incumbent.GetComponent(/datum/component/cyberware)
+			if(!incumbent_chrome)
+				continue
+			projected_load -= incumbent_chrome.chrome_load
+			projected_capacity -= incumbent_chrome.capacity_bonus
+	return list(
+		"load" = projected_load,
+		"capacity" = projected_capacity,
+		"evicts" = evicts,
+	)
 
 /obj/machinery/chrome_cradle/ui_data(mob/user)
 	var/list/data = list()
@@ -470,10 +799,31 @@
 	data["can_operate"] = has_patient && occupant_can_consent()
 	data["busy"] = busy
 	data["busy_action"] = busy_action
+	data["busy_ware"] = busy_ware?.name
 	data["busy_timeleft"] = busy ? max(busy_until - world.time, 0) / 10 : 0
 	data["busy_duration"] = busy_duration / 10
 	data["loaded_credits"] = loaded_credits
 	data["tuneup_fee"] = CYBERWARE_TUNEUP_FEE
+	// Only handed over with a body on the slab: with none, the interface drops
+	// the portrait entirely, which unmounts the map control client-side. Each
+	// viewer reads their OWN mirror's key — see ensure_preview_mirror() for
+	// why the key can never be shared or reused.
+	var/atom/movable/screen/map_view/mirror = has_patient ? ensure_preview_mirror(user) : null
+	data["preview_view"] = mirror?.assigned_map
+#ifdef CRADLE_TRACE
+	// ui_data runs about once a second, so only speak up when the key the
+	// interface is told to use actually changes -- or when we are handing out a
+	// key for a view nobody ever registered, which looks exactly like a render
+	// bug from the outside.
+	var/traced_key = mirror?.assigned_map || "NONE"
+	if(cradle_last_sent_key[user] != traced_key)
+		cradle_last_sent_key[user] = traced_key
+		cradle_trace("ui_data KEY-CHANGED user=[user] preview_view=[traced_key] mirror=[mirror ? REF(mirror) : "NULL"] \
+displayed_at=[mirror?.cradle_displayed_at] has_patient=[has_patient] \
+registered_on_client=[(user.client && mirror) ? length(user.client.screen_maps[traced_key]) : "n/a"]")
+	if(mirror && !mirror.cradle_displayed_at)
+		cradle_trace("ui_data WARNING user=[user] sending key=[traced_key] for a view display_to_client NEVER ran on")
+#endif
 
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(src))
 	data["barred"] = outpost?.is_user_barred(patient) ? TRUE : FALSE
@@ -487,52 +837,22 @@
 	data["load"] = has_patient ? get_chrome_load(patient) : 0
 	data["capacity"] = has_patient ? get_chrome_capacity(patient) : 0
 	data["brownout"] = has_patient && get_chrome_load(patient) > get_chrome_capacity(patient)
-
-	var/list/installed = list()
-	if(has_patient)
-		for(var/obj/item/organ/ware as anything in get_installed_cyberware(patient))
-			var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-			installed += list(list(
-				"ref" = REF(ware),
-				"name" = ware.name,
-				"tier" = chrome.tier,
-				"load" = chrome.chrome_load,
-				"capacity_bonus" = chrome.capacity_bonus,
-				"failing" = (ware.organ_flags & ORGAN_FAILING) ? TRUE : FALSE,
-				"emp_down" = chrome.emp_down ? TRUE : FALSE,
-			))
-	data["installed"] = installed
 	data["tuneup_denial"] = has_patient ? get_tuneup_denial(patient) : "No chrome installed."
 
-	// Everything chrome the occupant brought in: hands, pockets, bags.
-	var/list/carried = list()
-	if(has_patient)
-		for(var/obj/item/organ/ware in patient.get_all_contents())
-			var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-			if(!chrome || ware.owner)
-				continue
-			carried += list(list(
-				"ref" = REF(ware),
-				"name" = ware.name,
-				"tier" = chrome.tier,
-				"load" = chrome.chrome_load,
-				"capacity_bonus" = chrome.capacity_bonus,
-				"fits" = cyberware_insert_check(ware, patient, silent = TRUE) ? TRUE : FALSE,
-			))
-	data["carried"] = carried
-
-	var/list/tray_data = list()
-	for(var/obj/item/organ/ware as anything in tray)
-		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-		tray_data += list(list(
-			"ref" = REF(ware),
-			"name" = ware.name,
-			"tier" = chrome ? chrome.tier : 1, // CYBERWARE_TIER_1
-			"load" = chrome ? chrome.chrome_load : 0,
-			"fits" = (has_patient && chrome) ? (cyberware_insert_check(ware, patient, silent = TRUE) ? TRUE : FALSE) : FALSE,
-		))
-	data["tray"] = tray_data
-
+	// Settle the highlight before anything renders off it: the piece may have
+	// been installed, ejected or lifted out of a pocket since it was picked.
+	var/list/available = get_reachable_ware(patient)
+	if(selected_ware && !(selected_ware in available))
+		selected_ware = null
+		refresh_preview()
+	// The rack runs first because stacking identical spares can move the
+	// highlight onto the copy that owns the tile — read it back afterwards or
+	// the console lights up a card that isn't the one on screen.
+	data["groups"] = build_rack_data(patient, available)
+	data["selected"] = selected_ware ? REF(selected_ware) : null
+	data["projection"] = build_projection(patient, selected_ware ? available[selected_ware] : null)
+	data["ink"] = build_ink_data(patient)
+	data["tray_count"] = length(tray)
 	return data
 
 /obj/machinery/chrome_cradle/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -556,6 +876,47 @@
 				return TRUE
 			eject_cash(acting)
 			return TRUE
+		// Browsing the racks stays the occupant's alone: the highlight drives
+		// the ghost and the inspector for every viewer, and a bystander
+		// driving it would be fighting the person on the slab. Spinning the
+		// mannequin is open to anyone watching — it changes nothing but the
+		// shared facing, and the ripperdoc wants to see the back too.
+		if("select")
+			if(acting != occupant)
+				return TRUE
+			var/list/available = get_reachable_ware(occupant)
+			var/obj/item/organ/ware = locate(params["ref"]) in available
+			// Clicking the highlighted piece again clears it.
+			selected_ware = (ware == selected_ware) ? null : ware
+			refresh_preview()
+			return TRUE
+		if("rotate")
+			preview?.rotate(params["dir"] != "left")
+			sync_preview_mirrors()
+			return TRUE
+		// The interface reports its native map control now exists. Register
+		// (or re-register) this viewer's mirror into it and push the current
+		// look. Registering into a live control is the order every working
+		// map popup in the tree uses, and re-running it also recovers from
+		// show_hud() screen clears (lying down, sedation, F12) and from a
+		// plane group stranded on a stale hud.
+		if("preview_mounted")
+#ifdef CRADLE_TRACE
+			cradle_trace("ui_act preview_mounted user=[acting] client=[acting.client ? acting.client.ckey : "NO CLIENT"] \
+mirror=[viewer_mirrors[acting] ? REF(viewer_mirrors[acting]) : "NONE"] — interface says its control now exists")
+#endif
+			if(acting.client)
+				var/atom/movable/screen/map_view/chrome_mirror/mirror = ensure_preview_mirror(acting)
+				mirror.display_to_client(acting.client)
+			sync_preview_mirrors()
+			return TRUE
+#ifdef CRADLE_TRACE
+		// The interface reporting what it measured and what it winset, so the
+		// client half of the chain lands in the same log as the server half.
+		if("cradle_trace")
+			cradle_trace("CLIENT user=[acting] [copytext(params["line"], 1, 900)]")
+			return TRUE
+#endif
 
 	// Everything below touches a body, and only its owner gets to order that.
 	if(acting != occupant)
@@ -597,14 +958,15 @@
 			try_tune_up(patient)
 			return TRUE
 
-		if("configure")
+		// One swatch or one pattern per click, applied to the skin immediately —
+		// the ink panel is a live picker, not a form with a commit button.
+		if("set_ink")
 			var/obj/item/organ/ware = locate(params["ref"]) in get_installed_cyberware(patient)
 			if(!istype(ware, /obj/item/organ/cyberimp/cyberware/chromatic_dermis))
-				balloon_alert(patient, "nothing to configure!")
+				balloon_alert(patient, "nothing to re-key!")
 				return TRUE
 			var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/dermis = ware
-			// The picker blocks on input(); never sleep in ui_act.
-			INVOKE_ASYNC(dermis, TYPE_PROC_REF(/obj/item/organ/cyberimp/cyberware/chromatic_dermis, configure), patient)
+			dermis.set_ink(patient, params["color"], params["pattern"])
 			return TRUE
 
 	return TRUE

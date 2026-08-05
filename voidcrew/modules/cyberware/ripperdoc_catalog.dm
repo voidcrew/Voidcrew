@@ -15,6 +15,16 @@
  * climbing and never becomes an arbitrage loop (you can't refund vouchers, and
  * a removed piece resold at 50% is always a loss).
  *
+ * Splice is not the only source any more. The roster also rides the zone loot
+ * tables (modules/loot/themes/) at the tier that matches what he charges for
+ * it — the same two-channel shape the gun blueprints already have, shop as
+ * the certainty channel and caches as the gamble. What stays parlor-only:
+ * Legend Chrome (the chase is meant to be plannable, so it is always on the
+ * shelf and never in a crate) and both ammunition SKUs (the return-visit
+ * hook — a looted Ronin or Bunker Buster comes with what's loaded in it and
+ * nothing more). The one piece that is NOT sold here at all is the Skyhook
+ * wrist winch: it drops from expedition caches only.
+ *
  * Catalog only — the organs live in ware_*.dm, the cradle in chrome_cradle.dm,
  * the NPC subtype in trade/trader_npc.dm, the parlor room on the Undertow map.
  */
@@ -39,7 +49,7 @@
 
 /datum/outpost_shop/vendor/ripperdoc
 	outpost_name = "\improper The Chop Shop"
-	outpost_desc = "The Undertow's ripperdoc parlor. Chrome in, credits out, questions never."
+	outpost_desc = "The Undertow's ripperdoc parlor. Chrome in, credits out, no paperwork."
 	trader_name = "Splice"
 	trader_outfit = /datum/outfit/ripperdoc_splice
 	trader_gender = NEUTER
@@ -88,7 +98,6 @@
 		/datum/shop_sku/ripperdoc/bunker_buster,
 		/datum/shop_sku/ripperdoc/ghostskin,
 		/datum/shop_sku/ripperdoc/lazarus,
-		/datum/shop_sku/ripperdoc/void_chassis,
 		// ---- Legend Chrome (the chase — always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
@@ -116,15 +125,15 @@
 		TRADER_LINE_SALE = list(
 			"Sold. The chair's right there when you're ready.",
 			"Good choice. It'll fit. I've done this before.",
-			"Paid in full. If it sparks in the first hour, come back. It won't.",
+			"Paid in full. If it sparks in the first hour, come back.",
 			"That one's my own work. Treat it better than you treat your lungs.",
 			"Done. No warranty card. I'm the warranty.",
 		),
 		TRADER_LINE_REFUSAL = list(
 			"Your ledger's flagged. Chrome doesn't move to embargoed ships.",
 			"Not today. Come back when your account stops embarrassing you.",
-			"The invoice comes first. It always comes first.",
-			"No credit. The last guy who asked is a display case now. Joke. Mostly.",
+			"The invoice comes first. Always has.",
+			"No credit. Not for you, not for anybody.",
 		),
 		TRADER_LINE_WARNING = list(
 			"Careful. The turrets outside cost more than your arms are worth.",
@@ -132,13 +141,13 @@
 			"This is the one room in the red zone with clean floors. Keep it that way.",
 		),
 		TRADER_LINE_AGGRESSION = list(
-			"Wrong room. The house handles this part.",
-			"I fix bodies. The turrets make the work.",
+			"Wrong room to try that in.",
+			"I fix bodies. The turrets outside keep me busy.",
 			"Vex! One for the blacklist.",
 		),
 		TRADER_LINE_IDLE = list(
 			"The Cascade Lattice in the case? Not a replica. Stop asking.",
-			"Meat forgets. Chrome doesn't. That's the whole pitch.",
+			"Chrome doesn't get tired and it doesn't forget. That's the whole pitch.",
 			"Sawbones does organs. I do upgrades. We don't compete. We share a supplier.",
 			"The mirror's there for after. Everyone looks. Take your time.",
 			"The bar watches installs through that window. Dram charges them for the seat.",
@@ -150,7 +159,7 @@
 			"I don't do discounts. I do work that doesn't need discounts.",
 		),
 		TRADER_LINE_RESTOCK = list(
-			"Shipment's in. New chrome on the shelves. Some of it's even new.",
+			"Shipment's in. Fresh chrome on the shelves. Some of it's even unused.",
 			"Restock. The crates don't say where from. That's the supplier's whole brand.",
 			"Fresh stock. Come see what the lanes coughed up.",
 		),
@@ -166,7 +175,7 @@
 
 /datum/shop_sku/ripperdoc/chromatic_dermis
 	category = "Street Chrome"
-	desc = "Programmable circuit-tattoos under the skin. They flare when you take a hit, strobe when your chrome fires, and dim when you're starving. Pure show. Show is the outpost's real currency."
+	desc = "Programmable circuit-tattoos under the skin. They flare when you take a hit, strobe when your chrome fires, and go dim when you're starving. Pure show, and worth every credit."
 	item_path = /obj/item/organ/cyberimp/cyberware/chromatic_dermis
 	price_credits = 400
 	stock_min = 2
@@ -189,7 +198,7 @@
 
 /datum/shop_sku/ripperdoc/nightshade
 	category = "Street Chrome"
-	desc = "Sees in the dark without the thermal tantrum when someone flashes you. The autolathe can't say that."
+	desc = "Sees in the dark, and doesn't blind you when someone pops a flash. The printed thermals can't say that. Diagnostic bus is stock, so you'll read how much chrome the other guy is carrying, but never what."
 	item_path = /obj/item/organ/eyes/robotic/cyberware/nightshade
 	price_credits = 600
 	stock_min = 1
@@ -220,7 +229,7 @@
 
 /datum/shop_sku/ripperdoc/cargo_cavity
 	category = "Street Chrome"
-	desc = "One sealed slot behind the sternum. Scanners skip it, pat-downs miss it. What goes in it is your business."
+	desc = "One sealed slot behind the sternum. Scanners skip it and pat-downs miss it. I don't ask what goes in."
 	item_path = /obj/item/organ/cyberimp/cyberware/cargo_cavity
 	price_credits = 1000
 	stock_min = 1
@@ -273,7 +282,7 @@
 
 /datum/shop_sku/ripperdoc/icepick
 	category = "Pro Chrome"
-	desc = "A data spike for the kind of door and the kind of turret that don't take requests. Outpost defenses ignore it, before you get ideas."
+	desc = "A data spike for the doors and turrets that won't open or stand down when asked. Outpost defenses ignore it, before you get ideas."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
 	price_vouchers = 1
 
@@ -330,12 +339,13 @@
 
 /datum/shop_sku/ripperdoc/ronin
 	category = "Military Chrome"
-	desc = "A submachine gun that folds into your forearm. Feeds a proprietary caliber only I sell — see the Ammunition shelf. Can't be knocked out of a hand you don't technically have."
+	desc = "A submachine gun that folds into your forearm. Feeds a proprietary caliber only I sell — see the Ammunition shelf. Nobody is disarming you of it."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	price_vouchers = 3
 
 /datum/shop_sku/ripperdoc/rigger
 	category = "Military Chrome"
+	desc = "Skull jack. Opens your ship's helm wherever you're standing on it — engineering, a corridor, medbay with your hands full. It borrows a real console, so a hull with no helm left gives you nothing, and you're walking, not running, the whole time you're flying."
 	item_path = /obj/item/organ/cyberimp/cyberware/rigger
 	price_vouchers = 3
 
@@ -347,13 +357,13 @@
 /datum/shop_sku/ripperdoc/mantis
 	category = "Military Chrome"
 	name = "Mantis Blades (pair)"
-	desc = "A pair of folded blades where your forearms were. The lunge is the selling point. The look on people is free. Sold cased; install one side at a time."
+	desc = "A pair of folded blades where your forearms were. The lunge is the selling point; the reaction you get is free. Sold cased, install one side at a time."
 	item_path = /obj/item/cyberware_pair_case/mantis_blades
 	price_vouchers = 4
 
 /datum/shop_sku/ripperdoc/bunker_buster
 	category = "Military Chrome"
-	desc = "A two-shot rocket pod built into the forearm. Reloads are parlor-only — see the Ammunition shelf. Shaped charge, so it won't open your own hull. Won't open theirs either, just the people inside it."
+	desc = "A two-shot rocket pod built into the forearm. Reloads are parlor-only — see the Ammunition shelf. Shaped charge, so it won't open your hull. Or theirs. Just whoever's standing in it."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	price_vouchers = 4
 
@@ -367,18 +377,13 @@
 	item_path = /obj/item/organ/cyberimp/cyberware/lazarus
 	price_vouchers = 4
 
-/datum/shop_sku/ripperdoc/void_chassis
-	category = "Military Chrome"
-	item_path = /obj/item/organ/cyberimp/cyberware/void_chassis
-	price_vouchers = 4
-
 // =========================================================================
 // LEGEND CHROME — the chase, always on the shelf
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/governor_delete
 	category = "Legend Chrome"
-	desc = "Firmware surgery. Your capacity governor comes out thinking your spine can carry six points more. It's wrong about being wrong. Everything else on this shelf needs it."
+	desc = "Firmware surgery. Your capacity governor goes back in believing your spine can carry six more points of load, and it holds. Everything else on this shelf needs it."
 	item_path = /obj/item/organ/cyberimp/cyberware/governor_delete
 	price_vouchers = 5
 	stock_min = 1
@@ -393,7 +398,7 @@
 
 /datum/shop_sku/ripperdoc/cascade
 	category = "Legend Chrome"
-	desc = "Sandevistan-class reflex lattice. Eight seconds where everyone else is furniture. Then the crash, which is also educational. The most expensive thing I've ever bolted into a spine."
+	desc = "Sandevistan-class reflex lattice. Eight seconds where everyone else may as well be furniture, then a crash that puts you on the floor. The most expensive thing I've ever bolted into a spine."
 	item_path = /obj/item/organ/cyberimp/cyberware/cascade
 	price_vouchers = 8
 	stock_min = 1
@@ -415,7 +420,7 @@
 /datum/shop_sku/ripperdoc/buster_rockets
 	category = "Ammunition"
 	name = "Bunker Buster rockets"
-	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle gently. Or don't; they're for people you don't like."
+	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle them carefully — they're meant to go off at the far end."
 	item_path = /obj/item/ammo_box/cyberware_buster_rockets
 	price_credits = 600
 	stock_min = 2
@@ -448,7 +453,7 @@
 
 /datum/shop_buyback/ripperdoc/second_wind
 	name = "Second Wind Bladder (pulled)"
-	desc = "A used air reserve. Worth half toward a real void seal."
+	desc = "A used air reserve. Worth half toward something with a longer bladder."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/second_wind
 	pay_credits = 450

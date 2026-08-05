@@ -58,6 +58,12 @@ SUBSYSTEM_DEF(overmap)
 	var/list/obj/structure/overmap/ship/initial_ships = list()
 	/// Hull types the roundstart fleet has already rolled, so a second hull is a different class
 	var/list/spent_roundstart_hulls = list()
+	/// DEV SWITCH - set to FALSE to skip planets entirely: no overmap contacts, no terrain
+	/// generation, and no lobby hold waiting for it. For local iteration on things that
+	/// aren't planets; planet missions simply stop being offered. Turn it back on before
+	/// committing. (Preloaded planets are separate - those are the *_planet_count vars in
+	/// voidcrew/mapping/_mapping.dm, already 0.)
+	var/spawn_planets = TRUE
 	/// How many planets of each terrain type the round gets. Only the FIRST of each type is
 	/// generated during the lobby - see prebuild_roundstart_planets(). The rest are charted
 	/// contacts with no interior until a ship goes there, so raising this adds places to go
@@ -448,6 +454,14 @@ SUBSYSTEM_DEF(overmap)
  * the number generated up front - only the first of each type is prebuilt in the lobby.
  */
 /datum/controller/subsystem/overmap/proc/setup_planets()
+	if(!spawn_planets)
+		// Nothing to build, so nothing for the pre-round countdown to wait on - flip the
+		// gate now rather than letting the lobby sit through a prebuild pass over an
+		// empty marker list.
+		roundstart_planets_ready = TRUE
+		log_mapping("SSovermap: planets disabled (spawn_planets = FALSE) - no planet contacts this round")
+		return
+
 	// Init planets
 	var/list/planets = SSmapping.planets
 	if(!planets)

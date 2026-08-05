@@ -189,11 +189,14 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/deadeye
 	name = "\improper Deadeye link"
-	desc = "Milspec optics wrapped around a target-processing coprocessor. Paint a target and the link walks your next few rounds onto them, wherever you were actually pointing the barrel."
+	desc = "Milspec optics built around a target-processing coprocessor. Paint someone and the link walks your next few rounds onto them, whatever the barrel was actually pointed at."
 	icon_state = "deadeye"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
-	actions_types = list(/datum/action/cooldown/cyberware/deadeye_tag)
+	actions_types = list(
+		/datum/action/cooldown/cyberware/deadeye_tag,
+		/datum/action/cooldown/cyberware/chrome_read,
+	)
 	/// Weakref to the currently tagged target.
 	var/datum/weakref/tagged_ref
 	/// Homing shots remaining on the current tag.
@@ -264,7 +267,7 @@
 
 /datum/action/cooldown/cyberware/deadeye_tag
 	name = "Deadeye Tag"
-	desc = "Tag a hostile in view. Your next three shots hard-track them; the tag never takes a crewmate."
+	desc = "Tag a hostile in view. Your next three shots track them automatically. The tag refuses to take a crewmate."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
 	cooldown_time = 25 SECONDS
@@ -310,7 +313,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. It fires before you know the shot exists, and the step it takes on your behalf is always the one you would have wanted."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own — roughly one shot in seven misses because your body moved before you told it to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -357,12 +360,28 @@
  * world quietly desaturating as the meat racks up damage you can't feel.
  * You find out how bad it was afterwards.
  *
+ * "You can't tell how bad it's gotten" is enforced rather than implied. While
+ * the editor is actually running, the bearer loses every readout of their own
+ * condition:
+ * - health bar and health doll, through tg's fake_healthy screwy-hud — the
+ *   same primitive the Numb quirk uses, and grouped, so wearing both is fine;
+ * - the brute and crit damage vignettes, through TRAIT_NO_DAMAGE_OVERLAY and
+ *   TRAIT_NOCRITOVERLAY, plus a manual clear for the oxygen one (upstream
+ *   applies that overlay with no trait gate);
+ * - the felt half of a self-examine, and the limb damage read by "check
+ *   yourself for injuries".
+ * None of that changes what anyone ELSE sees: examine a Dead Channel bearer
+ * and their wounds and injuries read exactly as they would on anyone.
+ *
+ * All of it lifts the moment the ware stops running — browned out, EMP
+ * scrambled, broken or pulled — the same way the colour does.
+ *
  * (The design's -25% stun-duration line was dropped at freeze: no clean
  * partial-stun primitive exists in this vintage and we don't fake one.)
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel
 	name = "\improper Dead Channel pain editor"
-	desc = "A signal processor clamped over the spinothalamic trunk. Pain still happens; it just gets routed to a channel nobody is listening to. The world goes a little grayer for every report it eats."
+	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten — the colour draining out of the world is the only gauge you get."
 	icon_state = "dead_channel"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -372,6 +391,9 @@
 	organ_traits = list(TRAIT_ANALGESIA, TRAIT_NOSOFTCRIT)
 	/// Our live screen tint, updated as damage mounts.
 	var/datum/client_colour/desat_colour
+	/// TRUE while the bearer's own damage feedback is actually cut. Only ever
+	/// flipped through set_feedback_cut(), which owns every piece of it.
+	var/feedback_cut = FALSE
 
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -381,9 +403,22 @@
 	organ_owner.add_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
 	desat_colour = organ_owner.add_client_colour(/datum/client_colour/cyberware_dead_channel, REF(src))
 	RegisterSignal(organ_owner, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_health_update))
+	RegisterSignal(organ_owner, COMSIG_ATOM_EXAMINE, PROC_REF(on_owner_examined))
+	RegisterSignal(organ_owner, COMSIG_CARBON_CHECKING_BODYPART, PROC_REF(on_owner_checks_limb))
+	refresh_feedback_cut()
 	on_health_update(organ_owner)
 
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	// Hand the readouts back BEFORE anything else runs. mob_remove() nulls
+	// `owner` before calling us, so this is the last moment the teardown still
+	// has a mob to give the HUD and the vignettes back to — get it wrong and
+	// the ex-bearer walks away with a health bar permanently pinned to full.
+	set_feedback_cut(FALSE, organ_owner)
+	UnregisterSignal(organ_owner, list(
+		COMSIG_ATOM_EXAMINE,
+		COMSIG_CARBON_CHECKING_BODYPART,
+		COMSIG_LIVING_HEALTH_UPDATE,
+	))
 	. = ..()
 	if(ishuman(organ_owner))
 		var/mob/living/carbon/human/human_owner = organ_owner
@@ -391,15 +426,112 @@
 	organ_owner.remove_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
 	organ_owner.remove_client_colour(REF(src))
 	desat_colour = null
-	UnregisterSignal(organ_owner, COMSIG_LIVING_HEALTH_UPDATE)
+
+/**
+ * The heartbeat behind the cut. updatehealth() covers every case where damage
+ * moves, but the ware can go dark (brownout, EMP reboot finishing) while the
+ * bearer stands perfectly still and takes no damage at all — this settles the
+ * state once a tick regardless. Still called while ORGAN_FAILING, which is
+ * exactly when it matters.
+ */
+/obj/item/organ/cyberimp/cyberware/dead_channel/on_life(seconds_per_tick, times_fired)
+	. = ..()
+	refresh_feedback_cut()
+
+/// Settles the cut against the ware's live state: running and installed, or not.
+/obj/item/organ/cyberimp/cyberware/dead_channel/proc/refresh_feedback_cut()
+	set_feedback_cut(owner && !(organ_flags & ORGAN_FAILING), owner)
+
+/**
+ * The one place the suppression goes on and off, so every piece of it is
+ * added and dropped together.
+ *
+ * `bearer` is passed rather than read off `owner` because the teardown path
+ * runs after mob_remove() has already nulled it. A null bearer never flips
+ * the flag: dropping it there would strand the status effect and the traits
+ * on a live player with no organ left to take them off again.
+ */
+/obj/item/organ/cyberimp/cyberware/dead_channel/proc/set_feedback_cut(cutting, mob/living/carbon/bearer)
+	cutting = !!cutting
+	if(feedback_cut == cutting || !istype(bearer))
+		return
+	feedback_cut = cutting
+	if(cutting)
+		bearer.apply_status_effect(/datum/status_effect/grouped/screwy_hud/fake_healthy, REF(src))
+		bearer.add_traits(list(TRAIT_NO_DAMAGE_OVERLAY, TRAIT_NOCRITOVERLAY), REF(src))
+	else
+		bearer.remove_status_effect(/datum/status_effect/grouped/screwy_hud/fake_healthy, REF(src))
+		bearer.remove_traits(list(TRAIT_NO_DAMAGE_OVERLAY, TRAIT_NOCRITOVERLAY), REF(src))
+	// The traits and the status effect only gate the NEXT redraw, so whatever
+	// is on screen right now has to be re-settled by hand. This is the half
+	// that matters on the way OUT: without it a bearer who loses the ware
+	// mid-vignette keeps the overlay until something else happens to them.
+	bearer.update_damage_hud()
+	bearer.update_health_hud()
+	if(cutting)
+		bearer.clear_fullscreen("oxy", 0)
+
+/**
+ * Signal proc for [COMSIG_ATOM_EXAMINE] on the bearer: cut the lines that
+ * report FELT damage, and only when the examiner is the bearer themselves.
+ * Anyone else looking at a Dead Channel bearer reads their wounds and
+ * injuries completely normally.
+ *
+ * The brute and burn severity lines are already gone by the time this runs —
+ * upstream skips those on a self-examine while fake_healthy is up. What is
+ * left is the per-wound descriptions and the disabled-limb lines, rebuilt the
+ * way carbon/examine.dm built them and removed by value.
+ *
+ * Left alone on purpose: embedded objects, bleeding, blood-loss pallor and
+ * missing limbs. The editor sits on the pain nerves, not on the eyes — a
+ * knife in your leg is still a knife you can look down and see.
+ */
+/obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_owner_examined(mob/living/carbon/source, mob/examiner, list/examine_list)
+	SIGNAL_HANDLER
+	if(!feedback_cut || examiner != source)
+		return
+	var/their = source.p_their()
+	for(var/obj/item/bodypart/body_part as anything in source.bodyparts)
+		for(var/datum/wound/limb_wound as anything in body_part.wounds)
+			examine_list -= span_danger(limb_wound.get_examine_description(examiner))
+		// Upstream skips limbs disabled BY a wound here, so we must too, or we
+		// would try to remove a line that was never printed.
+		if(!body_part.bodypart_disabled || HAS_TRAIT(body_part, TRAIT_DISABLED_BY_WOUND))
+			continue
+		var/damage_text = "limp and lifeless"
+		if(body_part.get_damage() >= body_part.max_damage)
+			damage_text = (body_part.brute_dam >= body_part.burn_dam) ? body_part.heavy_brute_msg : body_part.heavy_burn_msg
+		examine_list -= span_boldwarning("[capitalize(their)] [body_part.plaintext_zone] looks [damage_text]!")
+
+/**
+ * Signal proc for [COMSIG_CARBON_CHECKING_BODYPART] on the bearer: the
+ * check-yourself-for-injuries pass reads damage the bearer cannot feel, so
+ * every limb comes back clean while the editor runs. Fires only on a self
+ * check — check_for_injuries() is never called with anyone else as examiner.
+ * Same hook tg's fake health-doll hallucination uses, pointed the other way.
+ */
+/obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_owner_checks_limb(mob/living/carbon/source, obj/item/bodypart/checked_part, list/check_list, list/limb_damage)
+	SIGNAL_HANDLER
+	if(!feedback_cut)
+		return
+	limb_damage[BRUTE] = 0
+	limb_damage[BURN] = 0
 
 /**
  * Signal proc for [COMSIG_LIVING_HEALTH_UPDATE]: ease the world toward
- * grayscale as damage mounts. While the ware is browned out or scrambled the
- * editor stops editing and colour comes back — the one time it "fails safe".
+ * grayscale as damage mounts, settle the cut, and clear the one damage
+ * overlay upstream applies with no trait gate. While the ware is browned out
+ * or scrambled the editor stops editing and colour comes back — the one time
+ * it "fails safe".
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_health_update(mob/living/source)
 	SIGNAL_HANDLER
+	refresh_feedback_cut()
+	if(feedback_cut)
+		// updatehealth() runs update_damage_hud() and THEN sends this signal,
+		// so the oxygen vignette is re-applied and cleared inside one call and
+		// never survives to a frame the bearer can see.
+		source.clear_fullscreen("oxy", 0)
 	if(!desat_colour)
 		return
 	var/fraction = 0
@@ -439,7 +571,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand; the landing is all knees and dust."
+	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -452,8 +584,8 @@
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
 	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see."
-	button_icon = 'icons/mob/actions/actions_items.dmi'
-	button_icon_state = "sniper_zoom"
+	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
 

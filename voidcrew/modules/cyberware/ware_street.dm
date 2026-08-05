@@ -25,48 +25,98 @@
 // ---- 1. Chromatic Dermis ----------------------------------------------
 
 /**
+ * The ink patterns, in Cradle order. `size` is the outline thickness the
+ * pattern draws at and `idle` the alpha it rests at, so picking a pattern is
+ * a real look change rather than a word in your examine text: hex weave is a
+ * tight bright line, starburst a wide soft halo, bar code a dim trace that
+ * only shows when something sets it off.
+ */
+GLOBAL_LIST_INIT(cyberware_ink_patterns, list(
+	"circuit traces" = list("size" = 1, "idle" = 150, "blurb" = "A clean single trace. The parlor default."),
+	"serpent coil" = list("size" = 2, "idle" = 130, "blurb" = "Heavier line, wound down the limbs."),
+	"hex weave" = list("size" = 1, "idle" = 200, "blurb" = "Tight and bright. Nobody misses you."),
+	"starburst" = list("size" = 3, "idle" = 95, "blurb" = "A wide soft halo instead of a line."),
+	"bar code" = list("size" = 1, "idle" = 70, "blurb" = "Nearly dark until something sets it off."),
+))
+
+/// The parlor's stock ink colours. Free text is deliberately not on offer —
+/// these are the pigments Splice keeps in the drawer.
+GLOBAL_LIST_INIT(cyberware_ink_palette, list(
+	"Parlor Cyan" = "#4dd8e6",
+	"Splice Magenta" = "#ff2079",
+	"Hazard Amber" = "#ffb347",
+	"Ripper Green" = "#aaff3c",
+	"Arterial Red" = "#e6394d",
+	"Deep Violet" = "#9b5cff",
+	"Ion Blue" = "#3d7bff",
+	"Cold White" = "#d8f4ff",
+))
+
+/**
  * # Chromatic Dermis (T1, chest, ink slot, load 0)
  *
  * Emissive circuit-tattoos under the skin: pure flex, everyone's first
- * install. Rendered as a coloured outline on the bearer — it flares when
- * they take a hit, strobes when any chrome ability fires, and dims to a
- * guttering trace when they're starving (the ink runs off body sugar).
- * Colour and pattern are re-keyed at the Chrome Cradle's Configure button.
+ * install. Rendered as a coloured outline on the bearer, re-keyed for colour
+ * and pattern at the Chrome Cradle.
+ *
+ * It is also the framework's shared tell. Anything on the body that does
+ * something worth looking at — a fist landing, a tool folding out of a
+ * forearm, the Cargo Cavity swallowing something, the grips clamping, the
+ * bladder taking over your breathing — calls cyberware_ink_pulse() on its
+ * bearer, and the ink answers. Chrome you can't see from outside stops being
+ * invisible the moment you also wear this.
  */
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis
 	name = "\improper Chromatic Dermis ink suite"
-	desc = "A sachet of programmable tattoo ink and its injector spider. The circuit patterns crawl under the skin and light up when your body does something worth watching. Colour and pattern get set at a Chrome Cradle."
+	desc = "Programmable tattoo ink and the spider-legged injector that lays it under the skin. The traces light up whenever the rest of your chrome does something: a punch landing, a tool folding out, the air bladder kicking in. Colour and pattern are set at a Chrome Cradle."
 	icon_state = "chromatic_dermis"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_INK
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 0
 	tier = CYBERWARE_TIER_1
-	/// Glow colour, "#rrggbb". Set at the Cradle; defaults to parlor cyan.
+	/// Glow colour, "#rrggbb". Re-keyed at the Cradle; defaults to parlor cyan.
 	var/tattoo_color = "#4dd8e6"
-	/// Flavor pattern name, picked at the Cradle. Examine-only.
+	/// Pattern name — a key into GLOB.cyberware_ink_patterns, which is what
+	/// decides the outline's thickness and resting brightness.
 	var/tattoo_pattern = "circuit traces"
 	/// Filter key on the bearer. Keyed to us so two-dermis nonsense can't collide.
 	var/filter_name = "chromatic_dermis"
 	/// The outline alpha the ink idles at, recomputed each life tick from
 	/// nutrition and failure state. Cached so we only touch the filter on change.
 	var/current_alpha = -1
+	/// How many pulses the ink has actually run, and what the last one's
+	/// strength was. A pulse is a client-side animation with no state to read
+	/// back, so these are the only handle anything server-side has on whether
+	/// the ink fired: VV, and the conformance test that keeps every ware's
+	/// activation wired to cyberware_ink_pulse().
+	var/pulse_count = 0
+	var/last_pulse_strength = 0
 
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/examine(mob/user)
 	. = ..()
-	. += span_notice("The ink is keyed to <font color='[tattoo_color]'>this colour</font> in a [tattoo_pattern] pattern.")
+	. += span_notice("The ink is keyed to <font color='[tattoo_color]'><b>this colour</b></font> in a [tattoo_pattern] pattern.")
 
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	current_alpha = -1
-	organ_owner.add_filter(filter_name, 2, outline_filter(1, glow_color(140)))
+	apply_ink_filter()
 	settle_glow()
 	RegisterSignal(organ_owner, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_owner_damaged))
 	RegisterSignal(organ_owner, COMSIG_MOB_ABILITY_STARTED, PROC_REF(on_ability_started))
+	// Generic combat: any swing lights the ink, with or without chrome fists.
+	// Ware-specific beats come in through cyberware_ink_pulse() instead.
+	RegisterSignal(organ_owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
+	RegisterSignal(organ_owner, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_item_attack))
 
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	UnregisterSignal(organ_owner, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_ABILITY_STARTED))
+	UnregisterSignal(organ_owner, list(
+		COMSIG_MOB_APPLY_DAMAGE,
+		COMSIG_MOB_ABILITY_STARTED,
+		COMSIG_LIVING_UNARMED_ATTACK,
+		COMSIG_MOB_ITEM_ATTACK,
+	))
 	organ_owner.remove_filter(filter_name)
 	current_alpha = -1
 
@@ -74,19 +124,37 @@
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/glow_color(alpha)
 	return "[tattoo_color][num2hex(clamp(alpha, 0, 255), 2)]"
 
+/// This pattern's entry, or the default's if someone has hand-set nonsense.
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/pattern_data()
+	RETURN_TYPE(/list)
+	return GLOB.cyberware_ink_patterns[tattoo_pattern] || GLOB.cyberware_ink_patterns["circuit traces"]
+
+/**
+ * (Re)hangs the outline filter at the current pattern's thickness. Filter
+ * size can't be animated between patterns cleanly, so a pattern change tears
+ * the filter down and builds a new one; colour and alpha still animate.
+ */
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/apply_ink_filter()
+	if(!owner)
+		return
+	var/list/pattern = pattern_data()
+	owner.remove_filter(filter_name)
+	owner.add_filter(filter_name, 2, outline_filter(pattern["size"], glow_color(max(current_alpha, 0))))
+
 /**
  * Recomputes the idle glow: browned-out/EMP'd ink goes dark, a starving
- * bearer's ink gutters low, everyone else gets the full parlor shine.
+ * bearer's ink gutters low, everyone else gets their pattern's full shine.
  * Called every life tick — cheap, and only touches the filter on change.
  */
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/settle_glow()
 	if(!owner)
 		return
-	var/target_alpha = 140
+	var/list/pattern = pattern_data()
+	var/target_alpha = pattern["idle"]
 	if(organ_flags & ORGAN_FAILING)
 		target_alpha = 0
 	else if(owner.nutrition < NUTRITION_LEVEL_HUNGRY)
-		target_alpha = 45
+		target_alpha = round(target_alpha * 0.3)
 	if(target_alpha == current_alpha)
 		return
 	current_alpha = target_alpha
@@ -98,77 +166,227 @@
 	. = ..()
 	settle_glow()
 
+/**
+ * THE thing the ink is for: light up. Called straight by the dermis' own
+ * signal handlers and, from everywhere else on the body, through
+ * cyberware_ink_pulse(). Three shapes, all easing back to whatever idle the
+ * bearer's pattern and blood sugar leave them at.
+ */
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/pulse(strength = CYBERWARE_INK_SOFT)
+	if((organ_flags & ORGAN_FAILING) || !owner)
+		return
+	var/filter = owner.get_filter(filter_name)
+	if(!filter)
+		return
+	pulse_count++
+	last_pulse_strength = strength
+	var/idle = max(current_alpha, 0)
+	switch(strength)
+		if(CYBERWARE_INK_FLARE)
+			animate(filter, color = glow_color(255), time = 0.1 SECONDS)
+			animate(color = glow_color(idle), time = 0.9 SECONDS)
+		if(CYBERWARE_INK_HARD)
+			animate(filter, color = glow_color(230), time = 0.15 SECONDS)
+			animate(color = glow_color(60), time = 0.15 SECONDS)
+			animate(color = glow_color(230), time = 0.15 SECONDS)
+			animate(color = glow_color(idle), time = 0.4 SECONDS)
+		else
+			animate(filter, color = glow_color(min(idle + 90, 255)), time = 0.2 SECONDS)
+			animate(color = glow_color(idle), time = 0.6 SECONDS)
+
 /// Signal proc for [COMSIG_MOB_APPLY_DAMAGE]: the ink flares hot when the
 /// bearer takes a real hit, then eases back to idle.
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/on_owner_damaged(datum/source, damage, damagetype, def_zone)
 	SIGNAL_HANDLER
-	if(damage < 1 || (organ_flags & ORGAN_FAILING) || !owner)
+	if(damage < 1)
 		return
-	var/filter = owner.get_filter(filter_name)
-	if(!filter)
-		return
-	animate(filter, color = glow_color(255), time = 0.1 SECONDS)
-	animate(color = glow_color(current_alpha), time = 0.9 SECONDS)
+	pulse(CYBERWARE_INK_FLARE)
 
-/// Signal proc for [COMSIG_MOB_ABILITY_STARTED]: a quick double-strobe
-/// whenever any chrome cooldown ability fires. Other ability families
-/// (spells, mob abilities) don't light the ink — chrome answers chrome.
+/// Signal proc for [COMSIG_MOB_ABILITY_STARTED]: a double-strobe whenever any
+/// chrome cooldown ability fires. Other ability families (spells, mob
+/// abilities) don't light the ink — chrome answers chrome.
 /obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/on_ability_started(mob/source, datum/action/cooldown/ability)
 	SIGNAL_HANDLER
-	if(!istype(ability, /datum/action/cooldown/cyberware) || (organ_flags & ORGAN_FAILING) || !owner)
+	if(!istype(ability, /datum/action/cooldown/cyberware))
 		return
-	var/filter = owner.get_filter(filter_name)
-	if(!filter)
+	pulse(CYBERWARE_INK_HARD)
+
+/// Signal proc for [COMSIG_LIVING_UNARMED_ATTACK]: fists light the ink,
+/// chrome ones or not. Only real swings — help-intent pats aren't a beat.
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/on_unarmed_attack(mob/living/source, atom/target, proximity, list/modifiers)
+	SIGNAL_HANDLER
+	if(!proximity || !source.combat_mode)
 		return
-	animate(filter, color = glow_color(230), time = 0.15 SECONDS)
-	animate(color = glow_color(60), time = 0.15 SECONDS)
-	animate(color = glow_color(230), time = 0.15 SECONDS)
-	animate(color = glow_color(current_alpha), time = 0.4 SECONDS)
+	pulse(CYBERWARE_INK_HARD)
+
+/// Signal proc for [COMSIG_MOB_ITEM_ATTACK]: swinging something reads softer
+/// than throwing a punch, but it still reads.
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/on_item_attack(mob/source, mob/target, mob/user, list/modifiers, list/attack_modifiers)
+	SIGNAL_HANDLER
+	pulse(CYBERWARE_INK_SOFT)
 
 /**
- * The Cradle's Configure hook: pattern list plus a colour picker. Called
- * async from chrome_cradle's ui_act, so input() is safe to block on. The
- * re-validation after each prompt matters — the patient can be pulled off
- * the chair mid-decision.
+ * The Cradle's ink panel hook: one colour and one pattern, both applied the
+ * moment they're picked. Driven from ui_act rather than a blocking prompt, so
+ * the console shows the swatch grid and the patient watches themselves change
+ * on the mannequin. Returns TRUE when something actually changed.
  */
-/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/configure(mob/living/carbon/user)
+/obj/item/organ/cyberimp/cyberware/chromatic_dermis/proc/set_ink(mob/living/carbon/user, new_color, new_pattern)
 	if(user != owner)
-		return
-	var/static/list/patterns = list("circuit traces", "serpent coil", "hex weave", "starburst", "bar code")
-	var/new_pattern = tgui_input_list(user, "Ink pattern", "Chromatic Dermis", patterns, tattoo_pattern)
-	if(new_pattern && user == owner)
+		return FALSE
+	. = FALSE
+	if(new_pattern && (new_pattern in GLOB.cyberware_ink_patterns) && new_pattern != tattoo_pattern)
 		tattoo_pattern = new_pattern
-	var/new_color = input(user, "Glow colour", "Chromatic Dermis", tattoo_color) as color|null
-	if(new_color && user == owner)
-		tattoo_color = new_color
-		var/filter = owner.get_filter(filter_name)
-		if(filter)
-			animate(filter, color = glow_color(255), time = 0.2 SECONDS)
-			animate(color = glow_color(current_alpha), time = 0.8 SECONDS)
-	if(user == owner)
-		user.balloon_alert(user, "ink re-keyed")
+		// A new pattern is a new outline thickness: rebuild, then re-settle so
+		// the idle alpha follows the pattern rather than the old one's.
+		current_alpha = -1
+		apply_ink_filter()
+		settle_glow()
+		. = TRUE
+	if(new_color && (new_color in GLOB.cyberware_ink_palette) && GLOB.cyberware_ink_palette[new_color] != tattoo_color)
+		tattoo_color = GLOB.cyberware_ink_palette[new_color]
+		. = TRUE
+	if(!.)
+		return FALSE
+	pulse(CYBERWARE_INK_FLARE)
+	user.balloon_alert(user, "ink re-keyed")
+	playsound(user, 'sound/machines/terminal/terminal_processing.ogg', 25, TRUE)
+	return TRUE
 
 // ---- 2. Nightshade Optics ---------------------------------------------
 
 /**
  * # Nightshade Optics (T1, eyes, load 1)
  *
- * Darkness vision with none of the thermal line's flash weakness — purely
- * declarative: the colour cutoffs light the dark through the standard eye
- * sight-update chain, flash_protect stays at the robotic default, and
- * there's no SEE_MOBS (wallhacks are the thermal tradeoff, not ours).
+ * Darkness vision with none of the thermal line's flash weakness: the colour
+ * cutoffs light the dark through the standard eye sight-update chain and
+ * flash_protect stays at the robotic default. Still no SEE_MOBS — seeing
+ * through walls is the thermal line's trade, not ours.
+ *
+ * What the Nightshade does instead is TAG. Bodies inside its range get a soft
+ * green bloom drawn over them, above the lighting plane and visible to nobody
+ * but the wearer, so a room full of crates and a room full of people stop
+ * looking the same in the dark. The
+ * tags are client-side images parented to their target, so they follow
+ * without any per-tick bookkeeping; only membership is re-swept, on the
+ * wearer's own movement plus a life-tick backstop.
+ *
+ * The chrome read comes with the base, at street resolution: these count the
+ * chrome in a body and read its neural load, but can't name a single piece.
  */
 /obj/item/organ/eyes/robotic/cyberware/nightshade
 	name = "\improper Nightshade optics"
-	desc = "Matte black eyes that drink whatever light there is and hand it back green. Unlike the printable thermal and shield lines, these take a flashbang no worse than the eyes you were born with — in the dark-site lane, nothing on a fab beats them."
+	desc = "Matte black eyes that render a dark room in green. Living bodies in range pick up a soft glow only you can see, so an unlit corridor isn't cover any more. They aren't thermals, so a flashbang hits you no harder than it would normal eyes. The diagnostic bus is the stock one: it counts how much chrome someone is carrying, but can't name any of it."
 	icon_state = "nightshade"
 	eye_color_left = "#1d3b2a"
 	eye_color_right = "#1d3b2a"
 	iris_overlay = null
-	// Downshift red so darkness reads as a cold botanical green.
-	color_cutoffs = list(10, 30, 20)
+	// Downshift red so darkness reads as a cold botanical green. Pushed well
+	// past the roster's first pass — the whole selling point is that an
+	// unlit room is workable, not merely navigable.
+	color_cutoffs = list(15, 50, 30)
+	// Raises the floor on how dark a tile is allowed to render for us at all.
+	lighting_cutoff = LIGHTING_CUTOFF_MEDIUM
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
+	chrome_scan_resolution = CYBERWARE_SCAN_SILHOUETTE
+	/// Bodies we're currently tagging, associated to the image doing it.
+	var/list/tagged = list()
+	/// Earliest world.time the next membership sweep may run.
+	var/next_sweep = 0
+
+/obj/item/organ/eyes/robotic/cyberware/nightshade/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	. = ..()
+	RegisterSignal(organ_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
+	RegisterSignal(organ_owner, COMSIG_MOB_LOGIN, PROC_REF(on_owner_login))
+	sweep_tags(force = TRUE)
+
+/obj/item/organ/eyes/robotic/cyberware/nightshade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	UnregisterSignal(organ_owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_LOGIN))
+	clear_tags()
+	return ..()
+
+/obj/item/organ/eyes/robotic/cyberware/nightshade/Destroy()
+	clear_tags()
+	return ..()
+
+/obj/item/organ/eyes/robotic/cyberware/nightshade/on_life(seconds_per_tick, times_fired)
+	. = ..()
+	// Backstop for bodies that walked into range while we stood still.
+	sweep_tags()
+
+/// Signal proc for [COMSIG_MOVABLE_MOVED]: our view changed, so the set of
+/// bodies in it did too.
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/on_owner_moved(datum/source)
+	SIGNAL_HANDLER
+	sweep_tags()
+
+/// Signal proc for [COMSIG_MOB_LOGIN]: a fresh client has an empty image
+/// list, so everything we were showing has to be handed over again.
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/on_owner_login(datum/source)
+	SIGNAL_HANDLER
+	clear_tags()
+	sweep_tags(force = TRUE)
+
+/**
+ * Re-derives which bodies we're tagging. Throttled, because it runs off
+ * movement: at a hard walk that's five sweeps a second otherwise.
+ */
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/sweep_tags(force = FALSE)
+	if(!force && world.time < next_sweep)
+		return
+	next_sweep = world.time + CYBERWARE_NIGHTSHADE_SWEEP
+	if(!owner || (organ_flags & ORGAN_FAILING) || owner.stat == DEAD || !owner.client)
+		clear_tags()
+		return
+
+	var/list/seen = list()
+	for(var/mob/living/body in view(owner.client.view || world.view, owner))
+		if(body == owner)
+			continue
+		seen[body] = TRUE
+		if(tagged[body])
+			continue
+		tag_body(body)
+
+	// Copied: untag_body mutates the list we'd otherwise be walking.
+	for(var/mob/living/body as anything in tagged.Copy())
+		if(seen[body] && !QDELETED(body))
+			continue
+		untag_body(body)
+
+/// Hangs one bloom on one body, visible to nobody but our bearer.
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/tag_body(mob/living/body)
+	var/image/bloom = image('icons/effects/light_overlays/light_32.dmi', body, "light")
+	bloom.color = (body.stat == DEAD) ? CYBERWARE_NIGHTSHADE_DEAD_COLOR : CYBERWARE_NIGHTSHADE_LIVE_COLOR
+	bloom.alpha = (body.stat == DEAD) ? 55 : 110
+	bloom.blend_mode = BLEND_ADD
+	bloom.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART
+	// Above the lighting overlay, or the dark we exist to see through eats it.
+	SET_PLANE_EXPLICIT(bloom, ABOVE_LIGHTING_PLANE, body)
+	tagged[body] = bloom
+	owner.client?.images += bloom
+	RegisterSignal(body, COMSIG_QDELETING, PROC_REF(on_tagged_deleted), override = TRUE)
+
+/// Drops one body's bloom.
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/untag_body(mob/living/body)
+	var/image/bloom = tagged[body]
+	tagged -= body
+	if(bloom)
+		owner?.client?.images -= bloom
+	if(!QDELETED(body))
+		UnregisterSignal(body, COMSIG_QDELETING)
+
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/clear_tags()
+	for(var/mob/living/body as anything in tagged.Copy())
+		untag_body(body)
+	tagged.Cut()
+
+/// Signal proc for [COMSIG_QDELETING] on a tagged body: stop showing a bloom
+/// parented to something that's about to stop existing.
+/obj/item/organ/eyes/robotic/cyberware/nightshade/proc/on_tagged_deleted(datum/source)
+	SIGNAL_HANDLER
+	untag_body(source)
 
 // ---- 3. Scrapper's Knuckles -------------------------------------------
 
@@ -191,7 +409,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/scrapper
 	name = "\improper Scrapper's Knuckles"
-	desc = "Milled knuckle caps grafted along the metacarpals, right-arm fit. Hits from a fist you were already swinging just land harder — and against plating and machine housings they land twice as hard."
+	desc = "Milled knuckle caps grafted along the metacarpals, right-arm fit. Your punches land harder, and against plating and machine housings they land about twice as hard again."
 	icon_state = "scrapper"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_RIGHT_ARM_AUG
@@ -205,7 +423,7 @@
 	aug_overlay = "scrapper_right"
 
 /obj/item/organ/cyberimp/cyberware/scrapper/left
-	desc = "Milled knuckle caps grafted along the metacarpals, left-arm fit. Hits from a fist you were already swinging just land harder — and against plating and machine housings they land twice as hard."
+	desc = "Milled knuckle caps grafted along the metacarpals, left-arm fit. Your punches land harder, and against plating and machine housings they land about twice as hard again."
 	zone = BODY_ZONE_L_ARM
 	slot = ORGAN_SLOT_LEFT_ARM_AUG
 	aug_overlay = "scrapper_left"
@@ -245,6 +463,10 @@
 
 	var/punch_damage = CYBERWARE_SCRAPPER_PUNCH_BONUS + rand(active_hand.unarmed_damage_low, active_hand.unarmed_damage_high)
 	source.changeNext_move(CLICK_CD_MELEE)
+
+	// The knuckles are buried in a forearm — the ink is how anyone watching
+	// (the wearer included) knows the punch that just landed was chrome.
+	cyberware_ink_pulse(source, CYBERWARE_INK_HARD)
 
 	if(is_structure_target)
 		var/obj/smashed = target
@@ -290,7 +512,7 @@
 
 /obj/item/storage/case/cyberware/scrapper
 	name = "\improper Scrapper's Knuckles case"
-	desc = "A foam-lined chrome case holding a matched pair of Scrapper's Knuckles, one per arm. Install each side separately — the rig does both in one sitting."
+	desc = "A foam-lined chrome case holding a matched pair of Scrapper's Knuckles, one per arm. Each side installs separately, though the rig will do both in one sitting."
 
 /obj/item/storage/case/cyberware/scrapper/PopulateContents()
 	new /obj/item/organ/cyberimp/cyberware/scrapper(src)
@@ -308,7 +530,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/shock_coils
 	name = "\improper Shock Coil calf pistons"
-	desc = "Spring-loaded pistons sistered along the calf bones. They put you back on your feet before the floor finishes introducing itself, shrug off wet decking, and soak a drop that would crack an ankle."
+	desc = "Spring-loaded pistons sistered along the calf bones. You get back on your feet much faster after a knockdown, keep your footing on wet decking, and walk away from drops that would break an ankle."
 	icon_state = "shock_coils"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -345,11 +567,12 @@
 	if(organ_flags & ORGAN_FAILING)
 		return NONE
 	new /obj/effect/temp_visual/mook_dust(fell_on)
+	cyberware_ink_pulse(owner, CYBERWARE_INK_SOFT)
 	if(levels >= 2)
 		owner.adjust_staggered_up_to(STAGGERED_SLOWDOWN_LENGTH * levels, 10 SECONDS)
 	owner.visible_message(
 		span_notice("[owner] lands on [fell_on] with a piston hiss."),
-		span_notice("Your shock coils drink the impact."),
+		span_notice("Your shock coils soak up the impact."),
 	)
 	return ZIMPACT_CANCEL_DAMAGE | ZIMPACT_NO_MESSAGE | ZIMPACT_NO_SPIN
 
@@ -369,7 +592,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/gastro
 	name = "\improper Gastro Reactor"
-	desc = "A ceramic-lined digester that replaces squeamishness with throughput. Rot, floor finds, gas-station sushi: it all burns the same, faster than a natural gut and with none of the after-action regret."
+	desc = "A ceramic-lined digester where your stomach used to be. Rot, floor scrapings, whatever was in the back of the fridge — it all burns the same, faster than a real gut and without the food poisoning."
 	icon_state = "gastro"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_GUT
@@ -415,7 +638,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/cargo_cavity
 	name = "\improper Cargo Cavity"
-	desc = "A shielded compartment plumbed into the ribcage, sized for one small item. Nothing on a scanner, nothing in a pat-down. What's in your chest is your business."
+	desc = "A shielded compartment plumbed into the ribcage, sized for one small item. Scanners read straight past it and a pat-down won't find it."
 	icon_state = "cargo_cavity"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_STASH
@@ -449,6 +672,7 @@
 		owner.put_in_hands(returned)
 		owner.balloon_alert(owner, "[returned.name] ejected")
 		playsound(owner, 'sound/machines/click.ogg', 30, TRUE)
+		cyberware_ink_pulse(owner, CYBERWARE_INK_SOFT)
 		return
 	var/obj/item/held = owner.get_active_held_item()
 	if(!held)
@@ -466,25 +690,31 @@
 	stashed = held
 	owner.balloon_alert(owner, "[held.name] stashed away")
 	playsound(owner, 'sound/items/eatfood.ogg', 20, TRUE)
+	cyberware_ink_pulse(owner, CYBERWARE_INK_SOFT)
 
 // ---- 10. Dermal Mesh ---------------------------------------------------
 
 /datum/armor/cyberware_dermal_mesh
-	melee = 10
-	bullet = 10
+	melee = 15
+	bullet = 15
+	laser = 10
+	wound = 5
 
 /**
  * # Dermal Mesh (T1, chest, dermal slot, load 2)
  *
  * Light woven plating under the skin — the roach-organ physiology armor
- * pattern, sized at 10 melee/bullet. Exists to be the rung Slabskin Plate
- * evicts. Physiology explicitly survives species changes (physiology.dm:1),
- * so one add/subtract pair is the whole lifecycle; re-applying on species
- * gain would stack the armor.
+ * pattern. Sized so that two points of load buys something you can feel in a
+ * scrap rather than a rounding error: 15 melee/bullet, a little laser, and
+ * enough wound resistance to keep a bad hit from opening you up. Still a
+ * long way under the Slabskin Plate that evicts it, which is the point.
+ * Physiology explicitly survives species changes (physiology.dm:1), so one
+ * add/subtract pair is the whole lifecycle; re-applying on species gain
+ * would stack the armor.
  */
 /obj/item/organ/cyberimp/cyberware/dermal_mesh
 	name = "\improper Dermal Mesh weave"
-	desc = "A subdermal lattice of impact polymer. It won't stop anything dramatic, but the everyday knives and small arms of a working port hurt noticeably less."
+	desc = "A subdermal lattice of impact polymer. It won't stop anything serious, but knives and small arms hurt noticeably less and the skin over it doesn't tear so easily."
 	icon_state = "dermal_mesh"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
@@ -514,27 +744,33 @@
 /**
  * # Gecko Grips (T1, arm, hands slot, load 1)
  *
- * Setae-pad palms, respec'd per the freeze addendum: NOT passive nodrop.
- * The grips clamp only when a stun would strip your hands — we pre-grip on
- * the status signals (they fire before the status applies, and therefore
- * before living's own HANDS_BLOCKED handler dumps your hands, which is
- * registered at mob init and would always beat an organ listener), then
- * release when TRAIT_HANDS_BLOCKED lifts. A deferred check un-grips
- * cleanly if the stun never actually landed.
+ * Setae-pad palms. Three things, all of which you should be able to feel:
  *
- * Kept from the anti-drop implant it apes: the EMP tradeoff — a pulse
- * spasms the pads and hurls whatever you're holding.
+ * 1. Your hands do not open when the lights go out. Rather than pre-clamping
+ *    off the stun signals (which only covered the handful of statuses we
+ *    thought to list, and lost every race against living's own
+ *    HANDS_BLOCKED handler — that one is registered at mob init and always
+ *    runs first), the pads simply refuse the involuntary drop itself: a
+ *    guard rides COMSIG_ITEM_PRE_UNEQUIP on whatever is in your hands and
+ *    cancels the unequip while your hands are blocked by trauma. That covers
+ *    stuns, paralysis, unconsciousness, stamina collapse and crit with one
+ *    rule. Two carve-outs keep it honest — restraints still take your hands
+ *    (cuffs beat chrome), and a corpse can still be looted.
+ * 2. Tables read as flat ground: TRAIT_PASSTABLE to walk straight over them,
+ *    TRAIT_FREERUNNING so anything you do have to climb is instant.
+ * 3. A chasm lip-catch. The catch arms TRAIT_CHASM_STOPPER on you (the chasm
+ *    component refuses to drop anything on a tile containing a STOPPER);
+ *    stepping onto a chasm consumes it — you're shoved back to the lip and
+ *    the pads need [CYBERWARE_GECKO_CATCH_COOLDOWN/10]s to re-set, during
+ *    which chasms are exactly as lethal as ever.
  *
- * Passives: TRAIT_FREERUNNING (tables stop being furniture) and a chasm
- * lip-catch. The catch arms TRAIT_CHASM_STOPPER on you (the chasm
- * component refuses to drop anything on a tile containing a STOPPER);
- * stepping onto a chasm consumes the catch — you're shoved back to the
- * lip and the pads need [CYBERWARE_GECKO_CATCH_COOLDOWN/10]s to re-set,
- * during which chasms are exactly as lethal as ever.
+ * Kept from the anti-drop implant it apes: the EMP tradeoff. A pulse spasms
+ * the pads open, hurls whatever you're holding, and leaves the grip dead for
+ * the reboot — chrome that holds on forever would have no counterplay.
  */
 /obj/item/organ/cyberimp/cyberware/gecko
 	name = "\improper Gecko Grip palm pads"
-	desc = "Van-der-Waals setae pads laminated into the palms. Your hands clamp shut of their own accord when something knocks the lights out, tables read as flat ground, and once in a while they're the reason a chasm didn't get you."
+	desc = "Setae pads laminated into the palms, running the same trick geckos do. Your hands clamp shut on whatever you're holding when you go down, so nobody strips your gun off you, and you can cross tables like flat ground and catch a ledge on the way into a chasm. Cuffs still work fine."
 	icon_state = "gecko"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_CYBERWARE_HANDS
@@ -542,90 +778,130 @@
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
 	organ_traits = list(TRAIT_FREERUNNING)
-	/// Items currently clamped with our NODROP.
-	var/list/obj/item/gripped = list()
 	/// Whether the chasm catch is armed.
 	var/catch_ready = TRUE
-	/// Status signals that precede a hand-stripping incapacitation.
-	var/static/list/grip_signals = list(
-		COMSIG_LIVING_STATUS_STUN,
-		COMSIG_LIVING_STATUS_PARALYZE,
-		COMSIG_LIVING_STATUS_UNCONSCIOUS,
-	)
+	/// Held items carrying our pre-unequip guard, so removal can lift them.
+	var/list/guarded = list()
+	/// world.time the clamp last told the room about itself, so a burst of
+	/// blocked drops is one message rather than six.
+	var/last_clamp_beat = 0
+
+/obj/item/organ/cyberimp/cyberware/gecko/examine(mob/user)
+	. = ..()
+	. += span_notice("The pads are [catch_ready ? "set" : "re-setting"] for a chasm catch.")
 
 /obj/item/organ/cyberimp/cyberware/gecko/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	RegisterSignals(organ_owner, grip_signals, PROC_REF(on_incapacitating_status))
-	RegisterSignal(organ_owner, COMSIG_LIVING_ENTER_STAMCRIT, PROC_REF(on_stamcrit))
-	RegisterSignal(organ_owner, SIGNAL_REMOVETRAIT(TRAIT_HANDS_BLOCKED), PROC_REF(on_hands_freed))
+	RegisterSignal(organ_owner, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_item_equipped))
+	RegisterSignal(organ_owner, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_item_unequipped))
 	RegisterSignal(organ_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+	passtable_on(organ_owner, REF(src))
+	// Whatever they were already holding when the pads went in.
+	for(var/obj/item/held in organ_owner.held_items)
+		guard_item(held)
 	if(catch_ready)
 		ADD_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	release_grip()
-	UnregisterSignal(organ_owner, grip_signals)
-	UnregisterSignal(organ_owner, list(COMSIG_LIVING_ENTER_STAMCRIT, SIGNAL_REMOVETRAIT(TRAIT_HANDS_BLOCKED), COMSIG_MOVABLE_MOVED))
+	drop_guards()
+	UnregisterSignal(organ_owner, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM, COMSIG_MOVABLE_MOVED))
+	passtable_off(organ_owner, REF(src))
 	REMOVE_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
 
-/// Signal proc for the incapacitating status signals: clamp before the
-/// status (and its item-dropping trait) lands.
-/obj/item/organ/cyberimp/cyberware/gecko/proc/on_incapacitating_status(datum/source, amount)
+/obj/item/organ/cyberimp/cyberware/gecko/Destroy()
+	drop_guards()
+	return ..()
+
+// ---- The clamp ---------------------------------------------------------
+
+/// Signal proc for [COMSIG_MOB_EQUIPPED_ITEM]: anything that lands in a hand
+/// gets the guard. Other slots are none of our business.
+/obj/item/organ/cyberimp/cyberware/gecko/proc/on_item_equipped(datum/source, obj/item/equipped, slot)
 	SIGNAL_HANDLER
-	if(amount <= 0)
+	if(!(slot & ITEM_SLOT_HANDS))
 		return
-	grip_held_items()
+	guard_item(equipped)
 
-/// Signal proc for [COMSIG_LIVING_ENTER_STAMCRIT]: stamina collapse strips
-/// hands too.
-/obj/item/organ/cyberimp/cyberware/gecko/proc/on_stamcrit(datum/source)
+/// Signal proc for [COMSIG_MOB_UNEQUIPPED_ITEM]: a drop we allowed (or that
+/// was forced past us) — stop watching it.
+/obj/item/organ/cyberimp/cyberware/gecko/proc/on_item_unequipped(datum/source, obj/item/unequipped)
 	SIGNAL_HANDLER
-	grip_held_items()
+	unguard_item(unequipped)
 
-/obj/item/organ/cyberimp/cyberware/gecko/proc/grip_held_items()
-	if(organ_flags & ORGAN_FAILING || !owner)
+/obj/item/organ/cyberimp/cyberware/gecko/proc/guard_item(obj/item/held)
+	if(QDELETED(held) || (held in guarded))
 		return
-	var/clamped_any = FALSE
-	for(var/obj/item/held in owner.held_items)
-		if(HAS_TRAIT(held, TRAIT_NODROP))
-			continue
-		ADD_TRAIT(held, TRAIT_NODROP, REF(src))
-		RegisterSignal(held, COMSIG_ITEM_DROPPED, PROC_REF(on_gripped_item_dropped))
-		gripped += held
-		clamped_any = TRUE
-	if(clamped_any)
-		owner.balloon_alert(owner, "grips clamp!")
-		// The stun may still have been blocked — if no hand-block actually
-		// arrives, let go rather than welding their hands shut forever.
-		addtimer(CALLBACK(src, PROC_REF(verify_grip)), 0.5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+	guarded += held
+	RegisterSignal(held, COMSIG_ITEM_PRE_UNEQUIP, PROC_REF(on_item_pre_unequip), override = TRUE)
+	RegisterSignal(held, COMSIG_QDELETING, PROC_REF(on_guarded_deleted), override = TRUE)
 
-/obj/item/organ/cyberimp/cyberware/gecko/proc/verify_grip()
-	if(!owner || !HAS_TRAIT(owner, TRAIT_HANDS_BLOCKED))
-		release_grip()
-
-/// Signal proc for [SIGNAL_REMOVETRAIT] of [TRAIT_HANDS_BLOCKED]: awake
-/// again, hands are yours.
-/obj/item/organ/cyberimp/cyberware/gecko/proc/on_hands_freed(datum/source)
-	SIGNAL_HANDLER
-	release_grip()
-
-/obj/item/organ/cyberimp/cyberware/gecko/proc/release_grip()
-	if(!length(gripped))
+/obj/item/organ/cyberimp/cyberware/gecko/proc/unguard_item(obj/item/held)
+	if(!(held in guarded))
 		return
-	for(var/obj/item/held as anything in gripped)
-		REMOVE_TRAIT(held, TRAIT_NODROP, REF(src))
-		UnregisterSignal(held, COMSIG_ITEM_DROPPED)
-	gripped.Cut()
-	owner?.balloon_alert(owner, "grips relax")
+	guarded -= held
+	if(!QDELETED(held))
+		UnregisterSignal(held, list(COMSIG_ITEM_PRE_UNEQUIP, COMSIG_QDELETING))
 
-/// Signal proc for [COMSIG_ITEM_DROPPED] on a clamped item: something with
-/// more authority than us moved it — stop tracking.
-/obj/item/organ/cyberimp/cyberware/gecko/proc/on_gripped_item_dropped(obj/item/source, mob/user)
+/obj/item/organ/cyberimp/cyberware/gecko/proc/drop_guards()
+	for(var/obj/item/held as anything in guarded.Copy())
+		unguard_item(held)
+	guarded.Cut()
+
+/// Signal proc for [COMSIG_QDELETING] on a guarded item.
+/obj/item/organ/cyberimp/cyberware/gecko/proc/on_guarded_deleted(datum/source)
 	SIGNAL_HANDLER
-	REMOVE_TRAIT(source, TRAIT_NODROP, REF(src))
-	UnregisterSignal(source, COMSIG_ITEM_DROPPED)
-	gripped -= source
+	unguard_item(source)
+
+/**
+ * Is something other than restraints currently blocking our bearer's hands?
+ *
+ * TRAIT_HANDS_BLOCKED is the one trait every hand-stripping condition adds,
+ * which is exactly why we have to read its SOURCES rather than the trait: a
+ * pair of cuffs adds it too, and chrome that beat handcuffs would be a very
+ * different (and much more expensive) piece of hardware. Anything else —
+ * stun, paralysis, unconsciousness, stamina collapse, crit — is what the
+ * pads are for.
+ */
+/obj/item/organ/cyberimp/cyberware/gecko/proc/hands_blocked_by_trauma()
+	if(!owner || (organ_flags & ORGAN_FAILING))
+		return FALSE
+	if(owner.stat == DEAD) // dead hands let go; corpses stay lootable
+		return FALSE
+	for(var/source in GET_TRAIT_SOURCES(owner, TRAIT_HANDS_BLOCKED))
+		if(source != TRAIT_RESTRAINED)
+			return TRUE
+	return FALSE
+
+/**
+ * Signal proc for [COMSIG_ITEM_PRE_UNEQUIP] on a held item. The whole clamp,
+ * in one branch: while the bearer is down, involuntary drops are refused.
+ * A forced unequip is never offered to us at all (doUnEquip only honors the
+ * block when force is FALSE), so admin work and gibbing are unaffected.
+ */
+/obj/item/organ/cyberimp/cyberware/gecko/proc/on_item_pre_unequip(obj/item/source, force, atom/newloc, no_move, invdrop, silent)
+	SIGNAL_HANDLER
+	if(force || !owner?.is_holding(source))
+		return NONE
+	if(!hands_blocked_by_trauma())
+		return NONE
+	clamp_beat(source)
+	return COMPONENT_ITEM_BLOCK_UNEQUIP
+
+/// The tell. Throttled so one knockout is one beat, not one per hand.
+/obj/item/organ/cyberimp/cyberware/gecko/proc/clamp_beat(obj/item/kept)
+	if(world.time < last_clamp_beat + 2 SECONDS)
+		return
+	last_clamp_beat = world.time
+	owner.visible_message(
+		span_notice("[owner]'s hands lock shut around [kept]."),
+		span_notice("Your grips clamp down on [kept]."),
+		vision_distance = COMBAT_MESSAGE_RANGE,
+	)
+	playsound(owner, 'sound/machines/click.ogg', 35, TRUE)
+	cyberware_ink_pulse(owner, CYBERWARE_INK_HARD)
+
+// ---- The chasm catch ---------------------------------------------------
 
 /**
  * Signal proc for [COMSIG_MOVABLE_MOVED]: the chasm lip-catch. The passive
@@ -650,6 +926,7 @@
 	source.forceMove(lip)
 	source.balloon_alert(source, "grips catch the lip!")
 	playsound(source, 'sound/effects/pickaxe/picaxe2.ogg', 40, TRUE)
+	cyberware_ink_pulse(source, CYBERWARE_INK_FLARE)
 	addtimer(CALLBACK(src, PROC_REF(rearm_catch)), CYBERWARE_GECKO_CATCH_COOLDOWN)
 
 /obj/item/organ/cyberimp/cyberware/gecko/proc/rearm_catch()
@@ -659,12 +936,14 @@
 		owner.balloon_alert(owner, "grips re-set")
 
 /// The anti-drop implant's signature tradeoff, kept on purpose: an EMP
-/// spasms the pads and everything you hold goes flying.
+/// spasms the pads and everything you hold goes flying. The clamp lets go on
+/// its own — the parent's ..() has already flipped us ORGAN_FAILING, which is
+/// exactly what hands_blocked_by_trauma() reads — so these stay ordinary
+/// unforced drops and anything genuinely NODROP (a deployed blade) stays put.
 /obj/item/organ/cyberimp/cyberware/gecko/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF || !owner)
 		return
-	release_grip()
 	var/throw_range = (severity == EMP_HEAVY) ? 5 : 3
 	var/list/possible_targets = oview(throw_range, owner)
 	if(!length(possible_targets))

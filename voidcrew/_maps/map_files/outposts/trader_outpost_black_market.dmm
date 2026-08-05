@@ -621,10 +621,6 @@
 /obj/machinery/iv_drip,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
-"nw" = (
-/obj/machinery/light/blacklight/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "nA" = (
 /obj/machinery/iv_drip/saline,
 /obj/effect/turf_decal/tile/blue/half/contrasted{
@@ -785,13 +781,7 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ww" = (
-/obj/structure/table/reinforced,
-/obj/structure/showcase{
-	desc = "A pair of massive chrome fists behind scratched glass. The tag says ASK SPLICE. The glass says someone already tried not asking.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "gorilla";
-	name = "display case: GORILLA ARMS"
-	},
+/obj/structure/displaycase/chop_shop/gorilla,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "wK" = (
@@ -833,6 +823,10 @@
 	name = "empty intake crate";
 	desc = "A cleared customs crate with its manifest torn away."
 	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"yo" = (
+/obj/machinery/light/red/dim/directional/south,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "yw" = (
@@ -907,10 +901,6 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
-"Cb" = (
-/obj/machinery/light/red/dim/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "Cj" = (
 /obj/machinery/vending/hotdog,
 /turf/open/indestructible/hotelwood,
@@ -929,13 +919,7 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "DM" = (
-/obj/structure/table/reinforced,
-/obj/structure/showcase{
-	desc = "A segmented chrome spine floating in a suspension jar. The whole shop is arranged so you end up looking at it.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "cascade";
-	name = "display case: CASCADE LATTICE"
-	},
+/obj/structure/displaycase/chop_shop/cascade,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "DU" = (
@@ -951,13 +935,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "EN" = (
-/obj/structure/table/reinforced,
-/obj/structure/showcase{
-	desc = "A folded blade housing under glass, edge glowing faintly. The price tag is turned face-down.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "mantis";
-	name = "display case: MANTIS BLADES"
-	},
+/obj/structure/displaycase/chop_shop/mantis,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "Fe" = (
@@ -1029,6 +1007,10 @@
 	desc = "Only numbered clamps remain. Vex keeps the real merchandise elsewhere."
 	},
 /turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"GV" = (
+/obj/machinery/light/blacklight/directional/south,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "Ih" = (
 /obj/structure/closet/outpost_medical,
@@ -2088,8 +2070,8 @@ ut
 Zf
 au
 FI
-as
 aV
+as
 ww
 aa
 "}
@@ -2114,9 +2096,9 @@ ji
 aa
 FI
 Mu
-ar
 aV
-Cb
+ar
+yo
 aa
 "}
 (31,1,1) = {"
@@ -2140,8 +2122,8 @@ aO
 aV
 au
 SI
-dq
 aV
+dq
 EN
 aa
 "}
@@ -2166,8 +2148,8 @@ aO
 aV
 ar
 cL
-mx
 aV
+mx
 DM
 aa
 "}
@@ -2192,9 +2174,9 @@ aO
 aV
 ar
 dq
-SI
 vn
 om
+SI
 aa
 "}
 (34,1,1) = {"
@@ -2218,9 +2200,9 @@ Pi
 aa
 NP
 ar
-ar
 aV
-nw
+ar
+GV
 aa
 "}
 (35,1,1) = {"
@@ -2244,8 +2226,8 @@ Tt
 nU
 ao
 ar
-ar
 aV
+ar
 au
 aa
 "}
@@ -2270,8 +2252,8 @@ aa
 aa
 jn
 WW
-WO
 aV
+WO
 ps
 aa
 "}

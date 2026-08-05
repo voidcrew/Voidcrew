@@ -5,6 +5,9 @@
 // prime is the riot line's back room. Guarded by whatever outlived the garrison:
 // asset-denial automation (robot markers) or the holdouts themselves
 // (syndicate markers).
+// Cyberware: chrome a garrison would have issued rather than bought — light
+// weave and knuckle plate on the line, and in the back room the ceramic
+// plating, the targeting optics and the frame that stops a limb coming off.
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested. Tune against the outfitter armor/gun prices
 // in theme_skus.
@@ -22,6 +25,11 @@
 		/datum/shop_sku/outfitter/riot_helmet,
 		/datum/shop_sku/outfitter/riot_shield,
 		/datum/shop_sku/outfitter/rotating/riot_suit,
+		/datum/shop_sku/ripperdoc/dermal_mesh,
+		/datum/shop_sku/ripperdoc/scrapper,
+		/datum/shop_sku/ripperdoc/slabskin,
+		/datum/shop_sku/ripperdoc/deadeye,
+		/datum/shop_sku/ripperdoc/atlas,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/armor/vest = 10,
@@ -48,6 +56,10 @@
 		/obj/item/gun/ballistic/rifle/boltaction = 4,
 		/obj/item/clothing/under/syndicate/tacticool = 3,
 		/obj/item/ship_parts/combat = 7,
+		// issue chrome: subdermal impact weave, and the knuckle set cased as
+		// a matched pair (both halves, one per arm)
+		/obj/item/organ/cyberimp/cyberware/dermal_mesh = 4,
+		/obj/item/storage/case/cyberware/scrapper = 3,
 	)
 	loot_prime = list(
 		/obj/item/clothing/suit/armor/riot = 9,
@@ -70,6 +82,11 @@
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
 		/obj/item/gun/energy/lasercannon = 3,
+		// the back room's chrome, all voucher-grade at the parlor: ceramic
+		// plate, the targeting link, and the truss that keeps limbs attached
+		/obj/item/organ/cyberimp/cyberware/slabskin = 3,
+		/obj/item/organ/eyes/robotic/cyberware/deadeye = 3,
+		/obj/item/organ/cyberimp/cyberware/atlas = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

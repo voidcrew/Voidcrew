@@ -3,8 +3,10 @@
  *
  * Live-mob tests for the chrome load system (voidcrew/modules/cyberware/):
  * the netted capacity gate, the install-context gate, the all-or-nothing
- * over-cap brownout, the one-hardware-slot-per-arm invariant, and the
- * Second Wind Bladder's breath interception.
+ * over-cap brownout, the one-hardware-slot-per-arm invariant, the Second Wind
+ * Bladder's breath interception, and the Chrome Cradle console — its rack
+ * grouping, load projection and body preview, all of which the interface reads
+ * straight out of ui_data() and none of which errors when it goes wrong.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so every fork
  * define is written as a literal with a comment naming it —
@@ -150,9 +152,60 @@
 			if(BODY_ZONE_L_ARM)
 				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot — it would stack with blades/launchers on the same arm")
 
+/// (f) Chrome read: the optics' scan resolves installed hardware by name at
+/// itemized resolution, rates parlor chrome by tier and everything else
+/// UNRATED, counts either way, and NEVER resolves anything flagged
+/// ORGAN_HIDDEN — the Cargo Cavity's whole selling point.
+/// Resolution literals are 1 = CYBERWARE_SCAN_SILHOUETTE, 2 = _ITEMIZED.
+/datum/unit_test/voidcrew_cyberware_scan
+
+/datum/unit_test/voidcrew_cyberware_scan/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+
+	// A body of nothing but meat reads as one.
+	var/blank = jointext(cyberware_scan_readout(lab_rat, 2), "\n")
+	TEST_ASSERT(findtext(blank, "NO HARDWARE SIGNATURE"), "An unaugmented body didn't read as unaugmented: [blank]")
+
+	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
+	TEST_ASSERT(optics.Insert(lab_rat, special = TRUE), "Nightshade staging insert was refused")
+	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/stash = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
+	TEST_ASSERT(stash.Insert(lab_rat, special = TRUE), "Cargo Cavity staging insert was refused")
+	TEST_ASSERT(stash.organ_flags & ORGAN_HIDDEN, "The Cargo Cavity stopped being ORGAN_HIDDEN — the scan exemption is keyed to that flag")
+	// A printable tg augment: robotic, but no chrome component to rate.
+	var/obj/item/organ/cyberimp/chest/reviver/printable = allocate(/obj/item/organ/cyberimp/chest/reviver)
+	TEST_ASSERT(printable.Insert(lab_rat, special = TRUE), "Reviver implant staging insert was refused")
+
+	// Hidden hardware is invisible to the bus, installed or not.
+	var/list/scannable = cyberware_scannable_hardware(lab_rat)
+	TEST_ASSERT(optics in scannable, "Installed unhidden chrome didn't show up as scannable")
+	TEST_ASSERT(printable in scannable, "A non-cyberware robotic organ didn't show up as scannable")
+	TEST_ASSERT(!(stash in scannable), "ORGAN_HIDDEN chrome showed up as scannable — the Cargo Cavity is meant to be off every scanner")
+
+	// Itemized resolution names what it found, rates chrome by tier, leaves
+	// printable augments unrated, and skips what it can't see.
+	var/itemized = jointext(cyberware_scan_readout(lab_rat, 2), "\n")
+	TEST_ASSERT(findtext(itemized, uppertext(optics.name)), "An itemized chrome read didn't name the installed optics: [itemized]")
+	TEST_ASSERT(findtext(itemized, "T1"), "An itemized chrome read didn't rate the tier 1 optics: [itemized]")
+	TEST_ASSERT(findtext(itemized, "UNRATED"), "An itemized chrome read rated a printable augment as parlor chrome: [itemized]")
+	TEST_ASSERT(!findtext(itemized, uppertext(stash.name)), "An itemized chrome read named the ORGAN_HIDDEN Cargo Cavity: [itemized]")
+	TEST_ASSERT(findtext(itemized, "SIGNATURES 2"), "An itemized chrome read miscounted the visible signatures: [itemized]")
+
+	// Silhouette resolution still counts and loads, but names nothing.
+	var/silhouette = jointext(cyberware_scan_readout(lab_rat, 1), "\n")
+	TEST_ASSERT(!findtext(silhouette, uppertext(optics.name)), "A silhouette chrome read named a ware it shouldn't resolve: [silhouette]")
+	TEST_ASSERT(findtext(silhouette, "SIGNATURES 2"), "A silhouette chrome read didn't report the signature count: [silhouette]")
+	TEST_ASSERT_EQUAL(initial(optics.chrome_scan_resolution), 1, "The street-tier Nightshade isn't set to silhouette resolution")
+
 /// (e) Second Wind Bladder: blocks suffocation while reserve lasts, runs
-/// dry, and refills in breathable air. Nullspace stands in for hard vacuum —
-/// breathe() sees no environment either way.
+/// dry, and refills in breathable air.
+///
+/// Two things about the fixture, both learned the hard way. The vacuum is a
+/// real space turf at the far corner of the test zone, NOT nullspace: the
+/// failed-breath path emotes, and an emote with no location runtimes inside
+/// audible_message(). And breathe() is called positionally, because
+/// /mob/living/carbon/human/breathe() declares no parameters of its own and
+/// forwards through ..() — naming the carbon proc's arguments on a
+/// human-typed var is a "bad arg name" runtime, not a call.
 /datum/unit_test/voidcrew_cyberware_second_wind
 
 /datum/unit_test/voidcrew_cyberware_second_wind/Run()
@@ -163,24 +216,292 @@
 	var/full_reserve = bladder.reserve
 	TEST_ASSERT(full_reserve > 0, "Second Wind spawned with an empty reserve")
 
-	lab_rat.moveToNullspace()
-	lab_rat.breathe(seconds_per_tick = 2, times_fired = 1)
+	var/floor_type = run_loc_floor_top_right.type
+	var/turf/vacuum = run_loc_floor_top_right.ChangeTurf(/turf/open/space)
+	lab_rat.forceMove(vacuum)
+	lab_rat.breathe(2, 1)
 	TEST_ASSERT(!lab_rat.failed_last_breath, "Second Wind didn't block a breath in vacuum — the bearer suffocated with a full reserve")
 	TEST_ASSERT_EQUAL(lab_rat.getOxyLoss(), 0, "Second Wind blocked the breath but the bearer still took oxygen damage")
 	TEST_ASSERT(bladder.reserve < full_reserve, "A blocked breath spent no reserve")
 	TEST_ASSERT(bladder.engaged, "Second Wind fed a breath without registering as engaged")
 
 	var/after_one_breath = bladder.reserve
-	lab_rat.breathe(seconds_per_tick = 2, times_fired = 1)
+	lab_rat.breathe(2, 1)
 	TEST_ASSERT(bladder.reserve < after_one_breath, "A second blocked breath spent no reserve")
 
 	// Run the reserve dry: the next breath must fail for real.
 	bladder.reserve = 0
-	lab_rat.breathe(seconds_per_tick = 2, times_fired = 1)
+	lab_rat.breathe(2, 1)
 	TEST_ASSERT(lab_rat.failed_last_breath || lab_rat.getOxyLoss() > 0, "Reserve empty in vacuum, but the bearer still isn't suffocating")
 
 	// Back in the test room's air the reserve climbs again.
 	lab_rat.forceMove(run_loc_floor_bottom_left)
-	lab_rat.breathe(seconds_per_tick = 2, times_fired = 1)
+	lab_rat.breathe(2, 1)
 	TEST_ASSERT(bladder.reserve > 0, "A breath of good air refilled no reserve")
 	TEST_ASSERT(!bladder.engaged, "Second Wind stayed engaged in breathable air")
+	vacuum.ChangeTurf(floor_type)
+
+/// (g) The Chrome Cradle console: every reachable piece files into exactly one
+/// rack group, the highlight projects its own swap before anything commits,
+/// and the body preview builds a mannequin wearing the occupant's worn chrome.
+/// The interface reads all of this straight out of ui_data(), so a silent
+/// change of shape here is a console that renders empty with no error.
+/datum/unit_test/voidcrew_cradle_console
+
+/datum/unit_test/voidcrew_cradle_console/Run()
+	var/obj/machinery/chrome_cradle/rig = allocate(/obj/machinery/chrome_cradle)
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+
+	// An empty slab still answers, and still draws the whole body diagram.
+	var/list/idle_data = rig.ui_data(lab_rat)
+	TEST_ASSERT(isnull(idle_data["preview_view"]), "An empty slab handed the interface a preview map key")
+	TEST_ASSERT_EQUAL(length(idle_data["groups"]), length(GLOB.cyberware_ui_groups), "The rack didn't render one row per body system")
+
+	rig.buckle_mob(lab_rat, force = TRUE)
+	TEST_ASSERT_EQUAL(rig.occupant, lab_rat, "The cradle didn't take the buckled patient as its occupant")
+
+	// One piece seated, one piece in hand: both have to reach the rack, in
+	// their own groups, tagged with where they are. Both carry worn art, which
+	// is what the mannequin assertions below hang off.
+	var/obj/item/organ/cyberimp/cyberware/dermal_mesh/worn = allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)
+	TEST_ASSERT(worn.Insert(lab_rat, special = TRUE), "Dermal Mesh staging insert was refused")
+	var/obj/item/organ/cyberimp/cyberware/shock_coils/held = allocate(/obj/item/organ/cyberimp/cyberware/shock_coils)
+	lab_rat.put_in_hands(held)
+	TEST_ASSERT_EQUAL(held.loc, lab_rat, "The carried ware didn't end up on the patient")
+
+	var/list/reachable = rig.get_reachable_ware(lab_rat)
+	TEST_ASSERT_EQUAL(reachable[worn], "installed", "Installed chrome wasn't reported as installed")
+	TEST_ASSERT_EQUAL(reachable[held], "carried", "Chrome in the patient's hands wasn't reported as carried")
+
+	var/list/data = rig.ui_data(lab_rat)
+	TEST_ASSERT(!isnull(data["preview_view"]), "An occupied slab handed the interface no preview map key")
+	var/list/seen = list()
+	for(var/list/group as anything in data["groups"])
+		for(var/list/card as anything in group["ware"])
+			TEST_ASSERT(!seen[card["ref"]], "[card["name"]] appears in more than one rack group")
+			seen[card["ref"]] = group["id"]
+			TEST_ASSERT(!isnull(card["icon"]), "[card["name"]] reached the rack with no card art key")
+	TEST_ASSERT_EQUAL(length(seen), 2, "The rack didn't carry exactly the two pieces the console can reach")
+	TEST_ASSERT(seen[REF(worn)] != seen[REF(held)], "Skin plating and leg pistons filed under the same body system")
+
+	// Highlighting the carried piece projects the swap and ghosts it onto the
+	// mannequin without touching the body.
+	var/before_load = get_chrome_load(lab_rat)
+	rig.selected_ware = held
+	rig.refresh_preview()
+	var/list/projection = rig.build_projection(lab_rat, "carried")
+	TEST_ASSERT_EQUAL(projection["load"], before_load + 1, "The projection didn't add the highlighted piece's load")
+	TEST_ASSERT_EQUAL(get_chrome_load(lab_rat), before_load, "Highlighting a piece changed the body's real load")
+	TEST_ASSERT(!held.owner, "Highlighting a piece installed it")
+
+	// The mannequin is a separate body wearing the occupant's worn art — never
+	// the occupant, and never carrying real organs.
+	var/atom/movable/screen/map_view/chrome_preview/mirror = rig.preview
+	TEST_ASSERT(!isnull(mirror), "The cradle minted no body preview")
+	TEST_ASSERT(!isnull(mirror.body), "The body preview built no mannequin")
+	TEST_ASSERT(mirror.body != lab_rat, "The preview is showing the patient themselves rather than a mannequin")
+	TEST_ASSERT_EQUAL(length(get_installed_cyberware(mirror.body)), 0, "The preview mannequin had real chrome inserted into it")
+	// The seated piece hangs solid art, the highlighted one hangs a ghost.
+	TEST_ASSERT_EQUAL(length(mirror.hung_overlays), 2, "The mannequin isn't wearing the seated piece plus the highlighted one")
+	TEST_ASSERT_EQUAL(length(mirror.ghost_overlays), 1, "The highlighted piece didn't ghost onto the mannequin")
+	TEST_ASSERT(!(worn.bodypart_aug in mirror.ghost_overlays), "Already-installed chrome was ghosted instead of drawn solid")
+
+	// Getting up clears the highlight and the mannequin's borrowed art, so
+	// nothing of one patient survives onto the next.
+	rig.unbuckle_mob(lab_rat, force = TRUE)
+	TEST_ASSERT(isnull(rig.selected_ware), "Leaving the slab left a highlight behind")
+	TEST_ASSERT_EQUAL(length(mirror.hung_overlays), 0, "Leaving the slab left the last patient's chrome on the mannequin")
+	TEST_ASSERT_EQUAL(length(mirror.ghost_overlays), 0, "Leaving the slab left a ghosted piece on the mannequin")
+
+/// (h) Splice's price index: the cradle quotes parlor prices next to the load
+/// cost, and cased pairs have to resolve to their halves or a Mantis Blade
+/// card comes up priceless.
+/datum/unit_test/voidcrew_cradle_prices
+
+/datum/unit_test/voidcrew_cradle_prices/Run()
+	build_cyberware_price_index()
+
+	var/list/direct = GLOB.cyberware_price_index[/obj/item/organ/cyberimp/cyberware/dermal_mesh]
+	TEST_ASSERT(!isnull(direct), "A ware sold one-to-a-SKU got no price entry")
+	TEST_ASSERT(direct["credits"] > 0, "Dermal Mesh indexed with no credit price")
+	TEST_ASSERT(!direct["paired"], "A single-item SKU was indexed as a cased pair")
+
+	// Both halves of a cased pair quote the case's price, flagged as a pair.
+	for(var/half in list(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis, /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left))
+		var/list/paired = GLOB.cyberware_price_index[half]
+		TEST_ASSERT(!isnull(paired), "[half] got no price entry — the pair case never resolved to its contents")
+		TEST_ASSERT(paired["vouchers"] > 0, "[half] indexed with no voucher price")
+		TEST_ASSERT(paired["paired"], "[half] came out of a pair case without the paired flag")
+
+/// (i) Gecko Grips: the clamp is a refusal of the involuntary drop itself, so
+/// what it does and does not refuse is the whole ware. Everything below is a
+/// real drop attempt rather than a state check, because the failure this
+/// replaced looked entirely correct in state and did nothing in play.
+/datum/unit_test/voidcrew_cyberware_gecko
+
+/datum/unit_test/voidcrew_cyberware_gecko/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/gecko/pads = allocate(/obj/item/organ/cyberimp/cyberware/gecko)
+	TEST_ASSERT(pads.Insert(lab_rat, special = TRUE), "Gecko Grip staging insert was refused")
+
+	// Tables read as flat ground for as long as the pads are in.
+	TEST_ASSERT(lab_rat.pass_flags & PASSTABLE, "Gecko Grips didn't make their bearer able to cross tables")
+
+	var/obj/item/bar = allocate(/obj/item/crowbar)
+	lab_rat.put_in_hands(bar)
+	TEST_ASSERT(lab_rat.is_holding(bar), "Test fixture never got the crowbar into a hand")
+
+	// Nothing wrong with them: an ordinary drop is an ordinary drop.
+	TEST_ASSERT(lab_rat.dropItemToGround(bar), "The grips blocked a voluntary drop by an upright bearer")
+	lab_rat.put_in_hands(bar)
+
+	// Stunned: this is the one the ware is sold on.
+	lab_rat.Stun(5 SECONDS)
+	TEST_ASSERT(HAS_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED), "Test fixture: the stun didn't block hands, so nothing was being tested")
+	TEST_ASSERT(lab_rat.is_holding(bar), "A stun stripped the crowbar out of gecko-gripped hands")
+	TEST_ASSERT(!lab_rat.dropItemToGround(bar), "A downed bearer's grip let go of the crowbar")
+	// Forced removal always wins — admin work and gibbing must not be blocked.
+	TEST_ASSERT(lab_rat.dropItemToGround(bar, force = TRUE), "A FORCED unequip was blocked by the grips")
+
+	// Cuffs beat chrome: hands blocked by restraints ALONE still open. The
+	// stun has to come off first — the clamp reads every source of
+	// TRAIT_HANDS_BLOCKED, so a lingering stun would make this pass or fail
+	// for the wrong reason.
+	lab_rat.SetStun(0)
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED), "Test fixture: the stun didn't lift, so the restraint case would be testing the stun")
+	lab_rat.put_in_hands(bar)
+	ADD_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED, TRAIT_RESTRAINED)
+	TEST_ASSERT(!pads.hands_blocked_by_trauma(), "Restraints read as trauma — the grips would beat handcuffs")
+	TEST_ASSERT(lab_rat.dropItemToGround(bar), "The grips held on against restraints")
+	REMOVE_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED, TRAIT_RESTRAINED)
+
+	// A corpse stays lootable.
+	lab_rat.put_in_hands(bar)
+	lab_rat.set_stat(DEAD)
+	TEST_ASSERT(!pads.hands_blocked_by_trauma(), "A dead bearer's grips still counted as clamped")
+	TEST_ASSERT(lab_rat.dropItemToGround(bar), "A corpse's grips wouldn't give up the crowbar")
+
+	// Out of the body, the passive goes with it.
+	pads.Remove(lab_rat, special = TRUE)
+	pads.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!(lab_rat.pass_flags & PASSTABLE), "Extracting the grips left their table-vaulting behind")
+
+/// (j) Chromatic Dermis: the ink hangs a real filter, re-keys off the parlor's
+/// stock list (and only off that list), and is reachable through the shared
+/// pulse bus every other piece of chrome calls it on. Slot literal is
+/// ORGAN_SLOT_CYBERWARE_INK.
+/datum/unit_test/voidcrew_cyberware_ink
+
+/datum/unit_test/voidcrew_cyberware_ink/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/ink = allocate(/obj/item/organ/cyberimp/cyberware/chromatic_dermis)
+	TEST_ASSERT(ink.Insert(lab_rat, special = TRUE), "Chromatic Dermis staging insert was refused")
+	TEST_ASSERT(!isnull(lab_rat.get_filter(ink.filter_name)), "The ink hung no outline filter on its bearer")
+
+	// The bus every other ware pulses through has to find it by slot.
+	TEST_ASSERT_EQUAL(lab_rat.get_organ_slot("cyberware_ink"), ink, "The ink suite isn't in the slot cyberware_ink_pulse() looks up")
+
+	// Re-keying: stock pigments and stock patterns, applied on the spot.
+	TEST_ASSERT(ink.set_ink(lab_rat, "Splice Magenta", "hex weave"), "set_ink refused a stock swatch and pattern")
+	TEST_ASSERT_EQUAL(ink.tattoo_color, GLOB.cyberware_ink_palette["Splice Magenta"], "The swatch didn't take")
+	TEST_ASSERT_EQUAL(ink.tattoo_pattern, "hex weave", "The pattern didn't take")
+	TEST_ASSERT(!isnull(lab_rat.get_filter(ink.filter_name)), "A pattern change tore the filter down without rebuilding it")
+
+	// Anything not on Splice's shelf is refused rather than written through.
+	TEST_ASSERT(!ink.set_ink(lab_rat, "Not A Pigment", "not a pattern"), "set_ink accepted a colour and pattern the parlor doesn't stock")
+	TEST_ASSERT_EQUAL(ink.tattoo_pattern, "hex weave", "A refused re-key still changed the pattern")
+
+	// And nobody but the bearer gets to re-key their skin.
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(!ink.set_ink(bystander, "Ion Blue", null), "Someone else's ink answered a stranger")
+
+/// (k) The ink bus: chrome that does something visible has to SAY so through
+/// cyberware_ink_pulse(), or the Chromatic Dermis goes back to being a piece of
+/// jewellery that ignores the rest of the body.
+///
+/// A pulse is a client-side filter animation with nothing to read back, so the
+/// dermis counts its own pulses and remembers the last strength; that counter is
+/// what this hangs off. Every case below drives the REAL activation path rather
+/// than calling pulse() — an unwired call site is exactly the failure this
+/// exists to catch, and it looks perfect from the ink's side.
+///
+/// Strength literals: 1 = CYBERWARE_INK_SOFT, 2 = _HARD, 3 = _FLARE.
+/datum/unit_test/voidcrew_cyberware_ink_bus
+
+/datum/unit_test/voidcrew_cyberware_ink_bus/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/ink = allocate(/obj/item/organ/cyberimp/cyberware/chromatic_dermis)
+	TEST_ASSERT(ink.Insert(lab_rat, special = TRUE), "Chromatic Dermis staging insert was refused")
+	TEST_ASSERT_EQUAL(ink.pulse_count, 0, "The ink pulsed before anything on the body had activated")
+
+	// The bus itself: an arbitrary caller reaches the ink by slot, at the
+	// strength it asked for. This is the one line every other ware calls.
+	cyberware_ink_pulse(lab_rat, 3)
+	TEST_ASSERT_EQUAL(ink.pulse_count, 1, "cyberware_ink_pulse() didn't reach the installed ink")
+	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 3, "The bus dropped the strength it was called with")
+
+	// (1) The shared cooldown-action bridge — every chrome ability button.
+	// PreActivate() is the funnel a real click reaches through
+	// InterceptClickOn(); Trigger() on a click_to_activate ability only arms
+	// the cursor and needs a client, so it is deliberately not what we call.
+	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
+	TEST_ASSERT(optics.Insert(lab_rat, special = TRUE), "Nightshade staging insert was refused")
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate(/datum/action/cooldown/cyberware/chrome_read) in lab_rat.actions
+	TEST_ASSERT(!isnull(read), "The optics never granted their chrome read action to the body")
+	TEST_ASSERT(!lab_rat.is_blind(), "Test fixture: the staged optics left the body blind, so the read could never run")
+
+	var/before = ink.pulse_count
+	TEST_ASSERT(read.PreActivate(lab_rat), "The chrome read didn't run against its own bearer")
+	TEST_ASSERT(ink.pulse_count > before, "A chrome ability fired and the ink never answered — the cooldown-action bridge is unwired")
+	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 2, "A chrome ability pulsed the ink at the wrong strength")
+
+	// (2) Deployable arm hardware. Rockjaw stands in for the whole toolkit-arm
+	// family (Fixer's Fingers, blades, launchers) — they all share the base's
+	// Extend/Retract override, so one wired arm is all of them.
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/fist = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw)
+	TEST_ASSERT(fist.Insert(lab_rat, special = TRUE), "Rockjaw staging insert was refused")
+	var/obj/item/drill = locate(/obj/item/pickaxe/drill/cyberware) in fist
+	TEST_ASSERT(!isnull(drill), "Test fixture: the Rockjaw minted no drill to deploy")
+
+	before = ink.pulse_count
+	fist.Extend(drill)
+	TEST_ASSERT(lab_rat.is_holding(drill), "Test fixture: the drill never made it into a hand, so nothing was deployed")
+	TEST_ASSERT(ink.pulse_count > before, "Arm hardware deployed and the ink never answered")
+	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 2, "A deployed arm pulsed the ink at the wrong strength")
+
+	before = ink.pulse_count
+	TEST_ASSERT(fist.Retract(), "Test fixture: the drill wouldn't stow again")
+	TEST_ASSERT(ink.pulse_count > before, "Arm hardware stowed and the ink never answered")
+	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 1, "A stowed arm pulsed the ink at the wrong strength")
+
+	// (3) Organ action buttons that aren't abilities at all — the Cargo
+	// Cavity's ui_action_click, which no signal covers.
+	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/cavity = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
+	TEST_ASSERT(cavity.Insert(lab_rat, special = TRUE), "Cargo Cavity staging insert was refused")
+	var/obj/item/contraband = allocate(/obj/item/screwdriver)
+	lab_rat.put_in_active_hand(contraband)
+	TEST_ASSERT(lab_rat.is_holding(contraband), "Test fixture: nothing in hand to stash")
+
+	before = ink.pulse_count
+	cavity.ui_action_click()
+	TEST_ASSERT_EQUAL(cavity.stashed, contraband, "Test fixture: the cavity didn't swallow the screwdriver")
+	TEST_ASSERT(ink.pulse_count > before, "The Cargo Cavity swallowed something and the ink never answered")
+
+	before = ink.pulse_count
+	cavity.ui_action_click()
+	TEST_ASSERT(isnull(cavity.stashed), "Test fixture: the cavity didn't hand the screwdriver back")
+	TEST_ASSERT(ink.pulse_count > before, "The Cargo Cavity ejected something and the ink never answered")
+
+	// Every ware calls the bus unconditionally, so it has to be a no-op on a
+	// body with no ink in it rather than a runtime in the middle of a punch.
+	var/mob/living/carbon/human/meat = allocate(/mob/living/carbon/human/consistent)
+	cyberware_ink_pulse(meat, 2)
+
+	// Ink that has browned out or been EMP-scrambled stays dark, however loud
+	// the rest of the body gets.
+	ink.organ_flags |= ORGAN_FAILING
+	before = ink.pulse_count
+	cyberware_ink_pulse(lab_rat, 3)
+	TEST_ASSERT_EQUAL(ink.pulse_count, before, "Offline ink still lit up")
+	ink.organ_flags &= ~ORGAN_FAILING
+

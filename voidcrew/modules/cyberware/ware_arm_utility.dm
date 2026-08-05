@@ -29,7 +29,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw
 	name = "\improper Rockjaw drill fist"
-	desc = "A compact mining drill that folds out of the forearm. Rock it cracks gets vacuumed straight into an internal hopper — no more crawling around a lavaland floor picking up your own paycheck."
+	desc = "A compact mining drill that folds out of the forearm. Anything it cracks gets vacuumed straight into an internal hopper, so you aren't crawling around the floor picking up your own ore."
 	icon_state = "rockjaw"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
@@ -41,9 +41,18 @@
 	/// Ore stacks riding in the hopper.
 	var/list/obj/item/stack/ore/hopper = list()
 
-/// Subtyped straight off organ_action so the /use New() doesn't rename it.
+/**
+ * Subtyped straight off organ_action so the /use New() doesn't rename it.
+ *
+ * The explicit button art matters: item_action falls back to the TARGET's
+ * icon when button_icon_state is null (item_action.dm:11), which would hand
+ * the dump button the same drill-fist sprite as the deploy button sitting
+ * right next to it. A satchel reads as "empty the bag" at a glance.
+ */
 /datum/action/item_action/organ_action/rockjaw_hopper
 	name = "Dump Ore Hopper"
+	button_icon = 'icons/obj/mining.dmi'
+	button_icon_state = "satchel"
 
 /// The drill the fist deploys. Between the store drill (0.6) and the
 /// diamond drill (0.2) — the speed is part of what the 1,200 cr buys.
@@ -112,6 +121,7 @@
 		pocketed = TRUE
 	if(pocketed)
 		owner.balloon_alert(owner, "ore pocketed")
+		cyberware_ink_pulse(owner, CYBERWARE_INK_SOFT)
 
 /// Toggle action = the toolkit deploy (parent); hopper action = the dump.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/ui_action_click(mob/user, datum/action/action)
@@ -130,6 +140,7 @@
 	hopper.Cut()
 	owner.balloon_alert(owner, "hopper dumped")
 	playsound(owner, 'sound/machines/click.ogg', 40, TRUE)
+	cyberware_ink_pulse(owner, CYBERWARE_INK_SOFT)
 
 // ---- 8. Fixer's Fingers ------------------------------------------------
 
@@ -148,7 +159,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	name = "\improper Fixer's Fingers"
-	desc = "A fingertip omnitool suite — driver, wrench and cutters folding out of the knuckles — wrapped around servo tendons that hurry everything your hands do by a quarter. The printable toolset gives you the tools; this gives you the hands."
+	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles, and the servo tendons behind them run any tool job about a quarter faster than bare hands."
 	icon_state = "fixers"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1

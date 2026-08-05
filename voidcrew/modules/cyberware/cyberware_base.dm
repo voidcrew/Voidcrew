@@ -19,13 +19,30 @@
  * before ..(), and the autosurgeon keeps its stored organ on a FALSE return
  * (autosurgeon.dm's "insertion failed!" path).
  */
+/**
+ * The worn-chrome overlay: tg's augment overlay, drawn one notch higher.
+ * Stock augments sit at BODY_ADJ_LAYER, which the character-setup underwear
+ * layer paints over — a bra would cover a Cascade spine rig. Chrome instead
+ * draws at CYBERWARE_WORN_LAYER: over underwear and undershirts, still under
+ * eyes, damage, and every EQUIPPED clothing layer. One override covers the
+ * images, the emissive twins and the emissive blockers alike, because they
+ * all take their layer from bitflag_to_layer().
+ */
+/datum/bodypart_overlay/augment/cyberware
+
+/datum/bodypart_overlay/augment/cyberware/bitflag_to_layer(layer)
+	if(layer == EXTERNAL_ADJACENT)
+		return -CYBERWARE_WORN_LAYER
+	return ..()
+
 /obj/item/organ/cyberimp/cyberware
 	name = "cyberware"
 	desc = "Aftermarket chrome. Someone sat in a parlor chair for this."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	// Worn look: ware that reads from outside the body sets aug_overlay to a
 	// state in this sheet and tg's bodypart-overlay pipeline draws it ON the
-	// bearer, under clothing — stack enough chrome and you stop looking human.
+	// bearer — over the character-setup underwear, under equipped clothing.
+	// Stack enough chrome and you stop looking human.
 	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
 	failing_desc = "is dark and inert — browned out, EMP-scrambled, or plain broken."
@@ -39,6 +56,11 @@
 /obj/item/organ/cyberimp/cyberware/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+	// Swap the parent-made augment overlay for the chrome one (see above).
+	// Runs before any limb insert, so nothing holds the old datum yet.
+	if(aug_overlay)
+		qdel(bodypart_aug)
+		bodypart_aug = new /datum/bodypart_overlay/augment/cyberware(src)
 
 /obj/item/organ/cyberimp/cyberware/Destroy()
 	// Never silently eat contents: the Cargo Cavity keeps a player's stash in
@@ -95,17 +117,25 @@
  * `cyberware_optics` slot is dead — so installing chrome optics replaces
  * your eyes outright. Robotic-eyes EMP static still fires through ..();
  * our reboot downtime stacks on top of it.
+ *
+ * Every optic on this base carries the chrome read (cyberware_scan.dm) — the
+ * diagnostic bus is what makes chrome eyes chrome eyes. Subtypes that add
+ * their own ability must keep the read in their actions_types list.
  */
 /obj/item/organ/eyes/robotic/cyberware
 	name = "cyberware optics"
-	desc = "Aftermarket eyes. The irises catch the light in a way meat never does."
+	desc = "Aftermarket eyes. The irises catch the light in a way real ones don't."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	actions_types = list(/datum/action/cooldown/cyberware/chrome_read)
 	/// Neural load this ware puts on its bearer.
 	var/chrome_load = 1
 	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed (the Governor hook).
 	var/chrome_capacity_bonus = 0
+	/// How much of a body the chrome read resolves — CYBERWARE_SCAN_SILHOUETTE
+	/// counts signatures, CYBERWARE_SCAN_ITEMIZED names every one of them.
+	var/chrome_scan_resolution = CYBERWARE_SCAN_ITEMIZED
 
 /obj/item/organ/eyes/robotic/cyberware/Initialize(mapload)
 	. = ..()
@@ -121,6 +151,7 @@
 /obj/item/organ/eyes/robotic/cyberware/examine(mob/user)
 	. = ..()
 	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += span_notice("Diagnostic bus: [chrome_scan_resolution >= CYBERWARE_SCAN_ITEMIZED ? "reads a body's chrome piece by piece" : "counts a body's chrome signatures, but can't name them"].")
 
 /obj/item/organ/eyes/robotic/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -183,6 +214,10 @@
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+	// Same worn-layer swap as the generic base above.
+	if(aug_overlay)
+		qdel(bodypart_aug)
+		bodypart_aug = new /datum/bodypart_overlay/augment/cyberware(src)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/examine(mob/user)
 	. = ..()
@@ -206,6 +241,23 @@
 	. = ..()
 	if(!special)
 		cyberware_boot_splash(arm_owner, src)
+
+// Deploying and stowing arm hardware is the most visible thing a piece of
+// chrome does, so it is also the ink's most common cue: every toolkit arm
+// (Fixer's Fingers picking a tool off the radial, the Rockjaw drill, blades,
+// launchers) lights the bearer up on the way out and on the way back in.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/Extend(obj/item/augment)
+	. = ..()
+	// The parent assigns active_item before it knows whether a hand is free
+	// (augments_arms.dm), so "did it deploy" is "did it leave us", not "is it set".
+	if(active_item && !(active_item in src))
+		cyberware_ink_pulse(owner, CYBERWARE_INK_HARD)
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/Retract()
+	var/mob/living/carbon/stowing_owner = owner
+	. = ..()
+	if(.)
+		cyberware_ink_pulse(stowing_owner, CYBERWARE_INK_SOFT)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/emp_act(severity)
 	. = ..() // toolkit's own EMP retract fires first
@@ -247,7 +299,7 @@
 		return TRUE
 	var/projected_load = get_chrome_load(target) + chrome.chrome_load
 	var/projected_capacity = get_chrome_capacity(target) + chrome.capacity_bonus
-	for(var/obj/item/organ/incumbent as anything in ware.cyberware_get_incumbents(target))
+	for(var/obj/item/organ/incumbent in ware.cyberware_get_incumbents(target))
 		var/datum/component/cyberware/incumbent_chrome = incumbent.GetComponent(/datum/component/cyberware)
 		if(!incumbent_chrome)
 			continue
@@ -257,7 +309,7 @@
 		return TRUE
 	if(!silent)
 		target.balloon_alert(target, "no neural headroom!")
-		to_chat(target, span_warning("Your nervous system is screaming already — [ware] needs [projected_load - projected_capacity] more chrome capacity."))
+		to_chat(target, span_warning("Your nervous system is already maxed out — [ware] needs [projected_load - projected_capacity] more chrome capacity."))
 		if(feedback_to && feedback_to != target)
 			to_chat(feedback_to, span_warning("[target]'s nervous system can't take [ware] — [projected_load - projected_capacity] over capacity."))
 	return FALSE
@@ -281,6 +333,22 @@
 		return FALSE
 	chrome.clear_install_context()
 	return TRUE
+
+// ---- Ink bus -----------------------------------------------------------
+
+/**
+ * Kick the target's Chromatic Dermis, if they wear one. THE integration hook
+ * for the ink suite: every ware that does something worth looking at calls
+ * this with a CYBERWARE_INK_* strength, and a bearer with ink lights up for
+ * it. Safe to call on anyone — no ink, no effect, no cost beyond a slot
+ * lookup, so new ware should call it freely rather than checking first.
+ */
+/proc/cyberware_ink_pulse(mob/living/carbon/target, strength = CYBERWARE_INK_SOFT)
+	if(!iscarbon(target))
+		return
+	var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/ink = target.get_organ_slot(ORGAN_SLOT_CYBERWARE_INK)
+	if(istype(ink))
+		ink.pulse(strength)
 
 // ---- BIOS boot splash --------------------------------------------------
 

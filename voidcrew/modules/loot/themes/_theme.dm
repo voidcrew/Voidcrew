@@ -23,6 +23,24 @@
  * loot audit unit test (code/modules/unit_tests/voidcrew_loot.dm) a single
  * registry to walk.
  *
+ * CYBERWARE (2026-08-05): the parlor roster rides these tables the same way
+ * the gun blueprints do — the shop is the certainty channel, the caches are
+ * the gamble channel, and both sit on one curve. Chrome enters at the tier
+ * that matches what Splice charges for it
+ * (voidcrew/modules/cyberware/ripperdoc_catalog.dm):
+ * - Street chrome (400-2000cr) -> common / uncommon
+ * - Pro chrome (2800-3600cr, 1-2 vouchers) -> uncommon / prime
+ * - Military chrome (2-4 vouchers) -> the long tail of prime, weight 2-3
+ * Two exclusions, both deliberate: Legend chrome (Cascade, Redline, Governor
+ * Delete) is the authored chase and is always on Splice's shelf, and the
+ * Piledriver is the black market's contract-only reward — neither drops. The
+ * Skyhook Wrist is the mirror of that: it has no SKU anywhere, so a cache is
+ * the only place it exists (expedition prime).
+ *
+ * A found piece is not a worn piece. Chrome still installs only at a Chrome
+ * Cradle or through organ-manipulation surgery, and it still costs capacity,
+ * so a cache pays the hardware and never the seat in the chair.
+ *
  * HARD RULE (design): no megafauna anywhere in the zone system — not in
  * guard tables, not as bosses, never as generic cache guards in new maps.
  * Megafauna (including this fork's /mob/living/basic/boss tier — see

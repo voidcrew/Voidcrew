@@ -4,6 +4,9 @@
 // somebody's good coat, prime is armored fashion you'll be recognized by.
 // Liner wrecks keep their passengers: guarded by the restless dead
 // (undead markers, themes/occult.dm).
+// Cyberware: the two pieces of the parlor roster that are a look before
+// they're a tool — programmable ink and matte black eyes. Both draw on the
+// body, which is exactly what this theme is for.
 // TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -11,6 +14,10 @@
 /datum/loot_theme/wardrobe
 	name = "wardrobe"
 	guard_themes = list(/obj/effect/zone_mobs/undead, /obj/effect/zone_mobs/undead/boss)
+	theme_skus = list(
+		/datum/shop_sku/ripperdoc/chromatic_dermis,
+		/datum/shop_sku/ripperdoc/nightshade,
+	)
 	loot_common = list(
 		/obj/item/clothing/suit/jacket/leather = 10,
 		/obj/item/clothing/suit/jacket/bomber = 8,
@@ -25,6 +32,9 @@
 		/obj/item/clothing/neck/scarf/red = 4,
 		// what was in the coat pocket when the liner went down
 		/obj/item/gun/ballistic/revolver/c38/detective = 5,
+		// somebody's unused parlor appointment: tattoo ink you wear under
+		// the skin, colour and pattern set at a Cradle
+		/obj/item/organ/cyberimp/cyberware/chromatic_dermis = 4,
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 10,
@@ -39,6 +49,9 @@
 		/obj/item/clothing/under/rank/prisoner = 4,
 		/obj/item/clothing/mask/gas/sechailer/swat = 4,
 		/obj/item/ship_parts/trade = 6,
+		// black eyes that see in the dark. Half the reason anyone buys them
+		// is that everyone can tell you have them
+		/obj/item/organ/eyes/robotic/cyberware/nightshade = 3,
 	)
 	loot_prime = list(
 		/obj/item/clothing/head/cowboy/bounty = 9,
