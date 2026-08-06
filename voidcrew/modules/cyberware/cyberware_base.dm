@@ -319,6 +319,10 @@
  * be open for this receiver, and the netted capacity must fit. The context
  * is consumed only on a pass, so a capacity refusal doesn't strand a surgery
  * that shed load and tried again within the window.
+ *
+ * A window opened as forced (the admin verb) waives the capacity half as well:
+ * the ware goes in over budget and browns out, which is the honest result of
+ * admin fiat rather than a silent refusal.
  */
 /proc/cyberware_can_insert(obj/item/organ/ware, mob/living/carbon/receiver)
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
@@ -329,7 +333,7 @@
 			receiver.balloon_alert(receiver, "needs a real rig!")
 			to_chat(receiver, span_warning("The autosurgeon chokes — this needs a real rig."))
 		return FALSE
-	if(!cyberware_insert_check(ware, receiver))
+	if(!chrome.install_context_forced && !cyberware_insert_check(ware, receiver))
 		return FALSE
 	chrome.clear_install_context()
 	return TRUE

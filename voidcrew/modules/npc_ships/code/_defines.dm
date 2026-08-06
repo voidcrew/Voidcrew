@@ -99,6 +99,10 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define BB_NPC_BOARDING_WAVE_START_TIME "npc_boarding_wave_start"   // World.time when current wave started
 #define BB_NPC_BOARDING_TARGET_POS "npc_boarding_target_pos"        // Target position at boarding start (for movement detection)
 
+// Crew-wipe tracking (applies to every engaged state, not just phased boarding)
+#define BB_NPC_TARGET_CREW_SEEN "npc_target_crew_seen"  // TRUE once we've read at least one living crewmember aboard the current target
+#define BB_NPC_CREW_WIPE_SINCE "npc_crew_wipe_since"    // World.time we first read zero living crew aboard the target
+
 // Boarding signals
 #define COMSIG_BOARDING_WAVE_COMPLETE "boarding_wave_complete"      // Fired when all boarders in wave die
 #define COMSIG_BOARDING_BOSS_KILLED "boarding_boss_killed"          // Fired when boss is killed
@@ -114,6 +118,11 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
 #define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation
 #define NPC_BOARDING_SPACE_CHECK_INTERVAL (10 SECONDS)  // How often to check if boarders fell into space
+/// How long a target has to read as "nobody alive aboard" before we call it a wipe and
+/// break off. A grace window, not a formality: a defib or a crit-recovery inside it puts
+/// the raid straight back on, and it also rides out the momentary zero a ship reads while
+/// it's mid-dock or mid-z-transit.
+#define NPC_CREW_WIPE_CONFIRM_TIME (15 SECONDS)
 
 // Ship combat boarding pod constants
 #define NPC_SHIP_COMBAT_MAX_BOARDERS 10            // Max hostile mobs during ship combat phase

@@ -534,6 +534,13 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	icon_state = "shock_coils"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
+	// Sleeved over both calves, so a surgeon may open either one to fit it. Both
+	// zones map to the one leg slot, so this is an incision site and nothing
+	// more - swap_zone() can never turn one piece of leg chrome into two.
+	valid_zones = list(
+		BODY_ZONE_L_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+		BODY_ZONE_R_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+	)
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1

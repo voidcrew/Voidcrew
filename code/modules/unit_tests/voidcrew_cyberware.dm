@@ -4,9 +4,10 @@
  * Live-mob tests for the chrome load system (voidcrew/modules/cyberware/):
  * the netted capacity gate, the install-context gate, the all-or-nothing
  * over-cap brownout, the one-hardware-slot-per-arm invariant, the Second Wind
- * Bladder's breath interception, and the Chrome Cradle console — its rack
- * grouping, load projection and body preview, all of which the interface reads
- * straight out of ui_data() and none of which errors when it goes wrong.
+ * Bladder's breath interception, chrome surviving a body-destroying death, and
+ * the Chrome Cradle console — its rack grouping, load projection and body
+ * preview, all of which the interface reads straight out of ui_data() and none
+ * of which errors when it goes wrong.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so every fork
  * define is written as a literal with a comment naming it —
@@ -54,6 +55,15 @@
 	zone = BODY_ZONE_CHEST
 	slot = "voidcrew_test_chrome_overflow"
 	chrome_load = 10
+
+// Arm-zone chrome, for the severed-limb half of the salvage test. It has to
+// claim the real arm hardware slot or test (d) below fails it like any other
+// piece of arm chrome.
+/obj/item/organ/cyberimp/cyberware/test_arm
+	name = "test arm chrome"
+	zone = BODY_ZONE_L_ARM
+	slot = ORGAN_SLOT_LEFT_ARM_AUG
+	chrome_load = 1
 
 /// (a) + (b): the insert gates — context, over-cap refusal with the organ
 /// surviving, and same-slot netting letting a ladder upgrade through at cap.
@@ -489,4 +499,87 @@
 	cyberware_ink_pulse(lab_rat, 3)
 	TEST_ASSERT_EQUAL(ink.pulse_count, before, "Offline ink still lit up")
 	ink.organ_flags &= ~ORGAN_FAILING
+
+/// (l) Surgical reach: every piece of chrome has to sit in a body zone that
+/// some organ-manipulation surgery can actually open, or the only way to wear
+/// it is a Chrome Cradle at a ripperdoc parlor.
+///
+/// This is not hypothetical. All three pieces of leg chrome shipped in
+/// BODY_ZONE_L_LEG, and no upstream surgery has ever listed a leg in its
+/// possible_locs - the insert step was unreachable and nothing anywhere said
+/// so. Add a ware in a zone no surgeon can cut into and this fails instead.
+/datum/unit_test/voidcrew_cyberware_surgical_reach
+
+/datum/unit_test/voidcrew_cyberware_surgical_reach/Run()
+	// The zones an INTERNAL organ-manipulation surgery can open. The external
+	// "Feature manipulation" surgeries are excluded on purpose: their step only
+	// accepts ORGAN_EXTERNAL organs, and no chrome is one, so counting them
+	// would make an unreachable zone look covered.
+	var/list/reachable = list()
+	for(var/datum/surgery/organ_manipulation/procedure in GLOB.surgeries_list)
+		var/takes_internal = FALSE
+		for(var/step_path in procedure.steps)
+			if(ispath(step_path, /datum/surgery_step/manipulate_organs/internal) || ispath(step_path, /datum/surgery_step/manipulate_organs/any))
+				takes_internal = TRUE
+				break
+		if(!takes_internal)
+			continue
+		for(var/zone in procedure.possible_locs)
+			reachable[zone] = TRUE
+
+	TEST_ASSERT(reachable[BODY_ZONE_L_LEG] && reachable[BODY_ZONE_R_LEG], "No organ-manipulation surgery opens a leg — every piece of leg chrome is Chrome Cradle-only again")
+
+	var/list/all_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/eyes/robotic/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
+	for(var/obj/item/organ/ware as anything in all_ware)
+		var/zone = initial(ware.zone)
+		TEST_ASSERT(reachable[zone], "[ware] lives in [zone], which no organ-manipulation surgery can open — it can never be installed by surgery")
+
+/// (m) Chrome salvage: a body coming apart leaves its hardware on the floor.
+/// Upstream, gibbing without DROP_ORGANS (which is most gib calls), dusting,
+/// and destroying a severed limb all delete organs outright — which quietly
+/// erased the most expensive thing a player owns and left whoever earned the
+/// kill nothing to pick up. Meat organs must still follow tg's drop flags,
+/// so each half of this checks both sides.
+/datum/unit_test/voidcrew_cyberware_salvage
+
+/datum/unit_test/voidcrew_cyberware_salvage/Run()
+	// Gibbing with no drop flags at all — the case that deleted everything.
+	var/mob/living/carbon/human/gib_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/test_small/gib_ware = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
+	TEST_ASSERT(gib_ware.Insert(gib_rat, special = TRUE), "Test fixture: staging insert into the gib subject was refused")
+	var/obj/item/organ/gib_meat = gib_rat.get_organ_slot(ORGAN_SLOT_LIVER)
+	TEST_ASSERT(gib_meat, "Test fixture: the gib subject has no liver to compare chrome against")
+
+	gib_rat.gib()
+	TEST_ASSERT(!QDELETED(gib_ware), "Gibbing deleted the chrome")
+	TEST_ASSERT(isnull(gib_ware.owner), "Gibbed chrome is still owned by the corpse")
+	TEST_ASSERT(isturf(gib_ware.loc), "Gibbed chrome ended up in [gib_ware.loc || "nullspace"] instead of on the floor")
+	TEST_ASSERT(QDELETED(gib_meat), "A flagless gib kept a meat organ — tg's drop rules changed, not just chrome's")
+
+	// Dusting: the body is queued for deletion, organs and all.
+	var/mob/living/carbon/human/ash_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/test_heavy/ash_ware = allocate(/obj/item/organ/cyberimp/cyberware/test_heavy)
+	TEST_ASSERT(ash_ware.Insert(ash_rat, special = TRUE), "Test fixture: staging insert into the dust subject was refused")
+
+	ash_rat.dust()
+	TEST_ASSERT(!QDELETED(ash_ware), "Dusting deleted the chrome")
+	TEST_ASSERT(isnull(ash_ware.owner), "Dusted chrome is still owned by the corpse")
+	TEST_ASSERT(isturf(ash_ware.loc), "Dusted chrome ended up in [ash_ware.loc || "nullspace"] instead of on the floor")
+
+	// A severed limb with chrome in it. drop_limb() takes the organ off the
+	// mob but leaves it inside the limb, and the limb's Destroy() is what
+	// used to eat it.
+	var/mob/living/carbon/human/limb_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/test_arm/limb_ware = allocate(/obj/item/organ/cyberimp/cyberware/test_arm)
+	TEST_ASSERT(limb_ware.Insert(limb_rat, special = TRUE), "Test fixture: staging insert into the dismemberment subject was refused")
+	var/obj/item/bodypart/severed = limb_rat.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT(severed, "Test fixture: the dismemberment subject has no left arm")
+	TEST_ASSERT_EQUAL(limb_ware.bodypart_owner, severed, "Test fixture: the arm chrome didn't seat in the left arm")
+
+	severed.drop_limb()
+	TEST_ASSERT_EQUAL(limb_ware.bodypart_owner, severed, "A dropped limb shed its chrome instead of carrying it off")
+	qdel(severed)
+	TEST_ASSERT(!QDELETED(limb_ware), "Destroying a severed limb deleted the chrome inside it")
+	TEST_ASSERT(isnull(limb_ware.bodypart_owner), "Chrome from a destroyed limb still points at the limb")
+	TEST_ASSERT(isturf(limb_ware.loc), "Chrome from a destroyed limb ended up in [limb_ware.loc || "nullspace"] instead of on the floor")
 

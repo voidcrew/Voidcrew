@@ -197,11 +197,14 @@
  * * [list_reagents][list] - list to add. Format it like this: list(/datum/reagent/toxin = 10, "beer" = 15)
  * * [data][list] - additional data to add
  * * [added_purity][number] - an override to the default purity for each reagent to add.
+ * * [temperature][number] - the temperature to add each reagent at. VOIDCREW EDIT: added
+ *   for the chemistry circuits; defaults to add_reagent's own default so existing callers
+ *   are unaffected.
  */
-/datum/reagents/proc/add_reagent_list(list/list_reagents, list/data = null, added_purity = null)
+/datum/reagents/proc/add_reagent_list(list/list_reagents, list/data = null, added_purity = null, temperature = DEFAULT_REAGENT_TEMPERATURE)
 	for(var/r_id in list_reagents)
 		var/amt = list_reagents[r_id]
-		add_reagent(r_id, amt, data, added_purity = added_purity)
+		add_reagent(r_id, amt, data, reagtemp = temperature, added_purity = added_purity)
 
 /**
  * Removes a specific reagent. can supress reactions if needed
@@ -582,7 +585,6 @@
 	var/list/deleted_reagents = list()
 	var/chem_index = 1
 	var/num_reagents = length(cached_reagents)
-	var/total_ph = 0
 	var/reagent_volume = 0
 	. = 0
 
@@ -614,17 +616,25 @@
 
 		//compute volume & ph like we would normally
 		. += reagent_volume
-		total_ph += reagent.ph * reagent_volume
+		//VOIDCREW EDIT: pH accumulation removed - update_total() is hot and the sum is
+		//no longer read. See the pH assignment below.
+		//total_ph += reagent.ph * reagent_volume
 
 		//reasign rounded value
 		reagent.volume = reagent_volume
 
 	//assign the final values, rounding up can sometimes cause overflow so bring it down
 	total_volume = min(round(., CHEMICAL_VOLUME_ROUNDING), maximum_volume)
+	//VOIDCREW EDIT ADDITION: we don't use pH. Holder pH is pinned to neutral instead of
+	//being derived from the mix, so it never drifts out of a recipe's optimal band and
+	//reactions aren't purity-penalised for it. Purity itself is untouched.
+	ph = CHEMICAL_NORMAL_PH
+	/* VOIDCREW EDIT ORIGINAL
 	if(!total_volume)
 		ph = CHEMICAL_NORMAL_PH
 	else
 		ph = clamp(total_ph / total_volume, CHEMICAL_MIN_PH, CHEMICAL_MAX_PH)
+	VOIDCREW EDIT END */
 
 	//clear out deleted reagents
 	QDEL_LIST(deleted_reagents)

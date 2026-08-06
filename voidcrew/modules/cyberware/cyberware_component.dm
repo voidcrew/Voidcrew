@@ -39,6 +39,10 @@
 	var/datum/weakref/install_context_ref
 	/// world.time at which the install window closes.
 	var/install_context_until = 0
+	/// TRUE when the open window was granted by admin fiat. A forced window
+	/// waives the capacity ceiling as well as the context check — the ware goes
+	/// in over budget and the brownout monitor takes it from there.
+	var/install_context_forced = FALSE
 
 /datum/component/cyberware/Initialize(chrome_load = 0, tier = CYBERWARE_TIER_1, capacity_bonus = 0)
 	if(!isorgan(parent))
@@ -59,6 +63,7 @@
 		deltimer(emp_timer)
 		emp_timer = null
 	install_context_ref = null
+	install_context_forced = FALSE
 	return ..()
 
 // ---- Brownout monitor --------------------------------------------------
@@ -143,12 +148,16 @@
 // ---- Install context ---------------------------------------------------
 // Cyberware refuses Insert() outside a legit context: organ-manipulation
 // surgery opens a window in pre_surgical_insertion, the Chrome Cradle opens
-// one right before it inserts, and special = TRUE (init/admin) bypasses the
-// gate entirely. Bare autosurgeons never open one — that is the point.
+// one right before it inserts, the "Cyberware: Install Chrome" admin verb
+// opens a forced one, and special = TRUE (init) bypasses the gate entirely.
+// Bare autosurgeons never open one — that is the point. VV-inserting an organ
+// onto a mob goes through the same live Insert(), so it hits the same wall;
+// the admin verb is the supported way in.
 
-/datum/component/cyberware/proc/grant_install_context(mob/living/carbon/target, duration = CYBERWARE_INSTALL_CONTEXT_WINDOW)
+/datum/component/cyberware/proc/grant_install_context(mob/living/carbon/target, duration = CYBERWARE_INSTALL_CONTEXT_WINDOW, forced = FALSE)
 	install_context_ref = WEAKREF(target)
 	install_context_until = world.time + duration
+	install_context_forced = forced
 
 /datum/component/cyberware/proc/has_install_context(mob/living/carbon/target)
 	return target && install_context_ref?.resolve() == target && world.time <= install_context_until
@@ -156,6 +165,7 @@
 /datum/component/cyberware/proc/clear_install_context()
 	install_context_ref = null
 	install_context_until = 0
+	install_context_forced = FALSE
 
 // ---- Global helpers ----------------------------------------------------
 

@@ -18,7 +18,8 @@
 
 /datum/reagent/reaction_agent/acidic_buffer
 	name = "Strong Acidic Buffer"
-	description = "This reagent will consume itself and move the pH of a beaker towards acidity when added to another."
+	//VOIDCREW EDIT: pH is pinned neutral fork-wide, so this no longer does anything.
+	description = "An industrial acidic buffer. Modern reagent stabilisers hold a mixture at neutral pH on their own, leaving nothing for it to correct."
 	color = "#fbc314"
 	ph = 0
 	inverse_chem = null
@@ -33,6 +34,10 @@
 		return
 
 	//do the ph change
+	//VOIDCREW EDIT: holder pH is pinned to neutral, so buffers can't move it. Report
+	//that honestly instead of claiming a change that never happens.
+	var/message = "The beaker froths as the buffer is added, to no effect."
+	/* VOIDCREW EDIT ORIGINAL
 	var/message
 	if(target.ph <= ph)
 		message = "The beaker froths as the buffer is added, to no effect."
@@ -40,6 +45,7 @@
 		message = "The beaker froths as the pH changes!"
 		target.adjust_all_reagents_ph((-(amount / target.total_volume) * BUFFER_IONIZING_STRENGTH))
 		target.update_total()
+	VOIDCREW EDIT END */
 
 	//give feedback & remove from holder because it's not transferred
 	target.my_atom.audible_message(span_warning(message))
@@ -50,7 +56,8 @@
 
 /datum/reagent/reaction_agent/basic_buffer
 	name = "Strong Basic Buffer"
-	description = "This reagent will consume itself and move the pH of a beaker towards alkalinity when added to another."
+	//VOIDCREW EDIT: pH is pinned neutral fork-wide, so this no longer does anything.
+	description = "An industrial alkaline buffer. Modern reagent stabilisers hold a mixture at neutral pH on their own, leaving nothing for it to correct."
 	color = "#3853a4"
 	ph = 14
 	inverse_chem = null
@@ -64,6 +71,10 @@
 		return
 
 	//do the ph change
+	//VOIDCREW EDIT: holder pH is pinned to neutral, so buffers can't move it. Report
+	//that honestly instead of claiming a change that never happens.
+	var/message = "The beaker froths as the buffer is added, to no effect."
+	/* VOIDCREW EDIT ORIGINAL
 	var/message
 	if(target.ph >= ph)
 		message = "The beaker froths as the buffer is added, to no effect."
@@ -71,6 +82,7 @@
 		message = "The beaker froths as the pH changes!"
 		target.adjust_all_reagents_ph(((amount / target.total_volume) * BUFFER_IONIZING_STRENGTH))
 		target.update_total()
+	VOIDCREW EDIT END */
 
 	//give feedback & remove from holder because it's not transferred
 	target.my_atom.audible_message(span_warning(message))

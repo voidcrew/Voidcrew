@@ -98,6 +98,3 @@
 	TEST_ASSERT_EQUAL(landing, launch_site, "a pod stopped by armour came to rest on [landing] instead of backing off to open space")
 	qdel(flier)
 	restore_walls()
-
-// TEMPORARY: focused run to verify the breach fix. Remove before committing.
-TEST_FOCUS(/datum/unit_test/voidcrew_assault_pod_breach)

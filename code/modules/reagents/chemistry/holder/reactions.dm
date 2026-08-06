@@ -72,6 +72,11 @@
 					if(isliving(cached_my_atom) && !reaction.mob_react) //Makes it so certain chemical reactions don't occur in mobs
 						continue
 
+					//VOIDCREW EDIT ADDITION: keeps mob-spawning mixtures out of plant chemistry
+					if((reaction.reaction_flags & REACTION_NOT_IN_PLANTS) && istype(cached_my_atom, /obj/item/food/grown))
+						continue
+					//VOIDCREW EDIT END
+
 				else if(reaction.required_container)
 					continue
 

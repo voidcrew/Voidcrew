@@ -49,6 +49,17 @@
  * layers, and anything routed through `do_teleport()` would silently no-op inside his
  * own sanctum.
  *
+ * **The leash alone is not enough, and failing it is unrecoverable.** It only re-checks
+ * distance when its *anchor* moves (`leash.dm:63`) — never when the leashed mob does —
+ * so any `forceMove` on him slips out of the radius unnoticed. Once he is outside,
+ * `on_parent_pre_move` (`leash.dm:97-103`) blocks every step whose destination is still
+ * beyond the radius, which from outside is *the first step back*: he stands frozen
+ * wherever he landed for the rest of a round that never unloads. That is what
+ * [is_outside_lair] and [recall_home] exist for. Anything that repositions him must
+ * either stay inside the radius by construction (the illusion swap checks
+ * [is_outside_lair] on its candidate turf before committing) or be content to be warped
+ * home on the next move or the next Life tick.
+ *
  * Files: lich_abilities.dm holds his spells, AI controller and planning subtrees;
  * lich_thrall.dm holds the mind-control status effect. The site, the ritual clock, the
  * ward gates and the shared defines (`FACTION_LICH`, `LICH_GREEN`) are track A's, in
@@ -148,6 +159,9 @@
 	var/obj/effect/lich_anchor/home_anchor
 	/// How far from [home_turf] he may get before the leash drags him back.
 	var/leash_range = 12
+	/// TRUE while [recall_home] is warping him, so the COMSIG_MOVABLE_MOVED handler that
+	/// its own forceMove trips does not re-enter it.
+	var/recalling_home = FALSE
 	/// Turfs marked by /obj/effect/landmark/lich/summon_spot, where his dead climb out.
 	/// Empty is fine — [pick_summon_anchor] falls back to his own turf.
 	var/list/turf/summon_anchors = list()
@@ -237,12 +251,120 @@
 			continue
 		summon_anchors += mark_turf
 
-	// The leash component refuses a turf owner (leash.dm:35-37), so drop an invisible
-	// movable to hang the leash off. Its recall is a plain forceMove (leash.dm:168), which
-	// is what makes it safe inside the lair's NOTELEPORT areas.
-	// AddComponent is a variadic macro, so this has to stay on one line.
+	ensure_leash()
+
+	// The leash cannot see its own mob move (leash.dm:63 watches the anchor only), so
+	// watch it here. This is the half of the guarantee that catches a forceMove.
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved), override = TRUE)
+
+/**
+ * Drops the anchor and leashes him to it, rebuilding both if the anchor has been lost.
+ *
+ * The leash component refuses a turf owner (leash.dm:35-37), so an invisible movable
+ * hangs the leash off his home turf. Its recall is a plain forceMove (leash.dm:168),
+ * which is what makes it safe inside the lair's NOTELEPORT areas.
+ *
+ * Called again from [recall_home] because the component deletes itself when its anchor
+ * is deleted (leash.dm:77-81) — and an anchorless Ilthuun has nothing stopping him
+ * following a fleeing raider all the way to the docks. Re-adding is safe: components
+ * default to COMPONENT_DUPE_HIGHLANDER (`_component.dm:18`), so a second one replaces
+ * the first rather than stacking.
+ */
+/mob/living/basic/lich/proc/ensure_leash()
+	if(isnull(home_turf) || !QDELETED(home_anchor))
+		return
 	home_anchor = new /obj/effect/lich_anchor(home_turf)
+	// AddComponent is a variadic macro, so this has to stay on one line.
 	AddComponent(/datum/component/leash, home_anchor, leash_range, /obj/effect/temp_visual/small_smoke/halfsecond, /obj/effect/temp_visual/small_smoke/halfsecond)
+
+/**
+ * TRUE if [check_turf] (his own turf by default) is outside the ground he is allowed to
+ * stand on.
+ *
+ * z is tested separately because the lair loads into a turf reservation, and `get_dist()`
+ * across z-levels is not a distance we want to reason about. Nullspace is not "outside" —
+ * the leash's own check_distance handles that case (leash.dm:113-118) and we would only
+ * fight it.
+ *
+ * Also used by the illusion swap in lich_abilities.dm to vet a landing turf *before*
+ * moving him onto it, which is the fix for the way he actually used to escape.
+ */
+/mob/living/basic/lich/proc/is_outside_lair(turf/check_turf)
+	if(isnull(home_turf))
+		return FALSE
+	if(isnull(check_turf))
+		check_turf = get_turf(src)
+	if(isnull(check_turf))
+		return FALSE
+	if(check_turf.z != home_turf.z)
+		return TRUE
+	return get_dist(check_turf, home_turf) > leash_range
+
+/**
+ * Warps him back to the middle of his own floor.
+ *
+ * Deliberately a `forceMove` and not `do_teleport()` — the lair areas are NOTELEPORT, so
+ * a teleport would silently no-op and leave him stuck exactly where the leash cannot let
+ * him move (see the file header).
+ *
+ * Loud on purpose. A boss vanishing and reappearing across the room with no tell reads as
+ * a bug to the party fighting him; a green flash and a line of text reads as the lair
+ * refusing to let him leave.
+ */
+/mob/living/basic/lich/proc/recall_home()
+	if(recalling_home || is_illusion || stat == DEAD)
+		return
+	if(!is_outside_lair())
+		return
+
+	recalling_home = TRUE
+	var/turf/left_behind = get_turf(src)
+	if(left_behind)
+		new /obj/effect/temp_visual/small_smoke/halfsecond(left_behind)
+
+	var/turf/destination = pick_recall_turf()
+	forceMove(destination)
+	new /obj/effect/temp_visual/small_smoke/halfsecond(destination)
+	new /obj/effect/temp_visual/circle_wave/verdigris(destination)
+	playsound(destination, 'sound/effects/magic/RATTLEMEBONES2.ogg', 60, vary = TRUE)
+	visible_message(span_boldwarning("Ilthuun comes apart, and puts himself back together standing on his own floor."))
+	log_game("LICH: Ilthuun was recalled to his sanctum from [left_behind ? AREACOORD(left_behind) : "nullspace"].")
+
+	recalling_home = FALSE
+	// He may have been out there because the anchor was destroyed, not because something
+	// moved him. Warping him home without rebuilding it would just let him walk back out.
+	ensure_leash()
+
+/// Where [recall_home] puts him: his home turf, or the nearest clear tile to it if
+/// something has since been built on top of it. Mobs do not block — landing on a raider
+/// standing in his spot is the correct outcome.
+/mob/living/basic/lich/proc/pick_recall_turf()
+	RETURN_TYPE(/turf)
+	if(!home_turf.is_blocked_turf(exclude_mobs = TRUE))
+		return home_turf
+	for(var/radius in 1 to 3)
+		for(var/turf/candidate in range(radius, home_turf))
+			if(!candidate.is_blocked_turf(exclude_mobs = TRUE))
+				return candidate
+	return home_turf // Walled in somehow. Better inside a wall at home than frozen abroad.
+
+/// Deferred by a tick rather than warping him mid-Moved(): re-entering the move machinery
+/// from inside its own signal is how you get a mob in two places at once.
+/mob/living/basic/lich/proc/on_moved(datum/source, atom/old_loc, dir, forced)
+	SIGNAL_HANDLER
+	if(recalling_home || is_illusion || stat == DEAD)
+		return
+	if(!is_outside_lair())
+		return
+	addtimer(CALLBACK(src, PROC_REF(recall_home)), 0, TIMER_UNIQUE|TIMER_OVERRIDE)
+
+/// Backstop for anything that puts him outside without a move we can see — and the only
+/// thing that will un-stick a lich already frozen out there when this fix loads.
+/mob/living/basic/lich/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+	. = ..()
+	if(is_illusion || stat == DEAD)
+		return
+	recall_home()
 
 /**
  * Returns a turf for his conjured dead to appear on.

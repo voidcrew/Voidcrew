@@ -12,6 +12,10 @@
 	var/port_type = PORT_TYPE_ANY
 	/// Whether we are adding output ports or not
 	var/is_output = FALSE
+	//VOIDCREW EDIT ADDITION: whether the output ports we add are /datum/port/output/singular.
+	//Only meaningful alongside is_output. See /datum/port/output/singular for why.
+	var/is_singular = FALSE
+	//VOIDCREW EDIT END
 	/// The prefix of the new ports
 	var/prefix = "Port"
 	/// The order of the new ports
@@ -21,7 +25,9 @@
 	/// The maximum amount of ports allowed
 	var/maximum_amount = 10
 
-/datum/component/circuit_component_add_port/Initialize(list/port_list, add_action, remove_action, port_type, is_output = FALSE, prefix = "Port", order = 1, minimum_amount = 1, maximum_amount = 10)
+//VOIDCREW EDIT: is_singular appended to the end of the signature so every pre-existing
+//positional caller keeps its argument mapping, and every pre-existing default is preserved.
+/datum/component/circuit_component_add_port/Initialize(list/port_list, add_action, remove_action, port_type, is_output = FALSE, prefix = "Port", order = 1, minimum_amount = 1, maximum_amount = 10, is_singular = FALSE)
 	. = ..()
 	if(!istype(parent, /obj/item/circuit_component))
 		return COMPONENT_INCOMPATIBLE
@@ -30,6 +36,7 @@
 	src.remove_action = remove_action
 	src.port_type = port_type
 	src.is_output = is_output
+	src.is_singular = is_singular //VOIDCREW EDIT ADDITION
 	src.prefix = prefix
 	src.order = order
 	src.minimum_amount = minimum_amount
@@ -73,6 +80,8 @@
 	var/obj/item/circuit_component/component = parent
 	var/list/arguments = list("[prefix] [length(port_list) + 1]", port_type, order = src.order + (length(port_list) + 1) * 0.001)
 	if(is_output)
+		if(is_singular) //VOIDCREW EDIT ADDITION
+			arguments["port_type"] = /datum/port/output/singular //VOIDCREW EDIT ADDITION
 		return component.add_output_port(arglist(arguments))
 	else
 		return component.add_input_port(arglist(arguments))

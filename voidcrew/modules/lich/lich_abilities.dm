@@ -422,12 +422,25 @@
 	if(!placed)
 		return
 
-	// He hides among them. Same trick as paper_abilities.dm:74.
-	if(length(directions))
-		var/turf/hiding_spot = get_step(cast_on, pick(directions))
-		if(hiding_spot && !hiding_spot.is_blocked_turf(exclude_mobs = TRUE))
-			new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(ilthuun))
-			ilthuun.forceMove(hiding_spot)
+	// He hides among them. Same trick as paper_abilities.dm:74 — but bounded to his leash,
+	// which the paper wizard has no equivalent of.
+	//
+	// This swap is a forceMove onto a tile up to cast_range + 1 away from him, and a
+	// forceMove is invisible to /datum/component/leash: it only re-checks distance when its
+	// ANCHOR moves (leash.dm:63), never when the leashed mob does. Land him outside the
+	// radius and its pre-move handler then blocks every step whose destination is still
+	// outside (leash.dm:97-103) — from out there that is the first step back, so he stands
+	// frozen in a corridor for the rest of a round whose interior never unloads. Vetting the
+	// landing turf first is the fix; recall_home() on the mob is the net under it.
+	for(var/direction in shuffle(directions))
+		var/turf/hiding_spot = get_step(cast_on, direction)
+		if(isnull(hiding_spot) || hiding_spot.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		if(ilthuun.is_outside_lair(hiding_spot))
+			continue
+		new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(ilthuun))
+		ilthuun.forceMove(hiding_spot)
+		break
 
 /datum/action/cooldown/spell/pointed/lich_mirror_images/proc/lost_copy(mob/living/source)
 	SIGNAL_HANDLER

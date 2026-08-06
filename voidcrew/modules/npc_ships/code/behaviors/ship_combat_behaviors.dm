@@ -141,6 +141,16 @@
 				if(scanned_time && (world.time - scanned_time) < NPC_SCAN_MEMORY_TIME)
 					continue  // Skip - we scanned this ship recently
 
+		// Skip hulls with nobody alive aboard. There's nothing to rob off a ship whose crew
+		// is dead or gone, and without this a pirate that had just wiped a crew and broken
+		// off would re-acquire the same corpse ship on its next scan and start the whole
+		// engagement over, with no one left aboard who could ever end it.
+		// count_living_crew() returns -1 for a ship it can't read, which is not an empty one.
+		// Left until last on purpose: it's the only check here that walks a list, so every
+		// cheap rejection above it - distance, zone, line of sight - has already run.
+		if(controller.count_living_crew(potential_target) == 0)
+			continue
+
 		// Found a valid target!
 		log_shuttle("NPC_SHIP: [ship.name] targeting [potential_target.name] - dist=[get_dist(ship, potential_target)], territory=[ship.territory_range]")
 		controller.set_target(potential_target)
@@ -719,6 +729,34 @@
 	if(combat.start_interdiction(target))
 		// Record commitment start time - other actions delayed while committed
 		controller.set_blackboard_key(BB_NPC_INTERDICTOR_START_TIME, world.time)
+
+	return AI_BEHAVIOR_DELAY
+
+// ========== CHECK CREW WIPE ==========
+
+/**
+ * Breaks the engagement off once there's nobody left alive on the target.
+ *
+ * Runs in every state where we're actually doing something to a crew - ship weapons,
+ * boarding waves, the boss phase - because all of them can finish a crew off and none of
+ * them noticed. Pods fired from normal ship combat (fire_boarding_pods) never registered
+ * anything at all, so a pirate that wiped a hull that way would go on shelling the corpse
+ * and holding the interdiction indefinitely.
+ *
+ * The controller owns the actual "is anyone left" judgement and its grace window; this
+ * just polls it. See check_crew_eliminated().
+ */
+/datum/ai_behavior/npc_ship/check_crew_wipe
+	action_cooldown = 5 SECONDS
+
+/datum/ai_behavior/npc_ship/check_crew_wipe/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/target = controller.get_target()
+	if(!target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	controller.check_crew_eliminated(target)
 
 	return AI_BEHAVIOR_DELAY
 

@@ -43,6 +43,7 @@
 											span_userdanger("[user] tries to squirt something into your eyes, but fails!"))
 					if(trans)
 						to_chat(user, span_notice("You transfer [trans] unit\s of the solution."))
+						after_pour(trans, safe_thing, user) //VOIDCREW EDIT ADDITION: dropper sounds
 					update_appearance()
 					return ITEM_INTERACT_BLOCKING
 			else if(isalien(target)) //hiss-hiss has no eyes!
@@ -64,6 +65,8 @@
 
 		trans = round(reagents.trans_to(target, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
 		to_chat(user, span_notice("You transfer [trans] unit\s of the solution."))
+		if(trans)
+			after_pour(trans, target, user) //VOIDCREW EDIT ADDITION: dropper sounds
 		update_appearance()
 		target.update_appearance()
 		return ITEM_INTERACT_SUCCESS

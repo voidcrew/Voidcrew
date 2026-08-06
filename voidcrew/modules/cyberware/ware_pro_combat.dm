@@ -575,6 +575,11 @@
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
+	// Either calf is a valid incision site; see the Shock Coils for the why.
+	valid_zones = list(
+		BODY_ZONE_L_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+		BODY_ZONE_R_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+	)
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2

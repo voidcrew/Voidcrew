@@ -339,18 +339,19 @@
 
 	//Calculate how much product to make and how much reactant to remove factors..
 	var/required_amount
-	var/pH_adjust
 	for(var/datum/reagent/requirement as anything in reaction.required_reagents)
 		required_amount = reaction.required_reagents[requirement]
 		if(!holder.remove_reagent(requirement, delta_chem_factor * required_amount))
 			to_delete = TRUE
 			return
+		//VOIDCREW EDIT REMOVAL: we don't use pH, so reactions no longer shift it.
 		//Apply pH changes
-		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
-			pH_adjust = ((delta_chem_factor * required_amount) / target_vol) * (reaction.H_ion_release * h_ion_mod)
-		else //Default adds pH independant of volume
-			pH_adjust = (delta_chem_factor * required_amount) * (reaction.H_ion_release * h_ion_mod)
-		holder.adjust_specific_reagent_ph(requirement, pH_adjust)
+		//if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
+		//	pH_adjust = ((delta_chem_factor * required_amount) / target_vol) * (reaction.H_ion_release * h_ion_mod)
+		//else //Default adds pH independant of volume
+		//	pH_adjust = (delta_chem_factor * required_amount) * (reaction.H_ion_release * h_ion_mod)
+		//holder.adjust_specific_reagent_ph(requirement, pH_adjust)
+		//VOIDCREW EDIT END
 
 	var/step_add
 	var/total_step_added = 0
@@ -361,12 +362,14 @@
 			to_delete = TRUE
 			return
 
+		//VOIDCREW EDIT REMOVAL: we don't use pH, so reactions no longer shift it.
 		//Apply pH changes
-		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
-			pH_adjust = (step_add / target_vol) * (reaction.H_ion_release * h_ion_mod)
-		else
-			pH_adjust = step_add * (reaction.H_ion_release * h_ion_mod)
-		holder.adjust_specific_reagent_ph(product, pH_adjust)
+		//if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
+		//	pH_adjust = (step_add / target_vol) * (reaction.H_ion_release * h_ion_mod)
+		//else
+		//	pH_adjust = step_add * (reaction.H_ion_release * h_ion_mod)
+		//holder.adjust_specific_reagent_ph(product, pH_adjust)
+		//VOIDCREW EDIT END
 
 		//record amounts created
 		reacted_vol += step_add

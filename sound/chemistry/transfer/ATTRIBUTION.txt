@@ -1,0 +1,11 @@
+Reagent transfer sounds (beakerpour_*.ogg, dropper*.ogg).
+
+Ported from Monkestation2.0, which ships them under the GNU Affero General
+Public License v3 (the same licence as this repository). Monkestation carries no
+per-file attribution for this set; sound/chemistry/SoundSources.txt there covers
+only the sounds in the parent directory, not these.
+
+The "sparkle" variants are rare alternates, played roughly 1% of the time.
+
+Note: beakerpour_10-25-4.ogg is included for completeness but is not referenced
+in code, matching monkestation, whose 10-25 list skips it.

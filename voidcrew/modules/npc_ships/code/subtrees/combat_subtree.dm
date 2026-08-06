@@ -43,6 +43,8 @@
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/hailing)
 		// Still check disengage in case target escapes
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
+		// No point demanding tribute from a ship whose crew died mid-call
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 		return
 
 	// Siphoning ships interdict + siphon only (yellow zone economic threat, no weapons/boarding)
@@ -63,18 +65,21 @@
 	if(combat_state == NPC_COMBAT_BOARDING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_wave_monitor)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 		return
 
 	// Cooldown between waves - wait for timer
 	if(combat_state == NPC_COMBAT_BOARDING_COOLDOWN)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_cooldown_monitor)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 		return
 
 	// Boss phase - wait for boss to be killed
 	if(combat_state == NPC_COMBAT_BOSS_PHASE)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boss_phase_monitor)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 		return
 
 	// Ship disabled - do nothing, wait for players to board
@@ -100,11 +105,13 @@
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_wealth)
 			// Still check disengage in case target escapes during scan
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 			return
 
 		if(NPC_COMBAT_ENGAGING)
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/acquire_lock)
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_weapons)
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 
 		if(NPC_COMBAT_COMBAT)
 			// ACTION PRIORITY SYSTEM: Pick ONE offensive action per tick instead of all three
@@ -121,6 +128,8 @@
 					controller.queue_behavior(/datum/ai_behavior/npc_ship/activate_siphon)
 			// Always check weapons status
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_weapons)
+			// Pods fired in this state can finish a crew off - notice when they have
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_crew_wipe)
 
 	// Always check if we should disengage (target out of range)
 	controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)

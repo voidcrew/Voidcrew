@@ -39,6 +39,28 @@
 	var/mob/living/chosen = choices[choice]
 	return QDELETED(chosen) ? null : chosen
 
+/**
+ * Presents every carbon body worth operating on: the players, plus whatever
+ * the admin has marked in VV. The marked slot is the only way to reach a body
+ * with no client — a spawned test dummy or a monkey — which is most of what
+ * chrome gets tried on. Returns the mob, or null on cancel.
+ */
+/proc/voidcrew_admin_pick_carbon(client/user, title = "Select Body")
+	var/list/choices = list()
+	var/mob/living/carbon/marked = user.holder?.marked_datum
+	if(istype(marked) && !QDELETED(marked))
+		choices["(VV marked) [marked.real_name || marked.name]"] = marked
+	for(var/mob/living/carbon/candidate in GLOB.player_list)
+		choices["[candidate.real_name || candidate.name] ([candidate.ckey])"] = candidate
+	if(!length(choices))
+		to_chat(user, span_warning("No carbon bodies are connected. Mark one in VV to reach a body with no client."))
+		return null
+	var/choice = tgui_input_list(user, "Which body?", title, sort_list(choices))
+	if(!choice)
+		return null
+	var/mob/living/carbon/chosen = choices[choice]
+	return QDELETED(chosen) ? null : chosen
+
 /// Presents every loaded ship for selection. Returns the overmap ship, or null on cancel.
 /proc/voidcrew_admin_pick_ship(client/user, title = "Select Ship")
 	var/list/choices = list()

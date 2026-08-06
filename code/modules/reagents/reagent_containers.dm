@@ -270,6 +270,9 @@
 /obj/item/reagent_containers/proc/on_reagent_change(datum/reagents/holder, ...)
 	SIGNAL_HANDLER
 	update_appearance()
+	//VOIDCREW EDIT ADDITION: lets reagents react to their own container changing (Australium)
+	reagent_processing()
+	//VOIDCREW EDIT END
 
 /obj/item/reagent_containers/update_overlays()
 	. = ..()

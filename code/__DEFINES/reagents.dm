@@ -143,6 +143,10 @@
 #define REACTION_PH_VOL_CONSTANT (1<<6)
 ///If a reaction will generate its impure/inverse reagents in the middle of a reaction, as apposed to being determined on ingestion/on reaction completion
 #define REACTION_REAL_TIME_SPLIT (1<<7)
+//VOIDCREW EDIT ADDITION: reaction refuses to run inside a grown food item, so plant
+//chemistry can't be used to mass-produce the mob-spawning mixtures.
+#define REACTION_NOT_IN_PLANTS (1<<8)
+//VOIDCREW EDIT END
 
 ///Used for overheat_temp - This sets the overheat so high it effectively has no overheat temperature.
 #define NO_OVERHEAT 99999
