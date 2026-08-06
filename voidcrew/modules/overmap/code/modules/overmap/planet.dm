@@ -520,6 +520,10 @@
 	else
 		var/is_survey = FALSE
 		var/dock_to_use = null
+		// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put the
+		// free ones back before choosing one, or the last visitor's offset is carried into this
+		// placement and compounds on every arrival.
+		reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 		// Port destinations are set by our survey console
 		if (acting.shuttle.port_destinations)
 			dock_to_use = acting.shuttle.port_destinations

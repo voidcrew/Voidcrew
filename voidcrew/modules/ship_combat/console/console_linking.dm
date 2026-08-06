@@ -124,6 +124,25 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle assault pod tube linking
+	if(istype(tool.buffer, /obj/machinery/ship_combat/pod_launcher))
+		var/obj/machinery/ship_combat/pod_launcher/tube = tool.buffer
+
+		// Check if already linked
+		for(var/datum/weakref/ref in linked_pod_tubes)
+			if(ref.resolve() == tube)
+				balloon_alert(user, "already linked")
+				return ITEM_INTERACT_BLOCKING
+
+		if(tube.link_console(src))
+			linked_pod_tubes += WEAKREF(tube)
+			balloon_alert(user, "pod tube linked")
+			to_chat(user, span_notice("Linked [tube] to [src]. Total pod tubes: [length(linked_pod_tubes)]"))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Handle shield generator linking
 	if(istype(tool.buffer, /obj/machinery/ship_combat/shield_generator))
 		var/obj/machinery/ship_combat/shield_generator/gen = tool.buffer

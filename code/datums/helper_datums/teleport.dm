@@ -237,4 +237,13 @@
 	if(((origin_area.area_flags & LOCAL_TELEPORT) || (destination_area.area_flags & LOCAL_TELEPORT)) && destination_area != origin_area)
 		return FALSE
 
+	// VOIDCREW EDIT ADDITION: bitrunning containment. The LOCAL_TELEPORT check above
+	// only covers tiles a domain template painted an area onto - the untouched floor of
+	// the reservation is plain /area/space, which has no such flag. A quantum pad built
+	// on one of those tiles teleports real loot out of VR and past the byteforge, which
+	// is the only sanctioned way anything leaves a domain. Gate on the reservation.
+	if(SSbitrunning.is_domain_turf(get_turf(teleported_atom)) != SSbitrunning.is_domain_turf(destination_turf))
+		return FALSE
+	// VOIDCREW EDIT END
+
 	return TRUE

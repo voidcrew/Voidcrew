@@ -242,10 +242,14 @@
 	vacuum.ChangeTurf(floor_type)
 
 /// (g) The Chrome Cradle console: every reachable piece files into exactly one
-/// rack group, the highlight projects its own swap before anything commits,
-/// and the body preview builds a mannequin wearing the occupant's worn chrome.
+/// rack group, and the highlight projects its own swap before anything commits.
 /// The interface reads all of this straight out of ui_data(), so a silent
 /// change of shape here is a console that renders empty with no error.
+///
+/// The body-preview mannequin this used to cover was cut on 2026-08-05, taking
+/// /atom/movable/screen/map_view/chrome_preview, chrome_cradle.preview and
+/// refresh_preview() with it. The assertions went with them; nothing else here
+/// depends on that feature.
 /datum/unit_test/voidcrew_cradle_console
 
 /datum/unit_test/voidcrew_cradle_console/Run()
@@ -254,15 +258,13 @@
 
 	// An empty slab still answers, and still draws the whole body diagram.
 	var/list/idle_data = rig.ui_data(lab_rat)
-	TEST_ASSERT(isnull(idle_data["preview_view"]), "An empty slab handed the interface a preview map key")
 	TEST_ASSERT_EQUAL(length(idle_data["groups"]), length(GLOB.cyberware_ui_groups), "The rack didn't render one row per body system")
 
 	rig.buckle_mob(lab_rat, force = TRUE)
 	TEST_ASSERT_EQUAL(rig.occupant, lab_rat, "The cradle didn't take the buckled patient as its occupant")
 
 	// One piece seated, one piece in hand: both have to reach the rack, in
-	// their own groups, tagged with where they are. Both carry worn art, which
-	// is what the mannequin assertions below hang off.
+	// their own groups, tagged with where they are.
 	var/obj/item/organ/cyberimp/cyberware/dermal_mesh/worn = allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)
 	TEST_ASSERT(worn.Insert(lab_rat, special = TRUE), "Dermal Mesh staging insert was refused")
 	var/obj/item/organ/cyberimp/cyberware/shock_coils/held = allocate(/obj/item/organ/cyberimp/cyberware/shock_coils)
@@ -274,7 +276,6 @@
 	TEST_ASSERT_EQUAL(reachable[held], "carried", "Chrome in the patient's hands wasn't reported as carried")
 
 	var/list/data = rig.ui_data(lab_rat)
-	TEST_ASSERT(!isnull(data["preview_view"]), "An occupied slab handed the interface no preview map key")
 	var/list/seen = list()
 	for(var/list/group as anything in data["groups"])
 		for(var/list/card as anything in group["ware"])
@@ -284,34 +285,18 @@
 	TEST_ASSERT_EQUAL(length(seen), 2, "The rack didn't carry exactly the two pieces the console can reach")
 	TEST_ASSERT(seen[REF(worn)] != seen[REF(held)], "Skin plating and leg pistons filed under the same body system")
 
-	// Highlighting the carried piece projects the swap and ghosts it onto the
-	// mannequin without touching the body.
+	// Highlighting the carried piece projects the swap without touching the body.
 	var/before_load = get_chrome_load(lab_rat)
 	rig.selected_ware = held
-	rig.refresh_preview()
 	var/list/projection = rig.build_projection(lab_rat, "carried")
 	TEST_ASSERT_EQUAL(projection["load"], before_load + 1, "The projection didn't add the highlighted piece's load")
 	TEST_ASSERT_EQUAL(get_chrome_load(lab_rat), before_load, "Highlighting a piece changed the body's real load")
 	TEST_ASSERT(!held.owner, "Highlighting a piece installed it")
 
-	// The mannequin is a separate body wearing the occupant's worn art — never
-	// the occupant, and never carrying real organs.
-	var/atom/movable/screen/map_view/chrome_preview/mirror = rig.preview
-	TEST_ASSERT(!isnull(mirror), "The cradle minted no body preview")
-	TEST_ASSERT(!isnull(mirror.body), "The body preview built no mannequin")
-	TEST_ASSERT(mirror.body != lab_rat, "The preview is showing the patient themselves rather than a mannequin")
-	TEST_ASSERT_EQUAL(length(get_installed_cyberware(mirror.body)), 0, "The preview mannequin had real chrome inserted into it")
-	// The seated piece hangs solid art, the highlighted one hangs a ghost.
-	TEST_ASSERT_EQUAL(length(mirror.hung_overlays), 2, "The mannequin isn't wearing the seated piece plus the highlighted one")
-	TEST_ASSERT_EQUAL(length(mirror.ghost_overlays), 1, "The highlighted piece didn't ghost onto the mannequin")
-	TEST_ASSERT(!(worn.bodypart_aug in mirror.ghost_overlays), "Already-installed chrome was ghosted instead of drawn solid")
-
-	// Getting up clears the highlight and the mannequin's borrowed art, so
-	// nothing of one patient survives onto the next.
+	// Getting up clears the highlight, so nothing of one patient survives onto
+	// the next.
 	rig.unbuckle_mob(lab_rat, force = TRUE)
 	TEST_ASSERT(isnull(rig.selected_ware), "Leaving the slab left a highlight behind")
-	TEST_ASSERT_EQUAL(length(mirror.hung_overlays), 0, "Leaving the slab left the last patient's chrome on the mannequin")
-	TEST_ASSERT_EQUAL(length(mirror.ghost_overlays), 0, "Leaving the slab left a ghosted piece on the mannequin")
 
 /// (h) Splice's price index: the cradle quotes parlor prices next to the load
 /// cost, and cased pairs have to resolve to their halves or a Mantis Blade

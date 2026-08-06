@@ -67,6 +67,30 @@
 /// Power draw when firing
 #define MISSILE_LAUNCHER_POWER_FIRE 500
 
+// ========== ASSAULT POD DEFINES ==========
+// Assault pods are drop pods fired out of a launch tube at another vessel. They
+// are a boarding tool, not ordnance: the shield toll is small, the breach is
+// hand-cut rather than blasted, and the whole point is depositing the occupants
+// on the far side of somebody else's hull.
+
+/// Shield damage a pod deals when a shield stops it. Deliberately low - pods are
+/// for hulls that are already open or already unshielded, not for cracking shields.
+#define ASSAULT_POD_SHIELD_DAMAGE 100
+/// Power draw when launching a pod
+#define ASSAULT_POD_LAUNCH_POWER 1500
+/// Time to load a pod into a launch tube
+#define ASSAULT_POD_LOAD_TIME 6 SECONDS
+/// How many consecutive blocked tiles a pod chews through before it gives up and
+/// stops on the outside face. Two gets you through a double-thickness hull.
+#define ASSAULT_POD_BREACH_DEPTH 2
+/// Light-impact radius of the shock at the breach point (no devastation, no heavy -
+/// the hole is cut explicitly so it stays the size we asked for)
+#define ASSAULT_POD_IMPACT_LIGHT 2
+/// Brute damage the pod deals to dense objects standing in the breach path
+#define ASSAULT_POD_BREACH_DAMAGE 500
+/// Flight speed of an assault pod (delay in deciseconds per tile - heavier than a missile)
+#define ASSAULT_POD_SPEED 1
+
 // ========== COMBAT CONSOLE DEFINES ==========
 
 /// Range at which ships can be detected on sensors (in overmap tiles)

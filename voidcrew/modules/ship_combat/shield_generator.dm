@@ -171,6 +171,15 @@
 	if(!active)
 		activate_generator()
 
+	// Backstop for a wall respawn we still owe. on_shuttle_move_start() tears the walls
+	// down for EVERY shuttle move, but the respawn hangs off the signal that ends that
+	// move - and not every move sends one. finish_crash_land_on_planet() forces its own
+	// initiate_docking() and then sets ship.docked by hand, without ever sending
+	// COMSIG_VOIDCREW_SHIP_DOCKED. Any such gap otherwise strands the hull with an ACTIVE
+	// shield readout, a full health pool, and no walls to intercept anything with.
+	if(pending_wall_respawn && shuttle_move_done && !length(shield_walls))
+		try_respawn_walls()
+
 	// Shield regeneration is handled by ship.process() - no need to coordinate here
 
 // ========== POWER CALCULATIONS ==========
@@ -1650,8 +1659,11 @@
 		// Docked to planet/ruin/empty alone - respawn walls
 
 		try_respawn_walls()
-	else
-
+	// No dock means we are on our way OUT: complete_undock_warmup() nulls ship.docked
+	// before SSshuttle ever moves the hull, so an undock ALWAYS lands here with a null
+	// dock and this branch must not treat that as "nothing to do". The respawn happens in
+	// on_ship_undocked(), once complete_dock() has confirmed the hull actually reached
+	// transit; pending_wall_respawn/shuttle_move_done stay set to carry it there.
 
 /// Helper to respawn walls and clear flags
 /obj/machinery/ship_combat/shield_generator/proc/try_respawn_walls()
@@ -1692,7 +1704,19 @@
 
 	// Invalidate boundary cache in case ship was modified while docked (e.g., construction console)
 	invalidate_boundary_cache()
-	// Shields don't auto-activate on undock - crew must manually enable
+
+	// Shields raised while docked stay running across the undock, but the hull just moved
+	// out from under their walls: on_shuttle_move_start() tore them down, and
+	// on_shuttle_move_complete() found ship.docked already null (cleared in
+	// complete_undock_warmup() before the move) so it had no dock to respawn against.
+	// This is the mirror of on_ship_docked()'s respawn and the point where the hull is
+	// known to have actually reached transit. Without it the ship flies away with the
+	// console reporting ACTIVE shields at full health and no walls to intercept anything -
+	// missiles, meteors and lasers all pass straight through to the hull.
+	if(pending_wall_respawn && shuttle_move_done)
+		try_respawn_walls()
+
+	// Shields still don't auto-ACTIVATE on undock - crew must manually enable
 
 /// Attempts to auto-link to a combat console on the same ship
 /obj/machinery/ship_combat/shield_generator/proc/attempt_auto_link()

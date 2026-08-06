@@ -67,11 +67,12 @@ Break the shields and they stay down for thirty seconds, and any charge they wer
 
 Enemy ships show on sensors within three tiles, and you can lock one at that range. The lock takes five seconds and **the target is warned the moment you start** — their ship blares a combat alarm. Moving out of sensor range, losing line of sight in a nebula, or either ship entering the Neutral Zone all break it.
 
-With a lock you enter attack mode: a camera view of the target's interior. Aim at a specific tile and fire — one missile, every missile, one turret, or every turret at once. You can also choose which side the missiles come in from, which matters when the room you want is behind three layers of wall. Attack mode needs the ships within two tiles of each other, so the shooter has to close. Firing anything breaks your own cloak.
+With a lock you enter attack mode: a camera view of the target's interior. Aim at a specific tile and fire — one missile, every missile, one turret, every turret at once, or an assault pod with your boarding party inside it. You can also choose which side the missiles come in from, which matters when the room you want is behind three layers of wall. Attack mode needs the ships within two tiles of each other, so the shooter has to close. Firing anything breaks your own cloak.
 
 ## Support systems
 
-- **Interdiction system.** Pins a target within two tiles: kills their momentum, throws everything inside them across the deck, halves their engine speed and blocks their cloak. Five-minute cooldown, legal in the Contested Zone. Share an overmap tile with an interdicted ship and you can force it to dock with yours — that is how boarding starts, and it cannot undock for two minutes.
+- **Assault pod tube.** A hull-mounted tube that throws a crewed [drop pod](drop-pods.md) at the target. The pod flies in like a missile, cuts a hole through the plating and puts the people inside it on the other side of it. It dies against a live shield, so it is the move you make *after* the guns have done their work.
+- **Interdiction system.** Pins a target within two tiles: kills their momentum, throws everything inside them across the deck, halves their engine speed and blocks their cloak. Five-minute cooldown, legal in the Contested Zone. Share an overmap tile with an interdicted ship and you can force it to dock with yours — the other way boarding starts, and it cannot undock for two minutes.
 - **Cloaking device.** Hides your ship on the overmap for thirty seconds base, longer with better capacitors. Drops the instant you fire or someone completes a lock on you.
 - **Data siphon.** With a lock held, drains credits out of the target's ship account.
 - **Nebula concealment.** Free. Hold position on a nebula tile for ten seconds and your ship goes dark, dropping every combat connection on you. Not available while interdicted, and a running ram scoop lights you back up.
@@ -86,7 +87,7 @@ At 60% integrity the ship starts screaming a critical damage alarm. At **50% the
 
 ## Being boarded, and repairing after
 
-Pirates deliver boarders by drop pod, and only when your shields are down; player crews board on foot after a forced dock. Either way the fight moves inside your ship, where hull weapons are useless and what matters is doors, chokepoints and whether anyone thought to buy guns.
+Pirates deliver boarders by drop pod, and only when your shields are down. Player crews arrive either through a hull breach cut by an [assault pod](drop-pods.md) or on foot after a forced dock. Either way the fight moves inside your ship, where hull weapons are useless and what matters is doors, chokepoints and whether anyone thought to buy guns. A pod entry announces itself — the ship calls the breach the moment it lands — and leaves a hole in the wall that has to be welded shut afterwards.
 
 There is no repair button afterward. Rebuilding the hull is engineering work: plating and rods for floors, metal for walls, a welder for the rest. Broken weapons need their parts replaced, machines shaken loose by the blast need rewrenching, and anything now buried inside a rebuilt hull will not fire until you move it back to the rim. Dock at a [trader outpost](trader-outposts.md) if you can — nothing can shoot you there, and random events skip ships in a safe harbour.
 

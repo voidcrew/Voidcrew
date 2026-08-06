@@ -396,24 +396,48 @@
 	else if(istype(hazard, /obj/structure/overmap/event/nebula))
 		apply_nebula_effect(hazard)
 
+/// TRUE only for the length of an ion storm's EMP burst, which is a synchronous
+/// loop of empulse() calls - nothing between the two writes below sleeps, so this
+/// cannot be left raised or observed by an unrelated EMP. Read by the SMES
+/// emp_act() override in voidcrew/edits/machinery/power.dm; see there for why the
+/// SMES is treated differently from everything else the burst touches.
+GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
+
 /**
  * Ion Storm Effect
  * EMPs random areas of the ship - no direct hull damage, but EMP can destroy electronics
  * If turfs are destroyed, delta tracking will automatically update mass
+ *
+ * The front also takes the ship's velocity. Braking is a helm command, the helm is
+ * a computer, and the burst below is about to take every computer in its radius
+ * offline for a minute (see /obj/machinery/power/apc/emp_act) - so a ship that kept
+ * its velocity here would coast on with no way to stop, taking a fresh burst on
+ * every storm tile it crossed and ending up somewhere else entirely. Killing the
+ * velocity is what makes a storm a place the crew can be rather than something that
+ * happens to them on the way past; surveying one needs 60 uninterrupted seconds
+ * parked on the tile (survey_computer.dm), which was otherwise unreachable.
  */
 /obj/structure/overmap/ship/proc/apply_ion_storm_damage(obj/structure/overmap/event/emp/storm)
 	var/intensity = storm.intensity
 	var/emp_count = 2 + (intensity * 2)
 
-	ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
+	var/was_moving = !is_still()
+	full_stop()
+
+	if(was_moving)
+		ship_notify("Ion front impact! Ship velocity lost. Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
+	else
+		ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
 
 	// Create EMPs at random locations in the ship - these can destroy equipment
+	GLOB.ion_storm_pulse_active = TRUE
 	for(var/i in 1 to emp_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
 			// empulse handles the visual effect when heavy_range > 1
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
+	GLOB.ion_storm_pulse_active = FALSE
 
 /**
  * Electrical Storm Effect

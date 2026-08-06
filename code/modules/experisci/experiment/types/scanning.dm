@@ -42,11 +42,15 @@
 	for (var/req_atom in required_atoms)
 		var/list/seen = scanned[req_atom]
 		///typecache experiments work all the same whether it's destructive or not
-		if(typecache && length(seen) == required_atoms[req_atom])
+		if(typecache)
+			//Some experiments share their scanned list with others (see fish), so the tally can overshoot
+			//this experiment's own requirement. An exact match would leave it uncompletable forever.
+			if(length(seen) < required_atoms[req_atom])
+				return FALSE
 			continue
-		if (destructive && (!(req_atom in scanned) || scanned[req_atom] != required_atoms[req_atom]))
+		if (destructive && (!(req_atom in scanned) || scanned[req_atom] < required_atoms[req_atom]))
 			return FALSE
-		if (!destructive && (!seen || seen.len != required_atoms[req_atom]))
+		if (!destructive && (!seen || seen.len < required_atoms[req_atom]))
 			return FALSE
 
 /**
@@ -107,15 +111,19 @@
  */
 /datum/experiment/scanning/proc/experiment_requirements(datum/component/experiment_handler/experiment_handler, atom/target)
 	var/destructive = (traits & EXPERIMENT_TRAIT_DESTRUCTIVE)
+	var/typecache = (traits & EXPERIMENT_TRAIT_TYPECACHE)
 	for (var/req_atom in required_atoms)
 		if (!istype(target, req_atom))
 			continue
 		// Try to select a required atom that this scanned atom would contribute towards
 		var/selected
 		var/list/seen = scanned[req_atom]
-		if (destructive && (req_atom in scanned) && scanned[req_atom] < required_atoms[req_atom])
+		//A typecache's entries are keyed by typepath, not by weakref, so a type already scanned must not be offered again.
+		if (typecache && length(seen) < required_atoms[req_atom] && !(target.type in seen))
 			selected = req_atom
-		else if (!destructive && seen.len < required_atoms[req_atom] && !(WEAKREF(target) in seen))
+		else if (!typecache && destructive && (req_atom in scanned) && scanned[req_atom] < required_atoms[req_atom])
+			selected = req_atom
+		else if (!typecache && !destructive && seen.len < required_atoms[req_atom] && !(WEAKREF(target) in seen))
 			selected = req_atom
 		// Run any additonal checks if necessary
 		if (selected && final_contributing_index_checks(experiment_handler, target, selected))

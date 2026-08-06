@@ -103,6 +103,78 @@
 			to_chat(user, span_warning("No launchers ready to fire!"))
 	return FALSE
 
+/**
+ * Launch one loaded assault pod at the current target location.
+ *
+ * Unlike the fire keys this can be carrying people, so a shielded target gets a
+ * confirmation rather than a chat warning after the fact - a pod that meets a
+ * live shield kills everyone strapped into it.
+ */
+/obj/machinery/computer/camera_advanced/ship_combat/proc/launch_pod(mob/user)
+	if(!attack_mode)
+		to_chat(user, span_warning("Enter attack mode first!"))
+		return FALSE
+
+	var/turf/target_turf = get_target_turf()
+	if(!target_ship || !target_turf)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return FALSE
+
+	var/obj/machinery/ship_combat/pod_launcher/tube = get_ready_pod_tube()
+	if(!tube)
+		if(user)
+			to_chat(user, span_warning("No assault pod tubes ready to launch!"))
+		return FALSE
+
+	if(target_shields_up())
+		var/choice = tgui_alert(
+			user,
+			"[target_ship.display_name] still has shields up. The pod will detonate against them and everyone aboard it will die. Launch anyway?",
+			"Shields Detected",
+			list("Hold", "Launch"),
+		)
+		if(choice != "Launch")
+			to_chat(user, span_notice("Launch held."))
+			return FALSE
+		// The wait is long enough for the shot to have gone stale
+		if(!attack_mode || QDELETED(target_ship))
+			return FALSE
+		target_turf = get_target_turf()
+		if(!target_turf)
+			return FALSE
+		tube = get_ready_pod_tube()
+		if(!tube)
+			to_chat(user, span_warning("No assault pod tubes ready to launch!"))
+			return FALSE
+
+	if(!tube.fire(target_turf, target_ship, current_ship, user, selected_approach_direction))
+		return FALSE
+
+	// Launching breaks cloak, same as any other shot
+	if(current_ship)
+		SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
+	return TRUE
+
+/// First linked pod tube that could launch right now, dropping dead refs as we go
+/obj/machinery/computer/camera_advanced/ship_combat/proc/get_ready_pod_tube()
+	for(var/datum/weakref/ref in linked_pod_tubes.Copy())
+		var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+		if(!tube)
+			linked_pod_tubes -= ref
+			continue
+		if(!tube.can_fire(target_ship))
+			continue
+		return tube
+	return null
+
+/// Whether the locked target is currently holding a shield up
+/obj/machinery/computer/camera_advanced/ship_combat/proc/target_shields_up()
+	var/obj/structure/overmap/ship/target_vessel = target_ship
+	if(!istype(target_vessel))
+		return FALSE
+	return target_vessel.shield_health > 0
+
 /// Fire one ready laser turret at the current target location
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_laser_one(mob/user)
 	if(!attack_mode)

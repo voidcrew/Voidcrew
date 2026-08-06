@@ -961,19 +961,32 @@
 
 	return TRUE
 
-/obj/structure/overmap/ship/proc/destroy_ship(force)
+/**
+ * Removes the ship from the round.
+ *
+ * force = TRUE deletes the hull outright; otherwise the ship is left behind as an
+ * abandoned derelict for someone else to claim.
+ *
+ * ignore_crew exists for the bluespace jump, which is meant to take the crew with
+ * it - the helm asks for confirmation first, and extraction runs before the call.
+ * Without it the crew check below rejected every jump ever attempted, silently:
+ * anyone flying the ship is by definition standing on it, and do_jump() is the
+ * only caller there has ever been.
+ */
+/obj/structure/overmap/ship/proc/destroy_ship(force, ignore_crew = FALSE)
 	// For backward compatibility, redirect to abandon_ship unless forced
 	if(force)
-		if(length(shuttle?.get_all_humans()) > 0)
-			return
+		if(!ignore_crew && length(shuttle?.get_all_humans()) > 0)
+			return FALSE
 		message_admins("\[SHUTTLE]: [shuttle?.name] has been FORCE deleted!")
 		log_shuttle("[shuttle?.name] has been force deleted!")
 		shuttle?.jumpToNullSpace()
 		qdel(src)
-		return
+		return TRUE
 
 	// Normal case: abandon instead of delete
 	abandon_ship()
+	return TRUE
 
 /**
  * Minimalist ship notification - sends a styled chat message to all crew members.
@@ -1535,6 +1548,41 @@
 	// SHIP_INTEGRITY_UNDOCK_LOCKOUT - so this can still refuse a ship reading 100%.
 	if(!COOLDOWN_FINISHED(src, integrity_undock_lockout))
 		return "Hull failure logged! Structural recertification in progress, [DisplayTimeText(COOLDOWN_TIMELEFT(src, integrity_undock_lockout))] remaining."
+
+	// Hull standing out past the docking port lands inside whatever the ship berths against
+	// (hull_port_overhang() in hull_survey.dm has the geometry), so it cannot be allowed to
+	// leave in that state.
+	//
+	// The reckoning is here rather than at the moment the hull grows because a build-time
+	// refusal is unsatisfiable: the first tile built past the port already overhangs it, so a
+	// crew could never reach the point of having a door out on the new outer face. Building
+	// out is legal; leaving with the port still buried is not. This is also the last moment
+	// the ship is guaranteed to be sitting still and reachable by its own construction gear.
+	//
+	// Reseat rather than refuse wherever the hull allows it. By the time there is a door on the
+	// outermost plating the crew has done everything that makes the hull legal, and all that is
+	// left is bookkeeping they would otherwise have to know to do by hand on the construction
+	// console - a console they may well have just built over, or lost. A refusal is kept for the
+	// hull with genuinely nowhere to put its port, which is the only case a message can help.
+	//
+	// Placed after the cooldown checks on purpose: the scan walks every turf of every hull area,
+	// and there is no reason to pay for it on an undock that is about to be refused anyway.
+	var/list/undock_overhang = hull_port_overhang(shuttle, null)
+	if(undock_overhang[1] > 0)
+		var/turf/reseat_to = hull_port_reseat_target(shuttle, null)
+		if(!reseat_to)
+			return "Launch refused: [undock_overhang[1]] metre\s of hull stand out past the docking \
+				port, and there is no door on the outermost plating to move it to. Fit an airlock or \
+				a firelock on that face - until then this ship would be driven through anything it \
+				berths against."
+		// Moves the port, drags the berth we are still standing on with it, recalculates the
+		// hull's bounds and drops the stale transit reservation - which matters here more than
+		// anywhere, since transit is where we are about to go.
+		hull_reseat_port(shuttle, reseat_to)
+		var/obj/machinery/door/reseated_door = hull_port_door(reseat_to)
+		ship_notify("Hull extends past the old docking port. Port reseated to [reseated_door ? "the [reseated_door.name]" : "the outer hull"] \
+			at ([reseat_to.x], [reseat_to.y]) - that door is now where other ships berth.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		log_shuttle("[shuttle] reseated its docking port to ([reseat_to.x], [reseat_to.y]) on undock, clearing a [undock_overhang[1]] tile overhang.")
 
 	// Start undock warmup. Returns nothing for the same reason dock() does - the
 	// broadcast below already reaches everyone, and the helm speaks any returned

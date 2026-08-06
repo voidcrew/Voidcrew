@@ -258,6 +258,12 @@
 	// Too close to the map edge is never allowed
 	if(!T || T.x <= 10 || T.y <= 10 || T.x >= world.maxx - 10 || T.y >= world.maxy - 10)
 		return SHUTTLE_DOCKER_BLOCKED
+	// VOIDCREW EDIT ADDITION: no designating a pad inside a live bitrunning domain. The
+	// reservation floor is plain /area/space, so the allow_shuttle_docking check further
+	// down happily clears it, and a shuttle is a door into VR that runs both ways.
+	if(SSbitrunning.is_domain_turf(T))
+		return SHUTTLE_DOCKER_BLOCKED
+	// VOIDCREW EDIT END
 	// If it's one of our shuttle areas assume it's ok to be there
 	if(shuttle_port.shuttle_areas[T.loc])
 		return SHUTTLE_DOCKER_LANDING_CLEAR

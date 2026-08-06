@@ -632,17 +632,37 @@
 		say("Bluespace Jump Calibration is currently recharging. ETA: [jump_wait].")
 		return
 	if(jump_state != JUMP_STATE_OFF && !inline)
-		return // This exists to prefent Href exploits to call process_jump more than once by a client
+		// Guards against href exploits calling this more than once per client. It used
+		// to return in total silence, which meant any jump that failed mid-sequence
+		// bricked the console for the rest of the round with no way to tell.
+		say("Bluespace Jump sequence already underway.")
+		return
 	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
 	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
 	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = TRUE
 	return TRUE
 
+/**
+ * Aborts a jump, whether it is still calibrating or already running the launch
+ * sequence, and puts the console back to a state that can jump again.
+ *
+ * jump_state has to be reset here: leaving it non-OFF makes calibrate_jump()
+ * refuse every future attempt. deltimer() has to cover the sequence timers too -
+ * jump_timer only ever held the initial calibration timer, so a cancel after
+ * calibration finished left the chain running and unstoppable.
+ */
 /obj/machinery/computer/helm/proc/cancel_jump()
 	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+	reset_jump()
+
+/// Clears all jump state and any pending sequence timer.
+/obj/machinery/computer/helm/proc/reset_jump()
 	calibrating = FALSE
-	deltimer(jump_timer)
+	jump_state = JUMP_STATE_OFF
+	if(jump_timer)
+		deltimer(jump_timer)
+		jump_timer = null
 
 /obj/machinery/computer/helm/proc/jump_sequence()
 	switch(jump_state)
@@ -658,16 +678,27 @@
 		if(JUMP_STATE_FIRING)
 			jump_state = JUMP_STATE_FINALIZED
 			current_ship?.ship_notify("Bluespace Pylon launched.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'sound/effects/magic/lightning_chargeup.ogg', 50)
-			addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS)
+			jump_timer = addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS, TIMER_STOPPABLE)
 			return
-	addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY)
+	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY, TIMER_STOPPABLE)
 
 /obj/machinery/computer/helm/proc/do_jump()
+	jump_timer = null
 	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	if(!current_ship)
+		reset_jump()
+		return
 	// Extract ship parts from all players on the ship before jumping
-	if(current_ship)
-		extract_ship_parts_from_ship(current_ship, "bluespace_jump")
-	current_ship.destroy_ship(TRUE)
+	extract_ship_parts_from_ship(current_ship, "bluespace_jump")
+	// ignore_crew: the jump is supposed to take the crew with it, and the console
+	// asked for confirmation before any of this started.
+	if(current_ship.destroy_ship(TRUE, ignore_crew = TRUE))
+		return
+	// Never strand the console in a state it cannot leave - a failed jump has to be
+	// retryable, and the crew has to hear that it failed.
+	current_ship.ship_notify("Bluespace Pylon misfire. Jump aborted; recalibration required.", "BLUESPACE", SHIP_NOTIFY_DANGER, 'voidcrew/sound/notify.ogg', 50)
+	stack_trace("Bluespace jump failed to destroy ship [current_ship] - the console has been reset.")
+	reset_jump()
 
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))

@@ -1015,6 +1015,11 @@ SUBSYSTEM_DEF(overmap)
 	secondary_dock.dheight = 0
 	secondary_dock.dwidth = 0
 
+	// Both berths get moved and resized to fit every ship that visits; record where they started
+	// so the next arrival is placed from this layout rather than the last visitor's offset.
+	primary_dock.mark_reserve_home()
+	secondary_dock.mark_reserve_home()
+
 	return list(mapzone, primary_dock, secondary_dock)
 
 

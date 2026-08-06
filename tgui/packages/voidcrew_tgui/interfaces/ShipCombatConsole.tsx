@@ -110,6 +110,18 @@ type Launcher = {
   enabled: BooleanLike;
 };
 
+type PodTube = {
+  id: string;
+  name: string;
+  loaded: BooleanLike;
+  pod_name: string | null;
+  /** How many people are strapped into the loaded pod. */
+  occupants: number;
+  ready: BooleanLike;
+  on_exterior: BooleanLike;
+  enabled: BooleanLike;
+};
+
 type Turret = {
   id: string;
   name: string;
@@ -230,6 +242,12 @@ type Data = {
   launchers: Launcher[];
   launchers_ready: number;
   launchers_total: number;
+  // Assault pod tube data
+  pod_tubes: PodTube[];
+  pod_tubes_ready: number;
+  pod_tubes_total: number;
+  /** Target is holding a shield up — a pod launched into it kills its crew. */
+  target_shields_up: BooleanLike;
   // Laser turret data
   turrets: Turret[];
   turrets_ready: number;
@@ -524,7 +542,7 @@ const Faceplate = () => {
         <Drawer />
       </Panel>
 
-      <Panel rect={GEOMETRY.TUBES} label="Missile tubes">
+      <Panel rect={GEOMETRY.TUBES} label="Ordnance tubes">
         <TubesPanel />
       </Panel>
       <Panel rect={GEOMETRY.LASERS} label="Laser battery">
@@ -2169,6 +2187,7 @@ const SystemsTab = () => {
   const { data } = useBackend<Data>();
   const {
     launchers = [],
+    pod_tubes = [],
     turrets = [],
     shield_generators = [],
     cloak_device,
@@ -2217,6 +2236,52 @@ const SystemsTab = () => {
                 ) : (
                   // No cooldown exists on tubes — loaded-but-not-ready means
                   // the zone's weapons rules are refusing the shot.
+                  <span style={{ color: C_WARN }}>Safed</span>
+                )}
+              </span>
+            </div>
+          );
+        })
+      )}
+
+      <div className="Tac__cat">Assault pod tubes</div>
+      {pod_tubes.length === 0 ? (
+        <div className="Tac__empty">No pod tubes linked</div>
+      ) : (
+        pod_tubes.map((tube) => {
+          const dead = !tube.on_exterior || !tube.enabled;
+          return (
+            <div
+              key={tube.id}
+              className={`Tac__sysRow ${dead ? 'Tac--dead' : ''}`}
+            >
+              <span className="Tac__sysId">{tube.id}</span>
+              <span className="Tac__sysBody">
+                {dead ? (
+                  <span style={{ color: C_CRIT }}>
+                    {!tube.on_exterior ? 'Not on exterior' : 'Disabled'}
+                  </span>
+                ) : tube.loaded ? (
+                  <>
+                    {tube.pod_name}
+                    <span className="Tac__sysDim">
+                      {' '}
+                      ·{' '}
+                      {tube.occupants > 0
+                        ? `${tube.occupants} aboard`
+                        : 'unmanned'}
+                    </span>
+                  </>
+                ) : (
+                  <span className="Tac__sysDim">Empty</span>
+                )}
+              </span>
+              <span className="Tac__sysState">
+                {dead || !tube.loaded ? (
+                  '—'
+                ) : tube.ready ? (
+                  <span style={{ color: C_GOOD }}>Ready</span>
+                ) : (
                   <span style={{ color: C_WARN }}>Safed</span>
                 )}
               </span>
@@ -2418,11 +2483,15 @@ const TubesPanel = () => {
     launchers = [],
     launchers_ready,
     launchers_total,
+    pod_tubes = [],
+    pod_tubes_ready,
+    pod_tubes_total,
+    target_shields_up,
     is_in_attack_mode,
     target_in_missile_range,
   } = data;
 
-  if (launchers.length === 0) {
+  if (launchers.length === 0 && pod_tubes.length === 0) {
     return (
       <div className="Tac__pad">
         <div className="Tac__quiet">
@@ -2440,6 +2509,14 @@ const TubesPanel = () => {
     : !target_in_missile_range
       ? 'Out of missile range'
       : undefined;
+  const podsArmed = armed && (pod_tubes_ready ?? 0) > 0;
+  const podReason = !armed
+    ? blockReason
+    : (pod_tubes_ready ?? 0) === 0
+      ? 'No pod loaded and ready'
+      : target_shields_up
+        ? 'Target shields are UP — the pod and its crew die on contact'
+        : 'Put a boarding pod through the target hull';
 
   return (
     <div className="Tac__pad">
@@ -2458,7 +2535,7 @@ const TubesPanel = () => {
         <button
           type="button"
           className="Tac__fireKey"
-          disabled={!armed}
+          disabled={!armed || launchers.length === 0}
           title={blockReason ?? 'Fire one tube at the locked target'}
           onClick={() => act('fire_missile')}
         >
@@ -2467,12 +2544,23 @@ const TubesPanel = () => {
         <button
           type="button"
           className="Tac__fireKey"
-          disabled={!armed}
+          disabled={!armed || launchers.length === 0}
           title={blockReason ?? 'Empty every ready tube at once'}
           onClick={() => act('fire_all')}
         >
           Salvo
         </button>
+        {pod_tubes.length > 0 && (
+          <button
+            type="button"
+            className="Tac__fireKey"
+            disabled={!podsArmed}
+            title={podReason}
+            onClick={() => act('launch_pod')}
+          >
+            Board {pod_tubes_ready}/{pod_tubes_total}
+          </button>
+        )}
       </div>
     </div>
   );

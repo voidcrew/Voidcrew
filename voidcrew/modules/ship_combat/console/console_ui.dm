@@ -238,6 +238,25 @@
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
 
+	// Get assault pod tube status
+	var/list/pod_tubes = list()
+	var/pods_ready_count = 0
+	var/pods_total_count = 0
+	for(var/datum/weakref/ref in linked_pod_tubes.Copy())
+		var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+		if(!tube)
+			linked_pod_tubes -= ref
+			continue
+		pods_total_count++
+		if(tube.can_fire(target_ship))
+			pods_ready_count++
+		pod_tubes += list(tube.get_status(target_ship))
+	data["pod_tubes"] = pod_tubes
+	data["pod_tubes_ready"] = pods_ready_count
+	data["pod_tubes_total"] = pods_total_count
+	// Boarding into a live shield kills the pod crew - the plate says so up front
+	data["target_shields_up"] = target_shields_up()
+
 	// Get laser turret status
 	var/list/turrets = list()
 	var/turrets_ready_count = 0
@@ -468,6 +487,11 @@
 
 		if("fire_all")
 			fire_all(ui.user)
+			return TRUE
+
+		if("launch_pod")
+			// Can stop to ask about shields, so it doesn't get to block the UI loop
+			INVOKE_ASYNC(src, PROC_REF(launch_pod), ui.user)
 			return TRUE
 
 		if("start_interdict")

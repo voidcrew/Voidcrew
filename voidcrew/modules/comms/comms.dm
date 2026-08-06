@@ -79,12 +79,20 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 	return net == get_physical_comms_net()
 
 /// Human-readable name of the ship this radio is bound to, for chat tags and feedback.
+///
+/// display_name, not name: a ship's `name` is copied off its mobile docking port
+/// (SSshuttle.create_ship), and that port name carries two pieces of bookkeeping the
+/// crew was never meant to read - the hull variant letter the template picked, and the
+/// duplicate-id counter tg appends in /obj/docking_port/mobile/Initialize. An unrenamed
+/// hull tagged every line it spoke "[Goon-class Repurposed Emergency Shuttle C 10]".
+/// display_name is the template name, which is what every other player-facing readout
+/// (holopads, sensors, dock listings) already uses.
 /obj/item/radio/proc/get_comms_ship_name()
 	var/obj/docking_port/mobile/voidcrew/bound = get_bound_comms_ship()
 	if(!bound)
 		return null
 	if(istype(bound) && bound.current_ship)
-		return bound.current_ship.name
+		return bound.current_ship.display_name || bound.current_ship.name
 	return bound.name
 
 /// Multitool re-tunes the radio's ship channel to whatever ship it is currently aboard.

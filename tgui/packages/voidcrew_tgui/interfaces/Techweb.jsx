@@ -671,7 +671,7 @@ const TechNode = (props) => {
             if (thisExp === null || thisExp === undefined) {
               return <LockedExperiment key={index} />;
             }
-            return <Experiment key={thisExp} exp={thisExp} />;
+            return <NodeExperiment key={thisExp} exp={thisExp} />;
           })}
         </Collapsible>
       )}
@@ -710,17 +710,35 @@ const TechNode = (props) => {
               return <LockedExperiment key={index} />;
             }
             return (
-              <Experiment key={thisExp} exp={thisExp}>
+              <NodeExperiment key={thisExp} exp={thisExp}>
                 <Box className="Techweb__ExperimentDiscount">
                   Provides a discount of {discount_experiments[k]} points to all
                   required point pools.
                 </Box>
-              </Experiment>
+              </NodeExperiment>
             );
           })}
         </Collapsible>
       )}
     </Section>
+  );
+};
+
+// The node view lists experiments whether or not they're done, and the card itself
+// only shows a raw progress tally - which for shared-tally experiments (fish) can even
+// read as "8/7". Say outright when one is already in the bag.
+const NodeExperiment = (props) => {
+  const { exp, children } = props;
+  return (
+    <Experiment exp={exp}>
+      {!!exp.completed && (
+        <Box color="good" bold mb={1}>
+          <Icon name="check" mr={1} />
+          Experiment completed.
+        </Box>
+      )}
+      {children}
+    </Experiment>
   );
 };
 

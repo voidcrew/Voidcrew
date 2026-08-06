@@ -13,9 +13,9 @@
 /obj/machinery/porta_turret/ship_defense
 	name = "hull defense turret"
 	desc = "A stubby laser mount bolted into the hull plating. The targeting computer only \
-		recognises wildlife and boarding parties, and the emitter is detuned so its beams \
-		pass through people entirely. The housing is thin enough that anything with claws \
-		can wreck it in a few swings, but a welder puts it back together."
+		recognises hostile wildlife and boarding parties, and the emitter is detuned so its \
+		beams pass through people entirely. The housing is thin enough that anything with \
+		claws can wreck it in a few swings, but a welder puts it back together."
 	icon_state = "standard_lethal"
 	base_icon_state = "standard"
 	mode = SHIP_TURRET_LETHAL
@@ -49,8 +49,10 @@
 	// polar bears, migos, geese, ants - would count as friendly. That cuts both ways through
 	// in_faction(): the turret refuses to shoot them, and both AI targeting paths refuse to
 	// let them fight back, so the turret is invulnerable to exactly the wildlife it exists
-	// to shoot. Bots and other turrets are still spared by the two factions left here.
-	faction = list(FACTION_SILICON, FACTION_TURRET)
+	// to shoot. Bots and other turrets are still spared by the two silicon factions, and
+	// FACTION_STATION covers the crew's own hardware - only the minebot and the node drone
+	// carry it, and both hunt fauna alongside the turret rather than against it.
+	faction = list(FACTION_STATION, FACTION_SILICON, FACTION_TURRET)
 
 	/// Swings from a creature needed to knock this out. Each one deals a flat share of max_integrity.
 	var/mob_hits_to_disable = 3
@@ -166,6 +168,96 @@
 
 	return our_turf
 
+/// Planning subtrees that mean "this creature goes looking for something to attack".
+GLOBAL_LIST_INIT(ship_turret_aggressive_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/simple_find_target,
+	/datum/ai_planning_subtree/simple_find_wounded_target,
+	/datum/ai_planning_subtree/find_target_prioritize_traits,
+	/datum/ai_planning_subtree/aggressive_find_target,
+)))
+
+/// Subtrees that pick a target only to run away from it. Checked first, because
+/// simple_find_target/to_flee is a subtype of an aggressive one and typecacheof()
+/// covers subtypes.
+GLOBAL_LIST_INIT(ship_turret_fleeing_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/simple_find_target/to_flee,
+	/datum/ai_planning_subtree/simple_find_nearest_target_to_flee,
+	/datum/ai_planning_subtree/find_nearest_thing_which_attacked_me_to_flee,
+)))
+
+/// Subtrees that only pick a fight once something has already picked one with them.
+GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/target_retaliate,
+	/datum/ai_planning_subtree/capricious_retaliate,
+)))
+
+/**
+ * Would this creature's own targeting strategy ever pick a person-sized mob?
+ *
+ * Stoats and crabs hunt, but only things strictly smaller than themselves - mice, roaches.
+ * They cannot lay a finger on the crew and are not what the turret is out here for. This
+ * mirrors /datum/targeting_strategy/basic/of_size/can_attack() with the target's size
+ * pinned to a person's, so it stays honest if that strategy gains more variants.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/threatens_people(mob/living/creature)
+	var/datum/targeting_strategy/basic/of_size/sizer = GET_TARGETING_STRATEGY(creature.ai_controller?.blackboard[BB_TARGETING_STRATEGY])
+	if(!istype(sizer)) // Anything not size-gated will take a swing at whatever it can reach.
+		return TRUE
+	if(sizer.inclusive && creature.mob_size == MOB_SIZE_HUMAN)
+		return TRUE
+	if(creature.mob_size > MOB_SIZE_HUMAN)
+		return sizer.find_smaller
+	return !sizer.find_smaller
+
+/**
+ * Would this creature start a fight on its own?
+ *
+ * A goat, a goose, an ant or a stoat has teeth and will use them if you shove it, but it
+ * is not a threat to a landed ship and the turret has no business shooting it. What makes
+ * something a threat is how its AI picks targets, not how hard it hits - a ranged trooper
+ * with no melee attack at all is exactly what these are for.
+ *
+ * Read off the live planning subtrees rather than the mob's type, so a controller that
+ * inherits its planning_subtrees from a parent (the viscerator, most of the trooper tree)
+ * still classifies correctly. Subtree instances are shared singletons out of
+ * GLOB.ai_subtrees, so this is a handful of list lookups.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/is_hostile_creature(mob/living/creature)
+	// The /hostile branch of the old simple animal tree is aggressive by definition; its
+	// retaliate-only subtypes were all moved over to /mob/living/basic long ago.
+	if(istype(creature, /mob/living/simple_animal/hostile))
+		return TRUE
+
+	// Somebody's pet, whatever its AI says. Cats and foxes both carry a full hunting
+	// subtree - the cat's is for squabbling over territory with other cats - and would
+	// otherwise read as aggressive.
+	if(istype(creature, /mob/living/basic/pet))
+		return FALSE
+
+	if(!threatens_people(creature))
+		return FALSE
+
+	var/datum/ai_controller/controller = creature.ai_controller
+	if(!controller)
+		return FALSE
+
+	var/provoked = FALSE
+	var/skittish = FALSE
+	for(var/datum/ai_planning_subtree/subtree as anything in controller.planning_subtrees)
+		if(GLOB.ship_turret_fleeing_subtrees[subtree.type])
+			skittish = TRUE
+			continue
+		if(GLOB.ship_turret_aggressive_subtrees[subtree.type])
+			return TRUE
+		if(GLOB.ship_turret_retaliating_subtrees[subtree.type])
+			provoked = TRUE
+
+	// Retaliators are left alone until they have actually settled on someone to maul, at
+	// which point they are as much of a problem as anything else out there. Skittish mobs
+	// are excluded because some of them park what they are running away from in the same
+	// blackboard key an attacker would go in.
+	return provoked && !skittish && !isnull(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+
 /**
  * Is this something the turret is willing to shoot?
  *
@@ -184,7 +276,7 @@
 		return FALSE
 	if(in_faction(creature)) // Bots, pets and other turrets.
 		return FALSE
-	if(!creature.melee_damage_upper) // Passive wildlife gets left alone.
+	if(!is_hostile_creature(creature)) // Livestock, pets and passive fauna get left alone.
 		return FALSE
 	return TRUE
 

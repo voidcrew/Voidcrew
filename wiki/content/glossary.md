@@ -48,7 +48,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Orbital survey console** | The console that surveys whatever your ship is orbiting, paying points and credits and recording the object against research that requires it. |
 | **Transporter** | A pad-and-console pair that beams people and cargo between the ship and a surface. See [Transporters](transporters.md). |
 | **Transponder** | The palm-sized beacon you carry that pairs to one transporter pad, letting the ship see you and pull you home. |
-| **Drop pod** | A pod that drops you onto whatever the ship is parked over, so the ship never has to land. See [Drop Pods](drop-pods.md). |
+| **Drop pod** | A one-shot pod that drops you onto whatever the ship is parked over, or gets fired through an enemy hull out of an assault pod tube. See [Drop Pods](drop-pods.md). |
 | **Abandoned ship** | A ship whose crew has all died or left. It stops accepting joiners until somebody claims it at its helm. |
 
 ## Money and progression

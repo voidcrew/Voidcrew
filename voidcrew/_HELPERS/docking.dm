@@ -56,3 +56,72 @@
 	dock_to_adjust.forceMove(locate(new_dock_location[1], new_dock_location[2], dock_to_adjust.z))
 	dock_to_adjust.dheight = new_dheight
 	dock_to_adjust.dwidth = new_dwidth
+
+/**
+ * Records where a freshly built reserve berth stands, so it can be put back later.
+ *
+ * Call once, immediately after creating and sizing the dock. There are three different layouts that
+ * produce these berths - spawn_dynamic_encounter() works off z-level bounds for planets, empty space
+ * and player outposts, while space ruins and meteor fields place theirs at opposite corners of a turf
+ * reservation - and copying any of those formulas into a reset proc means two places to keep in step.
+ * Having the dock remember its own origin means the reset needs no layout knowledge at all.
+ *
+ * Coordinates rather than a turf reference on purpose: these berths sit on turf reservations that get
+ * released and recycled, and a held turf ref would outlive the ground it names.
+ */
+/obj/docking_port/stationary/proc/mark_reserve_home()
+	var/turf/here = get_turf(src)
+	if(!here)
+		return
+	reserve_home_x = here.x
+	reserve_home_y = here.y
+	reserve_home_z = here.z
+
+/**
+ * Puts one free reserve berth back to the size, orientation and position it was built with.
+ *
+ * A berth does not stay where it was built. adjust_reserve_dock_to_shuttle() rotates and offsets it
+ * to fit whoever is arriving, the ship-to-ship pairing procs move it flush against another dock, and
+ * hull_reseat_port() drags it along when a ship relocates its own docking port while parked on it -
+ * which it has to, because get_docked() finds a stationary port by the mobile port's turf. All three
+ * leave it somewhere other than home.
+ *
+ * That matters because adjust_reserve_dock_to_shuttle() is *relative*: it reads the dock's current
+ * corners and works from those. Feed it a berth that is already displaced and the displacement is
+ * carried into the next placement, so repeated visits walk the berth across the level - eventually
+ * off the padded strip it is supposed to occupy and into the ruin it is meant to sit beside.
+ *
+ * Skips a dock with a shuttle physically parked on it: moving that berth would divorce it from the
+ * hull standing on top of it.
+ */
+/proc/reset_reserve_dock_to_home(obj/docking_port/stationary/dock)
+	if(QDELETED(dock) || !dock.reserve_home_z)
+		return
+	if(dock.get_docked())
+		return
+	var/turf/home = locate(dock.reserve_home_x, dock.reserve_home_y, dock.reserve_home_z)
+	if(!home)
+		return
+	dock.dir = NORTH
+	dock.width = RESERVE_DOCK_MAX_SIZE_LONG
+	dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	dock.dwidth = 0
+	dock.dheight = 0
+	dock.forceMove(home)
+
+/**
+ * Restores both of an encounter's reserve berths, skipping any that is claimed or occupied.
+ *
+ * Call this before choosing a berth for an arriving ship, so the placement is computed from known
+ * geometry rather than from whatever the last visitor left behind.
+ *
+ * Taking the docks and the claim flags as arguments rather than reading them off a type is
+ * deliberate: /obj/structure/overmap/planet, /event, /space_ruin and /dynamic are siblings that each
+ * redeclare their own reserve_dock/first_dock_taken pair, so there is no shared parent to hang this
+ * on and no way to write it once except as a free proc.
+ */
+/proc/reset_free_reserve_docks_for(obj/docking_port/stationary/primary, obj/docking_port/stationary/secondary, primary_taken = FALSE, secondary_taken = FALSE)
+	if(!primary_taken)
+		reset_reserve_dock_to_home(primary)
+	if(!secondary_taken)
+		reset_reserve_dock_to_home(secondary)

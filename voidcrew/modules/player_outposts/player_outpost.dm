@@ -576,6 +576,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 			adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
 			dock_to_use = berth.dock
 		else
+			// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put
+			// the free ones back before choosing one, or the last visitor's offset is carried into
+			// this placement and compounds on every arrival. Only the padded reserve docks need
+			// this; the hangar-elevator branch above hands out mapped per-ship berths instead.
+			reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 			if(reserve_dock && !first_dock_taken && !reserve_dock.get_docked())
 				dock_to_use = reserve_dock
 				first_dock_taken = TRUE

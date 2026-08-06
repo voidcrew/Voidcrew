@@ -22,6 +22,53 @@
 	UnregisterSignal(area_to_unregister, COMSIG_AREA_POWER_CHANGE)
 
 /**
+ * Ion storms drain the SMES but leave its input/output configuration alone.
+ *
+ * Upstream's emp_act rolls `output_attempt = rand(0, 1)` and randomises both power
+ * levels, so half of all EMPs simply switch the ship's powernet off. Nothing resets
+ * it: the APC blackout expires on its own after a minute, but a SMES that rolled
+ * output off stays off until a crew member walks to it and flips the switch. On a
+ * ship that reads as total, permanent, causeless power death - the helm is unusable
+ * (can_interact refuses on NOPOWER), electric engines go with it
+ * (thruster_active = !!powernet), and nothing on any console says why.
+ *
+ * A storm should cost the crew their charge, which is legible and recoverable, not
+ * their switchgear. Everything else in the burst radius takes the EMP normally; this
+ * is the one machine spared, and only for storms - a syndicate EMP grenade or a
+ * malfunctioning cell still scrambles the SMES the way upstream intends.
+ *
+ * The flag is set around the pulse loop in apply_ion_storm_damage() (ship_damage.dm).
+ */
+/obj/machinery/power/smes/emp_act(severity)
+	if(!GLOB.ion_storm_pulse_active)
+		return ..()
+
+	// Run the whole upstream chain - the charge drain, the generic machine EMP and
+	// the COMSIG_ATOM_EMP_ACT signal all still fire, so anything hardening a SMES
+	// keeps working - then put the switchgear back exactly as it was. Restoring is
+	// what keeps this in step with upstream: a future change to how much a hit
+	// drains carries over untouched, because only these six vars are reverted.
+	var/was_input_attempt = input_attempt
+	var/was_output_attempt = output_attempt
+	var/was_input_level = input_level
+	var/was_output_level = output_level
+	var/was_inputting = inputting
+	var/was_outputting = outputting
+
+	. = ..()
+
+	input_attempt = was_input_attempt
+	output_attempt = was_output_attempt
+	input_level = was_input_level
+	output_level = was_output_level
+	inputting = was_inputting
+	outputting = was_outputting
+	update_appearance(UPDATE_OVERLAYS)
+	// Parent already logged the scrambled values; log again so the engine record
+	// shows what the SMES is actually left set to.
+	log_smes()
+
+/**
  * Tops every cell in this SMES up to capacity. Returns the energy added.
  *
  * Lives here rather than at the call site because both the capacity var and

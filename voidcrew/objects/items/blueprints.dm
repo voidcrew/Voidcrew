@@ -88,8 +88,14 @@
 			if(T.x >= (shuttle_coords[1] - 1) && T.x <= (shuttle_coords[3] + 1))
 				if(T.y >= (shuttle_coords[2] - 1) && T.y <= (shuttle_coords[4] + 1))
 					near_shuttle = TRUE
+	// This warned and then carried on regardless, so the adjacency requirement the
+	// message describes was never enforced. Standing in any airtight room anywhere -
+	// a ruin, an outpost, the inside of a bitrunning virtual domain - and picking
+	// "New Area" handed that room, and everything in it, to your ship's shuttle_areas.
+	// The next dock moved it, contents and all, to wherever the ship went.
 	if(!near_shuttle)
 		to_chat(creator, "<span class='warning'>The new area must be next to the shuttle.</span>")
+		return
 	var/area_choice = input(creator, "Choose an area to expand or make a new area.", "Area Expansion") as null|anything in areas
 	area_choice = areas[area_choice]
 

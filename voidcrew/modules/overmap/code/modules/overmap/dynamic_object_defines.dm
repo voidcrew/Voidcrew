@@ -178,26 +178,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
  * Docks that are claimed (dock_taken flags) or physically occupied are left alone.
  */
 /obj/structure/overmap/planet/empty/proc/reset_free_reserve_docks()
-	if(QDELETED(src) || !mapzone || !length(mapzone.z_levels))
+	if(QDELETED(src))
 		return
-	var/datum/space_level/zlevel = mapzone.z_levels[1]
-	// Same layout SSovermap.spawn_dynamic_encounter uses when creating the encounter
-	var/turf/primary_docking_turf = locate(
-		zlevel.low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
-		zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + 1,
-		zlevel.z_value
-		)
-	if(!primary_docking_turf)
-		return
-	var/turf/secondary_docking_turf = locate(
-		primary_docking_turf.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING,
-		primary_docking_turf.y,
-		primary_docking_turf.z
-		)
-	if(!first_dock_taken)
-		reset_reserve_dock(reserve_dock, primary_docking_turf)
-	if(!second_dock_taken)
-		reset_reserve_dock(reserve_dock_secondary, secondary_docking_turf)
+	reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 
 /**
  * Which pair of reserve docks a cargo shuttle would use to berth alongside `ship_shuttle`:
@@ -248,19 +231,6 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	if(reserve_dock_secondary && reserve_dock_secondary != excluding && reserve_dock_secondary.get_docked())
 		return reserve_dock_secondary
 	return null
-
-/// Restores a single free reserve dock to its default size/orientation at the given turf
-/obj/structure/overmap/planet/empty/proc/reset_reserve_dock(obj/docking_port/stationary/dock, turf/home_turf)
-	if(!dock || QDELETED(dock) || !home_turf)
-		return
-	if(dock.get_docked()) // a shuttle is still physically parked on it
-		return
-	dock.dir = NORTH
-	dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	dock.dwidth = 0
-	dock.dheight = 0
-	dock.forceMove(home_turf)
 
 
 /**

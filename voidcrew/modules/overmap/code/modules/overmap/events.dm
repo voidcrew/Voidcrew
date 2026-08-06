@@ -244,6 +244,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	reserve_dock_secondary.dheight = 0
 	reserve_dock_secondary.dwidth = 0
 
+	// Both berths get moved and resized to fit every ship that visits; record where they started
+	// so the next arrival is placed from this layout rather than the last visitor's offset.
+	reserve_dock.mark_reserve_home()
+	reserve_dock_secondary.mark_reserve_home()
+
 	loaded = TRUE
 	loading = FALSE
 
@@ -299,6 +304,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/is_survey = FALSE
 	var/obj/docking_port/stationary/dock_to_use = null
 	var/selected_dock_index = 0
+
+	// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put the free
+	// ones back before choosing one, or the last visitor's offset is carried into this placement
+	// and compounds on every arrival.
+	reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 
 	// Port destinations are set by survey console
 	if(acting.shuttle.port_destinations)

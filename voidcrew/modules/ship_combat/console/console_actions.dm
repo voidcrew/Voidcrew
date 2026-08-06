@@ -99,6 +99,18 @@
 		return
 	console.open_laser_power_radial(owner)
 
+// Launch a crewed assault pod at the aimed tile
+/datum/action/innate/ship_combat/launch_pod
+	name = "Launch Assault Pod"
+	desc = "Throw a loaded assault pod at the targeted location. It cuts its own way in - unless the target's shields are up."
+	button_icon_state = "mech_eject"
+	button_icon = 'icons/mob/actions/actions_mecha.dmi'
+
+/datum/action/innate/ship_combat/launch_pod/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.launch_pod(owner)
+
 // Exit camera mode - doesn't inherit attack_mode check from parent
 /datum/action/innate/ship_combat/exit_camera
 	name = "Exit Camera"
