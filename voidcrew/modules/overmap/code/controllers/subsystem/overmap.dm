@@ -63,7 +63,7 @@ SUBSYSTEM_DEF(overmap)
 	/// aren't planets; planet missions simply stop being offered. Turn it back on before
 	/// committing. (Preloaded planets are separate - those are the *_planet_count vars in
 	/// voidcrew/mapping/_mapping.dm, already 0.)
-	var/spawn_planets = FALSE
+	var/spawn_planets = TRUE
 	/// How many planets of each terrain type the round gets. Only the FIRST of each type is
 	/// generated during the lobby - see prebuild_roundstart_planets(). The rest are charted
 	/// contacts with no interior until a ship goes there, so raising this adds places to go
