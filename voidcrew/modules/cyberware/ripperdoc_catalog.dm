@@ -1,31 +1,31 @@
 /**
- * # The Chop Shop — Splice, ripperdoc
+ * # The Chop Shop: Splice, ripperdoc
  *
  * The Undertow's chrome parlor: a vendor stall (own stock, own voice, own
  * ledger) fronted by Splice, who sits behind the counter in the neon annex off
- * the Dregs. He sells cyberware and nothing else — the whole roster, tiered up
+ * the Dregs. He sells cyberware and nothing else, the whole roster, tiered up
  * the voucher ladder, with the flagships always on the shelf so the chase is
  * plannable. Ammunition for the arm weapons is parlor-only: the return-visit
  * hook.
  *
  * Balance shape mirrors Vex's counter: credits buy the street and pro-utility
  * ware, vouchers gate everything that changes how you fight. Splice's intake
- * ledger buys back ONLY the ladder-base rungs — the street chrome a customer
- * outgrows — at half list, credits only, so climbing a slot ladder feels like
+ * ledger buys back ONLY the ladder-base rungs, the street chrome a customer
+ * outgrows, at half list, credits only, so climbing a slot ladder feels like
  * climbing and never becomes an arbitrage loop (you can't refund vouchers, and
  * a removed piece resold at 50% is always a loss).
  *
  * Splice is not the only source any more. The roster also rides the zone loot
  * tables (modules/loot/themes/) at the tier that matches what he charges for
- * it — the same two-channel shape the gun blueprints already have, shop as
+ * it, the same two-channel shape the gun blueprints already have, shop as
  * the certainty channel and caches as the gamble. What stays parlor-only:
  * Legend Chrome (the chase is meant to be plannable, so it is always on the
  * shelf and never in a crate) and both ammunition SKUs (the return-visit
- * hook — a looted Ronin or Bunker Buster comes with what's loaded in it and
+ * hook, a looted Ronin or Bunker Buster comes with what's loaded in it and
  * nothing more). The one piece that is NOT sold here at all is the Skyhook
  * wrist winch: it drops from expedition caches only.
  *
- * Catalog only — the organs live in ware_*.dm, the cradle in chrome_cradle.dm,
+ * Catalog only: the organs live in ware_*.dm, the cradle in chrome_cradle.dm,
  * the NPC subtype in trade/trader_npc.dm, the parlor room on the Undertow map.
  */
 /**
@@ -33,7 +33,7 @@
  * sterile blue (he operates, just not on the books), street leather over the
  * top, black no-bloodstain coroner latex, a diagnostic HUD because he scans
  * chrome rather than flesh, and a toolbelt because installing ware is shop
- * work. Purely cosmetic — the NPC snapshot only copies appearance.
+ * work. Purely cosmetic, the NPC snapshot only copies appearance.
  */
 /datum/outfit/ripperdoc_splice
 	name = "Ripperdoc"
@@ -98,7 +98,7 @@
 		/datum/shop_sku/ripperdoc/bunker_buster,
 		/datum/shop_sku/ripperdoc/ghostskin,
 		/datum/shop_sku/ripperdoc/lazarus,
-		// ---- Legend Chrome (the chase — always listed) ----
+		// ---- Legend Chrome (the chase, always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
 		/datum/shop_sku/ripperdoc/cascade,
@@ -170,7 +170,7 @@
 	stock_max = 2
 
 // =========================================================================
-// STREET CHROME — credits
+// STREET CHROME: credits
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/chromatic_dermis
@@ -257,7 +257,7 @@
 	stock_max = 2
 
 // =========================================================================
-// PRO CHROME — mixed currency
+// PRO CHROME: mixed currency
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/angler
@@ -317,7 +317,7 @@
 	price_vouchers = 2
 
 // =========================================================================
-// MILITARY CHROME — vouchers
+// MILITARY CHROME: vouchers
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/atlas
@@ -339,13 +339,13 @@
 
 /datum/shop_sku/ripperdoc/ronin
 	category = "Military Chrome"
-	desc = "A submachine gun that folds into your forearm. Feeds a proprietary caliber only I sell — see the Ammunition shelf. Nobody is disarming you of it."
+	desc = "A submachine gun that folds into your forearm. Feeds a proprietary caliber only I sell. See the Ammunition shelf. Nobody is disarming you of it."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	price_vouchers = 3
 
 /datum/shop_sku/ripperdoc/rigger
 	category = "Military Chrome"
-	desc = "Skull jack. Opens your ship's helm wherever you're standing on it — engineering, a corridor, medbay with your hands full. It borrows a real console, so a hull with no helm left gives you nothing, and you're walking, not running, the whole time you're flying."
+	desc = "Skull jack. Opens your ship's helm wherever you're standing on it: engineering, a corridor, medbay with your hands full. It borrows a real console, so a hull with no helm left gives you nothing, and you're walking, not running, the whole time you're flying."
 	item_path = /obj/item/organ/cyberimp/cyberware/rigger
 	price_vouchers = 3
 
@@ -363,7 +363,7 @@
 
 /datum/shop_sku/ripperdoc/bunker_buster
 	category = "Military Chrome"
-	desc = "A two-shot rocket pod built into the forearm. Reloads are parlor-only — see the Ammunition shelf. Shaped charge, so it won't open your hull. Or theirs. Just whoever's standing in it."
+	desc = "A two-shot rocket pod built into the forearm. Reloads are parlor-only. See the Ammunition shelf. Shaped charge, so it won't open your hull. Or theirs. Just whoever's standing in it."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	price_vouchers = 4
 
@@ -378,7 +378,7 @@
 	price_vouchers = 4
 
 // =========================================================================
-// LEGEND CHROME — the chase, always on the shelf
+// LEGEND CHROME: the chase, always on the shelf
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/governor_delete
@@ -405,7 +405,7 @@
 	stock_max = 1
 
 // =========================================================================
-// AMMUNITION — parlor-only reloads (the return-visit hook)
+// AMMUNITION: parlor-only reloads (the return-visit hook)
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/ronin_mag
@@ -420,14 +420,14 @@
 /datum/shop_sku/ripperdoc/buster_rockets
 	category = "Ammunition"
 	name = "Bunker Buster rockets"
-	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle them carefully — they're meant to go off at the far end."
+	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle them carefully. They're meant to go off at the far end."
 	item_path = /obj/item/ammo_box/cyberware_buster_rockets
 	price_credits = 600
 	stock_min = 2
 	stock_max = 4
 
 // =========================================================================
-// SPLICE'S INTAKE LEDGER — the trade-in ladder
+// SPLICE'S INTAKE LEDGER: the trade-in ladder
 // Half list, credits only, street rungs only. Removed chrome resold here is
 // always a loss (you can't refund vouchers, and 50% never beats buying up the
 // ladder), so this reads as "trade up" and never as an arbitrage loop.

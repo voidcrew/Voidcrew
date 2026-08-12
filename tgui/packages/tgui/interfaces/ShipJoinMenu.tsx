@@ -118,8 +118,8 @@ const RequisitionSection = (props: { canRequisition: boolean }) => {
         <Stack.Item>
           <Box color="gray" fontSize="13px" mb={1}>
             {canRequisition
-              ? 'No ship in the fleet has a position open for you, so the yard will issue you one at no cost. The class, theme and fittings are whatever is on the line — buy from the shipyard if you want to choose.'
-              : 'Available only when the fleet has no room left. There are still open positions below — join one of those.'}
+              ? 'No ship in the fleet has a position open for you, so the yard will issue you one at no cost. The class, theme and fittings are whatever is on the line. Buy from the shipyard if you want to choose.'
+              : 'Available only when the fleet has no room left. There are still open positions below, join one of those.'}
           </Box>
         </Stack.Item>
         <Stack.Item>

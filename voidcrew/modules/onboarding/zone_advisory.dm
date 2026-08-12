@@ -52,7 +52,7 @@
 	var/lawless = zone.zone_type == ZONE_RED
 	var/consequence = lawless ? "ship weapons are live here" : "boarding is permitted here"
 	return list(
-		"label" = "[zone.name] — [consequence], and this hull has no warfare research",
+		"label" = "[zone.name]: [consequence], and this hull has no warfare research",
 		"critical" = lawless,
 	)
 
@@ -81,7 +81,7 @@
 		: "boarding is permitted"
 
 	ship_notify(
-		"[uppertext(target_zone.name)] AHEAD — [threat] past this border, and this hull has no Shuttle Warfare Systems research. Stop at the helm to cancel.",
+		"[uppertext(target_zone.name)] AHEAD: [threat] past this border, and this hull has no Shuttle Warfare Systems research. Stop at the helm to cancel.",
 		"NAVIGATION ADVISORY",
 		SHIP_NOTIFY_DANGER,
 	) // no sound: the generic zone-transition chime already plays

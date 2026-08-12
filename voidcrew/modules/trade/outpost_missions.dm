@@ -20,7 +20,7 @@
  * # Outpost Supply Mission
  *
  * Delivery-style: haul the asked goods to your ship's mission pad or any
- * trader. Pays no credits — the reward is one free item rolled off the
+ * trader. Pays no credits. The reward is one free item rolled off the
  * posting shop's SKU list at creation time.
  */
 /datum/mission/outpost_supply
@@ -133,8 +133,8 @@
  * A cooking-shaped supply request posted only by outposts that run a kitchen
  * stall (see the general shop's extra_offer_mix). The ask is real cooking:
  * dishes only count when a player's own hands made them (TRAIT_FOOD_CHEF_MADE
- * from a grill, oven, fryer or the crafting menu) at the ordered recipe depth —
- * factory food is refused, and so are plates bought off the diner's own
+ * from a grill, oven, fryer or the crafting menu) at the ordered recipe depth.
+ * Factory food is refused, and so are plates bought off the diner's own
  * counter (see deliver/cooked and TRAIT_SOURCE_OUTPOST_KITCHEN).
  */
 /datum/mission/outpost_supply/cook
@@ -177,7 +177,7 @@
 /datum/mission/outpost_supply/cook/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Kitchen Order: [item_text]"
-	desc = "[author] at the diner is buying [item_text] — cooked by an actual person, \
+	desc = "[author] at the diner is buying [item_text], cooked by an actual person, \
 		[min_complexity >= FOOD_COMPLEXITY_4 ? "and it had better be worth the window" : "no factory food"]. \
 		Hand the plates to any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
 

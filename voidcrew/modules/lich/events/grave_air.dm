@@ -1,5 +1,5 @@
 /**
- * Ritual: Grave Air — ship-scoped, no upstream original.
+ * Ritual: Grave Air: ship-scoped, no upstream original.
  *
  * The air aboard goes to rot for a minute. Anyone breathing it is slowly poisoned; anyone
  * on internals is fine.
@@ -7,7 +7,7 @@
  * The third hazard rite, and the third distinct verb: The Floor Is Grave-Dirt is answered
  * by getting off the floor, The Cold of the Ground by putting something on, and this one by
  * closing your mask. All three self-terminate, damage nothing structural, and leave the ship
- * exactly as they found it — which is the whole roster policy after the item-cursing rites
+ * exactly as they found it, which is the whole roster policy after the item-cursing rites
  * were cut (see lich_events.dm).
  *
  * It is not an atmospherics event and deliberately touches no gas mixture. Editing the air
@@ -33,7 +33,7 @@
 	typepath = /datum/round_event/voidcrew/lich/grave_air
 	description = "The air aboard the target ship turns to rot for about a minute. Internals answer it."
 	/// Repeatable for the same reasons as the other two hazards, and one of the three
-	/// answers the top band needs — see the cap policy in lich_events.dm.
+	/// answers the top band needs, see the cap policy in lich_events.dm.
 	max_occurrences = 10
 	event_scope = EVENT_SCOPE_SHIP
 	min_wizard_trigger_potency = 3
@@ -49,7 +49,7 @@
 /datum/round_event/voidcrew/lich/grave_air/announce(fake)
 	lich_announce_ship(
 		"You are all breathing the same room. I have put something of mine in it. \
-		Nothing clever — it is only the smell of a grave, and what comes with the smell. \
+		Nothing clever: it is only the smell of a grave, and what comes with the smell. \
 		Close your masks or don't; it is a minute either way.",
 		"Grave Air",
 		'sound/effects/magic/curse.ogg',

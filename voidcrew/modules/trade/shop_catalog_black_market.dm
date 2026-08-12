@@ -1,8 +1,8 @@
 /**
- * # Undertow Exchange — the red-zone black market
+ * # Undertow Exchange: the red-zone black market
  *
  * Syndicate hardware, sealed mystery cargo and things with the serial numbers
- * filed off. The top shelf only moves for vouchers — the currency you can't
+ * filed off. The top shelf only moves for vouchers. The currency you can't
  * farm in safety.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  *
@@ -10,8 +10,8 @@
  *
  * - MODsuits. The suit stall at Quartermain sells civilian through advanced.
  *   Vex sells the tier it won't touch: syndicate, infiltrator and Interdyne
- *   control units, plus the antag modules. Bare chassis are the mid rungs —
- *   cheaper, but the buyer has to kit them out at a bench themselves.
+ *   control units, plus the antag modules. Bare chassis are the mid rungs.
+ *   Cheaper, but the buyer has to kit them out at a bench themselves.
  * - Ship systems. Every combat board is a protolathe-only research design and
  *   only 9 of 48 ships can research anything, so most crews have no route to a
  *   shield generator at all. This is that route. Quartermain covers engines and
@@ -20,7 +20,7 @@
 
 /**
  * Vex: all black, all business. The tactical turtleneck under the coat is the
- * tell that the Exchange has never been robbed — whoever tried met someone
+ * tell that the Exchange has never been robbed, whoever tried met someone
  * dressed for it. The one thing they let themselves show is the gold: a
  * merchant's chain, worn where a customer can see what dealing here pays.
  */
@@ -111,7 +111,7 @@
 		// Combat Medical
 		/datum/shop_sku/black_market/tactical_medkit,
 		/datum/shop_sku/black_market/stimulants,
-		// Intel & Charts — named ruin tips are dealt onto the rotating shelf
+		// Intel & Charts: named ruin tips are dealt onto the rotating shelf
 		// from chart_pool below; the generic tip is the cheap standing rung.
 		/datum/shop_sku/rumor,
 		// Blueprints
@@ -174,7 +174,7 @@
 		/datum/shop_buyback/exotic_gas/pluoxium,
 		/datum/shop_buyback/exotic_gas/nitrium,
 	)
-	// Vex's supply requests want the rare stuff — the free item makes it worth it
+	// Vex's supply requests want the rare stuff. The free item makes it worth it
 	mission_requests = list(
 		list("type" = /obj/item/stack/ore/uranium, "name" = "uranium ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/ore/diamond, "name" = "diamonds", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
@@ -184,7 +184,7 @@
 		list("type" = /obj/item/organ/monster_core/regenerative_core/legion, "name" = "legion core", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 	// The back shelf: hard contracts only, never sold. Each of these is the top
-	// of a ladder Vex otherwise stops short of — the elite suit above the
+	// of a ladder Vex otherwise stops short of, the elite suit above the
 	// syndicate one, the Spider Clan chassis above that, and the one combat
 	// board that is on no shelf anywhere.
 	exclusive_rewards = list(
@@ -200,7 +200,7 @@
 			"Welcome to the Undertow. Touch nothing you can't pay for.",
 			"Fresh faces. Vouchers up front, questions never.",
 			"You found us. That's the hard part done. Now spend.",
-			"Come in, come in. Leave the airlock drama outside — that's a dock problem.",
+			"Come in, come in. Leave the airlock drama outside. That's a dock problem.",
 			"Ah, customers. Or corpses with good timing. Either way, welcome.",
 		),
 		TRADER_LINE_SALE = list(
@@ -211,7 +211,7 @@
 			"That one's got a history. I'd stop asking about it right around now.",
 		),
 		TRADER_LINE_REFUSAL = list(
-			"Your money's no good here. Literally — check your embargo notice.",
+			"Your money's no good here. Literally. Check your embargo notice.",
 			"We don't serve your kind. 'Your kind' meaning people who shoot at my stock.",
 			"Come back when your ship's ledger is clean.",
 			"The Undertow forgives everything except property damage. Wait it out.",
@@ -219,7 +219,7 @@
 		TRADER_LINE_WARNING = list(
 			"Easy, killer. The turrets have a temper and a long memory.",
 			"That's one. Keep swinging and you'll meet the expensive part of this station.",
-			"Read the plaque. Violence is bad for business — mostly yours.",
+			"Read the plaque. Violence is bad for business, mostly yours.",
 		),
 		TRADER_LINE_AGGRESSION = list(
 			"Bad call. The turrets were the cheap part of this station.",
@@ -239,7 +239,7 @@
 			"Nobody else in the galaxy will sell you a shield generator. Think about what that's worth before you haggle.",
 		),
 		TRADER_LINE_RESTOCK = list(
-			"Convoy's in. Don't ask which flag it flew — new stock on the shelves.",
+			"Convoy's in. Don't ask which flag it flew, new stock on the shelves.",
 			"Fresh inventory, straight off a manifest that never existed.",
 			"The warehouse door opens once a cycle. It just did. Shop.",
 		),
@@ -292,7 +292,7 @@
 /datum/shop_sku/black_market/quiet_word_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m10mm/quiet_word
-	price_credits = 1000 // PROVISIONAL BALANCE — a shade over the 9mm mag; 10mm hits harder
+	price_credits = 1000 // PROVISIONAL BALANCE. A shade over the 9mm mag; 10mm hits harder
 	stock_min = 3
 	stock_max = 6
 
@@ -508,7 +508,7 @@
 /datum/shop_sku/black_market/ew_door_seize
 	category = "Exploit Software"
 	name = "Bolt Override exploit cartridge"
-	desc = "Takes over the target's airlock bolts — drop every door shut, or throw them all open."
+	desc = "Takes over the target's airlock bolts. Drop every door shut, or throw them all open."
 	item_path = /obj/item/ew_exploit/door_seize
 	price_credits = 700
 	stock_min = 1
@@ -597,8 +597,8 @@
 
 // ===== INFILTRATION =====
 // What's left of the old shelf. Every door on every player ship and every
-// outpost has req_access stripped, so nothing here is priced as an access tool
-// — these are boarding tools and they're priced like boarding tools.
+// outpost has req_access stripped, so nothing here is priced as an access tool.
+// These are boarding tools and they're priced like boarding tools.
 
 /datum/shop_sku/black_market/emag
 	category = "Infiltration"
@@ -690,7 +690,7 @@
 
 // ===== MYSTERY CARGO =====
 // The gamble channel, sold over the counter: sealed caches rolling the zone
-// loot tables. The crate pins its band to the spawn turf — bought at the
+// loot tables. The crate pins its band to the spawn turf, bought at the
 // Undertow, it rolls on lawless odds. The reinforced one is not a different
 // table, just a fuller crate; nothing here is unobtainable from a cache
 // found in the field.
@@ -863,7 +863,7 @@
 // inspect them.
 
 // The gas window: tanks of red-band nebula exotics, scooped where the lanes
-// are worst. Sold with the tank — Vex doesn't do decanting. Pays cash, never
+// are worst. Sold with the tank. Vex doesn't do decanting. Pays cash, never
 // vouchers: pluoxium and nitrium both come out of an ordinary atmospherics
 // setup, and a voucher you can synthesise aboard ship stops being the currency
 // that has to be earned in dangerous places.
@@ -893,7 +893,7 @@
 
 // ===== BACK ROOM =====
 // Vex's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
-// per crew per round. Priced above the rare shelf on purpose — standing opens
+// per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/vex_insurance

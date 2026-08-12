@@ -617,7 +617,7 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
  * ship's own footprint. Rocks used to be spawned on the reservation edge with no
  * termination condition at all: one that missed kept flying for its full three-minute
  * lifetime, straight across the transit z-level and into whatever ship was parked next
- * to us — and on reaching the reservation's hard cordon was teleported onto a live
+ * to us, and on reaching the reservation's hard cordon was teleported onto a live
  * space z-level rather than deleted.
  */
 /obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)

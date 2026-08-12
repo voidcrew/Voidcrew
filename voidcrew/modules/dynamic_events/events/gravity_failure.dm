@@ -1,10 +1,10 @@
 /**
- * Gravity Generator Failure — voidcrew's replacement for TG's Gravity Generator
+ * Gravity Generator Failure: voidcrew's replacement for TG's Gravity Generator
  * Blackout (code/modules/events/gravity_generator_blackout.dm).
  *
  * Not a port. TG's event switches off a specific machine, `/obj/machinery/gravity_generator/main`,
  * and requires a crewmember to walk to it and reset it by hand. No voidcrew hull maps
- * one — ship gravity comes from `default_gravity` on the shuttle areas themselves, so
+ * one, ship gravity comes from `default_gravity` on the shuttle areas themselves, so
  * there is no generator to black out and nothing to walk to. Rather than map a machine
  * onto forty-odd hulls to preserve a mechanic, the event acts on the thing that actually
  * provides gravity here: the deck plating cuts out ship-wide and comes back on its own.
@@ -46,7 +46,7 @@
 	var/list/area/suppressed_areas = list()
 
 /**
- * TRUE while the target is standing in gravity that isn't its own — landed on a planet,
+ * TRUE while the target is standing in gravity that isn't its own, landed on a planet,
  * berthed in an outpost hangar. The control refuses to pick such a ship in the first
  * place, but the gap between selection and start() is a ten-second admin window plus
  * three ticks, and a ship on final approach can land inside it.
@@ -86,7 +86,7 @@
  * A crew that runs for the nearest planet or outpost lands out of the fault: the ground
  * under the hull holds them down whatever the plating is doing, so keeping the flag set
  * would only mean a hull that stays weightless while parked in a gravity well. Ending
- * early here is also the fix for the flag outliving the fault — the areas keep it until
+ * early here is also the fix for the flag outliving the fault. The areas keep it until
  * something clears it, and a landing is exactly when nobody would think to look.
  */
 /datum/round_event/voidcrew/gravity_failure/tick()
@@ -105,8 +105,8 @@
 	target_ship.ship_event_announce("Gravity bus back online. Plating is holding.", "Gravity Alert")
 
 /**
- * Gravity must come back even if the event is killed early or the ship dies mid-fault —
- * the flag lives on the area, not on this datum, so leaking it would leave a hull
+ * Gravity must come back even if the event is killed early or the ship dies mid-fault.
+ * The flag lives on the area, not on this datum, so leaking it would leave a hull
  * permanently weightless with nothing left to explain why.
  */
 /datum/round_event/voidcrew/gravity_failure/kill()

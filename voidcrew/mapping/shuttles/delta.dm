@@ -5,8 +5,8 @@
  * * Converted to the phase-4 modular standard: 4 upgrade slots, 4 themes
  * * Slots: cargo (open, 7x5), cafe (open, 7x5), med (open, 6x3),
  *   dorms (enclosed-lite, 6x3 with the (14,16) cryo reserve tile)
- * * Themes: Salvage Claim (the re-lit derelict, default), The Night Market
- *   (lantern-lit hawker family), The Stacks (travelling archive),
+ * * Themes: Salvage Claim (the re-lit derelict, default), Gorlex Prize
+ *   (syndicate warship refit), The Congregation (blood cult refit),
  *   The Lightship (volunteer rescue station)
  * * The bare hull flies and is joinable with every slot empty: helm, engine
  *   block, both airlock arms, autolathe (engineering), and the reserve-tile
@@ -29,7 +29,7 @@
 		"delta_med",
 		"delta_dorms",
 	)
-	available_themes = list("salvage", "market", "archive", "lightship")
+	available_themes = list("salvage", "syndicate", "cult", "lightship")
 	// job_slots come from the selected theme, not defined here
 
 /// DOCKING PORT ///
@@ -63,10 +63,10 @@
 /area/shuttle/voidcrew/delta/bridge/a
 
 /area/shuttle/voidcrew/delta/bridge/b
-	name = "Front Office"
+	name = "Operations"
 
 /area/shuttle/voidcrew/delta/bridge/c
-	name = "Chart Room"
+	name = "Wheelhouse"
 
 /area/shuttle/voidcrew/delta/bridge/d
 	name = "Watch Room"
@@ -80,8 +80,10 @@
 /area/shuttle/voidcrew/delta/engineering/a
 
 /area/shuttle/voidcrew/delta/engineering/b
+	name = "Powerplant"
 
 /area/shuttle/voidcrew/delta/engineering/c
+	name = "Engine Room"
 
 /area/shuttle/voidcrew/delta/engineering/d
 	name = "Boiler Room"
@@ -95,7 +97,7 @@
 /area/shuttle/voidcrew/delta/medbay/a
 
 /area/shuttle/voidcrew/delta/medbay/b
-	name = "Street Clinic"
+	name = "Trauma Bay"
 
 /area/shuttle/voidcrew/delta/medbay/c
 	name = "Infirmary"
@@ -111,10 +113,10 @@
 /area/shuttle/voidcrew/delta/cargo/a
 
 /area/shuttle/voidcrew/delta/cargo/b
-	name = "Stockroom"
+	name = "Munitions Hold"
 
 /area/shuttle/voidcrew/delta/cargo/c
-	name = "Acquisitions"
+	name = "Hold"
 
 /area/shuttle/voidcrew/delta/cargo/d
 	name = "Boathouse"
@@ -130,10 +132,10 @@
 /area/shuttle/voidcrew/delta/dorms/a
 
 /area/shuttle/voidcrew/delta/dorms/b
-	name = "Family Quarters"
+	name = "Berthing"
 
 /area/shuttle/voidcrew/delta/dorms/c
-	name = "Lodgings"
+	name = "Quarters"
 
 /area/shuttle/voidcrew/delta/dorms/d
 	name = "Watch Quarters"
@@ -146,10 +148,10 @@
 /area/shuttle/voidcrew/delta/cafe/a
 
 /area/shuttle/voidcrew/delta/cafe/b
-	name = "Night Market"
+	name = "Mess Deck"
 
 /area/shuttle/voidcrew/delta/cafe/c
-	name = "The Stacks"
+	name = "Refectory"
 
 /area/shuttle/voidcrew/delta/cafe/d
 	name = "Station Mess"
@@ -163,10 +165,10 @@
 /area/shuttle/voidcrew/delta/hallway/central/a
 
 /area/shuttle/voidcrew/delta/hallway/central/b
-	name = "Lantern Row"
+	name = "Spinal Corridor"
 
 /area/shuttle/voidcrew/delta/hallway/central/c
-	name = "Long Gallery"
+	name = "Nave"
 
 /area/shuttle/voidcrew/delta/hallway/central/d
 	name = "Main Passage"
@@ -178,6 +180,7 @@
 /area/shuttle/voidcrew/delta/airlock/port/a
 
 /area/shuttle/voidcrew/delta/airlock/port/b
+	name = "Boarding Lock"
 
 /area/shuttle/voidcrew/delta/airlock/port/c
 

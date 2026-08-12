@@ -11,7 +11,7 @@
 /**
  * How the cradle files chrome on screen: one row per body system, in head-down
  * order, each owning the organ slots that live there. This is presentation
- * only — the slots themselves are the real uniqueness rule.
+ * only, the slots themselves are the real uniqueness rule.
  *
  * Anything chrome whose slot isn't listed here falls into a trailing "Other
  * Hardware" group rather than vanishing, so a new slot always shows up
@@ -79,7 +79,7 @@ GLOBAL_VAR_INIT(cyberware_prices_indexed, FALSE)
 			continue
 		// Cased pairs and knuckle sets: crack one open in nullspace to learn
 		// which organs it holds, so each half can quote the case's price. The
-		// sample and its contents go straight back out — nothing here is ever
+		// sample and its contents go straight back out. Nothing here is ever
 		// meant to reach a turf.
 		var/obj/item/sample = new item_path(null)
 		for(var/obj/item/organ/held in sample.contents)

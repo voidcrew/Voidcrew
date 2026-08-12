@@ -1,14 +1,14 @@
 // =========================================================================
-// SYNDICATE THEME — contraband tiered by what it's worth. Tables follow the
+// SYNDICATE THEME: contraband tiered by what it's worth. Tables follow the
 // black-market shop's price ladder (modules/trade/shop.dm and the SKUs in
 // theme_skus below) so the gamble channel and the certainty channel stay on
 // one curve.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop_catalog_black_market.dm.
 // Weapon blueprints are seeded across both channels: the outfitter sells the
 // c20r/wt550/carbine schematics (uncommon-tier), the black market sells the
-// l6_saw/sniper/bulldog three (prime-tier) — the same blueprints ride these
+// l6_saw/sniper/bulldog three (prime-tier), the same blueprints ride these
 // cache tables at matching tiers. Craft them from the recipe anywhere, once
 // you have the part and a firing pin (modules/weapons_bench/blueprint.dm).
 // Cyberware rides the same two channels: the parlor's smuggling cavity and
@@ -109,7 +109,7 @@
 	theme = /datum/loot_theme/syndicate
 
 /// The black market's premium cache SKU (shop_catalog_black_market.dm). Same
-/// tables as any other syndicate cache — it is simply packed fuller, which is
+/// tables as any other syndicate cache. It is simply packed fuller, which is
 /// what the extra vouchers buy.
 /obj/structure/closet/crate/zone_loot/syndicate/reinforced
 	name = "reinforced syndicate cache"

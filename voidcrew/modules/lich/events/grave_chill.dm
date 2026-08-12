@@ -1,11 +1,11 @@
 /**
- * Ritual: The Cold of the Ground — ship-scoped, no upstream original.
+ * Ritual: The Cold of the Ground, ship-scoped, no upstream original.
  *
  * The hull goes grave-cold for a minute. Put something on.
  *
  * Written rather than ported, to fill the hole left when the item-cursing rites were cut:
  * a rite must be *pressure*, not a lasting nuisance. Everything about this one is
- * temporary. It takes nothing, marks nothing, and leaves nothing behind — body temperature
+ * temporary. It takes nothing, marks nothing, and leaves nothing behind, body temperature
  * climbs back on its own the moment the rite ends, and a crewmember who was wearing a coat
  * the whole time is barely inconvenienced. That is the intended shape of the whole roster;
  * see The Floor Is Grave-Dirt for the same idea with a different verb.
@@ -52,7 +52,7 @@
 /datum/round_event/voidcrew/lich/grave_chill/announce(fake)
 	lich_announce_ship(
 		"You keep your ship warmer than the ground does. I have never understood why you \
-		bother — you will be cold for a great deal longer than you were ever warm. \
+		bother, you will be cold for a great deal longer than you were ever warm. \
 		Here is a minute of it, so you know what you are arguing with.",
 		"The Cold of the Ground",
 		'sound/effects/magic/curse.ogg',
@@ -79,7 +79,7 @@
 		chill_mob(victim)
 
 /datum/round_event/voidcrew/lich/grave_chill/end()
-	// Runs whether or not the ship survived — the overlays are tracked against the areas.
+	// Runs whether or not the ship survived. The overlays are tracked against the areas.
 	remove_rite_overlays()
 	if(!target_valid())
 		return

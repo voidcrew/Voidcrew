@@ -1,12 +1,12 @@
 /**
- * Ritual: Ossuary Rain — ship-scoped port of TG's Indoor Weather (code/modules/events/wizard/object_rain.dm).
+ * Ritual: Ossuary Rain: ship-scoped port of TG's Indoor Weather (code/modules/events/wizard/object_rain.dm).
  *
  * Bones fall out of the ceiling of one compartment, in drop pods, for about half a minute.
  *
  * The TG original picks a station department by area typepath out of a hardcoded
  * RAIN_TARGET_DEPARTMENTS list, snapshots every unblocked turf in it during setup(), and
  * pick_n_take()s from that cached list for the rest of the event. Neither half survives
- * here: ships have no department area types, and — the important one — a shuttle's turfs
+ * here: ships have no department area types, and (the important one) a shuttle's turfs
  * are positional. The instant the ship docks, launches or moves, every cached turf ref
  * points at whatever now occupies that coordinate, which could be a planet surface, a
  * trader outpost's shop floor, or another crew's bridge. Dropping pods on those is exactly
@@ -25,7 +25,7 @@
  *   a mess to sweep up rather than an unrecoverable state.
  * - What falls is registered with register_lich_leaving() (lich_loot.dm) and goes to dust
  *   when he dies. The table holds a skull helmet, bone armour and a bone axe, and a rite
- *   is pressure — it is not allowed to double as a supply drop. Anything the crew CRAFTS
+ *   is pressure, it is not allowed to double as a supply drop. Anything the crew CRAFTS
  *   out of the bone sheets before then is theirs and survives; they did the work.
  * - The admin_setup listed-options datum is dropped, per the port spec: it exists to let
  *   an admin name a station department.
@@ -52,7 +52,7 @@
 /datum/round_event/voidcrew/lich/ossuary_rain
 	announce_when = 1
 	end_when = 14
-	/// The ship area the rain falls in. An area, never a turf list — see the file header.
+	/// The ship area the rain falls in. An area, never a turf list, see the file header.
 	var/area/rain_area
 	/// Name of that area, kept for the announcement in case the area is gone by then.
 	var/rain_area_name = "the lower decks"
@@ -85,7 +85,7 @@
 /datum/round_event/voidcrew/lich/ossuary_rain/announce(fake)
 	lich_announce_ship(
 		"There is a great deal of me that is no longer needed. I am shedding it into \
-		[rain_area_name]. Do not mistake this for generosity — it is housekeeping, and you \
+		[rain_area_name]. Do not mistake this for generosity. It is housekeeping, and you \
 		are the bin.",
 		"Ossuary Rain",
 	)
@@ -117,7 +117,7 @@
 		"effectStealth" = TRUE,
 		"effectQuiet" = TRUE,
 	))
-	// He is shedding this, not gifting it — the table holds a skull helmet, bone armour
+	// He is shedding this, not gifting it. The table holds a skull helmet, bone armour
 	// and a bone axe, and none of it is allowed to outlive him. podspawn() hands back the
 	// pod with the item already inside, which is the only moment there is a ref to catch.
 	for(var/obj/item/shed_bone in pod)
@@ -126,7 +126,7 @@
 /**
  * A live, unblocked open turf inside the rain area, or null.
  *
- * Rebuilt from the area's current contents on every call rather than cached — that is the
+ * Rebuilt from the area's current contents on every call rather than cached, that is the
  * whole point. Falls back to any open turf aboard if the chosen compartment has been
  * flooded, sealed or blown open since setup.
  */

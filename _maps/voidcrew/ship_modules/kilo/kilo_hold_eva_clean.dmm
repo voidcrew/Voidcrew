@@ -46,17 +46,16 @@
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "D" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
 /obj/structure/sign/warning/vacuum/directional/south,
-/turf/open/floor/iron/dark,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "E" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/mining/eva,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "L" = (
@@ -76,7 +75,8 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
 	},
-/turf/open/floor/iron/white,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 
 (1,1,1) = {"

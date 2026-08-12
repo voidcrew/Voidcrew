@@ -125,7 +125,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 /**
  * What the chart draws this signal as. An unsurveyed ruin is a signal and nothing
- * more, so it deliberately gives up nothing but the encryption — which is already
+ * more, so it deliberately gives up nothing but the encryption, which is already
  * public, being the whole point of a rumour chart.
  */
 /obj/structure/overmap/space_ruin/get_contact_variant()

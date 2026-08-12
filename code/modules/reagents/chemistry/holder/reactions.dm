@@ -91,9 +91,11 @@
 					LAZYADD(failed_but_capable_reactions, reaction)
 					continue
 
-				if(ph < reaction.optimal_ph_min - reaction.determin_ph_range && ph > reaction.optimal_ph_max + reaction.determin_ph_range)
+				//VOIDCREW EDIT: only recipes that opt in with REACTION_USES_PURITY are gated on pH.
+				if((reaction.reaction_flags & REACTION_USES_PURITY) && (ph < reaction.optimal_ph_min - reaction.determin_ph_range && ph > reaction.optimal_ph_max + reaction.determin_ph_range))
 					LAZYADD(failed_but_capable_reactions, reaction)
 					continue
+				//VOIDCREW EDIT END
 
 				possible_reactions += reaction
 
@@ -148,8 +150,14 @@
 		else
 			if(reaction.required_temp < chem_temp)
 				return TRUE
-		if(((ph >= (reaction.optimal_ph_min - reaction.determin_ph_range)) && (ph <= (reaction.optimal_ph_max + reaction.determin_ph_range))))
+		//VOIDCREW EDIT: a reaction that doesn't opt into pH mechanics is never held back by pH,
+		//so it's always eligible to restart once its other conditions are met.
+		if(reaction.reaction_flags & REACTION_USES_PURITY)
+			if(((ph >= (reaction.optimal_ph_min - reaction.determin_ph_range)) && (ph <= (reaction.optimal_ph_max + reaction.determin_ph_range))))
+				return TRUE
+		else
 			return TRUE
+		//VOIDCREW EDIT END
 	return FALSE
 
 

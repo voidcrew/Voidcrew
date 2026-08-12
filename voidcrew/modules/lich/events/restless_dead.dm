@@ -1,9 +1,9 @@
 /**
- * Ritual: Restless Dead — galaxy-scoped port of TG's G-G-G-Ghosts! (code/modules/events/wizard/ghost.dm).
+ * Ritual: Restless Dead: galaxy-scoped port of TG's G-G-G-Ghosts! (code/modules/events/wizard/ghost.dm).
  *
  * The original is two lines: set every observer's default invisibility to 0 so the dead
  * are visible to the living, and tell them they feel obvious. That mechanic has no station
- * coupling at all — set_observer_default_invisibility() walks GLOB.player_list — so the
+ * coupling at all (set_observer_default_invisibility() walks GLOB.player_list) so the
  * port is a straight copy into the lich's own control tree with the flavor rewritten.
  *
  * Changed from the original:

@@ -5,8 +5,8 @@
  * growing), and the type cap.
  *
  * `mission_limit` used to be enforced only where offers are *generated*. Boards
- * can hold more copies of a capped contract than the cap allows — the
- * generation roll only counts live missions — so N ships could each accept the
+ * can hold more copies of a capped contract than the cap allows, the
+ * generation roll only counts live missions, so N ships could each accept the
  * same "limit 1" job and all run it at once. The cap has to hold at accept
  * time too, which is what mission_type_within_limit(type, excluding) exists
  * for; `excluding` is how an offer being accepted avoids counting against its
@@ -18,7 +18,7 @@
  *
  * weight 0 keeps it out of SSmissions' generation pool (Initialize only
  * collects types with weight > 0), and the generation override keeps it from
- * reaching for an overmap that a CIBUILDING world — which boots MetaStation —
+ * reaching for an overmap that a CIBUILDING world, which boots MetaStation,
  * does not have.
  */
 /datum/mission/unit_test_capped
@@ -43,7 +43,7 @@
 
 	SSmissions.all_active_missions += first
 	TEST_ASSERT(!mission_type_within_limit(/datum/mission/unit_test_capped, second), "a limit-1 contract was still 'within limit' with one already running, so a second ship can accept the same capped job. Boards hold more copies than the cap allows, so the cap has to hold at accept time (see /obj/structure/overmap/ship/proc/accept_mission).")
-	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "the running mission counted against its own cap — accept_mission passes the mission being accepted as `excluding` for exactly this reason")
+	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "the running mission counted against its own cap, accept_mission passes the mission being accepted as `excluding` for exactly this reason")
 
 	SSmissions.all_active_missions -= first
 	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, second), "the cap did not free up after the running mission ended")
@@ -65,7 +65,7 @@
 			continue // the fixture above
 		checked++
 		if(!length(initial(mission_type.name)))
-			TEST_FAIL("[mission_type] has no name — the board lists a blank contract")
+			TEST_FAIL("[mission_type] has no name, the board lists a blank contract")
 		if(!length(initial(mission_type.desc)))
 			TEST_FAIL("[mission_type] has no desc")
 		var/value_min = initial(mission_type.value_min)
@@ -75,7 +75,7 @@
 		if(value_min < 0)
 			TEST_FAIL("[mission_type] has a negative pay floor ([value_min])")
 		if(initial(mission_type.duration) <= 0)
-			TEST_FAIL("[mission_type] has duration [initial(mission_type.duration)] — the timeout fires the moment it is accepted")
+			TEST_FAIL("[mission_type] has duration [initial(mission_type.duration)]. The timeout fires the moment it is accepted")
 		if(initial(mission_type.weight) < 0)
 			TEST_FAIL("[mission_type] has a negative weight")
 		if(initial(mission_type.mission_limit) < 0)
@@ -99,7 +99,7 @@
 		if(required && !ispath(required, /obj/item))
 			TEST_FAIL("[objective_type].required_type [required] is not an item path, so can_turn_in() can never match anything")
 		if(initial(objective_type.required_amount) < 1)
-			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something — it can never be satisfied by handing anything over")
+			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something. It can never be satisfied by handing anything over")
 
 /**
  * # Ruin contracts never point at an occupied site
@@ -112,7 +112,7 @@
  * the interior out from under the contract. From the helm, taking a job and
  * leaving made the job disappear.
  *
- * `loaded` is the tell — a ruin is only ever loaded because somebody is there or
+ * `loaded` is the tell. A ruin is only ever loaded because somebody is there or
  * has just left. All three tiers of the pick are exercised here, because the two
  * preferences are not interchangeable and the first attempt at this fix folded
  * them into one set: with the boards holding enough offers to keep most of the
@@ -175,7 +175,7 @@
 	// than fail generation and drop the contract off the board entirely.
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = TRUE
-	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back — recovery contracts stop generating entirely")
+	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back. Recovery contracts stop generating entirely")
 
 	qdel(target)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)

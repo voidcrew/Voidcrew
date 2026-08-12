@@ -6,7 +6,7 @@
  * minigame charts the lab machines run against.
  *
  * Everything downstream of `seed` comes from the recipe's own PRNG, never
- * BYOND's global rand — so every chart is re-derivable at any time (the TGUI
+ * BYOND's global rand, so every chart is re-derivable at any time (the TGUI
  * clients rebuild them from scratch) and a seed fully identifies a recipe.
  * Chart times are in MILLISECONDS for the JS clients, not deciseconds.
  */
@@ -119,7 +119,7 @@
 
 /**
  * Advance the PRNG and return 1..max. 16-bit xorshift (Metcalf's 7/9/8
- * triple, full period 65535) — BYOND bitwise ops only go to 24 bits, so a
+ * triple, full period 65535), BYOND bitwise ops only go to 24 bits, so a
  * true xorshift32 can't be expressed; this width is plenty for chart rolls.
  */
 /datum/drug_recipe/proc/next_rand(max)
@@ -142,7 +142,7 @@
 /**
  * Rhythm chart for the catalyst station: 40-60 notes of
  * list("lane" = 1..4, "t" = ms), ascending, spread over ~45 seconds.
- * Notes are at least 120ms apart overall and 350ms apart within a lane —
+ * Notes are at least 120ms apart overall and 350ms apart within a lane,
  * built in time order with the gaps enforced by construction, so no sort.
  */
 /datum/drug_recipe/proc/build_catalyst_chart()
@@ -154,7 +154,7 @@
 	var/t = 500 + next_rand(500)
 	for(var/i in 1 to note_count)
 		// gaps bottom out at 121ms, so at most two prior notes sit inside any
-		// lane's 350ms cooldown window — at least two lanes are always open
+		// lane's 350ms cooldown window. At least two lanes are always open
 		var/list/open_lanes = list()
 		for(var/lane in 1 to DRUG_CATALYST_LANE_COUNT)
 			if(t - lane_last[lane] >= 350)

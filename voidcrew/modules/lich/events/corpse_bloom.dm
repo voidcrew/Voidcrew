@@ -1,5 +1,5 @@
 /**
- * Ritual: Corpse Bloom — ship-scoped reflavor of TG's Zombie Outbreak
+ * Ritual: Corpse Bloom: ship-scoped reflavor of TG's Zombie Outbreak
  * (code/modules/events/wizard/blobies.dm).
  *
  * The dead aboard one ship sit up as skeletons. Their bodies stay where they fell.
@@ -11,7 +11,7 @@
  * the contract calls for the deliberate reflavor: corpses rise as skeletons.
  *
  * Changed from the original:
- * - No blob. The riser is /mob/living/basic/skeleton — an existing ruin-defender mob with
+ * - No blob. The riser is /mob/living/basic/skeleton: an existing ruin-defender mob with
  *   FACTION_SKELETON, 40 HP and a claw attack. Nothing about it spreads, ventcrawls, or
  *   converts further corpses, so the event cannot snowball out of the compartment it
  *   started in. That is a real reduction in danger versus TG's spore, and an intentional
@@ -45,8 +45,8 @@
 	/**
 	 * Extended to the top of the ramp rather than stopping at 6.
 	 *
-	 * Raising the dead is the most on-theme thing a lich can be doing at maximum potency —
-	 * if any event belongs at 7 it is this one — and it gives the top band a repeatable
+	 * Raising the dead is the most on-theme thing a lich can be doing at maximum potency,
+	 * if any event belongs at 7 it is this one, and it gives the top band a repeatable
 	 * SHIP-scoped option next to grave_dirt, so a long-lived lich keeps producing pressure
 	 * from events authored to repeat instead of re-firing a one-shot.
 	 */
@@ -78,7 +78,7 @@
 /datum/round_event/voidcrew/lich/corpse_bloom/announce(fake)
 	lich_announce_ship(
 		"You have been storing my property in your freezer. I am collecting it. \
-		The meat is yours to keep — I have never had any use for the meat.",
+		The meat is yours to keep. I have never had any use for the meat.",
 		"Corpse Bloom",
 		'sound/effects/magic/RATTLEMEBONES.ogg',
 	)

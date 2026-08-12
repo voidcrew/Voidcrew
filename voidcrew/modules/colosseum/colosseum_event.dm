@@ -1,5 +1,5 @@
 /**
- * # Grand Colosseum — spawn event + admin controls
+ * # Grand Colosseum: spawn event + admin controls
  *
  * The venue is never a roundstart fixture: it surfaces mid-round through the
  * dynamic event scheduler as a rare galaxy-scope event, hard-gated to no
@@ -51,7 +51,7 @@
 	if(QDELETED(site))
 		return null
 	site.template_type = template_type
-	// Async: open_venue() loads a 62x58 template, which can sleep — never
+	// Async: open_venue() loads a 62x58 template, which can sleep, never
 	// block the event subsystem's fire on it.
 	INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, open_venue))
 	return site
@@ -62,7 +62,7 @@ ADMIN_VERB(spawn_colosseum, R_ADMIN, "Spawn Grand Colosseum", "Force-surface the
 		return
 	var/obj/structure/overmap/colosseum/site = spawn_colosseum_site()
 	if(!site)
-		to_chat(user, span_warning("Failed to place the Grand Colosseum — no free overmap square?"))
+		to_chat(user, span_warning("Failed to place the Grand Colosseum, no free overmap square?"))
 		return
 	message_admins("[key_name_admin(user)] force-spawned the Grand Colosseum.")
 	log_admin("[key_name(user)] force-spawned the Grand Colosseum.")

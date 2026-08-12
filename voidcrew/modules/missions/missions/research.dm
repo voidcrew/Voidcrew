@@ -51,7 +51,7 @@
 	return "[pick(titles)] [pick(surnames)], [pick(institutes)]"
 
 // =========================================================================
-// TELEMETRY CONTRACT — survey console quota, paid in points
+// TELEMETRY CONTRACT: survey console quota, paid in points
 // =========================================================================
 
 /**
@@ -128,7 +128,7 @@
 	return data
 
 // =========================================================================
-// CONTAINMENT CONTRACT — put an anomaly down, bring back its core
+// CONTAINMENT CONTRACT: put an anomaly down, bring back its core
 // =========================================================================
 
 /datum/mission/research/containment
@@ -265,7 +265,7 @@
 	return data
 
 // =========================================================================
-// CORE SAMPLE CONTRACT — planetside stratigraphy under fire
+// CORE SAMPLE CONTRACT: planetside stratigraphy under fire
 // =========================================================================
 
 /datum/mission/research/core_sample

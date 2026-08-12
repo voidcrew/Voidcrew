@@ -1,9 +1,9 @@
 /**
- * # Wear Them — Ilthuun's mind control
+ * # Wear Them: Ilthuun's mind control
  *
  * `/datum/status_effect/lich_thrall`. Ten seconds of genuine possession: the victim's
  * own input is discarded and an AI controller drives them into their nearest living ally.
- * This is the real mechanic, not a suggestion — the owner was asked and picked full
+ * This is the real mechanic, not a suggestion. The owner was asked and picked full
  * temporary mind control over the softer options.
  *
  * ## How agency is actually removed
@@ -12,20 +12,20 @@
  *
  * 1. **An AI controller is installed on a player mob.** In-repo precedent:
  *    `/datum/brain_trauma/special/primal_instincts` (`code/datums/brain_damage/special.dm:484-503`)
- *    does exactly this — it replaces a human's `ai_controller` with
+ *    does exactly this, it replaces a human's `ai_controller` with
  *    `/datum/ai_controller/monkey` and sets `continue_processing_when_client = TRUE`,
  *    which is the flag that stops `get_expected_ai_status()` from switching the AI off
  *    the moment it notices a client is attached (`_ai_controller.dm:259-260`).
  *
  * 2. **Attacks are forced through `ai_interact()`.**
  *    `/datum/ai_controller/proc/ai_interact` (`_ai_controller.dm:348-366`) sets combat
- *    mode and calls `living_pawn.ClickOn(target)` — i.e. it drives the mob through the
+ *    mode and calls `living_pawn.ClickOn(target)`, i.e. it drives the mob through the
  *    same click path a player would. `/datum/ai_behavior/monkey_attack_mob/proc/monkey_attack`
  *    (`code/datums/ai/monkey/monkey_behaviors.dm:193, 202, 209`) is the precedent for
  *    using it on a *carbon*, including firing a held gun and swinging a held weapon, and
  *    [/datum/ai_behavior/lich_thrall_strike/proc/strike] below is a compressed version of it.
  *
- * 3. **Movement is forced** by the standard behavior movement path — `set_movement_target`
+ * 3. **Movement is forced** by the standard behavior movement path: `set_movement_target`
  *    plus `AI_BEHAVIOR_REQUIRE_MOVEMENT`, which routes through `/datum/ai_movement` and
  *    `GLOB.move_manager`. Positional, so it works fine inside the lair's `NOTELEPORT` areas.
  *
@@ -52,12 +52,12 @@
  *   [LICH_THRALL_IMMUNITY]-long per-victim immunity behind so one player cannot be
  *   chain-locked for the whole fight.
  * - Antimagic blocks it (`MAGIC_RESISTANCE|MAGIC_RESISTANCE_MIND`), like any other spell
- *   here — the same flags `/datum/action/cooldown/spell/pointed/dominate` uses.
+ *   here, the same flags `/datum/action/cooldown/spell/pointed/dominate` uses.
  * - Dies with its caster: [tick] drops the effect if Ilthuun is gone or dead.
  *
  * ## Attribution is threaded, not hardcoded
  *
- * Ilthuun is not the only thing that can cast this any more — the verdigris bridle
+ * Ilthuun is not the only thing that can cast this any more, the verdigris bridle
  * (lich_loot.dm) is a player-wielded, charge-limited version of the same possession, and a
  * player taking another player's body away must be named for it everywhere. So every place
  * this effect says *who is doing it* goes through [attribution_name] (chat) and
@@ -86,7 +86,7 @@
  * Lives here rather than on the spell so that the spell (lich_abilities.dm), the AI
  * planning subtree that decides whether the ability is worth queueing, and
  * [/datum/status_effect/lich_thrall/on_apply] all ask exactly the same question. It is
- * checked three times on purpose — there are sleeps and a cooldown between "the AI wants
+ * checked three times on purpose. There are sleeps and a cooldown between "the AI wants
  * to cast this" and "the effect lands", and this must never end up on a corpse.
  *
  * `charge_cost = 0` on the antimagic check so that merely being *considered* as a target
@@ -140,7 +140,7 @@
 	 * held item with a `do_after` in its attack chain would sleep with this still raised,
 	 * leaving a window in which the player's own click would be honoured. For a
 	 * ten-second effect in a boss room that is an acceptable seam, and it fails in the
-	 * harmless direction — the victim gets a fraction of their agency back, rather than
+	 * harmless direction, the victim gets a fraction of their agency back, rather than
 	 * the lich getting extra.
 	 */
 	var/puppet_acting = FALSE
@@ -174,7 +174,7 @@
 
 	var/mob/living/master = master_ref?.resolve()
 	// `duration` is read through initial() because /datum/status_effect/on_creation rewrites
-	// the var into an absolute world.time the moment on_apply returns — and because the
+	// the var into an absolute world.time the moment on_apply returns, and because the
 	// bridle subtype runs shorter than Ilthuun does, so the define is the wrong number to
 	// quote here.
 	var/seconds_of_it = initial(duration) / 10
@@ -193,7 +193,7 @@
 	return TRUE
 
 /datum/status_effect/lich_thrall/on_remove()
-	// Teardown first and unconditionally — the victim may be mid-deletion.
+	// Teardown first and unconditionally: the victim may be mid-deletion.
 	release_the_wheel()
 
 	if(!isnull(original_faction))
@@ -231,7 +231,7 @@
 	retarget()
 
 	if(prob(35))
-		owner.visible_message(span_boldwarning("\"[possessed_line()]\" — [owner]'s mouth moves, but that is not [owner.p_their()] voice."))
+		owner.visible_message(span_boldwarning("\"[possessed_line()]\", [owner]'s mouth moves, but that is not [owner.p_their()] voice."))
 
 // ===== ATTRIBUTION =====
 
@@ -267,7 +267,7 @@
 
 /**
  * Marks the victim green for the whole duration, on their appearance, so that *everybody*
- * in the room can see who is being worn — not just the victim reading an alert.
+ * in the room can see who is being worn, not just the victim reading an alert.
  *
  * Two layers on purpose: a pulsing outline filter, which reads at a glance in a crowded
  * fight, and a colour wash, which survives being off-screen-edge or partly obscured.
@@ -329,7 +329,7 @@
 	SIGNAL_HANDLER
 	return COMSIG_MOB_CLIENT_BLOCK_PRE_MOVE
 
-/// Their mouse does nothing either — except when it is not actually their mouse.
+/// Their mouse does nothing either. Except when it is not actually their mouse.
 /datum/status_effect/lich_thrall/proc/block_own_clicks(mob/source, atom/target, list/modifiers)
 	SIGNAL_HANDLER
 	if(puppet_acting)
@@ -384,8 +384,8 @@
  * Drives a possessed mob at whatever [/datum/status_effect/lich_thrall/proc/retarget]
  * last handed it.
  *
- * Extends `/datum/ai_controller` directly, not `/datum/ai_controller/basic_controller` —
- * the pawn here is usually a `/mob/living/carbon/human`, and the basic-mob controller and
+ * Extends `/datum/ai_controller` directly, not `/datum/ai_controller/basic_controller`.
+ * The pawn here is usually a `/mob/living/carbon/human`, and the basic-mob controller and
  * its subtrees assume `/mob/living/basic`. `/datum/ai_controller/monkey` is the in-repo
  * example of an ai_controller written for carbons.
  */
@@ -405,7 +405,7 @@
 /**
  * Restraints, stuns and crit stop a thrall, which is the counterplay: cuff your friend
  * instead of shooting them. Being *grabbed* is ignored, so a thrall in someone's grip
- * still fights — otherwise the answer to the whole mechanic is "hug them".
+ * still fights, otherwise the answer to the whole mechanic is "hug them".
  *
  * `/datum/ai_controller/monkey/get_able_to_run` (monkey_controller.dm:123-128) is the
  * pattern; it ignores restraints as well, which we deliberately do not.
@@ -469,7 +469,7 @@
  * This is a compressed `/datum/ai_behavior/monkey_attack_mob/proc/monkey_attack`
  * (monkey_behaviors.dm:182-210): fire a held gun at range, otherwise close and swing.
  * The work is done by `controller.ai_interact()`, which sets combat mode and calls
- * `ClickOn()` on the pawn — the same code path a player's own click takes, which is
+ * `ClickOn()` on the pawn. The same code path a player's own click takes, which is
  * exactly why the possession looks and reads like the victim doing it.
  *
  * [/datum/status_effect/lich_thrall/var/puppet_acting] is raised across the call so that

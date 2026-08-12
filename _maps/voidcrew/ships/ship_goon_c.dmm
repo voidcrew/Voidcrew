@@ -198,7 +198,7 @@
 /obj/item/clothing/suit/armor/vest,
 /obj/item/clothing/gloves/combat,
 /obj/item/knife/combat/survival,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/medbay/c)
 "lT" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
@@ -264,7 +264,6 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
 "qO" = (
-/obj/structure/closet/supplypod/drop_pod,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
 "ri" = (
@@ -341,6 +340,10 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/c)
+"Aj" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/c)
 "AX" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/goon/commons/c)
@@ -523,7 +526,9 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
 "PU" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
@@ -542,8 +547,12 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/commons/c)
 "Ru" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -673,8 +682,8 @@ tn
 (3,1,1) = {"
 rJ
 El
-DI
-DI
+Aj
+Aj
 DI
 jM
 og

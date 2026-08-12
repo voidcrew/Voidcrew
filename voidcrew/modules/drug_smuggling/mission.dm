@@ -10,11 +10,11 @@
  * list from the planets actually flying this round; each ingredient gets a
  * pinned harvest site that field-spawns when its planet loads. The lab is a
  * rare, mission-locked space ruin raised at accept in the zone band the
- * contract rolled — the rumor-chart reveal steps, minus the chart.
+ * contract rolled, the rumor-chart reveal steps, minus the chart.
  *
  * Phase 5 state: weight stays 0 (the black-market posting wires in later),
- * the cook runs through the lab session's full station chain (lab_session.dm)
- * — mixer Simon, catalyst rhythm game, crystallizer catch game — with the
+ * the cook runs through the lab session's full station chain (lab_session.dm),
+ * mixer Simon, catalyst rhythm game, crystallizer catch game, with the
  * product printing beside the crystallizer; the customs patrol is a logged
  * roll (Phase 6). Loss policy is FAIL: one planet of each type per round
  * means a dead pin has nowhere to re-resolve.
@@ -63,7 +63,7 @@
 		drop_site_gps_signal(site)
 	QDEL_LIST(sites)
 	release_lab()
-	// Contract's over either way — the patrol has no quarrel left
+	// Contract's over either way: the patrol has no quarrel left
 	patrol?.stand_down()
 	patrol = null
 	gather = null
@@ -94,7 +94,7 @@
 
 /**
  * Compressed zone table: green x1 / yellow x1.5 / red x2 instead of the
- * base's 1/1.7/2.6 — the green band is already contraband-fat, so depth pads
+ * base's 1/1.7/2.6. The green band is already contraband-fat, so depth pads
  * the fee rather than multiplying it. Red keeps the base voucher bonus.
  */
 /datum/mission/drug_run/apply_zone_scaling(zone_type)
@@ -128,7 +128,7 @@
 		generation_failed = TRUE
 		return
 
-	// One harvest site per ingredient, each pinned to its planet NOW — a
+	// One harvest site per ingredient, each pinned to its planet NOW, a
 	// missing planet means no valid contract
 	for(var/list/entry in recipe.ingredients)
 		var/datum/ingredient_site/site = new(src, entry)
@@ -179,7 +179,7 @@
 	push_site_waypoints()
 
 // =========================================================================
-// TURN-IN GATING — outpost counters only
+// TURN-IN GATING, outpost counters only
 // =========================================================================
 
 /datum/mission/drug_run/can_turn_in_at(atom/reward_anchor)
@@ -192,11 +192,11 @@
 
 /datum/mission/drug_run/get_wrong_location_reason(atom/reward_anchor)
 	if(shop?.outpost)
-		return "Vex only settles at [shop.outpost_name]'s counter — nobody else touches the product."
-	return "Vex's buyers only work outpost counters — hand the product to an outpost trader."
+		return "Vex only settles at [shop.outpost_name]'s counter, nobody else touches the product."
+	return "Vex's buyers only work outpost counters, hand the product to an outpost trader."
 
 // =========================================================================
-// THE LAB — raise the kitchen, repoint the mission at it
+// THE LAB: raise the kitchen, repoint the mission at it
 // =========================================================================
 
 /**
@@ -216,7 +216,7 @@
 			break
 	if(!template)
 		stack_trace("Drug run: drug_lab ruin template is not registered (missing drug_lab.dmm?)")
-		fail("The kitchen's coordinates were a dud — contract void.")
+		fail("The kitchen's coordinates were a dud, contract void.")
 		return FALSE
 
 	var/band = ZONE_YELLOW
@@ -225,7 +225,7 @@
 		band = rolled.zone_type
 	var/turf/spawn_turf = SSovermap.get_unused_overmap_square_in_zone_band(band, tries = 80) // red band is ~9% of tiles; 40 tries misses ~2% of the time
 	if(!spawn_turf)
-		fail("No quiet corner left to hide a kitchen in — contract void.")
+		fail("No quiet corner left to hide a kitchen in, contract void.")
 		return FALSE
 
 	lab_ruin = new(spawn_turf)
@@ -239,7 +239,7 @@
 	if(!lab_target.resolve())
 		qdel(lab_target)
 		release_lab()
-		fail("The kitchen went dark before the run began — contract void.")
+		fail("The kitchen went dark before the run began, contract void.")
 		return FALSE
 	QDEL_NULL(target)
 	target = lab_target
@@ -272,7 +272,7 @@
 	lab.check_and_respawn()
 
 // =========================================================================
-// THE FORMULA CHIP — the shopping list, delivered at accept
+// THE FORMULA CHIP: the shopping list, delivered at accept
 // =========================================================================
 
 /**
@@ -297,7 +297,7 @@
 	return servant ? get_turf(servant.shuttle) : null
 
 // =========================================================================
-// HARVEST SITES — arming, waypoints, pickup bookkeeping
+// HARVEST SITES: arming, waypoints, pickup bookkeeping
 // =========================================================================
 
 /// Arms every un-collected harvest site (idempotent; start and gather both call it)
@@ -327,7 +327,7 @@
  * Uploads this mission's beacons to a handheld GPS unit (player tapped the
  * unit on the mission board): the batch itself once cooked (base machinery),
  * plus every live harvest site under a per-site tag. Sites whose planet
- * hasn't loaded have no surface position yet — their beacon uploads when
+ * hasn't loaded have no surface position yet, their beacon uploads when
  * the scene spawns (watch_item).
  */
 /datum/mission/drug_run/link_gps_unit(datum/component/gps/item/gps_unit)
@@ -380,13 +380,13 @@
 			.++
 
 // =========================================================================
-// THE COOK — purity payout, product hand-off, the customs roll
+// THE COOK: purity payout, product hand-off, the customs roll
 // =========================================================================
 
 /**
  * The batch is cooked (the lab session calls this after setting purity_tier).
  * Applies the purity payout, advances past the cook step, prints the product
- * (at `product_turf` — the session passes a tile beside the crystallizer when
+ * (at `product_turf`, the session passes a tile beside the crystallizer when
  * the lab is loaded), and rolls the customs patrol.
  */
 /datum/mission/drug_run/proc/on_cook_finished(turf/product_turf)
@@ -414,29 +414,29 @@
 
 /**
  * Prints the finished batch. `preferred_turf` is where the cook physically
- * ended — the lab session passes a tile beside its crystallizer machine when
+ * ended, the lab session passes a tile beside its crystallizer machine when
  * the lab interior is loaded; with no preference (lab unloaded mid-finish)
  * the batch falls back to the ship's pad, the courier-pod precedent. The
  * product IS a quest atom: losing it after the cook voids the contract
- * (FAIL policy) — that includes leaving it behind in a lab that unloads.
+ * (FAIL policy), that includes leaving it behind in a lab that unloads.
  */
 /datum/mission/drug_run/proc/spawn_product(turf/preferred_turf)
 	var/turf/product_turf = preferred_turf || get_pad_turf()
 	if(!product_turf)
-		fail("Nowhere to deliver the finished batch — contract void.")
+		fail("Nowhere to deliver the finished batch, contract void.")
 		return
 	var/obj/item/mission_recovery/drug_product/product = new(product_turf)
 	product.configure(recipe, purity_tier)
 	bind_item(product)
 	register_quest_atom(product)
 	if(preferred_turf)
-		servant?.ship_notify("The batch of [recipe.street_name] is packaged — collect it from the crystallization chamber and get it to Vex's counter. Don't leave it behind.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		servant?.ship_notify("The batch of [recipe.street_name] is packaged. Collect it from the crystallization chamber and get it to Vex's counter. Don't leave it behind.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	else
 		servant?.ship_notify("The batch of [recipe.street_name] is packaged and delivered to your mission pad. Get it to Vex's counter.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
  * The cook tripped somebody's sensor net: an NT customs corvette spawns near
- * the servant and runs the full shakedown — hail, fine (or surrender the
+ * the servant and runs the full shakedown, hail, fine (or surrender the
  * contraband), interdiction and boarding on refusal. The shuttle load can
  * sleep, and this is reached from the crystallizer's ui_act, so the actual
  * dispatch runs async.
@@ -454,11 +454,11 @@
 		list(/obj/item/mission_recovery/drug_product, 1, "the contraband shipment"),
 	)
 	if(!patrol)
-		// No clear spawn turf or the shuttle load failed — the crew gets away clean
+		// No clear spawn turf or the shuttle load failed. The crew gets away clean
 		message_admins("Drug run '[name]': customs patrol roll hit but dispatch failed; no patrol this run.")
 
 // =========================================================================
-// INGREDIENT SITE — one recipe ingredient's spot in the wild
+// INGREDIENT SITE: one recipe ingredient's spot in the wild
 // =========================================================================
 
 /**
@@ -518,7 +518,7 @@
 
 /**
  * Spawns now if the planet's interior is up, otherwise waits for it to load.
- * Idempotent — mission start and the gather objective both call it.
+ * Idempotent: mission start and the gather objective both call it.
  */
 /datum/ingredient_site/proc/arm()
 	if(spawned || collected || !site_target?.is_valid())
@@ -589,7 +589,7 @@
 	item_ref = null
 	if(collected || !mission || mission.failed || mission.completed)
 		return
-	// The interior is unloading (or never counted as loaded): not a loss —
+	// The interior is unloading (or never counted as loaded): not a loss,
 	// the scene respawns fresh, guards and all, on the next landing.
 	// `concerned` is the only reliable teardown marker: planets keep `loaded`
 	// and `mapzone` set while clear_reservation() qdels their contents.
@@ -606,7 +606,7 @@
 			respawns_left--
 			var/obj/item/drug_ingredient/replacement = new ingredient_type(retry_turf)
 			watch_item(replacement)
-			mission.servant?.ship_notify("The [ingredient_name] was destroyed — scans found one more specimen nearby. Don't waste it.", "DRUG RUN", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+			mission.servant?.ship_notify("The [ingredient_name] was destroyed. Scans found one more specimen nearby. Don't waste it.", "DRUG RUN", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			return
 		// Loaded but no clear ground to regrow on: treat it like an unload
 		spawned = FALSE
@@ -614,16 +614,16 @@
 			awaiting_load = TRUE
 			site_target.notify_when_loaded()
 		return
-	mission.fail("The last [ingredient_name] on [site_target?.planet?.name || "the planet"] was destroyed — the formula is short an ingredient. Contract void.")
+	mission.fail("The last [ingredient_name] on [site_target?.planet?.name || "the planet"] was destroyed, the formula is short an ingredient. Contract void.")
 
 /**
  * The pinned planet itself died. One planet of each type flies per round, so
- * there is nowhere to re-pin — the contract is void (FAIL policy).
+ * there is nowhere to re-pin. The contract is void (FAIL policy).
  */
 /datum/ingredient_site/proc/on_site_lost()
 	if(!mission || mission.failed || mission.completed)
 		return
-	mission.fail("The planet growing the [ingredient_name] is gone — the formula can't be filled. Contract void.")
+	mission.fail("The planet growing the [ingredient_name] is gone. The formula can't be filled. Contract void.")
 
 /// The pinned planet relocated after unloading: move the helm marker with it
 /datum/ingredient_site/proc/on_site_moved()

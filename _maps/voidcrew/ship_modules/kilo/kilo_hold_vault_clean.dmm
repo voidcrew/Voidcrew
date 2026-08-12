@@ -4,7 +4,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
 	},
-/turf/open/floor/iron/white,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "m" = (
 /obj/modular_map_connector,
@@ -45,6 +45,9 @@
 "C" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot_red,
+/obj/structure/closet/secure_closet/personal{
+	name = "records locker"
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "F" = (
@@ -57,12 +60,9 @@
 /turf/open/floor/iron/white,
 /area/template_noop)
 "T" = (
-/obj/structure/closet/secure_closet/personal{
-	name = "records locker"
-	},
 /obj/effect/turf_decal/delivery,
 /obj/structure/sign/warning/secure_area/directional/south,
-/turf/open/floor/iron/dark,
+/turf/open/floor/iron/white,
 /area/template_noop)
 
 (1,1,1) = {"

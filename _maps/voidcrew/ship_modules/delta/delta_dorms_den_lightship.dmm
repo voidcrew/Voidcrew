@@ -1,0 +1,130 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"k" = (
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"n" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"t" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"w" = (
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"z" = (
+/obj/item/trash/can{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"D" = (
+/obj/machinery/jukebox,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"F" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"G" = (
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"K" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/dark_blue{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"R" = (
+/obj/machinery/light/directional/north,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"S" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/dice/d20{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/flashlight/lamp{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+K
+D
+O
+"}
+(2,1,1) = {"
+R
+S
+U
+"}
+(3,1,1) = {"
+w
+z
+U
+"}
+(4,1,1) = {"
+t
+G
+U
+"}
+(5,1,1) = {"
+n
+k
+U
+"}
+(6,1,1) = {"
+X
+t
+U
+"}

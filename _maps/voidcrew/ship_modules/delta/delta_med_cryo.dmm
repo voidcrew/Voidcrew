@@ -1,4 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"e" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/co2,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/cryo_cell{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
 "k" = (
 /obj/machinery/sleeper{
 	dir = 8
@@ -7,6 +25,41 @@
 /area/template_noop)
 "o" = (
 /obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"u" = (
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"t" = (
+/obj/machinery/atmospherics/pipe/smart,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"v" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/machinery/atmospherics/pipe/smart,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "w" = (
@@ -22,10 +75,26 @@
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/iron/white,
 /area/template_noop)
+"y" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "z" = (
 /obj/machinery/defibrillator_mount/loaded{
 	dir = 4;
 	pixel_x = 28
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
@@ -76,40 +145,61 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/iron/white,
 /area/template_noop)
+"T" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
 "W" = (
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
 	dir = 1
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"Y" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/white,
+/area/template_noop)
 
 (1,1,1) = {"
 o
-C
-x
+y
+Y
 "}
 (2,1,1) = {"
-H
+g
+b
 C
-W
 "}
 (3,1,1) = {"
-E
-w
-K
+v
+e
+t
 "}
 (4,1,1) = {"
-o
-J
-N
+Z
+C
+C
 "}
 (5,1,1) = {"
 o
-J
+N
 P
 "}
 (6,1,1) = {"
 o
-z
+u
 k
 "}

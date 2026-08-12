@@ -34,7 +34,7 @@ for attempt in 1 2 3 4 5; do
 		break
 	fi
 	echo ">> Compile attempt $attempt failed. If the errors are 'icons/map_icons/... invalid"
-	echo ">> expression', the sprite pipeline is rewriting .dmis (trap #8) — retrying in 75s..."
+	echo ">> expression', the sprite pipeline is rewriting .dmis (trap #8), retrying in 75s..."
 	sleep 75
 done
 if [ "$compile_ok" -ne 1 ]; then
@@ -51,7 +51,7 @@ echo ">> Launching DreamDaemon on port $PORT (detached, minimized)."
 echo ">> Do NOT close the DreamDaemon window and do NOT connect a client to it."
 cmd //c start "" //min //low "$DD" tgstation.dmb -port "$PORT" -close -trusted -invisible -params "log-directory=ci"
 
-echo ">> Phase 1: waiting for the world to boot (up to ${BOOT_TIMEOUT_MIN}m; can be slow under load — trap #9)..."
+echo ">> Phase 1: waiting for the world to boot (up to ${BOOT_TIMEOUT_MIN}m; can be slow under load, trap #9)..."
 BOOT_START=$(date +%s)
 while [ ! -f "$CI_LOGS/game.log" ]; do
 	if [ $(($(date +%s) - BOOT_START)) -gt $((BOOT_TIMEOUT_MIN * 60)) ]; then

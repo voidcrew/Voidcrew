@@ -2,10 +2,10 @@
  * # Cyberware component
  *
  * The one datum that makes an organ count as chrome. Both organ bases
- * (/obj/item/organ/cyberimp/cyberware and /obj/item/organ/eyes/robotic/cyberware
- * — single inheritance forces the split) attach one of these, and everything
- * that has to treat "all cyberware" uniformly — load sums, capacity, the
- * brownout monitor, install contexts, EMP downtime — reads and writes it
+ * (/obj/item/organ/cyberimp/cyberware and /obj/item/organ/eyes/robotic/cyberware,
+ * single inheritance forces the split) attach one of these, and everything
+ * that has to treat "all cyberware" uniformly. Load sums, capacity, the
+ * brownout monitor, install contexts, EMP downtime. Reads and writes it
  * through GetComponent rather than caring which base a ware hangs off.
  *
  * Chrome load is never stored as a counter on the mob: it is recomputed live
@@ -16,8 +16,8 @@
  * The brownout monitor self-wires: COMSIG_ORGAN_IMPLANTED / _REMOVED are sent
  * on the organ itself, so the component hears its own installs without either
  * organ base carrying any monitor code. While a body's total load exceeds its
- * capacity, EVERY installed piece of chrome gains ORGAN_FAILING — legible,
- * all-or-nothing — and recovers the moment the load drops back under.
+ * capacity, EVERY installed piece of chrome gains ORGAN_FAILING, legible,
+ * all-or-nothing, and recovers the moment the load drops back under.
  * Removal is never blocked; pulling ware out IS the fix.
  */
 /datum/component/cyberware
@@ -25,7 +25,7 @@
 	var/chrome_load = 0
 	/// CYBERWARE_TIER_*, drives accent colours and Splice's bedside manner.
 	var/tier = CYBERWARE_TIER_1
-	/// Chrome capacity this ware ADDS to its bearer while installed — the
+	/// Chrome capacity this ware ADDS to its bearer while installed, the
 	/// Overclock Governor hook. Load 0 + bonus 6 is a Governor.
 	var/capacity_bonus = 0
 	/// TRUE while the bearer is over capacity and this ware is browned out.
@@ -40,7 +40,7 @@
 	/// world.time at which the install window closes.
 	var/install_context_until = 0
 	/// TRUE when the open window was granted by admin fiat. A forced window
-	/// waives the capacity ceiling as well as the context check — the ware goes
+	/// waives the capacity ceiling as well as the context check, the ware goes
 	/// in over budget and the brownout monitor takes it from there.
 	var/install_context_forced = FALSE
 
@@ -76,7 +76,7 @@
 	cyberware_reevaluate_brownout(new_owner)
 
 /// Signal proc for [COMSIG_ORGAN_REMOVED]: chrome outside a body is just a
-/// part again — drop the brownout (EMP downtime keeps ticking) and let the
+/// part again, drop the brownout (EMP downtime keeps ticking) and let the
 /// old bearer's remaining chrome re-settle without our load.
 /datum/component/cyberware/proc/on_removed(datum/source, mob/living/carbon/old_owner)
 	SIGNAL_HANDLER
@@ -86,7 +86,7 @@
 
 /// Signal proc for [COMSIG_CARBON_GAIN_ORGAN] and [COMSIG_CARBON_LOSE_ORGAN]
 /// on the bearer. Every installed ware listens with its own component, so a
-/// change re-evaluates N times — the evaluation is idempotent and only the
+/// change re-evaluates N times. The evaluation is idempotent and only the
 /// first caller does the flipping.
 /datum/component/cyberware/proc/on_owner_organs_changed(mob/living/carbon/source, obj/item/organ/changed, special)
 	SIGNAL_HANDLER
@@ -125,7 +125,7 @@
 		ware.owner.balloon_alert(ware.owner, "[ware.name] back online")
 
 /// Cradle tune-up: cancels any pending EMP reboot and repairs the organ
-/// outright. Cannot fix a brownout — that is a load problem, not damage.
+/// outright. Cannot fix a brownout, that is a load problem, not damage.
 /datum/component/cyberware/proc/tune_up()
 	if(emp_timer)
 		deltimer(emp_timer)
@@ -150,7 +150,7 @@
 // surgery opens a window in pre_surgical_insertion, the Chrome Cradle opens
 // one right before it inserts, the "Cyberware: Install Chrome" admin verb
 // opens a forced one, and special = TRUE (init) bypasses the gate entirely.
-// Bare autosurgeons never open one — that is the point. VV-inserting an organ
+// Bare autosurgeons never open one, that is the point. VV-inserting an organ
 // onto a mob goes through the same live Insert(), so it hits the same wall;
 // the admin verb is the supported way in.
 
@@ -248,7 +248,7 @@
 			any_recovered = TRUE
 	if(newly_tripped)
 		target.balloon_alert(target, "chrome brownout!")
-		to_chat(target, span_boldwarning("Your chrome browns out — too much load on the wetware. Shed some ware to bring it back."))
+		to_chat(target, span_boldwarning("Your chrome browns out. Too much load on the wetware. Shed some ware to bring it back."))
 		do_sparks(2, TRUE, target)
 	else if(any_recovered)
 		target.balloon_alert(target, "chrome back online")

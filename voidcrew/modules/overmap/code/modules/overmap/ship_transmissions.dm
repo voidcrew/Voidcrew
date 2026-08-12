@@ -3,7 +3,7 @@
  *
  * Ship-to-ship hails sent from the helm's comms tab. A transmission is a
  * position, a name and a line of text, delivered to every vessel that could see
- * the sender when it fired — the view ring, exactly as far as the crew can look.
+ * the sender when it fired, the view ring, exactly as far as the crew can look.
  *
  * This replaces a maptext overlay that used to be drawn onto the ship atom and
  * rendered by the helm's BYOND camera map. That camera is gone (`cam_screen` is
@@ -29,7 +29,7 @@
 /datum/overmap_transmission
 	/// The text that was sent.
 	var/message
-	/// Sender's name as it read when the hail fired — a later rename can't rewrite
+	/// Sender's name as it read when the hail fired. A later rename can't rewrite
 	/// history, and the log outlives the ship.
 	var/sender_name
 	/// The sending vessel, if it still exists. Used to identify it on the receiver's

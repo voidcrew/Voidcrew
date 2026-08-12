@@ -2,8 +2,8 @@
  * # Outpost Trader NPC
  *
  * The outpost's shopkeeper in the flesh: an unkillable static mob standing
- * behind the counter. Clicking them opens a radial — Trade, Talk, and (for the
- * outpost's main trader) Contracts — which consolidates what used to be a
+ * behind the counter. Clicking them opens a radial, Trade, Talk, and (for the
+ * outpost's main trader) Contracts, which consolidates what used to be a
  * holopad, a shop terminal and a mission board into one person.
  *
  * The trade and contract radials open the same TraderShop / OutpostMissionBoard
@@ -11,7 +11,7 @@
  * (one interface per tgui src_object) so both can be open at once.
  *
  * Unkillable AND protected: godmode makes violence pointless, and attacking a
- * trader is aggression against outpost property — embargo rules apply (unlike
+ * trader is aggression against outpost property. Embargo rules apply (unlike
  * the loiterers, who are squatters, not staff).
  *
  * Speech lines come from the outpost's shop datum, so each trader has their
@@ -61,7 +61,7 @@
 	COOLDOWN_DECLARE(speak_cooldown)
 
 // Covers the roundstart pre-load path: the outpost links (and sets shop on)
-// this mob before SSatoms initializes it — dressing the appearance dummy that
+// this mob before SSatoms initializes it, dressing the appearance dummy that
 // early is unsafe, so the look is applied here instead. No-ops when there's no
 // linked shop yet; the lazy-load path runs setup through link_interior_machinery.
 /mob/living/basic/outpost_trader/Initialize(mapload)
@@ -138,7 +138,7 @@
 
 /**
  * Whether a customer is close enough to do business: within counter range, with
- * nothing solid in the way. Adjacency isn't enough on its own here — the whole
+ * nothing solid in the way. Adjacency isn't enough on its own here, the whole
  * point is being able to stand on the customer side of a counter.
  */
 /mob/living/basic/outpost_trader/proc/customer_in_reach(mob/user)
@@ -148,7 +148,7 @@
 
 /**
  * The Trade / Talk / Contracts radial. Contracts only shows on the outpost's
- * main trader — vendor stalls don't post work. Barred customers get refused
+ * main trader, vendor stalls don't post work. Barred customers get refused
  * before the menu even opens.
  */
 /mob/living/basic/outpost_trader/proc/open_trader_menu(mob/living/user)
@@ -281,7 +281,7 @@
  *
  * tgui allows one interface per (user, src_object) pair, so the trader hosts
  * each of its two windows on a small datum facet. The facet delegates
- * physicality to the mob via ui_host — distance checks run against the trader.
+ * physicality to the mob via ui_host. Distance checks run against the trader.
  */
 /datum/outpost_trader_ui
 	/// The trader this facet fronts for
@@ -332,7 +332,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
  * # The storefront window
  *
  * The buy/sell tgui, sold against the outpost's shared /datum/outpost_shop
- * stock. Payment is stateless — nothing is inserted or escrowed. At purchase
+ * stock. Payment is stateless. Nothing is inserted or escrowed. At purchase
  * time it checks the buyer's hands for vouchers / barter goods and their ID's
  * bank account for credits, then charges and dispenses.
  */
@@ -411,7 +411,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			"trader" = shop.favor_trader_name(),
 		)
 
-	// Buyer's wallet snapshot, for the header — vouchers count from the whole
+	// Buyer's wallet snapshot, for the header. Vouchers count from the whole
 	// inventory, same as payment accepts them
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
 	var/obj/item/card/id/id_card
@@ -583,7 +583,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	data["offers"] = offers
 
 	// The ship's active contracts, with per-contract turn-in readiness at
-	// THIS trader — any item mission can be turned in here (couriers only at
+	// THIS trader: any item mission can be turned in here (couriers only at
 	// their destination), so crews can settle up without flying home
 	var/list/ship_missions = list()
 	if(ship)

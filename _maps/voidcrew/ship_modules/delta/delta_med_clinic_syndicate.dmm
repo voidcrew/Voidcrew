@@ -1,0 +1,229 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/east,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/effect/turf_decal/bot_red,
+/obj/item/storage/box/bodybags{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/bot_red,
+/obj/structure/rack,
+/obj/item/storage/box/bodybags{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"l" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/machinery/light/small/red/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"o" = (
+/obj/effect/turf_decal/box/red,
+/obj/structure/table/optable,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/effect/turf_decal/bot_red,
+/obj/structure/closet/secure_closet/medical1,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "casualty board";
+	default_raw_text = "Stasis bed takes the worst one. The table is for anything that needs opening. Blood is in the freezer at the far end - write down what you pull so we know when to restock.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "casualty board";
+	default_raw_text = "Stasis bed takes the worst one. The table is for anything that needs opening. Blood is in the freezer at the far end - write down what you pull so we know when to restock.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/box/bodybags{
+	pixel_x = 9;
+	pixel_y = 12
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = -7;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/effect/turf_decal/bot_red,
+/obj/structure/closet/crate/freezer,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/random,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "casualty board";
+	default_raw_text = "Stasis bed takes the worst one. The table is for anything that needs opening. Blood is in the freezer at the far end - write down what you pull so we know when to restock.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/box/bodybags{
+	pixel_x = 9;
+	pixel_y = 12
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"I" = (
+/obj/effect/turf_decal/bot_red,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/stasis,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+I
+j
+v
+"}
+(2,1,1) = {"
+o
+l
+V
+"}
+(3,1,1) = {"
+R
+y
+n
+"}
+(4,1,1) = {"
+f
+y
+N
+"}
+(5,1,1) = {"
+K
+E
+w
+"}
+(6,1,1) = {"
+U
+c
+s
+"}

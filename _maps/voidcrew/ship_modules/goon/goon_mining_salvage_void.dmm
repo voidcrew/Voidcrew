@@ -1,0 +1,69 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"n" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"p" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"D" = (
+/obj/machinery/autolathe,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"J" = (
+/obj/structure/table/reinforced,
+/obj/item/weldingtool/largetank,
+/obj/item/clothing/head/utility/welding,
+/obj/item/crowbar/large,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/bag/ore,
+/obj/machinery/light/cold{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"K" = (
+/obj/structure/rack,
+/obj/item/gun/energy/plasmacutter,
+/obj/item/extraction_pack,
+/obj/item/fulton_core,
+/obj/item/gps/mining,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"T" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/machinery/light/cold{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+T
+D
+n
+"}
+(2,1,1) = {"
+j
+j
+j
+"}
+(3,1,1) = {"
+j
+j
+j
+"}
+(4,1,1) = {"
+p
+K
+J
+"}

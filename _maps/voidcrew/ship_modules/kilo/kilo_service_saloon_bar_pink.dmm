@@ -2,6 +2,7 @@
 "a" = (
 /obj/machinery/jukebox,
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 8
 	},
 /obj/structure/sign/poster/contraband/tea_over_tizira{
@@ -58,12 +59,12 @@
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 "f" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
 /obj/structure/chair/comfy{
 	color = "#f5a9c9";
 	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 2
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
@@ -88,6 +89,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/reagent_containers/condiment/milk{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/food/sundae{
+	pixel_x = 6;
+	pixel_y = 3
+	},
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 "h" = (
@@ -115,15 +124,6 @@
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 "k" = (
-/obj/structure/table/glass,
-/obj/item/reagent_containers/condiment/milk{
-	pixel_x = -6;
-	pixel_y = 8
-	},
-/obj/item/food/sundae{
-	pixel_x = 6;
-	pixel_y = 3
-	},
 /obj/effect/turf_decal/trimline/white/filled/line{
 	color = "#ff9ecd";
 	dir = 1
@@ -131,6 +131,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/food/cakeslice/birthday,
+/obj/item/food/cookie/sugar,
+/obj/item/food/sundae,
+/obj/item/food/candyheart,
+/obj/item/food/candyheart,
+/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 "l" = (
@@ -171,6 +179,7 @@
 	dir = 1
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 4
 	},
 /turf/open/floor/iron/dollhouse/white,

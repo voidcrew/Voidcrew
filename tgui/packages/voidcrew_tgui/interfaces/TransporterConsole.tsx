@@ -146,7 +146,7 @@ export const TransporterConsole = (props) => {
                 <Box color={lockedSiteClear ? 'good' : 'bad'}>{lockedSite}</Box>
               ) : (
                 <Box color="label">
-                  none — the computer will pick open ground
+                  none, the computer will pick open ground
                 </Box>
               )}
             </LabeledList.Item>
@@ -248,7 +248,7 @@ export const TransporterConsole = (props) => {
                   <Table.Cell p={0.5}>
                     <Box>{signal.name}</Box>
                     <Box color="label" fontSize="0.85rem">
-                      {signal.carrier ? `carried by ${signal.carrier} — ` : ''}
+                      {signal.carrier ? `carried by ${signal.carrier}, ` : ''}
                       {signal.area}
                     </Box>
                   </Table.Cell>

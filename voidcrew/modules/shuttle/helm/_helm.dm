@@ -296,7 +296,7 @@
 	// Unified navigation readout: live distance/bearing from current position,
 	// grouped by category on the helm. Trader outposts are permanent fixtures,
 	// always listed (no per-ship state, no clear button). Most other entries are
-	// charted waypoints — missions, bounties, active-scan contacts. Ship
+	// charted waypoints, missions, bounties, active-scan contacts. Ship
 	// contacts are appended live (not charted) when the top radar tier is
 	// researched: they vanish the moment either ship leaves the bubble.
 	data["sensorRange"] = current_ship.get_sensor_range()
@@ -366,7 +366,7 @@
 
 	// What the Dock button offers from this tile. It used to only ever dock into
 	// empty space and refused outright when anything shared the tile, then only
-	// ever offered the first real candidate found — this lists every one, so a
+	// ever offered the first real candidate found, this lists every one, so a
 	// tile with more than one dockable thing on it lets the crew choose.
 	var/list/dock_candidates = get_dock_candidates()
 	var/list/dock_options = list()
@@ -378,7 +378,7 @@
 				"isEmpty" = FALSE,
 			))
 	else
-		// Nebulas aren't a docking target — concealment is the Cloak control's job —
+		// Nebulas aren't a docking target. Concealment is the Cloak control's job,
 		// but sitting in one and being told only "empty space" reads as the console
 		// having missed it, so the label says where the empty space is.
 		var/dock_name = (locate(/obj/structure/overmap/event/nebula) in T) \
@@ -532,21 +532,21 @@
 		// middle: overmap_centre (and the sun placed on it) sits at index
 		// (OVERMAP_SIZE - 1) / 2, one tile off from round((SIZE + 1) / 2), because
 		// setup_overmap() computes it that way ("not actually the centre but close
-		// enough" — see overmap.dm). calculate_zone_for_turf() measures every
+		// enough", see overmap.dm). calculate_zone_for_turf() measures every
 		// zone boundary from that same off-centre point, so the rings drawn here
 		// have to be centred on it too, or the yellow/red boundaries on the chart
 		// read as smaller than where a ship actually crosses into them.
 		"centre" = (OVERMAP_SIZE - 1) / 2,
 		"ringInner" = ZONE_INNER_RING_RATIO,
 		"ringMiddle" = ZONE_MIDDLE_RING_RATIO,
-		// The free sight radius, drawn as the solid inner ring. Fixed forever —
-		// research moves the sensor ring, never this one (see ship_sensors.dm).
+		// The free sight radius, drawn as the solid inner ring. Fixed forever.
+		// Research moves the sensor ring, never this one (see ship_sensors.dm).
 		"viewRange" = SHIP_VIEW_RANGE,
 	)
 
 	// Check if user is a crew member of this ship
 	// Everything the ship has ever seen. Static because it only changes on a new
-	// discovery, which pushes a refresh (see get_charted_contacts) — it is much
+	// discovery, which pushes a refresh (see get_charted_contacts), it is much
 	// the largest table the helm sends, and re-sending it every frame was the
 	// whole cost of charting the map as you go.
 	data["chartedContacts"] = current_ship.get_charted_contacts()
@@ -574,7 +574,7 @@
 /**
  * Every object the Dock button could act on from the ship's current tile, or an
  * empty list when there is nothing here and docking means holding station in
- * empty space. Order is whatever close_overmap_objects happens to hold — the
+ * empty space. Order is whatever close_overmap_objects happens to hold, the
  * console doesn't rank docking options, it just lists them.
  */
 /obj/machinery/computer/helm/proc/get_dock_candidates()
@@ -589,7 +589,7 @@
 /**
  * Names an autopilot destination from the ship's own contact set, so the label the
  * crew sees in chat is one the server already knows about. The client never gets to
- * supply this text — it ends up inside ship_notify() output, and a client-supplied
+ * supply this text, it ends up inside ship_notify() output, and a client-supplied
  * string there is an injection waiting to happen.
  */
 /obj/machinery/computer/helm/proc/describe_autopilot_destination(rel_x, rel_y)
@@ -923,10 +923,10 @@
 					return
 				if("change_heading")
 					var/new_direction = text2num(params["dir"])
-					// Touching the helm takes the ship off autopilot. Quietly — the
+					// Touching the helm takes the ship off autopilot. Quietly, the
 					// crew just did it on purpose and doesn't need to be told.
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
-					// Toggle off if clicking the course already held — back to a coast
+					// Toggle off if clicking the course already held, back to a coast
 					if(new_direction == current_ship.commanded_course)
 						current_ship.command_course(BURN_NONE)
 					else
@@ -934,7 +934,7 @@
 					return
 				if("set_course")
 					// Keyboard flight: non-toggling, so a held key holds the course
-					// instead of strobing it on and off. The dir comes off the wire —
+					// instead of strobing it on and off. The dir comes off the wire,
 					// only real courses (or 0 to coast) get through.
 					var/new_direction = text2num(params["dir"])
 					if(isnull(new_direction) || !(new_direction in list(0, NORTH, SOUTH, EAST, WEST, NORTH|EAST, NORTH|WEST, SOUTH|EAST, SOUTH|WEST)))
@@ -946,7 +946,7 @@
 					// Travel & dock: a contact row can ask for the course to end in a
 					// docking approach. The ref comes off the wire, so it only counts
 					// when it resolves to a dockable non-ship overmap object (ships
-					// keep their consensual request/accept handshake) — anything else
+					// keep their consensual request/accept handshake), anything else
 					// degrades to a plain course to the clicked tile.
 					var/obj/structure/overmap/dock_target
 					if(params["dock"])
@@ -955,7 +955,7 @@
 							dock_target = located
 					var/result
 					if(dock_target)
-						// Plot to the target's LIVE position — its .x/.y are already
+						// Plot to the target's LIVE position. Its .x/.y are already
 						// the absolute turf coordinates engage_autopilot() takes. The
 						// label is the console's own naming, never client text (see
 						// describe_autopilot_destination above for why).
@@ -999,7 +999,7 @@
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
 						return
-					// Brake always brakes — burning, cruising or coasting, the first
+					// Brake always brakes: burning, cruising or coasting, the first
 					// press is BURN_STOP. Only a second press while already braking
 					// releases back to a coast.
 					if(current_ship.burn_direction == BURN_STOP)
@@ -1021,7 +1021,7 @@
 					// outright whenever a ruin or planet shared the tile, so the only
 					// way to land on one was the contact list's Interact button.
 					//
-					// Auto-stop assist: a slow approach is close enough — the console
+					// Auto-stop assist: a slow approach is close enough, the console
 					// finishes the stop itself rather than bouncing the crew to the
 					// brake button. Above the assist ceiling the refusal stands, or
 					// Dock would double as a crash-stop from full cruise. Runs before
@@ -1029,7 +1029,7 @@
 					// gate either path has - dock_in_empty_space() never had its own.
 					if(!current_ship.is_still())
 						if(MAGNITUDE(current_ship.speed[1], current_ship.speed[2]) > current_ship.max_speed * DOCK_ASSIST_SPEED_FRACTION)
-							say("ERROR: Too fast for a docking approach — slow below [round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION)] tiles/min.")
+							say("ERROR: Too fast for a docking approach. Slow below [round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION)] tiles/min.")
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 							return
 						current_ship.full_stop()
@@ -1038,7 +1038,7 @@
 					if(length(dock_candidates))
 						// The client always sends the option it clicked once there is
 						// more than one, but re-validate against close_overmap_objects
-						// rather than trusting the ref on its own — same reason
+						// rather than trusting the ref on its own, same reason
 						// "act_overmap" above does.
 						var/target_ref = params["target"]
 						if(target_ref)
@@ -1051,7 +1051,7 @@
 						else if(length(dock_candidates) == 1)
 							dock_candidate = dock_candidates[1]
 						else
-							say("ERROR: Multiple docking options here — choose one from the Dock button.")
+							say("ERROR: Multiple docking options here. Choose one from the Dock button.")
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 							return
 						current_ship.disengage_autopilot("docking", notify = FALSE)

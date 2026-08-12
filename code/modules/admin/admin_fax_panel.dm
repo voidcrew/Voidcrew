@@ -116,7 +116,7 @@ ADMIN_VERB(fax_panel, R_ADMIN, "Fax Panel", "View and respond to faxes sent to C
 					stamp_class = needed_stamp[3]
 					break
 
-			fax_paper.name = "paper — [default_paper_name]"
+			fax_paper.name = "paper, [default_paper_name]"
 			fax_paper.add_raw_text(params["rawText"], advanced_html = TRUE)
 
 			if(stamp)

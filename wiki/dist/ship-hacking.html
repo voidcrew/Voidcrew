@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ship Hacking | Voidcrew Wiki</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
+</head>
+<body>
+<header class="topbar">
+<button class="nav-toggle" id="nav-toggle" aria-label="Menu">&#9776;</button>
+<a class="site-name" href="index.html">Voidcrew Wiki</a>
+<div class="search-wrap">
+<input type="search" id="search" placeholder="Search the wiki&hellip;" autocomplete="off">
+<div id="search-results" hidden></div>
+</div>
+</header>
+<div class="layout">
+<nav class="sidebar" id="sidebar">
+<a class="home-link" href="index.html">&#x2726; Voidcrew Wiki</a>
+<h3>Getting Started</h3><ul>
+<li><a href="new-player-guide.html">New Player Guide</a></li>
+<li><a href="coming-from-tg.html">Coming from /tg/station</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+</ul>
+<h3>Your Ship</h3><ul>
+<li><a href="piloting.html">Piloting Your Ship</a></li>
+<li><a href="ship-systems.html">Ship Systems</a></li>
+<li><a href="comms.html">Radio &amp; Comms</a></li>
+<li><a href="transporters.html">Transporters</a></li>
+<li><a href="research.html">Research</a></li>
+</ul>
+<h3>The Fleet</h3><ul>
+<li><a href="ship-catalog.html">Ship Catalog</a></li>
+<li><a href="ship-upgrades.html">Buying &amp; Upgrading Ships</a></li>
+</ul>
+<h3>Exploration</h3><ul>
+<li><a href="overmap.html">The Overmap</a></li>
+<li><a href="planets.html">Planets</a></li>
+<li><a href="mining.html">Mining &amp; Salvage</a></li>
+<li><a href="ruins.html">Ruins &amp; Points of Interest</a></li>
+<li><a href="bitrunning.html">Bitrunning</a></li>
+<li><a href="drop-pods.html">Drop Pods</a></li>
+</ul>
+<h3>Economy</h3><ul>
+<li><a href="money-and-trade.html">Money &amp; Trade</a></li>
+<li><a href="missions.html">Missions</a></li>
+<li><a href="trader-outposts.html">Trader Outposts</a></li>
+<li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
+<li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
+</ul>
+<h3>Danger</h3><ul>
+<li><a href="ship-combat.html">Ship Combat</a></li>
+<li class="active"><a href="ship-hacking.html">Ship Hacking</a></li>
+<li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
+<li><a href="dynamic-events.html">Random Events</a></li>
+<li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
+<li><a href="vestige-ruins.html">Vestige Ruins &amp; Boons</a></li>
+<li><a href="colosseum.html">The Grand Colosseum</a></li>
+</ul>
+</nav>
+<main class="content">
+<article><aside class="toc"><div class="toc-title">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-suite">The suite</a></li>
+<li><a href="#cartridges">Cartridges</a></li>
+<li><a href="#running-a-hack">Running a hack</a></li>
+<li><a href="#signature-and-the-trace">Signature and the trace</a></li>
+<li><a href="#the-exploits">The exploits</a></li>
+<li><a href="#being-hacked">Being hacked</a></li>
+<li><a href="#npc-ships">NPC ships</a></li>
+</ul>
+</div>
+</aside><h1>Ship Hacking</h1>
+<p>Ship hacking is the quiet half of <a href="ship-combat.html">ship combat</a>. Instead of punching holes in a locked ship's hull, an <strong>electronic warfare suite</strong> attacks its onboard systems, killing the lights, bolting the doors, venting the air, freezing the guns. Every effect is temporary and cleans up after itself; the point is to open a window for the guns or the boarding party that follows. The suite is player-built from a circuit board, and the <strong>exploit cartridges</strong> it runs come almost exclusively from the Undertow Exchange.</p>
+<h2 id="the-suite">The suite</h2>
+<p>The <strong>Electronic Warfare Systems</strong> research node (160 points, behind Shuttle Warfare Systems) unlocks the machine board and the three tier-1 cartridges. If your crew does not do research, Vex at the <a href="trader-outposts.html">Undertow Exchange</a> sells the board for 3,200 credits or 3 vouchers, one per round. Build it with two capacitors, a micro-laser and a servo, wrench it down anywhere on your ship, and link it to your weapons system console with a multitool, a freshly built suite also links itself to a free console automatically. One suite per console.</p>
+<p>The suite draws about 2 kW while an exploit is warming up or live, and losing power aborts whatever it was doing. Better parts matter: capacitors cut the signature each execution costs (down to a quarter of base), micro-lasers cut the power draw, and servos cut warmup time. Examining the suite shows its current signature, its loaded cartridges and all three reductions.</p>
+<h2 id="cartridges">Cartridges</h2>
+<p>Exploits come on physical <strong>cartridges</strong>, inserted into the suite by hand and fired from the console's <strong>Exploits</strong> tab. Each cartridge holds a few charges and burns one per execution; at zero it is a burned-out cartridge, and there are no refills. After any execution, that exploit goes on a 60-second recompile cooldown, and the suite runs one execution at a time.</p>
+<p>Research only ever prints the three tier-1 cartridges. Tier 2 and up are sold nowhere but Vex's <strong>Exploit Software</strong> shelf: tier 3 stock is zero-to-one per round, and the tier-4 exotics sit on the rotating shelf and take vouchers only. A cartridge's examine text names its exploit, tier, target subsystem and remaining charges, so looted or traded software is never a mystery.</p>
+<h2 id="running-a-hack">Running a hack</h2>
+<p>Everything hangs off a weapons lock, so the rules are the same as shooting: the target must be a ship (never an outpost), within two overmap tiles, and neither of you in the Neutral Zone. The lock takes five seconds to acquire and <strong>the target is warned the moment you start</strong>, so a hack is never a surprise attack.</p>
+<p>With the lock held, the Exploits tab lists your loaded cartridges with an Execute button. Clicking starts a warmup (four to twelve seconds depending on the exploit) with a progress bar and an Abort. If the lock, the range, the power or the cartridge is lost mid-warmup, the execution aborts harmlessly. When it completes, the payload lands for its listed duration and then reverts, undoing only the state it imposed. Bolt Override is the one with a choice: it executes as either <strong>Bolt</strong> or <strong>Release</strong>.</p>
+<h2 id="signature-and-the-trace">Signature and the trace</h2>
+<p>Every execution adds <strong>signature</strong> to your suite: more for nastier exploits, less with good capacitors. Signature bleeds off at 1.5 points a second while idle, but if it reaches 100 you are <strong>traced</strong>: the suite locks itself out for three minutes, and the target is flatly told which ship attacked them. The console's signature meter flashes TRACE IMMINENT from 75 up. In practice you get a couple of cheap harassments or one heavy assault per window before the suite has to cool, so pacing executions is the whole skill of the thing.</p>
+<h2 id="the-exploits">The exploits</h2>
+<p>All durations revert on their own, every exploit goes on a 60-second cooldown after firing, and prices are Vex's. "Printable" means the <a href="research.html">research node</a> also covers it.</p>
+<table>
+<thead>
+<tr>
+<th>Exploit</th>
+<th>Tier</th>
+<th>What it does to the target</th>
+<th>Duration</th>
+<th>Signature</th>
+<th>Charges</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blackout</td>
+<td>1</td>
+<td>Every light that was on goes out, shipwide</td>
+<td>45s</td>
+<td>10</td>
+<td>5</td>
+<td>500 cr, printable</td>
+</tr>
+<tr>
+<td>Phantom Klaxons</td>
+<td>1</td>
+<td>Trips every fire alarm, dropping all firelocks</td>
+<td>30s</td>
+<td>10</td>
+<td>5</td>
+<td>550 cr, printable</td>
+</tr>
+<tr>
+<td>Bolt Override</td>
+<td>1</td>
+<td>Bolt every powered airlock, or unbolt them all</td>
+<td>30s</td>
+<td>15</td>
+<td>5</td>
+<td>700 cr, printable</td>
+</tr>
+<tr>
+<td>Overvolt</td>
+<td>2</td>
+<td>Electrifies every powered airlock</td>
+<td>30s</td>
+<td>20</td>
+<td>4</td>
+<td>900 cr</td>
+</tr>
+<tr>
+<td>Comms Blackout</td>
+<td>2</td>
+<td>Jams their internal ship channel, both directions</td>
+<td>60s</td>
+<td>20</td>
+<td>4</td>
+<td>1,000 cr</td>
+</tr>
+<tr>
+<td>Ghost Contacts</td>
+<td>2</td>
+<td>Paints three phantom unknown contacts on their helm</td>
+<td>120s</td>
+<td>15</td>
+<td>4</td>
+<td>950 cr</td>
+</tr>
+<tr>
+<td>Scrambler</td>
+<td>2</td>
+<td>Cancels a running interdiction, decloaks them, and blocks both from restarting</td>
+<td>45s</td>
+<td>25</td>
+<td>4</td>
+<td>1,300 cr</td>
+</tr>
+<tr>
+<td>Vent Purge</td>
+<td>2</td>
+<td>Flips every air alarm to panic siphon: vents the atmosphere</td>
+<td>45s</td>
+<td>25</td>
+<td>4</td>
+<td>1,400 cr</td>
+</tr>
+<tr>
+<td>Breaker Trip</td>
+<td>3</td>
+<td>Equipment and lighting channels off at every APC</td>
+<td>30s</td>
+<td>30</td>
+<td>3</td>
+<td>1,800 cr</td>
+</tr>
+<tr>
+<td>Drive Lockout</td>
+<td>3</td>
+<td>All thrust cut: helm, autopilot and engines refuse</td>
+<td>25s</td>
+<td>35</td>
+<td>3</td>
+<td>2,200 cr</td>
+</tr>
+<tr>
+<td>Fire-Control Freeze</td>
+<td>3</td>
+<td>Missile launchers and laser turrets refuse to fire</td>
+<td>20s</td>
+<td>35</td>
+<td>3</td>
+<td>2,400 cr</td>
+</tr>
+<tr>
+<td>Shield Collapse</td>
+<td>3</td>
+<td>Forces a full shield break and blocks reactivation</td>
+<td>30s</td>
+<td>35</td>
+<td>3</td>
+<td>2,600 cr</td>
+</tr>
+<tr>
+<td>Runaway Burn</td>
+<td>4</td>
+<td>Throttle pinned at full burn on the current heading; autopilot disengaged</td>
+<td>15s</td>
+<td>45</td>
+<td>2</td>
+<td>3 vouchers</td>
+</tr>
+<tr>
+<td>Poltergeist</td>
+<td>4</td>
+<td>The ship is shoved onto a random heading every 3 seconds</td>
+<td>20s</td>
+<td>40</td>
+<td>2</td>
+<td>2 vouchers</td>
+</tr>
+</tbody>
+</table>
+<p>Comms Blackout and Ghost Contacts only work on player ships. NPC crews have no ship channel to jam and no helm to fool. Shield Collapse and Scrambler require the target to actually have the systems they attack, and Runaway Burn and Poltergeist require the target to be flying.</p>
+<div class="admonition tip">
+<p class="admonition-title">What a hack window looks like</p>
+<p>Drive Lockout so they cannot run, Fire-Control Freeze so they cannot shoot back, then close and board while the cooldowns tick. Two tier-3 executions cost 70 signature. One more cheap exploit and you are risking the trace.</p>
+</div>
+<h2 id="being-hacked">Being hacked</h2>
+<p>You get warning. A weapons lock announces itself to your whole crew with a combat alarm before any hack can start, the first payload to land names the subsystem it hit, and each additional one escalates to a red alert. Every payload also has a tell you can act on: lights snapping back for a moment before they die, doors bolting, the shipwide venting warning, radio static, engines and weapon mounts sparking. Expired payloads send a "restored" notice.</p>
+<p>The hard answer is on your own weapons console: the <strong>Defense</strong> tab's <strong>PURGE INTRUSION</strong> button instantly ends every active payload and hardens your firewalls for two minutes, during which no new connections can be made at all. It is free and always available, but somebody has to be at the console to press it, and it does nothing about the guns that are already coming. Breaking the lock works too: get more than two tiles away, reach the Neutral Zone, or go dark in a nebula.</p>
+<p>Physically, the attacker's suite aborts on power loss and cannot be unwrenched mid-execution, so if it comes to boarding, the rack of intrusion hardware is a legitimate target.</p>
+<h2 id="npc-ships">NPC ships</h2>
+<p>Almost every payload works on NPC ships too, but they are poor victims: their crews automatically purge all intrusions after 45 seconds, and a hostile NPC hull treats a hack exactly like an act of war. Intruding mid-negotiation turns pirates hostile, and idle patrol ships will acquire you and engage.</p></article>
+<footer>Voidcrew is a /tg/station fork. This wiki covers Voidcrew-specific systems; for base-game mechanics (chemistry, surgery, engineering&hellip;) see the <a href="https://wiki.tgstation13.org/">/tg/station wiki</a>.</footer>
+</main>
+</div>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

@@ -129,7 +129,7 @@ SUBSYSTEM_DEF(weather)
 		if(weather_event.weather_flags & WEATHER_ENDLESS)
 			continue
 		var/randTime = rand(5 MINUTES, 10 MINUTES)
-		randTime *= SSovermap_zones.weather_downtime_multiplier_for_z(numeric_z) // VOIDCREW EDIT — storms come more often on planets in dangerous overmap zones
+		randTime *= SSovermap_zones.weather_downtime_multiplier_for_z(numeric_z) // VOIDCREW EDIT. Storms come more often on planets in dangerous overmap zones
 		var/time_until_next_storm = weather_event.telegraph_duration + weather_event.weather_duration + weather_event.end_duration + randTime
 		var/old_timer = next_hit_by_zlevel[z_key]
 		if(old_timer)

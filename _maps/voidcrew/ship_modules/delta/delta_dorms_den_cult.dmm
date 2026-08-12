@@ -1,0 +1,172 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/template_noop)
+"h" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/destructible/cult/item_dispenser/archives,
+/turf/open/floor/wood,
+/area/template_noop)
+"m" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"r" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"s" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/jukebox,
+/turf/open/floor/wood,
+/area/template_noop)
+"t" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/template_noop)
+"z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/obj/structure/noticeboard/directional/north,
+/obj/item/paper{
+	name = "roster";
+	default_raw_text = "Kessler and Vann on watch, Halvers cooking, everyone else stood down. Whoever runs evening rites sweeps the deck after. Cards go back in the box."
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"A" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"G" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/flashlight/flare/candle{
+	pixel_x = -9;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"M" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/dice/d20{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"T" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"W" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+h
+s
+r
+"}
+(2,1,1) = {"
+z
+Q
+R
+"}
+(3,1,1) = {"
+S
+M
+A
+"}
+(4,1,1) = {"
+G
+B
+R
+"}
+(5,1,1) = {"
+c
+t
+T
+"}
+(6,1,1) = {"
+X
+t
+R
+"}

@@ -2,7 +2,7 @@
  * # Specimen Zero, and Greater Telekinesis
  *
  * The Curator's capstone. See voidcrew/modules/antag_ruins/ascension.dm for the
- * framework this plugs into — the run datum owns the arena, spawns the boss on the
+ * framework this plugs into. The run datum owns the arena, spawns the boss on the
  * map's boss landmark, and grants [/datum/vestige_boon/spell/greater_telekinesis] the
  * moment the boss dies. Nothing in this file has to know any of that; it only has to
  * put a fight in the room and an ability on the other side of it.
@@ -17,16 +17,16 @@
  * came to take, and it demonstrates that ability by throwing the room. Three abilities
  * to start with, a fourth at the phase flip:
  *
- * - **Sweep the Room** — every loose object around it rattles, lifts, and is thrown at
+ * - **Sweep the Room**: every loose object around it rattles, lifts, and is thrown at
  *   the player one after another, each shot aimed at wherever they are standing when it
  *   fires. Stand still and eat all of it; keep moving and most of it lands behind you.
  *   Grabbing a lifted item off the floor mid-telegraph takes that shot out of the volley.
- * - **Pin** — it marks a floor tile, and anything still standing there when the mark
+ * - **Pin**: it marks a floor tile, and anything still standing there when the mark
  *   fills gets picked up and put back down hard. Step off the tile.
- * - **Repulse** — a shove outward from itself that throws you clear and knocks you flat.
+ * - **Repulse**: a shove outward from itself that throws you clear and knocks you flat.
  *   It only fires when something is standing close, so it is the answer to parking in
  *   melee forever, not a random tax.
- * - **Confiscation** (fourth revision only) — it takes whatever is in your hand and
+ * - **Confiscation** (fourth revision only): it takes whatever is in your hand and
  *   throws it back at you. Counterplay is picking your weapon back up, which costs you
  *   the ten seconds it spends setting up its next move.
  *
@@ -39,8 +39,8 @@
  *
  * [/datum/action/cooldown/spell/greater_telekinesis] is a toggle. While it is up, the
  * caster's clicks are intercepted (`COMSIG_MOB_CLICKON`) and read differently depending
- * on combat mode: out of combat a click drags anything loose — objects, furniture,
- * machines, people — across the floor into orbit around them (the pull travels as a
+ * on combat mode: out of combat a click drags anything loose, objects, furniture,
+ * machines, people, across the floor into orbit around them (the pull travels as a
  * real throw and anything that can stop a throw can stop it; people can resist free),
  * and in combat a click hurls one held thing, right-click hurls all of them. Bolted-down
  * objects can be torn loose with a five-second channel first. Held things double as a
@@ -58,7 +58,7 @@
  */
 
 // ===== THE CAPSTONE =====
-// The ability desc quotes these numbers literally — keep them in sync.
+// The ability desc quotes these numbers literally. Keep them in sync.
 /// Most items the caster may hold in the air at once.
 #define GREATER_TK_MAX_HELD 5
 /// How far away an item may be and still be lifted.
@@ -126,7 +126,7 @@
 /// How long everything rattles on the deck before the first shot.
 #define MUTANT_SWEEP_TELEGRAPH (1.5 SECONDS)
 /// Gap between shots in a volley. Each shot is aimed when it fires, so this gap is
-/// what makes "keep moving" the counter — shorten it and the volley collapses into
+/// what makes "keep moving" the counter, shorten it and the volley collapses into
 /// one burst you dodge (or eat) all at once.
 #define MUTANT_SWEEP_STAGGER (1.5 SECONDS)
 /// A sweep that finds less ammunition than this tears the difference out of the walls.
@@ -188,14 +188,14 @@
 #define HARNESS_VOLLEY 5
 
 // =========================================================================
-// GREATER TELEKINESIS — the capstone boon
+// GREATER TELEKINESIS: the capstone boon
 // =========================================================================
 
 /datum/vestige_boon/spell/greater_telekinesis
 	name = "Greater Telekinesis"
 	// Keep the numbers in sync with the defines above (initial values must be
 	// compile-time constant, so no define interpolation here).
-	desc = "Hold an armful of loose objects, furniture, machines, even people in the air around you — bolted-down things come up too if you hold your grip on them. Combat mode off: click to drag something to you, click a held thing to set it down. Combat mode on: left-click throws one, right-click throws everything. What you're holding will sometimes turn a hit aside."
+	desc = "Hold an armful of loose objects, furniture, machines, even people in the air around you. Bolted-down things come up too if you hold your grip on them. Combat mode off: click to drag something to you, click a held thing to set it down. Combat mode on: left-click throws one, right-click throws everything. What you're holding will sometimes turn a hit aside."
 	grant_text = "Everything loose in the room is suddenly within arm's reach, and your arms have nothing to do with it."
 	spell_type = /datum/action/cooldown/spell/greater_telekinesis
 
@@ -212,7 +212,7 @@
  * caster and it sits in [pulling_in] until it lands, only joining [lifted] if it
  * actually arrived within arm's reach ([on_pull_finished]). Bolted-down objects add a
  * five-second channel in front of that ([rip_loose]). Living creatures ride the same
- * pipeline as everything else — the only mob-specific handling is the immobilize
+ * pipeline as everything else. The only mob-specific handling is the immobilize
  * trait and resist hook added in [lift_thing] and removed in [forget_thing].
  *
  * Every way a held thing can leave the set funnels through exactly two procs:
@@ -220,7 +220,7 @@
  * world took it away from us), and [release_thing] does that *and then* ends the orbit
  * (used when we are the ones letting go). Because release_thing removes the thing from
  * [lifted] before it calls end_orbit, the COMSIG_ATOM_ORBIT_STOP that end_orbit fires
- * finds nothing to clean up and returns — no re-entry, no flag needed.
+ * finds nothing to clean up and returns, no re-entry, no flag needed.
  */
 /datum/action/cooldown/spell/greater_telekinesis
 	name = "Greater Telekinesis"
@@ -236,7 +236,7 @@
 
 	/// Everything currently in the air around the caster, in the order it was lifted.
 	var/list/atom/movable/lifted = list()
-	/// Things still crossing the floor on their way to the caster. Not held yet — they
+	/// Things still crossing the floor on their way to the caster. Not held yet, they
 	/// only join [lifted] if they actually arrive. See [pull_thing].
 	var/list/atom/movable/pulling_in = list()
 	/// The bolted-down object currently being torn loose, if any. One rip at a time.
@@ -318,7 +318,7 @@
  * Deliberately conservative about what it eats. Anything modified (shift, ctrl, alt,
  * middle) and anything on the HUD passes straight through, so examining, pulling and
  * the action bar all keep working with the field up. Out of combat, only a click on a
- * liftable object is intercepted — doors, machines and conversations are untouched.
+ * liftable object is intercepted. Doors, machines and conversations are untouched.
  * In combat with something held, every click becomes a throw, which is the tradeoff:
  * you cannot swing a weapon and hold the room at the same time.
  */
@@ -363,7 +363,7 @@
 		return NONE
 	// Past this point it IS something we lift, so a refusal is worth saying out loud
 	// rather than quietly falling through to a normal click. Things mid-pull count
-	// against the cap — each has its slots booked whether or not it arrives.
+	// against the cap, each has its slots booked whether or not it arrives.
 	if(used_slots() + slot_cost(thing) > GREATER_TK_MAX_HELD)
 		source.balloon_alert(source, "no room to hold it!")
 		return COMSIG_MOB_CANCEL_CLICKON
@@ -409,12 +409,12 @@
 // ===== HOLDING =====
 
 /// Is this the kind of thing the field can pick up at all? Says nothing about range
-/// or how full our hands are — see [grab_click] for the refusals worth voicing.
+/// or how full our hands are, see [grab_click] for the refusals worth voicing.
 /datum/action/cooldown/spell/greater_telekinesis/proc/can_lift(atom/movable/thing)
 	if(QDELETED(thing) || thing == owner || thing.throwing || thing.anchored)
 		return FALSE
-	// The one weight limit: whatever the game itself says cannot be shoved around —
-	// megafauna, mechs, the specimen — cannot be lifted either.
+	// The one weight limit: whatever the game itself says cannot be shoved around.
+	// Megafauna, mechs, the specimen: cannot be lifted either.
 	if(thing.move_resist > GREATER_TK_MAX_MOVE_RESIST)
 		return FALSE
 	if(isliving(thing))
@@ -430,7 +430,7 @@
 			return FALSE
 		if(HAS_TRAIT(held, TRAIT_NODROP))
 			return FALSE
-		// On the floor, or in somebody's hand. Not in a bag, not in a crate — the field
+		// On the floor, or in somebody's hand. Not in a bag, not in a crate, the field
 		// lifts what it can see, and it cannot see into a backpack.
 		return isturf(held.loc) || isliving(held.loc)
 	// Furniture, machines, closets, crates: anything standing free on the floor.
@@ -527,12 +527,12 @@
  * Starts dragging something across the floor to the caster.
  *
  * It travels as a real throw aimed at the caster's own tile, with the caster as the
- * thrower — the throwing subsystem never lets an object throw hit its own thrower, so
+ * thrower, the throwing subsystem never lets an object throw hit its own thrower, so
  * objects glide to their feet rather than striking them. A pulled person is dense and
  * simply bumps to a stop on the adjacent tile, which counts as arriving. Everything
  * else that can stop a throw can stop the pull: a wall, a closed door, a window, or a
  * bystander it slams into (who can simply catch a small item). The grab only
- * completes when the thing actually arrives — see [on_pull_finished].
+ * completes when the thing actually arrives, see [on_pull_finished].
  */
 /datum/action/cooldown/spell/greater_telekinesis/proc/pull_thing(mob/living/source, atom/movable/thing)
 	if(isitem(thing) && isliving(thing.loc))
@@ -572,8 +572,8 @@
  * The pull is over, one way or the other.
  *
  * If the thing made it to within arm's reach of the caster it goes into orbit.
- * Anywhere else means something stopped it — a wall it fell short against, a
- * doorframe, or a hand that got to it first — and the grab simply fails.
+ * Anywhere else means something stopped it, a wall it fell short against, a
+ * doorframe, or a hand that got to it first, and the grab simply fails.
  */
 /datum/action/cooldown/spell/greater_telekinesis/proc/on_pull_finished(atom/movable/thing)
 	if(!(thing in pulling_in)) // cancelled mid-flight; it lands as an ordinary object
@@ -604,7 +604,7 @@
 	thing.remove_filter(VESTIGE_TK_FILTER)
 
 /// Puts something into orbit. By the time this runs it is on a turf within arm's
-/// reach — [pull_thing] and [on_pull_finished] have already done the travelling.
+/// reach, [pull_thing] and [on_pull_finished] have already done the travelling.
 /datum/action/cooldown/spell/greater_telekinesis/proc/lift_thing(mob/living/source, atom/movable/thing)
 	if(!isturf(thing.loc))
 		return FALSE
@@ -646,7 +646,7 @@
 		UnregisterSignal(thing, COMSIG_LIVING_RESIST)
 	// The orbiter cannot clean up after itself: end_orbit "cancels" its endless spin
 	// with a zero-length PARALLEL animation, which starts a second track and leaves the
-	// endless one running — so a released object keeps circling its resting place
+	// endless one running, so a released object keeps circling its resting place
 	// forever, on the floor or in flight. (Ghosts never show this because their float
 	// animation overwrites every track the moment the orbit ends; plain objects have
 	// nothing that would.) Killing every animation track here lets end_orbit's
@@ -678,7 +678,7 @@
 	SIGNAL_HANDLER
 	forget_thing(source)
 
-/// A held creature fights the grip. One resist is enough — the hold is a beat of
+/// A held creature fights the grip. One resist is enough. The hold is a beat of
 /// control and a throw, not a jail.
 /datum/action/cooldown/spell/greater_telekinesis/proc/on_captive_resist(mob/living/captive)
 	SIGNAL_HANDLER
@@ -701,7 +701,7 @@
  * Each object held adds [GREATER_TK_BLOCK_CHANCE_PER_ITEM]% to the chance that a melee
  * swing, an unarmed strike, a pounce or a thrown object is knocked out of the air
  * before it lands. The object that took the hit drops out of orbit, so a full orbit is
- * five blocks at the very most — the protection is spent, not passive. Bullets and
+ * five blocks at the very most. The protection is spent, not passive. Bullets and
  * beams are too fast to swat, which keeps this from stepping on the specimen collar's
  * territory too.
  */
@@ -709,7 +709,7 @@
 	SIGNAL_HANDLER
 	if(!length(lifted))
 		return NONE
-	// Never swat down our own inbound grab — a pulled person "hitting" the caster is
+	// Never swat down our own inbound grab. A pulled person "hitting" the caster is
 	// just the pull arriving.
 	if(hit_by in pulling_in)
 		return NONE
@@ -863,13 +863,13 @@
 
 	ai_controller = /datum/ai_controller/basic_controller/vestige_mutant
 
-	/// Sweep the Room — the signature. Throws the arena at you.
+	/// Sweep the Room: the signature. Throws the arena at you.
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/sweep/sweep
-	/// Pin — the marked tile.
+	/// Pin: the marked tile.
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/pin/pin
-	/// Repulse — the answer to standing in its face.
+	/// Repulse: the answer to standing in its face.
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/repulse/repulse
-	/// Confiscation — granted at the revision, not before.
+	/// Confiscation: granted at the revision, not before.
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/confiscate
 
 	/// TRUE once the fourth revision has arrived. One-way.
@@ -901,8 +901,8 @@
 	pin.Grant(src)
 	repulse.Grant(src)
 
-	// The controller is built during /atom/Initialize — i.e. before any of the above
-	// existed — so the kit has to be handed over now rather than seeded in `blackboard`.
+	// The controller is built during /atom/Initialize, i.e. before any of the above
+	// existed, so the kit has to be handed over now rather than seeded in `blackboard`.
 	var/datum/ai_controller/basic_controller/vestige_mutant/brain = ai_controller
 	if(istype(brain))
 		brain.register_kit(sweep, pin, repulse)
@@ -1032,7 +1032,7 @@
  *
  * The collar is guaranteed, so the kill is always worth something, and it is the one
  * piece of the fight the specimen was wearing rather than doing. The jackpot rolls from
- * a two-entry pool and both entries are literally its own abilities — the palm anchor
+ * a two-entry pool and both entries are literally its own abilities, the palm anchor
  * subtypes Pin and the harness subtypes Sweep the Room, so retuning either ability here
  * retunes the loot with it.
  */
@@ -1214,7 +1214,7 @@
  * Rolls the volley: loose objects first, conjured plating only to make up a shortfall.
  *
  * Anchored, abstract and already-airborne objects are skipped, and so is anything in a
- * hand or a bag — this strips floors, not people. Shuffled so a cluttered corner does
+ * hand or a bag, this strips floors, not people. Shuffled so a cluttered corner does
  * not get thrown in the same order twice.
  */
 /datum/action/cooldown/mob_cooldown/vestige_tk/sweep/proc/gather_ammunition(turf/centre, wanted)
@@ -1227,7 +1227,7 @@
 				continue
 			// Already wearing the telekinesis outline: booked into a volley still in
 			// flight, or held in somebody's Greater Telekinesis orbit. Either way it
-			// is spoken for — double-booking it would fire it twice and strip the
+			// is spoken for, double-booking it would fire it twice and strip the
 			// other holder's outline out from under them.
 			if(loose.get_filter(VESTIGE_TK_FILTER))
 				continue
@@ -1288,7 +1288,7 @@
  *
  * The mark is painted for the whole windup and it never moves, so the dodge is simply
  * "step off the tile". After the revision it paints a second tile as well, which is what
- * stops the dodge from being automatic — you have to look before you move.
+ * stops the dodge from being automatic. You have to look before you move.
  *
  * The palm anchor (below) is a subtype, so this is the only pin implementation here.
  */
@@ -1399,7 +1399,7 @@
 	/// How long it keeps you down.
 	var/repulse_knockdown = MUTANT_REPULSE_KNOCKDOWN
 
-/// Never spent on empty air — this is the answer to being crowded, and nothing else.
+/// Never spent on empty air. This is the answer to being crowded, and nothing else.
 /datum/action/cooldown/mob_cooldown/vestige_tk/repulse/worth_using_on(atom/quarry)
 	if(!..())
 		return FALSE
@@ -1507,7 +1507,7 @@
 	var/obj/item/prize = takeable_item(victim)
 	if(isnull(prize))
 		return FALSE
-	// Somewhere to put it, resolved before the victim's hand is opened — a failure after
+	// Somewhere to put it, resolved before the victim's hand is opened, a failure after
 	// the drop would leave their weapon on the floor for nothing.
 	var/turf/perch = get_turf(owner)
 	if(isnull(perch))
@@ -1544,8 +1544,8 @@
  * The megafauna attack rotation in the modern basic-mob framework, lifted wholesale
  * from the hoarfrost matriarch (hoarfrost_ai.dm): pick one ability at random, never the
  * one used last, drop anything unavailable or pointless against this quarry, queue it,
- * done. Everything else about the specimen is deliberately ordinary — it drifts up to
- * you and hits you — which is what makes the telegraphed abilities read as events.
+ * done. Everything else about the specimen is deliberately ordinary, it drifts up to
+ * you and hits you, which is what makes the telegraphed abilities read as events.
  */
 /datum/ai_controller/basic_controller/vestige_mutant
 	blackboard = list(
@@ -1567,7 +1567,7 @@
  * Publishes the kit onto the blackboard.
  *
  * Called from the specimen's Initialize, because the controller is built inside
- * /atom/Initialize — before a single action exists — so the keys cannot be seeded in
+ * /atom/Initialize (before a single action exists) so the keys cannot be seeded in
  * the `blackboard` list above. Confiscation is not here: it is granted at the revision
  * and writes its own key then.
  */
@@ -1581,7 +1581,7 @@
 	set_blackboard_key(BB_MUTANT_REPULSE, repulse)
 
 /datum/ai_planning_subtree/vestige_mutant_rotation
-	/// It will not spend a cooldown on somebody this far away — the sweep would fall
+	/// It will not spend a cooldown on somebody this far away. The sweep would fall
 	/// short and the self-centred abilities would simply be walked out of.
 	var/engagement_range = 13
 
@@ -1627,14 +1627,14 @@
 // =========================================================================
 
 /**
- * ## Specimen collar — guaranteed
+ * ## Specimen collar: guaranteed
  *
  * The one part of the fight the specimen was wearing rather than doing. Worn, it stops
  * one thrown object per second dead in the air in front of you; the object drops on
  * your tile instead of hitting you.
  *
  * `COMSIG_ATOM_PREHITBY` is only ever sent from `/atom/movable/pre_impact`, so this can
- * never touch a projectile, a punch or a swing — it is a thrown-object ward and nothing
+ * never touch a projectile, a punch or a swing. It is a thrown-object ward and nothing
  * else. The one-per-second gate is what stops it from being a free hard counter to a
  * whole debris volley.
  */
@@ -1676,7 +1676,7 @@
 	return COMSIG_HIT_PREVENTED
 
 /**
- * ## Palm anchor — jackpot
+ * ## Palm anchor: jackpot
  *
  * Pin, scaled to something a person can hold: same mark, same slam, longer recharge and
  * a shorter reach. It spares you and nobody else, exactly like the specimen's own.
@@ -1712,7 +1712,7 @@
 		starts to buzz."))
 
 /**
- * ## Debris harness — jackpot
+ * ## Debris harness: jackpot
  *
  * Sweep the Room in a form a person can wear. It lifts less, throws it slower and
  * recharges more slowly, and it conjures nothing at all: a bare room gives you a bare

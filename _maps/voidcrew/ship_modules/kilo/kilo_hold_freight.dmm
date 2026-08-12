@@ -41,6 +41,12 @@
 "z" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/shovel,
+/obj/item/pickaxe,
+/obj/item/storage/box/lights/mixed,
+/obj/item/mining_scanner,
+/obj/item/gun/energy/recharge/kinetic_accelerator,
 /turf/open/floor/plating,
 /area/template_noop)
 "A" = (
@@ -53,12 +59,6 @@
 /turf/open/floor/plating,
 /area/template_noop)
 "B" = (
-/obj/structure/closet/crate,
-/obj/item/shovel,
-/obj/item/pickaxe,
-/obj/item/storage/box/lights/mixed,
-/obj/item/mining_scanner,
-/obj/item/gun/energy/recharge/kinetic_accelerator,
 /obj/effect/turf_decal/box/corners,
 /obj/effect/turf_decal/box/corners{
 	dir = 1

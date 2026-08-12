@@ -74,12 +74,12 @@
 	return MISSION_ITEM_PROGRESS
 
 // =========================================================================
-// BOUND ITEM — a specific quest item this mission spawned
+// BOUND ITEM: a specific quest item this mission spawned
 // =========================================================================
 
 /**
  * Accepts only an /obj/item/mission_recovery whose binding resolves to this
- * objective's mission — the recovery family's carry-home step.
+ * objective's mission, the recovery family's carry-home step.
  */
 /datum/mission_objective/deliver/bound
 	required_name = "the objective"
@@ -115,7 +115,7 @@
 	return ..()
 
 // =========================================================================
-// GAS TANK — a tank carrying enough of a specific gas
+// GAS TANK: a tank carrying enough of a specific gas
 // =========================================================================
 
 /**
@@ -156,7 +156,7 @@
 	return "Tank holds [round(carried)]/[required_moles] mol of [required_name]."
 
 // =========================================================================
-// FISH — the angler's ask
+// FISH: the angler's ask
 // =========================================================================
 
 /**
@@ -186,13 +186,13 @@
 	return ..()
 
 // =========================================================================
-// COOKED DISH — the diner's ask
+// COOKED DISH: the diner's ask
 // =========================================================================
 
 /**
  * Real cooking, counted one plate at a time. A dish only counts if somebody's
- * own hands made it — TRAIT_FOOD_CHEF_MADE comes off the grill, the oven, the
- * fryer and the crafting menu, never off factory packaging — and if its recipe
+ * own hands made it, TRAIT_FOOD_CHEF_MADE comes off the grill, the oven, the
+ * fryer and the crafting menu, never off factory packaging, and if its recipe
  * runs at least min_complexity deep. The outpost diner's own plates carry the
  * same trait from TRAIT_SOURCE_OUTPOST_KITCHEN alone and are refused, so a
  * Kitchen Order can't be settled off Roux's own counter.

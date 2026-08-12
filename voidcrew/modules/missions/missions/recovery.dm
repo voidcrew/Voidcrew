@@ -70,7 +70,7 @@
 	gps_tag_prefix = "HUNT"
 
 	/// Mob type pools per difficulty (space-capable faction pirates).
-	/// Hard pool is the real faction bosses — red-zone bounties are the
+	/// Hard pool is the real faction bosses. Red-zone bounties are the
 	/// named monsters of the sector, not just another captain.
 	var/static/list/easy_targets = list(
 		/mob/living/basic/trooper/pirate/faction/silverscale/melee,

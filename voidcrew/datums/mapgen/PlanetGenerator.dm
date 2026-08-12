@@ -168,7 +168,7 @@
 	// Zone danger scaling: planets in dangerous overmap zones spawn denser and
 	// meaner fauna. Preloaded planets populate during SSmapping init (before
 	// SSovermap places them), so their zone comes from the band SSmapping dealt the
-	// planet pair up front — placement honors it later (setup_planets). Dynamic
+	// planet pair up front, placement honors it later (setup_planets). Dynamic
 	// planets populate at load time instead, and pass their marker's live band in.
 	// Decided once here so it costs nothing at runtime. Loot is never scaled.
 	var/mob_chance_mult = 1

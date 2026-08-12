@@ -42,6 +42,7 @@
 /obj/structure/closet/crate,
 /obj/item/storage/bag/ore,
 /obj/item/pickaxe,
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "m" = (
@@ -134,6 +135,7 @@
 /obj/item/extraction_pack,
 /obj/item/fulton_core,
 /obj/item/gps/mining,
+/obj/machinery/light/small/directional/north,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "I" = (

@@ -1,36 +1,36 @@
 /**
- * # The Verdigris — hoard
+ * # The Verdigris: hoard
  *
  * What is left on the sanctum floor when Ilthuun stops working. Four layers of
  * undead and a galaxy-wide ritual clock buy the raid his regalia (a robe and a
  * horned crown, green and gold, both of which cast), the staff he was leaning
  * on, the husk of the phylactery that stopped saving him, the bridle he put on
- * other people's hands, and three codices in his own hand — one per school he
+ * other people's hands, and three codices in his own hand, one per school he
  * fought in (see lich_spells.dm).
  *
  * ## Power calibration
  *
  * The occult theme's ceiling is `/obj/item/his_grace` at weight 1 in
- * `loot_prime` (voidcrew/modules/loot/themes/occult.dm) — a deliberate
+ * `loot_prime` (voidcrew/modules/loot/themes/occult.dm), a deliberate
  * crown-jewel jackpot, and a permanent, escalating, round-warping one. Nothing
  * here is that. Everything here is:
  *  - bounded (the phylactery is one draught and then it is glass),
  *  - narrow (the crown covers lesser undead only, only while worn, and only for
- *    the wearer — it is a hat that skeletons ignore, not a licence),
+ *    the wearer, it is a hat that skeletons ignore, not a licence),
  *  - or a retune of gear that already sits in this theme's tables (the robe and
  *    crown are wizard garb with a modest armour bump and real cold protection;
  *    `/obj/item/clothing/suit/armor/riot/knight` is already loot_prime weight 5,
  *    and `/obj/item/gun/magic/staff/chaos` is already loot_prime weight 2).
  * The staff's siphon is the one genuinely new capability, and it is capped, on a
- * cooldown, and does nothing at all against the undead — which is to say it does
+ * cooldown, and does nothing at all against the undead, which is to say it does
  * nothing on four fifths of the map it drops in.
  *
  * The bridle is the exception that has to be argued rather than waved at: taking
  * another player's body off them for five seconds is the strongest thing in this
  * file and the most grief-report-prone mechanic in the module. It is priced in
- * three ways — three charges and then it is dead leather, a full minute between
+ * three ways, three charges and then it is dead leather, a full minute between
  * uses against a five second effect, and a 90 second per-victim lockout that
- * outlasts its own cooldown — and it is loud: it names its wielder to the victim,
+ * outlasts its own cooldown, and it is loud: it names its wielder to the victim,
  * to every bystander, and in the logs, at apply and at expiry. It is also not a
  * targeting tool. The victim goes for whoever is nearest, which regularly means
  * the person who bridled them. See the item's own header.
@@ -86,7 +86,7 @@
 /// Between uses. Ilthuun casts his every 45 seconds; a minute is what stops this opening
 /// every engagement. Deliberately SHORTER than the 90 second per-victim immunity
 /// lich_thrall.dm leaves behind, so the bridle always comes back before its last victim
-/// does — a wielder who wants to use it again has to pick somebody else.
+/// does, a wielder who wants to use it again has to pick somebody else.
 #define LICH_BRIDLE_COOLDOWN (60 SECONDS)
 
 /// Set once the sanctum has been paid out, so a doubled death call can't double the hoard.
@@ -97,12 +97,12 @@ GLOBAL_VAR_INIT(lich_dispersal_done, FALSE)
 // =========================================================================
 // LANDMARK
 // Only the loot_spot subtype is declared here. `/obj/effect/landmark/lich`
-// itself is left implicit on purpose — DM creates the intermediate path for
+// itself is left implicit on purpose, DM creates the intermediate path for
 // free, and declaring a body for it in two tracks' files at once would be a
 // duplicate definition. boss_spawn and summon_spot belong to their own tracks.
 // =========================================================================
 
-/// Optional. Marks the tile Ilthuun's hoard lands on — a plinth, an altar, the
+/// Optional. Marks the tile Ilthuun's hoard lands on, a plinth, an altar, the
 /// middle of the sanctum floor, mapper's choice. Consumed on payout.
 /obj/effect/landmark/lich/loot_spot
 	name = "lich loot spot"
@@ -127,14 +127,14 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
  * Drops the hoard. Call this once, from wherever the boss dies.
  *
  * Scatters over the free tiles around the drop point rather than stacking the
- * whole hoard on one turf — a mapped plinth reads better with the regalia laid
+ * whole hoard on one turf. A mapped plinth reads better with the regalia laid
  * out around it, and a pile of eight is genuinely annoying to sort through.
  *
  * The scatter is size-agnostic: it lays claim to the drop turf plus every open,
  * non-dense tile in `range(1, ...)` (up to nine), and refills from that list if
  * the hoard is ever longer than the ring, so adding an entry to
  * GLOB.lich_hoard_contents needs no payout change. Verified against the current
- * eight — eight items, nine candidate tiles, one item per tile.
+ * eight, eight items, nine candidate tiles, one item per tile.
  *
  * Returns the turf it dropped on, or null if it couldn't find one.
  */
@@ -178,7 +178,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
  * It deliberately does NOT go looking for the landmark itself. The previous
  * version scanned GLOB.landmarks_list at death time and paid the entire hoard out
  * onto a docked player's SHIP: that list holds every landmark in the game, and the
- * first arbitrary one sharing the lich's z-level won — ruin interiors and docked
+ * first arbitrary one sharing the lich's z-level won, ruin interiors and docked
  * shuttles share reservation z-levels. Resolving position from the lair's own
  * footprint instead makes straying off the map structurally impossible.
  *
@@ -200,7 +200,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
  * The three spells his magic scatters into, which are the same three the codices
  * teach (lich_spells.dm). Deliberately the same set and not a wider pool: these
  * three are the ones costed against upstream fireball, they need no wizard garb,
- * and reusing them means the hoard books stay worth carrying home — a raider who
+ * and reusing them means the hoard books stay worth carrying home, a raider who
  * was dispersed the bolt can still read his way to the other two.
  */
 GLOBAL_LIST_INIT(lich_dispersal_spells, list(
@@ -222,7 +222,7 @@ GLOBAL_LIST_INIT(lich_dispersal_spells, list(
  * reason a crew that can't mount a raid still wants the raid to happen.
  *
  * It is strictly a DEATH reward. No ritual on the roster may hand the crew power
- * while he is alive — see the note in events/lich_events.dm. A ported Summon Magic
+ * while he is alive, see the note in events/lich_events.dm. A ported Summon Magic
  * used to sit at potency 5-7 and was removed for exactly that reason: arming the
  * galaxy for free on the way to him is the same payout with the incentive pointed
  * backwards.
@@ -275,8 +275,8 @@ GLOBAL_LIST_INIT(lich_dispersal_spells, list(
 /**
  * Weakrefs to every item a ritual has left lying in the galaxy.
  *
- * Ossuary Rain drops an ossuary's worth of real gear into a compartment — the table
- * has a skull helmet, bone armour and a bone axe in it — and none of it is meant to
+ * Ossuary Rain drops an ossuary's worth of real gear into a compartment, the table
+ * has a skull helmet, bone armour and a bone axe in it, and none of it is meant to
  * be a payout. A rite is pressure; it is not allowed to quietly function as a supply
  * drop. So everything a rite leaves in the world is registered here and crumbles the
  * moment Ilthuun stops. The only things of his that outlive him are what the raiding
@@ -329,7 +329,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	return crumbled
 
 // =========================================================================
-// GARB — verdigris robe
+// GARB: verdigris robe
 // Subtypes /obj/item/clothing/suit/wizrobe (code/modules/clothing/suits/wiz_robe.dm:111)
 // for slot behaviour, strip delays, CASTING_CLOTHES and the fishing-difficulty
 // component. Icon, worn icon, armour and cold protection are all overridden.
@@ -343,7 +343,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * let a plain crewmember cast the garb-locked half of this codebase's magic
  * (staves of change, a `granter/action/spell/random` roll that landed on
  * something garb-gated, the Athenaeum's blink). The three spells in
- * lich_spells.dm deliberately do NOT need it — the regalia is an amplifier for
+ * lich_spells.dm deliberately do NOT need it. The regalia is an amplifier for
  * magic you find elsewhere, not a key to your own reward.
  */
 /obj/item/clothing/suit/wizrobe/verdigris
@@ -393,7 +393,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	. += span_green("The collar's segments are lettered. Read together they spell the same name forty times over.")
 
 // =========================================================================
-// GARB — verdigris crown
+// GARB: verdigris crown
 // Subtypes /obj/item/clothing/head/wizard (code/modules/clothing/suits/wiz_robe.dm:1)
 // for SNUG_FIT|CASTING_CLOTHES, strip delays and armour baseline.
 // DMI states wanted: "lich_crown" (world), "lich_crown_worn" (worn overlay),
@@ -547,10 +547,10 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	claimed_dead -= source
 
 // =========================================================================
-// GEAR — verdigris staff
+// GEAR: verdigris staff
 // Subtypes /obj/item/melee (code/game/objects/items/melee/misc.dm:2) for
 // NEEDS_PERMIT and nothing else; every appearance var is set here.
-// DMI states wanted: "lich_staff" (world) and "lich_staff_inhand" (carried —
+// DMI states wanted: "lich_staff" (world) and "lich_staff_inhand" (carried,
 // one state serving both hands, since `inhand_icon_state` is a single var and
 // both hand files point at lich_garb.dmi).
 // =========================================================================
@@ -566,7 +566,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * it does not read whether the swing actually connected past a block or a dodge.
  * Precedent for hooking here is the shepherd's crook
  * (voidcrew/modules/loot/uniques/occult.dm:638). The cooldown is what keeps the
- * imprecision from mattering — you get one drink per four seconds regardless.
+ * imprecision from mattering, you get one drink per four seconds regardless.
  */
 /obj/item/melee/verdigris_staff
 	name = "verdigris staff"
@@ -641,7 +641,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	log_combat(user, target_mob, "siphoned with", src)
 
 // =========================================================================
-// GEAR — spent phylactery
+// GEAR: spent phylactery
 // A bare /obj/item; every appearance var set here.
 // DMI state wanted: "lich_phylactery" (world only, no inhand or worn).
 // =========================================================================
@@ -653,15 +653,15 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * binding, no repeat resurrections, no stationloving, no point of interest.
  *
  * This is the husk of Ilthuun's, cracked by whatever the raid did to him, with
- * one swallow left in the bottom. Carried on your person — pocket, belt, suit
+ * one swallow left in the bottom. Carried on your person, pocket, belt, suit
  * storage, hand, never a bag, exactly as `equipped()`/`dropped()` define it (the
  * same "on your person" contract the sealed syllable uses,
- * voidcrew/modules/antag_ruins/theme_wizard.dm:293) — it registers your death.
+ * voidcrew/modules/antag_ruins/theme_wizard.dm:293), it registers your death.
  * When you die it waits LICH_PHYLACTERY_DELAY, drags you back at
  * LICH_PHYLACTERY_REVIVE_TO damage of each type, paralyses you for
  * LICH_PHYLACTERY_STUN, and shatters. Once. Then it is glass on the floor.
  *
- * It cannot save a gibbed or dusted body — there is nothing left to pour into —
+ * It cannot save a gibbed or dusted body. There is nothing left to pour into,
  * and it refuses rather than spends itself in any case it cannot fix: see
  * `pour_the_draught()` for why it must NOT ask `can_be_revived()` up front.
  */
@@ -724,8 +724,8 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	SIGNAL_HANDLER
 	if(spent || gibbed)
 		return
-	// Claimed, not consumed. Nothing here is irreversible until the pour succeeds —
-	// the gourd only unstoppers, so a refusal below can honestly put it back.
+	// Claimed, not consumed. Nothing here is irreversible until the pour succeeds.
+	// The gourd only unstoppers, so a refusal below can honestly put it back.
 	spent = TRUE
 	source.visible_message(
 		span_boldwarning("The gourd on [source]'s person unstoppers itself, and something green climbs out of it and goes looking."),
@@ -740,7 +740,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * There is deliberately no `can_be_revived()` pre-check here, and there must not
  * be one. `/mob/living/can_be_revived()` (code/modules/mob/living/living.dm:1026)
  * is nothing but `health > HEALTH_THRESHOLD_DEAD`, and `succumb()` sets health to
- * *exactly* HEALTH_THRESHOLD_DEAD on its way out (living.dm:559) — so every
+ * *exactly* HEALTH_THRESHOLD_DEAD on its way out (living.dm:559), so every
  * succumbed corpse, and every corpse beaten past -100, failed that gate and the
  * draught drained away having done nothing at all. That was the bug.
  *
@@ -751,8 +751,8 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * clears the -100 threshold comfortably. It returns `stat != DEAD`, so its return
  * value is the honest answer to "did this work".
  *
- * If it did not work — no brain, no heart, or a body that simply will not take —
- * the charge is handed back and the gourd stays whole. A revival item that eats
+ * If it did not work, no brain, no heart, or a body that simply will not take.
+ * The charge is handed back and the gourd stays whole. A revival item that eats
  * itself on a case it cannot fix is worse than no item.
  */
 /obj/item/verdigris_phylactery/proc/pour_the_draught(mob/living/drinker)
@@ -797,22 +797,22 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	qdel(src)
 
 // =========================================================================
-// GEAR — verdigris bridle
+// GEAR: verdigris bridle
 // A bare /obj/item, on the module's own art: "lich_bridle" (world) and
 // "lich_bridle_inhand" (carried) in lich_garb.dmi, locked to the same sixteen
 // colours as the robe, crown, staff and phylactery.
 //
 // The sprite is the BIT, not the whole headstall: two rings and the jointed
 // mouthpiece, with the crooked spur that makes it the wrong shape for a mouth.
-// A full bridle was drawn first and thrown out — crownpiece, cheekpieces and
+// A full bridle was drawn first and thrown out, crownpiece, cheekpieces and
 // buckles cannot all be told apart in 32 pixels, and the closed strap loop it
 // needs reads as a padlock. The bit is strongly horizontal and mostly gold on
 // dark, so it survives at icon size. The leather is present only as the short
 // strap stubs threaded through each ring, which is what keeps it from reading
 // as pure metal; it is a small accent, not the subject.
 //
-// One inhand state serves both hands — `inhand_icon_state` is looked up in
-// `lefthand_file` and `righthand_file` alike, and both point here — so it is
+// One inhand state serves both hands, `inhand_icon_state` is looked up in
+// `lefthand_file` and `righthand_file` alike, and both point here, so it is
 // drawn once, on tg's lefthand geometry (East sits right of West, the held
 // item leading the facing direction).
 //
@@ -826,7 +826,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * Ilthuun's mind control, three times, in somebody else's hands. Asked for after the boss
  * fight playtest: the ability that makes people turn on each other, as a drop.
  *
- * ### Delivery — the boss's own spell, lent while held
+ * ### Delivery: the boss's own spell, lent while held
  *
  * The bridle grants [/datum/action/cooldown/spell/pointed/lich_corruption/bridle], a
  * subtype of the spell Ilthuun casts, through `actions_types` plus
@@ -852,7 +852,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * or a target who stopped being eligible mid-cast costs the 60 second cooldown and not the
  * leather.
  *
- * At zero it goes inert instead of crumbling — a deliberate difference from the
+ * At zero it goes inert instead of crumbling, a deliberate difference from the
  * phylactery, which shatters. Three reasons: the module already has one item that breaks
  * and doesn't need two; a spent strap left on a belt is a legible trophy, and a crew that
  * has just watched somebody use this should be able to look at the thing afterwards; and
@@ -863,7 +863,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * ### Attribution
  *
  * The whole point of the tuned status effect below. Ilthuun's version names Ilthuun
- * because he is always the caster; a player-wielded version names the player — in the
+ * because he is always the caster; a player-wielded version names the player, in the
  * message the victim reads, the message the room reads, the expiry message, out of the
  * victim's own mouth, on the status alert, and in `log_attack` and `log_game` with a ckey
  * attached. Threaded through the base effect's [/datum/status_effect/lich_thrall/proc/attribution_name]
@@ -872,7 +872,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * ### What it is deliberately not
  *
  * It is not a remote-controlled assassin. The bridled victim keeps the base effect's
- * target selection — nearest living non-ally, players first — which the wielder does not
+ * target selection (nearest living non-ally, players first) which the wielder does not
  * get to influence, and the wielder has to be within seven tiles to cast, so the wielder
  * is frequently the nearest thing there is. Bridling somebody at knife range means being
  * knifed. That is the intended shape of the item: you point it at a fight and the fight
@@ -919,7 +919,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	// times they can do it.
 	. += span_green("<b>Point it at someone: for [LICH_BRIDLE_DURATION / 10] seconds they are not driving, and they will attack whoever is nearest to them.</b> [charges] use[charges == 1 ? "" : "s"] left, once every [DisplayTimeText(LICH_BRIDLE_COOLDOWN)].")
 	. += span_green("You do not get to choose what they swing at, and you are usually the closest thing to them.")
-	. += span_green("It says your name while it does it — to them, to the room, and in the record. Mind-affecting wards turn it away, and it will not take the same head twice in the same minute and a half.")
+	. += span_green("It says your name while it does it, to them, to the room, and in the record. Mind-affecting wards turn it away, and it will not take the same head twice in the same minute and a half.")
 
 /obj/item/verdigris_bridle/attack_self(mob/user, modifiers)
 	. = ..()
@@ -963,7 +963,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	desc = "A short strap of grey-green leather with a dull gold bit buckled into it. Whatever used to be in the creases has been spent down to nothing. It is a thing that was used until it was empty, and is now a souvenir of what it was used on."
 	set_light_on(FALSE)
 
-	// The action is kept and made permanently unavailable rather than deleted — see the
+	// The action is kept and made permanently unavailable rather than deleted (see the)
 	// header. Renamed so a wielder staring at their HUD can see which of it is dead.
 	var/datum/action/cooldown/spell/pointed/lich_corruption/bridle/rein = locate() in actions
 	if(rein)
@@ -1022,10 +1022,10 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * Ilthuun's possession, tuned down for a player to hold, and made to say who is holding it.
  *
  * The only mechanical change is [duration]: LICH_BRIDLE_DURATION against his
- * LICH_THRALL_DURATION. Everything else about the effect — the AI controller, the
+ * LICH_THRALL_DURATION. Everything else about the effect, the AI controller, the
  * discarded input, the target selection, the green wash, the counterplay, and the
  * per-victim lockout it leaves behind (LICH_THRALL_IMMUNITY, 90 seconds, longer than this
- * spell's own cooldown on purpose) — is the base effect's, unweakened.
+ * spell's own cooldown on purpose). Is the base effect's, unweakened.
  *
  * The rest of this subtype is attribution. `id` is deliberately left inherited, so
  * `has_status_effect(/datum/status_effect/lich_thrall)` and STATUS_EFFECT_UNIQUE treat a
@@ -1085,7 +1085,7 @@ GLOBAL_LIST_EMPTY(lich_leavings)
 	var/mob/living/rider = master_ref?.resolve()
 	return rider ? "[key_name(rider)] with a verdigris bridle" : "a verdigris bridle with nobody holding it"
 
-/// Examining a bridled mob names the wielder too — it is the one attribution channel that
+/// Examining a bridled mob names the wielder too. It is the one attribution channel that
 /// still works for somebody who walked in after the apply message scrolled past.
 /datum/status_effect/lich_thrall/bridle/get_examine_text()
 	return span_boldwarning("[owner.p_They()] [owner.p_are()] lit from the inside with a cold green light, and [attribution_name()] is holding the other end of the strap.")

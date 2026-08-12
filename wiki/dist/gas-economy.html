@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fuel &amp; Gas — Voidcrew Wiki</title>
+<title>Fuel &amp; Gas | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li class="active"><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -74,13 +76,13 @@
 </aside><h1>Fuel &amp; Gas</h1>
 <p>Most ships fly on burnt gas, and gas costs money. A crew that buys every canister off a trader will spend a large fraction of its income on getting anywhere. There are two ways to stop doing that: scoop your fuel out of a nebula, or bake it out of plasma you mined. Both are machines you build once and run forever, and the second-order effect is that the rarer gases become something you <em>sell</em> rather than burn.</p>
 <h2 id="how-ships-burn-fuel">How ships burn fuel</h2>
-<p>Fuelled thrusters do not hold their own fuel. Each one draws from an <strong>engine heater</strong> parked directly behind it and facing the same way. The heater is the tank; the thruster is the nozzle. For how these fit into the rest of the hull, see <a href="ship-systems.html">Ship Systems</a>.</p>
+<p>Fuelled thrusters do not hold their own fuel. Each one draws from an <strong>engine heater</strong> parked directly behind it and facing the same way. The heater is the tank; the thruster is the nozzle. For how these fit into the rest of the hull. See <a href="ship-systems.html">Ship Systems</a>.</p>
 <p>A heater feeds from one of two sources, toggled by alt-clicking it:</p>
 <ul>
 <li><strong>Tank mode</strong>, where it drinks from a gas tank you slotted into it. Simple, portable, and small.</li>
 <li><strong>Pipe mode</strong>, where it drinks from whatever pipe network it is wrenched onto. This is the mode that matters, because it is what lets a fuel machine somewhere else on the ship keep the engines topped up automatically.</li>
 </ul>
-<p>The two common fuelled thrusters differ a lot in appetite. A <strong>plasma thruster</strong> burns plasma specifically, and is the efficient one. An <strong>expulsion thruster</strong> burns literally any gas and is far less efficient per mole — it is what you install when you have more gas than sense, or when the only thing you can scoop is nitrogen.</p>
+<p>The two common fuelled thrusters differ a lot in appetite. A <strong>plasma thruster</strong> burns plasma specifically, and is the efficient one. An <strong>expulsion thruster</strong> burns literally any gas and is far less efficient per mole. It is what you install when you have more gas than sense, or when the only thing you can scoop is nitrogen.</p>
 <p>Heavier ships burn proportionally more per burn, so a big hull with a small fuel supply is a bad combination. See <a href="piloting.html">Piloting</a> for how burns work at the helm.</p>
 <h2 id="nebulas">Nebulas</h2>
 <p>Nebulas are common features on the <a href="overmap.html">overmap</a>, and in Voidcrew every one of them <strong>carries a specific gas</strong>. Which gas depends on how deep the nebula is: the safe outer ring holds plasma, nitrogen and water vapour; the contested band adds tritium and miasma; and the lawless deep is where hypernoblium, pluoxium and nitrium pool.</p>
@@ -89,14 +91,14 @@
 <h2 id="the-ram-scoop">The ram scoop</h2>
 <p>A <strong>nebula ram scoop</strong> is an external intake you build on your hull and wrench onto a pipe network. It harvests only when three things are true at once: the intake is open, your ship is <strong>inside a nebula</strong>, and your ship is <strong>holding still</strong>. Click it to open or close the intake.</p>
 <p>Harvested gas feeds straight into the connected pipes. Run those pipes to an engine heater in pipe mode and your engines refuel themselves; run them to a connector port instead and you can fill canisters and tanks to sell or carry.</p>
-<p>Scoop rate depends on the gas. The common fuels come in fast; the valuable ones come in slowly on top of only existing in dangerous space. Better micro-lasers in the scoop multiply the rate — a full set of top-tier lasers roughly quadruples it.</p>
+<p>Scoop rate depends on the gas. The common fuels come in fast; the valuable ones come in slowly on top of only existing in dangerous space. Better micro-lasers in the scoop multiply the rate, a full set of top-tier lasers roughly quadruples it.</p>
 <div class="admonition danger">
 <p class="admonition-title">Scooping is loud</p>
 <p>Running the scoop <strong>cancels nebula concealment and rips away any concealment you already had</strong>, and keeps you visible for ten seconds after the last harvest tick. You cannot refuel and hide at the same time. Every crew in the galaxy knows the fuel stop is also the ambush spot.</p>
 </div>
 <p>Close the intake before you try to hide.</p>
 <h2 id="the-sublimation-chamber">The sublimation chamber</h2>
-<p>The <strong>plasma sublimation chamber</strong> is the other half of the loop, for crews who mine rather than fly around looking for clouds. Feed it raw <strong>plasma sheets</strong> by hand — the hopper holds fifty — and it bakes each sheet down into 30 moles of clean plasma gas, trickled into whatever pipe network it is wrenched onto. Alt-click empties the hopper back into sheets if you change your mind.</p>
+<p>The <strong>plasma sublimation chamber</strong> is the other half of the loop, for crews who mine rather than fly around looking for clouds. Feed it raw <strong>plasma sheets</strong> by hand (the hopper holds fifty) and it bakes each sheet down into 30 moles of clean plasma gas, trickled into whatever pipe network it is wrenched onto. Alt-click empties the hopper back into sheets if you change your mind.</p>
 <p>Micro-lasers set the output rate here too. Since planets and asteroids hand out plasma ore fairly freely, a mining crew with a sublimator effectively never buys fuel again.</p>
 <p>Both machines are unlocked by the same early research node as the engine heater, so any ship that can research at all can print both boards. Waystation Halcyon also sells the <strong>ram scoop board</strong> over the counter for 600 credits, which is the route for crews with no research bay.</p>
 <h2 id="buying-fuel">Buying fuel</h2>
@@ -128,13 +130,13 @@
 <tr>
 <td>Nebula ram scoop board</td>
 <td>600 cr</td>
-<td>—</td>
+<td>-</td>
 </tr>
 </tbody>
 </table>
 <p>Quartermain is cheaper on plasma because it sits further out; Halcyon's markup is the haul to the safe ring.</p>
 <h2 id="selling-gas">Selling gas</h2>
-<p>Exotic gas is worth real money, and there is exactly one buyer: <strong>Vex at the Undertow Exchange</strong>, in the lawless deep. Vex buys gas by the <strong>tank</strong> — fill a tank off your scooped pipe network at a connector port, carry it to the counter, and the tank goes with the sale.</p>
+<p>Exotic gas is worth real money, and there is exactly one buyer: <strong>Vex at the Undertow Exchange</strong>, in the lawless deep. Vex buys gas by the <strong>tank</strong>. Fill a tank off your scooped pipe network at a connector port, carry it to the counter, and the tank goes with the sale.</p>
 <table>
 <thead>
 <tr>

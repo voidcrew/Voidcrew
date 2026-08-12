@@ -1,8 +1,8 @@
 /**
- * # Plunder Uniques — the quartermaster's strongbox
+ * # Plunder Uniques: the quartermaster's strongbox
  *
  * Seven one-of-a-kind prizes for the PLUNDER uniques shelf (see
- * voidcrew/modules/loot/themes/plunder.dm — the `loot_uniques` shelf on
+ * voidcrew/modules/loot/themes/plunder.dm, the `loot_uniques` shelf on
  * /datum/loot_theme/plunder, read by the quartermaster's strongbox).
  *
  * Sprites live in voidcrew/modules/loot/icons/uniques.dmi (item states) with
@@ -18,15 +18,15 @@
  */
 
 // =========================================================================
-// Shared helpers — what a thing is worth, in this round's economy.
+// Shared helpers: what a thing is worth, in this round's economy.
 //
 // Two independent sources, checked in this order:
 //   1. A live outpost buyback (voidcrew/modules/trade/shop_buyback.dm), scanned
 //      across every trader outpost on the overmap (GLOB.trader_outposts). This
 //      is a real "the trader is buying this right now" price, and vouchers are
 //      weighted heavily above credits since they can't be farmed safely.
-//   2. The cargo export ledger (/datum/export, code/modules/cargo/exports.dm) —
-//      what the cargo shuttle pays for it. Far broader than the buyback list:
+//   2. The cargo export ledger (/datum/export, code/modules/cargo/exports.dm).
+//      What the cargo shuttle pays for it. Far broader than the buyback list:
 //      most manufactured goods, materials, tools, organs, fish and salvage have
 //      an export datum, which is why the fence's eye prices nearly anything.
 // =========================================================================
@@ -91,7 +91,7 @@
 	return null
 
 // =========================================================================
-// GREEN — Cheat's deck
+// GREEN: Cheat's deck
 // A real 52-card deck (subtypes /obj/item/toy/cards/deck) with its own art in
 // uniques.dmi. The parent picks its icon_state from the card count, so the
 // four count states are mirrored below rather than fought with.
@@ -134,7 +134,7 @@
 /obj/item/toy/cards/deck/cheats/attack_hand(mob/living/user, list/modifiers, flip_card = FALSE)
 	var/cards_before = count_cards()
 	. = ..()
-	// The parent can refuse the draw (no dexterity, telekinesis, etc) —
+	// The parent can refuse the draw (no dexterity, telekinesis, etc),
 	// fortune only flows when a card actually left the deck
 	if(count_cards() >= cards_before || !ishuman(user))
 		return
@@ -192,11 +192,11 @@
 #undef CHEATS_DECK_COOLDOWN
 
 // =========================================================================
-// GREEN — The bottomless ration
+// GREEN: The bottomless ration
 // Sprite donor: the rum bottle ("rumbottle" out of the stock bottles.dmi).
 //
 // FIXED: this used to subtype the plain /cup/glass/bottle, which is the blank
-// glass bottle — no list_reagents and the anonymous "glassbottle" sprite — so
+// glass bottle, no list_reagents and the anonymous "glassbottle" sprite, so
 // every one that ever rolled spawned empty and the refill code had nothing to
 // top up. The rum bottle's icon_state and starting reagents are now set here
 // explicitly rather than re-parenting, which would have changed the typepath
@@ -230,7 +230,7 @@
 	. = ..()
 	if(!had_reagents || !istype(target_mob) || !gulp_amount)
 		return
-	// Never runs empty — top it right back up to what it had before the swig.
+	// Never runs empty, top it right back up to what it had before the swig.
 	reagents.add_reagent(/datum/reagent/consumable/ethanol/rum, gulp_amount)
 	grant_liquid_courage(target_mob)
 
@@ -241,7 +241,7 @@
 	target_mob.adjustBruteLoss(-3)
 	ADD_TRAIT(target_mob, TRAIT_ANALGESIA, RATION_TRAIT_SOURCE)
 	addtimer(CALLBACK(src, PROC_REF(clear_liquid_courage), target_mob), RATION_PAIN_FREE_TIME, TIMER_OVERRIDE|TIMER_UNIQUE)
-	// Log the swig NOW — the repeat-swig warnings have to land as you drink,
+	// Log the swig NOW: the repeat-swig warnings have to land as you drink,
 	// not thirty seconds later when the courage wears off
 	var/drinker_ref = REF(target_mob)
 	var/list/recent = swig_log[drinker_ref]
@@ -271,7 +271,7 @@
 #undef RATION_TRAIT_SOURCE
 
 // =========================================================================
-// YELLOW — Marlinspike
+// YELLOW: Marlinspike
 // Subtypes the real meat hook (/obj/item/gun/magic/hook,
 // code/modules/projectiles/guns/special/meat_hook.dm) so it inherits its
 // in-hand sprites and the proven hook_and_move pull datum verbatim, tuned
@@ -279,7 +279,7 @@
 //
 // FIXED: the "haul yourself to something bolted down" leg never fired. Walls
 // are /turf, not /atom/movable, so the ismovable(target) guard threw away the
-// single most obvious thing to hook — and turfs are exactly what the
+// single most obvious thing to hook, and turfs are exactly what the
 // projectile reports when it stops against a wall (see /atom/bullet_act ->
 // on_hit). Both legs now report what happened.
 // =========================================================================
@@ -287,7 +287,7 @@
 #define MARLINSPIKE_MAX_RANGE 4
 
 /// A boarding hook, tuned down from the meat hook: yanks a loose target to
-/// you, or — if you hook something anchored — hauls you to it instead.
+/// you, or (if you hook something anchored) hauls you to it instead.
 /obj/item/gun/magic/hook/marlinspike
 	name = "marlinspike"
 	desc = "A boarding hook on braided line, good for 4 tiles. Hook something loose and it comes to you. Hook a wall, a floor tile, or anything bolted down, and you go to it."
@@ -300,7 +300,7 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-/// Range is capped short of the meat hook's full reach — refuse to even
+/// Range is capped short of the meat hook's full reach, refuse to even
 /// fire past it rather than let the projectile travel and fizzle.
 /obj/item/gun/magic/hook/marlinspike/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	if(get_dist(user, target) > MARLINSPIKE_MAX_RANGE)
@@ -360,11 +360,11 @@
 #undef MARLINSPIKE_MAX_RANGE
 
 // =========================================================================
-// YELLOW — Fence's eye
+// YELLOW: Fence's eye
 // A jeweler's monocle with its own art in uniques.dmi / uniques_worn.dmi.
 // The "examine anything for its trade value" beat rides the double-examine
 // ("look closer") extension point (COMSIG_MOB_EXAMINING_MORE,
-// code/game/atom/atom_examine.dm) — there is no generic per-user hook on the
+// code/game/atom/atom_examine.dm). There is no generic per-user hook on the
 // single-look examine in this codebase, only per-atom signals.
 //
 // FIXED: it used to price things against live outpost buybacks only, which is
@@ -383,7 +383,7 @@
 #define FENCES_EYE_SCAN_CAP 300
 
 /// A jeweler's monocle that prices anything you look twice at, and on a
-/// two-minute cooldown picks out the most valuable things nearby — including
+/// two-minute cooldown picks out the most valuable things nearby, including
 /// what's sitting inside closed crates and lockers.
 /obj/item/clothing/glasses/eyepatch/fences_eye
 	name = "fence's eye"
@@ -500,7 +500,7 @@
 	to_chat(user, span_notice("You squint through [src]. Best of what's within [FENCES_EYE_SQUINT_RANGE] tiles:"))
 	for(var/obj/item/find as anything in finds)
 		var/atom/holder = find
-		// Walk out to whatever is actually on the floor — outlining an item
+		// Walk out to whatever is actually on the floor, outlining an item
 		// sealed inside a crate would light up something nobody can see.
 		while(holder.loc && !isturf(holder.loc))
 			holder = holder.loc
@@ -520,7 +520,7 @@
 #undef FENCES_EYE_SQUINT_COOLDOWN
 
 // =========================================================================
-// RED — "Parley"
+// RED: "Parley"
 // Subtypes /obj/item/claymore/cutlass for the block-chance and hit_reaction
 // machinery (block_chance = 50 comes down from /obj/item/claymore); its ground
 // sprite is its own, its in-hands stay the stock cutlass ones.
@@ -582,10 +582,10 @@
 #undef PARLEY_DISARM_COOLDOWN
 
 // =========================================================================
-// RED — "Heave-Ho"
+// RED: "Heave-Ho"
 // The quartermaster's other job: moving the cargo. A stevedore's harness that
 // shoulders a whole closed crate, locker or cache so it can be walked out of a
-// ruin instead of emptied into a backpack one handful at a time — and swung at
+// ruin instead of emptied into a backpack one handful at a time, and swung at
 // whoever objects.
 //
 // Replaces the dead man's compass, which pointed at the highest-value item in
@@ -725,7 +725,7 @@
 	)
 	playsound(src, 'sound/items/handling/toolbox/toolbox_drop.ogg', 50, TRUE)
 
-/// A swing with a loaded harness throws its weight around — literally.
+/// A swing with a loaded harness throws its weight around, literally.
 /obj/item/heave_ho/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()
 	if(!carried || !isliving(target) || target == user || !isliving(user))
@@ -751,7 +751,7 @@
 #undef HEAVE_HO_LIFT_TIME
 
 // =========================================================================
-// RED — No Quarter
+// RED: No Quarter
 // Subtypes the Donk Co. Musket for its single-shot-then-rack loop and its
 // oversized in-hand frame; the ground sprite and the 64x in-hands are its own
 // (uniques.dmi / uniques_64x_*hand.dmi). Wall breaching calls
@@ -776,7 +776,7 @@
 	desc = "A flintlock hand cannon dressed up as a boltloading musket. One shot: it punches a hole in a normal wall, or throws a person 6 tiles. Loading the next cartridge takes 5 seconds."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "no_quarter"
-	// base musket sets inhand_icon_state = "donk_musket" — override so the
+	// base musket sets inhand_icon_state = "donk_musket", override so the
 	// custom states in the files below are actually used. inhand_x/y_dimension
 	// stay inherited at 64 from the shotgun base, matching the 64x64 files.
 	inhand_icon_state = "no_quarter"
@@ -813,7 +813,7 @@
 	. = ..()
 	. += span_notice("Loading a cartridge takes 5 seconds and can be done anywhere.")
 
-/// Slows the normal ammo-loading flow down to a five-second job — once that's
+/// Slows the normal ammo-loading flow down to a five-second job, once that's
 /// done, the real (unmodified) chambering logic takes over.
 /obj/item/gun/ballistic/shotgun/musket/no_quarter/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(!isammocasing(tool) && !istype(tool, /obj/item/ammo_box))
@@ -835,7 +835,7 @@
 	name = "\"No Quarter\" chamber"
 	ammo_type = /obj/item/ammo_casing/shotgun/no_quarter
 
-/// "Gunpowder and a metal slug, twisted shut" — the one cartridge type
+/// "Gunpowder and a metal slug, twisted shut", the one cartridge type
 /// No Quarter feeds on. Subtypes the real shotgun slug casing (icon/caliber/
 /// materials inherited verbatim) and just swaps the projectile it fires.
 /obj/item/ammo_casing/shotgun/no_quarter
@@ -843,7 +843,7 @@
 	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut. Only \"No Quarter\" takes them."
 	projectile_type = /obj/projectile/bullet/shotgun_slug/no_quarter
 
-/// The bandolier the gun turns up with — twelve cartridges, then you make
+/// The bandolier the gun turns up with. Twelve cartridges, then you make
 /// your own off the schematic.
 /obj/item/storage/belt/bandolier/no_quarter
 	name = "hand cannon bandolier"

@@ -164,7 +164,7 @@ SUBSYSTEM_DEF(overmap_zones)
  * Overmap turfs resolve directly. Turfs inside a loaded space ruin, trader
  * outpost or planet resolve to the zone of that object's overmap tile.
  * Returns null when the location can't be tied to the overmap (e.g. ship
- * interiors, CentCom) — callers pick their own default.
+ * interiors, CentCom), callers pick their own default.
  */
 /datum/controller/subsystem/overmap_zones/proc/get_zone_type_anywhere(turf/T)
 	if(!T)
@@ -217,7 +217,7 @@ SUBSYSTEM_DEF(overmap_zones)
  * Finds the overmap object whose loaded interior contains the given turf.
  */
 /datum/controller/subsystem/overmap_zones/proc/get_overmap_object_for_turf(turf/T)
-	// Space ruins: turf reservations on shared z-levels — bounds check
+	// Space ruins: turf reservations on shared z-levels, bounds check
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
 		if(reservation_contains_turf(ruin.reservation, T))
 			return ruin

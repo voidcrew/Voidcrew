@@ -8,7 +8,7 @@
  * ceiling. Pointed at yourself it is the load readout you would otherwise
  * walk back to the parlor for.
  *
- * It reads ALL robotic organs, not just ours — a printable reviver or a
+ * It reads ALL robotic organs, not just ours, a printable reviver or a
  * prosthetic heart comes back UNRATED, with no tier and no load, because the
  * bus only knows what answers it. Telling parlor chrome apart from fab-printed
  * augments at a glance is most of the point.
@@ -29,7 +29,7 @@
 /// How far the bus reaches, in tiles, with line of sight required.
 #define CYBERWARE_SCAN_RANGE 7
 #define CYBERWARE_SCAN_COOLDOWN (12 SECONDS)
-/// Readout colour for hardware the bus can see but can't rate — anything
+/// Readout colour for hardware the bus can see but can't rate, anything
 /// robotic that isn't parlor chrome.
 #define CYBERWARE_SCAN_UNRATED_COLOR "#8fa1a8"
 
@@ -56,7 +56,7 @@
 		. += organ
 
 /**
- * One monospace readout line in the given accent — the BIOS boot splash's
+ * One monospace readout line in the given accent, the BIOS boot splash's
  * visual language (cyberware_base.dm). Returned rather than sent so a whole
  * report lands as a single chat message instead of five.
  */
@@ -79,7 +79,7 @@
 	if(ishuman(target))
 		var/mob/living/carbon/human/human_target = target
 		subject = human_target.get_visible_name()
-	. += cyberware_scan_line("CHROME READ — [uppertext(subject)]", accent)
+	. += cyberware_scan_line("CHROME READ: [uppertext(subject)]", accent)
 
 	var/list/found = cyberware_scannable_hardware(target)
 	if(!length(found))
@@ -90,7 +90,7 @@
 	var/capacity = get_chrome_capacity(target)
 	. += cyberware_scan_line("SIGNATURES [length(found)] · NEURAL LOAD [load]/[capacity]", accent)
 	if(resolution < CYBERWARE_SCAN_ITEMIZED)
-		. += cyberware_scan_line("BUS RESOLUTION TOO LOW — IDENTITIES UNRESOLVED", accent)
+		. += cyberware_scan_line("BUS RESOLUTION TOO LOW: IDENTITIES UNRESOLVED", accent)
 	else
 		for(var/obj/item/organ/ware as anything in found)
 			var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
@@ -100,7 +100,7 @@
 			var/line_color = chrome ? cyberware_tier_color(chrome.tier) : CYBERWARE_SCAN_UNRATED_COLOR
 			. += cyberware_scan_line("» [uppertext(ware.name)] · [rating][status]", line_color)
 	if(load > capacity)
-		. += cyberware_scan_line("LOAD OVER CEILING — SUBJECT BROWNED OUT", CYBERWARE_COLOR_TIER_3)
+		. += cyberware_scan_line("LOAD OVER CEILING: SUBJECT BROWNED OUT", CYBERWARE_COLOR_TIER_3)
 
 // ---- The ability -------------------------------------------------------
 
@@ -134,7 +134,7 @@
 	// Ghostskin scatters the handshake the same way it scatters NPC targeting.
 	if(HAS_TRAIT(subject, TRAIT_CYBER_CAMO))
 		bearer.balloon_alert(bearer, "signature scatter!")
-		to_chat(bearer, cyberware_scan_line("CHROME READ — SIGNAL SCATTER, NO LOCK", CYBERWARE_COLOR_TIER_3))
+		to_chat(bearer, cyberware_scan_line("CHROME READ: SIGNAL SCATTER, NO LOCK", CYBERWARE_COLOR_TIER_3))
 		playsound(bearer, 'sound/machines/terminal/terminal_error.ogg', 20, TRUE)
 		StartCooldown()
 		return TRUE

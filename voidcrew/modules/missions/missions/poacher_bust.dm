@@ -94,7 +94,7 @@
 
 	/// /datum/overmap/planet typepath this bust is themed on
 	var/bust_planet_type
-	/// The rolled bust table row (points into the static table — never mutate)
+	/// The rolled bust table row (points into the static table, never mutate)
 	var/list/bust_row
 	/// The rolled contract-grudge line (stable across text rebuilds)
 	var/flavor_line
@@ -202,7 +202,7 @@
 
 	wipe = new
 	// The squad scales with the zone: green gets rifles and a knife, deeper
-	// zones add the trailboss's SMG and more guns. Exact subtypes only — the
+	// zones add the trailboss's SMG and more guns. Exact subtypes only, the
 	// /survivor/random variant self-replaces on Initialize and would escape
 	// tracking.
 	var/list/squad_types = list()
@@ -254,7 +254,7 @@
 	return data
 
 // =========================================================================
-// THE CAMP WIPE — field-spawn the outfit, count the squad down
+// THE CAMP WIPE: field-spawn the outfit, count the squad down
 // =========================================================================
 
 /**
@@ -266,7 +266,7 @@
  *
  * Death handling: a poacher's death always counts (attribution only flavors
  * the confirm line), so the wipe can't stall. A live poacher qdeleting
- * WITHOUT dying — site unload, admin cleanup — routes through the mission's
+ * WITHOUT dying (site unload, admin cleanup) routes through the mission's
  * quest-loss policy (FAIL) instead, so despawns can't hand out a free wipe.
  */
 /datum/mission_objective/field/wipe_camp
@@ -456,7 +456,7 @@
 	return "Camp cleared"
 
 // =========================================================================
-// EVIDENCE TURN-IN — the counted bound hand-over, case-file flavored
+// EVIDENCE TURN-IN, the counted bound hand-over, case-file flavored
 // =========================================================================
 
 /**

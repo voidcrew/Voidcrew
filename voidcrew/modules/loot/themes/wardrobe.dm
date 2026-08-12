@@ -1,13 +1,13 @@
 // =========================================================================
-// WARDROBE THEME — identity loot: clothes and character pieces so crews
+// WARDROBE THEME: identity loot: clothes and character pieces so crews
 // stop looking like quintuplets. Common is thrift-store, uncommon is
 // somebody's good coat, prime is armored fashion you'll be recognized by.
 // Liner wrecks keep their passengers: guarded by the restless dead
 // (undead markers, themes/occult.dm).
 // Cyberware: the two pieces of the parlor roster that are a look before
-// they're a tool — programmable ink and matte black eyes. Both draw on the
+// they're a tool. Programmable ink and matte black eyes. Both draw on the
 // body, which is exactly what this theme is for.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 

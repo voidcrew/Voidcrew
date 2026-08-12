@@ -3,7 +3,7 @@
  *
  * A machine aboard the target ship starts venting polonium and mutagen smoke and
  * irradiating everything near it. The crew stop it by working out which tool it wants
- * (the machine's examine text says) and spending thirty seconds on it — otherwise it
+ * (the machine's examine text says) and spending thirty seconds on it, otherwise it
  * runs for about five minutes and then settles on its own.
  *
  * The only structural change from the original is how the machine is chosen. TG scans
@@ -16,7 +16,7 @@
 	name = "Radiation Leak"
 	typepath = /datum/round_event/voidcrew/radiation_leak
 	// Admin-only. Cut from the ambient roster by design decision, not because the event is
-	// badly built — it telegraphs its compartment, its examine text names the tool that
+	// badly built, it telegraphs its compartment, its examine text names the tool that
 	// fixes it, and thirty seconds of work ends it early. What it does not have is a way
 	// to not happen: the radiation is already in the room the crew works in, and the toxin
 	// damage and mutations it hands out on the way to the fix outlast the event itself.
@@ -84,7 +84,7 @@
 		kill()
 		return
 
-	// If the hull has markers, leak from something near one — that is what they are for.
+	// If the hull has markers, leak from something near one, that is what they are for.
 	// Otherwise any eligible machine aboard will do.
 	var/list/markers = target_ship.get_ship_event_spawns()
 	if(length(markers))
@@ -105,7 +105,7 @@
 	var/area/location_descriptor = the_source_of_our_problems ? get_area(the_source_of_our_problems) : null
 	target_ship.ship_event_announce(
 		"A radiation leak has been detected in [location_descriptor?.name || "an unknown compartment"]. \
-		Clear the area. Our [pick("readings", "sensors", "diagnostics", "best guess")] say a machine in there is causing it — repair it and the leak stops.",
+		Clear the area. Our [pick("readings", "sensors", "diagnostics", "best guess")] say a machine in there is causing it. Repair it and the leak stops.",
 		"Radiation Alert",
 	)
 
@@ -160,7 +160,7 @@
 	puff_some_smoke(impromptu_smoke_machine)
 
 /**
- * Cleanup runs whether or not the ship is still alive — the component and the signals
+ * Cleanup runs whether or not the ship is still alive, the component and the signals
  * live on the machine, and a leak left running on a hull that outlived this event would
  * irradiate its crew forever with nothing to switch it off.
  */

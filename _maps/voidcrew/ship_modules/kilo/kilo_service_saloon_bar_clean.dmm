@@ -2,6 +2,7 @@
 "a" = (
 /obj/machinery/jukebox,
 /obj/machinery/light/small{
+	bulb_colour = "#deefff";
 	dir = 8
 	},
 /obj/structure/sign/poster/official/nanomichi_ad{
@@ -51,11 +52,11 @@
 /turf/open/floor/carpet,
 /area/template_noop)
 "f" = (
-/obj/structure/chair/comfy/black{
-	dir = 1
-	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
+	},
+/obj/structure/chair/comfy/black{
+	dir = 1
 	},
 /turf/open/floor/carpet,
 /area/template_noop)
@@ -75,6 +76,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/reagent_containers/cup/glass/bottle/vermouth{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/cup/glass/bottle/gin{
+	pixel_x = 5;
+	pixel_y = 8
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "h" = (
@@ -107,21 +116,20 @@
 /turf/open/floor/iron/white,
 /area/template_noop)
 "k" = (
-/obj/structure/table/reinforced,
-/obj/item/reagent_containers/cup/glass/bottle/vermouth{
-	pixel_x = -6;
-	pixel_y = 9
-	},
-/obj/item/reagent_containers/cup/glass/bottle/gin{
-	pixel_x = 5;
-	pixel_y = 8
-	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "l" = (
@@ -151,6 +159,7 @@
 	dir = 1
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#deefff";
 	dir = 4
 	},
 /turf/open/floor/iron/white,
@@ -172,14 +181,6 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/closet/crate/freezer/food,
-/obj/item/storage/box/donkpockets,
-/obj/item/storage/box/donkpockets/donkpocketteriyaki,
-/obj/item/food/canned/beans,
-/obj/item/food/canned/beans,
-/obj/item/food/sosjerky,
-/obj/item/food/energybar,
-/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/iron/white,
 /area/template_noop)
 

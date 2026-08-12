@@ -1,5 +1,5 @@
 /**
- * Ritual: Mockery of Heroes — galaxy-scoped port of TG's RPG Titles
+ * Ritual: Mockery of Heroes: galaxy-scoped port of TG's RPG Titles
  * (code/modules/events/wizard/rpgtitles.dm).
  *
  * He has decided the galaxy is a story about adventurers. He is not paying it a compliment.
@@ -21,7 +21,7 @@
  *
  * Its sibling, TG's RPG Loot (rpgloot.dm), was ported here as "Mockery of Treasure" and has
  * been REMOVED. It renamed and re-rolled the stats of every item in the galaxy, permanently
- * and irreversibly, including the stock inside NPC trader outposts — the single stickiest
+ * and irreversibly, including the stock inside NPC trader outposts, the single stickiest
  * thing the lich did to anybody. Rites do not touch the crew's property; see the roster
  * policy in lich_events.dm. Titles survives the cut because it is a label under a mob, it
  * costs nobody an item, and it dies with the round.

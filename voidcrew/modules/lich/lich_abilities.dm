@@ -3,20 +3,20 @@
  *
  * Three schools, granted one phase at a time by [/mob/living/basic/lich/proc/enter_phase]:
  *
- * - **Conjuration** (phase 1) — Raise the Buried. Pulls skeletons out of the floor at
+ * - **Conjuration** (phase 1): Raise the Buried. Pulls skeletons out of the floor at
  *   the map's `/obj/effect/landmark/lich/summon_spot` markers. Revoked in phase 3.
- * - **Destruction** (phase 2) — Volley of the Ossuary (a telegraphed, green
+ * - **Destruction** (phase 2): Volley of the Ossuary (a telegraphed, green
  *   `aoe/magic_missile` barrage) and Bolt of Necropotence (a fast three-shot bolt).
  *   Also where Wear Them comes online, the mind-control spell in lich_thrall.dm.
- * - **Illusion** (phase 3) — Verdigris Reflection. Copies of himself, straight off
+ * - **Illusion** (phase 3): Verdigris Reflection. Copies of himself, straight off
  *   `/datum/action/cooldown/spell/pointed/wizard_mimic` (paper_abilities.dm:41-89).
  *
  * ## Upstream coupling, verified
  *
  * Every spell here sets `spell_requirements = NONE`. Upstream's base defaults to
  * `SPELL_REQUIRES_WIZARD_GARB|SPELL_REQUIRES_NO_ANTIMAGIC` (`code/modules/spells/spell.dm:73`)
- * and Ilthuun wears no wizard garb — a robe and a skull are not the garb typepaths the
- * check looks for — so without this every spell in the fight would silently fail
+ * and Ilthuun wears no wizard garb. A robe and a skull are not the garb typepaths the
+ * check looks for, so without this every spell in the fight would silently fail
  * `can_cast_spell` and he would stand there punching people for 2800 HP.
  *
  * `/datum/action/cooldown/spell/conjure` (spell_types/conjure/_conjure.dm) does the
@@ -60,7 +60,7 @@
 #define LICH_PHASE_DESTRUCTION 2
 #define LICH_PHASE_ILLUSION 3
 
-// Blackboard keys for his abilities. Deliberately confined to this file — the mob's
+// Blackboard keys for his abilities. Deliberately confined to this file, the mob's
 // granting and revoking both live here (see below) so lich_mob.dm never needs them and
 // the two files carry no #define ordering dependency on each other.
 #define BB_LICH_RAISE_DEAD "BB_lich_raise_dead"
@@ -75,7 +75,7 @@
  * Grants the abilities of a phase, and takes away anything that phase retires.
  *
  * Additive by design: phase 2 keeps his summoning, so the destruction phase is fought
- * against skeletons *and* missiles. Phase 3 is the exception — it revokes conjuration,
+ * against skeletons *and* missiles. Phase 3 is the exception, it revokes conjuration,
  * because a boss who can both flood the room and duplicate himself at 33% health is
  * both unreadable and a summon-cap fight rather than a boss fight.
  */
@@ -136,7 +136,7 @@
  * Laid out like `/datum/ai_controller/basic_controller/paper_wizard` (paper_wizard.dm:51-71):
  * find a target, then walk the ability subtrees, then fall through to melee. Every
  * ability subtree sets `finish_planning = FALSE` so a queued spell does not stop him
- * swinging in the same tick — cooldowns, not planning order, are what pace the fight.
+ * swinging in the same tick. Cooldowns, not planning order, are what pace the fight.
  *
  * `idle_behavior` is deliberately null. He does not wander; he stands in the sanctum
  * until someone walks in. The leash on the mob is the hard guarantee, but not moving in
@@ -179,7 +179,7 @@
 	ability_key = BB_LICH_CORRUPTION
 	finish_planning = FALSE
 
-/// Don't bother trying to possess something that cannot be possessed — otherwise the
+/// Don't bother trying to possess something that cannot be possessed, otherwise the
 /// ability burns its planning slot every tick on antimagic-carrying raiders.
 /datum/ai_planning_subtree/targeted_mob_ability/lich_corruption/additional_ability_checks(datum/ai_controller/controller, datum/action/cooldown/using_action)
 	var/mob/living/target = controller.blackboard[target_key]
@@ -194,7 +194,7 @@
  *
  * The cap and the tracking are not implemented here on purpose. The mob owns the
  * registry (`live_summons` / `max_live_summons` on `/mob/living/basic/lich`) because the
- * illusion spell also feeds it, and because the interior never unloads — one authority
+ * illusion spell also feeds it, and because the interior never unloads, one authority
  * for "what has he left lying around" is the whole point. This spell only asks
  * permission and reports back.
  */
@@ -220,7 +220,7 @@
 	summon_amount = 2
 	summon_respects_density = TRUE
 	// Permanent. The cap plus the mob's death cleanup is what keeps this safe, not a
-	// timer — see the header of lich_mob.dm.
+	// timer, see the header of lich_mob.dm.
 	summon_lifespan = 0
 
 /datum/action/cooldown/spell/conjure/lich_raise_dead/can_cast_spell(feedback = TRUE)
@@ -230,7 +230,7 @@
 	var/mob/living/basic/lich/ilthuun = owner
 	if(!istype(ilthuun))
 		return FALSE
-	// Any room at all is enough — cast() clamps the batch to what is left under the
+	// Any room at all is enough, cast() clamps the batch to what is left under the
 	// cap, so a lone free slot still buys a skeleton instead of a silent turn.
 	return ilthuun.can_summon_more(1)
 
@@ -239,7 +239,7 @@
  * conjure spell, which then spreads the batch over `range(summon_radius, cast_on)`.
  *
  * `pick_summon_anchor()` returns his own turf when the map placed no landmarks, so a
- * hand-edited lair still works — the dead just climb out around his feet instead.
+ * hand-edited lair still works, the dead just climb out around his feet instead.
  */
 /datum/action/cooldown/spell/conjure/lich_raise_dead/cast(atom/cast_on)
 	var/mob/living/basic/lich/ilthuun = owner
@@ -259,7 +259,7 @@
 
 	var/mob/living/basic/lich/ilthuun = owner
 	if(!istype(ilthuun))
-		// Unreachable in the fight — can_cast_spell already rejects a non-lich owner —
+		// Unreachable in the fight: can_cast_spell already rejects a non-lich owner,
 		// but if it ever happens, an untracked summon in an interior that never unloads
 		// is exactly the failure mode this module exists to prevent. Refuse to leave it.
 		qdel(risen)
@@ -284,7 +284,7 @@
  *
  * A green magic missile barrage. Telegraphed twice: he announces the wind-up, and every
  * mob about to be hit gets a ripple on their own tile [telegraph_time] before the
- * missile actually launches. That window is the whole counterplay — break line of sight
+ * missile actually launches. That window is the whole counterplay. Break line of sight
  * or get behind something.
  */
 /datum/action/cooldown/spell/aoe/magic_missile/lich_bone_volley
@@ -360,7 +360,7 @@
  * ### Deliberate deviation from wizard_mimic
  *
  * `/datum/action/cooldown/spell/pointed/wizard_mimic` deletes all of its clones the
- * moment the caster's health changes (paper_abilities.dm:58, 82-85) — hit the real one
+ * moment the caster's health changes (paper_abilities.dm:58, 82-85). Hit the real one
  * and the ruse collapses. That works for a wandering paper wizard, but this ability
  * comes online below 33% health in the middle of a raid, where incoming damage is
  * continuous: the copies would be deleted within a tick of being created, every time.
@@ -422,14 +422,14 @@
 	if(!placed)
 		return
 
-	// He hides among them. Same trick as paper_abilities.dm:74 — but bounded to his leash,
+	// He hides among them. Same trick as paper_abilities.dm:74, but bounded to his leash,
 	// which the paper wizard has no equivalent of.
 	//
 	// This swap is a forceMove onto a tile up to cast_range + 1 away from him, and a
 	// forceMove is invisible to /datum/component/leash: it only re-checks distance when its
 	// ANCHOR moves (leash.dm:63), never when the leashed mob does. Land him outside the
 	// radius and its pre-move handler then blocks every step whose destination is still
-	// outside (leash.dm:97-103) — from out there that is the first step back, so he stands
+	// outside (leash.dm:97-103). From out there that is the first step back, so he stands
 	// frozen in a corridor for the rest of a round whose interior never unloads. Vetting the
 	// landing turf first is the fix; recall_home() on the mob is the net under it.
 	for(var/direction in shuffle(directions))
@@ -482,12 +482,12 @@
 
 	cast_range = 7
 
-	/// The possession this delivers. Subtyped, not retuned in place — see lich_loot.dm.
+	/// The possession this delivers. Subtyped, not retuned in place, see lich_loot.dm.
 	var/thrall_type = /datum/status_effect/lich_thrall
 
 /// `..()` first for the pointed spell's own "not on yourself" rejection. It never fires for
-/// Ilthuun — `can_be_lich_thralled` already refuses anything in FACTION_LICH, himself
-/// included — but the bridle's wielder is not in his faction, and a player must not be able
+/// Ilthuun: `can_be_lich_thralled` already refuses anything in FACTION_LICH, himself
+/// included, but the bridle's wielder is not in his faction, and a player must not be able
 /// to click the bridle onto their own head.
 /datum/action/cooldown/spell/pointed/lich_corruption/is_valid_target(atom/cast_on)
 	. = ..()
@@ -511,7 +511,7 @@
 	if(victim_turf)
 		new /obj/effect/temp_visual/circle_wave/verdigris(victim_turf)
 	// apply_status_effect returns the instance, or null if on_apply refused it (the third
-	// and last eligibility check) — so this is the honest "did the possession land" answer.
+	// and last eligibility check), so this is the honest "did the possession land" answer.
 	var/datum/status_effect/lich_thrall/possession = cast_on.apply_status_effect(thrall_type, owner)
 	if(possession)
 		on_thrall_applied(cast_on, possession)
@@ -523,7 +523,7 @@
 
 // ===== PROJECTILES =====
 
-/// The volley's missile. Green, and it hits noticeably harder than the wizard version —
+/// The volley's missile. Green, and it hits noticeably harder than the wizard version,
 /// but the paralyze is halved from upstream's 6 seconds, because five simultaneous
 /// six-second paralyzes in a boss room is not a fight, it is a cutscene.
 /obj/projectile/magic/aoe/magic_missile/verdigris

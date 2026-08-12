@@ -12,6 +12,7 @@
  * - Automatic shuttle shrinking when deconstructing
  * - Docking port relocation
  * - Ore silo resource link
+ * - Camera placement bound to the ship's camera network
  */
 
 /// How much material per RCD unit when using silo link (1/4 sheet per unit)
@@ -352,6 +353,34 @@
 	target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
 	rcd_effect.end_animation()
 	return TRUE
+
+/// Build a finished security camera on the target turf, hung on the wall in wall_dir.
+/// Returns the new camera so the caller can finish setup (network binding), or null on failure.
+/obj/item/construction/rcd/internal/ship/proc/build_camera(turf/target, wall_dir, mob/user)
+	var/list/camera_materials = list(
+		/datum/material/iron = SHIP_CAMERA_IRON_COST,
+		/datum/material/glass = SHIP_CAMERA_GLASS_COST,
+	)
+	if(!check_materials(camera_materials, user))
+		return null
+
+	// Show construction effect
+	var/obj/effect/constructing_effect/rcd_effect = new(target, SHIP_CAMERA_BUILD_DELAY, RCD_STRUCTURE)
+
+	// Delay for building
+	if(!build_delay(user, SHIP_CAMERA_BUILD_DELAY, target))
+		qdel(rcd_effect)
+		return null
+
+	// Double check materials after delay
+	if(!use_materials(camera_materials, user))
+		qdel(rcd_effect)
+		return null
+
+	// Mount the camera like a handheld wallframe would: on the open turf, facing its wall
+	var/obj/machinery/camera/new_camera = new(target, wall_dir, TRUE)
+	rcd_effect.end_animation()
+	return new_camera
 
 // ============================================
 // Ship Internal RTD - bypasses proximity checks
@@ -892,11 +921,26 @@
 		return
 	current_ship = port.current_ship
 
+/// Bind a freshly placed camera to this console's ship network. Done by the console rather
+/// than relying on the camera's own ship detection so it works even on freshly claimed
+/// turfs that no shuttle linkup will ever touch. Outpost consoles have no docking port, so
+/// their cameras keep the upstream default network - which is what the default security
+/// consoles and non-ship AIs there can actually see.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/setup_placed_camera(obj/machinery/camera/placed_camera)
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(port)
+		placed_camera.network = list(voidcrew_ship_camera_net(port))
+	// post_machine_initialize() already area-names cameras; this is just a backstop
+	if(!placed_camera.c_tag)
+		var/area/camera_area = get_area(placed_camera)
+		placed_camera.c_tag = "[format_text(camera_area?.name || "Unknown")] Camera"
+
 /obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
 	// Core RCD actions
 	actions += new /datum/action/innate/construction/ship/configure_mode(src)
 	actions += new /datum/action/innate/construction/ship/build(src)
 	actions += new /datum/action/innate/construction/ship/deconstruct(src)
+	actions += new /datum/action/innate/construction/ship/camera_build(src)
 	// RTD actions (added if upgrade is installed)
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
 		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
@@ -991,6 +1035,12 @@
 	return get_turf(src)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/CreateEye()
+	// Reuse the existing drone if it's still around. The parent camera_advanced only ever
+	// creates one eye per console; without this check, every entry into construction mode
+	// orphaned the previous drone mob, which lingered in the world and showed up in the
+	// ghost orbit menu.
+	if(eyeobj && !QDELETED(eyeobj))
+		return TRUE
 	var/turf/spawn_spot = find_spawn_spot()
 	if(!spawn_spot)
 		return FALSE

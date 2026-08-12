@@ -5,7 +5,7 @@
 /atom/proc/register_context()
 	flags_1 |= HAS_CONTEXTUAL_SCREENTIPS_1
 	// override = TRUE because turfs keep their signal registrations when they are
-	// replaced (see /turf/_clear_signal_refs) — so a wall built where a wall already
+	// replaced (see /turf/_clear_signal_refs), so a wall built where a wall already
 	// stood, which is every reload of a map template into recycled reservation turfs,
 	// re-registers over its own leftover entry. It is add_context either way, so the
 	// duplicate warning says nothing and the stack_trace it raises is not free: inside

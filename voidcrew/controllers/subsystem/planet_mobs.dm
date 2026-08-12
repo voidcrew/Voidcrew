@@ -137,8 +137,8 @@ SUBSYSTEM_DEF(planet_mobs)
 		return
 
 	// A flat cap muted the density half of danger scaling: deeper bands roll more
-	// spawns, then the cap threw the surplus away. Scale it modestly instead —
-	// the global cap still bounds the whole galaxy.
+	// spawns, then the cap threw the surplus away. Scale it modestly instead.
+	// The global cap still bounds the whole galaxy.
 	var/planet_cap = per_zlevel_mob_cap
 	switch(surface_z ? SSmapping.get_planet_zone_band_for_z(surface_z) : null)
 		if(ZONE_YELLOW)
@@ -230,8 +230,8 @@ SUBSYSTEM_DEF(planet_mobs)
  * (bodies are evidence and loot), anything inside something else, megafauna and
  * contract mobs are all off limits.
  *
- * This sweep is indiscriminate by design — it walks every living mob on the
- * z-level, not a list of the ones it spawned — so anything else that puts a mob
+ * This sweep is indiscriminate by design, it walks every living mob on the
+ * z-level, not a list of the ones it spawned, so anything else that puts a mob
  * on a planet is caught in it. A mission's marked specimen is exactly that: it
  * spawns from the objective chain, not from the biome tables, and deleting it
  * voids the contract three minutes after the crew steps off the surface.

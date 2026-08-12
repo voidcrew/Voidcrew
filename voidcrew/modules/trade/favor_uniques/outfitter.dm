@@ -1,5 +1,5 @@
 /**
- * # Outfitter favor uniques — Quartermain Depot's back-room stock
+ * # Outfitter favor uniques: Quartermain Depot's back-room stock
  *
  * Three one-of-a-kind rewards Sarge keeps for crews who've done real work for
  * the depot (see /datum/outpost_shop/outfitter in
@@ -8,7 +8,7 @@
  * live with the rest of the outfitter catalog; this file is items only.
  *
  * Every item carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so the
- * Helios pattern stamp — and any future duplicator — can never copy them.
+ * Helios pattern stamp (and any future duplicator) can never copy them.
  * Favor uniques stay unique.
  */
 
@@ -16,8 +16,8 @@
  * # Skunkworks cell
  *
  * A high-capacity cell that slowly recharges itself. There's no self-charging
- * cell left in upstream tg — the mechanism lives on energy guns now
- * (selfcharge in code/modules/projectiles/guns/energy.dm) — so this mirrors
+ * cell left in upstream tg. The mechanism lives on energy guns now
+ * (selfcharge in code/modules/projectiles/guns/energy.dm), so this mirrors
  * that: SSobj processing that give()s a trickle each tick, with the same
  * post-charge bookkeeping the base power store does after a magic recharge
  * (rechamber a host gun, refresh the host's appearance).
@@ -29,13 +29,13 @@
  */
 /obj/item/stock_parts/power_store/cell/skunkworks
 	name = "skunkworks cell"
-	desc = "A high-capacity power cell rebuilt around a radiothermal slug by somebody in a depot workshop. It trickle-charges itself off its own decay heat, so it never needs a charger — it just needs time."
+	desc = "A high-capacity power cell rebuilt around a radiothermal slug by somebody in a depot workshop. It trickle-charges itself off its own decay heat, so it never needs a charger. It just needs time."
 	icon = 'voidcrew/icons/obj/favor_uniques.dmi'
 	icon_state = "skunkworks_cell"
-	maxcharge = STANDARD_CELL_CHARGE * 12 // PROVISIONAL BALANCE — above a high-capacity cell (10x), well below bluespace (40x)
-	chargerate = STANDARD_CELL_RATE // PROVISIONAL BALANCE — a wall charger still beats waiting by a mile
+	maxcharge = STANDARD_CELL_CHARGE * 12 // PROVISIONAL BALANCE, above a high-capacity cell (10x), well below bluespace (40x)
+	chargerate = STANDARD_CELL_RATE // PROVISIONAL BALANCE, a wall charger still beats waiting by a mile
 	/// Watts fed back into the cell by its own radiothermal slug, every tick, wherever it is
-	var/self_charge_rate = STANDARD_CELL_RATE * 0.015 // PROVISIONAL BALANCE — 150 W, ~13 minutes empty-to-full
+	var/self_charge_rate = STANDARD_CELL_RATE * 0.015 // PROVISIONAL BALANCE, 150 W, ~13 minutes empty-to-full
 
 /obj/item/stock_parts/power_store/cell/skunkworks/Initialize(mapload)
 	. = ..()
@@ -69,14 +69,14 @@
  *
  * Subtypes the tinker's gloves (code/modules/clothing/gloves/special.dm) for
  * their sprite and their TRAIT_QUICK_BUILD pedigree, and adds
- * TRAIT_QUICKER_CARRY on top — both delivered through the stock
+ * TRAIT_QUICKER_CARRY on top: both delivered through the stock
  * clothing_traits equip/drop hook, no custom plumbing.
  *
  * Honest coverage: TRAIT_QUICK_BUILD is the only real construction-speed
  * trait in this codebase. It speeds up plating girders and foamed-metal
  * walls (0.7x time) and every stack recipe flagged with it as a
  * trait_booster (wall girders, platforms, steps, at 0.75x). It does not
- * touch pipes, machine frames, or tool-driven deconstruction — tool speed
+ * touch pipes, machine frames, or tool-driven deconstruction, tool speed
  * lives on the tool's own toolspeed var and has no clothing hook.
  * TRAIT_QUICKER_CARRY takes two full seconds off a fireman carry.
  */
@@ -100,16 +100,16 @@
 /**
  * # Prototype maneuvering harness
  *
- * Subtypes the oxygen jet harness (code/game/objects/items/tanks/jetpack.dm)
- * — its own onboard gas reserve, refilled like any tank. Keeps the base
+ * Subtypes the oxygen jet harness (code/game/objects/items/tanks/jetpack.dm),
+ * its own onboard gas reserve, refilled like any tank. Keeps the base
  * jetpack's full_speed = TRUE, so drifting on it carries no speed penalty
  * (/datum/movespeed_modifier/jetpack/full_speed), and the harness frame
  * means normal w_class with no wear slowdown.
  *
  * Handling beats everything printable: more than double the stock harness's
  * gas, stronger thrust and stabilization than a standard jetpack, and it
- * rides in the suit-storage slot like the captain's pack does. Still finite
- * — run it dry in a red zone and you're drifting home the slow way.
+ * rides in the suit-storage slot like the captain's pack does. Still finite.
+ * Run it dry in a red zone and you're drifting home the slow way.
  */
 /obj/item/tank/jetpack/oxygen/harness/prototype
 	name = "prototype maneuvering harness"
@@ -117,9 +117,9 @@
 	icon = 'voidcrew/icons/obj/favor_uniques.dmi'
 	icon_state = "maneuver_harness" // jetpack code derives "maneuver_harness-on"
 	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_SUITSTORE
-	volume = 85 // PROVISIONAL BALANCE — stock harness is 40, standard jetpack 70, captain's steal-objective pack 90
-	drift_force = 2 NEWTONS // PROVISIONAL BALANCE — standard jetpack is 1.5
-	stabilizer_force = 1.8 NEWTONS // PROVISIONAL BALANCE — standard jetpack is 1.2
+	volume = 85 // PROVISIONAL BALANCE. Stock harness is 40, standard jetpack 70, captain's steal-objective pack 90
+	drift_force = 2 NEWTONS // PROVISIONAL BALANCE. Standard jetpack is 1.5
+	stabilizer_force = 1.8 NEWTONS // PROVISIONAL BALANCE. Standard jetpack is 1.2
 
 /obj/item/tank/jetpack/oxygen/harness/prototype/Initialize(mapload)
 	. = ..()

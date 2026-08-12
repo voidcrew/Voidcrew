@@ -8,7 +8,7 @@
  * anything loudly, it silently moves seating and flags to hardcoded fallback
  * coordinates. The map has already drifted out from under the dryrun harness
  * once (colosseum_dryrun.dm's gallery coordinates are stale), and the dryrun
- * cannot live in this suite — it is #ifdef'd and drives a real two-cycle match
+ * cannot live in this suite. It is #ifdef'd and drives a real two-cycle match
  * with sleeps.
  *
  * This is the cheap half of that harness: everything the controller reaches for
@@ -21,14 +21,14 @@
 	var/datum/map_template/colosseum/venue_type = /datum/map_template/colosseum
 	var/mappath = initial(venue_type.mappath)
 	var/text = vc_test_file_text(mappath)
-	TEST_ASSERT_NOTNULL(text, "the colosseum map '[mappath]' is missing — the venue can never open")
+	TEST_ASSERT_NOTNULL(text, "the colosseum map '[mappath]' is missing. The venue can never open")
 
 	// Door ids set_gates() drives. Literals = COLOSSEUM_GATE_RED / _BLUE / _SOLO
 	// and COLOSSEUM_SEAL (voidcrew/_DEFINES/colosseum.dm); unit-test files
 	// compile before voidcrew/_DEFINES, so the defines are not available here.
 	for(var/gate_id in list("colo_gate_red", "colo_gate_blue", "colo_gate_solo", "colo_seal"))
 		if(!findtext(text, "id = \"[gate_id]\""))
-			TEST_FAIL("no door in the colosseum map carries id '[gate_id]' — set_gates() drives an empty list and that gate never opens or closes")
+			TEST_FAIL("no door in the colosseum map carries id '[gate_id]', set_gates() drives an empty list and that gate never opens or closes")
 
 	// Landmarks the seating and the game modes index.
 	for(var/landmark_path in list(
@@ -65,8 +65,8 @@
 		/area/voidcrew/colosseum/vault,
 	))
 		if(!findtext(text, "[area_path]"))
-			TEST_FAIL("the colosseum map has no [area_path] — the venue's area-driven behaviour (staging seals, vault claim window) has nothing to hang on")
+			TEST_FAIL("the colosseum map has no [area_path], the venue's area-driven behaviour (staging seals, vault claim window) has nothing to hang on")
 	if(!findtext(text, "/obj/structure/stairs"))
-		TEST_FAIL("the colosseum map has no stairs — the spectator gallery is unreachable")
+		TEST_FAIL("the colosseum map has no stairs. The spectator gallery is unreachable")
 	if(!findtext(text, "/turf/open/indestructible/glass"))
-		TEST_FAIL("the colosseum map has no glass gallery deck — spectators cannot see the arena below")
+		TEST_FAIL("the colosseum map has no glass gallery deck, spectators cannot see the arena below")

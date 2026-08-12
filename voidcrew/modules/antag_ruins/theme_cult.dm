@@ -1,5 +1,5 @@
 /**
- * # The Scarlet Sepulcher — cult vestige
+ * # The Scarlet Sepulcher: cult vestige
  *
  * A votive barge whose congregation bled out waiting for an ending. Trials
  * are rites: a remote ritual sacrifice, and a long tithe of the supplicant's
@@ -234,10 +234,10 @@
 // ===== BOONS =====
 
 // Tuning constants for the Sepulcher's boons (file-local, #undef at bottom).
-// Boon descs quote these numbers literally — keep them in sync.
+// Boon descs quote these numbers literally. Keep them in sync.
 /// Blood units one Crimson Step drinks
 #define VESTIGE_STEP_BLOOD_COST 15
-/// The fold refuses a body already drained below this — blood is the coin, not the corpse
+/// The fold refuses a body already drained below this. Blood is the coin, not the corpse
 #define VESTIGE_STEP_BLOOD_FLOOR BLOOD_VOLUME_OKAY
 /// Tiles the base step reaches
 #define VESTIGE_STEP_RANGE 5
@@ -266,18 +266,18 @@
 
 /**
  * The Sepulcher's step: a pointed, aimed fold to visible ground, paid for in
- * the caster's own blood. Deliberately NOT the wizard blink chassis — the
+ * the caster's own blood. Deliberately NOT the wizard blink chassis, the
  * Athenaeum's Word of Passage already owns the random-destination blink, and
  * two patrons selling the same spell cheapens both. This one is precise where
  * the wizard's is random, and costed where the wizard's is free: blood is the
  * cult's currency (the Vigil of Blood trial teaches exactly that), the fold
- * refuses a drained body, and both ends of the step are loudly advertised —
- * the pool left behind is real blood, with everything that implies for anyone
+ * refuses a drained body, and both ends of the step are loudly advertised.
+ * The pool left behind is real blood, with everything that implies for anyone
  * who can read a deck (or bloodcrawl through it).
  *
  * do_teleport runs unforced on the magic channel, so NOTELEPORT areas and
  * TRAIT_NO_TELEPORT keep their veto; a refused fold spends no blood (the
- * cooldown is lost — this fork's Activate() ignores cast()'s return value,
+ * cooldown is lost, this fork's Activate() ignores cast()'s return value,
  * and everything refusable up front already lives in before_cast).
  */
 /datum/action/cooldown/spell/pointed/vestige_crimson_step
@@ -393,7 +393,7 @@
 	return iscarbon(cast_on)
 
 // The cancel lives here: no knife to send back and no hand to call one into
-// means the cast never happens and the cooldown is never paid — this fork's
+// means the cast never happens and the cooldown is never paid, this fork's
 // Activate() ignores cast()'s return value, so an in-cast
 // reset_spell_cooldown() is dead code
 /datum/action/cooldown/spell/vestige_sanguine_blade/before_cast(atom/cast_on)
@@ -433,7 +433,7 @@
 
 /**
  * The Sepulcher's knife: a summoned sacrificial edge whose identity is the
- * altar, not the arm — flat force stays modest, but the fallen (anyone alive
+ * altar, not the arm, flat force stays modest, but the fallen (anyone alive
  * and flat on the deck) are cut altar_bonus points deeper. Pairs with the
  * Crimson Step's burst arrival; distinct on purpose from the armblade (flat
  * heavy melee) and the demon claws (bleed-and-rhythm melee).
@@ -443,7 +443,7 @@
 	desc = "The Sepulcher's knife, bound to a pact. It vanishes the moment it leaves your hand, and it cuts deepest into anyone already lying down."
 	force = 18
 	item_flags = ABSTRACT | DROPDEL
-	/// Bonus force against living targets already flat on the deck — the altar's edge
+	/// Bonus force against living targets already flat on the deck, the altar's edge
 	var/altar_bonus = VESTIGE_BLADE_ALTAR_BONUS
 
 /obj/item/knife/ritual/vestige/bound/fang
@@ -453,8 +453,8 @@
 	armour_penetration = 20
 	altar_bonus = VESTIGE_FANG_ALTAR_BONUS
 
-// The altar's edge: the fallen are offerings, not opponents. Living only —
-// the dead are the lantern's business, and corpse-sawing needs no buff.
+// The altar's edge: the fallen are offerings, not opponents. Living only.
+// The dead are the lantern's business, and corpse-sawing needs no buff.
 /obj/item/knife/ritual/vestige/bound/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(isliving(target) && target.stat != DEAD && target.body_position == LYING_DOWN)
 		MODIFY_ATTACK_FORCE(attack_modifiers, altar_bonus)

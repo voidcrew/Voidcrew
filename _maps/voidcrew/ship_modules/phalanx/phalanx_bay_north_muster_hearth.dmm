@@ -32,7 +32,7 @@
 /area/template_noop)
 "m" = (
 /obj/structure/curtain/cloth,
-/turf/open/floor/iron/dark,
+/turf/open/floor/carpet,
 /area/template_noop)
 "q" = (
 /obj/machinery/suit_storage_unit/mining,
@@ -46,11 +46,9 @@
 /obj/effect/turf_decal/bot,
 /obj/item/stack/sheet/cloth,
 /obj/item/bedsheet/brown{
-	
 	pixel_y = 4
-	
 	},
-/turf/open/floor/iron/dark,
+/turf/open/floor/wood,
 /area/template_noop)
 "s" = (
 /obj/modular_map_connector,
@@ -67,7 +65,7 @@
 /obj/effect/turf_decal/box/corners{
 	dir = 1
 	},
-/turf/open/floor/iron/dark,
+/turf/open/floor/wood,
 /area/template_noop)
 "B" = (
 /obj/machinery/light/floor,
@@ -83,20 +81,14 @@
 /obj/item/weldingtool,
 /obj/effect/turf_decal/bot,
 /obj/item/reagent_containers/cup/glass/coffee{
-	
 	pixel_x = -7;
-	
 	pixel_y = 7
-	
 	},
 /obj/item/storage/toolbox/mechanical{
-	
 	pixel_x = 6;
-	
 	pixel_y = -5
-	
 	},
-/turf/open/floor/iron/dark,
+/turf/open/floor/wood,
 /area/template_noop)
 "F" = (
 /obj/structure/rack,
@@ -112,20 +104,17 @@
 	},
 /obj/effect/turf_decal/bot,
 /obj/item/clothing/gloves/color/black{
-	
 	pixel_x = -5;
-	
 	pixel_y = -5
-	
 	},
 /obj/item/clothing/shoes/workboots{
-	
 	pixel_x = 5;
-	
 	pixel_y = -7
-	
 	},
 /turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/turf/open/floor/wood,
 /area/template_noop)
 "I" = (
 /obj/effect/turf_decal/bot,
@@ -139,12 +128,10 @@
 	pixel_y = 4
 	},
 /obj/item/clothing/suit/hooded/wintercoat{
-	
 	pixel_y = 7
-	
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
+/turf/open/floor/wood,
 /area/template_noop)
 "P" = (
 /obj/effect/decal/cleanable/dirt,
@@ -208,6 +195,6 @@ c
 "}
 (11,1,1) = {"
 r
-x
+H
 c
 "}

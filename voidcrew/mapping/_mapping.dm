@@ -19,7 +19,7 @@
 
 	// PRELOADED planets: generated in full at boot by loadWorld() below, one surface +
 	// one cave z-level each, held in memory for the whole round whether or not a single
-	// crew ever lands on them. All zeroed on purpose — the round's planet supply comes
+	// crew ever lands on them. All zeroed on purpose. The round's planet supply comes
 	// from dynamic markers instead (SSovermap.dynamic_planets_per_type, one set of every
 	// type per pass), which generate their surface on first visit. Raise a count here only
 	// to pin a specific planet type to a pre-generated, fully seeded z-pair, and budget ~2
@@ -67,7 +67,7 @@
  * Deals out a zone band (ZONE_GREEN/YELLOW/RED) for the next roundstart planet.
  *
  * Preloaded planet z-levels are generated and populated during SSmapping init,
- * BEFORE SSovermap places the planets on the overmap — so the zone must be
+ * BEFORE SSovermap places the planets on the overmap, so the zone must be
  * decided up front. The band is stored on the planet's SSmapping.planets entry;
  * SSovermap.setup_planets() then places the planet on an overmap tile inside
  * that band, keeping the pre-generated content honest.

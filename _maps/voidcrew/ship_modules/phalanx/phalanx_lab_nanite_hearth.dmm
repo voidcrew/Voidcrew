@@ -1,0 +1,225 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"e" = (
+/obj/modular_map_connector,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"f" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"i" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"j" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/door/window/brigdoor{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"n" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"o" = (
+/obj/machinery/firealarm/directional/south,
+/obj/structure/closet/crate/bin,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"q" = (
+/obj/machinery/computer/nanite_cloud_controller{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"s" = (
+/obj/structure/table/glass,
+/obj/item/screwdriver{
+	pixel_y = 8
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -4
+	},
+/obj/item/assembly/timer{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/assembly/timer{
+	pixel_x = 5
+	},
+/obj/item/assembly/timer{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"t" = (
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"A" = (
+/obj/machinery/nanite_program_hub,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"B" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"E" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"F" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/nanite_chamber,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"G" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"L" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/table/glass,
+/obj/item/stack/sheet/iron/five,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"N" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"R" = (
+/obj/machinery/light/directional/south,
+/obj/structure/closet/crate/science,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"S" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/computer/nanite_chamber_control{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"T" = (
+/obj/machinery/nanite_programmer,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"U" = (
+/obj/item/flashlight/flare/candle,
+/turf/open/floor/carpet,
+/area/template_noop)
+"W" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = 4
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_y = -4
+	},
+/obj/item/clothing/glasses/science{
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"Y" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+A
+t
+e
+"}
+(2,1,1) = {"
+T
+G
+s
+"}
+(3,1,1) = {"
+S
+G
+Y
+"}
+(4,1,1) = {"
+F
+j
+t
+"}
+(5,1,1) = {"
+f
+N
+E
+"}
+(6,1,1) = {"
+X
+N
+c
+"}
+(7,1,1) = {"
+q
+G
+R
+"}
+(8,1,1) = {"
+W
+G
+U
+"}
+(9,1,1) = {"
+B
+G
+i
+"}
+(10,1,1) = {"
+L
+n
+o
+"}

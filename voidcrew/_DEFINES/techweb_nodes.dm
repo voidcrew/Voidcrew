@@ -45,9 +45,6 @@
 // Missions
 #define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"
 
-// Industrial chemistry (wiremod chem circuits)
-#define TECHWEB_NODE_CHEM_CIRCUITRY "chem_circuitry"
-
 // Transporter
 #define TECHWEB_NODE_TRANSPORTER "transporter"
 #define TECHWEB_NODE_TRANSPORTER_TARGETING "transporter_targeting"

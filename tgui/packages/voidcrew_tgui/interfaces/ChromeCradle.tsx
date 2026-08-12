@@ -48,7 +48,7 @@ type Ware = {
   ref: string;
   name: string;
   desc: string;
-  /** Spritesheet key for the card art — see /datum/asset/spritesheet_batched/chrome. */
+  /** Spritesheet key for the card art, see /datum/asset/spritesheet_batched/chrome. */
   icon: string;
   tier: number;
   load: number;
@@ -81,7 +81,7 @@ type Group = {
   ware: Ware[];
 };
 
-/** Where the budget lands if the highlighted piece goes in — or comes out. */
+/** Where the budget lands if the highlighted piece goes in, or comes out. */
 type Projection = {
   load: number;
   capacity: number;
@@ -90,8 +90,8 @@ type Projection = {
 
 /**
  * The ink picker, sent only when the highlighted piece is a Chromatic Dermis
- * already seated in the occupant. `color` is a hex — what the skin is keyed to
- * now — while the palette entries are addressed by name, which is what the
+ * already seated in the occupant. `color` is a hex. What the skin is keyed to
+ * now, while the palette entries are addressed by name, which is what the
  * backend takes.
  */
 type Ink = {
@@ -362,7 +362,7 @@ const Bank = () => {
       <span className="Cradle__bankValue">{loaded_credits} cr</span>
       <span className="Cradle__bankTag">ID</span>
       <span className="Cradle__bankValue">
-        {account_credits === null ? '—' : `${account_credits} cr`}
+        {account_credits === null ? '-' : `${account_credits} cr`}
       </span>
     </div>
   );
@@ -394,7 +394,7 @@ const Rack = () => {
 
 const GroupRow = (props: { group: Group }) => {
   const { group } = props;
-  // Counts are of pieces, not of cards — a stack of three spares is three.
+  // Counts are of pieces, not of cards. A stack of three spares is three.
   const total = group.ware.reduce((sum, ware) => sum + ware.count, 0);
   const installed = group.ware.reduce(
     (sum, ware) => sum + (ware.installed ? ware.count : 0),
@@ -467,7 +467,7 @@ const Tile = (props: { ware: Ware }) => {
 /**
  * What a tile says on hover: the whole card without having to commit a click.
  * Clicking is what puts the piece on the body, so hovering has to be enough to
- * shop with — name, grade, what it costs the nervous system, what Splice
+ * shop with, name, grade, what it costs the nervous system, what Splice
  * charges, and the pitch.
  */
 const TileCard = (props: { ware: Ware }) => {
@@ -650,7 +650,7 @@ const Detail = () => {
 
 /**
  * The ink picker: eight pigments and five patterns, each applied to the skin
- * the moment it is clicked. Splice stocks what Splice stocks — there is no
+ * the moment it is clicked. Splice stocks what Splice stocks, there is no
  * free-text colour here on purpose.
  */
 const InkPanel = (props: { ware: Ware; mayOperate: boolean }) => {
@@ -783,7 +783,7 @@ const StatusDeck = () => {
           />
         </div>
         <div className="Cradle__note">
-          Hold still. Leaving the slab cancels the cycle — nothing is lost, the
+          Hold still. Leaving the slab cancels the cycle. Nothing is lost, the
           ware goes to the tray.
         </div>
       </div>
@@ -798,7 +798,7 @@ const StatusDeck = () => {
     notes.push('The slab is empty. Drag yourself onto it to lie back.');
   } else if (!occupant_is_user) {
     notes.push(
-      `${occupant_name} is on the slab. The rig takes orders from its occupant only — you can still pop the parts tray.`,
+      `${occupant_name} is on the slab. The rig takes orders from its occupant only. You can still pop the parts tray.`,
     );
   } else if (!can_operate) {
     notes.push(
@@ -858,7 +858,7 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={tray_count === 0}
-        hint="Anyone adjacent can pop the tray — evicted chrome is never held hostage."
+        hint="Anyone adjacent can pop the tray. Evicted chrome is never held hostage."
         onClick={() => act('eject_tray')}
       >
         {`EJECT TRAY${tray_count > 0 ? ` · ${tray_count}` : ''}`}
@@ -874,7 +874,7 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={!has_occupant}
-        hint="Gets the patient off the slab. Cancels any running cycle — the ware goes to the tray."
+        hint="Gets the patient off the slab. Cancels any running cycle, the ware goes to the tray."
         onClick={() => act('get_up')}
       >
         {occupant_is_user ? 'GET UP' : 'UNBUCKLE'}

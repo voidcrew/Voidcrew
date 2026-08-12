@@ -66,7 +66,7 @@
 #define MISSION_ITEM_PROGRESS 1
 #define MISSION_ITEM_COMPLETE 2
 
-/// Weighted zone_mobs wave themes rolled per mission — who answers the noise
+/// Weighted zone_mobs wave themes rolled per mission, who answers the noise
 #define MISSION_WAVE_THEMES list(\
 	/obj/effect/zone_mobs/pirate = 5,\
 	/obj/effect/zone_mobs/syndicate = 4,\

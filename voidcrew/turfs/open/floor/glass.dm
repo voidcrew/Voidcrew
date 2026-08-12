@@ -1,7 +1,7 @@
 /**
  * Indestructible reinforced glass floor. Unlike /turf/open/floor/glass this
  * has no pryable floor_tile and shrugs off damage like the rest of
- * /turf/open/indestructible — for venues whose structure must be untouchable
+ * /turf/open/indestructible, for venues whose structure must be untouchable
  * (the Grand Colosseum observation deck) while still showing the level below.
  */
 /turf/open/indestructible/glass

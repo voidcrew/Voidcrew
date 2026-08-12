@@ -334,12 +334,6 @@
 /obj/item/gun/ballistic/shotgun/riot,
 /turf/open/floor/carpet/neon/simple/purple,
 /area/shuttle/voidcrew/mechaton/bridge)
-"rt" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/mechaton/robotics)
 "rQ" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1175,6 +1169,7 @@
 	id = "exosuitconveyor";
 	pixel_x = 12
 	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/navbeacon{
@@ -1311,14 +1306,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/mechaton/concourse)
-"ZP" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/conveyor{
-	id = "exosuitconveyor"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/mechaton/robotics)
 "ZW" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/window/reinforced/spawner{
@@ -1486,7 +1473,7 @@ yP
 fV
 cE
 EF
-rt
+Dn
 SS
 cE
 "}
@@ -1518,7 +1505,7 @@ yP
 ZW
 ts
 VG
-ZP
+ws
 Oh
 ts
 "}

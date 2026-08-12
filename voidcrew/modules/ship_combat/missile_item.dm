@@ -115,8 +115,8 @@
 // ========== PRE-ARMED MISSILE SUBTYPES ==========
 // These spawn already armed with their warhead - for admin spawning and cargo
 
-// Name/icon defaults match the armed state so shop and reward UIs — which read
-// compile-time initial() values, not the runtime-updated appearance — show a
+// Name/icon defaults match the armed state so shop and reward UIs, which read
+// compile-time initial() values, not the runtime-updated appearance, show a
 // finished missile instead of "missile frame".
 /obj/structure/ship_missile/armed
 	name = "armed missile"

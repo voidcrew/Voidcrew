@@ -3,12 +3,12 @@
  *
  * The Lanista's stock: nine bespoke pieces of arena kit sold only at the
  * Grand Colosseum's concourse stall (colosseum_shop.dm). Gladiator panoply,
- * pit armaments and corner-man tools — flavorful mid-power gear, not antag
+ * pit armaments and corner-man tools, flavorful mid-power gear, not antag
  * loot. Every piece follows the loot-uniques conventions
  * (voidcrew/modules/loot/uniques/): bespoke ground sprites in
  * 'voidcrew/modules/colosseum/icons/gear.dmi', base-type worn/inhand states
  * reused wherever the base already looks the part, and TRAIT_NO_REPLICATE so
- * duplicators refuse the copy — the only road to these is the sand.
+ * duplicators refuse the copy. The only road to these is the sand.
  */
 
 /// Mood bonus for wearing the laurel of the games
@@ -21,7 +21,7 @@
 // =========================================================================
 
 /**
- * Laurel of the games — the showcase flex piece. Subtypes the costume crown
+ * Laurel of the games: the showcase flex piece. Subtypes the costume crown
  * (code/modules/clothing/head/crown.dm) for its slot/armor scaffolding;
  * bespoke ground and worn sprites. Light armor, fireproof gold, and the
  * crowd's favor: a small mood boost while it rests on your brow.
@@ -68,10 +68,10 @@
 	mood_change = LAUREL_MOOD_BONUS
 
 /**
- * Galea of the undefeated — the serious helmet. Subtypes the gladiator
+ * Galea of the undefeated: the serious helmet. Subtypes the gladiator
  * helmet (code/modules/clothing/head/helmet.dm) so the worn and inhand
  * sprites come free; the ground sprite is bespoke bronze. Real melee
- * protection with poor showing against energy weapons — it was forged for
+ * protection with poor showing against energy weapons. It was forged for
  * swords, not lasers.
  */
 /obj/item/clothing/head/helmet/gladiator/galea
@@ -98,7 +98,7 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /**
- * Pit champion's spaulder — one-shouldered bronze harness. Chest-and-arms
+ * Pit champion's spaulder: one-shouldered bronze harness. Chest-and-arms
  * armor with zero slowdown, and harness loops sized for pit kit: the pike,
  * the net, a shield or a whetstone all ride the suit slot's storage.
  */
@@ -137,7 +137,7 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /**
- * Sandstrider sandals — the footwork piece. Subtypes the wooden sandal
+ * Sandstrider sandals: the footwork piece. Subtypes the wooden sandal
  * (code/modules/clothing/shoes/sandals.dm, inhand states free) with a
  * bespoke worn state in gear_worn.dmi, and carries the galoshes' no-slip
  * trait: blood, water and spilled drinks on the sand stop being a way to
@@ -155,7 +155,7 @@
 	resistance_flags = NONE
 
 // Feet-only clothing may only carry bio/fire/acid armor (see the
-// gloves_and_shoes_armor unit test) — anything else would need the sandals to
+// gloves_and_shoes_armor unit test), anything else would need the sandals to
 // cover the legs, which they plainly do not.
 /datum/armor/sandal_sandstrider
 	bio = 10
@@ -171,11 +171,11 @@
 // =========================================================================
 
 /**
- * Bestiarius pike — the beast-hunter's polearm. Subtypes /obj/item/spear
+ * Bestiarius pike: the beast-hunter's polearm. Subtypes /obj/item/spear
  * (code/game/objects/items/spear.dm) following the bamboospear recipe:
  * icon_prefix drives the wielded/unwielded ground states ("bestiarius0/1",
  * both in gear.dmi); inhands reuse the base polearm files. Hits on
- * beast-biotype mobs strike harder — forged for the Beast Interlude, and
+ * beast-biotype mobs strike harder, forged for the Beast Interlude, and
  * for whatever the planets grow.
  */
 /obj/item/spear/bestiarius
@@ -196,7 +196,7 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-// No headpike crafting out of the unique — spare it the spear's slapcraft recipe
+// No headpike crafting out of the unique, spare it the spear's slapcraft recipe
 /obj/item/spear/bestiarius/add_headpike_component()
 	return
 
@@ -206,7 +206,7 @@
 	return ..()
 
 /**
- * Retiarius' weighted net — the crowd favorite. Subtypes the bola
+ * Retiarius' weighted net: the crowd favorite. Subtypes the bola
  * (code/game/objects/items/handcuffs.dm) for the whole throw-and-ensnare
  * kit; longer knockdown and a slower escape, because a proper net fight
  * should end with someone on the floor.
@@ -224,7 +224,7 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /**
- * Parmula of the pit — the duelist's shield. Subtypes the wooden buckler
+ * Parmula of the pit: the duelist's shield. Subtypes the wooden buckler
  * (code/game/objects/items/shields.dm, inhand states free) with a bronze
  * rim: better block odds, tougher, and it doesn't burn.
  */
@@ -248,7 +248,7 @@
 // =========================================================================
 
 /**
- * Pit doctor's satchel — the corner-man's bag. A medkit subtype
+ * Pit doctor's satchel: the corner-man's bag. A medkit subtype
  * (code/game/objects/items/storage/medkit.dm, inhand states free) stocked
  * for arena trauma: sutures, mesh, gauze, bone gel and one adrenaline pen.
  */
@@ -275,7 +275,7 @@
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 
 /**
- * Grindstone of the games — the armorer's counter stone. A sharpener
+ * Grindstone of the games: the armorer's counter stone. A sharpener
  * subtype (code/game/objects/items/sharpener.dm) with five workings per
  * stone; same edge cap as the standard whetstone, it just doesn't quit
  * after one blade.

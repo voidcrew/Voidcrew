@@ -1,5 +1,5 @@
 /**
- * The wild gorilla — the only gorilla that spawns from a biome table (jungle/dense
+ * The wild gorilla: the only gorilla that spawns from a biome table (jungle/dense
  * and the jungle dangerous tier, see datums/mapgen/biomes/jungle_biomes.dm).
  *
  * Upstream tunes /mob/living/basic/gorilla as a rare station-event ape that a whole
@@ -10,8 +10,8 @@
  * What was actually oppressive, in order:
  *
  * - Dismemberment with surgery_time = 0. Past SOFT_CRIT every hit tore off a limb
- *   with no do_after and — because amputate() only prints its warning when
- *   surgery_time > 0 — no message either. Re-added below with a real cast time, so
+ *   with no do_after and, because amputate() only prints its warning when
+ *   surgery_time > 0, no message either. Re-added below with a real cast time, so
  *   it is telegraphed and a crewmate can interrupt it.
  * - paralyze_chance 20 at CLICK_CD_MELEE with a 2 second Paralyze: a stunlock that
  *   fed the dismemberment. Zeroed, as upstream's own /genetics and /hostile do,

@@ -1,14 +1,14 @@
 /**
- * # Industrial uniques — Helios-Betna Forgeworks certified goods cache
+ * # Industrial uniques: Helios-Betna Forgeworks certified goods cache
  *
  * Six one-of-a-kind prizes for the industrial uniques shelf
  * (`voidcrew/modules/loot/zone_loot.dm`, `loot_uniques` on /datum/loot_theme/industrial).
- * Design source: `Rare-loot-uniques.md` in the docs vault, "INDUSTRIAL — certified
+ * Design source: `Rare-loot-uniques.md` in the docs vault, "INDUSTRIAL: certified
  * goods cache" section.
  *
  * Every item here carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so it
  * can never be memorized by the Helios pattern stamp (or any future
- * duplicator) — uniques stay unique. The stamp is the trait's first consumer.
+ * duplicator), uniques stay unique. The stamp is the trait's first consumer.
  *
  * Tiers: Helios lunch pail + the honest gauge are GREEN, Slagmaw + the Line
  * gauntlet are YELLOW, Forge-heart + the Helios pattern stamp are RED.
@@ -21,14 +21,14 @@
 /**
  * # Helios lunch pail
  *
- * Subtypes the toolbox for its storage behaviour only — the sprite is its own
+ * Subtypes the toolbox for its storage behaviour only. The sprite is its own
  * green lunch pail in uniques.dmi, with recoloured toolbox in-hands to match.
  * Restocks a coffee, a sandwich, and a boiled egg once an hour; finishing any
  * one of them to the last bite grants a timed buff with its own HUD alert.
  * TRAIT_QUICK_BUILD is the closest existing hook to a generic
  * "construction/repair/machine interaction" speedup in this codebase (it's
  * checked ad hoc by girder building and CRAFT_APPLIES_MATS stack recipes,
- * not a universal do_after multiplier) — see the deviation note in the
+ * not a universal do_after multiplier) (see the deviation note in the)
  * implementer's report.
  */
 /obj/item/storage/toolbox/helios_lunch_pail
@@ -79,7 +79,7 @@
 	. += span_notice("Eat a whole canteen ration and construction work goes faster for [DisplayTimeText(initial(break_effect.duration))].")
 	. += span_notice("Restocks itself every [DisplayTimeText(restock_interval)].")
 
-/// Canteen coffee — flavor only, no buff hook (drinks aren't run through the edible component in this codebase).
+/// Canteen coffee: flavor only, no buff hook (drinks aren't run through the edible component in this codebase).
 /obj/item/reagent_containers/cup/glass/coffee/helios_canteen
 	name = "canteen coffee"
 	desc = "Hot, black, and free. HELIOS-BETNA CANTEEN SERVICES."
@@ -118,7 +118,7 @@
  * The union break: TRAIT_QUICK_BUILD for a few minutes. In this codebase
  * that trait is checked ad hoc by girder/plating construction
  * (code/game/objects/structures/girders.dm) and by stack recipes flagged
- * trait_booster/trait_modifier (most platform/wall recipes) — the closest
+ * trait_booster/trait_modifier (most platform/wall recipes), the closest
  * existing thing to a generic "construction runs faster" hook. It carries its
  * own HUD alert with a live countdown so the buff is visible while it lasts.
  */
@@ -152,7 +152,7 @@
  * Subtypes the gas analyzer for its sprite. On machines: the RPED-style
  * parts manifest plus power draw and an operational diagnostic. On turfs
  * (walls and floors): integrity percentage, plus the same pipe/wire reveal
- * a T-ray scanner gives, borrowed from the global t_ray_scan() helper — no
+ * a T-ray scanner gives, borrowed from the global t_ray_scan() helper, no
  * new scanning tech, just merged readouts, exactly as the design doc asks.
  */
 /obj/item/analyzer/honest_gauge
@@ -210,7 +210,7 @@
  * stock update_overlays() still works). Still burns ordinary welder fuel, but
  * will also grind scrap fed to it (attacking the welder with another item)
  * into extra fuel. As a repair tool it calls the universal
- * /atom/proc/repair_damage() directly for a one-pass full restore — there's no
+ * /atom/proc/repair_damage() directly for a one-pass full restore, there's no
  * single "reweld to full" proc for walls in this codebase (walls only expose
  * cosmetic dent-fixing and deconstruction via welder), so this goes straight
  * to the integrity API instead of trying to replicate wall-specific do_after
@@ -259,7 +259,7 @@
 
 /**
  * Whether the hopper will take this item at all. Alerts the user with the
- * reason on every rejection — the whole complaint about the old version was
+ * reason on every rejection. The whole complaint about the old version was
  * that it silently ate anything you were holding.
  */
 /obj/item/weldingtool/slagmaw/proc/can_feed(obj/item/morsel, mob/user)
@@ -347,7 +347,7 @@
  *
  * Subtypes the H.A.U.L. cargo gauntlet for its sprite ("power-assisted work
  * glove" flavor matches). On an unarmed strike against a machine or
- * structure, deconstructs it cleanly after a short do_after — never against
+ * structure, deconstructs it cleanly after a short do_after, never against
  * anything isliving(), which is the interlock the flavor text describes.
  * Modeled on /datum/element/structure_repair's approach: register on
  * COMSIG_LIVING_UNARMED_ATTACK and cancel the normal attack chain.
@@ -372,7 +372,7 @@
 	if(!QDELETED(user) && user.get_item_by_slot(ITEM_SLOT_GLOVES) != src)
 		UnregisterSignal(user, COMSIG_LIVING_UNARMED_ATTACK)
 
-/// Intercepts an unarmed strike against a machine or structure. Mobs are never touched — the interlock.
+/// Intercepts an unarmed strike against a machine or structure. Mobs are never touched, the interlock.
 /// Combat mode only: this signal fires on every empty-hand click, and ordinary interaction
 /// (opening doors, pressing machine buttons) must keep working while the gauntlet is worn.
 /obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet/proc/on_unarmed_attack(mob/living/attacker, atom/target, proximity_flag, list/modifiers)
@@ -411,8 +411,8 @@
  * constantly bleeds heat into whatever turf it's currently on, following
  * the same direct gas-mixture temperature math /obj/machinery/space_heater
  * uses (there's no adjust_heat()/set_temperature() helper in this
- * codebase — space_heater does turf_gasmix.temperature += delta directly).
- * Heat shedding is always on, by design — that's the balance knob.
+ * codebase, space_heater does turf_gasmix.temperature += delta directly).
+ * Heat shedding is always on, by design. That's the balance knob.
  */
 /obj/item/stock_parts/power_store/cell/forge_heart
 	name = "Forge-heart"
@@ -494,7 +494,7 @@
 	var/strike_cooldown = 5 MINUTES
 	/// Ticks down between strikes
 	COOLDOWN_DECLARE(strike_timer)
-	/// Paperwork the stamp is genuinely meant to be used on — never intercepted.
+	/// Paperwork the stamp is genuinely meant to be used on, never intercepted.
 	var/static/list/paperwork_typecache = typecacheof(list(
 		/obj/item/paper,
 		/obj/item/paper_bin,
@@ -611,7 +611,7 @@
 	if(!memorized_type)
 		balloon_alert(user, "no pattern held")
 		return FALSE
-	// custom_materials is keyed by material datum instances, not typepaths —
+	// custom_materials is keyed by material datum instances, not typepaths,
 	// convert the stack's material_type before indexing or nothing ever matches
 	var/datum/material/mat_ref = material_stack.material_type ? GET_MATERIAL_REF(material_stack.material_type) : null
 	var/needed = (mat_ref && memorized_materials[mat_ref]) ? (memorized_materials[mat_ref] - banked_materials[mat_ref]) : 0

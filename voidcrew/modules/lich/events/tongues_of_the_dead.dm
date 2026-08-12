@@ -1,5 +1,5 @@
 /**
- * Ritual: Tongues of the Dead — galaxy-scoped port of TG's Tower of Babel
+ * Ritual: Tongues of the Dead: galaxy-scoped port of TG's Tower of Babel
  * (code/modules/events/wizard/tower_of_babel.dm).
  *
  * Every living tongue in the galaxy forgets how to be understood. The dead have only ever
@@ -9,27 +9,27 @@
  * datum is where the station coupling lives: its New() skips anyone failing
  * `is_station_level(curse_turf.z)`, and grants immunity plus omnilingualism to anyone
  * `IS_WIZARD()`. In this fork the z check resolves TRUE for whatever levels currently hold a
- * ship and FALSE for everyone standing in a ruin, on a planet, or aboard a trader outpost —
+ * ship and FALSE for everyone standing in a ruin, on a planet, or aboard a trader outpost,
  * a galaxy-wide event with an arbitrary geographic hole in it.
  *
  * Changed from the original:
  * - A /datum/tower_of_babel/lich subtype replaces New() outright, dropping the z filter and
  *   the wizard-immunity clause. It still registers COMSIG_GLOB_CREWMEMBER_JOINED so
- *   latejoiners are cursed, and it still assigns into GLOB.tower_of_babel — which matters,
+ *   latejoiners are cursed, and it still assigns into GLOB.tower_of_babel, which matters,
  *   because the parent's Destroy() is what cures everybody, and the admin
  *   /client/proc/tower_of_babel_undo() verb reads that same global. Subtyping keeps the undo
  *   path working; a parallel datum would have silently broken it.
  * - The per-victim half, `curse_of_babel()`, is reused verbatim. It has no station coupling,
  *   handles the antimagic check and the silicon exemption, and owns the status effect.
- * - The deadchat line and announcement are reflavored. Nobody is immune, including him —
- *   he simply has nothing left to say that requires a tongue.
+ * - The deadchat line and announcement are reflavored. Nobody is immune, including him.
+ *   He simply has nothing left to say that requires a tongue.
  * - It ends when he does. See end_lich_babel() at the bottom of this file.
  */
 
 /**
  * Ilthuun's Babel: same curse, no station filter, no exemptions.
  *
- * New() deliberately does not chain to the parent — the parent's body IS the station-scoped
+ * New() deliberately does not chain to the parent. The parent's body IS the station-scoped
  * victim sweep this subtype exists to replace. The signal registration it also performs is
  * repeated here so latejoin cursing still works, and Destroy() is left entirely to the
  * parent so the cure path stays in one place.
@@ -89,13 +89,13 @@
  * This rite is one of the four that outlive their own firing, and rule 2 in
  * lich_events.dm's header says nothing Ilthuun does outlives Ilthuun. Without this the
  * galaxy stays mute for the rest of the round no matter how well the raid went, and the
- * only cure is an admin verb — exactly the "no amount of playing well undoes any of it"
+ * only cure is an admin verb, exactly the "no amount of playing well undoes any of it"
  * failure the four deleted rites were deleted for.
  *
  * The cure is entirely the parent's Destroy(): it unregisters the latejoin signal and
  * walks GLOB.player_list calling cure_curse_of_babel() on every carbon, dead or alive
  * and wherever they are standing. QDEL_NULL is what the admin undo verb does, for the
- * same reason — the global slot has to be emptied as well as the datum destroyed, or
+ * same reason, the global slot has to be emptied as well as the datum destroyed, or
  * can_spawn_event() keeps refusing a future instance.
  *
  * The type check is load-bearing rather than defensive. GLOB.tower_of_babel is a single

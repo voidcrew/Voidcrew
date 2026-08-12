@@ -33,7 +33,7 @@
 	/// Item type path to spawn on completion (optional). The single-reward
 	/// convenience; get_reward_types() folds it together with mission_rewards.
 	var/mission_reward
-	/// Additional item type paths to spawn on completion — the multi-reward
+	/// Additional item type paths to spawn on completion, the multi-reward
 	/// channel (a whole bundle, potentially mixed rarity). May hold duplicates
 	/// (e.g. two of the same warhead), which spawn as separate items.
 	var/list/mission_rewards
@@ -46,7 +46,7 @@
 	var/list/reward_amounts
 	/// Multiplier on the difficulty pay band for outpost-board contracts.
 	/// Difficulty alone can't tell "hand over 30 cable coil you already have"
-	/// from "fly to a hostile ruin and kill a named boss" — both roll EASY in
+	/// from "fly to a hostile ruin and kill a named boss", both roll EASY in
 	/// green space. Archetypes that cost a trip and a fight set this above 1.
 	var/contract_pay_mult = 1
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
@@ -630,7 +630,7 @@
 /**
  * The best item in the user's hands to offer this contract: the first that
  * satisfies the ask outright, or failing that the first that is the right KIND
- * of goods. The near-miss matters — it lets a refusal name the real shortfall
+ * of goods. The near-miss matters. It lets a refusal name the real shortfall
  * ("Need 30, only have 12") instead of telling someone holding the goods to go
  * hold the goods. Returns null when nothing in hand is even close.
  *
@@ -682,7 +682,7 @@
  * * turned_in_item - Optional item that was offered (consumed by the objective)
  * * force - Skip objective validation (admin testing); state guards still apply
  *
- * Returns TRUE when the offer was accepted — the mission may have completed
+ * Returns TRUE when the offer was accepted. The mission may have completed
  * (it is qdeleted by then) or just advanced a counted hand-over.
  */
 /datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)

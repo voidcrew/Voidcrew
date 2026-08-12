@@ -1,15 +1,15 @@
 /**
- * # EXPEDITION uniques — prospector's claim chest
+ * # EXPEDITION uniques: prospector's claim chest
  *
  * Six unique prizes for the expedition uniques shelf
  * (voidcrew/modules/loot/zone_loot.dm, `loot_uniques` on /datum/loot_theme/expedition).
  * Tiers: green = "nice find," yellow = build-around, red = round-changing.
- * None of this is antag gear — these are found-in-the-world prizes for
+ * None of this is antag gear. These are found-in-the-world prizes for
  * anyone working a planet.
  *
  * Every item here carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so
  * duplicators (Helios pattern stamp, any future replicator) refuse to copy
- * it — see that define's doc comment.
+ * it, see that define's doc comment.
  *
  * Wired into the expedition uniques shelf in
  * voidcrew/modules/loot/themes/expedition.dm.
@@ -20,7 +20,7 @@
 // =========================================================================
 
 /**
- * Old hand's compass — GREEN. A prospector's compass, glass sanded to
+ * Old hand's compass: GREEN. A prospector's compass, glass sanded to
  * frost.
  *
  * Subtypes /obj/item/pinpointer (code/game/objects/items/pinpointer.dm)
@@ -28,16 +28,16 @@
  * (get_direction_icon(), the pinon* icon states, toggle_on()/process()).
  * The tracked atom is the nearest space ruin signal that hasn't been
  * visited yet (GLOB.space_ruin_signals, a global per-ruin flag set the
- * moment any ship docks there — see
+ * moment any ship docks there, see
  * voidcrew/modules/overmap/code/modules/overmap/space_ruin.dm), measured
  * from the wearer's ship's overmap position
- * (/proc/get_ship_from_atom(), ship.dm) — falling back to whatever
+ * (/proc/get_ship_from_atom(), ship.dm), falling back to whatever
  * overmap object currently contains the wearer
  * (SSovermap_zones.get_overmap_object_for_turf()) when they're on foot
  * with no ship (e.g. already boarded a ruin).
  *
  * The base pinpointer's overlay logic compares z-levels between "here"
- * (the item's own turf) and "there" (the target's turf) — which would
+ * (the item's own turf) and "there" (the target's turf), which would
  * always fail here, since the item sits on whatever z the wearer's ship
  * interior is on while the ruin sits on the single overmap z-level.
  * update_overlays() is overridden to instead measure between the two
@@ -47,7 +47,7 @@
  *
  * Deviations from the doc:
  * - "Visited" reuses the ruin's own global `visited` flag (set once any
- *   ship docks there) rather than per-player tracking — there is no
+ *   ship docks there) rather than per-player tracking, there is no
  *   existing per-player "have I been here" bookkeeping anywhere in this
  *   codebase, and the task brief calls a simple substitute acceptable.
  * - "Point of interest" is scoped to ruins only (space_ruin signals).
@@ -55,16 +55,16 @@
  *   so folding them in would mean inventing new bookkeeping.
  * - When the wearer can't be resolved to *any* overmap position (holding
  *   it on CentCom, say), it shows the normal "no signal" pinpointer icon
- *   rather than pointing north — north is reserved specifically for
+ *   rather than pointing north. North is reserved specifically for
  *   "every reachable ruin has been visited," matching the doc's "when
  *   you've been everywhere" framing.
  *
- * PLAYTEST FIX (2026-07-28) — "doesn't seem to work, not sure how it works".
+ * PLAYTEST FIX (2026-07-28), "doesn't seem to work, not sure how it works".
  * The tracking itself resolves fine; the problem was that the *only* output
  * was the needle overlay on the item icon, and that needle points along
  * OVERMAP axes. Standing in a ship interior, a north-east needle means
  * nothing about the room you're in, and it doesn't move at all while the
- * ship is parked — so a working compass is indistinguishable from a dead
+ * ship is parked, so a working compass is indistinguishable from a dead
  * one. On top of that, `scan_for_target()` is throttled to one scan per
  * `scan_interval`, and switching the compass on did not force a scan, so
  * the first thing you saw after clicking it could be up to 3 seconds of the
@@ -79,7 +79,7 @@
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "brass_compass"
 	// Bare-string overlays (the "pinon*" needle states the parent appends) resolve
-	// against this atom's own icon, not the base pinpointer's tracker.dmi — so the
+	// against this atom's own icon, not the base pinpointer's tracker.dmi, so the
 	// needle set is mirrored into uniques.dmi under this suffix, exactly as the
 	// "_hunter" pinpointer variant does inside tracker.dmi. Without it the compass
 	// renders no needle at all, not even the "no signal" state.
@@ -218,7 +218,7 @@
 	. = ..()
 	if(!active)
 		return
-	// The parent's overlay logic compares the item's z to the target's z —
+	// The parent's overlay logic compares the item's z to the target's z,
 	// always a mismatch here (ship interior vs overmap), so it appends its
 	// "no signal" overlay every time; strip it before adding the real needle
 	. -= "pinon[alert ? "alert" : ""]null[icon_suffix]"
@@ -232,29 +232,29 @@
 	. += get_direction_icon(cached_reference_turf, cached_target_turf)
 
 /**
- * Claim stake — GREEN. A steel stake with a brass claim-plate.
+ * Claim stake: GREEN. A steel stake with a brass claim-plate.
  *
  * Use in hand to drive it into solid ground: while deployed, wild fauna
  * within a 5-tile claim radius get the local planet factions
  * (FACTION_WASTELAND/FACTION_BEACH/FACTION_CRYSTAL,
  * voidcrew/_DEFINES/mobfactions.dm) temporarily added to their own faction
  * list, which is exactly the check `basic_targeting_strategy/can_attack()`
- * already uses to skip attacking friendlies (non-exact faction overlap —
- * code/datums/ai/basic_mobs/targeting_strategies/basic_targeting_strategy.dm)
- * — no new safe-zone infrastructure, just the same lever the codebase uses
+ * already uses to skip attacking friendlies (non-exact faction overlap,
+ * code/datums/ai/basic_mobs/targeting_strategies/basic_targeting_strategy.dm),
+ * no new safe-zone infrastructure, just the same lever the codebase uses
  * everywhere else to make a faction-driven mob leave something alone. It
  * also carries a GPS beacon (/datum/component/gps) tagged with the
  * driving prospector's name.
  *
  * "One claim per stake": a stake can only be deployed in one place at a
  * time (it's a single physical object), and pulling it up clears the
- * entire claim in one shot — there's no lingering aura after retrieval.
+ * entire claim in one shot. There's no lingering aura after retrieval.
  *
- * PLAYTEST FIX (2026-07-28) — "seems like it keeps the effect after you pull
+ * PLAYTEST FIX (2026-07-28), "seems like it keeps the effect after you pull
  * it out". The teardown was only wired to two paths: attack_hand() and
  * Destroy(). A planted stake is anchored, which stops `/obj/item/attack_hand`
- * from picking it up, but it does NOT stop the other pickup routes —
- * mouse-dragging it onto yourself calls `attempt_pickup()` directly (no
+ * from picking it up, but it does NOT stop the other pickup routes.
+ * Mouse-dragging it onto yourself calls `attempt_pickup()` directly (no
  * anchored check, see code/game/objects/items.dm), and storage inserts,
  * explosions, telekinesis and singularity pulls all just move the object.
  * Any of those left `deployed` TRUE with the stake in someone's hand: it kept
@@ -265,9 +265,9 @@
  * sitting on the turf it was driven into".
  *
  * Deviation: fauna already mid-retaliation bypass the faction check by
- * design — `target_retaliate` sets BB_TEMPORARILY_IGNORE_FACTION when
+ * design, `target_retaliate` sets BB_TEMPORARILY_IGNORE_FACTION when
  * picking a target off its "recently attacked me" list
- * (code/datums/ai/basic_mobs/basic_subtrees/target_retaliate.dm) — so the
+ * (code/datums/ai/basic_mobs/basic_subtrees/target_retaliate.dm), so the
  * claim keeps fauna from *starting* a fight inside the radius, it doesn't
  * pull them off one already underway. Stripping that list would mean
  * touching shared AI code outside this file's scope.
@@ -305,7 +305,7 @@
  * The claim only exists while the stake is standing in the ground, so any move
  * at all ends it. drive_claim() forceMoves the stake onto the turf *before* it
  * sets deployed, and retract_claim() clears the claim before put_in_hands(), so
- * neither of the intended paths trips this — it only catches the ones that
+ * neither of the intended paths trips this, it only catches the ones that
  * bypass attack_hand() (drag-to-hand, storage inserts, explosions, telekinesis).
  */
 /obj/item/claim_stake/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
@@ -414,7 +414,7 @@
 // =========================================================================
 
 /**
- * "Second Season" — YELLOW. A duster gone the color of every planet it's
+ * "Second Season", YELLOW. A duster gone the color of every planet it's
  * been on.
  *
  * Subtypes /obj/item/clothing/suit/hooded/explorer
@@ -429,7 +429,7 @@
  * hooded-suit type otherwise points icon_state AND worn_icon_state at
  * "<state>_t" the moment the hood goes up (see
  * /datum/component/toggle_attached_clothing), and there is no
- * "second_season_t" state — the coat would vanish. With the affix blank the
+ * "second_season_t" state, the coat would vanish. With the affix blank the
  * coat sprite simply doesn't change, which is a supported mode of the base
  * type, and the hood itself still renders on the head.
  *
@@ -440,20 +440,20 @@
  * TRAIT_WEATHER_IMMUNE (that also cancels effects this item was never
  * meant to touch, like void storms).
  *
- * Rough-terrain immunity can't reuse TRAIT_IGNORESLOWDOWN — verified that
+ * Rough-terrain immunity can't reuse TRAIT_IGNORESLOWDOWN, verified that
  * trait strips *every* non-IGNORE_NOSLOW movespeed modifier, including
  * armor/equipment slowdown, which this item must leave alone. Instead it
  * hooks COMSIG_MOVABLE_MOVED on the wearer and clears exactly the
- * `/datum/movespeed_modifier/turf_slowdown` entry after every step — the
+ * `/datum/movespeed_modifier/turf_slowdown` entry after every step, the
  * same modifier `update_turf_movespeed()` re-applies on each move
- * (code/modules/mob/living/living_movement.dm) — via the public
+ * (code/modules/mob/living/living_movement.dm), via the public
  * `/mob/proc/remove_movespeed_modifier()`. That's surgical: it never
  * touches equipment_speedmod or anything else.
  *
  * Deviation: this fork's planet weather roster
  * (voidcrew/modules/overmap/code/modules/overmap/behaviour/planets.dm) is
  * ash_storm (lava) / snow_storm (ice) / sand_storm (wasteland) /
- * rain_storm (beach, jungle) — there is no "rad squall" planet weather in
+ * rain_storm (beach, jungle), there is no "rad squall" planet weather in
  * this codebase to be immune to (rad_storm exists only as a station-level
  * random event). Rad-storm immunity is granted anyway since the trait is
  * real and free; it just never fires on a planet in this fork.
@@ -491,10 +491,10 @@
 	source.remove_movespeed_modifier(/datum/movespeed_modifier/turf_slowdown)
 
 /**
- * Divining pick — YELLOW. A pickaxe with a forked tip and opinions.
+ * Divining pick, YELLOW. A pickaxe with a forked tip and opinions.
  *
  * Directly subtypes /obj/item/pickaxe (code/modules/mining/equipment/
- * mining_tools.dm) for its sprite and mining behavior — no changes to how
+ * mining_tools.dm) for its sprite and mining behavior, no changes to how
  * it actually breaks rock.
  *
  * "Hums when you're warm": examine() reads nearby /turf/closed/mineral
@@ -502,18 +502,18 @@
  * intensity plus a compass direction toward the richest one.
  *
  * "Cracks the seam wider": while held, it listens on its wielder for
- * COMSIG_MOB_MINED — the signal every successful `gets_drilled()` call
+ * COMSIG_MOB_MINED: the signal every successful `gets_drilled()` call
  * sends to the mining mob regardless of tool
- * (code/game/turfs/closed/minerals.dm) — and, on that signal, walks a
+ * (code/game/turfs/closed/minerals.dm), and, on that signal, walks a
  * cascade outward from the mined tile, using the same orange(1, turf)
  * neighbor-walk idiom the resonator's burst() uses
  * (code/modules/mining/equipment/resonator.dm). This is done via signal
  * registration on the *wielder*, not by overriding
- * `/turf/closed/mineral/gets_drilled()` itself — that proc lives in
+ * `/turf/closed/mineral/gets_drilled()` itself, that proc lives in
  * upstream code this file must not edit, and the signal hook reaches the
  * exact same event without touching it.
  *
- * PLAYTEST CHANGE (2026-07-28) — "make it cascade even further, like up to 3
+ * PLAYTEST CHANGE (2026-07-28): "make it cascade even further, like up to 3
  * adjacent in each direction". The cascade was one hop: it only ever looked at
  * the eight tiles touching the one you broke. It's now a bounded
  * breadth-first walk out to `cascade_range` steps, where each tile that cracks
@@ -542,7 +542,7 @@
 
 /obj/item/pickaxe/divining/equipped(mob/user, slot, initial)
 	. = ..()
-	// only while actually wielded — belted/backpacked shouldn't cascade off a different tool's mining
+	// only while actually wielded. Belted/backpacked shouldn't cascade off a different tool's mining
 	if(slot & ITEM_SLOT_HANDS)
 		RegisterSignal(user, COMSIG_MOB_MINED, PROC_REF(on_wielder_mined), override = TRUE)
 
@@ -621,10 +621,10 @@
 // =========================================================================
 
 /**
- * Deepwell — RED. A core sampler crated in claim-office gray, deploying
+ * Deepwell: RED. A core sampler crated in claim-office gray, deploying
  * into an autonomous mining machine.
  *
- * PLAYTEST REDESIGN (2026-07-28) — "I'm not sure how this is actually
+ * PLAYTEST REDESIGN (2026-07-28): "I'm not sure how this is actually
  * useful... it only works once? it only mines one time."
  *
  * Two things made it read as single-use. First, the rig only ever worked the
@@ -639,7 +639,7 @@
  * Redesign, keeping the identity (plant it, it deep-samples and auto-smelts):
  * - It is a RADIUS miner, not a vein-follower. It drills any mineral wall
  *   within `dig_radius` (7) tiles, nearest ring first, connected or not.
- * - One wall every `pulse_interval` (2) seconds — that's a full 7-tile field
+ * - One wall every `pulse_interval` (2) seconds: that's a full 7-tile field
  *   worked in a few minutes, unattended, with the ore already smelted.
  * - When it runs out it goes idle instead of dying: it rescans every
  *   `idle_rescan_interval` (15) seconds, so rock you blast open nearby later
@@ -648,15 +648,15 @@
  * All the numbers above are stated in the item desc and the machine examine.
  *
  * No autonomous/deployable mining machine exists anywhere in this
- * codebase (verified) — this is new machinery, but every mechanic it
+ * codebase (verified), this is new machinery, but every mechanic it
  * uses is a direct reuse of an existing pattern:
- * - Drilling: calls the turf's own `gets_drilled()` — the universal
+ * - Drilling: calls the turf's own `gets_drilled()`: the universal
  *   mining entry point ~30 other sources already call
  *   (code/game/turfs/closed/minerals.dm).
  * - Auto-smelting: converts the dropped ore stack to sheets via the ore
- *   stack's own `refined_type` var — the same 1:1 lookup
+ *   stack's own `refined_type` var, the same 1:1 lookup
  *   `/obj/item/stack/ore/welder_act()` uses to self-refine
- *   (code/modules/mining/ores_coins.dm) — rather than wiring up a full
+ *   (code/modules/mining/ores_coins.dm), rather than wiring up a full
  *   material_container/ORM integration.
  * - Periodic work: plain /obj/machinery processing (default
  *   `processing_flags = START_PROCESSING_ON_INIT`, ticks every ~2s via
@@ -669,14 +669,14 @@
  * itself, so leaving it unattended draws wildlife.
  *
  * Deviation: there is no sound-propagation/noise-investigation AI system
- * anywhere in this codebase (verified — nothing hooks mob hearing to AI
+ * anywhere in this codebase (verified, nothing hooks mob hearing to AI
  * targeting; `/datum/element/hostile_machine`, the closest purpose-built
  * "make wildlife attack a fixed machine" lever, requires editing the
  * shared basic_targeting_strategy `can_attack()` proc to special-case a
  * new object type, which is out of scope for a single-new-file change).
  * The closest feasible substitute, and what's implemented here, is a
  * direct, repeating `ai_controller.set_movement_target()` ping on nearby
- * fauna — a pull, not a summon or a true noise mechanic. A fauna's own
+ * fauna, a pull, not a summon or a true noise mechanic. A fauna's own
  * planning tick can override it moments later (chasing something else,
  * fleeing, etc.), so the ping repeats periodically rather than being
  * fire-and-forget.
@@ -688,7 +688,7 @@
 	icon_state = "deepwell_item"
 	w_class = WEIGHT_CLASS_BULKY
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3, /datum/material/glass = SHEET_MATERIAL_AMOUNT)
-	/// Must match the machine's dig_radius — checked before letting anyone bolt it down
+	/// Must match the machine's dig_radius, checked before letting anyone bolt it down
 	var/dig_radius = 7
 
 /obj/item/deepwell_sampler/Initialize(mapload)
@@ -731,10 +731,10 @@
 	anchored = TRUE
 	use_power = NO_POWER_USE
 	/// Tiles out from the rig it will drill. Any mineral wall in here is fair game,
-	/// connected to the last one or not — that's what makes it a site miner
+	/// connected to the last one or not. That's what makes it a site miner
 	/// rather than a one-seam machine.
 	var/dig_radius = 7
-	/// Seconds between drill pulses — plain seconds, matching process()'s
+	/// Seconds between drill pulses: plain seconds, matching process()'s
 	/// seconds_per_tick accumulator (a `X SECONDS` value here would be
 	/// deciseconds and slow the drill down tenfold)
 	var/pulse_interval = 2
@@ -773,7 +773,7 @@
 /**
  * Rebuilds the whole dig queue from a fresh scan of the surrounding tiles,
  * nearest ring first so the rig eats outward instead of jumping around. Called
- * on deploy and every time the queue runs dry — the rescan is what lets a rig
+ * on deploy and every time the queue runs dry. The rescan is what lets a rig
  * pick up rock that got opened up after it was planted, instead of being
  * permanently spent the way the old connected-vein flood fill was.
  */
@@ -859,7 +859,7 @@
 	return ITEM_INTERACT_SUCCESS
 
 /**
- * Longwalk rig — RED. A leg harness of pistons and cable, trail-patched.
+ * Longwalk rig: RED. A leg harness of pistons and cable, trail-patched.
  *
  * Grants a dash action modeled directly on jump boots' dash
  * (code/modules/clothing/shoes/jumpboots.dm): `throw_at()` covering the
@@ -867,7 +867,7 @@
  * for the duration, removed automatically by the throw's completion
  * callback. That trait maps to the FLOATING movement_type bit, which is
  * exactly what lava (code/game/turfs/open/lava.dm) and chasms
- * (code/datums/components/chasm.dm) check to skip their hazard logic —
+ * (code/datums/components/chasm.dm) check to skip their hazard logic,
  * so the dash clears lava, chasms, and water without any hazard-specific
  * code of its own. `jumpdistance = 5` matches jump boots' own "-1 to see
  * the actual distance" quirk, landing on exactly four tiles crossed, and
@@ -877,17 +877,17 @@
  * Action wiring follows the same idiom as jump boots: a
  * `/datum/action/item_action` subtype purely for the button's name/icon,
  * whose base Trigger() calls `target.ui_action_click(owner, src)`
- * (code/datums/actions/item_action.dm) — so the actual dash logic lives
+ * (code/datums/actions/item_action.dm), so the actual dash logic lives
  * in `ui_action_click()` on the item itself, exactly like
  * `/obj/item/clothing/shoes/bhop/ui_action_click()`. The button reuses
  * the existing "jetboot" icon state from actions_items.dmi (the same one
  * jump boots' own action uses) rather than inventing a new one.
  *
  * Sprite/slot deviation: worn at the belt (ITEM_SLOT_BELT), not the feet
- * slot, so it never competes with the wearer's actual boots — matches
+ * slot, so it never competes with the wearer's actual boots, matches
  * the doc's own "belt/legs item" framing.
  *
- * PLAYTEST CHANGE (2026-07-28) — "should make you move faster too". The rig
+ * PLAYTEST CHANGE (2026-07-28): "should make you move faster too". The rig
  * now grants /datum/movespeed_modifier/longwalk_rig while it's worn on the
  * belt: -0.25 multiplicative_slowdown, in the same band as the heretic shadow
  * cloak (-0.25) and berserk (-0.2), which is a clear step up in pace without
@@ -911,7 +911,7 @@
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL
 	actions_types = list(/datum/action/item_action/longwalk_dash)
-	/// Tiles thrown — matches jump boots' -1 quirk: 5 = 4 tiles crossed
+	/// Tiles thrown: matches jump boots' -1 quirk: 5 = 4 tiles crossed
 	var/jumpdistance = 5
 	var/jumpspeed = 3
 	/// Wait between dashes
@@ -947,7 +947,7 @@
 	if(slot & slot_flags)
 		user.add_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
 	else
-		// picked up rather than strapped on — no speed from carrying it
+		// picked up rather than strapped on, no speed from carrying it
 		user.remove_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
 
 /obj/item/longwalk_rig/dropped(mob/user, silent)

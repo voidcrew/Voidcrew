@@ -15,20 +15,27 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/wood,
-/area/template_noop)
-"j" = (
-/obj/structure/table/wood,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey{
 	pixel_x = -4;
 	pixel_y = 8
 	},
+/turf/open/floor/wood,
+/area/template_noop)
+"j" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/wood,
 /area/template_noop)
 "k" = (
@@ -59,14 +66,6 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/closet/crate/freezer/food,
-/obj/item/storage/box/donkpockets,
-/obj/item/storage/box/donkpockets/donkpocketteriyaki,
-/obj/item/food/canned/beans,
-/obj/item/food/canned/beans,
-/obj/item/food/sosjerky,
-/obj/item/food/energybar,
-/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/wood,
 /area/template_noop)
 "u" = (
@@ -83,13 +82,13 @@
 /turf/open/floor/wood,
 /area/template_noop)
 "x" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/template_noop)
 "A" = (
@@ -118,7 +117,7 @@
 /obj/modular_map_connector,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/wood,
 /area/template_noop)
 "U" = (
 /obj/structure/chair/wood{

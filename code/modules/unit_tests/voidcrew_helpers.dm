@@ -5,14 +5,14 @@
  * simulations: a CIBUILDING world boots MetaStation, not the voidcrew overmap,
  * so nothing may assume a ship, a planet or a live SSovermap exists. What they
  * do instead is walk registries with subtypesof()/initial() and text-scan the
- * shipped `.dmm`/`.dm` files — the pattern voidcrew_loot.dm established.
+ * shipped `.dmm`/`.dm` files, the pattern voidcrew_loot.dm established.
  *
  * These are global procs rather than procs on a shared /datum/unit_test parent
  * because the runner executes every /datum/unit_test subtype, so an abstract
  * "helpers" test type would show up in the results as a hollow pass.
  *
  * NOTE: unit-test files compile at their `code/modules/unit_tests` include
- * position, which is BEFORE `voidcrew/_DEFINES/` — fork defines are not
+ * position, which is BEFORE `voidcrew/_DEFINES/`. Fork defines are not
  * available in any of these files. Use literals with a comment naming the
  * define, per the voidcrew_loot.dm convention.
  */
@@ -55,7 +55,7 @@
  * Whether a TGM map's text places the given typepath.
  *
  * TGM entries terminate in "," (the list continues), "{" (var edits) or ")"
- * (last path in the block), so matching against those avoids prefix hits —
+ * (last path in the block), so matching against those avoids prefix hits,
  * `/armory` would otherwise match `/armory/rare`. Same helper voidcrew_loot.dm
  * carries for its reachability scan.
  */
@@ -110,8 +110,8 @@
  * Reads a `<list_var> = list(...)` block off every definition under
  * `prefix_path` in a pre-read source tree, as typepath -> list of typepaths.
  *
- * DM's initial() cannot read a list var, and the alternative — instantiating
- * the type to read the list off the instance — is not safe for every type
+ * DM's initial() cannot read a list var, and the alternative, instantiating
+ * the type to read the list off the instance. Is not safe for every type
  * (a vestige patron dresses an appearance dummy through an async callback that
  * must not outlive the qdel), so some list-shaped invariants can only be
  * checked against the source. Callers MUST assert on the number of definitions

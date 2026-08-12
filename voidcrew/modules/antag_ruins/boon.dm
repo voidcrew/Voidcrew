@@ -4,7 +4,7 @@
  * A ported antagonist ability, chosen as payment when a trial completes. Boon
  * datums are stateless granters: instantiated, grant() called, deleted.
  *
- * Every boon must work on a plain human with no antag datum attached — either
+ * Every boon must work on a plain human with no antag datum attached, either
  * an ability that's already standalone (wizard spells, shadow walk) or a
  * standalone reimplementation (see the theme files).
  *
@@ -34,7 +34,7 @@
 
 /**
  * Grants an action (spell or otherwise). Mind-targeted, so it follows the
- * player across bodies — the same mechanism as learned wizard spells.
+ * player across bodies, the same mechanism as learned wizard spells.
  */
 /datum/vestige_boon/spell
 	/// Typepath of the /datum/action to grant
@@ -45,7 +45,7 @@
 	if(!spell_type)
 		return
 	remove_replaced_spell(user)
-	// Stripping the old ability can reshape its owner — removing a shapeshift
+	// Stripping the old ability can reshape its owner, removing a shapeshift
 	// boon mid-form unshifts the claimant and DELETES the shape mob we were
 	// handed as user. Re-resolve the body before granting the replacement.
 	if(owner?.current)
@@ -93,7 +93,7 @@
 		eligible += boon_type
 	return eligible
 
-/// Radial menu icon for a boon typepath — the granted spell's or item's own icon where possible
+/// Radial menu icon for a boon typepath, the granted spell's or item's own icon where possible
 /proc/vestige_boon_radial_image(datum/vestige_boon/boon_type)
 	if(initial(boon_type.radial_icon))
 		return image(icon = initial(boon_type.radial_icon), icon_state = initial(boon_type.radial_icon_state))
@@ -115,7 +115,7 @@
  * The debt a fulfilled pact leaves behind: an action-bar button carrying the
  * boon candidates rolled when the trial completed. Mind-targeted like the pact
  * tracker so the claim follows the player across bodies, and usable while
- * downed or dead — choosing a payment is not a power.
+ * downed or dead, choosing a payment is not a power.
  *
  * Clicking it opens a radial of the candidates anchored on the claimant;
  * picking one shows the boon's pitch behind a confirm, so a stray click can't
@@ -132,7 +132,7 @@
 	check_flags = NONE
 	/// Boon typepaths on offer, rolled once when the pact completed
 	var/list/candidates
-	/// Name of the owing patron, kept as text — the mob unloads with the ruin
+	/// Name of the owing patron, kept as text, the mob unloads with the ruin
 	var/patron_name = "the patron"
 	/// Guards against stacked radial menus
 	var/choosing = FALSE
@@ -207,7 +207,7 @@
 		var/confirm = tgui_alert(user, pitch, "[patron_name] offers: [choice]", list("Take it", "Reconsider"))
 		if(confirm == "Take it")
 			return menu_check(user) ? chosen : null
-		// A single offer would just autopick itself again — let go and let them re-click the button
+		// A single offer would just autopick itself again. Let go and let them re-click the button
 		if(length(options) < 2)
 			return null
 
@@ -228,7 +228,7 @@
 	to_chat(user, span_bolddanger("[patron_name] sounds satisfied. \"Paid in full.\""))
 	qdel(src)
 
-/// Settles the pending entry on the soul's ledger — NOT called from Destroy, which
+/// Settles the pending entry on the soul's ledger, NOT called from Destroy, which
 /// also runs on death cleanup, where the record must keep the debt for restoration
 /datum/action/vestige_reward/proc/clear_recorded_pending(datum/mind/mind)
 	var/datum/vestige_record/record = get_vestige_record(mind)

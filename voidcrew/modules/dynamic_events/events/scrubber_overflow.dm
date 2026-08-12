@@ -31,11 +31,11 @@
 	weight = 2
 	max_occurrences = 1
 	earliest_start = 35 MINUTES
-	/// Rolls the genuinely dangerous reagent table often enough to hurt — keep out of the safe ring.
+	/// Rolls the genuinely dangerous reagent table often enough to hurt. Keep out of the safe ring.
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	/// A lone crew member has no one to drag them out of a chemical foam flood.
 	min_crew_aboard = 2
-	/// Being dragged clear only helps if there is a clear tile to be dragged to — on a small
+	/// Being dragged clear only helps if there is a clear tile to be dragged to, on a small
 	/// hull the foam covers everything at once.
 	min_ship_mass = SHIP_MASS_MEDIUM
 	description = "The scrubbers release a tide of moderately harmless froth."
@@ -61,7 +61,7 @@
 	var/reagents_amount = 50
 	/// Probability of an individual scrubber overflowing
 	var/overflow_probability = 50
-	/// Specific reagent to force all scrubbers to use, null for random reagent choice (admin VV only — the TG admin_setup datum was not ported)
+	/// Specific reagent to force all scrubbers to use, null for random reagent choice (admin VV only. The TG admin_setup datum was not ported)
 	var/datum/reagent/forced_reagent_type
 	/// A list of scrubbers that will have reagents ejected from them
 	var/list/scrubbers = list()

@@ -1,17 +1,17 @@
 // =========================================================================
-// EXPEDITION THEME — prospector and frontier kit (mining camps, crash
+// EXPEDITION THEME: prospector and frontier kit (mining camps, crash
 // sites, survey posts, meteor fields). Common keeps you alive, uncommon
 // makes you faster, prime makes the planet regret you landed. Guarded by
 // territorial fauna: wildlife on planet surfaces, the vacuum-proof asteroid
 // table for airless rocks (the landable meteor storm fields in
 // overmap/events.dm spawn both this theme's caches and asteroid packs at
 // runtime).
-// Cyberware: the mobility and prospecting half of the parlor roster — calf
+// Cyberware: the mobility and prospecting half of the parlor roster, calf
 // pistons and a drill fist on the way up, surveyor optics and jump pistons at
 // the top. The Skyhook wrist winch is here and NOWHERE else: it is the one
 // piece of chrome Splice has never had on a shelf, so a cache is the only
 // place in the game it exists (the mirror of the black market's Piledriver).
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -120,12 +120,12 @@
 		/mob/living/basic/mining/goliath/ancient = 3,
 	)
 
-/// The wildlife setpiece. Red rolls a lavaland ELITE — the "harder version
+/// The wildlife setpiece. Red rolls a lavaland ELITE, the "harder version
 /// of a normal mob" tier (elite goliath/watcher/legion/hivelord), the
 /// design ceiling for ruin guards. NEVER megafauna: the old lesser ash
 /// drake here was a mistake the loot audit test now guards against.
 /// Standalone elites have no tumor, so they fight as NPCs and drop no
-/// tendril chest — the cache they guard is the prize.
+/// tendril chest, the cache they guard is the prize.
 /obj/effect/zone_mobs/wildlife/boss
 	name = "zone mob spawner (wildlife boss)"
 	count_green = list(1, 1)
@@ -146,7 +146,7 @@
 
 /// Airless rock fauna: mining wildlife that shrugs off vacuum. Used by the
 /// landable meteor storm fields (overmap/events.dm) and fits any airless
-/// asteroid ruin — everything in these tables survives space.
+/// asteroid ruin, everything in these tables survives space.
 /obj/effect/zone_mobs/asteroid
 	name = "zone mob spawner (asteroid)"
 	mobs_green = list(

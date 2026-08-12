@@ -132,6 +132,28 @@
 		remote_eye.balloon_alert(owner, "can't deconstruct that!")
 		return
 
+	// Special handling for cameras - cut them off the wall, no material cost
+	var/obj/machinery/camera/target_camera = locate() in target_turf
+	if(target_camera)
+		owner.changeNext_move(CLICK_CD_RANGE)
+		check_rcd()
+
+		// Show deconstruction effect
+		var/obj/effect/constructing_effect/camera_rcd_effect = new(target_turf, SHIP_CAMERA_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
+
+		// Delay for deconstruction
+		if(!base_console.internal_rcd.build_delay(owner, SHIP_CAMERA_DECONSTRUCT_DELAY, target_camera))
+			qdel(camera_rcd_effect)
+			return
+
+		// Remove the camera (cameranet cleanup happens in its Destroy)
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		qdel(target_camera)
+
+		// Clean up any empty shuttle turfs after deconstruction
+		ship_console.cleanup_deconstructed_turfs()
+		return
+
 	// Special handling for airlocks - bypass reinforcement/seal checks for remote construction
 	var/obj/machinery/door/airlock/target_airlock = locate() in target_turf
 	if(target_airlock)
@@ -201,6 +223,46 @@
 
 	// Clean up any empty shuttle turfs after deconstruction
 	ship_console.cleanup_deconstructed_turfs()
+
+/// Ship camera build action - mounts a finished camera on the wall the drone faces
+/datum/action/innate/construction/ship/camera_build
+	name = "Place Camera"
+	button_icon = 'icons/obj/machines/camera.dmi'
+	button_icon_state = "camera"
+
+/datum/action/innate/construction/ship/camera_build/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+
+	// The camera goes on the drone's own turf, hung on the wall the drone is facing,
+	// so it watches the room the drone is in (mirrors handheld wallframe placement).
+	if(!istype(target_turf, /turf/open) || isspaceturf(target_turf))
+		remote_eye.balloon_alert(owner, "need open floor!")
+		return
+
+	var/wall_dir = remote_eye.dir
+	if(ISDIAGONALDIR(wall_dir) || !isclosedturf(get_step(target_turf, wall_dir)))
+		remote_eye.balloon_alert(owner, "face an adjacent wall!")
+		return
+
+	if(locate(/obj/machinery/camera) in target_turf)
+		remote_eye.balloon_alert(owner, "camera already here!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+	check_rcd()
+
+	var/obj/machinery/camera/placed_camera = ship_rcd.build_camera(target_turf, wall_dir, owner)
+	if(!placed_camera)
+		return
+
+	ship_console.setup_placed_camera(placed_camera)
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 
 /// Ship-specific RCD configure action
 /datum/action/innate/construction/ship/configure_mode

@@ -1,0 +1,148 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"e" = (
+/obj/structure/weightmachine/weightlifter,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/structure/rack,
+/obj/item/clothing/gloves/boxing,
+/obj/item/clothing/gloves/boxing{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/waterbottle,
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"o" = (
+/obj/structure/punching_bag,
+/obj/effect/turf_decal/bot_white,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"x" = (
+/obj/structure/chair/sofa/bench/solo{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"y" = (
+/obj/structure/closet/athletic_mixed,
+/turf/open/floor/wood,
+/area/template_noop)
+"z" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"C" = (
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"G" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/structure/weightmachine,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/structure/chair/stool/bamboo{
+	dir = 8
+	},
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"T" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+o
+x
+s
+"}
+(2,1,1) = {"
+i
+g
+K
+"}
+(3,1,1) = {"
+j
+T
+e
+"}
+(4,1,1) = {"
+G
+T
+o
+"}
+(5,1,1) = {"
+G
+T
+o
+"}
+(6,1,1) = {"
+G
+C
+C
+"}
+(7,1,1) = {"
+G
+C
+C
+"}
+(8,1,1) = {"
+G
+C
+C
+"}
+(9,1,1) = {"
+Q
+g
+P
+"}
+(10,1,1) = {"
+z
+u
+y
+"}
+(11,1,1) = {"
+c
+u
+y
+"}

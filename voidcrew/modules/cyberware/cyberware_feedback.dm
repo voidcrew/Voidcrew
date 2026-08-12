@@ -5,7 +5,7 @@
  * traits: it pins the health bar and doll with tg's own `fake_healthy`, kills the
  * brute and crit vignettes by trait, and strips the wound lines off a self-examine.
  * Three readouts are built without a hook to hang off, so they are chained here
- * instead — one file, so the next person looking for "why can't I see my own
+ * instead, one file, so the next person looking for "why can't I see my own
  * damage" finds all of it in one place.
  *
  * Everything below no-ops unless the bearer actually has a Dead Channel that is
@@ -28,8 +28,8 @@
  * tox/oxy/stamina block afterwards, where nothing can reach them. Replace the
  * whole pass while cut.
  *
- * Missing limbs still report. The editor sits on the pain nerves, not the eyes —
- * an arm that isn't there is not something you have to feel to notice.
+ * Missing limbs still report. The editor sits on the pain nerves, not the eyes.
+ * An arm that isn't there is not something you have to feel to notice.
  */
 /mob/living/carbon/human/check_self_for_injuries()
 	if(!cutting_dead_channel(src))
@@ -49,7 +49,7 @@
 /**
  * The oxygen vignette is the one damage overlay upstream applies with no trait
  * gate. The editor clears it from its health-update handler, which covers every
- * path that runs through updatehealth() — but a client view or zoom change calls
+ * path that runs through updatehealth(), but a client view or zoom change calls
  * update_damage_hud() on its own, and that one would re-paint it until the next
  * Life tick. Catch it at the source instead.
  */
@@ -60,7 +60,7 @@
 
 /**
  * `fake_healthy` zeroes the doll's per-limb damage keys, but the red wound
- * outline is drawn off the wound list itself and pulses straight through it — a
+ * outline is drawn off the wound list itself and pulses straight through it, a
  * bearer with a cut arm still watches that limb throb. Drop the filters after
  * the parent has laid them down.
  *

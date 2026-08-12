@@ -3,7 +3,7 @@
  *
  * Goods that only come from planet surfaces, existing to make traders reward
  * planetary exploration (Loot-economy: "power costs danger"). Wave 1 is raw
- * telecrystal — mineable veins seeded on the dangerous planet types — plus
+ * telecrystal (mineable veins seeded on the dangerous planet types) plus
  * the wanted-ledger entries in the shop catalogs that buy fauna harvests.
  * Wave 2 gives every remaining planet type its own good: glacial cores
  * (mined on ice), wild spice pods (gathered on jungle) and pearl clams
@@ -12,7 +12,7 @@
  *
  * All of these are pure trade goods: raw telecrystal is NOT refined syndicate
  * telecrystal, no ORM accepts any of the minerals, nothing refines, grows or
- * shucks any of them. Vex pays vouchers for telecrystal — the flagship —
+ * shucks any of them. Vex pays vouchers for telecrystal, the flagship,
  * which is safe under the voucher doctrine because the only supply is hostile
  * planet crust. The wave 2 goods deliberately pay credits only, keeping the
  * voucher spigot exclusive to the deadliest worlds.
@@ -20,7 +20,7 @@
 
 /obj/item/stack/telecrystal_raw
 	name = "raw telecrystal"
-	desc = "A cloudy, unrefined telecrystal shard straight out of planetary crust. Too impure to power anything, but the Undertow pays well for the feedstock. Scanners can't pick the veins out of ordinary rock — prospectors find these the hard way."
+	desc = "A cloudy, unrefined telecrystal shard straight out of planetary crust. Too impure to power anything, but the Undertow pays well for the feedstock. Scanners can't pick the veins out of ordinary rock. Prospectors find these the hard way."
 	singular_name = "raw telecrystal shard"
 	icon = 'voidcrew/modules/trade/icons/trade.dmi'
 	icon_state = "telecrystal_raw"
@@ -32,7 +32,7 @@
 
 /**
  * Telecrystal-bearing rock. Deliberately has no scan_state: the lattice
- * defeats mining scanners, so veins look like ordinary rock until struck —
+ * defeats mining scanners, so veins look like ordinary rock until struck,
  * prospecting on dangerous planets stays luck-and-graft, not scanner sweeps.
  */
 /turf/closed/mineral/telecrystal
@@ -102,14 +102,14 @@
 // Vein seeding: the snow-planet random rock table lives upstream in
 // code/game/turfs/closed/minerals.dm (which this fork already edits), so the
 // glacial entry sits directly in /turf/closed/mineral/random/snow's
-// mineral_chances() — see the VOIDCREW EDIT there.
+// mineral_chances(), see the VOIDCREW EDIT there.
 
 // ===== WILD SPICE PODS (jungle planets) =====
 
 /**
  * The jungle planets' gathered good: pod clusters ground-spawned by the
  * jungle surface biomes (see jungle_biomes.dm feature lists). No seeds, no
- * hydroponics strain, no recipe uses them — the vine refuses to grow in a
+ * hydroponics strain, no recipe uses them, the vine refuses to grow in a
  * tray, which is exactly why the general store pays for wild stock.
  */
 /obj/item/stack/spice_pods
@@ -127,20 +127,20 @@
 
 /**
  * The beach planets' ocean good: a rare live clam mixed into the shore-water
- * fishing table. Sold whole and unopened — there is deliberately no shucking
+ * fishing table. Sold whole and unopened. There is deliberately no shucking
  * mechanic, mirroring raw telecrystal's no-refining design: the trader
  * candles them behind the counter and the pearl never enters the economy.
  */
 /obj/item/pearl_clam
 	name = "pearl clam"
-	desc = "A heavy deep-lagoon clam, shut tight around what is hopefully a pearl. Traders candle them on a cold lamp and pay for the glow — an amateur shucking ruins whatever's inside, so they only buy them sealed."
+	desc = "A heavy deep-lagoon clam, shut tight around what is hopefully a pearl. Traders candle them on a cold lamp and pay for the glow. An amateur shucking ruins whatever's inside, so they only buy them sealed."
 	icon = 'icons/obj/fluff/beach.dmi'
 	icon_state = "shell3"
 	w_class = WEIGHT_CLASS_SMALL
 	throwforce = 0
 
 // The pearl beds: seeded into the beach shore-water catch table. Shore water
-// only — the deep-water table (/datum/fish_source/ocean) stays untouched —
+// only, the deep-water table (/datum/fish_source/ocean) stays untouched,
 // and count-limited with a slow regen so a lagoon can be fished out for a
 // while. The fishing portal generator uses its own separate beach table, so
 // clams stay planet-gated.

@@ -1,10 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/structure/girder/displaced,
-/obj/item/stack/sheet/mineral/titanium,
-/obj/item/stack/rods,
-/obj/item/stack/cable_coil,
-/turf/open/floor/plating/airless,
+/turf/template_noop,
 /area/template_noop)
 "b" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -41,11 +37,31 @@
 /obj/machinery/rnd/production/techfab,
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"g" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "h" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small/directional/north,
 /obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark,
+/turf/open/floor/iron,
 /area/template_noop)
 "i" = (
 /obj/modular_map_connector,
@@ -76,6 +92,10 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
 	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "x" = (
@@ -260,7 +280,7 @@ d
 E
 e
 b
-G
+w
 R
 "}
 (6,1,1) = {"
@@ -268,7 +288,7 @@ F
 s
 S
 s
-y
+g
 "}
 (7,1,1) = {"
 L

@@ -335,7 +335,7 @@ export const ShipUpgradeSelector = () => {
     >
       <Window.Content>
         {/* Purchase Confirmation Modal */}
-        {confirmingPurchase && (
+        {!!confirmingPurchase && (
           <Modal>
             <Box fontSize="16px" bold mb={2}>
               {confirmingPurchase.type === 'ship' ? 'Purchase' : 'Unlock'}{' '}
@@ -408,7 +408,7 @@ export const ShipUpgradeSelector = () => {
           }}
         >
           {/* Top row: the big ship preview, spanning the whole window */}
-          {hasPreview && preview && (
+          {hasPreview && !!preview && (
             <div
               style={{
                 flex: showMap ? `${split} 1 0` : '0 0 auto',
@@ -436,7 +436,7 @@ export const ShipUpgradeSelector = () => {
                   </Stack>
                 }
               >
-                {showMap && (
+                {!!showMap && (
                   <Stack vertical fill>
                     {/* minHeight lets this shrink past the map's own height */}
                     <Stack.Item grow style={{ minHeight: 0 }}>
@@ -455,7 +455,7 @@ export const ShipUpgradeSelector = () => {
                         textAlign="center"
                         py={0.5}
                       >
-                        {previewLabel && (
+                        {!!previewLabel && (
                           <Box as="span" color="white" bold mr={1}>
                             {previewLabel}
                           </Box>
@@ -470,7 +470,7 @@ export const ShipUpgradeSelector = () => {
           )}
 
           {/* Drag this to trade map height against list height */}
-          {showMap && (
+          {!!showMap && (
             <SplitHandle
               active={dragging}
               onGrab={() => setDragging(true)}
@@ -633,7 +633,7 @@ export const ShipUpgradeSelector = () => {
                                                 (Default)
                                               </Box>
                                             )}
-                                            {isUnlocked &&
+                                            {!!isUnlocked &&
                                               !theme.is_default && (
                                                 <Box
                                                   as="span"
@@ -676,7 +676,7 @@ export const ShipUpgradeSelector = () => {
                                     </Stack.Item>
 
                                     {/* Cost display for locked themes */}
-                                    {!isUnlocked && hasCost && (
+                                    {!isUnlocked && !!hasCost && (
                                       <Stack.Item>
                                         <Stack>
                                           {Object.entries(theme.part_cost)
@@ -826,7 +826,7 @@ export const ShipUpgradeSelector = () => {
               </Stack.Item>
 
               {/* Bottom right column: loadout summary and launch controls */}
-              {hasPreview && (
+              {!!hasPreview && (
                 <Stack.Item width="19rem">
                   <Stack vertical fill>
                     <Stack.Item grow>
@@ -1027,7 +1027,7 @@ const HullRow = (props: {
             <Stack.Item>
               <Box bold color="white">
                 {hull.name}
-                {isOwned && (
+                {!!isOwned && (
                   <Box as="span" color="good" ml={1}>
                     <Icon name={hull.is_free ? 'gift' : 'check'} />{' '}
                     {hull.is_free ? 'Free' : 'Owned'}
@@ -1247,7 +1247,11 @@ const ShipPreview = (props: {
               position: 'relative',
               width: `${mapWidth}px`,
               height: `${mapHeight}px`,
-              backgroundColor: 'black',
+              // Not pure black: the darkest wall sprites (plastitanium,
+              // cult) are near-black and vanish against it. A dim space
+              // backdrop keeps dark hulls readable.
+              background:
+                'radial-gradient(ellipse at 35% 30%, #232a3d 0%, #161a26 65%, #10131c 100%)',
             }}
           >
             <img
@@ -1360,7 +1364,7 @@ const UpgradeSlotSection = (props: {
                   </Stack.Item>
 
                   {/* Cost display for locked modules */}
-                  {!isUnlocked && hasCost && (
+                  {!isUnlocked && !!hasCost && (
                     <Stack.Item>
                       <Stack>
                         {Object.entries(module.part_cost)

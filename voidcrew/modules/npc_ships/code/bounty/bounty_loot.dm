@@ -18,7 +18,7 @@
 	desc = "A crate of laser weapons recovered from a pirate vessel."
 
 // Steal-objective items have to exist before the crate is first opened, so the
-// objective can track them — see the closets unit test.
+// objective can track them, see the closets unit test.
 /obj/structure/closet/crate/secure/weapon/pirate_loot/lasers/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/laser(src)

@@ -1,18 +1,18 @@
 /**
- * # The Athenaeum — wizard vestige
+ * # The Athenaeum: wizard vestige
  *
  * A library barge that burned from the inside out when its master mispronounced
  * something. The patron is what the mispronunciation left behind. The trials
- * are tuition in the three disciplines of the art — the price (paid in scorched
+ * are tuition in the three disciplines of the art, the price (paid in scorched
  * flesh), the delivery (spoken whole, while burning), and the harder lesson of
- * not speaking at all — and the boons are honest wizard spells, taught as words
+ * not speaking at all, and the boons are honest wizard spells, taught as words
  * of the art: granted as-is where upstream asks for no garb (fireball, knock,
  * forcewall), and locally subtyped where it does (blink) or where crew tempo
  * wants a retune.
  */
 
 // Trial tuning (VESTIGE_SINGED_BURN_NEEDED lives in voidcrew/_DEFINES/antag_ruins.dm).
-// Trial descs quote these numbers literally — keep them in sync.
+// Trial descs quote these numbers literally. Keep them in sync.
 /// Verses the Trial of the Steady Tongue demands, spoken whole while burning
 #define VESTIGE_TONGUE_VERSES_NEEDED 3
 /// How long each verse must be held without stumbling
@@ -343,7 +343,7 @@
 	to_chat(user, span_notice("[src] goes quiet against you. It's listening now."))
 	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
 
-/// The word left this mob's person — or only changed slots, in which case equipped() beat us
+/// The word left this mob's person, or only changed slots, in which case equipped() beat us
 /// here and loc is still the mob. A true departure voids the vigil.
 /obj/item/vestige_syllable/proc/check_still_carried(mob/living/former)
 	if(QDELETED(src) || QDELETED(former))
@@ -371,7 +371,7 @@
 	playsound(source, 'sound/effects/wounds/sizzle1.ogg', 30, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
 
-/// May complete the trial — which reclaims (deletes) this phial with it
+/// May complete the trial, which reclaims (deletes) this phial with it
 /obj/item/vestige_syllable/proc/try_settle()
 	if(QDELETED(src))
 		return
@@ -391,7 +391,7 @@
 // ===== BOONS =====
 
 // Upstream coupling, verified against code/modules/spells/spell.dm: the base
-// spell cast chain has no antag checks and no resource costs — garb is only
+// spell cast chain has no antag checks and no resource costs, garb is only
 // demanded when SPELL_REQUIRES_WIZARD_GARB is set. Fireball, knock and
 // forcewall all override spell_requirements down to
 // SPELL_REQUIRES_NO_ANTIMAGIC, so they grant to a plain human exactly as
@@ -439,9 +439,9 @@
 
 /**
  * The word of destruction, slowed to something a crew can live around.
- * Upstream fireball's whole chain is clean — pointed/_pointed.dm and
+ * Upstream fireball's whole chain is clean, pointed/_pointed.dm and
  * projectile/magic.dm carry no antag or garb coupling, and antimagic_flags
- * propagate onto the bolt — so the only thing this subtype changes is the
+ * propagate onto the bolt, so the only thing this subtype changes is the
  * tempo. Upstream speaks it every SIX seconds, which is a wizard mid-ascension
  * with a spellbook to answer for; a permanent ranged explosive on a six second
  * loop in crew hands is not a boon, it is artillery. Forty-five seconds puts it
@@ -458,7 +458,7 @@
 /**
  * The refined word: the same bolt, thirty seconds instead of forty-five, a
  * whispered invocation in place of the shout, and a tighter blast. Contact
- * damage is untouched — the upgrade buys tempo and control, not more damage.
+ * damage is untouched, the upgrade buys tempo and control, not more damage.
  */
 /datum/action/cooldown/spell/pointed/projectile/fireball/vestige/refined
 	name = "Refined Fireball"
@@ -469,7 +469,7 @@
 	projectile_type = /obj/projectile/magic/fireball/vestige_refined
 
 /// The refined fireball's bolt: same flame and contact damage, smaller
-/// structural splash. Mastery reads as control — and ships only have one hull.
+/// structural splash. Mastery reads as control, and ships only have one hull.
 /obj/projectile/magic/fireball/vestige_refined
 	exp_light = 1 // upstream 2
 	exp_flash = 2 // upstream 3
@@ -477,8 +477,8 @@
 /**
  * The greater word of opening. Upstream knock's cast chain is clean (garb-free,
  * turf-signal based), so this subtype extends it: wider reach, shorter
- * cooldown, and airlock bolts are thrown before the door is asked to open —
- * base knock's COMSIG_ATOM_MAGICALLY_UNLOCKED handler calls open(), which
+ * cooldown, and airlock bolts are thrown before the door is asked to open.
+ * Base knock's COMSIG_ATOM_MAGICALLY_UNLOCKED handler calls open(), which
  * refuses while locked (verified in door.dm / airlock.dm). Welded, sealed and
  * unpowered doors still hold, so a determined defender keeps counterplay.
  */
@@ -501,7 +501,7 @@
  * the spell never overrides the base-spell default spell_requirements of
  * SPELL_REQUIRES_WIZARD_GARB|SPELL_REQUIRES_NO_ANTIMAGIC, so as shipped it is
  * garb-locked. This subtype drops the garb half, keeps the antimagic hook, and
- * slows the word to crew tempo — the wizard version recasts every 2 seconds.
+ * slows the word to crew tempo, the wizard version recasts every 2 seconds.
  * The destination stays random: the word says away, not where.
  */
 /datum/action/cooldown/spell/teleport/radius_turf/blink/vestige_passage
@@ -516,7 +516,7 @@
  * The word of denial. Upstream forcewall is already garb-free
  * (SPELL_REQUIRES_NO_ANTIMAGIC) and its cast is clean: three caster-keyed
  * /obj/effect/forcefield/wizard with a 30 second lifetime, which antimagic
- * bearers simply walk through. Only the cooldown is retuned — upstream's 10
+ * bearers simply walk through. Only the cooldown is retuned, upstream's 10
  * seconds lets several wall-lines stand at once, so this word matches its
  * cooldown to the wall's lifetime. One denial at a time; no corridor lockdown.
  */

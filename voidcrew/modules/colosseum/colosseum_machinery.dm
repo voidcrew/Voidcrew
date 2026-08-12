@@ -5,15 +5,15 @@
  * boards and the arena camera net. Everything here is an indestructible venue
  * fixture (matching the building's indestructible fiction) and everything
  * tolerates deferred linking: the site wires `site` vars in link_interior(),
- * and every interaction re-checks them (or falls back to GLOB.colosseum_site —
- * safe, the venue is one-per-round).
+ * and every interaction re-checks them (or falls back to GLOB.colosseum_site.
+ * Safe, the venue is one-per-round).
  */
 
 // ===== VENUE DOORS =====
 
 /**
  * The venue's interior airlocks. Same hardening recipe as the trader-outpost
- * sanctuary doors: no damage, no hacking, no emag — the fiction says the
+ * sanctuary doors: no damage, no hacking, no emag, the fiction says the
  * building has shrugged off worse than your weapons.
  */
 /obj/machinery/door/airlock/sandstone/colosseum
@@ -78,7 +78,7 @@
 
 /**
  * Venue ETA board: shows the match loop's current phase and, above all, when
- * the fighting starts. Driven two ways — a tick on SSmachines while any
+ * the fighting starts. Driven two ways, a tick on SSmachines while any
  * countdown is running, and site.update_status_displays() kicks on every
  * state flip so the boards never show a stale phase.
  */
@@ -103,7 +103,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/colosseum, 32)
 		site = null
 	return ..()
 
-// Venue fixture: no tool does anything — not unboltable, not deconstructable.
+// Venue fixture: no tool does anything, not unboltable, not deconstructable.
 /obj/machinery/status_display/colosseum/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(tool.tool_behaviour)
 		balloon_alert(user, "set into the stone!")
@@ -117,7 +117,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/colosseum, 32)
 		return PROCESS_KILL
 	switch(controller.state)
 		if(COLOSSEUM_STATE_IDLE)
-			// The claim window (5 min) outlives the arena reset (15 s) — keep
+			// The claim window (5 min) outlives the arena reset (15 s), keep
 			// the winners' countdown up until it lapses.
 			if(controller.claim_window_active())
 				set_messages("- SPOILS -", "CLAIM [colosseum_timer_text(controller.claim_until - world.time)]")
@@ -144,7 +144,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/colosseum, 32)
 
 /**
  * Arena camera: fixed network so the observation consoles list exactly the
- * fight and nothing else. Long view range — the arena is 28 tiles across and
+ * fight and nothing else. Long view range. The arena is 28 tiles across and
  * the cameras hang on its perimeter. The voidcrew camera edit auto-names
  * these per-area ("Colosseum Arena #1", ...) and leaves the network alone
  * because the venue isn't a shuttle.
@@ -196,7 +196,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
  * The tournament prize case. Awarded through the spoils vault (one per
  * winner, the prize parts dealt between them) and extracted ALONGSIDE a
  * standard extraction case rather than competing with it for the
- * one-case-per-player rule — see extract_ship_parts_from_player().
+ * one-case-per-player rule, see extract_ship_parts_from_player().
  */
 /obj/item/storage/briefcase/secure/extraction/tournament
 	name = "champion's extraction case"
@@ -271,7 +271,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 	if(length(controller.roster))
 		var/list/lines = list("The roster reads:")
 		for(var/datum/colosseum_contestant/entry as anything in controller.roster)
-			lines += "— [entry.display_name], of [entry.ship_name][entry.eliminated ? " (eliminated)" : ""]"
+			lines += "- [entry.display_name], of [entry.ship_name][entry.eliminated ? " (eliminated)" : ""]"
 		. += span_info(jointext(lines, "\n"))
 
 // The machinery interact chain (attack_hand -> _try_interact -> interact) is
@@ -342,7 +342,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 	if(site?.spoils_vault == src)
 		site.spoils_vault = null
 	site = null
-	// Don't delete the loot with the vault — spill it out instead
+	// Don't delete the loot with the vault, spill it out instead
 	var/turf/spill_turf = get_turf(src)
 	if(spill_turf)
 		for(var/atom/movable/thing as anything in contents.Copy())

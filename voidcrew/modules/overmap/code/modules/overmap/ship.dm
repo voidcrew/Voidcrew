@@ -3,7 +3,7 @@
 
 #define SHIP_RUIN (10 MINUTES)
 #define SHIP_DELETE (10 MINUTES)
-// SHIP_VIEW_RANGE now lives in voidcrew/_DEFINES/overmap.dm — the helm's sensor
+// SHIP_VIEW_RANGE now lives in voidcrew/_DEFINES/overmap.dm, the helm's sensor
 // code needs it too, and a file-local define was going out of scope before it.
 #define SHIP_SPEED_MULTIPLIER_DEFAULT 1
 /// How long crews must wait between ship renames
@@ -103,7 +103,7 @@
 	/// The direction currently being burned (0 = none, direction = thrust, -1 = active braking)
 	var/burn_direction = 0
 	/// Both the engine burn intensity (1-100) and the cruise-speed target as a
-	/// percentage of max_speed — one throttle for how hard to burn and how fast
+	/// percentage of max_speed, one throttle for how hard to burn and how fast
 	/// to end up going. 100 = flat out.
 	var/burn_percentage = 100
 	/// The course the pilot has commanded via the helm (dir bits), independent of
@@ -208,8 +208,8 @@
 	var/hidden_in_nebula = FALSE
 	/// Timer ID for nebula hide warmup
 	var/nebula_hide_timer
-	/// world.time of the last tick a mounted nebula ram scoop actually harvested —
-	/// concealment stays blocked while this is recent (see is_scoop_hot())
+	/// world.time of the last tick a mounted nebula ram scoop actually harvested.
+	/// Concealment stays blocked while this is recent (see is_scoop_hot())
 	var/last_scoop_activity = 0
 
 	// ===== ZONE TRANSITION =====
@@ -779,8 +779,8 @@
  * Pushes a UI frame to every helm bound to this ship, so the chart starts a fresh
  * glide the instant the ship crosses a tile.
  *
- * SStgui's own heartbeat is 0.9s while tick_move() runs at 1/speed deciseconds —
- * far faster than that under any real burn. Without this the client would see the
+ * SStgui's own heartbeat is 0.9s while tick_move() runs at 1/speed deciseconds.
+ * Far faster than that under any real burn. Without this the client would see the
  * ship teleport several tiles per update and the interpolation would lurch.
  */
 /obj/structure/overmap/ship/proc/push_helm_frame()
@@ -1260,7 +1260,7 @@
 
 /**
  * Called by a mounted nebula ram scoop every tick it actually harvests gas.
- * Scooping is deliberately loud — it blocks new concealment attempts and rips
+ * Scooping is deliberately loud. It blocks new concealment attempts and rips
  * away any active concealment, so the fuel stop is also the ambush spot.
  */
 /obj/structure/overmap/ship/proc/notify_scoop_activity()
@@ -1739,7 +1739,7 @@
 						// Another ship is still docked to this empty space - notify them we left
 						SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 
-			// Free the ship's hangar berth (the outpost itself never unloads — it's permanent)
+			// Free the ship's hangar berth (the outpost itself never unloads, it's permanent)
 			// (trader outposts and player outposts with a hangar elevator; no-op elsewhere)
 			old_docked_location?.on_ship_undock_complete(src)
 
@@ -2017,7 +2017,7 @@
 	// Hard ceiling on velocity: the burn loop integrates thrust every 0.2s with no
 	// other bound, so light hulls (the pill masses 4 turfs) would otherwise sail to
 	// several times max_speed. Scaling both axes by the same positive factor keeps
-	// the heading — tick_move() only reads the SIGNs.
+	// the heading, tick_move() only reads the SIGNs.
 	var/new_magnitude = MAGNITUDE(speed[1], speed[2])
 	if(new_magnitude > max_speed)
 		var/rescale = max_speed / new_magnitude
@@ -2078,7 +2078,7 @@
 	//
 	// burn_engines() has its own copy of this check, but it only runs while the
 	// engines are lit, and the ordinary way to fly is to burn up to speed and
-	// then coast — at which point burn_direction is BURN_NONE, process() stops
+	// then coast, at which point burn_direction is BURN_NONE, process() stops
 	// calling burn_engines() at all, and nothing was left watching where the
 	// ship went. Every coasting hull crossed zone lines for free, and the
 	// autopilot did it every time: autopilot_steer() deliberately drops the burn
@@ -2101,7 +2101,7 @@
 	reschedule_movement()
 	update_screen()
 	push_helm_frame()
-	// One tile crossed is one steering decision — there is no sub-tile position to
+	// One tile crossed is one steering decision. There is no sub-tile position to
 	// steer with in between (see ship_autopilot.dm).
 	if(autopilot_engaged)
 		autopilot_steer()
@@ -2144,7 +2144,7 @@
  * current scroll direction is kept as long as it still describes our motion, which
  * avoids direction flip-flopping during diagonal burns; a fresh direction is picked
  * from the dominant velocity axis otherwise. A still ship (no speed on either axis)
- * gets NONE, which makes set_parallax_movedir() ease the scroll to a stop — no
+ * gets NONE, which makes set_parallax_movedir() ease the scroll to a stop, no
  * thrust means no drifting stars.
  */
 /obj/structure/overmap/ship/proc/update_flight_parallax()
@@ -2153,7 +2153,7 @@
 	if(!istype(shuttle.get_docked(), /obj/docking_port/stationary/transit))
 		return
 
-	// Ground truth for what's currently applied — any shuttle area will do
+	// Ground truth for what's currently applied. Any shuttle area will do
 	var/current_dir = NONE
 	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
 		current_dir = shuttle_area.parallax_movedir
@@ -2251,8 +2251,8 @@
   * actually a change of zone. Null for a step within one zone, for a tile with no
   * zone, and before SSovermap_zones is up.
   *
-  * Shared by the two places a crossing can happen — ordering a burn towards a
-  * boundary, and the tile step that carries the ship over one — so the two can't
+  * Shared by the two places a crossing can happen, ordering a burn towards a
+  * boundary, and the tile step that carries the ship over one, so the two can't
   * disagree about what counts as leaving a zone.
   */
 /obj/structure/overmap/ship/proc/zone_crossing(turf/origin, turf/target)
@@ -3250,7 +3250,7 @@
  * on a zone transition, given a name so the autopilot can ask for it directly.
  *
  * Routed through adjust_speed() rather than writing `speed` so the movement timer,
- * the flight parallax and the helm chart all hear about it — the chart in
+ * the flight parallax and the helm chart all hear about it, the chart in
  * particular keeps gliding its token toward a tile the ship is no longer heading
  * for otherwise.
  */
@@ -3269,7 +3269,7 @@
  *
  * What a turn actually needs. tick_move() steps by the SIGN of each axis, so
  * changing course is a matter of getting the two signs right rather than of
- * shedding speed — and an axis already carrying the ship the right way should keep
+ * shedding speed, and an axis already carrying the ship the right way should keep
  * every bit of the speed it has instead of being braked along with the bad one.
  */
 /obj/structure/overmap/ship/proc/kill_drift(kill_x = FALSE, kill_y = FALSE)
@@ -3352,7 +3352,7 @@
 	// Ordering a burn straight at a boundary starts the crossing there and then,
 	// rather than letting the ship build speed it is only going to have taken off
 	// it a tile later. The authoritative check is the one in tick_move(), on the
-	// step that actually leaves the zone — this is the early one, for the case
+	// step that actually leaves the zone. This is the early one, for the case
 	// where the crew is already sitting on the line.
 	var/target_x = x + ((n_dir & EAST) ? 1 : 0) - ((n_dir & WEST) ? 1 : 0)
 	var/target_y = y + ((n_dir & NORTH) ? 1 : 0) - ((n_dir & SOUTH) ? 1 : 0)

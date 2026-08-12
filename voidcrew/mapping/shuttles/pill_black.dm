@@ -2,9 +2,9 @@
 	name = "Pill-class-B(lack) Suicide Device"
 	suffix = "pill_black"
 	short_name = "Blackpill-class"
-	catalog_desc = "A Pill with orange hardsuits and a self-destruct charge wired into the \
-		cabin floor. Three bunks, the same drills and ore bags, the same complete lack of \
-		facilities. Free to take."
+	catalog_desc = "A Pill with orange hardsuits and a self-destruct charge bolted to the \
+		cabin floor. Three bunks, the same ore bags but improvised picks instead of drills, \
+		the same complete lack of facilities. Free to take."
 	force_purchasable = TRUE // 3 tiles and a bomb, no upgrade slots, free and on the shelf anyway
 
 	job_slots = list(

@@ -1,0 +1,76 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"k" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"l" = (
+/obj/structure/table/reinforced,
+/obj/item/universal_scanner,
+/obj/item/hand_labeler,
+/obj/item/pen,
+/obj/item/storage/bag/trash,
+/obj/machinery/light/red{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"o" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"x" = (
+/obj/structure/closet/crate,
+/obj/machinery/light/red{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"A" = (
+/obj/structure/rack,
+/obj/item/stack/package_wrap,
+/obj/item/stack/package_wrap,
+/obj/item/hand_labeler,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"B" = (
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "goon_freight"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"C" = (
+/obj/machinery/conveyor_switch{
+	id = "goon_freight"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"P" = (
+/obj/structure/closet/crate,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"T" = (
+/obj/machinery/autolathe,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+x
+T
+k
+"}
+(2,1,1) = {"
+o
+o
+C
+"}
+(3,1,1) = {"
+B
+B
+B
+"}
+(4,1,1) = {"
+P
+A
+l
+"}

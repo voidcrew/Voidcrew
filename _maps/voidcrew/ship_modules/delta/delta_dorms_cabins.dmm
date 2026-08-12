@@ -1,4 +1,10 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/closet/wardrobe/mixed,
+/turf/open/floor/wood,
+/area/template_noop)
 "f" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
@@ -9,6 +15,20 @@
 	pixel_x = -8;
 	pixel_y = -6
 	},
+/turf/open/floor/wood,
+/area/template_noop)
+"l" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/template_noop)
+"r" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
 /turf/open/floor/wood,
 /area/template_noop)
 "s" = (
@@ -46,6 +66,9 @@
 /obj/structure/closet/wardrobe/mixed,
 /turf/open/floor/wood,
 /area/template_noop)
+"E" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
 "G" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/neutral,
@@ -79,6 +102,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/freezer,
 /area/template_noop)
+"P" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
 "R" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/cryopod{
@@ -104,22 +135,22 @@ v
 s
 "}
 (2,1,1) = {"
-B
+E
 J
 G
 "}
 (3,1,1) = {"
 V
-R
+f
 G
 "}
 (4,1,1) = {"
-z
+l
 h
 G
 "}
 (5,1,1) = {"
-M
+b
 f
 G
 "}

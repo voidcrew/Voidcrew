@@ -1,9 +1,9 @@
 /**
- * # Shop Buyback — the wanted ledger
+ * # Shop Buyback: the wanted ledger
  *
  * The sell-to-trader side of an outpost shop: one entry per thing the trader
- * is buying this round. Deliberately SKU-adjacent rather than a SKU subtype —
- * pricing runs the other direction (the trader pays out), and stock becomes
+ * is buying this round. Deliberately SKU-adjacent rather than a SKU subtype.
+ * Pricing runs the other direction (the trader pays out), and stock becomes
  * *demand* (how many sales the trader still wants this round).
  *
  * Selling accepts goods from anywhere in the seller's inventory (hands first),
@@ -11,8 +11,8 @@
  * voucher payouts materialize in hand.
  *
  * Balance rule: entries that pay VOUCHERS must only ever buy loot that can't
- * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds) —
- * vouchers are the currency that can't be farmed safely, and a lathe-printable
+ * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds).
+ * Vouchers are the currency that can't be farmed safely, and a lathe-printable
  * buyback would break that in one shift.
  */
 /datum/shop_buyback
@@ -106,7 +106,7 @@
  * Anything the seller is currently wearing is skipped. The contents sweep goes
  * through get_all_contents(), which reaches into worn slots as readily as into
  * a backpack, so without this a salvage ledger would quietly sell the armor off
- * the seller's own back — or the MODsuit they are standing in. Held items still
+ * the seller's own back, or the MODsuit they are standing in. Held items still
  * count (that hand-off is the whole gesture), and so does anything in a bag or
  * a pocket, because carrying it there is already a decision to bring it.
  */
@@ -140,7 +140,7 @@
 	return units
 
 /**
- * Why the user can't sell right now — shown as a tooltip / chat line.
+ * Why the user can't sell right now, shown as a tooltip / chat line.
  */
 /datum/shop_buyback/proc/get_denial_reason(mob/living/user)
 	if(demand <= 0)
@@ -180,7 +180,7 @@
 			remaining -= take
 			if(remaining <= 0)
 				break
-		if(remaining > 0) // couldn't cover a full unit; partial stacks were small — bail without pay
+		if(remaining > 0) // couldn't cover a full unit; partial stacks were small, bail without pay
 			return FALSE
 	else
 		var/list/found = find_offered_items(user)
@@ -210,7 +210,7 @@
  * consumed with its contents, so the gas actually leaves the economy.
  *
  * The intended source is deep-band nebula scooping (fill a tank off the
- * scooped pipenet at a connector port) — the gases bought are the red-zone
+ * scooped pipenet at a connector port). The gases bought are the red-zone
  * nebula exotics, so the voucher payout is danger-gated by supply.
  */
 /datum/shop_buyback/exotic_gas

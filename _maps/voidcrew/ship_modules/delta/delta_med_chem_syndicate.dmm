@@ -1,0 +1,146 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"b" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/smartfridge/chemistry/preloaded,
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/east,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"l" = (
+/obj/structure/closet/syndicate/chemical,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/pillbottles{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/chem_master,
+/obj/structure/sign/poster/contraband/interdyne_gene_clinics/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"F" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/chem_dispenser,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/box/beakers{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/storage/box/syringes{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/paper{
+	name = "stock note";
+	default_raw_text = "Buffers stay in the closet, not on the bench. If you take the last pill bottle say so on the radio, do not let us find out the hard way. The grinder jams if you overfill it.";
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/chem_heater/withbuffer,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/structure/table/reinforced,
+/obj/machinery/reagentgrinder,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+a
+a
+P
+"}
+(2,1,1) = {"
+H
+F
+T
+"}
+(3,1,1) = {"
+y
+U
+W
+"}
+(4,1,1) = {"
+g
+F
+m
+"}
+(5,1,1) = {"
+K
+F
+l
+"}
+(6,1,1) = {"
+J
+S
+b
+"}

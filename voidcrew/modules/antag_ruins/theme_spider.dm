@@ -1,57 +1,57 @@
 /**
- * # The Loom — giant spider vestige (patron + trials)
+ * # The Loom: giant spider vestige (patron + trials)
  *
- * A sericulture vessel: they farmed giant spiders for silk — vivarium cages,
+ * A sericulture vessel: they farmed giant spiders for silk, vivarium cages,
  * reeling machines, bolts of finished cloth graded and priced by the yard.
  * The stock got loose (the cages opened from the inside, and nobody ever asks
  * who taught the stock to work a latch). The brood spread through the decks,
- * was hunted, was harvested, and died out — all but the broodmother, who
+ * was hunted, was harvested, and died out, all but the broodmother, who
  * outlived every child she laid and keeps to the tapestry hall, still weaving.
  * The patron is the Weaver: ancient, patient, a craftswoman whose grief is a
- * maker's — everything she made was taken and sold, so now she weaves only
+ * maker's, everything she made was taken and sold, so now she weaves only
  * for herself. She speaks in weaving grammar and calls you a loose thread.
  *
  * The trials are her craft, farmed out, and every one demands active play at
  * every moment: the Snare pays only for prey that hits your silk MID-HUNT, so
  * you are the bait and the kiting is the trial; the Pantry is a three-act
- * wrangle — subdue a live beast, wrap it while it fights the silk, then haul
+ * wrangle, subdue a live beast, wrap it while it fights the silk, then haul
  * the cocoon home against a freshness clock; the Tremor Line turns the web
- * into a nerve — a dispersed network of trip-lines the trial itself sends
+ * into a nerve, a dispersed network of trip-lines the trial itself sends
  * thieves against, and every tremor is a sprint you answer in person or
  * restring the loss. (Distinct from the Roost's Broodwatch on purpose: that
  * is holding one point against tides; this is a spread-out sensor net where
  * placement is tactical and the response window is the whole game.)
  *
- * The boons — the spinneret, the fang, the lash, the grace — live in the
+ * The boons (the spinneret, the fang, the lash, the grace) live in the
  * sibling boons half (theme_spider_boons); this file only points the patron
  * at them.
  */
 
 // Trial tuning (file-local, #undef at bottom). Trial descs quote these
-// numbers literally — keep them in sync.
+// numbers literally, keep them in sync.
 
 /// Hunters the Snare must catch mid-chase
 #define VESTIGE_SNARE_CATCHES_NEEDED 5
-/// Most catches any single beast can credit — the same prey twice teaches nothing new
+/// Most catches any single beast can credit, the same prey twice teaches nothing new
 #define VESTIGE_SNARE_CATCHES_PER_BEAST 2
 /// Snare-webs the spinneret will keep standing at once
 #define VESTIGE_SNARE_MAX_WEBS 4
-/// How long one snare takes to spin — fast on purpose; you lay these mid-kite
+/// How long one snare takes to spin, fast on purpose; you lay these mid-kite
 #define VESTIGE_SNARE_SPIN_TIME (1.5 SECONDS)
 /// How long a sprung snare holds its catch fast
 #define VESTIGE_SNARE_HOLD_TIME (4 SECONDS)
-/// A snare-web's integrity — sturdier than wild silk, still burnable
+/// A snare-web's integrity: sturdier than wild silk, still burnable
 #define VESTIGE_SNARE_WEB_INTEGRITY 25
 
 /// Live beasts the Pantry must see wrapped, hauled and racked
 #define VESTIGE_PANTRY_STOCK_NEEDED 3
-/// The wrap channel's length — the beast fights it the whole way (see wrap_holds)
+/// The wrap channel's length: the beast fights it the whole way (see wrap_holds)
 #define VESTIGE_PANTRY_WRAP_TIME (4 SECONDS)
 /// Wrap-to-rack freshness window; an expired cocoon spoils and the meal walks free
 #define VESTIGE_PANTRY_FRESHNESS (90 SECONDS)
 /// The hoist channel at the rack
 #define VESTIGE_PANTRY_HOIST_TIME (2 SECONDS)
-/// A trial cocoon's integrity — breakable by anyone who objects
+/// A trial cocoon's integrity: breakable by anyone who objects
 #define VESTIGE_PANTRY_COCOON_INTEGRITY 40
 /// How long a sapient occupant needs to struggle free (safety valve; the pact refuses people anyway)
 #define VESTIGE_PANTRY_BREAKOUT (30 SECONDS)
@@ -62,11 +62,11 @@
 #define VESTIGE_TREMOR_MAX_LINES 4
 /// Lines that must stand before (and while) the trial sends thieves
 #define VESTIGE_TREMOR_MIN_LINES 3
-/// Minimum spacing between lines — the network must be DISPERSED; that's the design point
+/// Minimum spacing between lines: the network must be DISPERSED; that's the design point
 #define VESTIGE_TREMOR_SPREAD 5
 /// How long stringing one line takes
 #define VESTIGE_TREMOR_STRING_TIME (2 SECONDS)
-/// A line's integrity: ~a dozen seconds of thief-chewing — that chew-through IS the response window
+/// A line's integrity: ~a dozen seconds of thief-chewing, that chew-through IS the response window
 #define VESTIGE_TREMOR_LINE_INTEGRITY 60
 /// How close the keeper must be to a dying thief for the tremor to count as answered in person
 #define VESTIGE_TREMOR_ANSWER_RANGE 2
@@ -78,7 +78,7 @@
 #define VESTIGE_TREMOR_RESPITE (15 SECONDS)
 /// How far from its target line a thief surfaces (never closer than 3)
 #define VESTIGE_TREMOR_SPAWN_RANGE 7
-/// Hard lifespan on every silk thief — an abandoned night always cleans itself up
+/// Hard lifespan on every silk thief. An abandoned night always cleans itself up
 #define VESTIGE_TREMOR_THIEF_LIFESPAN (2 MINUTES)
 
 // ===== SHARED GATES =====
@@ -87,10 +87,10 @@
  * TRUE when a mob is honest quarry for the Weaver's lessons: wild fauna
  * (basic-mob or simple-animal stock), not a person, not a pacifist, not the
  * keeper's own pack, and not something under godmode (patrons, trader mobs).
- * Stricter than the Roost's gate in one respect: no minds and no clients —
+ * Stricter than the Roost's gate in one respect: no minds and no clients,
  * the Pantry ends with the Weaver TAKING the beast outright, so the pact
  * refuses anything with a soul in it rather than quietly deleting a player.
- * Every credit in this file runs through here — the pact pays for beasts,
+ * Every credit in this file runs through here. The pact pays for beasts,
  * never people.
  */
 /proc/vestige_loom_is_wild_quarry(mob/living/beast, mob/living/keeper)
@@ -110,7 +110,7 @@
  * The living person a beast is hunting RIGHT NOW, or null. Basic mobs report
  * their hunt through the AI blackboard; the old simple_animal hostiles still
  * carry theirs on a target var. Only a living mark with a soul (or the shape
- * of one) counts — the Snare pays for interrupted hunts, not for wanderers.
+ * of one) counts, the Snare pays for interrupted hunts, not for wanderers.
  */
 /proc/vestige_loom_hunted_prey(mob/living/menace)
 	if(menace.stat != CONSCIOUS)
@@ -133,7 +133,7 @@
 
 /**
  * TRUE when a beast is held still enough to wrap: downed by any stun-family
- * effect, out cold, or standing in webbing (any webbing — the sibling boon's
+ * effect, out cold, or standing in webbing (any webbing, the sibling boon's
  * silk counts, which is the intended synergy). Re-checked every tick of the
  * wrap channel: the moment the beast shakes loose, the wrap tears.
  */
@@ -179,7 +179,7 @@
 		"When the brood got loose, the crews came through with fire, deck by deck. The price of silk went up that year. It always does.",
 		"Tension is the whole art. Too slack and the cloth sags, too tight and the thread snaps. People are no different. I have not decided which one you are yet.",
 		"I outlived every egg I laid. Every single one. That is not something to be proud of.",
-		"Do not ask me for cloth. What I weave now is mine. What I know how to do — the silk, the stillness, the patience — that I will trade. Teaching costs me nothing.",
+		"Do not ask me for cloth. What I weave now is mine. What I know how to do (the silk, the stillness, the patience), that I will trade. Teaching costs me nothing.",
 	)
 	accept_line = "Agreed. Onto the loom with you, then. Mind your tension."
 	busy_line = "You are already strung on someone else's loom. Finish that work or cut yourself loose. One thread, one warp."
@@ -187,13 +187,13 @@
 	renounce_line = "Snip. There. Cut short. It will not go any easier the second time."
 	claim_line = "Your payment is already wound and waiting. Take it before you ask me for more."
 	exhausted_line = "That is everything these old spinnerets remember. Whatever you make now, you make without me. Go on."
-	remember_line = "Death unravelled you and something wove you back. No matter. I never forget a thread I have worked — your pattern is right where I left it."
+	remember_line = "Death unravelled you and something wove you back. No matter. I never forget a thread I have worked. Your pattern is right where I left it."
 
 // ===== THE SNARE =====
 
 /**
  * The bait trial: the spinneret lays snare-webs, and a snare pays out ONLY
- * when a beast hits it mid-hunt — actively chasing you or some other living
+ * when a beast hits it mid-hunt, actively chasing you or some other living
  * person at the instant it sticks. Kiting a hunter across your own trap line
  * is the loop; a web that catches a wanderer holds nothing and pays nothing
  * (it behaves like ordinary silk for everyone who isn't honest prey). Sprung
@@ -205,7 +205,7 @@
 	// Keep the counts in sync with VESTIGE_SNARE_CATCHES_NEEDED /
 	// VESTIGE_SNARE_CATCHES_PER_BEAST / VESTIGE_SNARE_MAX_WEBS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Silk does not chase. Take my spinneret, lay your snares, then go find something to chase you across them. Four snares stand at a time, and only prey that sticks mid-hunt counts — it has to be actively after you or someone else alive. Five catches, and no beast counts more than twice."
+	desc = "Silk does not chase. Take my spinneret, lay your snares, then go find something to chase you across them. Four snares stand at a time, and only prey that sticks mid-hunt counts. It has to be actively after you or someone else alive. Five catches, and no beast counts more than twice."
 	/// The loaned spinneret. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_snare_spinneret/spinneret
 	/// Standing snare-webs (culled by their own Destroy)
@@ -233,13 +233,13 @@
 		if(catches < VESTIGE_SNARE_CATCHES_NEEDED && !length(webs))
 			return "The spinneret is lost and the silk with it. Renounce the pact and [patron_name] will spin you another."
 	var/standing = length(webs)
-	return "Caught [catches] of [VESTIGE_SNARE_CATCHES_NEEDED] hunters mid-chase — [standing] snare[standing == 1 ? "" : "s"] of [VESTIGE_SNARE_MAX_WEBS] standing."
+	return "Caught [catches] of [VESTIGE_SNARE_CATCHES_NEEDED] hunters mid-chase, [standing] snare[standing == 1 ? "" : "s"] of [VESTIGE_SNARE_MAX_WEBS] standing."
 
 /// TRUE if this beast has already been counted its limit of times (read-only; springing checks this first)
 /datum/vestige_trial/loom_snare/proc/is_humbled(mob/living/beast)
 	return (catches_per_beast[WEAKREF(beast)] || 0) >= VESTIGE_SNARE_CATCHES_PER_BEAST
 
-/// Credits a mid-hunt catch. May complete (and delete) the trial — callers touch nothing after this.
+/// Credits a mid-hunt catch. May complete (and delete) the trial, callers touch nothing after this.
 /datum/vestige_trial/loom_snare/proc/ensnare(mob/living/beast, mob/living/keeper)
 	var/datum/weakref/key = WEAKREF(beast)
 	var/prior = catches_per_beast[key] || 0
@@ -260,7 +260,7 @@
 /**
  * The Snare's kit: a loaned spinneret that lays one snare-web on the tile
  * underfoot after a short spin. Inert without an active Snare (the module's
- * standing rule), and it never stores a trial reference — it resolves the
+ * standing rule), and it never stores a trial reference, it resolves the
  * wielder's mind at use time.
  */
 /obj/item/vestige_snare_spinneret
@@ -269,7 +269,7 @@
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "snare_spinneret"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
+	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_snare_spinneret/Destroy()
@@ -282,7 +282,7 @@
 
 /obj/item/vestige_snare_spinneret/examine(mob/user)
 	. = ..()
-	. += span_notice("Use in hand to spin a snare-web on the floor under you, [VESTIGE_SNARE_MAX_WEBS] standing at most. Only a wild animal that hits the silk mid-hunt — actively chasing you or someone else alive — gets held and counted, and no beast counts more than [VESTIGE_SNARE_CATCHES_PER_BEAST] times. A sprung snare is used up. Anything that can walk on webs steps right over it.")
+	. += span_notice("Use in hand to spin a snare-web on the floor under you, [VESTIGE_SNARE_MAX_WEBS] standing at most. Only a wild animal that hits the silk mid-hunt (actively chasing you or someone else alive) gets held and counted, and no beast counts more than [VESTIGE_SNARE_CATCHES_PER_BEAST] times. A sprung snare is used up. Anything that can walk on webs steps right over it.")
 
 /obj/item/vestige_snare_spinneret/attack_self(mob/user, modifiers)
 	. = ..()
@@ -329,7 +329,7 @@
 		balloon_alert(weaver, "already webbed!")
 		return FALSE
 	if(length(trial.webs) >= VESTIGE_SNARE_MAX_WEBS)
-		balloon_alert(weaver, "no silk to spare — [VESTIGE_SNARE_MAX_WEBS] snares already stand!")
+		balloon_alert(weaver, "no silk to spare, [VESTIGE_SNARE_MAX_WEBS] snares already stand!")
 		return FALSE
 	return TRUE
 
@@ -338,8 +338,8 @@
 /**
  * A snare-web: ordinary sticky silk to everyone except honest prey mid-hunt.
  * The spring runs inside CanAllowThrough (upstream precedent: base stickyweb
- * already does its stuck-reaction there), judged at the instant of contact —
- * what the beast was doing when it hit the silk is the whole trial. A sprung
+ * already does its stuck-reaction there), judged at the instant of contact.
+ * What the beast was doing when it hit the silk is the whole trial. A sprung
  * snare is spent on the spot; everything else gets the parent web's plain
  * 50% stick and pays nothing. Holds no trial reference: it resolves its
  * keeper's mind when touched, the rule every kit in the module follows.
@@ -348,7 +348,7 @@
 	name = "snare-web"
 	desc = "Spider silk laid flat across the floor. It looks like any other web, except the tension is wrong. Something set this on purpose."
 	max_integrity = VESTIGE_SNARE_WEB_INTEGRITY
-	/// Mind of the supplicant whose snare this is — the web knows its weaver's step
+	/// Mind of the supplicant whose snare this is, the web knows its weaver's step
 	var/datum/mind/bound_mind
 	/// TRUE once the snare has sprung; spent silk is just silk
 	var/spent = FALSE
@@ -384,7 +384,7 @@
 /**
  * The spring, judged at the instant of contact: wild quarry, mid-hunt after
  * a living person, not already counted out. A true spring blocks the move,
- * pins the beast, spends the web, and credits the trial LAST — ensnare may
+ * pins the beast, spends the web, and credits the trial LAST, ensnare may
  * complete (and delete) the trial, and with it this very web, so nothing here
  * runs after it. Returns TRUE if the snare sprang (and the mover is blocked).
  */
@@ -397,7 +397,7 @@
 		return FALSE
 	var/mob/living/mark = vestige_loom_hunted_prey(beast)
 	if(!mark)
-		return FALSE // not hunting anyone — plain silk for wanderers
+		return FALSE // not hunting anyone, plain silk for wanderers
 	if(trial.is_humbled(beast))
 		return FALSE // counted out; it gets the ordinary web, not the lesson
 	// Sprung. Bookkeeping and theater first, credit dead last.
@@ -411,20 +411,20 @@
 	playsound(src, 'sound/effects/blob/attackblob.ogg', 40, TRUE)
 	animate(src, alpha = 90, time = 0.5 SECONDS)
 	QDEL_IN(src, 0.6 SECONDS) // spent silk collapses; Destroy strikes it from the trial's list
-	trial.ensnare(beast, keeper) // may complete (and delete) the trial — nothing touches it after this
+	trial.ensnare(beast, keeper) // may complete (and delete) the trial, nothing touches it after this
 	return TRUE
 
 // ===== THE PANTRY =====
 
 /**
  * The wrangling trial, in three acts that are all hands-on: SUBDUE a wild
- * beast without killing it (stun it, floor it, or stick it in webbing —
+ * beast without killing it (stun it, floor it, or stick it in webbing,
  * including snare boons' silk), WRAP it through a channel it actively fights
  * (the hold is re-checked every tick; the moment it shakes loose, the wrap
  * tears), then HAUL the cocoon to your larder rack against a freshness clock
  * that starts at the knot. The clock is why you can't stockpile: every credit
- * is a fresh subdue-wrap-sprint. Racked meals are taken by the Weaver —
- * dissolved to thread, never killed on the floor, never lootable — so the
+ * is a fresh subdue-wrap-sprint. Racked meals are taken by the Weaver,
+ * dissolved to thread, never killed on the floor, never lootable, so the
  * pantry pays through the patron and nothing else.
  */
 /datum/vestige_trial/loom_pantry
@@ -432,7 +432,7 @@
 	// Keep the counts in sync with VESTIGE_PANTRY_STOCK_NEEDED /
 	// VESTIGE_PANTRY_FRESHNESS (initial values must be constant, so no
 	// define interpolation here)
-	desc = "A larder outlives a harvest, and mine is empty. Take the spool and the rack bundle. Bring down some wild thing without killing it — webbed, stunned, knocked flat, whatever works, as long as it cannot move. Wrap it while it is still fighting the silk, then haul the cocoon back to your rack. You get ninety seconds from wrap to rack before the meal spoils, and I want three of them, alive and fresh. Bring me no people. I have been called a horror enough times already."
+	desc = "A larder outlives a harvest, and mine is empty. Take the spool and the rack bundle. Bring down some wild thing without killing it. Webbed, stunned, knocked flat, whatever works, as long as it cannot move. Wrap it while it is still fighting the silk, then haul the cocoon back to your rack. You get ninety seconds from wrap to rack before the meal spoils, and I want three of them, alive and fresh. Bring me no people. I have been called a horror enough times already."
 	/// The loaned wrapping spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_wrap_spool/spool
 	/// The larder rack, bundled. Reclaimed the moment the pact ends.
@@ -451,7 +451,7 @@
 	var/obj/item/vestige_larder_bundle/parcel = new(get_turf(user))
 	parcel.bound_mind = owner
 	bundle = hand_over(user, parcel)
-	to_chat(user, span_notice("The spool is heavier than thread has any right to be. Plant the rack somewhere near good hunting — the clock runs from wrap to rack."))
+	to_chat(user, span_notice("The spool is heavier than thread has any right to be. Plant the rack somewhere near good hunting. The clock runs from wrap to rack."))
 
 /datum/vestige_trial/loom_pantry/Destroy()
 	QDEL_NULL(spool)
@@ -467,7 +467,7 @@
 	if(rack && !QDELETED(rack))
 		rack_state = "The rack stands ready."
 	else if(bundle && !QDELETED(bundle))
-		rack_state = "The rack is still bundled — plant it near your hunting ground."
+		rack_state = "The rack is still bundled. Plant it near your hunting ground."
 	else
 		rack_state = "The rack is gone. Renounce the pact and [patron_name] will bundle you another."
 	var/fresh = 0
@@ -477,7 +477,7 @@
 	var/waiting = fresh ? " [fresh] cocoon[fresh == 1 ? "" : "s"] on the clock." : ""
 	return "Stocked [stocked] of [VESTIGE_PANTRY_STOCK_NEEDED]. [rack_state][waiting]"
 
-/// Credits a racked meal. May complete (and delete) the trial — callers touch nothing after this.
+/// Credits a racked meal. May complete (and delete) the trial, callers touch nothing after this.
 /datum/vestige_trial/loom_pantry/proc/stock()
 	stocked++
 	if(rack && !QDELETED(rack))
@@ -491,7 +491,7 @@
 
 /**
  * The wrap: used on an adjacent, living, HELD wild beast, it channels a wrap
- * the beast fights against — the hold condition is re-verified every tick of
+ * the beast fights against. The hold condition is re-verified every tick of
  * the do_after, so a stun that runs out mid-wrap (with no webbing under the
  * beast to take up the slack) tears the whole channel. Upstream's cocoon
  * wrap kills what it wraps; this one is a bespoke live-capture, so the trial
@@ -504,7 +504,7 @@
 	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
-	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
+	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_wrap_spool/Destroy()
@@ -517,7 +517,7 @@
 
 /obj/item/vestige_wrap_spool/examine(mob/user)
 	. = ..()
-	. += span_notice("Use on a living wild animal that is held fast — stunned, floored, or stuck in webbing — to wrap it into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The animal fights the silk the whole time, and if it shakes loose the wrap tears. A cocoon stays fresh for [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It will not work on people.")
+	. += span_notice("Use on a living wild animal that is held fast (stunned, floored, or stuck in webbing) to wrap it into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The animal fights the silk the whole time, and if it shakes loose the wrap tears. A cocoon stays fresh for [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It will not work on people.")
 
 /obj/item/vestige_wrap_spool/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!isliving(target) || target == user)
@@ -539,7 +539,7 @@
 		balloon_alert(user, "too big for any larder!")
 		return
 	if(!vestige_loom_is_held_fast(target))
-		balloon_alert(user, "it isn't held — still it first!")
+		balloon_alert(user, "it isn't held, still it first!")
 		return
 	target.visible_message(
 		span_warning("[user] begins binding [target] in loops of grey silk!"),
@@ -564,7 +564,7 @@
 	trial.refresh_tracker()
 	user.visible_message(
 		span_warning("[user] cinches the last loop, and [target] disappears into a taut grey cocoon."),
-		span_notice("You bind off the wrap. The clock is running — get it to the rack while it's fresh."),
+		span_notice("You bind off the wrap. The clock is running. Get it to the rack while it's fresh."),
 	)
 	playsound(parcel, 'sound/items/handling/cloth/cloth_drop1.ogg', 60, TRUE)
 
@@ -577,7 +577,7 @@
 /**
  * A live-capture cocoon, built for the trial: the beast inside is intact and
  * asleep (AI paused), and comes back out ALIVE whenever the cocoon ends any
- * way except racking — spoiled, smashed, or spilled by a dead pact — angry,
+ * way except racking (spoiled, smashed, or spilled by a dead pact) angry,
  * and pointed at whoever wrapped it. Unanchored so it can be dragged; the
  * haul is the third act of the trial. Only a racked cocoon gives its meal
  * to the Weaver, and she takes it whole: no corpse, no loot, no farm.
@@ -592,7 +592,7 @@
 	max_integrity = VESTIGE_PANTRY_COCOON_INTEGRITY
 	/// Mind of the wrangler who spun this parcel
 	var/datum/mind/bound_mind
-	/// When the wrap was bound off — the freshness clock's zero
+	/// When the wrap was bound off, the freshness clock's zero
 	var/wrapped_at
 	/// TRUE while the rack is claiming this parcel: contents go to the Weaver instead of the floor
 	var/racked = FALSE
@@ -619,7 +619,7 @@
 	var/mob/living/wrangler = bound_mind?.current
 	for(var/atom/movable/meal in contents)
 		if(racked)
-			qdel(meal) // taken whole by the Weaver — no corpse, no loot
+			qdel(meal) // taken whole by the Weaver, no corpse, no loot
 			continue
 		meal.forceMove(here)
 		if(isliving(meal))
@@ -639,11 +639,11 @@
 	. = ..()
 	var/remaining = (wrapped_at + VESTIGE_PANTRY_FRESHNESS) - world.time
 	if(remaining > 0)
-		. += span_notice("The silk is still fresh — about [round(remaining / 10)] second[round(remaining / 10) == 1 ? "" : "s"] to get it on the rack.")
+		. += span_notice("The silk is still fresh, about [round(remaining / 10)] second[round(remaining / 10) == 1 ? "" : "s"] to get it on the rack.")
 	if(user.mind && user.mind == bound_mind)
 		. += span_notice("Drag it beside your larder rack and press a hand to the rack to hoist it up.")
 
-/// The meal fights its keeping, gently — theater, plus a hint that the parcel is live
+/// The meal fights its keeping, gently. Theater, plus a hint that the parcel is live
 /obj/structure/vestige_silk_cocoon/process(seconds_per_tick)
 	if(SPT_PROB(4, seconds_per_tick))
 		visible_message(span_warning("Something shifts inside [src]."))
@@ -653,7 +653,7 @@
 /obj/structure/vestige_silk_cocoon/proc/spoil()
 	if(QDELETED(src) || racked)
 		return
-	visible_message(span_boldwarning("The silk of [src] sloughs apart — the wrap has spoiled!"))
+	visible_message(span_boldwarning("The silk of [src] sloughs apart. The wrap has spoiled!"))
 	playsound(src, 'sound/effects/splat.ogg', 60, TRUE)
 	var/mob/living/wrangler = bound_mind?.current
 	var/datum/vestige_trial/loom_pantry/trial = bound_mind?.active_vestige_trial
@@ -666,7 +666,7 @@
 	playsound(src, 'sound/effects/splat.ogg', 70, TRUE)
 	return ..()
 
-/// Safety valve for anything sapient that somehow ends up inside — the pact refuses people, but silk doesn't ask twice
+/// Safety valve for anything sapient that somehow ends up inside. The pact refuses people, but silk doesn't ask twice
 /obj/structure/vestige_silk_cocoon/container_resist_act(mob/living/user)
 	user.changeNext_move(CLICK_CD_BREAKOUT)
 	user.last_special = world.time + CLICK_CD_BREAKOUT
@@ -687,7 +687,7 @@
 	icon_state = "sheet-cloth"
 	color = "#cdd3e0"
 	w_class = WEIGHT_CLASS_NORMAL
-	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
+	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_larder_bundle/Destroy()
@@ -700,7 +700,7 @@
 
 /obj/item/vestige_larder_bundle/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed to an open stretch of floor, it unfolds into the pantry's larder rack. Plant it near good hunting — the freshness clock runs from wrap to rack.")
+	. += span_notice("Pressed to an open stretch of floor, it unfolds into the pantry's larder rack. Plant it near good hunting. The freshness clock runs from wrap to rack.")
 
 /obj/item/vestige_larder_bundle/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isopenturf(interacting_with))
@@ -749,7 +749,7 @@
 /**
  * The pantry's far end: drag a fresh cocoon beside it and press a hand to
  * the rack to hoist. The hoist re-verifies everything a sleeping channel can
- * invalidate — the parcel's freshness (spoiling qdels it), the meal's pulse,
+ * invalidate, the parcel's freshness (spoiling qdels it), the meal's pulse,
  * the adjacency, the pact itself. A racked meal goes to the Weaver whole.
  * The keeper can pack the rack back into a bundle if the ground was chosen
  * badly; the stocked count lives on the trial and survives the move.
@@ -838,7 +838,7 @@
 		return
 	var/mob/living/meal = locate() in parcel.contents
 	if(!meal || meal.stat == DEAD)
-		balloon_alert(user, "the meal is dead — she wants it breathing!")
+		balloon_alert(user, "the meal is dead, she wants it breathing!")
 		return
 	parcel.racked = TRUE
 	user.visible_message(
@@ -848,7 +848,7 @@
 	playsound(src, 'sound/items/handling/cloth/cloth_pickup1.ogg', 60, TRUE)
 	playsound(src, 'sound/effects/magic/curse.ogg', 25, TRUE)
 	qdel(parcel) // racked: Destroy gives the meal to the Weaver whole
-	trial.stock() // may complete (and delete) the trial — nothing touches it after this
+	trial.stock() // may complete (and delete) the trial, nothing touches it after this
 
 /// The nearest fresh trial cocoon of ours within arm's reach of the rack, or null
 /obj/structure/vestige_larder_rack/proc/find_fresh_parcel()
@@ -882,12 +882,12 @@
 
 /**
  * The sensor-net trial: string tremor-lines across thresholds, and once the
- * net stands the trial itself sends the traffic — silk thieves, spawned with
+ * net stands the trial itself sends the traffic, silk thieves, spawned with
  * hard lifespans (Roost precedent), that beeline for a line and chew. The
  * first bite rings a tremor to the keeper with a bearing; the line's own
  * integrity is the response window, about a dozen seconds of chewing; and
- * only a thief cut down with the keeper AT the kill — within two tiles —
- * answers the tremor. A chewed-through line is cut and must be restrung
+ * only a thief cut down with the keeper AT the kill, within two tiles.
+ * Answers the tremor. A chewed-through line is cut and must be restrung
  * before the net sings again. One thief at a time, spread lines mandatory:
  * this is a dispersed network and a footrace, never a hold-one-point siege.
  *
@@ -901,7 +901,7 @@
 	// VESTIGE_TREMOR_MAX_LINES / VESTIGE_TREMOR_MIN_LINES /
 	// VESTIGE_TREMOR_SPREAD / VESTIGE_TREMOR_ANSWER_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come — little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer six tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
+	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come, little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer six tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
 	/// The loaned tremor spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_tremor_spool/spool
 	/// Standing tremor-lines (culled by their own Destroy)
@@ -910,7 +910,7 @@
 	var/list/thieves = list()
 	/// Tremors answered in person so far
 	var/answered = 0
-	/// Whether the net has ever gone taut (three lines standing) — starts the sending, once
+	/// Whether the net has ever gone taut (three lines standing). Starts the sending, once
 	var/night_begun = FALSE
 	/// Earliest time the next thief may be sent
 	var/next_send_at = 0
@@ -921,7 +921,7 @@
 	var/obj/item/vestige_tremor_spool/thread = new(get_turf(user))
 	thread.bound_mind = owner
 	spool = hand_over(user, thread)
-	to_chat(user, span_notice("The spool sits cold in your hand, wound with thread almost too fine to see. String the net wide and stay inside it — you will be doing a lot of running."))
+	to_chat(user, span_notice("The spool sits cold in your hand, wound with thread almost too fine to see. String the net wide and stay inside it. You will be doing a lot of running."))
 
 /datum/vestige_trial/loom_tremor/Destroy()
 	QDEL_NULL(spool)
@@ -929,7 +929,7 @@
 		line.ended_softly = TRUE // a dead pact unstrings its net; no "cut" theatrics
 		qdel(line)
 	lines.Cut()
-	// Whatever ends the night, the remaining thieves thin away — staggered so it reads as an ebb, not a wipe
+	// Whatever ends the night, the remaining thieves thin away. Staggered so it reads as an ebb, not a wipe
 	for(var/mob/living/basic/vestige_silk_thief/filcher as anything in thieves)
 		UnregisterSignal(filcher, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 		addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, dissolve)), rand(0.5 SECONDS, 3 SECONDS))
@@ -945,8 +945,8 @@
 		return "String [VESTIGE_TREMOR_MIN_LINES] tremor-lines, spread wide ([standing] of [VESTIGE_TREMOR_MAX_LINES] standing), and the thieves will come."
 	var/alarm = length(thieves) ? " Something is in the web NOW." : ""
 	if(standing < VESTIGE_TREMOR_MIN_LINES)
-		return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors — but only [standing] line[standing == 1 ? "" : "s"] stand[standing == 1 ? "s" : ""]. The web hangs slack; restring it.[alarm]"
-	return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors — [standing] line[standing == 1 ? "" : "s"] standing.[alarm]"
+		return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors, but only [standing] line[standing == 1 ? "" : "s"] stand[standing == 1 ? "s" : ""]. The web hangs slack; restring it.[alarm]"
+	return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors, [standing] line[standing == 1 ? "" : "s"] standing.[alarm]"
 
 /// Called whenever a line is strung: wakes the night the first time the net goes taut
 /datum/vestige_trial/loom_tremor/proc/check_night()
@@ -971,7 +971,7 @@
 /**
  * The night's heartbeat: reschedules itself, keeps sent thieves glued to
  * their lines (retaliation can distract them; a distracted thief re-remembers
- * its errand here), and sends the next thief when the floor conditions hold —
+ * its errand here), and sends the next thief when the floor conditions hold,
  * no thief out, respite elapsed, net taut, keeper alive and on a line's z.
  */
 /datum/vestige_trial/loom_tremor/proc/loom_beat()
@@ -993,7 +993,7 @@
 		if(!slack_notified)
 			slack_notified = TRUE
 			if(isliving(keeper))
-				to_chat(keeper, span_boldwarning("The web hangs slack — fewer than [VESTIGE_TREMOR_MIN_LINES] lines stand. The thieves will keep what they took until you restring it."))
+				to_chat(keeper, span_boldwarning("The web hangs slack. Fewer than [VESTIGE_TREMOR_MIN_LINES] lines stand. The thieves will keep what they took until you restring it."))
 			refresh_tracker()
 		return
 	if(!isliving(keeper) || keeper.stat == DEAD)
@@ -1022,7 +1022,7 @@
 	thieves[filcher] = line
 	RegisterSignal(filcher, COMSIG_LIVING_DEATH, PROC_REF(on_thief_died))
 	RegisterSignal(filcher, COMSIG_QDELETING, PROC_REF(on_thief_gone))
-	// The lifespan rides the THIEF, not the trial — orphans always clean themselves up
+	// The lifespan rides the THIEF, not the trial. Orphans always clean themselves up
 	addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, dissolve)), VESTIGE_TREMOR_THIEF_LIFESPAN)
 	filcher.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, line)
 	if(isliving(keeper))
@@ -1036,9 +1036,9 @@
 	if(isliving(keeper))
 		if(keeper.z == line.z)
 			var/bearing = dir2text(get_dir(keeper, line))
-			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — something is chewing your line[bearing ? " to the [bearing]" : ""], [get_dist(keeper, line)] paces out! Get there before it chews through!"))
+			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk. Something is chewing your line[bearing ? " to the [bearing]" : ""], [get_dist(keeper, line)] paces out! Get there before it chews through!"))
 		else
-			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — from one of your lines, a long way from here!"))
+			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk, from one of your lines, a long way from here!"))
 		playsound(keeper, 'sound/effects/snap.ogg', 70, TRUE)
 	refresh_tracker()
 
@@ -1053,7 +1053,7 @@
 
 /**
  * The judgment: a dead thief answers its tremor only if its line still stands
- * and the keeper is AT the kill — same z, within two tiles. Anything else is
+ * and the keeper is AT the kill. Same z, within two tiles. Anything else is
  * a dead thief and an unanswered tremor; the Weaver pays for presence.
  */
 /datum/vestige_trial/loom_tremor/proc/on_thief_died(mob/living/filcher, gibbed)
@@ -1074,11 +1074,11 @@
 		return
 	answered++
 	if(isliving(keeper))
-		to_chat(keeper, span_notice("The chewing stops under your hands and the line thrums once. Tremor answered — [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED]."))
+		to_chat(keeper, span_notice("The chewing stops under your hands and the line thrums once. Tremor answered, [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED]."))
 		playsound(keeper, 'sound/effects/magic/curse.ogg', 15, TRUE)
 	refresh_tracker()
 	if(answered >= VESTIGE_TREMOR_ANSWERS_NEEDED)
-		complete() // deletes the trial — nothing touches it after this
+		complete() // deletes the trial, nothing touches it after this
 
 /datum/vestige_trial/loom_tremor/proc/on_thief_gone(mob/living/filcher)
 	SIGNAL_HANDLER
@@ -1093,11 +1093,11 @@
 	for(var/mob/living/basic/vestige_silk_thief/filcher as anything in thieves)
 		if(thieves[filcher] != line)
 			continue
-		// The thief takes its mouthful and goes — the escape is part of the sting
+		// The thief takes its mouthful and goes. The escape is part of the sting
 		addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, make_off)), 0.7 SECONDS)
 	var/mob/living/keeper = owner?.current
 	if(!softly && isliving(keeper))
-		to_chat(keeper, span_bolddanger("A line falls dead-slack — cut through. String it again."))
+		to_chat(keeper, span_bolddanger("A line falls dead-slack, cut through. String it again."))
 		playsound(keeper, 'sound/effects/snap.ogg', 60, TRUE)
 	refresh_tracker()
 
@@ -1109,7 +1109,7 @@
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
+	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_tremor_spool/Destroy()
@@ -1122,7 +1122,7 @@
 
 /obj/item/vestige_tremor_spool/examine(mob/user)
 	. = ..()
-	. += span_notice("Use in hand to string a tremor-line across the floor under you — [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
+	. += span_notice("Use in hand to string a tremor-line across the floor under you, [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
 
 /obj/item/vestige_tremor_spool/attack_self(mob/user, modifiers)
 	. = ..()
@@ -1174,19 +1174,19 @@
 	if(length(trial.lines) >= VESTIGE_TREMOR_MAX_LINES)
 		balloon_alert(keeper, "the silk holds only [VESTIGE_TREMOR_MAX_LINES] lines taut!")
 		return FALSE
-	// The net must be DISPERSED — clustered lines would just be a doorstep siege
+	// The net must be DISPERSED. Clustered lines would just be a doorstep siege
 	for(var/obj/structure/vestige_tremor_line/sister as anything in trial.lines)
 		if(QDELETED(sister) || sister.z != ground.z)
 			continue
 		if(get_dist(sister, ground) < VESTIGE_TREMOR_SPREAD)
-			balloon_alert(keeper, "too close to another line — [VESTIGE_TREMOR_SPREAD] tiles apart!")
+			balloon_alert(keeper, "too close to another line, [VESTIGE_TREMOR_SPREAD] tiles apart!")
 			return FALSE
 	return TRUE
 
 // --- The line, strung ---
 
 /**
- * A tremor-line: no snare, no wall — a nerve. It reports the first bite it
+ * A tremor-line: no snare, no wall, a nerve. It reports the first bite it
  * takes (attack_generic is where basic-mob chewing lands, verified against
  * obj_defense) and its integrity is the whole response window. It holds no
  * trial reference: everything resolves through bound_mind at the moment
@@ -1209,7 +1209,7 @@
 	var/pinged = FALSE
 	/// One fraying warning per line
 	var/fray_warned = FALSE
-	/// TRUE when the line ends without violence (unstrung by the keeper, pact over) — suppresses the "cut" alarm
+	/// TRUE when the line ends without violence (unstrung by the keeper, pact over), suppresses the "cut" alarm
 	var/ended_softly = FALSE
 
 /obj/structure/vestige_tremor_line/Destroy()
@@ -1222,7 +1222,7 @@
 /obj/structure/vestige_tremor_line/examine(mob/user)
 	. = ..()
 	if(user.mind && user.mind == bound_mind)
-		. += span_notice("Part of your net. When something chews on it you will feel the tremor — get there in person, or restring whatever is left. Press a hand to the knots to take it back up.")
+		. += span_notice("Part of your net. When something chews on it you will feel the tremor. Get there in person, or restring whatever is left. Press a hand to the knots to take it back up.")
 	if(atom_integrity < max_integrity * 0.5)
 		. += span_danger("It is chewed ragged and badly frayed.")
 
@@ -1246,7 +1246,7 @@
 		fray_warned = TRUE
 		var/mob/living/keeper = bound_mind?.current
 		if(isliving(keeper))
-			to_chat(keeper, span_bolddanger("The tremor turns ragged — that line is more than half chewed through!"))
+			to_chat(keeper, span_bolddanger("The tremor turns ragged, that line is more than half chewed through!"))
 
 /obj/structure/vestige_tremor_line/attack_hand(mob/living/user, list/modifiers)
 	if(user.combat_mode)
@@ -1255,7 +1255,7 @@
 	INVOKE_ASYNC(src, PROC_REF(unstring), user)
 	return TRUE
 
-/// The keeper takes a line back up — a placement do-over, not a loss
+/// The keeper takes a line back up. A placement do-over, not a loss
 /obj/structure/vestige_tremor_line/proc/unstring(mob/living/user)
 	if(!user.mind || user.mind != bound_mind)
 		balloon_alert(user, "the thread slips your fingers!")
@@ -1304,7 +1304,7 @@
 	maxHealth = 30
 	melee_damage_lower = 5
 	melee_damage_upper = 8
-	obj_damage = 6 // against a 60-integrity line: about a dozen seconds of chewing — the response window
+	obj_damage = 6 // against a 60-integrity line: about a dozen seconds of chewing, the response window
 	speed = 4
 	combat_mode = TRUE
 	faction = list("vestige_loom_thief")
@@ -1333,7 +1333,7 @@
 	visible_message(span_warning("[src] crumbles into grey dust, and is gone."))
 	qdel(src)
 
-/// A thief whose line has parted escapes with its mouthful — the sting of an unanswered tremor
+/// A thief whose line has parted escapes with its mouthful, the sting of an unanswered tremor
 /mob/living/basic/vestige_silk_thief/proc/make_off()
 	if(QDELETED(src) || stat == DEAD)
 		return
@@ -1341,7 +1341,7 @@
 	qdel(src)
 
 /**
- * Thief AI: no hunting instinct of its own — its target is ASSIGNED by the
+ * Thief AI: no hunting instinct of its own. Its target is ASSIGNED by the
  * trial (the generic find-target subtrees only scan mobs, so a structure
  * errand has to be pushed into the blackboard; Roost precedent). Retaliation
  * lets it defend itself when the keeper arrives, and the custom strategy
@@ -1363,7 +1363,7 @@
 /**
  * Standard basic targeting, plus the tremor-line. The line is assigned as a
  * blackboard target by the trial itself; this strategy's job is to keep that
- * assignment VALID — both the keep-current-target check and the melee
+ * assignment VALID, both the keep-current-target check and the melee
  * behavior's re-validation run through can_attack.
  */
 /datum/targeting_strategy/basic/vestige_silk_thief
@@ -1404,22 +1404,22 @@
 
 
 /**
- * # The Loom — giant spider boons
+ * # The Loom: giant spider boons
  *
  * The Weaver's half of the bargain: what an ancient broodmother on a dead
  * sericulture ship pays a loose thread with when a trial is kept. The spider's
- * whole body is the antag — fangs, spinnerets, eight sure feet — so nothing
+ * whole body is the antag (fangs, spinnerets, eight sure feet) so nothing
  * here grants the spider. Each boon is the human-sized cut of one part of the
  * craft: the silk (webs rebuilt on the pointed-spell rail with a channel
- * ported from the spider's own lay_web guards — the placement checks, the
- * spinning-turf trait, the do_after — minus the spider mob), the fang (a
+ * ported from the spider's own lay_web guards. The placement checks, the
+ * spinning-turf trait, the do_after, minus the spider mob), the fang (a
  * touch spell on the Rusted Grasp chassis carrying a venom status effect that
  * keeps the hunting spider's own mercy floor), the line (a self-throw at an
  * anchor, honest about obstructions because throw_at is), and the legs (the
  * spider's own trait pair, cut down to what a human can wear).
  *
  * Ownership design note: upstream webs decide who passes by TRAIT_WEB_SURFER
- * (spiderwebs.dm CanAllowThrough), not faction — and the genetic web subtype
+ * (spiderwebs.dm CanAllowThrough), not faction, and the genetic web subtype
  * is the existing precedent for per-creature permission (an allowed_mob var).
  * The Loom's webs carry that one step further: a creator MIND weakref, so the
  * weaver's own tread never catches, across body swaps, without granting the
@@ -1460,7 +1460,7 @@
 #define VESTIGE_FANG_STAMINA_TICK 5
 /// Toxin dealt per second of venom
 #define VESTIGE_FANG_TOX_TICK 2
-/// Movespeed slowdown while the withering venom runs — a hobble, never a root
+/// Movespeed slowdown while the withering venom runs, a hobble, never a root
 #define VESTIGE_FANG_WITHER_SLOW 0.5
 
 // --- The line ---
@@ -1503,7 +1503,7 @@
 	name = "Venom Fang"
 	// Keep the numbers in sync with VESTIGE_FANG_COOLDOWN / _DURATION / _STAMINA_TICK / _TOX_TICK
 	// (5 stamina + 2 toxin per second over 8 seconds = 40 / 16 totals)
-	desc = "A bite you carry in your palm. Touch a living thing to poison it — stamina and toxin both, draining steadily, all the way down."
+	desc = "A bite you carry in your palm. Touch a living thing to poison it, stamina and toxin both, draining steadily, all the way down."
 	grant_text = "Something needle-fine settles into the pad of each finger and waits."
 	spell_type = /datum/action/cooldown/spell/touch/vestige_venom_fang
 
@@ -1521,7 +1521,7 @@
 /datum/vestige_boon/spell/silk_line
 	name = "Silk Line"
 	// Keep the numbers in sync with VESTIGE_LINE_RANGE / VESTIGE_LINE_COOLDOWN
-	desc = "Cast a dragline at anything solid in reach — a wall, a window, anything dense and bolted down — and reel yourself to it in one straight rush. If something solid is in the way, that is where you stop instead."
+	desc = "Cast a dragline at anything solid in reach (a wall, a window, anything dense and bolted down) and reel yourself to it in one straight rush. If something solid is in the way, that is where you stop instead."
 	grant_text = "Something coils tight at the base of your wrist, like a spinneret you don't have."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_line
 
@@ -1529,32 +1529,32 @@
 
 /datum/vestige_boon/spider_grace
 	name = "Eight-Legged Grace"
-	desc = "Nothing to cast — the Weaver just re-strings your footing. Every hunting web parts for you, whoever spun it, and wet decking grips your feet like dry board. A sealed weft is a wall, not a web, so it still stops you, and soap will still put you on the floor. This is in the body, not the soul, so a new body has to be taught again."
+	desc = "Nothing to cast, the Weaver just re-strings your footing. Every hunting web parts for you, whoever spun it, and wet decking grips your feet like dry board. A sealed weft is a wall, not a web, so it still stops you, and soap will still put you on the floor. This is in the body, not the soul, so a new body has to be taught again."
 	grant_text = "Your footing settles, like you are standing on more legs than you have."
 	radial_icon = 'icons/effects/web.dmi'
 	radial_icon_state = "cobweb1"
 
 /**
  * Body-work, not a spell: the traits go on the body and stay there. Lost with
- * the body by nature (Rubber Bones precedent) — the vestige record re-runs
+ * the body by nature (Rubber Bones precedent). The vestige record re-runs
  * grant() on respawn restore, which re-teaches whatever body the player wears
  * by then (add_traits is idempotent per source, so restoring into the same
  * body double-grants nothing).
  *
  * TRAIT_WEB_SURFER is the exact trait every upstream spider walks its own
  * nest with (spider.dm Initialize), and the exact trait stickyweb
- * CanAllowThrough consults — this is the kit's keystone: with Silk Spinner in
+ * CanAllowThrough consults: this is the kit's keystone: with Silk Spinner in
  * the other hand, your trap-field is your parlor. Two verified exceptions the
  * desc owns up to: sealed webs return FALSE before the trait check
  * (spiderwebs.dm), and the geneticist's web subtype never consults the trait
- * at all. TRAIT_NO_SLIP_WATER is the footing half — wet-floor slips only;
+ * at all. TRAIT_NO_SLIP_WATER is the footing half, wet-floor slips only;
  * lube explicitly needs TRAIT_NO_SLIP_ALL (mobs.dm), so the desc doesn't
  * claim it. (The spider's other innate, TRAIT_FENCE_CLIMBER, is a no-op on
- * anything that can hold items, so a human gets nothing from it — cut.)
+ * anything that can hold items, so a human gets nothing from it, cut.)
  */
 /datum/vestige_boon/spider_grace/grant(mob/living/user, datum/mind/owner)
 	..()
-	// The framework hands us owner.current at grant time, but re-resolve anyway —
+	// The framework hands us owner.current at grant time, but re-resolve anyway,
 	// the same rail /datum/vestige_boon/spell/grant rides (an earlier boon's
 	// side effects can reshape the body out from under the claim).
 	if(owner?.current)
@@ -1568,18 +1568,18 @@
  * The spider's Spin Web, rebuilt for a human hand on the pointed-spell rail.
  * Upstream's lay_web is a mob_cooldown action welded to standing-on-the-tile
  * (it always webs get_turf(owner)); the Weaver's version keeps every one of
- * its guards — the existing-web check, the TRAIT_SPINNING_WEB_TURF turf
+ * its guards, the existing-web check, the TRAIT_SPINNING_WEB_TURF turf
  * claim, the interruptible do_after with its one-spin-at-a-time interaction
- * key — but takes a click target so the thread can be strung on your own
+ * key, but takes a click target so the thread can be strung on your own
  * tile or one step away (cast_range = 1).
  *
  * Fork-quirk compliance: Activate() ignores cast()'s return value on this
  * fork, so the whole channel (and every bail-out) lives in before_cast,
- * which CAN cancel — an interrupted spin costs no cooldown. The chosen turf
+ * which CAN cancel, an interrupted spin costs no cooldown. The chosen turf
  * rides a same-cast handoff var into cast(), the Borrowed Shape pattern.
  *
  * The planted web is a local stickyweb subtype whose passage check knows its
- * creator's MIND (see below) — upstream webs gate on TRAIT_WEB_SURFER, which
+ * creator's MIND (see below). Upstream webs gate on TRAIT_WEB_SURFER, which
  * would either hold the weaver too (no trait) or wave every spider-kin
  * through (trait), so per-creator permission follows the genetic-web
  * precedent (allowed_mob) instead, hardened from a mob ref to a mind ref.
@@ -1588,7 +1588,7 @@
  * and a patient weaver would carpet a deck. Over budget, the oldest thread
  * frays. Accepted quirk, flagged: the budget lives on the spell, so claiming
  * the Master Weaver upgrade retires the old spell and orphans its existing
- * threads outside the new budget — at most eight stale webs that only decay
+ * threads outside the new budget, at most eight stale webs that only decay
  * by damage.
  */
 /datum/action/cooldown/spell/pointed/vestige_silk_spin
@@ -1613,7 +1613,7 @@
 	var/can_seal = FALSE
 	/// The turf validated and channelled over in before_cast, consumed by cast(). Same-cast handoff only.
 	var/turf/pending_turf
-	/// Weakrefs to every thread this spell has planted, spin order — the fray ledger
+	/// Weakrefs to every thread this spell has planted, spin order, the fray ledger
 	var/list/spun_webs = list()
 
 /datum/action/cooldown/spell/pointed/vestige_silk_spin/master_weaver
@@ -1649,11 +1649,11 @@
 	if(!isturf(owner.loc))
 		owner.balloon_alert(owner, "no footing to spin from!")
 		return . | SPELL_CANCEL_CAST
-	// One spin at a time — lay_web's DOING_INTERACTION guard, ported
+	// One spin at a time: lay_web's DOING_INTERACTION guard, ported
 	if(DOING_INTERACTION(owner, VESTIGE_SILK_DOAFTER))
 		owner.balloon_alert(owner, "already spinning!")
 		return . | SPELL_CANCEL_CAST
-	// Someone (or something) has already claimed this turf for a web — lay_web's turf-trait guard, ported
+	// Someone (or something) has already claimed this turf for a web, lay_web's turf-trait guard, ported
 	if(HAS_TRAIT(spin_turf, TRAIT_SPINNING_WEB_TURF))
 		owner.balloon_alert(owner, "already being webbed!")
 		return . | SPELL_CANCEL_CAST
@@ -1702,7 +1702,7 @@
 		spun = new /obj/structure/spider/stickyweb/sealed/vestige(spin_turf)
 		owner.visible_message(
 			span_warning("[owner] draws the webbing on [spin_turf] thread over thread into a solid wall of silk!"),
-			span_notice("You draw the snare into a sealed weft. Nothing passes now — you included."),
+			span_notice("You draw the snare into a sealed weft. Nothing passes now, you included."),
 		)
 	else
 		spun = new /obj/structure/spider/stickyweb/vestige(spin_turf, owner.mind)
@@ -1743,12 +1743,12 @@
  * A snare that knows its weaver. Upstream webs wave through anyone with
  * TRAIT_WEB_SURFER and dice-roll everyone else; this subtype checks the
  * creator's mind first (and whoever the creator is dragging along, mirroring
- * the parent's pulledby clause), then falls back to the parent's exact rules
- * — surfers still surf, everyone else eats the same prob(stuck_chance) roll,
+ * the parent's pulledby clause), then falls back to the parent's exact rules.
+ * Surfers still surf, everyone else eats the same prob(stuck_chance) roll,
  * projectiles the same prob(projectile_stuck_chance).
  *
  * genetic = TRUE reuses the parent's own bypass switch so its pass roll
- * doesn't fire ahead of ours — the same trick the genetic web itself uses,
+ * doesn't fire ahead of ours. The same trick the genetic web itself uses,
  * and the flag is consulted nowhere else in the codebase (verified: only
  * spiderwebs.dm reads it). Everything the parent gives is kept: 15 integrity,
  * melee brute quartered, burn amplified, hot-atmos self-damage, weavable
@@ -1765,12 +1765,12 @@
 	if(creator)
 		creator_mind_ref = WEAKREF(creator)
 	. = ..()
-	// A pale keepsake tint, the genetic web's outline trick — so crew can learn
+	// A pale keepsake tint, the genetic web's outline trick, so crew can learn
 	// to tell a Loom weave from wild webbing at a glance
 	add_filter("vestige_silk_tint", 10, list("type" = "outline", "color" = "#f5eed9ff", "size" = 0.1))
 
 /obj/structure/spider/stickyweb/vestige/CanAllowThrough(atom/movable/mover, border_dir)
-	. = ..() // the genetic flag makes the parent stop after base checks — no double roll
+	. = ..() // the genetic flag makes the parent stop after base checks, no double roll
 	if(isliving(mover))
 		var/mob/living/living_mover = mover
 		var/datum/mind/creator = creator_mind_ref?.resolve()
@@ -1793,7 +1793,7 @@
  * The master's weft: upstream's sealed web wearing the Loom's name. All
  * behavior is inherited and all of it verified: blocks every mover
  * unconditionally (CanAllowThrough returns FALSE before any trait or creator
- * check — the weaver walls themselves out too, and the desc says so), blocks
+ * check, the weaver walls themselves out too, and the desc says so), blocks
  * atmos (can_atmos_pass = ATMOS_PASS_NO plus the air update on init), and
  * dies to fire fast at 15 integrity. No creator var: a wall keeps no
  * favorites, and the seal-upgrade check only ever reads the base thread.
@@ -1806,18 +1806,18 @@
 
 /**
  * The giant spider's envenomed bite, moved into a human palm on the touch
- * chassis (the same rail as the Reliquary's Rusted Grasp — the base class in
+ * chassis (the same rail as the Reliquary's Rusted Grasp, the base class in
  * _touch.dm carries no antag checks, verified). Upstream spiders deliver
  * poison_per_bite units of a reagent through the venomous element; a plain
  * human has no fangs to hang that element on, so the delivery is a touch
- * spell and the payload is a local status effect rather than a reagent —
+ * spell and the payload is a local status effect rather than a reagent,
  * which buys exact, quotable numbers, no purging via detox chems being
  * TOO hard a counter (charcoal still shortens nothing, but the effect is
  * honest about its fixed clock), and a clean slot for the upgrade's slow.
  *
  * What it keeps from upstream is the venom's ethic: the hunting spider's
  * toxin (/datum/reagent/toxin/hunterspider) only deals damage above 40
- * health — "produced by spiders to weaken prey" — and this venom keeps that
+ * health, "produced by spiders to weaken prey", and this venom keeps that
  * exact floor for its toxin half. Stamina, being non-lethal by definition,
  * runs the full clock.
  *
@@ -1861,7 +1861,7 @@
 	var/mob/living/living_victim = victim
 	if(living_victim.stat == DEAD)
 		caster.balloon_alert(caster, "no blood moving to carry it!")
-		return FALSE // no meal in it — keep the hand
+		return FALSE // no meal in it, keep the hand
 	living_victim.apply_status_effect(venom_type)
 	living_victim.visible_message(
 		span_danger("[caster] lays two fingers on [living_victim], needle-quick, and something under the skin bites!"),
@@ -1884,7 +1884,7 @@
  * The venom itself. STATUS_EFFECT_REFRESH: a second bite from the same fang
  * restarts the clock rather than stacking a second spool. The withering
  * subtype takes a distinct id, so base and withering venoms from two
- * different weavers can coexist — within one player they never do, since the
+ * different weavers can coexist. Within one player they never do, since the
  * upgrade replaces the base spell.
  */
 /datum/status_effect/vestige_fang_venom
@@ -1935,7 +1935,7 @@
 	name = "Withering Venom"
 	desc = "Spider venom, the slow kind. Draining your stamina, poisoning you, and dragging at every step."
 
-// A hobble on the freezing_blast pattern — half its slowdown, over a longer clock
+// A hobble on the freezing_blast pattern, half its slowdown, over a longer clock
 /datum/movespeed_modifier/vestige_fang_wither
 	multiplicative_slowdown = VESTIGE_FANG_WITHER_SLOW
 
@@ -1951,11 +1951,11 @@
  * offers: gentle throws are verified harmless on impact (thrownthing.dm:
  * "If the throw is gentle, then the thrownthing is harmless on impact"),
  * spin off keeps the flight dignified, and dense crossings interrupt the
- * flight exactly where physics says — the desc promises precisely that and
+ * flight exactly where physics says, the desc promises precisely that and
  * nothing more. No TRAIT_NOTELEPORT concerns: nothing teleports.
  *
  * Anchors must be solid purchase: a closed turf, or a dense anchored obj
- * (walls, airlocks, windows, bolted machinery). Mobs are refused — a line
+ * (walls, airlocks, windows, bolted machinery). Mobs are refused, a line
  * that bites people is a pull tool, and that's the voidwalker's Come to the
  * Window, not the Weaver's craft. Being buckled or already mid-throw refuses
  * the cast in before_cast, so a bad cast never spends the cooldown.
@@ -1985,7 +1985,7 @@
 	owner.balloon_alert(owner, "the line needs solid purchase!")
 	return FALSE
 
-// Fork quirk: every refusal must land before cast — a cancelled before_cast
+// Fork quirk: every refusal must land before cast, a cancelled before_cast
 // spends no cooldown, and nothing after it can take the cooldown back
 /datum/action/cooldown/spell/pointed/vestige_silk_line/before_cast(atom/cast_on)
 	. = ..()

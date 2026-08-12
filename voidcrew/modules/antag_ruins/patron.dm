@@ -5,7 +5,7 @@
  * and immovable, same treatment as the outpost traders: godmode makes
  * violence pointless and NOMOBSWAP stops walk-throughs.
  *
- * Clicking a patron opens a radial — Speak / Pact. Supplicants don't browse
+ * Clicking a patron opens a radial. Speak / Pact. Supplicants don't browse
  * trials: the patron assigns each mind ONE trial, rolled at random from its
  * remaining pool, and the assignment holds through declines and renunciations
  * (no rerolling until it's fulfilled). Fulfilment pays out a choice of boons
@@ -126,7 +126,7 @@
 /**
  * Whether to show the capstone option at all: this patron hosts one, and this
  * soul has fulfilled every trial it has. Deliberately NOT the full eligibility
- * check — the round-time gate and the one-capstone-per-soul lock are refusals the
+ * check, the round-time gate and the one-capstone-per-soul lock are refusals the
  * patron says out loud, so a maxed-out supplicant always sees that the door exists.
  */
 /mob/living/basic/vestige_patron/proc/should_offer_ascension(mob/living/user)
@@ -157,13 +157,13 @@
 	if(!mind)
 		return
 
-	// The dead come back; their ledger never left. Restore first, then carry on —
-	// a restored unclaimed reward falls straight through to the claim gate below.
+	// The dead come back; their ledger never left. Restore first, then carry on.
+	// A restored unclaimed reward falls straight through to the claim gate below.
 	if(restore_lost_legacy(user))
 		say(remember_line)
 		playsound(src, 'sound/effects/magic/curse.ogg', 30, TRUE)
 
-	// An unclaimed boon comes before any new bargain — reopen the claim for them
+	// An unclaimed boon comes before any new bargain, reopen the claim for them
 	var/datum/action/vestige_reward/pending = mind.vestige_pending_reward
 	if(pending)
 		say(claim_line)
@@ -178,7 +178,7 @@
 			qdel(active) // Destroy clears mind.active_vestige_trial
 			say(renounce_line)
 		return
-	// A pact with someone else is underway — one hunger at a time
+	// A pact with someone else is underway, one hunger at a time
 	if(active)
 		say(busy_line)
 		return
@@ -191,7 +191,7 @@
 		say(exhausted_line)
 		return
 
-	// Offer the assignment. Declining doesn't reroll it — this is the trial they get.
+	// Offer the assignment. Declining doesn't reroll it. This is the trial they get.
 	var/datum/vestige_trial/offered = new trial_type(mind, name, boon_types.Copy())
 	var/accept = tgui_alert(user, offered.desc, offered.name, list("Accept", "Decline"))
 	if(accept != "Accept" || !check_menu(user) || mind.active_vestige_trial)
@@ -227,11 +227,11 @@
 
 /**
  * Death does not void a ledger: when this player's soul (ckey record) carries
- * vestige history the current mind lacks — i.e. they respawned — copy the
+ * vestige history the current mind lacks, i.e. they respawned, copy the
  * bookkeeping back and re-grant every lost boon, in original grant order so
  * upgrade replacement lands correctly. An unclaimed reward they died holding
- * is recreated too. Any patron restores everything, not just its own theme —
- * whichever vestige you can reach settles all accounts.
+ * is recreated too. Any patron restores everything, not just its own theme.
+ * Whichever vestige you can reach settles all accounts.
  *
  * Returns TRUE if anything tangible (a boon or a pending claim) came back.
  */
@@ -241,7 +241,7 @@
 	if(!record)
 		return FALSE
 
-	// Bookkeeping restores silently — it prevents refarming, it isn't a gift
+	// Bookkeeping restores silently: it prevents refarming, it isn't a gift
 	for(var/trial_type in record.completed_trials)
 		if(!(trial_type in mind.completed_vestige_trials))
 			LAZYADD(mind.completed_vestige_trials, trial_type)

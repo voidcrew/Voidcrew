@@ -4,14 +4,14 @@
  * Two bases, one behavior. Most ware extends /obj/item/organ/cyberimp/cyberware;
  * the optics ladder extends /obj/item/organ/eyes/robotic/cyberware instead so
  * it inherits the robotic eyes' nightvision/flash/EMP-static plumbing (and
- * evicting it costs you your meat eyes — that flavor is kept on purpose).
+ * evicting it costs you your meat eyes, that flavor is kept on purpose).
  * Single inheritance forces the split, so both bases carry the same thin set
  * of overrides and delegate everything real to /datum/component/cyberware and
  * the shared procs below.
  *
  * The install rules, enforced at the ORGAN so this fork's universal
  * TRAIT_SELF_SURGERY hits the same wall as everyone else:
- * - Capacity: net load after the swap must fit — the check nets out whatever
+ * - Capacity: net load after the swap must fit: the check nets out whatever
  *   incumbent the insert would replace, so ladder upgrades work at high load.
  * - Context: Insert() outside organ-manipulation surgery, the Chrome Cradle
  *   or special = TRUE (init/admin) is refused. Bare autosurgeons choke.
@@ -22,7 +22,7 @@
 /**
  * The worn-chrome overlay: tg's augment overlay, drawn one notch higher.
  * Stock augments sit at BODY_ADJ_LAYER, which the character-setup underwear
- * layer paints over — a bra would cover a Cascade spine rig. Chrome instead
+ * layer paints over, a bra would cover a Cascade spine rig. Chrome instead
  * draws at CYBERWARE_WORN_LAYER: over underwear and undershirts, still under
  * eyes, damage, and every EQUIPPED clothing layer. One override covers the
  * images, the emissive twins and the emissive blockers alike, because they
@@ -41,11 +41,11 @@
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	// Worn look: ware that reads from outside the body sets aug_overlay to a
 	// state in this sheet and tg's bodypart-overlay pipeline draws it ON the
-	// bearer — over the character-setup underwear, under equipped clothing.
+	// bearer, over the character-setup underwear, under equipped clothing.
 	// Stack enough chrome and you stop looking human.
 	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
-	failing_desc = "is dark and inert — browned out, EMP-scrambled, or plain broken."
+	failing_desc = "is dark and inert, browned out, EMP-scrambled, or plain broken."
 	/// Neural load this ware puts on its bearer. 0-12; see the tier bands.
 	var/chrome_load = 1
 	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
@@ -74,7 +74,7 @@
 
 /obj/item/organ/cyberimp/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>[chrome_capacity_bonus ? ", grants +[chrome_capacity_bonus] chrome capacity" : ""]. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += span_notice("Neural load: <b>[chrome_load]</b>[chrome_capacity_bonus ? ", grants +[chrome_capacity_bonus] chrome capacity" : ""]. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 
 /obj/item/organ/cyberimp/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -113,12 +113,12 @@
  * # Cyberware optics base
  *
  * The eyes-side twin of the base above, for the Nightshade -> Deadeye /
- * Prospector ladder. Uses tg's ORGAN_SLOT_EYES — the design's
- * `cyberware_optics` slot is dead — so installing chrome optics replaces
+ * Prospector ladder. Uses tg's ORGAN_SLOT_EYES, the design's
+ * `cyberware_optics` slot is dead, so installing chrome optics replaces
  * your eyes outright. Robotic-eyes EMP static still fires through ..();
  * our reboot downtime stacks on top of it.
  *
- * Every optic on this base carries the chrome read (cyberware_scan.dm) — the
+ * Every optic on this base carries the chrome read (cyberware_scan.dm), the
  * diagnostic bus is what makes chrome eyes chrome eyes. Subtypes that add
  * their own ability must keep the read in their actions_types list.
  */
@@ -133,7 +133,7 @@
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed (the Governor hook).
 	var/chrome_capacity_bonus = 0
-	/// How much of a body the chrome read resolves — CYBERWARE_SCAN_SILHOUETTE
+	/// How much of a body the chrome read resolves, CYBERWARE_SCAN_SILHOUETTE
 	/// counts signatures, CYBERWARE_SCAN_ITEMIZED names every one of them.
 	var/chrome_scan_resolution = CYBERWARE_SCAN_ITEMIZED
 
@@ -150,7 +150,7 @@
 
 /obj/item/organ/eyes/robotic/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 	. += span_notice("Diagnostic bus: [chrome_scan_resolution >= CYBERWARE_SCAN_ITEMIZED ? "reads a body's chrome piece by piece" : "counts a body's chrome signatures, but can't name them"].")
 
 /obj/item/organ/eyes/robotic/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
@@ -187,7 +187,7 @@
 /**
  * # Cyberware deployable-arm base
  *
- * The arm-weapon twin, for chrome that extends/retracts a held item — Mantis
+ * The arm-weapon twin, for chrome that extends/retracts a held item, Mantis
  * Blades, Widowline Monowire, the Popup Ronin, Bunker Buster, Icepick Jack,
  * Skyhook, Graverobber, Angler, Fixer's Fingers, Rockjaw. It rides tg's
  * /obj/item/organ/cyberimp/arm/toolkit for the whole extend/retract/radial/
@@ -221,7 +221,7 @@
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -273,7 +273,7 @@
 // ---- Shared insert gate ------------------------------------------------
 
 /**
- * The organs this insert would replace on the target — the incumbent
+ * The organs this insert would replace on the target, the incumbent
  * occupying our slot. THE netting extension point: paired arm ware (Gorilla
  * Arms, Mantis Blades) overrides this on its own type to return both arms'
  * incumbents, so a full-pair swap nets out both sides of the ladder rung.
@@ -309,9 +309,9 @@
 		return TRUE
 	if(!silent)
 		target.balloon_alert(target, "no neural headroom!")
-		to_chat(target, span_warning("Your nervous system is already maxed out — [ware] needs [projected_load - projected_capacity] more chrome capacity."))
+		to_chat(target, span_warning("Your nervous system is already maxed out. [ware] needs [projected_load - projected_capacity] more chrome capacity."))
 		if(feedback_to && feedback_to != target)
-			to_chat(feedback_to, span_warning("[target]'s nervous system can't take [ware] — [projected_load - projected_capacity] over capacity."))
+			to_chat(feedback_to, span_warning("[target]'s nervous system can't take [ware], [projected_load - projected_capacity] over capacity."))
 	return FALSE
 
 /**
@@ -331,7 +331,7 @@
 	if(!chrome.has_install_context(receiver))
 		if(receiver)
 			receiver.balloon_alert(receiver, "needs a real rig!")
-			to_chat(receiver, span_warning("The autosurgeon chokes — this needs a real rig."))
+			to_chat(receiver, span_warning("The autosurgeon chokes. This needs a real rig."))
 		return FALSE
 	if(!chrome.install_context_forced && !cyberware_insert_check(ware, receiver))
 		return FALSE
@@ -344,7 +344,7 @@
  * Kick the target's Chromatic Dermis, if they wear one. THE integration hook
  * for the ink suite: every ware that does something worth looking at calls
  * this with a CYBERWARE_INK_* strength, and a bearer with ink lights up for
- * it. Safe to call on anyone — no ink, no effect, no cost beyond a slot
+ * it. Safe to call on anyone, no ink, no effect, no cost beyond a slot
  * lookup, so new ware should call it freely rather than checking first.
  */
 /proc/cyberware_ink_pulse(mob/living/carbon/target, strength = CYBERWARE_INK_SOFT)
@@ -357,8 +357,8 @@
 // ---- BIOS boot splash --------------------------------------------------
 
 /**
- * Three staged chat lines in the ware's tier accent plus a synth chime —
- * fires on every non-special install, Cradle or DIY table alike. Doubles as
+ * Three staged chat lines in the ware's tier accent plus a synth chime.
+ * Fires on every non-special install, Cradle or DIY table alike. Doubles as
  * the "your chrome is live" tutorial beat.
  */
 /proc/cyberware_boot_splash(mob/living/target, obj/item/organ/ware)
@@ -369,7 +369,7 @@
 	playsound(target, 'sound/machines/synth/synth_yes.ogg', 40, TRUE)
 	cyberware_boot_line(target, accent, "CORTEX HANDSHAKE... OK")
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_boot_line), target, accent, "CALIBRATING..."), CYBERWARE_BOOT_LINE_DELAY)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_boot_line), target, accent, "CHROME ONLINE — [uppertext(ware.name)]"), CYBERWARE_BOOT_LINE_DELAY * 2)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_boot_line), target, accent, "CHROME ONLINE: [uppertext(ware.name)]"), CYBERWARE_BOOT_LINE_DELAY * 2)
 
 /// One BIOS line, monospace in the tier accent. Split out so the staged
 /// timers survive the target logging off mid-boot.
@@ -383,13 +383,13 @@
 /**
  * The one cooldown action chrome abilities hang off. Raw /datum/action/cooldown
  * lacks the organ_action owner guard, so this adds it, plus an ORGAN_FAILING
- * gate — a browned-out or EMP-scrambled ware's buttons go dark.
+ * gate, a browned-out or EMP-scrambled ware's buttons go dark.
  *
  * Works for both shapes of ability: leave click_to_activate off and override
  * Activate(target) for an instant pulse (target is the owner), or set
  * click_to_activate = TRUE for a targeted ability (target is what they
- * clicked). Either way StartCooldown() is YOURS to call inside Activate() —
- * the base never starts it for you.
+ * clicked). Either way StartCooldown() is YOURS to call inside Activate().
+ * The base never starts it for you.
  */
 /datum/action/cooldown/cyberware
 	check_flags = AB_CHECK_CONSCIOUS

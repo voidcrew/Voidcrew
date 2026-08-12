@@ -3,7 +3,7 @@
  *
  * The outpost service that converts a physical blueprint into round-long
  * knowledge: feed it the schematic, climb into the cradle, pay the fee, and the
- * recipe is bound to your ckey until the round ends — the scroll is shredded in
+ * recipe is bound to your ckey until the round ends. The scroll is shredded in
  * the process.
  *
  * The trade-off is the point: a physical schematic is shareable, resellable

@@ -1,13 +1,13 @@
 // =========================================================================
-// PLUNDER THEME — The Scuppers Freeport config (rare_pirate_cove ruin) and
+// PLUNDER THEME: The Scuppers Freeport config (rare_pirate_cove ruin) and
 // every crash site, cove and freeport. Pirate plunder: common =
 // trinkets/booze/small cash, uncommon = valuables and serviceable weapons,
 // prime = treasure (big cash, precious mats, prize gear). Guarded by pirate
 // crews.
 // Cyberware: boarding chrome, and it reads as taken off somebody rather than
-// bought — grip pads at uncommon, and in the treasure the blade pair, the
+// bought, grip pads at uncommon, and in the treasure the blade pair, the
 // folding machine-pistol and the rocket pod.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -70,7 +70,7 @@
 		/obj/item/stack/spacecash/c10000 = 2,
 		// the captain's cut, all of it voucher-grade chrome: the cased blade
 		// pair, the arm gun nobody can disarm you of, and the rocket pod.
-		// Both weapon pieces are parlor-fed — the crate pays what's loaded in
+		// Both weapon pieces are parlor-fed. The crate pays what's loaded in
 		// them and no more, so reloads still mean a trip to Splice
 		/obj/item/cyberware_pair_case/mantis_blades = 3,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin = 3,

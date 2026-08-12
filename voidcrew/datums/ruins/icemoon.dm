@@ -7,7 +7,7 @@
 // (/obj/structure/closet/crate/zone_loot) and zone-scaled mob spawners
 // (/obj/effect/zone_mobs). The prefix override below re-points the upstream
 // /datum/map_template/ruin/icemoon datums (code/datums/ruins/icemoon.dm) at
-// those copies — mappath is prefix + suffix, and voidcrew compiles after
+// those copies, mappath is prefix + suffix, and voidcrew compiles after
 // code/, so no upstream file needs editing. The underground subtypes inherit
 // this prefix. Upstream originals remain as merge reference only.
 //
@@ -35,7 +35,7 @@
 /datum/map_template/ruin/icemoon/micro_pod
 	name = "Ice-Micro Crashed Escape Pod"
 	id = "micro-ice-pod"
-	description = "An escape pod that made it down in one piece. The crew froze waiting — the cold kept them fresh."
+	description = "An escape pod that made it down in one piece. The crew froze waiting. The cold kept them fresh."
 	suffix = "icemoon_micro_pod.dmm"
 	cost = 2
 	allow_duplicates = TRUE

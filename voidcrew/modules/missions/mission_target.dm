@@ -109,7 +109,7 @@
 	target_y = object.y - OVERMAP_SOUTH_SIDE_COORD + 1
 
 // =========================================================================
-// SPACE RUIN — the classic recovery-family target
+// SPACE RUIN: the classic recovery-family target
 // =========================================================================
 
 /datum/mission_target/space_ruin
@@ -242,7 +242,7 @@
 	mission?.on_target_lost()
 
 // =========================================================================
-// PLANET — the same interface pointed at a planet surface
+// PLANET: the same interface pointed at a planet surface
 // =========================================================================
 
 /datum/mission_target/planet
@@ -315,16 +315,16 @@
  * The southern floor is the important one. Both reserve docks sit along the
  * bottom of the footprint, and a shuttle landing GIBS every living thing
  * standing on the turfs it lands on (/turf/proc/toShuttleMove) and deletes
- * anything anchored. Field objectives spawn BEFORE the crew touches down —
+ * anything anchored. Field objectives spawn BEFORE the crew touches down,
  * either at approach on an already-loaded planet, or from the interior-loaded
- * signal that load_level() fires before the dock move — so a specimen placed
+ * signal that load_level() fires before the dock move, so a specimen placed
  * in that strip is destroyed by the very ship that came to collect it. Ruins
  * are already kept out of it (reserve_dock_strip() -> NO_RUINS); objective
  * spawns need the same clearance.
  *
  * Shuttle areas are rejected for the mirror-image reason. A landed ship copies
  * its turfs over the surface, and those tiles are open, undense and perfectly
- * samplable — so with somebody else already parked on the planet the specimen
+ * samplable, so with somebody else already parked on the planet the specimen
  * can materialise inside their hull, and their takeoff carries it off the world
  * (/mob/onShuttleMove). Nothing dies and nothing fails: the beacon simply stops
  * being on the crew's z-level, and the surface has nothing on it. SSplanet_mobs
@@ -392,7 +392,7 @@
 	mission?.on_target_moved()
 
 // =========================================================================
-// COORDINATES — bare overmap coordinates in a chosen zone band
+// COORDINATES: bare overmap coordinates in a chosen zone band
 // =========================================================================
 
 /**
@@ -445,7 +445,7 @@
 	return zone_type
 
 // =========================================================================
-// TRADER OUTPOST — courier destinations
+// TRADER OUTPOST: courier destinations
 // =========================================================================
 
 /datum/mission_target/outpost

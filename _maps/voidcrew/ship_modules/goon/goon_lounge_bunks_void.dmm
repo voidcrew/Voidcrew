@@ -1,0 +1,93 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"n" = (
+/obj/structure/bed/pod,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/obj/machinery/door/window/survival_pod{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"A" = (
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"C" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/item/storage/cans/sixbeer,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/soap,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"G" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"M" = (
+/obj/modular_map_connector,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/bed/pod,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/obj/machinery/door/window/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"N" = (
+/obj/structure/bed/pod,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/obj/machinery/door/window/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"P" = (
+/obj/machinery/door/window/survival_pod{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"S" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/table,
+/obj/machinery/microwave,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+
+(1,1,1) = {"
+S
+P
+M
+"}
+(2,1,1) = {"
+C
+A
+n
+"}
+(3,1,1) = {"
+G
+A
+N
+"}

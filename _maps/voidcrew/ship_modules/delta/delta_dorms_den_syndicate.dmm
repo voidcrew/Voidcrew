@@ -1,0 +1,179 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"r" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/dice/d20{
+	pixel_x = -4;
+	pixel_y = -4
+	},
+/obj/item/gun_maintenance_supplies{
+	pixel_x = 6;
+	pixel_y = -1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"s" = (
+/obj/structure/chair/sofa/left{
+	dir = 2
+	},
+/obj/item/paper{
+	name = "duty roster";
+	default_raw_text = "Off watch is off watch. Clean your weapon at the table, not on the sofa, and put the kit back when you are done. Jukebox goes off at midwatch.";
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"u" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"w" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"x" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/item/cigbutt{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/rag{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"B" = (
+/obj/machinery/jukebox,
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"D" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"H" = (
+/obj/machinery/light/small/red/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"K" = (
+/obj/structure/bookcase/random,
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"L" = (
+/obj/structure/chair/sofa/right{
+	dir = 2
+	},
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"T" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+K
+B
+q
+"}
+(2,1,1) = {"
+L
+r
+u
+"}
+(3,1,1) = {"
+s
+A
+J
+"}
+(4,1,1) = {"
+f
+D
+u
+"}
+(5,1,1) = {"
+P
+T
+w
+"}
+(6,1,1) = {"
+X
+H
+R
+"}

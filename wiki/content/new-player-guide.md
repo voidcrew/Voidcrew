@@ -2,7 +2,7 @@
 title: New Player Guide
 category: Getting Started
 order: 1
-blurb: Your first shift — how you get a ship and a crew, what is already aboard, and what to do with all of it.
+blurb: Your first shift. How you get a ship and a crew, what is already aboard, and what to do with all of it.
 ---
 
 There is no station in Voidcrew. When the round starts you are dropped onto a small ship with a handful of other players, somewhere on the safe edge of a galaxy map called the [overmap](overmap.md), and everything you do that round happens on that ship or somewhere you flew it to. This page covers your first hour.
@@ -13,13 +13,13 @@ Ready up in the lobby like normal. When the round starts, the server counts how 
 
 Each hull is rolled at random: a hull class, one of that class's themes, and a random module in every one of its upgrade slots. Nobody chooses this and nobody pays for it, so the ship you wake up on is a surprise every round, and while the pool lasts no two hulls in the fleet are the same class. See [Ship Catalog](ship-catalog.md) for the hulls and [Ship Upgrades](ship-upgrades.md) for what themes and modules change.
 
-Your job comes from the ship category preferences in your character setup — Command, Security, Engineering, Medical, Science, Cargo, Service and Assistant, each set to high, medium or low. Each hull picks its captain first, contested between the players who set Command highest, with ties broken at random; if nobody wants Command, someone is drafted and told so. Everyone else is matched to an open job in a category they asked for, working down from high to low, then to any open job. Job titles vary by hull and theme, so the captain might be called Captain, Team Leader or something stranger.
+Your job comes from the ship category preferences in your character setup, Command, Security, Engineering, Medical, Science, Cargo, Service and Assistant, each set to high, medium or low. Each hull picks its captain first, contested between the players who set Command highest, with ties broken at random; if nobody wants Command, someone is drafted and told so. Everyone else is matched to an open job in a category they asked for, working down from high to low, then to any open job. Job titles vary by hull and theme, so the captain might be called Captain, Team Leader or something stranger.
 
 If you join after the round has started, you get a ship menu instead. You can join any existing crew that has an open slot and has left joining enabled, or launch a ship of your own from the shipyard. The two Pill-class hulls are free; everything else costs ship parts you have banked from previous rounds.
 
 ## What is already on your ship
 
-Every hull with real rooms launches with the same core kit, wherever the mapper put it. (The two free Pill-class hulls are the exception — they are four tiles, a helm and a cryopod, and nothing else.)
+Every hull with real rooms launches with the same core kit, wherever the mapper put it. (The two free Pill-class hulls are the exception. They are four tiles, a helm and a cryopod, and nothing else.)
 
 | Machine | What it does |
 | --- | --- |
@@ -46,7 +46,7 @@ Danger and reward both scale with how close to the star you fly. The safe outer 
 
 Most of what you find is yours only for the round. Ship parts are the exception: they are the persistent currency that unlocks hulls, themes and modules for every future round, and they only carry over if you extract them.
 
-To extract, the parts must be inside an extraction case, in your inventory, when the round ends or when your ship makes a bluespace jump out. Use the **Request Extraction Case** verb in the IC tab to get one. Only the first standard case you are carrying counts, and you have to be alive and conscious — nothing extracts off a corpse. Loose parts in your bag are lost. Everyone who played a character also gets one random part and a hundred credits at round end, so a bad round still moves you forward a little.
+To extract, the parts must be inside an extraction case, in your inventory, when the round ends or when your ship makes a bluespace jump out. Use the **Request Extraction Case** verb in the IC tab to get one. Only the first standard case you are carrying counts, and you have to be alive and conscious, nothing extracts off a corpse. Loose parts in your bag are lost. Everyone who played a character also gets one random part and a hundred credits at round end, so a bad round still moves you forward a little.
 
 ## Staying alive
 

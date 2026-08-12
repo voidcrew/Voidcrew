@@ -1,7 +1,7 @@
 /**
  * NT Customs Patrol Corvette - Vigilant-class
  * Reskin of the Rogue-class pirate vessel for Nanotrasen customs enforcement.
- * Dispatched by mission code (e.g. drug smuggling customs patrols) — see
+ * Dispatched by mission code (e.g. drug smuggling customs patrols), see
  * voidcrew/modules/npc_ships/code/faction_pirates/nt_patrol.dm
  */
 /datum/map_template/shuttle/voidcrew/nt_patrol

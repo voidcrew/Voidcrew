@@ -1,26 +1,26 @@
 /**
- * # The Shambles — slaughter demon vestige
+ * # The Shambles: slaughter demon vestige
  *
- * A provisions barge — the old word for a slaughterhouse was a "shambles",
+ * A provisions barge: the old word for a slaughterhouse was a "shambles",
  * and this ship earned the name twice. Her drive died between ports with the
  * holds packed and the freezers failing, and the crew, starving in a larder,
  * summoned something to "help with the butchering". It helped. Quickly,
  * professionally, with evident pride in the work. Then it stayed for the
  * meal, and the meal became a banquet, and the banquet ran so long that the
- * spilled blood dried on the deck — and a thing that travels through blood
+ * spilled blood dried on the deck, and a thing that travels through blood
  * cannot leave through dried blood. The patron is the Stain: a slaughter
  * demon set halfway out of the great rust-brown mark like a fly in amber,
  * convivial, dreadful, and genuinely delighted to have an apprentice at last.
  * It laughs. That is the horror; it is not laughing AT anyone.
  *
  * The trials are a butcher's apprenticeship, and every one demands active
- * play at every moment: the Red Road (positioning — fell wild things with the
+ * play at every moment: the Red Road (positioning, fell wild things with the
  * loaned knife while YOUR boots stand in wet blood), the Trapdoor Feast
- * (stalking and timing — a lesser, lurk-capped blood crawl, credit only for a
+ * (stalking and timing, a lesser, lurk-capped blood crawl, credit only for a
  * strike within two seconds of rising onto a beast mid-stride), and Set the
- * Table (logistics under pressure — every kill onto the loaned gambrel's
- * hooks before it cools, while the hunt continues). The boons — the crawl,
- * the claws, the mirth, the scent — live in the sibling boons file
+ * Table (logistics under pressure: every kill onto the loaned gambrel's
+ * hooks before it cools, while the hunt continues). The boons, the crawl,
+ * the claws, the mirth, the scent. Live in the sibling boons file
  * (theme_demon_boons.dm); this file only points the patron at them.
  *
  * Design note: the demon's bloodcrawl-consume stays CUT per the ability
@@ -29,18 +29,18 @@
  */
 
 // Trial tuning (file-local, #undef at bottom). Trial descs quote these
-// numbers literally — keep them in sync.
+// numbers literally, keep them in sync.
 /// Wild things the Red Road demands felled with wet blood underfoot
 #define VESTIGE_ROAD_KILLS_NEEDED 5
 /// Pounces the Trapdoor Feast demands landed out of the blood
 #define VESTIGE_TRAPDOOR_AMBUSHES_NEEDED 6
-/// Most pounces any single beast can credit — after that it has learned the floor
+/// Most pounces any single beast can credit, after that it has learned the floor
 #define VESTIGE_TRAPDOOR_STRIKES_PER_PREY 2
 /// How long after rising a strike still counts as a pounce
 #define VESTIGE_TRAPDOOR_STRIKE_WINDOW (2 SECONDS)
 /// How long the blood tolerates a lurker before spitting them back out
 #define VESTIGE_TRAPDOOR_LURK_MAX (10 SECONDS)
-/// The trapdoor crawl's cooldown — paid on the dive and again on the rise
+/// The trapdoor crawl's cooldown: paid on the dive and again on the rise
 #define VESTIGE_TRAPDOOR_COOLDOWN (6 SECONDS)
 /// Brute the dive costs when there is no pool in reach and the door must come out of your palm
 #define VESTIGE_TRAPDOOR_TOLL 5
@@ -52,7 +52,7 @@
 #define VESTIGE_TABLE_FRESHNESS (45 SECONDS)
 /// How long hooking a carcass up takes
 #define VESTIGE_TABLE_HANG_TIME (1.5 SECONDS)
-/// Beat between the final credit and completion — keeps complete() (which qdels
+/// Beat between the final credit and completion. Keeps complete() (which qdels
 /// the trial AND its kit) out of the kit's own call stack (see conclude())
 #define VESTIGE_SHAMBLES_CONCLUDE_DELAY (0.5 SECONDS)
 
@@ -60,12 +60,12 @@
  * TRUE when a mob is honest work for the Stain's lessons: wild fauna
  * (basic-mob or simple-animal stock), not a person, not a morsel, not a
  * pacifist, not the butcher's own pack, and not something under godmode
- * (patrons, trader mobs). All three trials gate their credit through this —
- * the pact pays for hunting beasts, never people. Deliberately NOT the
+ * (patrons, trader mobs). All three trials gate their credit through this.
+ * The pact pays for hunting beasts, never people. Deliberately NOT the
  * dragon's vestige_is_wild_quarry: themes keep their own gates so one theme's
  * balance pass can't silently retune another's.
  *
- * No stat check on purpose — the knife judges the living, the gambrel judges
+ * No stat check on purpose, the knife judges the living, the gambrel judges
  * the dead, and each caller applies its own.
  */
 /proc/vestige_is_shambles_quarry(mob/living/beast, mob/living/butcher)
@@ -73,7 +73,7 @@
 		return FALSE
 	if(!isanimal_or_basicmob(beast))
 		return FALSE
-	if(beast.mob_size < MOB_SIZE_SMALL) // no mice, no morsels — the Stain wants carcasses worth hanging
+	if(beast.mob_size < MOB_SIZE_SMALL) // no mice, no morsels. The Stain wants carcasses worth hanging
 		return FALSE
 	if(HAS_TRAIT(beast, TRAIT_PACIFISM) || HAS_TRAIT(beast, TRAIT_GODMODE))
 		return FALSE
@@ -99,7 +99,7 @@
 		/datum/vestige_trial/trapdoor_feast,
 		/datum/vestige_trial/set_the_table,
 	)
-	// Contract list — these boons are defined in the sibling boons file
+	// Contract list: these boons are defined in the sibling boons file
 	boon_types = list(
 		/datum/vestige_boon/spell/blood_crawl,
 		/datum/vestige_boon/spell/blood_crawl/red_undertow,
@@ -110,17 +110,17 @@
 	)
 	idle_lines = list(
 		"They asked for help with the butchering! Ha! I have never once declined an invitation, and that one was practically engraved.",
-		"The crew? Dressed, hung, and portioned, every one, and not a cut wasted. Say what you like about how the evening ended — the WORK was clean.",
-		"I stayed for the meal. The meal became a banquet, the banquet became — ha! — a permanent arrangement. And the floor dried while I was still complimenting the cook.",
+		"The crew? Dressed, hung, and portioned, every one, and not a cut wasted. Say what you like about how the evening ended. The WORK was clean.",
+		"I stayed for the meal. The meal became a banquet, the banquet became (ha!) a permanent arrangement. And the floor dried while I was still complimenting the cook.",
 		"A thing that travels by blood cannot leave by dried blood, apprentice. Write that down. On something. IN something.",
 		"You hold that knife like it owes you money. It owes you nothing. You owe IT a steady hand. We will fix this together, you and I.",
-		"The old shops called this a shambles — the wet floor, the gutter, the hooks, the honest work. The whole ship is a shambles now. I find that very tidy.",
-		"Do you know the difference between slaughter and butchery? Patience. One of us in this room had none, and look where it — HA! — look where it got me.",
+		"The old shops called this a shambles: the wet floor, the gutter, the hooks, the honest work. The whole ship is a shambles now. I find that very tidy.",
+		"Do you know the difference between slaughter and butchery? Patience. One of us in this room had none, and look where it. HA! Look where it got me.",
 	)
 	accept_line = "Excellent! Apron on, chin up. The floor teaches, the knife grades, and I laugh either way."
 	busy_line = "You're still carrying another kitchen's order, apprentice. Finish that plate or scrape it."
 	fulfilled_line = "That cut is made and hung. Even I never butchered the same beast twice. Ha! Well. Not on purpose."
-	renounce_line = "Hanging up the apron? Fine, fine. The floor was too wet for you. It gets everyone eventually — usually by the ankles."
+	renounce_line = "Hanging up the apron? Fine, fine. The floor was too wet for you. It gets everyone eventually, usually by the ankles."
 	claim_line = "Wages before work, that's shop law, older than me. Take what you're owed. I insist. I INSIST."
 	exhausted_line = "The larder's bare and the hooks are empty. You've carried off my whole trade, one parcel at a time. I'd applaud, but the stain has my hands."
 	remember_line = "Back from the walk-in, are we? The cold suits you. Your tools are fine, I oiled them myself. A good shop never loses an apprentice's kit. Only, occasionally, the apprentice."
@@ -129,9 +129,9 @@
 
 /**
  * The positioning trial: a butcher works on a wet floor. The loaned knife
- * paints — every honest cut into wild quarry guarantees a wet pool under the
+ * paints, every honest cut into wild quarry guarantees a wet pool under the
  * beast, its own blood where the engine gives it any and the knife's tithe
- * where it doesn't — but the credit is in the FEET: only a killing blow
+ * where it doesn't, but the credit is in the FEET: only a killing blow
  * landed by this knife while the butcher's own boots stand in wet, undried
  * blood counts. Pools stay where the fight spilled them and the fight keeps
  * moving, so every kill is a small dance of wound, herd, step, finish.
@@ -143,10 +143,10 @@
 	name = "The Red Road"
 	// Keep the count in sync with VESTIGE_ROAD_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "First lesson is the floor. Take the knife — I dressed the edge myself, it spills generously. Cut your beast open so the floor gets wet, then stand in the wet and land the killing blow from there. Wet blood under your boots, or it doesn't count. Five wild things brought down that way, and no beast counts twice however many times somebody props it back up. Ha!"
+	desc = "First lesson is the floor. Take the knife. I dressed the edge myself, it spills generously. Cut your beast open so the floor gets wet, then stand in the wet and land the killing blow from there. Wet blood under your boots, or it doesn't count. Five wild things brought down that way, and no beast counts twice however many times somebody props it back up. Ha!"
 	/// The loaned knife, while it survives. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_flensing_knife/knife
-	/// Beasts already walked down the road (weakref -> TRUE) — a revived and re-felled beast is still one meal
+	/// Beasts already walked down the road (weakref -> TRUE). A revived and re-felled beast is still one meal
 	var/list/felled = list()
 	/// Guards the deferred completion beat (see conclude)
 	var/concluding = FALSE
@@ -176,7 +176,7 @@
 	if(length(felled) >= VESTIGE_ROAD_KILLS_NEEDED && !concluding)
 		concluding = TRUE
 		// Deferred: complete() qdels the trial, and the trial's Destroy qdels the
-		// knife — which is partway through its own attack() right now
+		// knife, which is partway through its own attack() right now
 		addtimer(CALLBACK(src, PROC_REF(conclude)), VESTIGE_SHAMBLES_CONCLUDE_DELAY)
 	return TRUE
 
@@ -187,12 +187,12 @@
 
 /**
  * The flensing knife: a butcher's cleaver on loan from something that took
- * butchery very seriously. Ordinary cleaver stats — the trial is in where you
- * stand, not what you swing — plus two jobs of its own: it PAINTS (every cut
+ * butchery very seriously. Ordinary cleaver stats. The trial is in where you
+ * stand, not what you swing, plus two jobs of its own: it PAINTS (every cut
  * into wild quarry leaves a wet pool under the beast, so the road can always
  * be laid even through bloodless-as-the-engine-reckons-it fauna), and it
  * JUDGES (a killing blow it lands itself, with wet blood under its wielder's
- * boots, credits the wielder's live Red Road — resolved fresh at that moment,
+ * boots, credits the wielder's live Red Road, resolved fresh at that moment,
  * never stored). In anyone else's hand it is just a very good cleaver.
  */
 /obj/item/vestige_flensing_knife
@@ -200,7 +200,7 @@
 	desc = "A cleaver of demon-dark iron, balanced well enough that it does most of the work for you. The groove down the blade is stained a deep brown that no amount of scrubbing touches."
 	icon = 'icons/obj/weapons/khopesh.dmi'
 	icon_state = "render"
-	/// Mind of the supplicant this knife was loaned to — Destroy-time bookkeeping only; credit resolves the WIELDER at swing time
+	/// Mind of the supplicant this knife was loaned to, Destroy-time bookkeeping only; credit resolves the WIELDER at swing time
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_flensing_knife/Destroy()
@@ -217,7 +217,7 @@
 
 /obj/item/vestige_flensing_knife/attack(mob/living/prey, mob/living/butcher, list/modifiers, list/attack_modifiers)
 	var/was_alive = isliving(prey) && prey.stat != DEAD
-	. = ..() // the swing itself — damage (and any death) happens in here, synchronously
+	. = ..() // the swing itself, damage (and any death) happens in here, synchronously
 	if(!was_alive || !isliving(prey) || !isliving(butcher))
 		return
 	var/datum/vestige_trial/red_road/trial = butcher.mind?.active_vestige_trial
@@ -225,7 +225,7 @@
 		return
 	if(!vestige_is_shambles_quarry(prey, butcher))
 		return
-	// Every honest cut paints — including the last one, so the kill itself
+	// Every honest cut paints, including the last one, so the kill itself
 	// keeps laying road for the next
 	paint_the_road(prey)
 	if(prey.stat != DEAD)
@@ -241,7 +241,7 @@
 	if(!road)
 		to_chat(butcher, span_warning("[prey] falls on a dry floor. Somewhere, a tongue clicks twice. The killing blow only counts with wet blood under your boots, apprentice."))
 		return
-	// fell() may schedule completion (which later deletes the trial) — nothing touches trial after this
+	// fell() may schedule completion (which later deletes the trial), nothing touches trial after this
 	if(trial.fell(prey))
 		to_chat(butcher, span_notice("[prey] drops with your boots planted in the red. From nowhere in particular: two slow, delighted claps."))
 		playsound(butcher, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
@@ -251,7 +251,7 @@
 /**
  * Guarantees a wet pool under the beast: its own blood first (species-correct,
  * honest forensics), and the knife's tithe when the engine calls the beast
- * bloodless — the trial cannot hinge on which fauna happen to have plumbing.
+ * bloodless, the trial cannot hinge on which fauna happen to have plumbing.
  * Never stacks: an existing wet pool on the turf is left to do its job.
  */
 /obj/item/vestige_flensing_knife/proc/paint_the_road(mob/living/prey)
@@ -268,7 +268,7 @@
 
 /**
  * The stalking trial: the pact loans a lesser, trial-only blood crawl and
- * pays only for AMBUSHES — the first strike landed within two seconds of
+ * pays only for AMBUSHES, the first strike landed within two seconds of
  * rising, on a wild beast that was moving when the strike came. "Moving" is
  * judged honestly: the crawl memorizes where every nearby living thing stood
  * at the instant of surfacing, and a beast still on that same tile when the
@@ -283,8 +283,8 @@
  * out (and charging the cooldown for the ride); and it refuses to cast at all
  * without a live Trapdoor Feast on the caster's mind. In exchange it keeps
  * your hands (the trial is the strike, not the swim), rises instantly (an
- * ambush that gargles first is not an ambush), and — because a hunting ground
- * rarely comes pre-bloodied — a dive with no pool in reach cuts its own door
+ * ambush that gargles first is not an ambush), and, because a hunting ground
+ * rarely comes pre-bloodied. A dive with no pool in reach cuts its own door
  * out of the lurker's palm for a small brute toll. No consume mechanics
  * exist on this or any variant here: that stays cut.
  */
@@ -293,7 +293,7 @@
 	// Keep the counts in sync with VESTIGE_TRAPDOOR_AMBUSHES_NEEDED /
 	// _STRIKES_PER_PREY / _STRIKE_WINDOW / _LURK_MAX / _TOLL
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Second lesson is the pounce. I'll lend you the crawl — the apprentice's version of it. Sink into wet blood and the floor is yours for ten seconds before it spits you back out. No pool in reach and the door comes out of your own palm, five brute, shop price. Come up under something that is MOVING and land your first strike within two seconds of surfacing. Something standing still doesn't count. Six pounces, and no beast counts more than twice — after that it knows where the floor keeps its doors. Ha!"
+	desc = "Second lesson is the pounce. I'll lend you the crawl, the apprentice's version of it. Sink into wet blood and the floor is yours for ten seconds before it spits you back out. No pool in reach and the door comes out of your own palm, five brute, shop price. Come up under something that is MOVING and land your first strike within two seconds of surfacing. Something standing still doesn't count. Six pounces, and no beast counts more than twice. After that it knows where the floor keeps its doors. Ha!"
 	/// The loaned crawl. Mind-targeted like the boon spells; reclaimed (and any lurker ejected) the moment the pact ends.
 	var/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/crawl
 	/// Pounces landed so far
@@ -304,13 +304,13 @@
 	var/concluding = FALSE
 
 /datum/vestige_trial/trapdoor_feast/on_accepted(mob/living/user)
-	crawl = new(owner) // mind-targeted, same as granted boon spells — it rides across bodies with the pact
+	crawl = new(owner) // mind-targeted, same as granted boon spells, it rides across bodies with the pact
 	crawl.Grant(user)
 	to_chat(user, span_notice("Something teaches your bones the trick of it, laughing gently the whole time. A red floor is a door."))
 
 /datum/vestige_trial/trapdoor_feast/Destroy()
 	// Action Destroy runs Remove, and the jaunt machinery's Remove force-exits
-	// a live jaunt — a renounced lurker surfaces instead of stranding
+	// a live jaunt, a renounced lurker surfaces instead of stranding
 	QDEL_NULL(crawl)
 	return ..()
 
@@ -328,7 +328,7 @@
 	refresh_tracker()
 	if(ambushes >= VESTIGE_TRAPDOOR_AMBUSHES_NEEDED && !concluding)
 		concluding = TRUE
-		// Deferred: complete() qdels the trial, whose Destroy qdels the crawl —
+		// Deferred: complete() qdels the trial, whose Destroy qdels the crawl,
 		// which is partway through its own strike signal handler right now
 		addtimer(CALLBACK(src, PROC_REF(conclude)), VESTIGE_SHAMBLES_CONCLUDE_DELAY)
 	return TRUE
@@ -339,8 +339,8 @@
 		complete()
 
 /**
- * The trapdoor crawl: upstream's plain bloodcrawl (NOT the slaughter demon's
- * — the consume machinery stays cut) with the trial's restrictions bolted on.
+ * The trapdoor crawl: upstream's plain bloodcrawl (NOT the slaughter demon's.
+ * The consume machinery stays cut) with the trial's restrictions bolted on.
  * All the pounce-judging state lives here on the action, kit-side and
  * ephemeral, exactly like the ember-jaw's marks: the trial datum on the mind
  * keeps only the score.
@@ -348,7 +348,7 @@
  * Fork quirk note: this fork's spell Activate() ignores cast() return values,
  * so every cancel here routes through can_cast_spell (checked before
  * activation, no side effects) or before_cast (cast-time, may have side
- * effects, honored SPELL_CANCEL_CAST) — never through cast() itself.
+ * effects, honored SPELL_CANCEL_CAST), never through cast() itself.
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor
 	name = "Trapdoor Crawl"
@@ -357,12 +357,12 @@
 	desc = "Sink into wet blood and travel beneath the floor for up to 10 seconds before the blood spits you back out. With no pool in reach, the dive cuts its own door out of your palm for 5 brute. It only works while the Trapdoor Feast is running."
 	cooldown_time = VESTIGE_TRAPDOOR_COOLDOWN
 	exit_blood_time = 0 SECONDS // an ambush that bubbles and gargles first is not an ambush
-	equip_blood_hands = FALSE // the knife rises with you — the trial is the strike, not the swim
+	equip_blood_hands = FALSE // the knife rises with you. The trial is the strike, not the swim
 	/// Timer for the blood's patience running out mid-lurk
 	var/lurk_timer
 	/// When we last surfaced (0 = never), the strike window's anchor
 	var/emerged_at = 0
-	/// Whether this rise has already paid out — one pounce per surfacing, however fast you swing
+	/// Whether this rise has already paid out, one pounce per surfacing, however fast you swing
 	var/credited_this_rise = FALSE
 	/// Where every living thing nearby stood at the instant of surfacing (weakref -> turf), the "mid-stride" evidence
 	var/list/positions_at_rise
@@ -393,7 +393,7 @@
 	if(!.)
 		return FALSE
 	// Belt and suspenders: the crawl is qdeled with the pact, but resolve the
-	// wielder's mind at interaction time anyway — the kit-item rule
+	// wielder's mind at interaction time anyway, the kit-item rule
 	var/datum/vestige_trial/trapdoor_feast/trial = owner.mind?.active_vestige_trial
 	if(istype(trial))
 		return TRUE
@@ -412,7 +412,7 @@
  * A lurker above the floor can ALWAYS dive: when no pool waits, before_cast
  * cuts a door out of their own palm. This override returns a truthy sentinel
  * (src) in that case so the parent's can_cast_spell agrees the dive is
- * possible — with no side effects, because this proc runs on every movement
+ * possible, with no side effects, because this proc runs on every movement
  * update. The sentinel never reaches do_bloodcrawl: before_cast guarantees a
  * real pool exists before the parent's cast() goes looking for one.
  */
@@ -433,7 +433,7 @@
 	if(find_wet_door(get_turf(lurker)))
 		return // a door is already waiting
 	if(!cut_own_door(lurker))
-		return . | SPELL_CANCEL_CAST // nullspace and stranger things — no door, no dive, no cooldown
+		return . | SPELL_CANCEL_CAST // nullspace and stranger things, no door, no dive, no cooldown
 
 /// The toll: no pool in reach, so the lurker's own palm paints one. Returns the door, or null if there is nowhere to put it.
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/cut_own_door(mob/living/lurker)
@@ -458,13 +458,13 @@
 	if(!.)
 		return
 	deltimer(lurk_timer)
-	// The clock rides the timer subsystem, not the holder — a renounced pact's
+	// The clock rides the timer subsystem, not the holder, a renounced pact's
 	// Destroy deltimers it, and the jaunt machinery ejects the lurker itself
 	lurk_timer = addtimer(CALLBACK(src, PROC_REF(spit_out), jaunter), VESTIGE_TRAPDOOR_LURK_MAX, TIMER_STOPPABLE)
 	to_chat(jaunter, span_notice("The red closes over you. [VESTIGE_TRAPDOOR_LURK_MAX / 10] seconds, apprentice, then it puts you back."))
 
 /**
- * Any exit — voluntary rise, the clock, a renounce, a stat change — lands
+ * Any exit (voluntary rise, the clock, a renounce, a stat change) lands
  * here via the jaunt machinery's eject signal. Stamp the ambush window open
  * and memorize where everything nearby is standing, so "mid-stride" can be
  * judged against evidence instead of vibes.
@@ -485,7 +485,7 @@
 	if(QDELETED(src) || QDELETED(lurker) || !is_jaunting(lurker))
 		return
 	var/obj/effect/dummy/phased_mob/burrow = lurker.loc
-	// Don't strand them inside a wall they were phasing through — walk the
+	// Don't strand them inside a wall they were phasing through, walk the
 	// holder to the nearest open ground first
 	var/turf/spot = find_spit_spot(burrow)
 	if(spot && spot != get_turf(burrow))
@@ -515,7 +515,7 @@
 /// An armed swing by the crawl's owner. Signal args per COMSIG_MOB_ITEM_ATTACK: (target, user, modifiers, attack_modifiers).
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/on_armed_strike(mob/living/butcher, mob/living/prey, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
-	// The signal fires for every item touch, scanners included — only a real
+	// The signal fires for every item touch, scanners included, only a real
 	// weapon in the striking hand reads as a strike
 	var/obj/item/blade = butcher.get_active_held_item()
 	if(!blade || blade.force <= 0)
@@ -531,7 +531,7 @@
 
 /**
  * The pounce, judged: inside the window, first credit of this rise, honest
- * quarry, still alive — and MOVING, meaning it is not standing on the same
+ * quarry, still alive, and MOVING, meaning it is not standing on the same
  * tile it stood on when the lurker surfaced. A beast absent from the
  * surfacing snapshot closed the distance from beyond it, which is the most
  * moving a beast can be. Credit resolves the wielder's live trial at strike
@@ -554,7 +554,7 @@
 		to_chat(butcher, span_warning("[quarry] was standing still when you came up. A pounce only counts on something that was moving."))
 		return
 	if(!trial.pounce(quarry))
-		to_chat(butcher, span_warning("[quarry] has been surprised enough times. It knows where the floor keeps its doors now — go find something else."))
+		to_chat(butcher, span_warning("[quarry] has been surprised enough times. It knows where the floor keeps its doors now. Go find something else."))
 		return
 	credited_this_rise = TRUE
 	to_chat(butcher, span_notice("Up through the red and into [quarry] mid-stride. From under the floor, briefly: laughter."))
@@ -564,8 +564,8 @@
 
 /**
  * The logistics trial: killing is only half the shop. Every wild thing
- * brought down must go onto the loaned gambrel's hooks while it still steams
- * — the freshness clock is the beast's own time of death, so the pressure
+ * brought down must go onto the loaned gambrel's hooks while it still steams.
+ * The freshness clock is the beast's own time of death, so the pressure
  * needs no global scanning and no kill-watching: a carcass presented to the
  * hooks either made the window or it didn't. The gambrel refuses cold meat
  * outright (refusal teaches the timer better than silent no-credit would),
@@ -581,14 +581,14 @@
 	name = "Set the Table"
 	// Keep the counts in sync with VESTIGE_TABLE_SETTINGS / _FRESHNESS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Last lesson is the table, and it's the one every butcher skips. Take the gambrel and plant it somewhere the hunting is good. Everything you bring down goes on the hooks while it's still warm — forty-five seconds from last breath to hook, no more, I don't seat cold meat. Five carcasses hung fresh while the hunt goes on around you: kill, haul, hang, repeat. A butcher who can't set a table is just a murderer with a very good knife. Ha!"
+	desc = "Last lesson is the table, and it's the one every butcher skips. Take the gambrel and plant it somewhere the hunting is good. Everything you bring down goes on the hooks while it's still warm: forty-five seconds from last breath to hook, no more, I don't seat cold meat. Five carcasses hung fresh while the hunt goes on around you: kill, haul, hang, repeat. A butcher who can't set a table is just a murderer with a very good knife. Ha!"
 	/// The loaned gambrel, folded, while it rides in hand. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_gambrel/gambrel_item
 	/// The gambrel, planted. Reclaimed the moment the pact ends (hung meat drops free).
 	var/obj/structure/vestige_gambrel/gambrel_structure
 	/// Fresh settings hung so far
 	var/settings = 0
-	/// Carcasses already seated (weakref -> TRUE) — unhooking and re-hanging the same beast lays no second setting
+	/// Carcasses already seated (weakref -> TRUE), unhooking and re-hanging the same beast lays no second setting
 	var/list/served = list()
 	/// Guards the deferred completion beat (see conclude)
 	var/concluding = FALSE
@@ -609,7 +609,7 @@
 	if(gambrel_structure && !QDELETED(gambrel_structure))
 		status = "The gambrel stands planted"
 	else if(gambrel_item && !QDELETED(gambrel_item))
-		status = "The gambrel is folded up in your hands — plant it somewhere the hunting is good"
+		status = "The gambrel is folded up in your hands. Plant it somewhere the hunting is good"
 	else
 		status = "The gambrel is gone. Renounce the pact and [patron_name] will fold you another"
 	return "[status]. [settings] of [VESTIGE_TABLE_SETTINGS] settings hung fresh."
@@ -624,7 +624,7 @@
 	refresh_tracker()
 	if(settings >= VESTIGE_TABLE_SETTINGS && !concluding)
 		concluding = TRUE
-		// Deferred: complete() qdels the trial, whose Destroy qdels the gambrel —
+		// Deferred: complete() qdels the trial, whose Destroy qdels the gambrel,
 		// which is partway through its own buckle chain right now
 		addtimer(CALLBACK(src, PROC_REF(conclude)), VESTIGE_SHAMBLES_CONCLUDE_DELAY)
 	return TRUE
@@ -643,7 +643,7 @@
 	icon_state = "spikeframe"
 	color = "#a86a54" // demon-dark iron gone rustward
 	w_class = WEIGHT_CLASS_BULKY
-	/// Mind of the supplicant setting this table — the gambrel answers only its own butcher
+	/// Mind of the supplicant setting this table, the gambrel answers only its own butcher
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_gambrel/Destroy()
@@ -656,7 +656,7 @@
 
 /obj/item/vestige_gambrel/examine(mob/user)
 	. = ..()
-	. += span_notice("Use it on an open stretch of floor to unfold it into a hanging rack. Plant it somewhere the hunting is good — it only takes meat within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill.")
+	. += span_notice("Use it on an open stretch of floor to unfold it into a hanging rack. Plant it somewhere the hunting is good. It only takes meat within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill.")
 
 /obj/item/vestige_gambrel/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isopenturf(interacting_with))
@@ -701,11 +701,11 @@
 // --- The gambrel, planted ---
 
 /**
- * The planted rack: a buckle structure that accepts exactly one kind of guest
- * — a fresh, wild carcass, presented by its own butcher. It holds no trial
+ * The planted rack: a buckle structure that accepts exactly one kind of guest,
+ * a fresh, wild carcass, presented by its own butcher. It holds no trial
  * reference: everything resolves through bound_mind at the moment it's
  * needed, the same rule every kit item follows. Freshness is judged twice
- * (before and after the hang do_after — the clock does not stop for
+ * (before and after the hang do_after. The clock does not stop for
  * ceremony), and credit is banked at hang time, so unhooking to lighten the
  * table costs nothing and recycles nothing.
  */
@@ -734,7 +734,7 @@
 	bound_mind = null
 	return ..()
 
-/// The bound soul's table-setting, if it still runs — resolved fresh every time, never stored (renounce-safe)
+/// The bound soul's table-setting, if it still runs, resolved fresh every time, never stored (renounce-safe)
 /obj/structure/vestige_gambrel/proc/get_bound_trial()
 	var/datum/vestige_trial/set_the_table/trial = bound_mind?.active_vestige_trial
 	if(istype(trial))
@@ -743,14 +743,14 @@
 
 /obj/structure/vestige_gambrel/examine(mob/user)
 	. = ..()
-	. += span_notice("Drag a fresh wild carcass onto it to hang it — within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill, and only by whoever made the pact. [VESTIGE_TABLE_SETTINGS] settings finish the table.")
+	. += span_notice("Drag a fresh wild carcass onto it to hang it, within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill, and only by whoever made the pact. [VESTIGE_TABLE_SETTINGS] settings finish the table.")
 	var/datum/vestige_trial/set_the_table/trial = get_bound_trial()
 	if(istype(trial) && user.mind == bound_mind)
 		. += span_boldnotice(trial.get_progress_text())
 
 /obj/structure/vestige_gambrel/attack_hand(mob/living/user, list/modifiers)
 	if(user.combat_mode || has_buckled_mobs())
-		return ..() // smacking it, or letting the meat down — both the parent's business
+		return ..() // smacking it, or letting the meat down, both the parent's business
 	// tend() sleeps (tgui_alert); don't hold up the click chain
 	INVOKE_ASYNC(src, PROC_REF(tend), user)
 	return TRUE
@@ -783,7 +783,7 @@
 
 /**
  * The gatekeeping: only the bound butcher, only dead wild quarry, only fresh,
- * only new. Every refusal says why — the freshness clock is the trial, and a
+ * only new. Every refusal says why. The freshness clock is the trial, and a
  * clock you can't read teaches nothing. The parent runs the actual buckle;
  * post_buckle_mob banks the credit.
  */
@@ -799,7 +799,7 @@
 		balloon_alert(butcher, "the hooks hang slack!")
 		return
 	if(meat.stat != DEAD)
-		balloon_alert(butcher, "still kicking!") // finished work only — this is a table, not a rack
+		balloon_alert(butcher, "still kicking!") // finished work only, this is a table, not a rack
 		return
 	if(!vestige_is_shambles_quarry(meat, butcher))
 		balloon_alert(butcher, "not fit for this table!")
@@ -808,7 +808,7 @@
 		balloon_alert(butcher, "already served!")
 		return
 	if(world.time > meat.timeofdeath + VESTIGE_TABLE_FRESHNESS)
-		balloon_alert(butcher, "gone cold — no cold meat!")
+		balloon_alert(butcher, "gone cold, no cold meat!")
 		return
 	balloon_alert(butcher, "hooking it up...")
 	if(!do_after(butcher, VESTIGE_TABLE_HANG_TIME, target = src))
@@ -823,7 +823,7 @@
 	return ..()
 
 // The hung-meat presentation, borrowed from the kitchenspike (verified) minus
-// its living-victim theatrics: no scream, no spike damage — this guest is past both
+// its living-victim theatrics: no scream, no spike damage. This guest is past both
 /obj/structure/vestige_gambrel/post_buckle_mob(mob/living/meat)
 	playsound(loc, 'sound/effects/splat.ogg', 40, TRUE)
 	meat.setDir(SOUTH)
@@ -833,14 +833,14 @@
 	meat.add_offsets(type, y_add = -6, animate = FALSE)
 	ADD_TRAIT(meat, TRAIT_MOVE_UPSIDE_DOWN, REF(src))
 	// The gates all ran in user_buckle_mob, but post_buckle_mob is reachable by
-	// other roads (admin fiat, future code) — re-derive the cheap, honest checks
+	// other roads (admin fiat, future code). Re-derive the cheap, honest checks
 	var/datum/vestige_trial/set_the_table/trial = get_bound_trial()
 	if(!istype(trial))
 		return
 	if(world.time > meat.timeofdeath + VESTIGE_TABLE_FRESHNESS)
 		return
 	// lay_setting() may schedule completion (which later deletes the trial and
-	// this rack) — nothing touches trial after this
+	// this rack), nothing touches trial after this
 	if(trial.lay_setting(meat))
 		visible_message(span_notice("[meat] settles onto the hooks, still steaming. From somewhere close by: two slow, delighted claps."))
 		playsound(src, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
@@ -867,7 +867,7 @@
 
 
 /**
- * # The Shambles — slaughter demon vestige: BOONS
+ * # The Shambles: slaughter demon vestige: BOONS
  *
  * The Stain's syllabus, taught in the order any honest butcher learns the
  * trade: the crawl (how to reach the work), the claws (how to do the work),
@@ -879,7 +879,7 @@
  * - Blood Crawl: upstream /datum/action/cooldown/spell/jaunt/bloodcrawl ships
  *   spell_requirements = NONE (bloodcrawl.dm line 15) and is ALREADY granted
  *   to plain humans today by the demon heart organ (demon_items.dm,
- *   on_mob_insert) — the exact non-consume base type, as-is. The
+ *   on_mob_insert), the exact non-consume base type, as-is. The
  *   victim-consume subtype (/slaughter_demon) stays CUT: consume, the jaunt
  *   damage timer and the antag consume_count all live on the subtype, none of
  *   it on the base. Human edges checked: entry calls drop_all_held_items()
@@ -889,7 +889,7 @@
  *   (on_jaunt_exited), exit_blood_effect is a 6-second cosmetic tint, and an
  *   unconscious jaunter is safely ejected by the phased mob's stat-change
  *   handler. Nothing strips or eats worn gear.
- * - Red Undertow: local subtype adding ONE thing — a rise-strike on deliberate
+ * - Red Undertow: local subtype adding ONE thing: a rise-strike on deliberate
  *   exits. The 2-second bubbling exit channel stays as the telegraph.
  * - Rending Claws: local item + conjure spell on the changeling armblade boon
  *   pattern (theme_changeling.dm). The bleed-scaling rend and the wound-bonus
@@ -901,7 +901,7 @@
  *   (terrified.dm: AddComponentFrom/RemoveComponentSource); stagger is the
  *   upstream staggered status via adjust_staggered_up_to. No hard stun.
  * - Scent of Blood: local toggle. The compass is a subtype of the upstream
- *   agent_pinpointer status effect (screen-alert arrow — renders through
+ *   agent_pinpointer status effect (screen-alert arrow, renders through
  *   walls by construction, no image/sight-flag tricks); the blood-wet
  *   footwork is the demon's own /datum/movespeed_modifier/slaughter idea
  *   (-1 for 6s post-crawl) cut down to a modest standing bonus.
@@ -940,7 +940,7 @@
 // --- The laugh (VESTIGE_MIRTH_) ---
 /// Cooldown of the laugh
 #define VESTIGE_MIRTH_COOLDOWN (40 SECONDS)
-/// How far the laugh carries, in tiles (line of sight — walls smother it)
+/// How far the laugh carries, in tiles (line of sight, walls smother it)
 #define VESTIGE_MIRTH_RADIUS 5
 /// Terror buildup poured into each human who hears it (FEAR threshold is 150; TERROR is 300)
 #define VESTIGE_MIRTH_TERROR 200
@@ -1002,7 +1002,7 @@
 
 /datum/vestige_boon/spell/slaughters_mirth
 	name = "Slaughter's Mirth"
-	desc = "Laugh the way the trade laughs. Everyone in sight nearby is staggered, people get hit with raw dread — shaking, stuttering, a racing heart, but never a stun — and simple creatures cower on the deck. There is no subtle way to do it."
+	desc = "Laugh the way the trade laughs. Everyone in sight nearby is staggered, people get hit with raw dread (shaking, stuttering, a racing heart, but never a stun) and simple creatures cower on the deck. There is no subtle way to do it."
 	grant_text = "Something in your chest learns a new way to breathe, though breathing isn't quite what it's doing."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_mirth
 
@@ -1021,7 +1021,7 @@
  * the loaned blood-hands is inherited untouched; the single addition is a
  * knockdown burst when a DELIBERATE exit completes. try_exit_jaunt is only
  * reached through the cast chain, so an unconscious body flopping out of the
- * pool (phased_mob's stat-change eject) never knocks anyone down — only a
+ * pool (phased_mob's stat-change eject) never knocks anyone down, only a
  * butcher arriving on purpose does.
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_undertow
@@ -1057,7 +1057,7 @@
 // ===== RENDING CLAWS =====
 
 /**
- * The conjure spell, on the armblade boon's chassis — with the no-free-hand
+ * The conjure spell, on the armblade boon's chassis, with the no-free-hand
  * cancel moved into before_cast, because this fork's Activate() ignores
  * cast()'s return value and an in-cast reset_spell_cooldown() is dead code.
  * Casting with any vestige claw in hand folds it away; if the held claw is an
@@ -1128,9 +1128,9 @@
 	playsound(cast_on, 'sound/effects/magic/demon_attack1.ogg', 40, TRUE)
 
 /**
- * The trade's knives. Sharp, sheddable (ABSTRACT|DROPDEL, NODROP — same
+ * The trade's knives. Sharp, sheddable (ABSTRACT|DROPDEL, NODROP, same
  * lifecycle as the armblade), and rewarded for craft over brawn: force 21
- * flat, +8 rend against prey that is already bleeding — or, for bloodless
+ * flat, +8 rend against prey that is already bleeding, or, for bloodless
  * creatures, already below half health. Butchers meat too, naturally.
  * Sprite note: reuses the changeling arm_blade sprite under a gore-dark tint;
  * no dedicated claw item sprite exists in the tree.
@@ -1182,7 +1182,7 @@
  * The rhythm section. Same rend, plus the live slaughter demon's own
  * hitstreak (demon_subtypes.dm), moved onto the item: consecutive hits on the
  * same living prey raise the claw's wound bonuses by 5 apiece, capped at +15,
- * so a held tempo starts opening slash wounds — which bleed, which primes the
+ * so a held tempo starts opening slash wounds, which bleed, which primes the
  * rend bonus. Switching targets (or reforming the claws) drops the beat to
  * zero. Melee-honest: nothing here reaches past arm's length.
  */
@@ -1219,7 +1219,7 @@
 /**
  * The Laugh. An AoE dread-and-stagger built local: the demon has no laugh
  * spell to port (its terror is ambience), so this borrows the two honest
- * pieces upstream already maintains — the fearful component (terror buildup
+ * pieces upstream already maintains, the fearful component (terror buildup
  * with its stock jitter/stutter/heart handlers, applied and removed exactly
  * the way the nightmare's terrified status does it) and the staggered status
  * effect. view()-bounded: the laugh is a sound with a face, and walls smother
@@ -1240,7 +1240,7 @@
 	spell_requirements = NONE
 	aoe_radius = VESTIGE_MIRTH_RADIUS
 
-// view(), not range(): the laugh needs a line to you — a closed door is a
+// view(), not range(): the laugh needs a line to you. A closed door is a
 // perfectly good answer to it
 /datum/action/cooldown/spell/aoe/vestige_mirth/get_things_to_cast_on(atom/center)
 	var/list/things = list()
@@ -1261,7 +1261,7 @@
 	playsound(get_turf(owner), 'sound/misc/insane_low_laugh.ogg', 100, TRUE, extrarange = 3)
 	new /obj/effect/temp_visual/circle_wave/vestige_mirth(get_turf(owner))
 	owner.visible_message(
-		span_boldwarning("[owner] throws [owner.p_their()] head back and laughs — low, warm, and entirely wrong!"),
+		span_boldwarning("[owner] throws [owner.p_their()] head back and laughs, low, warm, and entirely wrong!"),
 		span_notice("You laugh the way the Stain laughs: like the room is a meal that has just been seated."),
 	)
 
@@ -1287,7 +1287,7 @@
 /**
  * The dread the laugh leaves behind: a timed pour of terror buildup through
  * the upstream fearful component, using only its stock default handlers
- * (jittering, stuttering, heart problems, panic — no darkness scaling, unlike
+ * (jittering, stuttering, heart problems, panic, no darkness scaling, unlike
  * the nightmare's nyctophobic version). 200 buildup lands between the FEAR
  * (150) and TERROR (300) thresholds: immediate shaking and stuttering that
  * decays on its own. The component source is removed with the status, so
@@ -1322,8 +1322,8 @@
 
 /**
  * The nose, as a held stance (the Silent Dojo's toggle pattern). While open,
- * a pinpointer-style HUD compass — the upstream agent_pinpointer status
- * effect with the objective scanner swapped for a wound scanner — swings
+ * a pinpointer-style HUD compass, the upstream agent_pinpointer status
+ * effect with the objective scanner swapped for a wound scanner, swings
  * toward the nearest bleeding carbon or badly wounded organic creature within
  * VESTIGE_SCENT_RANGE, re-sniffed every VESTIGE_SCENT_PULSE. A screen alert
  * renders through walls by construction: no images, no sight flags, no lies.
@@ -1355,7 +1355,7 @@
 	cast_on.balloon_alert(cast_on, "the nose opens")
 	to_chat(cast_on, span_notice("You inhale, and you can smell every open wound in the room."))
 
-// The stance drops with the spell — an upgrade swap, a borging, a body left
+// The stance drops with the spell, an upgrade swap, a borging, a body left
 // behind: the nose never outlives the lesson that opened it
 /datum/action/cooldown/spell/vestige_blood_scent/Remove(mob/living/remove_from)
 	remove_from.remove_status_effect(/datum/status_effect/agent_pinpointer/vestige_scent)
@@ -1366,7 +1366,7 @@
 	duration = STATUS_EFFECT_PERMANENT // the spell toggles it off; nothing else should
 	tick_interval = VESTIGE_SCENT_PULSE
 	alert_type = /atom/movable/screen/alert/status_effect/agent_pinpointer/vestige_scent
-	minimum_range = 2 // adjacent prey reads as "direct" — a nose, not a rangefinder
+	minimum_range = 2 // adjacent prey reads as "direct", a nose, not a rangefinder
 	range_fuzz_factor = 0 // smell does not dissemble
 	range_mid = 4
 	range_far = 8

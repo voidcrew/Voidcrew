@@ -15,13 +15,13 @@
  * thrusting against it. That is parity with the helm's force stop rather than a
  * cheat, and it is what keeps the steering honest. An autopilot that has to THRUST
  * its way out of a mistake must predict how much room the mistake will take, and
- * every version of that prediction here eventually deadlocked — see the history in
+ * every version of that prediction here eventually deadlocked (see the history in)
  * autopilot_imminent_hazard. Being able to stop means the only tile it ever has to
  * be right about is the next one.
  *
  * **It only routes around what this hull has actually seen.** The danger map is
- * built from `discovered_contacts` (ship_sensors.dm) — the permanent record of
- * everything the ship has laid eyes on — never from a map-wide list of hazards,
+ * built from `discovered_contacts` (ship_sensors.dm), the permanent record of
+ * everything the ship has laid eyes on, never from a map-wide list of hazards,
  * which would be the console knowing things the crew was never told.
  *
  * Building it from the LIVE view ring instead was the original design and it was
@@ -31,13 +31,13 @@
  * exactly the act of undoing the avoidance.
  *
  * **Steering is per-tile.** `tick_move()` calls in after every tile crossing, and
- * a slow poll timer covers the times the ship isn't moving — sitting out a zone
+ * a slow poll timer covers the times the ship isn't moving, sitting out a zone
  * transition, or starting from a standstill. Nothing steers between tiles because
  * there is no sub-tile position in DM to steer with.
  *
  * **Travel & dock.** A course may carry a docking target with it: on arrival the
- * ship comes to rest and hands the target to overmap_object_act() — the same
- * ship_act() docking path the helm's Dock button drives — so berth allocation,
+ * ship comes to rest and hands the target to overmap_object_act(), the same
+ * ship_act() docking path the helm's Dock button drives, so berth allocation,
  * access checks and the dock warmup all behave exactly as if the crew had
  * pressed Dock themselves, and the warmup stays as the crew's abort window.
  *
@@ -45,7 +45,7 @@
  * to COMSIG_SHIP_WEAPONS_LOCKED on itself, and NPC subtypes already listen to
  * COMSIG_SHIP_INTERDICTED, so a second registration from here would collide on
  * any claimed NPC hull. The four interrupt sites call interrupt_autopilot()
- * directly instead — see the call sites in ship.dm, ship_damage.dm, laser_effect.dm
+ * directly instead, see the call sites in ship.dm, ship_damage.dm, laser_effect.dm
  * and missile_effect.dm.
  */
 
@@ -53,14 +53,14 @@
  * Cost of stepping onto a tile with a storm or asteroid field on it.
  *
  * Has to exceed the longest detour the map can ask for, or A* does the arithmetic
- * and correctly decides that ploughing through is cheaper. At 24 — the original
- * value — anything needing more than a 24-tile detour got a route straight through
+ * and correctly decides that ploughing through is cheaper. At 24, the original
+ * value, anything needing more than a 24-tile detour got a route straight through
  * the weather, which is most fields of any size. The grid is 49x49, so no honest
  * detour approaches this; a hazard is now something the planner will go any
  * distance to avoid.
  *
  * Still finite, not impassable: a ship whose destination sits inside a storm, or
- * which is walled in by one, gets a route rather than "no course found" — and the
+ * which is walled in by one, gets a route rather than "no course found", and the
  * steering layer stops and hands back control rather than flying it (see
  * autopilot_imminent_hazard and the boxed-in check in autopilot_steer).
  */
@@ -83,7 +83,7 @@
  * opposed to being somewhere the planner would simply rather not go.
  *
  * The halo bands sit below this on purpose. They exist to bias A* toward a wide
- * berth, and nothing more — treating them as real danger makes the ship slam on
+ * berth, and nothing more. Treating them as real danger makes the ship slam on
  * the brakes for passing NEAR a storm and re-plan every time a route skirts one,
  * which reads as dithering rather than caution. Only the cores trip the brake.
  */
@@ -113,8 +113,8 @@
  * SSfastprocess so the control loop runs at the same rate as the thrust it is
  * controlling.
  *
- * change_heading() commands a CONTINUOUS burn — it thrusts every process tick
- * until something changes it — whereas steering otherwise only reconsiders once
+ * change_heading() commands a CONTINUOUS burn, it thrusts every process tick
+ * until something changes it, whereas steering otherwise only reconsiders once
  * per tile crossing, which at low speed is many seconds apart. Left on the slow
  * cadence a burn meant to add a little speed added a lot (observed: 0.2 against a
  * 0.1 ceiling), because nothing looked again until the ship had already crossed a
@@ -127,7 +127,7 @@
 /// remembered contacts, which is too much to redo at the burn cadence.
 #define AUTOPILOT_DANGER_LIFETIME (0.5 SECONDS)
 
-// The flyable interior of the overmap — tick_move() wraps a ship that steps onto
+// The flyable interior of the overmap, tick_move() wraps a ship that steps onto
 // the outermost ring, so these are the tiles a course may actually contain.
 #define OVERMAP_PATH_LOW_X (OVERMAP_LEFT_SIDE_COORD + 1)
 #define OVERMAP_PATH_HIGH_X (OVERMAP_RIGHT_SIDE_COORD - 1)
@@ -154,7 +154,7 @@
 	/// Danger map, kept warm across the fast burn-cadence polls.
 	var/list/autopilot_danger_cache
 	var/autopilot_danger_time = 0
-	/// TRUE once a re-plan has come back still routing through danger — the way
+	/// TRUE once a re-plan has come back still routing through danger, the way
 	/// through is the best on offer, so stop asking. Cleared the moment the
 	/// course ahead is clean again.
 	var/autopilot_danger_committed = FALSE
@@ -188,7 +188,7 @@
 
 /**
  * The shorter of the two ways round for a coordinate delta. The overmap wraps, so
- * a ship at x=3 is four tiles from x=48, not forty-five — routing and steering both
+ * a ship at x=3 is four tiles from x=48, not forty-five, routing and steering both
  * have to agree with the wraparound tick_move() actually performs.
  */
 /proc/overmap_wrapped_delta(delta, span)
@@ -232,9 +232,9 @@
  * Every step costs 1 whatever its direction (diagonals are how tick_move()
  * actually flies), so any two tiles are joined by many equal-cost courses and
  * the expansion order is the tie-break that decides which of them gets flown.
- * Neighbours are pushed worst-to-best against the destination bearing — the
+ * Neighbours are pushed worst-to-best against the destination bearing, the
  * bucket pops its tail, so the step aimed straight at the destination is the
- * first one explored — and every tie resolves into the line a pilot would draw.
+ * first one explored, and every tie resolves into the line a pilot would draw.
  * With a fixed push order here instead, the tail pop amounted to an absolute
  * compass preference (NE, then E, then SE...) and every course in open space
  * bowed north-east: a hop due east was plotted as a four-tile-tall arc.
@@ -362,7 +362,7 @@
  * Storms and asteroid fields inside the view ring are hard detours; nebulas are
  * deliberately absent, being a resource and a hiding place rather than a threat.
  * Known-hostile vessels get a standoff band, but only ones this ship has actually
- * identified — an unscanned contact is not known to be dangerous, and routing
+ * identified, an unscanned contact is not known to be dangerous, and routing
  * around it would leak identity the crew hasn't earned.
  */
 /obj/structure/overmap/ship/proc/build_autopilot_danger_map()
@@ -381,7 +381,7 @@
 	//
 	// get_contact_snapshot() is what records discoveries, and it is cached for a
 	// second, so this is how the autopilot keeps seeing new hazards while flying
-	// with no helm open — without it, nothing would observe the view ring.
+	// with no helm open, without it, nothing would observe the view ring.
 	get_contact_snapshot()
 	for(var/contact_ref in discovered_contacts)
 		var/datum/weakref/remembered = discovered_contacts[contact_ref]
@@ -407,7 +407,7 @@
 /**
  * Plots and begins flying a course to an absolute overmap coordinate. Returns a
  * message for the console to say, whether or not it took. Pass `dock_target` to
- * end the course in a docking approach — see complete_autopilot().
+ * end the course in a docking approach, see complete_autopilot().
  */
 /obj/structure/overmap/ship/proc/engage_autopilot(dest_x, dest_y, label, mob/user, obj/structure/overmap/dock_target = null)
 	if(state != OVERMAP_SHIP_FLYING)
@@ -448,8 +448,8 @@
 	autopilot_steer()
 	push_helm_frame()
 	if(dock_target)
-		return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"] — [length(course)] tiles, ending in a docking approach."
-	return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"] — [length(course)] tiles."
+		return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles, ending in a docking approach."
+	return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles."
 
 /**
  * Ends the current course. `reason` is shown to the crew and left on the helm;
@@ -485,7 +485,7 @@
 		return
 	disengage_autopilot(reason)
 
-/// Course flown. Unlike an interrupt this does bring the ship to rest — arriving
+/// Course flown. Unlike an interrupt this does bring the ship to rest, arriving
 /// is the one case where stopping is the whole point. A course carrying a dock
 /// target then hands it straight to the ship_act() docking path (see the header).
 /obj/structure/overmap/ship/proc/complete_autopilot()
@@ -500,14 +500,14 @@
 	// Compared against the target's LIVE position rather than close_overmap_objects,
 	// which is maintained by enter/exit signals and need not have caught up with the
 	// forceMove that just landed us here. The target validated at engage time can
-	// also be gone or moved by now — then this is just an arrival like any other.
+	// also be gone or moved by now. Then this is just an arrival like any other.
 	var/obj/structure/overmap/dock_target = autopilot_dock_ref?.resolve()
 	var/mob/pilot = autopilot_user_ref?.resolve()
 	autopilot_dock_ref = null
 	autopilot_user_ref = null
 	if(dock_target && !QDELETED(dock_target) && dock_target.x == x && dock_target.y == y)
 		if(ship_team)
-			ship_notify("Autopilot: arrived at [autopilot_label || "the plotted position"] — commencing docking approach.", "AUTOPILOT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+			ship_notify("Autopilot: arrived at [autopilot_label || "the plotted position"], commencing docking approach.", "AUTOPILOT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		// We just stopped, so overmap_object_act()'s stillness gate passes; it
 		// INVOKE_ASYNCs ship_act, and this runs from a timer, so nothing sleeps here.
 		overmap_object_act(pilot, dock_target)
@@ -551,7 +551,7 @@
  *
  * This is the part that makes course-following work at speed. `tick_move()` steps
  * the ship by `SIGN(speed[1])` and `SIGN(speed[2])`, so the direction of travel is
- * decided purely by the SIGNS of the velocity vector — magnitude only sets how
+ * decided purely by the SIGNS of the velocity vector. Magnitude only sets how
  * often a tile is crossed. A hair of leftover speed on the wrong axis therefore
  * doesn't nudge the ship slightly off course, it sends it diagonally, every tick,
  * until it's cancelled.
@@ -560,7 +560,7 @@
  *
  * - An axis moving the WRONG way is zeroed outright with kill_drift(). Burning
  *   against it was the old approach and it relied on accelerate() clamping the
- *   burn to the speed left on that axis — which it does, right up until the axis
+ *   burn to the speed left on that axis, which it does, right up until the axis
  *   reaches zero, at which point the clamp stops applying and the same burn drives
  *   it out the other side. Writing the zero is the thing that was being simulated.
  * - An axis that needs speed ADDED is a burn like any other, with no clamp to
@@ -594,7 +594,7 @@
 		disengage_autopilot("concealment engaged")
 		return
 	// A zone crossing cuts the engines for its duration and clears the burn. Sit
-	// through it — the poll timer picks the course back up on the far side, which
+	// through it, the poll timer picks the course back up on the far side, which
 	// is the whole reason the poll runs independently of tile crossings.
 	if(zone_transitioning)
 		return
@@ -602,7 +602,7 @@
 		disengage_autopilot("no engine power")
 		return
 
-	// On the destination tile. Nothing to wind down — complete_autopilot() stops the
+	// On the destination tile. Nothing to wind down, complete_autopilot() stops the
 	// ship where it stands, which is why there is no braking approach further down.
 	if(x == autopilot_dest_x && y == autopilot_dest_y)
 		complete_autopilot()
@@ -635,13 +635,13 @@
 		autopilot_path = course
 		autopilot_last_plan = world.time
 		// If the fresh course STILL runs through something, that is the best route
-		// available — commit to it rather than re-planning every tile for the
+		// available, commit to it rather than re-planning every tile for the
 		// length of the trip.
 		autopilot_danger_committed = autopilot_course_has_danger(danger)
 
 	// Stopped, and the best route out of here still runs through a hazard. Flying
 	// into a storm is not a decision the autopilot gets to make on the crew's
-	// behalf — hand the ship back where it is, safely at rest.
+	// behalf, hand the ship back where it is, safely at rest.
 	if(autopilot_danger_committed && is_still())
 		disengage_autopilot("hazard blocking the only route")
 		return
@@ -670,7 +670,7 @@
 		if(burn_direction != burn)
 			change_heading(burn)
 		// A burn keeps thrusting until something stops it, and nothing else looks
-		// again until the next tile crossing — which at low speed is many seconds
+		// again until the next tile crossing, which at low speed is many seconds
 		// away, long enough to blow well past the ceiling. Look again next thrust tick.
 		schedule_autopilot_poll(AUTOPILOT_BURN_POLL)
 		return
@@ -692,7 +692,7 @@
  * territory this ship has actually looked at.
  *
  * Sight is four tiles and a hazard is only ever discovered at that edge, so the
- * entire warning a storm gives is the time it takes to cross four tiles — about
+ * entire warning a storm gives is the time it takes to cross four tiles, about
  * four seconds at full cruise. That is enough to sidestep a single tile, but not
  * to work around the face of a wide field, which is discovered a few tiles at a
  * time: each new tile of it arrives too late to be planned around and the ship
@@ -728,7 +728,7 @@
 
 	// Something dangerous on the next few steps re-plans NOW, ahead of any
 	// throttle. The view ring is four tiles and the ship crosses one a second at
-	// cruise, so the entire warning a storm ever gives is about four seconds —
+	// cruise, so the entire warning a storm ever gives is about four seconds,
 	// and cancelling the existing drift eats one of them. This check used to sit
 	// BELOW a two-second floor, which silently spent half that budget and flew
 	// the ship into the storm.
@@ -750,7 +750,7 @@
  *
  * Exactly one tile, and that is the whole check. Steering runs on every tile
  * crossing and stopping is instant, so the next tile is the only one the current
- * drift has actually committed the ship to — everything past it can still be
+ * drift has actually committed the ship to. Everything past it can still be
  * steered or stopped out of, and avoiding it is the planner's job (see
  * autopilot_course_has_danger, which looks a full six ahead).
  *
@@ -761,8 +761,8 @@
  * **This used to look further and it deadlocked the autopilot outright.** The probe
  * ran `max(2, stopping_distance + 2)` tiles along the velocity ray, which
  * straightened a course that curved around a storm into a line that ran through it:
- * the ship braked for the storm its own route was avoiding, came to rest — which
- * CLEARS this check — re-planned the same curve, burned off along it and tripped
+ * the ship braked for the storm its own route was avoiding, came to rest, which
+ * CLEARS this check, re-planned the same curve, burned off along it and tripped
  * the ray again a fifth of a second later, forever. Any lookahead longer than the
  * committed tile reintroduces that, because setting off down a detour always begins
  * by pointing at the thing being detoured around.

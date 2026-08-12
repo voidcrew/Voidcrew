@@ -1,12 +1,12 @@
 /**
- * Ritual: Bodysnatch — ship-scoped port of TG's Change Places! (code/modules/events/wizard/shuffle.dm).
+ * Ritual: Bodysnatch: ship-scoped port of TG's Change Places! (code/modules/events/wizard/shuffle.dm).
  *
  * Everyone aboard is picked up and put down somewhere else aboard, at random, at once.
  *
  * TG's shuffleloc gathers `/mob/living/carbon/human` out of GLOB.alive_mob_list, filters on
  * `is_station_level(H.z)` with the comment "lets not try to strand people in space", and
  * teleports each into another victim's `loc`. In this fork that filter passes for any
- * z-level a ship currently occupies, which means the shared transit level — a galaxy-wide
+ * z-level a ship currently occupies, which means the shared transit level, a galaxy-wide
  * shuffle that would swap crews between hulls, dump people into vacuum, and teleport
  * shoppers out of a trader outpost. That is not a scarier version of the event, it is a
  * different and much worse event.
@@ -23,7 +23,7 @@
  *   shuttle that starts moving mid-shuffle would otherwise scatter the rest of the crew onto
  *   whatever now sits at those coordinates.
  * - The two sibling controls in TG's file are NOT ported. Change Faces (shuffle real_names)
- *   is a Face/Off gag with no necromantic reading, and Change Minds is mass mindswap — a
+ *   is a Face/Off gag with no necromantic reading, and Change Minds is mass mindswap, a
  *   round-warping effect that would collide badly with track C's thrall mechanic, and that
  *   sticks to a player in a way the roster no longer allows (see lich_events.dm).
  *

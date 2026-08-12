@@ -5,7 +5,7 @@
  * via SSovermap_zones, retrying on a timer while the containing level may
  * still be registering (planet mapzones attach only after their template
  * load returns). Fires the callback exactly once with the resolved zone
- * type, or null if every attempt failed — the consumer picks its own
+ * type, or null if every attempt failed. The consumer picks its own
  * fallback (both current consumers fall back to ZONE_GREEN, the weakest
  * table, so a broken resolution can never inflate a payout).
  *

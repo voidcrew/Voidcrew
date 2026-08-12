@@ -1,11 +1,11 @@
 /**
- * # Occult uniques — the reliquary casket
+ * # Occult uniques: the reliquary casket
  *
  * The six named prizes for `loot_uniques` on /datum/loot_theme/occult
  * (see `voidcrew/modules/loot/zone_loot.dm`). Each item subtypes an existing
  * item for its behavior; the candle, gloves and crook carry custom sprites in
  * `voidcrew/modules/loot/icons/uniques.dmi` (plus a worn glove state in
- * `uniques_worn.dmi`), and the rest inherit their donor's sprite — see the
+ * `uniques_worn.dmi`), and the rest inherit their donor's sprite (see the)
  * per-item comment for which, and for any flavor liberties taken.
  *
  * Every unique in this file carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm)
@@ -40,7 +40,7 @@
 #define CROOK_TAME_COOLDOWN (5 SECONDS)
 
 // =========================================================================
-// GREEN — Widow's candle
+// GREEN: Widow's candle
 // Subtypes /obj/item/flashlight/flare/candle (code/game/objects/items/devices/flashlight.dm)
 // for its fuel/wax-level/ignition behavior. Custom sprites live in
 // uniques.dmi as widow_candle1/2/3 plus a lit (3-frame flicker) state for
@@ -53,7 +53,7 @@
  * client, the game offers them one tgui_input_text prompt (30s timeout) to
  * speak through the flame. Whatever they type (if anything) is broadcast as
  * an audible_message from the candle, then the candle gutters out. One offer
- * per candle — if the ghost doesn't answer or isn't there, the candle stays
+ * per candle, if the ghost doesn't answer or isn't there, the candle stays
  * an ordinary candle from then on.
  */
 /obj/item/flashlight/flare/candle/widows
@@ -118,7 +118,7 @@
 		turn_off()
 
 // =========================================================================
-// GREEN — Pallbearer's gloves
+// GREEN: Pallbearer's gloves
 // Subtypes /obj/item/clothing/gloves/color/black (code/modules/clothing/gloves/color.dm)
 // for its protection values; icon/worn_icon are custom states in uniques.dmi
 // and uniques_worn.dmi. The parent's greyscale setup only feeds the inhand
@@ -128,7 +128,7 @@
 /**
  * While worn: dragging or carrying anything doesn't slow the wearer down
  * (negates the game's normal "dragging a limp body" slowdown, not just for
- * corpses specifically — the gloves don't discriminate), and any corpse the
+ * corpses specifically, the gloves don't discriminate), and any corpse the
  * wearer is dragging or fireman-carrying is held out of decay until they let
  * go of it.
  *
@@ -154,12 +154,12 @@
 	worn_icon_state = "pallbearer_gloves"
 	/// The wearer's own slowed_by_drag value, saved so we can restore it exactly on removal
 	var/restore_slowed_by_drag = TRUE
-	/// Whether we're actually worn on the hands and negating drag right now —
+	/// Whether we're actually worn on the hands and negating drag right now,
 	/// dropped() fires for hand-drops too, and must not "restore" anything then
 	var/drag_negated = FALSE
 	/// Who's wearing us on their hands, if anyone
 	var/mob/living/current_wearer
-	/// Every mob the wearer is currently dragging or carrying, dead or alive — we hold death/revive/deletion hooks on all of them
+	/// Every mob the wearer is currently dragging or carrying, dead or alive. We hold death/revive/deletion hooks on all of them
 	var/list/mob/living/watched = list()
 	/// The subset of watched that is dead and currently held out of decay
 	var/list/mob/living/preserved = list()
@@ -183,7 +183,7 @@
 	user.slowed_by_drag = FALSE
 	user.update_pull_movespeed()
 	// /mob/living/start_pulling doesn't call its /atom/movable parent, so
-	// COMSIG_ATOM_START_PULL never fires for a person pulling something —
+	// COMSIG_ATOM_START_PULL never fires for a person pulling something,
 	// COMSIG_LIVING_START_PULL is the one that does (code/modules/mob/living/living.dm).
 	// The buckle pair covers fireman carries.
 	RegisterSignals(user, list(
@@ -249,7 +249,7 @@
 	for(var/mob/living/held as anything in watched.Copy())
 		unwatch(held)
 
-/// Someone we're carrying just died or came back — recheck whether they should be preserved
+/// Someone we're carrying just died or came back. Recheck whether they should be preserved
 /obj/item/clothing/gloves/color/black/pallbearer/proc/on_held_state_changed(mob/living/source)
 	SIGNAL_HANDLER
 	refresh_pallbearing()
@@ -282,18 +282,18 @@
 	decay?.start_up(PALLBEARER_ROT_BLOCKER)
 
 // =========================================================================
-// YELLOW — Censer of the Quiet Parish
+// YELLOW: Censer of the Quiet Parish
 // Subtypes /obj/item/flashlight/lantern (code/game/objects/items/devices/flashlight.dm)
 // for icon/icon_state/toggle behavior. Sprite deviation: it's a mining
-// lantern, not a censer — see report for the acknowledged mismatch.
+// lantern, not a censer, see report for the acknowledged mismatch.
 // =========================================================================
 
 /**
  * While lit and worn on the belt: every non-megafauna hostile
  * /mob/living/basic fauna within CENSER_SCAN_RANGE has the wearer's ref
  * added to its own faction list (the same mechanism befriend()/lightgeist
- * use to make a specific mob stop treating a specific target as hostile —
- * see faction_check_atom, code/game/atoms_movable.dm), so it stops
+ * use to make a specific mob stop treating a specific target as hostile.
+ * See faction_check_atom, code/game/atoms_movable.dm), so it stops
  * initiating attacks on the wearer specifically. It re-scans every process
  * tick, so the truce follows whoever's actually nearby rather than being
  * permanent.
@@ -303,7 +303,7 @@
  * the censer won't grant new peace for 5 minutes.
  *
  * Scope note: peace is scoped to /mob/living/basic (this fork's planet
- * fauna) and explicitly excludes ismegafauna() — a censer talking down a
+ * fauna) and explicitly excludes ismegafauna(), a censer talking down a
  * megafauna boss felt like the wrong power level even though the doc didn't
  * name that exclusion for this item specifically.
  */
@@ -346,7 +346,7 @@
 /// Figures out whether we should currently be keeping the peace (lit + on a belt) and starts/stops accordingly
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/refresh_state()
 	// Destroy's unequip chain fires dropped() while the wearer still reads as
-	// holding us belted+lit — without this guard the dying censer restarts itself
+	// holding us belted+lit, without this guard the dying censer restarts itself
 	if(QDELETED(src))
 		return
 	var/mob/living/wearer = ismob(loc) ? loc : null
@@ -359,8 +359,8 @@
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/start_incense(mob/living/wearer)
 	censer_active = TRUE
 	current_wearer = wearer
-	// COMSIG_MOB_ATTACK_HAND only fires human-vs-human (species attack_hand) —
-	// it never fires for punching a basic-mob beast. LIVING_UNARMED_ATTACK
+	// COMSIG_MOB_ATTACK_HAND only fires human-vs-human (species attack_hand).
+	// It never fires for punching a basic-mob beast. LIVING_UNARMED_ATTACK
 	// fires on every empty-hand click regardless of target, gated below.
 	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_wearer_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_wearer_item_attack))
@@ -415,7 +415,7 @@
 	SIGNAL_HANDLER
 	peaceful_fauna -= source
 
-/// The wearer threw an unarmed strike — check if it broke the parish's patience.
+/// The wearer threw an unarmed strike. Check if it broke the parish's patience.
 /// Combat-mode gated so a help-intent pat on a peaceful beast doesn't count.
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/on_wearer_unarmed_attack(mob/living/source, atom/target, proximity, list/modifiers)
 	SIGNAL_HANDLER
@@ -423,7 +423,7 @@
 		return
 	check_patience_broken(target)
 
-/// The wearer hit something with a held item — same patience check
+/// The wearer hit something with a held item, same patience check
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/on_wearer_item_attack(mob/living/source, mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
 	check_patience_broken(target)
@@ -437,7 +437,7 @@
 		to_chat(current_wearer, span_warning("You swung first. The censer stops keeping the peace for a while."))
 
 // =========================================================================
-// YELLOW — Confessor's stole
+// YELLOW: Confessor's stole
 // Subtypes /obj/item/clothing/neck/scarf/purple (code/modules/clothing/neck/_neck.dm)
 // for icon/icon_state/greyscale config; color re-tuned toward "gone gray"
 // via the same greyscale system (not a new sprite).
@@ -445,7 +445,7 @@
 
 /**
  * While worn: whoever the wearer is pulling gets TRAIT_PACIFISM for as long
- * as the pull lasts — they can't attack anyone, but they can still talk, walk
+ * as the pull lasts. They can't attack anyone, but they can still talk, walk
  * out of the pull, and resist out of a grab. Letting go (or the wearer taking
  * the stole off) lifts it immediately.
  *
@@ -485,7 +485,7 @@
 	UnregisterSignal(user, list(COMSIG_LIVING_START_PULL, COMSIG_ATOM_NO_LONGER_PULLING))
 	release_confession()
 
-/// The wearer started pulling something — any pull counts, passive included
+/// The wearer started pulling something: any pull counts, passive included
 /obj/item/clothing/neck/scarf/purple/confessor_stole/proc/on_wearer_pull(mob/living/wearer, atom/movable/pulled_atom, state, force)
 	SIGNAL_HANDLER
 	if(!isliving(pulled_atom))
@@ -520,11 +520,11 @@
 	confessed = null
 
 // =========================================================================
-// RED — The Vow (pair)
+// RED: The Vow (pair)
 // Subtypes /obj/item/clothing/neck/beads (code/modules/clothing/neck/_neck.dm).
 // Sprite/slot deviation: this codebase has no ring inventory slot, so the
 // pair is reflavored as two iron rings threaded on a cord and worn at the
-// throat rather than the finger — see report.
+// throat rather than the finger, see report.
 // =========================================================================
 
 /**
@@ -534,14 +534,14 @@
  * goes on both rings, and clicking your ring afterward instead pulls a
  * capped amount of your partner's current brute/burn damage onto yourself
  * (cooldown-gated). Examining your own ring while bonded gives you a
- * direction/distance/health readout on your partner. The bond — and
- * TRAIT_NODROP — ends the moment either wearer dies (the funeral clause),
+ * direction/distance/health readout on your partner. The bond, and
+ * TRAIT_NODROP: ends the moment either wearer dies (the funeral clause),
  * or if either wearer clicks their ring's secondary action to let go
  * (consent, from the only side that can actually act on it while both rings
  * are nodrop-locked).
  *
  * Scope note: "two willing wearers speak the vow" is simplified to "either
- * wearer speaks it once both rings are actually being worn" — a full
+ * wearer speaks it once both rings are actually being worn", a full
  * two-party handshake (both must separately confirm) would need extra
  * state and messaging beyond what the doc's balance knobs call for.
  */
@@ -564,7 +564,7 @@
 	worn_icon_state = "vow_ring"
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5)
 	// attack_self is unreachable for a worn (and, once vowed, NODROP-locked)
-	// neck item — the action buttons are the only reliable activation path
+	// neck item, the action buttons are the only reliable activation path
 	actions_types = list(/datum/action/item_action/vow_hold, /datum/action/item_action/vow_release)
 	/// Weakref to our other half
 	var/datum/weakref/partner_ref
@@ -700,7 +700,7 @@
 	user.visible_message(span_notice("[user] flinches as [other]'s injuries open up on [user.p_their()] own body."))
 	to_chat(other, span_notice("Your wounds close up. [user] is carrying them now."))
 
-/// Funeral clause — either wearer dying ends the bond
+/// Funeral clause: either wearer dying ends the bond
 /obj/item/clothing/neck/beads/vow_ring/proc/on_wearer_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	end_vow()
@@ -716,7 +716,7 @@
 		partner.vow_spoken = FALSE
 
 // =========================================================================
-// RED — Shepherd's crook
+// RED: Shepherd's crook
 // Subtypes /obj/item/cane (code/game/objects/items/weaponry.dm) for its
 // weight class, force and inhand states; the item sprite is a custom state in
 // uniques.dmi. It's a WEIGHT_CLASS_SMALL cane, not an oversized two-hander,
@@ -727,11 +727,11 @@
  * A firm tap (melee hit) on a non-megafauna hostile /mob/living/basic beast
  * tames it instead of damaging it: befriend() + a full faction copy from the
  * wearer (the same trick this fork's own tamed goliaths and wolves use to
- * stop attacking their tamer — code/modules/mob/living/basic/lavaland/goliath/goliath.dm,
+ * stop attacking their tamer, code/modules/mob/living/basic/lavaland/goliath/goliath.dm,
  * code/modules/mob/living/basic/icemoon/wolf/wolf.dm), plus the standard
  * obeys_commands component (follow + protect owner) if the beast has an
- * ai_controller. Megafauna — both /mob/living/simple_animal/hostile/megafauna
- * and this fork's /mob/living/basic/boss tier, per the ismegafauna() macro —
+ * ai_controller. Megafauna, both /mob/living/simple_animal/hostile/megafauna
+ * and this fork's /mob/living/basic/boss tier, per the ismegafauna() macro,
  * decline the tap outright: no taming, no damage, just a refusal.
  *
  * CROOK_MAX_FLOCK beasts at once, CROOK_TAME_COOLDOWN between taps. A full
@@ -790,7 +790,7 @@
 		return TRUE
 	return ..()
 
-/// Returns TRUE if we handled the swing ourselves (taming attempt, success or not) — FALSE means "hit it normally"
+/// Returns TRUE if we handled the swing ourselves (taming attempt, success or not), FALSE means "hit it normally"
 /obj/item/cane/shepherds_crook/proc/try_tame(mob/living/target_mob, mob/living/user)
 	if(!isliving(target_mob))
 		return FALSE
@@ -808,7 +808,7 @@
 		balloon_alert(user, "already follows you")
 		return TRUE
 	if(beast.faction_check_atom(user))
-		// Already friendly to us (someone else's pet, neutral critter, etc) — let a normal hit happen instead of pretending to tame it.
+		// Already friendly to us (someone else's pet, neutral critter, etc). Let a normal hit happen instead of pretending to tame it.
 		return FALSE
 	if(length(flock) >= CROOK_MAX_FLOCK)
 		balloon_alert(user, "flock full ([length(flock)]/[CROOK_MAX_FLOCK])")

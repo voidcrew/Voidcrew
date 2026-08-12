@@ -2,7 +2,7 @@
  * Laser carbine -- yellow/mid-tier blueprint gun, the first energy schematic.
  *
  * Energy weapons skip the ammo node entirely: the cell recharges at any
- * recharger, which is the point of the carbine — sustained cheap fire, low
+ * recharger, which is the point of the carbine. Sustained cheap fire, low
  * per-shot punch. Part node sits mid-depth (prereq Riot Suppression, tier 3).
  */
 

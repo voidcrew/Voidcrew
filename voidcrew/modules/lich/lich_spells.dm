@@ -1,15 +1,15 @@
 /**
- * # The Verdigris — codices
+ * # The Verdigris: codices
  *
  * Three spells in Ilthuun's own hand, granted by three books that drop with the
  * rest of the hoard (see lich_loot.dm). One per school he fought you in, which
  * is the taxonomy his fight uses, not DM's: `SCHOOL_*` has conjuration and
  * evocation but no illusion, so all three are filed under SCHOOL_NECROMANCY
- * below. That is the honest classification — every one of them is a lich's work
- * — and it has the correct side effect of getting the caster smitten by an
+ * below. That is the honest classification. Every one of them is a lich's work.
+ * And it has the correct side effect of getting the caster smitten by an
  * honorbound god's chaplain, which is very funny and entirely deserved.
  *
- * ## Upstream coupling — verified, per spell
+ * ## Upstream coupling: verified, per spell
  *
  * The base spell cast chain (code/modules/spells/spell.dm) has no antag checks
  * and no resource costs. Garb is demanded in exactly one place,
@@ -25,7 +25,7 @@
  *  - `/datum/action/cooldown/spell/pointed` (spell_types/pointed/_pointed.dm:10)
  *    and `/datum/action/cooldown/spell/pointed/projectile` (:102) likewise set
  *    no `spell_requirements`. Note that upstream *fireball* is castable by a
- *    plain human only because fireball.dm:15 overrides it itself — the pointed
+ *    plain human only because fireball.dm:15 overrides it itself, the pointed
  *    parents give you nothing. RELAXED below.
  *  - `/datum/action/cooldown/spell` used directly for the mirage: base default,
  *    garb-locked. RELAXED below.
@@ -61,7 +61,7 @@
 /// How many mirages a single casting throws
 #define VERDIGRIS_MIRAGE_COUNT 3
 /// Brute the burst of a popped mirage costs whoever popped it. Quoted verbatim in
-/// the spell's `desc` below, since a 25-brute punish has to be advertised — keep
+/// the spell's `desc` below, since a 25-brute punish has to be advertised, keep
 /// the two in step if this ever moves.
 #define VERDIGRIS_MIRAGE_STING 25
 /// How far out a casting pulls hunters off the caster and onto the copies
@@ -74,7 +74,7 @@
 #define VERDIGRIS_BOLT_MEND 25
 
 // =========================================================================
-// CONJURATION — Raise Thrall
+// CONJURATION: Raise Thrall
 // =========================================================================
 
 /**
@@ -85,8 +85,8 @@
  * for its live-count bookkeeping: `post_summon()` registers COMSIG_QDELETING and
  * COMSIG_LIVING_DEATH on each summon and decrements on either (_conjure.dm:85),
  * so the cap is honest whether a thrall is killed or simply times out. The
- * timeout itself is the conjure base's `summon_lifespan` QDEL_IN (_conjure.dm:62)
- * — nothing here has to run a timer.
+ * timeout itself is the conjure base's `summon_lifespan` QDEL_IN (_conjure.dm:62).
+ * Nothing here has to run a timer.
  *
  * `limit_summons/can_cast_spell()` returns FALSE at the cap with no feedback at
  * all, which reads as a broken button; the override below says so out loud
@@ -102,7 +102,7 @@
 	cooldown_time = 30 SECONDS
 	invocation = "RISE. BE USEFUL. BE BRIEF."
 	invocation_type = INVOCATION_SHOUT
-	// Relaxed from the conjure chain's inherited garb lock — see the file header.
+	// Relaxed from the conjure chain's inherited garb lock, see the file header.
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	spell_max_level = 1
 
@@ -135,7 +135,7 @@
  * Ordering note: the component goes on BEFORE `befriend()` on purpose.
  * `follow/start_active` only activates itself from `add_new_friend()`
  * (pet_commands_basic.dm:64), which is reached from the COMSIG_LIVING_BEFRIENDED
- * handler the component registers — so a thrall befriended before it can obey
+ * handler the component registers, so a thrall befriended before it can obey
  * would come up with no standing order and just stand there.
  */
 /datum/action/cooldown/spell/conjure/limit_summons/raise_thrall/post_summon(atom/summoned_object, atom/cast_on)
@@ -161,7 +161,7 @@
 	// (code/modules/mob/living/living.dm:13), so the copy carries REF(owner) and
 	// `faction_check_atom` returns TRUE for that pair and for nobody else. The bare
 	// Copy() would drop the thrall's own REF along with FACTION_SKELETON, so put it
-	// back — anything that befriends the thrall later needs it to resolve.
+	// back, anything that befriends the thrall later needs it to resolve.
 	thrall.faction = owner.faction.Copy()
 	thrall.faction |= REF(thrall)
 	thrall.befriend(owner)
@@ -190,9 +190,9 @@
  * It is the stock skeleton controller (skeleton.dm:163) with two differences:
  *
  *  - `/datum/ai_planning_subtree/pet_planning` is present. Pet commands are run
- *    from nowhere else in the codebase — `pet_planning/SelectBehaviors()` reads
+ *    from nowhere else in the codebase, `pet_planning/SelectBehaviors()` reads
  *    BB_ACTIVE_PET_COMMAND and delegates to the command datum
- *    (code/datums/ai/basic_mobs/pet_commands/pet_command_planning.dm:10) — so on
+ *    (code/datums/ai/basic_mobs/pet_commands/pet_command_planning.dm:10), so on
  *    the stock skeleton controller the `obeys_commands` component above was inert
  *    and every order handed to a thrall, including its standing follow order, was
  *    silently dropped on the floor.
@@ -200,16 +200,16 @@
  *    puts it second, wolf_ai.dm:24). `follow/execute_action` returns
  *    SUBTREE_RETURN_FINISH_PLANNING (pet_commands_basic.dm:62), so first place
  *    would mean a thrall that heels beautifully and never swings at anything.
- *    Running find-target and melee first costs nothing when there is no enemy —
+ *    Running find-target and melee first costs nothing when there is no enemy,
  *    `basic_melee_attack_subtree` only finishes planning when a target actually
- *    exists (simple_attack_target.dm:9-13) — so planning falls through to `follow`
+ *    exists (simple_attack_target.dm:9-13), so planning falls through to `follow`
  *    exactly when the thrall has nothing better to do. Fight if there is something
  *    to fight, keep up otherwise.
  *
  * BB_PET_TARGETING_STRATEGY is not optional: `protect_owner/execute_action`
  * resolves it and immediately calls `can_attack()` on the result without a null
  * check (pet_commands_basic.dm:280), so leaving it unset runtimes the first time
- * something hits the caster. `find_food` is dropped from the stock list — a
+ * something hits the caster. `find_food` is dropped from the stock list, a
  * 45-second minion breaking off to look for milk is not a feature.
  */
 /datum/ai_controller/basic_controller/verdigris_thrall
@@ -237,7 +237,7 @@
 	. += span_green("It won't last long. Parts of it are already going transparent.")
 
 // =========================================================================
-// DESTRUCTION — Verdigris Bolt
+// DESTRUCTION: Verdigris Bolt
 // =========================================================================
 
 /**
@@ -252,7 +252,7 @@
 	name = "Verdigris Bolt"
 	desc = "Fires a bolt of grave-light at one target. Deals 25 burn and 20 toxin to the living. The undead take no damage from it and are healed 25 instead."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
-	// Existing states only — actions_spells.dmi has no green/necro bolt button,
+	// Existing states only: actions_spells.dmi has no green/necro bolt button,
 	// and asking track F for one for a rarely-seen button isn't worth the sprite.
 	button_icon_state = "arcane_barrage"
 	sound = 'sound/effects/magic/magic_missile.ogg'
@@ -260,7 +260,7 @@
 	cooldown_time = 7 SECONDS
 	invocation = "VERDE MORI!"
 	invocation_type = INVOCATION_SHOUT
-	// Relaxed from the pointed/projectile chain's inherited garb lock — see the
+	// Relaxed from the pointed/projectile chain's inherited garb lock (see the)
 	// file header. (Upstream fireball only escapes it by overriding this itself.)
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	spell_max_level = 1
@@ -272,13 +272,13 @@
 
 /**
  * Inherits `/obj/projectile/magic`'s antimagic handling wholesale
- * (magic.dm:13 — a target that `can_block_magic()` makes the bolt fizzle before
+ * (magic.dm:13, a target that `can_block_magic()` makes the bolt fizzle before
  * it ever hits, from `prehit_pierce()`), and gets its `antimagic_flags` written by
  * the spell's `ready_projectile()`.
  *
  * Sprite note: borrows the existing "necropotence" projectile state and recolors
  * it green, rather than asking track F for a projectile sprite. No behaviour is
- * inherited from `/obj/projectile/magic/necropotence` — that one's soul-tap is
+ * inherited from `/obj/projectile/magic/necropotence`, that one's soul-tap is
  * deliberately not here.
  */
 /obj/projectile/magic/verdigris_bolt
@@ -297,8 +297,8 @@
  * The undead branch has to zero `damage` BEFORE the parent call, and the reason is
  * a piece of upstream ordering that is easy to get backwards. Verified chain:
  *
- *  1. `process_hit_loop()` calls `prehit_pierce()` — where `/obj/projectile/magic`
- *     does its antimagic fizzle — and only afterwards calls
+ *  1. `process_hit_loop()` calls `prehit_pierce()`: where `/obj/projectile/magic`
+ *     does its antimagic fizzle, and only afterwards calls
  *     `target.projectile_hit()` (code/modules/projectiles/projectile.dm:532-560).
  *  2. `/atom/bullet_act()` calls `on_hit()` and RETURNS its result
  *     (code/game/atom/atom_act.dm:116). Nothing has been damaged yet.
@@ -307,14 +307,14 @@
  *     (code/modules/mob/living/living_defense.dm:94-132).
  *
  * So the old comment here was wrong: the bolt's 25 BURN had not landed by the time
- * `on_hit` ran, it landed immediately after — which is why the old heal-then-get-hit
+ * `on_hit` ran, it landed immediately after, which is why the old heal-then-get-hit
  * ordering netted out to roughly zero on a healthy thrall and read to the caster as
  * a plain hit. Zeroing `damage` first suppresses the hit outright, and
  * `is_hostile_projectile()` (projectile.dm:1355) then reads FALSE, which skips the
  * damage and the stun/knockdown effects in the same breath.
  *
  * Antimagic is untouched by this: it resolves in `prehit_pierce()`, two steps
- * earlier, and never looks at `damage`. Pierce is untouched too — this bolt sets no
+ * earlier, and never looks at `damage`. Pierce is untouched too. This bolt sets no
  * `projectile_piercing` and no `max_pierces`, so it hits exactly one thing and is
  * deleted, and the zeroed instance is never reused.
  */
@@ -345,7 +345,7 @@
  * `/mob/living/basic` keeps ONE pool: its `adjustBruteLoss` and `adjustFireLoss`
  * both funnel into `adjust_health()`, which reads and writes the same `bruteloss`
  * var (code/modules/mob/living/basic/health_adjustment.dm:10-40). Healing brute
- * *and* burn on a skeleton — or on one of our own thralls — would therefore quietly
+ * *and* burn on a skeleton (or on one of our own thralls) would therefore quietly
  * mend twice the advertised amount. Carbons really do split the two, so they get
  * half each and the total is the same either way.
  *
@@ -366,7 +366,7 @@
 	)
 
 // =========================================================================
-// ILLUSION — Grave Mirage
+// ILLUSION: Grave Mirage
 // =========================================================================
 
 /**
@@ -402,7 +402,7 @@
 	cooldown_time = 45 SECONDS
 	invocation = "which of us is the corpse."
 	invocation_type = INVOCATION_WHISPER
-	// Relaxed from the base spell default — see the file header.
+	// Relaxed from the base spell default, see the file header.
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	spell_max_level = 1
 	/// The mirages currently standing, so they can be swept on Remove/Destroy
@@ -464,7 +464,7 @@
  *
  *  - Modern `/mob/living/basic` mobs keep their victim on the AI blackboard, and the
  *    established way to move one from outside is
- *    `ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, thing)` — the
+ *    `ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, thing)`: the
  *    same call the vestige ruins use to steer their own garrisons
  *    (voidcrew/modules/antag_ruins/theme_dragon.dm:403, theme_spider.dm:630).
  *    Crucially the retarget STICKS rather than being overwritten on the next
@@ -481,7 +481,7 @@
  *    LosePatience/GainPatience/Aggro bookkeeping the var alone would skip
  *    (hostile.dm:303).
  *
- * Anything with no ai_controller and no legacy target var — a player, a bot — is
+ * Anything with no ai_controller and no legacy target var (a player, a bot) is
  * left entirely alone. This never touches who a mob is allowed to attack, only who
  * it currently is attacking, so it cannot make something hostile that was not.
  */
@@ -526,11 +526,11 @@
 	UnregisterSignal(source, list(COMSIG_QDELETING, COMSIG_LIVING_DEATH))
 
 /**
- * A copy of whoever cast it, in green, with one hit point and no tell — see
+ * A copy of whoever cast it, in green, with one hit point and no tell, see
  * `wear_the_face()` for why these are fully opaque, and `on_attacked()` for the
  * cost of finding out which one is which the hard way.
  *
- * Appearance is taken by assigning the caster's `appearance` wholesale — the
+ * Appearance is taken by assigning the caster's `appearance` wholesale, the
  * same one-liner `/obj/effect/temp_visual/decoy` uses
  * (code/game/objects/effects/temporary_visuals/miscellaneous.dm:239), which
  * brings across icon, icon_state, dir and every worn overlay in one go. Note the
@@ -539,7 +539,7 @@
  * fallback path where no original was passed.
  *
  * Examining one pops it (the paper wizard's copy does the same,
- * paper_wizard.dm:133) — except for observers, and except for the caster, who
+ * paper_wizard.dm:133), except for observers, and except for the caster, who
  * should not be able to destroy their own cover by looking at it.
  */
 /mob/living/basic/verdigris_mirage
@@ -586,7 +586,7 @@
 	appearance = original.appearance
 	setDir(original.dir)
 	// Fully opaque, and forced rather than inherited. These used to run at alpha 190,
-	// which meant the one solid figure in the group was always the real caster — the
+	// which meant the one solid figure in the group was always the real caster, the
 	// tell gave the whole spell away. Assigning `appearance` above would also drag
 	// across the caster's own alpha, so it is pinned here after the copy.
 	alpha = 255
@@ -596,7 +596,7 @@
 /mob/living/basic/verdigris_mirage/examine(mob/user)
 	. = ..()
 	if(isobserver(user) || user == original_ref?.resolve())
-		. += span_notice("It's a mirage — grave-light in the shape of somebody who is standing somewhere else.")
+		. += span_notice("It's a mirage. Grave-light in the shape of somebody who is standing somewhere else.")
 		return
 	. += span_notice("It's a mirage.")
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
@@ -607,8 +607,8 @@
  * VERDIGRIS_MIRAGE_STING brute to whoever swung.
  *
  * Once per copy, guaranteed, and not by relying on the 1 HP to kill us. A swing
- * that lands COMSIG_ATOM_WAS_ATTACKED without dealing damage — a zero-force item, a
- * grab, an unarmed attack a mob's damage roll came up empty on — would leave the
+ * that lands COMSIG_ATOM_WAS_ATTACKED without dealing damage, a zero-force item, a
+ * grab, an unarmed attack a mob's damage roll came up empty on, would leave the
  * mirage standing and let the sting be collected again on the next click. At 10
  * brute that was a nuisance; at 25 it is a real punish, so it gets a real guard.
  * `stung` closes the door and the deferred qdel spends the copy either way.
@@ -618,8 +618,8 @@
  * reference to is how you get runtimes downstream of a perfectly good hit.
  *
  * The caster is exempt (they cannot cost themselves 25 brute by clearing their own
- * cover), and so are sibling mirages, which is belt-and-braces — they have 0 melee
- * damage and the `simple` controller does not fight — but cheap.
+ * cover), and so are sibling mirages, which is belt-and-braces. They have 0 melee
+ * damage and the `simple` controller does not fight, but cheap.
  */
 /mob/living/basic/verdigris_mirage/proc/on_attacked(mob/source, mob/living/attacker, attack_flags)
 	SIGNAL_HANDLER
@@ -688,7 +688,7 @@
 	action_name = "verdigris bolt"
 	remarks = list(
 		"Point. Say it. Don't hold it. Definitely don't hold it...",
-		"It says the bolt is 'polite to its own' — what does that mean...",
+		"It says the bolt is 'polite to its own'. What does that mean...",
 		"Oh. It means it heals skeletons. That's going to come up...",
 		"Why is the diagram of a hand labelled 'yours, afterward'...",
 		"'Rot is just slow work, and I have plenty of time.'",

@@ -12,13 +12,13 @@
 #define OVERMAP_SOUTH_SIDE_COORD (OVERMAP_NORTH_SIDE_COORD - (OVERMAP_SIZE - 1))
 
 /**
- * How far a ship can SEE, in overmap tiles — the free, unresearchable ring the
+ * How far a ship can SEE, in overmap tiles, the free, unresearchable ring the
  * old camera console rendered with view(SHIP_VIEW_RANGE). Everything physically
  * inside it draws on the helm chart with no research and no scanning.
  *
  * Deliberately distinct from the ship's SENSOR range (ship_sensors.dm), which
  * starts equal to this and grows with the radar research tree. Sensors do not
- * widen what the crew can see — they reach past sight, so a scan can chart
+ * widen what the crew can see. They reach past sight, so a scan can chart
  * things into the waypoint list that were never visible. Keep the two apart:
  * collapsing them makes the whole radar tree a spectator upgrade.
  */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Transporters — Voidcrew Wiki</title>
+<title>Transporters | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -105,7 +107,7 @@
 <tr>
 <td>Transporter Biofilter Matrix</td>
 <td>30,000</td>
-<td>—</td>
+<td>-</td>
 <td>Stops passengers taking damage in transit, cuts 20 seconds off the pad's recharge, and lets the console detect a sabotaged pad.</td>
 </tr>
 </tbody>
@@ -113,35 +115,35 @@
 <h2 id="building-it">Building it</h2>
 <p>Three pieces, all printed from an R&amp;D suite:</p>
 <ul>
-<li><strong>Transporter pad</strong> — the platform. Its board is expensive on its own, and assembling the machine also eats <strong>six bluespace crystals</strong> on top of the usual capacitors, servos, scanning module and matter bin.</li>
-<li><strong>Transporter control console</strong> — aims the pad and holds the research unlocks.</li>
-<li><strong>Site-to-ship transponder</strong> — a pocket-sized beacon, printed on a protolathe, that the crew carries down with them.</li>
+<li><strong>Transporter pad</strong>: the platform. Its board is expensive on its own, and assembling the machine also eats <strong>six bluespace crystals</strong> on top of the usual capacitors, servos, scanning module and matter bin.</li>
+<li><strong>Transporter control console</strong>: aims the pad and holds the research unlocks.</li>
+<li><strong>Site-to-ship transponder</strong>: a pocket-sized beacon, printed on a protolathe, that the crew carries down with them.</li>
 </ul>
 <p>A console adopts an unclaimed pad within a few tiles of it on its own, so a pad built next to a console just works. Otherwise save the pad to a <strong>multitool</strong> buffer and use the multitool on the console; the pad has to be on the same vessel.</p>
 <p>The console also needs a <strong>research uplink</strong>: multitool your ship's R&amp;D server, then the console. Without it the console behaves as if you have researched nothing.</p>
 <h2 id="getting-a-lock">Getting a lock</h2>
-<p>The transporter beams onto whatever your ship is <strong>sharing a tile with</strong> on the overmap — a planet, a space ruin, or a meteor field. You do not dock; you sit in orbit alongside it. Empty space is not a target.</p>
+<p>The transporter beams onto whatever your ship is <strong>sharing a tile with</strong> on the overmap, a planet, a space ruin, or a meteor field. You do not dock; you sit in orbit alongside it. Empty space is not a target.</p>
 <p>An orbital lock only holds while the ship is still. <strong>The moment the engines burn, the lock drops</strong> and anyone using the targeting scanner is thrown out of it. Park, then beam.</p>
 <h2 id="beaming-down">Beaming down</h2>
 <p>Everything standing on the pad goes. Walk on, have someone at the console press the button, and stay put.</p>
-<p>Without the targeting node the console picks the site: a random patch of open ground on the planet below. It will not choose a cave. It also only does this for planets — a ruin or a meteor field has no charted open ground to fall back on, so those need the targeting scanner.</p>
+<p>Without the targeting node the console picks the site: a random patch of open ground on the planet below. It will not choose a cave. It also only does this for planets. A ruin or a meteor field has no charted open ground to fall back on, so those need the targeting scanner.</p>
 <p>With the targeting node, <strong>Open scanner</strong> gives the operator a remote view of the surface and a crosshair that turns green on a legal tile and red on an illegal one. Set the pattern lock, close the scanner, and beam. A locked site can be under a roof or inside a structure; without the node, beams need open sky. Walking away from the console closes the scanner.</p>
 <h3 id="what-the-beam-does">What the beam does</h3>
-<p>A beam is a <strong>cycle</strong>, not an instant. A column of light comes down at both ends and stands there for the whole cycle — ten seconds on a stock pad, as low as four with the best servos. Only what is still standing in the column when the cycle ends actually moves.</p>
+<p>A beam is a <strong>cycle</strong>, not an instant. A column of light comes down at both ends and stands there for the whole cycle, ten seconds on a stock pad, as low as four with the best servos. Only what is still standing in the column when the cycle ends actually moves.</p>
 <p>That cuts both ways. Someone who steps clear of the light in time stays behind, unharmed. Someone who walks <em>into</em> a column at the destination end is standing where people are about to arrive. The arrival column is visible from a long way off under open sky, so the far end always gets warning.</p>
 <p>Anything you are dragging is not in the pattern buffer and does not come with you.</p>
 <p>If the pad loses power mid-cycle, it drops the pattern lock and nobody moves.</p>
 <h2 id="transponders">Transponders</h2>
 <p>A transponder is how the ship finds you again. Touch one to a pad to pair it, and that pad's console can see where it is and pull it home. At the console, each transponder in range is listed with who is carrying it, where they are, and whether that spot can take a beam.</p>
-<p>Squeeze it in your hand to <strong>request a beam-up</strong>. That works with nobody at the console, as long as the pad is powered, idle and off cooldown — if it isn't, the transponder buzzes the reason at you. It is not a teleporter of its own; all it does is talk to the pad.</p>
+<p>Squeeze it in your hand to <strong>request a beam-up</strong>. That works with nobody at the console, as long as the pad is powered, idle and off cooldown, if it isn't, the transponder buzzes the reason at you. It is not a teleporter of its own; all it does is talk to the pad.</p>
 <div class="admonition tip">
 <p class="admonition-title">Everyone going down carries one</p>
 <p>Without the targeting node, a transponder is the <em>only</em> way back up. Lose it, or wander into a roofed area, and the ship cannot find you.</p>
 </div>
-<p>Once the targeting node is researched the console can pull up whatever is standing on a locked tile — transponder or not, willing or not. Consider what that means when you land on a planet another crew is already on.</p>
+<p>Once the targeting node is researched the console can pull up whatever is standing on a locked tile, transponder or not, willing or not. Consider what that means when you land on a planet another crew is already on.</p>
 <h2 id="what-a-pattern-buffer-will-hold">What a pattern buffer will hold</h2>
 <p>A stock pad moves <strong>two</strong> things per cycle, going up by one for each tier of scanning module above the first. Living things are loaded first, so a pile of crates cannot crowd a person out of a small buffer.</p>
-<p>It will not move anchored objects, anyone strapped into a bolted chair, mechs, or megafauna — those are too big for a buffer at any tier.</p>
+<p>It will not move anchored objects, anyone strapped into a bolted chair, mechs, or megafauna. Those are too big for a buffer at any tier.</p>
 <h2 id="upgrading-the-pad">Upgrading the pad</h2>
 <table>
 <thead>
@@ -157,7 +159,7 @@
 </tr>
 <tr>
 <td>Servos</td>
-<td>Shorter beam cycle — down from ten seconds to four.</td>
+<td>Shorter beam cycle, down from ten seconds to four.</td>
 </tr>
 <tr>
 <td>Scanning module</td>
@@ -171,11 +173,11 @@
 </table>
 <p>A stock pad takes 100 seconds to recharge between cycles. Fully upgraded, plus the biofilter node, that floors at 25 seconds.</p>
 <h2 id="arriving-in-one-piece">Arriving in one piece</h2>
-<p>A cheap pad hurts. Until the biofilter matrix is researched, anyone riding a pad with undersized matter bins takes burn damage on arrival — the smaller the bin, the worse it is. Upgrading the bins reduces it; the biofilter node removes it entirely.</p>
+<p>A cheap pad hurts. Until the biofilter matrix is researched, anyone riding a pad with undersized matter bins takes burn damage on arrival. The smaller the bin, the worse it is. Upgrading the bins reduces it; the biofilter node removes it entirely.</p>
 <p>Examine a pad and it will tell you outright when its biofilter is undersized for its buffer.</p>
 <h2 id="sabotage">Sabotage</h2>
 <p>A transporter pad can be <strong>emagged</strong>, and this is the reason to care who has access to your machine room.</p>
-<p>An emagged pad shows nothing. No message, no icon change, no alarm — it looks and behaves exactly like a working pad right up until someone rides it. When they do, the interlocks that check an arriving pattern against the one that left are gone, and they rematerialise wrong: usually maimed and badly burned, sometimes not finishing at all.</p>
+<p>An emagged pad shows nothing. No message, no icon change, no alarm. It looks and behaves exactly like a working pad right up until someone rides it. When they do, the interlocks that check an arriving pattern against the one that left are gone, and they rematerialise wrong: usually maimed and badly burned, sometimes not finishing at all.</p>
 <div class="admonition danger">
 <p class="admonition-title">Only one thing detects it</p>
 <p>A console with the <strong>biofilter matrix</strong> researched reports pattern integrity as <em>corrupted</em>. Below that tier it reads <em>unknown</em> and a cut interlock is indistinguishable from a healthy pad. If you have people beaming down and back regularly, that node is a safety device, not a luxury.</p>

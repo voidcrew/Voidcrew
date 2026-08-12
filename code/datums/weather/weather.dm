@@ -2,7 +2,7 @@
 /// the number of turfs determined by turf_weather_chance and turf_thunder_chance
 /// increasing this too high can result in severe lag so please be careful
 #define MAX_TURFS_PER_TICK 500
-/// VOIDCREW EDIT: containers-only weathers just top up open containers/trays — they don't
+/// VOIDCREW EDIT: containers-only weathers just top up open containers/trays, they don't
 /// need 500 picks a second; six concurrent storms at that rate was >3000 turf picks/sec
 #define MAX_CONTAINER_ONLY_TURFS_PER_TICK 100
 
@@ -102,7 +102,7 @@
 	var/turf_weather_chance = 0.01
 	/// If TRUE, weather_act_turf() only tops up open reagent containers (and waters hydroponics trays when
 	/// the reagent is water) instead of running full reagent exposure + washing on every struck turf.
-	/// Planet-scale weathers pick hundreds of turfs per second — full exposure at that rate eats whole ticks.
+	/// Planet-scale weathers pick hundreds of turfs per second. Full exposure at that rate eats whole ticks.
 	var/turf_act_containers_only = FALSE
 	/// The chance, per tick, a turf will have a thunder strike applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this really low near 0.001 (results in 1 in 1000 affected turfs having thunder strikes applied per tick)

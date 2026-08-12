@@ -3,7 +3,7 @@
  *
  * Cyberware outlives the body it was wired into.
  *
- * Chrome is the most expensive thing a player owns — vouchers, a trip to the
+ * Chrome is the most expensive thing a player owns, vouchers, a trip to the
  * parlor, and a Chrome Cradle is the only thing that takes it back out again.
  * Every body-destroying death in the game, meanwhile, deletes organs outright:
  * tg's gib() only spills organs when the caller passes DROP_ORGANS and most
@@ -16,7 +16,7 @@
  * - dust(), before the body is queued for deletion
  * - a severed limb being destroyed with chrome still inside it
  *
- * Only chrome is rescued — meat organs keep tg's rules exactly, so gibbing
+ * Only chrome is rescued. Meat organs keep tg's rules exactly, so gibbing
  * still looks and loots the way it always did apart from the hardware.
  */
 
@@ -67,7 +67,7 @@
 
 /**
  * Dusting. The parent queues the body for deletion on a timer, which takes
- * the organs with it — so the chrome comes out before that starts. No scatter
+ * the organs with it, so the chrome comes out before that starts. No scatter
  * here: nothing exploded, the body just stopped being there.
  */
 /mob/living/carbon/dust(just_ash, drop_items, force)
@@ -79,8 +79,8 @@
  * contents, so an arm that burns up takes the blades in it along too.
  *
  * Ownerless limbs only. A limb still attached to a body is the two mob-level
- * paths' problem — they run well before anything gets around to deleting
- * bodyparts — and gating on that keeps this out of ordinary mob cleanup.
+ * paths' problem, they run well before anything gets around to deleting
+ * bodyparts, and gating on that keeps this out of ordinary mob cleanup.
  */
 /obj/item/bodypart/Destroy()
 	var/turf/drop_turf = owner ? null : get_turf(src)

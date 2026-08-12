@@ -87,7 +87,7 @@
 	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable/lit = 1)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(/obj/structure/statue/snow/snowman = 3, /obj/structure/statue/snow/snowlegion = 1)
-	// Open windswept flats are legion country — the snowmen aren't all statues.
+	// Open windswept flats are legion country. The snowmen aren't all statues.
 	mob_spawn_list = list(
 		/mob/living/basic/mining/wolf/random = 15,
 		/obj/structure/spawner/ice_moon = 3,

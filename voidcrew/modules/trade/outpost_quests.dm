@@ -1,17 +1,17 @@
 /**
- * # Outpost Contracts — the trader-authored quest archetypes
+ * # Outpost Contracts: the trader-authored quest archetypes
  *
  * The contract board's real content (outpost_missions.dm holds the board
  * machinery and the procurement/supply archetype). Everything here is
  * shop-authored: weight = 0 (never rolled by SSmissions), posted by an
  * outpost, and speaking in its trader's voice.
  *
- * - Salvage Order  — recovery contract on a ruin, trader flavor
- * - Kill Contract  — proof-of-kill on a named ruin target, trader flavor
- * - Courier Run    — haul a sealed freight pod to ANOTHER outpost; the pod
+ * - Salvage Order: recovery contract on a ruin, trader flavor
+ * - Kill Contract: proof-of-kill on a named ruin target, trader flavor
+ * - Courier Run: haul a sealed freight pod to ANOTHER outpost; the pod
  *   only unloads at its destination trader (piracy bait by design)
  *
- * Hard contracts can roll the shop's exclusive_rewards — items no shelf sells.
+ * Hard contracts can roll the shop's exclusive_rewards. Items no shelf sells.
  */
 
 // ===== SALVAGE ORDER (outpost-authored recovery) =====
@@ -27,7 +27,7 @@
 		return
 	author = shop.trader_name
 	..()
-	// Board contracts pay in goods, not money — the open market covers credits/vouchers
+	// Board contracts pay in goods, not money. The open market covers credits/vouchers
 	value = 0
 	value_min = 0
 	value_max = 0
@@ -40,7 +40,7 @@
 	name = "Salvage Order: [objective_name]"
 	desc = "[author] of [shop?.outpost_name || "the outpost"] is paying for the [objective_name] out at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
 		Deliver it to any outpost trader or your own mission pad. \
-		Pays in kit — [reward_name], no credits changing hands. \
+		Pays in kit, [reward_name], no credits changing hands. \
 		Tap a GPS unit on a mission board to receive the objective's beacon ([gps_tag])."
 
 /datum/mission/recovery/outpost/get_archetype()
@@ -59,7 +59,7 @@
 		return
 	author = shop.trader_name
 	..()
-	// Board contracts pay in goods, not money — the open market covers credits/vouchers
+	// Board contracts pay in goods, not money. The open market covers credits/vouchers
 	value = 0
 	value_min = 0
 	value_max = 0
@@ -70,9 +70,9 @@
 /datum/mission/recovery/kill/outpost/update_text()
 	var/reward_name = get_contract_pay_summary()
 	name = "Kill Contract: [objective_name]"
-	desc = "[author] of [shop?.outpost_name || "the outpost"] wants [objective_name] gone — holed up at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
+	desc = "[author] of [shop?.outpost_name || "the outpost"] wants [objective_name] gone, holed up at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
 		Bring the identification tag to any outpost trader or your own mission pad. \
-		Pays in goods — [reward_name], settled on delivery. \
+		Pays in goods, [reward_name], settled on delivery. \
 		Tap a GPS unit on a mission board for the target's transponder ([gps_tag])."
 
 /datum/mission/recovery/kill/outpost/get_archetype()
@@ -131,7 +131,7 @@
 	var/obj/structure/overmap/trader_outpost/destination = get_destination()
 	name = "Courier Run: [destination?.name || "lost destination"]"
 	desc = "[author] needs a sealed freight pod hauled to [destination?.name || "its destination"] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		The pod's seals only release at the destination's trader — and every pirate on the lane knows what a courier pod looks like. \
+		The pod's seals only release at the destination's trader, and every pirate on the lane knows what a courier pod looks like. \
 		Pays in kit on delivery: [reward_name]."
 
 /datum/mission/outpost_courier/waypoint_label()
@@ -139,7 +139,7 @@
 	return "Courier: [destination?.name || "lost destination"]"
 
 /datum/mission/outpost_courier/on_mission_started()
-	// The pod materializes at the posting trader's feet — you accepted in person
+	// The pod materializes at the posting trader's feet, you accepted in person
 	var/turf/pod_turf
 	if(shop?.outpost?.trader)
 		pod_turf = get_turf(shop.outpost.trader)
@@ -157,7 +157,7 @@
 	servant?.ship_notify("Freight pod handed over at [shop.outpost_name]. Deliver it to [destination?.name || "the destination"] ([target.target_x], [target.target_y]).", "COURIER RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /datum/mission/outpost_courier/handle_quest_loss(reason)
-	return ..("Freight pod destroyed — contract void.")
+	return ..("Freight pod destroyed, contract void.")
 
 /datum/mission/outpost_courier/can_turn_in_at(atom/reward_anchor)
 	if(!istype(reward_anchor, /mob/living/basic/outpost_trader))
@@ -219,7 +219,7 @@
  * # Sealed Freight Pod
  *
  * The courier cargo: too big for a bag, visibly a courier pod, and worth
- * goods to whoever delivers it — the mission doesn't care who's carrying.
+ * goods to whoever delivers it. The mission doesn't care who's carrying.
  */
 /obj/item/freight_pod
 	name = "sealed freight pod"

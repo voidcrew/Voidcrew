@@ -1,5 +1,5 @@
 /**
- * # Quartermain Depot — the yellow-zone outfitter
+ * # Quartermain Depot: the yellow-zone outfitter
  *
  * Mid-tier arms, armor and fieldcraft for the contested lanes. Mostly credits;
  * the good hardware wants a voucher on top. Also the galaxy's most reliable
@@ -22,8 +22,8 @@
 /**
  * Sarge: a quartermaster first and a soldier second, in that order. The brown
  * QM shirt and the black gloves are the counter job; the militia beret and the
- * canvas field jacket over them are where the nickname came from. No sidearm —
- * she sells the guns, she doesn't wave them at customers.
+ * canvas field jacket over them are where the nickname came from. No sidearm.
+ * She sells the guns, she doesn't wave them at customers.
  */
 /datum/outfit/quartermain_sarge
 	name = "Depot quartermaster"
@@ -120,7 +120,7 @@
 		/datum/shop_sku/outfitter/oxygen_tank,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
-		// Intel & Charts — the dealt chart shelf adds to this from chart_pool
+		// Intel & Charts: the dealt chart shelf adds to this from chart_pool
 		/datum/shop_sku/rumor,
 		// Blueprints
 		/datum/shop_sku/outfitter/smg_blueprint,
@@ -129,7 +129,7 @@
 		// Barter
 		/datum/shop_sku/barter/plasteel_for_shield,
 	)
-	// Charts are a mix now — any station can stock any zone's chart. The shelf
+	// Charts are a mix now. Any station can stock any zone's chart. The shelf
 	// is dealt from this pool each round; ruin charts never repeat galaxy-wide.
 	chart_pool = list(
 		/datum/shop_sku/chart/green,
@@ -168,8 +168,8 @@
 		/datum/shop_sku/favor/fitter_gauntlets,
 		/datum/shop_sku/favor/maneuvering_harness,
 	)
-	// Sarge buys serviceable salvage — arms and armor off whoever stopped
-	// needing them — plus field materials off planet megafauna and crust
+	// Sarge buys serviceable salvage, arms and armor off whoever stopped
+	// needing them, plus field materials off planet megafauna and crust
 	buyback_types = list(
 		/datum/shop_buyback/outfitter/salvage_armor,
 		/datum/shop_buyback/outfitter/goliath_plates,
@@ -235,7 +235,7 @@
 			"The schematics I stock are legal. The fun ones are two zones that way.",
 		),
 		TRADER_LINE_RESTOCK = list(
-			"Convoy made it through. Shelves are full — for now.",
+			"Convoy made it through. Shelves are full, for now.",
 			"Resupply's in. Escort took casualties, so mind the prices and say thanks.",
 			"Fresh crates on the floor. New rotation's up on the board.",
 		),
@@ -361,7 +361,7 @@
 // ===== SHIP SYSTEMS =====
 // Machine boards for the ship itself. Only 9 of 48 ships can research these,
 // so for everyone else this shelf is the whole route. Note these are the
-// /machine/engine/ boards from voidcrew/modules/shuttle/boards.dm — the same
+// /machine/engine/ boards from voidcrew/modules/shuttle/boards.dm, the same
 // ones the protolathe designs build, so the shop stands in for a research bay.
 
 /datum/shop_sku/outfitter/engine_plasma
@@ -440,7 +440,7 @@
 /datum/shop_sku/outfitter/missile_light
 	category = "Ship Ordnance"
 	name = "light missile (armed)"
-	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher — no assembly, no fuss."
+	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher, no assembly, no fuss."
 	item_path = /obj/structure/ship_missile/armed/light
 	price_vouchers = 1
 	price_credits = 2400
@@ -530,7 +530,7 @@
 	stock_max = 3
 
 // ===== MESS TIN =====
-// Field chow. Nothing here is cooking — it's calories that survive a webbing
+// Field chow. Nothing here is cooking. It's calories that survive a webbing
 // pouch, a decompression and the customer. Every outpost feeds its lane;
 // the contested lanes eat out of tins.
 
@@ -627,7 +627,7 @@
 // ===== FUEL & GAS =====
 
 // The contested-lane fuel dock: closer to the supply, cheaper than Halcyon's
-// comfort markup — if you can make the drive
+// comfort markup, if you can make the drive
 /datum/shop_sku/outfitter/plasma_canister
 	name = "plasma canister (full)"
 	desc = "A full canister of thruster-grade plasma at depot rates. Sarge doesn't do markup; she does volume."
@@ -745,7 +745,7 @@
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
 	name = "heavy missile (armed)"
-	desc = "A ready-to-fire heavy missile — devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
+	desc = "A ready-to-fire heavy missile: devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
 	item_path = /obj/structure/ship_missile/armed/heavy
 	price_vouchers = 2
 	price_credits = 4800
@@ -754,7 +754,7 @@
 // Credits only; guns and armor can come off a lathe, so they never pay vouchers.
 //
 // No gun line here either. Any buyback typed at /obj/item/gun or
-// /obj/item/gun/energy pays out on cargo's toy crates — 400 cr buys eight foam
+// /obj/item/gun/energy pays out on cargo's toy crates, 400 cr buys eight foam
 // shotguns or six laser-tag rifles, and none of them can be told apart from the
 // real thing at the counter. Armor stays, because cargo's armor crate works out
 // to 200 cr a vest and this pays less than that.
@@ -768,7 +768,7 @@
 	demand_min = 3
 	demand_max = 6
 
-// Planet megafauna materials — armor-grade feedstock the depot can't lathe
+// Planet megafauna materials: armor-grade feedstock the depot can't lathe
 /datum/shop_buyback/outfitter/goliath_plates
 	name = "goliath hide plates"
 	desc = "Hide plate cut off a live goliath. Sarge lines the good vests with it, and asks no questions about the tentacle marks on YOU."
@@ -790,7 +790,7 @@
 	demand_max = 6
 
 // The ice planets' good: permafrost crystal out of unscannable veins in the
-// snow rock (see planetary_goods.dm). Credits only — telecrystal keeps the
+// snow rock (see planetary_goods.dm). Credits only, telecrystal keeps the
 // voucher spigot.
 /datum/shop_buyback/outfitter/glacial_core
 	name = "glacial cores"
@@ -813,7 +813,7 @@
 
 // ===== BACK ROOM =====
 // Sarge's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
-// per crew per round. Priced above the rare shelf on purpose — standing opens
+// per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/skunkworks_cell

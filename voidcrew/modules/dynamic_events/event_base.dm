@@ -4,7 +4,7 @@
  * TG's random events assume a single station z-level; voidcrew has none of that.
  * Ships are shuttles whose areas migrate between shared z-levels (transit space,
  * planets, ruins, outposts), so every ported event is scoped to ONE target ship's
- * shuttle areas — never to a z-level. Trader outposts, ruins and bystander ships
+ * shuttle areas, never to a z-level. Trader outposts, ruins and bystander ships
  * are structurally untouchable because events only ever resolve locations through
  * the target ship's area list.
  *
@@ -18,7 +18,7 @@
 	var/event_scope = EVENT_SCOPE_SHIP
 	/// Minimum living, client-connected players physically aboard for a ship to be targetable.
 	var/min_crew_aboard = 1
-	/// Minimum hull size a target ship must have — one of the SHIP_MASS_* bands.
+	/// Minimum hull size a target ship must have, one of the SHIP_MASS_* bands.
 	///
 	/// This is the size gate, and it is a separate question from min_crew_aboard: a full
 	/// crew aboard a tiny hull is still a tiny hull, and the crew count says nothing about
@@ -33,24 +33,24 @@
 	/// Zone bands (ZONE_GREEN/ZONE_YELLOW/ZONE_RED) the target ship must be in. Null = any zone.
 	/// Use this to keep dangerous events out of the safe outer ring.
 	var/list/allowed_zones = null
-	/// If TRUE the target must be flying free on the overmap — for events that make no sense while landed or docked.
+	/// If TRUE the target must be flying free on the overmap, for events that make no sense while landed or docked.
 	var/requires_flying = FALSE
 	/// If TRUE this event may hit ships docked at a trader outpost. Defaults off: outposts are safe harbors.
 	var/allow_in_safe_harbor = FALSE
 	/// If TRUE the target must be somewhere its own deck plating is the only thing holding
-	/// the crew down — free space, or docked at a wreck or another ship. A ship sitting on
+	/// the crew down, free space, or docked at a wreck or another ship. A ship sitting on
 	/// a planet surface or in an outpost hangar stands in that location's gravity
 	/// (has_ambient_gravity()), so an event that cuts ship gravity there would float a crew
 	/// that is, visibly, parked on solid ground.
 	var/requires_zero_g = FALSE
 	/// If TRUE this event ignores the per-ship DYNAMIC_EVENT_SHIP_COOLDOWN when picking a
 	/// target. Reserved for events belonging to a driven pressure system with its own
-	/// cadence — the lich's rituals (voidcrew/modules/lich/) are the reason this exists:
+	/// cadence, the lich's rituals (voidcrew/modules/lich/) are the reason this exists:
 	/// LICH_RITUAL_INTERVAL is 4 minutes and the ambient ship cooldown is longer than
 	/// that, so on a single-crewed-ship server the cooldown would eat nearly every
 	/// ritual, and an unrelated ambient event landing first would swallow the next one.
 	/// Events that set this still STAMP last_dynamic_event (see /datum/round_event/voidcrew/New),
-	/// so ambient events keep backing off a ship a driven system just hit — the exemption
+	/// so ambient events keep backing off a ship a driven system just hit, the exemption
 	/// is one-directional on purpose. Do not set this on ambient events; the cooldown is
 	/// what stops one crew being singled out for a spam wave.
 	var/ignores_ship_cooldown = FALSE
@@ -118,7 +118,7 @@
 	if(event_scope == EVENT_SCOPE_SHIP && !pending_target)
 		pending_target = pick_target_ship(force = admin_forced)
 		if(!pending_target)
-			message_admins("Dynamic event [name] found no valid target ship — skipping.")
+			message_admins("Dynamic event [name] found no valid target ship, skipping.")
 			return
 	. = ..()
 	pending_target = null
@@ -129,7 +129,7 @@
 	var/was_pending = triggering
 	..()
 	// The parent's "SOMETHING ELSE" reroll goes through SSevents.spawnEvent, which is a
-	// no-op while allow_random_events is off — reroll through our scheduler instead.
+	// no-op while allow_random_events is off, reroll through our scheduler instead.
 	// Only the click that actually stood the pending event down gets to do it: every
 	// later click on the same link still satisfies `!triggering`, and each one used to
 	// roll another event.
@@ -149,7 +149,7 @@
 			target_ship.last_dynamic_event = world.time
 
 /// TRUE while the target ship still exists as a loaded shuttle. Ship-scoped events
-/// must check this at the top of start()/tick()/end() and bail if it fails — the
+/// must check this at the top of start()/tick()/end() and bail if it fails, the
 /// ship can be destroyed or abandoned mid-event.
 /datum/round_event/voidcrew/proc/target_valid()
 	return !QDELETED(target_ship) && !target_ship.abandoned && target_ship.shuttle

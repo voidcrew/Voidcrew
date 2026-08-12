@@ -7,7 +7,7 @@
 // (/obj/structure/closet/crate/zone_loot) and zone-scaled mob spawners
 // (/obj/effect/zone_mobs). The prefix override below re-points the upstream
 // /datum/map_template/ruin/lavaland datums (code/datums/ruins/lavaland.dm) at
-// those copies — mappath is prefix + suffix, and voidcrew compiles after
+// those copies, mappath is prefix + suffix, and voidcrew compiles after
 // code/, so no upstream file needs editing. Upstream originals remain as
 // merge reference only.
 //

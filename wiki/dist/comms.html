@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Radio &amp; Comms — Voidcrew Wiki</title>
+<title>Radio &amp; Comms | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -74,12 +76,12 @@
 </ul>
 </div>
 </aside><h1>Radio &amp; Comms</h1>
-<p>There is no telecomms on Voidcrew. No relay to build, no stack to repair, no z-level to be on — radio just works, everywhere, forever. What changed instead is <em>who hears you</em>: every ordinary channel is scoped to a single ship, so your crew chatter reaches your crew and nobody else. The one channel everyone in the galaxy shares is <strong>Wideband</strong>.</p>
+<p>There is no telecomms on Voidcrew. No relay to build, no stack to repair, no z-level to be on. Radio just works, everywhere, forever. What changed instead is <em>who hears you</em>: every ordinary channel is scoped to a single ship, so your crew chatter reaches your crew and nobody else. The one channel everyone in the galaxy shares is <strong>Wideband</strong>.</p>
 <h2 id="your-ships-channel">Your ship's channel</h2>
 <p>Press <code>;</code> before a message to talk on your headset's main channel. On a station that would be the common channel; here it is <strong>your ship</strong>. Messages are tagged with the ship's name so you can tell at a glance which hull you are hearing.</p>
 <p>Department channels work the same way and are scoped the same way. Your engineering channel reaches the engineers on <em>your</em> ship, not the engineers on someone else's.</p>
 <h3 id="sticky-binding">Sticky binding</h3>
-<p>Your headset binds to a ship, and that binding follows you off it. It is set when you spawn in, or the first time you use a radio while physically aboard a ship. Once bound it stays bound — walking onto a planet, into a ruin, or onto someone else's deck does not change it.</p>
+<p>Your headset binds to a ship, and that binding follows you off it. It is set when you spawn in, or the first time you use a radio while physically aboard a ship. Once bound it stays bound, walking onto a planet, into a ruin, or onto someone else's deck does not change it.</p>
 <p>This means:</p>
 <ul>
 <li>An away team on a planet still talks to the crew back on the ship.</li>
@@ -95,16 +97,16 @@
 <p><strong>Wideband</strong> is the galaxy-wide hailing channel. Every headset carries it, no research or equipment is needed, and it reaches every radio in the galaxy regardless of distance or z-level.</p>
 <p>Speak on it by prefixing your message with <code>:w</code> or <code>.w</code>.</p>
 <p>Use it for the things that need to leave your hull: hailing a ship you can see, arranging a trade or a meeting, calling for help, warning other crews about something dangerous, or negotiating instead of shooting. It is also where a number of galaxy-wide events announce themselves, so expect traffic you did not ask for.</p>
-<p>Remember that a Wideband transmission tells everyone that you exist and that you are talking. It says nothing about where you are — but the people who want to find you are listening too.</p>
+<p>Remember that a Wideband transmission tells everyone that you exist and that you are talking. It says nothing about where you are, but the people who want to find you are listening too.</p>
 <p>A few other frequencies are also unscoped and reach the whole galaxy rather than one ship, including the syndicate channel. If you are carrying a headset that has one, assume the wrong people can hear it.</p>
 <h2 id="ship-to-ship-hails-from-the-helm">Ship-to-ship hails from the helm</h2>
-<p>The helm console's <strong>Comms</strong> tab sends a short transmission from the ship itself. It reaches every vessel within your four-tile view ring — the same distance you can see — and lands on their helm as a logged message with a pulsing marker at your position.</p>
+<p>The helm console's <strong>Comms</strong> tab sends a short transmission from the ship itself. It reaches every vessel within your four-tile view ring (the same distance you can see) and lands on their helm as a logged message with a pulsing marker at your position.</p>
 <p>The trade-off is deliberate: <strong>hailing gives you away</strong>. A transmission identifies your ship on the receiver's chart exactly as if they had scanned you, so an anonymous blip that says hello stops being anonymous. Staying quiet is a valid tactic, and a pirate lurking on your tile has a reason not to greet you. See <a href="piloting.html">Piloting Your Ship</a>.</p>
 <h2 id="holopad-calls">Holopad calls</h2>
 <p>Holopads dial by <strong>site</strong>, not by area. Open one and the list shows:</p>
 <ul>
 <li>Rooms on your own ship, by area, like a station intercom.</li>
-<li>Every other ship in the galaxy, as one entry per ship — calling it rings <strong>every pad on that ship at once</strong>.</li>
+<li>Every other ship in the galaxy, as one entry per ship: calling it rings <strong>every pad on that ship at once</strong>.</li>
 <li>Every trader outpost and player-founded outpost, the same way.</li>
 <li>Unregistered pads in ruins and wrecks, but only ones sharing your physical location.</li>
 </ul>
@@ -112,15 +114,15 @@
 <p>Two rules apply to calls between different ships:</p>
 <ul>
 <li><strong>Nobody can force their way onto your pad.</strong> Cross-ship calls always ring and always have to be answered. Keycard authorisation cannot auto-connect a call from another vessel.</li>
-<li><strong>Moving cuts the call.</strong> If either ship docks, undocks or jumps mid-call, the link drops and both pads announce that the carrier was lost. Calls within one ship are unaffected — both ends move together.</li>
+<li><strong>Moving cuts the call.</strong> If either ship docks, undocks or jumps mid-call, the link drops and both pads announce that the carrier was lost. Calls within one ship are unaffected: both ends move together.</li>
 </ul>
 <p>The ringing pad also announces where the call is coming from, so you know which ship or outpost is on the line before you pick up.</p>
 <h2 id="pirate-hails">Pirate hails</h2>
 <p>Hostile ships hail before they shoot. When one does, <strong>every holopad on your ship rings</strong> and the helm posts a priority alert.</p>
-<p>Answer it from the holopad interface: the incoming hail appears in the pad's call list alongside ordinary holocalls, labelled as a hostile vessel. Answering opens a negotiation with the pirate captain's hologram — you can pay them off, talk your way out, or stall.</p>
+<p>Answer it from the holopad interface: the incoming hail appears in the pad's call list alongside ordinary holocalls, labelled as a hostile vessel. Answering opens a negotiation with the pirate captain's hologram. You can pay them off, talk your way out, or stall.</p>
 <p>You have <strong>twenty seconds</strong> to answer, with a reminder at the halfway mark. Ignore it and they open fire. Lock weapons on them or shoot first, and the hail ends immediately and they engage. See <a href="ship-combat.html">Ship Combat</a>.</p>
 <h2 id="when-comms-go-down">When comms go down</h2>
-<p>Radios can be knocked out. An EMP silences everything it touches, radio jammers work the way they do on a station, and a <strong>communications blackout</strong> event kills every radio, intercom and holopad aboard one ship for about twenty seconds — including Wideband. Nothing needs repairing afterwards; the radios come back on their own.</p>
+<p>Radios can be knocked out. An EMP silences everything it touches, radio jammers work the way they do on a station, and a <strong>communications blackout</strong> event kills every radio, intercom and holopad aboard one ship for about twenty seconds, including Wideband. Nothing needs repairing afterwards; the radios come back on their own.</p>
 <p>The warning you get is the blackout announcing itself over the very radios it is about, degrading into static mid-sentence. If a message cuts out like that, you have a few seconds before the ship goes quiet.</p></article>
 <footer>Voidcrew is a /tg/station fork. This wiki covers Voidcrew-specific systems; for base-game mechanics (chemistry, surgery, engineering&hellip;) see the <a href="https://wiki.tgstation13.org/">/tg/station wiki</a>.</footer>
 </main>

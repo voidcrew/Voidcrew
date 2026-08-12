@@ -121,7 +121,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
-// Electronic warfare — the suite plus the basic exploit software. Stronger
+// Electronic warfare: the suite plus the basic exploit software. Stronger
 // exploit tiers are never researchable; the black market is the only source.
 /datum/techweb_node/ship_combat_ew
 	id = TECHWEB_NODE_SHIP_COMBAT_EW

@@ -618,7 +618,7 @@
 	var/max_negotiation_demand = 10000
 	/// Faction identifier for dialog and appearance
 	var/pirate_faction
-	/// Fixed negotiation item demand as list(type, quantity, name) — set by
+	/// Fixed negotiation item demand as list(type, quantity, name), set by
 	/// mission dispatch code so the ship asks for specific cargo instead of a
 	/// random pick (e.g. a customs patrol demanding the contraband itself)
 	var/list/fixed_item_demand

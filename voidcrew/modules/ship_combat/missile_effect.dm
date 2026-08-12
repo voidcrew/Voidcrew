@@ -32,7 +32,7 @@
 
 	/// The target turf we're flying toward
 	var/turf/target_turf
-	/// The overmap target — a ship or a raidable player outpost (for signals/effect scoping)
+	/// The overmap target: a ship or a raidable player outpost (for signals/effect scoping)
 	var/obj/structure/overmap/target_ship
 	/// The ship that fired us
 	var/obj/structure/overmap/ship/source_ship
@@ -196,7 +196,7 @@
 		return
 
 	// Last-chance outpost shield check for missiles that never crossed the
-	// envelope in Moved() (e.g. spawned inside it) — see outpost_shield.dm
+	// envelope in Moved() (e.g. spawned inside it), see outpost_shield.dm
 	if(try_outpost_shield_intercept(get_turf(src)))
 		return
 

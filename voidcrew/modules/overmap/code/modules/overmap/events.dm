@@ -2,7 +2,7 @@
 	name = "generic overmap event"
 	// Hazards show on the helm chart whenever they are inside the sensor bubble,
 	// but sensor_detectable stays FALSE: no scan of ours can pin a storm, so one
-	// you have flown clear of is lost until you go looking again — or until you
+	// you have flown clear of is lost until you go looking again, or until you
 	// buy the region's star chart, which records them the same as anything else.
 	sensor_category = "Hazards"
 
@@ -11,7 +11,7 @@
 	/// How many additional tiles to spawn at once in the selected orbit
 	var/chain_rate = 0
 	/// Which storm the helm chart draws for this event. Each family gets its own
-	/// silhouette — a rock field and an ion front are steered around differently,
+	/// silhouette, a rock field and an ion front are steered around differently,
 	/// so they must not share a glyph.
 	var/chart_variant = null
 	/// 1 minor / 2 moderate / 3 majour. Sizes the glyph, nothing else.
@@ -23,7 +23,7 @@
 /obj/structure/overmap/event/get_contact_severity()
 	return chart_severity
 
-/// Every meteor storm event on the overmap, loaded or not — zone resolution traces
+/// Every meteor storm event on the overmap, loaded or not, zone resolution traces
 /// field-interior turfs back to their event through this (see zone_controller.dm)
 GLOBAL_LIST_EMPTY(meteor_fields)
 
@@ -35,13 +35,13 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	chart_variant = "rock"
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
 	survey_value = 100
-	/// Notable minerals shown on the survey report — keep in sync with ore_weights
+	/// Notable minerals shown on the survey report. Keep in sync with ore_weights
 	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
 
 	/// Map generator used to carve this severity's landable rock field (see AsteroidCaves.dm)
 	var/datum/map_generator/cave_generator/asteroid_field/mapgen_type = /datum/map_generator/cave_generator/asteroid_field
 	/// Weighted ore table seeded into this severity's rock (seed_asteroid_ore_block);
-	/// higher severities carry rarer minerals — braving the worse storm pays better
+	/// higher severities carry rarer minerals. Braving the worse storm pays better
 	var/list/ore_weights = list(
 		/obj/item/stack/ore/iron = 40,
 		/obj/item/stack/ore/plasma = 20,
@@ -369,7 +369,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * expedition cache (with a mob pack standing guard) plus roaming zone-scaled
  * packs (zone_mobs.dm). Severity controls how MANY packs and whether a cache
  * drops at all; the overmap zone controls how nasty each pack rolls and what
- * the cache holds — resolution works because get_overmap_object_for_turf()
+ * the cache holds, resolution works because get_overmap_object_for_turf()
  * traces the field's reservation back to this event's overmap tile.
  */
 /obj/structure/overmap/event/meteor/proc/populate_field_extras(list/field_turfs)
@@ -382,7 +382,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		return
 
 	// The prize: a zone-scaled cache, never left unguarded. A field deep in
-	// the red pays more and reaches higher out of the same table — that is
+	// the red pays more and reaches higher out of the same table, that is
 	// the whole of the scaling, so there is no separate rare crate to roll.
 	if(prob(crate_chance))
 		var/turf/crate_turf = pick_n_take(open_turfs)
@@ -449,7 +449,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * the field ore-seeding step, called from load_level() above.
  *
  * source_desc is a human-readable label for the mapping log line only.
- * ore_weights optionally overrides the default weighted ore table — the meteor
+ * ore_weights optionally overrides the default weighted ore table, the meteor
  * severity tiers pass their own so worse storms seed richer rock.
  *
  * Mining itself needs no z-level traits: off mining levels, prox_to_vent() returns 0 and
@@ -556,14 +556,14 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  *
  * Every nebula carries a harvestable gas: hold still inside one with a nebula
  * ram scoop mounted (see modules/shuttle/engine/gas_harvest.dm) and it feeds
- * the ship's pipenet. Which gas is rolled from the tile's zone band at spawn —
- * the safe outer ring is plasma fuel stops and inert wisps, the deep bands
+ * the ship's pipenet. Which gas is rolled from the tile's zone band at spawn.
+ * The safe outer ring is plasma fuel stops and inert wisps, the deep bands
  * carry tritium and the exotics no cargo console sells. Scooping is loud:
  * it blocks and breaks nebula concealment (see ship.dm notify_scoop_activity()),
  * so the fuel stop is also the ambush spot.
  */
 
-/// Weighted gas tables per zone band — deeper bands carry rarer gas
+/// Weighted gas tables per zone band. Deeper bands carry rarer gas
 GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 	"[ZONE_GREEN]" = list(
 		/datum/gas/plasma = 55,
@@ -587,8 +587,8 @@ GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 	),
 ))
 
-/// Moles per second a rating-1 ram scoop pulls from a nebula of each gas —
-/// the precious stuff comes slower on top of already being red-band-only
+/// Moles per second a rating-1 ram scoop pulls from a nebula of each gas.
+/// The precious stuff comes slower on top of already being red-band-only
 GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 	/datum/gas/plasma = 8,
 	/datum/gas/nitrogen = 8,
@@ -660,7 +660,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	if(color)
 		layer.add_atom_colour(color, ADMIN_COLOUR_PRIORITY)
 
-// Fixed-gas variants for admin spawning / mapped encounters — natural spawns
+// Fixed-gas variants for admin spawning / mapped encounters, natural spawns
 // stay the base type and roll from their zone band's table instead
 /obj/structure/overmap/event/nebula/plasma
 	gas_type = /datum/gas/plasma

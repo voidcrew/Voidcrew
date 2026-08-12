@@ -1,22 +1,22 @@
 /**
  * # Vestige ruins
  *
- * Antag-themed space ruins housing patrons — the remnants of dead antagonists
+ * Antag-themed space ruins housing patrons: the remnants of dead antagonists
  * who trade boons (ported antagonist abilities) for bespoke trials. See
  * patron.dm / trial.dm / boon.dm for the actors; this file owns the map
  * templates, the overmap signal and the progressive arrival schedule.
  *
  * Vestige ruins never seed naturally (unpickable, like rare rumor ruins).
- * They surface one at a time as the round ages — the first at
+ * They surface one at a time as the round ages, the first at
  * VESTIGE_FIRST_SPAWN_TIME, another every VESTIGE_SPAWN_INTERVAL after, each
- * theme at most once per round — announced with a broadcast and shown on
- * sensors under its patron's name (patron_name below), colored red — distinct
+ * theme at most once per round, announced with a broadcast and shown on
+ * sensors under its patron's name (patron_name below), colored red, distinct
  * from the gold of a rare ruin.
  *
  * The signal persists all round: interiors unload when everyone leaves (same
  * as any space ruin) but the overmap object never respawn-cycles away, so
  * crews can come back to their patron. Because interiors are wiped on unload,
- * NOTHING about a player's trial may live on the patron mob or the map —
+ * NOTHING about a player's trial may live on the patron mob or the map,
  * trial state rides the player's mind (see trial.dm).
  */
 
@@ -28,7 +28,7 @@
 	allow_duplicates = FALSE
 	/// Broadcast to everyone when this ruin surfaces mid-round
 	var/arrival_announcement = "A new signal has surfaced in the sector. Approach is not advised."
-	/// The patron's name (matches the vestige_patron mob mapped inside) — this is what
+	/// The patron's name (matches the vestige_patron mob mapped inside), this is what
 	/// the overmap signal is called, both before and after survey. `name` above stays
 	/// the vessel's name, used for admin tooling and mapping logs, not shown to players.
 	var/patron_name
@@ -94,7 +94,7 @@
 	color = "#ff5964"
 
 // Vestige signals name themselves after their patron immediately, not just on
-// survey — you're meant to recognize your own patron from across the sector.
+// survey, you're meant to recognize your own patron from across the sector.
 /obj/structure/overmap/space_ruin/vestige/set_ruin_template(datum/map_template/ruin/space/vestige/template)
 	. = ..()
 	if(template.patron_name)
@@ -112,7 +112,7 @@
 	. += span_boldwarning("Something in there is offering work.")
 
 // Vestige ruins persist all round: unload when empty like anything else, but
-// stay on the overmap and never spawn a replacement — crews come back for
+// stay on the overmap and never spawn a replacement. Crews come back for
 // their patron.
 /obj/structure/overmap/space_ruin/vestige/check_and_respawn()
 	release_interior()

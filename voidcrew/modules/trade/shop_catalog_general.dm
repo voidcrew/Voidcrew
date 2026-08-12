@@ -1,5 +1,5 @@
 /**
- * # Waystation Halcyon — the green-zone general store
+ * # Waystation Halcyon: the green-zone general store
  *
  * Sundries, survival kit and honest prices for the safe outer ring. Credits
  * only; the most dangerous thing on the shelf is the chili in the rations.
@@ -8,7 +8,7 @@
 
 /**
  * Barnaby: thirty years on the same side of the same counter. Everything reads
- * soft and worn rather than professional — the sweater jacket and flat cap are
+ * soft and worn rather than professional. The sweater jacket and flat cap are
  * a shopkeeper's clothes, not a uniform, the reading glasses say he still does
  * the ledger by hand, and the mug is the bad coffee the shop is famous for.
  */
@@ -100,7 +100,7 @@
 		/datum/shop_sku/general/soap,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
-		// Intel & Charts — the cheap always-available rung; the dealt chart
+		// Intel & Charts: the cheap always-available rung; the dealt chart
 		// shelf below stocks the star charts and the named ruin coordinates
 		/datum/shop_sku/rumor,
 		// Barter
@@ -123,7 +123,7 @@
 		/datum/shop_sku/favor/field_contract_pad,
 		/datum/shop_sku/favor/freight_beacon,
 	)
-	// Charts are a mix — any outpost can end up holding the coordinates for
+	// Charts are a mix. Any outpost can end up holding the coordinates for
 	// anywhere. Named ruins are dealt without repeats across all three shops.
 	chart_pool = list(
 		/datum/shop_sku/chart/green,
@@ -181,7 +181,7 @@
 		),
 		TRADER_LINE_SALE = list(
 			"There you are. Safe travels out there!",
-			"Lovely. Do come again — we're literally always here.",
+			"Lovely. Do come again. We're literally always here.",
 			"Wonderful choice. I'd have picked the same, and I picked all of it.",
 			"All wrapped up. Wave at the mechanic on your way out, she likes that.",
 		),
@@ -490,7 +490,7 @@
 	stock_min = 3
 	stock_max = 6
 
-// Hull stock. Ships take damage and not every crew can mine — Barnaby is the
+// Hull stock. Ships take damage and not every crew can mine, Barnaby is the
 // boring, reliable place to buy the material back.
 /datum/shop_sku/general/iron_sheets
 	name = "iron sheets (30)"
@@ -523,10 +523,10 @@
 	stock_max = 3
 
 // The fuel dock: plasma at a comfortable waystation markup. The deeper depots
-// pump it cheaper — the commute is the discount.
+// pump it cheaper, the commute is the discount.
 /datum/shop_sku/general/plasma_canister
 	name = "plasma canister (full)"
-	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots — you're paying for the haul out to the safe ring."
+	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots. You're paying for the haul out to the safe ring."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
 	price_credits = 1800
@@ -534,7 +534,7 @@
 	stock_max = 3
 
 // Generator fuel. The sheets are the lifeline for any hull with no ore redemption
-// machine aboard — without them a ship that burns its plasma has no way back.
+// machine aboard, without them a ship that burns its plasma has no way back.
 // The ore is the cheaper option per sheet, but only if you can actually smelt it.
 /datum/shop_sku/general/plasma_sheets
 	name = "solid plasma (20)"
@@ -581,7 +581,7 @@
 	item_path = /obj/item/soap
 	price_credits = 60
 
-// Chart and rumor SKUs live in shop_catalog_charts.dm — Barnaby draws his
+// Chart and rumor SKUs live in shop_catalog_charts.dm, Barnaby draws his
 // through chart_pool above rather than defining his own.
 
 // ===== ROTATING SHELF =====
@@ -670,10 +670,10 @@
 	demand_max = 4
 
 // The jungle planets' good: pod clusters foraged off the surface biomes.
-// Wild stock only — the vine can't be grown aboard, so there's nothing to farm.
+// Wild stock only: the vine can't be grown aboard, so there's nothing to farm.
 /datum/shop_buyback/general/spice_pods
 	name = "wild spice pods"
-	desc = "Pods snipped off jungle-world strangler vines, picked wild. Barnaby buys every cluster that comes through the door — apparently they do wonders for a stew."
+	desc = "Pods snipped off jungle-world strangler vines, picked wild. Barnaby buys every cluster that comes through the door. Apparently they do wonders for a stew."
 	category = "Forage"
 	item_path = /obj/item/stack/spice_pods
 	amount = 3
@@ -682,10 +682,10 @@
 	demand_max = 5
 
 // The beach planets' good: a rare live catch off the shore-water fishing table.
-// Bought sealed — Barnaby does the candling, and the pearl never leaves the back room.
+// Bought sealed: Barnaby does the candling, and the pearl never leaves the back room.
 /datum/shop_buyback/general/pearl_clam
 	name = "pearl clam (unopened)"
-	desc = "A live lagoon clam off the beach worlds, shell shut tight. Barnaby candles them behind the counter and pays for the glow — cracked or shucked ones are worth exactly nothing."
+	desc = "A live lagoon clam off the beach worlds, shell shut tight. Barnaby candles them behind the counter and pays for the glow. Cracked or shucked ones are worth exactly nothing."
 	category = "Trapper & Angler"
 	item_path = /obj/item/pearl_clam
 	pay_credits = 350
@@ -703,7 +703,7 @@
 
 // ===== BACK ROOM =====
 // Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
-// per crew per round. Priced above the rare shelf on purpose — standing opens
+// per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/pike_ledger

@@ -110,6 +110,10 @@
 	},
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/neutral/full,
+/obj/item/toy/figure/secofficer{
+	pixel_y = 12;
+	pixel_x = 11
+	},
 /obj/item/folder/white{
 	pixel_y = 3;
 	pixel_x = 3

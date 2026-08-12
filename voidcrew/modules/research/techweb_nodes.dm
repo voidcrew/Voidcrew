@@ -6,7 +6,7 @@
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
-		"shuttle_heater", // was orphaned from every node — the heater design existed but nothing unlocked it
+		"shuttle_heater", // was orphaned from every node, the heater design existed but nothing unlocked it
 		"shuttle_helm",
 		"shuttle_scoop",
 		"shuttle_sublimator",
@@ -254,8 +254,8 @@
 
 // Station-only supply and records consoles. A ship has no station cargo department
 // to file requests with and no station payroll to audit, so they come out of their
-// upstream nodes; the ship bank machine — already unlocked by the consoles node —
-// is what crews use instead.
+// upstream nodes; the ship bank machine, already unlocked by the consoles node.
+// Is what crews use instead.
 // These edits used to sit on /datum/techweb_node/basic_mining, /comptech and
 // /comp_recordkeeping. None of those types exist here, so DM quietly created them
 // with a null id, initialize_all_techweb_nodes() skipped them, and the removals
@@ -281,7 +281,7 @@
 
 // The extra dissection tiers hang off the surgery ladder that gates the surgeries
 // beneath them. Same orphaned-parent story as above: these were on /adv_surgery and
-// /exp_surgery, which don't exist — the real node types are surgery_adv/surgery_exp.
+// /exp_surgery, which don't exist. The real node types are surgery_adv/surgery_exp.
 /datum/techweb_node/surgery_adv/New()
 	. = ..()
 	design_ids += list(
@@ -366,7 +366,7 @@
 	required_surveyed_objects = list(stars = 1, planets = 5, asteroids = 2)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
-// Radar array — the ship's overmap sensor suite. A dedicated ladder separate
+// Radar array: the ship's overmap sensor suite. A dedicated ladder separate
 // from the survey console: each tier widens the active-scan radius, and the
 // upper tiers add ruin identification and live player-ship tracking. Read by
 // the ship's sensor procs in ship_sensors.dm; the nodes unlock no designs.
@@ -380,7 +380,7 @@
 
 /datum/techweb_node/radar_array_advanced
 	id = TECHWEB_NODE_RADAR_ARRAY_ADV
-	display_name = "Radar Array — Signal Analysis"
+	display_name = "Radar Array: Signal Analysis"
 	description = "Spectral analysis of charted signals. Widens the scan radius further, and identifies what a space ruin actually is as soon as it's charted, no survey needed."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY)
 	design_ids = list()
@@ -388,13 +388,13 @@
 
 /datum/techweb_node/radar_array_elite
 	id = TECHWEB_NODE_RADAR_ARRAY_ELITE
-	display_name = "Radar Array — Vessel Tracking"
+	display_name = "Radar Array: Vessel Tracking"
 	description = "Active vessel tracking. Maximises the scan radius and plots other crews' ships within sensor range. Those contacts disappear as soon as either ship moves out of range."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
-// Transporter — the late-game replacement for the drop pod. A drop pod is a one-way
+// Transporter: the late-game replacement for the drop pod. A drop pod is a one-way
 // crate you fire at a planet; a transporter moves people both ways, from orbit, over
 // and over. The ladder below is deliberately expensive: the first node is a working
 // but crude lift, and the two above it are what make it precise and safe.

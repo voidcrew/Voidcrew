@@ -3,7 +3,7 @@
  *
  * A one-use survey slate sold by traders. Inserted into a ship's helm console,
  * it charts every object in one zone band straight onto the helm's navigation
- * readout — the certainty channel for discovery, the bulk alternative to
+ * readout, the certainty channel for discovery, the bulk alternative to
  * active scanning tile by tile.
  *
  * Deliberately wider than a scan: this is the only way to learn where the storms

@@ -6,7 +6,7 @@
  */
 
 // =========================================================================
-// FIELD OBJECTIVE MIXIN — steps that place things inside the mission target
+// FIELD OBJECTIVE MIXIN: steps that place things inside the mission target
 // =========================================================================
 
 /**
@@ -51,7 +51,7 @@
  * Places this objective's things at the site.
  *
  * A site that can't offer a clear turf right now is not a site that never
- * can — the sampler rejects blocked and closed tiles, and a ruin, a landed
+ * can, the sampler rejects blocked and closed tiles, and a ruin, a landed
  * ship or a passing storm can hold every roll it makes. Bailing out silently
  * (which is what this used to do) leaves the contract live on the board with
  * nothing in the world to find and no beacon to follow: the crew flies out,
@@ -94,7 +94,7 @@
  * Marks a mob the contract can't finish without, so the planet's fauna sweep
  * leaves it alone (SSplanet_mobs clears every unclaimed living mob off an empty
  * planet after its grace period, and does not know a mission put this one here).
- * Untracked flavour mobs — entourage guards, caged critters — are deliberately
+ * Untracked flavour mobs (entourage guards, caged critters) are deliberately
  * NOT marked: losing those costs nothing and they should age out like any other
  * wildlife.
  */
@@ -112,7 +112,7 @@
 	return length(open_turfs) ? pick(open_turfs) : around
 
 // =========================================================================
-// NAMED KILL — hunt the name, bring back the tag
+// NAMED KILL, hunt the name, bring back the tag
 // =========================================================================
 
 /datum/mission_objective/field/kill_named
@@ -175,7 +175,7 @@
 	return "Eliminate [mission?.objective_name || "the target"]"
 
 // =========================================================================
-// KILL COUNT — suppression sweeps
+// KILL COUNT, suppression sweeps
 // =========================================================================
 
 /**

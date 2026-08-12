@@ -1,17 +1,17 @@
 /**
- * # Waystation Halcyon — favor uniques
+ * # Waystation Halcyon: favor uniques
  *
  * The general outpost's back-room rewards: three field tools for crews that
  * ran enough of the waystation's board to earn the good shelf. Each one takes
- * a counter service crews normally fly home for — the buyback window, the
- * contract board, the shop shelf — and puts a portable version of it in a
+ * a counter service crews normally fly home for, the buyback window, the
+ * contract board, the shop shelf, and puts a portable version of it in a
  * pocket. None of them mint money: the ledger still obeys the counter's
  * demand caps, the pad only settles contracts the crew already earned, and
  * the beacon spends credits at full shelf price.
  *
  * All three resolve the live general shop at use time by walking
  * GLOB.trader_outposts, and all three honor the outpost embargo
- * (is_user_barred) — earning the back room doesn't launder an embargo.
+ * (is_user_barred), earning the back room doesn't launder an embargo.
  *
  * This file defines only the items. Their /datum/shop_sku favor-shelf
  * entries live in the shop catalog.
@@ -26,7 +26,7 @@
 
 /**
  * The live general outpost (Waystation Halcyon) this round, or null when no
- * general outpost exists. istype runs on the shop INSTANCE — outposts carry
+ * general outpost exists. istype runs on the shop INSTANCE, outposts carry
  * their shop as a live datum, and matching the instance is what tells the
  * main counter apart from the vendor stalls.
  */
@@ -37,7 +37,7 @@
 	return null
 
 // =========================================================================
-// PIKE'S LEDGER — the buyback window, carried
+// PIKE'S LEDGER: the buyback window, carried
 // =========================================================================
 
 /**
@@ -45,7 +45,7 @@
  *
  * A handheld remote-buyback terminal. Used in hand, it lists every line of
  * Halcyon's wanted ledger the holder is carrying sellable units of and sells
- * them exactly as the counter would — same prices, same shared demand caps,
+ * them exactly as the counter would. Same prices, same shared demand caps,
  * same payout channels (credits to the ID's account, vouchers into hand).
  * Refuses embargoed crews and goes quiet when no general outpost exists.
  */
@@ -123,7 +123,7 @@
 	if(QDELETED(buyback))
 		return
 
-	var/mode = tgui_alert(user, "[buyback.get_wanted_text()] — [buyback.get_payment_text()]. Halcyon will take [buyback.demand] more sale\s this shift.", name, list("Sell one", "Sell all", "Cancel"))
+	var/mode = tgui_alert(user, "[buyback.get_wanted_text()]: [buyback.get_payment_text()]. Halcyon will take [buyback.demand] more sale\s this shift.", name, list("Sell one", "Sell all", "Cancel"))
 	if(mode != "Sell one" && mode != "Sell all")
 		return
 	if(!ledger_radial_check(user) || QDELETED(buyback) || QDELETED(outpost))
@@ -149,7 +149,7 @@
 		to_chat(user, span_warning(buyback.get_denial_reason(user) || "The sale fell through."))
 
 // =========================================================================
-// FIELD CONTRACT PAD — the contract board, carried
+// FIELD CONTRACT PAD: the contract board, carried
 // =========================================================================
 
 /**
@@ -159,8 +159,8 @@
  * active contracts and settles every one that's ready: item contracts take
  * whatever qualifying goods the holder has in hand, finished non-item
  * contracts collect outright. Everything routes through the ship's own
- * complete_mission — the same location gating, item validation and refusal
- * strings the trader counter and board console use — and rewards spawn at
+ * complete_mission, the same location gating, item validation and refusal
+ * strings the trader counter and board console use, and rewards spawn at
  * the pad's turf via the standard turn-in flow. Couriered freight still
  * refuses anywhere but its destination outpost.
  */
@@ -194,7 +194,7 @@
 		return TRUE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
-		to_chat(user, span_warning("The pad finds no crew registration under your name — no ship, no contracts."))
+		to_chat(user, span_warning("The pad finds no crew registration under your name, no ship, no contracts."))
 		return TRUE
 	if(!length(ship.active_missions))
 		to_chat(user, span_notice("[ship]'s contract ledger is empty. Nothing to settle."))
@@ -209,7 +209,7 @@
 			continue
 		var/mission_name = mission.name
 		// The near-miss comes back too, so a refusal names the real shortfall
-		// ("Need 30, only have 12") — same trick the trader counter uses
+		// ("Need 30, only have 12"). Same trick the trader counter uses
 		var/obj/item/offered = mission.requires_item ? mission.pick_offered_item(user) : null
 		// complete_mission runs can_turn_in_at / can_turn_in / can_complete and
 		// hands back get_wrong_location_reason / get_failure_reason on refusal
@@ -217,11 +217,11 @@
 		if(result == TRUE)
 			settled++
 			if(QDELETED(mission))
-				to_chat(user, span_notice("• [mission_name] — contract settled. Pay delivered to your position."))
+				to_chat(user, span_notice("• [mission_name], contract settled. Pay delivered to your position."))
 			else
-				to_chat(user, span_notice("• [mission_name] — goods received; the contract continues."))
+				to_chat(user, span_notice("• [mission_name], goods received; the contract continues."))
 		else
-			to_chat(user, span_warning("• [mission_name] — [result]"))
+			to_chat(user, span_warning("• [mission_name], [result]"))
 	if(settled)
 		playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
 	else
@@ -229,14 +229,14 @@
 	return TRUE
 
 // =========================================================================
-// FREIGHT BEACON — the shop shelf, delivered
+// FREIGHT BEACON: the shop shelf, delivered
 // =========================================================================
 
 /**
  * # Freight beacon
  *
  * Remote purchase with pod delivery. Used in hand, it lists Halcyon's core
- * shelf (credit-priced lines only — no voucher stock, no intel, no barter)
+ * shelf (credit-priced lines only, no voucher stock, no intel, no barter)
  * and sells at the counter's own price, favor discount included. The goods
  * arrive by supply pod on the beacon's position after a short flight instead
  * of over the counter, stock decrements like any sale, and the beacon burns
@@ -320,14 +320,14 @@
 			continue
 		if(!sku.item_path || sku.stock <= 0)
 			continue
-		var/entry = "[sku.name] — [sku.get_credit_price(user)] cr ([sku.stock] in stock)"
+		var/entry = "[sku.name]: [sku.get_credit_price(user)] cr ([sku.stock] in stock)"
 		entries += entry
 		lookup[entry] = sku
 	if(!length(entries))
 		to_chat(user, span_warning("Halcyon's core shelf is picked clean. Wait for the supply convoy."))
 		return
 
-	var/choice = tgui_input_list(user, "Halcyon core shelf — shelf price, delivered by drop pod. [uses_left] charge\s left.", name, entries)
+	var/choice = tgui_input_list(user, "Halcyon core shelf, shelf price, delivered by drop pod. [uses_left] charge\s left.", name, entries)
 	if(!choice || !freight_user_check(user))
 		return
 	var/datum/shop_sku/sku = lookup[choice]

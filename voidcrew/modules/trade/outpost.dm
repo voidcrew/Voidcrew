@@ -4,8 +4,8 @@
  * Static, permanent, invincible trade station on the overmap. One-ish per zone;
  * the shop type matches the zone (deep-zone black market sells syndicate gear).
  *
- * Unlike space ruins, outposts never unload, never move and never respawn —
- * the interior is lazy-loaded on first dock and then stays for the round.
+ * Unlike space ruins, outposts never unload, never move and never respawn.
+ * The interior is lazy-loaded on first dock and then stays for the round.
  * The structure is indestructible by construction (CentCom-style turfs and
  * machinery); the deterrent against aggression is economic (turrets plus a
  * per-ship trade embargo), not HP.
@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	desc = "An independent trade station broadcasting an open docking invitation. Its hull shrugs off weapons fire."
 	icon_state = "station"
 	// Outposts broadcast their position sector-wide, so the helm lists them from
-	// GLOB.trader_outposts at any range — the sensor bubble would only duplicate it.
+	// GLOB.trader_outposts at any range: the sensor bubble would only duplicate it.
 	sensor_visible = FALSE
 
 	/// Shop datum type stocking this outpost (zone-specific)
@@ -68,7 +68,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	/// Whether the interior is currently loading
 	var/loading = FALSE
 	// Berth/elevator host vars (berths, lobby_alcove_turfs, lobby_panels,
-	// template_bottom_left) live on /obj/structure/overmap — see _overmap.dm.
+	// template_bottom_left) live on /obj/structure/overmap, see _overmap.dm.
 	/// Ships under trade embargo: ship -> world.time the embargo ends
 	var/list/embargoed_ships = list()
 	/// Minds that committed violence here: mind -> TRUE (turret targets, refused service)
@@ -86,7 +86,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	/// Looping timer id for the supply convoy restock
 	var/restock_timer
 
-/// A market, as against a crew's own colony — both are "Outposts" on the readout.
+/// A market, as against a crew's own colony. Both are "Outposts" on the readout.
 /obj/structure/overmap/trader_outpost/get_contact_variant()
 	return "market"
 
@@ -99,8 +99,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 /**
  * Creates the main shop on first need. SSovermap spawns outposts and pre-loads
- * their interiors during its own init — before SSatoms has run this structure's
- * Initialize — so interior linking and Initialize both route through here and
+ * their interiors during its own init, before SSatoms has run this structure's
+ * Initialize, so interior linking and Initialize both route through here and
  * whichever happens first builds the shop.
  */
 /obj/structure/overmap/trader_outpost/proc/ensure_main_shop()
@@ -142,7 +142,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 /**
  * Loads the outpost interior into a turf reservation (same approach as space ruins),
- * but permanently — outposts never unload.
+ * but permanently, outposts never unload.
  */
 /obj/structure/overmap/trader_outpost/proc/load_level()
 	if(reservation || loading)
@@ -200,7 +200,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!top_right)
 		return
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
-		// block() iterates y-major then x — same order the hangar-side alcove
+		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
 			lobby_alcove_turfs += interior_turf
@@ -225,9 +225,18 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				panel.outpost = src
 				panel.is_lobby = TRUE
 				lobby_panels += panel
+		// Everything the template placed is outpost property, swept here so the
+		// bare tg types on the maps (door fans, seating, lockers) are covered
+		// without a subtype each. The door fans are load-bearing: the sanctuary
+		// has no atmos plant, so a wrenched-off fan would vent it for good.
+		// Anything spawned after load (shop purchases, restock goods) is
+		// deliberately left loose.
+		for(var/obj/fixture in interior_turf)
+			if(ismachinery(fixture) || isstructure(fixture))
+				fixture.AddElement(/datum/element/outpost_property)
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
-	// yet — dressing the appearance dummy that early is unsafe, so those
+	// yet, dressing the appearance dummy that early is unsafe, so those
 	// traders run setup_from_shop in Initialize instead.
 	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
 		if(npc.flags_1 & INITIALIZED_1)
@@ -273,7 +282,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/get_dock_description()
 	return "Trader [shop?.trader_name || name] (hangar berth)"
 
-/// The hangar deck holds a berthed ship down on its own — /area/voidcrew/trader_outpost
+/// The hangar deck holds a berthed ship down on its own, /area/voidcrew/trader_outpost
 /// and its hangar are STANDARD_GRAVITY.
 /obj/structure/overmap/trader_outpost/has_ambient_gravity()
 	return TRUE
@@ -350,7 +359,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /**
  * The supply convoy arrives: shelves refill, one rotating slot rotates, the
  * special rerolls, buyback demand relaxes. The trader announces it and every
- * berthed ship gets a nudge — a standing reason to swing back past the shop.
+ * berthed ship gets a nudge, a standing reason to swing back past the shop.
  */
 /obj/structure/overmap/trader_outpost/proc/convoy_restock()
 	if(!shop)
@@ -360,7 +369,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		stocked_shop.trader_npc?.speak_line(TRADER_LINE_RESTOCK)
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth?.ship)
-			berth.ship.ship_notify("[name]: supply convoy arrived — shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+			berth.ship.ship_notify("[name]: supply convoy arrived, shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	// Open storefront UIs are looking at a stale catalog now; refresh them
 	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
 		npc.shop_ui?.update_static_data_for_all_viewers()
@@ -371,7 +380,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
  * Called when someone attacks outpost property or another visitor. The first
  * infractions only issue a warning; once the offender racks up
  * OUTPOST_AGGRESSION_STRIKES the outpost marks them and embargoes every ship
- * whose crew they belong to. Idempotent once marked — confirmed aggressors
+ * whose crew they belong to. Idempotent once marked, confirmed aggressors
  * short-circuit here.
  */
 /obj/structure/overmap/trader_outpost/register_aggression(mob/living/offender)
@@ -383,7 +392,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/strikes = aggressor_strikes[offender.mind] + 1
 	aggressor_strikes[offender.mind] = strikes
 
-	// Not over the line yet — warn and give them a chance to stand down.
+	// Not over the line yet: warn and give them a chance to stand down.
 	if(strikes < OUTPOST_AGGRESSION_STRIKES)
 		var/remaining = OUTPOST_AGGRESSION_STRIKES - strikes
 		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning. [remaining] more infraction\s and they fire."))
@@ -391,7 +400,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			trader.speak_line(TRADER_LINE_WARNING)
 		return
 
-	// Final strike — mark them and embargo their crew's ships.
+	// Final strike: mark them and embargo their crew's ships.
 	aggressor_minds[offender.mind] = TRUE
 
 	for(var/datum/team/voidcrew/team as anything in offender.mind.ship_teams)
@@ -438,7 +447,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 /**
  * Whether this mob is a valid turret target: marked aggressors AND crew of
- * embargoed ships — an embargo means shot on sight, not just refused service.
+ * embargoed ships, an embargo means shot on sight, not just refused service.
  */
 /obj/structure/overmap/trader_outpost/proc/is_turret_target(mob/living/target)
 	return istype(target) && is_user_barred(target)

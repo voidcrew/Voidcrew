@@ -1,0 +1,221 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/item/stock_parts/power_store/cell/high{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"g" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/structure/sign/warning/secure_area/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"h" = (
+/obj/structure/closet/secure_closet/armory1,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"i" = (
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"k" = (
+/obj/effect/turf_decal/box/red/corners{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/storage/toolbox/electrical,
+/obj/item/stack/cable_coil,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"l" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"o" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
+/obj/structure/sign/poster/contraband/c20r/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"p" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"q" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"r" = (
+/obj/structure/table/reinforced,
+/obj/item/wallframe/turret_control{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/structure/sign/poster/contraband/energy_swords/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"t" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"u" = (
+/obj/structure/closet/secure_closet/security,
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"w" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"C" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"D" = (
+/obj/structure/closet/syndicate,
+/obj/item/clothing/under/syndicate,
+/obj/item/clothing/under/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"G" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"H" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/structure/closet/syndicate,
+/obj/item/clothing/under/syndicate,
+/obj/item/clothing/under/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"I" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"O" = (
+/obj/structure/rack,
+/obj/item/storage/box/zipties,
+/obj/item/flashlight/seclite,
+/obj/item/flashlight/seclite,
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"Q" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"R" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/delivery/red,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+
+(1,1,1) = {"
+u
+X
+l
+I
+R
+"}
+(2,1,1) = {"
+i
+q
+Q
+I
+i
+"}
+(3,1,1) = {"
+S
+q
+C
+I
+g
+"}
+(4,1,1) = {"
+o
+q
+Q
+p
+r
+"}
+(5,1,1) = {"
+d
+q
+C
+I
+G
+"}
+(6,1,1) = {"
+D
+X
+Q
+p
+w
+"}
+(7,1,1) = {"
+O
+V
+V
+V
+k
+"}

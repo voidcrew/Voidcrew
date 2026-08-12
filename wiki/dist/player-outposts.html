@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Player Outposts — Voidcrew Wiki</title>
+<title>Player Outposts | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li class="active"><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -79,7 +81,7 @@
 <p><strong>Outpost deeds</strong> are sold over the counter at Waystation Halcyon and Quartermain Depot, on their Colonial Registry shelf. The price is 10,000 credits plus 3 trade vouchers, and it does not go down.</p>
 <p>A deed is bound to the buyer by name. Nobody else can use it, and each person may hold <strong>one active claim per round</strong>. If you already founded an outpost this shift, the registry refuses to sell you another deed.</p>
 <h2 id="founding">Founding</h2>
-<p>To found, your crew's ship has to be <strong>holding still on an empty overmap tile</strong> — not docked, not moving, and not on top of a planet, ruin or another outpost. Use the deed in hand and the registry catalogue opens.</p>
+<p>To found, your crew's ship has to be <strong>holding still on an empty overmap tile</strong>, not docked, not moving, and not on top of a planet, ruin or another outpost. Use the deed in hand and the registry catalogue opens.</p>
 <p>Pick a shell and a name:</p>
 <table>
 <thead>
@@ -110,7 +112,7 @@
 <p>Zone rules lock in at founding and never change. An outpost founded in the patrolled outer ring is <strong>protected from ship weapons forever</strong>. An outpost founded in the contested band or the lawless deep is <strong>raidable forever</strong>. Nothing you build later changes that, and you cannot move it.</p>
 </div>
 <h2 id="the-consoles">The consoles</h2>
-<p>Every shell ships with two consoles, and if either is destroyed you can rebuild it — a fresh console relinks itself to whatever outpost's z-level it is standing on. The Bare Claim's starter crate holds both boards.</p>
+<p>Every shell ships with two consoles, and if either is destroyed you can rebuild it, a fresh console relinks itself to whatever outpost's z-level it is standing on. The Bare Claim's starter crate holds both boards.</p>
 <p>The <strong>management console</strong> is the owner's control panel. Ownership is tied to your account rather than your body, so it survives death and respawn. Everyone else gets a read-only view. From it you can:</p>
 <ul>
 <li>Rename the outpost (announced galaxy-wide, on a 5-minute cooldown) and set a public memo.</li>
@@ -120,17 +122,17 @@
 <li>Transfer ownership to somebody standing on the outpost, or abandon the claim.</li>
 </ul>
 <p>The <strong>construction console</strong> puts you behind a remote drone with a built-in RCD, RTD, RPD and RLD, fed from the outpost's ore silo. It is the same tool ships use to expand their hulls, pointed at your claim instead. Anything the drone builds is automatically pulled into the outpost's powered area so it gets light, gravity and APC coverage; anything you build by hand gets swept in the same way within half a minute.</p>
-<p>You can build anywhere inside the claim's <strong>survey bounds</strong> — the shell's footprint plus fifteen tiles in every direction. Outside that, nothing.</p>
+<p>You can build anywhere inside the claim's <strong>survey bounds</strong>, the shell's footprint plus fifteen tiles in every direction. Outside that, nothing.</p>
 <h2 id="the-hangar">The hangar</h2>
-<p>Both prefab shells arrive with a <strong>hangar elevator</strong> already installed, which means visiting ships get their own private berth from the moment you found the place — exactly like a trader outpost. Ride the elevator from the concourse to any occupied berth and back.</p>
+<p>Both prefab shells arrive with a <strong>hangar elevator</strong> already installed, which means visiting ships get their own private berth from the moment you found the place, exactly like a trader outpost. Ride the elevator from the concourse to any occupied berth and back.</p>
 <p>If you took the Bare Claim, or you want the elevator somewhere else, the construction console has a three-step workflow for it: <strong>plan</strong> projects a coloured blueprint of the elevator kit under your drone, <strong>rotate</strong> turns it to face another way, and <strong>confirm</strong> stamps it down and wires it in.</p>
 <p>Without an elevator, an outpost still has two ordinary landing pads, and that is all.</p>
 <h2 id="who-is-allowed-in">Who is allowed in</h2>
 <p>The management console sets one of three docking policies:</p>
 <ul>
-<li><strong>Open</strong> — anybody may dock without asking. This is the default.</li>
-<li><strong>By request</strong> — a visiting ship's dock attempt queues a request, the owner is notified wherever they are, and they approve or deny it from the console. Approved ships stay approved.</li>
-<li><strong>Lockdown</strong> — only the owner's own crew gets in.</li>
+<li><strong>Open</strong>: anybody may dock without asking. This is the default.</li>
+<li><strong>By request</strong>: a visiting ship's dock attempt queues a request, the owner is notified wherever they are, and they approve or deny it from the console. Approved ships stay approved.</li>
+<li><strong>Lockdown</strong>: only the owner's own crew gets in.</li>
 </ul>
 <p>You can also <strong>ban</strong> specific ships outright, which overrides everything including an existing approval.</p>
 <h2 id="advertising">Advertising</h2>
@@ -148,7 +150,7 @@
 <li><strong>Recharging pauses for ten seconds after every hit.</strong> Sustained bombardment outruns regeneration; shields do not heal under fire.</li>
 <li>It draws 10 kW while charging and 1 kW while holding a full field, so your power supply has to be real.</li>
 </ul>
-<p>Building a second generator does <strong>not</strong> double your shield. Only the first working unit holds the field; the rest sit cold on standby and take over — empty — if it dies or loses power. Stacking generators buys redundancy, not capacity. Both sides get told what happened on every absorbed hit, including the charge you have left.</p>
+<p>Building a second generator does <strong>not</strong> double your shield. Only the first working unit holds the field; the rest sit cold on standby and take over (empty) if it dies or loses power. Stacking generators buys redundancy, not capacity. Both sides get told what happened on every absorbed hit, including the charge you have left.</p>
 <div class="admonition danger">
 <p class="admonition-title">When the shield collapses, everything lands</p>
 <p>Once the charge pool hits zero, missiles strike your buildings directly. A depleted shield with an attacker still on station is the point at which you either drive them off or lose the station.</p>
@@ -156,7 +158,7 @@
 <p>Nothing stops boarders. The shield is anti-ordnance only; a crew that docks at your hangar walks in the same as anybody else, which is what the docking policy and ban list are for.</p>
 <h2 id="endings">Endings</h2>
 <p>There is no cross-round persistence. When the round ends, the outpost, its contents and its deed are all gone. Nothing carries over.</p>
-<p>Two things can happen before then. You can <strong>transfer</strong> ownership to somebody standing on the outpost, provided they have not already founded a claim this round — their account becomes the owner and yours does not get a second claim. Or you can <strong>abandon</strong> it, which announces the abandonment galaxy-wide, clears ownership, reopens docking to everybody and kills any live broadcast. The station itself stays standing, unowned, with the doors open. Your account still cannot found another.</p></article>
+<p>Two things can happen before then. You can <strong>transfer</strong> ownership to somebody standing on the outpost, provided they have not already founded a claim this round. Their account becomes the owner and yours does not get a second claim. Or you can <strong>abandon</strong> it, which announces the abandonment galaxy-wide, clears ownership, reopens docking to everybody and kills any live broadcast. The station itself stays standing, unowned, with the doors open. Your account still cannot found another.</p></article>
 <footer>Voidcrew is a /tg/station fork. This wiki covers Voidcrew-specific systems; for base-game mechanics (chemistry, surgery, engineering&hellip;) see the <a href="https://wiki.tgstation13.org/">/tg/station wiki</a>.</footer>
 </main>
 </div>

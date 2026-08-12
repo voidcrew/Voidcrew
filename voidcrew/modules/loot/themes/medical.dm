@@ -1,15 +1,15 @@
 // =========================================================================
-// MEDICAL THEME — the CSV Meridian config (rare_hospice ruin) and every
+// MEDICAL THEME: the CSV Meridian config (rare_hospice ruin) and every
 // clinic, ward and quarantine wreck. Field medicine tiered up to the
 // miracle shelf: common is the aid-station shelf (basic kits and
 // consumables), uncommon is the working pharmacy (advanced kits, solid
 // chems, entry cybernetics), prime is the cold-chain stock nobody lived to
-// sign out (top kits, rare chems, tier-2 organs). Guarded by the dead —
-// plague sites keep their patients (undead markers, themes/occult.dm).
-// Cyberware: the surgical end of the parlor roster — a digester, an air
+// sign out (top kits, rare chems, tier-2 organs). Guarded by the dead.
+// Plague sites keep their patients (undead markers, themes/occult.dm).
+// Cyberware: the surgical end of the parlor roster, a digester, an air
 // bladder, a dialysis loop, and on the cold shelf the two pieces a clinic
 // would only ever have fitted under anaesthetic (pain editor, Lazarus node).
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune against the outpost shop med prices in
 // theme_skus.
 // =========================================================================

@@ -319,7 +319,7 @@
 
 /// Base power draw while warming up or running a payload (2 kW)
 #define EW_BASE_POWER_COST 2 KILO WATTS
-/// Signature ceiling — reaching it triggers a trace
+/// Signature ceiling: reaching it triggers a trace
 #define EW_SIGNATURE_MAX 100
 /// Signature decay per second while idle
 #define EW_SIGNATURE_DECAY 1.5

@@ -63,7 +63,7 @@ SUBSYSTEM_DEF(overmap)
 	/// aren't planets; planet missions simply stop being offered. Turn it back on before
 	/// committing. (Preloaded planets are separate - those are the *_planet_count vars in
 	/// voidcrew/mapping/_mapping.dm, already 0.)
-	var/spawn_planets = TRUE
+	var/spawn_planets = FALSE
 	/// How many planets of each terrain type the round gets. Only the FIRST of each type is
 	/// generated during the lobby - see prebuild_roundstart_planets(). The rest are charted
 	/// contacts with no interior until a ship goes there, so raising this adds places to go
@@ -474,7 +474,7 @@ SUBSYSTEM_DEF(overmap)
 	for (var/planet in planets)
 		var/turf/turf_for_planet
 		// Roundstart planets pre-rolled a zone band before their terrain generated
-		// (SSmapping.next_planet_zone_band()) — place them inside that band so the
+		// (SSmapping.next_planet_zone_band()), place them inside that band so the
 		// zone-scaled mobs/weather they were built with match their overmap tile
 		var/wanted_band = planets[planet]["zone_band"]
 		if(wanted_band)

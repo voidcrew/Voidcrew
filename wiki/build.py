@@ -17,7 +17,7 @@ Every page carries simple frontmatter:
     ---
 
 Files whose names start with an underscore are skipped (templates, notes).
-The markdown converter is vendored in wiki/tools/vendor — no pip install
+The markdown converter is vendored in wiki/tools/vendor, no pip install
 needed to run this.
 """
 from __future__ import annotations
@@ -118,7 +118,7 @@ def shell(title: str, sidebar: str, main: str) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(title)} — {SITE_NAME}</title>
+<title>{html.escape(title)} | {SITE_NAME}</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -172,7 +172,7 @@ def render_index(index_page: Page | None, pages: list[Page]) -> str:
 
 
 def main() -> None:
-    # Clear contents rather than deleting dist/ itself — Windows locks the
+    # Clear contents rather than deleting dist/ itself: Windows locks the
     # directory while Explorer or a terminal is sitting in it.
     DIST.mkdir(parents=True, exist_ok=True)
     for entry in DIST.iterdir():

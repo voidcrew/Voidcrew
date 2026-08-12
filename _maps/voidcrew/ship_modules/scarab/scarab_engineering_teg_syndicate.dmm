@@ -28,7 +28,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "f" = (
 /obj/machinery/power/thermoelectric_generator{
@@ -57,7 +57,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "m" = (
 /obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
@@ -78,7 +78,7 @@
 	dir = 2;
 	name = "main power monitoring console"
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "p" = (
 /obj/structure/table,
@@ -86,7 +86,7 @@
 /obj/item/clothing/mask/gas,
 /obj/item/clothing/glasses/meson/engine,
 /obj/item/clothing/glasses/meson/engine,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "q" = (
 /obj/effect/turf_decal/stripes/line{
@@ -103,7 +103,7 @@
 	dir = 8
 	},
 /obj/machinery/meter,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "v" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/orange/visible{
@@ -113,7 +113,7 @@
 	dir = 9
 	},
 /obj/machinery/meter,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "w" = (
 /obj/effect/turf_decal/stripes/line{
@@ -132,7 +132,7 @@
 	dir = 1
 	},
 /obj/machinery/digital_clock/directional/south,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/components/binary/circulator/cold{
@@ -151,7 +151,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "A" = (
 /obj/item/storage/belt/utility,
@@ -160,7 +160,7 @@
 /obj/item/multitool,
 /obj/structure/table,
 /obj/structure/sign/warning/no_smoking/directional/east,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "B" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
@@ -200,7 +200,7 @@
 /obj/machinery/atmospherics/components/tank/plasma/less,
 /obj/item/radio/intercom/directional/north,
 /obj/machinery/power/apc/auto_name/directional/west,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "H" = (
 /obj/structure/marker_beacon/burgundy,
@@ -248,7 +248,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 6
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/pipe/smart/simple/orange/visible{
@@ -269,7 +269,7 @@
 	target_temperature = 573
 	},
 /obj/structure/sign/warning/hot_temp/directional/north,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "O" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -279,7 +279,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/orange/visible{
 	dir = 4
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "P" = (
 /obj/machinery/atmospherics/components/binary/pump/off/general/hidden/layer2{
@@ -322,11 +322,11 @@
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 6
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "U" = (
 /obj/machinery/atmospherics/components/binary/volume_pump,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "V" = (
 /obj/effect/turf_decal/stripes/line{
@@ -369,7 +369,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 
 (1,1,1) = {"

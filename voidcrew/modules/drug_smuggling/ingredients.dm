@@ -51,7 +51,7 @@
 
 /obj/item/drug_ingredient/tidelily_nectar
 	name = "tidelily nectar"
-	desc = "Nectar drawn from a flower that blooms in the surf at low tide. Sweet, saline, and mildly luminescent — the fish that drink it swim in spirals."
+	desc = "Nectar drawn from a flower that blooms in the surf at low tide. Sweet, saline, and mildly luminescent, the fish that drink it swim in spirals."
 	icon_state = "tidelily_nectar"
 	biome = /datum/overmap/planet/beach
 
@@ -76,7 +76,7 @@
 /**
  * # Ingredient cache
  *
- * Weathered stash prop for dressing harvest sites — marks where a previous
+ * Weathered stash prop for dressing harvest sites, marks where a previous
  * crew worked the area. Purely decorative.
  */
 /obj/structure/ingredient_cache

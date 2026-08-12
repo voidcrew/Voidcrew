@@ -586,6 +586,7 @@
 	var/chem_index = 1
 	var/num_reagents = length(cached_reagents)
 	var/reagent_volume = 0
+	var/total_ph = 0
 	. = 0
 
 	//responsible for removing reagents and computing total ph & volume
@@ -616,25 +617,17 @@
 
 		//compute volume & ph like we would normally
 		. += reagent_volume
-		//VOIDCREW EDIT: pH accumulation removed - update_total() is hot and the sum is
-		//no longer read. See the pH assignment below.
-		//total_ph += reagent.ph * reagent_volume
+		total_ph += reagent.ph * reagent_volume
 
 		//reasign rounded value
 		reagent.volume = reagent_volume
 
 	//assign the final values, rounding up can sometimes cause overflow so bring it down
 	total_volume = min(round(., CHEMICAL_VOLUME_ROUNDING), maximum_volume)
-	//VOIDCREW EDIT ADDITION: we don't use pH. Holder pH is pinned to neutral instead of
-	//being derived from the mix, so it never drifts out of a recipe's optimal band and
-	//reactions aren't purity-penalised for it. Purity itself is untouched.
-	ph = CHEMICAL_NORMAL_PH
-	/* VOIDCREW EDIT ORIGINAL
 	if(!total_volume)
 		ph = CHEMICAL_NORMAL_PH
 	else
 		ph = clamp(total_ph / total_volume, CHEMICAL_MIN_PH, CHEMICAL_MAX_PH)
-	VOIDCREW EDIT END */
 
 	//clear out deleted reagents
 	QDEL_LIST(deleted_reagents)

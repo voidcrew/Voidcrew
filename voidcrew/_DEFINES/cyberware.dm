@@ -1,8 +1,8 @@
-// Cyberware — chrome load, slots, tiers, Cradle timings (voidcrew/modules/cyberware/)
+// Cyberware: chrome load, slots, tiers, Cradle timings (voidcrew/modules/cyberware/)
 
 /// Baseline chrome capacity of a carbon body. Installed ware sums its
 /// chrome_load against this; the Overclock Governor raises it via the
-/// component's capacity_bonus hook. Going over doesn't block removal —
+/// component's capacity_bonus hook. Going over doesn't block removal,
 /// it browns every piece of chrome out until the load drops back under.
 #define CYBERWARE_BASE_CAPACITY 20
 
@@ -10,7 +10,7 @@
 /// underwear/undershirt layer (BODY_LAYER, 32) and the eyes (EYES_LAYER, 31),
 /// so a spine rig reads over a bra or undershirt while every EQUIPPED
 /// clothing layer (UNIFORM_LAYER 28 and up) still covers it. Fractional on
-/// purpose — it must never collide with a real layer index.
+/// purpose, it must never collide with a real layer index.
 #define CYBERWARE_WORN_LAYER 31.5
 
 // ---- Organ slots -------------------------------------------------------
@@ -110,11 +110,11 @@
 // worth looking at kicks the bearer's ink with one of these; the dermis is
 // the framework's shared "your chrome just did a thing" tell.
 
-/// A single soft swell — a stash swallowed, a tool folded out, a soft landing.
+/// A single soft swell: a stash swallowed, a tool folded out, a soft landing.
 #define CYBERWARE_INK_SOFT 1
-/// The double strobe — an ability fired, a fist landed, the grips clamping.
+/// The double strobe: an ability fired, a fist landed, the grips clamping.
 #define CYBERWARE_INK_HARD 2
-/// A white-hot spike — a real hit taken, a chasm caught, a seal engaging.
+/// A white-hot spike: a real hit taken, a chasm caught, a seal engaging.
 #define CYBERWARE_INK_FLARE 3
 
 // ---- Nightshade Optics -------------------------------------------------
@@ -139,7 +139,7 @@
 /// Reserve spent per blocked breath. Carbons draw one breath roughly every
 /// 8 seconds of life ticks, so each engaged breath costs that much reserve.
 #define CYBERWARE_SECOND_WIND_DRAIN (8 SECONDS)
-/// Reserve regained per normal breath in breathable air — twice the drain
+/// Reserve regained per normal breath in breathable air, twice the drain
 /// rate, so a full recharge takes half as long as the reserve lasted.
 #define CYBERWARE_SECOND_WIND_REFILL (16 SECONDS)
 /// Minimum environmental O2 partial pressure (kPa) the bladder considers

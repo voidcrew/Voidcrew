@@ -9,9 +9,9 @@ Between the planets and the outposts, the galaxy is full of dead stations, wreck
 
 ## Signals and boarding
 
-A ruin starts as an "unknown signal" — a contact with no name and no detail. There are two ways to learn what it is before you commit: run an orbital survey on it, which permanently reveals its name and description, or research the signal-analysis tier of the radar array, after which the helm readout names ruins on its own. Either way you find out whether you are about to board a derelict, a research facility or a Syndicate site. See [The Overmap](overmap.md) for scanning and [Piloting](piloting.md) for flying there.
+A ruin starts as an "unknown signal", a contact with no name and no detail. There are two ways to learn what it is before you commit: run an orbital survey on it, which permanently reveals its name and description, or research the signal-analysis tier of the radar array, after which the helm readout names ruins on its own. Either way you find out whether you are about to board a derelict, a research facility or a Syndicate site. See [The Overmap](overmap.md) for scanning and [Piloting](piloting.md) for flying there.
 
-To board, fly onto the signal's tile and press Dock; the button reads "(boarding)". Two berths per ruin, same as a planet. Very large hulls are turned away — if the console says the ship is too big to dock, you need a smaller ride or a shuttle.
+To board, fly onto the signal's tile and press Dock; the button reads "(boarding)". Two berths per ruin, same as a planet. Very large hulls are turned away, if the console says the ship is too big to dock, you need a smaller ride or a shuttle.
 
 The interior loads when the first ship arrives and is torn down once everyone leaves. **Anything you leave inside a ruin is gone when it unloads**, and once a ruin has been cleared out and abandoned, a different ruin appears elsewhere in its place. The supply does not run out.
 
@@ -30,7 +30,7 @@ Not every ruin has one. The ones that do keep it in the most defensible room the
 
 Every ruin with a cache has something watching it, and the same ruin plays differently depending on where it spawned. Guard packs roll their size and their nastiness from the ruin's zone band: a green-ring site might have one straggler at the door, while the identical map in the lawless deep has packs at the chokepoints and a real monster on the vault.
 
-Expect pirates, Syndicate operatives, cultists, undead, insects, wildlife or hostile robots depending on the ruin's theme. **Elite-tier enemies are the ceiling** — harder versions of ordinary mobs, captains, lieutenants. Megafauna do not guard loot. The only places you will meet one are the surface of a volcanic planet, a short list of purpose-built arena ruins on volcanic, frozen and apocalyptic planet surfaces, and inside virtual reality ([Bitrunning](bitrunning.md)). See [Threats & Elites](threats-and-elites.md) for what you are actually fighting.
+Expect pirates, Syndicate operatives, cultists, undead, insects, wildlife or hostile robots depending on the ruin's theme. **Elite-tier enemies are the ceiling**. Harder versions of ordinary mobs, captains, lieutenants. Megafauna do not guard loot. The only places you will meet one are the surface of a volcanic planet, a short list of purpose-built arena ruins on volcanic, frozen and apocalyptic planet surfaces, and inside virtual reality ([Bitrunning](bitrunning.md)). See [Threats & Elites](threats-and-elites.md) for what you are actually fighting.
 
 ## Rare ruins and rumour charts
 
@@ -38,32 +38,32 @@ Ten named sites never appear on the chart on their own. The only way to one is t
 
 | Tip | Where it puts the ruin |
 |---|---|
-| CSV Meridian — a sealed plague ship | Contested space |
-| Eventide — a xenobiology annex that lost containment | Contested space |
-| MV Ambassador — a derelict liner with salvagers already aboard | Contested space |
-| Bastion-6 — a munitions barge with a live security grid | Lawless space |
-| The Scuppers — a smugglers' freeport in a hollow asteroid | Lawless space |
-| Pilgrim's Vow — a prayer barge whose congregation never stopped | Lawless space |
-| Helios-Betna — an automated foundry still running its line | Lawless space |
-| Longwatch Station — a survey post with something loose aboard | Lawless space |
-| Kestrel Anchorage — a Syndicate depot still under orders | Lawless space |
-| Nullstack Arcade — an overrun netpod parlour | Lawless space |
+| CSV Meridian, a sealed plague ship | Contested space |
+| Eventide, a xenobiology annex that lost containment | Contested space |
+| MV Ambassador, a derelict liner with salvagers already aboard | Contested space |
+| Bastion-6, a munitions barge with a live security grid | Lawless space |
+| The Scuppers, a smugglers' freeport in a hollow asteroid | Lawless space |
+| Pilgrim's Vow, a prayer barge whose congregation never stopped | Lawless space |
+| Helios-Betna, an automated foundry still running its line | Lawless space |
+| Longwatch Station, a survey post with something loose aboard | Lawless space |
+| Kestrel Anchorage, a Syndicate depot still under orders | Lawless space |
+| Nullstack Arcade, an overrun netpod parlour | Lawless space |
 
 Each of the three outpost types deals three charts onto its shelf, drawn from one galaxy-wide pool, so a tip sold at one outpost is gone everywhere. One chart per ruin per round, and one use each. Contested-lane tips run 3000–4800 credits, sometimes with a voucher or two attached; deep-lane tips cost three vouchers, and the hardest of them add credits on top. See [Trader Outposts](trader-outposts.md) and [Money & Trade](money-and-trade.md).
 
-Buying uploads a sealed rumour to your ship. Nothing exists yet — the ruin is spawned when someone hits reveal at the helm, which puts it on the chart as a gold "encrypted signal" and marks it as a waypoint. Reveal it when the crew is actually ready, not the moment you dock back home. Rare ruins are one-shots: clearing one does not seed a replacement.
+Buying uploads a sealed rumour to your ship. Nothing exists yet. The ruin is spawned when someone hits reveal at the helm, which puts it on the chart as a gold "encrypted signal" and marks it as a waypoint. Reveal it when the crew is actually ready, not the moment you dock back home. Rare ruins are one-shots: clearing one does not seed a replacement.
 
-There is also a cheap standing tip — "word on the lanes", 1500 credits at any outpost — which simply marks one uncharted ordinary signal on your helm and names the band it sits in. Useful when the chart is empty and you do not want to fly a search pattern.
+There is also a cheap standing tip ("word on the lanes", 1500 credits at any outpost) which simply marks one uncharted ordinary signal on your helm and names the band it sits in. Useful when the chart is empty and you do not want to fly a search pattern.
 
 ## Contested caches
 
-Roughly half an hour into the round, and at most twice per round, a bonded courier platform surfaces in contested or lawless space and announces itself to the entire galaxy on every channel — position included. Its vault unseals ten minutes after the notice, and everyone heard the same broadcast.
+Roughly half an hour into the round, and at most twice per round, a bonded courier platform surfaces in contested or lawless space and announces itself to the entire galaxy on every channel, position included. Its vault unseals ten minutes after the notice, and everyone heard the same broadcast.
 
-Once the seals drop, anyone standing at the vault can force it by hand. It takes thirty uninterrupted seconds, and taking any damage breaks your grip. The prize is a crate of ship-grade components, which still has to be carried back to your ship and flown home — and can be taken off you on the way. Every other crew got the same announcement you did, so expect company; see [Threats & Elites](threats-and-elites.md).
+Once the seals drop, anyone standing at the vault can force it by hand. It takes thirty uninterrupted seconds, and taking any damage breaks your grip. The prize is a crate of ship-grade components, which still has to be carried back to your ship and flown home, and can be taken off you on the way. Every other crew got the same announcement you did, so expect company; see [Threats & Elites](threats-and-elites.md).
 
 ## Vestige ruins
 
-Vestige ruins are a separate, patron-driven system that surfaces later in the round — see [Vestige Ruins](vestige-ruins.md).
+Vestige ruins are a separate, patron-driven system that surfaces later in the round. See [Vestige Ruins](vestige-ruins.md).
 
 ## Ruins on planets
 

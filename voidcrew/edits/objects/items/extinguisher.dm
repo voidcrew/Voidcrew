@@ -8,7 +8,7 @@
  * Dropping it to WEIGHT_CLASS_NORMAL lets it ride in a backpack.
  *
  * The catch is upstream's wind-up head bash (attack_secondary), which gates
- * itself on `w_class < WEIGHT_CLASS_BULKY` — lowering the weight class silently
+ * itself on `w_class < WEIGHT_CLASS_BULKY`, lowering the weight class silently
  * deletes the attack. The override below keeps the bash and re-gates it on an
  * explicit `can_wallop` var instead, so the two are no longer coupled and a
  * future weight change can't quietly remove a combat feature again.
@@ -37,7 +37,7 @@
 /**
  * A copy of upstream's attack_secondary (code/game/objects/items/extinguisher.dm)
  * with the weight-class gate swapped for `can_wallop`. Everything else is
- * verbatim — if upstream retunes the bash, re-sync this body.
+ * verbatim, if upstream retunes the bash, re-sync this body.
  */
 /obj/item/extinguisher/attack_secondary(mob/living/victim, mob/living/user, params)
 	if(!can_wallop)

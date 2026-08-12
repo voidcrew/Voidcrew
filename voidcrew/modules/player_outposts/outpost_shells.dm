@@ -11,12 +11,12 @@
  * - one /obj/machinery/ore_silo (feeds the construction console's internal tools)
  * - one /obj/effect/landmark/player_outpost_arrival
  * - a hangar elevator kit on the north side: 3x3 /obj/effect/landmark/outpost_elevator_alcove
- *   with one /obj/machinery/outpost_elevator/directional panel — so visiting ships
+ *   with one /obj/machinery/outpost_elevator/directional panel, so visiting ships
  *   get hangar berths from the moment of founding (see outpost_hangar.dm)
  * - external airlocks on the remaining cardinal sides (EVA walk-in stays possible)
  * - pressurized core, lights
  * - a starter power bay: APC + cable, charged SMES with input terminal, and an
- *   unanchored portable generator with fuel — the area requires power, so when
+ *   unanchored portable generator with fuel, the area requires power, so when
  *   the SMES buffer drains the owner keeps the generator fed or goes dark
  *
  * The bare-claim shell deliberately breaks all of these: it ships nothing but a
@@ -63,7 +63,7 @@
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_nothing.dmm"
 
 /// The bare claim's entire inheritance: the two registry console boards.
-/// Everything else — frames, materials, the silo, air — is the owner's problem.
+/// Everything else (frames, materials, the silo, air) is the owner's problem.
 /obj/structure/closet/crate/player_outpost_start
 	name = "colonial registry claim crate"
 	desc = "The colonial registry's idea of a starter kit: the circuit boards for an outpost's management and construction consoles, and a packing slip wishing you luck."

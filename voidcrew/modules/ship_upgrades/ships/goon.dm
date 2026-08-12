@@ -4,6 +4,16 @@
 //
 //   goon_port         x2-7  y7-9   18 tiles   marker (2,7)
 //     reserve (7,7) with /turf/template_noop - hull APC + light live there.
+//     PALETTE SEAM: because (7,7) is noop, its FLOOR is the hull's, and each
+//     hull floors it in that theme's palette (a/b titanium/blue, c
+//     plastitanium/red, d iron/dollhouse) to match the hull's other port-pod
+//     tiles (3,10),(4,10),(8,8). A module whose room palette differs will show
+//     that one tile in the hull's colour, in the corner where the APC is. The
+//     three current modules already disagree with each other - infirmary and
+//     chemlab floor titanium/blue, brig floors plain titanium - so no single
+//     hull turf can match them all. Match titanium/blue if you want the seam
+//     to vanish on the two NT themes; on c/d it cannot vanish without a
+//     goon_port_<theme>.dmm variant.
 //     Hull (6,7) borders the engine-room porthole at (6,6): a HARD-dense machine
 //     there leaves that window tile with no approach and the linter flags it. A
 //     closet or bare floor is fine. Keep hull (3,10) reachable too - the volume
@@ -15,6 +25,13 @@
 //
 //   goon_engineering  x4-7  y3-5   12 tiles   marker (4,3)
 //     reserve (7,3) with /turf/template_noop - hull APC + tool crate.
+//     PALETTE SEAM: as with (7,7), the hull owns this tile's floor and each
+//     hull matches its own engine-room tiles (3,2)-(3,5),(4,2),(8,4) - a
+//     titanium/yellow, b titanium/blue, c plastitanium, d iron/dollhouse. All
+//     three current modules floor titanium/yellow, so the seam is invisible on
+//     a and visible on b/c/d. Do not "fix" it by repainting the hull tile: it
+//     would then be the only engine-room floor tile in that hull not matching
+//     the rest. The fix is a themed module variant.
 //     Hull owns the APC cable run (4,3)-(6,3) and the ship's distro main on
 //     y4 (4,4)-(7,4), including the scrubber at (6,4).
 //     EVERY module here must ship a complete power plant - this slot is the
@@ -42,6 +59,18 @@
 //     EVERY module here must ship a helm console. Column 16 (APC, vent,
 //     scrubber, air alarm, supply trunk) and the docking port at (19,6) are
 //     permanent hull.
+//     The hull keeps MOVABLES on three of these six tiles and the module
+//     stacks on top of them rather than replacing them: mission_pad (17,5),
+//     computer/mission_board (18,5), and - on goon_a only - the captain's
+//     beeplushie at (17,6), which is the standard theme's documented signature
+//     and so must not live in a shared module. Don't put a dense object on
+//     (17,5) or (18,5), and expect (17,6) to already hold an item.
+//     The hull also owns the glazing: (19,5)-(19,7) east, (18,4) south and
+//     (18,8) north are all fulltile shuttle windows. The modules additionally
+//     place directional window spawners facing each of those five, which is
+//     inherited verbatim from the pre-modular ship_goon.dmm and matches the
+//     hull's own idiom at (16,4)/(16,8) - it is deliberate double glazing, not
+//     a duplicate. Leave it.
 //
 // No slot has its own area - each rides the APC of the hull area it was carved
 // from, so no module may place an APC.

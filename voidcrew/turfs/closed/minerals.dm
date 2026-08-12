@@ -1,33 +1,33 @@
 /**
- * Zone ore scaling — planets in deeper overmap zone bands yield MORE ore per
+ * Zone ore scaling: planets in deeper overmap zone bands yield MORE ore per
  * mineral wall (same ore tables; kinds are never zone-gated, only amounts).
  *
  * Called from the one-line VOIDCREW EDIT in the base gets_drilled()
- * (code/game/turfs/closed/minerals.dm) — the single payout choke point every
+ * (code/game/turfs/closed/minerals.dm), the single payout choke point every
  * mining path funnels through (picks, drills, KA/plasma projectiles, ex_act,
  * blob). Scaling at payout instead of Initialize means spread-vein walls
  * (which keep the default mineralAmt of 3, never touched by
  * scale_ore_to_vent()) and mapper-placed ore walls inside planet ruins get
  * scaled too, and it costs nothing at planet init. Walls created after init
- * are equally covered — and on non-planet z-levels (space ruins,
+ * are equally covered, and on non-planet z-levels (space ruins,
  * asteroid-field reservations, outposts, transit) the band lookup returns
  * null, so behavior there is byte-identical to upstream.
  *
  * Deliberately NOT scaled:
- * * telecrystal + glacial core veins — the planetary trade goods
+ * * telecrystal + glacial core veins: the planetary trade goods
  *   (voidcrew/modules/trade/planetary_goods.dm); their supply is
  *   economy-tuned, so a richer red-band spigot would distort the
  *   voucher/credit ladder
- * * gibtonite and "very strong rock" — their gets_drilled() overrides never
+ * * gibtonite and "very strong rock": their gets_drilled() overrides never
  *   call the base proc, so they never reach this hook; gibtonite's
  *   mineralAmt is detonation bookkeeping, not an ore payout
- * * gulag boulder walls — they use spawned_boulder, not mineralType, so the
+ * * gulag boulder walls: they use spawned_boulder, not mineralType, so the
  *   base proc's mineralType guard already skips them
  */
 /turf/closed/mineral/proc/zone_scaled_ore_amount(amount)
 	if(amount <= 0)
 		return amount
-	// trade-good veins keep their tuned yields — see block comment
+	// trade-good veins keep their tuned yields (see block comment)
 	if(istype(src, /turf/closed/mineral/telecrystal) || istype(src, /turf/closed/mineral/glacial))
 		return amount
 	// Resolved live, per wall. SSmapping.get_planet_zone_band_for_z() alone only

@@ -106,6 +106,26 @@
 /obj/machinery/biogenerator,
 /turf/open/floor/iron,
 /area/template_noop)
+"y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "z" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
@@ -134,11 +154,7 @@
 /turf/open/floor/grass,
 /area/template_noop)
 "J" = (
-/obj/structure/girder/displaced,
-/obj/item/stack/sheet/mineral/titanium,
-/obj/item/stack/rods,
-/obj/item/stack/cable_coil,
-/turf/open/floor/plating/airless,
+/turf/template_noop,
 /area/template_noop)
 "O" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -230,7 +246,7 @@ Z
 Y
 d
 o
-a
+d
 l
 "}
 (6,1,1) = {"
@@ -238,7 +254,7 @@ X
 V
 s
 V
-z
+y
 "}
 (7,1,1) = {"
 O

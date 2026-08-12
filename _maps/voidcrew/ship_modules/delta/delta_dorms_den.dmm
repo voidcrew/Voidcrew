@@ -6,6 +6,10 @@
 	},
 /turf/open/floor/wood,
 /area/template_noop)
+"d" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/template_noop)
 "e" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/neutral,
@@ -46,6 +50,11 @@
 /obj/machinery/cryopod{
 	dir = 2
 	},
+/turf/open/floor/wood,
+/area/template_noop)
+"u" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
 /turf/open/floor/wood,
 /area/template_noop)
 "v" = (
@@ -118,12 +127,12 @@ i
 e
 "}
 (4,1,1) = {"
-Z
+d
 N
 e
 "}
 (5,1,1) = {"
-m
+u
 v
 e
 "}

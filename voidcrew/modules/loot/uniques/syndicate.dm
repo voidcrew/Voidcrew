@@ -1,14 +1,14 @@
 /**
- * # SYNDICATE unique loot — reinforced syndicate cache
+ * # SYNDICATE unique loot: reinforced syndicate cache
  *
  * Six found-in-the-world prizes for the syndicate zone-loot cache
- * (voidcrew/modules/loot/zone_loot.dm). Not antag gear — nothing here
+ * (voidcrew/modules/loot/zone_loot.dm). Not antag gear, nothing here
  * requires a role or grants a loadout, they're just very good pickups.
  *
  * Every item ADD_TRAITs TRAIT_NO_REPLICATE on itself so the Helios pattern
  * stamp (and any future duplicator) refuses to copy it.
  *
- * Not yet wired into any loot table — see the `loot_uniques` shelf in voidcrew/modules/loot/themes/.
+ * Not yet wired into any loot table, see the `loot_uniques` shelf in voidcrew/modules/loot/themes/.
  */
 
 /// Bespoke, non-public radio frequency for the Ferryman coin/earpiece pair.
@@ -17,14 +17,14 @@
 #define FREQ_LISTENING_COIN 1401
 
 // =============================================================================
-// GREEN — "Ferryman" listening coin
+// GREEN: "Ferryman" listening coin
 // =============================================================================
 
 /**
  * A bugged coin. Mechanically it's just a radio: broadcasting = TRUE makes
  * the base /obj/item/radio class relay any speech it hears into its radio
- * channel (see set_broadcasting() in code/game/objects/items/devices/radio/radio.dm)
- * — that's the whole trick, no custom Hear() override needed. It ships
+ * channel (see set_broadcasting() in code/game/objects/items/devices/radio/radio.dm).
+ * That's the whole trick, no custom Hear() override needed. It ships
  * paired with a locked-frequency earpiece.
  *
  * Deviation from the design doc: the doc's suggested typepath was
@@ -57,7 +57,7 @@
 	slot_flags = NONE
 	canhear_range = 2
 	// Without freerange, set_frequency() sanitizes anything outside the public
-	// 1441-1489 band — our 1401 would silently clamp onto a public channel
+	// 1441-1489 band, our 1401 would silently clamp onto a public channel
 	freerange = TRUE
 	/// Set once someone starts searching it for the bug.
 	var/being_searched = FALSE
@@ -101,13 +101,13 @@
 	)
 	qdel(src)
 
-/// The paired earpiece the coin "ships with" — a normal headset, locked to
+/// The paired earpiece the coin "ships with", a normal headset, locked to
 /// the coin's frequency and listen-only so it doesn't also broadcast the
 /// wearer's own voice back into the channel.
 /obj/item/radio/headset/listening_coin_earpiece
 	name = "unmarked earpiece"
 	desc = "A tiny earpiece with no manufacturer stamp. It's locked to one private frequency."
-	// Same clamp-dodge as the coin — the pair lives outside the public band
+	// Same clamp-dodge as the coin: the pair lives outside the public band
 	freerange = TRUE
 
 /obj/item/radio/headset/listening_coin_earpiece/Initialize(mapload)
@@ -118,7 +118,7 @@
 	freqlock = RADIO_FREQENCY_LOCKED
 
 // =============================================================================
-// GREEN — Courier's palm
+// GREEN: Courier's palm
 // =============================================================================
 
 /**
@@ -127,7 +127,7 @@
  * COMSIG_TRY_STRIP (code/datums/elements/strippable.dm), sent to the
  * *stripper* at the very start of both try_equip() and try_unequip() before
  * any do_after or warning message fires. Returning COMPONENT_CANT_STRIP
- * there aborts the slow/loud vanilla path entirely — so we intercept there,
+ * there aborts the slow/loud vanilla path entirely, so we intercept there,
  * perform an instant silent transfer ourselves (restricted to hands and
  * pockets only), and cancel the normal one.
  */
@@ -200,7 +200,7 @@
 /**
  * Signal handler for COMSIG_TRY_STRIP, fired on the wearer whenever they
  * open the strip menu's equip or unequip flow on somebody. Only handles
- * items currently sitting in the target's hands or pockets — everything
+ * items currently sitting in the target's hands or pockets, everything
  * else (masks, armor, ears, etc.) is left to the normal slow/loud path.
  */
 /obj/item/clothing/gloves/courier/proc/on_try_strip(mob/living/user, atom/strip_target, obj/item/relevant_item)
@@ -264,17 +264,17 @@
 	return TRUE
 
 // =============================================================================
-// YELLOW — Static cuff
+// YELLOW: Static cuff
 // =============================================================================
 
 /**
  * Deviation from the design doc: cameras can't selectively render "static"
- * to one viewer while showing everyone else a clean feed — that would
+ * to one viewer while showing everyone else a clean feed, that would
  * require touching the camera rendering pipeline itself. What's real and
  * feasible from a worn item:
  *  - COMSIG_LIVING_CAN_TRACK -> COMPONENT_CANT_TRACK (verified in
  *    code/game/machinery/camera/trackable.dm and reused by e.g. the MOD
- *    camera-vision module) — this is the actual mechanism AI/console
+ *    camera-vision module), this is the actual mechanism AI/console
  *    "track" lookups check, and blocking it is the mechanically important
  *    half of "AI tracking on you fails".
  *  - Hiding from silicon AI huds, mirroring /datum/element/digitalcamo's
@@ -283,7 +283,7 @@
  *    camera in range is held on its own existing EMP-look icon state
  *    (base_icon_state + "_emp", see /obj/machinery/camera/update_icon_state())
  *    for as long as the cuff is on. This is purely the physical camera prop's
- *    sprite — it does not touch camera_enabled/network, so the feed itself
+ *    sprite, it does not touch camera_enabled/network, so the feed itself
  *    keeps working for everyone watching it.
  *    The hold works by listening to COMSIG_ATOM_UPDATE_ICON_STATE, which the
  *    camera sends at the END of its own update_icon_state(), so our write is
@@ -302,13 +302,13 @@
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = ITEM_SLOT_BELT
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 2)
-	// Belt-worn items can't be attack_self'd from the belt slot — the action
+	// Belt-worn items can't be attack_self'd from the belt slot, the action
 	// button routes to attack_self via the default ui_action_click, so the
 	// switch stays reachable while worn
 	actions_types = list(/datum/action/item_action/toggle)
 	/// Currently toggled on.
 	var/active = FALSE
-	/// Who the tracking shield is currently registered on — unregistration
+	/// Who the tracking shield is currently registered on, unregistration
 	/// must target them, not whatever loc happens to be after a drop.
 	var/mob/living/shielded_wearer
 	/// Remaining runtime, in deciseconds.
@@ -410,7 +410,7 @@
 
 /// Brings the set of held cameras in line with what's actually in range right
 /// now: cameras that just came into range get pinned, anything the wearer
-/// walked away from gets released. Cosmetic only — see the class doc comment
+/// walked away from gets released. Cosmetic only (see the class doc comment)
 /// for why this can't touch the actual feed.
 /obj/item/static_cuff/proc/sweep_cameras()
 	var/turf/here = get_turf(src)
@@ -477,12 +477,12 @@
 			silicon_hud.unhide_single_atomhud_from(ai_mob, target)
 
 // =============================================================================
-// YELLOW — "Housecall"
+// YELLOW: "Housecall"
 // =============================================================================
 
 /**
  * Subtypes the .38 revolver (code/modules/projectiles/guns/ballistic/revolver.dm)
- * for its icon/sprite and ammo economy — the design doc calls it a ".38",
+ * for its icon/sprite and ammo economy. The design doc calls it a ".38",
  * matching the c38 revolver rather than the .357 base one. Its magazine
  * subtypes cylinder/rev38 specifically (not the .357 base cylinder) so the
  * caliber stays consistent with the c38 casings it's loaded with.
@@ -493,7 +493,7 @@
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "housecall"
 	// c38 sets base_icon_state = "c38" and ballistic/update_icon_state() rebuilds
-	// icon_state from it on every update — without this the gun turns invisible.
+	// icon_state from it on every update, without this the gun turns invisible.
 	base_icon_state = "housecall"
 	inhand_icon_state = "housecall"
 	lefthand_file = 'voidcrew/modules/loot/icons/uniques_lefthand.dmi'
@@ -519,7 +519,7 @@
 	projectile_type = /obj/projectile/bullet/c38/housecall
 
 /// Modest damage; the payload is the anesthetic, not the hole. The dart mutes,
-/// staggers, muddles and pushes the target toward sleep — enough to take
+/// staggers, muddles and pushes the target toward sleep, enough to take
 /// someone out of a fight without killing them outright.
 /obj/projectile/bullet/c38/housecall
 	name = "subdermal dart"
@@ -553,7 +553,7 @@
 	return .
 
 // =============================================================================
-// RED — Second Shadow
+// RED: Second Shadow
 // =============================================================================
 
 /**
@@ -561,8 +561,8 @@
  * that eats the hit for you" mechanic in this codebase. What's real and
  * reused here:
  *  - The exact signal set /datum/status_effect/stun_absorption listens to
- *    (code/datums/status_effects/buffs/stun_absorption.dm) — knockdown,
- *    stun, paralyze, immobilize, incapacitate — all resolve through
+ *    (code/datums/status_effects/buffs/stun_absorption.dm), knockdown,
+ *    stun, paralyze, immobilize, incapacitate, all resolve through
  *    SEND_SIGNAL(..., amount, ignore_canstun) and respect COMPONENT_NO_STUN
  *    as a cancel. We hook those five signals directly (rather than reusing
  *    the shared status effect class itself, to avoid interacting with other
@@ -571,7 +571,7 @@
  *    (code/datums/components/reflection.dm): copy_appearance_filter_overlays()
  *    onto a temp_visual effect placed where the wearer stood.
  *  - "Crit-threshold hit" specifically isn't its own signal in this
- *    codebase — attacks that would put someone in crit generally also
+ *    codebase, attacks that would put someone in crit generally also
  *    apply a knockdown/stun as part of the same swing, so the five
  *    incapacitation signals are the closest real hook and cover the
  *    intended cases in practice.
@@ -580,7 +580,7 @@
  *    inside a signal handler mid-attack, with no opportunity for a
  *    do_after/UI prompt to ask the (about to be stunned) player anything.
  */
-// The cloak's hood, tinted to match — an untinted goliath hood renders bright red.
+// The cloak's hood, tinted to match, an untinted goliath hood renders bright red.
 /obj/item/clothing/head/hooded/cloakhood/goliath/second_shadow
 	color = "#3a3a45"
 
@@ -681,7 +681,7 @@
 		alerted_wearer.remove_status_effect(/datum/status_effect/syndicate_recharge/second_shadow)
 	alerted_wearer = null
 
-/// Signal handler for the incapacitation signals — see intercepted_signals.
+/// Signal handler for the incapacitation signals, see intercepted_signals.
 /// All five share the (source, amount, ignore_canstun) shape.
 /obj/item/clothing/suit/hooded/cloak/second_shadow/proc/try_intercept(mob/living/source, amount, ignore_canstun)
 	SIGNAL_HANDLER
@@ -711,7 +711,7 @@
 
 	wearer.visible_message(
 		span_warning("The blow passes clean through [wearer], and the shape flickers and slips aside!"),
-		span_userdanger("The cloak snaps you out of the way — the hit lands on empty air!"),
+		span_userdanger("The cloak snaps you out of the way. The hit lands on empty air!"),
 	)
 
 	var/old_alpha = wearer.alpha
@@ -727,21 +727,21 @@
 		step(wearer, pick(open_dirs))
 
 /// A silent, non-interactive copy of the wearer's appearance left behind at
-/// the moment of interception. Purely cosmetic — see spawn_decoy().
+/// the moment of interception. Purely cosmetic, see spawn_decoy().
 /obj/effect/temp_visual/second_shadow_decoy
 	name = "flickering shape"
 	randomdir = FALSE
 	duration = 3 SECONDS
 
 // =============================================================================
-// RED — "Understudy"
+// RED: "Understudy"
 // =============================================================================
 
 /**
  * Deviation from the design doc: full DNA/species-level identity swap (the
  * changeling "transform" power, code/modules/antagonists/changeling/powers/transform.dm)
  * is built entirely around the changeling antag datum and an absorbed-DNA
- * profile list — there's no standalone entry point to reuse it for a plain
+ * profile list, there's no standalone entry point to reuse it for a plain
  * loot item. Instead this copies the three independently real, lighter
  * levers this codebase exposes:
  *  - display name (mob/name)
@@ -844,7 +844,7 @@
 	remove_on_fullheal = FALSE
 	/// The name we're overriding, restored on removal.
 	var/old_name
-	/// Who we copied — held only long enough to apply the effect.
+	/// Who we copied: held only long enough to apply the effect.
 	var/mob/living/carbon/human/copied_from
 
 /datum/status_effect/understudy_disguise/on_creation(mob/living/new_owner, mob/living/carbon/human/target, duration = 10 MINUTES)
@@ -944,7 +944,7 @@
 	icon_state = "alert_understudy"
 
 // =============================================================================
-// Shared — "this thing is recharging" HUD countdown
+// Shared: "this thing is recharging" HUD countdown
 // =============================================================================
 
 /**
@@ -955,7 +955,7 @@
  *
  * The item hands us the time remaining, so putting the item back on partway
  * through the cooldown picks the countdown back up where it left off. Removing
- * the effect early (taking the item off) is silent — only the countdown
+ * the effect early (taking the item off) is silent, only the countdown
  * actually running out counts as "ready".
  */
 /datum/status_effect/syndicate_recharge

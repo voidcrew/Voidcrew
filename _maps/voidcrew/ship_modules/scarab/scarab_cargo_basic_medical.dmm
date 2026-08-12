@@ -1,8 +1,5 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/structure/closet/firecloset{
-	anchored = 1
-	},
 /obj/effect/turf_decal/bot_red,
 /obj/effect/turf_decal/stripes/red/corner{
 	dir = 1
@@ -203,6 +200,9 @@
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
 "J" = (
+/obj/structure/closet/firecloset{
+	anchored = 1
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
 	},
@@ -233,7 +233,6 @@
 /obj/item/flashlight/flare,
 /obj/item/flashlight/flare,
 /obj/item/stack/rods/fifty,
-/obj/item/storage/box/lights/bulbs,
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
 "M" = (

@@ -6,8 +6,8 @@
  * give less warning before they hit, and last longer once they do.
  *
  * Severity is applied through the COMSIG_WEATHER_TELEGRAPH global signal, which
- * every /datum/weather sends at the very top of telegraph() — before it rolls
- * its duration or arms the start timer — so mutating the storm instance there
+ * every /datum/weather sends at the very top of telegraph(), before it rolls
+ * its duration or arms the start timer, so mutating the storm instance there
  * is race-free. Each storm instance is one-shot, so the multipliers never stack.
  *
  * Zone resolution: live overmap lookup first (planet mapzones own whole

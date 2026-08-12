@@ -2,7 +2,7 @@
  * # Ship Waypoints
  *
  * Charted points of interest shown on the helm's waypoint readout.
- * Pure QoL bookkeeping: no detection, no map pings — just a name and
+ * Pure QoL bookkeeping: no detection, no map pings, just a name and
  * overmap coordinates the helm renders with live distance/bearing.
  *
  * Sources push waypoints keyed by a source_key (mission REF, outpost REF)
@@ -87,8 +87,8 @@
 /**
  * # Fleet beacons
  *
- * A few sites announce themselves to the whole galaxy the moment they surface —
- * the Verdigris, the Grand Colosseum, a contested cache — and chart themselves
+ * A few sites announce themselves to the whole galaxy the moment they surface,
+ * the Verdigris, the Grand Colosseum, a contested cache, and chart themselves
  * onto every helm so nobody has to go hunting for a thing that just shouted its
  * own coordinates. That push was a one-shot walk of SSovermap.simulated_ships at
  * surface time, which silently excluded every ship built AFTER it: a mid-round
@@ -119,7 +119,7 @@ GLOBAL_LIST_EMPTY(overmap_fleet_beacons)
 
 /**
  * Starts broadcasting: charts this site on every helm in the fleet right now,
- * and registers so ships created later get it too. Idempotent — re-calling
+ * and registers so ships created later get it too. Idempotent, re-calling
  * refreshes the existing waypoints in place rather than stacking new ones.
  */
 /obj/structure/overmap/proc/broadcast_fleet_waypoint()

@@ -1,12 +1,12 @@
 /**
- * Weapon schematics — blueprint-gated crafting-menu recipes
+ * Weapon schematics: blueprint-gated crafting-menu recipes
  *
  * A blueprint is a physical schematic scroll. Its recipe appears in the
  * ordinary tg crafting menu when EITHER:
  *   1. the crafter is carrying the physical blueprint anywhere on them, or
  *   2. the crafter's ckey holds a neural imprint of it for the round
  *      (bought at an outpost's neural schematic imprinter, destroying the
- *      physical copy — see voidcrew/modules/trade/blueprint_imprinter.dm).
+ *      physical copy, see voidcrew/modules/trade/blueprint_imprinter.dm).
  *
  * The availability gate lives in a //VOID EDIT inside
  * /datum/component/personal_crafting/is_recipe_available().
@@ -16,8 +16,8 @@
  *
  * Machined gun parts stay the R&D clock: each gun's part design prints at
  * the protolathe behind its techweb part node (see the per-gun files), and the
- * crafting recipes consume that part. Gun recipes also want a firing pin —
- * crafted guns get a clean standard pin installed in place of any
+ * crafting recipes consume that part. Gun recipes also want a firing pin.
+ * Crafted guns get a clean standard pin installed in place of any
  * faction-locked default (see on_craft_completion below). No bench or other
  * machinery is required; the recipe and its reqs are the whole gate, so
  * crafting can happen anywhere.
@@ -57,7 +57,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 	var/recipe_type
 	/// Display name of the thing it builds
 	var/schematic_name = "something"
-	/// BLUEPRINT_TIER_* — drives the imprinter fee and the scroll's tint
+	/// BLUEPRINT_TIER_*: drives the imprinter fee and the scroll's tint
 	var/tier = BLUEPRINT_TIER_YELLOW
 
 /obj/item/blueprint/Initialize(mapload)
@@ -111,20 +111,20 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
  * # Blueprint recipes
  *
  * Availability of the whole /blueprint subtree is gated in
- * is_recipe_available (VOID EDIT) — no CRAFT_MUST_BE_LEARNED involved.
+ * is_recipe_available (VOID EDIT), no CRAFT_MUST_BE_LEARNED involved.
  */
 /datum/crafting_recipe/blueprint
 	time = 10 SECONDS
 	category = CAT_WEAPON_RANGED
 
 /// Gun schematics: consume the techweb-gated machined part plus a firing pin.
-/// No machinery requirement — craftable anywhere the schematic is available.
+/// No machinery requirement: craftable anywhere the schematic is available.
 /datum/crafting_recipe/blueprint/gun
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
 
 /**
  * Blueprint-crafted guns swap any faction-locked default pin (syndicate
- * implant pins on the C-20r, SAW, Bulldog...) for a clean standard pin — the
+ * implant pins on the C-20r, SAW, Bulldog...) for a clean standard pin, the
  * recipe consumed one as a requirement. Without this the crafted gun would
  * refuse its own crew.
  */

@@ -1,0 +1,193 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/structure/closet/secure_closet/security,
+/obj/machinery/light/directional/north,
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"c" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/modular_map_connector,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"r" = (
+/obj/structure/table/reinforced,
+/obj/item/wallframe/turret_control{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/item/paper{
+	name = "turret log";
+	default_raw_text = "Four hull turrets, all of them older than the paint. Test-cycle them after every jump and write the result here. If a mount will not traverse, cut the board before anyone goes near it. We are a rescue boat first, so the disabler comes off the rack before anything else does.";
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/structure/closet/secure_closet/armory1,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/structure/rack,
+/obj/item/storage/box/zipties,
+/obj/item/flashlight/seclite,
+/obj/item/flashlight/seclite,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/item/stock_parts/power_store/cell/high{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/item/radio/off{
+	pixel_x = -7;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/structure/closet/wardrobe/red,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/storage/toolbox/electrical,
+/obj/item/stack/cable_coil,
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"I" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Y" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+b
+J
+H
+U
+p
+"}
+(2,1,1) = {"
+P
+J
+H
+U
+P
+"}
+(3,1,1) = {"
+N
+J
+H
+U
+c
+"}
+(4,1,1) = {"
+f
+J
+H
+U
+r
+"}
+(5,1,1) = {"
+w
+J
+H
+U
+I
+"}
+(6,1,1) = {"
+A
+J
+H
+U
+d
+"}
+(7,1,1) = {"
+t
+V
+V
+V
+B
+"}

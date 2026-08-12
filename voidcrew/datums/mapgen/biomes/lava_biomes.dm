@@ -21,7 +21,7 @@
 		/obj/structure/spawner/planetary/goliath = 1,
 	)
 	// Meaner tier for dangerous-zone planets: nests instead of lone mobs
-	// (megafauna rolls are exempt from the upgrade — see dangerous_mob_spawn_list)
+	// (megafauna rolls are exempt from the upgrade (see dangerous_mob_spawn_list))
 	dangerous_mob_spawn_list = list(
 		/obj/structure/spawner/planetary = 1,
 		/obj/structure/spawner/planetary/legion = 1,

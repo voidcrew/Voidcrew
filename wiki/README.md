@@ -1,7 +1,7 @@
 # Voidcrew Wiki
 
 A static wiki for the Voidcrew server, built from markdown into plain HTML.
-No server-side anything — host it on S3, GitHub Pages, or any file host.
+No server-side anything: host it on S3, GitHub Pages, or any file host.
 
 ## Layout
 
@@ -90,14 +90,14 @@ Minimal IAM policy for the deploy user (replace the bucket name):
 
 The site URL is the bucket's website endpoint
 (`http://wiki.voidcrew-lrp.com.s3-website-<region>.amazonaws.com`). For HTTPS and a
-custom domain, put CloudFront in front of the bucket later — nothing about
+custom domain, put CloudFront in front of the bucket later, nothing about
 the site needs to change; all links are relative and work under any prefix.
 
 ## Adding a page
 
 1. Copy `content/_TEMPLATE.md` (it contains the style guide) to
    `content/my-page.md`.
-2. Fill in the frontmatter — `category` decides which sidebar section it
+2. Fill in the frontmatter: `category` decides which sidebar section it
    lands in, `order` sorts within the section.
 3. `python wiki/build.py`, open `wiki/dist/my-page.html` in a browser to check.
 4. Commit `content/`, `assets/`, and `dist/` together; sync to S3.

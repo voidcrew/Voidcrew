@@ -7,7 +7,7 @@ interface Data {
   teleporterLinked: number;
   teleporterUsed: number;
   overPlanet: number;
-  /** Racked in an assault pod tube — the weapons system owns the launch. */
+  /** Racked in an assault pod tube, the weapons system owns the launch. */
   inTube: number;
 }
 
@@ -37,7 +37,7 @@ export const DropPod = (props, context) => {
 
   const canDrop = !used && overPlanet === 1 && inTube !== 1;
   const dropTooltip = inTube
-    ? 'loaded in a launch tube — the weapons officer fires this pod'
+    ? 'loaded in a launch tube. The weapons officer fires this pod'
     : used
       ? 'this pod has already been launched'
       : overPlanet !== 1

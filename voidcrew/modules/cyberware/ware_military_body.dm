@@ -1,16 +1,16 @@
 /**
- * # Tier 3 military chrome — body systems
+ * # Tier 3 military chrome: body systems
  *
  * Ghostskin Weave, Slabskin Plate, Lazarus Node, Atlas Frame, Rigger Socket.
  * All chest/head chrome on the generic cyberware base; every strong effect
- * here keeps the PvP contract — a visible telegraph and a counter.
+ * here keeps the PvP contract, a visible telegraph and a counter.
  */
 
 // =========================================================================
 // GHOSTSKIN WEAVE
 // =========================================================================
 
-/// Cloak alpha. NEVER 0 — a shimmer stays readable point-blank.
+/// Cloak alpha. NEVER 0: a shimmer stays readable point-blank.
 #define CYBERWARE_GHOSTSKIN_ALPHA 40
 /// How long a camo field holds before it collapses on its own.
 #define CYBERWARE_GHOSTSKIN_DURATION (10 SECONDS)
@@ -23,7 +23,7 @@
  * invisibility) that ripples brighter when you move; NPC targeting honors
  * TRAIT_CYBER_CAMO through the hook in cyberware_stealth.dm, but anything
  * within two tiles spots you anyway. The field collapses the instant you
- * attack, shoot, get struck, get cuffed, or eat an EMP — the break-trigger
+ * attack, shoot, get struck, get cuffed, or eat an EMP, the break-trigger
  * list is the MOD stealth module's, plus gunfire (nothing uncounterable
  * fires from inside a cloak on this server).
  */
@@ -66,7 +66,7 @@
 		span_notice("The weave bends the light around you. Ten seconds."),
 	)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
-	// gunfire — shooting from inside a cloak breaks it here.
+	// gunfire, shooting from inside a cloak breaks it here.
 	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
 	RegisterSignals(wearer, list(
@@ -117,7 +117,7 @@
 		do_sparks(2, TRUE, wearer)
 		wearer.visible_message(
 			span_danger("[wearer] shimmers back into full view!"),
-			span_warning("The weave collapses[reason ? " — [reason]" : ""]. You are visible."),
+			span_warning("The weave collapses[reason ? ", [reason]" : ""]. You are visible."),
 		)
 
 /// Signal proc for the blanket break triggers: any attack, hit or cuff.
@@ -125,7 +125,7 @@
 	SIGNAL_HANDLER
 	break_camo(owner, reason = "field contact")
 
-/// Signal proc for [COMSIG_LIVING_UNARMED_ATTACK]: MOD precedent — only
+/// Signal proc for [COMSIG_LIVING_UNARMED_ATTACK]: MOD precedent, only
 /// swings at living things blow the cloak, not opening a door.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_unarmed_attack(datum/source, atom/target)
 	SIGNAL_HANDLER
@@ -140,8 +140,8 @@
 		return
 	break_camo(owner, reason = "field disrupted")
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving-shimmer ripple —
-/// motion makes you briefly MORE visible. Free counterplay for sharp eyes.
+/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving-shimmer ripple.
+/// Motion makes you briefly MORE visible. Free counterplay for sharp eyes.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_camo_move(datum/source)
 	SIGNAL_HANDLER
 	var/mob/living/wearer = owner
@@ -188,7 +188,7 @@
 /**
  * # Slabskin Plate (T3, chest, dermal slot, load 6)
  *
- * Serious all-round subdermal armor — the top rung of the dermal ladder,
+ * Serious all-round subdermal armor: the top rung of the dermal ladder,
  * evicting Dermal Mesh. Every solid hit visibly SPARKS and ricochets off
  * the plate, so everyone in the fight can see you are armored under the
  * jumpsuit; that legibility is the PvP tax on built-in plate. Physiology
@@ -248,7 +248,7 @@
 
 /// Once per this long.
 #define CYBERWARE_LAZARUS_COOLDOWN (6 MINUTES)
-/// The visible seizure between crit entry and the jolt — the kill window.
+/// The visible seizure between crit entry and the jolt, the kill window.
 #define CYBERWARE_LAZARUS_WINDUP (1 SECONDS)
 /// Fraction of max health the jolt restores you to.
 #define CYBERWARE_LAZARUS_HEAL_TO 0.3
@@ -256,11 +256,11 @@
 /**
  * # Lazarus Node (T3, chest, tg heart-aid slot, load 5)
  *
- * The anti-crit charge bank. It rides tg's ORGAN_SLOT_HEART_AID — so it
- * EVICTS the printable reviver implant; the ladder, not a stack — and does
+ * The anti-crit charge bank. It rides tg's ORGAN_SLOT_HEART_AID, so it
+ * EVICTS the printable reviver implant; the ladder, not a stack, and does
  * the opposite of the reviver's slow trickle: once per six minutes, the
  * moment you drop into crit it screams up to charge for one full second
- * (visible seizure, audible whine — you are killable the whole time) and
+ * (visible seizure, audible whine. You are killable the whole time) and
  * then slams you back ON YOUR FEET at 30% health with a defib crack heard
  * down the corridor. It does nothing for the dead; overkill straight past
  * crit skips the node entirely. That windup and that ceiling are the PvP
@@ -285,7 +285,7 @@
 	if(COOLDOWN_FINISHED(src, jolt_cooldown))
 		. += span_notice("The charge bank reads <b>READY</b>.")
 	else
-		. += span_notice("The charge bank reads <b>RECHARGING</b> — [DisplayTimeText(COOLDOWN_TIMELEFT(src, jolt_cooldown))] left.")
+		. += span_notice("The charge bank reads <b>RECHARGING</b>, [DisplayTimeText(COOLDOWN_TIMELEFT(src, jolt_cooldown))] left.")
 
 /obj/item/organ/cyberimp/cyberware/lazarus/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -316,8 +316,8 @@
 	jolting = TRUE
 	COOLDOWN_START(src, jolt_cooldown, CYBERWARE_LAZARUS_COOLDOWN)
 	source.visible_message(
-		span_boldwarning("[source] seizes — something under [source.p_their()] ribs whines up to full charge!"),
-		span_userdanger("The Lazarus node screams up to charge—"),
+		span_boldwarning("[source] seizes, something under [source.p_their()] ribs whines up to full charge!"),
+		span_userdanger("The Lazarus node screams up to charge..."),
 	)
 	playsound(source, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	source.set_jitter_if_lower(4 SECONDS)
@@ -326,7 +326,7 @@
 
 /// The discharge: heal to 30%, clear the floor out from under every stun,
 /// and stand the patient up with a thunderclap. Skipped if they died (or
-/// recovered) during the windup — that second belongs to the attacker.
+/// recovered) during the windup, that second belongs to the attacker.
 /obj/item/organ/cyberimp/cyberware/lazarus/proc/jolt()
 	jolting = FALSE
 	var/mob/living/carbon/patient = owner
@@ -362,7 +362,7 @@
 	patient.set_jitter_if_lower(20 SECONDS)
 	patient.visible_message(
 		span_boldwarning("[patient] jolts bolt upright with a thunderclap of current!"),
-		span_userdanger("Your heart slams back into rhythm — ON YOUR FEET."),
+		span_userdanger("Your heart slams back into rhythm, ON YOUR FEET."),
 	)
 	patient.balloon_alert(patient, "lazarus jolt!")
 
@@ -371,7 +371,7 @@
 // =========================================================================
 
 /// Held by a bearer whose skeleton simply does not break. Blocks the whole
-/// bone wound series — dislocations, hairline fractures, compound fractures —
+/// bone wound series, dislocations, hairline fractures, compound fractures,
 /// at the wound system's own gate, and nothing else. Every other wound series
 /// lands on its bearer exactly as it lands on anyone.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
@@ -380,13 +380,13 @@
  * # Atlas Frame (T3, chest, frame slot, load 4)
  *
  * A load-bearing endoskeletal truss. It holds the skeleton and nothing else:
- * bones cannot break — no dislocations, no fractures — and nothing takes a
+ * bones cannot break (no dislocations, no fractures) and nothing takes a
  * limb off you. Everything soft is still on its own. Slashes, punctures,
  * burns and the bleeding that comes with them land completely normally, so
  * the frame answers hammers, falls and shrapnel, not a knife.
  *
  * On top of the skeleton, your throws carry real freight (+2 tiles, +1 speed)
- * and forced knockback against you is halved — a warframe sweep that hurls
+ * and forced knockback against you is halved, a warframe sweep that hurls
  * everyone else across the hall moves you one polite step.
  */
 /obj/item/organ/cyberimp/cyberware/atlas
@@ -450,8 +450,8 @@
 
 /**
  * Signal proc for [COMSIG_MOVABLE_PRE_THROW] on the BEARER: knockback
- * resist. Any throw of you that you didn't start travels half as far —
- * resist, not immunity, so hurl mechanics still read.
+ * resist. Any throw of you that you didn't start travels half as far.
+ * Resist, not immunity, so hurl mechanics still read.
  */
 /obj/item/organ/cyberimp/cyberware/atlas/proc/on_owner_thrown(mob/living/source, list/throw_args)
 	SIGNAL_HANDLER
@@ -469,11 +469,11 @@
  * The bone half of the frame, hooked at the wound system's own gate.
  *
  * /datum/wound_pregen_data/bone is the abstract parent of exactly the three
- * bone wounds — joint dislocation, hairline fracture, compound fracture — and
+ * bone wounds (joint dislocation, hairline fracture, compound fracture) and
  * every other series (slash, pierce, burn) hangs off a different parent, so
  * narrowing here narrows to bone and only bone. This one gate covers BOTH
  * ways a wound can arrive: the random roll in check_wounding(), and
- * apply_wound() itself, which re-checks it (see _wounds.dm) — so a scripted
+ * apply_wound() itself, which re-checks it (see _wounds.dm), so a scripted
  * or forced fracture is refused too, and there is no second place to patch.
  *
  * Deliberately NOT TRAIT_NEVER_WOUNDED: that trait short-circuits the whole
@@ -482,7 +482,7 @@
  *
  * The default argument values below are copied verbatim from the parent and
  * MUST stay that way. DM fills missing arguments from the signature of the
- * proc it actually dispatches to — this one — and callers rely on them:
+ * proc it actually dispatches to (this one) and callers rely on them:
  * /datum/wound/can_be_applied_to() passes only the limb and old_wound, so
  * dropping the `suggested_wounding_types` default would hand
  * wounding_types_valid() a null list and refuse EVERY bone wound, for
@@ -511,29 +511,29 @@
  * Remote helm access, and that is the whole piece. A skull jack that talks to
  * the hull you are standing on: hit the button and the ship's helm console
  * opens in front of you from anywhere aboard. Fly from engineering, from a
- * corridor, from medbay with both hands in someone's chest — the pilot never
+ * corridor, from medbay with both hands in someone's chest, the pilot never
  * has to be on the bridge, and the bridge never has to be crewed.
  *
  * It is a relay, not a second bridge. The uplink borrows a REAL helm console
  * and drives it exactly as if the bearer were standing at the keyboard: the
  * console's own crew authorization still applies, the ship's state limits
  * still apply, and everyone else working that console keeps their own window.
- * Lose every helm on the hull and the socket has nothing left to call — it
+ * Lose every helm on the hull and the socket has nothing left to call, it
  * says so and refuses.
  *
  * What takes it down: leaving the hull, blacking out, closing the panel, the
  * console dying, the ship dying, the socket going dark (browned out or
- * damaged), or an EMP — which knocks the whole ware offline for the standard
+ * damaged), or an EMP, which knocks the whole ware offline for the standard
  * chrome reboot through the base emp_act.
  *
  * The cost is attention. While the uplink is open the bearer moves at a heavy
  * walk (CYBERWARE_RIGGER_SLOWDOWN): you can hold the helm from cover, but you
  * cannot fly and outrun anyone at the same time. Bystanders get the matching
- * tell — the jack lights up and the pilot's eyes go somewhere else.
+ * tell, the jack lights up and the pilot's eyes go somewhere else.
  */
 /obj/item/organ/cyberimp/cyberware/rigger
 	name = "\improper Rigger socket"
-	desc = "A skull jack that patches a ship's helm straight into your head. Anywhere aboard, you can fly it — as long as the ship still has a helm console for the socket to talk to, and as long as you don't mind walking while you do it."
+	desc = "A skull jack that patches a ship's helm straight into your head. Anywhere aboard, you can fly it, as long as the ship still has a helm console for the socket to talk to, and as long as you don't mind walking while you do it."
 	icon_state = "rigger"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_CYBERWARE_RIGGER
@@ -548,7 +548,7 @@
 
 /obj/item/organ/cyberimp/cyberware/rigger/examine(mob/user)
 	. = ..()
-	. += span_notice("Opens the helm of whatever ship its bearer stands on, from anywhere on it. It borrows a real console — a hull with no helm left has nothing to answer with.")
+	. += span_notice("Opens the helm of whatever ship its bearer stands on, from anywhere on it. It borrows a real console. A hull with no helm left has nothing to answer with.")
 	if(!owner)
 		return
 	if(!linked_ship)
@@ -584,7 +584,7 @@
 /**
  * Organs tick with carbon life. Each tick: re-wire to whatever hull the
  * bearer is actually standing on, then check that an open uplink still has
- * every one of its legs — a live socket, a console that answers, and a window
+ * every one of its legs, a live socket, a console that answers, and a window
  * the bearer hasn't already shut.
  */
 /obj/item/organ/cyberimp/cyberware/rigger/on_life(seconds_per_tick, times_fired)
@@ -632,8 +632,8 @@
 /**
  * Signal proc for [COMSIG_MOB_STATCHANGE]: nobody flies a ship from inside a
  * blackout. Dropping the link here rather than waiting on the UI status poll
- * also guarantees the movement tax comes off before the bearer wakes back up
- * — on_life doesn't run at all while its owner is dead.
+ * also guarantees the movement tax comes off before the bearer wakes back up,
+ * on_life doesn't run at all while its owner is dead.
  */
 /obj/item/organ/cyberimp/cyberware/rigger/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
@@ -643,7 +643,7 @@
 
 /**
  * A helm on the linked hull the uplink can actually drive: alive, wired to
- * this ship, powered, and not one of the view-only viewscreens — those refuse
+ * this ship, powered, and not one of the view-only viewscreens, those refuse
  * every control topic, so relaying one would hand the bearer a dead panel.
  *
  * Typed loop rather than `as anything`: a hard-deleted console leaves a null
@@ -682,7 +682,7 @@
 
 /**
  * Brings the uplink up on a console of the linked hull. Every refusal names
- * which of the three things is missing — a hull, a console, or a socket that
+ * which of the three things is missing, a hull, a console, or a socket that
  * still works. Returns TRUE only if a helm window actually opened.
  */
 /obj/item/organ/cyberimp/cyberware/rigger/proc/open_uplink(mob/living/carbon/pilot)
@@ -698,7 +698,7 @@
 	var/obj/machinery/computer/helm/console = find_console()
 	if(!console)
 		pilot.balloon_alert(pilot, "no helm answering!")
-		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink — the socket borrows a helm console, and there isn't a working one left on the ship."))
+		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink. The socket borrows a helm console, and there isn't a working one left on the ship."))
 		return FALSE
 	uplink_console = console
 	RegisterSignal(console, COMSIG_QDELETING, PROC_REF(on_console_gone))
@@ -707,15 +707,15 @@
 	cyberware_ink_pulse(pilot, CYBERWARE_INK_HARD)
 	pilot.visible_message(
 		span_notice("The jack behind [pilot]'s ear lights up, and [pilot.p_their()] eyes go somewhere else."),
-		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here — at a walk."),
+		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here, at a walk."),
 	)
 	console.ui_interact(pilot)
 	return TRUE
 
 /**
  * Takes the uplink down, from any cause. Lifts the movement tax, shuts the
- * borrowed console's window FOR THIS BEARER ONLY — anyone else standing at
- * that console keeps working — and forgets the console. Safe to call when
+ * borrowed console's window FOR THIS BEARER ONLY, anyone else standing at
+ * that console keeps working, and forgets the console. Safe to call when
  * there is nothing up.
  */
 /obj/item/organ/cyberimp/cyberware/rigger/proc/drop_uplink(mob/living/carbon/pilot, reason, silent = FALSE)
@@ -733,7 +733,7 @@
 	if(silent)
 		return
 	pilot.balloon_alert(pilot, "uplink down")
-	to_chat(pilot, span_warning("The helm uplink drops[reason ? " — [reason]" : ""]."))
+	to_chat(pilot, span_warning("The helm uplink drops[reason ? ", [reason]" : ""]."))
 	playsound(pilot, 'sound/machines/terminal/terminal_off.ogg', 30, TRUE)
 
 /// The split-attention tax. On for exactly as long as the uplink is up.
@@ -753,7 +753,7 @@
 	if(!istype(socket) || !iscarbon(owner))
 		return FALSE
 	if(socket.uplink_console)
-		// Manual jack-out. No new cooldown — the press that opened it paid.
+		// Manual jack-out. No new cooldown: the press that opened it paid.
 		socket.drop_uplink(owner, reason = "you pull out of the link")
 		return TRUE
 	if(!socket.open_uplink(owner))
@@ -771,14 +771,14 @@
  * The one safety check the uplink waives is BEING THERE.
  *
  * tg's default state clamps a user at range to UI_CLOSE, and /atom/ui_status
- * clamps again on can_interact() — between them a remote helm window would be
+ * clamps again on can_interact(). Between them a remote helm window would be
  * shut before it drew. A bearer whose uplink is live on THIS console instead
  * reads as if they were standing at it. Nothing else is waived: their
  * condition still goes through shared_ui_interaction(), so a restrained or
  * downed pilot degrades exactly as they would at the keyboard, and the crew
  * authorization check in ui_act() is untouched. An unconscious bearer, or one
  * who left the hull, fails uplink_covers() and falls back to the stock
- * UI_CLOSE — which is what actually shuts the window, on the next poll.
+ * UI_CLOSE, which is what actually shuts the window, on the next poll.
  */
 /obj/machinery/computer/helm/ui_status(mob/user, datum/ui_state/state)
 	. = ..()
@@ -793,8 +793,8 @@
 	return max(., carbon_user.shared_ui_interaction(src))
 
 /**
- * A rigger's helm window closing — by hand, by the console dying, by a jump
- * sequence clearing the room — IS jacking out. Catching it here lifts the
+ * A rigger's helm window closing: by hand, by the console dying, by a jump
+ * sequence clearing the room. IS jacking out. Catching it here lifts the
  * movement tax on the same tick instead of waiting for the next life tick.
  */
 /obj/machinery/computer/helm/ui_close(mob/user)

@@ -7,7 +7,7 @@
  * read-only status view.
  *
  * The circuit board exists so a raided or deconstructed console can be
- * rebuilt — a fresh console relinks to the outpost whose z-level it's on.
+ * rebuilt, a fresh console relinks to the outpost whose z-level it's on.
  */
 
 /obj/item/circuitboard/computer/player_outpost_management

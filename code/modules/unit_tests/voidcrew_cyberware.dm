@@ -5,12 +5,12 @@
  * the netted capacity gate, the install-context gate, the all-or-nothing
  * over-cap brownout, the one-hardware-slot-per-arm invariant, the Second Wind
  * Bladder's breath interception, chrome surviving a body-destroying death, and
- * the Chrome Cradle console — its rack grouping, load projection and body
+ * the Chrome Cradle console. Its rack grouping, load projection and body
  * preview, all of which the interface reads straight out of ui_data() and none
  * of which errors when it goes wrong.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so every fork
- * define is written as a literal with a comment naming it —
+ * define is written as a literal with a comment naming it,
  * CYBERWARE_BASE_CAPACITY is 20 everywhere below.
  *
  * Insert(special = TRUE) bypasses both gates by design (init/admin), which
@@ -65,17 +65,17 @@
 	slot = ORGAN_SLOT_LEFT_ARM_AUG
 	chrome_load = 1
 
-/// (a) + (b): the insert gates — context, over-cap refusal with the organ
+/// (a) + (b): the insert gates. Context, over-cap refusal with the organ
 /// surviving, and same-slot netting letting a ladder upgrade through at cap.
 /datum/unit_test/voidcrew_cyberware_capacity
 
 /datum/unit_test/voidcrew_cyberware_capacity/Run()
 	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
 
-	// Context gate: no surgery, no Cradle, no special — the insert refuses
+	// Context gate: no surgery, no Cradle, no special, the insert refuses
 	// even though the body is empty of chrome.
 	var/obj/item/organ/cyberimp/cyberware/test_small/no_context = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
-	TEST_ASSERT(!no_context.Insert(lab_rat), "Cyberware Insert() succeeded without an install context — the autosurgeon gate is open")
+	TEST_ASSERT(!no_context.Insert(lab_rat), "Cyberware Insert() succeeded without an install context. The autosurgeon gate is open")
 	TEST_ASSERT(!no_context.owner, "A context-refused insert still ended up owned")
 	TEST_ASSERT(!QDELETED(no_context), "A context-refused insert deleted the organ")
 
@@ -97,7 +97,7 @@
 	overflow_chrome.grant_install_context(lab_rat)
 	TEST_ASSERT(!overflow.Insert(lab_rat), "Insert over capacity was allowed")
 	TEST_ASSERT(!overflow.owner, "An over-cap-refused insert still ended up owned")
-	TEST_ASSERT(!QDELETED(overflow), "An over-cap-refused insert deleted the organ — autosurgeons would eat it")
+	TEST_ASSERT(!QDELETED(overflow), "An over-cap-refused insert deleted the organ. Autosurgeons would eat it")
 	TEST_ASSERT_EQUAL(get_chrome_load(lab_rat), 20, "A refused insert changed the body's chrome load")
 
 	// (b) Same-slot netting: swap the bulk ware for the ladder pair. An
@@ -111,7 +111,7 @@
 	var/datum/component/cyberware/rung_two_chrome = rung_two.GetComponent(/datum/component/cyberware)
 	TEST_ASSERT(cyberware_insert_check(rung_two, lab_rat, silent = TRUE), "The netted capacity check refused a same-slot upgrade that should fit")
 	rung_two_chrome.grant_install_context(lab_rat)
-	TEST_ASSERT(rung_two.Insert(lab_rat), "Same-slot ladder upgrade at capacity was refused — netting is broken")
+	TEST_ASSERT(rung_two.Insert(lab_rat), "Same-slot ladder upgrade at capacity was refused, netting is broken")
 	TEST_ASSERT_EQUAL(rung_two.owner, lab_rat, "Ladder upgrade didn't take")
 	TEST_ASSERT(!rung_one.owner, "The evicted incumbent is somehow still installed")
 	TEST_ASSERT_EQUAL(get_chrome_load(lab_rat), 20, "Post-upgrade load isn't the new rung's 20")
@@ -131,10 +131,10 @@
 	TEST_ASSERT(!(heavy.organ_flags & ORGAN_FAILING), "Chrome under capacity is failing")
 
 	// 15 + 10 = 25 > 20 (CYBERWARE_BASE_CAPACITY): everything browns out.
-	TEST_ASSERT(overflow.Insert(lab_rat, special = TRUE), "Overflow staging insert was refused — special must bypass the gate")
+	TEST_ASSERT(overflow.Insert(lab_rat, special = TRUE), "Overflow staging insert was refused. Special must bypass the gate")
 	TEST_ASSERT(get_chrome_load(lab_rat) > get_chrome_capacity(lab_rat), "Test body isn't actually over capacity")
 	TEST_ASSERT(heavy.organ_flags & ORGAN_FAILING, "Over capacity, but the first ware didn't brown out")
-	TEST_ASSERT(overflow.organ_flags & ORGAN_FAILING, "Over capacity, but the second ware didn't brown out — brownout must hit ALL chrome")
+	TEST_ASSERT(overflow.organ_flags & ORGAN_FAILING, "Over capacity, but the second ware didn't brown out. Brownout must hit ALL chrome")
 
 	// Removal is never blocked and IS the fix.
 	overflow.Remove(lab_rat)
@@ -144,7 +144,7 @@
 
 /// (d) One-hardware-per-arm: every piece of arm-zone chrome must claim that
 /// arm's ONE hardware slot (tg's ARM_AUG), so knuckles, myomer lattices,
-/// blades and launchers can never stack on the same arm — a new install
+/// blades and launchers can never stack on the same arm, a new install
 /// evicts the incumbent instead. Gecko Grip is the deliberate exception:
 /// palm-surface pads, not arm chassis, on its own slot.
 /datum/unit_test/voidcrew_cyberware_arm_slots
@@ -158,14 +158,14 @@
 		var/obj/item/organ/ware = organ_path
 		switch(initial(ware.zone))
 			if(BODY_ZONE_R_ARM)
-				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_RIGHT_ARM_AUG, "[organ_path] is right-arm chrome off the arm hardware slot — it would stack with blades/launchers on the same arm")
+				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_RIGHT_ARM_AUG, "[organ_path] is right-arm chrome off the arm hardware slot. It would stack with blades/launchers on the same arm")
 			if(BODY_ZONE_L_ARM)
-				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot — it would stack with blades/launchers on the same arm")
+				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot. It would stack with blades/launchers on the same arm")
 
 /// (f) Chrome read: the optics' scan resolves installed hardware by name at
 /// itemized resolution, rates parlor chrome by tier and everything else
 /// UNRATED, counts either way, and NEVER resolves anything flagged
-/// ORGAN_HIDDEN — the Cargo Cavity's whole selling point.
+/// ORGAN_HIDDEN: the Cargo Cavity's whole selling point.
 /// Resolution literals are 1 = CYBERWARE_SCAN_SILHOUETTE, 2 = _ITEMIZED.
 /datum/unit_test/voidcrew_cyberware_scan
 
@@ -180,7 +180,7 @@
 	TEST_ASSERT(optics.Insert(lab_rat, special = TRUE), "Nightshade staging insert was refused")
 	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/stash = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
 	TEST_ASSERT(stash.Insert(lab_rat, special = TRUE), "Cargo Cavity staging insert was refused")
-	TEST_ASSERT(stash.organ_flags & ORGAN_HIDDEN, "The Cargo Cavity stopped being ORGAN_HIDDEN — the scan exemption is keyed to that flag")
+	TEST_ASSERT(stash.organ_flags & ORGAN_HIDDEN, "The Cargo Cavity stopped being ORGAN_HIDDEN. The scan exemption is keyed to that flag")
 	// A printable tg augment: robotic, but no chrome component to rate.
 	var/obj/item/organ/cyberimp/chest/reviver/printable = allocate(/obj/item/organ/cyberimp/chest/reviver)
 	TEST_ASSERT(printable.Insert(lab_rat, special = TRUE), "Reviver implant staging insert was refused")
@@ -189,7 +189,7 @@
 	var/list/scannable = cyberware_scannable_hardware(lab_rat)
 	TEST_ASSERT(optics in scannable, "Installed unhidden chrome didn't show up as scannable")
 	TEST_ASSERT(printable in scannable, "A non-cyberware robotic organ didn't show up as scannable")
-	TEST_ASSERT(!(stash in scannable), "ORGAN_HIDDEN chrome showed up as scannable — the Cargo Cavity is meant to be off every scanner")
+	TEST_ASSERT(!(stash in scannable), "ORGAN_HIDDEN chrome showed up as scannable. The Cargo Cavity is meant to be off every scanner")
 
 	// Itemized resolution names what it found, rates chrome by tier, leaves
 	// printable augments unrated, and skips what it can't see.
@@ -214,7 +214,7 @@
 /// failed-breath path emotes, and an emote with no location runtimes inside
 /// audible_message(). And breathe() is called positionally, because
 /// /mob/living/carbon/human/breathe() declares no parameters of its own and
-/// forwards through ..() — naming the carbon proc's arguments on a
+/// forwards through ..(), naming the carbon proc's arguments on a
 /// human-typed var is a "bad arg name" runtime, not a call.
 /datum/unit_test/voidcrew_cyberware_second_wind
 
@@ -230,7 +230,7 @@
 	var/turf/vacuum = run_loc_floor_top_right.ChangeTurf(/turf/open/space)
 	lab_rat.forceMove(vacuum)
 	lab_rat.breathe(2, 1)
-	TEST_ASSERT(!lab_rat.failed_last_breath, "Second Wind didn't block a breath in vacuum — the bearer suffocated with a full reserve")
+	TEST_ASSERT(!lab_rat.failed_last_breath, "Second Wind didn't block a breath in vacuum, the bearer suffocated with a full reserve")
 	TEST_ASSERT_EQUAL(lab_rat.getOxyLoss(), 0, "Second Wind blocked the breath but the bearer still took oxygen damage")
 	TEST_ASSERT(bladder.reserve < full_reserve, "A blocked breath spent no reserve")
 	TEST_ASSERT(bladder.engaged, "Second Wind fed a breath without registering as engaged")
@@ -324,7 +324,7 @@
 	// Both halves of a cased pair quote the case's price, flagged as a pair.
 	for(var/half in list(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis, /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left))
 		var/list/paired = GLOB.cyberware_price_index[half]
-		TEST_ASSERT(!isnull(paired), "[half] got no price entry — the pair case never resolved to its contents")
+		TEST_ASSERT(!isnull(paired), "[half] got no price entry, the pair case never resolved to its contents")
 		TEST_ASSERT(paired["vouchers"] > 0, "[half] indexed with no voucher price")
 		TEST_ASSERT(paired["paired"], "[half] came out of a pair case without the paired flag")
 
@@ -355,18 +355,18 @@
 	TEST_ASSERT(HAS_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED), "Test fixture: the stun didn't block hands, so nothing was being tested")
 	TEST_ASSERT(lab_rat.is_holding(bar), "A stun stripped the crowbar out of gecko-gripped hands")
 	TEST_ASSERT(!lab_rat.dropItemToGround(bar), "A downed bearer's grip let go of the crowbar")
-	// Forced removal always wins — admin work and gibbing must not be blocked.
+	// Forced removal always wins: admin work and gibbing must not be blocked.
 	TEST_ASSERT(lab_rat.dropItemToGround(bar, force = TRUE), "A FORCED unequip was blocked by the grips")
 
 	// Cuffs beat chrome: hands blocked by restraints ALONE still open. The
-	// stun has to come off first — the clamp reads every source of
+	// stun has to come off first. The clamp reads every source of
 	// TRAIT_HANDS_BLOCKED, so a lingering stun would make this pass or fail
 	// for the wrong reason.
 	lab_rat.SetStun(0)
 	TEST_ASSERT(!HAS_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED), "Test fixture: the stun didn't lift, so the restraint case would be testing the stun")
 	lab_rat.put_in_hands(bar)
 	ADD_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED, TRAIT_RESTRAINED)
-	TEST_ASSERT(!pads.hands_blocked_by_trauma(), "Restraints read as trauma — the grips would beat handcuffs")
+	TEST_ASSERT(!pads.hands_blocked_by_trauma(), "Restraints read as trauma. The grips would beat handcuffs")
 	TEST_ASSERT(lab_rat.dropItemToGround(bar), "The grips held on against restraints")
 	REMOVE_TRAIT(lab_rat, TRAIT_HANDS_BLOCKED, TRAIT_RESTRAINED)
 
@@ -417,7 +417,7 @@
 /// A pulse is a client-side filter animation with nothing to read back, so the
 /// dermis counts its own pulses and remembers the last strength; that counter is
 /// what this hangs off. Every case below drives the REAL activation path rather
-/// than calling pulse() — an unwired call site is exactly the failure this
+/// than calling pulse(), an unwired call site is exactly the failure this
 /// exists to catch, and it looks perfect from the ink's side.
 ///
 /// Strength literals: 1 = CYBERWARE_INK_SOFT, 2 = _HARD, 3 = _FLARE.
@@ -435,7 +435,7 @@
 	TEST_ASSERT_EQUAL(ink.pulse_count, 1, "cyberware_ink_pulse() didn't reach the installed ink")
 	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 3, "The bus dropped the strength it was called with")
 
-	// (1) The shared cooldown-action bridge — every chrome ability button.
+	// (1) The shared cooldown-action bridge, every chrome ability button.
 	// PreActivate() is the funnel a real click reaches through
 	// InterceptClickOn(); Trigger() on a click_to_activate ability only arms
 	// the cursor and needs a client, so it is deliberately not what we call.
@@ -447,11 +447,11 @@
 
 	var/before = ink.pulse_count
 	TEST_ASSERT(read.PreActivate(lab_rat), "The chrome read didn't run against its own bearer")
-	TEST_ASSERT(ink.pulse_count > before, "A chrome ability fired and the ink never answered — the cooldown-action bridge is unwired")
+	TEST_ASSERT(ink.pulse_count > before, "A chrome ability fired and the ink never answered. The cooldown-action bridge is unwired")
 	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 2, "A chrome ability pulsed the ink at the wrong strength")
 
 	// (2) Deployable arm hardware. Rockjaw stands in for the whole toolkit-arm
-	// family (Fixer's Fingers, blades, launchers) — they all share the base's
+	// family (Fixer's Fingers, blades, launchers), they all share the base's
 	// Extend/Retract override, so one wired arm is all of them.
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/fist = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw)
 	TEST_ASSERT(fist.Insert(lab_rat, special = TRUE), "Rockjaw staging insert was refused")
@@ -469,7 +469,7 @@
 	TEST_ASSERT(ink.pulse_count > before, "Arm hardware stowed and the ink never answered")
 	TEST_ASSERT_EQUAL(ink.last_pulse_strength, 1, "A stowed arm pulsed the ink at the wrong strength")
 
-	// (3) Organ action buttons that aren't abilities at all — the Cargo
+	// (3) Organ action buttons that aren't abilities at all, the Cargo
 	// Cavity's ui_action_click, which no signal covers.
 	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/cavity = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
 	TEST_ASSERT(cavity.Insert(lab_rat, special = TRUE), "Cargo Cavity staging insert was refused")
@@ -527,23 +527,23 @@
 		for(var/zone in procedure.possible_locs)
 			reachable[zone] = TRUE
 
-	TEST_ASSERT(reachable[BODY_ZONE_L_LEG] && reachable[BODY_ZONE_R_LEG], "No organ-manipulation surgery opens a leg — every piece of leg chrome is Chrome Cradle-only again")
+	TEST_ASSERT(reachable[BODY_ZONE_L_LEG] && reachable[BODY_ZONE_R_LEG], "No organ-manipulation surgery opens a leg. Every piece of leg chrome is Chrome Cradle-only again")
 
 	var/list/all_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/eyes/robotic/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
 	for(var/obj/item/organ/ware as anything in all_ware)
 		var/zone = initial(ware.zone)
-		TEST_ASSERT(reachable[zone], "[ware] lives in [zone], which no organ-manipulation surgery can open — it can never be installed by surgery")
+		TEST_ASSERT(reachable[zone], "[ware] lives in [zone], which no organ-manipulation surgery can open. It can never be installed by surgery")
 
 /// (m) Chrome salvage: a body coming apart leaves its hardware on the floor.
 /// Upstream, gibbing without DROP_ORGANS (which is most gib calls), dusting,
-/// and destroying a severed limb all delete organs outright — which quietly
+/// and destroying a severed limb all delete organs outright, which quietly
 /// erased the most expensive thing a player owns and left whoever earned the
 /// kill nothing to pick up. Meat organs must still follow tg's drop flags,
 /// so each half of this checks both sides.
 /datum/unit_test/voidcrew_cyberware_salvage
 
 /datum/unit_test/voidcrew_cyberware_salvage/Run()
-	// Gibbing with no drop flags at all — the case that deleted everything.
+	// Gibbing with no drop flags at all, the case that deleted everything.
 	var/mob/living/carbon/human/gib_rat = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/organ/cyberimp/cyberware/test_small/gib_ware = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
 	TEST_ASSERT(gib_ware.Insert(gib_rat, special = TRUE), "Test fixture: staging insert into the gib subject was refused")
@@ -554,7 +554,7 @@
 	TEST_ASSERT(!QDELETED(gib_ware), "Gibbing deleted the chrome")
 	TEST_ASSERT(isnull(gib_ware.owner), "Gibbed chrome is still owned by the corpse")
 	TEST_ASSERT(isturf(gib_ware.loc), "Gibbed chrome ended up in [gib_ware.loc || "nullspace"] instead of on the floor")
-	TEST_ASSERT(QDELETED(gib_meat), "A flagless gib kept a meat organ — tg's drop rules changed, not just chrome's")
+	TEST_ASSERT(QDELETED(gib_meat), "A flagless gib kept a meat organ. Tg's drop rules changed, not just chrome's")
 
 	// Dusting: the body is queued for deletion, organs and all.
 	var/mob/living/carbon/human/ash_rat = allocate(/mob/living/carbon/human/consistent)

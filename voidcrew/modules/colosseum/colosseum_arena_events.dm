@@ -4,11 +4,11 @@
  * A per-match hazard scheduler the mode opts into (var/arena_events on
  * /datum/colosseum_game). While the match is LIVE it periodically rolls one of:
  *
- * * Weapon crate drop — a supply pod delivers a crate of arena weapons onto a
+ * * Weapon crate drop: a supply pod delivers a crate of arena weapons onto a
  *   telegraphed tile (the pod's own landing zone marker is the telegraph).
- * * Hazard eruption — a telegraphed plus-shaped patch of the sand turns to
+ * * Hazard eruption: a telegraphed plus-shaped patch of the sand turns to
  *   lava for COLOSSEUM_HAZARD_DURATION, then the sand is restored.
- * * Pop-up cover — telegraphed destructible barricades rise from the sand.
+ * * Pop-up cover: telegraphed destructible barricades rise from the sand.
  *
  * Placement prefers the mapped /obj/effect/landmark/colosseum/arena_event
  * spots and falls back to random clear sand, so map edits can't starve it.
@@ -63,7 +63,7 @@
 			raise_cover()
 	schedule()
 
-/// A clear event tile (mapped spot or clear sand) — delegated to the controller
+/// A clear event tile (mapped spot or clear sand), delegated to the controller
 /// so match modifiers can use the same placement rules without a scheduler.
 /datum/colosseum_arena_scheduler/proc/get_event_turf()
 	return controller.arena_event_turf()
@@ -87,7 +87,7 @@
 	for(var/turf/hazard_turf as anything in patch)
 		new /obj/effect/temp_visual/colosseum_warning(hazard_turf)
 	playsound(center, 'sound/machines/warning-buzzer.ogg', 70, TRUE)
-	controller.site.venue_message(span_boldannounce("The sand glows — the floor is about to open!"))
+	controller.site.venue_message(span_boldannounce("The sand glows, the floor is about to open!"))
 	addtimer(CALLBACK(src, PROC_REF(hazard_go), patch), COLOSSEUM_EVENT_TELEGRAPH, TIMER_STOPPABLE)
 
 /datum/colosseum_arena_scheduler/proc/hazard_go(list/turf/patch)

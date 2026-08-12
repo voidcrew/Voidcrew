@@ -1,0 +1,173 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/machinery/mecha_part_fabricator,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/machinery/light/floor,
+/turf/open/floor/wood,
+/area/template_noop)
+"k" = (
+/obj/structure/flora/bush/leafy,
+/turf/open/floor/grass,
+/area/template_noop)
+"l" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"o" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/obj/machinery/computer/mech_bay_power_console,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"z" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"B" = (
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/capacitor{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/stock_parts/servo,
+/obj/item/stock_parts/servo{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/stack/cable_coil,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/machinery/mech_bay_recharge_port{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/machinery/computer/mech_bay_power_console,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"O" = (
+/obj/item/kirbyplants/organic/plant8,
+/turf/open/floor/grass,
+/area/template_noop)
+"Q" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/multitool{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+o
+N
+z
+"}
+(2,1,1) = {"
+M
+y
+c
+"}
+(3,1,1) = {"
+D
+T
+c
+"}
+(4,1,1) = {"
+u
+h
+c
+"}
+(5,1,1) = {"
+M
+y
+c
+"}
+(6,1,1) = {"
+e
+f
+c
+"}
+(7,1,1) = {"
+Q
+h
+c
+"}
+(8,1,1) = {"
+l
+h
+c
+"}
+(9,1,1) = {"
+B
+T
+c
+"}
+(10,1,1) = {"
+A
+k
+c
+"}
+(11,1,1) = {"
+i
+O
+c
+"}

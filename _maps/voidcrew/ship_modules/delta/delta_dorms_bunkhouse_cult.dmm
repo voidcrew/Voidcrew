@@ -1,0 +1,220 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/item/toy/plush/lizard_plushie{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"e" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"o" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/box/matches{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"A" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/flashlight/flare/candle{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/grey,
+/obj/item/clothing/suit/hooded/cultrobes,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/clothing/head/soft{
+	pixel_x = 7;
+	pixel_y = -7
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = -9;
+	pixel_y = -7
+	},
+/obj/structure/noticeboard/directional/west,
+/obj/item/paper{
+	name = "berth rules";
+	default_raw_text = "Lights out at watch change, not when you feel like it. Snuff your candle before you turn in. That is two mattresses this month."
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -10;
+	pixel_y = -8
+	},
+/obj/structure/dresser,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/clothing/head/hooded/cult_hoodie,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -10;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -10;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+N
+O
+y
+"}
+(2,1,1) = {"
+V
+A
+o
+"}
+(3,1,1) = {"
+v
+c
+d
+"}
+(4,1,1) = {"
+n
+Q
+o
+"}
+(5,1,1) = {"
+U
+w
+R
+"}
+(6,1,1) = {"
+G
+B
+o
+"}

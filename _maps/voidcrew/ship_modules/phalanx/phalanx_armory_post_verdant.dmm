@@ -1,0 +1,179 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"g" = (
+/obj/structure/closet/secure_closet/security/sec,
+/obj/item/assembly/flash/handheld,
+/obj/item/assembly/flash/handheld,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"k" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/structure/rack,
+/obj/item/gun/energy/disabler{
+	pixel_y = 4
+	},
+/obj/item/gun/energy/disabler,
+/obj/item/gun/energy/disabler{
+	pixel_y = -4
+	},
+/obj/item/shield/riot{
+	pixel_x = -5
+	},
+/obj/item/shield/riot{
+	pixel_x = -8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/structure/filingcabinet/security,
+/turf/open/floor/wood,
+/area/template_noop)
+"s" = (
+/obj/structure/closet/secure_closet/evidence,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"z" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"C" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/modular_map_connector,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"F" = (
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 7
+	},
+/obj/item/pen{
+	pixel_x = -3;
+	pixel_y = 7
+	},
+/obj/item/folder/red{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"W" = (
+/obj/item/kirbyplants/organic/plant7,
+/turf/open/floor/grass,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+g
+s
+A
+D
+"}
+(2,1,1) = {"
+p
+E
+P
+m
+"}
+(3,1,1) = {"
+k
+C
+C
+Z
+"}
+(4,1,1) = {"
+i
+n
+j
+Z
+"}
+(5,1,1) = {"
+T
+e
+W
+F
+"}
+(6,1,1) = {"
+M
+V
+q
+z
+"}

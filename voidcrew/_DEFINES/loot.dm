@@ -5,7 +5,7 @@
 
 /**
  * Loot tiers. A theme (voidcrew/modules/loot/themes/) is one pool cut four
- * ways by how good the item is — NOT by which band it drops in. Keys are
+ * ways by how good the item is, NOT by which band it drops in. Keys are
  * stringified everywhere they index a weighted list: DM indexes an assoc
  * list by a bare number POSITIONALLY, so list(LOOT_TIER_COMMON = 64) would
  * read back the key instead of the weight.
@@ -16,13 +16,13 @@
 #define LOOT_TIER_UNIQUE "4"
 
 /**
- * Per-band draw counts and tier odds — the whole balance surface of the zone
+ * Per-band draw counts and tier odds, the whole balance surface of the zone
  * loot system on one screen (consumed by voidcrew/modules/loot/zone_loot.dm,
  * displayed by the "Loot: Preview Zone Tables" admin verb).
  *
  * Odds are relative weights per draw across the four tiers above; draws are
  * how many items the cache pays. Zone scales AMOUNT and ODDS, never the kinds
- * on offer — the same contract zones have with planet ore, fauna and weather
+ * on offer, the same contract zones have with planet ore, fauna and weather
  * in overmap_zones.dm. Every band can reach every tier.
  *
  * Green is deliberately not a wasteland: 7-in-100 draws reach prime, so a

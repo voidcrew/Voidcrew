@@ -31,6 +31,12 @@
 /obj/structure/flora/bush/flowers_yw,
 /turf/open/floor/grass,
 /area/template_noop)
+"I" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "J" = (
 /obj/machinery/hydroponics/constructable,
 /turf/open/floor/grass,
@@ -41,7 +47,10 @@
 /area/template_noop)
 "O" = (
 /obj/modular_map_connector,
-/turf/open/floor/grass,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "Q" = (
 /obj/structure/flora/tree/stonepine,
@@ -76,50 +85,50 @@ O
 (2,1,1) = {"
 j
 B
-R
+I
 "}
 (3,1,1) = {"
 J
 R
-R
+I
 "}
 (4,1,1) = {"
 J
 U
-R
+I
 "}
 (5,1,1) = {"
 J
 R
-R
+I
 "}
 (6,1,1) = {"
 J
 Z
-R
+I
 "}
 (7,1,1) = {"
 J
 U
-R
+I
 "}
 (8,1,1) = {"
 J
 R
-R
+I
 "}
 (9,1,1) = {"
 V
 U
-R
+I
 "}
 (10,1,1) = {"
 k
 N
-R
+I
 "}
 (11,1,1) = {"
 Q
 T
-R
+I
 "}

@@ -166,7 +166,7 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
       </Box>
     );
   }
-  // Struck-through whenever the buyer's real price beats the sticker —
+  // Struck-through whenever the buyer's real price beats the sticker,
   // authored special or their crew's favor discount, whichever applied
   const discounted = sku.price_credits > 0 && finalCredits < sku.price_credits;
   return (
@@ -215,7 +215,7 @@ const SkuRow = (props: {
   const { sku, live, barred } = props;
   const isFavor = sku.shelf === 'favor';
   const stock = live?.stock ?? 0;
-  // The back room never runs a shared shelf dry — its scarcity is the
+  // The back room never runs a shared shelf dry. Its scarcity is the
   // per-crew cap, shown in the stock column instead
   const soldOut = isFavor
     ? (live?.crew_remaining ?? 0) <= 0 && live?.crew_remaining !== null
@@ -469,7 +469,7 @@ export const TraderShop = (props) => {
           {!!barred && (
             <Stack.Item>
               <NoticeBox danger>
-                TRADE EMBARGO IN EFFECT — service refused. Embargoes expire;
+                TRADE EMBARGO IN EFFECT: service refused. Embargoes expire;
                 grudges do not.
               </NoticeBox>
             </Stack.Item>
@@ -538,7 +538,7 @@ export const TraderShop = (props) => {
           </Stack.Item>
           <Stack.Item>
             <Box color="label" fontSize="0.85em" px={1}>
-              Fixed prices, charged on the spot — vouchers from anywhere on
+              Fixed prices, charged on the spot, vouchers from anywhere on
               you, credits off your ID, barter goods held in hand. No refunds.
             </Box>
           </Stack.Item>

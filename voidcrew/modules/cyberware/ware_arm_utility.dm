@@ -10,7 +10,7 @@
 
 /// How long after the mined signal the Rockjaw waits before sweeping the
 /// tile. COMSIG_MOB_MINED fires at the TOP of gets_drilled(), before the
-/// ore exists (minerals.dm:213 vs :217) — sweeping immediately finds rock.
+/// ore exists (minerals.dm:213 vs :217). Sweeping immediately finds rock.
 #define CYBERWARE_ROCKJAW_SWEEP_DELAY (0.2 SECONDS)
 
 // ---- 4. Rockjaw Drill Fist --------------------------------------------
@@ -55,7 +55,7 @@
 	button_icon_state = "satchel"
 
 /// The drill the fist deploys. Between the store drill (0.6) and the
-/// diamond drill (0.2) — the speed is part of what the 1,200 cr buys.
+/// diamond drill (0.2). The speed is part of what the 1,200 cr buys.
 /obj/item/pickaxe/drill/cyberware
 	name = "rockjaw drill"
 	desc = "The business end of a Rockjaw drill fist. It only comes off the arm at a Chrome Cradle."
@@ -63,7 +63,7 @@
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/Destroy()
 	// The toolkit parent qdels its created items but leaves other contents
-	// to vanish with us — the hopper is a player's paycheck, drop it.
+	// to vanish with us. The hopper is a player's paycheck, drop it.
 	var/turf/drop_turf = get_turf(src)
 	if(drop_turf)
 		for(var/obj/item/stack/ore/nugget as anything in hopper)
@@ -92,7 +92,7 @@
 	UnregisterSignal(arm_owner, COMSIG_MOB_MINED)
 
 /// Signal proc for [COMSIG_MOB_MINED]: queue a sweep of the drilled tile.
-/// Only counts when the drill itself is doing the mining — pickaxe work
+/// Only counts when the drill itself is doing the mining, pickaxe work
 /// with the fist stowed scatters ore like it always did.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/proc/on_mined(mob/living/source, turf/rock, give_exp)
 	SIGNAL_HANDLER
@@ -153,7 +153,7 @@
  *
  * The free printable toolset's premium cousin: cyborg screwdriver, wrench
  * and wirecutters fold out of the fingertips, and servo-assisted hands
- * run every timed action a quarter faster while the implant is in — the
+ * run every timed action a quarter faster while the implant is in, the
  * speed is the part the fab can't print. The actionspeed modifier applies
  * on install, tools out or not; your hands are simply better now.
  */

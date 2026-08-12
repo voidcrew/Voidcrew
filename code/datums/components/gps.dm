@@ -141,7 +141,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		if(gps == src || gps.emped || !gps.tracking)
 			continue
 		var/turf/pos = get_turf(gps.parent)
-		if(!pos || !is_signal_visible(curr, pos)) // VOIDCREW EDIT — overmap-aware signal filtering (was: (!global_mode && pos.z != curr.z))
+		if(!pos || !is_signal_visible(curr, pos)) // VOIDCREW EDIT. Overmap-aware signal filtering (was: (!global_mode && pos.z != curr.z))
 			continue
 		var/list/signal = list()
 		signal["entrytag"] = gps.gpstag //Name or 'tag' of the GPS
@@ -158,7 +158,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	data["signals"] = signals
 	return data
 
-// VOIDCREW EDIT ADDITION — overridable hook so voidcrew can filter cross-z
+// VOIDCREW EDIT ADDITION: overridable hook so voidcrew can filter cross-z
 // signals by overmap locality (voidcrew/edits/gps.dm). Default: upstream behavior.
 /// Whether a signal at pos should be listed for a unit located at curr.
 /datum/component/gps/item/proc/is_signal_visible(turf/curr, turf/pos)

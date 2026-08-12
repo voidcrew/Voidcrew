@@ -3,7 +3,7 @@
  *
  * `attack_hand()` only ever runs when the clicker is adjacent. Past that the
  * click chain calls [/mob/proc/RangedAttack] on the *clicker*, so a target atom
- * has no hook of its own for an empty-handed click — items get
+ * has no hook of its own for an empty-handed click, items get
  * `ranged_interact_with_atom()`, bare hands get nothing.
  *
  * This adds the missing half. An atom that wants to be usable from a couple of
@@ -20,7 +20,7 @@
 	. = ..()
 	if(.)
 		return
-	// Hands out at range is violence, not business — same split attack_hand makes
+	// Hands out at range is violence, not business. Same split attack_hand makes
 	if(combat_mode)
 		return FALSE
 	return target.ranged_attack_hand(src, modifiers)

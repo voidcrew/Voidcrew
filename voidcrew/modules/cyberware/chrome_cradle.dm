@@ -3,21 +3,21 @@
  *
  * The ripperdoc parlor's operating chair: an outpost machine that installs,
  * removes and services cyberware. Fast, safe and dramatic where DIY table
- * surgery is slow and fail-prone — the premium path, and in v1 the only
+ * surgery is slow and fail-prone, the premium path, and in v1 the only
  * legit rig besides a real organ-manipulation operation.
  *
  * Outpost furniture rules apply: no power draw, indestructible, tools bounce
- * off, attacking it is aggression. The patient lies ON TOP of the slab —
- * buckled, stasis-bed style, never sealed inside anything — and bystanders
+ * off, attacking it is aggression. The patient lies ON TOP of the slab,
+ * buckled, stasis-bed style, never sealed inside anything, and bystanders
  * may look on and pop the tray. This is a PvP server, so consent is
- * structural — Install, Remove and Tune-up can only ever be initiated by the
+ * structural, Install, Remove and Tune-up can only ever be initiated by the
  * occupant, on their own conscious, unrestrained body. Forced-buckle chrome
  * robbery dies right there. A sequence commits only at its very end; getting
  * up (or being hauled off) mid-cycle cancels cleanly with the ware safe in
  * the tray.
  *
  * Evicted incumbents go to the machine tray, never the floor, and the tray
- * ejects on demand (anyone adjacent — a logged-off occupant can't hold your
+ * ejects on demand (anyone adjacent. A logged-off occupant can't hold your
  * chrome hostage).
  */
 
@@ -32,7 +32,7 @@
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "bed"
 	// A slab, not a cabinet: you walk onto it and lie down. Buckling IS the
-	// occupancy — nothing is ever sealed inside.
+	// occupancy, nothing is ever sealed inside.
 	density = FALSE
 	anchored = TRUE
 	can_buckle = TRUE
@@ -65,7 +65,7 @@
 
 /obj/machinery/chrome_cradle/Initialize(mapload)
 	. = ..()
-	// INDESTRUCTIBLE doesn't stop tool acts — block deconstruction outright.
+	// INDESTRUCTIBLE doesn't stop tool acts, block deconstruction outright.
 	var/static/list/blocked_tools = list(TOOL_SCREWDRIVER, TOOL_WRENCH, TOOL_CROWBAR, TOOL_WELDER, TOOL_WIRECUTTER, TOOL_MULTITOOL)
 	for(var/tool_type in blocked_tools)
 		RegisterSignal(src, COMSIG_ATOM_TOOL_ACT(tool_type), PROC_REF(block_tool_act))
@@ -80,7 +80,7 @@
 	if(drop_turf)
 		// Snapshot: forceMove fires Exited(), which cuts the leaving organ out
 		// of tray underneath us and would make a live iteration skip every
-		// other piece — leaving them in contents to be qdel'd with the machine.
+		// other piece, leaving them in contents to be qdel'd with the machine.
 		for(var/obj/item/organ/ware in tray.Copy())
 			ware.forceMove(drop_turf)
 	tray.Cut()
@@ -101,7 +101,7 @@
 	if(length(tray))
 		. += span_notice("The parts tray holds: <b>[english_list(tray)]</b>.")
 
-// ---- Occupancy (buckling — the patient lies ON the slab) ----------------
+// ---- Occupancy (buckling, the patient lies ON the slab) ----------------
 
 // Only carbons fit the rig's restraint geometry.
 /obj/machinery/chrome_cradle/is_buckle_possible(mob/living/target, force = FALSE, check_loc = TRUE)
@@ -123,7 +123,7 @@
 	selected_ware = null
 	SStgui.update_uis(src)
 
-// The base movable click unbuckles the occupant — on the cradle a click is
+// The base movable click unbuckles the occupant. On the cradle a click is
 // always the console instead. Getting up is resist, moving, or the UI button;
 // nobody yanks a sedated patient off the slab with a stray click.
 /obj/machinery/chrome_cradle/attack_hand(mob/living/user, list/modifiers)
@@ -144,7 +144,7 @@
 /**
  * Whether the occupant is in a state to consent to chrome work: conscious
  * and unrestrained at sequence start. The install sequence itself sedates
- * them — that's fine, consent was given standing up.
+ * them, that's fine, consent was given standing up.
  */
 /obj/machinery/chrome_cradle/proc/occupant_can_consent()
 	var/mob/living/carbon/patient = occupant
@@ -267,8 +267,8 @@
 	SStgui.update_uis(src)
 
 /**
- * The commit point. Re-validates everything — the occupant may have been
- * yanked, the ware ejected, the slot filled by a mid-sequence DIY surgeon —
+ * The commit point. Re-validates everything: the occupant may have been
+ * yanked, the ware ejected, the slot filled by a mid-sequence DIY surgeon,
  * then evicts any incumbent to the tray and inserts. A refused insert parks
  * the ware in the tray; nothing is ever consumed on failure.
  */
@@ -281,7 +281,7 @@
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 	if(!chrome)
 		return
-	// Same-slot incumbents come out into the tray first — never the floor.
+	// Same-slot incumbents come out into the tray first, never the floor.
 	for(var/obj/item/organ/incumbent in ware.cyberware_get_incumbents(patient))
 		incumbent.Remove(patient, special = TRUE)
 		incumbent.forceMove(src)
@@ -355,7 +355,7 @@
 	busy_until = 0
 	busy_duration = 0
 
-/// Ends our sedation early. Only ever clears sleep WE caused — the patient
+/// Ends our sedation early. Only ever clears sleep WE caused, the patient
 /// was conscious at sequence start, that's the consent gate.
 /obj/machinery/chrome_cradle/proc/wake_patient(mob/living/carbon/patient)
 	if(istype(patient) && !QDELETED(patient))
@@ -364,7 +364,7 @@
 // ---- Tune-up -----------------------------------------------------------
 
 /// Whether anything on the occupant would actually benefit from a tune-up,
-/// or the reason nothing would. Brownouts are load problems — the fee can't
+/// or the reason nothing would. Brownouts are load problems. The fee can't
 /// fix those and won't be taken for them.
 /obj/machinery/chrome_cradle/proc/get_tuneup_denial(mob/living/carbon/patient)
 	var/list/installed = get_installed_cyberware(patient)
@@ -387,7 +387,7 @@
 	if(any_repairable)
 		return null
 	if(only_brownout && length(installed))
-		return "That chrome is browned out, not broken — shed some load instead."
+		return "That chrome is browned out, not broken. Shed some load instead."
 	return "Nothing needs a tune-up."
 
 /obj/machinery/chrome_cradle/proc/try_tune_up(mob/living/carbon/patient)
@@ -409,7 +409,7 @@
 	SStgui.update_uis(src)
 
 /// A T4 install pulls hard enough that the parlor's mood lighting browns out
-/// with it — every mapped fixture near the cradle flickers, and the CHROME
+/// with it, every mapped fixture near the cradle flickers, and the CHROME
 /// sign stutters. Pure theatre, and the whole point of doing it at the parlor.
 /obj/machinery/chrome_cradle/proc/flicker_parlor_lights()
 	for(var/obj/machinery/light/fixture in view(6, src))
@@ -421,7 +421,7 @@
 
 /**
  * The parlor voice, tier-keyed. Routed through the Splice NPC when one is in
- * view of the cradle — the ripperdoc talks you through the work — and falls
+ * view of the cradle (the ripperdoc talks you through the work) and falls
  * back to the rig's own speaker anywhere else (a cradle bought and mapped off
  * an outpost still has a bedside manner). T4 installs run silent by design;
  * the only line comes after the boot chime.
@@ -495,7 +495,7 @@
 	// turns into a null IN PLACE inside every list still holding it, and the
 	// tray holds strong refs. Scrub before reading, and use a typed loop so a
 	// null that appears between the scrub and the read is filtered rather than
-	// dereferenced — this proc runs from ui_data, so a runtime here blanks the
+	// dereferenced, this proc runs from ui_data, so a runtime here blanks the
 	// whole rack once a second.
 	list_clear_nulls(tray)
 	for(var/obj/item/organ/ware in tray)
@@ -506,14 +506,14 @@
 
 /**
  * The rack: one row per body system in head-down order, each holding whatever
- * chrome the console can see for its slots. Empty rows are kept — a system
+ * chrome the console can see for its slots. Empty rows are kept, a system
  * with nothing to put in it is information too, and it is what makes the rack
  * read as a body rather than as a list.
  *
  * Identical spares stack onto a single card carrying a count, rather than
  * tiling the same sprite six times across a row. The stack key is everything
  * the card actually shows, so a damaged or EMP-scrambled copy never hides
- * inside a clean stack, and an installed piece never merges with a loose one —
+ * inside a clean stack, and an installed piece never merges with a loose one,
  * they offer different buttons. Since only the representative of a stack has a
  * tile on screen, a highlight sitting on one of the folded-away copies is
  * snapped onto that representative here.
@@ -594,7 +594,7 @@
  * The ink panel: the parlor's stock pigments and patterns, plus where the
  * highlighted suite currently sits, so the console can show a swatch grid
  * instead of a blocking prompt. Only offered for a suite already seated in the
- * occupant's chest — a sachet in a bag has no skin to re-key.
+ * occupant's chest, a sachet in a bag has no skin to re-key.
  */
 /obj/machinery/chrome_cradle/proc/build_ink_data(mob/living/carbon/patient)
 	var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/dermis = selected_ware
@@ -621,8 +621,8 @@
 	)
 
 /**
- * Where the occupant's load budget lands if the highlighted piece goes in — or
- * comes out, when it is already installed — plus whatever that swap would
+ * Where the occupant's load budget lands if the highlighted piece goes in, or
+ * comes out, when it is already installed, plus whatever that swap would
  * evict. This is the number the ladder design lives or dies on, so the console
  * shows it before anything is committed rather than after a refusal.
  */
@@ -690,7 +690,7 @@
 	if(selected_ware && !(selected_ware in available))
 		selected_ware = null
 	// The rack runs first because stacking identical spares can move the
-	// highlight onto the copy that owns the tile — read it back afterwards or
+	// highlight onto the copy that owns the tile. Read it back afterwards or
 	// the console lights up a card that isn't the one on screen.
 	data["groups"] = build_rack_data(patient, available)
 	data["selected"] = selected_ware ? REF(selected_ware) : null
@@ -703,7 +703,7 @@
 	. = ..()
 	if(.)
 		return
-	// Off the ui, never a tracked var — ui.close() nulls those.
+	// Off the ui, never a tracked var. Ui.close() nulls those.
 	var/mob/living/acting = ui.user
 
 	// Slab and tray controls are open to anyone the ui_status let in.
@@ -723,7 +723,7 @@
 		// Browsing the racks stays the occupant's alone: the highlight drives
 		// the ghost and the inspector for every viewer, and a bystander
 		// driving it would be fighting the person on the slab. Spinning the
-		// mannequin is open to anyone watching — it changes nothing but the
+		// mannequin is open to anyone watching, it changes nothing but the
 		// shared facing, and the ripperdoc wants to see the back too.
 		if("select")
 			if(acting != occupant)
@@ -774,8 +774,8 @@
 			try_tune_up(patient)
 			return TRUE
 
-		// One swatch or one pattern per click, applied to the skin immediately —
-		// the ink panel is a live picker, not a form with a commit button.
+		// One swatch or one pattern per click, applied to the skin immediately.
+		// The ink panel is a live picker, not a form with a commit button.
 		if("set_ink")
 			var/obj/item/organ/ware = locate(params["ref"]) in get_installed_cyberware(patient)
 			if(!istype(ware, /obj/item/organ/cyberimp/cyberware/chromatic_dermis))

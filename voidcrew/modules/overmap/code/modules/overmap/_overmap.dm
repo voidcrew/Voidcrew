@@ -46,12 +46,12 @@
 	to_chat(user, "<span class='notice'>You don't think there's anything you can do here.</span>")
 
 /**
- * What the helm's Dock button means when this object shares the ship's tile —
+ * What the helm's Dock button means when this object shares the ship's tile,
  * a short noun phrase ("Trader Halcyon", "derelict signal"), or null if a ship
  * can't dock with this at all.
  *
  * Null is the default and covers everything a ship flies past rather than lands
- * on: storms, and nebulas (whose ship_act conceals rather than docks — that's the
+ * on: storms, and nebulas (whose ship_act conceals rather than docks, that's the
  * Cloak control's job). Other vessels are excluded by the helm itself, since
  * ship-to-ship docking is a consensual flow with its own request/accept handshake.
  *
@@ -64,7 +64,7 @@
 
 /**
  * Whether a ship parked at this object is standing in gravity that comes from the
- * location rather than from its own deck plating — a planet surface, an outpost deck.
+ * location rather than from its own deck plating, a planet surface, an outpost deck.
  *
  * Ship gravity is `default_gravity` on the shuttle areas, so anything that switches
  * the ship's plating off is only meaningful where the ship is the sole source of
@@ -100,7 +100,7 @@
 	return FALSE
 
 /// Areas that scope combat sounds/shakes/camera static to the target.
-/// Null means "don't filter" — correct for targets that own their whole z-level.
+/// Null means "don't filter", correct for targets that own their whole z-level.
 /obj/structure/overmap/proc/get_combat_target_areas()
 	return null
 
@@ -156,7 +156,7 @@
   * Mutually syncs the close-objects lists with every overmap object already sharing
   * this object's turf. on_entered only fires on movement, so an object spawned onto
   * an occupied tile (e.g. a freshly founded outpost under a still ship) is invisible
-  * to docking and sensors until something re-crosses — call this to register it now.
+  * to docking and sensors until something re-crosses. Call this to register it now.
   */
 /obj/structure/overmap/proc/sync_close_overmap_objects()
 	var/turf/our_turf = loc

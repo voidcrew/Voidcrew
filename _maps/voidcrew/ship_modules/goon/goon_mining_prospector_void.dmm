@@ -1,0 +1,64 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/ore_box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"d" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"j" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/storage/bag/ore,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/storage/bag/ore,
+/obj/machinery/light/cold{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"m" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"s" = (
+/obj/machinery/mineral/ore_redemption{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"v" = (
+/obj/machinery/autolathe,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"T" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+s
+v
+m
+"}
+(2,1,1) = {"
+T
+T
+T
+"}
+(3,1,1) = {"
+T
+T
+T
+"}
+(4,1,1) = {"
+d
+c
+j
+"}

@@ -7,11 +7,11 @@
  * delay everything standing in this floor's 3x3 alcove is moved to the
  * destination floor's alcove, tile-for-tile.
  *
- * Each floor's panel is its own independent car — concurrent rides from
+ * Each floor's panel is its own independent car, concurrent rides from
  * different floors are fine, they're pure teleports.
  *
  * The floor list marks which floor the viewer's own ship is on, computed live
- * from user.mind.ship_teams — so crew swaps update it with no extra plumbing,
+ * from user.mind.ship_teams, so crew swaps update it with no extra plumbing,
  * and a mind on several crews gets several starred floors.
  */
 /obj/machinery/outpost_elevator
@@ -102,7 +102,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(outpost)
 		floors += list(list(
 			"id" = 0,
-			"name" = "Concourse — [outpost.name]",
+			"name" = "Concourse: [outpost.name]",
 			"occupied" = length(outpost.lobby_alcove_turfs) > 0,
 			"your_ship" = FALSE,
 		))
@@ -114,7 +114,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 				is_yours = (slot.ship.ship_team in user.mind.ship_teams)
 			floors += list(list(
 				"id" = i,
-				"name" = slot ? "Berth [i] — [slot.ship ? slot.ship.name : "reserved"]" : "Berth [i] — vacant",
+				"name" = slot ? "Berth [i]: [slot.ship ? slot.ship.name : "reserved"]" : "Berth [i]: vacant",
 				"occupied" = !!slot,
 				"your_ship" = is_yours,
 			))

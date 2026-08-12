@@ -42,7 +42,7 @@
 /**
  * Presents every carbon body worth operating on: the players, plus whatever
  * the admin has marked in VV. The marked slot is the only way to reach a body
- * with no client — a spawned test dummy or a monkey — which is most of what
+ * with no client (a spawned test dummy or a monkey) which is most of what
  * chrome gets tried on. Returns the mob, or null on cancel.
  */
 /proc/voidcrew_admin_pick_carbon(client/user, title = "Select Body")
@@ -67,7 +67,7 @@
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
 		if(QDELETED(ship) || ship.abandoned || !ship.shuttle)
 			continue
-		choices["[ship.display_name || ship.name] — [length(ship.get_event_crew())] crew aboard"] = ship
+		choices["[ship.display_name || ship.name]: [length(ship.get_event_crew())] crew aboard"] = ship
 	if(!length(choices))
 		to_chat(user, span_warning("No loaded ships exist."))
 		return null
@@ -156,12 +156,12 @@ ADMIN_VERB(vestige_assign_trial, R_ADMIN|R_DEBUG, "Vestige: Assign Trial", "Hand
 				flag = " (completed)"
 			else if(mind.active_vestige_trial?.type == trial_type)
 				flag = " (active)"
-			choices["[entry["name"]] — [initial(trial_type.name)][flag]"] = list("trial" = trial_type, "patron" = entry["name"], "boons" = entry["boons"])
+			choices["[entry["name"]], [initial(trial_type.name)][flag]"] = list("trial" = trial_type, "patron" = entry["name"], "boons" = entry["boons"])
 	var/choice = tgui_input_list(user, "Which trial should [target] undertake?", "Assign Vestige Trial", choices)
 	if(!choice)
 		return
 	if(QDELETED(target) || target.mind != mind)
-		to_chat(user, span_warning("The target is gone or changed minds — aborting."))
+		to_chat(user, span_warning("The target is gone or changed minds, aborting."))
 		return
 	var/list/picked = choices[choice]
 	var/datum/vestige_trial/trial_type = picked["trial"]
@@ -199,11 +199,11 @@ ADMIN_VERB(vestige_complete_trial, R_ADMIN|R_DEBUG, "Vestige: Complete Trial", "
 	if(!active)
 		to_chat(user, span_warning("[target] has no active vestige pact."))
 		return
-	var/warning = mind.vestige_pending_reward ? "\nWARNING: they hold an unclaimed boon — the payout will be skipped until it's spent." : ""
+	var/warning = mind.vestige_pending_reward ? "\nWARNING: they hold an unclaimed boon. The payout will be skipped until it's spent." : ""
 	if(tgui_alert(user, "[active.name] ([active.patron_name])\n[active.get_progress_text()][warning]\n\nForce-fulfill this pact?", "Complete Vestige Trial", list("Fulfill", "Cancel")) != "Fulfill")
 		return
 	if(QDELETED(target) || target.mind != mind || mind.active_vestige_trial != active)
-		to_chat(user, span_warning("The pact changed while you were deciding — aborting."))
+		to_chat(user, span_warning("The pact changed while you were deciding, aborting."))
 		return
 	var/trial_name = active.name
 	active.complete()
@@ -230,10 +230,10 @@ ADMIN_VERB(vestige_grant_boon, R_ADMIN|R_DEBUG, "Vestige: Grant Boon", "Grant a 
 				var/datum/vestige_boon/prerequisite = initial(boon_type.upgrades_from)
 				if(prerequisite && !(prerequisite in mind.vestige_boons))
 					flag = " (upgrade of [initial(prerequisite.name)])"
-			choices["[entry["name"]] — [initial(boon_type.name)][flag]"] = boon_type
+			choices["[entry["name"]], [initial(boon_type.name)][flag]"] = boon_type
 
 	// Capstones hang off /datum/vestige_ascension rather than any patron's boon pool
-	// (ascension.dm), so the registry cannot see them — and must not, because
+	// (ascension.dm), so the registry cannot see them, and must not, because
 	// vestige_assign_trial pays a forced trial out of that same list and a capstone
 	// must never drop from an ordinary trial. Fold them in here, for this verb only.
 	for(var/patron_type in registry)
@@ -243,13 +243,13 @@ ADMIN_VERB(vestige_grant_boon, R_ADMIN|R_DEBUG, "Vestige: Grant Boon", "Grant a 
 		var/list/entry = registry[patron_type]
 		var/datum/vestige_boon/capstone_boon = capstone.boon_type
 		var/flag = (capstone_boon in mind.vestige_boons) ? " (owned)" : " (CAPSTONE)"
-		choices["[entry["name"]] — [initial(capstone_boon.name)][flag]"] = capstone_boon
+		choices["[entry["name"]], [initial(capstone_boon.name)][flag]"] = capstone_boon
 
 	var/choice = tgui_input_list(user, "Which boon should [target] receive?", "Grant Vestige Boon", choices)
 	if(!choice)
 		return
 	if(QDELETED(target) || target.mind != mind)
-		to_chat(user, span_warning("The target is gone or changed minds — aborting."))
+		to_chat(user, span_warning("The target is gone or changed minds, aborting."))
 		return
 	var/datum/vestige_boon/boon_type = choices[choice]
 	if(mind.vestige_boons && (boon_type in mind.vestige_boons))
@@ -279,7 +279,7 @@ ADMIN_VERB(vestige_inspect_player, R_ADMIN|R_DEBUG, "Vestige: Inspect Player", "
 	var/list/lines = list(span_boldnotice("Vestige state for [target] ([target.ckey]):"))
 
 	var/datum/vestige_trial/active = mind.active_vestige_trial
-	lines += "Active pact: [active ? "[active.name] ([active.patron_name]) — [active.get_progress_text()]" : "none"]"
+	lines += "Active pact: [active ? "[active.name] ([active.patron_name]), [active.get_progress_text()]" : "none"]"
 
 	var/datum/action/vestige_reward/pending = mind.vestige_pending_reward
 	if(pending)
@@ -368,7 +368,7 @@ ADMIN_VERB(spawn_zone_loot_cache, R_ADMIN|R_DEBUG, "Loot: Spawn Zone Cache", "Sp
 	var/list/choices = list()
 	for(var/obj/structure/closet/crate/zone_loot/cache_type as anything in subtypesof(/obj/structure/closet/crate/zone_loot))
 		var/short = replacetext("[cache_type]", "/obj/structure/closet/crate/zone_loot/", "")
-		choices["[short] — [initial(cache_type.name)]"] = cache_type
+		choices["[short]: [initial(cache_type.name)]"] = cache_type
 	var/choice = tgui_input_list(user, "Which cache?", "Spawn Zone Cache", sort_list(choices))
 	if(!choice)
 		return
@@ -394,7 +394,7 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 	var/list/choices = list()
 	for(var/obj/structure/closet/crate/zone_loot/cache_type as anything in subtypesof(/obj/structure/closet/crate/zone_loot))
 		var/short = replacetext("[cache_type]", "/obj/structure/closet/crate/zone_loot/", "")
-		choices["[short] — [initial(cache_type.name)]"] = cache_type
+		choices["[short]: [initial(cache_type.name)]"] = cache_type
 	var/choice = tgui_input_list(user, "Which cache type?", "Preview Zone Tables", sort_list(choices))
 	if(!choice)
 		return
@@ -447,7 +447,7 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 		html += "<h3>[section] (total weight [total])</h3><ul>"
 		for(var/entry in table)
 			var/weight = table[entry]
-			html += "<li>[entry] — [weight] ([round(weight / total * 100, 0.1)]%)</li>"
+			html += "<li>[entry]: [weight] ([round(weight / total * 100, 0.1)]%)</li>"
 		html += "</ul>"
 	qdel(sample)
 
@@ -505,7 +505,7 @@ ADMIN_VERB(force_dynamic_event, R_ADMIN|R_DEBUG, "Events: Force Dynamic Event", 
 		return
 	var/list/choices = list()
 	for(var/datum/round_event_control/voidcrew/event as anything in SSdynamic_events.control)
-		choices["[event.name] ([event.event_scope == EVENT_SCOPE_SHIP ? "ship" : "galaxy"]) — ran [event.occurrences]x"] = event
+		choices["[event.name] ([event.event_scope == EVENT_SCOPE_SHIP ? "ship" : "galaxy"]), ran [event.occurrences]x"] = event
 	var/choice = tgui_input_list(user, "Which event?", "Force Dynamic Event", sort_list(choices))
 	if(!choice)
 		return
@@ -517,7 +517,7 @@ ADMIN_VERB(force_dynamic_event, R_ADMIN|R_DEBUG, "Events: Force Dynamic Event", 
 		for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
 			if(QDELETED(ship) || ship.abandoned || !ship.shuttle)
 				continue
-			ship_choices["[ship.display_name || ship.name] — [length(ship.get_event_crew())] crew aboard"] = ship
+			ship_choices["[ship.display_name || ship.name]: [length(ship.get_event_crew())] crew aboard"] = ship
 		var/ship_choice = tgui_input_list(user, "Target which ship?", "Force Dynamic Event", ship_choices)
 		if(!ship_choice)
 			return
@@ -527,7 +527,7 @@ ADMIN_VERB(force_dynamic_event, R_ADMIN|R_DEBUG, "Events: Force Dynamic Event", 
 				to_chat(user, span_warning("That ship no longer exists."))
 				return
 			if(!event.is_valid_target(target))
-				to_chat(user, span_warning("Note: [target.display_name || target.name] fails the event's normal targeting rules (crew/cooldown/zone/harbor) — firing anyway."))
+				to_chat(user, span_warning("Note: [target.display_name || target.name] fails the event's normal targeting rules (crew/cooldown/zone/harbor), firing anyway."))
 			event.pending_target = target
 			target_label = target.display_name || target.name
 		else
@@ -541,11 +541,11 @@ ADMIN_VERB(force_dynamic_event, R_ADMIN|R_DEBUG, "Events: Force Dynamic Event", 
 
 // ===== MISSIONS =====
 
-ADMIN_VERB(give_ship_mission, R_ADMIN|R_DEBUG, "Missions: Give Mission", "Hand a specific mission type to a ship — onto its board, or already accepted.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(give_ship_mission, R_ADMIN|R_DEBUG, "Missions: Give Mission", "Hand a specific mission type to a ship: onto its board, or already accepted.", ADMIN_CATEGORY_DEBUG)
 	var/list/choices = list()
 	for(var/datum/mission/mission_type as anything in subtypesof(/datum/mission))
 		var/short = replacetext("[mission_type]", "/datum/mission/", "")
-		choices["[short] — [initial(mission_type.name)][initial(mission_type.weight) ? "" : " (never natural)"]"] = mission_type
+		choices["[short]: [initial(mission_type.name)][initial(mission_type.weight) ? "" : " (never natural)"]"] = mission_type
 	var/choice = tgui_input_list(user, "Which mission type?", "Give Mission", sort_list(choices))
 	if(!choice)
 		return
@@ -560,7 +560,7 @@ ADMIN_VERB(give_ship_mission, R_ADMIN|R_DEBUG, "Missions: Give Mission", "Hand a
 	var/datum/mission/mission = new mission_type(null)
 	if(mission.generation_failed)
 		qdel(mission)
-		to_chat(user, span_warning("Mission generation failed — no valid target/setup exists right now for that type."))
+		to_chat(user, span_warning("Mission generation failed. No valid target/setup exists right now for that type."))
 		return
 	if(mode == "Start Now")
 		mission.start_mission(ship)
@@ -576,7 +576,7 @@ ADMIN_VERB(force_resolve_mission, R_ADMIN|R_DEBUG, "Missions: Resolve Mission", 
 	for(var/datum/mission/mission as anything in SSmissions.all_active_missions)
 		if(QDELETED(mission))
 			continue
-		choices["[mission.name] — [mission.servant ? (mission.servant.display_name || mission.servant.name) : "no ship"]"] = mission
+		choices["[mission.name]: [mission.servant ? (mission.servant.display_name || mission.servant.name) : "no ship"]"] = mission
 	if(!length(choices))
 		to_chat(user, span_warning("No missions are active anywhere."))
 		return
@@ -678,8 +678,8 @@ ADMIN_VERB(spawn_gun_blueprint, R_ADMIN|R_DEBUG, "Trade: Spawn Blueprint", "Spaw
 
 // ===== OVERMAP / GAS ECONOMY =====
 
-ADMIN_VERB(spawn_gas_nebula, R_ADMIN|R_DEBUG, "Overmap: Spawn Nebula", "Spawn a gas nebula on the overmap — under a ship for instant ram scoop testing, or on an empty square.", ADMIN_CATEGORY_DEBUG)
-	var/list/choices = list("(random — roll the zone's gas table)" = /obj/structure/overmap/event/nebula)
+ADMIN_VERB(spawn_gas_nebula, R_ADMIN|R_DEBUG, "Overmap: Spawn Nebula", "Spawn a gas nebula on the overmap, under a ship for instant ram scoop testing, or on an empty square.", ADMIN_CATEGORY_DEBUG)
+	var/list/choices = list("(random, roll the zone's gas table)" = /obj/structure/overmap/event/nebula)
 	for(var/obj/structure/overmap/event/nebula/nebula_type as anything in subtypesof(/obj/structure/overmap/event/nebula))
 		var/datum/gas/gas_path = initial(nebula_type.gas_type)
 		choices[gas_path ? initial(gas_path.name) : "[nebula_type]"] = nebula_type

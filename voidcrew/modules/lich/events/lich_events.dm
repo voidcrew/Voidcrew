@@ -1,5 +1,5 @@
 /**
- * Ritual event roster for The Verdigris — Ilthuun, the Verdigris Lich.
+ * Ritual event roster for The Verdigris, Ilthuun, the Verdigris Lich.
  *
  * These are the magic events the lich's ritual clock fires as his potency ramps from
  * 0 to 7. They are copy-adapted ports of /tg/'s wizard events (code/modules/events/wizard/),
@@ -29,7 +29,7 @@
  * passes `allow_magic = TRUE`. That last part is load-bearing: any other caller that fires
  * one of these by hand must pass it too, or gate 1 above eats the entire roster silently.
  *
- * ## Cap policy — why max_occurrences is what it is
+ * ## Cap policy: why max_occurrences is what it is
  *
  * The ritual clock plateaus. Potency climbs to LICH_MAX_POTENCY and then stays there, so a
  * lich nobody kills fires potency-7 rituals every LICH_RITUAL_INTERVAL for the rest of the
@@ -39,7 +39,7 @@
  *
  * So the band splits into two kinds of event, deliberately:
  *
- * - **Repeatable pressure** — ship-scoped, self-terminating, recoverable with ordinary ship
+ * - **Repeatable pressure**: ship-scoped, self-terminating, recoverable with ordinary ship
  *   and medical tools. These carry high caps and are what a long-lived lich actually runs
  *   on: grave_dirt (20), grave_chill (12), grave_air (10), corpse_bloom (8). The three
  *   hazards are the spine of the roster; grave_air and corpse_bloom reach potency 7 with
@@ -47,7 +47,7 @@
  *   Caps count RITUALS, not hulls: a ship-scoped rite fires one event instance per crewed
  *   ship and fire_ritual_on_every_ship() puts `occurrences` back to one per ritual, so a
  *   busy galaxy does not burn through a cap faster than an empty one.
- * - **Round-warping one-shots** — galaxy-scoped and lasting for the round:
+ * - **Round-warping one-shots**: galaxy-scoped and lasting for the round:
  *   tongues_of_the_dead, mockery_of_heroes, restless_dead, unquiet_menagerie. These stay
  *   at max_occurrences = 1 forever. They are the last things on the roster that outlive
  *   their own firing, and they survive rule 2 on the grounds that none of them costs a
@@ -58,26 +58,26 @@
  *   can_spawn_event() overrides refuse a second instance outright).
  *
  * If the top of the ramp ever feels thin, the correct fix is a new repeatable ship-scoped
- * hazard or another band widened upward — never a raised cap on a one-shot.
+ * hazard or another band widened upward, never a raised cap on a one-shot.
  *
  * ## Two rules about what a ritual may do
  *
  * **1. A ritual never hands the crew power.** Ilthuun does not arm his raiders. TG's wizard
  * roster includes Summon Magic (a random magical item to every crewmember) and Summon Guns;
  * a port of Summon Magic lived here and was removed, and Summon Guns was never ported. A
- * ritual that gives the crew a working weapon or spell inverts the whole pressure system —
- * the clock is supposed to make the galaxy worse until somebody goes and kills him, and the
+ * ritual that gives the crew a working weapon or spell inverts the whole pressure system.
+ * The clock is supposed to make the galaxy worse until somebody goes and kills him, and the
  * reward for reaching him is his hoard plus the spell his death disperses (lich_loot.dm).
  * Handing that out for free on the way there costs the raid its only payoff and rewards
  * every crew that ignored him.
  *
- * **2. A ritual never leaves a permanent mark — on the crew's property or on the crew.**
+ * **2. A ritual never leaves a permanent mark, on the crew's property or on the crew.**
  * No curses on items, no renaming or re-rolling what people own, and no lasting damage to a
  * body or a mind that outlives the rite. Four rites used to, and all four are gone:
  * grave_goods (nodrop cursed clothing forced onto everyone), grasping_bones (every item
  * aboard permanently barbed and renamed), mockery_of_treasure (every item in the galaxy
  * renamed and stat-rolled for the round), and whispers_of_the_green (brain traumas at
- * TRAUMA_RESILIENCE_LOBOTOMY — surgery or nothing, for the rest of the round).
+ * TRAUMA_RESILIENCE_LOBOTOMY: surgery or nothing, for the rest of the round).
  *
  * None of those were dangerous. They were *annoying*, which is worse: a crew spends the rest
  * of the round managing the leftovers of a rite that stopped being a threat forty seconds
@@ -89,10 +89,10 @@
  * put something on (grave_chill); the air rots and you close your mask (grave_air). Each
  * runs about a minute, ends on its own, costs damage that heals, and leaves the ship
  * exactly as it found it. New rites should look like those three. Animating the dead,
- * moving people around, taking a sense away for a while — all fine. Leaving a mess the
- * crew has to clean up after he is dead — not fine.
+ * moving people around, taking a sense away for a while, all fine. Leaving a mess the
+ * crew has to clean up after he is dead, not fine.
  *
- * ## Scoping — every ritual reaches every crew
+ * ## Scoping: every ritual reaches every crew
  *
  * EVENT_SCOPE_SHIP events resolve every location through a target ship's shuttle areas,
  * so trader outposts, ruins and bystander structures are structurally untouchable. In the
@@ -101,7 +101,7 @@
  * crewed ship, one independent event instance each, so a rite lands on everybody flying
  * with people aboard. EVENT_SCOPE_GALAXY events have no target ship and reach everyone by
  * their own machinery. The two scopes are therefore a difference in plumbing, not in who
- * gets hit — a crew three sectors from the lair is not a spectator.
+ * gets hit, a crew three sectors from the lair is not a spectator.
  *
  * The only crews a ship-scoped rite skips are those docked at a trader outpost
  * (`allow_in_safe_harbor = FALSE`, inherited): NPC outposts never take collateral, and
@@ -109,8 +109,8 @@
  *
  * Consequence worth knowing: every instance stamps its ship's `last_dynamic_event`, so
  * while Ilthuun is working the whole fleet is on ambient-event cooldown and
- * SSdynamic_events goes quiet. That is the intended reading — the lich owns the pressure
- * budget for as long as he is alive — and it reverses on its own when he dies.
+ * SSdynamic_events goes quiet. That is the intended reading, the lich owns the pressure
+ * budget for as long as he is alive, and it reverses on its own when he dies.
  *
  * ## Voice
  *
@@ -146,7 +146,7 @@
 	 * anti-spam throttle is the wrong governor for it.
 	 *
 	 * These events still stamp last_dynamic_event, so ambient events keep backing off a
-	 * ship the lich just hit — the exemption runs one way only, and the lich crowds out
+	 * ship the lich just hit. The exemption runs one way only, and the lich crowds out
 	 * ambient noise rather than stacking with it.
 	 */
 	ignores_ship_cooldown = TRUE
@@ -156,14 +156,14 @@
 	 * The port spec asks harmful events to restrict themselves to ZONE_YELLOW/ZONE_RED so
 	 * the green outer ring stays a safe place to learn the game. A lich raid is explicitly
 	 * a galaxy-wide threat announced to every crew alive, and the whole design of the
-	 * feature is that the only way to make it stop is to go kill him — a crew that can opt
+	 * feature is that the only way to make it stop is to go kill him. A crew that can opt
 	 * out by parking in green has no reason to. The potency ramp is the safety valve here,
 	 * not the zone band, and these events never fire from the natural roster where the
 	 * zone rules matter.
 	 */
 	allowed_zones = null
 	/// Left at the framework default: a ship docked at an NPC outpost is skipped and another victim is picked.
-	/// Not out of mercy — hostiles and hazards spawned aboard a docked ship can walk off it, and outposts must never take collateral.
+	/// Not out of mercy: hostiles and hazards spawned aboard a docked ship can walk off it, and outposts must never take collateral.
 	allow_in_safe_harbor = FALSE
 
 /**
@@ -238,7 +238,7 @@
  * - Re-adding heals a room that lost the paint. `overlays` is a raw appearance list with no
  *   owner; anything that rebuilds an area's appearance drops whatever it did not put there,
  *   and a one-shot paint has no way to notice or recover. TG's weather has the same exposure
- *   and papers over it by re-running update_areas() at every stage transition — the same
+ *   and papers over it by re-running update_areas() at every stage transition, the same
  *   trick, just at a coarser interval.
  * - Re-reading the area list picks up a compartment that joined the hull after the rite began
  *   (blueprints, hull construction, a shuttle expansion), which the cached list never could.
@@ -259,8 +259,8 @@
 		painted_areas[ship_area] = TRUE
 
 /// Strips exactly the overlays this rite added, from exactly the areas it added them to.
-/// Safe to call on a rite that never painted, and on one whose ship has been destroyed —
-/// shuttle areas outlive their turfs, which is why nothing here caches a turf.
+/// Safe to call on a rite that never painted, and on one whose ship has been destroyed.
+/// Shuttle areas outlive their turfs, which is why nothing here caches a turf.
 /datum/round_event/voidcrew/lich/proc/remove_rite_overlays()
 	if(!length(rite_overlays))
 		return

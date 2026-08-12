@@ -8,7 +8,7 @@
  * researched rather than bought.
  *
  * One tab each, and every tab kept short. This opens four seconds after spawn, on
- * top of a player who is still working out which way their ship faces — anything
+ * top of a player who is still working out which way their ship faces, anything
  * longer than a screen gets closed unread.
  *
  * Shown once per client per round - a respawn twenty minutes later does not
@@ -89,7 +89,7 @@ GLOBAL_DATUM_INIT(orientation_briefing, /datum/orientation_briefing, new)
 		list(
 			"name" = ZONE_NAME_RED,
 			"color" = ZONE_COLOR_RED,
-			"summary" = "The inner ring. Nothing is off limits — your hull can be shot at, and the ships out here are equipped for it.",
+			"summary" = "The inner ring. Nothing is off limits. Your hull can be shot at, and the ships out here are equipped for it.",
 			"rules" = list(
 				"Ship weapons are live: you can be shot",
 				"PLAYERS CAN KILL YOU FOR NOTHING",

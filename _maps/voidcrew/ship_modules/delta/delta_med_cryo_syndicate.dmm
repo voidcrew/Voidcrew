@@ -1,0 +1,284 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"h" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "cryo log";
+	default_raw_text = "Cryoxadone stays on the bench until the tube is cold. Nobody sits in the pod longer than ten minutes without someone watching the readout. Log the name and the time you pulled them out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"a" = (
+/obj/machinery/atmospherics/pipe/smart,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"b" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"c" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "cryo log";
+	default_raw_text = "Cryoxadone stays on the bench until the tube is cold. Nobody sits in the pod longer than ten minutes without someone watching the readout. Log the name and the time you pulled them out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryo_cell{
+	dir = 2
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "cryo log";
+	default_raw_text = "Cryoxadone stays on the bench until the tube is cold. Nobody sits in the pod longer than ten minutes without someone watching the readout. Log the name and the time you pulled them out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryo_cell{
+	dir = 4
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/machinery/iv_drip,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"I" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"O" = (
+/obj/machinery/light/small/red/directional/south,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/sleeper{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/machinery/light/small/directional/south,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/co2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+I
+w
+d
+"}
+(2,1,1) = {"
+y
+E
+W
+"}
+(3,1,1) = {"
+s
+X
+a
+"}
+(4,1,1) = {"
+H
+L
+K
+"}
+(5,1,1) = {"
+i
+v
+A
+"}
+(6,1,1) = {"
+e
+h
+Q
+"}

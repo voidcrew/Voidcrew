@@ -4,14 +4,14 @@
  * Three properties of the hull shelf that are enforced by convention today:
  *
  * 1. **Catalog rules.** Only curated `force_purchasable` gag hulls are free,
- *    and those must never be on the starting line — the roundstart fleet rolls
+ *    and those must never be on the starting line, the roundstart fleet rolls
  *    hull, theme and modules at random, so a hull with no themes and no slots
  *    hands a crew four tiles and no way to configure anything.
  * 2. **Dock rotation.** A hull whose `preferred_direction` disagrees with the
  *    aspect-ratio guess in adjust_reserve_dock_to_shuttle() spins 90 degrees on
  *    every dock and undock, forever, and nothing says so.
  * 3. **Starting equipment.** Every purchasable hull launches with a mission
- *    board and pad, a bank machine, a cargo console and an R&D board kit —
+ *    board and pad, a bank machine, a cargo console and an R&D board kit,
  *    either on the hull itself, or (the Delta pattern) guaranteed by every
  *    module that can fill one of its slots.
  */
@@ -36,15 +36,15 @@
 				TEST_FAIL("[hull.type] is force_purchasable (curated back onto the shelf by hand) but is roundstart-eligible. The roundstart fleet rolls hull, theme and modules at random and these hulls have none of that to roll.")
 			continue
 		if(ship_template_total_part_cost(hull) <= 0)
-			TEST_FAIL("[hull.type] is on the shelf for nothing. Only curated force_purchasable hulls are free — there is deliberately no free starter hull.")
+			TEST_FAIL("[hull.type] is on the shelf for nothing. Only curated force_purchasable hulls are free. There is deliberately no free starter hull.")
 		if(!length(hull.catalog_desc))
 			TEST_FAIL("[hull.type] has no catalog_desc, so the shelf falls back to a generated 'N-class with capacity for N crew' line")
 
 	var/list/roundstart = get_roundstart_hull_templates()
-	TEST_ASSERT(length(roundstart) >= 4, "the roundstart hull pool collapsed to [length(roundstart)] hulls — the fleet is sized to turnout and needs variety to deal from")
+	TEST_ASSERT(length(roundstart) >= 4, "the roundstart hull pool collapsed to [length(roundstart)] hulls. The fleet is sized to turnout and needs variety to deal from")
 	for(var/datum/map_template/shuttle/voidcrew/hull as anything in roundstart)
 		if(!length(hull.upgrade_slot_ids))
-			TEST_FAIL("[hull.type] is roundstart-eligible with no upgrade slots — there is nothing to roll modules into")
+			TEST_FAIL("[hull.type] is roundstart-eligible with no upgrade slots. There is nothing to roll modules into")
 		if(!length(hull.available_themes))
 			TEST_FAIL("[hull.type] is roundstart-eligible with no themes to roll")
 			continue
@@ -59,7 +59,7 @@
 				continue
 			seats += job_definition["slots"] || 1
 		if(seats < 4)
-			TEST_FAIL("[hull.type]'s default theme seats only [seats] — too small to deal a roundstart crew into")
+			TEST_FAIL("[hull.type]'s default theme seats only [seats], too small to deal a roundstart crew into")
 
 	// Pricing shape: exactly one free default theme per hull, everything else priced.
 	for(var/hull_type in GLOB.ship_themes)
@@ -72,7 +72,7 @@
 				if(length(theme.part_cost))
 					TEST_FAIL("[hull_type]'s default theme '[theme_id]' costs parts; the default is what a hull's owner gets for free with the hull")
 			else if(!length(theme.part_cost))
-				TEST_FAIL("[hull_type] theme '[theme_id]' is not the default and costs nothing — every alternative look is meant to be earned")
+				TEST_FAIL("[hull_type] theme '[theme_id]' is not the default and costs nothing. Every alternative look is meant to be earned")
 		if(defaults != 1)
 			TEST_FAIL("[hull_type] has [defaults] default themes, expected exactly 1")
 
@@ -104,7 +104,7 @@
 		if(!text)
 			TEST_FAIL("[hull.type] points at a missing map [hull.mappath]")
 			continue
-		// Exactly one mobile port per hull map — the same assumption
+		// Exactly one mobile port per hull map, the same assumption
 		// /datum/map_template/discover_offset() is built on.
 		var/path_start = findtext(text, "/obj/docking_port/mobile/")
 		if(!path_start)
@@ -217,7 +217,7 @@
 					continue
 				if(slot_guarantees(hull, theme, theme_id, equipment_path))
 					continue
-				TEST_FAIL("[theme.template_suffix] ships without a [required_equipment[equipment_path]] ([equipment_path]), and no upgrade slot guarantees one. Every purchasable hull launches with a mission board and pad, a bank machine, a cargo console and an R&D board kit — either on the hull, or on every module that can fill one of its slots.")
+				TEST_FAIL("[theme.template_suffix] ships without a [required_equipment[equipment_path]] ([equipment_path]), and no upgrade slot guarantees one. Every purchasable hull launches with a mission board and pad, a bank machine, a cargo console and an R&D board kit, either on the hull, or on every module that can fill one of its slots.")
 	TEST_ASSERT(checked >= 15, "only [checked] hull/theme maps were checked for starting equipment")
 
 /**

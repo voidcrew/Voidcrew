@@ -4,8 +4,8 @@
  *
  * TG heavy-EMPs every entry in GLOB.telecomm_machines, because on a station every radio
  * message is relayed through a telecomms stack and knocking the stack out silences the
- * whole crew at once. Voidcrew has no telecomms at all — vocal radio skips the machinery
- * entirely and is scoped per ship (see voidcrew/modules/comms/comms.dm) — so there is no
+ * whole crew at once. Voidcrew has no telecomms at all. Vocal radio skips the machinery
+ * entirely and is scoped per ship (see voidcrew/modules/comms/comms.dm), so there is no
  * relay to break and the port has to act on the radios themselves.
  *
  * The effect is the same from the crew's side: for about twenty seconds nobody aboard can
@@ -64,7 +64,7 @@
 			handset.emp_act(EMP_HEAVY)
 			blacked_out++
 
-	// Holopads carry the other half of ship comms here — hails, and the pirate channel.
+	// Holopads carry the other half of ship comms here, hails, and the pirate channel.
 	for(var/obj/machinery/holopad/pad as anything in target_ship.get_ship_machines(/obj/machinery/holopad))
 		pad.emp_act(EMP_HEAVY)
 

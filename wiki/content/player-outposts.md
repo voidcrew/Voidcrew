@@ -15,7 +15,7 @@ A deed is bound to the buyer by name. Nobody else can use it, and each person ma
 
 ## Founding
 
-To found, your crew's ship has to be **holding still on an empty overmap tile** — not docked, not moving, and not on top of a planet, ruin or another outpost. Use the deed in hand and the registry catalogue opens.
+To found, your crew's ship has to be **holding still on an empty overmap tile**, not docked, not moving, and not on top of a planet, ruin or another outpost. Use the deed in hand and the registry catalogue opens.
 
 Pick a shell and a name:
 
@@ -34,7 +34,7 @@ The two prefab shells arrive with lights, a pressurised core, an APC and cable, 
 
 ## The consoles
 
-Every shell ships with two consoles, and if either is destroyed you can rebuild it — a fresh console relinks itself to whatever outpost's z-level it is standing on. The Bare Claim's starter crate holds both boards.
+Every shell ships with two consoles, and if either is destroyed you can rebuild it, a fresh console relinks itself to whatever outpost's z-level it is standing on. The Bare Claim's starter crate holds both boards.
 
 The **management console** is the owner's control panel. Ownership is tied to your account rather than your body, so it survives death and respawn. Everyone else gets a read-only view. From it you can:
 
@@ -46,11 +46,11 @@ The **management console** is the owner's control panel. Ownership is tied to yo
 
 The **construction console** puts you behind a remote drone with a built-in RCD, RTD, RPD and RLD, fed from the outpost's ore silo. It is the same tool ships use to expand their hulls, pointed at your claim instead. Anything the drone builds is automatically pulled into the outpost's powered area so it gets light, gravity and APC coverage; anything you build by hand gets swept in the same way within half a minute.
 
-You can build anywhere inside the claim's **survey bounds** — the shell's footprint plus fifteen tiles in every direction. Outside that, nothing.
+You can build anywhere inside the claim's **survey bounds**, the shell's footprint plus fifteen tiles in every direction. Outside that, nothing.
 
 ## The hangar
 
-Both prefab shells arrive with a **hangar elevator** already installed, which means visiting ships get their own private berth from the moment you found the place — exactly like a trader outpost. Ride the elevator from the concourse to any occupied berth and back.
+Both prefab shells arrive with a **hangar elevator** already installed, which means visiting ships get their own private berth from the moment you found the place, exactly like a trader outpost. Ride the elevator from the concourse to any occupied berth and back.
 
 If you took the Bare Claim, or you want the elevator somewhere else, the construction console has a three-step workflow for it: **plan** projects a coloured blueprint of the elevator kit under your drone, **rotate** turns it to face another way, and **confirm** stamps it down and wires it in.
 
@@ -60,9 +60,9 @@ Without an elevator, an outpost still has two ordinary landing pads, and that is
 
 The management console sets one of three docking policies:
 
-- **Open** — anybody may dock without asking. This is the default.
-- **By request** — a visiting ship's dock attempt queues a request, the owner is notified wherever they are, and they approve or deny it from the console. Approved ships stay approved.
-- **Lockdown** — only the owner's own crew gets in.
+- **Open**: anybody may dock without asking. This is the default.
+- **By request**: a visiting ship's dock attempt queues a request, the owner is notified wherever they are, and they approve or deny it from the console. Approved ships stay approved.
+- **Lockdown**: only the owner's own crew gets in.
 
 You can also **ban** specific ships outright, which overrides everything including an existing approval.
 
@@ -88,7 +88,7 @@ The numbers matter:
 - **Recharging pauses for ten seconds after every hit.** Sustained bombardment outruns regeneration; shields do not heal under fire.
 - It draws 10 kW while charging and 1 kW while holding a full field, so your power supply has to be real.
 
-Building a second generator does **not** double your shield. Only the first working unit holds the field; the rest sit cold on standby and take over — empty — if it dies or loses power. Stacking generators buys redundancy, not capacity. Both sides get told what happened on every absorbed hit, including the charge you have left.
+Building a second generator does **not** double your shield. Only the first working unit holds the field; the rest sit cold on standby and take over (empty) if it dies or loses power. Stacking generators buys redundancy, not capacity. Both sides get told what happened on every absorbed hit, including the charge you have left.
 
 !!! danger "When the shield collapses, everything lands"
     Once the charge pool hits zero, missiles strike your buildings directly. A depleted shield with an attacker still on station is the point at which you either drive them off or lose the station.
@@ -99,4 +99,4 @@ Nothing stops boarders. The shield is anti-ordnance only; a crew that docks at y
 
 There is no cross-round persistence. When the round ends, the outpost, its contents and its deed are all gone. Nothing carries over.
 
-Two things can happen before then. You can **transfer** ownership to somebody standing on the outpost, provided they have not already founded a claim this round — their account becomes the owner and yours does not get a second claim. Or you can **abandon** it, which announces the abandonment galaxy-wide, clears ownership, reopens docking to everybody and kills any live broadcast. The station itself stays standing, unowned, with the doors open. Your account still cannot found another.
+Two things can happen before then. You can **transfer** ownership to somebody standing on the outpost, provided they have not already founded a claim this round. Their account becomes the owner and yours does not get a second claim. Or you can **abandon** it, which announces the abandonment galaxy-wide, clears ownership, reopens docking to everybody and kills any live broadcast. The station itself stays standing, unowned, with the doors open. Your account still cannot found another.

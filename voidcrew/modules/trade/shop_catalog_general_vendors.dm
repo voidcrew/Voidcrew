@@ -1,23 +1,23 @@
 /**
- * # Waystation Halcyon — vendor stalls
+ * # Waystation Halcyon: vendor stalls
  *
  * Halcyon's side businesses: Fern in the conservatory running the Potting
  * Shed, and Pike selling tackle off a bench beside the pond he dug into the
  * deck plating. Each is a full /datum/outpost_shop (own stock, own buyback
- * ledger, own voice) fronted by its own trader NPC — same wiring as the
+ * ledger, own voice) fronted by its own trader NPC, same wiring as the
  * Undertow's stalls (see outpost.dm get_shop(), trader_npc.dm for the mobs).
  *
  * Balance notes:
  * - No overlap with Barnaby's counter: he keeps the groceries, Fern owns seeds
  *   and grower's supply, Pike owns tackle and the rods. Pike's stall stocks
- *   nothing a stock ship autolathe prints for free — that ruled out the
+ *   nothing a stock ship autolathe prints for free, that ruled out the
  *   aquarium kit and fish case.
  * - Fern's hand tools ARE autolathe designs, and they're priced like it: pocket
  *   change, sold for the crew that wants a garden running before they've built
- *   a lathe or walked back to one. Her tray board is the real sale — it sits
+ *   a lathe or walked back to one. Her tray board is the real sale, it sits
  *   behind the hydroponics techweb node, so a ship with no R&D bay has no other
  *   way to add a tray.
- * - Fern's produce and graft buybacks pay pocket change on purpose — it's the
+ * - Fern's produce and graft buybacks pay pocket change on purpose: it's the
  *   "sell your harvest at the waystation" fantasy, not an economy. Her graft
  *   ledger refuses plain repeated-harvest cuttings so a tray of wheat can't be
  *   farmed into credits; see the matches() override below.
@@ -26,7 +26,7 @@
  */
 
 // =========================================================================
-// THE POTTING SHED — Fern, conservatory keeper
+// THE POTTING SHED: Fern, conservatory keeper
 // =========================================================================
 
 /**
@@ -59,7 +59,7 @@
 		"Job Packs",
 	)
 	sku_types = list(
-		// Seed Rack — honest staples for a ship galley
+		// Seed Rack: honest staples for a ship galley
 		/datum/shop_sku/potting/tomato,
 		/datum/shop_sku/potting/potato,
 		/datum/shop_sku/potting/carrot,
@@ -78,20 +78,20 @@
 		/datum/shop_sku/potting/robust_harvest,
 		/datum/shop_sku/potting/left4zed,
 		/datum/shop_sku/potting/overalls,
-		// Grower's Supply — hand tools
+		// Grower's Supply: hand tools
 		/datum/shop_sku/potting/cultivator,
 		/datum/shop_sku/potting/spade,
 		/datum/shop_sku/potting/hatchet,
 		/datum/shop_sku/potting/secateurs,
 		/datum/shop_sku/potting/watering_can,
 		/datum/shop_sku/potting/plant_analyzer,
-		// Grower's Supply — the tray itself
+		// Grower's Supply: the tray itself
 		/datum/shop_sku/potting/tray_board,
 		// The Apiary
 		/datum/shop_sku/potting/honeycomb,
 		/datum/shop_sku/potting/honey_frame,
 		/datum/shop_sku/potting/queen_bee,
-		// Job Packs — the crate lives in shop_catalog_job_packs.dm
+		// Job Packs: the crate lives in shop_catalog_job_packs.dm
 		/datum/shop_sku/potting/job_pack_botany,
 	)
 	rotating_pool = list(
@@ -130,7 +130,7 @@
 			"Bring me grafts with something actually in them. A cutting off a wheat stalk is just a cutting.",
 			"Tray boards are on the shelf behind me. Two bins, a servo, a sheet of glass, and you've got a garden.",
 			"Take the tools while you're here. They're cheap, and I'd rather you weren't pulling weeds with your hands.",
-			"Ash flora seeds off the burning worlds — I pay proper credits. They grow ANYWHERE. It's terrifying. I love them.",
+			"Ash flora seeds off the burning worlds. I pay proper credits. They grow ANYWHERE. It's terrifying. I love them.",
 			"Pike keeps saying fish fertilizer would double my yield. Pike is banned from the conservatory.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -392,7 +392,7 @@
 
 // Fern buys genetics, not clippings. Grafts taken off a plant with no
 // graft_gene of its own come out carrying the default repeated-harvest trait,
-// which she already has on everything and will not pay for — that closes the
+// which she already has on everything and will not pay for, that closes the
 // "buy a cheap seed, snip it forever" loop without touching the seed rack.
 // Priced and demanded low on purpose: secateurs print free on a stock ship
 // autolathe, so the supply side of this ledger can't be gated, only the
@@ -414,7 +414,7 @@
 
 /datum/shop_buyback/potting/ash_flora
 	name = "ash flora seeds (any)"
-	desc = "Seed stock off the burning worlds — cactus, mushroom, moss, whatever survives down there. All of it grows just fine up here, which Fern finds thrilling and slightly alarming."
+	desc = "Seed stock off the burning worlds: cactus, mushroom, moss, whatever survives down there. All of it grows just fine up here, which Fern finds thrilling and slightly alarming."
 	category = "Cuttings & Curiosities"
 	item_path = /obj/item/seeds/lavaland
 	pay_credits = 150
@@ -431,11 +431,11 @@
 	demand_max = 10
 
 // =========================================================================
-// PIKE'S BAIT & TACKLE — Pike, resident angler
+// PIKE'S BAIT & TACKLE: Pike, resident angler
 // =========================================================================
 
 /**
- * Pike: overalls, rubber boots and a puffer vest — a man who expects to be
+ * Pike: overalls, rubber boots and a puffer vest. A man who expects to be
  * standing in water at some point today, indoors or not. The hat is the
  * genuine article and he will tell you so; the rod never leaves his hand.
  * Deliberately not in Fern's waders, since they share a corridor.
@@ -464,7 +464,7 @@
 		"Aquarist Corner",
 	)
 	sku_types = list(
-		// Rods & Reels — the basic rod prints on any ship lathe, so Pike only
+		// Rods & Reels: the basic rod prints on any ship lathe, so Pike only
 		// stocks the ones worth carrying out to a planet
 		/datum/shop_sku/bait/telescopic_rod,
 		// Bait & Tackle
@@ -554,7 +554,7 @@
 // are unconsumable omni-bait, and each one only interests a specific sort of
 // fish, so the set is what turns the whole thing from luck into a choice.
 // Priced between the cargo goody pack (400) and the box's own shelf price
-// (450) — buying it here means carrying it out today instead of waiting on a
+// (450), buying it here means carrying it out today instead of waiting on a
 // supply run.
 /datum/shop_sku/bait/lure_set
 	category = "Bait & Tackle"
@@ -626,7 +626,7 @@
 /datum/shop_sku/bait/rotating/rescue_rod
 	category = "Rods & Reels"
 	name = "rescue rod"
-	desc = "A rod rigged with a rescue hook — it casts at people, not fish. Pike sells one every time somebody falls in the pond, which is more often than you'd think."
+	desc = "A rod rigged with a rescue hook. It casts at people, not fish. Pike sells one every time somebody falls in the pond, which is more often than you'd think."
 	item_path = /obj/item/fishing_rod/rescue
 	price_credits = 350
 

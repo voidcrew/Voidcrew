@@ -2,14 +2,14 @@
  * Ship-scoped port of TG's Space Vines (code/modules/events/space_vines/vine_event.dm).
  *
  * Kudzu takes root somewhere aboard the target ship and spreads from there. The event
- * itself is nearly the whole original — pick a floor, roll a mutation, hand it to a
- * /datum/spacevine_controller — with two changes:
+ * itself is nearly the whole original. Pick a floor, roll a mutation, hand it to a
+ * /datum/spacevine_controller, with two changes:
  *
  * 1. TG seeds into `/area/station/hallway`, which does not exist here. The seed goes on
  *    any open floor aboard instead.
  * 2. The controller is a ship-scoped subtype. Vines already refuse to spread into space
  *    (see /obj/structure/spacevine/proc/spread), which contains them perfectly well on a
- *    flying ship — the vacuum is the wall. It stops containing them the moment the crew
+ *    flying ship, the vacuum is the wall. It stops containing them the moment the crew
  *    docks at a ruin or an outpost and opens the airlock, and kudzu that gets into a
  *    never-unloading trader outpost is there for the rest of the round. The subtype below
  *    culls anything that ends up off-hull.
@@ -33,7 +33,7 @@
 	fakeable = FALSE
 	/// Potency of the spawned kudzu (mutation frequency and severity ceiling).
 	var/potency
-	/// Production of the spawned kudzu — lower spreads faster.
+	/// Production of the spawned kudzu: lower spreads faster.
 	var/production
 
 /datum/round_event/voidcrew/spacevine/start()
@@ -82,7 +82,7 @@
  * A vine controller that keeps its growth on one ship.
  *
  * The cull runs on the controller rather than on spread(), because spread() dereferences
- * whatever spawn_spacevine_piece() returns without a null check — refusing to create the
+ * whatever spawn_spacevine_piece() returns without a null check, refusing to create the
  * piece there would runtime. Letting the piece exist for one tick and removing it after
  * is uglier in principle and considerably safer in practice.
  */
@@ -98,7 +98,7 @@
 		return ..()
 
 	var/obj/structure/overmap/ship/ship = ship_ref.resolve()
-	// No ship left to be aboard of — the hull was destroyed or abandoned with us on it.
+	// No ship left to be aboard of. The hull was destroyed or abandoned with us on it.
 	if(QDELETED(ship) || !ship.shuttle)
 		DeleteVines()
 		return

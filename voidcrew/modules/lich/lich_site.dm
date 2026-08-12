@@ -1,5 +1,5 @@
 /**
- * # The Verdigris — lich lair site + ritual engine
+ * # The Verdigris: lich lair site + ritual engine
  *
  * A necrotic signal surfaces in yellow/red space well into the round and the
  * whole galaxy is told what it is. Inside is Ilthuun, the Verdigris Lich, behind
@@ -26,7 +26,7 @@
  * a pristine copy next time. That is exactly wrong for a raid: a crew that wipes
  * on layer three would come back to a full-health lich and a resurrected
  * garrison. Both procs are overridden to no-ops here, so once the lair loads it
- * is held for the rest of the round — boss HP, dead guards, spent ammo and
+ * is held for the rest of the round, boss HP, dead guards, spent ammo and
  * opened wards all persist as live objects. That costs one turf reservation,
  * the same order as the Colosseum's z-stack, and in exchange there is no state
  * mirroring to write at all: nothing needs to survive a reload, because there
@@ -71,7 +71,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	/// fell (see get_lich_hoard_turf, lich_loot.dm).
 	var/turf/hoard_turf
 	/// TRUE once link_interior() has indexed the footprint. The interior never
-	/// unloads, so linking is a once-per-round job — but load_level() is called on
+	/// unloads, so linking is a once-per-round job, but load_level() is called on
 	/// every docking attempt (the base proc early-returns on an existing
 	/// reservation), so without this flag every subsequent dock would re-walk the
 	/// footprint and, worse, RESPAWN Ilthuun once his corpse was gone.
@@ -135,7 +135,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 			. += span_boldwarning("Every ward is dark. Nothing stands between the breach and the sanctum.")
 
 /**
- * Kicks the raid off: reveals the site (there is no mystery to survey — he
+ * Kicks the raid off: reveals the site (there is no mystery to survey, he
  * announces himself), charts a helm waypoint onto the whole fleet, tells the
  * galaxy who is calling and what is about to start happening to it, and starts
  * the ritual clock. Called once by the scheduler right after set_ruin_template().
@@ -155,7 +155,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	// round, so a hull commissioned an hour from now still needs to be told where.
 	broadcast_fleet_waypoint()
 
-	notify_ghosts("The Verdigris has surfaced — a lich has begun a galaxy-wide ritual!", source = src, header = "The Verdigris")
+	notify_ghosts("The Verdigris has surfaced. A lich has begun a galaxy-wide ritual!", source = src, header = "The Verdigris")
 
 	schedule_ritual(LICH_FIRST_RITUAL_DELAY)
 	log_game("LICH: The Verdigris surfaced at overmap [where].")
@@ -163,8 +163,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /**
  * Galaxy-wide broadcast in Ilthuun's voice: a Wideband transmission (in-fiction
  * he is simply on every channel) plus a green priority announcement so players
- * without a headset still get it. Wideband is unscoped — see
- * voidcrew/modules/comms/comms.dm — so the site's z-level is irrelevant.
+ * without a headset still get it. Wideband is unscoped, see
+ * voidcrew/modules/comms/comms.dm, so the site's z-level is irrelevant.
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/broadcast_galaxy(message, title)
 	priority_announce(message, title, sender_override = LICH_ANNOUNCER, color_override = "green")
@@ -172,7 +172,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 // ===== RITUAL CLOCK =====
 
-/// Arms the next ritual. Safe to call repeatedly — an existing pending ritual is
+/// Arms the next ritual. Safe to call repeatedly. An existing pending ritual is
 /// always replaced, never stacked.
 /obj/structure/overmap/space_ruin/lich_lair/proc/schedule_ritual(delay = LICH_RITUAL_INTERVAL)
 	if(QDELETED(src) || spent)
@@ -200,7 +200,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 	ritual_potency = min(ritual_potency + 1, LICH_MAX_POTENCY)
 	// Running a round event sleeps (grand_rune.dm:187 makes the same note about
-	// the same call) — never block SStimer's fire on it.
+	// the same call), never block SStimer's fire on it.
 	INVOKE_ASYNC(src, PROC_REF(fire_ritual_event), ritual_potency)
 	broadcast_galaxy(ritual_flavor(ritual_potency), "The Verdigris")
 	schedule_ritual()
@@ -217,10 +217,10 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * registry to keep in sync: SSevents instantiates one control per typepath at
  * init, so subtyping the base is the whole registration step.
  *
- * One ritual, one event TYPE — but a ship-scoped one lands on every crewed ship
+ * One ritual, one event TYPE, but a ship-scoped one lands on every crewed ship
  * at once rather than on a rolled victim. See fire_ritual_on_every_ship().
  *
- * A null return is not a failure — it means nothing in the roster was willing to
+ * A null return is not a failure. It means nothing in the roster was willing to
  * run right now, and the ritual passes quietly. See get_ritual_roster().
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/fire_ritual_event(potency = ritual_potency)
@@ -247,14 +247,14 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  *
  * The ambient framework rolls a single weighted victim ship per event, which is
  * right for ambient noise and wrong for this: Ilthuun announces himself to the
- * whole galaxy, names the price of ignoring him, and then — under the old
- * behaviour — inconvenienced one crew at random while everyone else watched. A
+ * whole galaxy, names the price of ignoring him, and then, under the old
+ * behaviour, inconvenienced one crew at random while everyone else watched. A
  * pressure system that only presses one hull is not a reason for anybody else to
  * fly at the lair. So every crew that is flying with people aboard gets the rite.
  *
  * Implemented as N separate run_event() calls with `pending_target` set by hand,
  * rather than by teaching the events to take a list. Each ship gets its own event
- * instance with its own lifecycle, its own tracked objects and its own end() — so
+ * instance with its own lifecycle, its own tracked objects and its own end(), so
  * every existing per-ship event works unchanged, and one crew's curse expiring or
  * one hull being destroyed mid-rite cannot touch another's.
  *
@@ -310,7 +310,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  *
  * can_spawn_event() is the ONLY authority on whether a candidate may run, and
  * there is deliberately no bypass around it. It is where an event's own refusals
- * live — every max_occurrences cap, the one-controller-only guards on the two
+ * live, every max_occurrences cap, the one-controller-only guards on the two
  * Mockery events, the roster's own GLOB.lich_lair gate. An empty list is a
  * legitimate answer: at sustained maximum potency, once the one-shots in band
  * have all been spent, the correct behaviour is a ritual that costs the galaxy
@@ -378,7 +378,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 /**
  * Called by Ilthuun when he dies (and, as a backstop, by the death signal the
- * site registers at link time — the guard makes both paths idempotent).
+ * site registers at link time. The guard makes both paths idempotent).
  *
  * Stops the clock, lifts the curses that outlive their own firing, tells the
  * galaxy, retires the helm markers. Deliberately does NOT qdel the site or drop
@@ -399,7 +399,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 	// Stopping the clock only stops FUTURE rites. Tongues of the Dead installs a
 	// permanent global curse that would otherwise outlast him for the whole round,
-	// so his death has to reach back and undo it — see end_lich_babel() and rule 2
+	// so his death has to reach back and undo it (see end_lich_babel() and rule 2)
 	// in the lich_events.dm header. Runs before the broadcast below, which tells
 	// the galaxy it has happened.
 	end_lich_babel()
@@ -413,7 +413,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands, and you walked four halls and took it back off me. Everything I made is going to dust on the way out, so check your pockets. You keep only what you take off my floor, and whatever of me has ended up in your head. Ilthuun is finished. The rites are finished.",
 		"The Verdigris",
 	)
-	notify_ghosts("Ilthuun has been slain — the Verdigris rituals have stopped.", source = src, header = "The Verdigris")
+	notify_ghosts("Ilthuun has been slain. The Verdigris rituals have stopped.", source = src, header = "The Verdigris")
 	log_game("LICH: Ilthuun slain by [killer ? key_name(killer) : "unknown"] after [ritual_potency] ritual(s).")
 
 /// COMSIG_LIVING_DEATH backstop. The boss calls on_lich_slain() himself; this
@@ -425,7 +425,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 // ===== INTERIOR =====
 
 /**
- * The lair loads lazily, on the first dock, and then stays — so link_interior()
+ * The lair loads lazily, on the first dock, and then stays, so link_interior()
  * runs exactly once per round (guarded by `linked`).
  *
  * The try/catch is load-bearing, not paranoia. load_level() is called from the
@@ -434,8 +434,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * neither until it returns. An uncaught runtime in here would therefore propagate
  * out of ship_act() and strand BOTH sides permanently: the site would answer every
  * future dock with "Too much traffic, try again later!", and the ship would sit in
- * ACTING state unable to move or dock anywhere else. Indexing the footprint — and
- * in particular spawning Ilthuun, whose Initialize() is a lot of moving parts — is
+ * ACTING state unable to move or dock anywhere else. Indexing the footprint, and
+ * in particular spawning Ilthuun, whose Initialize() is a lot of moving parts, is
  * not worth that risk. A failure here leaves a raidable-but-unlinked lair and a
  * loud log line, which is recoverable; a bricked ship is not.
  */
@@ -446,7 +446,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	try
 		link_interior()
 	catch(var/exception/e)
-		log_mapping("LICH: link_interior() failed: [e] ([e.file], line [e.line]). The lair is loaded but unlinked — wards, gates and the boss may all be missing.")
+		log_mapping("LICH: link_interior() failed: [e] ([e.file], line [e.line]). The lair is loaded but unlinked. Wards, gates and the boss may all be missing.")
 		stack_trace("The Verdigris failed to link its interior: [e]")
 
 /**
@@ -487,7 +487,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 			qdel(boss_mark)
 		// Where the hoard lands when Ilthuun dies. Resolved HERE, from a walk over
 		// this lair's own footprint, rather than by scanning GLOB.landmarks_list at
-		// death time — that scan once paid the whole hoard out onto a docked
+		// death time, that scan once paid the whole hoard out onto a docked
 		// player's ship, because ruin interiors and docked shuttles share
 		// reservation z-levels. A footprint walk cannot stray off the map.
 		for(var/obj/effect/landmark/lich/loot_spot/loot_mark in interior_turf)
@@ -505,15 +505,15 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		if(!found_lich)
 			found_lich = locate(/mob/living/basic/lich) in interior_turf
 
-	// Never conjure a replacement after the event has resolved — a spent site is a
+	// Never conjure a replacement after the event has resolved. A spent site is a
 	// lootable husk, not a respawner.
 	if(!found_lich && !spent)
 		var/turf/spawn_turf = boss_spawn_turf || get_random_layer_turf(/area/ruin/space/has_grav/powered/lich_lair/sanctum)
 		if(spawn_turf)
 			found_lich = new /mob/living/basic/lich(spawn_turf)
-			log_mapping("LICH: template placed no lich — spawned one at ([spawn_turf.x], [spawn_turf.y]).")
+			log_mapping("LICH: template placed no lich. Spawned one at ([spawn_turf.x], [spawn_turf.y]).")
 		else
-			log_mapping("LICH: no lich, no boss_spawn landmark and no sanctum turf — the raid has no boss.")
+			log_mapping("LICH: no lich, no boss_spawn landmark and no sanctum turf. The raid has no boss.")
 	if(found_lich)
 		bind_lich(found_lich)
 
@@ -523,7 +523,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		if(!length(ward_doors[expected_id]))
 			log_mapping("LICH: no poddoors found with id '[expected_id]'.")
 	if(!length(wards))
-		log_mapping("LICH: template placed no ward machines — every layer stands open.")
+		log_mapping("LICH: template placed no ward machines. Every layer stands open.")
 
 /// Adopts a lich as this site's boss and arms the death backstop.
 /obj/structure/overmap/space_ruin/lich_lair/proc/bind_lich(mob/living/boss)
@@ -577,7 +577,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	return
 
 /// No-op: the base proc drops the reservation and relocates the signal to a
-/// fresh overmap square. The Verdigris holds both — the galaxy was told exactly
+/// fresh overmap square. The Verdigris holds both. The galaxy was told exactly
 /// where it is, and the interior is the persistent state.
 /obj/structure/overmap/space_ruin/lich_lair/unload_level()
 	return
@@ -592,14 +592,14 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * Arms the once-per-round lich arrival. Called once from Initialize.
  *
  * Rolls LICH_SPAWN_CHANCE here rather than at fire time so a round that isn't
- * getting a lich never arms the timer at all — the retry loop below would
+ * getting a lich never arms the timer at all. The retry loop below would
  * otherwise have to re-roll on every attempt, which compounds into a much higher
  * effective chance the longer a round runs. One roll, one round, logged either way
  * so a quiet round is distinguishable from a broken one.
  */
 /datum/controller/subsystem/overmap/proc/schedule_lich_lair()
 	if(!prob(LICH_SPAWN_CHANCE))
-		log_mapping("LICH: spawn roll failed ([LICH_SPAWN_CHANCE]% chance) — no lich this round.")
+		log_mapping("LICH: spawn roll failed ([LICH_SPAWN_CHANCE]% chance), no lich this round.")
 		return
 	addtimer(CALLBACK(src, PROC_REF(spawn_scheduled_lich_lair)), LICH_FIRST_SPAWN_TIME)
 
@@ -659,7 +659,7 @@ ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the l
 		return
 	var/obj/structure/overmap/space_ruin/lich_lair/site = surface_lich_lair()
 	if(!site)
-		to_chat(user, span_warning("Failed to place The Verdigris — no free overmap square, or the lair template is missing?"))
+		to_chat(user, span_warning("Failed to place The Verdigris. No free overmap square, or the lair template is missing?"))
 		return
 	message_admins("[key_name_admin(user)] force-surfaced The Verdigris.")
 	log_admin("[key_name(user)] force-surfaced The Verdigris.")
@@ -667,8 +667,8 @@ ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the l
 
 /**
  * Ritual-clock control, the counterpart to the Colosseum's match-control verb
- * (colosseum_controller.dm). The ramp is deliberately slow — potency caps roughly
- * half an hour after the lair surfaces — which makes the late game of this event
+ * (colosseum_controller.dm). The ramp is deliberately slow, potency caps roughly
+ * half an hour after the lair surfaces, which makes the late game of this event
  * almost untestable in real time. This drives the clock by hand instead.
  */
 ADMIN_VERB(lich_ritual_control, R_ADMIN, "Verdigris Ritual Control", "Drive the lich's ritual clock: fire a ritual now, set its potency, or resolve the event outright.", ADMIN_CATEGORY_EVENTS)
@@ -677,7 +677,7 @@ ADMIN_VERB(lich_ritual_control, R_ADMIN, "Verdigris Ritual Control", "Drive the 
 		to_chat(user, span_warning("There is no Verdigris this round. Use \"Spawn The Verdigris\" first."))
 		return
 	if(site.spent)
-		to_chat(user, span_warning("Ilthuun is already dead — the ritual clock is stopped and the site is a husk."))
+		to_chat(user, span_warning("Ilthuun is already dead. The ritual clock is stopped and the site is a husk."))
 		return
 
 	var/static/list/choices = list(
@@ -732,7 +732,7 @@ ADMIN_VERB(lich_ritual_control, R_ADMIN, "Verdigris Ritual Control", "Drive the 
 			var/mob/living/boss = site.lich_ref?.resolve()
 			if(QDELETED(boss))
 				INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin/lich_lair, on_lich_slain), null, user.mob)
-				to_chat(user, span_warning("No live Ilthuun found — resolved the event on the site directly (no loot will drop)."))
+				to_chat(user, span_warning("No live Ilthuun found, resolved the event on the site directly (no loot will drop)."))
 			else
 				boss.investigate_log("was admin-slain by [key_name(user)].", INVESTIGATE_DEATHS)
 				boss.adjustBruteLoss(boss.maxHealth * 2)

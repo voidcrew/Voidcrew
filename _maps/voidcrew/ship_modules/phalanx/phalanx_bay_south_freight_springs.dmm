@@ -23,16 +23,16 @@
 /obj/machinery/light/floor,
 /turf/open/floor/plating,
 /area/template_noop)
-"i" = (
-/obj/structure/closet/crate,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/plating,
-/area/template_noop)
 "k" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /turf/open/floor/plating,
+/area/template_noop)
+"m" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/freezer,
 /area/template_noop)
 "n" = (
 /obj/structure/closet/crate/wooden,
@@ -65,7 +65,7 @@
 "t" = (
 /obj/structure/bedsheetbin/basket,
 /obj/effect/turf_decal/box,
-/turf/open/floor/plating,
+/turf/open/floor/iron/freezer,
 /area/template_noop)
 "u" = (
 /obj/structure/rack,
@@ -87,7 +87,7 @@
 /area/template_noop)
 "w" = (
 /obj/machinery/washing_machine,
-/turf/open/floor/plating,
+/turf/open/floor/iron/freezer,
 /area/template_noop)
 "y" = (
 /obj/structure/rack,
@@ -110,6 +110,9 @@
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
+/area/template_noop)
+"A" = (
+/turf/open/floor/iron/freezer,
 /area/template_noop)
 "P" = (
 /obj/structure/closet/crate/internals,
@@ -141,6 +144,10 @@
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
+/area/template_noop)
+"W" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/freezer,
 /area/template_noop)
 "X" = (
 /obj/structure/reagent_dispensers/fueltank,
@@ -189,8 +196,8 @@ r
 X
 "}
 (9,1,1) = {"
-r
-g
+A
+W
 o
 "}
 (10,1,1) = {"
@@ -199,7 +206,7 @@ w
 n
 "}
 (11,1,1) = {"
-i
-i
+m
+m
 T
 "}

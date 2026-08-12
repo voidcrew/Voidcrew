@@ -1,0 +1,78 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"i" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"m" = (
+/obj/machinery/power/thermoelectric_generator{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"n" = (
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/item/wrench,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"x" = (
+/obj/machinery/power/port_gen/pacman,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"G" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"K" = (
+/obj/machinery/atmospherics/components/binary/circulator/cold{
+	dir = 8
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"N" = (
+/obj/machinery/atmospherics/components/binary/circulator{
+	dir = 4;
+	flipped = 1
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+N
+i
+f
+"}
+(2,1,1) = {"
+m
+i
+x
+"}
+(3,1,1) = {"
+K
+i
+n
+"}
+(4,1,1) = {"
+G
+i
+X
+"}

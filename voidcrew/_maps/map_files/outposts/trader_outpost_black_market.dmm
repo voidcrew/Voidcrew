@@ -901,6 +901,12 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"Cg" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
+	dir = 1
+	},
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
 "Cj" = (
 /obj/machinery/vending/hotdog,
 /turf/open/indestructible/hotelwood,
@@ -1012,6 +1018,15 @@
 /obj/machinery/light/blacklight/directional/south,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"HP" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
 "Ih" = (
 /obj/structure/closet/outpost_medical,
 /obj/effect/turf_decal/bot,
@@ -1063,6 +1078,15 @@
 /obj/structure/table/optable,
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"Lu" = (
+/obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/co2{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "LB" = (
 /obj/effect/turf_decal/bot,
@@ -1120,6 +1144,9 @@
 /obj/machinery/light/blacklight/directional/north,
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"Oq" = (
+/turf/open/indestructible/white/textured,
 /area/voidcrew/trader_outpost)
 "Oz" = (
 /obj/effect/turf_decal/tile/blue/fourcorners,
@@ -1270,6 +1297,21 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"Wf" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
+	dir = 1
+	},
+/obj/structure/sign/warning/cold_temp,
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
+"Wi" = (
+/obj/machinery/atmospherics/components/unary/passive_vent{
+	dir = 2;
+	 name = "cryogenics exhaust"
+	},
+/obj/structure/lattice,
+/turf/template_noop,
+/area/template_noop)
 "WO" = (
 /obj/machinery/light/small/directional/east{
 	bulb_colour = "#ff2079"
@@ -1456,7 +1498,7 @@ aC
 aa
 bO
 XA
-UL
+HP
 RY
 aa
 vm
@@ -1466,7 +1508,7 @@ RY
 aa
 jc
 KU
-GI
+Oq
 aa
 as
 as
@@ -1478,11 +1520,11 @@ aC
 aF
 "}
 (7,1,1) = {"
-aC
-aa
-Sq
-XA
-UL
+Wi
+Cg
+Wf
+Lu
+HP
 Bt
 aa
 yw
@@ -1508,7 +1550,7 @@ aC
 aa
 se
 XA
-UL
+HP
 Ih
 aa
 mJ
@@ -1518,7 +1560,7 @@ ad
 st
 Oz
 ad
-ad
+GI
 aa
 aI
 ar

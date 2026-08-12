@@ -1,16 +1,16 @@
 /**
- * # The Chowder Pot — Roux, Halcyon's diner cook
+ * # The Chowder Pot: Roux, Halcyon's diner cook
  *
  * The waystation's diner: a full /datum/outpost_shop vendor stall (own stock,
  * own ledger, own voice) fronted by its own trader NPC, same wiring as Fern's
  * Potting Shed and Pike's tackle bench (see outpost.dm get_shop(),
  * trader_npc.dm for the mob). Lore closes a loop the outpost already had:
- * Barnaby buys "anything with fins for the chowder" — Roux runs the pot he's
+ * Barnaby buys "anything with fins for the chowder". Roux runs the pot he's
  * buying for.
  *
  * The menu is a quality ladder, and the rungs are mechanical, not just priced:
  * - COUNTER GRUB is factory food. No TRAIT_FOOD_CHEF_MADE, so eating it is
- *   "meh" — cheap calories, nothing else (see edible.dm get_recipe_complexity).
+ *   "meh", cheap calories, nothing else (see edible.dm get_recipe_complexity).
  * - BLUE PLATE SPECIALS and the CHEF'S TABLE leave the pass with the chef-made
  *   trait added at dispense (the /plated SKU parent below), so they grant the
  *   real food-quality mood their crafting_complexity earns. That's the entire
@@ -21,7 +21,7 @@
  * Balance notes:
  * - The plated trait uses its own source key (TRAIT_SOURCE_OUTPOST_KITCHEN),
  *   and both the buyback ledger and the Kitchen Order contracts accept only
- *   HAS_TRAIT_NOT_FROM that source — Roux never buys her own plates back, and
+ *   HAS_TRAIT_NOT_FROM that source: Roux never buys her own plates back, and
  *   contracts can't be settled off her own counter.
  * - Every ledger payout sits below the cheapest plated SKU, so buy-to-sell-back
  *   loses money even before the source gate.
@@ -29,7 +29,7 @@
  */
 
 // =========================================================================
-// THE CHOWDER POT — Roux, diner cook
+// THE CHOWDER POT: Roux, diner cook
 // =========================================================================
 
 /**
@@ -61,21 +61,21 @@
 		"The Pantry",
 	)
 	sku_types = list(
-		// Counter Grub — factory food, honest about it
+		// Counter Grub: factory food, honest about it
 		/datum/shop_sku/diner/fries,
 		/datum/shop_sku/diner/hotdog,
 		/datum/shop_sku/diner/pretzel,
 		/datum/shop_sku/diner/popcorn,
 		/datum/shop_sku/diner/muffin,
 		/datum/shop_sku/diner/donut,
-		// Blue Plate Specials — real cooking at diner prices
+		// Blue Plate Specials: real cooking at diner prices
 		/datum/shop_sku/diner/plated/house_burger,
 		/datum/shop_sku/diner/plated/omelette,
 		/datum/shop_sku/diner/plated/mac_n_cheese,
 		/datum/shop_sku/diner/plated/egg_fried_rice,
 		/datum/shop_sku/diner/plated/meatball_spaghetti,
 		/datum/shop_sku/diner/plated/fish_and_chips,
-		// Chef's Table — the good plates
+		// Chef's Table: the good plates
 		/datum/shop_sku/diner/plated/carbonara,
 		/datum/shop_sku/diner/plated/bibimbap,
 		/datum/shop_sku/diner/plated/katsu_curry,
@@ -84,7 +84,7 @@
 		/datum/shop_sku/diner/plated/meat_pizza,
 		/datum/shop_sku/diner/plated/chocolate_cake,
 		/datum/shop_sku/diner/plated/grilled_cheese,
-		// The Pantry — galley staples no other counter stocks
+		// The Pantry: galley staples no other counter stocks
 		/datum/shop_sku/diner/flour,
 		/datum/shop_sku/diner/rice,
 		/datum/shop_sku/diner/sugar,
@@ -184,7 +184,7 @@
 // ===== THE PLATED SHELVES =====
 // Everything below leaves the pass with Roux's mark on it. The chef-made
 // trait is what turns crafting_complexity into a real food-quality mood on
-// eating — without it a 300cr plate would chew exactly like a 30cr donut.
+// eating, without it a 300cr plate would chew exactly like a 30cr donut.
 // The dedicated trait source is load-bearing: her ledger and the Kitchen
 // Order contracts refuse anything carrying the trait ONLY from this source,
 // which is what stops buy-from-Roux-sell-to-Roux round trips.
@@ -299,7 +299,7 @@
 
 // ===== THE PANTRY =====
 // Raw galley staples. Deliberately no overlap with the neighbors: Barnaby
-// keeps the canned goods, Fern the seeds — this shelf is what a ship kitchen
+// keeps the canned goods, Fern the seeds. This shelf is what a ship kitchen
 // needs that neither of them stocks.
 
 /datum/shop_sku/diner/flour

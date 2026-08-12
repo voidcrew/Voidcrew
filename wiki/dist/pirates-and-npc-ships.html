@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pirates &amp; NPC Ships — Voidcrew Wiki</title>
+<title>Pirates &amp; NPC Ships | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li class="active"><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -114,11 +116,11 @@
 </table>
 <p>Faction changes how a fight goes: how fast they get a lock, how often they shoot, how many boarders they throw at you, and how much they ask for.</p>
 <h2 id="they-scan-you-first">They scan you first</h2>
-<p>A pirate that spots you runs a financial scan before committing. Your ship gets a warning that its financial systems are being scanned. If the scan comes back and you are broke, they disengage — being poor is a real defence. If you have money, what happens next depends on the zone.</p>
-<p><strong>In the Contested Zone</strong> they cannot shoot you and they will not board. Instead they lock on, pin you with an interdiction field and run a data siphon into your ship account, draining credits for as long as the lock holds. This is a mugging, not a battle — break the lock and it stops.</p>
+<p>A pirate that spots you runs a financial scan before committing. Your ship gets a warning that its financial systems are being scanned. If the scan comes back and you are broke, they disengage. Being poor is a real defence. If you have money, what happens next depends on the zone.</p>
+<p><strong>In the Contested Zone</strong> they cannot shoot you and they will not board. Instead they lock on, pin you with an interdiction field and run a data siphon into your ship account, draining credits for as long as the lock holds. This is a mugging, not a battle. Break the lock and it stops.</p>
 <p><strong>In the Lawless Zone</strong> they hail you first.</p>
 <h2 id="the-hail">The hail</h2>
-<p>Your holopads ring. Every pad aboard sounds off, the ship announces an incoming hail, and you have <strong>twenty seconds</strong> to answer before they open fire. Answer through the holopad interface, the same way you would take an ordinary holo-call — the hostile vessel is listed as an incoming caller.</p>
+<p>Your holopads ring. Every pad aboard sounds off, the ship announces an incoming hail, and you have <strong>twenty seconds</strong> to answer before they open fire. Answer through the holopad interface, the same way you would take an ordinary holo-call. The hostile vessel is listed as an incoming caller.</p>
 <p>Answering spawns a hologram of the pirate captain on the pad, and they name their price. There is no bartering. You are offered exactly two ways to pay:</p>
 <ul>
 <li><strong>Credits</strong> out of your ship account. The figure is built from a quarter of your balance, adjusted by faction, by how far the fight has already gone (cheapest before combat starts, most expensive to stop one mid-fight) and by how badly damaged they are.</li>
@@ -129,22 +131,22 @@
 <p class="admonition-title">Do not fly away mid-negotiation</p>
 <p>Moving your ship during an active negotiation is read as betrayal. The first time, they interdict you on the spot and raise the demand by half. The second time, they open fire and the negotiation is over.</p>
 </div>
-<p>Pay and they disengage, and that ship leaves you alone for five minutes. Refuse, stall out the clock, or get caught fleeing twice, and that ship marks you down permanently — it will not offer you terms again this round.</p>
+<p>Pay and they disengage, and that ship leaves you alone for five minutes. Refuse, stall out the clock, or get caught fleeing twice, and that ship marks you down permanently. It will not offer you terms again this round.</p>
 <h2 id="if-you-refuse">If you refuse</h2>
 <p>Refusal in the Lawless Zone starts a staged assault rather than a straight shootout. About five seconds after the rejection they interdict you, announce the boarding, and roughly thirty seconds later the first pod lands.</p>
 <p>It runs in <strong>three waves</strong> with a thirty-second breather between each, the wave sizes scaled to how many crew you had aboard when it started. Between waves the captain taunts you over comms. Repel all three and the enemy commander comes down personally by drop pod.</p>
-<p>At the same time, if they can, they will shoot: lasers while your shields hold, missiles once they drop, and boarding pods only when your shields are down — the shield wall would swat the pods out of the sky. There is a hard cap of ten hostile boarders aboard your ship at once.</p>
+<p>At the same time, if they can, they will shoot: lasers while your shields hold, missiles once they drop, and boarding pods only when your shields are down. The shield wall would swat the pods out of the sky. There is a hard cap of ten hostile boarders aboard your ship at once.</p>
 <p>Kill the commander and <strong>the pirate ship is disabled</strong>. It stops fighting, releases its weapons lock and its interdiction, and your ship is told plainly that you may now board and claim it.</p>
 <h2 id="boarding-them-and-taking-their-ship">Boarding them, and taking their ship</h2>
-<p>A pirate ship becomes boardable when it is disabled, when it is interdicted, or when its hull is damaged past three-quarters — and dead in the water counts too, so wrecking their engines works. To actually get across you need an interdiction system of your own: pin them, move onto their overmap tile, and force the dock.</p>
+<p>A pirate ship becomes boardable when it is disabled, when it is interdicted, or when its hull is damaged past three-quarters, and dead in the water counts too, so wrecking their engines works. To actually get across you need an interdiction system of your own: pin them, move onto their overmap tile, and force the dock.</p>
 <p>Two prizes are on the table.</p>
-<p><strong>The ship itself.</strong> The pirate captain carries a <strong>ship authorization key</strong> and drops it where they die. Insert that key into the pirate ship's helm console and the vessel becomes yours to fly. If the whole crew is killed and nobody claims it in time, the ship is abandoned and drifts as a derelict — still claimable, but you were on a clock.</p>
-<p><strong>The bounty.</strong> Every active pirate has a standing bounty listed on your ship's <a href="missions.html">mission board</a>. Bounties are competitive: several crews can accept the same one, and the first to turn in the captain's key gets paid. Yellow-band pirates are worth 5,000 credits, Lawless-band pirates 15,000, and the heavier bounties pay out better loot crates — laser weapons, disablers, armour, batons and security supplies at the low end, premium military gear at the high end. You can also buy tracking on a bounty target, at the cost of a quarter of the reward.</p>
+<p><strong>The ship itself.</strong> The pirate captain carries a <strong>ship authorization key</strong> and drops it where they die. Insert that key into the pirate ship's helm console and the vessel becomes yours to fly. If the whole crew is killed and nobody claims it in time, the ship is abandoned and drifts as a derelict. Still claimable, but you were on a clock.</p>
+<p><strong>The bounty.</strong> Every active pirate has a standing bounty listed on your ship's <a href="missions.html">mission board</a>. Bounties are competitive: several crews can accept the same one, and the first to turn in the captain's key gets paid. Yellow-band pirates are worth 5,000 credits, Lawless-band pirates 15,000, and the heavier bounties pay out better loot crates, laser weapons, disablers, armour, batons and security supplies at the low end, premium military gear at the high end. You can also buy tracking on a bounty target, at the cost of a quarter of the reward.</p>
 <p>You cannot have both. Turning the key in for the bounty spends it; using it to claim the ship fails the bounty.</p>
-<p>While you are aboard, find their <strong>data siphon</strong>. Whatever they drained out of your accounts — or somebody else's — is still sitting in it, and interacting with it hands the stored credits back as a holochip.</p>
+<p>While you are aboard, find their <strong>data siphon</strong>. Whatever they drained out of your accounts (or somebody else's) is still sitting in it, and interacting with it hands the stored credits back as a holochip.</p>
 <h2 id="neutral-traffic">Neutral traffic</h2>
 <p>There isn't any. Every roaming NPC ship in the galaxy is hostile by default, and there is no friendly convoy or merchant traffic to run into. Trade happens at <a href="trader-outposts.html">trader outposts</a>, not on the open overmap.</p>
-<p>The one exception is dispatched rather than roaming: <strong>NTSV Vigilant</strong>, a Nanotrasen customs enforcement corvette. It never scans for prey and never hunts at random — it is sent after one specific ship by mission code, currently the contraband-running mission, and it ignores everyone else. It opens with a hail like a pirate does, but the demand is a fixed fine or the surrender of the contraband it was sent for. Refuse and it escalates through the same interdiction, boarding waves and commander fight. Kill its commander and it spools emergency FTL and warps out: no wreck, no key, no salvage. It also chases across zone lines, which pirates will not do, and it keeps re-engaging after you dock and fly again until it eventually gives up.</p>
+<p>The one exception is dispatched rather than roaming: <strong>NTSV Vigilant</strong>, a Nanotrasen customs enforcement corvette. It never scans for prey and never hunts at random. It is sent after one specific ship by mission code, currently the contraband-running mission, and it ignores everyone else. It opens with a hail like a pirate does, but the demand is a fixed fine or the surrender of the contraband it was sent for. Refuse and it escalates through the same interdiction, boarding waves and commander fight. Kill its commander and it spools emergency FTL and warps out: no wreck, no key, no salvage. It also chases across zone lines, which pirates will not do, and it keeps re-engaging after you dock and fly again until it eventually gives up.</p>
 <h2 id="practical-advice">Practical advice</h2>
 <ul>
 <li>Keep your ship account low when crossing the Contested Zone. The scan is on your balance, and a poor ship gets left alone.</li>

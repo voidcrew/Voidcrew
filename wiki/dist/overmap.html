@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Overmap — Voidcrew Wiki</title>
+<title>The Overmap | Voidcrew Wiki</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>&#128760;</text></svg>">
 </head>
@@ -49,9 +49,11 @@
 <li><a href="trader-outposts.html">Trader Outposts</a></li>
 <li><a href="gas-economy.html">Fuel &amp; Gas</a></li>
 <li><a href="player-outposts.html">Player Outposts</a></li>
+<li><a href="cyberware.html">Cyberware</a></li>
 </ul>
 <h3>Danger</h3><ul>
 <li><a href="ship-combat.html">Ship Combat</a></li>
+<li><a href="ship-hacking.html">Ship Hacking</a></li>
 <li><a href="pirates-and-npc-ships.html">Pirates &amp; NPC Ships</a></li>
 <li><a href="dynamic-events.html">Random Events</a></li>
 <li><a href="threats-and-elites.html">Hostile Fauna &amp; Elites</a></li>
@@ -71,7 +73,7 @@
 </ul>
 </div>
 </aside><h1>The Overmap</h1>
-<p>The overmap is the galaxy: a 51-by-51 grid of tiles with a star burning at the centre, on which your entire ship is a single icon. Every planet, ruin, trader, storm and rival crew occupies one tile of it. Flying is done from the <a href="piloting.html">helm console</a>, and everything you do in a round starts with picking a tile and going there. The single most important thing on this map is not any one destination — it is the three concentric rings of law that decide whether other crews are allowed to shoot you.</p>
+<p>The overmap is the galaxy: a 51-by-51 grid of tiles with a star burning at the centre, on which your entire ship is a single icon. Every planet, ruin, trader, storm and rival crew occupies one tile of it. Flying is done from the <a href="piloting.html">helm console</a>, and everything you do in a round starts with picking a tile and going there. The single most important thing on this map is not any one destination. It is the three concentric rings of law that decide whether other crews are allowed to shoot you.</p>
 <h2 id="moving-around">Moving around</h2>
 <p>Your ship burns its engines in a direction and keeps coasting until you brake, so it handles like a ship and not like a cursor. The helm gives you a heading, a throttle percentage, an engine list and a Stop button that switches between cutting thrust and actively braking. Engines need power and fuel, so a ship that has run dry is a ship that drifts.</p>
 <p>You can also plot a course: click a charted destination and the autopilot flies there. It routes around known storms, and if it blunders into one anyway it hands control straight back rather than pressing on. Touching the heading controls takes the ship off autopilot silently. Full details are on <a href="piloting.html">Piloting</a>.</p>
@@ -86,7 +88,7 @@
 <tbody>
 <tr>
 <td>Planets</td>
-<td>Landable worlds — lava, ice, jungle, beach and wasteland. Ore, ruins, weather and fauna. See <a href="planets.html">Planets</a>.</td>
+<td>Landable worlds: lava, ice, jungle, beach and wasteland. Ore, ruins, weather and fauna. See <a href="planets.html">Planets</a>.</td>
 </tr>
 <tr>
 <td>Space ruins</td>
@@ -122,12 +124,12 @@
 </tr>
 </tbody>
 </table>
-<p>Other things surface on a schedule rather than at roundstart — contested caches, the <a href="colosseum.html">Grand Colosseum</a> and the lich's lair — and announce themselves on Wideband when they do.</p>
+<p>Other things surface on a schedule rather than at roundstart (contested caches, the <a href="colosseum.html">Grand Colosseum</a> and the lich's lair) and announce themselves on Wideband when they do.</p>
 <h2 id="seeing-it">Seeing it</h2>
 <p>Two different ranges matter and they are deliberately not the same thing.</p>
-<p><strong>Sight</strong> is a fixed ring of four tiles around your ship. It costs nothing, needs no research, and everything physically inside it draws on the helm chart immediately. Anything you see this way is remembered for the rest of the round, drawn faded once you leave — you chart the sector by flying it.</p>
+<p><strong>Sight</strong> is a fixed ring of four tiles around your ship. It costs nothing, needs no research, and everything physically inside it draws on the helm chart immediately. Anything you see this way is remembered for the rest of the round, drawn faded once you leave, you chart the sector by flying it.</p>
 <p><strong>Sensors</strong> are an active scan on a one-minute cooldown, and they reach further than you can see. A scan does not reveal things around you; it <em>charts</em> what it finds into your navigation list, where it stays at any distance. It starts at the same four tiles as your sight and grows to six, eight and ten through the radar research tree, which also teaches your sensors to name space ruins instead of listing them as unknown signals, and eventually to identify vessels automatically.</p>
-<p>Two things escape both. Other ships are never recorded, because they move — an unscanned vessel is an anonymous blip. And storms cannot be scanned at all; the only ways to learn where one is are to fly past it or to buy a <strong>star chart</strong> from a trader, a one-use slate that charts every contact in one whole ring at once. Traders also sell <strong>rumor charts</strong>, which name a specific rare ruin and spawn it somewhere uncharted when you decrypt one at the helm.</p>
+<p>Two things escape both. Other ships are never recorded, because they move. An unscanned vessel is an anonymous blip. And storms cannot be scanned at all; the only ways to learn where one is are to fly past it or to buy a <strong>star chart</strong> from a trader, a one-use slate that charts every contact in one whole ring at once. Traders also sell <strong>rumor charts</strong>, which name a specific rare ruin and spawn it somewhere uncharted when you decrypt one at the helm.</p>
 <h2 id="the-three-zones">The three zones</h2>
 <p>The map is divided into three static concentric rings measured from the star. They never move and never rotate, so the ring a tile is in is simply how far from the centre it sits.</p>
 <table>
@@ -162,7 +164,7 @@
 </table>
 <p>In plain terms: the outer ring is safe, the middle ring lets someone stop your ship and board it but not shoot it, and the inner ring is open season. The star charts traders sell label the three rings the neutral ring, the contested lanes and the lawless deep.</p>
 <p>You can always tell which one you are in. The helm names the current zone, describes it, and says outright whether weapons and interdiction are permitted here; the overmap tiles themselves are tinted green, yellow and red. Every player ship spawns in the outer ring at roundstart, so if you have not deliberately flown inward, you are safe.</p>
-<p>Crossing a boundary is a deliberate act. Thrusting at a tile in a different zone does not move you — it starts a ten-second transition instead, during which your engines are cut and you cannot thrust. The helm announces the zone you are entering and counts down. Pressing Stop cancels it, so you get a free chance to change your mind.</p>
+<p>Crossing a boundary is a deliberate act. Thrusting at a tile in a different zone does not move you. It starts a ten-second transition instead, during which your engines are cut and you cannot thrust. The helm announces the zone you are entering and counts down. Pressing Stop cancels it, so you get a free chance to change your mind.</p>
 <div class="admonition danger">
 <p class="admonition-title">The middle ring is not a soft warning</p>
 <p>Weapons being disabled in the Contested Zone does not make it safe. Anyone can interdict you there, pin you in place and force a dock, and then the fight happens with guns inside your hull. Boarding is the whole point of that ring.</p>

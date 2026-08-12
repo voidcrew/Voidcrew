@@ -1,0 +1,309 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "ward notes";
+	default_raw_text = "Cryo is for injuries. The sleeper at the far end is for everything else. If the tube is occupied leave the cryoxadone alone, it is measured out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"a" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"c" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/flashlight/flare/candle{
+	pixel_x = 10;
+	pixel_y = -8
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/machinery/atmospherics/pipe/smart,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/iv_drip,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "ward notes";
+	default_raw_text = "Cryo is for injuries. The sleeper at the far end is for everything else. If the tube is occupied leave the cryoxadone alone, it is measured out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"k" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 10;
+	pixel_y = -6
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"r" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"s" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/co2,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"u" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/flashlight/flare/candle{
+	pixel_x = 10;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/sleeper{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"E" = (
+/obj/machinery/cryo_cell{
+	dir = 4
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"F" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"O" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 10;
+	pixel_y = -6
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"Q" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "ward notes";
+	default_raw_text = "Cryo is for injuries. The sleeper at the far end is for everything else. If the tube is occupied leave the cryoxadone alone, it is measured out.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/machinery/cryo_cell{
+	dir = 2
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Y" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+s
+S
+F
+"}
+(2,1,1) = {"
+E
+J
+c
+"}
+(3,1,1) = {"
+n
+t
+a
+"}
+(4,1,1) = {"
+k
+m
+X
+"}
+(5,1,1) = {"
+T
+x
+f
+"}
+(6,1,1) = {"
+Y
+b
+B
+"}

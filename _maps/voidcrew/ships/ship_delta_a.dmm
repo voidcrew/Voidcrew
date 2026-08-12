@@ -247,7 +247,7 @@
 	name = "Cargo Bay Door Control";
 	pixel_x = -12
 	},
-/turf/open/floor/iron/white,
+/turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/cargo/a)
 "kS" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -302,6 +302,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/a)
+"lB" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
 "lK" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -340,6 +349,16 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/a)
+"nA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
+"nD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
 "nF" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
@@ -754,6 +773,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/a)
+"zo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/scrubber,
+/obj/machinery/atmospherics/pipe/bridge_pipe/orange,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
 "zu" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate,
@@ -965,6 +994,15 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/a)
+"GE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
 "GX" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/binary/pump{
@@ -1061,6 +1099,19 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/a)
+"JJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/item/wrench,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/a)
 "JP" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/suit_storage_unit/standard_unit,
@@ -1097,7 +1148,7 @@
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/iron,
+/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/medbay/a)
 "Lv" = (
 /obj/effect/turf_decal/stripes{
@@ -1120,7 +1171,7 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron,
+/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/medbay/a)
 "LG" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1148,7 +1199,7 @@
 	},
 /obj/machinery/airalarm/directional/west,
 /obj/machinery/firealarm/directional/south,
-/turf/open/floor/iron,
+/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/medbay/a)
 "MP" = (
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -1277,6 +1328,13 @@
 /obj/machinery/vending/coffee,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/hallway/central/a)
+"RQ" = (
+/obj/structure/girder/displaced,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/delta/cafe/a)
 "Sg" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -1351,7 +1409,7 @@
 	},
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/east,
-/turf/open/floor/iron,
+/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/medbay/a)
 "Ua" = (
 /turf/closed/wall/mineral/titanium,
@@ -1550,15 +1608,15 @@ aa
 PO
 ca
 GX
-gH
-Lv
+nA
+lB
 wj
 ys
 TP
 SF
 Wr
 FP
-Zw
+nD
 Tl
 Ig
 PO
@@ -1569,15 +1627,15 @@ aa
 PO
 zx
 uo
-De
-zG
+zo
+GE
 jT
 Hn
 lo
 iK
 TD
 mK
-uP
+JJ
 NX
 lh
 PO
@@ -1862,7 +1920,7 @@ aa
 aa
 fF
 Ck
-fF
+WZ
 eg
 WZ
 kK
@@ -1986,7 +2044,7 @@ pv
 Ts
 ql
 ql
-ql
+RQ
 ql
 ql
 Ts

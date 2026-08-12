@@ -3,13 +3,13 @@
  *
  * The "outposts are more than just a shop" furniture: per-zone comforts that
  * live inside the sanctuary interior. Everything here follows the outpost
- * construction rules — indestructible where it's outpost property, and
+ * construction rules, indestructible where it's outpost property, and
  * attacking outpost property is aggression.
  *
  * - Med alcove kit (all outposts): stocked first-aid closet + tuned-up sleeper
  * - Rental stash lockers (yellow depot): pay once, locker is yours for the round
  * - Flavor loiterers (one flavor per zone): unkillable NPCs with barks and
- *   zero gameplay hooks — they just stop the room reading as a console farm
+ *   zero gameplay hooks, they just stop the room reading as a console farm
  */
 
 // =========================================================================
@@ -19,7 +19,7 @@
 /**
  * Stocked first-aid closet. Ordinary closet on purpose: the *supplies* are
  * the amenity, and walking off with them is restocking economics, not
- * aggression — only the fixed machinery around it is outpost property.
+ * aggression, only the fixed machinery around it is outpost property.
  */
 /obj/structure/closet/outpost_medical
 	name = "outpost first-aid locker"
@@ -38,13 +38,13 @@
 	new /obj/item/stack/medical/mesh(src)
 
 /**
- * The house sleeper: same machine, torpedo-rated housing. Free to use —
+ * The house sleeper: same machine, torpedo-rated housing. Free to use,
  * the "safe harbor between fights" identity, made of metal.
  *
  * `controls_inside` is the whole point: a solo pilot has nobody outside to
  * press the buttons, and the default sleeper closes the occupant's own UI.
  * The board is kept (not nulled) so `apply_default_parts()` actually runs and
- * the chem list gets populated — sleepers with no servo offer zero chems.
+ * the chem list gets populated, sleepers with no servo offer zero chems.
  * It still can't be stripped for parts: `deconstructable` is FALSE, so
  * `/obj/machinery/sleeper/Initialize` deletes the board after parts apply.
  */
@@ -60,7 +60,7 @@
  * Tier-3 servo, tier-1 bin: full damage-type coverage (libital/aiuri/convermol
  * /multiver) without reaching the tier-4 omnizine, and the stock 20u per-chem
  * cap. A patch-up station between fights, not a fountain. Never built by
- * players — it exists so the mapped machine gets the right parts.
+ * players, it exists so the mapped machine gets the right parts.
  */
 /obj/item/circuitboard/machine/sleeper/outpost
 	build_path = /obj/machinery/sleeper/outpost
@@ -91,12 +91,12 @@
 
 /**
  * Pay-to-stash locker: swipe an ID to rent it for the round, then it locks
- * to that ID like a personal closet. Emag-proof and indestructible — the
+ * to that ID like a personal closet. Emag-proof and indestructible, the
  * entire product being sold here is "nobody can get at your stuff".
  */
 /obj/structure/closet/secure_closet/outpost_rental
 	name = "rental stash locker"
-	desc = "A torpedo-rated stash locker. Swipe an ID to rent it for the shift — the fee comes off your card, the lock answers to nobody else."
+	desc = "A torpedo-rated stash locker. Swipe an ID to rent it for the shift. The fee comes off your card, the lock answers to nobody else."
 	locked = FALSE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	can_install_electronics = FALSE
@@ -116,7 +116,7 @@
 	var/obj/item/card/id/id = weapon.GetID()
 	if(isnull(id) || opened || broken)
 		return ..()
-	if(id_card) // already rented — the lock handles the rest
+	if(id_card) // already rented, the lock handles the rest
 		balloon_alert(user, "already rented!")
 		return TRUE
 	var/datum/bank_account/account = id.registered_account
@@ -170,7 +170,7 @@
 /**
  * A non-hostile NPC who hangs around the outpost and talks to nobody in
  * particular. No gameplay hook. Unkillable (godmode) rather than protected:
- * attacking one deliberately does NOT trip the embargo — loiterers are
+ * attacking one deliberately does NOT trip the embargo, loiterers are
  * squatters, not outpost property, and the swing accomplishes nothing anyway.
  */
 /mob/living/basic/outpost_loiterer
@@ -250,7 +250,7 @@
 /**
  * Hi-vis, hard hat, insulated gloves and a welder she has not put down in six
  * years. Everything here is the compressor job she is permanently mid-way
- * through — no ID, no radio, nothing that says anyone employs her.
+ * through, no ID, no radio, nothing that says anyone employs her.
  */
 /datum/outfit/outpost_mechanic
 	name = "Outpost mechanic"
@@ -284,7 +284,7 @@
 		"Barnaby says I can't charge for advice, so: free advice, seal your ship.",
 		"I've been fixing this same compressor for six years. It's a lifestyle.",
 		"You'd be amazed what people leave in the repair bay. Mostly blood.",
-		"Green zone's quiet. Too quiet. No, wait — that's the compressor again.",
+		"Green zone's quiet. Too quiet. No, wait. That's the compressor again.",
 	)
 	emote_see = list("wipes her hands on an oily rag.", "taps a pipe thoughtfully.")
 
@@ -308,7 +308,7 @@
 	desc = "Loads crates, unloads opinions."
 	outfit_path = /datum/outfit/outpost_dockhand
 	attacked_lines = list(
-		"Hey! Take it outside — Sarge charges for cleanup and it comes out of MY pay.",
+		"Hey! Take it outside. Sarge charges for cleanup and it comes out of MY pay.",
 		"You hit like a cargo tech. I'd know.",
 	)
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/dockhand
@@ -333,7 +333,7 @@
 
 /**
  * The Dregs' other apron. Same shirt and slacks as Dram behind the counter,
- * white apron instead of his blue one — she works the floor, he works the bar,
+ * white apron instead of his blue one. She works the floor, he works the bar,
  * and the glass in her hand was already clean.
  */
 /datum/outfit/outpost_cantina_bartender
@@ -405,7 +405,7 @@
 	speak = list(
 		"Everyone's armed in the red zone. That's why it's polite here.",
 		"My captain thinks I'm out resupplying. I am. Slowly.",
-		"The turrets only shoot rude people. Beautiful system. No survivors— I mean, no complaints.",
+		"The turrets only shoot rude people. Beautiful system. No survivors... I mean, no complaints.",
 		"Shore leave's four days. Two getting here, one drinking, one regretting it.",
 		"You didn't see me here. I'm not here. Nobody's ever here.",
 	)
@@ -416,7 +416,7 @@
 // =========================================================================
 
 /**
- * Indestructible grass for outpost conservatories — same sprite family as
+ * Indestructible grass for outpost conservatories: same sprite family as
  * /turf/open/floor/grass, but outpost property. Map icon_state grass1-3 for
  * variety (the destructible turf randomizes at init; this one stays put).
  */
@@ -437,7 +437,7 @@
  * Halcyon's indoor fishing hole. Nobody approved it; it's load-bearing now.
  * Water can't be pried up or scraped away (baseturfs is itself, all the way
  * down), so the sanctuary stays sealed no matter what happens to the pond.
- * Stocked with honest river fish — Pike insists they arrive through the
+ * Stocked with honest river fish: Pike insists they arrive through the
  * water recyclers.
  */
 /turf/open/water/outpost_pond
@@ -452,15 +452,15 @@
 
 /**
  * The cook's line and the shop fridges. Stock tg kitchen machines are built to be
- * taken apart — a crowbar alone reduces a griddle or a range to a frame, since
- * both pass ignore_panel to default_deconstruction_crowbar — and none of them
+ * taken apart, a crowbar alone reduces a griddle or a range to a frame, since
+ * both pass ignore_panel to default_deconstruction_crowbar, and none of them
  * register aggression, so the diner could be stripped to bare frames without the
  * turrets ever reacting. These are the same machines with the outpost's own
  * construction rules applied.
  *
  * Cooking is untouched: only the tool and part-swap paths are closed, so a visiting
- * chef can still use every one of them normally. Contents are fair game as ever —
- * food walking out of a fridge is restocking economics, the same call the med
+ * chef can still use every one of them normally. Contents are fair game as ever.
+ * Food walking out of a fridge is restocking economics, the same call the med
  * alcove makes.
  */
 /obj/machinery/griddle/outpost

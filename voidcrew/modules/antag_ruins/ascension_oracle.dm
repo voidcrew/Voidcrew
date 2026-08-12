@@ -17,13 +17,13 @@
  * deliberately the same trick as the capstone the player is fighting to take, so
  * the fight teaches the reward.
  *
- * - **The Word of Falling** — say DOWN, and 1.5 seconds later everything that
+ * - **The Word of Falling**: say DOWN, and 1.5 seconds later everything that
  *   can still see it goes down. *Counter: break line of sight.*
- * - **The Antiphon** — burn a line of the verse into the floor along all four
+ * - **The Antiphon**: burn a line of the verse into the floor along all four
  *   axes (eight after the Stammer). *Counter: get off the axis.*
- * - **The Called Word** — call you by a name close enough to yours and your feet
+ * - **The Called Word**: call you by a name close enough to yours and your feet
  *   walk you in. *Counter: break line of sight, or fight while you are dragged.*
- * - **The Last Line** (phase two) — it plants and recites the finish. If it gets
+ * - **The Last Line** (phase two): it plants and recites the finish. If it gets
  *   there the room is on fire. *Counter: deal 200 damage to it inside the
  *   window, and it loses the line and sags.* That is the Magister's advice
  *   (`departure_line`: "Don't listen to it. Talk over it.") as a mechanic.
@@ -46,14 +46,14 @@
  *
  * It does NOT subtype `/datum/action/cooldown/spell/voice_of_god`, because that
  * type's `cast()` calls `voice_of_god()` unconditionally and DM has no way to
- * skip an immediate parent — subtyping it would fire both dispatchers. The
+ * skip an immediate parent. Subtyping it would fire both dispatchers. The
  * fifteen lines of action shell are copied instead; the command roster is not.
  *
  * The three new commands are real `/datum/voice_of_god_command` subtypes, so
  * they land in `GLOB.voice_of_god_commands` and any Voice of God can reach them.
  * Their numbers are all multiplied by the power multiplier, so at base VoG power
  * they are minor and at capstone power they end fights. The frenzy is gated
- * harder than that — see [/datum/voice_of_god_command/frenzy].
+ * harder than that, see [/datum/voice_of_god_command/frenzy].
  */
 
 // ===== BOSS TUNING =====
@@ -123,7 +123,7 @@
 /**
  * Is this victim on the speaker's side, and therefore spared?
  *
- * The caster's own faction, minus "neutral" — the same trick the rimebreath horn
+ * The caster's own faction, minus "neutral", the same trick the rimebreath horn
  * plays (hoarfrost_loot.dm), because plain humans are FACTION_NEUTRAL and a
  * player firing the Oracle's slate would otherwise spare every other person
  * alive. The speaker themselves is always spared.
@@ -196,13 +196,13 @@
 
 	ai_controller = /datum/ai_controller/basic_controller/vestige_oracle
 
-	/// The Word of Falling — the line-of-sight knockdown.
+	/// The Word of Falling: the line-of-sight knockdown.
 	var/datum/action/cooldown/mob_cooldown/oracle_word/word_of_falling/word_of_falling
-	/// The Antiphon — the burning axes.
+	/// The Antiphon: the burning axes.
 	var/datum/action/cooldown/mob_cooldown/oracle_word/antiphon/antiphon
-	/// The Called Word — the drag.
+	/// The Called Word: the drag.
 	var/datum/action/cooldown/mob_cooldown/oracle_word/called_word/called_word
-	/// The Last Line — phase two only, granted at the Stammer.
+	/// The Last Line: phase two only, granted at the Stammer.
 	var/datum/action/cooldown/mob_cooldown/oracle_word/last_line/last_line
 
 	/// TRUE once the Stammer has fired. One-way.
@@ -271,7 +271,7 @@
 	last_line = null
 	return ..()
 
-// ===== PHASE TWO — THE STAMMER =====
+// ===== PHASE TWO: THE STAMMER =====
 
 /**
  * Watches its own health. Reading the signal rather than overriding
@@ -324,7 +324,7 @@
 
 /**
  * Plant or unplant it for the Last Line. While planted it cannot move, swing or
- * cast — the AI rotation checks this too. Standing in front of it during the
+ * cast, the AI rotation checks this too. Standing in front of it during the
  * recital has to be safe, or the interrupt is not a real option.
  */
 /mob/living/basic/vestige_oracle/proc/set_inert(planted)
@@ -350,7 +350,7 @@
  * `/datum/element/knockback` would be the obvious tool, but its Attach() gates on
  * ishostile(), which is false for the basic-mob line, so it can never attach
  * here. `melee_attack()` still fires COMSIG_HOSTILE_POST_ATTACKINGTARGET, so we
- * hang off the same signal the element would have used — the Matriarch's maul
+ * hang off the same signal the element would have used, the Matriarch's maul
  * does exactly this.
  *
  * Dropped, not thrown, and no stun: everything you lose is at your feet. It is a
@@ -443,7 +443,7 @@
  * both entries hand the player a piece of the Oracle's own kit.
  *
  * The capstone is the real payout, so the pool deliberately avoids duplicating
- * it — the slate is short-cooldown shaped damage and the token is a lure, and
+ * it, the slate is short-cooldown shaped damage and the token is a lure, and
  * Voice of the Word is neither.
  */
 /mob/living/basic/vestige_oracle/proc/drop_the_verse()
@@ -462,7 +462,7 @@
 /**
  * The megafauna attack rotation in the modern basic-mob framework, copied from
  * hoarfrost_ai.dm: pick one ability at random, never the one used last, drop
- * anything unavailable. Everything else about it is ordinary — it walks up and
+ * anything unavailable. Everything else about it is ordinary, it walks up and
  * hits you, which is what makes the telegraphed words read as events.
  */
 /datum/ai_controller/basic_controller/vestige_oracle
@@ -487,7 +487,7 @@
  * Publishes the kit onto the blackboard.
  *
  * Called from Initialize, because the controller is built inside
- * /atom/Initialize — before a single action exists — so the keys cannot be
+ * /atom/Initialize (before a single action exists) so the keys cannot be
  * seeded in the `blackboard` list above. The Last Line is deliberately absent:
  * it is registered by [/mob/living/basic/vestige_oracle/proc/begin_stammer], and
  * until then the rotation simply finds a null under its key and skips it.
@@ -502,7 +502,7 @@
 	set_blackboard_key(BB_ORACLE_CALLED_WORD, called_word)
 
 /datum/ai_planning_subtree/oracle_rotation
-	/// It will not spend a word on somebody this far away — the Antiphon falls
+	/// It will not spend a word on somebody this far away, the Antiphon falls
 	/// short and the rest are simply walked out of.
 	var/engagement_range = 8
 
@@ -674,8 +674,8 @@
 /**
  * *Get off the axis.* The verse burns itself into the floor along the four
  * directions out from the caster, six tiles each, and after the Stammer along
- * all eight. Blocked by anything dense, so the arena's pillars shorten the lanes
- * — standing behind one is as good as standing off the axis.
+ * all eight. Blocked by anything dense, so the arena's pillars shorten the lanes.
+ * Standing behind one is as good as standing off the axis.
  */
 /datum/action/cooldown/mob_cooldown/oracle_word/antiphon
 	name = "The Antiphon"
@@ -751,7 +751,7 @@
 /**
  * *Break line of sight, or fight while you are dragged.* It calls the target by
  * a name that is almost theirs, and their feet answer. Six seconds of one forced
- * step a second, no damage and no loss of control over anything else — the
+ * step a second, no damage and no loss of control over anything else, the
  * danger is entirely in where it puts you, which is usually inside melee range
  * or onto an Antiphon lane.
  */
@@ -907,7 +907,7 @@
 		oracle.set_inert(FALSE)
 
 // =========================================================================
-// THE CALLED WORD — STATUS EFFECT
+// THE CALLED WORD: STATUS EFFECT
 // =========================================================================
 
 /**
@@ -915,7 +915,7 @@
  *
  * Deliberately generic in what does the calling: the Oracle uses it, and so does
  * the borrowed name once it is stuck in the floor. Nothing else about the victim
- * is taken away — they can still shoot, cast and swing, they just cannot stand
+ * is taken away, they can still shoot, cast and swing, they just cannot stand
  * still. Losing sight of the caller ends it, which is the counterplay.
  */
 /datum/status_effect/oracle_called
@@ -1172,7 +1172,7 @@
 		listener.apply_status_effect(/datum/status_effect/oracle_called, src, pull_duration)
 
 // =========================================================================
-// THE CAPSTONE — VOICE OF THE WORD
+// THE CAPSTONE: VOICE OF THE WORD
 // =========================================================================
 
 /datum/vestige_boon/spell/voice_of_the_word
@@ -1219,7 +1219,7 @@
 	 * The Word's phrasebook: what it can be told to do, in the words that do it.
 	 *
 	 * The dispatcher matches free text against a roster of regexes nobody can
-	 * see, which made the capstone a guessing game — the whole point of this
+	 * see, which made the capstone a guessing game, the whole point of this
 	 * table is that the player never has to guess. Each row is the command it
 	 * triggers, the words to shout, and what those words do at this spell's
 	 * power.
@@ -1228,7 +1228,7 @@
 	 * against its own command's trigger, so if an upstream regex is ever
 	 * reworded the row drops out with a stack trace instead of quietly shouting
 	 * something inert. A command added upstream and not listed here is still
-	 * reachable — the menu's last entry is a free-text box, which is exactly
+	 * reachable, the menu's last entry is a free-text box, which is exactly
 	 * what this spell used to be.
 	 *
 	 * Effects are described at WORD_POWER_MULTIPLIER, which is what this spell
@@ -1297,7 +1297,7 @@
 		if(!matcher.Find(LOWER_TEXT(phrase)))
 			stack_trace("Voice of the Word phrase '[phrase]' no longer matches [command_type]'s trigger.")
 			continue
-		menu["[phrase] — [note]"] = phrase
+		menu["[phrase]: [note]"] = phrase
 	// Maps to itself so both input paths below resolve it to the same string
 	menu[WORD_MENU_FREEHAND] = WORD_MENU_FREEHAND
 	return menu
@@ -1306,7 +1306,7 @@
 /datum/action/cooldown/spell/voice_of_the_word/proc/read_the_words(mob/reader)
 	var/list/lines = list(span_boldnotice("The Word knows these orders. Shout any of them, or anything that means the same thing."))
 	for(var/list/row as anything in phrasebook)
-		lines += span_notice("<b>[row[2]]</b> — [row[3]]")
+		lines += span_notice("<b>[row[2]]</b>, [row[3]]")
 	lines += span_notice("Anything else you shout still reaches the older roster of orders; these are only the ones worth knowing by name.")
 	to_chat(reader, boxed_message(jointext(lines, "<br>")))
 
@@ -1360,8 +1360,8 @@
  *
  * Differences from `/proc/voice_of_god`, all of them deliberate:
  *
- * - Listeners are gathered from **line of sight**, not `get_hearers_in_view` —
- *   deafness, earmuffs and a closed helmet are all irrelevant.
+ * - Listeners are gathered from **line of sight**, not `get_hearers_in_view`.
+ *   Deafness, earmuffs and a closed helmet are all irrelevant.
  * - No `can_block_magic` check. Holy and mind antimagic do not stop an order.
  * - No name or job focusing, and no `voice_of_god_power` role multiplier. This
  *   is a room weapon; everybody in the room gets the same thing, at the same
@@ -1409,8 +1409,8 @@
 //
 // These are ordinary /datum/voice_of_god_command subtypes, so they join
 // GLOB.voice_of_god_commands and any Voice of God can reach them. Every trigger
-// below was checked against upstream's roster for overlap in both directions —
-// the dispatch takes the first regex that matches, so a collision would silently
+// below was checked against upstream's roster for overlap in both directions.
+// The dispatch takes the first regex that matches, so a collision would silently
 // shadow somebody else's command.
 
 /// Everyone in the room goes to sleep. 4 seconds a point of power.
@@ -1426,7 +1426,7 @@
  * Everyone in the room catches fire properly.
  *
  * Upstream's `burn` command already exists and is much gentler; this is the one
- * the capstone is for. A firesuit still works — the order overrides ear
+ * the capstone is for. A firesuit still works, the order overrides ear
  * protection and antimagic, not thermodynamics.
  */
 /datum/voice_of_god_command/immolate
@@ -1443,13 +1443,13 @@
  * Everyone in the room turns on everyone else.
  *
  * Power-gated, and it is the only command here that is. At Voice of God strength
- * it is a fright — a delusion that makes the room look like monsters, which is
+ * it is a fright. A delusion that makes the room look like monsters, which is
  * what a shout that loud should be worth. At WORD_FRENZY_POWER_GATE and above it
  * is the real thing: the possession from `/datum/status_effect/lich_thrall`,
  * with attribution rewritten to name whoever shouted.
  *
  * Reusing the lich's possession rather than writing a second one is deliberate,
- * and precedented — the verdigris bridle (lich_loot.dm) is already a second
+ * and precedented, the verdigris bridle (lich_loot.dm) is already a second
  * consumer, and lich_thrall.dm's header threads attribution specifically so a
  * player-driven caster can be named everywhere. The one thing that comes with it
  * is `can_be_lich_thralled`'s antimagic gate: a tinfoil hat stops the frenzy
@@ -1479,7 +1479,7 @@
  * The possession, wearing the Oracle's colours instead of Ilthuun's.
  *
  * Only four things change: the duration, who gets named, what colour the victim
- * glows, and — the important one — [retarget]. The parent skips other thralls on
+ * glows, and (the important one) [retarget]. The parent skips other thralls on
  * purpose ("two possessed crewmen circling each other reads as a bug"), which is
  * exactly right for a lich picking off one raider and exactly wrong here, where
  * everybody in the room is possessed at once and turning on each other is the
@@ -1530,7 +1530,7 @@
  *
  * Rewritten wholesale rather than extended: the parent's exclusions (undead,
  * FACTION_LICH, other thralls) are all wrong for a room-wide order, and the one
- * exclusion that matters here — the speaker — is not one of them. Somebody who
+ * exclusion that matters here (the speaker) is not one of them. Somebody who
  * shouts "TURN ON EACH OTHER" is not included in "each other".
  */
 /datum/status_effect/lich_thrall/word_frenzy/retarget()

@@ -80,8 +80,8 @@
 	return planet && initial(planet.surface_area)
 
 /// Terrain planets pull a landed ship down with the surface areas' own gravity
-/// (/area/overmap_encounter/planetoid is STANDARD_GRAVITY). Flat encounters —
-/// empty space, crashed ships, weak signals — are just space with a dock in it.
+/// (/area/overmap_encounter/planetoid is STANDARD_GRAVITY). Flat encounters.
+/// Empty space, crashed ships, weak signals. Are just space with a dock in it.
 /obj/structure/overmap/planet/has_ambient_gravity()
 	return is_terrain_planet()
 
@@ -382,13 +382,13 @@
  * Runs terrain generation over the areas a ruin brought with it.
  *
  * Several mining ruins ship /turf/open/genturf tiles and leave their own area's
- * generator to fill them in. Roundstart gets that for free — ruins are seeded before
+ * generator to fill them in. Roundstart gets that for free. Ruins are seeded before
  * the world-wide generation sweep, which is why SSmapping runs them in that order.
  * A planet is built the other way round: its terrain is already down before a ruin
  * lands on it, so a ruin's own areas have to be generated here or those tiles sit
  * there as bare genturf for the rest of the round.
  *
- * The planet's own areas are skipped — they generated at build time, and a second
+ * The planet's own areas are skipped, they generated at build time, and a second
  * pass would rewrite the surface out from under everything standing on it. So is any
  * area whose generator has already run: map_generator stops being a typepath the
  * moment RunTerrainGeneration() instantiates it.

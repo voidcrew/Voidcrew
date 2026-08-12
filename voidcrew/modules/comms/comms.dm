@@ -9,12 +9,12 @@
  * /datum/signal/subspace/vocal/voidcrew, created in /obj/item/radio/talk_into_impl)
  * and are scoped by network key rather than z-level:
  *
- * * Ship channel — every frequency except the unscoped ones below. Messages are stamped
+ * * Ship channel: every frequency except the unscoped ones below. Messages are stamped
  *   with the speaker's network (bound ship, or physical location as fallback) and only
  *   reach radios matching that network. Radios bind to a ship lazily the first time they
  *   send/receive while physically aboard, at job spawn for headsets, or via multitool.
  *   Binding is sticky, so away teams and boarding parties keep their crew channel.
- * * Wideband (:w) — galaxy-wide hailing channel carried by every headset.
+ * * Wideband (:w): galaxy-wide hailing channel carried by every headset.
  *
  * Counterplay stays at the item level: EMPs, radio jammers, and stealing headsets
  * (a stolen headset stays bound to its home ship until re-tuned with a multitool).

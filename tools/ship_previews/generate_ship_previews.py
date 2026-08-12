@@ -14,6 +14,9 @@ nothing. We repair that here:
   - tables/falsewalls (objects sandwiched between floor and items): copy those
     tiles from a second render done with --disable icon-smoothing, where they
     draw their unsmoothed default state in correct layer order
+  - fulltile/shuttle windows: compute the junction ourselves and composite the
+    sprite ON TOP of the render (the window draws over its grille; the glass
+    is translucent so the grille stays visible)
 
 Outputs (commit these):
     voidcrew/modules/ship_upgrades/previews/manifest.json
@@ -27,6 +30,7 @@ dmm-tools location: $DMM_TOOLS or ~/code/tg-tools/bin/dmm-tools.exe
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -61,9 +65,16 @@ ENVIRONMENT = "tgstation.dme"
 # Turf types whose smoothed sprite we paint as an underlay.
 # type path -> (dmi path, base_icon_state, join group)
 # Longest matching path prefix wins, so subtypes (nodiagonal, rust, ...) inherit.
+# Join groups (mirroring DM canSmoothWith):
+#   wall          joins other walls/doors/falsewalls only
+#   shuttle_wall  additionally extends toward shuttle parts (shuttle and
+#                 plastitanium windows, shuttle engines) - the window does NOT
+#                 extend back, matching in-game framing
+#   pod_wall      shuttle_wall plus regular fulltile windows
 SMOOTH_TURFS = {
     "/turf/closed/wall": ("icons/turf/walls/wall.dmi", "wall", "wall"),
     "/turf/closed/wall/r_wall": ("icons/turf/walls/reinforced_wall.dmi", "reinforced_wall", "wall"),
+    "/turf/closed/wall/r_wall/plastitanium": ("icons/turf/walls/plastitanium_wall.dmi", "plastitanium_wall", "shuttle_wall"),
     "/turf/closed/wall/mineral/gold": ("icons/turf/walls/gold_wall.dmi", "gold_wall", "wall"),
     "/turf/closed/wall/mineral/silver": ("icons/turf/walls/silver_wall.dmi", "silver_wall", "wall"),
     "/turf/closed/wall/mineral/diamond": ("icons/turf/walls/diamond_wall.dmi", "diamond_wall", "wall"),
@@ -76,12 +87,48 @@ SMOOTH_TURFS = {
     "/turf/closed/wall/mineral/iron": ("icons/turf/walls/iron_wall.dmi", "iron_wall", "wall"),
     "/turf/closed/wall/mineral/snow": ("icons/turf/walls/snow_wall.dmi", "snow_wall", "wall"),
     "/turf/closed/wall/mineral/abductor": ("icons/turf/walls/abductor_wall.dmi", "abductor_wall", "wall"),
-    "/turf/closed/wall/mineral/titanium": ("icons/turf/walls/shuttle_wall.dmi", "shuttle_wall", "wall"),
-    "/turf/closed/wall/mineral/titanium/survival": ("icons/turf/walls/survival_pod_walls.dmi", "survival_pod_walls", "wall"),
-    "/turf/closed/wall/mineral/titanium/dollhouse": ("voidcrew/icons/turf/walls/dollhouse_wall.dmi", "shuttle_wall", "wall"),
-    "/turf/closed/wall/mineral/plastitanium": ("icons/turf/walls/plastitanium_wall.dmi", "plastitanium_wall", "wall"),
+    "/turf/closed/wall/mineral/titanium": ("icons/turf/walls/shuttle_wall.dmi", "shuttle_wall", "shuttle_wall"),
+    "/turf/closed/wall/mineral/titanium/survival": ("icons/turf/walls/survival_pod_walls.dmi", "survival_pod_walls", "pod_wall"),
+    "/turf/closed/wall/mineral/titanium/dollhouse": ("voidcrew/icons/turf/walls/dollhouse_wall.dmi", "shuttle_wall", "shuttle_wall"),
+    "/turf/closed/wall/mineral/plastitanium": ("icons/turf/walls/plastitanium_wall.dmi", "plastitanium_wall", "shuttle_wall"),
+    "/turf/closed/wall/mineral/cult": ("icons/turf/walls/cult_wall.dmi", "cult_wall", "wall"),
     "/turf/open/floor/carpet": ("icons/turf/floors/carpet.dmi", "carpet", "carpet"),
 }
+
+# Bitmask-smoothed objects drawn as an overlay on top of the render.
+# type path -> (dmi path, base_icon_state, join group)
+# Join groups mirror DM's canSmoothWith: each window family only connects to
+# itself (fulltile windows are SMOOTH_GROUP_WINDOW_FULLTILE, shuttle windows
+# only WINDOW_FULLTILE_SHUTTLE, etc.), never to walls.
+SMOOTH_OBJS = {
+    "/obj/structure/window/fulltile": ("icons/obj/smooth_structures/window.dmi", "window", "window"),
+    "/obj/structure/window/plasma/fulltile": ("icons/obj/smooth_structures/plasma_window.dmi", "plasma_window", "window"),
+    "/obj/structure/window/reinforced/fulltile": ("icons/obj/smooth_structures/reinforced_window.dmi", "reinforced_window", "window"),
+    "/obj/structure/window/reinforced/fulltile/ice": ("icons/obj/smooth_structures/rice_window.dmi", "rice_window", "window"),
+    "/obj/structure/window/reinforced/plasma/fulltile": ("icons/obj/smooth_structures/rplasma_window.dmi", "rplasma_window", "window"),
+    "/obj/structure/window/reinforced/tinted/fulltile": ("icons/obj/smooth_structures/tinted_window.dmi", "tinted_window", "window"),
+    "/obj/structure/window/reinforced/shuttle": ("icons/obj/smooth_structures/shuttle_window.dmi", "shuttle_window", "shuttle_window"),
+    "/obj/structure/window/reinforced/shuttle/survival_pod": ("icons/obj/smooth_structures/pod_window.dmi", "pod_window", "pod_window"),
+    "/obj/structure/window/reinforced/plasma/plastitanium": ("icons/obj/smooth_structures/plastitanium_window.dmi", "plastitanium_window", "plastitanium_window"),
+    "/obj/structure/window/bronze/fulltile": ("icons/obj/smooth_structures/clockwork_window.dmi", "clockwork_window", "bronze_window"),
+}
+
+# Non-window tiles that also count as joins for a window group
+# (pod windows connect to pod walls/airlocks: SMOOTH_GROUP_SURVIVAL_TITANIUM_POD)
+WINDOW_JOIN_EXTRA = {
+    "pod_window": (
+        "/turf/closed/wall/mineral/titanium/survival/pod",
+        "/obj/machinery/door/airlock/survival_pod",
+    ),
+}
+
+# SMOOTH_GROUP_SHUTTLE_PARTS members: what shuttle_wall/pod_wall extend toward
+# (opsglass is /turf/closed and therefore already a wall join)
+SHUTTLE_PARTS_PREFIXES = (
+    "/obj/structure/window/reinforced/shuttle",
+    "/obj/structure/window/reinforced/plasma/plastitanium",
+    "/obj/machinery/power/shuttle_engine",
+)
 
 # A tile joins the "wall" smoothing group when it holds any of these
 WALL_JOIN_PREFIXES = (
@@ -271,11 +318,38 @@ def smooth_turf_at(dmm: Dmm, x: int, y: int):
     return best
 
 
-def build_join_sets(dmm: Dmm) -> tuple[set, set, set]:
-    """Precompute per-tile membership: wall-join group, carpet group, copy-from-B."""
+def smooth_obj_entry(path: str):
+    """Longest-prefix SMOOTH_OBJS entry for an obj path, or None."""
+    best = None
+    best_len = -1
+    for prefix, entry in SMOOTH_OBJS.items():
+        if path_matches(path, prefix) and len(prefix) > best_len:
+            best = entry
+            best_len = len(prefix)
+    return best
+
+
+def smooth_obj_at(dmm: Dmm, x: int, y: int):
+    key = dmm.grid.get((x, y))
+    if key is None:
+        return None
+    for path in dmm.key_paths[key]:
+        entry = smooth_obj_entry(path)
+        if entry:
+            return entry
+    return None
+
+
+def build_join_sets(dmm: Dmm) -> tuple[dict, set, dict]:
+    """Precompute per-tile membership: one join set per turf group (wall families,
+    carpet), copy-from-B tiles, and one join set per window group."""
     wall_join: set[tuple[int, int]] = set()
     carpet: set[tuple[int, int]] = set()
     copy_b: set[tuple[int, int]] = set()
+    shuttle_parts: set[tuple[int, int]] = set()
+    window_joins: dict[str, set[tuple[int, int]]] = {
+        entry[2]: set() for entry in SMOOTH_OBJS.values()
+    }
     for pos, key in dmm.grid.items():
         for path in dmm.key_paths[key]:
             if any(path_matches(path, p) for p in WALL_JOIN_PREFIXES) and not any(
@@ -286,7 +360,21 @@ def build_join_sets(dmm: Dmm) -> tuple[set, set, set]:
                 carpet.add(pos)
             if any(path_matches(path, p) for p in COPY_B_PREFIXES):
                 copy_b.add(pos)
-    return wall_join, carpet, copy_b
+            if any(path_matches(path, p) for p in SHUTTLE_PARTS_PREFIXES):
+                shuttle_parts.add(pos)
+            obj_entry = smooth_obj_entry(path)
+            if obj_entry:
+                window_joins[obj_entry[2]].add(pos)
+            for group, prefixes in WINDOW_JOIN_EXTRA.items():
+                if any(path_matches(path, p) for p in prefixes):
+                    window_joins[group].add(pos)
+    turf_joins = {
+        "wall": wall_join,
+        "shuttle_wall": wall_join | shuttle_parts,
+        "pod_wall": wall_join | shuttle_parts | window_joins["window"],
+        "carpet": carpet,
+    }
+    return turf_joins, copy_b, window_joins
 
 
 def junction_at(x: int, y: int, joins: set) -> int:
@@ -300,10 +388,19 @@ def junction_at(x: int, y: int, joins: set) -> int:
     return j
 
 
+def junction_sprite(dmi: Dmi, base_state: str, junction: int) -> Image.Image | None:
+    return (
+        dmi.sprite(f"{base_state}-{junction}")
+        or dmi.sprite(f"{base_state}-{junction & 15}")
+        or dmi.sprite(f"{base_state}-0")
+    )
+
+
 def apply_smoothing_fixes(dmm: Dmm, render_a: Image.Image, render_b: Image.Image) -> Image.Image:
-    """Underlay computed wall/carpet sprites, then patch table tiles from render B."""
+    """Underlay computed wall/carpet sprites, patch table tiles from render B,
+    then overlay computed window sprites."""
     T = TILE_PX
-    wall_join, carpet, copy_b = build_join_sets(dmm)
+    turf_joins, copy_b, window_joins = build_join_sets(dmm)
     out = Image.new("RGBA", render_a.size, (0, 0, 0, 0))
 
     for (x, y) in dmm.grid:
@@ -314,13 +411,8 @@ def apply_smoothing_fixes(dmm: Dmm, render_a: Image.Image, render_b: Image.Image
         dmi = Dmi.load(dmi_path)
         if not dmi:
             continue
-        joins = carpet if group == "carpet" else wall_join
-        junction = junction_at(x, y, joins)
-        sprite = (
-            dmi.sprite(f"{base_state}-{junction}")
-            or dmi.sprite(f"{base_state}-{junction & 15}")
-            or dmi.sprite(f"{base_state}-0")
-        )
+        junction = junction_at(x, y, turf_joins[group])
+        sprite = junction_sprite(dmi, base_state, junction)
         if not sprite:
             print(f"WARN: no sprite {base_state}-{junction} in {dmi_path}")
             continue
@@ -331,6 +423,21 @@ def apply_smoothing_fixes(dmm: Dmm, render_a: Image.Image, render_b: Image.Image
     for (x, y) in copy_b:
         box = ((x - 1) * T, (dmm.height - y) * T, x * T, (dmm.height - y + 1) * T)
         out.paste(render_b.crop(box), box)
+
+    for (x, y) in dmm.grid:
+        entry = smooth_obj_at(dmm, x, y)
+        if not entry:
+            continue
+        dmi_path, base_state, group = entry
+        dmi = Dmi.load(dmi_path)
+        if not dmi:
+            continue
+        junction = junction_at(x, y, window_joins[group])
+        sprite = junction_sprite(dmi, base_state, junction)
+        if not sprite:
+            print(f"WARN: no sprite {base_state}-{junction} in {dmi_path}")
+            continue
+        out.alpha_composite(sprite, ((x - 1) * T, (dmm.height - y) * T))
 
     return out
 
@@ -355,6 +462,18 @@ def render(dmm_tools: Path, dmm_path: Path, out_png: Path, tmp_dir: Path, dmm: D
         fixed = apply_smoothing_fixes(dmm, render_a.convert("RGBA"), render_b.convert("RGBA"))
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fixed.save(out_png)
+
+
+def source_md5(dmm_path: Path) -> str:
+    """MD5 of the .dmm this preview was rendered from.
+
+    The purchase screen shows committed PNGs, so a map edit is invisible there
+    until the previews are regenerated. DM has no way to read a file's mtime,
+    so the manifest carries the source hash instead and
+    /datum/unit_test/voidcrew_ship_previews compares it against the map on disk
+    with rustg_hash_file(). Raw bytes, to match what rustg hashes.
+    """
+    return hashlib.md5(dmm_path.read_bytes()).hexdigest()
 
 
 def module_geometry(dmm: Dmm) -> dict:
@@ -395,6 +514,7 @@ def main() -> None:
             "width": dmm.width,
             "height": dmm.height,
             "slots": slots,
+            "src_md5": source_md5(ship_dmm),
         }
         print(f"hull {hull_key}: {dmm.width}x{dmm.height}, slots {list(slots)}")
 
@@ -411,6 +531,7 @@ def main() -> None:
             base_dmm = Dmm(base_path)
             entry = module_geometry(base_dmm)
             entry["png"] = png_name
+            entry["src_md5"] = source_md5(base_path)
             render(dmm_tools, base_path, OUTPUT_DIR / png_name, tmp_dir, base_dmm)
 
         # themed variants: <base>_<theme>.dmm beside the base file.
@@ -425,6 +546,7 @@ def main() -> None:
             variant_dmm = Dmm(variant)
             variant_entry = module_geometry(variant_dmm)
             variant_entry["png"] = variant_png
+            variant_entry["src_md5"] = source_md5(variant)
             render(dmm_tools, variant, OUTPUT_DIR / variant_png, tmp_dir, variant_dmm)
             themes[theme_id] = variant_entry
 

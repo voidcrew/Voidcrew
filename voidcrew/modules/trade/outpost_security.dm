@@ -116,10 +116,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	stun_projectile_sound = 'sound/items/weapons/plasma_cutter.ogg'
 	icon_state = "syndie_off"
 	base_icon_state = "syndie"
-	// Players' default faction IS "neutral" — including FACTION_NEUTRAL here (like
+	// Players' default faction IS "neutral", including FACTION_NEUTRAL here (like
 	// the pacifist centcom turrets do) would faction-exempt every player from targeting
 	faction = list(FACTION_TURRET)
-	mode = 1 // TURRET_LETHAL — the define is file-local to portable_turret.dm
+	mode = 1 // TURRET_LETHAL, the define is file-local to portable_turret.dm
 	turret_flags = NONE
 
 	/// The outpost this turret defends (set by the outpost on interior load)
@@ -143,7 +143,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /obj/machinery/porta_turret/outpost/allowed(mob/accessor)
 	return FALSE
 
-// No settings UI at all — the power toggle in ui_act() isn't gated on `locked`,
+// No settings UI at all: the power toggle in ui_act() isn't gated on `locked`,
 // so the panel must never open in the first place
 /obj/machinery/porta_turret/outpost/ui_interact(mob/user, datum/tgui/ui)
 	return
@@ -172,7 +172,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
  * # Outpost Defense Laser
  *
  * Fired only by outpost turrets. Phases harmlessly through bystanders and only
- * impacts valid turret targets — marked aggressors and embargoed crew — so
+ * impacts valid turret targets (marked aggressors and embargoed crew) so
  * enforcement never catches innocent shoppers in the crossfire. Dense obstacles
  * (walls, structures) still stop it as normal.
  */
@@ -212,7 +212,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	/// The berth host this door belongs to (set by the outpost on interior/hangar load)
 	var/obj/structure/overmap/outpost
 
-// See-through variant for storefronts that want their interior on display —
+// See-through variant for storefronts that want their interior on display,
 // the Chop Shop's parlor door. Same sanctuary armor, glass panes.
 /obj/machinery/door/airlock/outpost/glass
 	name = "outpost glass airlock"
@@ -273,35 +273,61 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 // =========================================================================
 
 /**
- * Marks fixed machinery as outpost property: it can't be unbolted, unscrewed,
- * pried apart or stripped for parts, and hitting it is aggression.
+ * Marks a machine or structure as outpost property: it can't be damaged,
+ * unbolted, unscrewed, pried apart or stripped for parts, and hitting it is
+ * aggression.
  *
- * INDESTRUCTIBLE on the type covers damage and nothing else — tool deconstruction
- * never consults resistance flags, which is the same trap the berth display's
- * wrench fell into (see outpost_hangar.dm). Blocking on COMSIG_ATOM_TOOL_ACT
- * closes every route at one point: that signal fires inside tool_act() ahead of
+ * INDESTRUCTIBLE covers damage (and the RCD, whose deconstruct mode checks the
+ * flag) and nothing else, tool deconstruction never consults resistance flags,
+ * which is the same trap the berth display's wrench fell into (see
+ * outpost_hangar.dm). Blocking on COMSIG_ATOM_TOOL_ACT closes every route at
+ * one point: that signal fires inside tool_act() ahead of
  * crowbar_act/screwdriver_act/wrench_act, and a blocking return there ends the
- * click chain before attackby ever runs — so the machines that deconstruct out of
- * attackby instead (the food processor and the deep fryer both do) need no
- * special handling here.
+ * click chain before attackby ever runs, so the machines that deconstruct out
+ * of attackby instead (the food processor and the deep fryer both do) need no
+ * special handling here. Right clicks raise COMSIG_ATOM_SECONDARY_TOOL_ACT,
+ * a separate signal, so both are blocked, tables and chairs deconstruct from
+ * their _secondary tool acts.
+ *
+ * Attached per-type by the outpost machine subtypes, and swept over everything
+ * the interior/hangar templates placed at link time, so bare tg types on the
+ * maps (the door fans, seating, lockers) are covered without a subtype each.
+ * Attach is guarded by TRAIT_OUTPOST_PROPERTY, so those two paths can overlap
+ * in either order.
  */
 /datum/element/outpost_property
 
 /datum/element/outpost_property/Attach(datum/target)
 	. = ..()
-	if(!ismachinery(target))
+	if(!ismachinery(target) && !isstructure(target))
 		return ELEMENT_INCOMPATIBLE
+	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY))
+		return
+	ADD_TRAIT(target, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
+
+	// Never restored on Detach, which only ever runs at qdel
+	var/obj/property = target
+	property.resistance_flags |= INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 	RegisterSignals(target, list(
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
 		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
 		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WIRECUTTER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WIRECUTTER),
 	), PROC_REF(block_tool))
-	RegisterSignal(target, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(block_part_replacer))
+	RegisterSignals(target, list(
+		COMSIG_ATOM_ITEM_INTERACTION,
+		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
+	), PROC_REF(block_part_replacer))
 
 	// relay_attackers folds melee, projectiles, thrown items, hulks and mechs into
 	// one signal, so aggression doesn't need a proc per attack route
-	var/atom/movable/property = target
 	property.AddElement(/datum/element/relay_attackers)
 	RegisterSignal(target, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
 
@@ -310,21 +336,30 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
 		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
 		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WIRECUTTER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WIRECUTTER),
 		COMSIG_ATOM_ITEM_INTERACTION,
+		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
 		COMSIG_ATOM_WAS_ATTACKED,
 	))
+	REMOVE_TRAIT(source, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
 	return ..()
 
-/datum/element/outpost_property/proc/block_tool(obj/machinery/source, mob/living/user, obj/item/tool)
+/datum/element/outpost_property/proc/block_tool(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
-	source.balloon_alert(user, "bolted down!")
+	source.balloon_alert(user, "outpost property!")
 	return ITEM_INTERACT_BLOCKING
 
 /**
  * A bluespace RPED skips the panel_open check in exchange_parts(), so blocking the
  * screwdriver doesn't keep the parts inside on its own.
  */
-/datum/element/outpost_property/proc/block_part_replacer(obj/machinery/source, mob/living/user, obj/item/tool)
+/datum/element/outpost_property/proc/block_part_replacer(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
 	if(!istype(tool, /obj/item/storage/part_replacer))
 		return NONE
@@ -332,7 +367,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	return ITEM_INTERACT_BLOCKING
 
 /// Shoves and stamina hits aren't vandalism; only a real damaging hit is
-/datum/element/outpost_property/proc/on_attacked(obj/machinery/source, atom/attacker, attack_flags)
+/datum/element/outpost_property/proc/on_attacked(obj/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
 		return

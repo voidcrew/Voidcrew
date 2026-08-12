@@ -115,7 +115,7 @@
 	if(!target_valid())
 		return
 	target_ship.ship_event_announce(
-		"Massive bluespace anomaly on intercept course — brace for boarders.",
+		"Massive bluespace anomaly on intercept course, brace for boarders.",
 		"Bluespace Anomaly Alert",
 		'sound/effects/magic/lightning_chargeup.ogg',
 	)

@@ -6,6 +6,12 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"d" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/closet/crate/freezer/food,
 /obj/item/storage/box/donkpockets,
 /obj/item/storage/box/donkpockets/donkpocketteriyaki,
@@ -86,6 +92,9 @@
 /area/template_noop)
 "E" = (
 /obj/structure/table/optable,
+/obj/machinery/defibrillator_mount{
+	pixel_y = 28
+	},
 /turf/open/floor/iron/white/smooth_large,
 /area/template_noop)
 "H" = (
@@ -102,6 +111,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
+/obj/machinery/vending/wallmed/directional/east,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "O" = (
@@ -138,7 +148,7 @@ D
 (2,1,1) = {"
 E
 x
-O
+d
 k
 "}
 (3,1,1) = {"

@@ -2,7 +2,7 @@
  * Industrial mixer station of the hidden drug lab: bank the three recipe
  * precursors, then run the hopper-sequence memory game.
  *
- * All correctness is SERVER-SIDE — every hopper press is an act round-trip
+ * All correctness is SERVER-SIDE. Every hopper press is an act round-trip
  * checked against the session's cursor. The only client-local behavior is the
  * cosmetic flash phase: when a fresh sequence arrives (sequence_id bump), the
  * client replays it on the hopper grid before accepting input.
@@ -235,7 +235,7 @@ export const DrugLabMixer = (props) => {
                           mr={1}
                         />
                         Attempt scored {data.last_attempt_score}/100
-                        {data.botched ? ' — the batch reacted violently!' : ''}
+                        {data.botched ? ', the batch reacted violently!' : ''}
                       </NoticeBox>
                     )}
                     {!data.game_active && !data.awaiting_choice && (
@@ -323,7 +323,7 @@ export const DrugLabMixer = (props) => {
                 </NoticeBox>
                 {data.stage < DrugLabStage.Done ? (
                   <NoticeBox info>
-                    The batch has moved on — work the{' '}
+                    The batch has moved on, work the{' '}
                     {data.stage === DrugLabStage.Catalyst
                       ? 'catalyst column'
                       : 'crystallization chamber'}

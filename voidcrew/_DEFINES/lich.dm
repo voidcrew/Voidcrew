@@ -1,10 +1,10 @@
-// The Verdigris — galaxy-wide lich raid event.
+// The Verdigris: galaxy-wide lich raid event.
 // See voidcrew/modules/lich/lich_site.dm for the site + ritual engine.
 
 // ===== SPAWN SCHEDULE =====
 
-/// Earliest the lair may surface. Deliberately late-round — later even than the
-/// Grand Colosseum's 40 minute gate (COLOSSEUM_EARLIEST_SPAWN) — because this is
+/// Earliest the lair may surface. Deliberately late-round, later even than the
+/// Grand Colosseum's 40 minute gate (COLOSSEUM_EARLIEST_SPAWN), because this is
 /// a strictly heavier ask than the colosseum: a four-layer assault on a
 /// megafauna-tier boss, and until someone clears it the ritual ramp is making the
 /// whole galaxy worse. Crews need to be armed, fed, flying and ideally willing to
@@ -17,8 +17,8 @@
 /// that whole tail with it.
 #define LICH_FIRST_SPAWN_TIME (120 MINUTES)
 /// Percent chance, rolled ONCE per round at overmap init, that the lich happens at
-/// all. He is a round-defining set piece — a galaxy-wide pressure ramp plus a raid
-/// nobody can ignore — and a set piece that shows up every single round stops being
+/// all. He is a round-defining set piece, a galaxy-wide pressure ramp plus a raid
+/// nobody can ignore, and a set piece that shows up every single round stops being
 /// one. At 30% a crew sees him occasionally rather than as a scheduled fixture, and
 /// the rounds he skips are quieter on purpose.
 ///
@@ -27,7 +27,7 @@
 /// (surface_lich_lair()), which force-surfaces him regardless.
 #define LICH_SPAWN_CHANCE 30
 /// Retry delay when the scheduler can't yet surface the lair (no free overmap
-/// square, or not enough players aboard — see LICH_MIN_PLAYERS).
+/// square, or not enough players aboard, see LICH_MIN_PLAYERS).
 #define LICH_SPAWN_RETRY (5 MINUTES)
 /// Living, non-AFK players required before the lair will surface. Mirrors the
 /// Grand Colosseum's min_players (colosseum_event.dm), and matters more here:

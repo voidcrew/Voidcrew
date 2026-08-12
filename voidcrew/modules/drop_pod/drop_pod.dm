@@ -14,7 +14,7 @@
 	var/used = FALSE
 	var/mob/living/ui_user = null
 	var/mob/living/map_user = null
-	// Both halves of ismegafauna() — /mob/living/basic/boss is this fork's tier
+	// Both halves of ismegafauna(): /mob/living/basic/boss is this fork's tier
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna, /mob/living/basic/boss)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 	var/mob/eye/camera/drop_pod/eyeobj

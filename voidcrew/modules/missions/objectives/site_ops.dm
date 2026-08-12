@@ -7,7 +7,7 @@
  */
 
 // =========================================================================
-// PLANT QUEST ITEM — the recovery family's arming step
+// PLANT QUEST ITEM: the recovery family's arming step
 // =========================================================================
 
 /**
@@ -33,7 +33,7 @@
 	return "Signal at ([target.target_x], [target.target_y])"
 
 // =========================================================================
-// PYLON CHAIN — calibrate N pylons, each one answered by a wave
+// PYLON CHAIN: calibrate N pylons, each one answered by a wave
 // =========================================================================
 
 /// How far the survey points scatter from the first one
@@ -194,7 +194,7 @@
 #undef PYLON_MIN_SPACING
 
 // =========================================================================
-// CONTAIN ANOMALY — put it down the way science says, keep what falls out
+// CONTAIN ANOMALY: put it down the way science says, keep what falls out
 // =========================================================================
 
 /**
@@ -210,7 +210,7 @@
 /datum/mission_objective/field/contain_anomaly
 	/// Anomaly typepath manifested at the site
 	var/anomaly_type = /obj/effect/anomaly/flux
-	/// Core typepath its neutralization sheds — also the delivery ask
+	/// Core typepath its neutralization sheds: also the delivery ask
 	var/core_type = /obj/item/assembly/signaler/anomaly/flux
 	/// Display name for progress text (the mission's rolled name)
 	var/anomaly_name = "anomaly"
@@ -226,7 +226,7 @@
 
 /**
  * Undoes the contract's stabilization. Whatever ended the objective that
- * ISN'T a neutralization — timeout, abandon, retarget — has to hand the
+ * ISN'T a neutralization (timeout, abandon, retarget) has to hand the
  * anomaly its clock back, or the site keeps a deathless anomaly parked in it
  * for as long as the ruin stays loaded.
  */
@@ -245,7 +245,7 @@
 
 /datum/mission_objective/field/contain_anomaly/spawn_field_objects(turf/spawn_turf)
 	anomaly = new anomaly_type(spawn_turf)
-	// Contract anomalies do not expire on their own — the crew has to come and
+	// Contract anomalies do not expire on their own. The crew has to come and
 	// put it down, however long the flight takes. stabilize() kills the
 	// countdown's authority (immortal) and pins the anomaly so it can't wander
 	// out of the site; stopping the countdown effect keeps it from displaying a
@@ -286,7 +286,7 @@
 	return "Neutralize the [anomaly_name]"
 
 // =========================================================================
-// ESCORT — bring the survivor back breathing
+// ESCORT: bring the survivor back breathing
 // =========================================================================
 
 /**
@@ -369,7 +369,7 @@
 	return "Bring the survivor to the mission pad alive"
 
 // =========================================================================
-// CLAIM DEFENSE — plant the beacon, hold the site, print the deed
+// CLAIM DEFENSE: plant the beacon, hold the site, print the deed
 // =========================================================================
 
 /**

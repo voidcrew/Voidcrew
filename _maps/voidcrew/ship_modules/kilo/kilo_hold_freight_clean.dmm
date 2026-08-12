@@ -1,15 +1,15 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "t" = (
-/obj/structure/closet/crate/cargo/mining{
-	name = "mining kit crate"
-	},
-/obj/item/shovel,
-/obj/item/pickaxe,
-/obj/item/storage/box/lights/mixed,
-/obj/item/mining_scanner,
-/obj/item/gun/energy/recharge/kinetic_accelerator,
 /obj/effect/turf_decal/box,
 /obj/structure/sign/departments/cargo/directional/south,
+/obj/item/hand_labeler{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 7;
+	pixel_y = -4
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "u" = (
@@ -41,6 +41,14 @@
 "C" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/cargo/mining{
+	name = "mining kit crate"
+	},
+/obj/item/shovel,
+/obj/item/pickaxe,
+/obj/item/storage/box/lights/mixed,
+/obj/item/mining_scanner,
+/obj/item/gun/energy/recharge/kinetic_accelerator,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "G" = (
@@ -79,14 +87,6 @@
 /obj/effect/turf_decal/delivery,
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
-	},
-/obj/item/hand_labeler{
-	pixel_x = -6;
-	pixel_y = 5
-	},
-/obj/item/clipboard{
-	pixel_x = 7;
-	pixel_y = -4
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)

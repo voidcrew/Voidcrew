@@ -1,5 +1,5 @@
 /**
- * Ritual: Unquiet Menagerie — ship-scoped port of TG's Petsplosion
+ * Ritual: Unquiet Menagerie: ship-scoped port of TG's Petsplosion
  * (code/modules/events/wizard/petsplosion.dm).
  *
  * The ship's animals start budding copies of themselves. His reanimation magic is not
@@ -8,8 +8,8 @@
  * The TG original counts candidates with `is_station_level(dupe_animal.z)`, walks
  * GLOB.alive_mob_list twice per wave, and doubles the population every 30 seconds until it
  * has made 400 mobs. Every part of that is wrong here. The z check would sweep in every
- * animal on a shared transit level — other crews' pets, a trader outpost's livestock, a
- * ruin's fauna — and 400 mobs would be a server incident on a ship with six rooms.
+ * animal on a shared transit level, other crews' pets, a trader outpost's livestock, a
+ * ruin's fauna, and 400 mobs would be a server incident on a ship with six rooms.
  *
  * Changed from the original:
  * - Candidates come from target_ship.get_all_mobs_aboard(), never from a z-level scan.
@@ -17,7 +17,7 @@
  *   that wandered off the ship between waves stops multiplying.
  * - Hard cap of 20 duplicates total instead of TG's 400, and three waves instead of an
  *   open-ended doubling. Culling the herd between waves still slows it down, exactly as in
- *   the original — that is the counterplay and it is preserved.
+ *   the original, that is the counterplay and it is preserved.
  * - The candidate ceiling (TG refuses to run above 100 dupable mobs) is kept as a per-ship
  *   check in is_valid_target(): a ship already crawling with animals is skipped.
  * - Reuses upstream's GLOB.petsplosion_candidates typecache so the eligible-pet list stays

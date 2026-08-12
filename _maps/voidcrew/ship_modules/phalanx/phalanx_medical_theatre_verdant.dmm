@@ -1,0 +1,237 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"c" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"e" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"f" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/machinery/light/directional/east,
+/obj/structure/table/optable{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"h" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"i" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/window/right/directional/east,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"j" = (
+/obj/structure/table/glass,
+/obj/item/storage/medkit/surgery,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"l" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/window/left/directional/west,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"n" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"p" = (
+/obj/item/kirbyplants/organic/plant5,
+/turf/open/floor/grass,
+/area/template_noop)
+"q" = (
+/obj/modular_map_connector,
+/obj/machinery/computer/operating{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"s" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/stasis{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"v" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/table/glass,
+/obj/item/defibrillator/loaded{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"y" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"A" = (
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/computer/operating{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"C" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"E" = (
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = 28
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"G" = (
+/obj/machinery/light/directional/west,
+/obj/structure/table/optable{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/help_others{
+	pixel_x = -32
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"I" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"J" = (
+/obj/structure/table/glass,
+/obj/item/storage/medkit/surgery,
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 7;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"M" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/stasis{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"O" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/suit_storage_unit/medical,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"Q" = (
+/obj/machinery/light/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"U" = (
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular,
+/obj/item/tank/internals/anesthetic{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath/muzzle{
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Y" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+
+(1,1,1) = {"
+U
+G
+q
+"}
+(2,1,1) = {"
+J
+e
+d
+"}
+(3,1,1) = {"
+E
+c
+Q
+"}
+(4,1,1) = {"
+O
+i
+s
+"}
+(5,1,1) = {"
+C
+h
+Y
+"}
+(6,1,1) = {"
+P
+h
+b
+"}
+(7,1,1) = {"
+n
+l
+M
+"}
+(8,1,1) = {"
+y
+c
+p
+"}
+(9,1,1) = {"
+j
+c
+I
+"}
+(10,1,1) = {"
+v
+f
+A
+"}

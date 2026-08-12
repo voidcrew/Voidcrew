@@ -109,7 +109,7 @@
  * "flying" in deep space with no destination. action_load() leaves the port at
  * SHUTTLE_IDLE with timer = 0, which makes check_effects() treat us as "about to
  * arrive" on every SSshuttle fire and call parallax_slowdown(), permanently wiping
- * parallax_movedir on the ship's areas — so space looks frozen for the whole first
+ * parallax_movedir on the ship's areas, so space looks frozen for the whole first
  * flight. Mirror enterTransit()'s destination-less state instead (SHUTTLE_CALL with
  * an infinite timer), which is exactly the state any ship is in after a normal
  * undock, and re-assert the scroll direction on our areas in case a mid-load

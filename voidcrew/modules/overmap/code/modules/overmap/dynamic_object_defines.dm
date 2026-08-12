@@ -72,7 +72,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	/// Delay between unload retries in seconds
 	var/unload_retry_delay = 10 SECONDS
 
-// Not a docking target in its own right — it IS empty space, and the helm's
+// Not a docking target in its own right. It IS empty space, and the helm's
 // dock_in_empty_space() path already finds and reuses any placeholder on the tile.
 /obj/structure/overmap/planet/empty/get_dock_description()
 	return null

@@ -105,8 +105,10 @@
 		return FALSE
 
 	//To prevent reactions outside of the pH window from starting.
-	if(holder.ph < (reaction.optimal_ph_min - reaction.determin_ph_range) || holder.ph > (reaction.optimal_ph_max + reaction.determin_ph_range))
+	//VOIDCREW EDIT: only recipes that opt in with REACTION_USES_PURITY are gated on pH.
+	if((reaction.reaction_flags & REACTION_USES_PURITY) && (holder.ph < (reaction.optimal_ph_min - reaction.determin_ph_range) || holder.ph > (reaction.optimal_ph_max + reaction.determin_ph_range)))
 		return FALSE
+	//VOIDCREW EDIT END
 
 	//All checks pass. cache the product ratio
 	if(length(reaction.results))
@@ -267,24 +269,31 @@
 
 	//Begin checks
 	//Calculate DeltapH (Deviation of pH from optimal)
-	//Within mid range
-	var/acceptable_ph
-	if (cached_ph >= reaction.optimal_ph_min  && cached_ph <= reaction.optimal_ph_max)
-		delta_ph = 1 //100% purity for this step
-	//Lower range
-	else if (cached_ph < reaction.optimal_ph_min) //If we're outside of the optimal lower bound
-		acceptable_ph = reaction.optimal_ph_min - reaction.determin_ph_range
-		if (cached_ph < acceptable_ph) //If we're outside of the deterministic bound
-			delta_ph = 0 //0% purity
-		else //We're in the deterministic phase
-			delta_ph = ((cached_ph - acceptable_ph) / reaction.determin_ph_range) ** reaction.ph_exponent_factor
-	//Upper range
-	else if (cached_ph > reaction.optimal_ph_max) //If we're above of the optimal lower bound
-		acceptable_ph = reaction.optimal_ph_max + reaction.determin_ph_range
-		if (cached_ph > acceptable_ph)  //If we're outside of the deterministic bound
-			delta_ph = 0 //0% purity
-		else  //We're in the deterministic phase
-			delta_ph = ((acceptable_ph - cached_ph) / reaction.determin_ph_range) ** reaction.ph_exponent_factor
+	//VOIDCREW EDIT: pH only drives purity for recipes that opt in with REACTION_USES_PURITY.
+	//Everything else reacts at full purity whatever the mixture's pH happens to be, so a
+	//recipe's optimal band doesn't have to contain neutral for the recipe to be usable.
+	if(!(reaction.reaction_flags & REACTION_USES_PURITY))
+		delta_ph = 1
+	else
+		//Within mid range
+		var/acceptable_ph
+		if (cached_ph >= reaction.optimal_ph_min  && cached_ph <= reaction.optimal_ph_max)
+			delta_ph = 1 //100% purity for this step
+		//Lower range
+		else if (cached_ph < reaction.optimal_ph_min) //If we're outside of the optimal lower bound
+			acceptable_ph = reaction.optimal_ph_min - reaction.determin_ph_range
+			if (cached_ph < acceptable_ph) //If we're outside of the deterministic bound
+				delta_ph = 0 //0% purity
+			else //We're in the deterministic phase
+				delta_ph = ((cached_ph - acceptable_ph) / reaction.determin_ph_range) ** reaction.ph_exponent_factor
+		//Upper range
+		else if (cached_ph > reaction.optimal_ph_max) //If we're above of the optimal lower bound
+			acceptable_ph = reaction.optimal_ph_max + reaction.determin_ph_range
+			if (cached_ph > acceptable_ph)  //If we're outside of the deterministic bound
+				delta_ph = 0 //0% purity
+			else  //We're in the deterministic phase
+				delta_ph = ((acceptable_ph - cached_ph) / reaction.determin_ph_range) ** reaction.ph_exponent_factor
+	//VOIDCREW EDIT END
 
 	//Calculate DeltaT (Deviation of T from optimal)
 	if(!reaction.is_cold_recipe)
@@ -344,14 +353,13 @@
 		if(!holder.remove_reagent(requirement, delta_chem_factor * required_amount))
 			to_delete = TRUE
 			return
-		//VOIDCREW EDIT REMOVAL: we don't use pH, so reactions no longer shift it.
 		//Apply pH changes
-		//if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
-		//	pH_adjust = ((delta_chem_factor * required_amount) / target_vol) * (reaction.H_ion_release * h_ion_mod)
-		//else //Default adds pH independant of volume
-		//	pH_adjust = (delta_chem_factor * required_amount) * (reaction.H_ion_release * h_ion_mod)
-		//holder.adjust_specific_reagent_ph(requirement, pH_adjust)
-		//VOIDCREW EDIT END
+		var/pH_adjust
+		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
+			pH_adjust = ((delta_chem_factor * required_amount) / target_vol) * (reaction.H_ion_release * h_ion_mod)
+		else //Default adds pH independant of volume
+			pH_adjust = (delta_chem_factor * required_amount) * (reaction.H_ion_release * h_ion_mod)
+		holder.adjust_specific_reagent_ph(requirement, pH_adjust)
 
 	var/step_add
 	var/total_step_added = 0
@@ -362,14 +370,13 @@
 			to_delete = TRUE
 			return
 
-		//VOIDCREW EDIT REMOVAL: we don't use pH, so reactions no longer shift it.
 		//Apply pH changes
-		//if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
-		//	pH_adjust = (step_add / target_vol) * (reaction.H_ion_release * h_ion_mod)
-		//else
-		//	pH_adjust = step_add * (reaction.H_ion_release * h_ion_mod)
-		//holder.adjust_specific_reagent_ph(product, pH_adjust)
-		//VOIDCREW EDIT END
+		var/pH_adjust
+		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
+			pH_adjust = (step_add / target_vol) * (reaction.H_ion_release * h_ion_mod)
+		else
+			pH_adjust = step_add * (reaction.H_ion_release * h_ion_mod)
+		holder.adjust_specific_reagent_ph(product, pH_adjust)
 
 		//record amounts created
 		reacted_vol += step_add

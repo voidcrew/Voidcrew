@@ -104,6 +104,20 @@
 "iW" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/d)
+"jk" = (
+/obj/machinery/light/directional/east,
+/obj/structure/plaque/static_plaque{
+	name = "hull patch plate";
+	desc = "The wing was open to vacuum from here out to the outer frame. The plate went in over four days and the mess reopened the week after."
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/cafe/d)
 "jp" = (
 /obj/structure/cable,
 /obj/machinery/button/door{
@@ -197,7 +211,7 @@
 	pixel_x = -12
 	},
 /obj/machinery/light/directional/west,
-/turf/open/floor/iron/white,
+/turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/cargo/d)
 "kY" = (
 /turf/open/floor/plating,
@@ -265,6 +279,11 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/d)
+"nE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/d)
 "nP" = (
 /obj/structure/reagent_dispensers/watertank,
 /obj/item/reagent_containers/cup/bucket,
@@ -446,6 +465,14 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/hallway/central/d)
+"sv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/d)
 "sA" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "delta_cafe"
@@ -824,6 +851,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/white/textured,
+/area/shuttle/voidcrew/delta/engineering/d)
+"CM" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/item/wrench,
+/obj/structure/cable,
+/obj/effect/turf_decal/caution,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
 "CS" = (
 /obj/structure/cable,
@@ -1258,6 +1298,14 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/d)
+"Nf" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/d)
 "Ni" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -1267,6 +1315,15 @@
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/d)
+"NM" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/scrubber,
+/obj/machinery/atmospherics/pipe/bridge_pipe/orange,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
 "NS" = (
@@ -1691,6 +1748,11 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
+"ZL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/d)
 "ZO" = (
 /obj/machinery/door/poddoor{
 	id = "delta_cargo_hatch";
@@ -1743,15 +1805,15 @@ aa
 iW
 pc
 mC
-FF
-jL
+ZL
+Nf
 Gv
 SH
 We
 go
 Ni
 FT
-XM
+nE
 ty
 lJ
 iW
@@ -1762,15 +1824,15 @@ aa
 iW
 Aq
 Mz
-Dm
-yc
+NM
+sv
 Bm
 JZ
 Gb
 Cr
 UC
 Gm
-lX
+CM
 EP
 AL
 cr
@@ -2055,7 +2117,7 @@ aa
 aa
 hl
 WO
-hl
+rw
 NS
 rw
 kS
@@ -2179,7 +2241,7 @@ On
 Po
 Jq
 Jq
-Jq
+jk
 Jq
 Jq
 Po

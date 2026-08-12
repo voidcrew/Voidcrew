@@ -146,6 +146,11 @@
 //VOIDCREW EDIT ADDITION: reaction refuses to run inside a grown food item, so plant
 //chemistry can't be used to mass-produce the mob-spawning mixtures.
 #define REACTION_NOT_IN_PLANTS (1<<8)
+///The reaction opts into pH-driven purity. Unset (the fork-wide default) means pH is a live,
+///drifting number that no reaction is blocked or purity-penalised by, so a recipe's optimal
+///pH band never has to contain 7 to be usable. Set it to bring tg's pH mechanics back for
+///that one recipe.
+#define REACTION_USES_PURITY (1<<9)
 //VOIDCREW EDIT END
 
 ///Used for overheat_temp - This sets the overheat so high it effectively has no overheat temperature.

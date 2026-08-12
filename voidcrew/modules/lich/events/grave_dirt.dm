@@ -1,5 +1,5 @@
 /**
- * Ritual: The Floor Is Grave-Dirt — ship-scoped port of TG's The Floor Is LAVA!
+ * Ritual: The Floor Is Grave-Dirt. Ship-scoped port of TG's The Floor Is LAVA!
  * (code/modules/events/wizard/lava.dm).
  *
  * The deck of one ship turns into turned earth. Standing on it burns. Get on top of something.
@@ -7,7 +7,7 @@
  * "Ship-scoped" is about plumbing, not blast radius: when the ritual clock fires this rite it
  * runs one instance per crewed hull via fire_ritual_on_every_ship() (lich_site.dm), so in
  * actual play every crew that is flying with people aboard gets it at the same time. The
- * per-ship instance is what keeps one crew's rite from touching another's — separate
+ * per-ship instance is what keeps one crew's rite from touching another's, separate
  * lifecycle, separate tracked overlays, separate end(). The single-ship path you get from the
  * "Events: Force Dynamic Event" admin verb is the testing path, not the live one.
  *
@@ -57,7 +57,7 @@
 	description = "The deck of the target ship becomes burning grave-dirt for about a minute."
 	/**
 	 * Effectively uncapped (20 is upstream's default ceiling), because this is the top of
-	 * the ramp's workhorse — see the cap policy note in lich_events.dm.
+	 * the ramp's workhorse. See the cap policy note in lich_events.dm.
 	 *
 	 * Safe to repeat: it is ship-scoped, it self-terminates after about a minute, the only
 	 * lasting cost is burn damage that heals with ordinary medical care, and the counterplay
@@ -110,7 +110,7 @@
 		victim.adjustFireLoss(burn_per_tick)
 
 /datum/round_event/voidcrew/lich/grave_dirt/end()
-	// Runs whether or not the ship survived — the overlays are tracked against the areas.
+	// Runs whether or not the ship survived. The overlays are tracked against the areas.
 	remove_rite_overlays()
 	if(!target_valid())
 		return
@@ -131,7 +131,7 @@
 		return FALSE
 	if(HAS_TRAIT(victim, TRAIT_WEATHER_IMMUNE) || HAS_TRAIT(victim, TRAIT_LAVA_IMMUNE))
 		return FALSE
-	// Anything holding the mob — a locker, a mech, an enviro bag — protects it, as the
+	// Anything holding the mob (a locker, a mech, an enviro bag) protects it, as the
 	// weather base class's recursive check does.
 	var/atom/holder = victim.loc
 	if(!isturf(holder))

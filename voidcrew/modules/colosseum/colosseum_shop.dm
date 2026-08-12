@@ -1,17 +1,17 @@
 /**
- * # The Lanista's Rack — the Grand Colosseum's gear stall
+ * # The Lanista's Rack: the Grand Colosseum's gear stall
  *
  * A trader-outpost-style vendor stall on the venue concourse, selling the
  * bespoke arena gear from colosseum_gear.dm. Reuses the whole outpost shop
  * stack (voidcrew/modules/trade/): /datum/outpost_shop for stock and
- * shelves, the outpost_trader mob + TraderShop tgui for the storefront —
+ * shelves, the outpost_trader mob + TraderShop tgui for the storefront,
  * but stands alone, with no trader outpost behind it (shop machinery in
  * trader_npc.dm is null-outpost tolerant for exactly this).
  *
  * Stock loop: the core shelf is always up; rotating picks and the rare
  * showcase reroll through convoy_restock(), which the match controller
- * fires after every settled match (colosseum_controller.dm resolve()) —
- * the games end, the convoy lands, the rack refills.
+ * fires after every settled match (colosseum_controller.dm resolve()).
+ * The games end, the convoy lands, the rack refills.
  */
 
 // =========================================================================
@@ -75,7 +75,7 @@
 			"The laurel? Purely decorative. So are the statues upstairs, and people still fight for those.",
 		),
 		TRADER_LINE_RESTOCK = list(
-			"Match settled, convoy's in. The rack is full again — for now.",
+			"Match settled, convoy's in. The rack is full again, for now.",
 			"New stock off the supply lighter. Some of it is even unbloodied.",
 			"The games provide. Fresh shelves, same prices.",
 		),
@@ -96,7 +96,7 @@
 	stock_min = 1
 	stock_max = 2
 
-// ===== CORE — PIT KIT + THE NET =====
+// ===== CORE: PIT KIT + THE NET =====
 
 /datum/shop_sku/colosseum/grindstone
 	category = "Pit Kit"
@@ -117,7 +117,7 @@
 	item_path = /obj/item/restraints/legcuffs/bola/retiarius
 	price_credits = 1800
 
-// ===== ROTATING — THE FIGHTING KIT =====
+// ===== ROTATING: THE FIGHTING KIT =====
 
 /datum/shop_sku/colosseum/rotating/sandstriders
 	category = "Panoply"
@@ -134,7 +134,7 @@
 	item_path = /obj/item/spear/bestiarius
 	price_credits = 3300
 
-// ===== RARE — THE SHOWCASE =====
+// ===== RARE: THE SHOWCASE =====
 
 /datum/shop_sku/colosseum/rare/galea
 	category = "Panoply"

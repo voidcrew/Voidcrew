@@ -255,9 +255,13 @@
 		if(reagent.purity < equilibrium.reaction.purity_min)
 			purity_alert = ENABLE_FLASHING//Because 0 is seen as null
 			danger = TRUE
-		if(flashing != ENABLE_FLASHING)//So that the pH meter flashes for ANY reactions out of optimal
+		//VOIDCREW EDIT: only alarm on pH for recipes that actually care about it. Without
+		//REACTION_USES_PURITY the mixture's pH has no effect on the reaction, so flashing the
+		//meter at the chemist would be warning them about nothing.
+		if(flashing != ENABLE_FLASHING && (equilibrium.reaction.reaction_flags & REACTION_USES_PURITY))//So that the pH meter flashes for ANY reactions out of optimal
 			if(equilibrium.reaction.optimal_ph_min > beaker_reagents.ph || equilibrium.reaction.optimal_ph_max < beaker_reagents.ph)
 				flashing = ENABLE_FLASHING
+		//VOIDCREW EDIT END
 		if(equilibrium.reaction.is_cold_recipe)
 			if(equilibrium.reaction.overheat_temp > beaker_reagents.chem_temp && equilibrium.reaction.overheat_temp != NO_OVERHEAT)
 				danger = TRUE

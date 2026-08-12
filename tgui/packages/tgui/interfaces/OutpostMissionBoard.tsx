@@ -251,17 +251,17 @@ export const OutpostMissionBoard = (props) => {
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
 
   return (
-    <Window title={`${shop_name} — Contract Board`} width={560} height={620}>
+    <Window title={`${shop_name}, Contract Board`} width={560} height={620}>
       <Window.Content scrollable>
         {!!barred && (
           <NoticeBox danger>
-            TRADE EMBARGO IN EFFECT — {trader_name} is not posting work for
+            TRADE EMBARGO IN EFFECT: {trader_name} is not posting work for
             you.
           </NoticeBox>
         )}
         {!ship_name && (
           <NoticeBox>
-            No crew registration found — you need a ship to take a contract.
+            No crew registration found: you need a ship to take a contract.
           </NoticeBox>
         )}
         <Section
@@ -310,7 +310,7 @@ export const OutpostMissionBoard = (props) => {
               <ShipMissionRow key={mission.ref} mission={mission} />
             ))}
             <Box color="label" fontSize="0.85em" mt={1}>
-              Item contracts can be turned in right here — hold the goods in
+              Item contracts can be turned in right here. Hold the goods in
               hand. Courier pods only unseal at their destination outpost.
             </Box>
           </Section>

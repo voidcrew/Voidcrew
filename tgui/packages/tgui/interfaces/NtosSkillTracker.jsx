@@ -47,7 +47,7 @@ export const NtosSkillTracker = (props) => {
                           %
                         </ProgressBar>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </Table.Cell>
                     <Table.Cell textAlign="center">
@@ -64,7 +64,7 @@ export const NtosSkillTracker = (props) => {
                           %
                         </ProgressBar>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </Table.Cell>
                   </Table.Row>

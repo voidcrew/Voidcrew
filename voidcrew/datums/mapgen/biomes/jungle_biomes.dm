@@ -18,7 +18,7 @@
 		/mob/living/basic/gorilla/beach = 3,
 		/mob/living/basic/spider/giant/tarantula = 1,
 	)
-	// Wild spice pods — the jungle export good; foraged off the ground and sold
+	// Wild spice pods: the jungle export good; foraged off the ground and sold
 	// at the general store (see modules/trade/planetary_goods.dm)
 	feature_spawn_chance = 0.5
 	feature_spawn_list = list(/obj/item/stack/spice_pods = 1)

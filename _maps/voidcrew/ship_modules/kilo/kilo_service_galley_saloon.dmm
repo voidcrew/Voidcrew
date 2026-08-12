@@ -3,7 +3,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/template_noop)
 "l" = (
@@ -22,7 +21,12 @@
 	},
 /obj/effect/spawner/random/food_or_drink/booze,
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 4
+	},
+/obj/machinery/reagentgrinder{
+	desc = "Used to grind things up into raw materials and liquids.";
+	pixel_y = 5
 	},
 /turf/open/floor/wood,
 /area/template_noop)
@@ -57,18 +61,14 @@
 	pixel_y = 12
 	},
 /obj/machinery/airalarm/directional/south,
-/turf/open/floor/wood,
-/area/template_noop)
-"w" = (
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/coffeemaker{
+	pixel_x = 8;
+	pixel_y = 4
+	},
 /turf/open/floor/wood,
 /area/template_noop)
 "y" = (
 /obj/structure/cable,
-/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
@@ -84,7 +84,6 @@
 /obj/item/food/sausage,
 /obj/item/food/sosjerky,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/template_noop)
 "E" = (
@@ -94,7 +93,6 @@
 /turf/open/floor/wood,
 /area/template_noop)
 "F" = (
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/template_noop)
 "G" = (
@@ -107,6 +105,7 @@
 	dir = 4
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood{
@@ -134,7 +133,7 @@
 /obj/modular_map_connector,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/wood,
 /area/template_noop)
 "U" = (
 /obj/structure/closet/crate/bin,
@@ -171,7 +170,7 @@ v
 (3,1,1) = {"
 W
 E
-w
+E
 F
 "}
 (4,1,1) = {"

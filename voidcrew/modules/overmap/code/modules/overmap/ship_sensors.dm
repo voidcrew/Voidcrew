@@ -4,13 +4,13 @@
  * TWO RINGS, and keeping them apart is the whole design:
  *
  * - The **view ring** is SHIP_VIEW_RANGE (4) and never changes. It is free,
- *   passive and live — the radius the old camera console rendered. Everything
+ *   passive and live, the radius the old camera console rendered. Everything
  *   physically inside it draws on the helm chart: planets, ruins, outposts,
  *   nebulas, storms, vessels. No research, no scanning, no memory. Fly away and
  *   it is gone from the chart, because nothing recorded it.
  * - The **sensor ring** is get_sensor_range(), starts equal to the view ring and
  *   grows to 10 with radar research. Nothing in it draws on its own. It is the
- *   reach of an active scan, which CHARTS what it finds into the waypoint list —
+ *   reach of an active scan, which CHARTS what it finds into the waypoint list,
  *   where it persists at any distance, drawn faded once it falls out of sight.
  *
  * So sensors never widen what you can see. They reach past sight, and what they
@@ -18,7 +18,7 @@
  *
  * **Sight itself is permanent.** Anything drawn in the view ring is recorded into
  * `discovered_contacts` and stays on the chart for the rest of the round, faded
- * once it drops out of sight — you chart the sector by flying it. That makes the
+ * once it drops out of sight, you chart the sector by flying it. That makes the
  * radar tree a purchase of REACH and IDENTITY rather than of memory: a scan is
  * worth running for what sits beyond the hull's own eyes, and at base radar (where
  * the two rings coincide) it buys nothing you couldn't get by flying over there
@@ -36,7 +36,7 @@
  * so keeping a position would be a lie. They are live contacts or nothing, and an
  * unscanned one is an anonymous blip rather than a named ship.
  *
- * Hazards are still unreachable by a SCAN (`sensor_detectable = FALSE`) — our own
+ * Hazards are still unreachable by a SCAN (`sensor_detectable = FALSE`), our own
  * sensors cannot pin a storm, so one has to be flown past to enter the log. What
  * they can be reached by is a star chart, which is bought survey data rather than
  * a sweep and records the whole band (see chart_zone). That is the difference the
@@ -72,13 +72,13 @@
 
 /obj/structure/overmap
 	/// Whether an active SCAN can chart this object, making it persist on the helm
-	/// after it leaves the sensor bubble. Scannable statics only — set TRUE on
+	/// after it leaves the sensor bubble. Scannable statics only, set TRUE on
 	/// planets and ruins. Hazards are visible up close but no sweep of ours can
 	/// pin one; a bought star chart still records them (chart_zone reads
 	/// sensor_visible instead, which is the whole point of buying one).
 	var/sensor_detectable = FALSE
 	/// Whether this object renders on the helm chart while it is inside the ship's
-	/// VIEW ring — free, live, no research. TRUE for anything physically out there;
+	/// VIEW ring: free, live, no research. TRUE for anything physically out there;
 	/// cleared on objects the helm sources some other way (vessels, which need
 	/// identity gating, and trader outposts, which broadcast sector-wide) or that
 	/// aren't really present (empty-space placeholders).
@@ -105,20 +105,20 @@
 	/// REF()s of vessels an active scan has identified, as an assoc set. Purely
 	/// live: get_contact_snapshot rebuilds it from the ships still in contact, so
 	/// a vessel that leaves the ring is forgotten and reads as unknown if it
-	/// returns. Never charted — see the file header.
+	/// returns. Never charted, see the file header.
 	var/list/identified_ships = list()
 	/// Everything this ship has ever laid eyes on, as REF -> weakref. Recorded by
 	/// the view-ring pass in get_contact_snapshot and kept for the round, so
 	/// flying somewhere charts it permanently. Weakrefs rather than REF strings
 	/// because BYOND recycles refs, and a recycled one would resolve to whatever
-	/// took its place. Vessels are deliberately absent — see the file header.
+	/// took its place. Vessels are deliberately absent, see the file header.
 	var/list/discovered_contacts = list()
 	/// TRUE while a static-data refresh is already queued for this ship's helms.
 	var/charted_push_queued = FALSE
 	/// Which overmap tiles this ship's view ring has ever swept, as a flat grid
 	/// indexed by ((y - 1) * OVERMAP_SIZE + x) in relative coordinates. Distinct
 	/// from discovered_contacts, which can only record tiles that had something on
-	/// them — empty space leaves no object behind, so "surveyed and empty" and
+	/// them, empty space leaves no object behind, so "surveyed and empty" and
 	/// "never looked" are otherwise the same thing. A flat list rather than an
 	/// assoc of "x,y" keys: ~2600 slots is 20-odd KB and indexes in O(1).
 	var/list/surveyed_tiles
@@ -127,7 +127,7 @@
 	var/surveyed_from_y = 0
 
 /**
- * Returns the ship's research techweb — the one hosted on its onboard R&D
+ * Returns the ship's research techweb, the one hosted on its onboard R&D
  * server's disk, which is where radar nodes actually get researched. Cached by
  * weakref; the (potentially expensive) server search is throttled so a ship
  * with no R&D server doesn't rescan its whole hull every tick.
@@ -199,7 +199,7 @@
  * This is the single gate every readout asks, and the reason it lives on the ship
  * rather than on the contact: identity is not a property of the hull out there,
  * it is a property of what THIS crew has done about it. A console that answers the
- * question for itself will always drift out of step with the chart — which is
+ * question for itself will always drift out of step with the chart, which is
  * exactly what the combat console used to do, naming hulls the helm still drew as
  * anonymous blips.
  */
@@ -214,7 +214,7 @@
  * this was new knowledge.
  *
  * Anything that amounts to LOOKING at a hull should call this: an active scan, a
- * received hail, a completed weapons lock. Nothing here is permanent —
+ * received hail, a completed weapons lock. Nothing here is permanent,
  * get_contact_snapshot rebuilds the set from what is still in contact, so a vessel
  * that drifts away is forgotten and comes back anonymous (see the file header).
  */
@@ -232,7 +232,7 @@
  * How the helm's Dock button should name another vessel sharing our tile.
  *
  * Docking with a ship is still the request/accept handshake ship_act() runs on
- * /obj/structure/overmap/ship (see ship.dm) — this only decides what the button
+ * /obj/structure/overmap/ship (see ship.dm), this only decides what the button
  * calls the option, and it keeps the same anonymity an unidentified contact has
  * everywhere else on the chart (see identify_vessels() above): sharing a tile
  * doesn't reveal a hull the crew hasn't scanned or tracked.
@@ -283,7 +283,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			continue
 		if(chart_as_waypoint(candidate))
 			found++
-	// Only spend the cooldown on a productive scan — an empty sweep can retry.
+	// Only spend the cooldown on a productive scan. An empty sweep can retry.
 	if(found > 0)
 		COOLDOWN_START(src, sensor_scan_cooldown, SENSOR_SCAN_COOLDOWN)
 	return found
@@ -321,7 +321,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	if(!coords)
 		return FALSE
 	// Charted against the object rather than against bare coordinates. Everything
-	// scannable is static, so nothing actually moves as a result — it is what lets
+	// scannable is static, so nothing actually moves as a result. It is what lets
 	// the readout keep asking the object what it is (terrain, storm family) after
 	// the ship has flown out of sight of it.
 	add_waypoint(key, get_contact_name(object), coords[1], coords[2], object.sensor_category, object)
@@ -343,14 +343,14 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  * Returns the count of things this ship did not already know about.
  *
  * The gate is `sensor_visible`, not `sensor_detectable`: a bought survey is not a
- * sensor sweep, and it covers everything that is physically out there — storms and
+ * sensor sweep, and it covers everything that is physically out there, storms and
  * nebulas included, which no scan of ours can reach. What that flag still leaves
  * out is exactly what should be left out: vessels (they move, so a recorded
  * position would be a lie), trader outposts (already broadcast to every helm, and
  * charting one would draw it twice) and empty-space placeholders (not really there).
  *
  * Discoveries land in the charted table rather than the waypoint list, which is
- * where a SIGHTING goes — and buying the survey is meant to be worth the same as
+ * where a SIGHTING goes, and buying the survey is meant to be worth the same as
  * having flown the region. It also keeps a region's worth of contacts out of the
  * per-frame payload, prunes itself when a ruin is consumed, and doesn't hand the
  * crew a hundred individual clear buttons for one purchase.
@@ -432,7 +432,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 
 /**
  * Whether a contact at `coords` is close enough to be seen rather than merely
- * known — the helm draws the difference as solid versus faded. Both arguments
+ * known, the helm draws the difference as solid versus faded. Both arguments
  * are relative overmap coordinates; a null origin reads as "not in sight".
  */
 /proc/in_view_ring(list/origin, list/coords)
@@ -443,8 +443,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	return sqrt(dx * dx + dy * dy) <= SHIP_VIEW_RANGE
 
 /**
- * Every contact the helm draws — the live view ring, permanent fixtures,
- * vessel tracking and charted waypoints — as one list, rebuilt at most once a
+ * Every contact the helm draws, the live view ring, permanent fixtures,
+ * vessel tracking and charted waypoints, as one list, rebuilt at most once a
  * second and shared by all consoles on the ship.
  *
  * Entries carry coordinates only. Distance and bearing are derived per-read in
@@ -463,7 +463,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 
 	// The view ring: everything actually out there within sight, charted or not,
 	// research or none. This is what stops the chart reading empty while the crew
-	// is flying through a nebula bank — you see what is next to the hull.
+	// is flying through a nebula bank. You see what is next to the hull.
 	var/turf/our_turf = get_turf(src)
 	var/list/own_position = get_relative_overmap_coords()
 	var/sensor_range = get_sensor_range()
@@ -502,11 +502,11 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 				// No ref: sight owns this entry, so there is nothing to clear.
 				"ref" = null,
 				// The object itself, for the chart's context menu. Acting on it is
-				// gated server-side on sharing our tile — see act_overmap in _helm.dm.
+				// gated server-side on sharing our tile, see act_overmap in _helm.dm.
 				"target" = REF(nearby),
 			))
 
-	// Trader outposts are permanent fixtures — always listed on every ship, with
+	// Trader outposts are permanent fixtures, always listed on every ship, with
 	// no per-ship state and no clear button.
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(live_refs[REF(outpost)])
@@ -543,8 +543,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 		))
 
 	// Vessels. Two axes, and the radar tree moves both:
-	//   reach    — the view ring for free, the full sensor ring at the top tier.
-	//   identity — an anonymous blip until an active scan names it, or always at
+	//   reach, the view ring for free, the full sensor ring at the top tier.
+	//   identity, an anonymous blip until an active scan names it, or always at
 	//              the top tier, which is what "tracking" buys over "seeing".
 	// Nebula-hidden ships stay concealed from either.
 	var/tracking = can_scan_ships()
@@ -662,7 +662,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  *
  * This set only changes when the ship discovers something new, so it rides
  * `ui_static_data` and is pushed on discovery rather than re-sent with every
- * frame. That matters because it is by far the largest thing the helm sends —
+ * frame. That matters because it is by far the largest thing the helm sends,
  * up to a couple of hundred entries once a ship has explored, against a live set
  * that is usually a handful.
  *
@@ -671,7 +671,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  * making an otherwise static table look dynamic. The helm computes them
  * client-side from coordinates it already has.
  *
- * Nothing here is de-duplicated against the live set — static data cannot know
+ * Nothing here is de-duplicated against the live set, static data cannot know
  * what is in sight this second. The client drops any charted entry whose `target`
  * is already on the live list.
  */
@@ -684,7 +684,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 		var/datum/weakref/remembered = discovered_contacts[contact_ref]
 		var/obj/structure/overmap/object = remembered?.resolve()
 		if(!object)
-			// Gone for good — a ruin consumed, an event cleaned up.
+			// Gone for good: a ruin consumed, an event cleaned up.
 			LAZYADD(forgotten, contact_ref)
 			continue
 		var/list/remembered_coords = object.get_relative_overmap_coords()
@@ -709,7 +709,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  * discoveries into one push.
  *
  * Deferred rather than immediate because discovery happens inside
- * get_contact_snapshot(), which itself runs from ui_data() — refreshing static
+ * get_contact_snapshot(), which itself runs from ui_data(), refreshing static
  * data from there would re-enter the UI update that is currently running.
  */
 /obj/structure/overmap/ship/proc/queue_charted_push()

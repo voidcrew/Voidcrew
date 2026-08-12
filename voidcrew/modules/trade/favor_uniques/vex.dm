@@ -1,5 +1,5 @@
 /**
- * # Vex's favor uniques — the Undertow's back shelf
+ * # Vex's favor uniques: the Undertow's back shelf
  *
  * Two one-of-a-kind rewards Vex keeps under the counter for crews who have
  * earned real standing (the favor shelf: SHELF_FAVOR and
@@ -8,25 +8,25 @@
  * SKUs live with the catalog files; this file is items only.
  *
  * Both prizes carry TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so the
- * Helios pattern stamp — and any future duplicator — can never copy them.
+ * Helios pattern stamp (and any future duplicator) can never copy them.
  * Favor uniques stay unique.
  */
 
 /// How long Vex's insurance telegraphs its recall before pulling the body home
 #define VEX_INSURANCE_RECALL_DELAY (10 SECONDS) // PROVISIONAL BALANCE
-/// Oxygen damage cleared the moment the policy triggers — crit deaths are mostly oxygen deaths
+/// Oxygen damage cleared the moment the policy triggers. Crit deaths are mostly oxygen deaths
 #define VEX_INSURANCE_OXY_HEAL 40 // PROVISIONAL BALANCE
 /// Toxin damage cleared on trigger
 #define VEX_INSURANCE_TOX_HEAL 10 // PROVISIONAL BALANCE
-/// Brute damage healed on trigger — takes the edge off, nowhere near a full patch
+/// Brute damage healed on trigger: takes the edge off, nowhere near a full patch
 #define VEX_INSURANCE_BRUTE_HEAL 15 // PROVISIONAL BALANCE
 /// Burn damage healed on trigger
 #define VEX_INSURANCE_BURN_HEAL 15 // PROVISIONAL BALANCE
-/// Units of epinephrine released on trigger — the exact payload of a stock epinephrine medipen
+/// Units of epinephrine released on trigger, the exact payload of a stock epinephrine medipen
 #define VEX_INSURANCE_EPINEPHRINE 10
 
 // =============================================================================
-// Vex's insurance — one-shot crit rescue implant
+// Vex's insurance: one-shot crit rescue implant
 // =============================================================================
 
 /**
@@ -36,13 +36,13 @@
  * (sent by /mob/proc/set_stat, code/modules/mob/mob.dm) and fires exactly once,
  * the first time the wearer drops into SOFT_CRIT or HARD_CRIT. UNCONSCIOUS is
  * deliberately not a trigger (that's every nap and every sleeper), and neither
- * is going straight to DEAD — a corpse gets no payout, only a customer does.
+ * is going straight to DEAD. A corpse gets no payout, only a customer does.
  *
  * On trigger it stabilizes on the spot (flat heals scaled against what an
  * epinephrine medipen accomplishes over its whole runtime, plus the medipen's
  * own 10u epinephrine payload for the ongoing crit regulation), announces
- * itself, and starts a telegraphed recall. Ten seconds later the body — alive
- * or not by then; retrieval is the product — is do_teleport()ed to the crew's
+ * itself, and starts a telegraphed recall. Ten seconds later the body, alive
+ * or not by then; retrieval is the product. Is do_teleport()ed to the crew's
  * ship, cryopod-side if the hull has pods, any open deck tile otherwise.
  *
  * No registered crew ship at trigger time = stabilization only, with an
@@ -53,7 +53,7 @@
 	desc = "A one-shot vitals monitor wired to a bluespace recall beacon, sold with a straight face and a payment plan. If the wearer's body starts shutting down, it floods them with stabilizer and pulls them back to their registered ship. It pays out exactly once."
 	icon_state = "reagents"
 	implant_color = "b"
-	actions_types = null // entirely passive — no activate button
+	actions_types = null // entirely passive, no activate button
 	uses = 1
 	/// One-shot guard: TRUE once the policy has paid out. Stat can keep changing
 	/// under us (SOFT_CRIT to HARD_CRIT and back), so this must latch immediately.
@@ -119,7 +119,7 @@
  * The immediate payout: enough to stop the wearer dying where they fell, not
  * enough to put them back in the fight. Scaled against the epinephrine
  * medipen (code/modules/reagents/reagent_containers/hypospray.dm), whose 10u
- * payload only drip-heals in crit — this front-loads the oxygen recovery the
+ * payload only drip-heals in crit. This front-loads the oxygen recovery the
  * pen would take minutes to manage, then hands over the same 10u for the
  * ongoing regulation.
  */
@@ -132,7 +132,7 @@
 
 /**
  * The delayed half of the claim: haul the body home. Runs off a timer, so
- * everything gets re-checked — the implant may have been cut out, the ship
+ * everything gets re-checked. The implant may have been cut out, the ship
  * may have been lost. Fires whether or not the wearer survived the wait;
  * bringing the body back to the crew is half the point of the policy.
  */
@@ -183,7 +183,7 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 // =============================================================================
-// The Quiet Word — integrally suppressed 10mm sidearm
+// The Quiet Word: integrally suppressed 10mm sidearm
 // =============================================================================
 
 /**
@@ -193,13 +193,13 @@
  * following the exact pattern of the Ansem/SC Fisher
  * (code/modules/projectiles/guns/ballistic/pistol.dm): suppressed = TRUE with
  * can_suppress and can_unsuppress both FALSE, which the base ballistic code
- * reads as "the suppressor is part of the gun" — no overlay, no alt-click
+ * reads as "the suppressor is part of the gun", no overlay, no alt-click
  * removal, and examine reports it as integral. No underbarrel gadget; this is
  * just the gun.
  *
  * Damage ladder (all existing rounds, nothing invented): the 9mm Makarov's
  * bullet is 30, 10mm is 40, a .357 is 60. Chambering it in stock 10mm lands it
- * exactly in the commissioned slot — better than a suppressed 9mm, nowhere
+ * exactly in the commissioned slot, better than a suppressed 9mm, nowhere
  * near a revolver. Carried weight matches a Makarov with a suppressor screwed
  * on (install_suppressor() bumps the class for the same reason): it does not
  * fit in a pocket.
@@ -211,7 +211,7 @@
 	// lives in the voidcrew dmi under the quiet_word name
 	icon = 'voidcrew/icons/obj/favor_uniques.dmi'
 	icon_state = "quiet_word"
-	w_class = WEIGHT_CLASS_NORMAL // PROVISIONAL BALANCE — carries like a suppressed pistol, no pocket concealment
+	w_class = WEIGHT_CLASS_NORMAL // PROVISIONAL BALANCE, carries like a suppressed pistol, no pocket concealment
 	suppressed = TRUE
 	can_suppress = FALSE
 	can_unsuppress = FALSE
@@ -229,8 +229,8 @@
  */
 /obj/item/ammo_box/magazine/m10mm/quiet_word
 	name = "Quiet Word magazine (10mm)"
-	desc = "A slim double-stack 10mm magazine cut for the Quiet Word. Standard caliber — it feeds any 10mm pistol, and the Quiet Word isn't fussy about whose magazines it eats."
-	max_ammo = 10 // PROVISIONAL BALANCE — Ansem carries 8, stechkin APS 15
+	desc = "A slim double-stack 10mm magazine cut for the Quiet Word. Standard caliber. It feeds any 10mm pistol, and the Quiet Word isn't fussy about whose magazines it eats."
+	max_ammo = 10 // PROVISIONAL BALANCE, Ansem carries 8, stechkin APS 15
 
 /obj/item/ammo_box/magazine/m10mm/quiet_word/Initialize(mapload)
 	. = ..()

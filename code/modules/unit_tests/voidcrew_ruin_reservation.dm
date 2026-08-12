@@ -6,7 +6,7 @@
  * ceiling: only the band inset by SHUTTLE_TRANSIT_BORDER is ever reservable, and
  * the cordon ring costs another turf at each end.
  *
- * A template over that ceiling is not merely rare — it is *unboardable forever*.
+ * A template over that ceiling is not merely rare. It is *unboardable forever*.
  * Worse, it fails in the most expensive way available: request_turf_block_reservation()
  * reads "no room" as "this z-level is full", allocates a brand new 255x255
  * reservation z-level, fails on that too, and returns null while keeping the level.
@@ -35,7 +35,7 @@
 		var/datum/map_template/ruin/space/ruin = SSmapping.space_ruins_templates[template_name]
 		if(!istype(ruin))
 			continue
-		// unpickable templates never reach the overmap on their own — they are
+		// unpickable templates never reach the overmap on their own, they are
 		// surfaced deliberately by a chart, mission or admin, and oversized ones are
 		// parked here on purpose (see /datum/map_template/ruin/space/oldstation)
 		if(ruin.unpickable)
@@ -52,7 +52,7 @@
 		// fully parsed copy of every space ruin map in memory for the rest of the run.
 		ruin.preload_size(map_path, FALSE)
 		if(!ruin.width || !ruin.height)
-			TEST_FAIL("Space ruin template '[template_name]' ([map_path]) reports no dimensions — preload_size() could not read it")
+			TEST_FAIL("Space ruin template '[template_name]' ([map_path]) reports no dimensions, preload_size() could not read it")
 			continue
 
 		checked++
@@ -66,4 +66,4 @@
 				Shrink the map, or set unpickable = TRUE to keep it out of the spawn pools.")
 
 	if(!checked)
-		TEST_FAIL("No space ruin templates were checked — SSmapping.space_ruins_templates is empty, so this test is not guarding anything")
+		TEST_FAIL("No space ruin templates were checked. SSmapping.space_ruins_templates is empty, so this test is not guarding anything")

@@ -32,7 +32,7 @@
 
 /// How many attempts a crew gets at each station before its score locks in
 #define DRUG_STATION_ATTEMPTS 3
-/// Score ceiling per attempt number — retries cap lower, so first tries matter
+/// Score ceiling per attempt number: retries cap lower, so first tries matter
 #define DRUG_ATTEMPT_MAX_SCORES list(100, 75, 50)
 
 // Customs patrol tuning
@@ -47,7 +47,7 @@
 /// Debug: when defined, the patrol always spawns regardless of DRUG_COP_CHANCE
 //#define DRUG_COP_FORCE_ROLL
 
-// Lab hazard tuning — botched attempts have consequences
+// Lab hazard tuning: botched attempts have consequences
 /// An attempt scoring below this counts as a botch and rolls for a hazard
 #define DRUG_HAZARD_BOTCH_SCORE 40
 /// Percent chance a botched attempt vents toxic fumes over the machine
@@ -56,6 +56,6 @@
 #define DRUG_HAZARD_FIRE_CHANCE 15
 /// Reagent volume of the fume cloud released on a fume hazard
 #define DRUG_HAZARD_FUME_VOLUME 30
-/// Shock damage the catalyst's electrical hazard deals its operator — a
+/// Shock damage the catalyst's electrical hazard deals its operator, a
 /// nasty jolt plus the standard stun, never anything close to lethal
 #define DRUG_HAZARD_SHOCK_DAMAGE 15

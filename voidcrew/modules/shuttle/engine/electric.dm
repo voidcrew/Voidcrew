@@ -41,7 +41,7 @@
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel()
 	// Burns draw live wattage off the wire (see burn_engine), not stored charge. A
 	// full SMES with its output disabled would otherwise read 100% on the helm while
-	// the engine produces nothing — report a dead wire as an empty tank instead.
+	// the engine produces nothing, report a dead wire as an empty tank instead.
 	if(!avail() && !newavail())
 		return 0
 	if(length(powernet?.nodes) >= 1)

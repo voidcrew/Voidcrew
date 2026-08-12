@@ -1,12 +1,12 @@
 // =========================================================================
-// RESEARCH THEME — the Eventide Exotics Annex config (rare_biolab ruin) and
+// RESEARCH THEME: the Eventide Exotics Annex config (rare_biolab ruin) and
 // every lab/anomaly ruin. Xenoscience: common = lab consumables / minor
 // science gear, uncommon = solid research and engineering prizes, prime =
 // bluespace and exotic tech. Guarded by loose specimens (the bug markers).
 // Cyberware: the two pieces that read as instrumentation rather than
-// augmentation — a bone-conducted sonar transceiver, and the skull jack that
+// augmentation, a bone-conducted sonar transceiver, and the skull jack that
 // patches a helm console straight into a head.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 

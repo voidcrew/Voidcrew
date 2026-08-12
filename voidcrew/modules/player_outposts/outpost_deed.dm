@@ -50,7 +50,7 @@
 	catalog.ui_interact(user)
 
 /**
- * Why the holder can't found an outpost right now — null when everything checks out.
+ * Why the holder can't found an outpost right now. Null when everything checks out.
  * Re-run at confirm time; UI state can go stale.
  */
 /obj/item/outpost_deed/proc/get_founding_denial(mob/user)
@@ -150,7 +150,7 @@
 
 	. = TRUE
 
-	// Everything can have changed while the catalog was open — re-validate all of it
+	// Everything can have changed while the catalog was open, re-validate all of it
 	var/denial = deed?.get_founding_denial(usr)
 	if(denial)
 		to_chat(usr, span_warning(denial))
@@ -183,7 +183,7 @@
  * # Outpost Deed SKU
  *
  * Sold over the counter at trader outposts. Charges the full price on every
- * purchase — the deed carries no cross-round persistence. A player who has
+ * purchase, the deed carries no cross-round persistence. A player who has
  * already founded an outpost this round can't buy another. Deeds dispense
  * name-bound to the buyer.
  */

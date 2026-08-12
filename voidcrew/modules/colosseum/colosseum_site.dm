@@ -1,5 +1,5 @@
 /**
- * # The Grand Colosseum — overmap site
+ * # The Grand Colosseum: overmap site
  *
  * A monumental PvP event venue surfaced mid-round by the Grand Colosseum
  * dynamic event (colosseum_event.dm), never at roundstart. One per round.
@@ -7,18 +7,18 @@
  * Mirrors the trader-outpost pattern for docking: ships dock into per-ship
  * hangar berths (voidcrew/modules/trade/outpost_hangar.dm) and ride the alcove
  * elevator up to the concourse. The building itself is indestructible by
- * construction — every structural turf in the template is
+ * construction, every structural turf in the template is
  * /turf/closed/indestructible or /turf/open/indestructible, and the only ways
  * onto the fighting floor are the ten id-tagged poddoors this site collects at
  * load.
  *
  * The venue is two levels: the arena floor (dmm z1) and an upstairs
- * observation gallery (dmm z2) — an openspace ring behind an indestructible
+ * observation gallery (dmm z2), an openspace ring behind an indestructible
  * glass parapet, reached by the staircases in the lobby pockets. The file
  * follows the standard tg multi-z convention (z1 = bottom), so editors pair
  * the floors correctly. Unlike trader outposts the interior loads onto REAL
  * stacked z-levels minted at open (linked with ZTRAIT_UP/ZTRAIT_DOWN, so the
- * engine's native multiz rendering and plane offsets apply — no
+ * engine's native multiz rendering and plane offsets apply, no
  * reservation-faked verticality). Every landmark coordinate (and the dry-run
  * harness's) is expressed on the arena-floor slice.
  *
@@ -28,7 +28,7 @@
  */
 
 /// The one colosseum this round, or null. Guards against double-spawns
-/// (event + admin verb) — UNIQUE_AREA interiors cannot coexist anyway.
+/// (event + admin verb), UNIQUE_AREA interiors cannot coexist anyway.
 GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 
 /datum/map_template/colosseum
@@ -173,7 +173,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /obj/structure/overmap/colosseum/Initialize(mapload)
 	. = ..()
 	if(GLOB.colosseum_site && GLOB.colosseum_site != src)
-		stack_trace("Second colosseum spawned while one already exists — deleting the newcomer.")
+		stack_trace("Second colosseum spawned while one already exists, deleting the newcomer.")
 		return INITIALIZE_HINT_QDEL
 	GLOB.colosseum_site = src
 	berths = new /list(OUTPOST_MAX_BERTHS)
@@ -208,7 +208,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	area_turfs.Cut()
 	landmark_turfs.Cut()
 	template_bottom_left = null
-	// The interior z-levels themselves persist — z-levels can't be deleted.
+	// The interior z-levels themselves persist: z-levels can't be deleted.
 	// Admin-deleting the site just leaves them as sealed, unreachable space.
 	interior_levels = null
 	return ..()
@@ -222,7 +222,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /**
  * Galaxy-wide broadcast: a Wideband transmission (in-fiction, reaches every
  * headset) plus a priority announcement (guaranteed delivery to players without
- * radios). Wideband is unscoped, so the site's z-level doesn't matter — see
+ * radios). Wideband is unscoped, so the site's z-level doesn't matter, see
  * voidcrew/modules/comms/comms.dm.
  */
 /obj/structure/overmap/colosseum/proc/broadcast_galaxy(message, title = "Grand Colosseum")
@@ -263,7 +263,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /**
  * Loads the colosseum interior onto freshly minted REAL z-levels, one per map
  * slice, linked into a stack with ZTRAIT_UP/ZTRAIT_DOWN. Load once, keep for
- * the round — z-levels cannot be unminted, which the permanent venue never
+ * the round, z-levels cannot be unminted, which the permanent venue never
  * needed anyway.
  */
 /obj/structure/overmap/colosseum/proc/load_level()
@@ -293,7 +293,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			level_traits[ZTRAIT_UP] = TRUE
 		var/datum/space_level/level = SSmapping.add_new_zlevel("Grand Colosseum ([stack_index] of [template.z_count])", level_traits)
 		if(length(interior_levels) && level.z_value != interior_levels[length(interior_levels)].z_value + 1)
-			log_mapping("COLOSSEUM: interior z-levels came out non-consecutive ([interior_levels[length(interior_levels)].z_value] then [level.z_value]) — multiz linkage would be wrong, aborting load.")
+			log_mapping("COLOSSEUM: interior z-levels came out non-consecutive ([interior_levels[length(interior_levels)].z_value] then [level.z_value]). Multiz linkage would be wrong, aborting load.")
 			loading = FALSE
 			return
 		interior_levels += level
@@ -339,8 +339,8 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /**
  * Scans the freshly loaded footprint and indexes everything match logic needs:
  * elevator alcove/panels (berth-host wiring), the ten gate poddoors by id,
- * per-area turf lists and all colosseum landmarks. Idempotent by construction —
- * it only ever runs once per load, but collections are rebuilt from scratch.
+ * per-area turf lists and all colosseum landmarks. Idempotent by construction.
+ * It only ever runs once per load, but collections are rebuilt from scratch.
  */
 /obj/structure/overmap/colosseum/proc/link_interior()
 	if(!template_bottom_left || !length(interior_levels))
@@ -348,7 +348,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	gate_doors = list()
 	area_turfs = list()
 	landmark_turfs = list()
-	// Every level of the z-stack — a multi-z venue can mount boards
+	// Every level of the z-stack: a multi-z venue can mount boards
 	// (or, one day, gates/landmarks) on its upper decks too.
 	var/list/interior_turfs = list()
 	for(var/datum/space_level/level as anything in interior_levels)
@@ -360,7 +360,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		var/area/turf_area = interior_turf.loc
 		if(istype(turf_area, /area/voidcrew/colosseum))
 			LAZYADDASSOCLIST(area_turfs, turf_area.type, interior_turf)
-		// block() iterates y-major then x — same order the hangar-side alcove
+		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
 			lobby_alcove_turfs += interior_turf
@@ -369,7 +369,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			LAZYADDASSOCLIST(landmark_turfs, colo_mark.type, interior_turf)
 			qdel(colo_mark)
 		// The gear stall's shopkeeper is self-sufficient (owns its own shop
-		// datum) — indexing it here only wires the post-match restock hook
+		// datum), indexing it here only wires the post-match restock hook
 		for(var/mob/living/basic/outpost_trader/colosseum/merchant in interior_turf)
 			armory_trader = merchant
 		for(var/obj/machinery/machine in interior_turf)
@@ -398,33 +398,33 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 				var/obj/machinery/status_display/colosseum/board = machine
 				board.site = src
 				status_displays += board
-	// The venue must function even if a map edit loses the service machinery —
-	// fall back to spawning it on any clear concourse tile.
+	// The venue must function even if a map edit loses the service machinery.
+	// Fall back to spawning it on any clear concourse tile.
 	if(!signup_console)
 		var/turf/console_turf = get_random_lobby_turf()
 		if(console_turf)
 			signup_console = new(console_turf)
 			signup_console.site = src
-			log_mapping("COLOSSEUM: template has no signup console — fallback-spawned one at ([console_turf.x], [console_turf.y]).")
+			log_mapping("COLOSSEUM: template has no signup console, fallback-spawned one at ([console_turf.x], [console_turf.y]).")
 	if(!spoils_vault)
 		var/turf/vault_turf = get_random_lobby_turf()
 		if(vault_turf)
 			spoils_vault = new(vault_turf)
 			spoils_vault.site = src
-			log_mapping("COLOSSEUM: template has no spoils vault — fallback-spawned one at ([vault_turf.x], [vault_turf.y]).")
+			log_mapping("COLOSSEUM: template has no spoils vault, fallback-spawned one at ([vault_turf.x], [vault_turf.y]).")
 	if(!bookmaker)
 		var/turf/book_turf = get_random_lobby_turf()
 		if(book_turf)
 			bookmaker = new(book_turf)
 			bookmaker.site = src
-			log_mapping("COLOSSEUM: template has no bookmaker console — fallback-spawned one at ([book_turf.x], [book_turf.y]).")
+			log_mapping("COLOSSEUM: template has no bookmaker console, fallback-spawned one at ([book_turf.x], [book_turf.y]).")
 	if(!armory_trader)
 		var/turf/stall_turf = get_random_lobby_turf()
 		if(stall_turf)
 			armory_trader = new(stall_turf)
-			log_mapping("COLOSSEUM: template has no gear stall lanista — fallback-spawned one at ([stall_turf.x], [stall_turf.y]).")
+			log_mapping("COLOSSEUM: template has no gear stall lanista, fallback-spawned one at ([stall_turf.x], [stall_turf.y]).")
 	if(!length(lobby_alcove_turfs))
-		log_mapping("COLOSSEUM: template has no elevator alcove landmarks — ships cannot reach the concourse.")
+		log_mapping("COLOSSEUM: template has no elevator alcove landmarks. Ships cannot reach the concourse.")
 	if(!length(lobby_panels))
 		log_mapping("COLOSSEUM: template has no concourse elevator panel.")
 	for(var/expected_id in list(COLOSSEUM_GATE_RED, COLOSSEUM_GATE_BLUE, COLOSSEUM_GATE_SOLO, COLOSSEUM_SEAL))
@@ -450,7 +450,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			return candidate
 	return null
 
-/// A random clear concourse tile — ejection destination and machinery fallback.
+/// A random clear concourse tile, ejection destination and machinery fallback.
 /obj/structure/overmap/colosseum/proc/get_random_lobby_turf()
 	return get_random_clear_turf(/area/voidcrew/colosseum/lobby) || (length(lobby_alcove_turfs) ? pick(lobby_alcove_turfs) : null)
 
@@ -573,14 +573,14 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 
 /**
  * Handles ship docking: allocates the ship its own hangar berth (see
- * outpost_hangar.dm) and docks it there. The interior is already loaded —
- * open_venue() ran at spawn — but load_level() is retried defensively.
+ * outpost_hangar.dm) and docks it there. The interior is already loaded,
+ * open_venue() ran at spawn, but load_level() is retried defensively.
  */
 /obj/structure/overmap/colosseum/get_dock_description()
 	return "[name] (arena berth)"
 
-/// The venue is carved into a bedrock shard and its areas are STANDARD_GRAVITY —
-/// a ship berthed here is held down by the rock, not by its own plating.
+/// The venue is carved into a bedrock shard and its areas are STANDARD_GRAVITY.
+/// A ship berthed here is held down by the rock, not by its own plating.
 /obj/structure/overmap/colosseum/has_ambient_gravity()
 	return TRUE
 

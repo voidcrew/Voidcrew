@@ -1,9 +1,9 @@
 /**
- * # Medical uniques — cold-chain pharmacy cache
+ * # Medical uniques: cold-chain pharmacy cache
  *
  * Rare-tier prizes for the medical loot cache (voidcrew/modules/loot/zone_loot.dm,
  * `loot_uniques` on /datum/loot_theme/medical). Not wired into any loot
- * table here — that's the coordinator's job once these are added to the .dme.
+ * table here, that's the coordinator's job once these are added to the .dme.
  *
  * Every item below carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so
  * duplicators (Helios pattern stamp, etc.) refuse to copy them.
@@ -22,11 +22,11 @@
 // =========================================================================
 
 /**
- * Night sister's watch — a fob watch that chimes once when someone on your
+ * Night sister's watch: a fob watch that chimes once when someone on your
  * deck (z-level) drops into hard crit, with a rough directional hint.
  *
  * Sprite donor: /obj/item/clothing/neck/stethoscope ("stethoscope" icon_state,
- * icons/obj/clothing/neck.dmi) — no fob-watch/pocket-watch sprite exists
+ * icons/obj/clothing/neck.dmi), no fob-watch/pocket-watch sprite exists
  * anywhere in this codebase (verified via dmi_list_states on neck.dmi and a
  * repo-wide search for "watch"/"clock" assets), so this is the closest worn
  * medical neck item available. Flagged as a sprite mismatch in the report.
@@ -96,12 +96,12 @@
 	known_crit = currently_critical
 
 /**
- * Triage pen — marks up to three patients at once. Marked patients have
+ * Triage pen: marks up to three patients at once. Marked patients have
  * their vitals streamed to the pen's current holder on a short interval, and
  * unmark automatically once they're stable again.
  *
  * Sprite: "triage_pen" in uniques.dmi. can_click is turned off because a grease
- * pencil has no clicker — that also stops /obj/item/pen's transforming component
+ * pencil has no clicker, that also stops /obj/item/pen's transforming component
  * from flipping icon_state to "triage_pen_retracted", a state that doesn't (and
  * shouldn't) exist. Inhand/ear-slot states stay on the stock pen sprites.
  *
@@ -118,7 +118,7 @@
 	can_click = FALSE
 	/// Weakrefs to the (up to three) patients this specific pen is tracking.
 	var/list/datum/weakref/marked_patients = list()
-	/// Hard cap on simultaneous marks — "triage means choosing."
+	/// Hard cap on simultaneous marks, "triage means choosing."
 	var/static/max_marked = 3
 
 /obj/item/pen/red/triage/Initialize(mapload)
@@ -219,17 +219,17 @@
 // =========================================================================
 
 /**
- * Meridian drip — a wheeled IV stand with an internal chemistry unit that
+ * Meridian drip: a wheeled IV stand with an internal chemistry unit that
  * synthesizes the right healer chem for the attached patient's worst damage
  * type, in small doses, straight from its own power (no beaker needed).
  *
  * Base: /obj/machinery/iv_drip (voidcrew doc suggested /obj/structure, but
- * the codebase's IV stand is /obj/machinery/iv_drip — deviated to match the
+ * the codebase's IV stand is /obj/machinery/iv_drip, deviated to match the
  * real base class rather than inventing a structure duplicate of it).
  *
  * Sprites: gold-and-brass custom art in uniques.dmi. The parent's
  * update_icon_state() builds "[base_icon_state]_injecting" / "_injectidle" (and
- * "_donating" / "_donateidle", which this drip can never reach — toggle_mode()
+ * "_donating" / "_donateidle", which this drip can never reach, toggle_mode()
  * bails out early on inject_only stands), so base_icon_state points at the two
  * "meridian_drip_*" states. The parent's update_overlays() only draws the
  * beaker and reagent-fill overlays when there's an external reagent_container,
@@ -237,7 +237,7 @@
  * chemistry unit and the drop are painted into the "_injecting" state itself.
  *
  * "Folds into a carry item": no fold/deploy convention exists elsewhere in
- * this codebase, so this adds a bespoke pair — a verb to fold the structure
+ * this codebase, so this adds a bespoke pair, a verb to fold the structure
  * into /obj/item/meridian_drip, and attack_self() on that item to unfold it
  * back into the structure.
  */
@@ -318,7 +318,7 @@
 	qdel(src)
 
 /// The carried, folded form of the Meridian drip.
-/// Inhand state is the stock "rods" bundle — it's the right shape for a folded
+/// Inhand state is the stock "rods" bundle. It's the right shape for a folded
 /// pole and uniques_lefthand.dmi has no rod sprite.
 /obj/item/meridian_drip
 	name = "folded Meridian drip"
@@ -342,11 +342,11 @@
 	qdel(src)
 
 /**
- * Hospice blanket — tuck in a downed patient and they stop deteriorating
+ * Hospice blanket: tuck in a downed patient and they stop deteriorating
  * (no bleeding out, no creeping organ failure) and mend slowly, until they
  * move or the blanket comes off.
  *
- * Base: /obj/item/bedsheet/medical — reuses its existing "cover a lying mob"
+ * Base: /obj/item/bedsheet/medical: reuses its existing "cover a lying mob"
  * interaction (coverup/on_pickup/smooth_sheets), including its built-in
  * "ends when the sleeper moves, or the sheet is picked up" cleanup hooks,
  * for free.
@@ -356,7 +356,7 @@
  * (worn on the neck slot, recoloured from the vanilla worn sheet so the body-zone
  * layout stays correct). The inhand stays the stock bedsheet inhand. undyeable is
  * set because /obj/item/proc/dye_item overwrites icon, icon_state, name and desc
- * wholesale from whatever plain bedsheet you dyed it to — a washing machine would
+ * wholesale from whatever plain bedsheet you dyed it to. A washing machine would
  * otherwise strip this thing back down to a white sheet.
  */
 /obj/item/bedsheet/medical/hospice
@@ -434,13 +434,13 @@
 // =========================================================================
 
 /**
- * The Meridian heart — holds one internal defib charge. Thirty seconds after
+ * The Meridian heart: holds one internal defib charge. Thirty seconds after
  * its owner dies, it fires on its own; recharges over 20 minutes of the owner
  * staying alive.
  *
  * Base: /obj/item/organ/heart/cybernetic (matches doc exactly). Revival
  * logic mirrors /obj/item/shockpaddles/proc/do_help's success branch
- * (code/game/objects/items/defib.dm) — same health-redistribution math and
+ * (code/game/objects/items/defib.dm), same health-redistribution math and
  * the same can_defib() gate, so DNR (TRAIT_SUICIDED), decapitation/no
  * brain, missing/failing heart, and blacklisting are all respected exactly
  * as they are for a normal defibrillator.
@@ -449,7 +449,7 @@
  * builds "[base_icon_state]-on" / "-off" off the beating flag, so both states
  * exist ("meridian_heart-on" is the 4-frame beat, "-off" is the stopped one).
  *
- * PLAYTEST FIX (2026-07-28) — "1 hour recharge is crazy. do 20 minutes."
+ * PLAYTEST FIX (2026-07-28), "1 hour recharge is crazy. do 20 minutes."
  * Recharge is now 20 minutes, and the item says so: the desc states the number,
  * examine prints the exact time left while it's charging, and the owner is told
  * the number when the charge is spent.
@@ -543,7 +543,7 @@
 	SEND_SIGNAL(patient, COMSIG_LIVING_MINOR_SHOCK)
 
 /**
- * Winterkiss ampoule — one dose drops the subject into hard stasis where
+ * Winterkiss ampoule: one dose drops the subject into hard stasis where
  * they stand: frozen, untouchable, unhurtable, for exactly five minutes.
  *
  * Nests under /obj/item/reagent_containers/cup/tube so it inherits full,
@@ -611,13 +611,13 @@
 	affected_mob.apply_status_effect(/datum/status_effect/grouped/stasis/winterkiss, REF(src))
 
 /**
- * PLAYTEST FIX (2026-07-28) — "when i click around and im stasis'd i can look
+ * PLAYTEST FIX (2026-07-28), "when i click around and im stasis'd i can look
  * around (aka move what direction im facing)."
  *
  * The parent stasis effect adds TRAIT_IMMOBILIZED and TRAIT_HANDS_BLOCKED, which
  * kill arrow-key movement and item use, but neither one touches facing: clicking
  * a tile runs face_atom() -> setDir(), which nothing was blocking. Same fix the
- * unobserved_actor component uses for its "can't turn while watched" case — hook
+ * unobserved_actor component uses for its "can't turn while watched" case, hook
  * COMSIG_ATOM_PRE_DIR_CHANGE and return COMPONENT_ATOM_BLOCK_DIR_CHANGE, which
  * /atom/proc/setDir checks before it does anything. Unregistered on removal, and
  * the registration lives on this datum, which is built fresh per application.
@@ -646,7 +646,7 @@
 	return ..()
 
 /**
- * Lazarus line — one-use bypass revival for the long-dead: no defib window,
+ * Lazarus line: one-use bypass revival for the long-dead: no defib window,
  * no husk complaints, no decay excuses. Still respects DNR (TRAIT_SUICIDED)
  * and decapitation (no brain to reach). The returned keep a permanent flatline
  * scar and take 10% more of everything, forever.

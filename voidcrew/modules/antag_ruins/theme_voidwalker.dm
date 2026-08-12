@@ -1,10 +1,10 @@
 /**
- * # The Aperture — voidwalker vestige
+ * # The Aperture: voidwalker vestige
  *
  * A hull section that is mostly windows, all of them facing nothing. The
  * voidwalker's body is the antag (space-native, unportable), so the patron is
- * what watches through the glass, the trials are introductions — to the dark,
- * to the glass, to the other side — and the boons are human-tuned pieces of
+ * what watches through the glass, the trials are introductions, to the dark,
+ * to the glass, to the other side, and the boons are human-tuned pieces of
  * what the voidwalker does through a pane: the dash, the void's tolerance,
  * the pull, the passing-through. Each port's doc comment records what
  * coupling it was checked for.
@@ -123,7 +123,7 @@
  * The theme's flagship image, made into homework: a face at the window, seen
  * from indoors, with nothing behind it. The card only works from the void's
  * side of a pane with a breathing room beyond, so every credit is that scene
- * happening to somebody's ship — and the knock lands at the START of the
+ * happening to somebody's ship, and the knock lands at the START of the
  * press, so anyone inside gets the whole channel to look up and meet it.
  * Progress is deduped by the AREA beyond the glass, not the pane: a row of
  * mess-hall windows is one introduction, the walk around the whole hull is
@@ -134,7 +134,7 @@
 	// Keep the count in sync with VESTIGE_CALLER_ROOMS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
 	desc = "Take the card. Step outside and press it against the windows of five different rooms that still have air in them. You have to be on the void side of the glass. Let whoever looks up get a good look at you."
-	/// Rooms already called upon (area weakref -> TRUE) — every introduction needs a new room
+	/// Rooms already called upon (area weakref -> TRUE). Every introduction needs a new room
 	var/list/rooms_called = list()
 	/// The loaned card, reclaimed (deleted) the moment the pact ends
 	var/obj/item/vestige_calling_card/card
@@ -201,7 +201,7 @@
 		balloon_alert(user, "already called this room!")
 		return ITEM_INTERACT_BLOCKING
 	// The tell fires before the press lands: the knock is the point
-	pane.visible_message(span_warning("Something knocks, once, and presses flat against [pane] — from the outside."))
+	pane.visible_message(span_warning("Something knocks, once, and presses flat against [pane], from the outside."))
 	playsound(pane, 'sound/effects/glass/glassknock.ogg', 75, TRUE)
 	if(!do_after(user, VESTIGE_CALLER_PRESS_TIME, target = pane))
 		return ITEM_INTERACT_BLOCKING
@@ -217,7 +217,7 @@
 	if(!trial.call_upon(room))
 		return ITEM_INTERACT_BLOCKING
 	// call_upon may have completed (and deleted) the trial, which reclaims this
-	// card — the same tail the proboscis rides; nothing past here touches either
+	// card, the same tail the proboscis rides; nothing past here touches either
 	pane.visible_message(span_danger("Frost blooms across [pane] in the shape of a spread hand."))
 	playsound(pane, 'sound/effects/magic/voidblink.ogg', 40, TRUE)
 	balloon_alert(user, "introduced")
@@ -234,7 +234,7 @@
  * The turf beyond the pane from where the caller floats, or null when the
  * geometry refuses. Windows are border objects: a fulltile pane seals its
  * whole tile (the room starts one step past it), a directional pane seals one
- * edge (its own tile IS the room, and it must actually face the caller — a
+ * edge (its own tile IS the room, and it must actually face the caller, a
  * pane sealing some other edge has no glass between the two of you).
  */
 /obj/item/vestige_calling_card/proc/resolve_far_side(mob/living/user, obj/structure/window/pane)
@@ -262,7 +262,7 @@
  * readout). Mechanics checked against source: a throw converts to newtonian
  * drift when SSthrowing finalizes it, every drift step is a real Move (so
  * Moved counts turfs), and a flight that ends by HITTING something never
- * resumes drifting — the THROW_LANDED signal catches that case. Stopping a
+ * resumes drifting, the THROW_LANDED signal catches that case. Stopping a
  * qualified flight is done by qdel-ing the drift_handler, which is the
  * handler's own supported teardown (its handle_move qdels itself mid-Moved
  * routinely). Deleting the keepsake mid-equip on completion is likewise safe:
@@ -313,7 +313,7 @@
 	color = "#9b7fc4"
 	w_class = WEIGHT_CLASS_SMALL
 	throwforce = 0
-	/// Mind of whoever last let go of it — that soul's flights are the ones that count
+	/// Mind of whoever last let go of it, that soul's flights are the ones that count
 	var/datum/mind/bound_mind
 	/// Space turfs crossed by the current unbroken flight
 	var/flight_tiles = 0
@@ -322,8 +322,8 @@
 
 /obj/item/vestige_keepsake/Initialize(mapload)
 	. = ..()
-	// Catches the flight that ends by hitting something at full distance —
-	// drift never resumes there, so Moved alone would miss the settle
+	// Catches the flight that ends by hitting something at full distance.
+	// Drift never resumes there, so Moved alone would miss the settle
 	RegisterSignal(src, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(on_flight_landed))
 
 /obj/item/vestige_keepsake/Destroy()
@@ -344,7 +344,7 @@
 	if(!settled && user?.mind)
 		bound_mind = user.mind
 
-/// The bound soul's little-moon trial, if it still runs — resolved fresh every time, never stored (renounce-safe)
+/// The bound soul's little-moon trial, if it still runs, resolved fresh every time, never stored (renounce-safe)
 /obj/item/vestige_keepsake/proc/get_bound_trial()
 	var/datum/vestige_trial/little_moon/trial = bound_mind?.active_vestige_trial
 	if(istype(trial))
@@ -363,7 +363,7 @@
 	if(!isturf(old_loc))
 		flight_tiles = 0
 		return
-	// Only unaccompanied flight over open space counts — a floor grounds it, a leash disqualifies it
+	// Only unaccompanied flight over open space counts, a floor grounds it, a leash disqualifies it
 	if(!isspaceturf(loc) || pulledby)
 		flight_tiles = 0
 		return
@@ -376,7 +376,7 @@
 		return
 	settle()
 
-/// A throw that ends by hitting something never resumes drifting — settle here if the flight already qualifies
+/// A throw that ends by hitting something never resumes drifting, settle here if the flight already qualifies
 /obj/item/vestige_keepsake/proc/on_flight_landed(datum/source, datum/thrownthing/flight)
 	SIGNAL_HANDLER
 	if(settled || flight_tiles < VESTIGE_MOON_DRIFT_NEEDED)
@@ -387,7 +387,7 @@
 
 /**
  * The flight is complete: kill whatever momentum is left and turn the
- * keepsake into a little moon — anchored by nothing, lit well enough to be
+ * keepsake into a little moon. Anchored by nothing, lit well enough to be
  * found again from a long way off.
  */
 /obj/item/vestige_keepsake/proc/settle()
@@ -404,7 +404,7 @@
 		playsound(thrower, 'sound/effects/magic/voidblink.ogg', 30, TRUE)
 
 // Retrieval is the completion: the settled keepsake returning to the thrower's
-// own possession fulfills the pact, wherever that reunion happens — geography
+// own possession fulfills the pact, wherever that reunion happens, geography
 // already puts it twenty-plus tiles of nothing away from where it was let go
 /obj/item/vestige_keepsake/equipped(mob/user, slot, initial = FALSE)
 	. = ..()
@@ -416,7 +416,7 @@
 	if(!istype(trial))
 		return
 	to_chat(user, span_notice("The keepsake goes warm for a second, then vanishes out of your hand. Delivered."))
-	trial.complete() // deletes the trial, which reclaims the keepsake — touch neither afterward
+	trial.complete() // deletes the trial, which reclaims the keepsake, touch neither afterward
 
 // ===== BOONS =====
 
@@ -462,8 +462,8 @@
 
 // Human-tuned subtype of the generic charge action (the component only ever
 // touches owner, so a mind-targeted grant to a plain human is safe).
-// Note the icon: "void_dash" lives in actions_items.dmi — the file the charge
-// base inherits and the voidwalker's own charge draws from — NOT in
+// Note the icon: "void_dash" lives in actions_items.dmi, the file the charge
+// base inherits and the voidwalker's own charge draws from, NOT in
 // actions_voidwalker.dmi, which only holds the telepathy button.
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash
 	name = "Cosmic Dash"
@@ -481,9 +481,9 @@
 
 /**
  * The upgrade: aims one turf past the target and floors whoever it connects
- * with. The knockdown is what makes the pass-through real — the charge's move
+ * with. The knockdown is what makes the pass-through real. The charge's move
  * loop keeps walking after a bump, and a floored mob no longer blocks the
- * tile — so the twist is mechanical, not just numbers. Same damage as the
+ * tile, so the twist is mechanical, not just numbers. Same damage as the
  * base dash on purpose.
  */
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash/unbroken
@@ -566,7 +566,7 @@
 
 /**
  * A void pull built locally: the heretic's void_pull drags victims with raw
- * forceMove (which ignores walls), so this uses a throw instead — the body
+ * forceMove (which ignores walls), so this uses a throw instead, the body
  * stops at whatever it hits, and a windowpane between you is exactly where a
  * victim ends up. Telegraphed: the victim gets a visual, a sound and a chat
  * warning one and a quarter seconds before the yank, and breaking line of
@@ -588,7 +588,7 @@
 	cast_range = 7
 	active_msg = "You fix your attention on something in the distance..."
 	deactive_msg = "You let it go."
-	/// Delay between the telegraph and the yank — the victim's window to break line of sight
+	/// Delay between the telegraph and the yank, the victim's window to break line of sight
 	var/windup = 1.25 SECONDS
 	/// How many tiles the victim is dragged toward the caster
 	var/pull_range = 3
@@ -611,7 +611,7 @@
 		to_chat(victim, span_userdanger("The air between you and [owner] pulls thin, like a pane about to give!"))
 	addtimer(CALLBACK(src, PROC_REF(yank), victim), windup)
 
-/// The delayed yank. Every out it checks is deliberate counterplay — don't quietly relax them.
+/// The delayed yank. Every out it checks is deliberate counterplay. Don't quietly relax them.
 /datum/action/cooldown/spell/pointed/vestige_beckon/proc/yank(mob/living/victim)
 	if(QDELETED(victim) || QDELETED(owner) || !isliving(owner) || owner.stat == DEAD)
 		return
@@ -640,7 +640,7 @@
 /**
  * The voidwalker's glass-passing, recut as a spell. Upstream this is the
  * glass_passer component (which the stable voided trauma already puts on
- * plain humans — verified human-safe), but a component is body-bound and
+ * plain humans, verified human-safe), but a component is body-bound and
  * always-on; a spell rides the mind like every other boon and takes a
  * cooldown. Mechanics checked against source: PASSWINDOW is in the
  * pass_flags_self of BOTH windows and grilles, so one flag crosses the whole

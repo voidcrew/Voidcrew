@@ -67,7 +67,7 @@
 	return candidates
 
 /datum/round_event/voidcrew/heart_attack
-	// No announcement anywhere in this chain, so a faked one is silent — it would
+	// No announcement anywhere in this chain, so a faked one is silent, it would
 	// spend a False Alarm occurrence and produce nothing.
 	fakeable = FALSE
 	/// A list of prime candidates for heart attacking, assoc victim = weight.
@@ -118,7 +118,7 @@
 /datum/round_event_control/voidcrew/brain_trauma
 	name = "Spontaneous Brain Trauma"
 	typepath = /datum/round_event/voidcrew/brain_trauma
-	// Admin-only. Fires silently and the trauma outlives the event — the victim is stuck
+	// Admin-only. Fires silently and the trauma outlives the event. The victim is stuck
 	// with it until someone finds mannitol or cuts their skull open. Nothing about that is
 	// a thing the crew can play against, so it does not belong in the ambient roster.
 	weight = 0
@@ -178,7 +178,7 @@
 /**
  * Fake Virus
  *
- * Harmless hypochondria — any zone, any crew count. The original's min() clamps
+ * Harmless hypochondria: any zone, any crew count. The original's min() clamps
  * already scale the victim counts to however many candidates the ship has.
  */
 /datum/round_event_control/voidcrew/fake_virus
@@ -231,7 +231,7 @@
 /**
  * Mass Hallucination
  *
- * Harmless — any zone, any crew count. Everyone aboard the target ship (and
+ * Harmless: any zone, any crew count. Everyone aboard the target ship (and
  * only them) hallucinates the same thing; the original's centcom/station-z
  * checks are subsumed by the ship scoping. Dead mobs are skipped by
  * get_all_mobs_aboard(); clientless carbons aboard still hallucinate, matching

@@ -1,15 +1,15 @@
 /**
  * # Colosseum headless dry-run harness
  *
- * Compiled ONLY when COLOSSEUM_DRYRUN is defined (never in normal builds —
- * the define is injected into a scratch .dme copy). Drives the same
+ * Compiled ONLY when COLOSSEUM_DRYRUN is defined (never in normal builds.
+ * The define is injected into a scratch .dme copy). Drives the same
  * controller procs the admin verbs call, through two full match cycles, with
  * clientless dummy contestants, and logs a PASS/FAIL transcript to game.log
  * under the "COLOSSEUM DRYRUN" prefix.
  *
- * Cycle 1: 4 contestants, natural mode pick — signup → seat → live → kill 3
+ * Cycle 1: 4 contestants, natural mode pick. Signup → seat → live → kill 3
  *          → resolve → sweep/prizes → claim checks → reset → IDLE.
- * Cycle 2: 6 contestants, forced Tournament — round cuts, mid-match
+ * Cycle 2: 6 contestants, forced Tournament. Round cuts, mid-match
  *          sweep/reset/reseat, intermissions, final, doubled payout.
  */
 #ifdef COLOSSEUM_DRYRUN
@@ -21,11 +21,11 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 
 /datum/controller/subsystem/colosseum_dryrun/Initialize()
 	// The MC suspends a clientless world's tick after init (sleep_offline),
-	// which freezes every sleep/timer — the harness would die at its first
+	// which freezes every sleep/timer. The harness would die at its first
 	// sleep. Same opt-out the autowiki harness uses.
 	Master.sleep_offline_after_initializations = FALSE
 	// A playerless headless round "ends" instantly and reboots the world about
-	// 45 seconds after init — hold it open or the test dies mid-flight.
+	// 45 seconds after init. Hold it open or the test dies mid-flight.
 	SSticker.delay_end = TRUE
 	// NOT addtimer: timers scheduled from init-context never fire in this
 	// environment (verified empirically 2026-07-18). Engine sleeps do.
@@ -44,7 +44,7 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 /datum/controller/subsystem/colosseum_dryrun/proc/report(label, ok, detail = "")
 	if(!ok)
 		failures++
-	log_game("COLOSSEUM DRYRUN: [ok ? "PASS" : "FAIL"] — [label][detail ? " ([detail])" : ""]")
+	log_game("COLOSSEUM DRYRUN: [ok ? "PASS" : "FAIL"], [label][detail ? " ([detail])" : ""]")
 
 /datum/controller/subsystem/colosseum_dryrun/proc/make_dummy(turf/spot, name_suffix)
 	var/mob/living/carbon/human/consistent/dummy = new(spot)
@@ -119,7 +119,7 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 		var/turf/bridge = bridge_ground ? GET_TURF_ABOVE(bridge_ground) : null
 		report("gallery: west bridge glass deck", istype(bridge, /turf/open/indestructible/glass))
 		// Rail sits 2 tiles off the glass (y=31/32 are a buffer strip) so the
-		// parapet turf is never Chebyshev-adjacent to a transparent tile —
+		// parapet turf is never Chebyshev-adjacent to a transparent tile,
 		// see [[turf_z_transparency]]'s 3x3 spillover, which otherwise
 		// projects the arena floor onto any solid turf touching openspace/glass.
 		var/turf/bridge_edge_ground = site.local_turf(20, 30)
@@ -266,6 +266,6 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	sleep(16 SECONDS)
 	report("second reset -> IDLE", controller.state == COLOSSEUM_STATE_IDLE)
 
-	log_game("COLOSSEUM DRYRUN: COMPLETE — [failures] failure\s")
+	log_game("COLOSSEUM DRYRUN: COMPLETE: [failures] failure\s")
 
 #endif

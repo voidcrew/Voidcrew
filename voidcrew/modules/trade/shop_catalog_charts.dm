@@ -56,7 +56,7 @@
  * certainty ladder's cheapest rung, below star charts and above flying blind.
  *
  * The tip can land anywhere in the galaxy, so the mark names the zone band it
- * sits in — otherwise the buyer has no way to tell a short hop from a run into
+ * sits in, otherwise the buyer has no way to tell a short hop from a run into
  * the deep.
  */
 /datum/shop_sku/rumor
@@ -110,7 +110,7 @@
 		return
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
-		return "No crew registration — you need a ship to chart the tip onto."
+		return "No crew registration, you need a ship to chart the tip onto."
 
 /datum/shop_sku/rumor/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
@@ -121,7 +121,7 @@
 	var/datum/outpost_shop/shop = vendor?.shop
 	var/obj/structure/overmap/space_ruin/target = find_rumor_target(ship)
 	if(!target)
-		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))
+		to_chat(user, span_warning("The lanes are quiet, no fresh rumors this shift."))
 		return FALSE
 
 	// Validate the credit half before consuming any vouchers. User passed so

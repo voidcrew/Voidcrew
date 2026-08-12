@@ -5,7 +5,7 @@
  * Stray Cargo Pod is a ship-scoped treat event: a supply pod carrying a random
  * cargo crate punches into the target ship, announced in advance so the crew
  * can clear the impact zone. The pod is the stock TG supplypod, so it lands
- * with its usual light explosion — free loot with a dent.
+ * with its usual light explosion, free loot with a dent.
  *
  * Market Crash is a galaxy-scoped economy event: it inflates SSeconomy for a
  * while, raising vendor prices sector-wide, then lets them settle back. It has
@@ -92,14 +92,14 @@
 /datum/round_event/voidcrew/stray_cargo/proc/make_pod()
 	return new /obj/structure/closet/supplypod
 
-/// Nothing to clean up — the pod and crate belong to the crew now.
+/// Nothing to clean up, the pod and crate belong to the crew now.
 /datum/round_event/voidcrew/stray_cargo/end()
 	if(!target_valid())
 		return
 
 /**
  * The rare one: a syndicate pod carrying thirty telecrystals of uplink gear, picked the
- * same way surplus crates are. Kept to a single occurrence and pushed late — this is the
+ * same way surplus crates are. Kept to a single occurrence and pushed late, this is the
  * best thing a crew can be handed for free, and it should stay a story rather than a
  * supply line.
  */
@@ -165,7 +165,7 @@
 	priority_announce("Sector-wide vendor prices have now stabilized.", "Sector Accounting Division")
 
 /datum/round_event/voidcrew/market_crash/tick()
-	tick_counter++ // TG writes `tick_counter = tick_counter++`, a DM no-op that stalls the counter at 1 — fixed to match the evident intent
+	tick_counter++ // TG writes `tick_counter = tick_counter++`, a DM no-op that stalls the counter at 1, fixed to match the evident intent
 	SSeconomy.inflation_value = 5.5*(log(activeFor+1))
 	if(tick_counter == 5)
 		tick_counter = 1
