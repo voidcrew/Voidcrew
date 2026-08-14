@@ -129,8 +129,11 @@
  * other becomes a no-op via the type check below.
  *
  * The cure is entirely the parent's Destroy(): it unregisters the latejoin signal and
- * walks GLOB.player_list calling cure_curse_of_babel() on every carbon, dead or alive
- * and wherever they are standing. QDEL_NULL is what the admin undo verb does, for the
+ * walks GLOB.carbon_list calling cure_curse_of_babel() on every carbon, dead or alive
+ * and wherever they are standing. carbon_list and not player_list, because a dead player
+ * who ghosted leaves their cursed body clientless and off player_list; sweeping the
+ * client-holding mobs alone left revived players babbling with the cure long gone.
+ * QDEL_NULL is what the admin undo verb does, for the
  * same reason, the global slot has to be emptied as well as the datum destroyed, or
  * can_spawn_event() keeps refusing a future instance.
  *

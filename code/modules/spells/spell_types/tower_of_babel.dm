@@ -33,8 +33,10 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	. = ..()
 	UnregisterSignal(SSdcs, COMSIG_GLOB_CREWMEMBER_JOINED)
 
-	for(var/mob/living/carbon/target in GLOB.player_list)
-		// some players might be off the z-level or dead but we still need to cure them
+	// carbon_list, not player_list: player_list only holds mobs with a client attached, and a
+	// dead player who ghosted leaves their cursed body clientless. Miss the body here and they
+	// revive still babbling, with the cure already destroyed.
+	for(var/mob/living/carbon/target in GLOB.carbon_list)
 		cure_curse_of_babel(target)
 
 /datum/tower_of_babel/proc/handle_new_player(datum/source, mob/living/new_crewmember, rank)

@@ -23,6 +23,10 @@
 	var/obj/structure/overmap/current_survey_target
 	var/datum/survey_research/data
 	var/survey_value
+	/// Payout multiplier when the survey target sits on a neighbouring tile instead
+	/// of our own (storms only, see get_survey_target). Parking inside stays the
+	/// greedy play; scanning from next door is the safe one.
+	var/range_survey_value_mult = 0.6
 	var/survey_timer
 	var/banked_points = 0
 	var/banked_cash = 0
@@ -178,7 +182,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	var/list/tgui_data = list()
-	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
+	var/obj/structure/overmap/celestial_object = get_survey_target()
 	survey_research_tiers = get_survey_research_tiers()
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
 	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
@@ -187,6 +191,7 @@
 	tgui_data["bankedPoints"] = banked_points
 	tgui_data["bankedCash"] = banked_cash
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
+	tgui_data["surveyAtRange"] = is_survey_at_range(celestial_object)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
@@ -239,27 +244,69 @@
 					return object
 	return null
 
+/**
+ * The object a survey would target right now: whatever shares our overmap tile,
+ * or failing that a storm on one of the 8 neighbouring tiles. Storms are the only
+ * at-range targets - the hazard IS the tile, so scanning one without flying into
+ * it is the intended counterplay - while landable content (planets, ruins, meteor
+ * fields) still requires being on the tile. Unsurveyed storms are preferred so an
+ * already-scanned tile at a cluster's edge doesn't mask fresh ones behind it.
+ *
+ * Only the survey path uses this. The docking paths (refresh, checkLandingTurf)
+ * must keep using get_current_celestial_object(), or the docking camera could be
+ * aimed into the reservation of a field the ship isn't on.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_target()
+	var/obj/structure/overmap/on_tile = get_current_celestial_object()
+	if(on_tile)
+		return on_tile
+	if(!ship_port?.current_ship)
+		return null
+	var/turf/ship_turf = get_turf(ship_port.current_ship)
+	if(!ship_turf)
+		return null
+	var/obj/structure/overmap/event/surveyed_fallback
+	for(var/obj/structure/overmap/event/storm in orange(1, ship_turf))
+		if(!istype(storm, /obj/structure/overmap/event/electric) && !istype(storm, /obj/structure/overmap/event/emp))
+			continue
+		if(!is_object_surveyed(storm))
+			return storm
+		if(!surveyed_fallback)
+			surveyed_fallback = storm
+	return surveyed_fallback
+
+/// TRUE when the survey target sits on a neighbouring tile rather than sharing ours
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/is_survey_at_range(obj/structure/overmap/object)
+	if(!object || !ship_port?.current_ship)
+		return FALSE
+	return get_turf(object) != get_turf(ship_port.current_ship)
+
+/// Whether this object already has an entry in the survey records
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/is_object_surveyed(obj/structure/overmap/object)
+	var/celestial_type = data.get_related_celestial_list(object.type)
+	if(!celestial_type)
+		return FALSE
+	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[celestial_type])
+		if(celestial.ref_id == ref(object))
+			return TRUE
+	return FALSE
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_status(obj/structure/overmap/object)
 	if(!object || isnull(object))
 		return "no-orbit"
 	if (survey_in_progress)
 		return "in-progress"
 
-	var/already_surveyed = FALSE
-	var/current_celestial_type = data.get_related_celestial_list(object.type)
-	if(!current_celestial_type)
+	if(!data.get_related_celestial_list(object.type))
 		log_runtime("Not found [object.type]")
-	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[current_celestial_type])
-		if (celestial.ref_id == ref(object))
-			already_surveyed = TRUE
-	if(already_surveyed)
+	if(is_object_surveyed(object))
 		return "complete"
 	return "unsurveyed"
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user)
 	if(survey_in_progress)
 		return
-	var/obj/structure/overmap/current_object = get_current_celestial_object()
+	var/obj/structure/overmap/current_object = get_survey_target()
 	if(!current_object)
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 		balloon_alert(user, "no surveyable celestial object found")
@@ -336,6 +383,11 @@
 	else if("advanced" in survey_research_tiers)
 		cash *= 1.2
 		points *= 1.2
+
+	// Scanning a storm from a neighbouring tile is safe, so it pays less
+	if(is_survey_at_range(object))
+		cash *= range_survey_value_mult
+		points *= range_survey_value_mult
 
 	point_list["cash"] = cash
 	point_list["points"] = points

@@ -87,9 +87,14 @@
  *   because its can_spawn_event() refuses to run while GLOB.tower_of_babel is
  *   occupied, its max_occurrences > 1 quietly stops meaning anything: it fires
  *   once and never again, with no cap ever reached and nothing logged.
+ * - The cure sweep goes back to GLOB.player_list. That list only holds mobs with a
+ *   client, and a dead player who ghosted leaves their cursed body clientless, so
+ *   they revive still babbling after the rite is over (the original shipped bug).
+ *   The sweep must walk GLOB.carbon_list, which carries clientless bodies too.
  *
- * All three are checked against a datum in the global slot or against initial()
- * values, never a live lair, so this test spawns nothing and needs no overmap.
+ * The first three are checked against a datum in the global slot or against
+ * initial() values; the fourth curses one allocated, clientless human. No live
+ * lair, so this test needs no overmap.
  */
 /datum/unit_test/lich_babel_cure
 
@@ -97,10 +102,16 @@
 	var/datum/tower_of_babel/preexisting = GLOB.tower_of_babel
 	GLOB.tower_of_babel = null
 
-	// His: the cure path must clear it.
+	// His: the cure path must clear it, and it must reach a cursed body with no client,
+	// the state a dead-and-ghosted player's corpse is in when the lich dies.
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	victim.mind_initialize()
 	GLOB.tower_of_babel = new /datum/tower_of_babel/lich
+	curse_of_babel(victim)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/tower_of_babel/magical), "curse_of_babel() did not land on the test victim, so the clientless-cure half of this test cannot run")
 	end_lich_babel()
 	TEST_ASSERT(isnull(GLOB.tower_of_babel), "end_lich_babel() left GLOB.tower_of_babel populated. The curse survives the lich, and can_spawn_event() will keep refusing a future instance")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/tower_of_babel/magical), "the cure sweep missed a clientless cursed body. It has to walk GLOB.carbon_list, not GLOB.player_list: a dead player who ghosted is not on player_list, and revives still babbling")
 
 	// Somebody else's: the cure path must not touch it.
 	var/datum/tower_of_babel/admin_cast = new /datum/tower_of_babel

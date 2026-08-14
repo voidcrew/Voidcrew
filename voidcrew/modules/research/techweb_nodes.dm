@@ -277,6 +277,17 @@
 		"bluespace_pod"
 	)
 
+// Explosives gated itself behind the Low-Yield Explosives ordnance experiment, which is
+// only completable by catching an explosion on a Tachyon-Doppler array and publishing the
+// reading through the NT Frontier app - an ordnance lab's workflow, and no ship has one.
+// That left the node unreachable no matter how many points a crew banked, and with it
+// everything downstream: Exotic Ammunition and the rest of that branch. Points gate it now.
+// The experiment itself is untouched and still pays out through a scientific partner
+// (code/modules/research/ordnance/scipaper_partner.dm) for any crew that does build the array.
+/datum/techweb_node/explosives/New()
+	. = ..()
+	required_experiments -= /datum/experiment/ordnance/explosive/lowyieldbomb
+
 // The extra dissection tiers hang off the surgery ladder that gates the surgeries
 // beneath them. Same orphaned-parent story as above: these were on /adv_surgery and
 // /exp_surgery, which don't exist. The real node types are surgery_adv/surgery_exp.
