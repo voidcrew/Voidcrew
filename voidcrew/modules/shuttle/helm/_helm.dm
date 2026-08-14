@@ -807,6 +807,13 @@
 			if(waypoint)
 				current_ship.delete_waypoint(waypoint)
 			return
+		if("autopilot_pref")
+			// Flight policy is editable whether or not a course is being flown,
+			// which is why this sits with the universal topics. The key is
+			// whitelisted server-side in set_autopilot_pref(); an unknown one
+			// is dropped there without touching anything.
+			current_ship.set_autopilot_pref(params["key"], params["value"])
+			return
 		if("reveal_rumor")
 			var/datum/rumor_chart/chart = locate(params["chart"]) in current_ship.pending_rumors
 			if(!chart)

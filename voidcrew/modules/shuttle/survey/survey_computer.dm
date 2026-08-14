@@ -23,10 +23,15 @@
 	var/obj/structure/overmap/current_survey_target
 	var/datum/survey_research/data
 	var/survey_value
-	/// Payout multiplier when the survey target sits on a neighbouring tile instead
-	/// of our own (storms only, see get_survey_target). Parking inside stays the
-	/// greedy play; scanning from next door is the safe one.
+	/// Payout multiplier when the survey target sits on a nearby tile instead of
+	/// our own (storms only, see get_survey_target). Parking inside stays the
+	/// greedy play; scanning from outside is the safe one.
 	var/range_survey_value_mult = 0.6
+	/// How many overmap tiles out the at-range storm scan reaches. The helm chart
+	/// draws severity-scaled glyphs over overlapping cluster contacts, so players
+	/// cannot reliably park exactly one tile from a storm's anchor turf - this is
+	/// deliberately a short ring, not strict adjacency.
+	var/range_survey_distance = 3
 	var/survey_timer
 	var/banked_points = 0
 	var/banked_cash = 0
@@ -196,6 +201,24 @@
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
 
+	// Everything surveyable from here, for the UI's target picker
+	var/turf/ship_turf = ship_port?.current_ship ? get_turf(ship_port.current_ship) : null
+	var/list/targets = list()
+	for(var/obj/structure/overmap/candidate as anything in get_survey_candidates())
+		var/list/values = get_survey_value(candidate)
+		var/at_range = is_survey_at_range(candidate)
+		targets += list(list(
+			"ref" = ref(candidate),
+			"name" = candidate.name,
+			"status" = get_survey_status(candidate),
+			"atRange" = at_range,
+			"dist" = (at_range && ship_turf) ? get_dist(ship_turf, get_turf(candidate)) : 0,
+			"points" = values ? values["points"] : 0,
+			"cash" = values ? values["cash"] : 0,
+			"mappable" = (istype(candidate, /obj/structure/overmap/planet) || istype(candidate, /obj/structure/overmap/space_ruin) || istype(candidate, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE,
+		))
+	tgui_data["surveyTargets"] = targets
+
 	return tgui_data
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_static_data(mob/user)
@@ -208,7 +231,7 @@
 		return
 	switch(action)
 		if("survey")
-			survey_celestial_object(ui.user)
+			survey_celestial_object(ui.user, params["target_ref"])
 		if("map")
 			playsound(src, 'sound/machines/pda_button/pda_button1.ogg', 100)
 			activate_survey_map(ui.user)
@@ -231,12 +254,17 @@
 
 	return TRUE
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
+/// Overmap types the console refuses to treat as survey targets
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_blacklisted_overmap_types()
 	var/list/blacklisted_types = list(
 		/obj/structure/overmap/ship,
 	)
 	if(!debug_mode)
 		blacklisted_types += /obj/structure/overmap/planet/empty
+	return blacklisted_types
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
+	var/list/blacklisted_types = get_blacklisted_overmap_types()
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
@@ -245,35 +273,59 @@
 	return null
 
 /**
- * The object a survey would target right now: whatever shares our overmap tile,
- * or failing that a storm on one of the 8 neighbouring tiles. Storms are the only
- * at-range targets - the hazard IS the tile, so scanning one without flying into
- * it is the intended counterplay - while landable content (planets, ruins, meteor
- * fields) still requires being on the tile. Unsurveyed storms are preferred so an
- * already-scanned tile at a cluster's edge doesn't mask fresh ones behind it.
+ * Every object a survey could target right now, ordered: objects sharing our
+ * overmap tile first (in close-list order), then storms within
+ * range_survey_distance tiles sorted nearest-first. Storms are the only at-range
+ * targets - the hazard IS the tile, so scanning one without flying into it is
+ * the intended counterplay - while landable content (planets, ruins, meteor
+ * fields) still requires being on the tile.
  *
  * Only the survey path uses this. The docking paths (refresh, checkLandingTurf)
  * must keep using get_current_celestial_object(), or the docking camera could be
  * aimed into the reservation of a field the ship isn't on.
  */
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_target()
-	var/obj/structure/overmap/on_tile = get_current_celestial_object()
-	if(on_tile)
-		return on_tile
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_candidates()
+	var/list/candidates = list()
 	if(!ship_port?.current_ship)
-		return null
+		return candidates
+	// Everything sharing our tile - there can be more than one, and the old
+	// single-target flow only ever exposed the first
+	var/list/blacklisted_types = get_blacklisted_overmap_types()
+	for(var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
+		if(!is_type_in_list(object, blacklisted_types))
+			candidates |= object
+	// Storms within the scan ring, nearest first. Same range()-over-turf sweep
+	// the sensor contact push uses (ship_sensors.dm)
 	var/turf/ship_turf = get_turf(ship_port.current_ship)
 	if(!ship_turf)
-		return null
-	var/obj/structure/overmap/event/surveyed_fallback
-	for(var/obj/structure/overmap/event/storm in orange(1, ship_turf))
+		return candidates
+	var/list/storms_by_dist = list()
+	for(var/obj/structure/overmap/event/storm in range(range_survey_distance, ship_turf))
 		if(!istype(storm, /obj/structure/overmap/event/electric) && !istype(storm, /obj/structure/overmap/event/emp))
 			continue
-		if(!is_object_surveyed(storm))
-			return storm
-		if(!surveyed_fallback)
-			surveyed_fallback = storm
-	return surveyed_fallback
+		storms_by_dist[storm] = get_dist(ship_turf, get_turf(storm))
+	sortTim(storms_by_dist, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	for(var/storm in storms_by_dist)
+		candidates |= storm
+	return candidates
+
+/**
+ * The object an unqualified survey click targets: the first on-tile object,
+ * else the nearest unsurveyed storm in scan range, else the nearest surveyed
+ * one. The UI's target list lets the player override this via target_ref.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_target()
+	var/list/candidates = get_survey_candidates()
+	if(!length(candidates))
+		return null
+	// The candidate list is ordered on-tile first, then storms nearest-first
+	var/obj/structure/overmap/first = candidates[1]
+	if(!is_survey_at_range(first))
+		return first
+	for(var/obj/structure/overmap/candidate as anything in candidates)
+		if(!is_object_surveyed(candidate))
+			return candidate
+	return first
 
 /// TRUE when the survey target sits on a neighbouring tile rather than sharing ours
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/is_survey_at_range(obj/structure/overmap/object)
@@ -303,10 +355,18 @@
 		return "complete"
 	return "unsurveyed"
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user)
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user, target_ref)
 	if(survey_in_progress)
 		return
-	var/obj/structure/overmap/current_object = get_survey_target()
+	var/obj/structure/overmap/current_object
+	if(target_ref)
+		// Resolve the client's pick against the live candidate list, never as a raw ref
+		for(var/obj/structure/overmap/candidate as anything in get_survey_candidates())
+			if(ref(candidate) == target_ref)
+				current_object = candidate
+				break
+	else
+		current_object = get_survey_target()
 	if(!current_object)
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 		balloon_alert(user, "no surveyable celestial object found")

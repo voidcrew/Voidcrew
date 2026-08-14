@@ -159,6 +159,20 @@ type ChartedContact = {
   target: string;
 };
 
+/**
+ * Flight-policy toggles. Keys are exactly what act('autopilot_pref') sends and
+ * the server whitelists in set_autopilot_pref(); the checked state shown is
+ * whatever the server last confirmed, so a rejected key simply never moves.
+ */
+type AutopilotPrefs = {
+  crossMeteor: BooleanLike;
+  crossElectric: BooleanLike;
+  crossEmp: BooleanLike;
+  avoidHostiles: BooleanLike;
+  zoneCaution: BooleanLike;
+  hazardLanding: BooleanLike;
+};
+
 /** A plotted course. See ship_autopilot.dm. */
 type Autopilot = {
   engaged: BooleanLike;
@@ -173,6 +187,10 @@ type Autopilot = {
   remaining?: number;
   /** Remaining course, next step first, in relative overmap coordinates. */
   path: [number, number][];
+  /** Present engaged or idle: the policy panel works while nothing is flown. */
+  prefs?: AutopilotPrefs;
+  /** Shields are up, so asteroid impacts are absorbed (crossMeteor hint). */
+  shieldsActive?: BooleanLike;
 };
 
 /** One thing the Dock button could do from the tile the ship is on. */
@@ -1754,6 +1772,55 @@ const useDrift = (contacts: Contact[]): Drift | null => {
   };
 };
 
+/** The policy rows, in the order the panel lists them. */
+const AUTOPILOT_POLICY_ROWS: { key: keyof AutopilotPrefs; label: string }[] = [
+  { key: 'crossMeteor', label: 'Cross asteroid fields' },
+  { key: 'crossElectric', label: 'Cross ion storms' },
+  { key: 'crossEmp', label: 'Cross EMP clouds' },
+  { key: 'avoidHostiles', label: 'Avoid known hostiles' },
+  { key: 'zoneCaution', label: 'Prefer safer zones' },
+  { key: 'hazardLanding', label: 'Allow hazardous destination' },
+];
+
+/**
+ * The autopilot's flight-policy checkboxes, opened from the gear beside the
+ * autopilot readout. Editable engaged or idle; a change while a course is
+ * being flown re-plans it on the spot under the new rules (server side, see
+ * set_autopilot_pref in ship_autopilot.dm).
+ */
+const AutopilotPolicyPanel = () => {
+  const { act, data } = useBackend<Data>();
+  const locked = useLocked();
+  const prefs = data.autopilot?.prefs;
+  if (!prefs) return null;
+  return (
+    <div className="Helm__policyPanel">
+      <div className="Helm__policyTitle">FLIGHT POLICY</div>
+      {AUTOPILOT_POLICY_ROWS.map((row) => (
+        <label key={row.key} className="Helm__policyRow">
+          <input
+            type="checkbox"
+            checked={!!prefs[row.key]}
+            disabled={locked}
+            onChange={(event) =>
+              act('autopilot_pref', {
+                key: row.key,
+                value: event.currentTarget.checked ? 1 : 0,
+              })
+            }
+          />
+          {row.label}
+          {row.key === 'crossMeteor' && !!data.autopilot?.shieldsActive && (
+            <span className="Helm__policyHint">
+              Shields online — impacts absorbed
+            </span>
+          )}
+        </label>
+      ))}
+    </div>
+  );
+};
+
 const Chart = () => {
   const { act, data } = useBackend<Data>();
   const {
@@ -1783,6 +1850,8 @@ const Chart = () => {
   // there was one) and the tile it was over, because plotting a course is an
   // action on the position rather than on any mark.
   const [hovered, setHovered] = useState<string | null>(null);
+  // The flight-policy panel, opened from the gear beside the autopilot readout.
+  const [showPolicy, setShowPolicy] = useState(false);
   const openActionMenu = useContext(MenuControl);
   const viewportRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<SVGGElement>(null);
@@ -2417,6 +2486,7 @@ const Chart = () => {
       {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
 
       <div className="Helm__hud Helm--bl">
+        {!!showPolicy && <AutopilotPolicyPanel />}
         <div className="Helm__hudLine" style={{ color: '#3d6a76' }}>
           <span className="Helm__hudKey">SENSOR</span> {sensorRange} TILES
         </div>
@@ -2438,11 +2508,33 @@ const Chart = () => {
             >
               Cancel
             </button>
+            <button
+              type="button"
+              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
+              title="Autopilot flight policy"
+              onClick={() => setShowPolicy((open) => !open)}
+            >
+              ⚙
+            </button>
           </div>
         )}
-        {!autopilot?.engaged && !!autopilot?.status && (
-          <div className="Helm__courseStatus">
-            AUTOPILOT OFF · {autopilot.status}
+        {!autopilot?.engaged && (
+          // The gear stays reachable with no course engaged; the readout line
+          // only appears once there is an outcome to report.
+          <div className="Helm__course">
+            <span className="Helm__courseStatus" style={{ marginTop: 0 }}>
+              {autopilot?.status
+                ? `AUTOPILOT OFF · ${autopilot.status}`
+                : 'AUTOPILOT'}
+            </span>
+            <button
+              type="button"
+              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
+              title="Autopilot flight policy"
+              onClick={() => setShowPolicy((open) => !open)}
+            >
+              ⚙
+            </button>
           </div>
         )}
       </div>

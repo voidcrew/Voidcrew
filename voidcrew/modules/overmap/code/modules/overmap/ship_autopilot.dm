@@ -89,6 +89,34 @@
  */
 #define AUTOPILOT_HARM_THRESHOLD AUTOPILOT_HOSTILE_COST
 
+/**
+ * Cost of a hazard tile the crew's flight policy tolerates (see the
+ * autopilot_cross_* vars). A tolerated field is a nuisance rather than a wall:
+ * cheap enough to fly through when it's on the way, dear enough that a clean
+ * corridor of similar length still wins. Deliberately below
+ * AUTOPILOT_HARM_THRESHOLD, which is the whole mechanism: the brake and the
+ * committed latch key off that threshold, so pricing a tolerated hazard under
+ * it disables braking and committing for that type with no logic of its own.
+ * No halo either, a hazard the crew has agreed to cross needs no wide berth.
+ */
+#define AUTOPILOT_TOLERATED_COST 5
+/**
+ * Added per unsurveyed tile a course steps onto. This prices ignorance: the
+ * danger map is empty where this hull has never looked, so unexplored space
+ * reads as FREE to A* and courses detour through the uncharted far side of the
+ * map because nothing bad is on record there. Two per tile means a charted,
+ * clean corridor beats an unknown one of similar length, while genuinely long
+ * detours through charted space still lose to a short unknown hop.
+ */
+#define AUTOPILOT_UNCHARTED_COST 2
+/// Added per A* step that wraps a map edge. Wrapping is how tick_move() flies,
+/// so it stays available, but a course should only go the long way round when
+/// it is genuinely shorter, not merely equal and first out of the frontier.
+#define AUTOPILOT_WRAP_COST 3
+/// Surcharge per zone tier hotter than the trip itself needs (see
+/// autopilot_zone_caution and the reference-tier logic in plan_overmap_course).
+#define AUTOPILOT_ZONE_CAUTION_COST 4
+
 /// Ceiling on A* expansions, so a pathological danger map can't stall the server.
 #define AUTOPILOT_MAX_EXPANSIONS 6000
 /// Hard stop on the bucket scan, in case a cost ever escapes its expected range.
@@ -98,6 +126,21 @@
 #define AUTOPILOT_REPLAN_INTERVAL (10 SECONDS)
 /// Shortest gap between two full re-plans, whatever else is asking for one.
 #define AUTOPILOT_REPLAN_FLOOR (2 SECONDS)
+/**
+ * Tiles a periodic-refresh course must SAVE before it replaces the one being
+ * flown. Costs shift a little every rebuild of the danger map, and with no
+ * margin the ship swapped between near-equal courses on every refresh, which
+ * read on the chart as the autopilot flipping direction mid-flight for
+ * nothing. Danger-triggered and lost-course re-plans ignore this: those have
+ * no old course worth being loyal to.
+ */
+#define AUTOPILOT_REPLAN_IMPROVEMENT 3
+// autopilot_course_needs_replan() verdicts: nothing to do; the flown course is
+// gone or dangerous (adopt whatever the planner returns); or the course is
+// still fine and a fresh plan is merely a candidate to be measured against it.
+#define AUTOPILOT_REPLAN_NONE 0
+#define AUTOPILOT_REPLAN_FORCED 1
+#define AUTOPILOT_REPLAN_PERIODIC 2
 /// How many steps ahead a newly-spotted hazard forces an immediate re-plan, and
 /// how far ahead the route is checked for unsurveyed ground.
 #define AUTOPILOT_LOOKAHEAD 6
@@ -165,6 +208,32 @@
 	var/datum/weakref/autopilot_dock_ref
 	/// Who engaged the course, for the arrival dock's feedback messages.
 	var/datum/weakref/autopilot_user_ref
+	/**
+	 * TRUE while the crew has knowingly plotted INTO a hazard: a travel & dock
+	 * order (the destination is the field), or plain coordinates with
+	 * autopilot_hazard_landing switched on. The danger check and the one-tile
+	 * brake skip the destination tile while this is set, which is what lets a
+	 * course actually END on an asteroid field instead of stopping one tile
+	 * short and disengaging. The destination alone; every tile on the way there
+	 * keeps its full protection. Cleared with the course.
+	 */
+	var/autopilot_dest_consented = FALSE
+
+	// Flight policy, set from the helm (see set_autopilot_pref). Defaults are
+	// exactly the behaviour the autopilot shipped with: avoid all weather,
+	// stand off known hostiles, and never end a course on a hazard tile.
+	/// Tolerate asteroid fields rather than routing around them.
+	var/autopilot_cross_meteor = FALSE
+	/// Tolerate ion storms rather than routing around them.
+	var/autopilot_cross_electric = FALSE
+	/// Tolerate EMP clouds rather than routing around them.
+	var/autopilot_cross_emp = FALSE
+	/// Stamp known hostile vessels into the danger map.
+	var/autopilot_avoid_hostiles = TRUE
+	/// Surcharge tiles in zone bands hotter than the trip itself needs.
+	var/autopilot_zone_caution = TRUE
+	/// Allow plotted coordinates that sit on a hazard tile (destination consent).
+	var/autopilot_hazard_landing = FALSE
 
 // ---------------------------------------------------------------- grid helpers
 
@@ -206,6 +275,26 @@
 	return max(step_x, step_y)
 
 /**
+ * How hot the zone band under an overmap tile is, as an explicit 0/1/2 ladder:
+ * green 0, yellow 1, red 2. Written out rather than derived from the ZONE_*
+ * define values, those happen to be ordered integers today, but the ordering
+ * is not part of their contract and arithmetic on them would break silently if
+ * a band were ever added or renumbered. Tiles with no zone read as green.
+ */
+/proc/autopilot_zone_tier(tile_x, tile_y)
+	var/turf/open/overmap/tile = locate(overmap_wrap_x(tile_x), overmap_wrap_y(tile_y), OVERMAP_Z_LEVEL)
+	if(!istype(tile) || !tile.current_zone)
+		return 0
+	switch(tile.current_zone.zone_type)
+		if(ZONE_GREEN)
+			return 0
+		if(ZONE_YELLOW)
+			return 1
+		if(ZONE_RED)
+			return 2
+	return 0
+
+/**
  * Stamps a danger disc onto the cost map. Costs are taken as a maximum rather than
  * summed, so a tile caught by two overlapping hazards reads as the worse of the
  * two instead of an inflated total that would distort the route around it.
@@ -239,11 +328,20 @@
  * compass preference (NE, then E, then SE...) and every course in open space
  * bowed north-east: a hop due east was plotted as a four-tile-tall arc.
  *
+ * `pilot`, when given, prices in what that ship KNOWS: unsurveyed tiles carry
+ * AUTOPILOT_UNCHARTED_COST (the danger map is silent about space the hull has
+ * never looked at, so without this, ignorance reads as safety and courses bend
+ * through the uncharted far side of the map), and with autopilot_zone_caution
+ * set, tiles in a hotter zone band than the trip itself needs carry a
+ * surcharge, measured against the hotter of the origin and destination bands,
+ * so a green-to-green run won't cut through yellow to save two tiles while a
+ * run INTO red doesn't fight its own destination.
+ *
  * Returns the course as a list of list(x, y), destination last and the starting
  * tile omitted. Returns an empty list when already there, or null if no route
  * exists inside the expansion budget.
  */
-/proc/plan_overmap_course(start_x, start_y, dest_x, dest_y, list/danger)
+/proc/plan_overmap_course(start_x, start_y, dest_x, dest_y, list/danger, obj/structure/overmap/ship/pilot)
 	start_x = overmap_wrap_x(start_x)
 	start_y = overmap_wrap_y(start_y)
 	dest_x = overmap_wrap_x(dest_x)
@@ -259,6 +357,16 @@
 	var/list/came_from = list()
 	var/list/cost_so_far = list()
 	var/list/buckets = list()
+
+	// The band the trip itself already commits to: the hotter of where it starts
+	// and where it ends. Computed once, the surcharge below is relative to it.
+	var/zone_caution = pilot?.autopilot_zone_caution
+	var/reference_tier = 0
+	if(zone_caution)
+		reference_tier = max(autopilot_zone_tier(start_x, start_y), autopilot_zone_tier(dest_x, dest_y))
+	// Zone tiers are read per neighbour via locate(), which is cheap but not
+	// free at thousands of expansions; each tile's tier is asked for once.
+	var/list/zone_tier_cache = list()
 
 	cost_so_far[start_key] = 0
 	var/frontier = overmap_course_heuristic(start_x, start_y, dest_x, dest_y)
@@ -316,6 +424,21 @@
 				var/next_y = overmap_wrap_y(current_y + step_y)
 				var/next_key = "[next_x],[next_y]"
 				var/new_cost = current_cost + 1 + (danger[next_key] || 0)
+				// The step crossed a map edge if the wrap moved it. Legal, but it
+				// should only win when the long way round is genuinely shorter.
+				if(next_x != current_x + step_x || next_y != current_y + step_y)
+					new_cost += AUTOPILOT_WRAP_COST
+				if(pilot)
+					// The danger map cannot indict a tile nobody has looked at, so
+					// ignorance is priced instead (see AUTOPILOT_UNCHARTED_COST).
+					if(!pilot.is_tile_surveyed(next_x - OVERMAP_LEFT_SIDE_COORD + 1, next_y - OVERMAP_SOUTH_SIDE_COORD + 1))
+						new_cost += AUTOPILOT_UNCHARTED_COST
+					if(zone_caution)
+						var/tier = zone_tier_cache[next_key]
+						if(isnull(tier))
+							tier = autopilot_zone_tier(next_x, next_y)
+							zone_tier_cache[next_key] = tier
+						new_cost += max(0, tier - reference_tier) * AUTOPILOT_ZONE_CAUTION_COST
 				var/existing = cost_so_far[next_key]
 				if(!isnull(existing) && existing <= new_cost)
 					continue
@@ -388,19 +511,39 @@
 		var/obj/structure/overmap/event/hazard = remembered?.resolve()
 		if(!istype(hazard) || istype(hazard, /obj/structure/overmap/event/nebula))
 			continue
+		if(autopilot_hazard_tolerated(hazard))
+			// The crew's flight policy accepts this weather. Priced as a
+			// nuisance rather than a wall, below AUTOPILOT_HARM_THRESHOLD so
+			// the brake and the committed latch ignore it, and with no halo,
+			// a hazard you're willing to fly through needs no wide berth.
+			stamp_autopilot_danger(danger, hazard.x, hazard.y, 0, AUTOPILOT_TOLERATED_COST, 0, AUTOPILOT_TOLERATED_COST)
+			continue
 		stamp_autopilot_danger(danger, hazard.x, hazard.y, 0, AUTOPILOT_HAZARD_COST, 1, AUTOPILOT_HAZARD_HALO_COST)
 
-	var/tracking = can_scan_ships()
-	for(var/obj/structure/overmap/ship/npc/other in SSovermap.simulated_ships)
-		if(other == src || other.hidden_in_nebula || !other.hostile)
-			continue
-		if(!tracking && !identified_ships[REF(other)])
-			continue
-		stamp_autopilot_danger(danger, other.x, other.y, AUTOPILOT_HOSTILE_CORE_RANGE, AUTOPILOT_HOSTILE_COST, AUTOPILOT_HOSTILE_HALO_RANGE, AUTOPILOT_HOSTILE_HALO_COST)
+	if(autopilot_avoid_hostiles)
+		var/tracking = can_scan_ships()
+		for(var/obj/structure/overmap/ship/npc/other in SSovermap.simulated_ships)
+			if(other == src || other.hidden_in_nebula || !other.hostile)
+				continue
+			if(!tracking && !identified_ships[REF(other)])
+				continue
+			stamp_autopilot_danger(danger, other.x, other.y, AUTOPILOT_HOSTILE_CORE_RANGE, AUTOPILOT_HOSTILE_COST, AUTOPILOT_HOSTILE_HALO_RANGE, AUTOPILOT_HOSTILE_HALO_COST)
 
 	autopilot_danger_cache = danger
 	autopilot_danger_time = world.time
 	return danger
+
+/// Whether the crew's flight policy tolerates crossing this hazard's type.
+/// Anything unrecognised is not tolerated, new weather is dangerous until a
+/// toggle for it is deliberately added here and on the helm.
+/obj/structure/overmap/ship/proc/autopilot_hazard_tolerated(obj/structure/overmap/event/hazard)
+	if(istype(hazard, /obj/structure/overmap/event/meteor))
+		return autopilot_cross_meteor
+	if(istype(hazard, /obj/structure/overmap/event/electric))
+		return autopilot_cross_electric
+	if(istype(hazard, /obj/structure/overmap/event/emp))
+		return autopilot_cross_emp
+	return FALSE
 
 // ---------------------------------------------------------------- engage / end
 
@@ -424,7 +567,8 @@
 	if(dest_x == x && dest_y == y)
 		return "Autopilot: already at those coordinates."
 
-	var/list/course = plan_overmap_course(x, y, dest_x, dest_y, build_autopilot_danger_map())
+	var/list/danger = build_autopilot_danger_map()
+	var/list/course = plan_overmap_course(x, y, dest_x, dest_y, danger, src)
 	if(isnull(course))
 		return "ERROR: Unable to plot a course to those coordinates."
 
@@ -437,6 +581,11 @@
 	autopilot_status = null
 	autopilot_dock_ref = dock_target ? WEAKREF(dock_target) : null
 	autopilot_user_ref = user ? WEAKREF(user) : null
+	// Destination consent: a travel & dock order names the hazard itself as the
+	// destination, and the hazard-landing policy extends the same consent to
+	// bare coordinates. Either way the crew chose that tile on purpose, so the
+	// danger checks stop protecting them from it (and only it, see the var).
+	autopilot_dest_consented = !!dock_target || autopilot_hazard_landing
 	// The autopilot owns the ship now; the commanded course (and the rose it
 	// lights on the helm) stands down with the rest of manual control.
 	commanded_course = BURN_NONE
@@ -447,9 +596,18 @@
 	schedule_autopilot_poll()
 	autopilot_steer()
 	push_helm_frame()
+
+	// Say up front when the plotted line runs through weather the flight policy
+	// tolerates, so "cross asteroid fields" never reads as the autopilot
+	// quietly deciding that for the crew.
+	var/tolerated_crossings = 0
+	for(var/list/node as anything in course)
+		if(danger["[node[1]],[node[2]]"] == AUTOPILOT_TOLERATED_COST)
+			tolerated_crossings++
+	var/crossing_note = tolerated_crossings ? ", crosses [tolerated_crossings] hazard[tolerated_crossings > 1 ? "s" : ""] under current flight policy" : ""
 	if(dock_target)
-		return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles, ending in a docking approach."
-	return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles."
+		return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles, ending in a docking approach[crossing_note]."
+	return "Autopilot engaged. Course plotted to [label || "([dest_x], [dest_y])"], [length(course)] tiles[crossing_note]."
 
 /**
  * Ends the current course. `reason` is shown to the crew and left on the helm;
@@ -469,6 +627,7 @@
 	autopilot_status = reason
 	autopilot_dock_ref = null
 	autopilot_user_ref = null
+	autopilot_dest_consented = FALSE
 	if(autopilot_poll_timer)
 		deltimer(autopilot_poll_timer)
 		autopilot_poll_timer = null
@@ -505,6 +664,7 @@
 	var/mob/pilot = autopilot_user_ref?.resolve()
 	autopilot_dock_ref = null
 	autopilot_user_ref = null
+	autopilot_dest_consented = FALSE
 	if(dock_target && !QDELETED(dock_target) && dock_target.x == x && dock_target.y == y)
 		if(ship_team)
 			ship_notify("Autopilot: arrived at [autopilot_label || "the plotted position"], commencing docking approach.", "AUTOPILOT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
@@ -616,6 +776,22 @@
 		else
 			break
 
+	// In uncharted space the caches are the wrong side of the ledger: the
+	// contact snapshot holds for a second and the danger map for half of one,
+	// which together can be older than a tile crossing, so the one-tile brake
+	// below could clear a step on a picture taken before a storm entered sensor
+	// range. Force both fresh whenever the tile under us or the one the course
+	// steps to next is unsurveyed; charted space keeps the cheap caches, its
+	// danger map already knows everything there is to know.
+	if(!is_tile_surveyed(x - OVERMAP_LEFT_SIDE_COORD + 1, y - OVERMAP_SOUTH_SIDE_COORD + 1))
+		contact_snapshot = null
+		autopilot_danger_cache = null
+	else if(length(autopilot_path))
+		var/list/peek = autopilot_path[1]
+		if(!is_tile_surveyed(peek[1] - OVERMAP_LEFT_SIDE_COORD + 1, peek[2] - OVERMAP_SOUTH_SIDE_COORD + 1))
+			contact_snapshot = null
+			autopilot_danger_cache = null
+
 	var/list/danger = build_autopilot_danger_map()
 
 	// Before anything clever: are we about to cross onto something that will hurt?
@@ -627,17 +803,31 @@
 		schedule_autopilot_poll(AUTOPILOT_BURN_POLL)
 		return
 
-	if(autopilot_course_needs_replan(danger))
-		var/list/course = plan_overmap_course(x, y, autopilot_dest_x, autopilot_dest_y, danger)
+	var/replan = autopilot_course_needs_replan(danger)
+	if(replan != AUTOPILOT_REPLAN_NONE)
+		var/list/course = plan_overmap_course(x, y, autopilot_dest_x, autopilot_dest_y, danger, src)
 		if(isnull(course))
-			disengage_autopilot("no safe course to the destination")
-			return
-		autopilot_path = course
-		autopilot_last_plan = world.time
-		// If the fresh course STILL runs through something, that is the best route
-		// available, commit to it rather than re-planning every tile for the
-		// length of the trip.
-		autopilot_danger_committed = autopilot_course_has_danger(danger)
+			// A periodic refresh blowing its expansion budget is not an
+			// emergency: the course being flown is, by the verdict above, still
+			// valid and danger-free. Keep flying it and ask again later.
+			if(replan == AUTOPILOT_REPLAN_PERIODIC)
+				autopilot_last_plan = world.time
+			else
+				disengage_autopilot("no safe course to the destination")
+				return
+		else if(replan == AUTOPILOT_REPLAN_PERIODIC && length(course) + AUTOPILOT_REPLAN_IMPROVEMENT > length(autopilot_path))
+			// Stickiness: a refresh only replaces a healthy course when it is
+			// meaningfully shorter. Costs wobble a little between danger-map
+			// rebuilds, and swapping between near-equal courses read on the
+			// chart as the ship flipping direction mid-flight for nothing.
+			autopilot_last_plan = world.time
+		else
+			autopilot_path = course
+			autopilot_last_plan = world.time
+			// If the fresh course STILL runs through something, that is the best route
+			// available, commit to it rather than re-planning every tile for the
+			// length of the trip.
+			autopilot_danger_committed = autopilot_course_has_danger(danger)
 
 	// Stopped, and the best route out of here still runs through a hazard. Flying
 	// into a storm is not a decision the autopilot gets to make on the crew's
@@ -712,19 +902,26 @@
 			return max_speed * AUTOPILOT_UNCHARTED_CRUISE
 	return max_speed
 
-/// Whether the current course is missing, stale, abandoned by the ship, or now
-/// runs through something the crew has just laid eyes on.
+/**
+ * Whether the current course still deserves to be flown, as a three-way
+ * verdict: NONE (fly on), FORCED (the course is gone, abandoned, or newly
+ * dangerous, adopt whatever the planner returns), or PERIODIC (the course is
+ * healthy and a fresh plan is merely a candidate, to be adopted only if it
+ * beats the one in hand by AUTOPILOT_REPLAN_IMPROVEMENT, see autopilot_steer).
+ * The split exists because treating a routine refresh as authoritative made
+ * the ship swap between near-equal courses and flip direction mid-flight.
+ */
 /obj/structure/overmap/ship/proc/autopilot_course_needs_replan(list/danger)
 	// No course at all, or we drifted off the plotted line (a wraparound, a shove,
 	// an overshoot on a tight corner). Either way there is nothing to fly, so these
 	// two re-plan immediately whatever the throttle below says.
 	if(!length(autopilot_path))
-		return TRUE
+		return AUTOPILOT_REPLAN_FORCED
 	var/list/next_node = autopilot_path[1]
 	if(abs(overmap_wrapped_delta(next_node[1] - x, OVERMAP_PATH_SPAN_X)) > 1)
-		return TRUE
+		return AUTOPILOT_REPLAN_FORCED
 	if(abs(overmap_wrapped_delta(next_node[2] - y, OVERMAP_PATH_SPAN_Y)) > 1)
-		return TRUE
+		return AUTOPILOT_REPLAN_FORCED
 
 	// Something dangerous on the next few steps re-plans NOW, ahead of any
 	// throttle. The view ring is four tiles and the ship crosses one a second at
@@ -737,13 +934,15 @@
 		// through was still the best route on offer. Asking again every tile
 		// cannot produce a different answer, and A* over the whole grid is not
 		// something to run per tile.
-		return !autopilot_danger_committed
+		return autopilot_danger_committed ? AUTOPILOT_REPLAN_NONE : AUTOPILOT_REPLAN_FORCED
 	autopilot_danger_committed = FALSE
 
 	// Periodic refresh, for everything that isn't an emergency.
 	if((world.time - autopilot_last_plan) < AUTOPILOT_REPLAN_FLOOR)
-		return FALSE
-	return (world.time - autopilot_last_plan) > AUTOPILOT_REPLAN_INTERVAL
+		return AUTOPILOT_REPLAN_NONE
+	if((world.time - autopilot_last_plan) > AUTOPILOT_REPLAN_INTERVAL)
+		return AUTOPILOT_REPLAN_PERIODIC
+	return AUTOPILOT_REPLAN_NONE
 
 /**
  * Whether the tile the ship is about to cross onto will hurt it.
@@ -779,19 +978,66 @@
 	if(danger["[x],[y]"] >= AUTOPILOT_HARM_THRESHOLD)
 		return FALSE
 
-	var/next_key = "[overmap_wrap_x(x + step_x)],[overmap_wrap_y(y + step_y)]"
-	return danger[next_key] >= AUTOPILOT_HARM_THRESHOLD
+	var/next_x = overmap_wrap_x(x + step_x)
+	var/next_y = overmap_wrap_y(y + step_y)
+	// Stepping onto the destination the crew consented to (a travel & dock
+	// order onto the field, or the hazard-landing policy). Braking here is the
+	// bug: it left the ship one tile short of the field it was sent to.
+	if(autopilot_dest_consented && next_x == autopilot_dest_x && next_y == autopilot_dest_y)
+		return FALSE
+	return danger["[next_x],[next_y]"] >= AUTOPILOT_HARM_THRESHOLD
 
 /// Whether the next few steps of the plotted course run through anything on the
-/// danger map.
+/// danger map. The destination tile itself is exempt while the crew has
+/// consented to it (see autopilot_dest_consented), or a course ENDING on a
+/// hazard could never read as clean and the ship would disengage a tile short.
 /obj/structure/overmap/ship/proc/autopilot_course_has_danger(list/danger)
 	for(var/index in 1 to min(AUTOPILOT_LOOKAHEAD, length(autopilot_path)))
 		var/list/node = autopilot_path[index]
+		if(autopilot_dest_consented && node[1] == autopilot_dest_x && node[2] == autopilot_dest_y)
+			continue
 		if(danger["[node[1]],[node[2]]"] >= AUTOPILOT_HARM_THRESHOLD)
 			return TRUE
 	return FALSE
 
 // ---------------------------------------------------------------- helm readout
+
+/**
+ * Applies one flight-policy toggle from the helm. The key is client text, so
+ * it maps through an explicit whitelist, never an indirect var write. Returns
+ * FALSE for anything unrecognised.
+ *
+ * A change takes effect immediately: the danger map is dropped (its stamps
+ * embody the old policy), and a course in flight is re-planned on the spot
+ * rather than flown out under rules the crew has just rejected.
+ */
+/obj/structure/overmap/ship/proc/set_autopilot_pref(key, value)
+	value = value ? TRUE : FALSE
+	switch(key)
+		if("crossMeteor")
+			autopilot_cross_meteor = value
+		if("crossElectric")
+			autopilot_cross_electric = value
+		if("crossEmp")
+			autopilot_cross_emp = value
+		if("avoidHostiles")
+			autopilot_avoid_hostiles = value
+		if("zoneCaution")
+			autopilot_zone_caution = value
+		if("hazardLanding")
+			autopilot_hazard_landing = value
+		else
+			return FALSE
+	autopilot_danger_cache = null
+	if(autopilot_engaged)
+		// Consent is normally settled at engage time; re-derive it so flipping
+		// hazard landing mid-course honestly applies to the course being flown.
+		autopilot_dest_consented = !!autopilot_dock_ref || autopilot_hazard_landing
+		// No course means autopilot_course_needs_replan() answers FORCED, so the
+		// next steer adopts a fresh plan under the new policy unconditionally.
+		autopilot_path = null
+		autopilot_steer()
+	return TRUE
 
 /// The autopilot block the helm draws: state, destination, and the remaining
 /// course so the chart can trace the plotted line in relative coordinates.
@@ -802,6 +1048,19 @@
 		"status" = autopilot_status,
 		"dockOnArrival" = !!autopilot_dock_ref,
 		"path" = list(),
+		// Flight policy, present engaged or idle - the settings panel has to
+		// work while nothing is being flown. Keys mirror set_autopilot_pref().
+		"prefs" = list(
+			"crossMeteor" = autopilot_cross_meteor,
+			"crossElectric" = autopilot_cross_electric,
+			"crossEmp" = autopilot_cross_emp,
+			"avoidHostiles" = autopilot_avoid_hostiles,
+			"zoneCaution" = autopilot_zone_caution,
+			"hazardLanding" = autopilot_hazard_landing,
+		),
+		// For the asteroid-field hint: shields soak meteor impacts, so the
+		// panel can say crossing is currently covered.
+		"shieldsActive" = shields_active,
 	)
 	if(!autopilot_engaged)
 		return data
@@ -822,10 +1081,19 @@
 #undef AUTOPILOT_HOSTILE_HALO_COST
 #undef AUTOPILOT_HOSTILE_CORE_RANGE
 #undef AUTOPILOT_HOSTILE_HALO_RANGE
+#undef AUTOPILOT_HARM_THRESHOLD
+#undef AUTOPILOT_TOLERATED_COST
+#undef AUTOPILOT_UNCHARTED_COST
+#undef AUTOPILOT_WRAP_COST
+#undef AUTOPILOT_ZONE_CAUTION_COST
 #undef AUTOPILOT_MAX_EXPANSIONS
 #undef AUTOPILOT_MAX_FRONTIER
 #undef AUTOPILOT_REPLAN_INTERVAL
 #undef AUTOPILOT_REPLAN_FLOOR
+#undef AUTOPILOT_REPLAN_IMPROVEMENT
+#undef AUTOPILOT_REPLAN_NONE
+#undef AUTOPILOT_REPLAN_FORCED
+#undef AUTOPILOT_REPLAN_PERIODIC
 #undef AUTOPILOT_LOOKAHEAD
 #undef AUTOPILOT_UNCHARTED_CRUISE
 #undef AUTOPILOT_POLL_INTERVAL
