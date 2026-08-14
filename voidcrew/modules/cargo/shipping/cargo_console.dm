@@ -111,7 +111,10 @@
 	if(board)
 		board.contraband = TRUE
 		board.obj_flags |= EMAGGED
-	update_static_data(user)
+	// The catalog is static data now, so refresh every viewer - not just the emagger.
+	// Anyone else with the console open would otherwise keep the pre-emag pack list
+	// until they closed and reopened it.
+	update_static_data_for_all_viewers()
 	return TRUE
 
 /obj/machinery/computer/voidcrew_cargo/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
@@ -150,6 +153,26 @@
 /obj/machinery/computer/voidcrew_cargo/ui_static_data(mob/user)
 	var/list/data = list()
 	data["max_order"] = CARGO_MAX_ORDER
+
+	// The pack catalog is ~200 KiB of JSON. It has to live in static data, which is sent
+	// once on open: ui_data() is re-serialized and pushed to every viewer every SStgui
+	// tick (0.9s) and again after every ui_act, so building it there costs ~220 KiB/s per
+	// open console. That is invisible on a local host and saturates a real connection,
+	// backing up the same BYOND queue that carries player input - it reads as the whole
+	// client lagging, not just the console.
+	// Nothing in here changes mid-round: pack cost is only scaled by
+	// SSeconomy.pack_price_modifier, which roundstart station traits set and nothing else
+	// touches. The one exception is the emag contraband unlock, and emag_act() refreshes
+	// static data itself.
+	data["supplies"] = list()
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(!data["supplies"][pack.group])
+			data["supplies"][pack.group] = list(
+				"name" = pack.group,
+				"packs" = get_packs_data(pack.group),
+			)
+
 	return data
 
 /**
@@ -183,16 +206,8 @@
 /obj/machinery/computer/voidcrew_cargo/ui_data(mob/user)
 	var/list/data = list()
 
-	// Build supplies list (in ui_data to ensure SSshuttle is initialized)
-	data["supplies"] = list()
-	for(var/pack_id in SSshuttle.supply_packs)
-		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
-		if(!data["supplies"][pack.group])
-			data["supplies"][pack.group] = list(
-				"name" = pack.group,
-				"packs" = get_packs_data(pack.group),
-			)
-
+	// The pack catalog is deliberately NOT built here - see ui_static_data(). Everything
+	// below is small and genuinely per-tick; keep it that way.
 	data["has_bank_account"] = !!bank_account_holder
 	if(!bank_account_holder?.synced_bank_account)
 		data["shuttle_error"] = "NO BANK ACCOUNT CONNECTED"

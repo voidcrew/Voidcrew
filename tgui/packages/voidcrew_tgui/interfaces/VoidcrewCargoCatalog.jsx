@@ -67,7 +67,13 @@ export function VoidcrewCargoCatalog(props) {
   const { data } = useBackend();
   const { express } = props;
 
-  const supplies = Object.values(data.supplies || {});
+  // `data` is a fresh object on every backend push, so Object.values() here would hand
+  // back a new array ~every second and invalidate the packs memo below - re-sorting and
+  // re-rendering the whole catalog on every tick. `data.supplies` itself is static data,
+  // so it keeps a stable reference across partial updates; key the memo on that.
+  const supplies = useMemo(() => Object.values(data.supplies || {}), [
+    data.supplies,
+  ]);
   const [showContents, setShowContents] = useState('');
   const [searchText, setSearchText] = useSharedState('search_text', '');
   const [activeSupplyName, setActiveSupplyName] = useSharedState(
@@ -138,7 +144,10 @@ function CatalogTabs(props) {
   } = props;
   const { self_paid } = data;
 
-  const sorted = sortBy(categories, [(supply) => supply.name]);
+  const sorted = useMemo(
+    () => sortBy(categories, [(supply) => supply.name]),
+    [categories],
+  );
 
   return (
     <Stack fill vertical>
