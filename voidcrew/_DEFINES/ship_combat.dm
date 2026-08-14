@@ -293,6 +293,8 @@
 #define SIPHON_BASE_RATE 25
 /// Base warmup time before siphon activates
 #define SIPHON_BASE_WARMUP_TIME 5 SECONDS
+/// Balance below which a target isn't worth the lock - the siphon refuses to spin up
+#define SIPHON_MINIMUM_TARGET_BALANCE 50
 
 // Siphon stock part multipliers (per tier above 1)
 /// Capacitor: +25% siphon rate per tier

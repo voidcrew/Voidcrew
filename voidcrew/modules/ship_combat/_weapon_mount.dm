@@ -10,6 +10,10 @@
 	var/cached_exterior_check
 	/// Whether the exterior cache is valid
 	var/exterior_cache_valid = FALSE
+	/// Whether this mount can be bolted into a hull wall by dragging it onto one.
+	var/wall_mountable = FALSE
+	/// How long bolting into a wall takes.
+	var/wall_mount_time = 5 SECONDS
 
 /// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
 /// Weapons must be on the exterior to fire - they need line of sight to space/outside
@@ -53,6 +57,111 @@
 /// Invalidates the exterior check cache (call when the mount is moved/anchored)
 /obj/machinery/ship_combat/proc/invalidate_exterior_cache()
 	exterior_cache_valid = FALSE
+
+// ========== WALL MOUNTING ==========
+// Weapon mounts have to sit on the exterior, which on most hulls means giving up a
+// floor tile in a corridor that already has none to spare. Sinking one into the hull
+// plating instead is the same trade the hull defense turrets make, so it is mounted
+// the same way: wrench it loose, drag it onto the wall.
+//
+// Dragging rather than pushing is not a style choice. A mount is dense, so it can be
+// pulled out of a closed turf but never walked back into one - Move() rejects the
+// destination. Without the drag there is no way back in.
+
+/**
+ * Drag an unbolted mount onto an adjacent wall to bolt it into the hull.
+ *
+ * The mount ends up facing the way you shoved it, i.e. out through the far side of
+ * the wall, which is the outboard side whenever you are standing inside your own ship.
+ */
+/obj/machinery/ship_combat/mouse_drop_dragged(atom/over, mob/user, src_location, over_location, params)
+	if(!wall_mountable)
+		return ..()
+
+	var/turf/wall = over
+	if(!isclosedturf(wall))
+		return ..()
+
+	if(anchored)
+		balloon_alert(user, "unbolt it first")
+		return
+
+	var/mount_dir = get_dir(src, wall)
+	if(!(mount_dir in GLOB.cardinals))
+		balloon_alert(user, "move it beside the wall")
+		return
+
+	if(wall_mount_blocker(wall))
+		balloon_alert(user, "no room in that wall")
+		return
+
+	balloon_alert(user, "mounting...")
+	if(!do_after(user, wall_mount_time, target = src))
+		return
+	// Re-check: it is a long enough job that someone could have moved or bolted it.
+	if(anchored || QDELETED(wall) || wall_mount_blocker(wall) || get_dir(src, wall) != mount_dir)
+		return
+
+	forceMove(wall)
+	setDir(mount_dir)
+	set_anchored(TRUE)
+	invalidate_exterior_cache()
+	update_appearance()
+	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
+	user.visible_message(
+		span_notice("[user] bolts [src] into [wall]."),
+		span_notice("You bolt [src] into [wall]."),
+	)
+	// The mount only became exterior-facing just now, and the launcher's auto-link
+	// refuses to link anything that is not, so give it another go from its new home.
+	after_wall_mount(user)
+
+/// Anything already occupying a wall that would stop another mount going in there.
+/obj/machinery/ship_combat/proc/wall_mount_blocker(turf/wall)
+	return (locate(/obj/machinery/ship_combat) in wall) || (locate(/obj/machinery/porta_turret) in wall)
+
+/// Hook for subtypes that need to react to being bolted into a wall.
+/obj/machinery/ship_combat/proc/after_wall_mount(mob/user)
+	return
+
+/**
+ * Shove a freshly unbolted mount out of the wall it was sitting in.
+ *
+ * A loose mount inside a wall cannot be wrenched down again - default_unfasten_wrench
+ * refuses to anchor anything on a blocked turf - so leaving it there is a dead end that
+ * looks like a bug. Popping it out onto the deck puts it back in a state the player has
+ * seen before.
+ */
+/obj/machinery/ship_combat/proc/eject_from_wall(mob/user)
+	if(anchored || !wall_mountable)
+		return FALSE
+	var/turf/our_turf = get_turf(src)
+	if(!isclosedturf(our_turf))
+		return FALSE
+
+	// Behind us first - that is the inboard side, the one the player is standing on -
+	// then any open side, so it never stays wedged in solid rock.
+	for(var/exit_dir in (list(REVERSE_DIR(dir)) + GLOB.cardinals))
+		var/turf/exit = get_step(our_turf, exit_dir)
+		if(!exit || exit.is_blocked_turf(exclude_mobs = TRUE, source_atom = src))
+			continue
+		forceMove(exit)
+		invalidate_exterior_cache()
+		if(user)
+			balloon_alert(user, "pried out of the wall")
+		return TRUE
+	return FALSE
+
+/obj/machinery/ship_combat/examine(mob/user)
+	. = ..()
+	if(!wall_mountable)
+		return
+	if(!anchored)
+		. += span_notice("It is loose. Drag it onto a hull wall to bolt it into the plating, or wrench it down where it stands.")
+	else if(isclosedturf(get_turf(src)))
+		. += span_notice("It is sunk into the hull plating. A wrench frees it.")
+	else
+		. += span_notice("It is bolted to the deck. Unwrench it and drag it onto a hull wall to sink it into the plating instead.")
 
 // ========== APPROACH GEOMETRY ==========
 // Where a shot fired from this mount enters the target's reservation, and from

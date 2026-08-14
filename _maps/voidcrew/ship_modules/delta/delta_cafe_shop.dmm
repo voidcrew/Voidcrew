@@ -216,7 +216,7 @@
 /area/template_noop)
 "U" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/rnd/production/circuit_imprinter/offstation,
+/obj/machinery/rnd/production/circuit_imprinter,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "W" = (

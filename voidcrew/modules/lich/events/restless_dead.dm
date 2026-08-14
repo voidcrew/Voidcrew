@@ -14,6 +14,10 @@
  * - TG's sibling event in the same file (Possessing Ghosts, which grants fun_verbs) is NOT
  *   ported. It is an admin-flavored toy that hands live players poltergeist powers with no
  *   counterplay, and it is not on the contract's ramp.
+ * - His death undoes it. TG's version is permanent for the round; here the veil restores
+ *   itself through end_restless_dead() (bottom of this file), called from the site's victory
+ *   path, the same reach-back Tongues of the Dead gets. The visible dead are his working,
+ *   and rule 2 in lich_events.dm's header says nothing he does outlives him.
  */
 /datum/round_event_control/voidcrew/lich/restless_dead
 	name = "Ritual: Restless Dead"
@@ -35,6 +39,7 @@
 	announce_when = 1
 
 /datum/round_event/voidcrew/lich/restless_dead/start()
+	GLOB.lich_restless_dead_active = TRUE
 	set_observer_default_invisibility(0, span_warning("A cold green pressure settles over you. Something enormous has just noticed that you are still here."))
 
 /datum/round_event/voidcrew/lich/restless_dead/announce(fake)
@@ -44,3 +49,29 @@
 		see them. Look at their faces. You will be joining them soon enough.",
 		"A Small Courtesy",
 	)
+
+/// TRUE while the veil is down because of THIS rite. end_restless_dead() keys on it so
+/// killing the lich can only undo his own casting: if an admin made observers visible on
+/// their own (this rite never fired), his death must not quietly revert their work.
+GLOBAL_VAR_INIT(lich_restless_dead_active, FALSE)
+
+/**
+ * Restores the veil. One caller: the site's victory path (on_lich_slain(), lich_site.dm).
+ *
+ * Unlike Tongues of the Dead this rite has no timer, so his death is its only cure; that
+ * is what keeps a one-shot with no end() on the right side of rule 2 in lich_events.dm's
+ * header. The flag check makes it a no-op when the rite never fired, and the value check
+ * makes it yield if something else (roundend, an admin verb) has already moved observer
+ * invisibility off 0 since, whatever they set stands.
+ *
+ * Restoring the GLOBAL matters as much as the sweep inside the helper: freshly made
+ * observers read GLOB.observer_default_invisibility in New(), so without it every ghost
+ * created after his death would spawn visible.
+ */
+/proc/end_restless_dead()
+	if(!GLOB.lich_restless_dead_active)
+		return
+	GLOB.lich_restless_dead_active = FALSE
+	if(GLOB.observer_default_invisibility != 0)
+		return
+	set_observer_default_invisibility(INVISIBILITY_OBSERVER, span_notice("The green pressure lifts. The living can no longer see you."))

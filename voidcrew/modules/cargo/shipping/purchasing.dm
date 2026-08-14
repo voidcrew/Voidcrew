@@ -48,10 +48,23 @@
 		// in a secure crate type, which arrives locked - anyone aboard can toggle it
 		// open, but the crew shouldn't have to unlock cargo they just paid for.
 		var/turf/spawn_turf = pick(cargo_turfs)
-		var/obj/structure/closet/crate/delivered_crate = spawning_order.generate(spawn_turf)
-		if(delivered_crate?.locked)
-			delivered_crate.locked = FALSE
-			delivered_crate.update_appearance()
+		if(spawning_order.pack.goody)
+			// Goody packs have no crate type: upstream never routes them through
+			// generate() (it hand-packs them into account-locked cases), so calling
+			// it here CRASHed and the whole shipment loop died with the money spent.
+			// Ship-paid orders belong to the whole crew, so a plain box does.
+			var/obj/item/storage/box/goody_box = new(spawn_turf)
+			goody_box.name = "goody package - [spawning_order.pack.name]"
+			// Manifest errors can qdel contents; a goody is often a single item
+			ADD_TRAIT(goody_box, TRAIT_NO_MISSING_ITEM_ERROR, TRAIT_GENERIC)
+			ADD_TRAIT(goody_box, TRAIT_NO_MANIFEST_CONTENTS_ERROR, TRAIT_GENERIC)
+			spawning_order.pack.fill(goody_box)
+			spawning_order.generateManifest(goody_box, "Cargo", spawning_order.pack, price)
+		else
+			var/obj/structure/closet/crate/delivered_crate = spawning_order.generate(spawn_turf)
+			if(delivered_crate?.locked)
+				delivered_crate.locked = FALSE
+				delivered_crate.update_appearance()
 
 		SSblackbox.record_feedback("nested tally", "cargo_imports", 1, list("[price]", "[spawning_order.pack.name]"))
 

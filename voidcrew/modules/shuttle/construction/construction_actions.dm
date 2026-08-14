@@ -107,7 +107,8 @@
 	button_icon = 'voidcrew/icons/obj/tools.dmi'
 	button_icon_state = "rcd_remove"
 
-/// Cost to deconstruct an airlock (same as standard RCD)
+/// Base cost to deconstruct an airlock (standard RCD cost, before the ship
+/// deconstruction discount in deconstruct_cost() is applied)
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_COST 32
 /// Delay to deconstruct an airlock
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY (5 SECONDS)
@@ -160,8 +161,13 @@
 		owner.changeNext_move(CLICK_CD_RANGE)
 		check_rcd()
 
+		// This branch charges directly rather than going through rcd_create(), so it
+		// never sets RCD_DECONSTRUCT mode - apply the deconstruction discount by hand.
+		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+		var/airlock_cost = ship_rcd.deconstruct_cost(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST)
+
 		// Check resources
-		if(!base_console.internal_rcd.checkResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+		if(!ship_rcd.checkResource(airlock_cost, owner))
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
 
@@ -169,13 +175,12 @@
 		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
 
 		// Delay for deconstruction
-		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
 		if(!ship_rcd.build_delay(owner, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, target_airlock))
 			qdel(rcd_effect)
 			return
 
 		// Use resources after delay
-		if(!base_console.internal_rcd.useResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+		if(!ship_rcd.useResource(airlock_cost, owner))
 			qdel(rcd_effect)
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return

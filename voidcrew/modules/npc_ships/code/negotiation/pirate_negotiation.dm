@@ -471,6 +471,9 @@
 		return FALSE
 
 	player_ship.ship_account.adjust_money(-demanded_credits)
+	// The tribute goes into the pirate's hold rather than out of the economy, so a
+	// crew that pays up and then wins the rematch can siphon its own money back
+	pirate_ship?.ship_account?.adjust_money(demanded_credits, "Hold: tribute from [player_ship.name]")
 
 	// Payment complete!
 	end_negotiation(success = TRUE, reason = "payment_complete")

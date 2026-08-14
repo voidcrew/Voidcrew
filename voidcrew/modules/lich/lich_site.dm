@@ -397,12 +397,16 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		UnregisterSignal(slain, COMSIG_LIVING_DEATH)
 	lich_ref = null
 
-	// Stopping the clock only stops FUTURE rites. Tongues of the Dead installs a
-	// permanent global curse that would otherwise outlast him for the whole round,
-	// so his death has to reach back and undo it (see end_lich_babel() and rule 2)
-	// in the lich_events.dm header. Runs before the broadcast below, which tells
-	// the galaxy it has happened.
+	// Stopping the clock only stops FUTURE rites. Tongues of the Dead installs a global
+	// curse that runs on its own two-minute timer, so a raid that lands inside that
+	// window has to reach back and cut it short (see end_lich_babel() and rule 2 in
+	// the lich_events.dm header). A no-op if the timer already expired. Runs before
+	// the broadcast below, which tells the galaxy it has happened.
 	end_lich_babel()
+	// Same reach-back for Restless Dead, which has no timer at all: the veil over the
+	// dead stays down until he does. A no-op unless that rite fired (see
+	// end_restless_dead(), restless_dead.dm).
+	end_restless_dead()
 
 	name = "the Verdigris"
 	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped."

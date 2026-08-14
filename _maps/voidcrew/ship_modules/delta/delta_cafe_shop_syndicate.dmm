@@ -19,7 +19,7 @@
 /area/template_noop)
 "j" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/rnd/production/circuit_imprinter/offstation,
+/obj/machinery/rnd/production/circuit_imprinter,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "k" = (

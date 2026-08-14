@@ -138,6 +138,15 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 /// Same, for the faction boss that drops in after the last wave is repelled.
 #define NPC_PIRATE_BOSS_HEALTH_MULT 1.6
 
+// ========== NPC HULL WEALTH ==========
+// What a pirate is carrying in its own accounts, and therefore what a crew can
+// take back off it with a data siphon. Rolled per hull from the faction's
+// hold_credits_min/max at spawn and scaled by the zone it spawned in - a red
+// zone raider is running with a fuller hold than a yellow zone shakedown crew.
+#define NPC_HOLD_ZONE_MULT_GREEN 0.75
+#define NPC_HOLD_ZONE_MULT_YELLOW 1
+#define NPC_HOLD_ZONE_MULT_RED 1.5
+
 // Additional boarding blackboard keys
 #define BB_NPC_BOARDING_LAST_SPACE_CHECK "npc_boarding_space_check"  // Last time we checked for boarders in space
 

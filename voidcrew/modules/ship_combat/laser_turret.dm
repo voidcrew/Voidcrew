@@ -7,13 +7,14 @@
 
 /obj/machinery/ship_combat/laser_turret
 	name = "laser turret"
-	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a weapons system with a multitool and control power levels from there. Has an internal power cell that can be replaced."
+	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a weapons system with a multitool and control power levels from there. Has an internal power cell that can be replaced. Unwrench it and drag it onto a hull wall to sink it into the plating."
 	icon = 'icons/obj/weapons/turrets.dmi'
 	icon_state = "standard_off"
 	density = TRUE
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/laser_turret
+	wall_mountable = TRUE
 	/// How much power we draw from the grid to charge our cell per process tick
 	idle_power_usage = 0
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 2
@@ -399,7 +400,11 @@
 	. = ITEM_INTERACT_BLOCKING
 	default_unfasten_wrench(user, tool)
 	invalidate_exterior_cache()  // Position may have changed
+	eject_from_wall(user)  // Loose inside hull plating is a dead end - pop it onto the deck
 	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/laser_turret/after_wall_mount(mob/user)
+	attempt_auto_link()
 
 // Alt+click to rotate when unwrenched
 /obj/machinery/ship_combat/laser_turret/click_alt(mob/user)

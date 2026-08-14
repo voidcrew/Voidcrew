@@ -62,6 +62,7 @@
 
 	. = preflight_check(old_turfs, new_turfs, areas_to_move, underlying_areas, rotation)
 	if(.)
+		repair_powernets_after_aborted_move(old_turfs)
 		remove_ripples()
 		return
 
@@ -80,9 +81,11 @@
 
 	if(!force)
 		if(!check_dock(new_dock))
+			repair_powernets_after_aborted_move(old_turfs)
 			remove_ripples()
 			return DOCKING_BLOCKED
 		if(!canMove())
+			repair_powernets_after_aborted_move(old_turfs)
 			remove_ripples()
 			return DOCKING_IMMOBILIZED
 
@@ -110,6 +113,25 @@
 	// remove any stragglers just in case, and clear the list
 	remove_ripples()
 	return DOCKING_SUCCESS
+
+/**
+ * Rebuild the hull's powernets after a move aborts between preflight_check() and takeoff().
+ *
+ * By then beforeShuttleMove() has severed every cable on the hull, and it deliberately
+ * skips the deferred neighbour re-propagation (see /obj/structure/cable/beforeShuttleMove)
+ * that used to heal exactly this window - so without this pass an aborted dock leaves the
+ * whole grid cut, machines disconnected, until the next successful move. Nothing has moved
+ * yet, so propagating from any severed cable rebuilds its grid in place; the rest of that
+ * grid then short-circuits on the net it built, and untouched cables never had theirs cut.
+ */
+/obj/docking_port/mobile/proc/repair_powernets_after_aborted_move(list/old_turfs)
+	for(var/i in 1 to length(old_turfs))
+		CHECK_TICK
+		var/turf/oldT = old_turfs[i]
+		if(!oldT)
+			continue
+		for(var/obj/structure/cable/cut_cable in oldT)
+			cut_cable.propagate_if_no_network()
 
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, list/underlying_areas, rotation)
 	for(var/i in 1 to length(old_turfs))

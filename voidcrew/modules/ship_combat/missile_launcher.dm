@@ -5,7 +5,7 @@
 
 /obj/machinery/ship_combat/missile_launcher
 	name = "missile launcher"
-	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a weapons system with a multitool. Use a wrench to secure or unsecure."
+	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a weapons system with a multitool. Use a wrench to secure or unsecure, or drag it onto a hull wall to sink it into the plating."
 	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
@@ -17,6 +17,7 @@
 	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 	pixel_x = -16
 	pixel_y = -16
+	wall_mountable = TRUE
 	/// Loaded missile data (list of missile properties, or null if empty)
 	var/list/loaded_missile
 	/// Reference to our linked combat console
@@ -134,7 +135,11 @@
 		return
 	default_unfasten_wrench(user, tool)
 	invalidate_exterior_cache()  // Position may have changed
+	eject_from_wall(user)  // Loose inside hull plating is a dead end - pop it onto the deck
 	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/missile_launcher/after_wall_mount(mob/user)
+	attempt_auto_link()
 
 // Alt+click to rotate when unwrenched
 /obj/machinery/ship_combat/missile_launcher/click_alt(mob/user)

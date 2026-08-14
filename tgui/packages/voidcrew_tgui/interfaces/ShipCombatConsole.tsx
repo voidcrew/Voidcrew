@@ -299,6 +299,7 @@ type Data = {
   siphon_goal: number;
   siphon_goal_progress: number;
   siphon_target_name: string | null;
+  siphon_target_credits: number;
   // Electronic warfare suite (attacker side)
   ew_linked: BooleanLike;
   ew: EwSuite | null;
@@ -334,6 +335,9 @@ const C_WARN = '#d9a230';
 const C_CRIT = '#cf4a38';
 /** The cyan-green the helm uses for overhealth plate; shields borrow it. */
 const C_OVER = '#3ecfa0';
+
+/** Mirrors SIPHON_MINIMUM_TARGET_BALANCE - below this the siphon refuses to spin up. */
+const SIPHON_MIN_TARGET_CREDITS = 50;
 
 // Server-truth totals, for the progress bars that only receive a remainder.
 // All from ship_combat defines; a snapshot plus a total is what makes a
@@ -1069,6 +1073,7 @@ const SiphonPanel = () => {
     siphon_goal,
     siphon_goal_progress,
     siphon_target_name,
+    siphon_target_credits,
   } = data;
 
   if (!siphon_linked) {
@@ -1145,6 +1150,8 @@ const SiphonPanel = () => {
     );
   }
 
+  const targetHasFunds = siphon_target_credits >= SIPHON_MIN_TARGET_CREDITS;
+
   return (
     <div className="Tac__pad">
       {siphon_credits_stored > 0 && (
@@ -1152,15 +1159,27 @@ const SiphonPanel = () => {
           {siphon_credits_stored} cr aboard, collect at device
         </div>
       )}
+      {!!target_ref && (
+        <div
+          className="Tac__note"
+          style={{ color: targetHasFunds ? C_GOOD : C_LABEL }}
+        >
+          {targetHasFunds
+            ? `Target holds ${siphon_target_credits} cr`
+            : 'Target accounts empty'}
+        </div>
+      )}
       <button
         type="button"
         className="Tac__btn Tac__wideBtn"
         style={{ marginTop: 'auto' }}
-        disabled={!target_ref}
+        disabled={!target_ref || !targetHasFunds}
         title={
-          target_ref
-            ? 'Tap the locked target and drain its accounts'
-            : 'Requires a target lock'
+          !target_ref
+            ? 'Requires a target lock'
+            : targetHasFunds
+              ? 'Tap the locked target and drain its accounts'
+              : 'Nothing left in the target to take'
         }
         onClick={() => act('siphon_activate')}
       >

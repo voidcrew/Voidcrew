@@ -39,23 +39,33 @@
  *
  * So the band splits into two kinds of event, deliberately:
  *
- * - **Repeatable pressure**: ship-scoped, self-terminating, recoverable with ordinary ship
- *   and medical tools. These carry high caps and are what a long-lived lich actually runs
- *   on: grave_dirt (20), grave_chill (12), grave_air (10), corpse_bloom (8). The three
- *   hazards are the spine of the roster; grave_air and corpse_bloom reach potency 7 with
- *   grave_dirt so the top band always has more than one repeatable answer.
+ * - **Repeatable pressure**: self-terminating and recoverable with ordinary ship and medical
+ *   tools. These carry high caps and are what a long-lived lich actually runs
+ *   on: grave_dirt (20), grave_chill (12), grave_air (10), corpse_bloom (8),
+ *   tongues_of_the_dead (6). The three hazards are the spine of the roster; grave_air,
+ *   corpse_bloom and tongues_of_the_dead reach potency 7 with grave_dirt so the top band
+ *   always has more than one repeatable answer.
+ *   Self-terminating is the entry requirement, not ship scope: tongues_of_the_dead is
+ *   galaxy-scoped and belongs here because it lifts itself after two minutes. Its cap is the
+ *   lowest of the five because it is the one with no verb attached, a crew answers a hazard
+ *   and merely waits out a silence.
  *   Caps count RITUALS, not hulls: a ship-scoped rite fires one event instance per crewed
  *   ship and fire_ritual_on_every_ship() puts `occurrences` back to one per ritual, so a
  *   busy galaxy does not burn through a cap faster than an empty one.
  * - **Round-warping one-shots**: galaxy-scoped and lasting for the round:
- *   tongues_of_the_dead, mockery_of_heroes, restless_dead, unquiet_menagerie. These stay
+ *   mockery_of_heroes, restless_dead, unquiet_menagerie. These stay
  *   at max_occurrences = 1 forever. They are the last things on the roster that outlive
  *   their own firing, and they survive rule 2 on the grounds that none of them costs a
- *   player an item, a limb or a brain: a scrambled language, a title under your feet, ghosts
- *   you can see, more cats than you had. If one of them starts reading as a chore rather
- *   than a round-long joke, it goes the same way the other four did. Firing them twice is not more interesting, and two of
- *   them install global controllers that must not be duplicated at all (their
- *   can_spawn_event() overrides refuse a second instance outright).
+ *   player an item, a limb or a brain: a title under your feet, ghosts
+ *   you can see, more cats than you had. "For the round" has one carve-out: restless_dead
+ *   reverses when he dies (end_restless_dead(), called from the victory path alongside
+ *   end_lich_babel()), because the visible dead read as his active working rather than a
+ *   leftover joke. If one of them starts reading as a chore rather
+ *   than a round-long joke, it goes the same way the other four did, or the way
+ *   tongues_of_the_dead went: give it an end() and it graduates to the repeatable tier.
+ *   Firing them twice is not more interesting, and mockery_of_heroes installs a global
+ *   controller that must not be duplicated at all (its can_spawn_event() override refuses
+ *   a second instance outright).
  *
  * If the top of the ramp ever feels thin, the correct fix is a new repeatable ship-scoped
  * hazard or another band widened upward, never a raised cap on a one-shot.

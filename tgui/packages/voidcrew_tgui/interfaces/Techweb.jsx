@@ -185,7 +185,7 @@ export const TechwebContent = (props) => {
             <Button fluid onClick={() => act('toggleLock')} icon="lock">
               Lock Console
             </Button>
-            {d_disk && (
+            {!!d_disk && (
               <Flex.Item>
                 <Button
                   fluid
@@ -197,7 +197,7 @@ export const TechwebContent = (props) => {
                 </Button>
               </Flex.Item>
             )}
-            {t_disk && (
+            {!!t_disk && (
               <Flex.Item>
                 <Button
                   fluid
@@ -654,7 +654,7 @@ const TechNode = (props) => {
       <Box className="Techweb__NodeUnlockedDesigns" mb={2}>
         {design_ids.map((k, i) => (
           <Button
-            key={id}
+            key={k}
             className={`${design_cache[k].class} Techweb__DesignIcon`}
             tooltip={design_cache[k].name}
             tooltipPosition={i % 15 < 7 ? 'right' : 'left'}
@@ -671,7 +671,7 @@ const TechNode = (props) => {
             if (thisExp === null || thisExp === undefined) {
               return <LockedExperiment key={index} />;
             }
-            return <NodeExperiment key={thisExp} exp={thisExp} />;
+            return <NodeExperiment key={k} exp={thisExp} />;
           })}
         </Collapsible>
       )}
@@ -710,7 +710,7 @@ const TechNode = (props) => {
               return <LockedExperiment key={index} />;
             }
             return (
-              <NodeExperiment key={thisExp} exp={thisExp}>
+              <NodeExperiment key={k} exp={thisExp}>
                 <Box className="Techweb__ExperimentDiscount">
                   Provides a discount of {discount_experiments[k]} points to all
                   required point pools.

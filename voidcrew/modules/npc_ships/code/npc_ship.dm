@@ -9,8 +9,16 @@
 /obj/structure/overmap/ship/npc
 	name = "unidentified vessel"
 	desc = "An AI-controlled vessel."
-	/// The commissioning grant is for player crews; an NPC hull's account stays empty.
+	/// The commissioning grant is for player crews; an NPC hull funds itself from
+	/// hold_credits_min/max instead, which is zone-scaled and rolled per ship.
 	starting_credits = 0
+
+	/// Lower bound on what this hull is carrying when it spawns. This is what a
+	/// crew can take back off it with a data siphon, so a faction that demands
+	/// big ransoms should be worth robbing in turn. Zero means an empty hull.
+	var/hold_credits_min = 0
+	/// Upper bound on the spawn hold roll.
+	var/hold_credits_max = 0
 
 	/// Combat interface for firing weapons
 	var/datum/npc_combat_interface/combat_interface
@@ -139,6 +147,37 @@
 		color = ship_color
 		chat_color = ship_color
 	// AI initialization happens after shuttle is fully loaded via signal or explicit call
+
+/obj/structure/overmap/ship/npc/setup_from_template(datum/map_template/shuttle/voidcrew/template, datum/ship_theme/selected_theme)
+	. = ..()
+	if(!.)
+		return
+	fund_hold()
+
+/**
+ * Rolls this hull's spawn balance into its ship account.
+ *
+ * Called once, straight after the account exists. Pirates used to spawn broke,
+ * which made them immune to the very siphon they carry - a crew that won the
+ * fight had nothing to drain. The roll is scaled by the zone the hull spawned
+ * in; ships created off the overmap (mission dispatch, admin spawns) fall back
+ * to the yellow multiplier.
+ */
+/obj/structure/overmap/ship/npc/proc/fund_hold()
+	if(!ship_account || hold_credits_max <= 0)
+		return
+
+	var/rolled = rand(hold_credits_min, hold_credits_max)
+	var/zone_type = SSovermap_zones.get_zone_type(get_turf(src))
+	switch(zone_type)
+		if(ZONE_GREEN)
+			rolled *= NPC_HOLD_ZONE_MULT_GREEN
+		if(ZONE_RED)
+			rolled *= NPC_HOLD_ZONE_MULT_RED
+		else
+			rolled *= NPC_HOLD_ZONE_MULT_YELLOW
+
+	ship_account.adjust_money(round(rolled), "Hold: unaccounted takings")
 
 /obj/structure/overmap/ship/npc/Destroy()
 	QDEL_NULL(ai_controller)
@@ -606,6 +645,11 @@
 
 	// Faction
 	faction = list(FACTION_PIRATE)
+
+	// Takings aboard - roughly tracks the faction's ransom appetite below, so the
+	// crews that demand the most are also the ones worth siphoning back
+	hold_credits_min = 1200
+	hold_credits_max = 2600
 
 	// ========== NEGOTIATION CONFIG ==========
 	/// Whether this pirate accepts negotiations (can be hailed)

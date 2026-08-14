@@ -92,8 +92,6 @@
 		"nanite_cloud_control",
 		"relay_nanites",
 		"monitoring_nanites",
-		"research_nanites",
-		"researchplus_nanites",
 		"access_nanites",
 		"repairing_nanites",
 		"sensor_nanite_volume",

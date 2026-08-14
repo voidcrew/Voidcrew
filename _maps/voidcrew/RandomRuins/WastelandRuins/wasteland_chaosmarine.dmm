@@ -17,7 +17,7 @@
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "bi" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "bH" = (
@@ -48,7 +48,7 @@
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "hu" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /obj/item/ammo_box/c10mm,
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
@@ -246,7 +246,7 @@
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Jb" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /obj/item/ammo_box/magazine/m9mm,
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered)

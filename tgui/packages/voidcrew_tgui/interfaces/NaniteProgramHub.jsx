@@ -1,4 +1,3 @@
-// import { map } from '../../common/collections';
 import { map } from 'es-toolkit/compat';
 import { useBackend, useSharedState } from '../../tgui/backend';
 import {
@@ -14,10 +13,7 @@ import { Window } from '../../tgui/layouts';
 export const NaniteProgramHub = (props, context) => {
   const { act, data } = useBackend(context);
   const { detail_view, disk, has_disk, has_program, programs = {} } = data;
-  const [selectedCategory, setSelectedCategory] = useSharedState(
-    context,
-    'category',
-  );
+  const [selectedCategory, setSelectedCategory] = useSharedState('category');
   const programsInCategory = (programs && programs[selectedCategory]) || [];
   return (
     <Window width={500} height={700} resizable>
@@ -77,11 +73,13 @@ export const NaniteProgramHub = (props, context) => {
             <Flex>
               <Flex.Item minWidth="110px">
                 <Tabs vertical>
-                  {map((cat_contents, category) => {
-                    const progs = cat_contents || [];
-                    // Backend was sending stupid data that would have been
-                    // annoying to fix
-                    const tabLabel = category.substring(0, category.length - 8);
+                  {map(programs, (cat_contents, category) => {
+                    // Categories arrive as RND paths ("/Nanites/Utility Nanites");
+                    // show just the subcategory word
+                    const tabLabel = category
+                      .split('/')
+                      .pop()
+                      .replace(/ Nanites$/, '');
                     return (
                       <Tabs.Tab
                         key={category}
@@ -91,7 +89,7 @@ export const NaniteProgramHub = (props, context) => {
                         {tabLabel}
                       </Tabs.Tab>
                     );
-                  })(programs)}
+                  })}
                 </Tabs>
               </Flex.Item>
               <Flex.Item grow={1} basis={0}>

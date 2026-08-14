@@ -733,6 +733,12 @@
 	. = ..()
 	AddElement(/datum/element/caseless)
 
+// The base casing appends "-live" while loaded; ammo.dmi has no
+// "low_yield_rocket-live" state, and a caseless rocket is always loaded.
+/obj/item/ammo_casing/cyberware_buster/update_icon_state()
+	. = ..()
+	icon_state = base_icon_state
+
 /// The launcher's two-round rotary rack.
 /obj/item/ammo_box/magazine/internal/cylinder/cyberware_buster
 	name = "buster rotary rack"

@@ -69,21 +69,27 @@
 			TEST_FAIL("only [repeatable_in_band] repeatable event(s) sit at potency [max_potency]. The ritual clock plateaus there for the rest of the round, so the top band needs more than one answer that can fire again (see the cap policy in lich_events.dm. The fix is a new repeatable ship-scoped event or a band widened upward, never a raised cap on a one-shot).")
 
 /**
- * # Ilthuun's Babel is lifted by his death, and only his
+ * # Ilthuun's Babel is lifted by his own timer or his death, and nobody else's
  *
- * Tongues of the Dead is the one ritual that installs a permanent global
- * controller, so it is the one that can outlive the lich. on_lich_slain() calls
- * end_lich_babel() to undo it (rule 2, lich_events.dm: a rite that is over should
- * be over). Two ways that silently rots:
+ * Tongues of the Dead does its damage through a global controller that sits in
+ * GLOB.tower_of_babel until something destroys it, rather than resolving inside
+ * its own start(). Two things destroy it: the event's end() when its two minutes
+ * are up, and on_lich_slain() if the raid lands sooner. Both go through
+ * end_lich_babel() (rule 2, lich_events.dm: a rite that is over should be over).
+ * Three ways that silently rots:
  *
  * - The cure stops emptying GLOB.tower_of_babel. Nothing throws: the galaxy just
  *   stays mute for the rest of the round and only an admin verb fixes it.
  * - The istype() narrows to the wrong type, or is dropped for a truthiness check.
- *   Then killing the lich also wipes an admin's own Tower of Babel out from under
- *   them, which nobody would connect to the lich dying.
+ *   Then the rite expiring, or the lich dying, also wipes an admin's own Tower of
+ *   Babel out from under them, which nobody would connect to either.
+ * - end_when goes back to 0. The rite reverts to lasting the whole round, and
+ *   because its can_spawn_event() refuses to run while GLOB.tower_of_babel is
+ *   occupied, its max_occurrences > 1 quietly stops meaning anything: it fires
+ *   once and never again, with no cap ever reached and nothing logged.
  *
- * Both cases are checked against a datum in the global slot, never against a live
- * lair, so this test spawns nothing and needs no overmap.
+ * All three are checked against a datum in the global slot or against initial()
+ * values, never a live lair, so this test spawns nothing and needs no overmap.
  */
 /datum/unit_test/lich_babel_cure
 
@@ -91,12 +97,12 @@
 	var/datum/tower_of_babel/preexisting = GLOB.tower_of_babel
 	GLOB.tower_of_babel = null
 
-	// His: the death path must clear it.
+	// His: the cure path must clear it.
 	GLOB.tower_of_babel = new /datum/tower_of_babel/lich
 	end_lich_babel()
 	TEST_ASSERT(isnull(GLOB.tower_of_babel), "end_lich_babel() left GLOB.tower_of_babel populated. The curse survives the lich, and can_spawn_event() will keep refusing a future instance")
 
-	// Somebody else's: the death path must not touch it.
+	// Somebody else's: the cure path must not touch it.
 	var/datum/tower_of_babel/admin_cast = new /datum/tower_of_babel
 	GLOB.tower_of_babel = admin_cast
 	end_lich_babel()
@@ -104,3 +110,9 @@
 	QDEL_NULL(GLOB.tower_of_babel)
 
 	GLOB.tower_of_babel = preexisting
+
+	// The cap and the timer are one mechanism, not two settings.
+	var/datum/round_event/voidcrew/lich/tongues_of_the_dead/rite = /datum/round_event/voidcrew/lich/tongues_of_the_dead
+	var/datum/round_event_control/voidcrew/lich/tongues_of_the_dead/rite_control = /datum/round_event_control/voidcrew/lich/tongues_of_the_dead
+	if(initial(rite_control.max_occurrences) > 1)
+		TEST_ASSERT(initial(rite.end_when) > 0, "Tongues of the Dead is capped at [initial(rite_control.max_occurrences)] firings but has end_when = 0, so the curse never lifts on its own. Its can_spawn_event() refuses to run while GLOB.tower_of_babel is occupied, so it will fire exactly once and the cap becomes decorative. Either restore end_when or drop max_occurrences to 1.")

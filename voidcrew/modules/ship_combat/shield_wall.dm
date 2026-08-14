@@ -12,6 +12,11 @@
 	opacity = FALSE
 	layer = ABOVE_MOB_LAYER
 	resistance_flags = INDESTRUCTIBLE
+	// INDESTRUCTIBLE only stops damage - strong fauna (move_force >= 2x move_resist) can
+	// still force-push anchored structures via PushAM, and the attempted Move() re-points
+	// dir even when blocked. dir IS this wall's connector shape, so any shove visibly
+	// rotates the shield (or displaces the segment outright if the far turf is clear).
+	move_resist = INFINITY
 	light_range = 2
 	light_power = 0.5
 	light_color = LIGHT_COLOR_BLUE

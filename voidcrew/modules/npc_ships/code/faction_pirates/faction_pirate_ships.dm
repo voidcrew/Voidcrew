@@ -46,6 +46,9 @@
 	negotiation_dialog_type = /datum/pirate_faction_dialog/silverscale
 	min_negotiation_demand = 800
 	max_negotiation_demand = 15000
+	// And carry more tribute to be relieved of
+	hold_credits_min = 2200
+	hold_credits_max = 4600
 	pirate_faction = "silverscale"
 
 	// Phased combat - aristocratic duelists
@@ -104,6 +107,8 @@
 	negotiation_dialog_type = /datum/pirate_faction_dialog/skeleton
 	min_negotiation_demand = 400
 	max_negotiation_demand = 8000
+	hold_credits_min = 1100
+	hold_credits_max = 2400
 	pirate_faction = "skeleton"
 
 	// Phased combat - undead hordes
@@ -163,6 +168,8 @@
 	min_negotiation_demand = 200
 	max_negotiation_demand = 5000
 	pirate_faction = "grey"
+	hold_credits_min = 700
+	hold_credits_max = 1600
 
 	// Phased combat - greytide swarm
 	boss_type = /mob/living/basic/trooper/pirate/faction/boss/grey
@@ -216,6 +223,8 @@
 	min_negotiation_demand = 500
 	max_negotiation_demand = 10000
 	pirate_faction = "lustrous"
+	hold_credits_min = 1400
+	hold_credits_max = 3000
 
 	// Phased combat - crystalline beings
 	boss_type = /mob/living/basic/trooper/pirate/faction/boss/lustrous
@@ -275,6 +284,8 @@
 	min_negotiation_demand = 700
 	max_negotiation_demand = 12000
 	pirate_faction = "interdyne"
+	hold_credits_min = 1800
+	hold_credits_max = 3800
 
 	// Phased combat - surgical strike teams
 	boss_type = /mob/living/basic/trooper/pirate/faction/boss/interdyne
@@ -338,6 +349,9 @@
 	min_negotiation_demand = 1000
 	max_negotiation_demand = 20000
 	pirate_faction = "irs"
+	// Collections vessel: the fullest coffers in the pool, and the best robbery
+	hold_credits_min = 2800
+	hold_credits_max = 6000
 
 	// Phased combat - tax enforcement
 	boss_type = /mob/living/basic/trooper/pirate/faction/boss/irs
@@ -400,6 +414,8 @@
 	min_negotiation_demand = 600
 	max_negotiation_demand = 12000
 	pirate_faction = "medieval"
+	hold_credits_min = 1500
+	hold_credits_max = 3200
 
 	// Phased combat - knights and men-at-arms
 	boss_type = /mob/living/basic/trooper/pirate/faction/boss/medieval
