@@ -194,6 +194,13 @@
 	/// The ship we sent a docking request to (if any)
 	var/obj/structure/overmap/ship/pending_dock_target
 
+	/// Weakref to the overmap site we're waiting on to finish generating (see
+	/// request_site_load). The helm is never held while a site generates - the
+	/// approach resumes automatically off COMSIG_VOIDCREW_SITE_LOAD_FINISHED.
+	var/datum/weakref/awaiting_load_site
+	/// Weakref to the mob that asked for that approach; used to resume it (may be null).
+	var/datum/weakref/awaiting_load_user
+
 	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
 	var/speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
 	/// Whether this ship is currently being interdicted
@@ -1879,6 +1886,91 @@
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 
 /**
+ * Requests generation of an ungenerated site's interior WITHOUT holding the helm:
+ * the ship stays fully controllable, progress is broadcast crew-wide, and the
+ * docking approach resumes on its own when the site charts.
+ *
+ * Called from the ship_act() of planets, space ruins and meteor fields when their
+ * interior isn't generated yet. Completion (success or failure) arrives via
+ * COMSIG_VOIDCREW_SITE_LOAD_FINISHED; while queued, progress comes from
+ * worldgen_claim()'s notify_ship routing.
+ *
+ * * site - the overmap object that needs its interior generated.
+ * * user - the mob that pressed Dock, if any; kept by weakref for the resume.
+ */
+/obj/structure/overmap/ship/proc/request_site_load(obj/structure/overmap/site, mob/user)
+	// A second destination while one is already queued supersedes the first rather
+	// than stacking: only the newest approach gets to auto-resume.
+	var/obj/structure/overmap/old_site = awaiting_load_site?.resolve()
+	if(old_site == site)
+		awaiting_load_user = WEAKREF(user)
+		ship_notify("Survey of [site.get_site_label()] is already underway - the approach resumes on its own when it charts.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		return
+	if(old_site)
+		UnregisterSignal(old_site, list(COMSIG_VOIDCREW_SITE_LOAD_FINISHED, COMSIG_QDELETING))
+		ship_notify("Survey request for [old_site.get_site_label()] superseded by a new approach.", "SURVEY", SHIP_NOTIFY_NOTICE)
+
+	awaiting_load_site = WEAKREF(site)
+	awaiting_load_user = WEAKREF(user)
+	RegisterSignal(site, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, PROC_REF(on_site_load_finished))
+	RegisterSignal(site, COMSIG_QDELETING, PROC_REF(on_site_load_qdeleting))
+
+	// The site may have finished loading between the helm's check and now - never
+	// sit waiting for a signal that already fired.
+	if(site.is_loaded())
+		UnregisterSignal(site, list(COMSIG_VOIDCREW_SITE_LOAD_FINISHED, COMSIG_QDELETING))
+		awaiting_load_site = null
+		awaiting_load_user = null
+		INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src)
+		return
+
+	var/queue_depth = SSovermap.worldgen_queue_length() + (SSovermap.worldgen_owner ? 1 : 0)
+	var/queue_status = queue_depth ? "[queue_depth] survey operation[queue_depth == 1 ? "" : "s"] ahead of us." : "The survey starts immediately."
+	ship_notify("Survey request logged for [site.get_site_label()]. [queue_status] Helm remains free - we will broadcast when the site is charted.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+	if(site.is_loading())
+		// Another crew (or our own earlier press) already started this one; its
+		// load sends the same completion signal we just registered for.
+		ship_notify("A survey of this site is already underway - the approach resumes on its own when it charts.", "SURVEY", SHIP_NOTIFY_NOTICE)
+	else
+		site.start_level_load(user, src)
+
+/**
+ * Signal handler - a site we were waiting on finished (or failed) its generation.
+ * Resumes the docking approach if the ship is still in a position to take it:
+ * flying, stationary, on the site's tile, and not interdicted. Anything else gets
+ * a "dock when ready" broadcast instead - the ship may have moved on deliberately.
+ */
+/obj/structure/overmap/ship/proc/on_site_load_finished(obj/structure/overmap/site, success)
+	SIGNAL_HANDLER
+	UnregisterSignal(site, list(COMSIG_VOIDCREW_SITE_LOAD_FINISHED, COMSIG_QDELETING))
+	awaiting_load_site = null
+	var/mob/user = awaiting_load_user?.resolve()
+	awaiting_load_user = null
+
+	if(QDELETED(site))
+		return
+	if(!success)
+		ship_notify("Survey of [site.get_site_label()] could not be completed right now - sector traffic is too heavy. Helm remains free; try docking again shortly.", "SURVEY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+		return
+
+	if(state == OVERMAP_SHIP_FLYING && is_still() && site.x == x && site.y == y && !is_interdicted && site.is_loaded())
+		ship_notify("Chart complete: [site.get_site_label()]. Resuming docking approach.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src)
+	else
+		ship_notify("Chart complete: [site.get_site_label()]. It will hold position - dock when ready.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+/**
+ * Signal handler - the site we were waiting on was deleted mid-survey.
+ */
+/obj/structure/overmap/ship/proc/on_site_load_qdeleting(obj/structure/overmap/site)
+	SIGNAL_HANDLER
+	UnregisterSignal(site, list(COMSIG_VOIDCREW_SITE_LOAD_FINISHED, COMSIG_QDELETING))
+	awaiting_load_site = null
+	awaiting_load_user = null
+	ship_notify("Survey target lost from the chart. Approach cancelled.", "SURVEY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+
+/**
   * Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)
   */
 /obj/structure/overmap/ship/proc/check_loc()
@@ -2373,8 +2465,10 @@
 	if(istype(loading_target) && loading_target.loading)
 		manoeuvre_watch_since = world.time
 		return FALSE
-	// ...and ship_act() sets ACTING before it queues behind every other build in the sector,
-	// which is minutes by design rather than a stall.
+	// ...and ACTING with worldgen work active is a legal wait, not a stall. Legacy:
+	// ship_act() used to hold ships in ACTING while their survey queued; surveys now
+	// run in the background off request_site_load() and the ship never leaves FLYING.
+	// This remains as a safety net for anything that still sets ACTING near a build.
 	if(state == OVERMAP_SHIP_ACTING && (SSovermap.worldgen_owner || SSovermap.worldgen_queue_length()))
 		manoeuvre_watch_since = world.time
 		return FALSE

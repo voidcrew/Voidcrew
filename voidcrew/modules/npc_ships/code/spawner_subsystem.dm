@@ -405,16 +405,20 @@ SUBSYSTEM_DEF(npc_ships)
 		SSshuttle.shuttle_loading = FALSE
 		return null
 
+	var/datum/worldgen_probe/probe = worldgen_begin("ship-npc", "[template_instance.name]")
+
 	var/obj/structure/overmap/ship/npc/ship = new ship_type_path(spawn_turf)
 
 	if(!ship || QDELETED(ship))
 		SSshuttle.shuttle_loading = FALSE
+		worldgen_end(probe, "spawn-failed")
 		return null
 
 	if(!ship.setup_from_template(template_instance))
 		stack_trace("NPC ship failed to setup from template [template_path]")
 		qdel(ship)
 		SSshuttle.shuttle_loading = FALSE
+		worldgen_end(probe, "setup-failed")
 		return null
 
 	SSair.can_fire = FALSE
@@ -425,6 +429,7 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!loaded)
 		stack_trace("Failed to load shuttle for NPC ship [template_path]")
 		qdel(ship)
+		worldgen_end(probe, "load-failed")
 		return null
 
 	loaded.current_ship = ship
@@ -435,6 +440,7 @@ SUBSYSTEM_DEF(npc_ships)
 	ship.calculate_mass()
 	ship.initialize_ai()
 
+	worldgen_end(probe)
 	return ship
 
 // ========== ADMIN VERBS ==========

@@ -63,6 +63,40 @@
 	return null
 
 /**
+ * What crew-facing survey broadcasts call this object. Falls back through
+ * display_name to name for objects that deliberately are not Dock-button targets:
+ * the dock-in-empty-space placeholder returns null from get_dock_description() by
+ * design, and a null would otherwise interpolate as a blank into every
+ * request_site_load() message ("Survey request logged for .").
+ */
+/obj/structure/overmap/proc/get_site_label()
+	return get_dock_description() || display_name || name
+
+/**
+ * Kicks off generation of this object's interior in the background, if it has one.
+ *
+ * Overridden by planets, space ruins and meteor fields to INVOKE_ASYNC their own
+ * load_level() (whose signatures differ per type). The caller - a ship's
+ * request_site_load() - has already registered for COMSIG_VOIDCREW_SITE_LOAD_FINISHED,
+ * which every load path sends on success and failure, so this never needs to return
+ * a status. Base: the object has no loadable interior, nothing happens.
+ *
+ * * user - The mob that asked, if any. Told where it stands if the worldgen queue is busy.
+ * * waiting_ship - The ship holding a docking approach on this object; routed to
+ *   worldgen_claim()'s notify_ship so queue progress reaches the whole crew.
+ */
+/obj/structure/overmap/proc/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	return
+
+/// Whether this object's interior is currently being generated. Base: it never is.
+/obj/structure/overmap/proc/is_loading()
+	return FALSE
+
+/// Whether this object's interior is generated and dockable. Base: it never is.
+/obj/structure/overmap/proc/is_loaded()
+	return FALSE
+
+/**
  * Whether a ship parked at this object is standing in gravity that comes from the
  * location rather than from its own deck plating, a planet surface, an outpost deck.
  *

@@ -353,6 +353,12 @@
 				balloon_alert(usr, "minimum reward is 100 cr!")
 				return TRUE
 
+			// Escrowing the balance into a bounty and cancelling it later parks money out
+			// of a pirate's reach, so a frozen account can't post one.
+			if(ship.ship_account?.is_siphon_locked())
+				balloon_alert(usr, "accounts locked - intrusion!")
+				return TRUE
+
 			if(ship.ship_account?.account_balance < reward_amount)
 				balloon_alert(usr, "insufficient funds!")
 				return TRUE

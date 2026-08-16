@@ -47,6 +47,8 @@
 		else
 			stack_trace("Ship theme [selected_theme.id] points at a missing map: [template_instance.mappath]")
 
+	var/datum/worldgen_probe/probe = worldgen_begin("ship", "[template_instance.name] theme=[selected_theme?.id || "default"]")
+
 	// Create ship and set template directly as a workaround for Initialize arg passing
 	// Ships spawn in the green zone (outer ring) for safety
 	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
@@ -55,6 +57,7 @@
 	if(!ship_to_spawn || QDELETED(ship_to_spawn))
 		stack_trace("Unable to properly load ship [ship_template_to_spawn].")
 		shuttle_loading = FALSE
+		worldgen_end(probe, "spawn-failed")
 		return FALSE
 
 	// Store upgrade selections and theme BEFORE setup_from_template (module job_slots_add
@@ -69,6 +72,7 @@
 		stack_trace("Ship failed to setup from template [ship_template_to_spawn].")
 		qdel(ship_to_spawn)
 		shuttle_loading = FALSE
+		worldgen_end(probe, "setup-failed")
 		return FALSE
 
 	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
@@ -86,6 +90,7 @@
 		stack_trace("Unable to properly load ship template [ship_to_spawn.source_template].")
 		loading_ship = null
 		qdel(ship_to_spawn)
+		worldgen_end(probe, "load-failed")
 		return FALSE
 
 	loaded.current_ship = ship_to_spawn
@@ -125,6 +130,7 @@
 	// voidcrew/modules/shuttle/ship_parts/starter_supplies.dm
 	loaded.ensure_starter_supplies()
 
+	worldgen_end(probe)
 	return ship_to_spawn
 
 /client/add_admin_verbs()

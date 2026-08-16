@@ -270,3 +270,4 @@ rust_g64.dll
 /vc/
 /unit_test_run.dme
 wiki/deploy.local.ps1
+wiki/dist/

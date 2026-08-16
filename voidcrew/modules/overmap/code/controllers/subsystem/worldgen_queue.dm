@@ -1,30 +1,32 @@
 /**
  * # Worldgen queue
  *
- * A global, FIFO, reentrant lock around **planet terrain builds and planet teardowns**,
- * and nothing else.
+ * A global, FIFO, reentrant lock around every heavy generation job: **planet terrain
+ * builds and teardowns, space ruin loads and teardowns, meteor-field loads and
+ * teardowns, and mapgen-bearing flat encounters (the large asteroid's cave level)**.
  *
  * A planet lays down, populates, ruins and cordons ~16k turfs of generated terrain; a
  * teardown qdels every atom standing on them in a sweep that deliberately never yields
- * (see /datum/space_level/clear_reservation). Two of those at once will not deadlock -
- * they interleave, which is worse. Both take proportionally longer, the tick budget
- * stays pinned for the sum of their runtimes instead of each in turn, and every player
- * on every ship feels it. So: one at a time, in the order people asked.
+ * (see /datum/space_level/clear_reservation); a ruin or meteor field stamps thousands
+ * of turfs into a reservation. Two of those at once will not deadlock - they
+ * interleave, which is worse. Both take proportionally longer, the tick budget stays
+ * pinned for the sum of their runtimes instead of each in turn, and every player on
+ * every ship feels it. So: one at a time, in the order people asked.
  *
  * ## What is deliberately NOT queued
  *
- * Ruin reservations, meteor fields, empty space, player and trader outposts, the
- * colosseum. They stamp a template into a reservation or fill a flat level - real work,
- * but nothing like a terrain build, and every one of them is on a path where a wait
- * would be worse than the lag it avoids. Empty space is the clearest case: it is stood
- * up for routine ship-to-ship and cargo docking, and making that queue behind somebody
- * else's planet would break ordinary docking to fix a stutter nobody reported.
+ * Empty space, player and trader outposts, the colosseum - the flat encounters stood
+ * up for routine ship-to-ship and cargo docking. Boarding is time-critical (a crew
+ * docking a hostile ship under fire cannot wait out somebody else's planet survey),
+ * the work is a flat level fill rather than generated terrain, and making it queue
+ * would break ordinary docking to fix a stutter. Nor is any of it *throttled* while a
+ * queued job happens to be building: their loops pass throttled = FALSE to
+ * worldgen_yield() and run at plain CHECK_TICK speed.
  *
- * Nor are they *throttled* while a planet happens to be building: their loops pass
- * throttled = FALSE to worldgen_yield() and run at plain CHECK_TICK speed. Design rule:
- * a survey may never slow a ruin or empty-space dock, in any amount. The cost is that
- * generation work briefly stacks when an encounter loads mid-survey; the queue's budget
- * only ever governed the queued job itself.
+ * Queueing no longer means locking anyone's helm: ships requesting an ungenerated
+ * site register for COMSIG_VOIDCREW_SITE_LOAD_FINISHED and keep flying (see
+ * /obj/structure/overmap/ship/proc/request_site_load), so a wait behind the queue is
+ * a broadcast to the crew, not a frozen helm.
  *
  * ## The mapzone race is fixed at the source, not here
  *
@@ -125,8 +127,12 @@
  * * timeout - how long to stay in line before giving up. Null takes the default;
  *   WORLDGEN_QUEUE_NO_WAIT means take the queue only if it is free this instant,
  *   which is what UI paths want rather than holding an interface open for minutes.
+ * * notify_ship - optional ship whose whole crew gets the queue-position messages via
+ *   ship_notify (category SURVEY) instead of just `waiter` getting a to_chat. Ships no
+ *   longer lock up while their survey queues, so the messages are the only thing
+ *   telling the crew why their destination isn't charting yet.
  */
-/datum/controller/subsystem/overmap/proc/worldgen_claim(obj/structure/overmap/requester, label, mob/waiter, timeout)
+/datum/controller/subsystem/overmap/proc/worldgen_claim(obj/structure/overmap/requester, label, mob/waiter, timeout, obj/structure/overmap/ship/notify_ship)
 	if(QDELETED(requester))
 		return FALSE
 
@@ -144,6 +150,7 @@
 
 	var/ticket = worldgen_next_ticket++
 	worldgen_tickets += ticket
+	var/queued_at = world.time
 	var/deadline = world.time + timeout
 	var/warned_waiter = FALSE
 	var/next_waiter_update = 0
@@ -164,18 +171,37 @@
 		if(QDELETED(requester))
 			worldgen_tickets -= ticket
 			return FALSE
+		// The crew being paged can stop caring mid-wait: the ship may be deleted, or its
+		// crew may have superseded this survey with a newer approach (request_site_load()
+		// re-targets awaiting_load_site). The job itself is still worth running - the
+		// site gets charted for whoever comes next - but stop paging a crew that has
+		// moved on, and drop the reference so a destroyed ship isn't pinned soft-deleted
+		// for the rest of a minutes-long wait.
+		if(notify_ship)
+			if(QDELETED(notify_ship))
+				notify_ship = null
+			else
+				var/obj/structure/overmap/current_wait = notify_ship.awaiting_load_site?.resolve()
+				if(current_wait && current_wait != requester)
+					notify_ship = null
+					waiter = null // same crew's helmsman - mute both channels
 		// Repeated rather than said once: the hold can run for minutes with the helm
 		// locked, and a single line at the start is indistinguishable from a hang.
-		if(waiter && world.time >= next_waiter_update)
+		if((waiter || notify_ship) && world.time >= next_waiter_update)
 			next_waiter_update = world.time + WORLDGEN_QUEUE_UPDATE_INTERVAL
 			var/ahead = worldgen_tickets.Find(ticket) - 1
 			if(worldgen_owner)
 				ahead++
+			var/queue_message
 			if(warned_waiter)
-				to_chat(waiter, span_notice("Still holding. [ahead] survey operation[ahead == 1 ? "" : "s"] ahead of us."))
+				queue_message = "Still holding. [ahead] survey operation[ahead == 1 ? "" : "s"] ahead of us."
 			else
 				warned_waiter = TRUE
-				to_chat(waiter, span_notice("Another survey is already underway in this sector. Holding position - [ahead] operation[ahead == 1 ? "" : "s"] ahead of us."))
+				queue_message = "Another survey is already underway in this sector. Holding position - [ahead] operation[ahead == 1 ? "" : "s"] ahead of us."
+			if(notify_ship)
+				notify_ship.ship_notify(queue_message, "SURVEY", SHIP_NOTIFY_NOTICE)
+			else
+				to_chat(waiter, span_notice(queue_message))
 		stoplag(WORLDGEN_QUEUE_POLL)
 
 	worldgen_tickets -= ticket
@@ -184,14 +210,23 @@
 	worldgen_claimed_at = world.time
 	worldgen_label = label
 
+	// Time spent waiting in line is the generation-stacks-during-lag signal: a claim
+	// granted after a long hold means builds are piling up behind each other under load.
+	var/waited = (world.time - queued_at) / 10
+	if(waited > 0.5)
+		WRITE_LOG(GLOB.worldgen_log, "QUEUE wt=[world.time] label=\"[label]\" wait=[round(waited, 0.01)]s tdil=[SStime_track ? SStime_track.time_dilation_current : 0]")
+
 	// Nothing is playing yet during the lobby prebuild, so there is no lag to spread and
 	// throttling would only push back the round start that the prebuild is already
 	// holding open. Decided per claim rather than per yield - it cannot change mid-job.
 	worldgen_throttled = SSticker?.HasRoundStarted()
 	worldgen_slice_limit = TICK_USAGE + WORLDGEN_TICK_BUDGET
 
-	if(warned_waiter && waiter)
-		to_chat(waiter, span_notice("The sector is clear. Beginning survey."))
+	if(warned_waiter)
+		if(notify_ship && !QDELETED(notify_ship))
+			notify_ship.ship_notify("The sector is clear. Beginning survey.", "SURVEY", SHIP_NOTIFY_NOTICE)
+		else if(waiter)
+			to_chat(waiter, span_notice("The sector is clear. Beginning survey."))
 	return TRUE
 
 /**
@@ -272,6 +307,7 @@
 
 	if(QDELETED(worldgen_owner))
 		log_mapping("SSovermap: worldgen queue was held by a deleted object ('[worldgen_label]') - releasing")
+		WRITE_LOG(GLOB.worldgen_log, "QUEUE wt=[world.time] label=\"[worldgen_label]\" note=\"watchdog-release-deleted\" held=[round((world.time - worldgen_claimed_at) / 10, 0.01)]s")
 		worldgen_clear()
 		return
 
@@ -281,6 +317,7 @@
 	var/obj/structure/overmap/stuck = worldgen_owner
 	var/stuck_label = worldgen_label
 	log_mapping("SSovermap: worldgen job '[stuck_label]' ([stuck.type]) held the queue for over [WORLDGEN_JOB_TIMEOUT / 600] minutes - force-releasing")
+	WRITE_LOG(GLOB.worldgen_log, "QUEUE wt=[world.time] label=\"[stuck_label]\" note=\"watchdog-release-timeout\" held=[round((world.time - worldgen_claimed_at) / 10, 0.01)]s")
 	message_admins("Worldgen queue: '[stuck_label]' ran over [WORLDGEN_JOB_TIMEOUT / 600] minutes and was force-released so other locations can load. That location may be in a broken state.")
 	worldgen_clear()
 	stuck.on_worldgen_timeout()

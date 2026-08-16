@@ -11,7 +11,7 @@ wiki/
   assets/         style.css, wiki.js, images/
   tools/vendor/   vendored python-markdown (no pip install needed)
   build.py        content/ + assets/  ->  dist/
-  dist/           the finished site (committed, ready to upload)
+  dist/           the finished site (gitignored; deploy.ps1 rebuilds it fresh)
 ```
 
 ## Build
@@ -100,4 +100,4 @@ the site needs to change; all links are relative and work under any prefix.
 2. Fill in the frontmatter: `category` decides which sidebar section it
    lands in, `order` sorts within the section.
 3. `python wiki/build.py`, open `wiki/dist/my-page.html` in a browser to check.
-4. Commit `content/`, `assets/`, and `dist/` together; sync to S3.
+4. Commit `content/` and `assets/`; `.\wiki\deploy.ps1` rebuilds `dist/` and syncs to S3.

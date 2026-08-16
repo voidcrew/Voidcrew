@@ -235,8 +235,12 @@ SUBSYSTEM_DEF(bounty)
 	if(!creator_ship.ship_account || creator_ship.ship_account.account_balance < reward_amount)
 		return null
 
-	// Deduct reward from creator (escrow)
-	creator_ship.ship_account.adjust_money(-reward_amount)
+	// Deduct reward from creator (escrow). If the account refuses the withdrawal - a
+	// siphon has it frozen, or the balance moved since the console checked - bail out
+	// instead of posting a bounty nobody paid for: completing it would pay the hunter
+	// out of thin air, and cancel() would refund credits that were never taken.
+	if(!creator_ship.ship_account.adjust_money(-reward_amount, "Bounty: escrow"))
+		return null
 
 	var/datum/player_bounty/new_bounty = new(creator_ship, creator_pad, reward_amount)
 	if(QDELETED(new_bounty))

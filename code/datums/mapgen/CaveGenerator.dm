@@ -135,6 +135,11 @@
 		if(SSair.initialized && isclosedturf(new_turf))
 			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
+		// VOIDCREW EDIT: same mid-round reality as above - thousands of turfs with no
+		// yield is a hard freeze. Shares the worldgen queue's budget when a job holds
+		// it, degrades to CHECK_TICK everywhere else (see worldgen_yield()).
+		SSovermap.worldgen_yield()
+
 	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
 	log_world(message)
@@ -307,7 +312,9 @@
 					megas_allowed = megas_allowed && length(megafauna_spawn_list)
 				new picked_mob(target_turf)
 				spawned_something = TRUE
-		CHECK_TICK
+		// VOIDCREW EDIT: worldgen_yield, not CHECK_TICK - mid-round asteroid/field
+		// builds run this under the worldgen queue and must share its budget
+		SSovermap.worldgen_yield()
 
 	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)

@@ -22,18 +22,27 @@
 
 	var/value = 0
 	var/purchases = 0
+	var/unpaid = 0
 
 	// Group orders by pack name for cleaner history
 	var/list/order_counts = list()
 	var/list/order_costs = list()
 
-	for(var/datum/supply_order/spawning_order as anything in checkout_list)
+	// Iterate a copy: paid orders leave checkout_list inside the loop.
+	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
 		var/price = spawning_order.pack.get_cost()
 		if(spawning_order.applied_coupon)
 			price *= (1 - spawning_order.applied_coupon.discount_pct_off)
 
-		// Actually deduct the cost from the bank account
-		bank_account_holder.synced_bank_account.adjust_money(-price)
+		// Pay first, ship second. The balance can move between calling the shuttle and
+		// its arrival - a pirate siphon empties an account in seconds - and adjust_money()
+		// refuses a withdrawal it can't cover. This used to ignore that and spawn the
+		// crate regardless, handing out free cargo to anyone who got robbed in transit.
+		// price can legitimately be 0 (a fully discounted coupon), and adjust_money(0)
+		// reports failure, so only bill when there is something to bill.
+		if(price > 0 && !bank_account_holder.synced_bank_account.adjust_money(-price))
+			unpaid++
+			continue
 
 		SSeconomy.track_purchase(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
 		value += price
@@ -76,6 +85,10 @@
 	// Record purchases in history
 	for(var/pack_name in order_counts)
 		cargo_shuttle.record_transaction("buy", pack_name, order_counts[pack_name], order_costs[pack_name])
+
+	if(unpaid)
+		var/obj/structure/overmap/ship/paying_ship = get_ship_from_atom(src)
+		paying_ship?.ship_notify("[unpaid] order[unpaid > 1 ? "s" : ""] could not be paid for and [unpaid > 1 ? "remain" : "remains"] in the cart.", "CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 	SSeconomy.import_total += value
 	investigate_log("[purchases] orders in this shipment, worth [value] credits. [bank_account_holder.synced_bank_account.account_balance] credits left.", INVESTIGATE_CARGO)

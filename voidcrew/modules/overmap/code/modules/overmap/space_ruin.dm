@@ -180,15 +180,33 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /**
  * Load the ruin using a turf reservation (smaller than full z-level)
  */
-/obj/structure/overmap/space_ruin/proc/load_level()
+/**
+ * Loads the ruin's interior into a turf reservation, under the worldgen queue.
+ *
+ * * user - The mob that asked, if any. Told where it stands if the worldgen queue is busy.
+ * * waiting_ship - The ship holding a docking approach on this ruin; routed to
+ *   worldgen_claim()'s notify_ship so queue progress reaches the whole crew.
+ * * queue_timeout - How long to wait for the worldgen queue. Null takes the default;
+ *   UI callers that cannot hold an interface open pass WORLDGEN_QUEUE_NO_WAIT.
+ *
+ * Sends COMSIG_VOIDCREW_SITE_LOAD_FINISHED (TRUE/FALSE) on every exit except the
+ * in-flight guard (that load owns the signal) - a ship may already be registered for
+ * it by request_site_load() when this is entered, and a silent exit latches that ship
+ * out of this site for the rest of the round.
+ */
+/obj/structure/overmap/space_ruin/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
 	if(reservation)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, is_loaded())
 		return
 	if(loading)
-		return
+		return // the in-flight load sends the completion signal
 	if(!ruin_template)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
 	loading = TRUE
+
+	var/datum/worldgen_probe/probe = worldgen_begin("ruin", "[name] ([ruin_template.name])")
 
 	// Check if ruin template has valid dimensions
 	if(!ruin_template.width || !ruin_template.height)
@@ -200,6 +218,8 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 			ruin_template.preload_size(template_path, TRUE)
 		else
 			loading = FALSE
+			worldgen_end(probe, "preload-failed")
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 			return
 
 	// Calculate reservation size: ruin size + buffer for docking on two sides
@@ -218,12 +238,32 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		log_mapping("SPACE RUIN: '[ruin_template.name]' is [ruin_template.width]x[ruin_template.height], \
 			needing a [reserve_width]x[reserve_height] reservation - too large to ever fit. Ruin is unboardable.")
 		loading = FALSE
+		worldgen_end(probe, "too-large")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
+
+	// Heavy work from here on - take the worldgen queue like every other survey.
+	if(!SSovermap.worldgen_claim(src, "ruin survey ([name])", user, queue_timeout, waiting_ship))
+		loading = FALSE
+		worldgen_end(probe, "queue-timeout")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
+
+	// The world moved while we queued: another caller may have loaded us already.
+	if(reservation)
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "already-loaded")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 
 	// Request a turf reservation instead of a full z-level
 	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
 	if(!reservation)
+		SSovermap.worldgen_release(src)
 		loading = FALSE
+		worldgen_end(probe, "reservation-failed")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
 	var/turf/bottom_left = reservation.bottom_left_turfs[1]
@@ -247,7 +287,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		qdel(reservation)
 		reservation = null
 		ruin_bottom_left = null
+		SSovermap.worldgen_release(src)
 		loading = FALSE
+		worldgen_end(probe, "load-failed")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
 	// The reservation's buffer space (everything outside the ruin's own footprint)
@@ -286,11 +329,36 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	reserve_dock.mark_reserve_home()
 	reserve_dock_secondary.mark_reserve_home()
 
+	worldgen_end(probe)
 	loaded = TRUE
 	loading = FALSE
 	visited = TRUE
+	SSovermap.worldgen_release(src)
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
+
+/obj/structure/overmap/space_ruin/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	INVOKE_ASYNC(src, PROC_REF(load_level), user, waiting_ship)
+
+/obj/structure/overmap/space_ruin/is_loading()
+	return loading
+
+/obj/structure/overmap/space_ruin/is_loaded()
+	// All three, not just the flag: ship_act()'s dock path needs the reservation and a
+	// berth to exist, and request_site_load()'s fast path re-invokes ship_act off this
+	// answer - answering "loaded" while the reservation is gone would bounce the two
+	// procs off each other in an unbroken INVOKE_ASYNC loop.
+	return loaded && reservation && reserve_dock
+
+/// A wedged load or teardown leaves these flags latched (the watchdog force-released
+/// the queue, but nothing else ever resets them), and ships may be registered for a
+/// completion signal the dead job will now never send - so send the failure here, or
+/// the site reads "survey underway" and holds its waiters for the rest of the round.
+/obj/structure/overmap/space_ruin/on_worldgen_timeout()
+	loading = FALSE
+	concerned = FALSE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 
 /obj/structure/overmap/space_ruin/attack_ghost(mob/user)
 	if(reserve_dock)
@@ -319,28 +387,33 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	return "[name] (boarding)"
 
 /obj/structure/overmap/space_ruin/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
-	// dock() refuses interdicted ships only after the dock slot below is claimed
-	// and the ship is locked into ACTING - refuse up front instead
+	// dock() refuses interdicted ships only after the dock slot below is claimed -
+	// refuse up front instead
 	if(acting.is_interdicted)
-		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		if(user)
+			to_chat(user, span_warning("Cannot dock while interdicted!"))
+		else
+			acting.ship_notify("Cannot dock while interdicted!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 	if(concerned)
-		to_chat(user, span_notice("Too much traffic, try again later!"))
+		if(user)
+			to_chat(user, span_notice("Too much traffic, try again later!"))
+		else
+			acting.ship_notify("Approach on [name] aborted: too much traffic, try again later!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
+
+	// Interior not generated yet (or torn back down): request it in the background and
+	// return the helm immediately. The ship stays fully controllable; request_site_load()
+	// broadcasts the survey's progress and resumes this approach itself when the ruin
+	// charts. Gated on the same is_loaded() the resume path re-checks, so the two can
+	// never disagree about whether this ruin is dockable.
+	if(!is_loaded())
+		acting.request_site_load(src, user)
+		return
+
 	concerned = TRUE
-
-	var/prev_state = acting.state
-	acting.state = OVERMAP_SHIP_ACTING
-	balloon_alert(user, "starting docking process..")
-
-	// Load the level first
-	load_level()
-
-	if(!reservation || !reserve_dock)
-		acting.state = prev_state
-		concerned = FALSE
-		to_chat(user, span_warning("Failed to load the location."))
-		return
+	if(user)
+		balloon_alert(user, "starting docking process..")
 
 	var/is_survey = FALSE
 	var/obj/docking_port/stationary/dock_to_use = null
@@ -364,9 +437,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 			selected_dock_index = 2
 
 	if(!dock_to_use)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_notice("All potential docking locations occupied."))
+		if(user)
+			to_chat(user, span_notice("All potential docking locations occupied."))
+		else
+			acting.ship_notify("All potential docking locations at [name] are occupied.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Adjust dock and check if shuttle can fit BEFORE committing to docking
@@ -375,9 +450,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	// Check if shuttle can actually fit in the dock
 	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		if(user)
+			to_chat(user, span_warning("Ship is too large to dock at this location."))
+		else
+			acting.ship_notify("Ship is too large to dock at [name].", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Now that we know docking will work, set the flags
@@ -392,7 +469,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	// to the whole crew by ship_notify()
 	var/dock_result = acting.dock(src, dock_to_use)
 	if(dock_result)
-		to_chat(user, span_notice("[dock_result]"))
+		if(user)
+			to_chat(user, span_notice("[dock_result]"))
+		else
+			acting.ship_notify("[dock_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 	concerned = FALSE
 
@@ -412,6 +492,19 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
  */
 /obj/structure/overmap/space_ruin/proc/can_release_interior()
 	if(!reservation)
+		return FALSE
+
+	// Never while the interior is still being generated. worldgen_claim() is reentrant
+	// by requester, so a teardown fired mid-load would be granted the queue instantly
+	// (load and teardown both claim as src) and delete the reservation out from under
+	// the template still stamping into it.
+	if(loading)
+		return FALSE
+
+	// A claimed berth means a ship is somewhere between "approach started" and "undock
+	// complete" - possibly in hyperspace transit, which the contents and hull-overlap
+	// checks below are both blind to.
+	if(first_dock_taken || second_dock_taken)
 		return FALSE
 
 	// Check if any ships are still docked here (docked ships move INTO the ruin, so check contents)
@@ -480,7 +573,26 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	if(!can_release_interior())
 		return FALSE
 
+	// The teardown qdels every atom standing on the reservation - far too heavy to
+	// run alongside a planet build or another survey, so it takes the worldgen queue
+	// like every other job. A timeout is a soft failure: callers retry later.
+	//
+	// `concerned` is only raised once the claim is granted: the wait can run for
+	// minutes, and holding the flag through it would refuse every arriving ship for
+	// a teardown that may yet stand down. An arrival mid-wait claims a berth, which
+	// the re-check below reads as "occupied" and aborts on.
+	if(!SSovermap.worldgen_claim(src, "ruin teardown ([name])"))
+		return FALSE
+
 	concerned = TRUE
+
+	// Asked twice, once before joining the queue and again now that we hold it: the
+	// wait can run for minutes, and someone sneaking back aboard mid-wait must stop
+	// the teardown - we are about to delete every atom on the reservation.
+	if(!can_release_interior())
+		SSovermap.worldgen_release(src)
+		concerned = FALSE
+		return FALSE
 
 	// Announce the teardown before anything is actually torn down, and with the
 	// loaded flag already down so a listener that re-arms itself waits for the
@@ -491,6 +603,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	remove_docks()
 	remove_reservation()
 
+	SSovermap.worldgen_release(src)
 	concerned = FALSE
 	return TRUE
 

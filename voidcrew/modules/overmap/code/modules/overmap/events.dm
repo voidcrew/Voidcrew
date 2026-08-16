@@ -152,20 +152,48 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * Loads (or reuses) the field's turf reservation: carves the procedural rock
  * field, seeds ore, and stands up docking ports on opposite sides - the same
  * recipe as /obj/structure/overmap/space_ruin/load_level(), minus the static template.
+ *
+ * Runs under the worldgen queue like every other survey. Sends
+ * COMSIG_VOIDCREW_SITE_LOAD_FINISHED (TRUE/FALSE) on every exit except the in-flight
+ * guard (that load owns the signal) - a ship may already be registered for it by
+ * request_site_load() when this is entered, and a silent exit latches that ship out
+ * of this site for the rest of the round. queue_timeout follows load_level's usual
+ * contract: null takes the default, UI callers pass WORLDGEN_QUEUE_NO_WAIT.
  */
-/obj/structure/overmap/event/meteor/proc/load_level()
+/obj/structure/overmap/event/meteor/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
 	if(reservation)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, is_loaded())
 		return
 	if(loading)
-		return
+		return // the in-flight load sends the completion signal
 	loading = TRUE
+
+	var/datum/worldgen_probe/probe = worldgen_begin("asteroid", "[name]")
+
+	// Carving the field is planet-build-scale work - take the worldgen queue.
+	if(!SSovermap.worldgen_claim(src, "asteroid field survey ([name])", user, queue_timeout, waiting_ship))
+		loading = FALSE
+		worldgen_end(probe, "queue-timeout")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
+
+	// The world moved while we queued: another caller may have loaded us already.
+	if(reservation)
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "already-loaded")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
+		return
 
 	var/reserve_width = EVENT_FIELD_WIDTH + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
 	var/reserve_height = EVENT_FIELD_HEIGHT + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
 
 	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
 	if(!reservation)
+		SSovermap.worldgen_release(src)
 		loading = FALSE
+		worldgen_end(probe, "reservation-failed")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
 	var/turf/bottom_left = reservation.bottom_left_turfs[1]
@@ -193,9 +221,10 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	for(var/turf/candidate as anything in block(field_bottom_left, field_top_right))
 		var/in_primary_clearance = candidate.x <= primary_clearance_max_x && candidate.y <= primary_clearance_max_y
 		var/in_secondary_clearance = candidate.x >= secondary_clearance_min_x && candidate.y >= secondary_clearance_min_y
-		if(in_primary_clearance || in_secondary_clearance)
-			continue
-		field_candidates += candidate
+		if(!in_primary_clearance && !in_secondary_clearance)
+			field_candidates += candidate
+		// This scan covers the whole padded reservation - yield or it pins the tick
+		SSovermap.worldgen_yield()
 
 	// Carve the rock field via the map generator framework (same architecture as
 	// planets - see AsteroidCaves.dm) then top up ore the same way asteroid space
@@ -249,10 +278,35 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	reserve_dock.mark_reserve_home()
 	reserve_dock_secondary.mark_reserve_home()
 
+	worldgen_end(probe)
 	loaded = TRUE
 	loading = FALSE
+	SSovermap.worldgen_release(src)
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
+
+/obj/structure/overmap/event/meteor/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	INVOKE_ASYNC(src, PROC_REF(load_level), user, waiting_ship)
+
+/obj/structure/overmap/event/meteor/is_loading()
+	return loading
+
+/obj/structure/overmap/event/meteor/is_loaded()
+	// All three, not just the flag: ship_act()'s dock path needs the reservation and a
+	// berth to exist, and request_site_load()'s fast path re-invokes ship_act off this
+	// answer - answering "loaded" while the reservation is gone would bounce the two
+	// procs off each other in an unbroken INVOKE_ASYNC loop.
+	return loaded && reservation && reserve_dock
+
+/// A wedged load or teardown leaves these flags latched (the watchdog force-released
+/// the queue, but nothing else ever resets them), and ships may be registered for a
+/// completion signal the dead job will now never send - so send the failure here, or
+/// the site reads "survey underway" and holds its waiters for the rest of the round.
+/obj/structure/overmap/event/meteor/on_worldgen_timeout()
+	loading = FALSE
+	concerned = FALSE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 
 /obj/structure/overmap/event/meteor/attack_ghost(mob/user)
 	if(reserve_dock)
@@ -278,28 +332,33 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	return "[name] (mining anchorage)"
 
 /obj/structure/overmap/event/meteor/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
-	// dock() refuses interdicted ships only after the dock slot below is claimed
-	// and the ship is locked into ACTING - refuse up front instead
+	// dock() refuses interdicted ships only after the dock slot below is claimed -
+	// refuse up front instead
 	if(acting.is_interdicted)
-		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		if(user)
+			to_chat(user, span_warning("Cannot dock while interdicted!"))
+		else
+			acting.ship_notify("Cannot dock while interdicted!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 	if(concerned)
-		to_chat(user, span_notice("Too much traffic, try again later!"))
+		if(user)
+			to_chat(user, span_notice("Too much traffic, try again later!"))
+		else
+			acting.ship_notify("Approach on [name] aborted: too much traffic, try again later!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
+
+	// Field not generated yet (or torn back down): request it in the background and
+	// return the helm immediately. The ship stays fully controllable; request_site_load()
+	// broadcasts the survey's progress and resumes this approach itself when the field
+	// charts. Gated on the same is_loaded() the resume path re-checks, so the two can
+	// never disagree about whether this field is dockable.
+	if(!is_loaded())
+		acting.request_site_load(src, user)
+		return
+
 	concerned = TRUE
-
-	var/prev_state = acting.state
-	acting.state = OVERMAP_SHIP_ACTING
-	balloon_alert(user, "starting docking process..")
-
-	// Load the level first
-	load_level()
-
-	if(!reservation || !reserve_dock)
-		acting.state = prev_state
-		concerned = FALSE
-		to_chat(user, span_warning("Failed to load the location."))
-		return
+	if(user)
+		balloon_alert(user, "starting docking process..")
 
 	var/is_survey = FALSE
 	var/obj/docking_port/stationary/dock_to_use = null
@@ -323,9 +382,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 			selected_dock_index = 2
 
 	if(!dock_to_use)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_notice("All potential docking locations occupied."))
+		if(user)
+			to_chat(user, span_notice("All potential docking locations occupied."))
+		else
+			acting.ship_notify("All potential docking locations at [name] are occupied.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Adjust dock and check if shuttle can fit BEFORE committing to docking
@@ -334,9 +395,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 	// Check if shuttle can actually fit in the dock
 	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		if(user)
+			to_chat(user, span_warning("Ship is too large to dock at this location."))
+		else
+			acting.ship_notify("Ship is too large to dock at [name].", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Now that we know docking will work, set the flags
@@ -351,7 +414,10 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// to the whole crew by ship_notify()
 	var/dock_result = acting.dock(src, dock_to_use)
 	if(dock_result)
-		to_chat(user, span_notice("[dock_result]"))
+		if(user)
+			to_chat(user, span_notice("[dock_result]"))
+		else
+			acting.ship_notify("[dock_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 	concerned = FALSE
 
@@ -403,6 +469,19 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(!reservation)
 		return FALSE
 
+	// Never while the interior is still being generated. worldgen_claim() is reentrant
+	// by requester, so a teardown fired mid-load would be granted the queue instantly
+	// (load and teardown both claim as src) and delete the reservation out from under
+	// the generator still carving into it.
+	if(loading)
+		return FALSE
+
+	// A claimed berth means a ship is somewhere between "approach started" and "undock
+	// complete" - possibly in hyperspace transit, which the contents and player checks
+	// below are both blind to.
+	if(first_dock_taken || second_dock_taken)
+		return FALSE
+
 	// Check if any ships are still docked
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
 		return FALSE
@@ -419,12 +498,40 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		return
 
 	if(!can_release_interior())
+		return // someone is still aboard; the next undock re-triggers us
+
+	// Freeing the field's reservation is survey-scale teardown work - queue it like
+	// every other job rather than stacking it on top of a build in progress.
+	//
+	// `concerned` is only raised once the claim is granted: the wait can run for
+	// minutes, and holding the flag through it would refuse every arriving ship for
+	// a teardown that may yet stand down. An arrival mid-wait claims a berth, which
+	// the re-check below reads as "occupied" and aborts on.
+	//
+	// A queue timeout must re-arm itself: our only callers are one-shot undock timers,
+	// so giving up silently would leave the reservation, both berths and every mob
+	// spawner resident until roundend.
+	if(!SSovermap.worldgen_claim(src, "asteroid field teardown ([name])"))
+		addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
 	concerned = TRUE
+
+	// Re-checked once the queue is held: the wait can run for minutes, and someone
+	// docking back in mid-wait must stop the teardown.
+	if(!can_release_interior())
+		SSovermap.worldgen_release(src)
+		concerned = FALSE
+		return
+
+	// Flag down before the sweep, not after (and before anything below can yield):
+	// is_loaded() must read FALSE the moment the reservation stops being safe to
+	// dock into, or an arriving ship's fast path resumes an approach into turfs
+	// that are mid-recycle.
+	loaded = FALSE
 	remove_docks()
 	remove_reservation()
-	loaded = FALSE
+	SSovermap.worldgen_release(src)
 	concerned = FALSE
 
 /obj/structure/overmap/event/meteor/proc/remove_docks()
@@ -485,6 +592,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 			ore_bearing_count++
 			continue
 		barren_rock += rock
+		// Scans a whole reservation block mid-round - yield (see worldgen_yield())
+		SSovermap.worldgen_yield()
 
 	var/target = CEILING(mineral_turf_count * target_ratio, 1)
 	var/to_seed = target - ore_bearing_count

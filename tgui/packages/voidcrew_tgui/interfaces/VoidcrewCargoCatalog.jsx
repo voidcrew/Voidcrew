@@ -23,6 +23,9 @@ import { formatMoney } from 'tgui-core/format';
 
 import { useBackend, useSharedState } from '../../tgui/backend';
 
+// Shuttle state constants (must match DM defines)
+const CARGO_SHUTTLE_AWAY = 0;
+
 // Inline search function to avoid import issues
 function searchForSupplies(supplies, search) {
   const lowerSearch = search.toLowerCase();
@@ -216,8 +219,16 @@ function CatalogTabs(props) {
 
 function CatalogList(props) {
   const { act, data } = useBackend();
-  const { amount_by_name = {}, max_order = 20, self_paid, app_cost } = data;
+  const {
+    amount_by_name = {},
+    max_order = 20,
+    self_paid,
+    app_cost,
+    shuttle_state = CARGO_SHUTTLE_AWAY,
+  } = data;
   const { packs = [], openContents } = props;
+  // Once the shuttle is called the cart is a dispatched manifest - no more additions
+  const cartLocked = shuttle_state !== CARGO_SHUTTLE_AWAY;
 
   return (
     <>
@@ -250,7 +261,9 @@ function CatalogList(props) {
             dmIconState={pack.first_item_icon_state}
             imageSize={32}
             color={color}
-            disabled={(amount_by_name[pack.name] || 0) >= max_order}
+            disabled={
+              cartLocked || (amount_by_name[pack.name] || 0) >= max_order
+            }
             buttonsAlt={
               <Button
                 color="transparent"

@@ -115,7 +115,11 @@
 // stay on the overmap and never spawn a replacement. Crews come back for
 // their patron.
 /obj/structure/overmap/space_ruin/vestige/check_and_respawn()
-	release_interior()
+	if(!release_interior())
+		// Same re-arm as the base proc: a refusal is usually the departing hull still
+		// mid-move, or the worldgen queue timing out - and nothing else ever retries,
+		// so giving up here would hold the reservation for the rest of the round.
+		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 
 // The base proc relocates the signal to a fresh overmap square on unload;
 // vestige signals hold position so known patrons stay findable.

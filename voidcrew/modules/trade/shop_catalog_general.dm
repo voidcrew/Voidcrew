@@ -152,6 +152,7 @@
 		/datum/shop_buyback/general/bear_pelt,
 		/datum/shop_buyback/general/spice_pods,
 		/datum/shop_buyback/general/pearl_clam,
+		/datum/shop_buyback/general/sea_crystal,
 	)
 	// Waystation restocking: gentle asks for the outer ring
 	// Pike's stall makes this the outpost that posts angling requests, and
@@ -167,6 +168,7 @@
 		list("type" = /obj/item/fish, "name" = "fresh planet-caught fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/sea_crystal, "name" = "sea crystal", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 	// Under the counter: hard contracts only, never sold
 	exclusive_rewards = list(
@@ -719,6 +721,19 @@
 	pay_credits = 350
 	demand_min = 2
 	demand_max = 4
+
+// The beach planets' deep-water trophy: one crystal per guarded spawning
+// nexus (see voidcrew/modules/mob/living/simple_animal/friendly/sea_crystal.dm),
+// so supply is a fight and not a fishing rod. Priced well above the renewable
+// beach goods, demand kept short - a little of this stock goes a long way.
+/datum/shop_buyback/general/sea_crystal
+	name = "sea crystal"
+	desc = "A deep-ocean crystal off the beach worlds, cut out of a spawning nexus guarded by the very things it was making. Barnaby asks no questions about how it came off the reef, and says even less about why the buyers want them."
+	category = "Trapper & Angler"
+	item_path = /obj/item/sea_crystal
+	pay_credits = 800
+	demand_min = 1
+	demand_max = 2
 
 // Barter demo SKU: Barnaby pays in kit for raw plasma
 /datum/shop_sku/barter/plasma_for_medkit

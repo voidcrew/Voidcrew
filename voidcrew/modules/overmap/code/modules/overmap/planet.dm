@@ -91,8 +91,15 @@
   *   busy; a build can hold for minutes and a silent wait just looks like a locked helm.
   * * queue_timeout - How long to wait for the worldgen queue. Null takes the default;
   *   UI callers that cannot hold an interface open pass WORLDGEN_QUEUE_NO_WAIT.
+  * * waiting_ship - The ship holding a docking approach on this planet; routed to
+  *   worldgen_claim()'s notify_ship so queue progress reaches the whole crew.
+  *
+  * Sends COMSIG_VOIDCREW_SITE_LOAD_FINISHED (TRUE/FALSE) on every exit except the
+  * in-flight `loading` guard (that load owns the signal) - ships holding an approach
+  * resume (or give up) off that signal, and a silent exit would latch them out of
+  * this planet for the rest of the round.
   */
-/obj/structure/overmap/planet/proc/load_level(mob/user, queue_timeout)
+/obj/structure/overmap/planet/proc/load_level(mob/user, queue_timeout, obj/structure/overmap/ship/waiting_ship)
 	// Busy. Returning truthy aborts the caller's docking attempt cleanly - falling
 	// through would hand it a null reserve_dock. Planets are pre-built during the lobby
 	// and rebuilt after being abandoned, so arriving mid-build is a real possibility.
@@ -104,14 +111,27 @@
 	// window falls into the create_docking_ports() branch and builds ports onto a level
 	// that is still half-generated, or already half-deleted.
 	if(loading)
-		return "Planetary survey in progress, stand by."
+		return "Planetary survey in progress, stand by." // the in-flight load sends the completion signal
 	if(unloading)
+		// A waiter shouldn't be able to register during a teardown (ship_act refuses on
+		// unloading before it requests), but if one is, a silent exit latches it out of
+		// this planet for the round - failure is always safe to over-report.
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return "Orbit is being recalculated, stand by."
-	// If mapzone exists but docks don't (pre-configured planets), create docks
+	// Materially loaded already: mapzone stands and neither in-progress flag is up. This
+	// is the lobby-prebuilt planet standing its docks up on first visit, or the wreckage
+	// of a watchdog-released build (mapzone assigned, `loaded` never set). Both end with
+	// a dockable planet, so complete the state and say so - request_site_load() may have
+	// a ship registered for the signal, and returning silently would strand it while
+	// every later Dock press reads "survey already underway" off its own registration.
 	if(mapzone && !reserve_dock)
 		create_docking_ports()
+		loaded = TRUE
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 	if(mapzone)
+		loaded = TRUE
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 
 	// Flagged before queueing rather than after: from here on this planet is loading,
@@ -119,19 +139,25 @@
 	// starting a second build behind our back.
 	loading = TRUE
 
+	var/datum/worldgen_probe/load_probe = worldgen_begin("planet-load", "[display_name || name]")
+
 	if(is_terrain_planet())
-		// Terrain generation is the only job heavy enough to be worth queueing - see the
-		// scope note in worldgen_queue.dm. The flat-encounter branch below is not.
-		if(!SSovermap.worldgen_claim(src, "planet build ([display_name || name])", user, queue_timeout))
+		// Terrain generation is the heaviest job there is - see worldgen_queue.dm.
+		if(!SSovermap.worldgen_claim(src, "planet build ([display_name || name])", user, queue_timeout, waiting_ship))
 			loading = FALSE
+			worldgen_end(load_probe, "queue-timeout")
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 			return "Survey queue is backed up, try again shortly."
 
-		// Generation is throttled to a slice of each tick now, so this is the better part
-		// of a minute during which the helm sits locked and nothing visibly happens. Say
-		// what is going on, and why the controls are not responding.
-		if(user)
-			to_chat(user, span_notice("Orbital survey of [display_name || name] underway. Mapping a surface takes about a minute; helm control returns when it finishes."))
-		build_planet()
+		// Generation is throttled to a slice of each tick, so this is the better part of
+		// a minute - say what is going on. The helm is NOT held anymore (the ship keeps
+		// flying and the approach resumes on its own); this is why the wait exists.
+		var/survey_message = "Orbital survey of [display_name || name] underway. Mapping a surface takes about a minute; the approach resumes on its own when it finishes."
+		if(waiting_ship)
+			waiting_ship.ship_notify(survey_message, "SURVEY", SHIP_NOTIFY_NOTICE)
+		else if(user)
+			to_chat(user, span_notice(survey_message))
+		build_planet(load_probe)
 		// Terrain queues a light source per surface turf; until SSlighting drains that,
 		// the planet is pitch black. Hold the dock (callers show "survey in progress")
 		// so arrivals land on a lit surface. Short cap: mid-round the queues are
@@ -143,24 +169,46 @@
 		SSovermap.wait_for_lighting_settle(cap = 90 SECONDS)
 		SSovermap.worldgen_release(src)
 	else
-		// Flat encounters - empty space, crashed ships, outpost-style stops. No terrain,
-		// no caves; the generic single-z encounter builder covers these. Unqueued: empty
-		// space is stood up for routine ship-to-ship and cargo docking, and making that
-		// wait behind somebody else's planet would be far worse than the work it saves.
-		var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template, zone_band = SSovermap.get_zone_band_for_turf(get_turf(src)))
+		// Flat encounters split in two. Empty space, crashed ships and weak signals are
+		// stood up for routine ship-to-ship and cargo docking, and may never wait behind
+		// somebody else's survey (the design rule in worldgen_queue.dm). Anything carrying
+		// its own map generator - the large asteroid's cave level - is survey-scale work
+		// and queues like every other heavy job.
+		var/queued_encounter = planet && initial(planet.mapgen)
+		if(queued_encounter && !SSovermap.worldgen_claim(src, "encounter build ([display_name || name])", user, queue_timeout, waiting_ship))
+			loading = FALSE
+			worldgen_end(load_probe, "queue-timeout")
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+			return "Survey queue is backed up, try again shortly."
+		var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template, zone_band = SSovermap.get_zone_band_for_turf(get_turf(src)), throttled = queued_encounter)
+		if(queued_encounter)
+			SSovermap.worldgen_release(src)
 		// A failed build must drop the loading flag on its way out: this branch has
 		// no worldgen-queue watchdog, so a wedged flag reads "survey in progress"
 		// for the rest of the round with nothing left to ever clear it.
 		if(length(dynamic_encounter_values) < 3 || !dynamic_encounter_values[1] || !dynamic_encounter_values[2])
 			loading = FALSE
 			log_mapping("SSovermap: dynamic encounter build failed for '[display_name || name]' at ([x],[y]) - dock aborted")
+			worldgen_end(load_probe, "failed")
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 			return "Dock site failed to initialize, try again."
 		mapzone = dynamic_encounter_values[1]
 		reserve_dock = dynamic_encounter_values[2]
 		reserve_dock_secondary = dynamic_encounter_values[3]
+	worldgen_end(load_probe)
 	loaded = TRUE
 	loading = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
+
+/obj/structure/overmap/planet/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	INVOKE_ASYNC(src, PROC_REF(load_level), user, null, waiting_ship)
+
+/obj/structure/overmap/planet/is_loading()
+	return loading
+
+/obj/structure/overmap/planet/is_loaded()
+	return loaded
 
 /**
  * Builds this planet's interior: one surface z-level, confined to a planet_size region
@@ -175,8 +223,12 @@
  * with linked entrances, which doubled generation time and made the load stall long
  * enough to be felt server-wide. Rock and ore still appear on the surface as cave
  * pockets, which is where the mining content lives now.
+ *
+ * parent_probe - the enclosing load_level() worldgen probe; stage timings are logged
+ * as its children so a laggy build shows which stage burned the time.
  */
-/obj/structure/overmap/planet/proc/build_planet()
+/obj/structure/overmap/planet/proc/build_planet(datum/worldgen_probe/parent_probe)
+	var/datum/worldgen_probe/build_probe = worldgen_begin("planet-build", "[display_name || name]", parent_probe?.id)
 	var/datum/overmap/planet/planet_info = new planet
 	var/planet_size = planet_info.planet_size
 	var/ruin_trait = planet_info.ruin_type
@@ -227,25 +279,35 @@
 
 	// Terrain first: this lays biome turfs down and tags each one with the biome it came
 	// from, which everything below reads.
+	var/datum/worldgen_probe/stage_probe = worldgen_begin("stage", "terrain", build_probe.id)
 	surface_area?.RunTerrainGeneration()
+	worldgen_end(stage_probe)
 
 	// Register before populating - population hands its mob spawn turfs to SSplanet_mobs
 	planet_key = "[REF(src)]"
 	SSplanet_mobs.register_planet(planet_key, surface_level.z_value)
 
+	stage_probe = worldgen_begin("stage", "populate", build_probe.id)
 	populate_planet_level(surface_level)
+	worldgen_end(stage_probe)
 
 	// Before ruins, not after: seedRuins() reads NO_RUINS while it picks placements, and a
 	// flag set afterwards would be too late to move anything.
 	reserve_dock_strip(surface_level)
 
+	stage_probe = worldgen_begin("stage", "ruins", build_probe.id)
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type)
+	worldgen_end(stage_probe)
 	generate_ruin_terrain(surface_level)
+
+	stage_probe = worldgen_begin("stage", "rivers", build_probe.id)
 	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
+	worldgen_end(stage_probe)
 
 	create_docking_ports()
 
 	log_mapping("SSovermap: Built planet '[name]' band [zone_band] on z [surface_level.z_value], [planet_size]x[planet_size]")
+	worldgen_end(build_probe)
 
 /**
  * Points a z-level's traits at this planet, clearing whatever the last occupant left
@@ -506,82 +568,101 @@
 	return "[display_name || name] (planetfall)"
 
 /obj/structure/overmap/planet/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
-	// dock() refuses interdicted ships only after the dock slot below is claimed
-	// and the ship is locked into ACTING - refuse up front instead
+	// dock() refuses interdicted ships only after the dock slot below is claimed -
+	// refuse up front instead
 	if(acting.is_interdicted)
-		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		if(user)
+			to_chat(user, span_warning("Cannot dock while interdicted!"))
+		else
+			acting.ship_notify("Cannot dock while interdicted!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 	if(concerned || unloading)
-		to_chat(user, "<span class='notice'>Too much traffic, try again later!</span>")
+		var/busy_message = unloading ? "Orbit is being recalculated, stand by." : "Too much traffic, try again later!"
+		if(user)
+			to_chat(user, "<span class='notice'>[busy_message]</span>")
+		else
+			acting.ship_notify("Approach on [display_name || name] aborted: [busy_message]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
+
+	// Interior not generated yet: request it in the background and return the helm
+	// immediately. The ship stays fully controllable; request_site_load() broadcasts
+	// the survey's progress and resumes this approach itself when the planet charts.
+	if(!loaded)
+		acting.request_site_load(src, user)
+		return
+
 	concerned = TRUE
 	// Someone is coming back before the countdown ran out - the interior stays put
 	cancel_despawn_timer()
 
-	var/prev_state = acting.state
-	acting.state = OVERMAP_SHIP_ACTING //This is so the controls are locked while loading the level to give both a sense of confirmation and to prevent people from moving the ship
-	balloon_alert(user, "starting docking process..")
-	. = load_level(user)
-	if(.)
-		to_chat(user, span_notice("[.]"))
-		acting.state = prev_state
-		concerned = FALSE
-	else
-		var/is_survey = FALSE
-		var/dock_to_use = null
-		// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put the
-		// free ones back before choosing one, or the last visitor's offset is carried into this
-		// placement and compounds on every arrival.
-		reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
-		// Port destinations are set by our survey console
-		if (acting.shuttle.port_destinations)
-			dock_to_use = acting.shuttle.port_destinations
-			is_survey = TRUE
-		else
-			if(!reserve_dock.get_docked() && !first_dock_taken)
-				dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
-				first_dock_taken = TRUE
-				acting.dock_index = 1
-			else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
-				dock_to_use = reserve_dock_secondary
-				second_dock_taken = TRUE
-				acting.dock_index = 2
-		if(!dock_to_use)
-			acting.state = prev_state
-			concerned = FALSE
-			// Two berths is a hard layout limit: PLANET_MIN_SIZE is sized to exactly two
-			// max-size berth rectangles plus padding (see planet_defines.dm), so a third
-			// fixed berth cannot fit on the dock strip, and packing berths by actual hull
-			// size instead is a rework of the shared reserve-dock lifecycle (dock_index
-			// release flags, cargo shuttle claims, reserve-home resets), not a tweak.
-			// Until that lands, at least tell the refused crew who is occupying the
-			// ground and what their options are, instead of a bare "occupied".
-			var/list/parked_names = list()
-			for(var/obj/docking_port/stationary/berth in list(reserve_dock, reserve_dock_secondary))
-				var/obj/docking_port/mobile/parked = berth.get_docked()
-				if(!parked)
-					continue
-				// Not everything that parks here is a player hull - a cargo delivery holds a
-				// berth too, and its port is a stock /supply one with no current_ship var at
-				// all, so the hull name has to come off an istype'd local rather than a
-				// blind typed cast.
-				var/parked_name = "[parked]"
-				if(istype(parked, /obj/docking_port/mobile/voidcrew))
-					var/obj/docking_port/mobile/voidcrew/hull_port = parked
-					if(hull_port.current_ship)
-						parked_name = "[hull_port.current_ship]"
-				parked_names += parked_name
-			var/blocked_by = length(parked_names) ? " The berths are taken by [english_list(parked_names)]." : ""
-			to_chat(user, span_warning("No free landing berths.[blocked_by] Try again when one lifts off - ships abandoned on the surface are eventually cleared away - or plot a custom landing site with an upgraded orbital survey console."))
-			return
+	// Lobby-prebuilt planets own a mapzone but only stand their docks up when visited
+	if(mapzone && !reserve_dock)
+		create_docking_ports()
 
-		if(!is_survey)
-			adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
-		// dock() only returns a string when it refuses; a successful start is
-		// announced to the whole crew by ship_notify()
-		var/dock_result = acting.dock(src, dock_to_use)
-		if(dock_result)
+	if(user)
+		balloon_alert(user, "starting docking process..")
+
+	var/is_survey = FALSE
+	var/dock_to_use = null
+	// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put the
+	// free ones back before choosing one, or the last visitor's offset is carried into this
+	// placement and compounds on every arrival.
+	reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
+	// Port destinations are set by our survey console
+	if (acting.shuttle.port_destinations)
+		dock_to_use = acting.shuttle.port_destinations
+		is_survey = TRUE
+	else
+		if(!reserve_dock.get_docked() && !first_dock_taken)
+			dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
+			first_dock_taken = TRUE
+			acting.dock_index = 1
+		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
+			dock_to_use = reserve_dock_secondary
+			second_dock_taken = TRUE
+			acting.dock_index = 2
+	if(!dock_to_use)
+		concerned = FALSE
+		// Two berths is a hard layout limit: PLANET_MIN_SIZE is sized to exactly two
+		// max-size berth rectangles plus padding (see planet_defines.dm), so a third
+		// fixed berth cannot fit on the dock strip, and packing berths by actual hull
+		// size instead is a rework of the shared reserve-dock lifecycle (dock_index
+		// release flags, cargo shuttle claims, reserve-home resets), not a tweak.
+		// Until that lands, at least tell the refused crew who is occupying the
+		// ground and what their options are, instead of a bare "occupied".
+		var/list/parked_names = list()
+		for(var/obj/docking_port/stationary/berth in list(reserve_dock, reserve_dock_secondary))
+			var/obj/docking_port/mobile/parked = berth.get_docked()
+			if(!parked)
+				continue
+			// Not everything that parks here is a player hull - a cargo delivery holds a
+			// berth too, and its port is a stock /supply one with no current_ship var at
+			// all, so the hull name has to come off an istype'd local rather than a
+			// blind typed cast.
+			var/parked_name = "[parked]"
+			if(istype(parked, /obj/docking_port/mobile/voidcrew))
+				var/obj/docking_port/mobile/voidcrew/hull_port = parked
+				if(hull_port.current_ship)
+					parked_name = "[hull_port.current_ship]"
+			parked_names += parked_name
+		var/blocked_by = length(parked_names) ? " The berths are taken by [english_list(parked_names)]." : ""
+		var/no_berths_message = "No free landing berths.[blocked_by] Try again when one lifts off - ships abandoned on the surface are eventually cleared away - or plot a custom landing site with an upgraded orbital survey console."
+		if(user)
+			to_chat(user, span_warning(no_berths_message))
+		else
+			acting.ship_notify(no_berths_message, "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+		return
+
+	if(!is_survey)
+		adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
+	// dock() only returns a string when it refuses; a successful start is
+	// announced to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		if(user)
 			to_chat(user, span_notice("[dock_result]"))
+		else
+			acting.ship_notify("[dock_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 	concerned = FALSE
 	// For request docking
 	if (optional_partner)
@@ -597,6 +678,13 @@
  */
 /obj/structure/overmap/planet/proc/can_release_interior()
 	if(preserve_level || !mapzone)
+		return FALSE
+
+	// Never mid-build: build_planet() assigns mapzone long before the surface is done,
+	// and worldgen_claim() is reentrant by requester, so a teardown fired during the
+	// load would be granted the queue instantly (both claim as src) and sweep the
+	// level out from under the generator.
+	if(loading)
 		return FALSE
 
 	if(first_dock_taken || second_dock_taken)
@@ -621,30 +709,46 @@
 	if(!can_release_interior())
 		return
 
-	unloading = TRUE
-	concerned = TRUE //Prevent someone to act with this while it reloads
+	var/datum/worldgen_probe/teardown_probe = worldgen_begin("planet-teardown", "[display_name || name]")
 
 	// TERRAIN teardown is as expensive as generation and just as unwelcome alongside
 	// it: the contents sweep in clear_reservation() cannot yield, so landing it in the
-	// middle of somebody else's build stalls both - queue it. Flat encounters (weak
-	// signals, crashed ships) are cheap by comparison and, by design rule, may never
-	// wait behind a planet build: while a queued wait holds `unloading`, any ship
-	// arriving at this tile reads "Orbit is being recalculated" for minutes.
-	var/queue_teardown = is_terrain_planet()
+	// middle of somebody else's build stalls both - queue it. Queued on the same test
+	// the build queued on: terrain planets AND mapgen-bearing flat encounters (the
+	// large asteroid's cave level); tearing down unqueued what was built queued lands
+	// that sweep on top of whatever the queue is currently building. Plain flat
+	// encounters (weak signals, crashed ships) are cheap by comparison and, by design
+	// rule, may never wait behind a planet build.
+	var/queue_teardown = is_terrain_planet() || (planet && initial(planet.mapgen))
 	if(queue_teardown)
+		// The in-progress flags are only raised once the claim is granted: the wait can
+		// run for minutes, and holding them through it would read "Orbit is being
+		// recalculated" to every arriving ship for a teardown that may yet stand down.
+		// An arrival mid-wait claims a berth, which the re-check below refuses on.
+		//
+		// A queue timeout must re-arm itself: the despawn timer that got us here has
+		// already fired, so giving up silently would leave the level resident until
+		// roundend.
 		if(!SSovermap.worldgen_claim(src, "planet teardown ([display_name || name])"))
-			unloading = FALSE
-			concerned = FALSE
+			worldgen_end(teardown_probe, "queue-timeout")
+			addtimer(CALLBACK(src, PROC_REF(attempt_despawn)), 30 SECONDS, TIMER_UNIQUE)
 			return
 
-		// No ship can have docked while we queued - ship_act() bails on unloading - but a
-		// ghost role, a drop pod or a transporter beam is enough to put someone back down
-		// there, and we are about to delete every atom on the level.
+		unloading = TRUE
+		concerned = TRUE //Prevent someone to act with this while it reloads
+
+		// No ship can have docked and STAYED past the re-check - but a ghost role, a
+		// drop pod or a transporter beam is enough to put someone back down there, and
+		// we are about to delete every atom on the level.
 		if(!can_release_interior())
 			SSovermap.worldgen_release(src)
 			unloading = FALSE
 			concerned = FALSE
+			worldgen_end(teardown_probe, "aborted")
 			return
+	else
+		unloading = TRUE
+		concerned = TRUE //Prevent someone to act with this while it reloads
 
 	if(planet_key)
 		SSplanet_mobs.unregister_planet(planet_key)
@@ -671,14 +775,19 @@
 	second_dock_taken = FALSE
 	unloading = FALSE
 	concerned = FALSE //Now it can be raided again
+	worldgen_end(teardown_probe)
 	return TRUE
 
 /// A wedged build or teardown leaves these set, and every entry point to the planet
 /// tests them - the contact would stay "survey in progress" for the rest of the round.
+/// Ships registered for the completion signal get the failure here too: the job that
+/// was going to send it is the thing that just died, and an unanswered registration
+/// holds its ship's approach forever.
 /obj/structure/overmap/planet/on_worldgen_timeout()
 	loading = FALSE
 	unloading = FALSE
 	concerned = FALSE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 
 /// `throttled` = whether the sweep shares the queued worldgen job's tick budget;
 /// unqueued flat-encounter teardowns pass FALSE - see worldgen_yield().

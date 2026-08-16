@@ -314,7 +314,7 @@
 
 	if(was_active && target)
 		var/run_take = get_run_take()
-		target.ship_notify("Data siphon connection severed. Total credits lost: [run_take].", "FINANCE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
+		target.ship_notify("Data siphon connection severed. Total credits lost: [run_take]. Accounts unlock in [SIPHON_ACCOUNT_LOCK_GRACE / 10] seconds.", "FINANCE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
 		owner?.ship_notify("Siphon link lost. Total credits acquired: [run_take].", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
 
 	target_ship_ref = null
@@ -328,12 +328,25 @@
 		return
 
 	var/datum/bank_account/target_account = target.ship_account
-	var/siphoned = min(target_account.account_balance, siphon_per_tick)
+	// Freeze the account before taking anything. While the tap is live the crew can't
+	// spend, withdraw or escrow their way out from under it - otherwise the answer to
+	// being robbed is to dump the balance into a holochip and hand us nothing.
+	target_account.mark_siphoned()
+
+	// forced_withdraw, not adjust_money: the freeze we just set would refuse our own
+	// withdrawal, since adjust_money() checks has_money() on negative amounts.
+	var/siphoned = target_account.forced_withdraw(siphon_per_tick, "Piracy: data siphon")
 
 	if(siphoned <= 0)
+		// Nothing left to take. The goal was measured off the balance at activation and
+		// can end up out of reach - tribute paid to someone else, an account that was
+		// already near empty - and a pirate holding a lock while draining zero forever
+		// is a stalemate, not a threat. Call the run done and disengage.
+		if(!goal_reached)
+			goal_reached = TRUE
+			on_goal_reached(target, "Target accounts drained dry. [get_run_take()] credits acquired. Disengaging from target.")
 		return
 
-	target_account.adjust_money(-siphoned)
 	credits_stored += siphoned
 
 	// Check if we've reached our siphon goal - measured against this run's take,
@@ -343,11 +356,11 @@
 		on_goal_reached(target)
 
 /// Called when siphon goal is reached - triggers retreat behavior
-/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_goal_reached(obj/structure/overmap/ship/target)
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_goal_reached(obj/structure/overmap/ship/target, owner_message)
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
 
 	// Announce goal reached
-	owner?.ship_notify("Siphon goal reached! [get_run_take()] credits acquired. Disengaging from target.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	owner?.ship_notify(owner_message || "Siphon goal reached! [get_run_take()] credits acquired. Disengaging from target.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	target?.ship_notify("The attacker has finished siphoning and is disengaging.", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 
 	// Deactivate the siphon
@@ -511,8 +524,11 @@
 			// Warmup complete - activate siphon
 			warming_up = FALSE
 			active = TRUE
+			// Freeze on the same tick the alert goes out, so there is no window between
+			// the crew learning they're being robbed and the account locking.
+			target.ship_account?.mark_siphoned()
 			owner?.ship_notify("Data siphon active. Draining target accounts.", "SIPHON SYSTEM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-			target.ship_notify("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 20)
+			target.ship_notify("CRITICAL: CREDIT SIPHONING OCCURRING! Ship accounts are locked until the tap is broken.", "FINANCE ALERT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 20)
 		return
 
 	// If not active (shouldn't happen but safety check)

@@ -1002,7 +1002,16 @@ SUBSYSTEM_DEF(overmap)
 		if (ZTRAIT_WASTELAND_RUINS)
 			return SSmapping.wasteland_ruins_templates
 
-/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type, zone_band)
+/**
+ * Builds a single-z dynamic encounter level: map zone, area fill, optional ruin,
+ * optional mapgen terrain, docking ports. Arguments beyond the historical ones:
+ * * zone_band - overmap difficulty band the terrain scales to, if any.
+ * * throttled - TRUE when the caller already holds the worldgen queue (the large
+ *   asteroid's cave level): the build shares that job's tick budget. FALSE (default)
+ *   for unqueued flat encounters, which run at plain CHECK_TICK speed and never wait
+ *   behind a queued job - see worldgen_queue.dm.
+ */
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type, zone_band, throttled = FALSE)
 	log_shuttle("SSOVERMAP: SPAWNING DYNAMIC ENCOUNTER STARTED")
 	var/list/ruin_list
 	var/datum/map_generator/mapgen
@@ -1015,9 +1024,11 @@ SUBSYSTEM_DEF(overmap)
 		ruin_list = get_ruin_list(planet_type.ruin_type)
 		if(!isnull(planet_type.mapgen))
 			mapgen = new planet_type.mapgen
-			// This build is unqueued: it must never crawl behind a queued planet
-			// job's tick budget - see worldgen_yield() in worldgen_queue.dm
-			if(istype(mapgen, /datum/map_generator/planet_generator))
+			// Unqueued callers (empty space, weak signals) must never crawl behind a
+			// queued planet job's tick budget - see worldgen_yield() in
+			// worldgen_queue.dm. Callers that already hold the queue (throttled = TRUE)
+			// keep the generator's budget instead.
+			if(!throttled && istype(mapgen, /datum/map_generator/planet_generator))
 				var/datum/map_generator/planet_generator/unqueued_gen = mapgen
 				unqueued_gen.throttled = FALSE
 		target_area = planet_type.target_area
@@ -1073,9 +1084,11 @@ SUBSYSTEM_DEF(overmap)
 	// the new planet's weather.
 	SSweather.set_z_level_weather_trait(zlevel, weather_trait)
 
-	// throttled = FALSE: encounter builds are unqueued and must never wait behind a
-	// queued planet job - see worldgen_yield() in worldgen_queue.dm
-	var/area/filled_area = zlevel.fill_in(area_override = target_area, throttled = FALSE)
+	// throttled stays FALSE for unqueued encounter builds (empty space, weak signals):
+	// they must never wait behind a queued planet job - see worldgen_yield() in
+	// worldgen_queue.dm. Queued callers (the large asteroid's cave level) pass TRUE
+	// and share the budget they already hold.
+	var/area/filled_area = zlevel.fill_in(area_override = target_area, throttled = throttled)
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(

@@ -137,8 +137,19 @@
 
 /**
  * Cleans up all shuttle resources (for error states, not normal departure)
+ *
+ * Forces state back to AWAY, and does it first. This proc used to clear the timer, the
+ * deadline and docked_at while leaving state wherever it happened to be - but the helm
+ * gates undock on state alone, so a delivery that got cleaned up mid-claim stayed
+ * "present" forever. That was the round 7 (2026-08-16) stranding: ten "send" clicks in
+ * thirteen seconds raced through spawn_shuttle() on this per-ship singleton, one
+ * invocation's cleanup nulled docked_at under another's berth lookup, and the runtime
+ * left state parked at ARRIVING with nothing left armed to notice. Every caller that
+ * reaches for this proc wants the console back at AWAY; call_shuttle()'s post-spawn
+ * check relies on it to catch a spawn that was torn down while it yielded.
  */
 /datum/voidcrew_cargo_shuttle/proc/cleanup_shuttle()
+	state = CARGO_SHUTTLE_AWAY
 	if(warmup_timer)
 		deltimer(warmup_timer)
 		warmup_timer = null
@@ -183,6 +194,13 @@
 	// Always spawn fresh - clean up any existing shuttle first
 	if(shuttle_port && !QDELETED(shuttle_port))
 		cleanup_shuttle()
+		// cleanup_shuttle() just forced the whole datum back to AWAY, watchdog included -
+		// but the caller claimed ARRIVING before calling us and the work below yields for
+		// seconds. Re-assert the claim and its deadline so the console and helm keep
+		// reading this spawn as in-flight, and so a spawn that never returns is recovered.
+		state = CARGO_SHUTTLE_ARRIVING
+		warmup_started = world.time
+		stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
 	shuttle_port = null // Ensure it's null even if QDELETED
 
 	// Use the existing cargo_box template
@@ -320,11 +338,48 @@
 		return "Ship hull extends past its docking port. Move the docking port to the \
 			outermost hull door before ordering a delivery"
 
+	// Lock the state before spawn_shuttle() yields for the template load: the console
+	// credit-checked the cart already, but buy() charges at dock time, so the cart must
+	// read as dispatched from this point on. Failure paths below hand it back to AWAY.
+	// The claim cannot wait for the spawn's return. spawn_shuttle() yields for seconds and
+	// this datum is a per-ship singleton, so every "send" click landing in that window used
+	// to pass the guard above and start a second concurrent spawn on it: round 7
+	// (2026-08-16) logged ten calls in thirteen seconds, the interleaved spawns ran
+	// cleanup_shuttle() on each other, and the berth lookup below dereferenced the
+	// docked_at that cleanup had just nulled. The runtime returned null to the console,
+	// which reports null as success - so every failed call was announced as "Cargo shuttle
+	// called" while the datum sat parked at ARRIVING and the helm refused to undock.
+	// Nothing between the guard and this block yields (hull_overhangs_port() is a pure
+	// turf scan), so the guard and the claim are atomic as a pair.
+	state = CARGO_SHUTTLE_ARRIVING
+	warmup_started = world.time
+	// Deliberately the full warmup plus grace, not grace alone, and armed in the same
+	// block as the state. spawn_shuttle() below can legitimately run long - a reservation
+	// UNTIL() plus a template load - and the console the orderer is staring at polls
+	// check_stalled() every ui_data tick. check_stalled() now reads a non-terminal state
+	// with no deadline as a stall to recover on sight, so claiming ARRIVING while leaving
+	// stall_deadline at 0 would tear down this healthy in-flight delivery at the next
+	// tick; a watchdog that merely expired inside the spawn would do the same.
+	stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
+
 	// Spawn shuttle fresh
 	if(!spawn_shuttle())
+		state = CARGO_SHUTTLE_AWAY
+		warmup_started = null
+		stall_deadline = 0
 		target_ship = null
 		docked_at = null
 		return "Could not prepare a cargo shuttle"
+
+	// spawn_shuttle() yielded, so the watchdog may have torn the order down while we were
+	// inside it - and cleanup_shuttle() now resets state and docked_at on ANY teardown it
+	// performs, including the stale-port branch at the top of the spawn. Bail rather than
+	// runtime on the null below; the refusal returns the datum to AWAY and consistent.
+	if(!docked_at || state != CARGO_SHUTTLE_ARRIVING)
+		state = CARGO_SHUTTLE_AWAY
+		cleanup_shuttle()
+		target_ship = null
+		return "Cargo shuttle preparation was interrupted"
 
 	// Claim the berth now and hold it for the whole flight. Re-checked here rather than
 	// trusting the console's pre-click check because spawn_shuttle() yields while it
@@ -332,13 +387,13 @@
 	var/list/berth = docked_at.get_cargo_berth(ship.shuttle)
 	var/berth_error = berth["error"]
 	if(berth_error)
+		state = CARGO_SHUTTLE_AWAY
 		cleanup_shuttle() // tears the fresh shuttle back down; we hold no berth to release
 		target_ship = null
 		return berth_error
 	claim_berth(berth["index"])
 
 	// Start warmup
-	state = CARGO_SHUTTLE_ARRIVING
 	warmup_started = world.time
 	load_retries = 0
 	stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
@@ -360,19 +415,32 @@
  * second timer: the failure mode being covered IS a lost callback, so the recovery path
  * must not depend on one.
  *
+ * The order of the checks below is the point. Terminal states are excused first; a
+ * non-terminal state with no deadline armed is then treated as already stalled, not as
+ * nothing-to-watch. State and deadline are always armed in the same assignment block, so
+ * one without the other is wreckage, not calm - and the old order (`if(!stall_deadline)
+ * return FALSE` first) read exactly that wreckage as calm, which is how the round 7
+ * (2026-08-16) stranding survived every poll for the rest of the round.
+ *
  * Returns TRUE if it tore a stalled delivery down.
  */
 /datum/voidcrew_cargo_shuttle/proc/check_stalled()
-	if(!stall_deadline)
-		return FALSE
+	// Terminal states first. DOCKED is a legitimate resting state - the shuttle sits at
+	// its berth with no timer running while the crew unloads - and AWAY means resolved.
 	if(state == CARGO_SHUTTLE_AWAY || state == CARGO_SHUTTLE_DOCKED)
 		stall_deadline = 0 // resolved normally; nothing to watch
 		return FALSE
-	if(world.time <= stall_deadline)
+	// A non-terminal state with no deadline armed is not "nothing to watch" - it IS the
+	// lost callback. Every path into ARRIVING/DEPARTING arms stall_deadline in the same
+	// block as the state (call_shuttle(), send_shuttle(), the complete_*() re-arms), so
+	// a zero here means whatever armed it was torn down underneath the delivery. There is
+	// no deadline left to wait for, and waiting is what stranded round 7: recover now.
+	if(stall_deadline && world.time <= stall_deadline)
 		return FALSE
 
-	log_shuttle("CARGO SHUTTLE STALL: delivery to [target_ship || "unknown ship"] stuck in state [state] \
-		[(world.time - stall_deadline) / 10]s past its deadline (shuttle_port=[shuttle_port ? "live" : "gone"], \
+	var/tardiness = stall_deadline ? "[(world.time - stall_deadline) / 10]s past its deadline" : "no deadline armed"
+	log_shuttle("CARGO SHUTTLE STALL: delivery to [target_ship || "unknown ship"] stuck in state [state], \
+		[tardiness] (shuttle_port=[shuttle_port ? "live" : "gone"], \
 		transit=[transit_dock ? "live" : "gone"]) - forcing recovery")
 	state = CARGO_SHUTTLE_AWAY
 	target_ship?.ship_notify("Cargo shuttle failed to arrive and has been recalled. Re-order when ready.", \

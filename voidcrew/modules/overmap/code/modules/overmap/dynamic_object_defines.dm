@@ -143,6 +143,13 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	if(unloading)
 		return FALSE
 
+	// Never mid-build: a reused placeholder can be standing its encounter up for a new
+	// arrival while the previous visitor's unload retry timer is still live, and
+	// qdel'ing ourselves under an in-flight spawn_dynamic_encounter() strands the
+	// half-built zone. The retry loop calls again after the load has settled.
+	if(loading)
+		return FALSE
+
 	if(!can_release_interior())
 		return FALSE
 

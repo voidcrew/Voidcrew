@@ -149,6 +149,8 @@
 	if((T.y+height) - 1 > world.maxy)
 		return
 
+	var/datum/worldgen_probe/probe = worldgen_begin("template", "[name] [width]x[height] @ [T.x],[T.y],[T.z]")
+
 	// Cache for sonic speed
 	var/list/to_rebuild = SSair.adjacent_rebuild
 	// iterate over turfs in the border and clear them from active atmos processing
@@ -177,10 +179,12 @@
 		no_changeturf = (SSatoms.initialized == INITIALIZATION_INSSATOMS),
 		place_on_top = should_place_on_top,
 	))
+		worldgen_end(probe, "parse-failed")
 		return
 
 	var/list/bounds = parsed.bounds
 	if(!bounds)
+		worldgen_end(probe, "no-bounds")
 		return
 
 	require_area_resort()
@@ -193,6 +197,7 @@
 		generate_ceiling(affected_turfs)
 
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")
+	worldgen_end(probe)
 	return bounds
 
 /datum/map_template/proc/generate_ceiling(affected_turfs)

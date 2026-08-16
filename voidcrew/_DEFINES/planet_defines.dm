@@ -6,6 +6,14 @@
 /// to let go of what is about to be wiped, instead of reading the wipe as a loss.
 #define COMSIG_VOIDCREW_RUIN_UNLOADING "voidcrew_ruin_unloading"
 
+/// Sent by every site load_level() on EVERY exit past the point where it claimed the
+/// job (success AND failure: queue timeout, reservation failure, template failure).
+/// Arg is TRUE on success, FALSE on failure. Distinct from COMSIG_VOIDCREW_PLANET_LOADED,
+/// which only ever fires on success and has listeners (missions, survey consoles) whose
+/// semantics must not change - ships waiting to auto-resume a docking approach listen to
+/// this one instead (see /obj/structure/overmap/ship/proc/request_site_load).
+#define COMSIG_VOIDCREW_SITE_LOAD_FINISHED "voidcrew_site_load_finished"
+
 /**
  * Smallest a planet's bounded region may be.
  *

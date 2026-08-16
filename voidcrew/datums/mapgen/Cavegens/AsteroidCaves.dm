@@ -33,6 +33,8 @@
 			miny = T.y
 		else if(T.y > maxy)
 			maxy = T.y
+		// Runs mid-round over a whole encounter level - yield (see worldgen_yield())
+		SSovermap.worldgen_yield()
 
 	var/midx = minx + (maxx - minx) / 2
 	var/midy = miny + (maxy - miny) / 2
@@ -47,6 +49,7 @@
 		turfs_to_gen += T
 		var/area/old_area = get_area(T)
 		T.change_area(old_area, asteroid_area)
+		SSovermap.worldgen_yield()
 
 	return ..(turfs_to_gen)
 
@@ -124,6 +127,7 @@
 	var/list/allowed_turfs = list()
 	for(var/turf/allowed_turf as anything in turfs)
 		allowed_turfs[allowed_turf] = TRUE
+		SSovermap.worldgen_yield()
 	var/list/selected_turfs = list()
 
 	var/maxx
@@ -139,6 +143,7 @@
 			miny = T.y
 		else if(T.y > maxy)
 			maxy = T.y
+		SSovermap.worldgen_yield()
 
 	var/blob_count = rand(blob_count_min, blob_count_max)
 	var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
@@ -163,6 +168,8 @@
 			var/area/old_area = get_area(candidate)
 			candidate.change_area(old_area, asteroid_area)
 			turfs_to_gen += candidate
+		// A majour field carves ~60 blobs over thousands of turfs mid-round - yield
+		SSovermap.worldgen_yield()
 
 	if(!length(turfs_to_gen))
 		return turfs_to_gen

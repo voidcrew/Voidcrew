@@ -120,7 +120,7 @@
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
-		/mob/living/simple_animal/sea_crystal = 1
+		/obj/structure/spawner/sea_crystal = 1
 	)
 
 /datum/biome/cave/beach

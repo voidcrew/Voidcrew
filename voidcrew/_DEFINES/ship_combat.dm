@@ -322,6 +322,10 @@
 #define SIPHON_BASE_WARMUP_TIME 5 SECONDS
 /// Balance below which a target isn't worth the lock - the siphon refuses to spin up
 #define SIPHON_MINIMUM_TARGET_BALANCE 50
+/// How long a siphoned account stays frozen after the last credit is pulled off it.
+/// The freeze lapses on its own instead of being released, so a siphon that dies
+/// without cleaning up can never leave a crew locked out of their money for the round.
+#define SIPHON_ACCOUNT_LOCK_GRACE (10 SECONDS)
 
 // Siphon stock part multipliers (per tier above 1)
 /// Capacitor: +25% siphon rate per tier

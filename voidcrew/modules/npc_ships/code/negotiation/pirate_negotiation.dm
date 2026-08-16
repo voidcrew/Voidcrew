@@ -466,11 +466,13 @@
 			COOLDOWN_START(src, rejection_message_cooldown, 2 SECONDS)
 		return FALSE
 
-	// Deduct from player account
-	if(!player_ship.ship_account?.has_money(demanded_credits))
+	// Deduct from player account. Balance check rather than has_money(), and a forced
+	// withdrawal, because our own siphon may have their accounts frozen - paying us off
+	// is the way out of that, so it has to go through.
+	if((player_ship.ship_account?.account_balance || 0) < demanded_credits)
 		return FALSE
 
-	player_ship.ship_account.adjust_money(-demanded_credits)
+	player_ship.ship_account.forced_withdraw(demanded_credits, "Piracy: tribute")
 	// The tribute goes into the pirate's hold rather than out of the economy, so a
 	// crew that pays up and then wins the rematch can siphon its own money back
 	pirate_ship?.ship_account?.adjust_money(demanded_credits, "Hold: tribute from [player_ship.name]")

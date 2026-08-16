@@ -353,6 +353,16 @@
 		usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 		return
 
+	// The cart is the manifest of an in-flight delivery: credits were checked when the
+	// shuttle was called, but buy() doesn't charge until it docks. Editing it mid-flight
+	// would shrink a dispatched shipment or tack on items that were never credit-checked.
+	if(action in list("add", "add_by_name", "remove", "modify", "clear"))
+		var/datum/voidcrew_cargo_shuttle/manifest_shuttle = get_cargo_shuttle()
+		if(manifest_shuttle && manifest_shuttle.state != CARGO_SHUTTLE_AWAY)
+			balloon_alert(usr, "order already dispatched")
+			usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
+			return TRUE
+
 	switch(action)
 		/**
 		 * CARGO ORDERING
@@ -452,6 +462,13 @@
 
 					// Check if we have enough credits for the order
 					var/total_cost = get_cart_total()
+					// A siphon on the account freezes ordering: shipping the balance out
+					// as crates while a pirate drains it is just laundering. A loan-only
+					// call brings credits in, so that one still goes.
+					if(total_cost > 0 && bank_account_holder.synced_bank_account.is_siphon_locked())
+						say("Error: accounts locked - hostile intrusion detected. Orders cannot be placed.")
+						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
+						return TRUE
 					var/available = bank_account_holder.synced_bank_account.account_balance
 					if(total_cost > available)
 						say("Error: Insufficient credits. Need [total_cost], have [available].")

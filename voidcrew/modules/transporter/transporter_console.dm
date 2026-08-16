@@ -438,11 +438,11 @@
 	if(!target)
 		return null
 
-	// Targeting a planet forces a build of somewhere the ship never docked at, which is
-	// the whole point of the scanner - but it opens an interface, so it takes the worldgen
-	// queue only if the queue is free. Behind somebody else's planet it reports no target
-	// rather than holding the window open until they are finished. Ruins and hazard fields
-	// are not queued at all, so they just load.
+	// Targeting a planet, ruin or hazard field forces a build of somewhere the ship never
+	// docked at, which is the whole point of the scanner - but it opens an interface, so
+	// every branch takes the worldgen queue only if the queue is free. Behind somebody
+	// else's survey it reports no target rather than holding the window open until they
+	// are finished.
 	if(istype(target, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/planet = target
 		planet.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
@@ -455,14 +455,14 @@
 
 	if(istype(target, /obj/structure/overmap/space_ruin))
 		var/obj/structure/overmap/space_ruin/ruin = target
-		ruin.load_level()
+		ruin.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!ruin.reservation)
 			return null
 		return ruin.reserve_dock ? get_turf(ruin.reserve_dock) : ruin.reservation.bottom_left_turfs[1]
 
 	if(istype(target, /obj/structure/overmap/event/meteor))
 		var/obj/structure/overmap/event/meteor/field = target
-		field.load_level()
+		field.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!field.reservation)
 			return null
 		return field.reserve_dock ? get_turf(field.reserve_dock) : field.reservation.bottom_left_turfs[1]

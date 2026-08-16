@@ -206,6 +206,10 @@
 // once the event is over.
 /obj/structure/overmap/space_ruin/contested_cache/check_and_respawn()
 	if(!release_interior())
+		// Same re-arm as the base proc: a refusal is usually the departing hull still
+		// mid-move, or the worldgen queue timing out - retry rather than holding the
+		// reservation until try_cleanup happens to come around.
+		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 	if(event_over)
 		qdel(src)

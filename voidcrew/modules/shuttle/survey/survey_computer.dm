@@ -943,9 +943,13 @@
 			docking_location = locate(1, 1, lvl.z_value)
 	else if(istype(o, /obj/structure/overmap/space_ruin))
 		var/obj/structure/overmap/space_ruin/ruin = o
-		// Ensure the ruin's reservation and docking ports exist
-		ruin.load_level()
+		// Ensure the ruin's reservation and docking ports exist. Same rule as the planet
+		// branch above: ruin loads queue now, and a camera refresh is no reason to hold
+		// this console open behind somebody else's survey - take the queue only if free.
+		ruin.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!ruin.reservation)
+			if(user)
+				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
 			docking_location = null
 			return
@@ -956,9 +960,11 @@
 			docking_location = ruin.reservation.bottom_left_turfs[1]
 	else if(istype(o, /obj/structure/overmap/event/meteor))
 		var/obj/structure/overmap/event/meteor/field = o
-		// Ensure the field's reservation and docking ports exist
-		field.load_level()
+		// Ensure the field's reservation and docking ports exist - same no-wait rule as above
+		field.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!field.reservation)
+			if(user)
+				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
 			docking_location = null
 			return
