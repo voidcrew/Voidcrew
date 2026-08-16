@@ -18,7 +18,7 @@
  */
 
 /// Source roots that declare /datum/round_event/voidcrew subtypes.
-#define DYNAMIC_EVENT_SOURCE_ROOTS list("voidcrew/modules/dynamic_events/", "voidcrew/modules/lich/events/", "voidcrew/modules/colosseum/")
+#define DYNAMIC_EVENT_SOURCE_ROOTS list("voidcrew/modules/dynamic_events/", "voidcrew/modules/colosseum/")
 
 /datum/unit_test/voidcrew_dynamic_event_observability
 	priority = TEST_LONGER

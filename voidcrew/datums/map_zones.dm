@@ -108,6 +108,15 @@
 /**
  * Fills everything outside the bounded region with cordon turfs. No-op when the
  * bounds already cover the whole level.
+ *
+ * The cordon is flagged NO_RUINS: try_to_place() samples ruin spots across the whole
+ * 255x255 level, so on a 128x128 planet ~3/4 of candidates are centered off the
+ * footprint. The flag check breaks out on the first flagged turf it scans, where the
+ * area-whitelist rejection only fires after walking the full footprint - this turns
+ * most wasted samples from a ~thousand-turf scan into a nearly free one. Set here
+ * rather than on /turf/cordon itself to keep the upstream type untouched; no staleness
+ * risk on recycled zones, since clear_reservation() resets the whole level through
+ * ChangeTurf, which drops the flag with the turf.
  */
 /datum/space_level/proc/place_cordon()
 	if(isnull(low_x))
@@ -115,30 +124,55 @@
 	if(low_x <= 1 && low_y <= 1 && high_x >= world.maxx && high_y >= world.maxy)
 		return
 
+	var/skipped_ship_turfs = 0
 	// Bottom strip (below the planet)
 	if(low_y > 1)
 		for(var/turf/cordon_turf as anything in block(locate(1, 1, z_value), locate(world.maxx, low_y - 1, z_value)))
-			new /turf/cordon(cordon_turf)
+			skipped_ship_turfs += place_cordon_turf(cordon_turf)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
 			SSovermap.worldgen_yield()
 	// Top strip (above the planet)
 	if(high_y < world.maxy)
 		for(var/turf/cordon_turf as anything in block(locate(1, high_y + 1, z_value), locate(world.maxx, world.maxy, z_value)))
-			new /turf/cordon(cordon_turf)
+			skipped_ship_turfs += place_cordon_turf(cordon_turf)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
 			SSovermap.worldgen_yield()
 	// Left strip (beside the planet, between the top and bottom strips)
 	if(low_x > 1)
 		for(var/turf/cordon_turf as anything in block(locate(1, low_y, z_value), locate(low_x - 1, high_y, z_value)))
-			new /turf/cordon(cordon_turf)
+			skipped_ship_turfs += place_cordon_turf(cordon_turf)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
 			SSovermap.worldgen_yield()
 	// Right strip
 	if(high_x < world.maxx)
 		for(var/turf/cordon_turf as anything in block(locate(high_x + 1, low_y, z_value), locate(world.maxx, high_y, z_value)))
-			new /turf/cordon(cordon_turf)
+			skipped_ship_turfs += place_cordon_turf(cordon_turf)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
 			SSovermap.worldgen_yield()
+
+	if(skipped_ship_turfs)
+		var/seal_warning = "place_cordon: a shuttle occupies [skipped_ship_turfs] turf(s) inside the cordon band on z[z_value]. Its turfs were left alone, but a hull should never be out here - planet lifecycle bug likely, and the ship is probably sealed in. Admin recovery needed."
+		log_mapping(seal_warning)
+		message_admins(seal_warning)
+
+/**
+ * Replaces a single out-of-bounds turf with cordon, unless a landed shuttle owns it.
+ *
+ * Ship turfs are never overwritten: a hull that has ended up in the cordon band got
+ * there through a lifecycle bug (round 4: the derelict auto-crash placed a 10-hour
+ * player hull in the band and the cordon sealed it in), and painting cordon over it
+ * turns that bug into deleted player work. place_cordon() counts the skips and
+ * raises the alarm once, after the sweep.
+ *
+ * Returns 1 when the turf was skipped for that reason, else 0.
+ */
+/datum/space_level/proc/place_cordon_turf(turf/cordon_turf)
+	if(istype(cordon_turf.loc, /area/shuttle))
+		return 1
+	// NO_RUINS: see the doc comment on place_cordon() above
+	var/turf/placed = new /turf/cordon(cordon_turf)
+	placed.turf_flags |= NO_RUINS
+	return 0
 
 /datum/space_level/proc/get_block()
 	if(isnull(low_x))

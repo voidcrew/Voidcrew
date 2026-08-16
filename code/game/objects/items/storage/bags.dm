@@ -104,6 +104,28 @@
 	var/mob/listeningTo
 	///Cooldown on balloon alerts when picking ore
 	COOLDOWN_DECLARE(ore_bag_balloon_cooldown)
+	// VOIDCREW EDIT ADDITION START - a full satchel only ever said so with a balloon alert,
+	// which is easy to miss while mining. Two miners in round 4 of the 14/15 playtest walked
+	// off a planet believing they had hundreds of ore they had actually left on the ground.
+	///Cooldown on the chat warning that the satchel is full. Invented value, unplaytested.
+	COOLDOWN_DECLARE(ore_bag_full_warning_cooldown)
+	// VOIDCREW EDIT ADDITION END
+
+// VOIDCREW EDIT ADDITION START - tell the miner how much room is left before they lose ore
+/obj/item/storage/bag/ore/examine(mob/user)
+	. = ..()
+	if(!atom_storage)
+		return
+	var/free_slots = atom_storage.max_slots - length(contents)
+	var/free_weight = atom_storage.max_total_storage - atom_storage.get_total_weight()
+	if(free_slots <= 0 || free_weight <= 0)
+		. += span_warning("It is full. Ore you walk over will be left on the ground until you empty it.")
+	else if(free_slots >= INFINITY) // the satchel of holding
+		. += span_notice("It has room for as much ore as you can carry.")
+	else
+		. += span_notice("It has room for [free_slots] more stack\s of ore.")
+	. += span_notice("Click an ore redemption machine or an ore box with it to empty it out.")
+	// VOIDCREW EDIT ADDITION END
 
 /obj/item/storage/bag/ore/equipped(mob/user)
 	. = ..()
@@ -153,6 +175,13 @@
 			else
 				if(!spam_protection)
 					balloon_alert(user, "bag full!")
+					// VOIDCREW EDIT ADDITION START - back the balloon alert with a chat line,
+					// so a miner who is watching the ground and not their own sprite finds out
+					// that the ore they are walking over is staying on the ground.
+					if(COOLDOWN_FINISHED(src, ore_bag_full_warning_cooldown))
+						COOLDOWN_START(src, ore_bag_full_warning_cooldown, 30 SECONDS)
+						to_chat(user, span_warning("Your [name] is full - the ore under you is staying on the ground. Empty it into an ore box or an ore redemption machine."))
+					// VOIDCREW EDIT ADDITION END
 					spam_protection = TRUE
 					continue
 	if(show_message)

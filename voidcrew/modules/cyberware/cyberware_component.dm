@@ -32,6 +32,10 @@
 	var/browned_out = FALSE
 	/// TRUE while rebooting from an EMP hit.
 	var/emp_down = FALSE
+	/// TRUE while the ware's failing-gated passive layer (organ_traits,
+	/// physiology armor/mods) is applied to a bearer. The edge latch behind
+	/// chrome_passives_on/off, so those hooks fire exactly once per flip.
+	var/passives_online = FALSE
 	/// Timer for the pending EMP reboot.
 	var/emp_timer
 	/// Who this ware currently has an install window open for. Weakref so a
@@ -73,14 +77,28 @@
 /datum/component/cyberware/proc/on_implanted(datum/source, mob/living/carbon/new_owner)
 	SIGNAL_HANDLER
 	RegisterSignals(new_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN), PROC_REF(on_owner_organs_changed))
+	// Per-tick settle: catches ORGAN_FAILING flips that never pass through
+	// this component (tg's apply_organ_damage() sets/clears the flag directly
+	// at the damage ceiling). Two comparisons a tick; Dead Channel precedent.
+	RegisterSignal(new_owner, COMSIG_LIVING_LIFE, PROC_REF(on_owner_life))
 	cyberware_reevaluate_brownout(new_owner)
+	settle_passives(new_owner)
+	if(!passives_online)
+		// Inserted while still failing (EMP reboot ticking outside the body,
+		// or straight into a brownout): tg's on_mob_insert just granted the
+		// organ_traits unconditionally, so take the passive layer back off.
+		var/obj/item/organ/ware = parent
+		ware.chrome_passives_off(new_owner)
 
 /// Signal proc for [COMSIG_ORGAN_REMOVED]: chrome outside a body is just a
 /// part again, drop the brownout (EMP downtime keeps ticking) and let the
 /// old bearer's remaining chrome re-settle without our load.
 /datum/component/cyberware/proc/on_removed(datum/source, mob/living/carbon/old_owner)
 	SIGNAL_HANDLER
-	UnregisterSignal(old_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN))
+	UnregisterSignal(old_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN, COMSIG_LIVING_LIFE))
+	// Owner is already null by the time this signal fires, so this settles the
+	// passive layer OFF while we still hold a real bearer to take it off of.
+	settle_passives(old_owner)
 	set_browned_out(FALSE)
 	cyberware_reevaluate_brownout(old_owner)
 
@@ -144,6 +162,46 @@
 		ware.organ_flags |= ORGAN_FAILING
 	else if(ware.damage < ware.maxHealth)
 		ware.organ_flags &= ~ORGAN_FAILING
+	// Removal settles through on_removed() with the old bearer instead; owner
+	// is already null on that path and the passive layer needs a real mob.
+	if(ware.owner)
+		settle_passives(ware.owner)
+
+/**
+ * Edge-settles the ware's failing-gated passive layer (BAL-4).
+ *
+ * Passives are ON exactly while the ware is installed in `bearer` and not
+ * ORGAN_FAILING; everything else, EMP reboot, brownout, damage failure,
+ * removal, is OFF. The passives_online latch makes each flip fire the
+ * matching chrome_passives_on/off hook exactly once, which is what lets the
+ * hooks carry non-idempotent physiology work.
+ *
+ * Our own two failure sources are read directly as well as through the flag.
+ * ORGAN_FAILING is a shared bit that anything may write: tg's
+ * apply_organ_damage() clears it unconditionally the moment damage drops
+ * below the ceiling, so a single point of organ healing landing on a bearer
+ * mid-EMP would otherwise hand the whole passive layer back before the
+ * reboot timer had run. Reading browned_out/emp_down too can only ever hold
+ * passives down longer, never bring them up early.
+ */
+/datum/component/cyberware/proc/settle_passives(mob/living/carbon/bearer)
+	var/obj/item/organ/ware = parent
+	var/installed_here = !QDELETED(ware) && bearer && ware.owner == bearer
+	var/ware_running = !browned_out && !emp_down && !(ware.organ_flags & ORGAN_FAILING)
+	var/should_be_online = installed_here && ware_running
+	if(passives_online == !!should_be_online)
+		return
+	passives_online = !!should_be_online
+	if(passives_online)
+		ware.chrome_passives_on(bearer)
+	else
+		ware.chrome_passives_off(bearer)
+
+/// Signal proc for [COMSIG_LIVING_LIFE] on the bearer: the per-tick catch-all
+/// settle (see the registration comment in on_implanted()).
+/datum/component/cyberware/proc/on_owner_life(mob/living/carbon/source, seconds_per_tick, times_fired)
+	SIGNAL_HANDLER
+	settle_passives(source)
 
 // ---- Install context ---------------------------------------------------
 // Cyberware refuses Insert() outside a legit context: organ-manipulation

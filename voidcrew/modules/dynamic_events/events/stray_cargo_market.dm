@@ -4,8 +4,12 @@
  *
  * Stray Cargo Pod is a ship-scoped treat event: a supply pod carrying a random
  * cargo crate punches into the target ship, announced in advance so the crew
- * can clear the impact zone. The pod is the stock TG supplypod, so it lands
- * with its usual light explosion, free loot with a dent.
+ * can clear the impact zone. The pod looks like the stock TG supplypod but its
+ * landing charge is stripped in make_pod(): the stock pod detonates a light
+ * explosion plus flame on touchdown, and inside a hull that broke APCs,
+ * generators and doors, burned cargo, and gibbed corpses five separate times in
+ * round 4 of the 14/15 playtest. A treat event must not damage the ship it
+ * lands on, so the pod now arrives with sound and smoke only.
  *
  * Market Crash is a galaxy-scoped economy event: it inflates SSeconomy for a
  * while, raising vendor prices sector-wide, then lets them settle back. It has
@@ -22,9 +26,9 @@
 	description = "A pod containing a random supply crate lands on the target ship."
 	requires_flying = TRUE // Pods do not punch into a ship parked inside a hangar.
 	min_crew_aboard = 1
-	/// A pod arrives with a light explosion and takes a tile with it. On a hull the size of
-	/// a Pill-class that is a breach across most of the ship, and the "free loot with a
-	/// dent" trade this event is built around stops being a trade.
+	/// Kept from when the pod still exploded on arrival: a Pill-class barely has a free
+	/// tile to park a pod on, so small hulls stay out of the pool even though the landing
+	/// is harmless now (see make_pod()).
 	min_ship_mass = SHIP_MASS_MEDIUM
 
 /datum/round_event/voidcrew/stray_cargo
@@ -88,9 +92,15 @@
 	var/static/mutable_appearance/target_appearance = mutable_appearance('icons/obj/supplypods_32x32.dmi', "LZ")
 	notify_ghosts("[control.name] has summoned a supply crate!", source = get_turf(landing_marker), header = "Cargo Inbound", alert_overlay = target_appearance)
 
-/// The pod itself, so variants can reskin it. A stock pod, small explosion included.
+/// The pod itself, so variants can reskin it. Stock pod visuals, safe landing: the stock
+/// supplypod's explosionSize is list(0,0,2,3) (light 2, flame 3), which is what wrecked
+/// APCs, generators, doors and cargo, and gibbed corpses awaiting dissection, in every
+/// round-4 landing of the 14/15 playtest. Zeroed, the pod still plays its landing boom
+/// and smoke but damages nothing at the drop turf.
 /datum/round_event/voidcrew/stray_cargo/proc/make_pod()
-	return new /obj/structure/closet/supplypod
+	var/obj/structure/closet/supplypod/pod = new
+	pod.explosionSize = list(0, 0, 0, 0)
+	return pod
 
 /// Nothing to clean up, the pod and crate belong to the crew now.
 /datum/round_event/voidcrew/stray_cargo/end()
@@ -117,7 +127,9 @@
 	possible_pack_types = list(/datum/supply_pack/misc/syndicate)
 
 /datum/round_event/voidcrew/stray_cargo/syndicate/make_pod()
-	var/obj/structure/closet/supplypod/pod = new
+	// Parent proc strips the landing explosion; this was the pod that broke a door and
+	// gibbed two corpses on The Pill at 13:19 in round 4.
+	var/obj/structure/closet/supplypod/pod = ..()
 	pod.setStyle(/datum/pod_style/syndicate)
 	return pod
 

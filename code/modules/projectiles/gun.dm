@@ -168,6 +168,9 @@
 				. += span_info("[pin] looks like [pin.p_theyre()] firmly locked in, [pin.p_they()] looks impossible to remove.")
 		else
 			. += "It doesn't have a <b>firing pin</b> installed, and won't fire."
+			// VOIDCREW EDIT ADDITION START - tell players where firing pins actually come from
+			. += span_info("Use an electronic firing pin on it to install one. Outfitter traders sell standard pins, and guns crafted at a weapons bench come with one fitted. Prying a pin out of another gun destroys the pin, so they can't be transplanted.")
+			// VOIDCREW EDIT ADDITION END
 
 	var/healthpercent = (atom_integrity/max_integrity) * 100
 	switch(healthpercent)

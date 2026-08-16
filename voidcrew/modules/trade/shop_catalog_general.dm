@@ -98,6 +98,8 @@
 		/datum/shop_sku/general/glass_sheets,
 		/datum/shop_sku/general/plasteel,
 		/datum/shop_sku/general/soap,
+		/datum/shop_sku/general/autolathe_board,
+		/datum/shop_sku/general/supply_console_board,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
 		// Intel & Charts: the cheap always-available rung; the dealt chart
@@ -580,6 +582,32 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/soap
 	price_credits = 60
+
+// Bootstrap insurance. An autolathe board only prints at a circuit imprinter,
+// and the imprinter kit only prints at an autolathe - a crew that loses its
+// lathe is locked out of the whole fabrication chain with no way back. Barnaby
+// stocking the board is the way back. (Round 15: a crew traded away an
+// autosurgeon because there was no other way to get one.)
+/datum/shop_sku/general/autolathe_board
+	name = "autolathe board"
+	desc = "The circuit board for an autolathe. If yours is gone, this is the only way to start fabricating again, so Barnaby keeps a couple in the back."
+	category = "Ship Sundries"
+	item_path = /obj/item/circuitboard/machine/autolathe
+	price_credits = 500 // invented, unplaytested
+	stock_min = 1
+	stock_max = 2
+
+// Same story for the supply console: the board design exists on the techweb
+// (Civilian Consoles, imprinter-printed), but a crew without an imprinter has
+// no path to one. Sold here so a broken or missing console isn't permanent.
+/datum/shop_sku/general/supply_console_board
+	name = "supply console board"
+	desc = "The circuit board for a ship supply console, the one that calls the cargo shuttle. Barnaby finds it very funny to sell you the thing you buy things with."
+	category = "Ship Sundries"
+	item_path = /obj/item/circuitboard/computer/voidcrew_cargo
+	price_credits = 500 // invented, unplaytested
+	stock_min = 1
+	stock_max = 2
 
 // Chart and rumor SKUs live in shop_catalog_charts.dm, Barnaby draws his
 // through chart_pool above rather than defining his own.

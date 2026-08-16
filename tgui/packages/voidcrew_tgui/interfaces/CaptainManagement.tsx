@@ -40,6 +40,8 @@ type Data = {
   ship_name: string;
   memo: string;
   joining_allowed: BooleanLike;
+  join_password: string;
+  can_set_password: BooleanLike;
   is_captain: BooleanLike;
   crew: CrewMember[];
   available_players: AvailablePlayer[];
@@ -246,9 +248,17 @@ const InvitesTab = () => {
 
 const SettingsTab = () => {
   const { act, data } = useBackend<Data>();
-  const { ship_name, memo, joining_allowed, can_rename } = data;
+  const {
+    ship_name,
+    memo,
+    joining_allowed,
+    join_password,
+    can_set_password,
+    can_rename,
+  } = data;
   const [newName, setNewName] = useState(ship_name ?? '');
   const [newMemo, setNewMemo] = useState(memo ?? '');
+  const [newPassword, setNewPassword] = useState(join_password ?? '');
 
   return (
     <Stack vertical fill>
@@ -300,6 +310,47 @@ const SettingsTab = () => {
               </Button>
             </Stack.Item>
           </Stack>
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Join Password">
+          {can_set_password ? (
+            <>
+              <Box mb={1} color="label" fontSize="11px">
+                Players joining from the lobby must enter this password. Crew
+                you invite, and anyone who has already served aboard, never
+                need it. Leave blank and save to remove the lock.
+              </Box>
+              <Stack>
+                <Stack.Item grow>
+                  <Input
+                    fluid
+                    value={newPassword}
+                    maxLength={24}
+                    onChange={(value) => setNewPassword(value ?? '')}
+                    placeholder="No password - anyone may join"
+                  />
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon={newPassword ? 'lock' : 'lock-open'}
+                    color="good"
+                    onClick={() =>
+                      act('set_password', { password: newPassword })
+                    }
+                  >
+                    {newPassword ? 'Set Password' : 'Clear'}
+                  </Button>
+                </Stack.Item>
+              </Stack>
+            </>
+          ) : (
+            <Box color="label">
+              Fleet-issued vessels stay open to everyone and cannot be
+              password-locked.
+            </Box>
+          )}
         </Section>
       </Stack.Item>
 

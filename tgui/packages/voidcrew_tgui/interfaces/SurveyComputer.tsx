@@ -74,6 +74,8 @@ interface Data {
   mappingEnabled?: number;
   shipMoving: number;
   surveyAtRange?: number;
+  rangeSurveyDistance?: number;
+  rangeSurveyPercent?: number;
   surveyStatus?: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
   surveyTargets?: SurveyTarget[];
   surveyValue: { cash: number; points: number };
@@ -392,6 +394,8 @@ const Surveying = (props, context) => {
     bankedPoints,
     shipMoving,
     surveyTargets = [],
+    rangeSurveyDistance = 3,
+    rangeSurveyPercent = 60,
   } = data;
 
   interface Option {
@@ -490,6 +494,12 @@ const Surveying = (props, context) => {
       </Stack.Item>
       <Stack.Item grow>
         <Section title="Targets" fill scrollable>
+          <Box color="label" mb={1}>
+            Surveying needs the ship stationary on the same overmap tile as the
+            target — no docking or landing required. Electric and EMP storms
+            can also be scanned from up to {rangeSurveyDistance} tiles away at{' '}
+            {rangeSurveyPercent}% yield.
+          </Box>
           {surveyTargets.length > 0 ? (
             <Tabs vertical>
               {surveyTargets.map((target) => {

@@ -125,6 +125,16 @@
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS
 
+		// VOIDCREW EDIT: upstream only ever runs this at mapload, where SSair init
+		// recomputes the whole map afterwards - here it also runs MID-ROUND (asteroid
+		// encounters, meteor fields, planet builds) over live turfs. The raw `new` above
+		// bypasses ChangeTurf, so a closed turf laid over open space stays inside every
+		// neighbour's atmos_adjacent_turfs and LINDA runtimes on it (enemy_tile.run_later)
+		// every cycle, forever. Open turfs self-queue a rebuild via requires_activation in
+		// /turf/Initialize; closed turfs never do, so queue them here.
+		if(SSair.initialized && isclosedturf(new_turf))
+			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
+
 	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
 	log_world(message)
@@ -192,6 +202,10 @@
 
 			if(gen_turf.turf_flags & NO_RUINS)
 				new_turf.turf_flags |= NO_RUINS
+
+			// VOIDCREW EDIT: same mid-round adjacency scrub as generate_terrain() above
+			if(SSair.initialized && isclosedturf(new_turf))
+				CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
 		CHECK_TICK
 

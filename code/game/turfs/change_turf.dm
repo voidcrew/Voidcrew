@@ -158,8 +158,16 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
-			// Should have a lighting object if we never had one
-			lighting_object = old_lighting_object || new /datum/lighting_object(src)
+			// VOIDCREW EDIT: a nested ChangeTurf inside new path(src) - e.g.
+			// /turf/closed/mineral/random rerolling its ore type during Initialize -
+			// can already have built a lighting object for this spot. Blindly building
+			// another one here double-assigns and stack-traces ("a lighting object was
+			// assigned to a turf that already had a lighting object!") on every
+			// mid-round terrain generation pass. Reuse whichever object survives.
+			if(old_lighting_object && lighting_object && lighting_object != old_lighting_object)
+				qdel(lighting_object, force = TRUE) // drop the nested duplicate, keep the original
+			lighting_object = old_lighting_object || lighting_object || new /datum/lighting_object(src)
+			// END VOIDCREW EDIT (was: lighting_object = old_lighting_object || new /datum/lighting_object(src))
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 

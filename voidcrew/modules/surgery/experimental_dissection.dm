@@ -11,11 +11,44 @@
 // Target multipliers in /datum/surgery_step/experimental_dissection/check_value()
 // scale these. Fauna is graded by threat rather than paid a flat rate:
 //   megafauna x10, elite x3, anything with a melee attack /3, passive critters /6.
+//
+// A body is not consumed forever by the tier that opened it: dissection_points_paid
+// below records what has been extracted so far, and a higher tier can reopen the
+// body for the difference (can_start() in the upstream file consults
+// dissection_value_remaining()). Before this, a corpse dissected at a low tier was
+// permanently dead to the higher tiers, so researching a better dissection punished
+// crews for every body they had already processed - playtest crews were told to
+// stop researching so as not to "waste" corpses.
+
+/mob/living
+	/// Research points already paid out by experimental dissection on this body.
+	/// A higher dissection tier can reopen the body and collect the difference.
+	var/dissection_points_paid = 0
 
 /datum/surgery/advanced/experimental_dissection
 	name = "Dissection"
 	requires_tech = FALSE
 	replaced_by = /datum/surgery/advanced/experimental_dissection/advanced
+	/// Spare instance of our own dissection step, kept only to price a body without
+	/// running the surgery. can_start() is called on every surgery in GLOB.surgeries_list
+	/// each time somebody clicks a corpse with a scalpel, so this is built once per tier
+	/// rather than made and thrown away on every click.
+	var/datum/surgery_step/experimental_dissection/pricing_step
+
+/**
+ * Research points this surgery's dissection tier could still pull out of a body that
+ * was already opened at some lower tier. Zero means this tier has nothing new to say.
+ */
+/datum/surgery/advanced/experimental_dissection/proc/dissection_value_remaining(mob/living/target)
+	if(isnull(pricing_step))
+		for(var/step_type in steps)
+			if(!ispath(step_type, /datum/surgery_step/experimental_dissection))
+				continue
+			pricing_step = new step_type
+			break
+	if(isnull(pricing_step))
+		return 0
+	return max(pricing_step.check_value(target) - target.dissection_points_paid, 0)
 
 /datum/surgery/advanced/experimental_dissection/advanced
 	name = "Advanced Dissection"

@@ -18,8 +18,13 @@
 	. = ..()
 	if(!.)
 		return .
-	if(HAS_TRAIT_FROM(target, TRAIT_DISSECTED, EXPERIMENTAL_SURGERY_TRAIT))
+	// VOIDCREW EDIT START - a body dissected at a lower tier can be reopened by a higher
+	// dissection tier for the difference in yield, so researching a better dissection
+	// never wastes corpses already processed under the old one. The helper and the
+	// bookkeeping var live in voidcrew/modules/surgery/experimental_dissection.dm.
+	if(HAS_TRAIT_FROM(target, TRAIT_DISSECTED, EXPERIMENTAL_SURGERY_TRAIT) && dissection_value_remaining(target) <= 0)
 		return FALSE
+	// VOIDCREW EDIT END
 	if(target.stat != DEAD)
 		return FALSE
 	return .
@@ -42,6 +47,10 @@
 
 /datum/surgery_step/experimental_dissection/success(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, default_display_results = FALSE)
 	var/points_earned = check_value(target)
+	// VOIDCREW EDIT START - a reopened body only pays out what lower tiers have not already extracted
+	points_earned = max(points_earned - target.dissection_points_paid, 0)
+	target.dissection_points_paid += points_earned
+	// VOIDCREW EDIT END
 	user.visible_message(span_notice("[user] dissects [target], discovering [points_earned] point\s of data!"), span_notice("You dissect [target], finding [points_earned] point\s worth of discoveries, you also write a few notes."))
 
 	var/obj/item/research_notes/the_dossier = new /obj/item/research_notes(user.loc, points_earned, "biology")
@@ -54,7 +63,12 @@
 	return ..()
 
 /datum/surgery_step/experimental_dissection/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/points_earned = round(check_value(target) * 0.01)
+	// VOIDCREW EDIT START - a botch pays 1% of whatever this tier could still have extracted
+	// and ruins the rest of that value; only a higher tier can reopen the body afterwards.
+	var/remaining_value = max(check_value(target) - target.dissection_points_paid, 0)
+	var/points_earned = round(remaining_value * 0.01)
+	target.dissection_points_paid += remaining_value
+	// VOIDCREW EDIT END
 	user.visible_message(
 		span_notice("[user] dissects [target]!"),
 		span_notice("You dissect [target], but do not find anything particularly interesting."),

@@ -193,7 +193,9 @@
  * the plate, so everyone in the fight can see you are armored under the
  * jumpsuit; that legibility is the PvP tax on built-in plate. Physiology
  * armor persists through species changes by design (the physiology datum
- * survives them), and is added/removed symmetrically on install/removal.
+ * survives them), and is added/removed symmetrically through the
+ * failing-gated passive hooks (BAL-4): an EMP-scrambled or browned-out
+ * plate stops armoring you until it reboots or gets repaired.
  */
 /obj/item/organ/cyberimp/cyberware/slabskin
 	name = "\improper Slabskin plate"
@@ -205,19 +207,34 @@
 	chrome_load = 6
 	tier = CYBERWARE_TIER_3
 	aug_overlay = "slabskin"
+	/// TRUE while the plate armor is mixed into the bearer's physiology.
+	/// Guards the failing-gated passive hooks against double add/subtract.
+	var/plate_armor_applied = FALSE
 
 /obj/item/organ/cyberimp/cyberware/slabskin/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.armor = human_owner.physiology.armor.add_other_armor(/datum/armor/cyberware_slabskin)
 	RegisterSignal(organ_owner, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_damaged))
+
+/obj/item/organ/cyberimp/cyberware/slabskin/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(plate_armor_applied || !ishuman(bearer))
+		return
+	plate_armor_applied = TRUE
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.armor = human_bearer.physiology.armor.add_other_armor(/datum/armor/cyberware_slabskin)
+
+/obj/item/organ/cyberimp/cyberware/slabskin/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(!plate_armor_applied)
+		return
+	plate_armor_applied = FALSE // reset before the validity skip, or the plate never re-arms after a bearer deletes
+	if(!ishuman(bearer) || QDELETED(bearer))
+		return
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.armor = human_bearer.physiology.armor.subtract_other_armor(/datum/armor/cyberware_slabskin)
 
 /obj/item/organ/cyberimp/cyberware/slabskin/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.armor = human_owner.physiology.armor.subtract_other_armor(/datum/armor/cyberware_slabskin)
 	UnregisterSignal(organ_owner, COMSIG_MOB_APPLY_DAMAGE)
 
 /**

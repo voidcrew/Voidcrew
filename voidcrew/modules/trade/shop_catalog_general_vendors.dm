@@ -626,7 +626,7 @@
 /datum/shop_sku/bait/rotating/rescue_rod
 	category = "Rods & Reels"
 	name = "rescue rod"
-	desc = "A rod rigged with a rescue hook. It casts at people, not fish. Pike sells one every time somebody falls in the pond, which is more often than you'd think."
+	desc = "A rod rigged with a rescue hook. It casts at people, not fish - it can reach anyone lost down any chasm on the same site, not just the hole they fell into. Pike sells one every time somebody falls in the pond, which is more often than you'd think."
 	item_path = /obj/item/fishing_rod/rescue
 	price_credits = 350
 

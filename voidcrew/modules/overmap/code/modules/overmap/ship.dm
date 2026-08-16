@@ -38,6 +38,14 @@
 	var/deletion_timer
 	/// Whether this ship has been abandoned (no crew, claimable by anyone)
 	var/abandoned = FALSE
+	/// world.time abandon_ship() ran. The derelict-despawn clock: once it is
+	/// SHIP_DERELICT_DESPAWN_TIME old, SSovermap's sweep deletes the hull for good.
+	/// Cleared by claim_abandoned_ship().
+	var/abandoned_at = 0
+	/// world.time SSovermap's sweep first found no living, connected player aboard;
+	/// 0 while anyone is. At SHIP_CREWLESS_ABANDON_TIME the hull is abandoned - this
+	/// is the trigger crew death alone never provided (log off, cryo, walk away).
+	var/crewless_since = 0
 	///Timer ID of the looping movement timer
 	var/movement_callback_id
 
@@ -53,6 +61,14 @@
 
 	///Boolean on whether players are allowed to latejoin into this ship, toggled by the job managing console.
 	var/joining_allowed = TRUE
+	///Password required to latejoin this ship, set by the captain. Null = open to everyone.
+	///Only player-created hulls (purchased, requisitioned, commissioned) may carry one;
+	///the roundstart fleet stays public - see can_have_join_password().
+	var/join_password
+	///Assoc list of ckeys (ckey = TRUE) that never face the password prompt: the buyer,
+	///anyone who has entered it correctly, and invited crew. Keyed by ckey rather than
+	///mind so dying and respawning through the lobby doesn't re-lock your own ship.
+	var/list/password_cleared_ckeys = list()
 	///Name of the ship.
 	var/map_name
 	///Short memo of the ship, set by the crew, and shown to latejoiners.
@@ -230,6 +246,16 @@
 	var/dock_warmup_timer
 	/// Timer ID for undock warmup
 	var/undock_warmup_timer
+	/// The site complete_undock_warmup() launched us away from, kept so check_manoeuvre_stalled()
+	/// can restart a lost undock with the same argument the timer chain was carrying - without it
+	/// the recovery cannot hand the berth back, because `docked` is cleared on the way out. Weak
+	/// because the site can be torn down the moment we leave it. Null whenever we are not undocking.
+	var/datum/weakref/undock_origin
+	/// Transitional state check_manoeuvre_stalled() last saw us in, and when it first saw it.
+	/// Watchdog bookkeeping only - observed by the poll rather than stamped at each `state`
+	/// assignment, so a new assignment site cannot forget to arm it.
+	var/manoeuvre_watch_state
+	var/manoeuvre_watch_since = 0
 
 // ===== SHARED SHIELD POOL PROCS =====
 
@@ -252,6 +278,8 @@
 	// If max health decreased and current health exceeds it, cap it
 	if(shield_health > shield_max_health)
 		shield_health = shield_max_health
+	// Same for banked overhealth - its ceiling scales off max health
+	shield_overhealth = min(shield_overhealth, shield_max_health * SHIP_SHIELD_MAX_OVERHEALTH_MULT)
 
 	// Note: shields_active is managed by activate_generator()/deactivate_generator()
 	// This proc only updates stats, not activation state
@@ -267,10 +295,12 @@
 	if(shield_health < shield_max_health)
 		shield_health = min(shield_health + effective_regen, shield_max_health)
 	else if(shield_power_allocation > 1)
-		// Generate overhealth when at max and power > 100%
+		// Generate overhealth when at max and power > 100% - capped like the main pool,
+		// or a ship idling at 200% banks an unbounded buffer that absorbs before health
+		// and makes the break check unreachable
 		var/excess = shield_power_allocation - 1
 		var/overhealth_rate = shield_regen_rate * excess * seconds_per_tick
-		shield_overhealth += overhealth_rate
+		shield_overhealth = min(shield_overhealth + overhealth_rate, shield_max_health * SHIP_SHIELD_MAX_OVERHEALTH_MULT)
 
 /// Absorbs incoming damage to the shared shield pool
 /// Returns TRUE if damage was absorbed (even partially), FALSE if shields were down
@@ -321,6 +351,13 @@
 	// Start cooldown
 	COOLDOWN_START(src, shield_reactivation_cooldown, SHIP_SHIELD_BROKEN_COOLDOWN)
 
+	// Round 4: a silent collapse was indistinguishable from shields refusing to come
+	// online. Every collapse tells the crew what happened and when they can retry.
+	if(graceful)
+		ship_notify("Shields are down. They can be raised again in [DisplayTimeText(SHIP_SHIELD_BROKEN_COOLDOWN)].", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+	else
+		ship_notify("Shields have collapsed! Generators resetting - [DisplayTimeText(SHIP_SHIELD_BROKEN_COOLDOWN)] before they can be raised again.", "SHIELDS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 40)
+
 	// Ensure ship keeps processing so it can check cooldown and reactivate
 	start_shield_processing()
 
@@ -368,8 +405,11 @@
 		// Recalculate stats and activate
 		recalculate_shield_stats()
 		shields_active = TRUE
-		// Restore stored health (capped to max in case generators changed)
-		shield_health = min(stored_shield_health, shield_max_health)
+		// Restore stored health (capped to max in case generators changed), but never
+		// come back below the raise charge floor. Returning at 0 HP meant the first
+		// hit re-broke the pool and re-armed the full cooldown, so under sustained
+		// fire (round 4 meteor shower) shields could never re-establish.
+		shield_health = clamp(max(stored_shield_health, shield_max_health * SHIP_SHIELD_RAISE_CHARGE_MULT), 0, shield_max_health)
 
 		// Spawn shield walls from first active generator
 		if(first_active_gen)
@@ -377,6 +417,7 @@
 
 		SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_RESTORED)
 		playsound(first_active_gen || src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
+		ship_notify("Shields are back online.", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	else
 		// No generators want to activate - stop processing
 		stop_shield_processing()
@@ -407,6 +448,39 @@
 		)
 		playsound(effect_loc, sound_file, 60, TRUE, extrarange = 10, pressure_affected = FALSE)
 
+/**
+ * Why can't shields come up right now? Returns a player-facing reason string, or null
+ * if nothing is blocking activation. Round 4: every path that refused activation did
+ * so silently, which read as "shields refuse to work" - anything that acts on a
+ * player's request for shields should surface this instead of doing nothing.
+ */
+/obj/structure/overmap/ship/proc/get_shield_blocker_reason()
+	if(!length(linked_shield_generators))
+		return "No shield generators are linked to the ship."
+	if(shields_broken)
+		if(!COOLDOWN_FINISHED(src, shield_reactivation_cooldown))
+			return "Shield generators are resetting - [DisplayTimeText(COOLDOWN_TIMELEFT(src, shield_reactivation_cooldown))] before shields can be raised."
+		return "Shield generators are resetting."
+	if(is_in_ship_to_ship_dock())
+		return "Shields cannot be raised while docked to another ship."
+	var/gen_count = 0
+	var/unpowered = 0
+	var/dock_latched = 0
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		gen_count++
+		if(gen.machine_stat & NOPOWER)
+			unpowered++
+		if(gen.in_ship_to_ship_dock)
+			dock_latched++
+	if(gen_count && unpowered == gen_count)
+		return "No linked shield generator has power."
+	// The generators keep their own ship-to-ship dock latch (signal-driven); if it is
+	// stuck out of step with the ship's real state, surface it rather than letting
+	// every activation attempt die silently
+	if(gen_count && dock_latched == gen_count)
+		return "Shields cannot be raised while docked to another ship."
+	return null
+
 /// Returns aggregated shield status for UI
 /obj/structure/overmap/ship/proc/get_shield_status()
 	// Calculate total power draw and efficiency
@@ -416,7 +490,11 @@
 
 	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
 		if(!(gen.machine_stat & (BROKEN|NOPOWER)))
-			total_power_draw += gen.get_power_draw()
+			// Only active generators actually draw - update_power_draw() zeroes the
+			// usage while inactive (break cooldown, ship-to-ship dock), so summing
+			// inactive ones overstates the readout against the real grid load
+			if(gen.active)
+				total_power_draw += gen.get_power_draw()
 			total_efficiency_bonus += (1 - gen.power_efficiency)
 			gen_count++
 
@@ -436,6 +514,21 @@
 		"cooldown_remaining" = COOLDOWN_TIMELEFT(src, shield_reactivation_cooldown),
 		"generator_count" = length(linked_shield_generators),
 	)
+
+/// Counts laser turrets linked to any combat console aboard this ship.
+/// LASER_MAX_TURRETS is a per-hull cap, but the linked lists live on the consoles -
+/// counting only one console's list lets a second console double the ceiling.
+/obj/structure/overmap/ship/proc/count_linked_turrets()
+	if(!shuttle)
+		return 0
+	var/list/counted = list()
+	for(var/area/ship_area in shuttle.shuttle_areas)
+		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			for(var/datum/weakref/ref in console.linked_turrets)
+				var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+				if(turret)
+					counted |= turret
+	return length(counted)
 
 /// Starts shield processing on this ship (called when shields activate)
 /obj/structure/overmap/ship/proc/start_shield_processing()
@@ -694,6 +787,19 @@
 	if(!shuttle)
 		est_thrust = 0
 		return
+	// A hull mid-move is geometrically untestable: takeoff() relocates the port's tile
+	// (x/y/z all updated) early in initiate_docking(), but setDir(new_dock.dir) is that
+	// proc's LAST line, after cleanup_runway()'s per-turf CHECK_TICK yields - so on any
+	// rotated move there are whole ticks where return_coords() projects the old heading
+	// from the new position and the rect misses the hull entirely. Round 4 (2026-08-15
+	// 04:39:22): a refresh landed in that window during an undock from the round's only
+	// dir-rotated berth and unsynced all four of D 19's thrusters while they stood on
+	// their own registered deck tiles - and the rebind sweep below could not save them,
+	// because get_containing_shuttle() runs the same poisoned rect. Nothing about the
+	// roster can be learned mid-move; keep the list and let the first post-move refresh
+	// judge it against honest geometry.
+	if(shuttle.move_in_flight())
+		return
 	var/calculated_thrust = 0
 	// Cutting from engine_list mid-loop shifts the loop's internal index down and makes
 	// it skip the next entry, so a live engine sitting behind a dropped one silently
@@ -750,6 +856,66 @@
 	var/area/engine_area = get_area(E)
 	return engine_area ? "[engine_area.type]" : "nullspace"
 
+/// How many diagnostic lines one engine refresh will read back before it stops.
+#define ENGINE_DIAGNOSTIC_MAX_LINES 8
+
+/**
+ * Names every thruster on or beside the hull that the helm cannot use, and why.
+ *
+ * refresh_engines() silently prunes and silently ignores; a thruster bolted on a tile
+ * the ship does not own simply never appears anywhere, and the round-6 crew burned
+ * fifteen minutes theorising about cables and SMES units because nothing would say
+ * "that tile is not your ship". This is the saying-it: run from the helm's manual
+ * engine refresh (a button press, never the burn path - the sweep walks the whole
+ * footprint plus a one-tile ring, which is exactly where nacelles get bolted on).
+ *
+ * Returns a list of player-facing strings; empty means nothing to complain about.
+ */
+/obj/structure/overmap/ship/proc/engine_diagnostic_report()
+	var/list/lines = list()
+	if(!shuttle)
+		return lines
+	// Same guard as refresh_engines(): mid-move the port's rect projects the old
+	// heading from the new position and every geometric answer is wrong.
+	if(shuttle.move_in_flight())
+		lines += "Hull is mid-manoeuvre - engine survey unavailable until it settles."
+		return lines
+	var/turf/port_turf = get_turf(shuttle)
+	if(!port_turf)
+		return lines
+	var/list/rect = shuttle.return_coords()
+	var/min_x = max(1, min(rect[1], rect[3]) - 1)
+	var/min_y = max(1, min(rect[2], rect[4]) - 1)
+	var/max_x = min(world.maxx, max(rect[1], rect[3]) + 1)
+	var/max_y = min(world.maxy, max(rect[2], rect[4]) + 1)
+
+	// Everything registered, plus everything physically on or hugging the footprint -
+	// the one-tile ring is where an unclaimed nacelle row sits.
+	var/list/obj/machinery/power/shuttle_engine/ship/candidates = list()
+	for(var/obj/machinery/power/shuttle_engine/ship/registered in shuttle.engine_list)
+		candidates |= registered
+	for(var/turf/tile as anything in block(locate(min_x, min_y, port_turf.z), locate(max_x, max_y, port_turf.z)))
+		for(var/obj/machinery/power/shuttle_engine/ship/found in tile)
+			candidates |= found
+
+	for(var/obj/machinery/power/shuttle_engine/ship/engine as anything in candidates)
+		if(QDELETED(engine))
+			continue
+		// A ship docked against us parks its own nacelles inside our ring - their
+		// engines are their business, not a fault on our report.
+		var/obj/docking_port/mobile/owner = engine.connected_ship_ref?.resolve()
+		if(owner && owner != shuttle)
+			continue
+		var/reason = engine.link_refusal_reason(shuttle)
+		if(!reason)
+			continue
+		lines += "[engine.name] at ([engine.x], [engine.y]): [reason]"
+		if(length(lines) >= ENGINE_DIAGNOSTIC_MAX_LINES)
+			break
+	return lines
+
+#undef ENGINE_DIAGNOSTIC_MAX_LINES
+
 /// Updates the screen for the helm console
 /obj/structure/overmap/ship/proc/update_screen()
 	if(!cam_screen)
@@ -802,6 +968,9 @@
 /obj/structure/overmap/ship/proc/register_crewmember(mob/living/carbon/human/crewmate)
 	ship_team.add_member(crewmate.mind)
 	RegisterSignal(crewmate, COMSIG_LIVING_DEATH, PROC_REF(on_member_death))
+	// Serving crew never face the join password again, even after dying and respawning
+	if(crewmate.ckey)
+		password_cleared_ckeys[crewmate.ckey] = TRUE
 
 	//set their ID to use our bank account
 	var/obj/item/card/id/card = crewmate.wear_id
@@ -815,6 +984,30 @@
 
 	crewmate.mind.wipe_memory() //clears ALL memories, but currently all they have is their old bank account.
 	crewmate.mind.assigned_role.paycheck_department = ship_team.name
+
+/**
+ * Puts an already-spawned player on this ship's crew roster, the same way accepting a
+ * captain's invite does: team membership, manifest entry, and a permanent password
+ * clearance for their ckey (every crew-adding path must grant that - see the join
+ * password rules above).
+ *
+ * NOT register_crewmember(): that is for fresh spawns only - it wipes the mind's
+ * memory and folds their bank account into ours, which would trash the character of
+ * anyone who already has a life on another ship. This also deliberately leaves their
+ * other crew memberships alone: founding or being handed a second hull should not
+ * strip a player off their first one.
+ *
+ * Returns TRUE if they ended up on the roster.
+ */
+/obj/structure/overmap/ship/proc/enlist_crewmember(mob/living/crewmate)
+	if(!crewmate?.mind || !ship_team)
+		return FALSE
+	ship_team.add_member(crewmate.mind) // no-op if they are already aboard
+	if(!(crewmate.real_name in manifest))
+		manifest += crewmate.real_name
+	if(crewmate.ckey)
+		password_cleared_ckeys[crewmate.ckey] = TRUE
+	return TRUE
 
 /**
  * ##destroy_ship
@@ -831,12 +1024,19 @@
 		return // Already abandoned
 
 	abandoned = TRUE
+	abandoned_at = world.time // starts the derelict-despawn clock (SSovermap.sweep_derelicts)
 	joining_allowed = FALSE // Disable cryopod spawning until claimed
+	// A derelict is public salvage - the old crew's lock dies with their tenure
+	join_password = null
+	password_cleared_ckeys = list()
 
-	// Clear all crew members properly (removes antag datums)
+	// Clear all crew members properly (removes antag datums). Snapshot the roster
+	// first: the announcement at the bottom has to reach these players, and by the
+	// time it runs the team is empty.
+	var/list/former_members
 	if(ship_team)
-		var/list/members_to_remove = ship_team.members?.Copy()
-		for(var/datum/mind/member in members_to_remove)
+		former_members = ship_team.members?.Copy()
+		for(var/datum/mind/member in former_members)
 			ship_team.remove_member(member)
 
 	// Stop deletion timer if still running
@@ -849,11 +1049,22 @@
 	if(crash && (state in list(OVERMAP_SHIP_FLYING, OVERMAP_SHIP_UNDOCKING, OVERMAP_SHIP_ACTING)))
 		enter_integrity_failure()
 
-	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! [ADMIN_COORDJMP(shuttle?.loc)]")
-	log_shuttle("[name] has been abandoned and is claimable.")
+	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! It will despawn in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes if unclaimed. [ADMIN_COORDJMP(shuttle?.loc)]")
+	log_shuttle("[name] has been abandoned and is claimable; despawn due in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes.")
 
-	// Announce on ship
-	ship_notify("WARNING: Ship abandoned. Command authorization reset. Any personnel may claim this vessel via the helm console.", "ABANDONMENT PROTOCOL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+	// Announce to the crew that was. ship_notify() cannot do this - it walks
+	// ship_team.members, cleared above, so the old call here reached nobody (round 4:
+	// the whole crew was dead and ghosting, their ship silently left the join menu,
+	// and none of them were told). Reach each former member through their player mob
+	// by ckey - their mind still points at the corpse, not the ghost they are riding.
+	for(var/datum/mind/member as anything in former_members)
+		if(!member?.key)
+			continue
+		var/mob/player_mob = get_mob_by_ckey(ckey(member.key))
+		if(!player_mob)
+			continue
+		to_chat(player_mob, span_boldwarning("Your ship, [name], has been abandoned: it went too long with no living crew aboard. It no longer appears in the ship join list, but it is still out there - anyone who reaches it can claim it from its helm console."))
+		SEND_SOUND(player_mob, sound('voidcrew/sound/warn.ogg', volume = 25))
 
 // ===== CAPTAIN MANAGEMENT =====
 
@@ -924,6 +1135,59 @@
 		return FALSE
 	return TRUE
 
+// ===== JOIN PASSWORD =====
+
+/**
+ * Whether this hull may carry a join password at all. The roundstart fleet is the public
+ * fleet - locking one would let a crew privatize a hull the round spawned for everyone -
+ * so only player-created ships (purchased, requisitioned, commissioned) qualify.
+ */
+/obj/structure/overmap/ship/proc/can_have_join_password()
+	return !(src in SSovermap.initial_ships)
+
+/// Whether a ckey may board without being asked for the password.
+/obj/structure/overmap/ship/proc/is_password_cleared(ckey)
+	if(!join_password)
+		return TRUE
+	if(!ckey)
+		return FALSE
+	return (ckey in password_cleared_ckeys)
+
+/**
+ * Whether an attempt matches the join password. Case-insensitive and trimmed - the
+ * password travels by being typed into another chat window, so exact casing is the
+ * kind of thing that locks friends out over nothing.
+ */
+/obj/structure/overmap/ship/proc/check_join_password(attempt)
+	if(!join_password)
+		return TRUE
+	return lowertext(trim("[attempt || ""]")) == lowertext(join_password)
+
+/**
+ * Sets (or clears, on null/empty) the join password. Returns TRUE on success.
+ * The caller is responsible for authorization; this only enforces which hulls
+ * may carry a password at all.
+ */
+/obj/structure/overmap/ship/proc/set_join_password(new_password, mob/user)
+	if(!can_have_join_password())
+		if(user)
+			to_chat(user, span_warning("[name] is a fleet-issued vessel - joining stays public."))
+		return FALSE
+	new_password = trim("[new_password || ""]", SHIP_JOIN_PASSWORD_MAX_LEN + 1)
+	if(!length(new_password))
+		if(!join_password)
+			return TRUE
+		join_password = null
+		if(user)
+			to_chat(user, span_notice("Join password cleared - anyone may join [name] again."))
+		log_game("[key_name(user)] cleared the join password of ship [name]")
+		return TRUE
+	join_password = new_password
+	if(user)
+		to_chat(user, span_notice("Join password set. Players joining [name] from the lobby must enter it; crew you invite never need it."))
+	log_game("[key_name(user)] set a join password on ship [name]")
+	return TRUE
+
 /**
  * Claims an abandoned ship for a new owner.
  * * claimer - The mob claiming the ship
@@ -934,8 +1198,10 @@
 	if(!claimer?.mind)
 		return FALSE
 
-	// Reset abandoned state
+	// Reset abandoned state, stopping the derelict-despawn clock
 	abandoned = FALSE
+	abandoned_at = 0
+	crewless_since = 0
 	joining_allowed = TRUE // Re-enable cryopod spawning
 
 	// Create new ship team or use existing (cleared) one
@@ -944,8 +1210,12 @@
 		ship_team.name = name
 		ship_team.ship = src
 
-	// Add claimer to ship team
+	// Add claimer to ship team. Every crew-adding path also clears the ckey through
+	// the join password gate - the claimer must never be locked out of the hull they
+	// now command if they die and respawn through the lobby.
 	ship_team.add_member(claimer.mind)
+	if(claimer.ckey)
+		password_cleared_ckeys[claimer.ckey] = TRUE
 
 	// Set the claimer as captain
 	claimed_captain = claimer.mind
@@ -986,6 +1256,73 @@
 
 	// Normal case: abandon instead of delete
 	abandon_ship()
+	return TRUE
+
+/**
+ * Deletes a derelict hull and releases everything it was pinning: the berth flags at
+ * whatever it is docked to (which is what lets that site's own unload machinery tear
+ * down its map zone - a derelict never undocks, so without this every abandoned ship
+ * pinned a zone and eventually a whole z-level for the rest of the round), its transit
+ * reservation, and its overmap datum.
+ *
+ * Called only by SSovermap.sweep_derelicts() once the claim window is over. Anyone
+ * physically aboard aborts the teardown; the sweep simply tries again a minute later.
+ */
+/obj/structure/overmap/ship/proc/despawn_derelict()
+	if(QDELETED(src))
+		return FALSE
+	// Any connected player physically aboard holds the teardown - dead ones too,
+	// deliberately: a body with a player behind it may be mid-rescue, and unlike the
+	// abandonment clock this check costs nothing to be generous with.
+	for(var/mob/player as anything in GLOB.player_list)
+		if(isliving(player) && is_aboard(player))
+			return FALSE
+	// A ship docked to us ship-to-ship parks its overmap token in our contents.
+	// Deleting the host would strand the guest inside a deleted loc.
+	for(var/obj/structure/overmap/ship/guest in src)
+		return FALSE
+
+	log_shuttle("[name]: derelict despawned (abandoned [(world.time - abandoned_at) / 600] minutes ago).")
+	message_admins("\[SHUTTLE]: Derelict [name] has despawned. [ADMIN_COORDJMP(shuttle?.loc)]")
+
+	// Hand our berth back before the hull goes - the subset of complete_dock()'s
+	// undocking branch that releases the site. can_release_interior() reads these
+	// flags, and a deleted ship never runs the undock path that clears them.
+	var/obj/structure/overmap/site = docked
+	if(site)
+		if(istype(site, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/host = site
+			if(host.shuttle && host.shuttle != shuttle)
+				host.shuttle.shuttle_areas -= shuttle.shuttle_areas
+			SEND_SIGNAL(host, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
+		release_berth_flags(site)
+		site.on_ship_undock_complete(src) // frees hangar berths at outposts; no-op elsewhere
+		if(istype(site, /obj/structure/overmap/space_ruin))
+			addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin, check_and_respawn)), 5 SECONDS)
+		else if(istype(site, /obj/structure/overmap/event/meteor))
+			addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/event/meteor, unload_level)), 5 SECONDS)
+		// Planets and empty-space placeholders (crash sites included) registered
+		// on_ship_undocked() on us when we entered; this is what schedules their own
+		// unload once the hull is gone.
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+		docked = null
+
+	// Drop the hard refs other ships hold on us. A stale entry keeps the datum from
+	// garbage collecting and hands SSgarbage an expensive hard delete instead.
+	for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
+		if(other == src)
+			continue
+		LAZYREMOVE(other.close_overmap_objects, src)
+		if(other.pending_dock_target == src)
+			other.pending_dock_target = null
+
+	// intoTheSunset() rather than a bare jumpToNullSpace(): it ghostizes and
+	// nullspaces every mob aboard first, corpses included. A mind-holding corpse left
+	// on the site's turfs would fail get_mind_mobs() and pin the map zone anyway.
+	// It ends in jumpToNullSpace(), which frees the transit reservation and the port.
+	if(shuttle)
+		shuttle.intoTheSunset()
+	qdel(src)
 	return TRUE
 
 /**
@@ -1172,17 +1509,26 @@
 /**
  * Checks if the ship can perform a shield burst to break interdiction.
  * Requirements:
- * - Ship must be interdicted
+ * - Ship must be interdicted, by a field that has finished locking
  * - Shields must be active (not broken)
  * - Shield health must meet the cost (base * interdictor power level)
  */
 /obj/structure/overmap/ship/proc/can_burst_shields()
 	if(!is_interdicted)
 		return FALSE
+	// is_interdicted is raised at warmup start (see start_interdiction's race-condition
+	// note), which used to let a target burst out before the attacker ever earned the
+	// lock - and still charged the attacker the full re-interdiction cooldown. A field
+	// that is still warming up is escaped by flying out of range, not by dumping the
+	// shield pool; bursting is only meaningful against a completed lock.
+	var/obj/machinery/ship_combat/interdictor/interdicting_machine = interdicting_machine_ref?.resolve()
+	if(interdicting_machine && !interdicting_machine.interdiction_active)
+		return FALSE
 	if(!shields_active || shields_broken)
 		return FALSE
 	var/required = get_burst_shield_cost()
-	if(shield_health < required)
+	// Overhealth counts - the burst consumes the whole pool, overhealth included
+	if(shield_health + shield_overhealth < required)
 		return FALSE
 	return TRUE
 
@@ -1380,12 +1726,53 @@
 /// helm's ui_act has no branch for, so every button on the console silently did nothing.
 #define DOCK_MOVE_MAX_ATTEMPTS 30
 
+/// How long a ship may sit in one transitional overmap state - DOCKING, UNDOCKING or ACTING -
+/// before SSovermap's poll treats the sequence as lost and reconciles the ship against where its
+/// hull physically is. Every one of those states greys out all four helm ops buttons and the
+/// cargo console's call button, so a sequence that quietly stops advancing is a dead ship for the
+/// rest of the round; today the only exit is an admin editing `state` by hand.
+///
+/// Generous on purpose. A healthy dock is the warmup plus at most DOCK_MOVE_MAX_ATTEMPTS of
+/// retries, and the waits that legitimately run longer than that - a destination still generating
+/// its interior, a sector build somebody else is holding the worldgen queue for - hold the clock
+/// rather than counting against it. Reaching this means nothing is coming.
+#define MANOEUVRE_STALL_TIMEOUT (90 SECONDS)
+
 /// Dock warmup time in deciseconds
 #define DOCK_WARMUP_TIME (10 SECONDS)
 /// Undock warmup time in deciseconds
 #define UNDOCK_WARMUP_TIME (10 SECONDS)
 /// Undock cooldown time in deciseconds (after docking, before can undock)
 #define UNDOCK_COOLDOWN_TIME (20 SECONDS)
+
+/**
+ * Messaging only, no flow change: request() (mobile_port.dm) drops a dock call on the
+ * floor when its berth check fails - no return value and no player-facing sign, so the
+ * sequence just sits until the stall watchdog reconciles it and the crew invents a
+ * reason. Run the same side-effect-free geometry check request() is about to run and
+ * TELL the crew when the request is going to be refused. Changes no state and blocks
+ * nothing - the caller still issues the request exactly as before.
+ *
+ * Returns TRUE when a refusal was detected (and broadcast), FALSE when the request
+ * should go through.
+ */
+/obj/structure/overmap/ship/proc/explain_dock_refusal(obj/docking_port/stationary/dock_to_use)
+	if(!shuttle || !dock_to_use)
+		return FALSE
+	var/status = shuttle.canDock(dock_to_use)
+	// ALREADY_DOCKED is benign - request() treats it as "nothing to do", not a fault
+	if(status == SHUTTLE_CAN_DOCK || status == SHUTTLE_ALREADY_DOCKED)
+		return FALSE
+	var/reason
+	switch(status)
+		if(SHUTTLE_DWIDTH_TOO_LARGE, SHUTTLE_WIDTH_TOO_LARGE, SHUTTLE_DHEIGHT_TOO_LARGE, SHUTTLE_HEIGHT_TOO_LARGE)
+			reason = "this ship does not fit that berth ([status]). A hull extension can outgrow a berth's clearance."
+		if(SHUTTLE_SOMEONE_ELSE_DOCKED)
+			reason = "another vessel is already occupying that berth."
+		else
+			reason = "the berth rejected the request ([status])."
+	ship_notify("DOCKING FAULT: [reason]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+	return TRUE
 
 /**
   * Docks the shuttle by requesting a port at the requested spot.
@@ -1428,10 +1815,15 @@
 	// Instant dock (force dock) - bypass warmup
 	if(instant)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
+		// Messaging only - the request below is issued either way, and the stall
+		// watchdog still owns recovery. See explain_dock_refusal().
+		var/refused = explain_dock_refusal(dock_to_use)
 		shuttle.request(dock_to_use)
 		shuttle.setTimer(1 SECONDS)
 		addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
-		return "Commencing docking..."
+		// On a refusal the fault broadcast has already said everything; don't follow it
+		// with a contradictory "Commencing docking..." echo
+		return refused ? null : "Commencing docking..."
 
 	// Start dock warmup. Return nothing: ship_notify() has already told the whole crew,
 	// including whoever pressed the button, and callers echo a returned string straight
@@ -1459,8 +1851,13 @@
 		return
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
+	// Messaging only - the request is issued either way and the stall watchdog still
+	// owns recovery. On a refusal, skip the "Docking now." line so the crew isn't told
+	// a move is happening right after being told why it can't.
+	var/refused = explain_dock_refusal(dock_to_use)
 	shuttle.request(dock_to_use)
-	ship_notify("Docking now.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	if(!refused)
+		ship_notify("Docking now.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	shuttle.setTimer(1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock_ref), 1 SECONDS)
 
@@ -1613,7 +2010,11 @@
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
+	// Kept on the ship as well as in the callback: if the chain below is ever lost, the
+	// timer's copy goes with it, and check_manoeuvre_stalled() has no other way to learn
+	// which berth to hand back.
+	undock_origin = WEAKREF(undock_from)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), undock_origin), 1 SECONDS)
 	// Crash state is not cleared here. The integrity latch re-arms itself when the hull is
 	// repaired back past its recovery threshold (see on_ship_recovered), and clearing the flag
 	// on undock as well used to desync the two: the ship stopped reporting as a wreck while
@@ -1631,7 +2032,23 @@
 	// var/old_loc = loc
 	switch(state)
 		if(OVERMAP_SHIP_DOCKING) //so that the shuttle is truly docked first
-			if(shuttle.mode == SHUTTLE_CALL || shuttle.mode == SHUTTLE_IDLE)
+			// The honest "did the hull actually move?" test, and the exact inverse of the one
+			// the UNDOCKING branch below already uses (see shuttle_is_in_transit's docstring).
+			// The mode check this replaced could not tell the two ends of the move apart:
+			// SHUTTLE_CALL is a voidcrew port's resting state in open flight and SHUTTLE_IDLE
+			// is its resting state once berthed, and request() leaves a flying port on
+			// SHUTTLE_CALL - so the test passed a second after the request exactly as readily
+			// as it did after the arrival, and walked the overmap token onto the site whether
+			// or not the hull followed. That is a ship the chart calls docked with its crew
+			// still in transit, it made abort_stalled_dock() below unreachable, and it hid a
+			// live race: complete_dock() is armed for warmup + 1s while the hull waits for the
+			// next SSshuttle fire after setTimer(1 SECONDS), and which lands first is not
+			// deterministic.
+			//
+			// Every dock in this fork starts from flight - the helm only offers docking in
+			// OVERMAP_SHIP_FLYING, and both ship-to-ship paths dock two flying hulls into
+			// empty space - so "no longer standing on a transit dock" is exactly "arrived".
+			if(!shuttle_is_in_transit())
 				var/obj/structure/overmap/docking_target = to_dock?.resolve()
 				if(!docking_target) //Panic, somehow the docking target is gone but the shuttle has likely docked somewhere, get it out quickly
 					state = OVERMAP_SHIP_FLYING
@@ -1657,8 +2074,18 @@
 				// Start undock cooldown
 				COOLDOWN_START(src, undock_cooldown, UNDOCK_COOLDOWN_TIME)
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+				// The counterpart to the "complete_dock UNDOCKING" line further down, whose
+				// absence is why a round-4 strand could not be diagnosed from the logs at all:
+				// 168 undock lines and not one for docking. The attempt count is the useful
+				// part now that a dock can legitimately take more than one.
+				log_shuttle("complete_dock DOCKING: [name] docked at [docking_target] after [attempt] attempt\s, hull on [shuttle.get_docked() || "NO DOCK"], mode=[shuttle.mode]")
 			else
-				//This should never happen, yet it does sometimes.
+				// Still standing on the transit dock: SSshuttle has not moved the hull yet, or
+				// cannot. check_transit_zone() refuses outright while the global transit budget
+				// is spent and initiate_docking() can be refused by a blocked berth or the
+				// port's own move lock, in which case check() just retries every 2 seconds.
+				// Wait for the hull rather than declaring the dock finished without it - and
+				// give up eventually, because "never" is one of the outcomes.
 				if(attempt >= DOCK_MOVE_MAX_ATTEMPTS)
 					abort_stalled_dock(to_dock?.resolve())
 					return
@@ -1768,6 +2195,7 @@
 
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
+			undock_origin = null
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 			// Force refresh close_overmap_objects for all ships on this turf
 			var/turf/our_turf = get_turf(src)
@@ -1780,6 +2208,14 @@
 			//if(repair_timer)
 				//deltimer(repair_timer)
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
+		else
+			// complete_dock() is the only thing that can move a ship out of DOCKING or
+			// UNDOCKING, and it is driven by one non-repeating timer per attempt. A callback
+			// that lands in any other state is a sequence that ended somewhere it did not
+			// announce, and it used to leave nothing behind at all - no log line, no runtime,
+			// nothing to tell the strand apart from a dock that simply never started.
+			log_shuttle("complete_dock: [name] fired in unexpected state [state] (to_dock=[to_dock?.resolve() || "gone"], attempt=[attempt]) - no action taken")
+			stack_trace("complete_dock in state [state]")
 
 	// With area-based mass tracking, no re-registration needed - areas persist through shuttle movement
 	update_appearance(UPDATE_ICON_STATE)
@@ -1824,6 +2260,7 @@
 /obj/structure/overmap/ship/proc/abort_stalled_undock(obj/structure/overmap/old_docked_location)
 	var/stuck_mode = shuttle?.mode
 	docked = old_docked_location // complete_undock_warmup() cleared this on the way out
+	undock_origin = null
 	state = OVERMAP_SHIP_IDLE
 	// Leave the port in the resting state a docked shuttle sits in, rather than the
 	// SHUTTLE_IGNITING it is stuck retrying from - otherwise the next undock's request()
@@ -1895,6 +2332,90 @@
 	)
 	update_appearance(UPDATE_ICON_STATE)
 	update_screen()
+
+/**
+ * Polled once a second by SSovermap for a manoeuvre that has stopped advancing.
+ *
+ * DOCKING, UNDOCKING and ACTING all grey out every helm ops control and the cargo console's
+ * call button, and every exit from them runs on a one-shot timer or a one-shot signal:
+ * complete_dock()'s retry chain, complete_dock_warmup(), on_planet_loaded(), and the
+ * `acting.state = prev_state` restores at the bottom of each site's ship_act(). A runtime
+ * anywhere in those unwinds the proc without arming the next step, and DM says nothing. The
+ * ship is then pinned in a dead state for the rest of the round - the only exit today is an
+ * admin editing `state` by hand.
+ *
+ * So this is a poll, not a timer: the failure being covered IS a lost callback, and a recovery
+ * that depends on one is covering nothing. It is also driven off the state it observes rather
+ * than a deadline stamped at each `state =` assignment, so a new assignment site cannot forget
+ * to arm it - the cost is up to a second of lag against a 90 second timeout.
+ *
+ * Recovery reconciles against the hull's own docking port, which is the only honest source of
+ * truth here (`state`, `docked` and `loc` are all bookkeeping that can and did drift from it).
+ * Returns TRUE if it acted.
+ */
+/obj/structure/overmap/ship/proc/check_manoeuvre_stalled()
+	if(state != OVERMAP_SHIP_DOCKING && state != OVERMAP_SHIP_UNDOCKING && state != OVERMAP_SHIP_ACTING)
+		manoeuvre_watch_state = null
+		manoeuvre_watch_since = 0
+		return FALSE
+
+	// First sighting, or a state that changed under us: start the clock. Every transition
+	// between transitional states is progress by definition.
+	if(manoeuvre_watch_state != state)
+		manoeuvre_watch_state = state
+		manoeuvre_watch_since = world.time
+		return FALSE
+
+	// Legal waits that outlast the timeout, held rather than counted. A destination still
+	// generating its interior is progress, just slow (dock() parks in DOCKING on
+	// COMSIG_VOIDCREW_PLANET_LOADED for exactly as long as that takes)...
+	var/obj/structure/overmap/planet/loading_target = docked
+	if(istype(loading_target) && loading_target.loading)
+		manoeuvre_watch_since = world.time
+		return FALSE
+	// ...and ship_act() sets ACTING before it queues behind every other build in the sector,
+	// which is minutes by design rather than a stall.
+	if(state == OVERMAP_SHIP_ACTING && (SSovermap.worldgen_owner || SSovermap.worldgen_queue_length()))
+		manoeuvre_watch_since = world.time
+		return FALSE
+
+	if(world.time - manoeuvre_watch_since < MANOEUVRE_STALL_TIMEOUT)
+		return FALSE
+
+	var/stalled_for = world.time - manoeuvre_watch_since
+	// Restart the clock before acting: a recovery can need a second pass (complete_dock()
+	// spends up to DOCK_MOVE_MAX_ATTEMPTS before it gives up), and this must not re-fire on
+	// every SSovermap fire while that runs.
+	manoeuvre_watch_since = world.time
+
+	log_shuttle("[name]: STRANDED in state [state] for [stalled_for / 10]s (loc=[loc], docked=[docked || "null"], \
+		hull on [shuttle?.get_docked() || "NO DOCK"], mode=[shuttle?.mode]) - reconciling against the hull")
+	message_admins("\[SHUTTLE]: [display_name] was stuck in [get_state_readout()] for [stalled_for / 10]s and is being resynchronised. [ADMIN_COORDJMP(shuttle?.loc)]")
+
+	switch(state)
+		if(OVERMAP_SHIP_ACTING)
+			// Nothing has moved the hull in ACTING - a site sets it, loads, and hands over to
+			// dock(), which sets DOCKING itself. Give the helm back. A site that does get
+			// there late simply sets its own state again.
+			state = OVERMAP_SHIP_FLYING
+			ship_notify("Approach plot timed out - navigation control restored.", "NAVIGATION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+			update_appearance(UPDATE_ICON_STATE)
+			update_screen()
+		if(OVERMAP_SHIP_DOCKING)
+			if(shuttle_is_in_transit())
+				// The hull never left flight, whatever the chart says.
+				abort_stalled_dock(docked)
+			else
+				// The hull is berthed and only the paperwork is missing. Hand it to the branch
+				// that does the paperwork, which now agrees with the hull.
+				ship_notify("Docking computer desynchronised from the hull - resynchronising.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+				INVOKE_ASYNC(src, PROC_REF(complete_dock), WEAKREF(docked))
+		if(OVERMAP_SHIP_UNDOCKING)
+			// complete_dock()'s UNDOCKING branch already tests transit and calls
+			// abort_stalled_undock() on its own, so restarting the lost chain with the berth
+			// we launched from is the whole recovery.
+			INVOKE_ASYNC(src, PROC_REF(complete_dock), undock_origin)
+	return TRUE
 
 /**
  * Initializes uninitialized space turfs around the shuttle so they can be built on.
@@ -3629,6 +4150,7 @@
 #undef SHIP_RUIN
 #undef SHIP_DELETE
 #undef DOCK_MOVE_MAX_ATTEMPTS
+#undef MANOEUVRE_STALL_TIMEOUT
 #undef DOCK_WARMUP_TIME
 #undef UNDOCK_WARMUP_TIME
 #undef UNDOCK_COOLDOWN_TIME

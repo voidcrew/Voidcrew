@@ -12,6 +12,8 @@
 #define TECHWEB_NODE_RADAR_ARRAY "radar_array"
 #define TECHWEB_NODE_RADAR_ARRAY_ADV "radar_array_advanced"
 #define TECHWEB_NODE_RADAR_ARRAY_ELITE "radar_array_elite"
+#define TECHWEB_NODE_RTG "rtg_generation"
+#define TECHWEB_NODE_TEG "teg_generation"
 #define TECHWEB_NODE_NANITE_BASIC "nanite_base"
 #define TECHWEB_NODE_NANITE_SMART "nanite_smart"
 #define TECHWEB_NODE_NANITE_MESH "nanite_mesh"

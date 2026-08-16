@@ -482,6 +482,30 @@
 
 	// Get a safe direction that avoids obstacles and stays in zone
 	var/safe_dir = get_zone_safe_direction(ship, flee_dir, spawn_zone)
+
+	// get_zone_safe_direction's fallback list is static and knows nothing about the
+	// threat, so when the direct escape vector is unusable - which is constant for a
+	// ship pressed against its band boundary - it can hand back a step TOWARD the
+	// chaser. Round 4's wedged pirates spent hours shuffling along the yellow boundary
+	// beside their target this way. Re-rank: of the legal candidates, step wherever
+	// opens the most distance from the threat.
+	if(safe_dir && safe_dir != flee_dir && threat && !QDELETED(threat))
+		var/turf/threat_loc = get_turf(threat)
+		if(threat_loc)
+			var/best_dist = -1
+			for(var/candidate_dir in GLOB.alldirs)
+				if(direction_has_obstacle(our_loc, candidate_dir))
+					continue
+				if(!direction_stays_in_zone(our_loc, candidate_dir, spawn_zone))
+					continue
+				var/turf/candidate_turf = get_step(our_loc, candidate_dir)
+				if(!candidate_turf)
+					continue
+				var/candidate_dist = get_dist(candidate_turf, threat_loc)
+				if(candidate_dist > best_dist)
+					best_dist = candidate_dist
+					safe_dir = candidate_dir
+
 	if(!safe_dir)
 		return AI_BEHAVIOR_DELAY
 
@@ -489,5 +513,86 @@
 	if(next_tile)
 		ship.dir = safe_dir
 		ship.forceMove(next_tile)
+
+	return AI_BEHAVIOR_DELAY
+
+// ========== UNDOCK RECOVERY ==========
+
+/**
+ * Takes a parked NPC ship back to open flight.
+ *
+ * Both AI subtrees stand down whenever the ship isn't OVERMAP_SHIP_FLYING, and nothing
+ * else in the game ever undocks an NPC hull - so before this behavior existed, one
+ * player force-dock (or a crash-land) was a permanent kill switch for that ship's AI:
+ * the hull sat berthed with live crew for the rest of the round. The movement subtree
+ * queues this whenever the ship is sitting in OVERMAP_SHIP_IDLE.
+ *
+ * Holds before leaving:
+ * - the park must be at least NPC_PARKED_RECOVERY_DELAY old, so the pirate doesn't
+ *   launch straight back out into the face of whoever force-docked it (undock()'s own
+ *   force-dock/interdiction lockouts still apply on top of this);
+ * - no living player aboard our own hull - they are mid-raid, and undocking under
+ *   them would kidnap the boarding party;
+ * - no player ship docked onto us or berthed at the same site - the encounter is
+ *   still in progress, leave the hull where they pinned it.
+ *
+ * Never recovers a crashed, abandoned, claimed or crew-dead hull. Those are wrecks
+ * and prizes for the players, not pilots.
+ */
+/datum/ai_behavior/npc_ship/undock_recovery
+	action_cooldown = 15 SECONDS
+
+/datum/ai_behavior/npc_ship/undock_recovery/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	if(!ship)
+		return AI_BEHAVIOR_DELAY
+
+	// Only recover a ship that is actually sitting berthed. Flying again means we're
+	// done; DOCKING/UNDOCKING/ACTING are transitional and covered elsewhere.
+	if(ship.state != OVERMAP_SHIP_IDLE)
+		return AI_BEHAVIOR_DELAY
+
+	// Wrecks and prizes stay where they are
+	if(ship.player_controlled || ship.abandoned || ship.has_crash_landed)
+		return AI_BEHAVIOR_DELAY
+
+	// A hull with no living crew aboard is a derelict-in-waiting (the abandonment
+	// timer owns it now), not something that should fly itself away from the players
+	// who earned it
+	if(ship.count_live_crew_aboard() < 1)
+		return AI_BEHAVIOR_DELAY
+
+	// Wait out the parked delay before even thinking about leaving
+	var/parked_since = controller.blackboard[BB_NPC_PARKED_SINCE]
+	if(!parked_since || world.time - parked_since < NPC_PARKED_RECOVERY_DELAY)
+		return AI_BEHAVIOR_DELAY
+
+	// Hold while any living player is aboard our hull - undocking now would carry
+	// their boarding party off with us
+	if(controller.count_living_crew(ship) > 0)
+		return AI_BEHAVIOR_DELAY
+
+	// Hold while a player ship is docked onto us or shares our berth site - the
+	// encounter that parked us is still going on
+	for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
+		if(other == ship || QDELETED(other))
+			continue
+		if(istype(other, /obj/structure/overmap/ship/npc))
+			var/obj/structure/overmap/ship/npc/other_npc = other
+			if(!other_npc.player_controlled)
+				continue
+		if(other.docked == ship || (ship.docked && other.docked == ship.docked))
+			return AI_BEHAVIOR_DELAY
+
+	// Clear to leave. undock() runs its own cooldown/lockout checks and returns a
+	// refusal string while any still apply - in that case just retry next tick,
+	// quietly. It also self-heals drifted bookkeeping (IDLE while standing on a
+	// turf) via check_loc(), which is a recovery in itself.
+	var/berth = ship.docked ? "[ship.docked]" : "unknown berth"
+	var/refusal = ship.undock()
+	if(isnull(refusal))
+		log_shuttle("NPC_SHIP: [ship.name] AI undocking from [berth] to resume patrol ([round((world.time - parked_since) / (1 MINUTES), 0.1)] minutes parked)")
 
 	return AI_BEHAVIOR_DELAY

@@ -23,6 +23,7 @@
 	. += span_notice("This is a [part_class]-class ship part.")
 	. += span_warning("Must be stored in an extraction briefcase to be extracted!")
 	. += span_notice("Parts are extracted when you bluespace jump or when the round ends.")
+	. += span_notice("No briefcase? Get a free one with the Request Extraction Case verb in the IC tab.")
 
 // Combat parts (red) - found in wrecks, combat zones
 /obj/item/ship_parts/combat

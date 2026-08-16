@@ -96,9 +96,11 @@
 	// the template load asserted on our areas
 	ship_to_spawn.update_flight_parallax()
 
-	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
-
+	// Mass must exist before the signal: SHIP_LOADED handlers (shield generators among
+	// them) read ship.mass for power pricing, and at this point it is still null
 	ship_to_spawn.calculate_mass()
+
+	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 
 	// assign landmarks as needed - use shuttle areas or fallback to shuttle location
 	var/turf/safe_turf
@@ -117,6 +119,11 @@
 	if(safe_turf)
 		new /obj/effect/landmark/blobstart(safe_turf) // Stationloving component
 		new /obj/effect/landmark/observer_start(safe_turf) // Observer and Unit tests
+
+	// No hull configuration may launch without breathing gear, or without a
+	// surgical kit if it has somewhere to operate (BAL-6) - see
+	// voidcrew/modules/shuttle/ship_parts/starter_supplies.dm
+	loaded.ensure_starter_supplies()
 
 	return ship_to_spawn
 

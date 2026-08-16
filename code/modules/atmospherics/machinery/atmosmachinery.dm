@@ -406,7 +406,11 @@
 	if(istype(reference, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/P = reference
 		P.destroy_network()
-	nodes[nodes.Find(reference)] = null
+	// VOIDCREW EDIT: Find() returns 0 on an asymmetric link, and nodes[0] runtimes -
+	// aborting the caller's Destroy() chain before any of its cleanup runs
+	var/node_index = nodes.Find(reference)
+	if(node_index)
+		nodes[node_index] = null
 	update_appearance()
 
 /obj/machinery/atmospherics/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)

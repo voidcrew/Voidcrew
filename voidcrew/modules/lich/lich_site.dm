@@ -1,23 +1,22 @@
 /**
- * # The Verdigris: lich lair site + ritual engine
+ * # The Verdigris: lich lair site + status beacon
  *
  * A necrotic signal surfaces in yellow/red space well into the round and the
  * whole galaxy is told what it is. Inside is Ilthuun, the Verdigris Lich, behind
- * four sealed defense layers. From the moment he surfaces he works: every
- * LICH_RITUAL_INTERVAL his potency climbs by one (capped at LICH_MAX_POTENCY)
- * and one eligible event from the ritual roster fires somewhere in the galaxy,
- * ramping from "your dead look at you funny" to round-warping. The only off
- * switch is a boarding party.
+ * four sealed defense layers. The site does nothing to anyone who stays away:
+ * it is a standing, galaxy-wide raid offer, not a pressure ramp. Every
+ * LICH_BEACON_INTERVAL it re-announces itself and re-pushes its helm waypoint,
+ * so a crew formed an hour after he surfaced still knows where he is and that
+ * he is still standing. The reward for answering is the hoard on his sanctum
+ * floor (lich_loot.dm), and only the boarding party gets it.
  *
  * ## Why the site owns its own clock
  *
  * SSdynamic_events is a weight-rolled roster of ship-victim events on a minutes
- * cadence with no notion of escalation, and its events must keep firing whether
- * or not anything spawned them. The ritual ramp is the opposite on both counts:
- * the cadence and the potency belong to one mob, and lich events must not exist
- * when there is no lich. So the site drives its own addtimer chain (same shape
- * as the contested cache's lifecycle, contested_cache.dm) and reaches into the
- * roster itself through fire_ritual_event().
+ * cadence; the beacon is not an event, it is a reminder tied to one object's
+ * lifetime, and it must stop the moment he dies. So the site drives its own
+ * addtimer chain (same shape as the contested cache's lifecycle,
+ * contested_cache.dm) and cancels it from the victory path.
  *
  * ## Why the interior never unloads
  *
@@ -35,7 +34,7 @@
 
 /// The one lich lair this round, or null. Guards the event and the admin verb
 /// against double-spawning, and is the hook every other track resolves the site
-/// through (the ritual roster gates on it, the boss reports his death to it).
+/// through (the boss reports his death to it).
 GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 // ===== MAP TEMPLATE =====
@@ -56,12 +55,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	desc = "A voice transmitting on every band at once, in a language older than any charter in the sector. It uses your ship's name."
 	fleet_waypoint_name = "The Verdigris"
 
-	/// Rituals completed. Doubles as the potency of the last one, so the number
-	/// the crew hears announced is the number the roster filters on. Climbs one
-	/// per ritual to LICH_MAX_POTENCY and then holds there, firing forever.
-	var/ritual_potency = 0
-	/// Timer id of the pending ritual, so killing him can cancel it cleanly.
-	var/ritual_timer
+	/// Timer id of the pending beacon beat, so killing him can cancel it cleanly.
+	var/beacon_timer
 	/// TRUE once Ilthuun is dead. Stops the clock; the site stays put as a
 	/// lootable husk rather than retiring, so raiders can strip it and fly home.
 	var/spent = FALSE
@@ -104,9 +99,9 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /obj/structure/overmap/space_ruin/lich_lair/Destroy()
 	if(GLOB.lich_lair == src)
 		GLOB.lich_lair = null
-	if(ritual_timer)
-		deltimer(ritual_timer)
-		ritual_timer = null
+	if(beacon_timer)
+		deltimer(beacon_timer)
+		beacon_timer = null
 	clear_fleet_waypoint()
 	QDEL_NULL(radio)
 	ward_doors = null
@@ -126,7 +121,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(spent)
 		. += span_notice("The green is gone out of it. Whatever was working in there has stopped.")
 		return
-	. += span_boldwarning("Rituals completed: [ritual_potency][ritual_potency >= LICH_MAX_POTENCY ? " (as deep as it goes)" : ""].")
+	. += span_boldwarning("Still transmitting. Ilthuun has not been dealt with.")
 	if(loaded)
 		var/sealed = sealed_ward_count()
 		if(sealed)
@@ -137,8 +132,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /**
  * Kicks the raid off: reveals the site (there is no mystery to survey, he
  * announces himself), charts a helm waypoint onto the whole fleet, tells the
- * galaxy who is calling and what is about to start happening to it, and starts
- * the ritual clock. Called once by the scheduler right after set_ruin_template().
+ * galaxy who is out there and where, and starts the status beacon. Called once
+ * by the scheduler right after set_ruin_template().
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/start_event()
 	on_surveyed()
@@ -147,17 +142,17 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	var/where = coords ? "grid [coords[1]], [coords[2]]" : "an unknown position"
 
 	broadcast_galaxy(
-		"You have all been very busy. I have been busy longer. My name is Ilthuun, and my house has come up out of the dark at [where]. Come and look at it or don't, it changes nothing. I am going to keep cutting rites, and you are going to keep feeling them. There is one way to stop me, and it is a short walk down four sealed halls.",
+		"You have all been very busy. I have been busy longer. My name is Ilthuun, and my house has come up out of the dark at [where]. Come and look at it or don't, it changes nothing. If you want me ended, it is a short walk down four sealed halls, and everything I own is at the bottom of it.",
 		"The Verdigris",
 	)
 
-	// Registers as well as pushes: he is going to keep working for the rest of the
+	// Registers as well as pushes: he is going to sit there for the rest of the
 	// round, so a hull commissioned an hour from now still needs to be told where.
 	broadcast_fleet_waypoint()
 
-	notify_ghosts("The Verdigris has surfaced. A lich has begun a galaxy-wide ritual!", source = src, header = "The Verdigris")
+	notify_ghosts("The Verdigris has surfaced. Ilthuun waits behind four sealed wards!", source = src, header = "The Verdigris")
 
-	schedule_ritual(LICH_FIRST_RITUAL_DELAY)
+	schedule_beacon()
 	log_game("LICH: The Verdigris surfaced at overmap [where].")
 
 /**
@@ -170,209 +165,41 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	priority_announce(message, title, sender_override = LICH_ANNOUNCER, color_override = "green")
 	radio?.talk_into(src, message, RADIO_CHANNEL_WIDEBAND)
 
-// ===== RITUAL CLOCK =====
+// ===== STATUS BEACON =====
 
-/// Arms the next ritual. Safe to call repeatedly. An existing pending ritual is
-/// always replaced, never stacked.
-/obj/structure/overmap/space_ruin/lich_lair/proc/schedule_ritual(delay = LICH_RITUAL_INTERVAL)
+/// Arms the next beacon beat. Safe to call repeatedly. An existing pending beat
+/// is always replaced, never stacked.
+/obj/structure/overmap/space_ruin/lich_lair/proc/schedule_beacon(delay = LICH_BEACON_INTERVAL)
 	if(QDELETED(src) || spent)
 		return
-	if(ritual_timer)
-		deltimer(ritual_timer)
-	ritual_timer = addtimer(CALLBACK(src, PROC_REF(run_ritual)), delay, TIMER_STOPPABLE)
+	if(beacon_timer)
+		deltimer(beacon_timer)
+	beacon_timer = addtimer(CALLBACK(src, PROC_REF(run_beacon)), delay, TIMER_STOPPABLE)
 
 /**
- * One beat of the clock: deepen the working, fire one event at the new potency,
- * tell the galaxy how it is going, re-arm. Potency is incremented BEFORE the
- * roll (so the first ritual lands at 1 and the announced number always matches
- * the band the roster filtered on) and never decreases.
+ * One beat of the status beacon: tell the galaxy he is still standing, re-push
+ * the fleet waypoint, re-arm. That is the whole beat, there is no mechanical
+ * effect on anybody. It exists so a crew that formed after he surfaced (or
+ * cleared its helm marker, or missed the surface announcement) keeps being told
+ * where the raid is until somebody answers it.
  *
- * The broadcast is unconditional: it does not wait on the roll and does not care
- * whether an event actually ran. A ritual that finds nothing willing to fire
- * still deepens the working and Ilthuun still gloats about it, which is both the
- * honest reading of the fiction and the reason no bypass is needed in
- * get_ritual_roster().
+ * broadcast_fleet_waypoint() is idempotent: add_waypoint() dedups on
+ * source_key (ship_waypoints.dm), so the re-push refreshes existing markers in
+ * place rather than stacking duplicates, and restores any a crew cleared.
  */
-/obj/structure/overmap/space_ruin/lich_lair/proc/run_ritual()
-	ritual_timer = null
+/obj/structure/overmap/space_ruin/lich_lair/proc/run_beacon()
+	beacon_timer = null
 	if(QDELETED(src) || spent)
 		return
 
-	ritual_potency = min(ritual_potency + 1, LICH_MAX_POTENCY)
-	// Running a round event sleeps (grand_rune.dm:187 makes the same note about
-	// the same call), never block SStimer's fire on it.
-	INVOKE_ASYNC(src, PROC_REF(fire_ritual_event), ritual_potency)
-	broadcast_galaxy(ritual_flavor(ritual_potency), "The Verdigris")
-	schedule_ritual()
-
-/**
- * Fires one ritual at the given potency and returns the control that ran, or null
- * if nothing was eligible.
- *
- * **This is the hook the ritual roster plugs into.** Anything that subtypes
- * /datum/round_event_control/voidcrew/lich is a candidate; the band it declares
- * through min_wizard_trigger_potency..max_wizard_trigger_potency (inclusive,
- * code/modules/events/_event.dm:28-31) decides which potencies it is eligible
- * at, and eligible candidates are rolled by their event weight. No roster
- * registry to keep in sync: SSevents instantiates one control per typepath at
- * init, so subtyping the base is the whole registration step.
- *
- * One ritual, one event TYPE, but a ship-scoped one lands on every crewed ship
- * at once rather than on a rolled victim. See fire_ritual_on_every_ship().
- *
- * A null return is not a failure. It means nothing in the roster was willing to
- * run right now, and the ritual passes quietly. See get_ritual_roster().
- */
-/obj/structure/overmap/space_ruin/lich_lair/proc/fire_ritual_event(potency = ritual_potency)
-	var/list/roster = get_ritual_roster(potency)
-	if(!length(roster))
-		log_game("LICH: ritual [potency] had no willing event in the roster; it passes quietly.")
-		return null
-
-	var/datum/round_event_control/voidcrew/lich/chosen = pick_weight(roster)
-	if(!chosen)
-		return null
-
-	if(chosen.event_scope != EVENT_SCOPE_SHIP)
-		chosen.run_event(random = TRUE, event_cause = "a Verdigris ritual")
-		log_game("LICH: ritual [potency] fired [chosen.name] ([chosen.typepath]) galaxy-wide.")
-		return chosen
-
-	if(!fire_ritual_on_every_ship(chosen, potency))
-		return null
-	return chosen
-
-/**
- * Runs a ship-scoped ritual on EVERY crewed ship, one event instance per hull.
- *
- * The ambient framework rolls a single weighted victim ship per event, which is
- * right for ambient noise and wrong for this: Ilthuun announces himself to the
- * whole galaxy, names the price of ignoring him, and then, under the old
- * behaviour, inconvenienced one crew at random while everyone else watched. A
- * pressure system that only presses one hull is not a reason for anybody else to
- * fly at the lair. So every crew that is flying with people aboard gets the rite.
- *
- * Implemented as N separate run_event() calls with `pending_target` set by hand,
- * rather than by teaching the events to take a list. Each ship gets its own event
- * instance with its own lifecycle, its own tracked objects and its own end(), so
- * every existing per-ship event works unchanged, and one crew's curse expiring or
- * one hull being destroyed mid-rite cannot touch another's.
- *
- * Two accounting details:
- *
- * - `occurrences` is restored to exactly one per ritual. The caps in
- *   lich_events.dm are written as "how many rituals may be this event", and
- *   letting a five-ship galaxy burn five occurrences would silently make every
- *   cap population-dependent.
- * - Deadchat is announced once, by the first instance. Ghosts do not need the
- *   same line per hull.
- *
- * Ships docked at a trader outpost are still skipped, via the framework's
- * `allow_in_safe_harbor` rule. That is a hard invariant about NPC outposts never
- * taking collateral, not a mercy, and the docking bay is the one place a crew can
- * legitimately sit out a rite.
- *
- * Returns the number of ships hit.
- */
-/obj/structure/overmap/space_ruin/lich_lair/proc/fire_ritual_on_every_ship(datum/round_event_control/voidcrew/lich/chosen, potency)
-	var/list/targets = chosen.get_valid_target_ships()
-	if(!length(targets))
-		log_game("LICH: ritual [potency] rolled [chosen.name] but no crewed ship was targetable; it passes quietly.")
-		return 0
-
-	var/occurrences_before = chosen.occurrences
-	var/alert_observers_before = chosen.alert_observers
-	var/fired = 0
-
-	for(var/obj/structure/overmap/ship/victim as anything in targets)
-		if(QDELETED(victim))
-			continue
-		chosen.pending_target = victim
-		chosen.run_event(random = TRUE, event_cause = "a Verdigris ritual")
-		chosen.alert_observers = FALSE // the first instance already told deadchat
-		fired++
-
-	chosen.pending_target = null
-	chosen.alert_observers = alert_observers_before
-	if(fired)
-		chosen.occurrences = occurrences_before + 1
-
-	log_game("LICH: ritual [potency] fired [chosen.name] ([chosen.typepath]) on [fired] ship(s).")
-	return fired
-
-/**
- * Weighted candidate list for a ritual at the given potency.
- *
- * Selection mirrors the wizard grand rune (grand_rune.dm:200-217): same two
- * vars, same inclusive comparison, and can_spawn_event() is passed
- * allow_magic = TRUE so a roster flagged wizardevent isn't filtered out just
- * because SSevents.wizardmode is off (it always is, in this fork).
- *
- * can_spawn_event() is the ONLY authority on whether a candidate may run, and
- * there is deliberately no bypass around it. It is where an event's own refusals
- * live, every max_occurrences cap, the one-controller-only guards on the two
- * Mockery events, the roster's own GLOB.lich_lair gate. An empty list is a
- * legitimate answer: at sustained maximum potency, once the one-shots in band
- * have all been spent, the correct behaviour is a ritual that costs the galaxy
- * nothing but a threat. Ilthuun still talks; see run_ritual().
- */
-/obj/structure/overmap/space_ruin/lich_lair/proc/get_ritual_roster(potency = ritual_potency)
-	var/list/roster = list()
-	var/player_count = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
-
-	for(var/datum/round_event_control/voidcrew/lich/candidate in SSevents.control)
-		if(!candidate.typepath) // abstract bases never get a typepath
-			continue
-		if(candidate.min_wizard_trigger_potency > potency)
-			continue
-		if(candidate.max_wizard_trigger_potency < potency)
-			continue
-		if(!candidate.can_spawn_event(player_count, allow_magic = TRUE))
-			continue
-		roster[candidate] = max(candidate.weight, 1)
-
-	return roster
-
-/// The line Ilthuun broadcasts after a ritual of the given potency. He starts
-/// almost courteous and does not stay that way.
-/obj/structure/overmap/space_ruin/lich_lair/proc/ritual_flavor(potency)
-	switch(potency)
-		if(0, 1)
-			return pick(
-				"That is the first rite done. You will feel it as a chill in your teeth and nothing worse. That will not be true for long.",
-				"It has started, and it started quietly. Somewhere on your ship, something that was not moving is moving now.",
-			)
-		if(2)
-			return pick(
-				"Second rite done. Your dead are listening now. They always were. The difference is that now they answer me.",
-				"Can you hear the humming? That is my work settling into your crew's bones. Take your time with it. I am not in any hurry.",
-			)
-		if(3)
-			return pick(
-				"Third. The green is in your water, your air, and the little warm rooms you sleep in. Nobody has come to stop me yet. I did expect somebody by now.",
-				"Three rites down. I have started a list of your ships. It is not a long list, and I am not writing it in ink.",
-			)
-		if(4)
-			return pick(
-				"Fourth rite. I can see you now. I am going to keep one of you and give the rest back changed.",
-				"I am halfway done. Come and stop me, or stand still and get built into it. Either one works for me.",
-			)
-		if(5)
-			return pick(
-				"FIFTH. The green runs all the way to the edge of the chart now. I have your names written down, and I did not use ink.",
-				"I do not have to reach for you any more. Every one of you is inside this already, breathing it. Say my name if you think it will help.",
-			)
-		if(6)
-			return pick(
-				"SIX. THE ROT IS IN THE AIR OF EVERY SHIP STILL FLYING. BREATHE. BREATHE. BREATHE IT IN FOR ME.",
-				"Sixth rite. Your engines, your lights, your corridors: all of it is scaffolding for my sanctum now. Do you like what I have done with your sky?",
-			)
-		else
-			return pick(
-				"SEVEN. THERE IS NO EIGHTH. THERE IS ONLY THIS NOW, AND ALL OF YOU INSIDE IT.",
-				"THE WORK IS FINISHED AND I AM STILL WORKING. I WILL BE WORKING ON YOUR BONES LONG AFTER THE STARS GO OUT.",
-				"I HAVE STOPPED COUNTING. THERE IS NOTHING LEFT TO COUNT TOWARDS.",
-			)
+	var/list/coords = get_relative_overmap_coords()
+	var/where = coords ? "grid [coords[1]], [coords[2]]" : "an uncharted position"
+	broadcast_galaxy(pick(
+		"The Verdigris is still transmitting from [where]. Ilthuun has not been dealt with.",
+		"The necrotic signal at [where] has not stopped. Ilthuun is still in there.",
+	), "The Verdigris")
+	broadcast_fleet_waypoint()
+	schedule_beacon()
 
 // ===== VICTORY =====
 
@@ -380,33 +207,22 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * Called by Ilthuun when he dies (and, as a backstop, by the death signal the
  * site registers at link time. The guard makes both paths idempotent).
  *
- * Stops the clock, lifts the curses that outlive their own firing, tells the
- * galaxy, retires the helm markers. Deliberately does NOT qdel the site or drop
- * the interior: the sanctum still has his garb and his gear in it, and the
- * raiders still have to carry all of that back to a ship and fly it home.
+ * Stops the beacon, tells the galaxy, retires the helm markers. Deliberately
+ * does NOT qdel the site or drop the interior: the sanctum still has his garb
+ * and his gear in it, and the raiders still have to carry all of that back to a
+ * ship and fly it home.
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/on_lich_slain(mob/living/slain, mob/living/killer)
 	if(spent)
 		return
 	spent = TRUE
 
-	if(ritual_timer)
-		deltimer(ritual_timer)
-		ritual_timer = null
+	if(beacon_timer)
+		deltimer(beacon_timer)
+		beacon_timer = null
 	if(slain)
 		UnregisterSignal(slain, COMSIG_LIVING_DEATH)
 	lich_ref = null
-
-	// Stopping the clock only stops FUTURE rites. Tongues of the Dead installs a global
-	// curse that runs on its own two-minute timer, so a raid that lands inside that
-	// window has to reach back and cut it short (see end_lich_babel() and rule 2 in
-	// the lich_events.dm header). A no-op if the timer already expired. Runs before
-	// the broadcast below, which tells the galaxy it has happened.
-	end_lich_babel()
-	// Same reach-back for Restless Dead, which has no timer at all: the veil over the
-	// dead stays down until he does. A no-op unless that rite fired (see
-	// end_restless_dead(), restless_dead.dm).
-	end_restless_dead()
 
 	name = "the Verdigris"
 	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped."
@@ -414,14 +230,14 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	clear_fleet_waypoint()
 
 	broadcast_galaxy(
-		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands, and you walked four halls and took it back off me. Everything I made is going to dust on the way out, so check your pockets. You keep only what you take off my floor, and whatever of me has ended up in your head. Ilthuun is finished. The rites are finished.",
+		"...oh. Oh, that was well done. That was very well done. I had forever in my hands, and you walked four halls and took it back off me. What is left of me is lying on the sanctum floor. Take it and go. Ilthuun is finished.",
 		"The Verdigris",
 	)
-	notify_ghosts("Ilthuun has been slain. The Verdigris rituals have stopped.", source = src, header = "The Verdigris")
-	log_game("LICH: Ilthuun slain by [killer ? key_name(killer) : "unknown"] after [ritual_potency] ritual(s).")
+	notify_ghosts("Ilthuun has been slain. The Verdigris has gone dark.", source = src, header = "The Verdigris")
+	log_game("LICH: Ilthuun slain by [killer ? key_name(killer) : "unknown"].")
 
 /// COMSIG_LIVING_DEATH backstop. The boss calls on_lich_slain() himself; this
-/// exists so a missed call can never leave the ritual clock running on a corpse.
+/// exists so a missed call can never leave the status beacon running on a corpse.
 /obj/structure/overmap/space_ruin/lich_lair/proc/on_boss_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	INVOKE_ASYNC(src, PROC_REF(on_lich_slain), source, null) // announcing sleeps
@@ -621,10 +437,10 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		addtimer(CALLBACK(src, PROC_REF(spawn_scheduled_lich_lair)), LICH_SPAWN_RETRY)
 
 /**
- * Places The Verdigris on an unused overmap square and starts its ritual clock.
- * Mid-to-dangerous space by preference: a galaxy-threatening raid boss has no
- * business parked in the safe outer ring. Shared by the scheduler and the admin
- * verb. Returns the site, or null if it could not be placed.
+ * Places The Verdigris on an unused overmap square and starts its status
+ * beacon. Mid-to-dangerous space by preference: a raid boss has no business
+ * parked in the safe outer ring. Shared by the scheduler and the admin verb.
+ * Returns the site, or null if it could not be placed.
  */
 /proc/surface_lich_lair()
 	if(GLOB.lich_lair)
@@ -656,7 +472,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	log_mapping("SSovermap: The Verdigris surfaced on the overmap.")
 	return site
 
-ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the lich lair raid site on the overmap and start its ritual clock, ignoring both the 90-minute gate and the minimum-player gate.", ADMIN_CATEGORY_EVENTS)
+ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the lich lair raid site on the overmap and start its status beacon, ignoring both the spawn-time gate and the minimum-player gate.", ADMIN_CATEGORY_EVENTS)
 	if(GLOB.lich_lair)
 		var/list/coords = GLOB.lich_lair.get_relative_overmap_coords()
 		to_chat(user, span_warning("The Verdigris already exists this round[coords ? " (at grid [coords[1]], [coords[2]])" : ""]."))
@@ -670,80 +486,23 @@ ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the l
 	BLACKBOX_LOG_ADMIN_VERB("Spawn The Verdigris")
 
 /**
- * Ritual-clock control, the counterpart to the Colosseum's match-control verb
- * (colosseum_controller.dm). The ramp is deliberately slow, potency caps roughly
- * half an hour after the lair surfaces, which makes the late game of this event
- * almost untestable in real time. This drives the clock by hand instead.
+ * Minimal beacon control: fires one status-beacon beat immediately (the
+ * galaxy-wide status line plus the fleet-waypoint re-push) and re-arms the
+ * clock from now. Killing him is done the ordinary way, or with a smite; the
+ * old ritual-control verb died with the ritual ramp.
  */
-ADMIN_VERB(lich_ritual_control, R_ADMIN, "Verdigris Ritual Control", "Drive the lich's ritual clock: fire a ritual now, set its potency, or resolve the event outright.", ADMIN_CATEGORY_EVENTS)
+ADMIN_VERB(lich_beacon_control, R_ADMIN, "Verdigris Beacon", "Fire the Verdigris status beacon now: re-broadcast the galaxy-wide status line and re-push the fleet waypoint.", ADMIN_CATEGORY_EVENTS)
 	var/obj/structure/overmap/space_ruin/lich_lair/site = GLOB.lich_lair
 	if(!site)
 		to_chat(user, span_warning("There is no Verdigris this round. Use \"Spawn The Verdigris\" first."))
 		return
 	if(site.spent)
-		to_chat(user, span_warning("Ilthuun is already dead. The ritual clock is stopped and the site is a husk."))
+		to_chat(user, span_warning("Ilthuun is already dead. The beacon is stopped and the site is a husk."))
 		return
-
-	var/static/list/choices = list(
-		"Fire a ritual now (keeps current potency)",
-		"Deepen by one and fire (a normal ritual beat)",
-		"Set potency...",
-		"Slay Ilthuun (resolve the event)",
-		"Cancel",
-	)
-	var/choice = tgui_input_list(user.mob, "Ritual potency is currently [site.ritual_potency] of [LICH_MAX_POTENCY].", "Verdigris Ritual Control", choices)
-	if(!choice || choice == "Cancel")
-		return
-	// Re-resolve: the input above sleeps, and the raid party may have killed him
-	// (or an admin deleted the site) while the box was open.
-	site = GLOB.lich_lair
-	if(!site || site.spent)
-		to_chat(user, span_warning("The Verdigris is no longer running an event."))
-		return
-
-	switch(choice)
-		if("Fire a ritual now (keeps current potency)")
-			// fire_ritual_event() runs a round event, which sleeps
-			INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin/lich_lair, fire_ritual_event), site.ritual_potency)
-			to_chat(user, span_notice("Fired one ritual event at potency [site.ritual_potency]."))
-			message_admins("[key_name_admin(user)] fired a Verdigris ritual at potency [site.ritual_potency].")
-			log_admin("[key_name(user)] fired a Verdigris ritual at potency [site.ritual_potency].")
-
-		if("Deepen by one and fire (a normal ritual beat)")
-			// run_ritual() increments, fires, broadcasts and re-arms the clock
-			INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin/lich_lair, run_ritual))
-			to_chat(user, span_notice("Advancing the clock one beat (potency [site.ritual_potency] -> [min(site.ritual_potency + 1, LICH_MAX_POTENCY)])."))
-			message_admins("[key_name_admin(user)] advanced the Verdigris ritual clock one beat.")
-			log_admin("[key_name(user)] advanced the Verdigris ritual clock one beat.")
-
-		if("Set potency...")
-			var/new_potency = tgui_input_number(user.mob, "Ritual potency (0 to [LICH_MAX_POTENCY]). This does not fire an event; it sets where the ramp sits.", "Verdigris Potency", site.ritual_potency, LICH_MAX_POTENCY, 0)
-			if(isnull(new_potency))
-				return
-			site = GLOB.lich_lair
-			if(!site || site.spent)
-				return
-			var/old_potency = site.ritual_potency
-			site.ritual_potency = clamp(round(new_potency), 0, LICH_MAX_POTENCY)
-			to_chat(user, span_notice("Potency [old_potency] -> [site.ritual_potency]. The next ritual will roll from that band."))
-			message_admins("[key_name_admin(user)] set Verdigris ritual potency to [site.ritual_potency] (was [old_potency]).")
-			log_admin("[key_name(user)] set Verdigris ritual potency to [site.ritual_potency] (was [old_potency]).")
-
-		if("Slay Ilthuun (resolve the event)")
-			// Prefer a real death so the mob's own death path runs (summon cleanup,
-			// the loot hoard, its own site handoff). Fall back to resolving the site
-			// directly if the mob is already gone somehow.
-			var/mob/living/boss = site.lich_ref?.resolve()
-			if(QDELETED(boss))
-				INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin/lich_lair, on_lich_slain), null, user.mob)
-				to_chat(user, span_warning("No live Ilthuun found, resolved the event on the site directly (no loot will drop)."))
-			else
-				boss.investigate_log("was admin-slain by [key_name(user)].", INVESTIGATE_DEATHS)
-				boss.adjustBruteLoss(boss.maxHealth * 2)
-				if(boss.stat != DEAD)
-					boss.death()
-				to_chat(user, span_notice("Ilthuun killed; rituals stop and the hoard drops in the sanctum."))
-			message_admins("[key_name_admin(user)] slew Ilthuun via ritual control.")
-			log_admin("[key_name(user)] slew Ilthuun via ritual control.")
-
-	BLACKBOX_LOG_ADMIN_VERB("Verdigris Ritual Control")
+	// The broadcast path sleeps; never block the verb on it. run_beacon()
+	// re-arms the clock itself.
+	INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/space_ruin/lich_lair, run_beacon))
+	to_chat(user, span_notice("Fired one beacon beat. The clock re-armed from now."))
+	message_admins("[key_name_admin(user)] fired the Verdigris status beacon.")
+	log_admin("[key_name(user)] fired the Verdigris status beacon.")
+	BLACKBOX_LOG_ADMIN_VERB("Verdigris Beacon")

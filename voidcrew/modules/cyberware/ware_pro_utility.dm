@@ -556,21 +556,32 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	organ_traits = list(TRAIT_RESISTHEAT)
+	/// TRUE while the burn-halving physiology mod is applied. Guards the
+	/// failing-gated passive hooks against double multiply/divide.
+	var/coolant_mod_applied = FALSE
 
-/obj/item/organ/cyberimp/cyberware/coolant/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+// The burn halving (and, through the base hooks, TRAIT_RESISTHEAT) rides the
+// failing-gated passive layer (BAL-4): EMP-scrambled or browned-out loops
+// don't circulate, so heat and burns land at full strength until the ware
+// reboots or gets repaired.
+// Physiology persists across species changes (physiology.dm:1).
+/obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner))
+	if(coolant_mod_applied || !ishuman(bearer))
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	// Physiology persists across species changes (physiology.dm:1).
-	human_owner.physiology.burn_mod *= 0.5
+	coolant_mod_applied = TRUE
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.burn_mod *= 0.5
 
-/obj/item/organ/cyberimp/cyberware/coolant/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+/obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner) || QDELETED(organ_owner))
+	if(!coolant_mod_applied)
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	human_owner.physiology.burn_mod /= 0.5
+	coolant_mod_applied = FALSE // reset before the validity skip, see Shock Coils
+	if(!ishuman(bearer) || QDELETED(bearer))
+		return
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.burn_mod /= 0.5
 
 /obj/item/organ/cyberimp/cyberware/coolant/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -801,7 +812,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber
 	name = "\improper Graverobber's Jack"
-	desc = "A spike for reading the dead. A skull holds onto more than anyone bothers to wipe: patrol routes, cargo manifests, the occasional vault phrase. Three seconds a body."
+	desc = "An arm-mounted data spike that reads intel out of dead bodies. Spend three seconds on an adjacent corpse and nearby loot caches and hostile patrols get marked on your HUD."
 	icon_state = "graverobber"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -809,6 +820,12 @@
 	/// Intel marks the last read raised, so pulling the spike takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/examine(mob/user)
+	. = ..()
+	. += span_notice("Once installed, use the Data-Spike the Dead ability on a dead body next to you. The read takes 3 seconds. It marks loot caches within [CYBERWARE_GRAVEROBBER_SWEEP_RANGE] tiles in amber and hostile patrols in red on your HUD for a few seconds.")
+	. += span_notice("Occasionally a read recovers a vault phrase, marking caches within [CYBERWARE_GRAVEROBBER_DEEP_SWEEP_RANGE] tiles instead.")
+	. += span_notice("Each body can only be read once, and the spike takes 20 seconds to recharge between reads.")
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
 	clear_marks()

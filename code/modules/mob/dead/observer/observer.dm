@@ -159,6 +159,10 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 1 SECONDS)
 
 /mob/dead/observer/Destroy()
+	// VOIDCREW EDIT: only Logout() and reset_perspective() ever ran this - a ghost
+	// deleted while still observing someone (clientless cleanup, admin delete) stayed
+	// in the observed mob's `observers` list and hard-deleted on that one ref
+	cleanup_observe()
 	if(ghost_hud_flags & GHOST_DATA_HUDS)
 		remove_data_huds()
 

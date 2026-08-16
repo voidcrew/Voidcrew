@@ -97,28 +97,28 @@
 
 /**
  * Notifies the spawner subsystem that this pirate has been resolved.
- * Called automatically during Destroy(), but can be called manually for
- * edge cases (like abandonment where key may persist).
+ * Called automatically during Destroy() - claiming at a helm, turning the key in for a
+ * bounty, and physically destroying it all funnel through here.
  *
- * Only notifies once per key to prevent duplicate spawns.
- * Does NOT notify if ship was already abandoned (already resolved via abandonment).
+ * When the ship still exists, resolution is routed through the SHIP's latch
+ * (notify_spawner_resolved), so a hull that already resolved - crew wipe, abandonment -
+ * can never resolve a second time when its key is later consumed. The old guard checked
+ * ship.abandoned, which the helm's claim path clears before deleting the key, and that
+ * double-resolved every claimed derelict.
  */
 /obj/item/ship_key/proc/notify_spawner_resolved()
 	if(spawner_notified)
 		return
 	if(!ship_type_path)
 		return
-
-	// Check if ship was already resolved via abandonment
-	var/obj/structure/overmap/ship/npc/ship = ship_ref?.resolve()
-	if(ship?.abandoned)
-		return  // Ship was already resolved when abandoned
-
 	spawner_notified = TRUE
-	// Pass the ship's zone so replacement spawns in same zone
-	var/resolved_zone_type
-	if(ship)
-		var/turf/ship_turf = get_turf(ship)
-		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
-		resolved_zone_type = zone?.zone_type
-	SSnpc_ships.on_pirate_resolved(ship_type_path, resolved_zone_type)
+
+	var/obj/structure/overmap/ship/npc/ship = ship_ref?.resolve()
+	if(istype(ship))
+		ship.notify_spawner_resolved("key [destruction_reason]")
+		return
+
+	// Key outlived its ship. The hull's own Destroy() already resolved the slot in that
+	// case, so this direct call is normally a no-op via the spawner's live capacity
+	// check - it only matters if the ship object somehow vanished unresolved.
+	SSnpc_ships.on_pirate_resolved(ship_type_path, null)

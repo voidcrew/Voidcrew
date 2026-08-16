@@ -834,6 +834,20 @@
 			return
 		if("reload_engines")
 			current_ship.refresh_engines()
+			// The refresh itself is silent, and an unregistered thruster is invisible
+			// on this console - read back what was found and why anything was refused,
+			// so a missing engine is a diagnosis instead of a fifteen-minute mystery.
+			var/list/engine_report = current_ship.engine_diagnostic_report()
+			var/registered = 0
+			for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle?.engine_list)
+				if(!QDELETED(E))
+					registered++
+			if(registered)
+				say("Engine refresh complete. [registered] thruster\s registered.")
+			else
+				say("Engine refresh complete. No thrusters registered to this hull.")
+			for(var/line in engine_report)
+				say("[line]")
 			return
 		if("typing_sound")
 			// The comms field asks for this on every keypress, so the console decides

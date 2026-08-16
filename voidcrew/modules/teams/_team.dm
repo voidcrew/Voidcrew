@@ -31,10 +31,13 @@
 	// Remove this team from the member's list
 	LAZYREMOVE(member.ship_teams, src)
 
-	// Find and remove the specific crew antagonist for this team
+	// Find and remove the specific crew antagonist for this team.
+	// Not remove_antag_datum(): that resolves BY TYPE via has_antag_datum(), so on a
+	// multi-crew mind it removed whichever ship's crew datum happened to sit first in
+	// antag_datums - stranding this team's datum in the list forever.
 	for(var/datum/antagonist/crew/crew_antag in member.antag_datums)
 		if(crew_antag.crew_team == src)
-			member.remove_antag_datum(crew_antag)
+			crew_antag.on_removal()
 			break
 
 /datum/team/voidcrew/Destroy(force, ...)

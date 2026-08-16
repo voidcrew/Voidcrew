@@ -76,6 +76,12 @@
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS
 
+		// VOIDCREW EDIT: mid-round generation over live turfs - a closed turf laid by
+		// raw `new` never scrubs itself out of its neighbours' atmos_adjacent_turfs.
+		// See the matching edit in CaveGenerator.dm.
+		if(SSair.initialized && isclosedturf(new_turf))
+			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
+
 		CHECK_TICK
 
 	return new_turfs

@@ -170,6 +170,10 @@
 			var/gravity_modifier = user.has_gravity() > STANDARD_GRAVITY ? 2 : 1
 			// remember the real xp gain is from sleeping after working out
 			user.mind.adjust_experience(/datum/skill/athletics, WORKOUT_XP * gravity_modifier)
+			// VOIDCREW EDIT ADDITION START - actual progress feedback instead of pure flavor
+			var/exp_to_next = user.mind.exp_needed_to_level_up(/datum/skill/athletics)
+			to_chat(user, span_notice("Athletics skill: [user.mind.get_skill_level_name(/datum/skill/athletics)].[exp_to_next ? " [exp_to_next] experience to the next level." : ""] Sleeping after exercise trains it much faster."))
+			// VOIDCREW EDIT ADDITION END
 			user.apply_status_effect(/datum/status_effect/exercised, EXERCISE_STATUS_DURATION)
 
 	end_workout()

@@ -171,6 +171,9 @@
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
 
+		// Say what the tear-out costs before it happens
+		remote_eye.balloon_alert(owner, "cost: [ship_rcd.charge_readout(airlock_cost)]")
+
 		// Show construction effect
 		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
 
@@ -218,6 +221,12 @@
 		base_console.internal_rcd.mode = old_mode
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
+
+	// Say what the tear-out costs before it happens. useResource() applies the
+	// deconstruction discount itself, so mirror it here for an honest number.
+	var/obj/item/construction/rcd/internal/ship/decon_rcd = base_console.internal_rcd
+	if(istype(decon_rcd))
+		remote_eye.balloon_alert(owner, "cost: [decon_rcd.charge_readout(decon_rcd.deconstruct_cost(cost))]")
 
 	// Perform the RCD deconstruction
 	base_console.internal_rcd.rcd_create(rcd_target, owner)

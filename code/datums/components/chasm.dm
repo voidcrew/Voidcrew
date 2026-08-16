@@ -252,10 +252,16 @@ GLOBAL_LIST_EMPTY(chasm_fallen_mobs)
 /obj/effect/abstract/chasm_storage/Entered(atom/movable/arrived)
 	. = ..()
 	if(isliving(arrived))
-		//Mobs that have fallen in reserved area should be deleted to avoid fishing stuff from the deathmatch or VR.
-		if(is_reserved_level(loc.z) && !istype(get_area(loc), /area/shuttle))
+		// VOIDCREW EDIT START: upstream deletes fallen mobs on reserved z-levels to keep
+		// deathmatch/VR corpses out of the fishing pool. In this fork, planets and
+		// encounters ALSO load onto reserved z-levels, so that proxy check hard-deleted
+		// real players who fell into planetary chasms. Only delete in the areas the
+		// check was actually written for.
+		var/area/storage_area = get_area(loc)
+		if(istype(storage_area, /area/deathmatch) || istype(storage_area, /area/virtual_domain))
 			qdel(arrived)
 			return
+		// VOIDCREW EDIT END
 		RegisterSignal(arrived, COMSIG_LIVING_REVIVE, PROC_REF(on_revive))
 		LAZYADD(GLOB.chasm_fallen_mobs[get_chasm_category(loc)], arrived)
 
@@ -294,7 +300,7 @@ GLOBAL_LIST_EMPTY(chasm_fallen_mobs)
 	if(is_centcom_level(z_level))
 		return ZTRAIT_CENTCOM
 	if(is_reserved_level(z_level))
-		return ZTRAIT_RESERVED
+		return "[ZTRAIT_RESERVED]-[z_level]" // VOIDCREW EDIT: each encounter/planet owns its own z-level, so key fallen mobs per-site rather than one galaxy-wide rescue bucket
 
 	return ZTRAIT_SPACE_RUINS
 

@@ -115,7 +115,9 @@
 	if(!isliving(hit_atom))
 		return
 	var/mob/living/victim = hit_atom
-	var/mob/living/thrower = throwingdatum?.thrower
+	// thrownthing.thrower is a WEAKREF, not a mob; reading it raw made this
+	// istype always fail, so no hit ever counted. Resolve it properly.
+	var/mob/living/thrower = throwingdatum?.get_thrower()
 	if(!istype(thrower) || thrower == victim || victim.stat == DEAD)
 		return
 	var/datum/vestige_trial/thrown_star/trial = thrower.mind?.active_vestige_trial

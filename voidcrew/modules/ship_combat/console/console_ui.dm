@@ -17,6 +17,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/attack_hand(mob/user, list/modifiers)
 	// Don't call parent - we handle our own UI
 	if(machine_stat & (NOPOWER|BROKEN))
+		balloon_alert(user, (machine_stat & BROKEN) ? "console broken!" : "no power!")
 		return
 
 	attempt_ship_connection()
@@ -530,6 +531,7 @@
 		// Shield power allocation (0-200%) - applies to ship's shared shield pool
 		if("set_shield_power")
 			if(!current_ship || !length(current_ship.linked_shield_generators))
+				to_chat(ui.user, span_warning("No shield generators are linked to the ship."))
 				return FALSE
 			var/new_power = params["power"]
 			if(!isnum(new_power))
@@ -538,6 +540,14 @@
 			var/power_mult = new_power / 100
 			current_ship.set_shield_power_allocation(power_mult)
 			invalidate_shield_cache()  // Force immediate UI refresh
+			// The crew just asked for shields. If they cannot come up, say why -
+			// a slider that silently does nothing reads as "shields refuse to work"
+			// (round 4). Generators activate on their next process tick, so report
+			// the blocking condition rather than polling for the state change.
+			if(power_mult > 0 && !current_ship.shields_active)
+				var/reason = current_ship.get_shield_blocker_reason()
+				if(reason)
+					to_chat(ui.user, span_warning(reason))
 			return TRUE
 
 		// Shield burst - sacrifice shields to break interdiction

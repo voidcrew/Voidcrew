@@ -127,6 +127,8 @@
 	data["ship_name"] = ship.name
 	data["memo"] = ship.memo || ""
 	data["joining_allowed"] = ship.joining_allowed
+	data["join_password"] = ship.join_password || ""
+	data["can_set_password"] = ship.can_have_join_password()
 
 	// Check if user is still captain
 	data["is_captain"] = ship.is_ship_captain(captain)
@@ -245,6 +247,11 @@
 			to_chat(captain, span_notice("Cryopod joining is now [ship.joining_allowed ? "enabled" : "disabled"]."))
 			return TRUE
 
+		if("set_password")
+			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
+			ship.set_join_password(params["password"], captain)
+			return TRUE
+
 // ===== INVITE SYSTEM =====
 
 /// Send an invite to a living player
@@ -305,6 +312,11 @@
 	if(ship.ship_team)
 		ship.ship_team.add_member(player.mind)
 		ship.manifest += player.real_name
+
+	// An invite is the captain vouching for them - they never face the join
+	// password, including if they later die and respawn through the lobby
+	if(ckey)
+		ship.password_cleared_ckeys[ckey] = TRUE
 
 	to_chat(player, span_notice("You have joined the crew of [ship.name]!"))
 	ship.ship_notify("[player.real_name] has joined the crew.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

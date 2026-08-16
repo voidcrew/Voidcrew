@@ -458,6 +458,11 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	var/is_structure_target = ismachinery(target) || isstructure(target)
 	if(!isliving(target) && !is_structure_target)
 		return NONE
+	// Past the last "not our punch" guard: this swing is ours from here on, so
+	// stand Redline's bypass top-up down before we take the chain away. The
+	// roll below reads the hand's unarmed damage, which already carries the
+	// window's +8; without this the same bonus lands twice (D5).
+	cyberware_unarmed_roll_paid(source)
 	if(!source.can_unarmed_attack())
 		return COMPONENT_SKIP_ATTACK
 
@@ -546,26 +551,44 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	tier = CYBERWARE_TIER_1
 	aug_overlay = "shock_coils"
 	organ_traits = list(TRAIT_NO_SLIP_WATER)
+	/// TRUE while the knockdown/stun physiology mods are applied. Guards the
+	/// failing-gated passive hooks against ever double-multiplying.
+	var/reflex_mods_applied = FALSE
 
 /obj/item/organ/cyberimp/cyberware/shock_coils/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	RegisterSignal(organ_owner, COMSIG_LIVING_Z_IMPACT, PROC_REF(on_z_impact))
-	if(!ishuman(organ_owner))
+
+// The knockdown/stun mods live in the failing-gated passive hooks (BAL-4):
+// EMP-scrambled or browned-out coils are dead springs, so the mods drop with
+// the rest of the ware and return when it reboots or gets repaired.
+// Physiology persists across species changes (physiology.dm:1), so a single
+// apply/remove pair per flip is safe, no species-gain re-hook needed.
+/obj/item/organ/cyberimp/cyberware/shock_coils/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(reflex_mods_applied || !ishuman(bearer))
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	// Physiology persists across species changes (physiology.dm:1), so a
-	// single apply/remove pair is safe, no species-gain re-hook needed.
-	human_owner.physiology.knockdown_mod *= 0.5
-	human_owner.physiology.stun_mod *= 0.8
+	reflex_mods_applied = TRUE
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.knockdown_mod *= 0.5
+	human_bearer.physiology.stun_mod *= 0.8
+
+/obj/item/organ/cyberimp/cyberware/shock_coils/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(!reflex_mods_applied)
+		return
+	// Reset the latch before any bearer-validity skip, or a ware pulled off a
+	// deleting mob would stay marked applied and never re-arm for the next one.
+	reflex_mods_applied = FALSE
+	if(!ishuman(bearer) || QDELETED(bearer))
+		return
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.knockdown_mod /= 0.5
+	human_bearer.physiology.stun_mod /= 0.8
 
 /obj/item/organ/cyberimp/cyberware/shock_coils/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	UnregisterSignal(organ_owner, COMSIG_LIVING_Z_IMPACT)
-	if(!ishuman(organ_owner) || QDELETED(organ_owner))
-		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	human_owner.physiology.knockdown_mod /= 0.5
-	human_owner.physiology.stun_mod /= 0.8
 
 /// Signal proc for [COMSIG_LIVING_Z_IMPACT]: the MOD longfall pattern,
 /// minus the suit's power cost. Big multi-level drops still stagger.
@@ -716,8 +739,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  * enough wound resistance to keep a bad hit from opening you up. Still a
  * long way under the Slabskin Plate that evicts it, which is the point.
  * Physiology explicitly survives species changes (physiology.dm:1), so one
- * add/subtract pair is the whole lifecycle; re-applying on species gain
- * would stack the armor.
+ * add/subtract pair per flip is the whole lifecycle; re-applying on species
+ * gain would stack the armor. The pair rides the failing-gated passive hooks
+ * (BAL-4): EMP-scrambled or browned-out mesh armors nothing.
  */
 /obj/item/organ/cyberimp/cyberware/dermal_mesh
 	name = "\improper Dermal Mesh weave"
@@ -729,22 +753,28 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
 	aug_overlay = "dermal_mesh"
-	/// Armor mixed into the bearer's physiology while installed.
+	/// Armor mixed into the bearer's physiology while installed and running.
 	var/datum/armor/mesh_armor = /datum/armor/cyberware_dermal_mesh
+	/// TRUE while mesh_armor is mixed in; guards against double add/subtract.
+	var/mesh_armor_applied = FALSE
 
-/obj/item/organ/cyberimp/cyberware/dermal_mesh/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+/obj/item/organ/cyberimp/cyberware/dermal_mesh/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner))
+	if(mesh_armor_applied || !ishuman(bearer))
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	human_owner.physiology.armor = human_owner.physiology.armor.add_other_armor(mesh_armor)
+	mesh_armor_applied = TRUE
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.armor = human_bearer.physiology.armor.add_other_armor(mesh_armor)
 
-/obj/item/organ/cyberimp/cyberware/dermal_mesh/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+/obj/item/organ/cyberimp/cyberware/dermal_mesh/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner) || QDELETED(organ_owner))
+	if(!mesh_armor_applied)
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	human_owner.physiology.armor = human_owner.physiology.armor.subtract_other_armor(mesh_armor)
+	mesh_armor_applied = FALSE // reset before the validity skip, see Shock Coils
+	if(!ishuman(bearer) || QDELETED(bearer))
+		return
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.armor = human_bearer.physiology.armor.subtract_other_armor(mesh_armor)
 
 // ---- 11. Gecko Grips ---------------------------------------------------
 

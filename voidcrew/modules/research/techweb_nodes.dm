@@ -6,6 +6,7 @@
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
+		"engine_oil", // had no design at all before rounds 14/15 - the depot was its only source
 		"shuttle_heater", // was orphaned from every node, the heater design existed but nothing unlocked it
 		"shuttle_helm",
 		"shuttle_scoop",
@@ -63,6 +64,35 @@
 		"engine_expulsion",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+// The TEG, its circulators and the RTG had circuit boards but no research route
+// anywhere in the web - the only ones in the game were mapped into hulls. Six
+// players rediscovered that in rounds 14/15. Both node costs are invented and
+// unplaytested. The RTG is quiet passive power one tier above the starter
+// thrusters; the TEG is priced a tier above the PACMAN it outclasses, and hangs
+// off the same atmos node, because the Scarab's TEG engineering module is already
+// costed as a top-tier power spike ("TEG is pretty OP", ship_upgrades/ships/scarab.dm)
+// and its research route should not be an early pickup.
+/datum/techweb_node/rtg
+	id = TECHWEB_NODE_RTG
+	display_name = "Radioisotope Generators"
+	description = "A sealed block of uranium wrapped in thermocouples. Slow, steady power with no fuel line and no moving parts."
+	prereq_ids = list(TECHWEB_NODE_ENERGY_MANIPULATION)
+	design_ids = list(
+		"rtg",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/teg
+	id = TECHWEB_NODE_TEG
+	display_name = "Thermoelectric Generation"
+	description = "A generator that turns the temperature difference between two circulating gas loops into serious power. Ships as a generator core and two circulators."
+	prereq_ids = list(TECHWEB_NODE_PLASMA_CONTROL)
+	design_ids = list(
+		"teg",
+		"teg_circulator",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/survey_scanner
 	id = TECHWEB_NODE_SURVEY_SCANNER
@@ -138,7 +168,10 @@
 	id = "nanite_bio"
 	display_name = "Biological Nanite Programming"
 	description = "Nanite programs that require complex biological interaction."
-	prereq_ids = list("nanite_base","biotech")
+	// "biotech" was an old-tg node id that no longer exists; SSresearch stripped it at
+	// boot ("Invalid techweb nodes detected"). Advanced medbay gear is its closest
+	// living relative for "complex biological interaction".
+	prereq_ids = list("nanite_base", TECHWEB_NODE_MEDBAY_EQUIP_ADV)
 	design_ids = list(
 		"regenerative_nanites",
 		"bloodheal_nanites",
@@ -173,7 +206,9 @@
 	id = "nanite_synaptic"
 	display_name = "Synaptic Nanite Programming"
 	description = "Nanite programs affecting mind and thoughts."
-	prereq_ids = list("nanite_neural","neural_programming")
+	// "neural_programming" was an old-tg node id that no longer exists (boot warning).
+	// Brain-computer interfaces are the modern node for machine-mind meddling.
+	prereq_ids = list("nanite_neural", TECHWEB_NODE_BCI)
 	design_ids = list(
 		"mindshield_nanites",
 		"pacifying_nanites",
@@ -246,7 +281,10 @@
 	id = "sleepertech"
 	display_name = "Sleeper Unit Construction"
 	description = "The technological peak of medical equipment within human space."
-	prereq_ids = list("adv_biotech", "adv_engi")
+	// "adv_biotech"/"adv_engi" were old-tg node ids that no longer exist (boot warning);
+	// with both stripped this node dangled with NO prerequisites at all. Advanced medbay
+	// equipment + advanced parts is the same medical-plus-engineering gate they used to be.
+	prereq_ids = list(TECHWEB_NODE_MEDBAY_EQUIP_ADV, TECHWEB_NODE_PARTS_ADV)
 	design_ids = list("sleeper")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 

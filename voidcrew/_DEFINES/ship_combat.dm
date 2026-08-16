@@ -116,6 +116,15 @@
 /// Cooldown between interdiction attempts (5 minutes)
 #define INTERDICTOR_COOLDOWN 5 MINUTES
 
+/// Rearm time after the target shield-bursts out of a completed lock. Deliberately far
+/// shorter than INTERDICTOR_COOLDOWN: the burst drains the target's entire shield pool,
+/// which takes ~47s (30s broken + regen back to the burst cost) before it can burst
+/// again - re-locking inside that window is the counterplay. Charging the full 5-minute
+/// cooldown here made the target's recovery 2-6x faster than the attacker's, so bursting
+/// out was strictly dominant and yellow-zone pirates (boardable only via interdiction)
+/// could never be caught.
+#define INTERDICTOR_BURST_BREAK_COOLDOWN 30 SECONDS
+
 /// Base speed reduction at 100% power (50% speed)
 #define INTERDICTOR_BASE_REDUCTION 0.5
 
@@ -174,6 +183,24 @@
 #define SHIP_SHIELD_BASE_POWER_COST 1.5 KILO WATTS
 /// Power draw per unit of ship mass (W per mass)
 #define SHIP_SHIELD_POWER_PER_MASS 15
+/// Ceiling on banked overhealth, as a fraction of max shield health. Overhealth is
+/// consumed before the main pool, so without a ceiling a ship idling at 200% power
+/// banks shield_regen_rate HP/sec forever and becomes unbreakable.
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_SHIELD_MAX_OVERHEALTH_MULT 0.5
+/// Maximum shield generators that can join one hull's pool. Max health and regen are
+/// plain sums over the pool, so the generator count is otherwise the one shield stat
+/// with no limit (turrets have LASER_MAX_TURRETS).
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_MAX_SHIELD_GENERATORS 4
+/// Fraction of max shield health the pool starts with the moment shields come online,
+/// on a fresh raise and on post-break reactivation alike. Shields used to establish at
+/// 0 HP, so under sustained fire (round 4 meteor shower) the first hit re-broke the
+/// pool and re-armed the full SHIP_SHIELD_BROKEN_COOLDOWN - shields could never come
+/// online at all once anything was shooting. 0.5 lets a single tier-1 generator's pool
+/// (500) survive one small meteor (200) on the way up.
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_SHIELD_RAISE_CHARGE_MULT 0.5
 
 // Stock part multipliers (per tier above 1)
 /// Capacitor: +50% max shield health per tier

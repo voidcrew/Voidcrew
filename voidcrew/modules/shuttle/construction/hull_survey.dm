@@ -945,6 +945,27 @@
 	vessel.update_flight_parallax()
 	SEND_SIGNAL(port, COMSIG_VOIDCREW_SHIP_LOADED)
 
+	// The builders own what they built. setup_from_template() creates the crew roster
+	// but nothing used to put anyone ON it, so a commissioned hull launched with a crew
+	// of nobody: every roster-gated console refused the people who welded it together,
+	// there was no captain to invite anyone aboard, and the only way out was an admin
+	// hand-editing team membership (round 6, 2026-08-15, ticket #1). Enlist the surveyor
+	// as commanding officer and everyone standing inside the enclosure as crew.
+	// enlist_crewmember() also clears each ckey through the join password, per the
+	// crew-adding rules in ship.dm.
+	vessel.ship_team.name = vessel_name // not the template's "Commissioned Vessel" placeholder
+	for(var/turf/claimed as anything in turfs)
+		for(var/mob/living/builder in claimed)
+			if(builder == user || !builder.mind || !builder.client || builder.stat == DEAD)
+				continue
+			if(vessel.enlist_crewmember(builder))
+				to_chat(builder, span_notice("You are registered as crew of [vessel_name]."))
+	if(vessel.enlist_crewmember(user))
+		vessel.claimed_captain = user.mind
+		grant_captain_management(user, vessel)
+		to_chat(user, span_notice("You are registered as the commanding officer of [vessel_name]. \
+			Use the Ship Management button to invite crew, set a memo, or set a join password."))
+
 	message_admins("[key_name(user)] commissioned a scratch-built vessel, [vessel_name], at [ADMIN_VERBOSEJMP(origin)].")
 	log_shuttle("[key_name(user)] commissioned scratch-built vessel [vessel_name] at [get_area(origin)].")
 	return vessel

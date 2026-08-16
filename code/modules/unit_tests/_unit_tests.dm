@@ -321,6 +321,7 @@
 #include "voidcrew_autopilot_course.dm"
 #include "voidcrew_bitrunning.dm"
 #include "voidcrew_colosseum.dm"
+#include "voidcrew_crew_antag_gc.dm"
 #include "voidcrew_crew_hud.dm"
 #include "voidcrew_cyberware.dm"
 #include "voidcrew_drug_lab.dm"

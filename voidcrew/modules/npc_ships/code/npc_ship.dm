@@ -54,8 +54,15 @@
 	var/missile_cooldown_time = 10 SECONDS
 
 	/// Global cooldown between ANY weapon firing (missiles, lasers, boarding pods)
-	/// This prevents rapid-fire spam across different weapon types
-	var/global_weapon_cooldown_time = 10 SECONDS
+	/// This prevents rapid-fire spam across different weapon types.
+	/// Halved from 10s after round 4: at 10s the best-armed pirate managed ~900 shield
+	/// HP/min while a single tier-1 shield generator regenerates 600/min, so with the
+	/// action-priority system skimming ticks off the top, one starter generator could
+	/// outheal almost every pirate in the galaxy and no NPC ever felt dangerous.
+	/// Per-weapon cooldowns (laser_cooldown_time, missile_cooldown_time) still pace
+	/// individual weapon types on top of this. INVENTED value, not playtested.
+	/// NPC-only - player weapon cooldowns are untouched.
+	var/global_weapon_cooldown_time = 5 SECONDS
 
 	/// Override cloak duration for this NPC ship type (0 = use device's calculated value)
 	var/npc_cloak_duration = 0
@@ -127,6 +134,17 @@
 	/// Whether the spawner has already been notified to spawn a replacement
 	var/spawner_resolved = FALSE
 
+	/// The zone band this hull was spawned into by the pirate pool. Resolves report this
+	/// rather than the live turf: a crash-landed hull has been forceMove()d into a planet
+	/// by the time a late resolve runs, and the pool's red/yellow split only holds if a
+	/// resolve frees the band it was budgeted against.
+	var/pool_zone_type
+
+	/// Whether spawn_crew() actually produced a roster. The pool reconcile refuses to
+	/// treat an empty roster as a crew wipe unless this is set - otherwise a hull whose
+	/// crew spawn silently failed would resolve at birth and churn the pool in a loop.
+	var/crew_ever_spawned = FALSE
+
 	// ========== MASS CACHING (Performance optimization) ==========
 	// Instead of iterating all turfs every second, we cache mass and only
 	// recalculate when the ship takes hull damage
@@ -185,7 +203,7 @@
 	// Clean up from dirty queue if we were in it
 	SSovermap.dirty_npc_ships -= src
 	// Notify spawner to spawn replacement (guard prevents double-notify if already resolved)
-	notify_spawner_resolved()
+	notify_spawner_resolved("hull deleted")
 	// Untrack from spawner subsystem
 	SSnpc_ships.untrack_ship(src)
 	// Cancel abandonment timer if running
@@ -304,6 +322,7 @@
  */
 /obj/structure/overmap/ship/npc/proc/spawn_crew()
 	if(!shuttle?.shuttle_areas)
+		log_shuttle("NPC_SHIP: [name] spawn_crew found no shuttle areas - hull gets no roster")
 		return
 
 	// No crew types defined = no crew to spawn
@@ -336,6 +355,7 @@
 			valid_turfs += T
 
 	if(!length(valid_turfs))
+		log_shuttle("NPC_SHIP: [name] spawn_crew found no valid spawn turfs - hull gets no roster")
 		return
 
 	// Spawn captain first with ship key
@@ -361,6 +381,10 @@
 		tracked_crew += crewmember
 		RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
 
+	// A roster exists; the pool may now treat this roster emptying as a crew wipe
+	if(length(tracked_crew))
+		crew_ever_spawned = TRUE
+
 /**
  * Signal handler for when any crew member dies.
  * Tracks deaths and triggers abandonment when all crew are dead.
@@ -377,9 +401,15 @@
 
 	// Remove from tracked crew list
 	tracked_crew -= victim
+	log_shuttle("NPC_SHIP: [name] crew member [victim] died ([length(tracked_crew)] tracked crew remain)")
 
 	// Check if all crew are dead
 	if(!length(tracked_crew))
+		// The pool slot frees the instant the crew is wiped. The abandonment timer below
+		// is a separate concern - it holds the hull claimable for a while - and must not
+		// delay the replacement spawn.
+		if(!player_controlled)
+			notify_spawner_resolved("crew wiped")
 		start_abandonment_timer()
 
 /**
@@ -410,27 +440,79 @@
  */
 /obj/structure/overmap/ship/npc/abandon_ship(crash = TRUE)
 	// Notify spawner before calling parent (spawns replacement pirate)
-	notify_spawner_resolved()
+	notify_spawner_resolved("abandoned")
 
 	// Call parent implementation
 	return ..()
 
 /**
- * Notifies the spawner subsystem that this pirate ship is no longer active.
- * Triggers spawning of a replacement pirate.
- * Only notifies once per ship to prevent duplicate replacements.
+ * Resolves this ship's pirate pool slot, spawning a replacement exactly once.
+ *
+ * The single latch for every resolution condition - crew wipe, key claimed or turned
+ * in, abandonment, deletion, the reconcile sweep. Whichever fires first wins; the rest
+ * are no-ops. Deliberately does NOT check player_controlled: the helm's claim path
+ * flips that flag on before the key is destroyed, and the key's destruction IS the
+ * resolve for a claim. Callers that must skip claimed hulls (the crew-wipe path) gate
+ * on player_controlled themselves.
  */
-/obj/structure/overmap/ship/npc/proc/notify_spawner_resolved()
+/obj/structure/overmap/ship/npc/proc/notify_spawner_resolved(reason = "unknown")
 	if(spawner_resolved)
-		return
-	// Don't notify if already player-controlled (was claimed)
-	if(player_controlled)
-		return
-
+		return FALSE
 	spawner_resolved = TRUE
-	var/turf/ship_turf = get_turf(src)
-	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
-	SSnpc_ships.on_pirate_resolved(type, zone?.zone_type)
+
+	// Report the band this hull was budgeted against; fall back to the live turf for
+	// hulls that never went through the pool spawner (admin/mission spawns)
+	var/resolved_zone_type = pool_zone_type
+	if(isnull(resolved_zone_type))
+		var/turf/ship_turf = get_turf(src)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
+		resolved_zone_type = zone?.zone_type
+
+	log_shuttle("NPC_SHIP: [name] resolved from the pirate pool ([reason]), zone [resolved_zone_type || "unknown"]")
+	SSnpc_ships.on_pirate_resolved(type, resolved_zone_type)
+	return TRUE
+
+/**
+ * How many of this hull's own tracked crew are alive and actually aboard.
+ *
+ * Derived from live state rather than roster bookkeeping on purpose: a missed death
+ * signal, a hard-deleted mob, or a pirate spaced or dragged off the hull must all read
+ * as "not aboard", or the pool slot this crew holds never frees. The roster is 2-6
+ * entries, so this is cheap enough for the reconcile's slow tick.
+ */
+/obj/structure/overmap/ship/npc/proc/count_live_crew_aboard()
+	if(!shuttle?.shuttle_areas)
+		return 0
+	var/count = 0
+	for(var/mob/living/crew as anything in tracked_crew)
+		if(QDELETED(crew))
+			continue
+		if(crew.stat == DEAD)
+			continue
+		var/area/crew_area = get_area(crew)
+		if(!crew_area || !shuttle.shuttle_areas[crew_area])
+			continue
+		count++
+	return count
+
+/**
+ * Kills tracked crew that ended up floating in open space (hull breach blowout).
+ * The same cleanup boarding waves already get via check_boarders_in_space(); without it
+ * a spaced pirate drifts alive forever. Run from the pool reconcile.
+ */
+/obj/structure/overmap/ship/npc/proc/sweep_spaced_crew()
+	var/list/spaced = list()
+	for(var/mob/living/crew as anything in tracked_crew)
+		if(QDELETED(crew) || crew.stat == DEAD)
+			continue
+		var/turf/crew_turf = get_turf(crew)
+		if(!crew_turf)
+			continue
+		if(isspaceturf(crew_turf) || istype(get_area(crew_turf), /area/space))
+			spaced += crew
+	// death() fires on_crew_death, which edits tracked_crew - never kill mid-iteration
+	for(var/mob/living/lost as anything in spaced)
+		lost.death()
 
 /**
  * Signal handler for ship integrity changes.

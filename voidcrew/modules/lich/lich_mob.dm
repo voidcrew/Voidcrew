@@ -61,7 +61,7 @@
  * home on the next move or the next Life tick.
  *
  * Files: lich_abilities.dm holds his spells, AI controller and planning subtrees;
- * lich_thrall.dm holds the mind-control status effect. The site, the ritual clock, the
+ * lich_thrall.dm holds the mind-control status effect. The site, the status beacon, the
  * ward gates and the shared defines (`FACTION_LICH`, `LICH_GREEN`) are track A's, in
  * lich_site.dm / lich_wards.dm / voidcrew/_DEFINES/lich.dm.
  */
@@ -533,23 +533,16 @@
 /**
  * Fired once, when the real Ilthuun dies. Overridden to nothing on the illusion.
  *
- * Three cross-track calls, all idempotent, all made explicitly rather than left to a
+ * Two cross-track calls, both idempotent, both made explicitly rather than left to a
  * backstop:
  *
  * - `drop_lich_hoard(src)` is track E's payout API (lich_loot.dm): the robe, crown,
  *   staff, phylactery and the three spell codices. Nothing else calls it, so without this
  *   line killing the boss drops nothing at all. Guarded by `GLOB.lich_hoard_dropped`.
  *   Called synchronously: it does not sleep, and the loot landing is not something to
- *   leave to a timer.
- * - `disperse_verdigris(killer)` is the other half of that payout: one of his three
- *   spells to every living player in the galaxy, not just the boarding party. Guarded by
- *   `GLOB.lich_dispersal_done`. This is the ONLY place in the module that gives the crew
- *   power, and it fires on his death by design; see the roster note in
- *   events/lich_events.dm.
- * - `crumble_lich_leavings()` takes back everything his rituals left in the galaxy: the
- *   ossuary's bone kit, and anything a future rite drops, so no rite doubles as a supply
- *   drop. Idempotent by construction: the registry is emptied as it is swept.
- * - `on_lich_slain()` is track A's site hook: stops the ritual clock, broadcasts the
+ *   leave to a timer. The hoard is the WHOLE payout: only the boarding party gets
+ *   anything, because only the boarding party paid anything.
+ * - `on_lich_slain()` is track A's site hook: stops the status beacon, broadcasts the
  *   victory line, retires the helm waypoints. Guarded on the site's `spent` flag, and the
  *   site also registers COMSIG_LIVING_DEATH on the bound lich as its own backstop
  *   (lich_site.dm:334-338), so calling it here cannot double-fire. Invoked async because
@@ -566,8 +559,6 @@
 	log_game("LICH: Ilthuun died at [AREACOORD(src)], last attacker [killer ? key_name(killer) : "unknown"].")
 
 	drop_lich_hoard(src)
-	disperse_verdigris(killer)
-	crumble_lich_leavings()
 
 	var/obj/structure/overmap/space_ruin/lich_lair/site = GLOB.lich_lair
 	if(!QDELETED(site))

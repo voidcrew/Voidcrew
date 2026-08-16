@@ -59,7 +59,7 @@ Salvaged documents can also be **sold** through the cargo console at half a cred
 
 ### The orbital survey console
 
-The **Orbital survey console** costs a single **40-point** node, which makes it the first thing most crews research. It surveys whatever your ship is sharing an overmap tile with. You sit in orbit alongside it, you do not have to dock.
+The **Orbital survey console** costs a single **40-point** node, which makes it the first thing most crews research. It surveys whatever your ship is sharing an overmap tile with. You sit in orbit alongside it, you do not have to dock. The one exception is storms: electric and EMP storms can also be scanned from up to **3 tiles away**, at **60%** of the normal payout, so you never have to fly into one just to log it.
 
 A survey takes **60 seconds** and is cancelled the moment the ship moves, so park first. It pays points and an identical amount in credits, both banked in the console: **Print research** turns the points into a research-notes document, and **Cash out** spits the credits out as physical bills.
 

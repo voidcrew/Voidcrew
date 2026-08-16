@@ -34,13 +34,32 @@
 		SSair.remove_from_expansion(src)
 	if(air?.volume)
 		temporarily_store_air()
-	for(var/obj/machinery/atmospherics/pipe/considered_pipe in members)
-		considered_pipe.replace_pipenet(considered_pipe.parent, null)
+	// VOIDCREW EDIT: both loops below run cleanup that prunes the very list being
+	// walked (replace_pipenet() drops the pipe from our members, nullify_pipenet()
+	// removes the component from other_atmos_machines) - a for-in over the live list
+	// skips every other entry when the current one is removed. Detach the lists first.
+	var/list/dying_members = members
+	members = list()
+	for(var/obj/machinery/atmospherics/pipe/considered_pipe in dying_members)
+		// Only sever pipes that are still ours: a pipe already rebuilt into a LIVE
+		// pipeline (the build_pipeline steal) must not have its new parent nulled -
+		// the old code passed considered_pipe.parent here and did exactly that,
+		// leaving the live pipeline holding a pipe that no longer pointed back.
+		if(considered_pipe.parent == src)
+			considered_pipe.replace_pipenet(src, null)
 		if(QDELETED(considered_pipe))
 			continue
 		SSair.add_to_rebuild_queue(considered_pipe)
-	for(var/obj/machinery/atmospherics/components/considered_component in other_atmos_machines)
+	var/list/dying_machines = other_atmos_machines
+	other_atmos_machines = list()
+	for(var/obj/machinery/atmospherics/components/considered_component in dying_machines)
 		considered_component.nullify_pipenet(src)
+	other_airs.Cut()
+	require_custom_reconcilation.Cut()
+	// Every dead pipeline otherwise leaks its gas overlay objects, each holding a live
+	// animate() color filter; qdel'ing them also detaches them from any pipe
+	// vis_contents still showing them
+	QDEL_LIST_ASSOC_VAL(gas_visuals)
 	return ..()
 
 /datum/pipeline/process()
@@ -172,8 +191,15 @@
 	if(parent_pipeline == src)
 		return
 	air.volume += parent_pipeline.air.volume
-	members.Add(parent_pipeline.members)
-	for(var/obj/machinery/atmospherics/pipe/reference_pipe in parent_pipeline.members)
+	// VOIDCREW EDIT: detach before iterating - replace_pipenet() now prunes the pipe
+	// out of its old pipeline's members in place, which would skip entries walking the
+	// live list. |= rather than Add(): a build_pipeline steal can leave a pipe listed
+	// in both pipelines at once, and concatenating duplicated the shared pipes into
+	// the survivor's members (each duplicate = one permanent GC-blocking ref).
+	var/list/merged_members = parent_pipeline.members
+	parent_pipeline.members = list()
+	members |= merged_members
+	for(var/obj/machinery/atmospherics/pipe/reference_pipe in merged_members)
 		reference_pipe.replace_pipenet(reference_pipe.parent, src)
 	air.merge(parent_pipeline.air)
 	for(var/obj/machinery/atmospherics/components/reference_component in parent_pipeline.other_atmos_machines)
@@ -182,7 +208,6 @@
 			require_custom_reconcilation |= reference_component
 	other_atmos_machines |= parent_pipeline.other_atmos_machines
 	other_airs |= parent_pipeline.other_airs
-	parent_pipeline.members.Cut()
 	parent_pipeline.other_atmos_machines.Cut()
 	parent_pipeline.require_custom_reconcilation.Cut()
 	update = TRUE

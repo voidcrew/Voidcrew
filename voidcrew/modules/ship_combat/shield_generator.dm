@@ -62,6 +62,9 @@
 	var/shuttle_move_done = FALSE
 	/// Flag: we are currently in a ship-to-ship dock (set/cleared ONLY by signals at correct timing)
 	var/in_ship_to_ship_dock = FALSE
+	/// One-shot latch: an unpowered generator with a live power allocation warns the crew
+	/// once per outage instead of refusing silently every process tick
+	var/power_warning_sent = FALSE
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
@@ -111,6 +114,14 @@
 	. = ..()
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	. += span_notice("Generator Status: [active ? "ACTIVE" : "OFFLINE"]")
+	// Name every condition that blocks activation - a refusal the crew cannot see
+	// anywhere reads as "shields refuse to work" (round 4)
+	if(machine_stat & NOPOWER)
+		. += span_warning("It has no power.")
+	if(in_ship_to_ship_dock)
+		. += span_warning("Shields cannot run while docked to another ship.")
+	if(!ship)
+		. += span_warning("Not linked to a ship.")
 	if(ship)
 		. += span_notice("Ship Shield Status: [ship.shields_active ? "ACTIVE" : (ship.shields_broken ? "RECHARGING" : "OFFLINE")]")
 		if(ship.shields_active)
@@ -144,17 +155,41 @@
 // ========== PROCESSING ==========
 
 /obj/machinery/ship_combat/shield_generator/process(seconds_per_tick)
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+
 	// Check for power loss
 	if(machine_stat & NOPOWER)
 		if(active)
 			power_loss_shutdown()
+		else if(power_allocation > 0 && !power_warning_sent)
+			// The crew is asking for shields from a dead socket - say so once per
+			// outage instead of refusing silently every tick (round 4: silent
+			// refusals read as "shields refuse to come online").
+			power_warning_sent = TRUE
+			ship?.ship_notify("Shield generator has no power.", "SHIELDS", SHIP_NOTIFY_WARNING)
 		return
+	power_warning_sent = FALSE
+
+	// ship.mass is live (construction, hull damage) but the cost cache was written once
+	// at link time - keep it tracking the hull or the draw stays priced at link-day mass
+	var/old_mass = cached_ship_mass
+	update_ship_mass()
+	if(cached_ship_mass != old_mass)
+		update_power_draw()
 
 	// If allocation is 0, shields are off
 	if(power_allocation <= 0)
 		if(active)
 			deactivate_generator()
 		return
+
+	// Self-heal the ship-to-ship dock latch. It is set/cleared by dock signals, and a
+	// missed clear (host hull despawned while docked, or any dock path that skips the
+	// undock signals) used to leave this generator refusing activation forever with no
+	// way to reset it - re-linking early-returns on "already ours". A FLYING ship is
+	// definitively not in a completed ship-to-ship dock.
+	if(in_ship_to_ship_dock && ship?.state == OVERMAP_SHIP_FLYING)
+		in_ship_to_ship_dock = FALSE
 
 	// Can't run shields while docked to another ship
 	if(is_docked_to_ship())
@@ -163,7 +198,8 @@
 		return
 
 	// Check if ship shields are broken (on cooldown) - can't activate during cooldown
-	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	// Not silent: break_ship_shields() announced the collapse and the cooldown, and
+	// the console slider reports the remaining time on any activation attempt.
 	if(ship?.shields_broken)
 		return
 
@@ -1376,7 +1412,12 @@
 		if(!ship.shields_active && !ship.shields_broken)
 
 			ship.shields_active = TRUE
-			ship.shield_health = 0  // Start at 0, shields must regenerate
+			// Establish with a starting charge: preserved health from a manual
+			// shutdown if any, the raise charge floor otherwise. Starting at 0 meant
+			// any hit during the raise broke the pool instantly and re-armed the 30s
+			// cooldown - under sustained fire (round 4 meteor shower) shields could
+			// never come online at all.
+			ship.shield_health = clamp(max(ship.stored_shield_health, ship.shield_max_health * SHIP_SHIELD_RAISE_CHARGE_MULT), 0, ship.shield_max_health)
 
 			// Start ship processing for shield regen
 			ship.start_shield_processing()
@@ -1445,6 +1486,11 @@
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
+		// Name the cause; break_ship_shields() below only announces the effect.
+		// Also arms the once-per-outage latch so process() doesn't repeat this.
+		power_warning_sent = TRUE
+		ship.ship_notify("Shield generator lost power.", "SHIELDS", SHIP_NOTIFY_WARNING)
+
 		// Recalculate ship shield stats
 		ship.recalculate_shield_stats()
 
@@ -1531,11 +1577,23 @@
 /// Links to a ship
 /obj/machinery/ship_combat/shield_generator/proc/link_ship(obj/structure/overmap/ship/ship)
 	if(!ship)
-		return
+		return FALSE
 	// Already ours - re-linking would tear us out of the shared pool and back in,
 	// which drops the whole ship's shields if we happen to be the only active generator.
 	if(linked_ship_ref?.resolve() == ship)
-		return
+		// Self-heal: our ref can be right while the ship's pool lost us. Membership in
+		// linked_shield_generators IS what the console slider drives, so a one-sided
+		// break here is a generator that silently never receives an allocation.
+		ship.linked_shield_generators |= src
+		// Re-linking is the crew's explicit repair action, so also refresh the
+		// signal-driven dock latch from the ship's real state - a missed undock
+		// signal otherwise leaves it stuck and shields refusing forever.
+		in_ship_to_ship_dock = ship.is_in_ship_to_ship_dock()
+		return TRUE
+	// Hull-wide cap. Checked before unlink_ship() so a rejected link doesn't tear us
+	// out of whatever pool we were already in.
+	if(length(ship.linked_shield_generators) >= SHIP_MAX_SHIELD_GENERATORS)
+		return FALSE
 	unlink_ship()
 	linked_ship_ref = WEAKREF(ship)
 	ship.linked_shield_generators |= src  // Add to list (|= avoids duplicates)
@@ -1560,6 +1618,7 @@
 	// If already in ship-to-ship dock, deactivate generator
 	if(in_ship_to_ship_dock)
 		deactivate_generator()
+	return TRUE
 
 /// Unlinks from the current ship
 /obj/machinery/ship_combat/shield_generator/proc/unlink_ship()

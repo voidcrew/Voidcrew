@@ -61,27 +61,21 @@ They will never turn up as generic loot guards, they are banned from the zone ga
 
 ## The Verdigris
 
-An hour and a half into a shift, if there are enough people alive to field a raid party, a **necrotic signal** surfaces in Contested or Lawless space and the galaxy is told about it. Inside is Ilthuun, the Verdigris Lich. There is one per round.
+Two hours into a shift, if there are enough people alive to field a raid party, a **necrotic signal** surfaces in Contested or Lawless space and the galaxy is told about it. Inside is Ilthuun, the Verdigris Lich. There is one per round, and not every round.
 
-From the moment he arrives he is working. Every four minutes his potency climbs by one (capped at seven) and one ritual fires somewhere in the galaxy. The ramp is real and it does not stop on its own:
+He does nothing to anyone who stays away. The signal is a standing raid offer, not a threat: the site charts a helm waypoint onto every ship in the fleet (including hulls built after it surfaced), and every fifteen minutes it repeats a plain status line on Wideband so nobody loses track of where he is. Ignore him and the round simply goes on without you.
 
-- **Early**: the dead become visible to the living; loose objects grow barbs when thrown; bones rain through a compartment.
-- **Middle**: the crew of one ship are shuffled between each other's bodies; animals aboard a ship multiply in waves; corpses rise as skeletons.
-- **Late**: everyone alive is dressed in grave goods that will not come off; the deck of a ship turns to burning grave-dirt; every language in the galaxy is replaced with a garbled one; everyone's name acquires an RPG title; every object in the galaxy gets a fantastical name and a quality roll.
-
-Low-potency rituals pick one crewed ship to torment. High-potency ones stop pretending the galaxy is not his and hit everybody. Parking in the safe zone does not opt you out, the rituals ignore zone bands entirely.
-
-The only off switch is a boarding party.
+Because the whole galaxy hears the same signal and sees the same waypoint, the raid is a natural rallying point. Crews can call each other over Wideband, fly in together and split the cost of clearing the lair, and more than one ship's worth of raiders is exactly what the fight expects.
 
 ### The lair
 
-Four sealed layers stand between the docking breach and the ritual chamber: the **Atrium**, the **Ossuary**, the **Warrens**, and the **Sanctum**. Each layer is held shut by a ward (a green crystal grown through a knot of bones) and the ward only guts out and rolls the doors back when **everything hostile in its hall is dead**. There is no console, no hack, no welder. Clearing the layer is the key.
+Four sealed layers stand between the docking breach and the sanctum at the middle: the **Atrium**, the **Ossuary**, the **Warrens**, and the **Sanctum**. Each layer is held shut by a ward (a green crystal grown through a knot of bones) and the ward only guts out and rolls the doors back when **everything hostile in its hall is dead**. There is no console, no hack, no welder. Clearing the layer is the key.
 
 Teleportation does not work anywhere inside, for you or for him. Ilthuun does not leave his sanctum, and he fights in three phases, one per school of his art. He conjures undead, but the summons are hard-capped and vanish when he dies.
 
 !!! danger "The lair does not reset"
     Every other ruin wipes itself clean when the last person leaves. This one does not. Boss health, dead guards, spent ammunition and opened wards all persist for the rest of the round. Wipe on layer three and you can come back to a lair that is still three-quarters cleared, but everything you burned getting there is still burned.
 
-Kill him and the ritual clock stops for good. What he leaves on the sanctum floor: his robe and horned crown (both of which cast), the staff he was leaning on, the spent husk of the phylactery that stopped saving him, a bridle that takes someone else's body off them briefly, and three codices in his own hand. The site stays put afterward as a lootable husk, so you can strip it and fly home.
+Kill him and the beacon goes quiet for good. What he leaves on the sanctum floor: his robe and horned crown (both of which cast), the staff he was leaning on, the spent husk of the phylactery that stopped saving him, a bridle that takes someone else's body off them briefly, and three spell codices in his own hand. That hoard is the entire reward — his magic survives only in those codices, and nothing is handed to crews that stayed home. The site stays put afterward as a lootable husk, so you can strip it and fly home.
 
 Bring a real party. Four layers of undead is not a two-person job, and the fight at the bottom is on the same tier as the Matriarch.

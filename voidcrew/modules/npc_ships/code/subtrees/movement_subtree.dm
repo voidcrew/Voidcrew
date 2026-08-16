@@ -19,10 +19,22 @@
 		return
 
 	var/obj/structure/overmap/ship/npc/ship = controller.pawn
-
-	// Don't run movement AI when the ship isn't flying (docked, crashed, etc.)
-	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+	if(!ship)
 		return
+
+	// Ship isn't flying (docked, crashed, mid-manoeuvre): normal movement stands down,
+	// but the AI must not go silent over it - note the park (one log line) and, if the
+	// ship is sitting berthed, run the recovery behavior that will eventually undock it
+	// back into open flight. Without this, one player force-dock permanently killed the
+	// ship's AI: nothing else in the game ever returns an NPC hull to FLYING.
+	if(ship.state != OVERMAP_SHIP_FLYING)
+		controller.note_ai_parked()
+		if(ship.state == OVERMAP_SHIP_IDLE)
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/undock_recovery)
+		// DOCKING/UNDOCKING/ACTING are transitional; stalls there are reconciled by
+		// check_manoeuvre_stalled() on SSovermap's poll, so just wait them out.
+		return
+	controller.note_ai_recovered()
 
 	var/movement_mode = controller.blackboard[BB_NPC_MOVEMENT_MODE] || NPC_MOVEMENT_PATROL
 	var/obj/structure/overmap/ship/target = controller.get_target()

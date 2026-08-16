@@ -7,6 +7,20 @@
 
 /obj/machinery/computer/operating/Destroy()
 	unsync_research_servers()
+	// Upstream's Destroy (reached via ..()) finds the optable POSITIONALLY (locate in
+	// adjacent turfs), which fails when a z-teardown already nullspaced the table -
+	// the dying table's `computer` var then pins this console into a hard delete.
+	// Unlink through the stored var instead.
+	if(table?.computer == src)
+		table.computer = null
+	table = null
+	return ..()
+
+/// Mirror unlink from the table side, for when the table dies first
+/obj/structure/table/optable/Destroy()
+	if(computer?.table == src)
+		computer.table = null
+	computer = null
 	return ..()
 
 /obj/machinery/computer/operating/unsync_research_servers()

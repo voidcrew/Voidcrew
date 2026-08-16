@@ -10,7 +10,10 @@
 
 /obj/machinery/computer/rdconsole/unsync_research_servers()
 	if(stored_research)
-		stored_research.consoles_accessing[src] = FALSE
+		// Must be -= : `[src] = FALSE` keeps the console as an assoc KEY, i.e. a
+		// permanent hard ref. Upstream's Destroy would have removed it, but this runs
+		// first (dme chaining) and nulls stored_research, so upstream's cleanup skips.
+		stored_research.consoles_accessing -= src
 		stored_research.connected_machines -= src
 		stored_research = null
 

@@ -26,7 +26,9 @@
 	if(!istype(controller))
 		return
 
-	// Don't run combat AI when the ship isn't flying (docked, crashed, etc.)
+	// Don't run combat AI when the ship isn't flying (docked, crashed, etc.).
+	// The movement subtree owns getting back to flight: it logs the park and queues
+	// undock_recovery, so a berthed ship is quiet here but not permanently dead.
 	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
 	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
 		return
@@ -191,8 +193,13 @@
 	if(target && !target.is_interdicted)
 		action_weights[NPC_ACTION_USE_INTERDICTOR] = 25
 
-	// Siphon is available if ship has siphon goals (weight: 15)
-	if(ship?.siphon_goal_percent > 0)
+	// Siphon is available if ship has siphon goals (weight: 15) - but never in the red
+	// band. The siphon is the yellow-band mugging tool; red settles it with guns and
+	// boarders (acquire_lock and hail_escalates_to_siphon gate on the same check).
+	// Without this, a red-zone pirate that rolled the siphon skimmed its goal and then
+	// ended the whole fight via on_goal_reached()'s retreat - and retreating ships
+	// ignore further player aggression entirely.
+	if(ship?.siphon_goal_percent > 0 && !controller.is_red_zone_raid())
 		action_weights[NPC_ACTION_ACTIVATE_SIPHON] = 15
 
 	// If only weapons available, just return that

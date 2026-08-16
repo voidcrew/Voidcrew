@@ -6,8 +6,8 @@
  * The two OS cores share the chest OS slot, installing one evicts the
  * other, the CP2077 operating-system choice. Both are windowed powers with
  * a crash on the back end; per the design freeze the crash IS the balance,
- * because ambient EMP threat is thin. Cascade additionally treats any EMP
- * during its window as an instant crash plus a full recooldown, the
+ * because ambient EMP threat is thin. Both additionally treat any EMP during
+ * their window as an instant crash plus a full recooldown, the
  * 1-voucher-grenade counter to an 8-voucher implant.
  */
 
@@ -232,7 +232,8 @@
  * the window reaches punches that never touch the standard attack chain.
  *
  * Then the collapse: a hundred stamina, leaden legs, and whatever you
- * didn't finish is now standing over you.
+ * didn't finish is now standing over you. An EMP during the window skips
+ * straight to that collapse and re-arms the full ninety-second cooldown.
  */
 /obj/item/organ/cyberimp/cyberware/redline
 	name = "\improper Redline core"
@@ -252,9 +253,32 @@
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
 
+/**
+ * The EMP counter, Cascade parity (BAL-4): a pulse during the window forces
+ * the crash immediately and re-arms the full cooldown, on top of the standard
+ * chrome reboot ..() already started. Before this, Cascade carried the
+ * mid-window EMP collapse and Redline quietly didn't, so the 12 seconds of
+ * stun immunity and 40% resist rode straight through the one thing that is
+ * supposed to answer them. Applying the same rule to both OS cores is the
+ * conservative reading; not separately playtested.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(!owner)
+		return
+	var/datum/status_effect/cyberware_redline_window/window = owner.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	if(!window)
+		return
+	to_chat(owner, span_userdanger("The pulse scrambles the core mid-burn and the strength drops out of you all at once!"))
+	owner.remove_status_effect(/datum/status_effect/cyberware_redline_window) // on_remove applies the crash
+	for(var/datum/action/cooldown/cyberware/redline_burn/burn in actions)
+		burn.StartCooldown()
+
 /datum/action/cooldown/cyberware/redline_burn
 	name = "Redline Burn"
-	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse."
+	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse. An EMP mid-window collapses you instantly."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_redline"
 	cooldown_time = 90 SECONDS
@@ -295,6 +319,17 @@
  *
  * Deliberately written against the chain, not against Gorilla, any future
  * ware that swallows the punch chain gets the bonus for free.
+ *
+ * The one hole in "never reached the late signal means never paid" (D5): a
+ * ware can swallow the chain AND still roll the bodypart itself. tg's
+ * Strong-Arm implant and our own Scrapper's Knuckles both do exactly that,
+ * their damage lines read unarmed_damage_low/high, which already carries the
+ * +8, and then cancel the chain, so the top-up used to pay a second time on
+ * top (Strong-Arm doubles its roll, so that hit was landing roughly +24
+ * instead of +8). Those wares call cyberware_unarmed_roll_paid() to stand the
+ * top-up down themselves. Gorilla Arms deliberately does not: its line is
+ * flat and never reads the bodypart, so the top-up is the only way it sees
+ * the bonus at all.
  */
 /datum/status_effect/cyberware_redline_window
 	id = "cyberware_redline_window"
@@ -309,6 +344,10 @@
 	/// Armour penetration of the hand that threw that punch, so the top-up is
 	/// blunted by armour exactly as much as the strike it belongs to.
 	var/bypassed_penetration = 0
+	/// One-shot: a ware has already paid this punch's arm bonus inside its own
+	/// roll, so the next arming is skipped. See suppress_topup() for why this
+	/// can't just clear the armed state.
+	var/topup_suppressed = FALSE
 
 /datum/status_effect/cyberware_redline_window/on_apply()
 	// The anti-stun implant's buff pattern: traits plus damage-slowdown immunity.
@@ -386,6 +425,13 @@
 	SIGNAL_HANDLER
 	bypassed_victim = null
 	bypassed_penetration = 0
+	// Consumed unconditionally, and this handler runs on every unarmed swing
+	// the window sees, so a suppression raised by a ware whose own guards then
+	// bailed can never outlive one punch.
+	var/suppressed = topup_suppressed
+	topup_suppressed = FALSE
+	if(suppressed)
+		return NONE
 	// Harm punches on a living body only. Help intent, right-click, ranged
 	// clicks and punching the scenery are none of our business.
 	if(!proximity || !source.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
@@ -418,9 +464,43 @@
  */
 /datum/status_effect/cyberware_redline_window/proc/on_unarmed_attack(mob/living/source, atom/target, proximity, list/modifiers)
 	SIGNAL_HANDLER
+	stand_down_topup()
+	return NONE
+
+/// Cancels the top-up armed by this punch's early signal.
+/datum/status_effect/cyberware_redline_window/proc/stand_down_topup()
 	bypassed_victim = null
 	bypassed_penetration = 0
-	return NONE
+
+/**
+ * A ware standing this punch's top-up down because its own roll already paid
+ * the arm bonus (D5).
+ *
+ * Timing is the whole reason this isn't just stand_down_topup(). Handlers fire
+ * in registration order, and a window opened by a button press registers AFTER
+ * chrome that registered at install time, so the ware almost always calls this
+ * BEFORE on_early_unarmed_attack() has armed anything, and there is nothing to
+ * clear yet. Raising a one-shot the arming consumes covers that. Chrome
+ * installed during a live window registers after us and hits the other order,
+ * where clearing the armed state is the correct move; both are handled.
+ */
+/datum/status_effect/cyberware_redline_window/proc/suppress_topup()
+	if(bypassed_victim)
+		stand_down_topup()
+		return
+	topup_suppressed = TRUE
+
+/**
+ * "My damage line already rolled this hand's unarmed_damage_low/high."
+ *
+ * Punch-swallowing chrome calls this once it commits to taking a swing over.
+ * Redline's arm bonus lives inside that roll, so the strike has already been
+ * paid and must not also collect the bypass top-up. Safe to call from anyone,
+ * any time; it is a no-op on a bearer with no Redline window open.
+ */
+/proc/cyberware_unarmed_roll_paid(mob/living/puncher)
+	var/datum/status_effect/cyberware_redline_window/window = puncher?.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	window?.suppress_topup()
 
 /**
  * The top-up, one tick after a punch that never reached the standard attack

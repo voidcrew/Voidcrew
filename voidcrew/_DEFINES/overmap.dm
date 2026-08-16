@@ -24,12 +24,35 @@
  */
 #define SHIP_VIEW_RANGE 4
 
+/// Longest join password a captain may set on a player-created hull
+#define SHIP_JOIN_PASSWORD_MAX_LEN 24
+
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
 #define OVERMAP_SHIP_FLYING "flying"
 #define OVERMAP_SHIP_ACTING "acting"
 #define OVERMAP_SHIP_DOCKING "docking"
 #define OVERMAP_SHIP_UNDOCKING "undocking"
+
+/**
+ * Derelict lifecycle (see SSovermap.sweep_derelicts()).
+ *
+ * Crew death was never the only way a ship empties: crews log off, cryo out, or walk
+ * away, and none of those paths ever flagged the hull. Occupancy is the one honest
+ * signal, so the sweep runs on it - deliberately with no carve-outs for crews that
+ * are planetside, dead or logged off. A crew that is not aboard for this long IS the
+ * abandoned ship. Getting it back afterwards is one claim at the helm.
+ */
+/// No living, connected player physically aboard for this long -> the hull is abandoned
+/// (claimable derelict). Hulls that never had a crew at all skip the derelict window
+/// and despawn outright.
+#define SHIP_CREWLESS_ABANDON_TIME (30 MINUTES)
+/// An abandoned hull older than this despawns for good, releasing its berth, its map
+/// zone pin and its transit reservation. Claiming stops the clock; merely being aboard
+/// only postpones the teardown.
+#define SHIP_DERELICT_DESPAWN_TIME (1 HOURS)
+/// Cadence of the occupancy sweep. A minute of slack on half-hour clocks is nothing.
+#define DERELICT_SWEEP_INTERVAL (1 MINUTES)
 
 /// Fraction of max_speed at or below which the helm's Dock button finishes the stop itself; any faster and the approach is refused.
 #define DOCK_ASSIST_SPEED_FRACTION 0.5

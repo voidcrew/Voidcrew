@@ -67,6 +67,8 @@ Some weapons cannot be researched, bought assembled, or printed. They exist only
 
 While you are carrying a schematic anywhere on your person, its recipe appears in your ordinary crafting menu. No workbench is involved; you can build it wherever you are standing. Gun recipes still consume a machined weapon component (printed at a protolathe behind its research node) plus a firing pin, so the schematic is the permission, not the whole cost.
 
+Firing pins come from the Quartermain Depot's shelf at 900 credits apiece — that is also the fix for ruin-salvage guns that arrive pinless. You cannot harvest a pin from another gun: prying one out destroys it.
+
 Six schematics exist:
 
 | Schematic | Tier | Sold at |

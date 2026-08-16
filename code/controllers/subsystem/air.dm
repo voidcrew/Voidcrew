@@ -296,10 +296,11 @@ SUBSYSTEM_DEF(air)
 	expansion_queue += list(new_packet)
 
 /datum/controller/subsystem/air/proc/remove_from_expansion(datum/pipeline/line)
-	for(var/list/packet in expansion_queue)
+	// VOIDCREW EDIT: remove every packet for this pipeline, not just the first, and
+	// iterate a copy so the removal can't skip entries in the live list
+	for(var/list/packet in expansion_queue.Copy())
 		if(packet[SSAIR_REBUILD_PIPELINE] == line)
 			expansion_queue -= packet
-			return
 
 /datum/controller/subsystem/air/proc/process_atoms(resumed = FALSE)
 	if(!resumed)
@@ -795,6 +796,13 @@ GLOBAL_LIST_EMPTY(colored_images)
 		var/path = id
 		if(!ispath(path))
 			path = gas_id2path(path) //a lot of these strings can't have embedded expressions (especially for mappers), so support for IDs needs to stick around
+		// VOIDCREW EDIT: an unknown id (a mapper typo, or a gas string from another
+		// codebase that was never ported - "ws_atmos") resolves to "" here, and the
+		// ADD_GAS below then indexes a null list once per turf that uses the string.
+		// Warn once for the mix instead and leave that component out.
+		if(!ispath(path))
+			stack_trace("parse_gas_string(): unknown gas id \"[id]\" in gas string \"[gas_string]\" - ignoring it.")
+			continue
 		ADD_GAS(path, gases)
 		gases[path][MOLES] = text2num(gas[id])
 

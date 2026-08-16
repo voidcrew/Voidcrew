@@ -115,6 +115,14 @@
 /obj/item/construction/rcd/internal/ship/proc/deconstruct_cost(cost)
 	return max(1, round(cost * SHIP_RCD_DECONSTRUCT_COST_MULT))
 
+/// Human-readable price of `units` RCD matter units, as drawn from whatever this RCD
+/// is actually paying with. Used to tell the operator what a spend costs BEFORE it
+/// happens - playtesting read the silent per-tile sheet burn as a bug.
+/obj/item/construction/rcd/internal/ship/proc/charge_readout(units)
+	if(silo_link && silo_mats?.mat_container)
+		return "[round(units * SHIP_RCD_SILO_USE_AMOUNT / SHEET_MATERIAL_AMOUNT, 0.1)] iron sheet\s"
+	return "[units] matter unit\s"
+
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
 /obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
 	// rcd_create() charges the raw rcd_vals cost itself, so the discount has to land
@@ -345,7 +353,8 @@
 
 	// Build the wall
 	var/wall_path = get_selected_wall_path()
-	target.ChangeTurf(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_wall = target.ChangeTurf(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	restamp_hull_marker(new_wall)
 	rcd_effect.end_animation()
 	return TRUE
 
@@ -369,9 +378,28 @@
 
 	// Build the floor
 	var/floor_path = get_selected_floor_path()
-	target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	restamp_hull_marker(new_floor)
 	rcd_effect.end_animation()
 	return TRUE
+
+/**
+ * A breach's ScrapeAway() walks past /turf/baseturf_skipover/shuttle and deletes it
+ * (baseturfs.dm), and ChangeTurf() carries the marker-less chain onto the rebuilt tile.
+ * The repair then fails isshuttleturf(), fromShuttleMove() never grants it MOVE_TURF,
+ * and the tile is left behind at the berth on the next move - "I repaired my ship with
+ * the drone console and when I undock the repairs went with it".
+ *
+ * reconcile_hull_before_move() deliberately cannot restamp these: by move time it has
+ * no way to tell a repaired deck tile from site ground adopted through the breach. At
+ * rebuild time we still can - a console build inside a hull area is explicit deck
+ * repair - so restore the marker here, the same way build_with_floor_tiles() does for
+ * manual tile repairs (see /turf/open/build_with_floor_tiles in _open.dm).
+ */
+/obj/item/construction/rcd/internal/ship/proc/restamp_hull_marker(turf/built)
+	if(isnull(built) || !istype(built.loc, /area/shuttle) || isshuttleturf(built))
+		return
+	built.insert_baseturf(turf_type = /turf/baseturf_skipover/shuttle)
 
 /// Build a finished security camera on the target turf, hung on the wall in wall_dir.
 /// Returns the new camera so the caller can finish setup (network binding), or null on failure.
@@ -678,6 +706,9 @@
 	var/tray_mode = SHIP_TRAY_MODE_OFF
 	/// Pipe connection images for T-ray pipe mode
 	var/list/tray_connection_images = list()
+	/// Rate limit on the "new sections have no air" warning - a room is many tiles,
+	/// and the builder only needs telling once per build session, not per tile
+	COOLDOWN_DECLARE(airless_warning_cooldown)
 
 // ============================================
 // Initialization
@@ -736,9 +767,12 @@
 
 	var/range = 3
 
-	// Clean up old images that are out of range
-	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images)
-		if(get_dist(eyeobj, smart) > range)
+	// Clean up old images that are out of range. Iterate a copy (removing the current
+	// entry mid-walk skips the next), and drop deleted pipes explicitly - the assoc
+	// KEY is a hard ref, and get_dist() on a nullspaced pipe is not reliably > range,
+	// so a pipe deleted while a console sat in pipe mode was pinned forever
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images.Copy())
+		if(QDELETED(smart) || get_dist(eyeobj, smart) > range)
 			tray_connection_images -= smart
 
 	// Show connection arrows on smart pipes
@@ -1278,6 +1312,12 @@
 	// Every drone-built tile is credited as weightless without this - see
 	// recount_hull_after_expansion() in hull_survey.dm for why.
 	recount_hull_after_expansion(port)
+
+	// New deck tiles start with no atmosphere - round 2 sent two engineers into a
+	// fresh room without saying so. Once per minute, not per tile.
+	if(user && COOLDOWN_FINISHED(src, airless_warning_cooldown))
+		COOLDOWN_START(src, airless_warning_cooldown, 1 MINUTES)
+		to_chat(user, span_warning("Note: newly built sections have no air. Extend atmospherics piping and a vent into the new room, or open it to the rest of the ship, before anyone works there unprotected."))
 
 	return TRUE
 

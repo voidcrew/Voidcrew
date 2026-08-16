@@ -147,18 +147,31 @@
 	if(istype(tool.buffer, /obj/machinery/ship_combat/shield_generator))
 		var/obj/machinery/ship_combat/shield_generator/gen = tool.buffer
 
-		// Check if already linked
+		// Check the hull-wide generator cap (pool members re-linking to a new console pass)
+		if(current_ship && !(gen in current_ship.linked_shield_generators) && length(current_ship.linked_shield_generators) >= SHIP_MAX_SHIELD_GENERATORS)
+			balloon_alert(user, "max generators reached")
+			to_chat(user, span_warning("Cannot link more than [SHIP_MAX_SHIELD_GENERATORS] shield generators to one ship!"))
+			return ITEM_INTERACT_BLOCKING
+
+		// Check if already linked to this console. Run the full link anyway: it
+		// verifies (and repairs) the generator's membership in the ship's shield
+		// pool, which is what the shield slider actually drives. Round 4: "already
+		// linked" used to be a no-op, so a generator that had fallen out of the pool
+		// could never be re-linked - the multitool just kept reporting success.
+		var/was_linked = FALSE
 		for(var/datum/weakref/ref in linked_shields)
 			if(ref.resolve() == gen)
-				balloon_alert(user, "already linked")
-				return ITEM_INTERACT_BLOCKING
+				was_linked = TRUE
+				break
 
 		// Link the generator
 		if(link_shield_generator(gen))
-			balloon_alert(user, "shield generator linked")
-			to_chat(user, span_notice("Linked [gen] to [src]. Total generators: [length(linked_shields)]"))
+			balloon_alert(user, was_linked ? "already linked" : "shield generator linked")
+			if(!was_linked)
+				to_chat(user, span_notice("Linked [gen] to [src]. Total generators: [length(linked_shields)]"))
 		else
 			balloon_alert(user, "link failed")
+			to_chat(user, span_warning("[gen] could not join the ship's shield pool."))
 
 		return ITEM_INTERACT_SUCCESS
 
@@ -166,8 +179,10 @@
 	if(istype(tool.buffer, /obj/machinery/ship_combat/laser_turret))
 		var/obj/machinery/ship_combat/laser_turret/turret = tool.buffer
 
-		// Check if at max turrets
-		if(length(linked_turrets) >= LASER_MAX_TURRETS)
+		// Check if at max turrets - the cap is per hull, so count across every console
+		// aboard, not just this one (a second console must not double the ceiling)
+		var/ship_turret_count = current_ship ? current_ship.count_linked_turrets() : length(linked_turrets)
+		if(ship_turret_count >= LASER_MAX_TURRETS)
 			balloon_alert(user, "max turrets reached")
 			to_chat(user, span_warning("Cannot link more than [LASER_MAX_TURRETS] laser turrets to one ship!"))
 			return ITEM_INTERACT_BLOCKING
@@ -275,24 +290,36 @@
 	if(!gen)
 		return FALSE
 
+	// Make sure we know our own ship before pool work - a console that has never been
+	// interacted with has no current_ship, and linking through it used to leave the
+	// generator out of the ship's pool with the console still reporting "linked".
+	attempt_ship_connection()
+
 	// Drop stale refs while we look for this one. Iterate a copy - removing from the
 	// list we are walking makes the index skip the entry after each removal.
+	var/already_here = FALSE
 	for(var/datum/weakref/ref in linked_shields.Copy())
 		var/obj/machinery/ship_combat/shield_generator/existing = ref.resolve()
 		if(!existing)
 			linked_shields -= ref
 			continue
 		if(existing == gen)
-			return TRUE
+			already_here = TRUE
 
-	linked_shields += WEAKREF(gen)
+	if(!already_here)
+		linked_shields += WEAKREF(gen)
 	// Tell the generator too, or it keeps reporting itself as unlinked to anyone
 	// examining it no matter how many times they multitool it onto the console.
 	gen.link_console(src)
 
-	// Link to our ship
+	// Link to our ship. Membership in ship.linked_shield_generators IS the pool the
+	// shield slider drives - a console-side "linked" that never joined the pool is
+	// exactly the silent dead-shield state, so verify instead of assuming (link_ship
+	// can refuse: hull-wide generator cap).
 	if(current_ship)
 		gen.link_ship(current_ship)
+		if(!(gen in current_ship.linked_shield_generators))
+			return FALSE
 
 	return TRUE
 

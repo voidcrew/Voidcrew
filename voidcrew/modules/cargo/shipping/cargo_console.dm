@@ -20,6 +20,11 @@
 	/// Loaded coupons that can be applied to orders
 	var/list/obj/item/coupon/loaded_coupons
 
+	/// The cargo shuttle datum that last registered us as its linked_console - kept so
+	/// Destroy can sever that back-ref directly. Re-deriving the ship from position
+	/// fails mid-teardown (areas already swept), which left the datum pinning us.
+	var/datum/weakref/linked_shuttle_ref
+
 /obj/machinery/computer/voidcrew_cargo/Initialize(mapload)
 	. = ..()
 	//Mapped-in consoles have no multitool link yet, so adopt the ship's own bank machine.
@@ -69,6 +74,13 @@
 		on_bank_deletion(bank_account_holder)
 	QDEL_LIST(checkout_list)
 	QDEL_LAZYLIST(loaded_coupons)
+	// The ship's cargo shuttle datum outlives its consoles; its linked_console
+	// back-ref is otherwise only cleared in the datum's own Destroy. Prefer the
+	// stored handle - positional lookup fails once the teardown sweep is underway.
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = linked_shuttle_ref?.resolve() || get_cargo_shuttle()
+	if(cargo_shuttle?.linked_console == src)
+		cargo_shuttle.linked_console = null
+	linked_shuttle_ref = null
 	return ..()
 
 /obj/machinery/computer/voidcrew_cargo/on_construction(mob/user)
@@ -136,6 +148,9 @@
 /obj/machinery/computer/voidcrew_cargo/Exited(atom/movable/gone, direction)
 	. = ..()
 	if(istype(gone, /obj/item/coupon))
+		var/obj/item/coupon/leaving = gone
+		if(leaving.inserted_console == src)
+			leaving.inserted_console = null
 		LAZYREMOVE(loaded_coupons, gone)
 
 /obj/machinery/computer/voidcrew_cargo/proc/on_bank_deletion(atom/source)
@@ -426,6 +441,7 @@
 
 			// Set linked console for callbacks
 			cargo_shuttle.linked_console = src
+			linked_shuttle_ref = WEAKREF(cargo_shuttle)
 
 			switch(cargo_shuttle.state)
 				if(CARGO_SHUTTLE_AWAY)

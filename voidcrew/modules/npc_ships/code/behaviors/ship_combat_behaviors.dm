@@ -840,6 +840,7 @@
 
 /**
  * Escape behavior for retreating ships.
+ * Checks every escape condition FIRST, then handles interdiction/cloaking.
  * If interdicted: tries to shield burst to break free.
  * If not interdicted (or just broke free): tries to cloak.
  */
@@ -855,6 +856,42 @@
 	if(!ship || !combat)
 		return AI_BEHAVIOR_DELAY
 
+	// ===== Escape conditions, all evaluated BEFORE the interdiction branch. The old
+	// shape early-returned every tick while interdicted and never read its own exit
+	// conditions, and its only exit needed 15+ tiles of separation - which a
+	// zone-confined ship fleeing a chaser that stays put can never open. Round 4 left
+	// two pirates wedged here for 21 hours. =====
+
+	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
+
+	// Nothing left worth fleeing: chaser gone, docked/crashed, or nobody alive aboard.
+	// count_living_crew() returns -1 for a ship it can't read - that is not an empty one.
+	if(!last_target || QDELETED(last_target) || last_target.state != OVERMAP_SHIP_FLYING || controller.count_living_crew(last_target) == 0)
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// Clean escape - far enough away
+	var/turf/our_loc = get_turf(ship)
+	var/turf/target_loc = get_turf(last_target)
+	var/distance = (our_loc && target_loc) ? get_dist(our_loc, target_loc) : null
+	if(!isnull(distance) && distance >= 15)
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// Timed out - the chaser is still around but the encounter is over. Write it off
+	// and go back to hunting rather than shuffling along a band boundary forever.
+	var/retreat_start = controller.blackboard[BB_NPC_RETREAT_START]
+	if(!retreat_start)
+		retreat_start = world.time
+		controller.set_blackboard_key(BB_NPC_RETREAT_START, retreat_start)
+	if(world.time - retreat_start > NPC_RETREAT_TIME_LIMIT)
+		log_shuttle("NPC_SHIP: [ship.name] retreat timed out at [isnull(distance) ? "?" : distance]/15 tiles from [last_target.name] - returning to patrol")
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// ===== Still fleeing =====
+
 	// If interdicted, try to break free with shield burst
 	if(ship.is_interdicted)
 		if(ship.can_burst_shields())
@@ -868,22 +905,6 @@
 	if(ship.invisibility <= INVISIBILITY_NONE && combat.has_working_cloak())
 		combat.activate_cloak()
 
-	// Check if we've escaped far enough from the last target to return to patrol
-	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
-	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
-
-	if(last_target && !QDELETED(last_target))
-		var/turf/our_loc = get_turf(ship)
-		var/turf/target_loc = get_turf(last_target)
-		if(our_loc && target_loc)
-			var/distance = get_dist(our_loc, target_loc)
-			// If we're far enough away (15+ tiles), return to patrol
-			if(distance >= 15)
-				return_to_patrol(controller)
-	else
-		// No last target to escape from - just return to patrol
-		return_to_patrol(controller)
-
 	return AI_BEHAVIOR_DELAY
 
 /// Helper proc to transition retreating ship back to patrol
@@ -891,6 +912,7 @@
 	// Clear retreat state
 	controller.blackboard[BB_NPC_RETREAT_REASON] = null
 	controller.blackboard[BB_NPC_LAST_TARGET] = null
+	controller.clear_blackboard_key(BB_NPC_RETREAT_START)
 	// Return to idle/patrol
 	controller.clear_target()
 	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)

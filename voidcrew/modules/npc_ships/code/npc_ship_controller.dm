@@ -331,8 +331,20 @@
 	var/old_state = blackboard[BB_NPC_COMBAT_STATE]
 	set_blackboard_key(BB_NPC_COMBAT_STATE, new_state)
 
+	// Every transition gets one log line. Round-4 forensics had to reconstruct 21 hours
+	// of a wedged state machine from profiler call ratios, because the only NPC-ship
+	// logging in the tree was the target-acquisition line.
+	if(old_state != new_state)
+		var/obj/structure/overmap/ship/npc/state_ship = get_ship()
+		log_shuttle("NPC_SHIP: [state_ship?.name || "unknown vessel"] combat state: [old_state || "none"] -> [new_state]")
+
+	// Track when a retreat began; retreat_escape gives up after NPC_RETREAT_TIME_LIMIT
+	if(old_state == NPC_COMBAT_RETREATING && new_state != NPC_COMBAT_RETREATING)
+		clear_blackboard_key(BB_NPC_RETREAT_START)
+
 	// When entering retreat mode, lose weapon lock and cancel interdiction
 	if(new_state == NPC_COMBAT_RETREATING && old_state != NPC_COMBAT_RETREATING)
+		set_blackboard_key(BB_NPC_RETREAT_START, world.time)
 		var/obj/structure/overmap/ship/target = get_target()
 		var/obj/structure/overmap/ship/npc/ship = get_ship()
 
@@ -364,6 +376,41 @@
  */
 /datum/ai_controller/npc_ship/proc/get_combat_state()
 	return blackboard[BB_NPC_COMBAT_STATE]
+
+/**
+ * Stamps and logs the moment the AI notices its ship parked (any state other than
+ * OVERMAP_SHIP_FLYING). Both subtrees stand down while parked, so before this the
+ * transition was completely silent - round 4's Ghostship docked mid-round and simply
+ * vanished from every log for the remaining ~18 hours, crew alive aboard.
+ *
+ * Also drops any live engagement: a berthed ship can't fight, and a stale target
+ * holds hails, interdiction and the target's engaging_pirate_ref open against a
+ * ship that will not be acting on any of it. The dock signal (on_ship_docked)
+ * already does this for force-docks; this covers the crash-land paths too.
+ *
+ * Called from SelectBehaviors, so it must not sleep.
+ */
+/datum/ai_controller/npc_ship/proc/note_ai_parked()
+	if(blackboard[BB_NPC_PARKED_SINCE])
+		return
+	set_blackboard_key(BB_NPC_PARKED_SINCE, world.time)
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	log_shuttle("NPC_SHIP: [ship?.name || "unknown vessel"] AI parked - state=[ship?.state], docked=[ship?.docked || "null"], crashed=[(ship?.has_crash_landed) ? "yes" : "no"], combat_state=[get_combat_state() || "none"]")
+	if(get_target() || get_combat_state() != NPC_COMBAT_IDLE)
+		INVOKE_ASYNC(src, PROC_REF(clear_target))
+
+/**
+ * Clears the parked stamp and logs the recovery, the first planning pass after the
+ * ship reads as flying again - whether our own undock_recovery got it there or an
+ * admin/check_loc() reconciliation did.
+ */
+/datum/ai_controller/npc_ship/proc/note_ai_recovered()
+	var/parked_since = blackboard[BB_NPC_PARKED_SINCE]
+	if(!parked_since)
+		return
+	clear_blackboard_key(BB_NPC_PARKED_SINCE)
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	log_shuttle("NPC_SHIP: [ship?.name || "unknown vessel"] AI recovered to flight after [round((world.time - parked_since) / (1 MINUTES), 0.1)] minutes parked")
 
 /**
  * Sets the current target ship.

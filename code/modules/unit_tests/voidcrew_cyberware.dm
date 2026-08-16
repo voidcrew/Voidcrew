@@ -4,10 +4,12 @@
  * Live-mob tests for the chrome load system (voidcrew/modules/cyberware/):
  * the netted capacity gate, the install-context gate, the all-or-nothing
  * over-cap brownout, the one-hardware-slot-per-arm invariant, the Second Wind
- * Bladder's breath interception, chrome surviving a body-destroying death, and
- * the Chrome Cradle console. Its rack grouping, load projection and body
- * preview, all of which the interface reads straight out of ui_data() and none
- * of which errors when it goes wrong.
+ * Bladder's breath interception, chrome surviving a body-destroying death, the
+ * EMP counter (a pulse reaching installed chrome, offline chrome dropping its
+ * passives, and the Voltaic cyberheart's one-pulse absorb), and the Chrome
+ * Cradle console. Its rack grouping, load projection and body preview, all of
+ * which the interface reads straight out of ui_data() and none of which errors
+ * when it goes wrong.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so every fork
  * define is written as a literal with a comment naming it,
@@ -582,4 +584,57 @@
 	TEST_ASSERT(!QDELETED(limb_ware), "Destroying a severed limb deleted the chrome inside it")
 	TEST_ASSERT(isnull(limb_ware.bodypart_owner), "Chrome from a destroyed limb still points at the limb")
 	TEST_ASSERT(isturf(limb_ware.loc), "Chrome from a destroyed limb ended up in [limb_ware.loc || "nullspace"] instead of on the floor")
+
+/// (h) EMP is THE designed counter to a chromed-out body, and it has to
+/// actually arrive and actually cost the wearer something. Three claims, all
+/// of which shipped broken at some point:
+///
+/// 1. A pulse on the bearer reaches installed chrome (mob -> limb -> organ)
+///    and knocks it offline.
+/// 2. Offline chrome stops paying its always-on passives. Dermal Mesh stands
+///    in for every ware that mixes something into the bearer's physiology.
+/// 3. The Voltaic cyberheart soaks exactly ONE pulse. It used to hang a
+///    permanent EMP_PROTECT_CONTENTS element on the whole mob, which deleted
+///    the counter outright for anyone carrying one.
+///
+/// Nothing here is permanent: the tune-up hands the passives straight back,
+/// which is the ripperdoc/Cradle repair path.
+/datum/unit_test/voidcrew_cyberware_emp
+
+/datum/unit_test/voidcrew_cyberware_emp/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/dermal_mesh/mesh = allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)
+	var/bare = lab_rat.physiology.armor.get_rating(MELEE)
+
+	TEST_ASSERT(mesh.Insert(lab_rat, special = TRUE), "Test fixture: Dermal Mesh staging insert was refused")
+	var/plated = lab_rat.physiology.armor.get_rating(MELEE)
+	TEST_ASSERT(plated > bare, "Installed Dermal Mesh never mixed its plating into the bearer's physiology")
+
+	lab_rat.emp_act(EMP_HEAVY)
+	TEST_ASSERT(mesh.organ_flags & ORGAN_FAILING, "An EMP on the bearer never reached installed chrome")
+	TEST_ASSERT_EQUAL(lab_rat.physiology.armor.get_rating(MELEE), bare, "EMP-scrambled chrome kept armoring its bearer. Offline ware must stop paying its passives")
+
+	// The repair path, and proof the counter is a moment and not a brick.
+	var/datum/component/cyberware/chrome = mesh.GetComponent(/datum/component/cyberware)
+	TEST_ASSERT_NOTNULL(chrome, "Test fixture: Dermal Mesh carries no cyberware component")
+	chrome.tune_up()
+	TEST_ASSERT(!(mesh.organ_flags & ORGAN_FAILING), "A tune-up didn't bring the EMP'd ware back online")
+	TEST_ASSERT_EQUAL(lab_rat.physiology.armor.get_rating(MELEE), plated, "Repaired chrome didn't hand its plating back")
+
+	// One pulse, then the capacitors have to vent. Both pulses below land in
+	// the same tick, so the shortened recharge can't finish between them; it
+	// is shortened only so the recharge timer doesn't outlive the test.
+	var/obj/item/organ/heart/cybernetic/anomalock/prebuilt/shield = allocate(/obj/item/organ/heart/cybernetic/anomalock/prebuilt)
+	shield.emp_absorb_cooldown_time = 1
+	TEST_ASSERT(shield.Insert(lab_rat, special = TRUE), "Test fixture: Voltaic cyberheart staging insert was refused")
+
+	lab_rat.emp_act(EMP_HEAVY)
+	TEST_ASSERT(!(mesh.organ_flags & ORGAN_FAILING), "The Voltaic cyberheart didn't absorb the first pulse")
+
+	lab_rat.emp_act(EMP_HEAVY)
+	TEST_ASSERT(mesh.organ_flags & ORGAN_FAILING, "The Voltaic cyberheart ate a second pulse on drained capacitors. It must only ever cover one")
+
+	// Pulling the core first: a cored heart tesla-zaps the room on removal,
+	// and teardown removes it.
+	QDEL_NULL(shield.core)
 

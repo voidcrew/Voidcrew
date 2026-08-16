@@ -36,6 +36,24 @@
 	var/reserve_home_z = 0
 
 /**
+ * Nothing upstream nulls the back-references a mobile port keeps to the berth it last
+ * left (`previous`, set in enterTransit) or is flying toward (`destination`, set in
+ * request and only cleared on arrival). Upstream never deletes stationary ports out
+ * from under a live shuttle, but encounter berths here are force-qdel'd on every
+ * planet/ruin/event teardown - so each undock left the departed berth pinned by the
+ * ship's `previous` until the garbage collector hard-deleted it (round 4: 92 of them,
+ * 22 s of world freeze).
+ */
+/obj/docking_port/stationary/Destroy(force)
+	if(force)
+		for(var/obj/docking_port/mobile/port as anything in SSshuttle.mobile_docking_ports)
+			if(port.previous == src)
+				port.previous = null
+			if(port.destination == src)
+				port.destination = null
+	return ..()
+
+/**
  * The main docking port that all voidcrew ships should be using.
  */
 /obj/docking_port/mobile/voidcrew
@@ -78,6 +96,9 @@
 
 /obj/docking_port/mobile/voidcrew/Destroy(force)
 	UnregisterSignal(SSdcs, COMSIG_GLOB_Z_SHIP_PROBE)
+	// Keyed by mobile port and never pruned on success - a ship that ever failed a
+	// transit request would otherwise be pinned by this list and hard-delete
+	SSshuttle.transit_request_failures -= src
 	// Debug: log when shuttle is destroyed to help track orphaning issues
 	if(current_ship)
 		// This should only happen through normal cleanup - log a stack trace to find unexpected deletions
@@ -139,6 +160,22 @@
 	if(mode == SHUTTLE_CALL && isnull(destination) && timeLeft(1) <= 0)
 		timer = INFINITY
 	return ..()
+
+/**
+ * TRUE while initiate_docking() is anywhere between its first line and its return -
+ * which includes the window cleanup_runway() yields through AFTER takeoff() has already
+ * relocated the port's tile. In that window the port's x/y/z are the destination berth
+ * but `dir` is still the old dock's, because setDir(new_dock.dir) is the base proc's
+ * LAST statement - so on any rotated move return_coords() projects the old heading from
+ * the new position and describes a rectangle that exists nowhere. Round 4 (2026-08-15
+ * 04:39:22, Delta D 19): a refresh_engines() landed in exactly that window during an
+ * undock from the round's only dir-rotated berth (site dir=1, transit berth dir=2) and
+ * every engine on the hull failed is_in_shuttle_bounds_geometric() while standing on its
+ * own registered deck tiles. Callers that act PERMANENTLY on bounds membership must
+ * treat the geometry as unknowable while this is TRUE.
+ */
+/obj/docking_port/mobile/voidcrew/proc/move_in_flight()
+	return world.time < move_lock_until
 
 /obj/docking_port/mobile/voidcrew/initiate_docking(obj/docking_port/stationary/new_dock, movement_direction, force = FALSE)
 	if(isnull(new_dock)) // base proc error-returns; no reconcile pass for a non-move

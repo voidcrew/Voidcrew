@@ -125,6 +125,71 @@
 	. = ..()
 	update_appearance(UPDATE_ICON)
 
+/**
+ * The placement rule, said out loud. A thruster only registers once the tile beneath it
+ * belongs to a ship's hull, and on a scratch-built hull that is exactly the tile players
+ * bolt them onto LAST - the nacelle row outside the surveyed room. The failure used to be
+ * completely silent (the helm just lists nothing), which cost a round-6 crew fifteen
+ * minutes of cable/SMES/terminal/welding folklore before an admin explained it.
+ */
+/obj/machinery/power/shuttle_engine/ship/examine(mob/user)
+	. = ..()
+	var/obj/docking_port/mobile/port = connected_ship_ref?.resolve()
+	if(port)
+		. += span_notice("It is registered to [port.name].")
+	else
+		. += span_warning("It is not registered to any vessel. A thruster only counts once the tile \
+			under it is part of a ship's hull - bolt it down on the ship's own deck, normally along \
+			the outer edge. On a scratch-built ship, plating outside the surveyed hull does not \
+			count until a hull survey claims it.")
+	if(!enabled)
+		. += span_warning("It has been switched off by hand. Click it to switch it back on.")
+
+/**
+ * Why this thruster is missing from the helm, or registered but producing nothing - one
+ * plain sentence for the helm's engine refresh to read back, or null when it is healthy.
+ * `port` is the hull doing the asking.
+ */
+/obj/machinery/power/shuttle_engine/ship/proc/link_refusal_reason(obj/docking_port/mobile/port)
+	if(!port)
+		return null
+	if(!(src in port.engine_list))
+		if(!anchored)
+			return "not wrenched to the deck."
+		var/area/mount_area = get_area(src)
+		if(!port.shuttle_areas[mount_area])
+			return "the tile under it is not part of the hull. A thruster only registers on the \
+				ship's own deck - claim that tile into the hull with a hull survey, then refresh again."
+		return "not registered. Wrench it loose and bolt it back down to re-register it."
+	update_engine()
+	if(panel_open)
+		return "its maintenance panel is open."
+	if(!enabled)
+		return "switched off by hand. Click it in person to switch it back on."
+	return thrust_refusal_reason()
+
+/**
+ * The thrust-specific half of link_refusal_reason(), split out so each engine family can
+ * name its own missing prerequisite instead of a generic shrug. Null when healthy.
+ */
+/obj/machinery/power/shuttle_engine/ship/proc/thrust_refusal_reason()
+	if(!thruster_active)
+		return "not producing thrust."
+	return null
+
+/**
+ * A thruster bolted down on ground no ship owns will never appear on any helm, and
+ * nothing else ever says so - the wrench click is the one moment the builder is standing
+ * right there, so tell them now instead of letting the helm list nothing later.
+ */
+/obj/machinery/power/shuttle_engine/ship/default_unfasten_wrench(mob/user, obj/item/tool, time = 20)
+	. = ..()
+	if(. == SUCCESSFUL_UNFASTEN && anchored && !connected_ship_ref?.resolve())
+		balloon_alert(user, "no vessel claims this tile!")
+		to_chat(user, span_warning("[src] is bolted down, but the tile under it is not part of any \
+			ship's hull, so no helm will register it. Mount it on your ship's own deck - on a \
+			scratch-built hull, the tile has to be claimed by a hull survey first."))
+
 /obj/machinery/power/shuttle_engine/ship/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
 	if(!do_after(user, MIN_TOOL_SOUND_DELAY, target=src))

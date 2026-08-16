@@ -97,6 +97,12 @@
 			if(clothes_check.get_armor_rating(WOUND))
 				exposed_wound_bonus = 0
 				break
+		// VOIDCREW EDIT START - D6: physiology wound armor (subdermal chrome like
+		// Dermal Mesh / Slabskin Plate) counts as coverage too, matching the
+		// ablation it now contributes in check_woundings_mods() below.
+		if(human_wearer.physiology?.armor.get_rating(WOUND))
+			exposed_wound_bonus = 0
+		// VOIDCREW EDIT END
 
 	for (var/datum/wound/iterated_path as anything in possible_wounds)
 		for (var/datum/wound/existing_wound as anything in wounds)
@@ -262,6 +268,12 @@
 					clothes.take_damage_zone(body_zone, damage, BRUTE)
 				else if(wounding_type == WOUND_BURN)
 					clothes.take_damage_zone(body_zone, damage, BURN)
+		// VOIDCREW EDIT START - D6: wound armor living in physiology (subdermal
+		// chrome) was dead: this proc only ever tabulated worn clothing, so the
+		// `wound` ratings on /datum/armor/cyberware_dermal_mesh and
+		// /datum/armor/cyberware_slabskin never applied to anything.
+		armor_ablation += human_owner.physiology?.armor.get_rating(WOUND) || 0
+		// VOIDCREW EDIT END
 
 	injury_mod += wound_bonus
 

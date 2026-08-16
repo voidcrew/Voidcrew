@@ -29,6 +29,9 @@
 	var/capacitor_rating = max(total_part_rating(/datum/stock_part/capacitor), 1)
 	var/bin_rating = max(total_part_rating(/datum/stock_part/matter_bin), 1)
 
-	power_gen = round(base_power_gen * capacitor_rating * 2)
+	// Linear in capacitor tier: a tier-1 build matches stock tg's flat output exactly,
+	// upgrades scale it up to 4x. (The old *2 doubled even an unupgraded build and
+	// topped out at 8x tg's 40 kW ceiling.)
+	power_gen = round(base_power_gen * capacitor_rating)
 	max_sheets = base_max_sheets * bin_rating * bin_rating
 	consumption = total_part_rating(/datum/stock_part/micro_laser)

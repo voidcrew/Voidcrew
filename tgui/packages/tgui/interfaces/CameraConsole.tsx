@@ -21,6 +21,7 @@ type Data = {
   can_spy: BooleanLike;
   mapRef: string;
   network: string[];
+  networkNames?: string[]; // VOIDCREW EDIT - human-readable network names
 };
 
 type Camera = {
@@ -109,11 +110,20 @@ export const CameraContent = (props) => {
 const CameraSelector = (props) => {
   const { act, data } = useBackend<Data>();
   const { searchText, setSearchText } = props;
-  const { activeCamera } = data;
+  const { activeCamera, networkNames = [] } = data;
   const cameras = selectCameras(data.cameras, searchText);
 
   return (
     <Stack fill vertical>
+      {/* VOIDCREW EDIT ADDITION START - show which camera network this console watches */}
+      {networkNames.length > 0 && (
+        <Stack.Item>
+          <NoticeBox info mb={0}>
+            Network: {networkNames.join(', ')}
+          </NoticeBox>
+        </Stack.Item>
+      )}
+      {/* VOIDCREW EDIT ADDITION END */}
       <Stack.Item>
         <Input
           autoFocus

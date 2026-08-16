@@ -20,6 +20,7 @@
 		"plasmaman_gas_filter",
 		"analyzer",
 		"pipe_painter",
+		"rpd_loaded", // VOIDCREW EDIT: moved here from the tier-3 Fusion node; ships need pipe repair from roundstart and Fusion is hours away (BAL-6)
 	)
 
 /datum/techweb_node/gas_compression
@@ -82,7 +83,7 @@
 		"HFR_waste_output",
 		"adv_fire_extinguisher",
 		"bolter_wrench",
-		"rpd_loaded",
+		// VOIDCREW EDIT: "rpd_loaded" moved to the starting Atmospherics node (BAL-6)
 		"engine_goggles",
 		"crystallizer",
 	)

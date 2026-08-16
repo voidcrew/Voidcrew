@@ -1108,7 +1108,7 @@
  */
 /datum/action/cooldown/spell/vestige_recall_anchor
 	name = "Recall Anchor"
-	desc = "Teleport back to your anchor tag. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
+	desc = "Teleport back to your anchor tag, from anywhere on the same world. It cannot reach a tag on a ship out in space or on another world. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "vortex_recall"
 	background_icon_state = "bg_alien"
@@ -1174,7 +1174,9 @@
 		return . | SPELL_CANCEL_CAST
 	if(!here || here.z != destination.z)
 		owner.balloon_alert(owner, "anchor out of reach!")
-		to_chat(owner, span_warning("The tag answers faintly, from somewhere the pull cannot reach."))
+		// Say the rule out loud: players who left the tag on a ship now in orbit
+		// read the old vague line as the power being broken (round 14)
+		to_chat(owner, span_warning("The tag answers faintly from another space entirely. The pull only reaches a tag on the same world - it cannot cross to a ship out in space."))
 		return . | SPELL_CANCEL_CAST
 	// The wind-up lives here rather than in cast(): a broken pull cancels the
 	// whole cast, so it pays no recharge at all. Standing still IS the cost

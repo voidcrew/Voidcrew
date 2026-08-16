@@ -575,13 +575,17 @@
 /// Called when the target ship breaks free via shield burst
 /// Similar to cancel_interdiction but doesn't clear interdiction on target (they already did that)
 /obj/machinery/ship_combat/interdictor/proc/on_target_broke_free()
+	var/was_locked = interdiction_active
 	interdiction_active = FALSE
 	interdiction_warming_up = FALSE
 	warmup_progress = 0
 
-	// Reset cooldown - shield burst means the attacker can't immediately re-interdict
-	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
-	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
+	// A burst out of a completed lock leaves the target shieldless for ~47s - rearm fast
+	// enough to contest that window rather than eating the full 5-minute cooldown for an
+	// engagement the target paid its whole shield pool to escape. A break during warmup
+	// charges nothing, mirroring cancel_interdiction(): the lock never completed.
+	if(was_locked)
+		COOLDOWN_START(src, interdict_cooldown, INTERDICTOR_BURST_BREAK_COOLDOWN * cooldown_mult)
 
 	// Stop processing
 	end_processing()

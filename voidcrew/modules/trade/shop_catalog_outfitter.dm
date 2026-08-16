@@ -394,7 +394,7 @@
 /datum/shop_sku/outfitter/engine_oil
 	category = "Ship Systems"
 	name = "oil thruster board"
-	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. There's no lathe design for it anywhere, so the depot is the only source."
+	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. Buying one here skips the shuttle research your lathe would need to print it."
 	item_path = /obj/item/circuitboard/machine/engine/oil
 	price_credits = 4200
 	stock_min = 1

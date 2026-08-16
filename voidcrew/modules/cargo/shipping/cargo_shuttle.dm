@@ -595,13 +595,17 @@
  * Completely destroys the shuttle - deletes all turfs and objects
  */
 /datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
-	// Clean up transit dock and its reservation FIRST
+	// Clean up transit dock and its reservation FIRST. Must be forced: every docking
+	// port answers a bare qdel() with QDEL_HINT_LETMELIVE, and transit/Destroy() does
+	// ALL of its cleanup - unregistering, freeing the reservation, nulling `owner` -
+	// inside if(force). The old non-forced qdel was a no-op that left the port alive
+	// with `owner` still pointing at the supply shuttle, which is the one ref that
+	// hard-deleted the shuttle on every teardown (see release_assigned_transit()).
 	if(transit_dock && !QDELETED(transit_dock))
-		// Release the turf reservation if it exists
 		if(transit_dock.reserved_area)
 			qdel(transit_dock.reserved_area)
 			transit_dock.reserved_area = null
-		qdel(transit_dock)
+		qdel(transit_dock, force = TRUE)
 	transit_dock = null
 
 	if(!shuttle_port || QDELETED(shuttle_port))

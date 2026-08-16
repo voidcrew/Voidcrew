@@ -83,9 +83,11 @@
 /obj/item/mod/module/clamp/on_part_deactivation(deleting = FALSE)
 	if(deleting)
 		return
-	for(var/atom/movable/crate as anything in stored_crates)
+	// VOIDCREW EDIT: removing mid-walk skipped every other crate, leaving them stuck
+	// inside the deactivated module (and pinned by this list if later deleted)
+	for(var/atom/movable/crate in stored_crates)
 		crate.forceMove(drop_location())
-		stored_crates -= crate
+	stored_crates.Cut()
 
 /obj/item/mod/module/clamp/proc/check_crate_pickup(atom/movable/target)
 	if(length(stored_crates) >= max_crates)
@@ -200,12 +202,26 @@
 			return
 		break
 	ore.forceMove(src)
+	// VOIDCREW EDIT: forceMove into the bag runs stack merge_with_loc(), which can
+	// merge the stack away entirely and qdel it (the loop above breaks on the first
+	// can_merge() match even when that stack was full and took nothing). Appending
+	// the dead stack pinned it in this round-long list forever - one hard delete per
+	// pickup once the bag held a full stack of that ore (round 4: ~380 of them, 170 s).
+	if(QDELETED(ore))
+		return
 	ores += ore
 
+// VOIDCREW EDIT: keep the bookkeeping list honest however ore leaves - dumped,
+// stolen out by hand, or deleted (qdel nullspaces contents through Exited)
+/obj/item/mod/module/orebag/Exited(atom/movable/gone, direction)
+	. = ..()
+	ores -= gone
+
 /obj/item/mod/module/orebag/on_use()
-	for(var/obj/item/ore as anything in ores)
+	// VOIDCREW EDIT: iterate a copy - Exited() now prunes ores on each forceMove,
+	// and the old explicit `ores -= ore` mid-walk skipped every other stack anyway
+	for(var/obj/item/ore in ores.Copy())
 		ore.forceMove(drop_location())
-		ores -= ore
 	drain_power(use_energy_cost)
 
 /obj/item/mod/module/hydraulic

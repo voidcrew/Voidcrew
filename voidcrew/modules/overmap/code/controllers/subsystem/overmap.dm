@@ -14,13 +14,25 @@ Performance Note:
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
 	wait = 10 // Fires every 1 second (10 deciseconds)
-	init_order = INIT_ORDER_OVERMAP
+	init_order = INIT_ORDER_OVERMAP // NOTE: dead - the MC overwrites init_order from the dependency graph (see Master/Initialize)
 	flags = NONE
 	// LOBBY is in here so the roundstart planets can generate while players are still
 	// picking characters - see prebuild_roundstart_planets()
 	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_SETUP | RUNLEVEL_GAME
+	// Init ordering is purely dependency-topological now. With only mapping declared,
+	// the MC initialized SSovermap BEFORE SSatoms/SSair/SSlighting, so spawn_initial_ship()
+	// (plus the space ruin / trader outpost loads) placed a whole hull whose atoms were
+	// still uninitialized, then action_load() immediately shuttle-moved it to transit:
+	// ~350 runtimes on every boot (null turf air -> null.copy_from()/remove_ratio(),
+	// null atmospherics node lists in lateShuttleMove, doubled lighting objects).
+	// These dependencies push our init after the world is actually ready to load ships,
+	// making the roundstart hull load identical to the proven mid-round purchase path.
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
+		/datum/controller/subsystem/atoms, // template loads must initialize their atoms (initTemplateBounds no-ops pre-SSatoms)
+		/datum/controller/subsystem/air, // hull turfs need real gas mixtures before the transit move copies air around
+		/datum/controller/subsystem/lighting, // otherwise SSlighting's whole-map sweep double-builds every hull lighting object
+		/datum/controller/subsystem/shuttle, // create_ship()/action_load() run during our Initialize
 	)
 
 	/// Centre of the overmap
@@ -35,6 +47,8 @@ SUBSYSTEM_DEF(overmap)
 	var/list/map_zones = list()
 	///List of all simulated ships
 	var/list/simulated_ships = list()
+	/// world.time of the next derelict occupancy sweep - see sweep_derelicts()
+	var/next_derelict_sweep = 0
 	/// List of NPC ships that need mass recalculated (damaged ships)
 	/// Used for performance - NPC ships cache mass and only recalc when damaged
 	var/list/dirty_npc_ships = list()
@@ -101,6 +115,19 @@ SUBSYSTEM_DEF(overmap)
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
 		if(QDELETED(ship))
 			simulated_ships -= ship
+			continue
+		// A dock, undock or approach whose callback chain was lost leaves the ship pinned in
+		// a state that greys out every helm control, with nothing else in the game able to
+		// clear it. Polled rather than timer-armed on purpose - see check_manoeuvre_stalled().
+		ship.check_manoeuvre_stalled()
+
+	// Derelict lifecycle: crewless hulls abandon, abandoned hulls eventually despawn.
+	// Gated on the round actually running - this subsystem also fires through the lobby
+	// (for the planet prebuild), and a long lobby hold must not run the crewless clock
+	// against roundstart hulls nobody has been able to board yet.
+	if(SSticker.IsRoundInProgress() && world.time >= next_derelict_sweep)
+		next_derelict_sweep = world.time + DERELICT_SWEEP_INTERVAL
+		sweep_derelicts()
 
 	// A build or teardown that runtimed partway through never released the worldgen
 	// queue, and everything waiting on it would sit there for the rest of the round.
@@ -118,6 +145,65 @@ SUBSYSTEM_DEF(overmap)
 	if(!roundstart_planets_prebuilt && Master.init_stage_completed == INITSTAGE_MAX)
 		roundstart_planets_prebuilt = TRUE
 		INVOKE_ASYNC(src, PROC_REF(prebuild_roundstart_planets))
+
+/**
+ * Once-a-minute derelict bookkeeping over the whole fleet. Occupancy is the only
+ * signal: living, connected players physically aboard (get_event_crew()). Two clocks
+ * run off it, in sequence:
+ *
+ * 1. A hull with nobody aboard for SHIP_CREWLESS_ABANDON_TIME is abandoned - the
+ *    claimable-derelict state. This is the trigger crew death alone never provided:
+ *    a crew that logs off, cryos out or walks away is an abandoned ship too, and
+ *    deliberately there are no carve-outs for crews that are planetside, dead or
+ *    logged off. Getting the ship back afterwards is one claim at the helm. A hull
+ *    that never carried a crew at all (roundstart spares, latejoin free hulls nobody
+ *    took) skips the derelict window - there is nothing aboard worth exploring and
+ *    no claim to honour.
+ * 2. An abandoned hull older than SHIP_DERELICT_DESPAWN_TIME despawns for good via
+ *    despawn_derelict(). Anyone physically aboard postpones that; claiming cancels it.
+ *
+ * At most one hull despawns per sweep: teardown is the expensive part (HardDelete
+ * has been measured at 600+ ms per call late in a long round), and the sweep comes
+ * back in a minute anyway.
+ *
+ * Live NPC ships are exempt from clock 1 - their crews are NPCs, so player occupancy
+ * says nothing about them and their own crew-death tracking drives abandonment. Once
+ * abandoned (or claimed by players) they are subject to the same rules as any hull,
+ * which is what finally stops every killed pirate leaving a permanent wreck.
+ */
+/datum/controller/subsystem/overmap/proc/sweep_derelicts()
+	var/despawned_one = FALSE
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+		if(QDELETED(ship))
+			continue
+		if(length(ship.get_event_crew()))
+			ship.crewless_since = 0
+			continue
+		if(!ship.crewless_since)
+			ship.crewless_since = world.time
+			continue
+		if(ship.abandoned)
+			if(!ship.abandoned_at) // flagged before this clock existed - start it now
+				ship.abandoned_at = world.time
+				continue
+			if(despawned_one || world.time - ship.abandoned_at < SHIP_DERELICT_DESPAWN_TIME)
+				continue
+			despawned_one = ship.despawn_derelict()
+			continue
+		if(istype(ship, /obj/structure/overmap/ship/npc))
+			var/obj/structure/overmap/ship/npc/npc_ship = ship
+			if(!npc_ship.player_controlled)
+				continue
+		if(world.time - ship.crewless_since < SHIP_CREWLESS_ABANDON_TIME)
+			continue
+		if(!length(ship.manifest) && !LAZYLEN(ship.ship_team?.members))
+			// Never crewed: straight to despawn, no derelict window
+			if(!despawned_one)
+				log_shuttle("[ship.name]: never crewed and empty for [(world.time - ship.crewless_since) / 600] minutes - despawning without a derelict window.")
+				despawned_one = ship.despawn_derelict()
+			continue
+		log_shuttle("[ship.name]: no crew aboard for [(world.time - ship.crewless_since) / 600] minutes - abandoning.")
+		ship.abandon_ship(crash = TRUE) // only actually crashes a hull that is in flight
 
 /**
  * Generates the roundstart planets during the pre-round lobby.
@@ -267,6 +353,55 @@ SUBSYSTEM_DEF(overmap)
 	overmap_area.reg_in_areas_in_z()
 	// not actually the centre but close enough
 	overmap_centre = get_turf(locate((OVERMAP_LEFT_SIDE_COORD + ((OVERMAP_SIZE - 1) / 2)) - 1, (OVERMAP_SOUTH_SIDE_COORD + ((OVERMAP_SIZE - 1) / 2)) - 1, OVERMAP_Z_LEVEL))
+
+	relocate_lobby()
+
+/**
+ * Moves the pre-round lobby off the live overmap.
+ *
+ * The tg lobby anchor (the new_player landmark in CentCom.dmm, /area/misc/start) sits
+ * in the top-left corner of the centcom z - the exact block create_map() just turned
+ * into the live overmap. Left alone, everyone in the lobby is parked ON an overmap
+ * tile and can watch real ships and planets drift past the title menu before they
+ * have even joined the round, which players were openly using to metagame (scouting
+ * planets and ship positions from the lobby).
+ *
+ * So: strip every lobby spawn point that falls inside the overmap block, park the
+ * lobby over an empty corner of the same z far outside it, and sweep any player who
+ * already spawned onto the old spot. The lobby keeps its overmap look through a
+ * static starfield backdrop on the lobby HUD instead
+ * (/atom/movable/screen/lobby/starfield, voidcrew/edits/mobs/new_player.dm).
+ */
+/datum/controller/subsystem/overmap/proc/relocate_lobby()
+	// Far top-right corner of the centcom z: empty space in CentCom.dmm, and nothing
+	// is ever runtime-spawned there (ships, hangars and planets all load into
+	// reserved z-levels; the overmap block is the only thing built onto this z).
+	var/turf/safe_lobby_turf = locate(max(world.maxx - 16, OVERMAP_RIGHT_SIDE_COORD + 10), world.maxy - 16, OVERMAP_Z_LEVEL)
+	if(isnull(safe_lobby_turf) || is_turf_in_overmap_block(safe_lobby_turf))
+		stack_trace("relocate_lobby() could not find a turf outside the overmap block - lobby players can see the live overmap!")
+		return
+
+	var/list/sanitized_starts = list()
+	for(var/atom/start_loc as anything in GLOB.newplayer_start)
+		var/turf/start_turf = get_turf(start_loc)
+		if(start_turf && is_turf_in_overmap_block(start_turf))
+			continue
+		sanitized_starts += start_loc
+	if(!length(sanitized_starts))
+		sanitized_starts += safe_lobby_turf
+	GLOB.newplayer_start = sanitized_starts
+
+	// Anyone who connected before this ran was spawned onto the old landmark
+	for(var/mob/dead/new_player/lobby_player as anything in GLOB.new_player_list)
+		var/turf/player_turf = get_turf(lobby_player)
+		if(player_turf && is_turf_in_overmap_block(player_turf))
+			lobby_player.forceMove(pick(GLOB.newplayer_start))
+
+/// Whether this turf lies inside the overmap's block on the centcom z (edge included).
+/datum/controller/subsystem/overmap/proc/is_turf_in_overmap_block(turf/checked_turf)
+	if(checked_turf.z != OVERMAP_Z_LEVEL)
+		return FALSE
+	return checked_turf.x >= OVERMAP_LEFT_SIDE_COORD && checked_turf.x <= OVERMAP_RIGHT_SIDE_COORD && checked_turf.y >= OVERMAP_SOUTH_SIDE_COORD && checked_turf.y <= OVERMAP_NORTH_SIDE_COORD
 
 /datum/controller/subsystem/overmap/proc/setup_sun()
 	var/turf/open/overmap/centre_tile = overmap_centre
@@ -578,10 +713,11 @@ SUBSYSTEM_DEF(overmap)
 	if(dynamic_planets_per_type > 1)
 		planet_to_spawn.designation = planet_designation(pass)
 
-	// SSovermap initializes before SSatoms, so the marker's Initialize() - which is
-	// what normally copies the planet datum's identity onto it - has not run yet and
-	// will not until SSatoms drains its queue. Copy the identity across now so the
-	// contact is never briefly a nameless "weak energy signature".
+	// Copy the planet datum's identity onto the marker now, rather than waiting on
+	// Initialize(), so the contact is never briefly a nameless "weak energy signature".
+	// Redundant since SSovermap gained its SSatoms dependency (Initialize() runs on the
+	// spot now), but kept because it is what makes the designation suffix survive - see
+	// apply_planet_identity().
 	planet_to_spawn.apply_planet_identity()
 
 	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded[planet_to_spawn.prebuild_at_roundstart ? ", prebuilt" : ""]) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")

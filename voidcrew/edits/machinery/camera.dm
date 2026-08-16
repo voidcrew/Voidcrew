@@ -35,6 +35,32 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port = SSshuttle.get_containing_shuttle(machine)
 	return istype(ship_port) ? ship_port : null
 
+/**
+ * Human-readable name for a camera network key.
+ *
+ * Per-ship keys are internal ref strings ("ship_[0x...]"), useless to a player
+ * asking "what network is this?". Reverse-resolve them to the owning ship's
+ * name; every other key (colosseum, ss13, ...) already reads fine as-is.
+ * Console Initialize() lowercases its keys, so compare case-insensitively.
+ */
+/proc/voidcrew_camera_net_display_name(net_key)
+	for(var/obj/docking_port/mobile/voidcrew/port in SSshuttle.mobile_docking_ports)
+		if(LOWER_TEXT(voidcrew_ship_camera_net(port)) == LOWER_TEXT(net_key))
+			var/ship_name = port.current_ship ? port.current_ship.name : port.name
+			return "[ship_name] (ship-local)"
+	return net_key
+
+/// Tell players what network the console is tuned to - there was no in-game way
+/// to learn a ship's camera network name at all.
+/obj/machinery/computer/security/examine(mob/user)
+	. = ..()
+	if(!length(network))
+		return
+	var/list/names = list()
+	for(var/net in network)
+		names += voidcrew_camera_net_display_name(net)
+	. += span_notice("It is tuned to the [english_list(names)] camera network[length(names) == 1 ? "" : "s"].")
+
 /obj/machinery/camera/post_machine_initialize()
 	. = ..()
 	// Bind to the ship we're physically on. Mapped ship cameras are (re)bound by

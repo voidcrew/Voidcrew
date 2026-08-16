@@ -225,6 +225,12 @@
 	target.shields_broken = TRUE
 	COOLDOWN_START(target, shield_reactivation_cooldown, max(duration, COOLDOWN_TIMELEFT(target, shield_reactivation_cooldown)))
 	imposed_end = world.time + COOLDOWN_TIMELEFT(target, shield_reactivation_cooldown)
+	// The shields-off path above forces shields_broken without break_ship_shields(),
+	// which is what normally starts ship processing - the only thing that ever clears
+	// the flag once the cooldown ends. Without this, a lost on_expire() (attacker
+	// deleted mid-window) left the target refusing shield activation for the rest of
+	// the round with no message anywhere. Idempotent when already processing.
+	target.start_shield_processing()
 
 	var/sparked = 0
 	for(var/obj/machinery/ship_combat/shield_generator/gen in target.linked_shield_generators)

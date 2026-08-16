@@ -11,6 +11,14 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define BB_NPC_COMBAT_STATE "npc_combat_state"        // idle/engaging/combat
 #define BB_NPC_RETREAT_REASON "npc_retreat_reason"    // Why we're retreating (siphon_goal, no_weapons)
 #define BB_NPC_LAST_TARGET "npc_last_target"          // Who we were fighting before retreating
+#define BB_NPC_RETREAT_START "npc_retreat_start"      // world.time the current retreat began (stamped by set_combat_state)
+
+/// Hard cap on how long a ship stays in RETREATING before writing the encounter off and
+/// returning to patrol. The distance-based escape (15+ tiles from the last target) is
+/// unreachable for a zone-confined ship whose chaser simply stays nearby - round 4 left
+/// two pirates wedged in RETREATING for 21 hours (156,929 retreat_escape calls against a
+/// single return_to_patrol all round), which emptied the yellow band of working pirates.
+#define NPC_RETREAT_TIME_LIMIT (2 MINUTES)
 
 // Movement blackboard keys
 #define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // patrol/chase/return_to_route/roaming
@@ -177,6 +185,22 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 
 // How long to remember a scanned ship before re-scanning (5 minutes)
 #define NPC_SCAN_MEMORY_TIME (5 MINUTES)
+
+// ========== PARKED-SHIP RECOVERY ==========
+// Both AI subtrees stand down whenever the ship isn't OVERMAP_SHIP_FLYING, and nothing
+// else in the game ever undocks an NPC hull - so before the recovery behavior existed,
+// a single player force-dock (or a crash-land) was a permanent kill switch for that
+// ship's AI. Round 4's Ghostship docked at 04:34 and sat AI-silent for the rest of a
+// 22-hour round with its crew alive aboard.
+
+/// world.time the AI first noticed its ship parked (state != FLYING). Cleared, with a
+/// log line, the first planning pass after the ship is flying again.
+#define BB_NPC_PARKED_SINCE "npc_parked_since"
+/// How long a ship must have been parked before the AI tries to undock and resume
+/// patrol. Longer than the 2 minute interdictor force-dock lockout on purpose, so a
+/// force-docked pirate doesn't launch back out into the face of whoever boarded it the
+/// second its clamps release. INVENTED value, not playtested.
+#define NPC_PARKED_RECOVERY_DELAY (3 MINUTES)
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"

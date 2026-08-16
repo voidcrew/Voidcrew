@@ -1,26 +1,19 @@
-// The Verdigris: galaxy-wide lich raid event.
-// See voidcrew/modules/lich/lich_site.dm for the site + ritual engine.
+// The Verdigris: galaxy-announced, opt-in lich raid event.
+// See voidcrew/modules/lich/lich_site.dm for the site + status beacon.
 
 // ===== SPAWN SCHEDULE =====
 
 /// Earliest the lair may surface. Deliberately late-round, later even than the
 /// Grand Colosseum's 40 minute gate (COLOSSEUM_EARLIEST_SPAWN), because this is
 /// a strictly heavier ask than the colosseum: a four-layer assault on a
-/// megafauna-tier boss, and until someone clears it the ritual ramp is making the
-/// whole galaxy worse. Crews need to be armed, fed, flying and ideally willing to
-/// cooperate across ships before it lands.
-///
-/// Note the ramp tail this implies: potency caps at LICH_MAX_POTENCY roughly
-/// LICH_FIRST_RITUAL_DELAY + (LICH_MAX_POTENCY * LICH_RITUAL_INTERVAL) after the
-/// lair surfaces (~30 min), so the worst of the galaxy-wide pressure starts
-/// landing around the two and a half hour mark. Pushing this define later shifts
-/// that whole tail with it.
+/// megafauna-tier boss. Crews need to be armed, fed, flying and ideally willing
+/// to cooperate across ships before it lands.
 #define LICH_FIRST_SPAWN_TIME (120 MINUTES)
 /// Percent chance, rolled ONCE per round at overmap init, that the lich happens at
-/// all. He is a round-defining set piece, a galaxy-wide pressure ramp plus a raid
-/// nobody can ignore, and a set piece that shows up every single round stops being
-/// one. At 30% a crew sees him occasionally rather than as a scheduled fixture, and
-/// the rounds he skips are quieter on purpose.
+/// all. He is a round-defining set piece, a standing raid offer the whole galaxy
+/// is invited to answer, and a set piece that shows up every single round stops
+/// being one. At 30% a crew sees him occasionally rather than as a scheduled
+/// fixture, and the rounds he skips are quieter on purpose.
 ///
 /// The roll is a one-shot: lose it and the scheduler is never armed, so no amount of
 /// waiting or repopulating brings him back. It does NOT gate the admin verb
@@ -31,27 +24,22 @@
 #define LICH_SPAWN_RETRY (5 MINUTES)
 /// Living, non-AFK players required before the lair will surface. Mirrors the
 /// Grand Colosseum's min_players (colosseum_event.dm), and matters more here:
-/// late-round frequently means LOW POPULATION, and an unanswerable galaxy threat
-/// is worse than no threat. A skeleton crew cannot clear four defense layers, so
-/// the ritual ramp would just grind the rest of the round down with no counter.
-/// The scheduler retries on LICH_SPAWN_RETRY rather than giving up, so a round
-/// that fills back up still gets its lich.
+/// late-round frequently means LOW POPULATION, and a skeleton crew cannot clear
+/// four defense layers, so the site would just sit there unanswerable for the
+/// rest of the round. The scheduler retries on LICH_SPAWN_RETRY rather than
+/// giving up, so a round that fills back up still gets its lich.
 #define LICH_MIN_PLAYERS 4
 /// One lich per round, ever. GLOB.lich_lair enforces it; this documents it.
 #define LICH_MAX_PER_ROUND 1
 
-// ===== RITUAL CLOCK =====
+// ===== STATUS BEACON =====
 
-/// Grace period between the lair surfacing and the first ritual firing, so the
-/// galaxy gets the announcement (and a chance to move) before the ramp starts.
-#define LICH_FIRST_RITUAL_DELAY (2 MINUTES)
-/// Cadence of the ritual clock. Each tick raises potency by one until the cap
-/// and fires one eligible event from the roster.
-#define LICH_RITUAL_INTERVAL (4 MINUTES)
-/// Potency ceiling. Matches upstream's wizard grand-ritual scale
-/// (min/max_wizard_trigger_potency, code/modules/events/_event.dm:28-31), which
-/// the ritual roster reuses as its ramp gate.
-#define LICH_MAX_POTENCY 7
+/// Cadence of the galaxy-wide status beat. The site has no mechanical effect on
+/// anyone who stays away; the beacon exists so crews that formed after he
+/// surfaced (or cleared their helm marker) still know he is out there. Each beat
+/// re-broadcasts one plain status line and re-pushes the fleet waypoint, and the
+/// first beat lands one interval after the surface announcement.
+#define LICH_BEACON_INTERVAL (15 MINUTES)
 
 // ===== DEFENSE LAYERS =====
 // Ward poddoor ids, mapped on /obj/machinery/door/poddoor in lich_lair.dmm and

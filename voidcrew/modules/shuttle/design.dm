@@ -8,6 +8,15 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
+// The oil thruster was the only engine with no design datum at all, so it could never
+// be researched or printed and the outfitter depot was its single source. Players
+// ahelped about it in rounds 14/15; it sits in basic shuttle research with its peers.
+/datum/design/board/engine/oil
+	name = "Machine Design (Oil Thruster Board)"
+	desc = "The circuit board for an oil thruster, which burns liquid fuel instead of gas."
+	id = "engine_oil"
+	build_path = /obj/item/circuitboard/machine/engine/oil
+
 /datum/design/board/engine/void
 	name = "Machine Design (Void Thruster Board)"
 	desc = "The circuit board for a void thruster."

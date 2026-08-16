@@ -75,6 +75,7 @@
 /obj/item/organ/cyberimp/cyberware/examine(mob/user)
 	. = ..()
 	. += span_notice("Neural load: <b>[chrome_load]</b>[chrome_capacity_bonus ? ", grants +[chrome_capacity_bonus] chrome capacity" : ""]. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += cyberware_emp_examine_line()
 
 /obj/item/organ/cyberimp/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -152,6 +153,7 @@
 	. = ..()
 	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 	. += span_notice("Diagnostic bus: [chrome_scan_resolution >= CYBERWARE_SCAN_ITEMIZED ? "reads a body's chrome piece by piece" : "counts a body's chrome signatures, but can't name them"].")
+	. += cyberware_emp_examine_line()
 
 /obj/item/organ/eyes/robotic/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -222,6 +224,7 @@
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/examine(mob/user)
 	. = ..()
 	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
+	. += cyberware_emp_examine_line()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
 	if(!special && !cyberware_can_insert(src, receiver))
@@ -337,6 +340,48 @@
 		return FALSE
 	chrome.clear_install_context()
 	return TRUE
+
+// ---- Failing-gated passive layer ---------------------------------------
+
+/**
+ * Always-on chrome effects (physiology armor and mods, organ_traits) used to
+ * survive ORGAN_FAILING untouched: an EMP'd Slabskin still armored you, an
+ * EMP'd Coolant Loop still halved burns, and so EMP never actually countered
+ * a chromed-out body (BAL-4). These two hooks are the fix. The cyberware
+ * component calls them, edge-triggered off its passives_online latch, whenever
+ * the ware's effective failing state settles: EMP reboot, brownout, damage
+ * failure, cradle tune-up, install and removal all route through the same
+ * pair, so a passive is DOWN whenever the chrome reads as offline and back
+ * the moment it repairs. Nothing here is permanent; the ripperdoc/cradle
+ * repair path is untouched.
+ *
+ * The base pair handles the ware's organ_traits with tg's own bookkeeping
+ * (same REF(src) source on_mob_insert uses, so add/remove is idempotent
+ * against the parent's grants). Subtypes layer their physiology work on top
+ * and MUST keep it idempotent, non-idempotent mods (multiply/divide, armor
+ * add/subtract) carry their own applied-state bool because the off hook can
+ * legitimately run when nothing is applied (inserting an already-EMP'd ware).
+ */
+/obj/item/organ/proc/chrome_passives_on(mob/living/carbon/bearer)
+	SHOULD_CALL_PARENT(TRUE)
+	if(isnull(bearer))
+		return
+	for(var/trait in organ_traits)
+		ADD_TRAIT(bearer, trait, REF(src))
+
+/obj/item/organ/proc/chrome_passives_off(mob/living/carbon/bearer)
+	SHOULD_CALL_PARENT(TRUE)
+	if(isnull(bearer))
+		return
+	for(var/trait in organ_traits)
+		REMOVE_TRAIT(bearer, trait, REF(src))
+
+/// The EMP line every piece of chrome carries on examine. One place, so the
+/// number and the wording can't drift between the three cyberware bases. The
+/// weakness was always in the design and never legible on the item itself;
+/// now that it actually bites (BAL-4), it says so where people read it.
+/proc/cyberware_emp_examine_line()
+	return span_notice("Electromagnetic pulses scramble chrome. An EMP knocks this offline for up to [DisplayTimeText(CYBERWARE_EMP_DOWNTIME)] and everything it was doing for you stops until it reboots; a Chrome Cradle tune-up clears it early.")
 
 // ---- Ink bus -----------------------------------------------------------
 

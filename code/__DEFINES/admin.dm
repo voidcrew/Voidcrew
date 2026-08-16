@@ -140,8 +140,24 @@
 #define MAX_KEYPRESS_COMMANDLENGTH 16
 ///Maximum keys that can be bound to one button
 #define MAX_COMMANDS_PER_KEY 5
-///Max amount of keypress messages per second over two seconds before client is autokicked
+///Max amount of keypress messages in one (real) second before the client picks up a flood strike
 #define MAX_KEYPRESS_AUTOKICK 50
+// VOIDCREW EDIT ADDITION START - lag-tolerant keysend flood protection. Every number
+// below is INVENTED and UNPLAYTESTED; they were picked to survive the round 6 (2026-08-15)
+// case where ckey viterfly was autokicked twice in 40 seconds, both times while the server
+// was over its tick budget.
+/// How many separate over-threshold seconds a client must rack up before it is autokicked.
+/// A real flood (a plugged-in game controller, a scripted client) trips every consecutive
+/// second and reaches this in about three seconds; a lag spike flushes one buffered burst.
+#define KEYPRESS_FLOOD_STRIKES_TO_KICK 3
+/// Strikes older than this are forgiven, so unrelated spikes minutes apart never add up.
+#define KEYPRESS_FLOOD_STRIKE_MEMORY (30 SECONDS)
+/// Strike count at which the client gets a warning, before any kick.
+#define KEYPRESS_FLOOD_STRIKES_TO_WARN 2
+/// Tick usage above which a keysend burst is assumed to be the server flushing queued
+/// input rather than the client flooding, and so does not earn a strike.
+#define KEYPRESS_FLOOD_LAG_TICK_USAGE 80
+// VOIDCREW EDIT ADDITION END
 ///Length of held key buffer
 #define HELD_KEY_BUFFER_LENGTH 15
 

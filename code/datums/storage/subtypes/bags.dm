@@ -34,6 +34,18 @@
 /datum/storage/bag/ore
 	max_specific_storage = WEIGHT_CLASS_HUGE
 	max_total_storage = 50
+	// VOIDCREW EDIT ADDITION START - the ore bag never set max_slots, so it inherited the
+	// /datum/storage default of 7. can_insert() checks the slot count before the item is
+	// moved in, so stack merging never gets a chance: once seven ore stacks are in the bag
+	// it refuses everything, including ore that would have merged into a half-empty stack
+	// of the same type. There are ten ore types, so a miner on a mixed planet could jam the
+	// bag with seven single chunks and then silently collect nothing (silent_for_user hides
+	// the "no room!" alert). That is what ate a miner's iron in round 4 of the 14/15
+	// playtest. 25 slots leaves room for every ore type plus repeats, so the weight cap
+	// above - which was always meant to be the real limit - is the one that binds.
+	// Slot count is invented and unplaytested; the 50-weight cap is unchanged.
+	max_slots = 25
+	// VOIDCREW EDIT ADDITION END
 	silent_for_user = TRUE
 
 /datum/storage/bag/ore/New(atom/parent, max_slots, max_specific_storage, max_total_storage, rustle_sound, remove_rustle_sound)

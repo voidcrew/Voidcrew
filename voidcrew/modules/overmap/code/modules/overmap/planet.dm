@@ -52,11 +52,11 @@
  * Copies the planet datum's identity - name, description, appearance, weather, parallax -
  * onto the overmap contact.
  *
- * Called from Initialize(), and again by hand from SSovermap.setup_planets(): SSovermap
- * initializes before SSatoms, so a marker it spawns does not run Initialize() until
- * SSatoms drains its queue, and until then it would sit on the chart as a nameless "weak
- * energy signature". Both paths go through here so the designation suffix survives the
- * second copy instead of being overwritten by the datum's bare name.
+ * Called from Initialize(), and again by hand from SSovermap.setup_planets(). Both paths
+ * go through here so the designation suffix survives the second copy instead of being
+ * overwritten by the datum's bare name. (The hand call dates from when SSovermap
+ * initialized before SSatoms and a marker it spawned sat on the chart as a nameless "weak
+ * energy signature" until SSatoms drained its queue; SSovermap now depends on SSatoms.)
  */
 /obj/structure/overmap/planet/proc/apply_planet_identity()
 	if(!planet)
@@ -361,6 +361,15 @@
  * Seeds ruins on the surface, using the same budget and ore-vent preset the preloaded
  * planets got. Ruins are placed by rejection sampling against the whitelisted area, so
  * the cordon outside the planet keeps them inside the footprint on its own.
+ *
+ * The cave sibling area has to be whitelisted alongside the surface: terrain generation
+ * has already run by this point and moved half the surface into /cave pockets (see
+ * populate_planet_level()), and the cave type is a SIBLING of the surface type, not a
+ * subtype, so the typecache doesn't cover it. With the surface alone, nearly every
+ * candidate footprint touches a cave turf and is rejected - the seeder then burns its
+ * full PLACEMENT_TRIES * PLACEMENT_TRIES sample budget per ruin scanning footprints
+ * that can never pass. Roundstart seeding (setup_ruins()) correctly whitelists only the
+ * surface because it runs BEFORE the terrain sweep carves any caves.
  */
 /obj/structure/overmap/planet/proc/seed_planet_ruins(datum/space_level/surface_level, ruin_trait, area/surface_area_type)
 	if(!ruin_trait)
@@ -371,7 +380,7 @@
 	seedRuins(
 		list(surface_level.z_value),
 		CONFIG_GET(number/lavaland_budget),
-		list(surface_area_type),
+		list(surface_area_type, /area/overmap_encounter/planetoid/cave),
 		ruin_templates,
 		clear_below = TRUE,
 		mineral_budget = 15,
@@ -540,7 +549,30 @@
 		if(!dock_to_use)
 			acting.state = prev_state
 			concerned = FALSE
-			to_chat(user, "<span class='notice'>All potential docking locations occupied.</span>")
+			// Two berths is a hard layout limit: PLANET_MIN_SIZE is sized to exactly two
+			// max-size berth rectangles plus padding (see planet_defines.dm), so a third
+			// fixed berth cannot fit on the dock strip, and packing berths by actual hull
+			// size instead is a rework of the shared reserve-dock lifecycle (dock_index
+			// release flags, cargo shuttle claims, reserve-home resets), not a tweak.
+			// Until that lands, at least tell the refused crew who is occupying the
+			// ground and what their options are, instead of a bare "occupied".
+			var/list/parked_names = list()
+			for(var/obj/docking_port/stationary/berth in list(reserve_dock, reserve_dock_secondary))
+				var/obj/docking_port/mobile/parked = berth.get_docked()
+				if(!parked)
+					continue
+				// Not everything that parks here is a player hull - a cargo delivery holds a
+				// berth too, and its port is a stock /supply one with no current_ship var at
+				// all, so the hull name has to come off an istype'd local rather than a
+				// blind typed cast.
+				var/parked_name = "[parked]"
+				if(istype(parked, /obj/docking_port/mobile/voidcrew))
+					var/obj/docking_port/mobile/voidcrew/hull_port = parked
+					if(hull_port.current_ship)
+						parked_name = "[hull_port.current_ship]"
+				parked_names += parked_name
+			var/blocked_by = length(parked_names) ? " The berths are taken by [english_list(parked_names)]." : ""
+			to_chat(user, span_warning("No free landing berths.[blocked_by] Try again when one lifts off - ships abandoned on the surface are eventually cleared away - or plot a custom landing site with an upgraded orbital survey console."))
 			return
 
 		if(!is_survey)

@@ -155,7 +155,8 @@
  * and wirecutters fold out of the fingertips, and servo-assisted hands
  * run every timed action a quarter faster while the implant is in, the
  * speed is the part the fab can't print. The actionspeed modifier applies
- * on install, tools out or not; your hands are simply better now.
+ * whenever the ware is running, tools out or not; your hands are simply
+ * better now (until an EMP or a brownout takes the servos offline).
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	name = "\improper Fixer's Fingers"
@@ -170,12 +171,16 @@
 		/obj/item/wirecutters/cyborg,
 	)
 
-/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/on_mob_insert(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
+// The tool-speed bonus rides the failing-gated passive layer (BAL-4): servo
+// tendons with an EMP reboot or a brownout are just fingers until the ware
+// comes back. Actionspeed modifiers are keyed by type, so add/remove is
+// idempotent and needs no applied-state guard.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	arm_owner.add_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.add_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
 
-/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	arm_owner.remove_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.remove_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
 
 #undef CYBERWARE_ROCKJAW_SWEEP_DELAY

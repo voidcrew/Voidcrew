@@ -60,6 +60,10 @@
 	var/repair_time = 4 SECONDS
 	/// How long it takes to bolt an unanchored turret into a wall by dragging it there.
 	var/mount_time = 5 SECONDS
+	/// Whether the turret engages hostile wildlife. Off means it holds fire for everything
+	/// except boarding parties, so the crew can farm the local fauna themselves. Toggled by
+	/// alt-clicking the housing; crew of the owning ship only.
+	var/target_wildlife = TRUE
 
 /datum/armor/machinery_ship_defense_turret
 	melee = 0 // Creature swings bypass armor entirely, see attack_generic().
@@ -90,6 +94,87 @@
 /// Silicons hijacking a turret would let them put beams wherever they liked, including into people.
 /obj/machinery/porta_turret/ship_defense/give_control(mob/controller)
 	return FALSE
+
+/**
+ * May this person work the turret's controls?
+ *
+ * A req_access lock is a dead letter here - voidcrew/edits/ship_access.dm opens every
+ * access check inside a crewed hull for whoever is standing in it, boarders included,
+ * and an anti-boarding gun that boarders can switch off is not doing its job. So the
+ * gate is crew membership itself: the panel answers to minds on the owning ship's
+ * team, which is exactly the set of people the turret exists to protect.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/allowed_operator(mob/user)
+	if(isAdminGhostAI(user))
+		return TRUE
+	var/area/shuttle/voidcrew/ship_area = get_area(src)
+	if(!istype(ship_area))
+		return TRUE // Workshop floor, outpost, ruin - nobody's ship, nobody's lock.
+	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
+	if(isnull(ship))
+		return TRUE
+	if(ship.ai_controller) // An NPC hull's defenses answer to nobody until the hull is claimed.
+		return FALSE
+	if(isnull(ship.ship_team) || ship.abandoned) // A derelict is run by whoever is standing in it.
+		return TRUE
+	return !isnull(user.mind) && LAZYFIND(user.mind.ship_teams, ship.ship_team)
+
+/**
+ * Clicking the housing is the on/off switch. This replaces the stock station-turret
+ * TGUI, whose settings (criminals, unauthorized weapons, mindshields) are all about
+ * shooting people - the one thing this turret refuses to do - and whose panel players
+ * reported not being able to find at all. Everything the turret can be told to do is
+ * on the housing itself and spelled out in its examine text.
+ */
+/// No TGUI at all: every remaining path to the stock panel (ghost clicks included) dead-ends
+/// here, so the housing controls in interact() and click_alt() are the whole interface.
+/obj/machinery/porta_turret/ship_defense/ui_interact(mob/user, datum/tgui/ui)
+	return
+
+/obj/machinery/porta_turret/ship_defense/interact(mob/user)
+	update_last_used(user)
+	if(!allowed_operator(user))
+		balloon_alert(user, "controls locked to crew!")
+		return TRUE
+	toggle_on(!on)
+	balloon_alert(user, on ? "turret switched on" : "turret switched off")
+	user.visible_message(
+		span_notice("[user] switches [src] [on ? "on" : "off"]."),
+		span_notice("You switch [src] [on ? "on" : "off"]."),
+	)
+	return TRUE
+
+/**
+ * Swiping an ID does nothing, and says so.
+ *
+ * The stock turret's ID branch flips `locked`, which used to gate the TGUI panel. There is
+ * no panel any more and allowed_operator() decides who may work the controls, so a swipe
+ * would have printed "Controls are now locked." and changed nothing at all - the worst kind
+ * of feedback, since a crew would think they had secured the gun. Every other branch of the
+ * parent (crowbar salvage, wrench bolts) is left alone.
+ */
+/obj/machinery/porta_turret/ship_defense/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	if(!(machine_stat & BROKEN) && attacking_item.GetID())
+		balloon_alert(user, "no card reader")
+		to_chat(user, span_notice("[src] has no card reader. Its controls answer to the crew of the ship it is bolted to."))
+		return TRUE
+	return ..()
+
+/// Alt-click toggles wildlife targeting, leaving the turret watching for boarders only.
+/obj/machinery/porta_turret/ship_defense/click_alt(mob/user)
+	if(machine_stat & BROKEN)
+		balloon_alert(user, "it's wrecked!")
+		return CLICK_ACTION_BLOCKING
+	if(!allowed_operator(user))
+		balloon_alert(user, "controls locked to crew!")
+		return CLICK_ACTION_BLOCKING
+	target_wildlife = !target_wildlife
+	balloon_alert(user, target_wildlife ? "targeting wildlife" : "holding fire on wildlife")
+	user.visible_message(
+		span_notice("[user] adjusts [src]'s targeting computer."),
+		span_notice("You set [src] to [target_wildlife ? "fire on hostile wildlife and boarders" : "fire on boarding parties only"]."),
+	)
+	return CLICK_ACTION_SUCCESS
 
 /**
  * Drag an unbolted turret onto an adjacent wall to mount it there.
@@ -276,6 +361,11 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
 		return FALSE
 	if(in_faction(creature)) // Bots, pets and other turrets.
 		return FALSE
+	// With wildlife targeting off the turret only watches for boarding parties, which are
+	// all trooper-type humanoids (pirates and their kin). Lets the crew hunt the local
+	// fauna themselves without the turret stealing every kill.
+	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper))
+		return FALSE
 	if(!is_hostile_creature(creature)) // Livestock, pets and passive fauna get left alone.
 		return FALSE
 	return TRUE
@@ -341,6 +431,10 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
 		. += span_warning("It has been smashed apart. Welding the housing back together would fix it.")
 	else if(atom_integrity < max_integrity)
 		. += span_notice("The housing is dented and scorched. A welder would sort that out.")
+
+	if(!(machine_stat & BROKEN))
+		. += span_notice("It is switched [on ? "on" : "off"], and set to fire on [target_wildlife ? "hostile wildlife and boarding parties" : "boarding parties only"].")
+	. += span_notice("Click the housing to switch it on or off, or alt-click it to toggle wildlife targeting. The controls only answer to the crew of the ship it is bolted to.")
 
 	if(anchored)
 		. += span_notice("It is bolted down. Switch it off and use a wrench to free it.")

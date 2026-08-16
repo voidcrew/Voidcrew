@@ -6,7 +6,8 @@
  * - **Conjuration** (phase 1): Raise the Buried. Pulls skeletons out of the floor at
  *   the map's `/obj/effect/landmark/lich/summon_spot` markers. Revoked in phase 3.
  * - **Destruction** (phase 2): Volley of the Ossuary (a telegraphed, green
- *   `aoe/magic_missile` barrage) and Bolt of Necropotence (a fast three-shot bolt).
+ *   `aoe/magic_missile` barrage), Bolt of Necropotence (a fast three-shot bolt), and
+ *   Lift the Lid (a telegraphed ground hazard, the one piece antimagic cannot touch).
  *   Also where Wear Them comes online, the mind-control spell in lich_thrall.dm.
  * - **Illusion** (phase 3): Verdigris Reflection. Copies of himself, straight off
  *   `/datum/action/cooldown/spell/pointed/wizard_mimic` (paper_abilities.dm:41-89).
@@ -44,6 +45,26 @@
  * There is no illusion school define in `code/__DEFINES/magic.dm`; the illusion spells
  * use `SCHOOL_PSYCHIC`, which is the closest existing bucket.
  *
+ * ## The antimagic boolean, and why the fight no longer lives or dies on it
+ *
+ * Playtest result: the fight was decided before the doors opened. Both projectiles
+ * inherited `armour_penetration = 100, armor_flag = NONE` from `/obj/projectile/magic`
+ * (magic.dm:6-7), and `prehit_pierce()` (magic.dm:13-20) deletes a magic projectile
+ * outright against anyone passing `can_block_magic(MAGIC_RESISTANCE)`. So a crew with a
+ * nullrod sat in a corner while his entire ranged kit ceased to exist, and a crew
+ * without one ate five simultaneous paralyzes and died where they stood. Three answers,
+ * all in this file:
+ *
+ * - Both projectiles now carry an armor slope (`armor_flag = ENERGY`, 35 AP), so what
+ *   you wear moves the damage instead of gating it. See the projectile block.
+ * - The volley knocks down instead of paralyzing, so getting hit is a position you dig
+ *   out of rather than a cutscene. Also the projectile block.
+ * - Lift the Lid resolves through position, never through `can_block_magic()`, so one
+ *   talisman can no longer blank the whole phase. See its own header for the intent.
+ *
+ * Wear Them stays fully antimagic-blockable on purpose: mind control is the one thing
+ * in his kit a talisman should flatly stop.
+ *
  * ## Nothing here teleports
  *
  * All five lair areas are `NOTELEPORT` (track A), deliberately, so that a teleport
@@ -66,6 +87,7 @@
 #define BB_LICH_RAISE_DEAD "BB_lich_raise_dead"
 #define BB_LICH_BONE_VOLLEY "BB_lich_bone_volley"
 #define BB_LICH_NECROTIC_BOLT "BB_lich_necrotic_bolt"
+#define BB_LICH_GRAVE_DIRT "BB_lich_grave_dirt"
 #define BB_LICH_MIRROR_IMAGES "BB_lich_mirror_images"
 #define BB_LICH_CORRUPTION "BB_lich_corruption"
 
@@ -93,6 +115,7 @@
 			grant_actions_by_list(list(
 				/datum/action/cooldown/spell/aoe/magic_missile/lich_bone_volley = BB_LICH_BONE_VOLLEY,
 				/datum/action/cooldown/spell/pointed/projectile/lich_necrotic_bolt = BB_LICH_NECROTIC_BOLT,
+				/datum/action/cooldown/spell/pointed/lich_grave_dirt = BB_LICH_GRAVE_DIRT,
 				/datum/action/cooldown/spell/pointed/lich_corruption = BB_LICH_CORRUPTION,
 			))
 
@@ -102,7 +125,12 @@
 			))
 			// He has run out of buried dead. From here he only has himself to spend.
 			revoke_ability(BB_LICH_RAISE_DEAD)
-			// And he stops pacing himself.
+			// And he stops pacing himself. This 15 -> 10 second drop was originally
+			// tuned against a volley that paralyzed, which no longer exists: the
+			// missiles knock down now (see the projectile block). Kept anyway, and it
+			// matters more than it did -- with no paralyze chain, sustained volley
+			// pressure at this cadence is what stops phase 3 from being solved by
+			// pure kiting.
 			var/datum/action/cooldown/volley = ai_controller?.blackboard[BB_LICH_BONE_VOLLEY]
 			if(!QDELETED(volley))
 				volley.cooldown_time = 10 SECONDS
@@ -153,6 +181,7 @@
 		/datum/ai_planning_subtree/simple_find_target,
 		/datum/ai_planning_subtree/targeted_mob_ability/lich_corruption,
 		/datum/ai_planning_subtree/targeted_mob_ability/lich_mirror_images,
+		/datum/ai_planning_subtree/targeted_mob_ability/lich_grave_dirt,
 		/datum/ai_planning_subtree/targeted_mob_ability/lich_necrotic_bolt,
 		/datum/ai_planning_subtree/use_mob_ability/lich_bone_volley,
 		/datum/ai_planning_subtree/use_mob_ability/lich_raise_dead,
@@ -169,6 +198,10 @@
 
 /datum/ai_planning_subtree/targeted_mob_ability/lich_necrotic_bolt
 	ability_key = BB_LICH_NECROTIC_BOLT
+	finish_planning = FALSE
+
+/datum/ai_planning_subtree/targeted_mob_ability/lich_grave_dirt
+	ability_key = BB_LICH_GRAVE_DIRT
 	finish_planning = FALSE
 
 /datum/ai_planning_subtree/targeted_mob_ability/lich_mirror_images
@@ -348,6 +381,221 @@
 	projectile_type = /obj/projectile/magic/verdigris_necropotence
 	projectile_amount = 3
 
+/**
+ * ## Lift the Lid
+ *
+ * Phase 2's ground hazard. He picks someone, the 3x3 of deck around them darkens into
+ * turned earth for [telegraph_time], and then the patch burns for [burn_duration]:
+ * anything living standing on it takes [burn_per_tick] burn per [burn_interval] until
+ * it steps off or gets on top of something. His own faction walks on it freely.
+ *
+ * ### Why this exists, and why it is not a projectile
+ *
+ * Everything else phase 2 throws resolves through one boolean. The missiles and the
+ * bolt are magic projectiles, deleted on contact by `prehit_pierce()` against a
+ * `can_block_magic(MAGIC_RESISTANCE)` carrier, and Wear Them checks the same flag by
+ * design. Playtested result: one nullrod turned the whole phase off. This ability is
+ * the piece of his kit that boolean cannot answer, deliberately: it is not a
+ * projectile, and nothing in it ever consults the target's antimagic. The counterplay
+ * is movement -- the telegraph gives you the window, the elevation rule gives you an
+ * answer that works mid-melee, and it burns ground, not people, so it never needs to
+ * care what you are carrying.
+ *
+ * ### Salvage note
+ *
+ * The damage shape, the elevation rule and the green-washed `weather_effects.dmi`
+ * ground overlay are carried over from the deleted galaxy-rite version of the same
+ * idea (Ritual: The Floor Is Grave-Dirt, formerly under events/), itself a port of
+ * `/datum/weather/floor_is_lava`. Reimplemented here self-contained because the event
+ * framework is gone. Two deliberate drops from the rite's rule set:
+ * TRAIT_LAVA_IMMUNE / TRAIT_WEATHER_IMMUNE are not honoured (this is his working, not
+ * weather, and a gear trait quietly restoring a full exemption is exactly the
+ * bimodality this ability exists to remove), and the burn lands raw rather than
+ * through armor, because a patch you can simply step off does not need a second
+ * mitigation axis.
+ *
+ * ### Lifecycle safety
+ *
+ * The lair interior never unloads, so a leaked effect loop would be permanent. Four
+ * guards, in depth: every timer callback opens with a QDELETED(src) bail (timers fire
+ * on qdel'd datums -- the callback holds a hard ref); the burn loop is time-bounded
+ * by [burn_duration] no matter what; the ground visuals are temp_visuals that delete
+ * themselves on their own timers even if this datum leaks; and Destroy() deltimers
+ * the pending step and snuffs the visuals, so deleting him (or this action) ends an
+ * in-flight patch instantly. If he merely dies without being deleted, an
+ * already-burning patch runs out its last few seconds on its own -- acceptable, and
+ * bounded.
+ */
+/datum/action/cooldown/spell/pointed/lich_grave_dirt
+	name = "Lift the Lid"
+	desc = "Turns the ground under someone into burning grave-dirt. Step off it, or get on top of something."
+	button_icon = 'icons/mob/actions/actions_spells.dmi'
+	button_icon_state = "spell_default"
+	sound = 'sound/effects/magic/curse.ogg'
+
+	school = SCHOOL_NECROMANCY
+	cooldown_time = 12 SECONDS // Pre-playtest guess: slower than the bolt, faster than the volley.
+	invocation = "GET YOUR FEET OFF MY GROUND."
+	invocation_type = INVOCATION_SHOUT
+	spell_requirements = NONE
+
+	cast_range = 9 // The bolt's reach, so his two pointed attacks threaten the same ring.
+
+	// Every figure below is a pre-playtest guess. The intended feel: standing in the
+	// patch for its whole life (7 ticks x 5 burn = 35) costs about a bolt and a half,
+	// walking out on the telegraph costs nothing.
+	/// How long the patch glows dim before it starts burning. The whole counterplay window.
+	var/telegraph_time = 2 SECONDS
+	/// How long the ground burns once lit.
+	var/burn_duration = 7 SECONDS
+	/// How often the burn is applied while it lasts.
+	var/burn_interval = 1 SECONDS
+	/// Burn applied per tick to anyone standing on an affected tile.
+	var/burn_per_tick = 5
+	/// The live patch's ground visuals, so his deletion can snuff them early.
+	var/list/obj/effect/temp_visual/lich_grave_dirt/active_dirt = list()
+	/// Stoppable id of the pending ignition, null outside the telegraph window.
+	var/ignite_timer
+	/// Stoppable id of the next burn application, null outside the burn window.
+	var/burn_timer
+
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/Destroy()
+	deltimer(ignite_timer)
+	deltimer(burn_timer)
+	ignite_timer = null
+	burn_timer = null
+	QDEL_LIST(active_dirt)
+	return ..()
+
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/is_valid_target(atom/cast_on)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!isliving(cast_on))
+		return FALSE
+	var/mob/living/victim = cast_on
+	return victim.stat != DEAD
+
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/cast(mob/living/cast_on)
+	. = ..()
+	var/turf/center = get_turf(cast_on)
+	if(isnull(center))
+		return
+
+	if(owner)
+		owner.visible_message(span_boldwarning("Ilthuun drives a hand downward, and the ground around [cast_on] darkens into turned earth."))
+		owner.balloon_alert_to_viewers("the ground turns!")
+
+	// The cooldown (12s) is longer than telegraph + burn (9s), so exactly one patch
+	// can be in flight and the single-slot timer ids above are safe. If a retune ever
+	// breaks that inequality, the ids must become lists first.
+	QDEL_LIST(active_dirt) // No-op under that invariant; a hard reset if it breaks.
+
+	// His established "something is about to happen on this tile" tell, same as the
+	// volley's per-target mark, so the language of the fight stays consistent.
+	new /obj/effect/temp_visual/circle_wave/verdigris(center)
+	var/list/turf/patch = list()
+	for(var/turf/tile as anything in RANGE_TURFS(1, center))
+		if(isnull(tile) || isspaceturf(tile))
+			continue
+		patch += tile
+		active_dirt += new /obj/effect/temp_visual/lich_grave_dirt(tile, telegraph_time + burn_duration)
+		for(var/mob/living/warned in tile)
+			if(can_burn(warned))
+				to_chat(warned, span_warning("The ground under you softens into warm, turned earth. Move."))
+	if(!length(patch))
+		return
+	ignite_timer = addtimer(CALLBACK(src, PROC_REF(ignite_patch), patch, center), telegraph_time, TIMER_STOPPABLE)
+
+/// Fires when the telegraph runs out. QDELETED-guarded for the same reason as the
+/// volley's delayed_fire: two seconds is plenty of time for him to stop existing.
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/proc/ignite_patch(list/turf/patch, turf/center)
+	if(QDELETED(src))
+		return
+	ignite_timer = null
+	playsound(center, 'sound/effects/magic/fireball.ogg', 60, TRUE)
+	for(var/obj/effect/temp_visual/lich_grave_dirt/dirt as anything in active_dirt)
+		if(QDELETED(dirt))
+			continue
+		// The dim telegraph wash hardens into the full burn overlay.
+		animate(dirt, alpha = 230, time = 0.3 SECONDS)
+	burn_tick(patch, world.time + burn_duration)
+
+/**
+ * One application of the burn, self-rescheduling until end_time.
+ *
+ * Holding the turf list across the burn is safe: BYOND turf refs are positional, so a
+ * tile that gets ChangeTurf'd mid-burn resolves to whatever replaced it, which is the
+ * behaviour we want -- the dirt is on the ground, not on a particular floor type.
+ */
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/proc/burn_tick(list/turf/patch, end_time)
+	if(QDELETED(src))
+		return
+	burn_timer = null
+	for(var/turf/tile as anything in patch)
+		if(turf_is_safe(tile))
+			continue
+		for(var/mob/living/victim in tile)
+			if(!can_burn(victim))
+				continue
+			victim.adjustFireLoss(burn_per_tick)
+			to_chat(victim, span_danger("The grave-dirt sears you from below!"))
+	// The first application lands at ignition, so reschedule only while the NEXT one
+	// would still fall inside the window: 7 ticks total, not 8.
+	if(world.time + burn_interval < end_time)
+		burn_timer = addtimer(CALLBACK(src, PROC_REF(burn_tick), patch, end_time), burn_interval, TIMER_STOPPABLE)
+
+/// TRUE if this tile of the patch cannot burn anyone right now. The ground half of
+/// /datum/weather/floor_is_lava/can_weather_act_mob(): walls are not floors, and a
+/// dense structure (a table, a rack) is something to stand on. The elevation rule is
+/// the mid-melee counterplay, keep it generous.
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/proc/turf_is_safe(turf/tile)
+	if(QDELETED(tile) || tile.density)
+		return TRUE
+	for(var/obj/structure/perch in tile)
+		if(perch.density)
+			return TRUE
+	return FALSE
+
+/// TRUE if the burn applies to this mob. The containment exemptions (in a locker, in
+/// a mech, in a body bag) are structural rather than checked: the burn loop only ever
+/// sees a turf's direct contents.
+/datum/action/cooldown/spell/pointed/lich_grave_dirt/proc/can_burn(mob/living/victim)
+	if(QDELETED(victim) || victim.stat == DEAD)
+		return FALSE // Cooking a corpse does nothing but husk somebody's revival.
+	if(FACTION_LICH in victim.faction)
+		return FALSE // His skeletons walk on it freely. So do active thralls: lich_thrall.dm rewrites their faction while he wears them.
+	if(issilicon(victim))
+		return FALSE
+	if(istype(victim.buckled, /obj/structure/bed))
+		return FALSE // Buckled onto furniture counts as being on top of something.
+	if(victim.movement_type & MOVETYPES_NOT_TOUCHING_GROUND)
+		return FALSE // Flying and floating are not standing.
+	return TRUE
+
+/**
+ * The ground of one patch tile: the weather "lava" overlay washed LICH_GREEN, drawn at
+ * the exact layer/plane pair /datum/weather/floor_is_lava uses so it covers floors and
+ * not walls, and people visibly stand ON it. Spawns dim as the telegraph;
+ * ignite_patch() animates it to full strength when the burn starts. Self-deleting on
+ * the temp_visual timer, so even a leaked cast cleans its own visuals up.
+ */
+/obj/effect/temp_visual/lich_grave_dirt
+	name = "grave-dirt"
+	icon = 'icons/effects/weather_effects.dmi'
+	icon_state = "lava"
+	color = LICH_GREEN
+	alpha = 90 // The telegraph wash. Full strength arrives when it ignites.
+	layer = ABOVE_OPEN_TURF_LAYER
+	plane = FLOOR_PLANE
+	randomdir = FALSE // A tiling ground texture; rotating tiles breaks the seams.
+	duration = 9 SECONDS // Fallback only; Initialize receives the real telegraph + burn figure.
+
+/obj/effect/temp_visual/lich_grave_dirt/Initialize(mapload, lifetime)
+	if(lifetime)
+		duration = lifetime
+	return ..()
+
 // ===== ILLUSION =====
 
 /**
@@ -523,15 +771,33 @@
 
 // ===== PROJECTILES =====
 
-/// The volley's missile. Green, and it hits noticeably harder than the wizard version,
-/// but the paralyze is halved from upstream's 6 seconds, because five simultaneous
-/// six-second paralyzes in a boss room is not a fight, it is a cutscene.
+/**
+ * The volley's missile. Green, and it hits noticeably harder than the wizard version,
+ * but upstream's paralyze (6 seconds) is gone entirely, traded for a knockdown of the
+ * same length we used to paralyze for. A paralyze is a cutscene: the volley marks up
+ * to five people at once, and five simultaneous paralyzes chaining into his melee and
+ * bolts was the "stunlocked, instant death" half of the playtest report. A knockdown
+ * floors you but leaves your input alive -- you can crawl off the kill tile, keep
+ * shooting from the ground, and a friend can drag you -- so eating the volley is a
+ * position you dig out of rather than a death sentence, while whiffing your dodge
+ * still costs real tempo.
+ *
+ * The armor slope (here and on the bolt below) overrides /obj/projectile/magic's
+ * armour_penetration = 100 / armor_flag = NONE, which made every suit of armor in the
+ * game cosmetic against him. Both bolts deal BURN, so ENERGY is the honest armor slot
+ * (there is no magic armor flag in this codebase, see code/__DEFINES/combat.dm). The
+ * 35 AP figure is a pre-playtest guess: hardsuit-tier armor should blunt him
+ * noticeably, not blank him.
+ */
 /obj/projectile/magic/aoe/magic_missile/verdigris
 	name = "ossuary shard"
 	color = LICH_GREEN
 	damage = 18
 	damage_type = BURN
-	paralyze = 3 SECONDS
+	armor_flag = ENERGY
+	armour_penetration = 35 // Pre-playtest guess, see above.
+	paralyze = 0 // Overrides the parent's 6 seconds. Never bring it back, see above.
+	knockdown = 3 SECONDS
 
 /**
  * His fast bolt.
@@ -540,6 +806,9 @@
  * borrows only the sprite. See the deviation note in this file's header: necropotence's
  * `on_hit` soul-taps the victim's maxHealth away permanently, which is not an acceptable
  * cost to attach to a boss ability the crew will eat a dozen of per attempt.
+ *
+ * Same armor slope as the missile, same rationale, see the comment above it: 3x22
+ * unmitigable burn per cast was the other half of the no-antimagic death spiral.
  */
 /obj/projectile/magic/verdigris_necropotence
 	name = "bolt of necropotence"
@@ -547,6 +816,8 @@
 	color = LICH_GREEN
 	damage = 22
 	damage_type = BURN
+	armor_flag = ENERGY
+	armour_penetration = 35 // Pre-playtest guess, matching the missile.
 	speed = 1.4
 
 /obj/projectile/magic/verdigris_necropotence/on_hit(atom/target, blocked = 0, pierce_hit)
@@ -572,5 +843,6 @@
 #undef BB_LICH_RAISE_DEAD
 #undef BB_LICH_BONE_VOLLEY
 #undef BB_LICH_NECROTIC_BOLT
+#undef BB_LICH_GRAVE_DIRT
 #undef BB_LICH_MIRROR_IMAGES
 #undef BB_LICH_CORRUPTION

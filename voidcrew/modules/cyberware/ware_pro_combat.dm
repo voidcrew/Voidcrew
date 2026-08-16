@@ -324,12 +324,22 @@
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	cyberware_register_dodge_source(organ_owner, REF(src), CALLBACK(src, PROC_REF(get_dodge_chance)))
-	organ_owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
 
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	cyberware_unregister_dodge_source(organ_owner, REF(src))
-	organ_owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+
+// The gait boost rides the failing-gated passive layer (BAL-4): the dodge
+// already zeroed itself while failing (get_dodge_chance), but the speed kept
+// running through EMP downtime. Movespeed modifiers are keyed by type, so
+// add/remove is idempotent and needs no applied-state guard.
+/obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	bearer?.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+
+/obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	bearer?.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
 
 /// Dodge-source callback: dead weight while failing, 15% otherwise.
 /obj/item/organ/cyberimp/cyberware/slipwire/proc/get_dodge_chance()
@@ -394,19 +404,46 @@
 	/// TRUE while the bearer's own damage feedback is actually cut. Only ever
 	/// flipped through set_feedback_cut(), which owns every piece of it.
 	var/feedback_cut = FALSE
+	/// TRUE while the stamina mod and slowdown immunity are applied. Guards
+	/// the failing-gated passive hooks against double multiply/divide.
+	var/channel_mods_applied = FALSE
 
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.stamina_mod *= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
-	organ_owner.add_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
 	desat_colour = organ_owner.add_client_colour(/datum/client_colour/cyberware_dead_channel, REF(src))
 	RegisterSignal(organ_owner, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_health_update))
 	RegisterSignal(organ_owner, COMSIG_ATOM_EXAMINE, PROC_REF(on_owner_examined))
 	RegisterSignal(organ_owner, COMSIG_CARBON_CHECKING_BODYPART, PROC_REF(on_owner_checks_limb))
 	refresh_feedback_cut()
 	on_health_update(organ_owner)
+
+// The pain edit itself now rides the failing-gated passive layer (BAL-4):
+// while the editor is EMP-scrambled or browned out, TRAIT_ANALGESIA and
+// TRAIT_NOSOFTCRIT (through the base hooks), the stamina halving and the
+// damage-slowdown immunity all drop, and every injury the bearer racked up
+// arrives at once. The readouts were already gated through feedback_cut;
+// this makes the protection match what the HUD was claiming.
+/obj/item/organ/cyberimp/cyberware/dead_channel/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(channel_mods_applied || isnull(bearer))
+		return
+	channel_mods_applied = TRUE
+	if(ishuman(bearer))
+		var/mob/living/carbon/human/human_bearer = bearer
+		human_bearer.physiology.stamina_mod *= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
+	bearer.add_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
+
+/obj/item/organ/cyberimp/cyberware/dead_channel/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(!channel_mods_applied)
+		return
+	channel_mods_applied = FALSE // reset before the validity skip, see Shock Coils
+	if(isnull(bearer) || QDELETED(bearer))
+		return
+	if(ishuman(bearer))
+		var/mob/living/carbon/human/human_bearer = bearer
+		human_bearer.physiology.stamina_mod /= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
+	bearer.remove_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
 
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	// Hand the readouts back BEFORE anything else runs. mob_remove() nulls
@@ -420,10 +457,8 @@
 		COMSIG_LIVING_HEALTH_UPDATE,
 	))
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.stamina_mod /= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
-	organ_owner.remove_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
+	// The stamina mod and slowdown immunity come off in chrome_passives_off(),
+	// which the component fires from this same removal (COMSIG_ORGAN_REMOVED).
 	organ_owner.remove_client_colour(REF(src))
 	desat_colour = null
 

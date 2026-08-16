@@ -93,6 +93,12 @@
 /obj/machinery/computer/security/ui_static_data()
 	var/list/data = list()
 	data["network"] = network
+	// VOIDCREW EDIT ADDITION START - human-readable network names for the UI (voidcrew/edits/machinery/camera.dm)
+	var/list/network_names = list()
+	for(var/net in network)
+		network_names += voidcrew_camera_net_display_name(net)
+	data["networkNames"] = network_names
+	// VOIDCREW EDIT ADDITION END
 	data["mapRef"] = cam_screen.assigned_map
 	data["cameras"] = GLOB.cameranet.get_available_cameras_data(network)
 	return data

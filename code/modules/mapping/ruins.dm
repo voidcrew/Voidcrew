@@ -4,6 +4,11 @@
 		return place_on_isolated_level(z)
 	while(sanity > 0)
 		sanity--
+		// VOIDCREW EDIT: throttled yield, not CHECK_TICK - see worldgen_yield() in
+		// worldgen_queue.dm. Each sample scans a full ruin footprint, and a mid-round
+		// planet build can burn thousands of rejected samples back to back; with no
+		// yield that runs whole seconds outside MC accounting and freezes the world.
+		SSovermap.worldgen_yield()
 		var/width_border = TRANSITIONEDGE + SPACERUIN_MAP_EDGE_PAD + round(width / 2)
 		var/height_border = TRANSITIONEDGE + SPACERUIN_MAP_EDGE_PAD + round(height / 2)
 		var/turf/central_turf = forced_turf ? forced_turf : locate(rand(width_border, world.maxx - width_border), rand(height_border, world.maxy - height_border), z)

@@ -100,6 +100,20 @@
 	return TRUE
 
 /**
+ * A carried item that is a SUBTYPE of the wanted goods on an exact-type ledger
+ * (match_subtypes = FALSE) - close enough to name in the refusal so the player
+ * learns why their crystal/ore/pelt variant doesn't count. Null when the ledger
+ * accepts subtypes or nothing close is carried.
+ */
+/datum/shop_buyback/proc/find_refused_variant(mob/living/user)
+	if(match_subtypes || !item_path)
+		return null
+	for(var/obj/item/offered in user.get_all_contents())
+		if(istype(offered, item_path) && offered.type != item_path)
+			return offered
+	return null
+
+/**
  * Every matching item on the seller, held items first so a deliberate
  * hand-off is always the thing consumed first.
  *
@@ -146,6 +160,13 @@
 	if(demand <= 0)
 		return "Not buying any more this shift."
 	if(count_carried_units(user) < 1)
+		// Exact-type ledgers (match_subtypes = FALSE) refuse processed/lab-made
+		// variants of the wanted goods. Without this, a player holding a refined
+		// bluespace crystal at the "natural bluespace crystals" window just got
+		// "carrying none of the goods" and read it as a bug (rounds 14/15).
+		var/obj/item/near_miss = find_refused_variant(user)
+		if(near_miss)
+			return "Won't take [near_miss.name] - only [name], nothing processed or lab-made."
 		return "Carrying none of the goods: [get_wanted_text()]."
 	if(pay_credits > 0)
 		var/obj/item/card/id/id_card = user.get_idcard(TRUE)

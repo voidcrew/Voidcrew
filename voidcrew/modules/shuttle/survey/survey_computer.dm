@@ -5,7 +5,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	name = "Orbital survey console"
-	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void."
+	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void. Surveys only need the ship parked on the same overmap tile as the target, not docked or landed; storms can also be scanned from a few tiles away at reduced yield."
 	view_range = 10
 	x_offset = 0
 	y_offset = -5
@@ -197,6 +197,9 @@
 	tgui_data["bankedCash"] = banked_cash
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
 	tgui_data["surveyAtRange"] = is_survey_at_range(celestial_object)
+	// So the UI can state the range rule with the real numbers instead of folklore
+	tgui_data["rangeSurveyDistance"] = range_survey_distance
+	tgui_data["rangeSurveyPercent"] = round(range_survey_value_mult * 100)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
@@ -369,7 +372,22 @@
 		current_object = get_survey_target()
 	if(!current_object)
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
-		balloon_alert(user, "no surveyable celestial object found")
+		// Say WHY there is nothing to survey - a ship contact sharing the tile is
+		// the usual confusion ("why won't it survey this ship?")
+		var/has_ship_contact = FALSE
+		var/has_empty_space = FALSE
+		for(var/obj/structure/overmap/object in ship_port?.current_ship?.close_overmap_objects)
+			if(istype(object, /obj/structure/overmap/ship))
+				has_ship_contact = TRUE
+			else if(istype(object, /obj/structure/overmap/planet/empty))
+				has_empty_space = TRUE
+		if(has_ship_contact)
+			balloon_alert(user, "can't survey ships")
+			to_chat(user, span_warning("Vessels are not valid survey targets. The console only surveys celestial objects: planets, signals, storms, and stars."))
+		else if(has_empty_space)
+			balloon_alert(user, "empty space, nothing to survey")
+		else
+			balloon_alert(user, "no surveyable celestial object found")
 		return
 
 	soundloop.start()
@@ -895,7 +913,9 @@
 	remove_old_ports(my_port)
 	if(my_port)
 		my_port.unregister()
-		qdel(my_port)
+		// Forced, or docking_port/Destroy answers with QDEL_HINT_LETMELIVE and the
+		// just-unregistered port lives on as an orphan
+		qdel(my_port, force = TRUE)
 		my_port = null
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	if(the_eye)

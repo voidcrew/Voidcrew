@@ -340,7 +340,8 @@
 	var/mob/living/L = user
 	if(!eyeobj)
 		CreateEye()
-	if(!eyeobj) //Eye creation failed
+	if(!eyeobj) //Eye creation failed - the pod isn't aboard a ship, so there's no orbit to drop from
+		balloon_alert(user, "pod not aboard a ship!")
 		return
 	map_user = L
 	if(!eye_initialized)
@@ -374,9 +375,14 @@
 		return
 	var/obj/structure/overmap/planet/current_planet = get_current_planet()
 	if(!current_planet)
+		// Same failure the map path messages at activate_map(); a silent return here
+		// reads as the pod just not working (space ruins are not planets, so this is
+		// the branch everyone hits trying to pod into one).
+		balloon_alert(user, "no current planet!")
 		return
 	var/planet_z_level = get_planet_z(current_planet)
 	if(!planet_z_level)
+		balloon_alert(user, "planet not surveyed!")
 		return
 	var/list/area/planet_areas = list()
 	for (var/area/candidate_area in SSmapping.areas_in_z["[planet_z_level]"])
@@ -476,7 +482,7 @@
 			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
 				to_chat(map_user, span_warning("Giant biological entity is blocking the landing zone. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED)
-				to_chat(map_user, span_warning("Invalid transit location."))
+				to_chat(map_user, span_warning("Landing site blocked. Pods can only drop onto open ground on the surface below - not solid rock, chasms, or restricted airspace. Pick a clear surface tile."))
 		return
 
 	remove_eye_control(map_user)

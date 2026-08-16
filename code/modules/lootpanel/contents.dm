@@ -43,8 +43,9 @@
 
 /// For: Resetting to empty. Ignores the searchable qdel event
 /datum/lootpanel/proc/reset_contents()
+	// VOIDCREW EDIT: removing mid-walk skipped every other index, leaving half the
+	// search objects registered and listed across populate_contents() calls
 	for(var/datum/search_object/index as anything in contents)
-		contents -= index
 		to_image -= index
 
 		if(QDELETED(index))
@@ -52,3 +53,4 @@
 
 		UnregisterSignal(index, COMSIG_QDELETING)
 		qdel(index)
+	contents.Cut()
