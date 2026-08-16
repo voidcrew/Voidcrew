@@ -22,6 +22,13 @@
 	var/spawned = FALSE
 	/// How many times the site has refused to hand over a spawn turf
 	var/spawn_attempts = 0
+	/// Weakrefs to every mob this step marked contract-critical, so the mark can
+	/// be dropped again when the contract stops needing them
+	var/list/datum/weakref/field_mob_refs
+
+/datum/mission_objective/field/Destroy()
+	release_field_mobs()
+	return ..()
 
 /datum/mission_objective/field/activate()
 	. = ..()
@@ -29,6 +36,9 @@
 
 /datum/mission_objective/field/reset()
 	. = ..()
+	// A retarget re-arms at a fresh site; whatever is still standing in the old
+	// one stopped being the contract's business the moment it was abandoned
+	release_field_mobs()
 	spawned = FALSE
 	spawn_attempts = 0
 
@@ -102,6 +112,25 @@
 	if(QDELETED(protected))
 		return
 	ADD_TRAIT(protected, TRAIT_MISSION_FIELD_MOB, INNATE_TRAIT)
+	LAZYADD(field_mob_refs, WEAKREF(protected))
+
+/**
+ * Hands every mob this step marked back to the world.
+ *
+ * The mark is an exemption from the planet's fauna sweep, and it used to be
+ * permanent: nothing ever removed the trait, so a poacher squad, a marked
+ * specimen or a survivor from a contract that timed out three hours ago stayed
+ * immune to cleanup for the rest of the round, on a planet with nobody on it.
+ * The exemption is only meant to last as long as the contract needs the mob
+ * alive, so it comes off when the objective is torn down or re-armed elsewhere.
+ */
+/datum/mission_objective/field/proc/release_field_mobs()
+	for(var/datum/weakref/mob_ref as anything in field_mob_refs)
+		var/mob/living/marked = mob_ref.resolve()
+		if(QDELETED(marked))
+			continue
+		REMOVE_TRAIT(marked, TRAIT_MISSION_FIELD_MOB, INNATE_TRAIT)
+	field_mob_refs = null
 
 /// Open turfs near a spot for scattering extra spawns
 /datum/mission_objective/field/proc/get_nearby_open_turf(turf/around, radius = 2)

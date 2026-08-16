@@ -304,15 +304,41 @@
 	/// Multiplier applied to mission credits when unharmed
 	var/unharmed_bonus = 2
 
+/datum/mission_objective/field/escort/Destroy()
+	release_survivor()
+	return ..()
+
 /datum/mission_objective/field/escort/deactivate()
-	if(survivor)
-		UnregisterSignal(survivor, COMSIG_LIVING_DEATH)
-		survivor = null
+	release_survivor()
 	return ..()
 
 /datum/mission_objective/field/escort/reset()
 	. = ..()
 	survivor = null
+
+/**
+ * Ends the survivor's involvement in the contract.
+ *
+ * Every way this objective stops that ISN'T a turn-in comes through here: the
+ * mission timing out, the crew abandoning it from the board, a spawn failure,
+ * a retarget re-arming at a fresh site. Dropping the reference (which is all
+ * this used to do) left a live NPC standing wherever the crew last had them -
+ * usually aboard the ship, since that is where the contract expires - still
+ * following whoever gave them a hand, still holding the field-mob trait that
+ * exempts them from every cleanup sweep. Nothing in the round would ever have
+ * removed them, and there was no contract left to hand them in to.
+ *
+ * The successful turn-in has already nulled the ref by the time deactivation
+ * runs, so a repatriated survivor never reaches this.
+ */
+/datum/mission_objective/field/escort/proc/release_survivor()
+	var/mob/living/leaving = survivor
+	survivor = null
+	if(QDELETED(leaving))
+		return
+	UnregisterSignal(leaving, COMSIG_LIVING_DEATH)
+	leaving.visible_message(span_notice("[leaving]'s beacon chirps, and they are teleported away."))
+	qdel(leaving)
 
 /datum/mission_objective/field/escort/spawn_field_objects(turf/spawn_turf)
 	survivor = new survivor_type(spawn_turf)
