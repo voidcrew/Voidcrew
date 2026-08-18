@@ -67,10 +67,13 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	survey_value = 0
 	/// How many times we've tried to unload this level
 	var/unload_attempts = 0
-	/// Maximum number of unload retry attempts
+	/// How many quick retries an undock gets before the loop backs off. Never a give-up
+	/// point - see try_unload_level().
 	var/max_unload_attempts = 5
-	/// Delay between unload retries in seconds
+	/// Delay between the quick unload retries
 	var/unload_retry_delay = 10 SECONDS
+	/// Delay between unload retries once the quick burst is spent
+	var/unload_backoff_delay = 30 SECONDS
 
 // Not a docking target in its own right. It IS empty space, and the helm's
 // dock_in_empty_space() path already finds and reuses any placeholder on the tile.
@@ -114,10 +117,19 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	// left stale, the next ship to claim one would be placed overlapping the ship
 	// that stayed behind.
 	reset_free_reserve_docks()
-	// Retry if we haven't hit max attempts
+	// Keep trying, forever. This used to stop after five attempts, which is fifty
+	// seconds - shorter than a routine ship-to-ship rendezvous or a cargo run - and an
+	// encounter still busy at that point was pinned, along with its map zone and the
+	// z-level under it, until another ship happened to dock here and undock again. The
+	// only terminal answer is unload_level() returning TRUE, which preserve_level does.
+	// The first few retries stay quick for the common case (the departing shuttle is
+	// still mid-move); after that back off to a cheap 30s heartbeat. TIMER_UNIQUE on the
+	// backoff so a fresh undock's burst can't stack a second heartbeat on top.
 	unload_attempts++
 	if(unload_attempts < max_unload_attempts)
 		addtimer(CALLBACK(src, PROC_REF(try_unload_level)), unload_retry_delay)
+	else
+		addtimer(CALLBACK(src, PROC_REF(try_unload_level)), unload_backoff_delay, TIMER_UNIQUE)
 
 /// Same contract as the parent's, minus its mapzone requirement: an empty-space
 /// encounter that never got as far as allocating one still needs cleaning up.

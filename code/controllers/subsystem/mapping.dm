@@ -621,6 +621,17 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 	reservation_type = /datum/turf_reservation,
 	turf_type_override = null,
 )
+	// VOIDCREW EDIT: a request too big for ANY reservation z-level cannot be answered by
+	// the "no room right now" fallback below, but that fallback still runs: it adds a
+	// permanent 255x255 reservation level, fails to fit on that one too, and returns
+	// null. The level is never removed, so every attempt leaks one. The check used to
+	// live at the callers and only one of the six ever made it (space_ruin.dm, which
+	// still does its own so it can pick a different ruin). Refuse here instead.
+	if(!reservation_can_ever_fit(width, height))
+		log_mapping("request_turf_block_reservation: refused an impossible [width]x[height] reservation - the ceiling is \
+			[world.maxx - (SHUTTLE_TRANSIT_BORDER * 2) - 1]x[world.maxy - (SHUTTLE_TRANSIT_BORDER * 2) - 1]. Granting it \
+			is impossible and attempting it leaks a reservation z-level per try.")
+		return null
 	UNTIL((!z_reservation || reservation_ready["[z_reservation]"]) && !clearing_reserved_turfs)
 	var/datum/turf_reservation/reserve = new reservation_type
 	if(!isnull(turf_type_override))

@@ -7,6 +7,13 @@
 /// Earlier offenses only issue a warning; the final strike marks the aggressor.
 #define OUTPOST_AGGRESSION_STRIKES 3
 
+/// Grace window after an infraction during which further hits don't add strikes.
+/// A single swing reaches register_aggression through more than one route (the
+/// machine's own attacked_by override and the outpost_property relay), and an
+/// autoattack burst would otherwise blow through the whole ladder before the
+/// first warning is read.
+#define OUTPOST_AGGRESSION_GRACE (2 SECONDS)
+
 /// Placement attempts when scattering trader outposts across the zone bands
 #define MAX_OUTPOST_PLACEMENT_ATTEMPTS 300
 

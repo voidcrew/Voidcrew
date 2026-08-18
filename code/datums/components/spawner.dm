@@ -41,6 +41,16 @@
 	RegisterSignal(parent, COMSIG_VENT_WAVE_CONCLUDED, PROC_REF(stop_spawning))
 	START_PROCESSING((spawn_time < 2 SECONDS ? SSfastprocess : SSprocessing), src)
 
+// VOIDCREW EDIT: break the parent <-> spawn_callback reference cycle.
+// /obj/structure/spawner passes spawn_callback = CALLBACK(src, PROC_REF(on_mob_spawn)),
+// and the callback datum's obj var keeps the parent alive: parent -> components ->
+// this component -> spawn_callback -> parent never soft-GCs, so every component-based
+// spawner hard-deletes - a multi-minute reference search each under REFERENCE_TRACKING.
+/datum/component/spawner/Destroy()
+	spawn_callback = null
+	spawned_things = null
+	return ..()
+
 /datum/component/spawner/process()
 	try_spawn_mob()
 
@@ -57,6 +67,25 @@
 		return
 	if(!COOLDOWN_FINISHED(src, spawn_delay))
 		return
+
+	// VOIDCREW EDIT: don't spawn on a z-level nobody is standing on.
+	// Spawned mobs die unattended out there (vacuum, weather, each other) and
+	// validate_references() frees the slot the instant one is DEAD, so a bone pit or
+	// monster den on a loaded-but-unvisited level emits a fresh corpse every spawn_time
+	// for the rest of the round - and nothing reaps corpses. Same-z only is intentional:
+	// a cave level with no one in it should stay quiet even if the surface above is busy.
+	// We deliberately keep processing (and do not touch the cooldown) so a player arriving
+	// re-enables the spawner on the very next tick.
+	var/turf/spawner_turf = get_turf(parent)
+	if(!spawner_turf)
+		return
+	// Dynamically created z-levels (planets, encounters) can outrun SSmobs' resize.
+	if(spawner_turf.z > length(SSmobs.clients_by_zlevel))
+		return
+	if(!length(SSmobs.clients_by_zlevel[spawner_turf.z]))
+		return
+	// END VOIDCREW EDIT
+
 	validate_references()
 	var/spawned_total = length(spawned_things)
 	if(spawned_total >= max_spawned)

@@ -59,8 +59,8 @@
 		/obj/item/clothing/head/helmet/knight = 7,
 		/obj/item/clothing/head/cowboy/black/syndicate = 6,
 		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
+		// the helmet is the suit's hood, it comes with it. never rolled alone
 		/obj/item/clothing/suit/hooded/berserker = 4,
-		/obj/item/clothing/head/hooded/berserker = 4,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat = 2,

@@ -53,6 +53,12 @@ SUBSYSTEM_DEF(planet_mobs)
 	var/has_players = FALSE
 	/// world.time when players last left (0 = they haven't)
 	var/player_left_time = 0
+	/// How many mobs this planet has drawn from the global budget. Counted at spawn and
+	/// handed back whole when the planet depopulates or unregisters, rather than derived
+	/// from a headcount: a headcount cannot see the ones players killed, and the budget
+	/// they were charged against would ratchet up until the global cap saturated and
+	/// every planet in the round quietly stopped spawning fauna.
+	var/spawned_count = 0
 
 /**
  * Starts tracking a planet's z-level. Called as the planet builds its terrain, BEFORE
@@ -77,8 +83,8 @@ SUBSYSTEM_DEF(planet_mobs)
 	var/datum/planet_mob_tracker/tracker = tracked_planets[planet_key]
 	if(!tracker)
 		return
-	if(tracker.populated)
-		total_managed_mobs = max(0, total_managed_mobs - count_planet_mobs(tracker))
+	total_managed_mobs = max(0, total_managed_mobs - tracker.spawned_count)
+	tracker.spawned_count = 0
 	z_to_planet -= "[tracker.surface_z]"
 	tracked_planets -= planet_key
 	qdel(tracker)
@@ -128,13 +134,14 @@ SUBSYSTEM_DEF(planet_mobs)
 
 /// Populates the planet from its pre-indexed spawn turfs.
 /datum/controller/subsystem/planet_mobs/proc/spawn_planet_mobs(datum/planet_mob_tracker/tracker)
-	spawn_on_zlevel(tracker.surface_spawn_turfs, tracker.surface_z)
+	tracker.spawned_count += spawn_on_zlevel(tracker.surface_spawn_turfs, tracker.surface_z)
 	tracker.populated = TRUE
 
 /// Spawns up to the zone-scaled per-planet cap from the given candidate turfs.
+/// Returns how many mobs it actually spawned.
 /datum/controller/subsystem/planet_mobs/proc/spawn_on_zlevel(list/spawn_turfs, surface_z)
 	if(!length(spawn_turfs))
-		return
+		return 0
 
 	// A flat cap muted the density half of danger scaling: deeper bands roll more
 	// spawns, then the cap threw the surplus away. Scale it modestly instead.
@@ -183,6 +190,8 @@ SUBSYSTEM_DEF(planet_mobs)
 		spawned++
 		total_managed_mobs++
 
+	return spawned
+
 /**
  * A biome's mob_spawn_list minus structure spawners and the SPAWN_MEGAFAUNA sentinel -
  * both of those are placed once at generation time and are not ours to manage.
@@ -211,17 +220,24 @@ SUBSYSTEM_DEF(planet_mobs)
 		tracker.player_left_time = 0
 		return
 
-	var/despawned = 0
-	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
+	// Copy, and let the typed loop filter: qdel() below edits GLOB.mob_living_list, and
+	// walking the live list means every deletion shifts it and skips the next mob.
+	// allow_dead: corpses are evidence and loot while there is somebody around to read
+	// them. There is not - the zone has been empty for the grace period and was just
+	// re-checked - and the alternative is leaving them there for the rest of the round,
+	// because nothing else in the game reaps a body. Minds and clients are still refused.
+	for(var/mob/living/candidate in GLOB.mob_living_list.Copy())
 		if(candidate.z != tracker.surface_z)
 			continue
-		if(!can_despawn(candidate))
+		if(!can_despawn(candidate, allow_dead = TRUE))
 			continue
 		qdel(candidate)
-		despawned++
 		CHECK_TICK
 
-	total_managed_mobs = max(0, total_managed_mobs - despawned)
+	// The whole budget this planet drew goes back, not just the headcount deleted here:
+	// the mobs players killed were charged against it too.
+	total_managed_mobs = max(0, total_managed_mobs - tracker.spawned_count)
+	tracker.spawned_count = 0
 	tracker.populated = FALSE
 	tracker.player_left_time = 0
 
@@ -230,18 +246,24 @@ SUBSYSTEM_DEF(planet_mobs)
  * (bodies are evidence and loot), anything inside something else, megafauna and
  * contract mobs are all off limits.
  *
+ * `allow_dead` is for the grace-period sweep only, which runs on a zone nobody has been
+ * on for three minutes: there is no one left for a body to be evidence for, and nothing
+ * anywhere in the game reaps a corpse, so refusing there just means the planet keeps
+ * every body it ever produced. Everything with a mind or a client is still refused, dead
+ * or not. Never pass TRUE for a zone that has players on it.
+ *
  * This sweep is indiscriminate by design, it walks every living mob on the
  * z-level, not a list of the ones it spawned, so anything else that puts a mob
  * on a planet is caught in it. A mission's marked specimen is exactly that: it
  * spawns from the objective chain, not from the biome tables, and deleting it
  * voids the contract three minutes after the crew steps off the surface.
  */
-/datum/controller/subsystem/planet_mobs/proc/can_despawn(mob/living/candidate)
+/datum/controller/subsystem/planet_mobs/proc/can_despawn(mob/living/candidate, allow_dead = FALSE)
 	if(candidate.ckey)
 		return FALSE
 	if(candidate.mind)
 		return FALSE
-	if(candidate.stat == DEAD)
+	if(candidate.stat == DEAD && !allow_dead)
 		return FALSE
 	if(!isturf(candidate.loc))
 		return FALSE

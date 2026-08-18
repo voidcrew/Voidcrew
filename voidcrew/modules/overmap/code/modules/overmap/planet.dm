@@ -815,14 +815,26 @@
 	addtimer(CALLBACK(src, PROC_REF(check_start_despawn)), 3 SECONDS)
 
 /// Starts the countdown, if the planet really is empty.
+///
+/// Our only caller is on_ship_undocked()'s one-shot 3-second timer, so a refusal here
+/// used to end the planet's lifecycle for good: one crewmate left behind, one ghost role,
+/// one mission mob with a mind still on the surface at T+3s and the z-level stayed
+/// resident for the rest of the round unless another ship happened to dock and leave
+/// again. Re-arm instead, the same way check_and_respawn() and the field teardown do.
 /obj/structure/overmap/planet/proc/check_start_despawn()
-	if(preserve_level || unloading || !mapzone || despawn_timer_id)
+	// Terminal: a preserved level never releases, and one with no mapzone is already
+	// unloaded - there is nothing left to count down to. Everything else is a "not yet".
+	if(preserve_level || !mapzone)
 		return
-	if(first_dock_taken || second_dock_taken)
+	// An armed countdown IS the retry; attempt_despawn() re-arms itself if it refuses.
+	if(despawn_timer_id)
 		return
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
-	if(length(mapzone.get_mind_mobs()))
+	// A teardown already in flight, or loading, either berth, a ship still inside,
+	// anyone with a mind on the surface. Deliberately the same test unload_level() will
+	// apply in five minutes. An in-flight teardown can still abort (see unload_level's
+	// post-claim re-check), so it retries rather than ending here.
+	if(unloading || !can_release_interior())
+		addtimer(CALLBACK(src, PROC_REF(check_start_despawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 	despawn_timer_id = addtimer(CALLBACK(src, PROC_REF(attempt_despawn)), PLANET_DESPAWN_TIMER, TIMER_STOPPABLE)
 
@@ -836,6 +848,13 @@
 /obj/structure/overmap/planet/proc/attempt_despawn()
 	despawn_timer_id = null
 	if(!unload_level())
+		// The countdown that got us here is spent, so a refusal at this exact instant
+		// (someone came back, a build is in flight, the queue timed out) would otherwise
+		// leave the level resident until the next visitor undocks. preserve_level and an
+		// already-unloaded planet never release and must not spin. TIMER_UNIQUE dedupes
+		// against unload_level()'s own queue-timeout re-arm - it is this same callback.
+		if(!preserve_level && mapzone)
+			addtimer(CALLBACK(src, PROC_REF(attempt_despawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 	log_mapping("SSovermap: Planet '[name]' unloaded after being abandoned, relocated to ([x], [y])")
 

@@ -326,10 +326,18 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
 	), PROC_REF(block_part_replacer))
 
-	// relay_attackers folds melee, projectiles, thrown items, hulks and mechs into
-	// one signal, so aggression doesn't need a proc per attack route
-	property.AddElement(/datum/element/relay_attackers)
-	RegisterSignal(target, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+	// Deliberately NOT /datum/element/relay_attackers: its bare-hand route
+	// (COMSIG_ATOM_ATTACK_HAND) reports *any* empty-handed click as a damaging
+	// attack as long as combat mode is on, and attack_hand is also the click that
+	// opens a machine's UI. Riding the hangar elevator with combat mode left on
+	// therefore cost the rider an aggression strike per floor. Empty hands can't
+	// scratch INDESTRUCTIBLE property anyway, so only the routes that carry real
+	// force count here.
+	RegisterSignal(target, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_melee_attack))
+	RegisterSignal(target, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_hit))
+	RegisterSignal(target, COMSIG_ATOM_PREHITBY, PROC_REF(on_thrown_hit))
+	RegisterSignal(target, COMSIG_ATOM_HULK_ATTACK, PROC_REF(on_hulk_attack))
+	RegisterSignal(target, COMSIG_ATOM_ATTACK_MECH, PROC_REF(on_mech_attack))
 
 /datum/element/outpost_property/Detach(datum/source, ...)
 	UnregisterSignal(source, list(
@@ -345,7 +353,11 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WIRECUTTER),
 		COMSIG_ATOM_ITEM_INTERACTION,
 		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
-		COMSIG_ATOM_WAS_ATTACKED,
+		COMSIG_ATOM_AFTER_ATTACKEDBY,
+		COMSIG_PROJECTILE_PREHIT,
+		COMSIG_ATOM_PREHITBY,
+		COMSIG_ATOM_HULK_ATTACK,
+		COMSIG_ATOM_ATTACK_MECH,
 	))
 	REMOVE_TRAIT(source, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
 	return ..()
@@ -366,10 +378,39 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	source.balloon_alert(user, "casing is sealed!")
 	return ITEM_INTERACT_BLOCKING
 
-/// Shoves and stamina hits aren't vandalism; only a real damaging hit is
-/datum/element/outpost_property/proc/on_attacked(obj/source, atom/attacker, attack_flags)
-	SIGNAL_HANDLER
-	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
+/// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
+/datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker)
+	if(!isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
 	outpost?.register_aggression(attacker)
+
+/datum/element/outpost_property/proc/on_melee_attack(obj/source, obj/item/weapon, mob/attacker, list/modifiers, list/attack_modifiers)
+	SIGNAL_HANDLER
+	if(!weapon.force || weapon.damtype == STAMINA)
+		return
+	register_hit(source, attacker)
+
+/datum/element/outpost_property/proc/on_projectile_hit(obj/source, obj/projectile/hit_projectile)
+	SIGNAL_HANDLER
+	if(!hit_projectile.is_hostile_projectile() || hit_projectile.damage_type == STAMINA)
+		return
+	register_hit(source, hit_projectile.firer)
+
+/datum/element/outpost_property/proc/on_thrown_hit(obj/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(!isitem(hit_atom))
+		return
+	var/obj/item/hit_item = hit_atom
+	if(!hit_item.throwforce || hit_item.damtype == STAMINA)
+		return
+	register_hit(source, throwingdatum?.get_thrower())
+
+/datum/element/outpost_property/proc/on_hulk_attack(obj/source, mob/attacker)
+	SIGNAL_HANDLER
+	register_hit(source, attacker)
+
+/// The mecha is the attacker as far as the signal is concerned; the pilot is who the outpost blames
+/datum/element/outpost_property/proc/on_mech_attack(obj/source, obj/vehicle/sealed/mecha/mecha_attacker, mob/living/pilot)
+	SIGNAL_HANDLER
+	register_hit(source, pilot)

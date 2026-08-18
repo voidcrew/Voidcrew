@@ -115,9 +115,13 @@
 /datum/mission_target/space_ruin
 	/// The ruin signal this mission targets
 	var/obj/structure/overmap/space_ruin/ruin
+	/// Whether WE are the ones holding the ruin's exclusive flag, so unhook only
+	/// clears a lock it actually set
+	var/holds_exclusive = FALSE
 
 /datum/mission_target/space_ruin/resolve()
 	var/obj/structure/overmap/space_ruin/previous = ruin
+	var/exclusive = mission?.exclusive_site
 	unhook()
 	// Three tiers, worst case last. The two preferences are NOT equally weighted,
 	// which an earlier version of this got wrong by folding them into one set:
@@ -136,6 +140,9 @@
 		// A mission owns this ruin's whole lifecycle (the drug run's hidden
 		// lab): never point another contract's objectives into it
 		if(candidate.mission_locked)
+			continue
+		// Somebody else's contract has already called this site theirs alone
+		if(candidate.mission_exclusive)
 			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
@@ -157,11 +164,24 @@
 		pool = cold_unclaimed
 	else if(length(cold))
 		pool = cold
+	// A contract that can't share takes the top tier or nothing. Double-booking is
+	// cosmetic for a salvage run and fatal for a rescue: the other contract spawns
+	// its named target and its paid entourage into the same wreck, and a survivor
+	// with 60 HP and no weapon standing near hired muscle is a survivor the crew
+	// arrives to find face-down. Failing generation here just means the board rolls
+	// a different offer.
+	if(exclusive)
+		if(!length(cold_unclaimed))
+			return FALSE
+		pool = cold_unclaimed
 	// Applied last, to the pool the occupancy tiers already settled on: a cold
 	// unclaimed ruin in the wrong band still beats a hot one in the right band.
 	pool = filter_by_preferred_zone(pool)
 	ruin = pick(pool)
 	ruin.mission_claims++
+	if(exclusive)
+		ruin.mission_exclusive = TRUE
+		holds_exclusive = TRUE
 	cache_coords_from(ruin)
 	RegisterSignal(ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
 	RegisterSignal(ruin, COMSIG_VOIDCREW_RUIN_UNLOADING, PROC_REF(on_ruin_unloading))
@@ -173,8 +193,11 @@
 /datum/mission_target/space_ruin/unhook()
 	if(ruin)
 		ruin.mission_claims = max(ruin.mission_claims - 1, 0)
+		if(holds_exclusive)
+			ruin.mission_exclusive = FALSE
 		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED, COMSIG_VOIDCREW_RUIN_UNLOADING))
 		ruin = null
+	holds_exclusive = FALSE
 
 /datum/mission_target/space_ruin/get_zone_type()
 	if(!ruin)

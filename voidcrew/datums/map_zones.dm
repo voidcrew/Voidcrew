@@ -249,6 +249,25 @@
 		var/area/old_area = get_area(T)
 		if(old_area != space_area)
 			T.change_area(old_area, space_area)
+		// VOIDCREW EDIT: hand-run the lighting teardown ChangeTurf would have done.
+		// Replacing the turf in place is a raw BYOND turf swap: the replacement starts with
+		// null lighting vars and every ref to the old turf silently retargets to it, so the
+		// old turf's lighting datums are simply dropped instead of freed.
+		// - lighting_object: mirrors change_turf.dm's space_lit branch, which qdels it because
+		//   /turf/open/space/basic is space_lit. Also drops it out of SSlighting.objects_queue.
+		// - light: a planet-style /lit floor turf owns a /datum/light_source, and that source is
+		//   cross-linked with its lighting corners (light.effect_str[corner] <-> corner.affecting).
+		//   That is a reference cycle, which BYOND's refcounting can never collect - so without
+		//   this every zone recycle leaks one source plus its corners per lit turf, permanently.
+		//   qdel -> Destroy() -> remove_lum() is what empties both sides of the cycle; the corners
+		//   themselves need no explicit qdel, since once the last source releases them the old
+		//   turf's four corner refs are gone too and they fall to zero references.
+		//   (/atom/Destroy() does exactly this QDEL_NULL - we are standing in for it.)
+		if(T.lighting_object)
+			qdel(T.lighting_object, force = TRUE)
+		if(T.light)
+			QDEL_NULL(T.light)
+		// END VOIDCREW EDIT
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
 		new /turf/open/space/basic(T)
 		// Every caller is an unqueued flat-encounter/outpost teardown: never wait

@@ -102,6 +102,23 @@
 	closed_turf_types = expand_weights(weighted_closed_turf_types)
 
 
+/**
+ * VOIDCREW EDIT: reports how long a generation pass took.
+ *
+ * Upstream only ever runs these generators at mapload, so shouting the timings at
+ * `world` reached nobody but the lobby. Here they also run MID-ROUND (asteroid
+ * fields, planet builds, mapgen-bearing encounters), so every player on every ship
+ * got a bold "Asteroid Field Generator terrain generation finished in 4.2s!" each
+ * time somebody, anybody, docked a rock field. Keep the lobby behaviour as-is;
+ * once the round is running it is admin-only. The log line is unconditional.
+ */
+/datum/map_generator/cave_generator/proc/announce_generation_time(message)
+	if(SSticker?.HasRoundStarted())
+		to_chat(GLOB.admins, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
+	else
+		to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
+	log_world(message)
+
 /datum/map_generator/cave_generator/generate_terrain(list/turfs, area/generate_in)
 	. = ..()
 	if(!(generate_in.area_flags & CAVES_ALLOWED))
@@ -140,9 +157,7 @@
 		// it, degrades to CHECK_TICK everywhere else (see worldgen_yield()).
 		SSovermap.worldgen_yield()
 
-	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 /**
@@ -221,9 +236,7 @@
 
 		generated_turfs_per_biome[biome] = generated_turfs
 
-	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 /datum/map_generator/cave_generator/populate_terrain(list/turfs, area/generate_in)
@@ -316,9 +329,7 @@
 		// builds run this under the worldgen queue and must share its budget
 		SSovermap.worldgen_yield()
 
-	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 /**
@@ -339,9 +350,7 @@
 
 	// No sense in doing anything here if nothing is allowed anyway.
 	if(!flora_allowed && !features_allowed && !fauna_allowed)
-		var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-		to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-		log_world(message)
+		announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 		return
 
 	for(var/biome in generated_turfs_per_biome)
@@ -350,9 +359,7 @@
 
 		CHECK_TICK
 
-	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 /datum/map_generator/cave_generator/jungle

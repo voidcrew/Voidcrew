@@ -81,15 +81,45 @@
 		shard.fire(i * (360 / 5))
 	return ..()
 
+/**
+ * The sea crystal's guard. Two upstream assumptions do not survive being pointed
+ * at a fork icon sheet.
+ *
+ * The parent's `appearance_on_aggro` component switches icon_state to
+ * "hivelord_alert" the moment the mob takes a target, and reverts on deaggro or
+ * death. That state only exists on lavaland_monsters.dmi. beach_hivelord.dmi has
+ * "hivelord" (an eight frame writhe) and "hivelord_inactive" (tentacles pulled
+ * in), so a crystal hivelord blanked out the instant it saw a player and stayed
+ * invisible until it died - which is exactly the window where you need to see it.
+ * The fork sheet's pair maps the other way round, so idle is the still frame and
+ * aggro is the writhe.
+ *
+ * The parent's brood ability is also tuned for a lone lavaland set piece rather
+ * than for something a spawner drops two or three of at a time: a brood every two
+ * seconds from the ranged attack plus one more every second the mob is hit, each
+ * living ten seconds, is a worm carpet at any multiple. Slowed here rather than
+ * disabled, so a crystal hivelord still fights like a hivelord.
+ */
 /mob/living/basic/mining/hivelord/beach
 	name = "crystal hivelord"
 	icon = 'voidcrew/icons/mob/beach/beach_hivelord.dmi'
-	icon_state = "hivelord"
-	icon_living = "hivelord"
+	icon_state = "hivelord_inactive"
+	icon_living = "hivelord_inactive"
 	icon_dead = "hivelord_dead"
 	icon_gib = null
 	faction = list(FACTION_BEACH, FACTION_CRYSTAL)
 	death_spawn_type = /mob/living/basic/hivelord_brood/beach
+
+/mob/living/basic/mining/hivelord/beach/Initialize(mapload)
+	. = ..()
+	// Components default to COMPONENT_DUPE_HIGHLANDER, so this replaces the
+	// parent's copy rather than stacking with it.
+	AddComponent(/datum/component/appearance_on_aggro, aggro_state = "hivelord")
+	// death_spawn_type only covers the broods that burst out when it dies; the
+	// ability spawns its own, and was still spawning green lavaland ones.
+	spawn_brood.spawn_type = /mob/living/basic/hivelord_brood/beach
+	spawn_brood.cooldown_time = 6 SECONDS
+	spawn_brood.on_hit_delay = 5 SECONDS
 
 /mob/living/basic/hivelord_brood/beach
 	icon = 'voidcrew/icons/mob/beach/beach_hivelord.dmi'

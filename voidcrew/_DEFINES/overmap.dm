@@ -53,6 +53,20 @@
 #define SHIP_DERELICT_DESPAWN_TIME (1 HOURS)
 /// Cadence of the occupancy sweep. A minute of slack on half-hour clocks is nothing.
 #define DERELICT_SWEEP_INTERVAL (1 MINUTES)
+/**
+ * A hull docked at a dynamic encounter - a planet, a space ruin, an asteroid field, the
+ * crash site its own hull failure minted - with nothing alive at the site for this long
+ * is force-undocked back into open space.
+ *
+ * A docked hull holds one of the site's berth flags and parks its overmap token in the
+ * site's contents, and can_release_interior() refuses on either. Nothing else undocks a
+ * hull whose crew is dead, so the site's map zone (or turf reservation, and often a whole
+ * z-level under it) stayed pinned until the hull itself despawned - the crewless clock
+ * plus the claim window, an hour and a half later. Five minutes instead. The derelict
+ * clocks above are untouched and keep running; they just run in open space, where they
+ * cost a hull rather than a hull and an encounter.
+ */
+#define SHIP_SITE_DEAD_UNDOCK_TIME (5 MINUTES)
 
 /// Fraction of max_speed at or below which the helm's Dock button finishes the stop itself; any faster and the approach is refused.
 #define DOCK_ASSIST_SPEED_FRACTION 0.5

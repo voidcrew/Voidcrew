@@ -481,7 +481,11 @@ DISABLE_HIGH_POP_MC_MODE_AMOUNT 60
 #RESUME_AFTER_INITIALIZATIONS
 
 ## Uncomment to set the number of /world/Reboot()s before the DreamDaemon restarts itself. 0 means restart every round. Requires tgstation server tools.
-#ROUNDS_UNTIL_HARD_RESTART 10
+## VOIDCREW: restart every round. 32-bit DD has a hard ~4GB address ceiling and in-process
+## reboots carry heap fragmentation across rounds; a fresh process each round resets it.
+## No effect on non-TGS (local/dev) worlds - check_hard_reboot() requires TgsAvailable().
+## NOTE: the live server reads its own Configuration copy - mirror this value there.
+ROUNDS_UNTIL_HARD_RESTART 0
 
 ## Enable automatic profiling - Byond 513.1506 and newer only.
 #AUTO_PROFILE

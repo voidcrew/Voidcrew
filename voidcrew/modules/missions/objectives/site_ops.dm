@@ -291,8 +291,11 @@
 
 /**
  * Spawns a live survivor at the site; the mission is turn-in-able while the
- * survivor is alive next to one of the ship's mission pads. Survivor death
- * routes through the mission's quest-loss policy ("another beacon" retarget).
+ * survivor is alive next to one of the ship's mission pads. A flatline starts a
+ * recovery window instead of ending the contract - revive them inside it and the
+ * job carries on, minus the unharmed bonus. Only running the window out (or
+ * gibbing them) routes through the mission's quest-loss policy ("another beacon"
+ * retarget).
  */
 /datum/mission_objective/field/escort
 	/// The survivor mob type
@@ -303,6 +306,12 @@
 	var/unharmed_threshold = 0.8
 	/// Multiplier applied to mission credits when unharmed
 	var/unharmed_bonus = 2
+	/// How long a flatlined survivor stays recoverable before the contract writes them off
+	var/revival_grace = 3 MINUTES
+	/// Timer id for the grace window; non-null exactly while the survivor is down
+	var/grace_timer
+	/// Whether this survivor has already been brought back once (voids the unharmed bonus)
+	var/was_revived = FALSE
 
 /datum/mission_objective/field/escort/Destroy()
 	release_survivor()
@@ -314,7 +323,9 @@
 
 /datum/mission_objective/field/escort/reset()
 	. = ..()
+	clear_grace()
 	survivor = null
+	was_revived = FALSE
 
 /**
  * Ends the survivor's involvement in the contract.
@@ -332,11 +343,12 @@
  * runs, so a repatriated survivor never reaches this.
  */
 /datum/mission_objective/field/escort/proc/release_survivor()
+	clear_grace()
 	var/mob/living/leaving = survivor
 	survivor = null
 	if(QDELETED(leaving))
 		return
-	UnregisterSignal(leaving, COMSIG_LIVING_DEATH)
+	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
 	leaving.visible_message(span_notice("[leaving]'s beacon chirps, and they are teleported away."))
 	qdel(leaving)
 
@@ -344,16 +356,70 @@
 	survivor = new survivor_type(spawn_turf)
 	protect_field_mob(survivor)
 	RegisterSignal(survivor, COMSIG_LIVING_DEATH, PROC_REF(on_survivor_death))
+	RegisterSignal(survivor, COMSIG_LIVING_REVIVE, PROC_REF(on_survivor_revived))
 	mission.register_quest_atom(survivor)
 	notify_crew("Survivor beacon locked ([mission.gps_tag]). They're alive - go get them.")
 
+/// Stops the recovery clock without deciding anything about the contract
+/datum/mission_objective/field/escort/proc/clear_grace()
+	if(!grace_timer)
+		return
+	deltimer(grace_timer)
+	grace_timer = null
+
+/**
+ * The survivor flatlined.
+ *
+ * This used to drop the reference and void the contract on the spot, in the same
+ * tick as the death. That made a revived survivor useless: the crew could get the
+ * body back up with strange reagent (it works on this mob - organic biotype,
+ * non-carbon, so a splash is enough) and the contract had already retargeted to a
+ * ruin on the other side of the sector, with nothing in the world pointing at the
+ * person standing in front of them. Dying and being brought back is the one thing
+ * a rescue contract should obviously survive, so the beacon holds them for a
+ * window instead, and only gives up if nobody brings them back inside it.
+ *
+ * Gibbing skips the window - there is no body left to revive.
+ */
 /datum/mission_objective/field/escort/proc/on_survivor_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	if(!mission || mission.failed || mission.completed)
 		return
-	UnregisterSignal(source, COMSIG_LIVING_DEATH)
+	if(gibbed)
+		abandon_survivor("The survivor didn't make it.")
+		return
+	if(grace_timer) // already counting down; a re-death mid-revival doesn't restart it
+		return
+	grace_timer = addtimer(CALLBACK(src, PROC_REF(on_grace_expired)), revival_grace, TIMER_STOPPABLE)
+	notify_crew("Survivor's vitals flatlined - the beacon is still holding their tag. Get them breathing again within [DisplayTimeText(revival_grace)] and the contract stands.", type = SHIP_NOTIFY_WARNING)
+
+/// Somebody got them back up inside the window
+/datum/mission_objective/field/escort/proc/on_survivor_revived(mob/living/source, full_heal_flags)
+	SIGNAL_HANDLER
+	// revive() fires this even when the revival failed (still dead, no grab), so
+	// check the mob rather than trusting the signal
+	if(!grace_timer || QDELETED(source) || source.stat == DEAD)
+		return
+	clear_grace()
+	was_revived = TRUE
+	notify_crew("Survivor is breathing again. Bring them to the pad - the fee holds, the unharmed bonus does not.")
+
+/// Nobody brought them back in time
+/datum/mission_objective/field/escort/proc/on_grace_expired()
+	grace_timer = null
+	if(!mission || mission.failed || mission.completed)
+		return
+	if(!QDELETED(survivor) && survivor.stat != DEAD)
+		return // back on their feet by some route that never called revive()
+	abandon_survivor("The survivor didn't make it.")
+
+/// Cuts the contract loose from this survivor and runs the quest-loss policy
+/datum/mission_objective/field/escort/proc/abandon_survivor(reason)
+	clear_grace()
+	if(survivor)
+		UnregisterSignal(survivor, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
 	survivor = null
-	mission.handle_quest_loss("The survivor didn't make it.")
+	mission.handle_quest_loss(reason)
 
 /// Whether the survivor is alive and on/beside one of the servant's pads
 /datum/mission_objective/field/escort/is_satisfied()
@@ -372,13 +438,15 @@
 /datum/mission_objective/field/escort/on_turn_in_finalized(atom/reward_anchor)
 	if(QDELETED(survivor))
 		return
-	// Still walking pays double
-	if(survivor.health >= survivor.maxHealth * unharmed_threshold)
+	clear_grace()
+	// Still walking pays double - somebody who had to be brought back doesn't count,
+	// however healthy the revival left them
+	if(!was_revived && survivor.health >= survivor.maxHealth * unharmed_threshold)
 		mission.value *= unharmed_bonus
 		notify_crew("Survivor recovered unharmed - fee doubled.")
 	// Repatriation: they step onto the pad and ship out
 	var/mob/living/leaving = survivor
-	UnregisterSignal(leaving, COMSIG_LIVING_DEATH)
+	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
 	survivor = null
 	leaving.visible_message(span_notice("[leaving] waves goodbye and is teleported out."))
 	if(istype(reward_anchor, /obj/machinery/mission_pad))
@@ -392,6 +460,8 @@
 		return target ? "Beacon at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
 	if(QDELETED(survivor))
 		return "Survivor lost"
+	if(survivor.stat == DEAD)
+		return "Survivor is down - revive them ([DisplayTimeText(max(grace_timer ? timeleft(grace_timer) : 0, 0))] left)"
 	return "Bring the survivor to the mission pad alive"
 
 // =========================================================================

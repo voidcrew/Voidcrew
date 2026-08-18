@@ -59,8 +59,11 @@
 	var/voucher_count = 0
 	/// Research points paid on completion, handed over as a research-notes
 	/// dossier at the turn-in point (the crew slots it into an R&D console).
-	/// Types set their GREEN-zone band; apply_zone_scaling() multiplies it up
-	/// alongside credits.
+	/// Types set one of the MISSION_RESEARCH_PAY_* bands as their GREEN-zone
+	/// value; apply_zone_scaling() multiplies it up by the zone's research_mult,
+	/// which is deliberately flatter than the credit one. Never hand-write a
+	/// number here - the bands are what keeps the board in line with the rest of
+	/// the point economy.
 	var/research_reward = 0
 	/// Field of study printed on that dossier ("notes of xenofauna")
 	var/research_origin = "field work"
@@ -102,6 +105,14 @@
 	var/preferred_zone
 	/// Display name of the target's zone at generation time
 	var/target_zone_name = MISSION_ZONE_UNKNOWN
+	/// This contract needs its site to itself: target selection only accepts a
+	/// site no other contract is pointed at, and locks other contracts out of it
+	/// for as long as this one holds it. For the jobs whose objective is alive and
+	/// helpless - a bounty's named target arrives with paid muscle, and muscle
+	/// spawned twenty tiles from a rescue's survivor kills the survivor long before
+	/// the crew walks in. Costs a generation roll when every site is spoken for, so
+	/// only the contracts that genuinely can't share should set it.
+	var/exclusive_site = FALSE
 	/// Flavor name of the thing being recovered/hunted/planted, if any
 	var/objective_name
 
@@ -230,17 +241,23 @@
  */
 /datum/mission/proc/apply_zone_scaling(zone_type)
 	var/static/list/zone_scaling = list(
-		"[ZONE_GREEN]" = list("name" = ZONE_NAME_GREEN, "difficulty" = MISSION_DIFFICULTY_EASY, "value_mult" = 1, "voucher_bonus" = 0),
-		"[ZONE_YELLOW]" = list("name" = ZONE_NAME_YELLOW, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "value_mult" = 1.7, "voucher_bonus" = 0),
-		"[ZONE_RED]" = list("name" = ZONE_NAME_RED, "difficulty" = MISSION_DIFFICULTY_HARD, "value_mult" = 2.6, "voucher_bonus" = 1),
+		"[ZONE_GREEN]" = list("name" = ZONE_NAME_GREEN, "difficulty" = MISSION_DIFFICULTY_EASY, "value_mult" = 1, "research_mult" = 1, "voucher_bonus" = 0),
+		"[ZONE_YELLOW]" = list("name" = ZONE_NAME_YELLOW, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "value_mult" = 1.7, "research_mult" = 1.4, "voucher_bonus" = 0),
+		"[ZONE_RED]" = list("name" = ZONE_NAME_RED, "difficulty" = MISSION_DIFFICULTY_HARD, "value_mult" = 2.6, "research_mult" = 1.8, "voucher_bonus" = 1),
 	)
 	var/list/row = zone_scaling["[zone_type]"] || zone_scaling["[ZONE_GREEN]"]
 	target_zone_name = row["name"]
 	difficulty = row["difficulty"]
 	value_min = round(value_min * row["value_mult"], 10)
 	value_max = round(value_max * row["value_mult"], 10)
+	// Points scale slower than credits on purpose. Credits are spent and gone, so a
+	// deep-band contract can pay several times a green one without distorting
+	// anything; research is permanent progress on a tree the whole ship shares, and
+	// riding the 2.6x credit multiplier put one Lawless contract ahead of every other
+	// point faucet in the game combined. The danger premium is paid in credits and
+	// vouchers - the band (MISSION_RESEARCH_PAY_*) is what sets the science.
 	if(research_reward > 0)
-		research_reward = round(research_reward * row["value_mult"], 50)
+		research_reward = round(research_reward * row["research_mult"], 10)
 	if(voucher_count > 0)
 		voucher_count += row["voucher_bonus"]
 

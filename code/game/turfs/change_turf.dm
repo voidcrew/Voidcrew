@@ -158,15 +158,28 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
-			// VOIDCREW EDIT: a nested ChangeTurf inside new path(src) - e.g.
-			// /turf/closed/mineral/random rerolling its ore type during Initialize -
-			// can already have built a lighting object for this spot. Blindly building
-			// another one here double-assigns and stack-traces ("a lighting object was
-			// assigned to a turf that already had a lighting object!") on every
-			// mid-round terrain generation pass. Reuse whichever object survives.
-			if(old_lighting_object && lighting_object && lighting_object != old_lighting_object)
-				qdel(lighting_object, force = TRUE) // drop the nested duplicate, keep the original
-			lighting_object = old_lighting_object || lighting_object || new /datum/lighting_object(src)
+			// VOIDCREW EDIT: kept in lockstep with the copy in voidcrew/edits/turf.dm, which is
+			// the body that actually runs (it is the outermost link of the duplicate-definition
+			// chain and never calls ..()). Two changes vs upstream:
+			// 1. Gate on the area's static_lighting, like SSlighting.create_all_lighting_objects()
+			//    and map_template.dm already do, so mid-round changes inside a
+			//    static_lighting = FALSE area stop accreting lighting objects nothing reclaims.
+			// 2. A nested ChangeTurf inside new path(src) - e.g. /turf/closed/mineral/random
+			//    rerolling its ore type during Initialize - can already have built a lighting
+			//    object for this spot. Blindly building another one here double-assigns and
+			//    stack-traces ("a lighting object was assigned to a turf that already had a
+			//    lighting object!") on every mid-round terrain generation pass. Reuse whichever
+			//    object survives.
+			var/area/lit_area = new_turf.loc
+			if(!lit_area || lit_area.static_lighting)
+				if(old_lighting_object && lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE) // drop the nested duplicate, keep the original
+				lighting_object = old_lighting_object || lighting_object || new /datum/lighting_object(src)
+			else
+				if(lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE)
+				if(old_lighting_object)
+					qdel(old_lighting_object, force = TRUE)
 			// END VOIDCREW EDIT (was: lighting_object = old_lighting_object || new /datum/lighting_object(src))
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)

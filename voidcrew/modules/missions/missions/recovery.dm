@@ -160,6 +160,10 @@
 	var/datum/mission/mission = mission_ref?.resolve()
 	if(mission && !mission.failed && !mission.completed && mission.binding_serial == binding_serial)
 		. += span_notice("Tagged for contract: <b>[mission.name]</b>.")
+		// Sites get shared, so somebody else's objective can end up in your hands.
+		// Say whose it is rather than letting the pad refuse it with no explanation.
+		if(mission.servant)
+			. += span_notice("Filed to the [mission.servant.name]. Only that vessel's pad will take it.")
 	else
 		. += span_warning("The contract this was tagged for has expired.")
 

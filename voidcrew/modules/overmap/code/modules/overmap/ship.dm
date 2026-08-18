@@ -46,6 +46,14 @@
 	/// 0 while anyone is. At SHIP_CREWLESS_ABANDON_TIME the hull is abandoned - this
 	/// is the trigger crew death alone never provided (log off, cryo, walk away).
 	var/crewless_since = 0
+	/// world.time the sweep first found this hull berthed at a dynamic encounter with
+	/// nothing alive at the site: nobody aboard, no living player anywhere on the site's
+	/// own z-levels, and no living NPC crew of its own. 0 whenever that stops holding.
+	/// At SHIP_SITE_DEAD_UNDOCK_TIME the hull is force-undocked so the site can release.
+	var/site_dead_since = 0
+	/// TRUE while the force-undock above is being refused (a cooldown, a hull overhang),
+	/// so the retry logs its reason once per streak instead of once a minute.
+	var/site_dead_undock_refused = FALSE
 	///Timer ID of the looping movement timer
 	var/movement_callback_id
 
@@ -1323,13 +1331,200 @@
 		if(other.pending_dock_target == src)
 			other.pending_dock_target = null
 
-	// intoTheSunset() rather than a bare jumpToNullSpace(): it ghostizes and
-	// nullspaces every mob aboard first, corpses included. A mind-holding corpse left
-	// on the site's turfs would fail get_mind_mobs() and pin the map zone anyway.
-	// It ends in jumpToNullSpace(), which frees the transit reservation and the port.
+	// intoTheSunset() rather than a bare jumpToNullSpace(): it ghostizes every mob aboard
+	// first, corpses included. A mind-holding corpse left on the site's turfs would fail
+	// get_mind_mobs() and pin the map zone anyway. It ends in jumpToNullSpace(), which
+	// frees the transit reservation and the port.
+	//
+	// But it moves those mobs to NULLSPACE rather than deleting them, and it does so
+	// BEFORE jumpToNullSpace()'s per-turf empty() pass - so every mob aboard survives the
+	// teardown in GLOB.mob_list/mob_living_list for the rest of the round. That is correct
+	// for the round-end escape shuttle it was written for (those mobs are still players
+	// being scored) and a straight leak here: 3-6 pirates or a dead crew per despawned
+	// hull. Clear them out ourselves first. Nothing with a connected player behind it can
+	// be here - the guard at the top of this proc already refused - so this is NPCs,
+	// corpses, and the bodies of crew who logged off, which ARE the abandoned ship.
 	if(shuttle)
+		for(var/turf/hull_turf as anything in shuttle.return_turfs())
+			if(!hull_turf)
+				continue
+			for(var/mob/living/aboard in hull_turf.get_all_contents())
+				if(QDELETED(aboard))
+					continue
+				aboard.ghostize(FALSE) // a disconnected player's body still holds their key
+				qdel(aboard)
 		shuttle.intoTheSunset()
 	qdel(src)
+	return TRUE
+
+/**
+ * The dynamic encounter this hull should be force-undocked from, or null if it should
+ * stay where it is.
+ *
+ * Only called for hulls SSovermap's sweep has already found crewless, so "nobody aboard"
+ * is a given here and is deliberately not re-tested - get_event_crew() walks the player
+ * list against the shuttle's areas and the sweep has just paid for it.
+ *
+ * Restricted to the encounters that mint an interior and cannot give it back while a hull
+ * sits in their contents. Trader outposts, player outposts and the colosseum are permanent
+ * fixtures with nothing to free, and a ship-to-ship dock is two crews' business rather
+ * than a pinned site.
+ */
+/obj/structure/overmap/ship/proc/get_dead_site_undock_target()
+	// Cheap checks first: this runs once a minute for every crewless hull in the fleet,
+	// and the site-wide player scan below is the only part that costs anything.
+	if(QDELETED(src) || !shuttle)
+		return null
+	// Anything other than IDLE is a hull in flight, mid-dock or already undocking.
+	if(state != OVERMAP_SHIP_IDLE)
+		return null
+	var/obj/structure/overmap/site = docked
+	if(!site || QDELETED(site))
+		return null
+	// Never while the site is busy with its own load or teardown - `concerned` is the
+	// shared latch, the rest are per-family and each of the three declares its own.
+	if(site.concerned)
+		return null
+	if(istype(site, /obj/structure/overmap/planet))
+		var/obj/structure/overmap/planet/planet_site = site
+		if(planet_site.loading || planet_site.unloading)
+			return null
+	else if(istype(site, /obj/structure/overmap/space_ruin))
+		var/obj/structure/overmap/space_ruin/ruin_site = site
+		if(ruin_site.loading)
+			return null
+	else if(istype(site, /obj/structure/overmap/event/meteor))
+		var/obj/structure/overmap/event/meteor/field_site = site
+		if(field_site.loading)
+			return null
+	else
+		return null // outpost, colosseum, another ship: nothing pinned, nothing to do
+
+	// Two hulls sharing an empty-space encounter are berthed to a /planet/empty and pass
+	// the gate above, so this has to be asked even though a ship is never `docked` to
+	// another ship's type here. A rendezvous is the two crews' business, not ours.
+	if(is_in_ship_to_ship_dock())
+		return null
+
+	// An NPC hull whose own crew is still alive keeps its "board it and finish the job"
+	// window, however dead the hull is - the pirate pool frees its slot on a crew wipe or
+	// on the key, never on a hull kill, and towing the wreck out of its crash site would
+	// take the fight with it.
+	var/obj/structure/overmap/ship/npc/npc_self = src
+	if(istype(npc_self) && npc_self.count_live_crew_aboard())
+		return null
+
+	if(site_has_living_players(site))
+		return null
+	return site
+
+/**
+ * Whether any living, connected player is standing anywhere inside `site`'s interior.
+ *
+ * Two shapes of interior, and they need different tests. Planets, empty space and crash
+ * sites own whole z-levels through a map zone, so a z match is the whole answer. Ruins
+ * and asteroid fields live in turf reservations that SHARE their z-level with every other
+ * reservation on it - other ruins, outposts, hangars, ascension arenas - so those have to
+ * be scoped to the reservation's own footprint, or a visitor two ruins over reads as a
+ * visitor here (the same reasoning as turf_reservation_has_players()).
+ *
+ * GLOB.player_list is connected players only and runs a few dozen entries at most, so one
+ * pass over it beats walking either interior. get_turf() rather than the mob's own z: a
+ * player inside a locker, a mech or a bodybag reads z 0 off the mob.
+ */
+/obj/structure/overmap/ship/proc/site_has_living_players(obj/structure/overmap/site)
+	var/list/site_z_values
+	var/datum/turf_reservation/site_reservation
+	if(istype(site, /obj/structure/overmap/planet))
+		var/obj/structure/overmap/planet/planet_site = site
+		if(planet_site.mapzone)
+			site_z_values = list()
+			for(var/datum/space_level/zlevel as anything in planet_site.mapzone.z_levels)
+				site_z_values += zlevel.z_value
+	else if(istype(site, /obj/structure/overmap/space_ruin))
+		var/obj/structure/overmap/space_ruin/ruin_site = site
+		site_reservation = ruin_site.reservation
+	else if(istype(site, /obj/structure/overmap/event/meteor))
+		var/obj/structure/overmap/event/meteor/field_site = site
+		site_reservation = field_site.reservation
+
+	// Reservation bounds. Width and height are shared across the stack, so one rectangle
+	// plus the z of each level in it covers a multi-z reservation too.
+	var/min_x = 0
+	var/min_y = 0
+	var/max_x = 0
+	var/max_y = 0
+	if(site_reservation)
+		var/turf/bottom_left = LAZYACCESS(site_reservation.bottom_left_turfs, 1)
+		if(!bottom_left)
+			return FALSE
+		min_x = bottom_left.x
+		min_y = bottom_left.y
+		max_x = min_x + site_reservation.width - 1
+		max_y = min_y + site_reservation.height - 1
+		site_z_values = list()
+		for(var/turf/level_corner as anything in site_reservation.bottom_left_turfs)
+			if(level_corner)
+				site_z_values += level_corner.z
+
+	// No interior to stand in. A hull berthed at a site that has nothing loaded is exactly
+	// the stranded case this exists for, so read it as empty rather than as blocking.
+	if(!length(site_z_values))
+		return FALSE
+
+	for(var/mob/player as anything in GLOB.player_list)
+		if(!isliving(player))
+			continue
+		var/mob/living/living_player = player
+		if(living_player.stat == DEAD)
+			continue
+		var/turf/player_turf = get_turf(living_player)
+		if(!player_turf)
+			continue
+		if(!(player_turf.z in site_z_values))
+			continue
+		if(site_reservation && (player_turf.x < min_x || player_turf.x > max_x || player_turf.y < min_y || player_turf.y > max_y))
+			continue
+		return TRUE
+	return FALSE
+
+/**
+ * Runs the SHIP_SITE_DEAD_UNDOCK_TIME clock and force-undocks when it runs out.
+ *
+ * Called once a minute from SSovermap.sweep_derelicts(), for crewless hulls only. Returns
+ * TRUE only when an undock was actually started.
+ *
+ * The undock goes through the ordinary undock() - warmup, state machine, and on completion
+ * the same COMSIG_VOIDCREW_SHIP_UNDOCKED that releases the site when a crew leaves under
+ * its own power. Nothing here is special-cased past the trigger.
+ */
+/obj/structure/overmap/ship/proc/check_dead_site_undock()
+	var/obj/structure/overmap/site = get_dead_site_undock_target()
+	if(!site)
+		site_dead_since = 0
+		site_dead_undock_refused = FALSE
+		return FALSE
+	if(!site_dead_since)
+		site_dead_since = world.time
+		return FALSE
+	if(world.time - site_dead_since < SHIP_SITE_DEAD_UNDOCK_TIME)
+		return FALSE
+
+	var/refusal = undock()
+	if(refusal)
+		// Every refusal undock() can give here either expires on its own (the post-dock
+		// stabilization cooldown, an interdiction lockout, the structural recertification
+		// a failed hull is held for) or needs a crew that isn't here (a hull built out past
+		// its docking port with no door to reseat to). Keep the stamp and try again next
+		// sweep; say why once per streak rather than once a minute for as long as it runs.
+		if(!site_dead_undock_refused)
+			site_dead_undock_refused = TRUE
+			log_shuttle("[name]: force-undock from [site] refused - [refusal] Retrying each sweep.")
+		return FALSE
+
+	log_shuttle("[name]: force-undocking from [site] - no living crew at the site for [(world.time - site_dead_since) / 600] minutes.")
+	site_dead_since = 0
+	site_dead_undock_refused = FALSE
 	return TRUE
 
 /**
@@ -3383,12 +3578,23 @@
 			interdictor.force_dock_target(user)
 			return
 
-	// If target ship is a disabled NPC ship, allow direct docking without mutual request
+	// If target ship is a disabled NPC ship, allow direct docking without mutual request.
+	// An abandoned hull docks the same way and for the same reason: the handshake below
+	// needs a helm with someone at it, an abandoned hull has no crew left to answer, and
+	// the claim console inside (claim_abandoned_ship()) is only reachable by boarding it.
+	// Without this the whole SHIP_DERELICT_DESPAWN_TIME claim window was unreachable by
+	// any ordinary means - only an interdictor lock could put a boarding party aboard.
 	var/obj/structure/overmap/ship/npc/npc_target = src
-	if(istype(npc_target) && npc_target.is_disabled)
+	var/target_disabled = istype(npc_target) && npc_target.is_disabled
+	if(target_disabled || abandoned)
 		// Clear any pending dock requests
 		clear_pending_dock()
 		acting_ship.clear_pending_dock()
+
+		// The derelict cannot answer, so tell the boarders what is happening instead.
+		// Not for the disabled-NPC case, which has always been silent here.
+		if(!target_disabled)
+			acting_ship.ship_notify("[name] is not responding - registered as an abandoned derelict. Docking directly.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 		// Dock directly - no mutual request needed for disabled ships
 		var/result = dock_ships_directly(acting_ship, user)

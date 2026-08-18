@@ -69,6 +69,59 @@
 	log_smes()
 
 /**
+ * RTGs are the fuel-free generator, and upstream priced them for a station that
+ * only ever used them as derelict set dressing.
+ *
+ * A mapped advanced RTG runs on default T1 parts, so it made 2.5 kW; the goon RTG
+ * Bank module fits three of them for 7.5 kW total, against the free default PACMAN
+ * Bay's two generators at up to 80 kW. On a ship that is not a tradeoff - an ion
+ * thruster alone wants 50 kJ off the wire for one full burn (electric.dm), so the
+ * bank could not feed a single engine and only trickled into the SMES. Raising the
+ * base output to 5 kW / 6 kW puts the bank at 36 kW: still under a fuelled PACMAN
+ * pair, but it actually runs a hull with no fuel line, which is what both the
+ * module's description and its 4-science-part price already claimed it did.
+ */
+/obj/machinery/power/rtg
+	power_gen = 5000 // 5 kW on T1 parts, 30 kW on T4.
+
+/obj/machinery/power/rtg/advanced
+	power_gen = 6000 // Two parts, so 12 kW on T1, 72 kW on T4.
+
+/**
+ * Output multiplier one stock part contributes at the given tier.
+ *
+ * Upstream summed the raw tiers, which makes a T4 capacitor worth exactly four T1s -
+ * a linear return on a part that costs bluespace research, so nobody ever fitted one
+ * and RTGs were a fit-and-forget machine. Weighting the top tiers turns an RTG into
+ * something engineering can invest in: the PACMAN's output is flat and ignores its
+ * parts entirely, so scaling with parts is the RTG's half of the trade.
+ */
+/obj/machinery/power/rtg/proc/part_output_weight(tier)
+	switch(tier)
+		if(1)
+			return 1
+		if(2)
+			return 2
+		if(3)
+			return 4
+		if(4 to INFINITY)
+			return 6
+		else
+			return 0
+
+/// The Void Core is abductor loot, not ship engineering - it keeps upstream's flat sum.
+/obj/machinery/power/rtg/abductor/part_output_weight(tier)
+	return tier
+
+/obj/machinery/power/rtg/RefreshParts()
+	. = ..() // Upstream sets power_gen off the flat tier sum; recompute over the weights.
+	var/scale = 0
+	for(var/datum/stock_part/stock_part in component_parts)
+		scale += part_output_weight(stock_part.tier)
+
+	power_gen = initial(power_gen) * scale
+
+/**
  * Tops every cell in this SMES up to capacity. Returns the energy added.
  *
  * Lives here rather than at the call site because both the capacity var and

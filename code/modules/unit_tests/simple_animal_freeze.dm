@@ -70,7 +70,6 @@
 		/mob/living/simple_animal/hostile/ooze,
 		/mob/living/simple_animal/hostile/ooze/gelatinous,
 		/mob/living/simple_animal/hostile/ooze/grapes,
-		/mob/living/simple_animal/sea_crystal, // Voidcrew: see the note above
 		// DO NOT ADD NEW ENTRIES TO THIS LIST
 		// READ THE COMMENT ABOVE
 	)

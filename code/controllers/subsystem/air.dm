@@ -458,7 +458,23 @@ SUBSYSTEM_DEF(air)
 			border += item
 
 			net.air.volume += item.volume
+			// VOIDCREW EDIT: this is the one place a pipe is taken off a LIVE pipeline
+			// without that pipeline being merged or destroyed - see the warning logged
+			// above, which is exactly the case that reaches it. replace_pipenet() now
+			// prunes the pipe out of its old pipeline's members, so stealing the last one
+			// leaves a husk with no members and no machines that nothing but
+			// SSair.networks points at: never garbage collected, and processed every
+			// SSair tick for the rest of the round. Delete it, guarded the same way
+			// components already guard theirs in nullify_pipenet(). Deliberately NOT done
+			// inside replace_pipenet() itself - merge() calls that with a pipeline whose
+			// members it has already detached and whose air it has not yet taken, so a
+			// qdel there would drop the merged gas on the floor.
+			var/datum/pipeline/stolen_from = item.parent
 			item.replace_pipenet(item.parent, net)
+			// `building` is left alone: its Destroy() would edit expansion_queue, which is
+			// the list this very drain is walking.
+			if(stolen_from && stolen_from != net && !QDELETED(stolen_from) && !stolen_from.building && !length(stolen_from.members) && !length(stolen_from.other_atmos_machines))
+				qdel(stolen_from)
 
 			if(item.air_temporary)
 				net.air.merge(item.air_temporary)

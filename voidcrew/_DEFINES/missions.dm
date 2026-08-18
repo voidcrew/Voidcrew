@@ -39,6 +39,30 @@
  */
 #define MISSION_UNARMED_GREEN_BIAS_PROB 70
 
+/**
+ * Research-point pay bands for the contracts that settle in points instead of
+ * credits (voidcrew/modules/missions/missions/research.dm). A contract picks the
+ * band that matches how much science its ask is worth; if it has an overmap
+ * target, apply_zone_scaling() then multiplies it by the zone's research_mult.
+ * Nothing else in the mission system should hand-write a point number.
+ *
+ * Priced against what a point actually buys and against the rest of the research
+ * economy, so the board stays one faucet among several rather than the whole tap:
+ *
+ * - a techweb node costs 40 (tier 1) to 200 (tier 5), and the entire tg +
+ *   voidcrew tree is roughly 16,000 points (code/__DEFINES/research.dm)
+ * - one experiment pays 200 (research/edits/_experiments.dm)
+ * - a dissection pays 100 base, 200/400/600 by tier
+ * - the orbital survey console pays 250 (nebula) to 1000 (star) per object, and
+ *   a telemetry contract is scored on scans the console already paid for
+ *
+ * So the top of this ladder - a HIGH band contract flown into Lawless space -
+ * settles near one star survey, and the bottom sits under one experiment.
+ */
+#define MISSION_RESEARCH_PAY_LOW 150
+#define MISSION_RESEARCH_PAY_MEDIUM 300
+#define MISSION_RESEARCH_PAY_HIGH 500
+
 // Overmap bounds for exploration missions (relative coords, 1 to OVERMAP_SIZE)
 // Avoid edges (1 tile border) and some buffer
 #define MISSION_OVERMAP_MIN_COORD 3

@@ -125,7 +125,7 @@
 /datum/unit_test/voidcrew_mission_ruin_target_picker/Run()
 	var/list/obj/structure/overmap/space_ruin/live_ruins = list()
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
-		if(QDELETED(ruin) || ruin.mission_locked)
+		if(QDELETED(ruin) || ruin.mission_locked || ruin.mission_exclusive)
 			continue
 		if(!istype(get_turf(ruin), /turf/open/overmap))
 			continue
@@ -178,6 +178,89 @@
 	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back. Recovery contracts stop generating entirely")
 
 	qdel(target)
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		ruin.loaded = saved_loaded[ruin]
+		ruin.mission_claims = saved_claims[ruin]
+
+/**
+ * A contract that marks itself exclusive_site must get a wreck to itself.
+ *
+ * Double-booking a ruin is cosmetic for salvage and fatal for a rescue. A bounty
+ * contract spawns its named target plus a paid entourage at a random interior
+ * turf; a rescue spawns a 60 HP survivor who never fights back at another random
+ * interior turf in the same small template. Playtesting turned that up the
+ * obvious way - the crew flew out to a rescue, found the survivor dead, and left
+ * with the identification tag of somebody else's bounty target instead.
+ *
+ * So: an exclusive pick only ever comes out of the cold-and-unclaimed tier, it
+ * flags the site so nothing else can aim there, it refuses to generate rather
+ * than share, and it gives the flag back when the contract lets go.
+ */
+/datum/unit_test/voidcrew_mission_exclusive_site
+
+/datum/unit_test/voidcrew_mission_exclusive_site/Run()
+	var/list/obj/structure/overmap/space_ruin/live_ruins = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
+		if(QDELETED(ruin) || ruin.mission_locked || ruin.mission_exclusive)
+			continue
+		if(!istype(get_turf(ruin), /turf/open/overmap))
+			continue
+		live_ruins += ruin
+	if(length(live_ruins) < 3)
+		return // no overmap worth testing against in this world
+
+	var/list/saved_loaded = list()
+	var/list/saved_claims = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		saved_loaded[ruin] = ruin.loaded
+		saved_claims[ruin] = ruin.mission_claims
+		ruin.loaded = FALSE
+		ruin.mission_claims = 0
+
+	var/datum/mission/exclusive_mission = new()
+	exclusive_mission.exclusive_site = TRUE
+	var/datum/mission/sharing_mission = new()
+
+	var/datum/mission_target/space_ruin/exclusive_target = new(exclusive_mission)
+	var/datum/mission_target/space_ruin/sharing_target = new(sharing_mission)
+
+	if(!exclusive_target.resolve())
+		TEST_FAIL("an exclusive contract found no site with [length(live_ruins)] cold, unclaimed ruins on the overmap")
+	else
+		var/obj/structure/overmap/space_ruin/taken = exclusive_target.ruin
+		TEST_ASSERT(taken.mission_exclusive, "an exclusive contract claimed a ruin without flagging it exclusive, so the next contract can still aim into it")
+
+		// Nobody else may land on it, however many rolls they get. Released between
+		// rolls so the "never re-pick the previous site" rule doesn't starve the
+		// candidate set on a small overmap and read as a failure.
+		for(var/_ in 1 to 40)
+			sharing_target.unhook()
+			if(!sharing_target.resolve())
+				TEST_FAIL("a normal contract found no site at all while [length(live_ruins) - 1] unclaimed ruins were free")
+				break
+			if(sharing_target.ruin == taken)
+				TEST_FAIL("a normal contract targeted a ruin an exclusive contract is holding - this is the bounty-in-the-rescue's-wreck case that kills the survivor before the crew arrives")
+				break
+
+		// Nothing cold and unclaimed left: refuse rather than share
+		sharing_target.unhook() // its claim would otherwise come back off below
+		for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+			if(ruin != taken)
+				ruin.mission_claims = 1
+		var/datum/mission_target/space_ruin/starved_target = new(exclusive_mission)
+		TEST_ASSERT(!starved_target.resolve(), "an exclusive contract double-booked a site once every other ruin was claimed; it should fail generation and let the board roll something else")
+		qdel(starved_target)
+
+		// ...and the flag comes back off when the contract lets go
+		qdel(exclusive_target)
+		exclusive_target = null
+		TEST_ASSERT(!taken.mission_exclusive, "a released exclusive claim left the ruin flagged, so no contract can ever target that site again this round")
+
+	if(exclusive_target)
+		qdel(exclusive_target)
+	qdel(sharing_target)
+	qdel(exclusive_mission)
+	qdel(sharing_mission)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]

@@ -55,6 +55,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	/// A mission owns this ruin's lifecycle: the empty-ruin cleanup in
 	/// check_and_respawn() is suppressed until the mission releases it
 	var/mission_locked = FALSE
+	/// One contract has taken this ruin for its own and no other contract may aim
+	/// here while it holds. Used by the jobs whose objective is a living thing that
+	/// somebody else's spawns would kill (see /datum/mission/var/exclusive_site).
+	var/mission_exclusive = FALSE
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()

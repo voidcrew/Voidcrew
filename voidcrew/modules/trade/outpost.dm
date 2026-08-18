@@ -75,6 +75,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/aggressor_minds = list()
 	/// Warning strikes accrued before turrets engage: mind -> infraction count
 	var/list/aggressor_strikes = list()
+	/// Last time each mind took a strike: mind -> world.time (see OUTPOST_AGGRESSION_GRACE)
+	var/list/aggressor_strike_times = list()
 	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
 	var/list/datum/mission/shop_offers = list()
 	/// Linked trader NPC fronting the main shop (the outpost's "face")
@@ -130,6 +132,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	embargoed_ships.Cut()
 	aggressor_minds.Cut()
 	aggressor_strikes.Cut()
+	aggressor_strike_times.Cut()
 	QDEL_LIST(shop_offers)
 	turrets.Cut()
 	traders.Cut()
@@ -388,6 +391,13 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		return
 	if(aggressor_minds[offender.mind])
 		return
+
+	// One swing can arrive here down several routes, and holding the mouse down
+	// shouldn't spend the whole warning ladder in a tick.
+	var/last_strike = aggressor_strike_times[offender.mind]
+	if(last_strike && world.time < last_strike + OUTPOST_AGGRESSION_GRACE)
+		return
+	aggressor_strike_times[offender.mind] = world.time
 
 	var/strikes = aggressor_strikes[offender.mind] + 1
 	aggressor_strikes[offender.mind] = strikes

@@ -498,7 +498,18 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		return
 
 	if(!can_release_interior())
-		return // someone is still aboard; the next undock re-triggers us
+		// Already released - can_release_interior() refuses on a null reservation too,
+		// and there is nothing left to come back for. Terminal, or the retry below
+		// becomes a permanent heartbeat on every field that ever unloaded.
+		if(!reservation)
+			return
+		// Usually the departing shuttle is still mid-move, or the field is mid-build.
+		// "The next undock re-triggers us" is not a retry: our callers are all one-shot
+		// undock timers, so a field that was busy at this instant kept its reservation,
+		// both berths and every mob spawner until roundend. Same 30s re-arm the queue
+		// timeout below uses - TIMER_UNIQUE, and the same callback, so they can't stack.
+		addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
+		return
 
 	// Freeing the field's reservation is survey-scale teardown work - queue it like
 	// every other job rather than stacking it on top of a build in progress.
@@ -522,6 +533,9 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(!can_release_interior())
 		SSovermap.worldgen_release(src)
 		concerned = FALSE
+		// Same reason as the refusal at the top: the timer that got us here is spent.
+		if(reservation)
+			addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
 	// Flag down before the sweep, not after (and before anything below can yield):

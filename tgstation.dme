@@ -6719,6 +6719,7 @@
 #include "voidcrew\area\megafauna_ban.dm"
 #include "voidcrew\area\ship_areas.dm"
 #include "voidcrew\controllers\subsystem\idle_npc_wakeup.dm"
+#include "voidcrew\controllers\subsystem\instance_census.dm"
 #include "voidcrew\controllers\subsystem\planet_mobs.dm"
 #include "voidcrew\datums\map_zones.dm"
 #include "voidcrew\datums\pod_style.dm"

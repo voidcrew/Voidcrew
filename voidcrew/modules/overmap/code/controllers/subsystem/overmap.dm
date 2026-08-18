@@ -148,8 +148,16 @@ SUBSYSTEM_DEF(overmap)
 
 /**
  * Once-a-minute derelict bookkeeping over the whole fleet. Occupancy is the only
- * signal: living, connected players physically aboard (get_event_crew()). Two clocks
- * run off it, in sequence:
+ * signal: living, connected players physically aboard (get_event_crew()). Three clocks
+ * run off it, the first independent of the other two:
+ *
+ * 0. A hull berthed at a dynamic encounter with nobody alive at the site - not aboard,
+ *    not anywhere on the site's own z-levels - is force-undocked after
+ *    SHIP_SITE_DEAD_UNDOCK_TIME. It holds a berth flag and sits in the site's contents
+ *    for as long as it stays, and a dead crew never undocks, so an encounter's map zone
+ *    (often a whole z-level) used to stay pinned until the hull itself despawned an hour
+ *    and a half later. The hull is not otherwise touched; the two clocks below carry on
+ *    against it in open space.
  *
  * 1. A hull with nobody aboard for SHIP_CREWLESS_ABANDON_TIME is abandoned - the
  *    claimable-derelict state. This is the trigger crew death alone never provided:
@@ -168,17 +176,29 @@ SUBSYSTEM_DEF(overmap)
  *
  * Live NPC ships are exempt from clock 1 - their crews are NPCs, so player occupancy
  * says nothing about them and their own crew-death tracking drives abandonment. Once
- * abandoned (or claimed by players) they are subject to the same rules as any hull,
- * which is what finally stops every killed pirate leaving a permanent wreck.
+ * abandoned, claimed by players, or destroyed they are subject to the same rules as any
+ * hull, which is what finally stops every killed pirate leaving a permanent wreck.
  */
 /datum/controller/subsystem/overmap/proc/sweep_derelicts()
 	var/despawned_one = FALSE
-	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+	// Copy: despawn_derelict() qdels the hull, whose Destroy() takes it out of
+	// simulated_ships, and removing the current entry mid-iteration shifts the list and
+	// skips the next ship for this pass.
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships.Copy())
 		if(QDELETED(ship))
 			continue
 		if(length(ship.get_event_crew()))
 			ship.crewless_since = 0
+			ship.site_dead_since = 0
+			ship.site_dead_undock_refused = FALSE
 			continue
+		// Clock 0, and the only one that runs on a hull nobody has given up on yet: a
+		// crewless hull berthed at a dynamic encounter with nothing alive on the site
+		// either is force-undocked back into open space, so the encounter can tear its
+		// interior down instead of waiting out the two clocks below. See
+		// check_dead_site_undock() - it does its own docked/site-type filtering, and
+		// only reaches a player scan for hulls that are actually berthed somewhere.
+		ship.check_dead_site_undock()
 		if(!ship.crewless_since)
 			ship.crewless_since = world.time
 			continue
@@ -190,13 +210,26 @@ SUBSYSTEM_DEF(overmap)
 				continue
 			despawned_one = ship.despawn_derelict()
 			continue
+		var/obj/structure/overmap/ship/npc/npc_ship
 		if(istype(ship, /obj/structure/overmap/ship/npc))
-			var/obj/structure/overmap/ship/npc/npc_ship = ship
-			if(!npc_ship.player_controlled)
-				continue
+			npc_ship = ship
+		// A live NPC hull is exempt from the crewless clock: its crew are NPCs, so player
+		// occupancy says nothing about it, and its own crew-death tracking drives
+		// abandonment. A DESTROYED one is not. Losing its hull docks a pirate into a
+		// crash site it mints on the spot (make_crash_site), and that site is a fresh map
+		// zone and often a fresh z-level; with the exemption unconditional, any wreck
+		// nobody boarded to finish off held both for the rest of the round. Let it take
+		// the ordinary clocks instead. Nothing here touches the pirate pool - the slot
+		// still resolves on crew wipe, on the key, at abandon_ship(), or from Destroy().
+		if(npc_ship && !npc_ship.player_controlled && npc_ship.integrity_state != SHIP_INTEGRITY_DISABLED)
+			continue
 		if(world.time - ship.crewless_since < SHIP_CREWLESS_ABANDON_TIME)
 			continue
-		if(!length(ship.manifest) && !LAZYLEN(ship.ship_team?.members))
+		// crew_ever_spawned keeps a wreck out of the never-crewed fast path: an NPC hull
+		// carries no manifest and no ship_team, but it is emphatically crewed, and its
+		// wreck is loot and a claimable hull. It gets the full derelict window like any
+		// other ship that had people on it.
+		if(!length(ship.manifest) && !LAZYLEN(ship.ship_team?.members) && !npc_ship?.crew_ever_spawned)
 			// Never crewed: straight to despawn, no derelict window
 			if(!despawned_one)
 				log_shuttle("[ship.name]: never crewed and empty for [(world.time - ship.crewless_since) / 600] minutes - despawning without a derelict window.")

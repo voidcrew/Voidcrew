@@ -6,6 +6,7 @@
 	icon_state = "judge"
 	icon_living = "judge"
 	icon_dead = "judge_dead" // lol
+	greyscale_config = NONE // The beach sheet has no greyscale states to recolour.
 	maxHealth = 40
 	health = 40
 
@@ -29,9 +30,18 @@
 	icon_state = "shark"
 	icon_living = "shark"
 	icon_dead = "shark_dead"
+	greyscale_config = NONE // The beach sheet has no greyscale states to recolour.
 	pixel_x = 0
 	maxHealth = 50
 	health = 50
+
+/mob/living/basic/carp/mega/beach/Initialize(mapload)
+	. = ..()
+	// /mob/living/basic/carp/mega's Initialize renames itself off the megacarp name
+	// lists, so the declared "shark" was arriving in the round as "Sharkbait Chum"
+	// or similar. It also rolls extra health and melee on top of whatever the
+	// subtype declared; that part is left alone.
+	name = initial(name)
 
 /mob/living/basic/carp/mega/beach/apply_colour()
 

@@ -99,8 +99,37 @@
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
-			// Should have a lighting object if we never had one
-			lighting_object = old_lighting_object || new /datum/lighting_object(src)
+			// VOIDCREW EDIT: mirror the area gate that SSlighting.create_all_lighting_objects()
+			// and map_template.dm both apply. Without it every mid-round ChangeTurf into a
+			// static_lighting = FALSE area (/area/overmap, /area/centcom/asteroid/voidcrew,
+			// /area/space, holodecks) accretes a lighting object that roundstart init
+			// deliberately skipped, and nothing ever reclaims it. Every non-static area in the
+			// tree also sets base_lighting_alpha, so the turf stays lit by the area's overlay;
+			// and if the turf's area later becomes static-lit, transfer_area_lighting() builds
+			// the object then.
+			var/area/lit_area = new_turf.loc
+			if(!lit_area || lit_area.static_lighting)
+				// A nested ChangeTurf inside new path(src) - e.g. /turf/closed/mineral/random
+				// rerolling its ore type during Initialize - can already have built a lighting
+				// object for this spot. Blindly building another one here double-assigns and
+				// stack-traces ("a lighting object was assigned to a turf that already had a
+				// lighting object!") on every mid-round terrain generation pass. Reuse whichever
+				// object survives. (This mirrors the same guard in code/game/turfs/change_turf.dm,
+				// which never runs: this body is the outermost link of the duplicate-definition
+				// chain and does not call ..().)
+				if(old_lighting_object && lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE) // drop the nested duplicate, keep the original
+				// Should have a lighting object if we never had one
+				lighting_object = old_lighting_object || lighting_object || new /datum/lighting_object(src)
+			else
+				// Non-static area: same outcome transfer_area_lighting() reaches via
+				// lighting_clear_overlay() when a turf moves into one. Drop a nested duplicate
+				// first, since qdel'ing the old object nulls the turf's pointer either way.
+				if(lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE)
+				if(old_lighting_object)
+					qdel(old_lighting_object, force = TRUE)
+			// END VOIDCREW EDIT
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 

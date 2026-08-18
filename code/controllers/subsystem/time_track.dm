@@ -58,6 +58,18 @@ SUBSYSTEM_DEF(time_track)
 			"tidi_slowavg",
 			"maptick",
 			"num_timers",
+			// VOIDCREW EDIT ADDITION START - memory growth instrumentation (2026-08 OOM investigation)
+			"world_contents",
+			"world_maxz",
+			"mob_count",
+			"alive_mobs",
+			"dead_mobs",
+			"overmap_ships",
+			"map_zones",
+			"gc_queue_total",
+			"gc_totaldels",
+			"gc_totalgcs",
+			// VOIDCREW EDIT ADDITION END
 			"air_turf_cost",
 			"air_eg_cost",
 			"air_highpressure_cost",
@@ -133,6 +145,18 @@ SUBSYSTEM_DEF(time_track)
 			time_dilation_avg_slow,
 			MAPTICK_LAST_INTERNAL_TICK_USAGE,
 			length(SStimer.timer_id_dict),
+			// VOIDCREW EDIT ADDITION START - memory growth instrumentation (order must match the header list above)
+			world.contents.len,
+			world.maxz,
+			length(GLOB.mob_list),
+			length(GLOB.alive_mob_list),
+			length(GLOB.dead_mob_list),
+			length(SSovermap.simulated_ships),
+			length(SSovermap.map_zones),
+			gc_queue_depth(),
+			SSgarbage.totaldels,
+			SSgarbage.totalgcs,
+			// VOIDCREW EDIT ADDITION END
 			SSair.cost_turfs,
 			SSair.cost_groups,
 			SSair.cost_highpressure,
@@ -153,3 +177,12 @@ SUBSYSTEM_DEF(time_track)
 	)
 
 	SSdbcore.reset_tracking()
+
+// VOIDCREW EDIT ADDITION START - memory growth instrumentation
+/// Total number of datums sitting in SSgarbage's collection queues. A climbing
+/// value means qdel'd objects are piling up faster than they resolve.
+/datum/controller/subsystem/time_track/proc/gc_queue_depth()
+	. = 0
+	for(var/list/queue in SSgarbage.queues)
+		. += length(queue)
+// VOIDCREW EDIT ADDITION END
