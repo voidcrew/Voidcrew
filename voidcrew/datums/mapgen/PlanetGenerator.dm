@@ -119,10 +119,27 @@
 	var/area/overmap_encounter/planetoid/cave/cave_area
 	var/caves = FALSE
 	var/overworld = FALSE
+	// Whether this call created cave_area, or borrowed the invoking cave area. Decides
+	// registration (a borrowed one is already in areas_in_z - re-registering appends a
+	// duplicate, reg_in_areas_in_z() does not dedup) and cleanup on the early returns.
+	var/minted_cave_area = FALSE
 
 	if (planet_type.cave_biomes && length(planet_type.cave_biomes) > 0)
 		caves = TRUE
-		cave_area = new
+		// Reuse, never mint, when this IS the cave pass. RunTerrainGeneration() on a cave
+		// area hands us that area's own turfs; minting a fresh instance here made
+		// generate_cave()'s change_area() migrate every tile out of the invoking instance
+		// into the new one, leaving the old cave area empty but still registered - one
+		// leaked /area per planet per build (churn soak: encounter_areas +8/cycle, half of
+		// it this). An empty area has no z, so no teardown reap can ever see one - the fix
+		// has to be here at the mint.
+		if(is_cave && length(turfs))
+			var/area/invoking_area = get_area(turfs[1])
+			if(istype(invoking_area, /area/overmap_encounter/planetoid/cave))
+				cave_area = invoking_area
+		if(isnull(cave_area))
+			cave_area = new
+			minted_cave_area = TRUE
 		cave_area.map_generator = src
 	// This is needed because planet surfaces start as /area/overmap_encounter/planetoid/planet_type
 	// If we're starting with an /area/overmap_encounter/planetoid/cave, we want to ignore overworld_biomes
@@ -151,6 +168,10 @@
 			max_y = bounds_turf.y
 		SSovermap.worldgen_yield(throttled)
 	if(min_x > max_x)
+		// A freshly-minted cave area that will never hold a turf is unreachable by every
+		// reap (an empty area has no z) - take it with us on the way out.
+		if(minted_cave_area)
+			qdel(cave_area)
 		return
 
 	// One lattice geometry, three fields sampled on it. The drift margin is built into
@@ -215,8 +236,9 @@
 		// leaves this loop taking ~70% of every tick for its whole run. See
 		// worldgen_yield() in worldgen_queue.dm.
 		SSovermap.worldgen_yield(throttled)
-	// Register cave areas
-	if(caves)
+	// Register cave areas - only ones this call minted; a borrowed cave area is already
+	// registered, and reg_in_areas_in_z() appends without dedup.
+	if(caves && minted_cave_area)
 		cave_area.reg_in_areas_in_z()
 
 	// Logged, not announced: planets regenerate mid-round, and a world-wide bold
