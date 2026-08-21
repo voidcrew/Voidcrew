@@ -1795,6 +1795,52 @@ SUBSYSTEM_DEF(churn_soak)
 	soak_log("FORENSICS cycle=[cycle] light_sources by_owner: [forensics_top(sources_by_owner, 16)]")
 	soak_log("FORENSICS cycle=[cycle] space-owned sources by z/region/area: [forensics_top(space_owned_where, 12)]")
 	soak_log("FORENSICS cycle=[cycle] space-owned sample: [jointext(space_owned_sample, " ")]")
+
+	// ---- accumulated encounter-area instances -------------------------------------------
+	// The +8/cycle encounter_areas drift has now outlived FOUR fix hypotheses (cave mint
+	// chain, dmm header spares, reap timing, resident-turf staleness). Enumerate the
+	// actual survivors: per type, total instances, how many hold no turfs, and - for the
+	// ones that DO hold turfs - where those turfs are, because a turf-holding instance
+	// parked on a z no teardown sweeps (a transit reservation, CentCom) leaks exactly
+	// this quietly. Names included: instanced areas often carry their creator in them.
+	var/list/enc_by_type = list()
+	var/list/enc_empty = list()
+	var/list/enc_holding_z = list()
+	var/list/enc_sample = list()
+	var/enc_total = 0
+	// `in world`, NOT GLOB.areas: the first instrumented run enumerated GLOB.areas and
+	// found ZERO areas while the sample counter's `for(area in world)` saw 56+ - either
+	// this fork's GLOB.areas is not maintained or something empties it; length logged
+	// below to settle that separately. The world walk is the counter's own idiom and
+	// cannot miss.
+	for(var/area/enc_area in world)
+		if(!istype(enc_area, /area/overmap_encounter))
+			continue
+		enc_total++
+		enc_by_type["[enc_area.type]"]++
+		if(!enc_area.has_contained_turfs())
+			enc_empty["[enc_area.type]"]++
+			if(length(enc_sample) < 8)
+				enc_sample += "EMPTY [enc_area.type] '[enc_area.name]'"
+			continue
+		// Where do a holding instance's turfs actually live?
+		var/turf/witness
+		for(var/list/zlevel_turfs as anything in enc_area.get_zlevel_turf_lists())
+			for(var/turf/resident as anything in zlevel_turfs)
+				if(resident?.loc == enc_area)
+					witness = resident
+					break
+			if(witness)
+				break
+		if(witness)
+			var/datum/holding_region = map_region_for_turf(witness)
+			enc_holding_z["[enc_area.type] z[witness.z] [isnull(holding_region) ? "no-region" : "[holding_region.type]"]"]++
+			if(length(enc_sample) < 8)
+				enc_sample += "HOLDING [enc_area.type] '[enc_area.name]' @([witness.x],[witness.y],[witness.z])"
+	soak_log("FORENSICS cycle=[cycle] encounter area instances total=[enc_total] (GLOB.areas len=[length(GLOB.areas)]) by_type: [forensics_top(enc_by_type, 10)]")
+	soak_log("FORENSICS cycle=[cycle] encounter areas NO turfs: [forensics_top(enc_empty, 10)]")
+	soak_log("FORENSICS cycle=[cycle] encounter areas HOLDING turfs at: [forensics_top(enc_holding_z, 10)]")
+	soak_log("FORENSICS cycle=[cycle] encounter area sample: [jointext(enc_sample, " | ")]")
 	log_disowned_source_shape(cycle)
 	log_pipeline_shape(cycle)
 
