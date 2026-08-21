@@ -124,9 +124,15 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/proc/remove_mapzone()
 	if(mapzone)
-		mapzone.clear_to_uninitialized_space()
-		mapzone.taken = FALSE
+		// Per-slot teardown - see /datum/map_zone/clear_to_uninitialized_space(). An
+		// outpost owns a whole-level slot today, so this is the last-tenant-out path and
+		// behaves exactly as it did before packing.
+		var/datum/map_zone/departing_zone = mapzone
+		var/datum/map_footprint/departing_footprint = footprint
+		departing_zone.clear_to_uninitialized_space(departing_footprint)
+		departing_zone.release_slot(departing_footprint)
 		mapzone = null
+		footprint = null
 
 /obj/structure/overmap/dynamic/player_outpost/examine(mob/user)
 	. = ..()
@@ -198,7 +204,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		else
 			formatted = span_boldnotice("[name]: [message]")
 	if(mapzone)
-		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs())
+		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs_in(footprint))
 			to_chat(occupant, formatted)
 			if(sound_file && occupant.client)
 				var/sound/S = sound(sound_file)
@@ -318,19 +324,28 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		loading = FALSE
 		return FALSE
 
-	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE)
+	// MAP_TENANT_CLASS_OUTPOST, never FLAT: an outpost is a long-lived, preserve_level-shaped
+	// tenant that would pin a lattice slot for the whole round, so it gets its own class and
+	// never shares a level with the flat encounters that recycle every few minutes. The class
+	// deals one whole-level slot today, which is exactly the allocation outposts already had.
+	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE, tenant_class = MAP_TENANT_CLASS_OUTPOST, tenant_owner = src)
 	if(!length(dynamic_encounter_values))
 		loading = FALSE
 		return FALSE
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
+	footprint = LAZYACCESS(dynamic_encounter_values, 4)
 
 	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	// Anchored off the outpost's own footprint - the level rect only happens to agree
+	// while an outpost owns a whole level.
+	var/anchor_low_x = footprint ? footprint.low_x : zlevel.low_x
+	var/anchor_low_y = footprint ? footprint.low_y : zlevel.low_y
 	// Directly north of the docks (which sit at the bottom edge), aligned with the first dock
-	var/shell_min_y = zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
+	var/shell_min_y = anchor_low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
 	var/turf/bottom_left = locate(
-		zlevel.low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
+		anchor_low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
 		shell_min_y,
 		zlevel.z_value
 	)
@@ -354,11 +369,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 	// Buildable region: shell footprint inflated by the build margin, kept off
 	// the z-level border and off the dock rows at the bottom edge
+	var/anchor_high_x = footprint ? footprint.high_x : zlevel.high_x
+	var/anchor_high_y = footprint ? footprint.high_y : zlevel.high_y
 	build_bounds = list(
-		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, zlevel.low_x + 3),
+		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, anchor_low_x + 3),
 		max(bottom_left.y - PLAYER_OUTPOST_BUILD_MARGIN, shell_min_y - 2),
-		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_x - 3),
-		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_y - 3),
+		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_x - 3),
+		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_y - 3),
 	)
 
 	link_interior_machinery()

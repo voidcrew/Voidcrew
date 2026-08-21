@@ -38,6 +38,13 @@
 		return
 	var/datum/weather/affected_weather
 	for(var/datum/weather/weather as anything in SSweather.processing)
+		// VOIDCREW EDIT ADDITION: storms are per-SITE, not per-level. Every voidcrew planet
+		// storm uses area_type = /area/overmap_encounter/planetoid, so on a packed planet
+		// level this matched a CO-TENANT's storm and wind_down() cancelled it outright for a
+		// crew standing on a different planet. A storm with no site keeps the z-wide match.
+		if(weather.weather_site && !weather.weather_site.contains_turf(user_turf))
+			continue
+		// VOIDCREW EDIT END
 		if((user_turf.z in weather.impacted_z_levels) && ispath(user_area.type, weather.area_type))
 			affected_weather = weather
 			break
@@ -89,6 +96,11 @@
 	for(var/datum/weather/weather as anything in SSweather.processing)
 		if(weather.stage != MAIN_STAGE)
 			continue
+		// VOIDCREW EDIT ADDITION: same site scoping as attack_self() above - the damage
+		// boost leaked off a co-tenant planet's storm exactly the same way.
+		if(weather.weather_site && !weather.weather_site.contains_turf(target_turf))
+			continue
+		// VOIDCREW EDIT END
 		if((target_turf.z in weather.impacted_z_levels) && ispath(target_area.type, weather.area_type))
 			power_boosted = TRUE
 			break

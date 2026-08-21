@@ -230,6 +230,28 @@
 		&& SSmapping.get_reservation_from_turf(destination_turf) != SSmapping.get_reservation_from_turf(get_turf(original_destination)))
 		return FALSE
 
+	// VOIDCREW EDIT ADDITION: the same containment, on the slot lattice.
+	// The reserved-level test above was the ONLY thing keeping an imprecise teleport inside
+	// the site it aimed at, and it only ever worked because ruins and asteroid fields lived
+	// on ZTRAIT_RESERVED levels. Packed sites do not - lattice levels are minted
+	// ZTRAIT_MINING + ZTRAIT_LINKAGE - so that test is skipped for them entirely. Meanwhile
+	// a bag of holding pushes precision to at least 100 (see do_teleport() above), and
+	// get_teleport_turfs() is RANGE_TURFS(precision, center): a 201x201 landing square that
+	// covers every slot on a 255x255 packed level. The cordon band is NOTELEPORT and is
+	// already excluded, but a co-tenant's /area/space and /area/ruin are not.
+	//
+	// Refuses only ground that POSITIVELY resolves to a DIFFERENT region, so unclaimed
+	// ground - a roundstart level, deep space, the gutter, a build-out - passes exactly as
+	// it does today and this can never wedge a teleport that currently works.
+	if(istype(original_destination) && destination_turf)
+		var/turf/wanted_turf = get_turf(original_destination)
+		var/datum/wanted_region = wanted_turf ? map_region_for_turf(wanted_turf) : null
+		if(wanted_region)
+			var/datum/landing_region = map_region_for_turf(destination_turf)
+			if(landing_region && landing_region != wanted_region)
+				return FALSE
+	// VOIDCREW EDIT END
+
 	if((origin_area.area_flags & NOTELEPORT) || (destination_area.area_flags & NOTELEPORT))
 		return FALSE
 

@@ -67,6 +67,16 @@
 	LAZYINITLIST(src.atmos_adjacent_turfs)
 	var/list/atmos_adjacent_turfs = src.atmos_adjacent_turfs
 	var/canpass = CANATMOSPASS(src, src, FALSE)
+	// VOIDCREW EDIT: an open turf can have a NULL air. /turf/open/space/basic returns out of New()
+	// before Initialize ever runs - that is the whole point of the type - so isopenturf() waves it
+	// through while it holds no gas mixture at all. It must never be paired with anybody, because
+	// process_cell() archives EVERY entry it finds in atmos_adjacent_turfs, and one null mixture in
+	// there is "Cannot execute null.archive()" every tick for the rest of the round.
+	// This is deliberately folded into the share test rather than made its own `continue`: falling
+	// through to the else below is what REMOVES a pairing an earlier raw turf swap left standing,
+	// and a continue would leave exactly the stale entry we are here to clear.
+	var/turf/open/open_src = src
+	var/we_hold_air = !isopenturf(src) || open_src.air
 	// I am essentially inlineing two get_dir_multizs here, because they're way too slow on their own. I'm sorry brother
 	var/list/z_traits = SSmapping.multiz_levels[z]
 	for(var/direction in GLOB.cardinals_multiz)
@@ -93,7 +103,9 @@
 
 		//Can you and me form a deeper relationship, or is this just a passing wind
 		// (direction & (UP | DOWN)) is just "is this vertical" by the by
-		if(canpass && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
+		// VOIDCREW EDIT: `we_hold_air`/`open_neighbour.air` - see the note above the loop.
+		var/turf/open/open_neighbour = current_turf
+		if(canpass && we_hold_air && open_neighbour.air && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
 			LAZYINITLIST(current_turf.atmos_adjacent_turfs)
 			atmos_adjacent_turfs[current_turf] = TRUE
 			current_turf.atmos_adjacent_turfs[src] = TRUE
@@ -112,6 +124,15 @@
 	LAZYINITLIST(src.atmos_adjacent_turfs)
 	var/list/atmos_adjacent_turfs = src.atmos_adjacent_turfs
 	var/canpass = CANATMOSPASS(src, src, FALSE)
+	// VOIDCREW EDIT: an open turf can have a NULL air - /turf/open/space/basic never Initializes,
+	// and the packed-level teardown paints whole rectangles of them in with a raw turf swap that
+	// nothing recalculates adjacency for. Pairing with one puts a null mixture in somebody's
+	// atmos_adjacent_turfs and process_cell() then archives it every tick, forever.
+	// Folded into the share test on purpose: this proc is the ONLY thing that prunes a stale
+	// pairing (the else below strips it from BOTH sides), so a `continue` here would be a no-op
+	// against the entry that is actually causing the runtime.
+	var/turf/open/open_src = src
+	var/we_hold_air = !isopenturf(src) || open_src.air
 	for(var/direction in GLOB.cardinals_multiz)
 		var/turf/current_turf = get_step_multiz(src, direction)
 		if(!isopenturf(current_turf)) // not interested in you brother
@@ -119,7 +140,8 @@
 
 		//Can you and me form a deeper relationship, or is this just a passing wind
 		// (direction & (UP | DOWN)) is just "is this vertical" by the by
-		if(canpass && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
+		var/turf/open/open_neighbour = current_turf
+		if(canpass && we_hold_air && open_neighbour.air && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
 			LAZYINITLIST(current_turf.atmos_adjacent_turfs)
 			atmos_adjacent_turfs[current_turf] = TRUE
 			current_turf.atmos_adjacent_turfs[src] = TRUE

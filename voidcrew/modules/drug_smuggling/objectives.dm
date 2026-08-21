@@ -149,21 +149,19 @@
 	hooked_ruin = null
 
 /**
- * Sweeps the lab reservation's turf block for /obj/machinery/drug_lab and
- * points each at the mission's session. Safe to call repeatedly.
+ * Sweeps the lab site's own slot for /obj/machinery/drug_lab and points each at the
+ * mission's session. Safe to call repeatedly.
  */
 /datum/mission_objective/drug_cook/proc/wire_lab()
 	var/datum/mission/drug_run/run = mission
 	if(!istype(run) || !run.session)
 		return
-	var/datum/turf_reservation/reservation = run.lab_ruin?.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
+	// The site's rectangle, not its z-level: a packed level carries up to four sites and
+	// the wide sweep would adopt a neighbouring lab's machines into this session.
+	var/list/turf/lab_block = run.lab_ruin?.footprint?.get_block()
+	if(!length(lab_block))
 		return
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	var/turf/top_right = reservation.top_right_turfs[1]
-	if(!bottom_left || !top_right)
-		return
-	for(var/turf/tile as anything in block(bottom_left, top_right))
+	for(var/turf/tile as anything in lab_block)
 		for(var/obj/machinery/drug_lab/machine in tile)
 			machine.session_ref = WEAKREF(run.session)
 			run.session.register_machine(machine)

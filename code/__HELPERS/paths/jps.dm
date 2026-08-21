@@ -122,16 +122,21 @@
 	if(QDELETED(requester))
 		return FALSE
 
+	// These were inline list() literals, which meant two list allocations for every single node
+	// popped off the open heap. Statics: same contents, allocated once for the whole round.
+	var/static/list/cardinal_scans = list(EAST, WEST, NORTH, SOUTH)
+	var/static/list/diagonal_scans = list(NORTHEAST, SOUTHEAST, NORTHWEST, SOUTHWEST)
+
 	while(!open.is_empty() && !path)
 		var/datum/jps_node/current_processed_node = open.pop() //get the lower f_value turf in the open list
 		if(max_distance && (current_processed_node.number_tiles > max_distance))//if too many steps, don't process that path
 			continue
 
 		var/turf/current_turf = current_processed_node.tile
-		for(var/scan_direction in list(EAST, WEST, NORTH, SOUTH))
+		for(var/scan_direction as anything in cardinal_scans)
 			lateral_scan_spec(current_turf, scan_direction, current_processed_node)
 
-		for(var/scan_direction in list(NORTHEAST, SOUTHEAST, NORTHWEST, SOUTHWEST))
+		for(var/scan_direction as anything in diagonal_scans)
 			diag_scan_spec(current_turf, scan_direction, current_processed_node)
 
 		// Stable, we'll just be back later

@@ -291,6 +291,21 @@ GLOBAL_LIST_EMPTY(chasm_fallen_mobs)
 	if(istype(area, /area/shuttle)) //shuttle move between z-levels, so they're a special case.
 		return area
 
+	// VOIDCREW EDIT: the map region a turf belongs to - a packed slot's footprint, a planet's,
+	// or a turf reservation - is the site, and it is finer than any z trait. This has to be
+	// tested BEFORE the trait ladder below, because every branch of that ladder is now wrong
+	// for an encounter: lattice encounter levels are minted ZTRAIT_MINING, so they would fall
+	// into one galaxy-wide mining bucket, and one ship docking anywhere on a level flips the
+	// whole thing ZTRAIT_STATION (link_to_z_level(), _docking_port.dm), which catches even the
+	// reserved ruin levels the "[ZTRAIT_RESERVED]-[z]" key below was written for. That key was
+	// itself only per-site while a site owned a z-level, which packing ends.
+	//
+	// Keyed by REF rather than by the region datum: GLOB.chasm_fallen_mobs holds these
+	// forever, and a datum key would be a hard-delete blocker on every torn-down site.
+	var/datum/region = map_region_for_turf(turf)
+	if(region)
+		return "site-[REF(region)]-[z_level]"
+
 	if(is_away_level(z_level))
 		return ZTRAIT_AWAY
 	if(is_mining_level(z_level))
@@ -300,7 +315,7 @@ GLOBAL_LIST_EMPTY(chasm_fallen_mobs)
 	if(is_centcom_level(z_level))
 		return ZTRAIT_CENTCOM
 	if(is_reserved_level(z_level))
-		return "[ZTRAIT_RESERVED]-[z_level]" // VOIDCREW EDIT: each encounter/planet owns its own z-level, so key fallen mobs per-site rather than one galaxy-wide rescue bucket
+		return "[ZTRAIT_RESERVED]-[z_level]" // VOIDCREW EDIT: reservation ground with no registered block, kept per-z rather than one galaxy-wide rescue bucket
 
 	return ZTRAIT_SPACE_RUINS
 

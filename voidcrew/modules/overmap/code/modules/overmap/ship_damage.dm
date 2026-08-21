@@ -275,28 +275,39 @@
 		make_crash_site()
 		return
 
-	// Pick a random spot that keeps the whole hull inside the planet's footprint.
-	// zlevel.low_*..high_* bound the buildable surface; everything outside that band is
-	// indestructible cordon, and a hull force-docked into the cordon is sealed in for
-	// good. The old upper bounds used low + world.maxx/maxy, which on a 128x128 planet
-	// put roughly half the random range inside the cordon (or off the map entirely) -
-	// round 4's 10-hour hull was entombed exactly this way by its own derelict
-	// auto-crash.
+	// Pick a random spot that keeps the whole hull inside THIS PLANET's footprint.
+	//
+	// The site rect bounds the buildable surface; everything outside it is either
+	// indestructible cordon or - on a packed z-level - a different planet's ground. A hull
+	// force-docked into the cordon is sealed in for good, and one force-docked onto the
+	// neighbour lands on a world its crew never surveyed, past a cordon they cannot cross,
+	// while :317-320 below records it as docked to THIS planet. The bounds were once
+	// low + world.maxx/maxy, which on a 128x128 planet put roughly half the random range in
+	// the cordon (or off the map) - round 4's 10-hour hull was entombed exactly that way by
+	// its own derelict auto-crash. The level's rect is the same class of mistake once a level
+	// is shared, since it widens to the whole z the moment a second tenant lands.
+	var/datum/map_footprint/site = planet.footprint
+	var/has_footprint = site && !isnull(site.low_x) && site.z_value
+	var/site_low_x = has_footprint ? site.low_x : zlevel.low_x
+	var/site_low_y = has_footprint ? site.low_y : zlevel.low_y
+	var/site_high_x = has_footprint ? site.high_x : zlevel.high_x
+	var/site_high_y = has_footprint ? site.high_y : zlevel.high_y
+	var/site_z = has_footprint ? site.z_value : zlevel.z_value
 	var/padding = max(shuttle.width, shuttle.height) + 5
-	var/min_x = zlevel.low_x + padding
-	var/max_x = zlevel.high_x - padding
-	var/min_y = zlevel.low_y + padding
-	var/max_y = zlevel.high_y - padding
+	var/min_x = site_low_x + padding
+	var/max_x = site_high_x - padding
+	var/min_y = site_low_y + padding
+	var/max_y = site_high_y - padding
 	var/target_x
 	var/target_y
 	if(min_x > max_x || min_y > max_y)
 		// Hull too large for a padded pick - aim for the middle of the footprint
-		target_x = round((zlevel.low_x + zlevel.high_x) / 2)
-		target_y = round((zlevel.low_y + zlevel.high_y) / 2)
+		target_x = round((site_low_x + site_high_x) / 2)
+		target_y = round((site_low_y + site_high_y) / 2)
 	else
 		target_x = rand(min_x, max_x)
 		target_y = rand(min_y, max_y)
-	var/turf/crash_turf = locate(target_x, target_y, zlevel.z_value)
+	var/turf/crash_turf = locate(target_x, target_y, site_z)
 
 	if(!crash_turf)
 		make_crash_site()

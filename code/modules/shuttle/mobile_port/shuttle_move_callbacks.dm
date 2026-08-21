@@ -364,6 +364,14 @@ All ShuttleMove procs go here
 
 /obj/structure/cable/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
+	// Voidcrew: gated on MOVE_AREA, matching /obj/structure/lattice above. Without it a
+	// cable the move is NOT carrying gets cut anyway - and never reconnected, because
+	// afterShuttleMove()'s Connect_cable() only runs for atoms in moved_atoms, which
+	// needs MOVE_CONTENTS. Any foreign cable that ends up inside the move rectangle (a
+	// co-tenant's grid on a packed z-level, ground the hull is merely parked on) is
+	// therefore killed silently and permanently by a ship taking off next to it.
+	if(!(. & MOVE_AREA))
+		return
 	// No neighbour re-propagation: every neighbour is also about to be cut and moved,
 	// and the deferred timers would fire mid-transplant (the move CHECK_TICK-yields),
 	// pinning half-built powernets onto cables that afterShuttleMove() then trusts.

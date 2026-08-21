@@ -31,8 +31,11 @@
 	if(mapload && prob(33))
 		MakeDirty()
 
-	if(is_station_level(z))
+	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// `if(is_station_level(z))`. See the matching comment on /turf/closed/wall/Initialize().
+	if(is_station_level(z) && !map_region_for_turf(src))
 		GLOB.station_turfs += src
+	// VOIDCREW EDIT END
 
 /turf/open/floor/broken_states()
 	return list("damaged1", "damaged2", "damaged3", "damaged4", "damaged5")
@@ -41,8 +44,11 @@
 	return list()
 
 /turf/open/floor/Destroy()
-	if(is_station_level(z))
+	// VOIDCREW EDIT CHANGE: symmetric with the guard in Initialize() - original was
+	// `if(is_station_level(z))`. See /turf/closed/wall/Destroy().
+	if(length(GLOB.station_turfs) && !map_region_for_turf(src))
 		GLOB.station_turfs -= src
+	// VOIDCREW EDIT END
 	return ..()
 
 /turf/open/floor/ex_act(severity, target)

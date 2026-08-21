@@ -1,5 +1,5 @@
 /datum/biome/lavaland
-	open_turf_types = list(/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/planetary_basalt/lava_land_surface = 1)
 	// flora_spawn_chance = 10
 	// flora_spawn_list = list(
 	// 	/obj/structure/flora/ausbushes/sparsegrass/hell = 100,

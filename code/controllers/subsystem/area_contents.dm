@@ -32,10 +32,13 @@ SUBSYSTEM_DEF(area_contents)
 
 	while(length(currentrun))
 		var/area/test = currentrun[length(currentrun)]
-		for (var/area_zlevel in 1 to length(test.turfs_to_uncontain_by_zlevel))
-			if(length(test.turfs_to_uncontain_by_zlevel[area_zlevel]) > ALLOWED_LOOSE_TURFS)
-				marked_for_clearing |= test
-				break
+		// A destroyed area has both bookkeeping lists nulled, so there is nothing to mark and
+		// marking it would only pin the corpse until the next drain.
+		if(!QDELETED(test))
+			for (var/area_zlevel in 1 to length(test.turfs_to_uncontain_by_zlevel))
+				if(length(test.turfs_to_uncontain_by_zlevel[area_zlevel]) > ALLOWED_LOOSE_TURFS)
+					marked_for_clearing |= test
+					break
 		currentrun.len--
 		if(MC_TICK_CHECK)
 			return
@@ -43,6 +46,14 @@ SUBSYSTEM_DEF(area_contents)
 	// Alright, if we've done a scan on all our areas, it's time to knock the existing ones down to size
 	while(length(marked_for_clearing))
 		var/area/clear = marked_for_clearing[length(marked_for_clearing)]
+		// Marked during the scan, died before the drain reached it. /area/Destroy() nulls
+		// turfs_to_uncontain_by_zlevel, so every length() below would read 0 anyway - drop it
+		// rather than leaving a dead area sitting at the end of the list.
+		if(QDELETED(clear) || isnull(clear.turfs_to_uncontain_by_zlevel))
+			marked_for_clearing.len--
+			if(MC_TICK_CHECK)
+				return
+			continue
 
 		for (var/area_zlevel in 1 to length(clear.turfs_to_uncontain_by_zlevel))
 			if (!length(clear.turfs_to_uncontain_by_zlevel[area_zlevel]))
@@ -52,19 +63,47 @@ SUBSYSTEM_DEF(area_contents)
 				clear.turfs_to_uncontain_by_zlevel[area_zlevel] = list()
 				continue
 
-			// The operation of cutting large lists can be expensive
-			// It scales almost directly with the size of the list we're cutting with
-			// Because of this, we're gonna stick to cutting 1 entry at a time
-			// There's no reason to batch it I promise, this is faster. No overtime too
-			var/amount_cut = 0
-			var/list/cut_from = clear.turfs_to_uncontain_by_zlevel[area_zlevel]
-			for(amount_cut in 1 to length(cut_from))
-				clear.turfs_by_zlevel[area_zlevel] -= cut_from[amount_cut]
-				if(MC_TICK_CHECK)
-					cut_from.Cut(1, amount_cut + 1)
-					return
+			// VOIDCREW EDIT REPLACEMENT START - drain a whole z-level per pass, through the
+			// counted-occurrence rebuild in cannonize_contained_turfs_by_zlevel().
+			//
+			// This used to cut one entry at a time with `turfs_by_zlevel[z] -= cut_from[i]`,
+			// on the theory that a per-entry cut yields more smoothly than a batch. It does,
+			// but each of those cuts is a full O(N) rescan of a list the area doc itself calls
+			// HUGE - on /area/space that is ~65,000 entries. Draining one packed level's
+			// teardown (~121,000 loose turfs) that way is ~10^11 comparisons, so the drain
+			// made a few hundred cuts per fire and lost the race permanently. Both lists then
+			// grew by a whole footprint every build/teardown cycle, which is where the soak's
+			// unexplained ~116 MB/h of retained memory lived: list CONTENTS, not instances.
+			//
+			// The rebuild is O(contained + cut) and must not be split, because a partially
+			// rebuilt list plus a concurrent change_area() append is corruption. One z-level
+			// is therefore the atomic unit: the tick check runs BEFORE it so the pass starts
+			// with a full budget rather than the tail of someone else's.
+			//
+			// It also has to be _autoclean = FALSE and per-z. The old code emptied the WHOLE
+			// cut list in one assignment after the z loop - and change_area() appends to that
+			// same list during every MC_TICK_CHECK yield taken above it, so any entry that
+			// landed mid-drain was thrown away without ever being applied. The turf stayed in
+			// turfs_by_zlevel forever with nothing left to remove it: a permanent phantom
+			// occupant, and the reason has_contained_turfs() could not be trusted (see
+			// has_resident_turfs() in areas.dm). cannonize_contained_turfs_by_zlevel() clears
+			// only the z it just applied, inside the same unyielding call, so there is no
+			// window for an append to be lost.
+			if(MC_TICK_CHECK)
+				return
+			clear.cannonize_contained_turfs_by_zlevel(area_zlevel, _autoclean = FALSE)
+			// VOIDCREW EDIT REPLACEMENT END
 
-		clear.turfs_to_uncontain_by_zlevel = list()
+		// VOIDCREW EDIT ADDITION - trim the trailing empty z lists off the cut list.
+		// `_autoclean = FALSE` above is mandatory: the autoclean tail shortens this very list,
+		// and the `1 to length()` bound above is snapshotted, so letting it run mid-loop would
+		// index off the end. The trim has to happen somewhere though - get_zlevel_turf_lists()
+		// decides whether to cannonize at all from `length(turfs_to_uncontain_by_zlevel)`, and
+		// it is called on hot paths (APC power, lighting, get_turfs_from_all_zlevels). Leaving
+		// a full-length list of empty lists behind would make every one of those calls walk
+		// every z for nothing. Only trailing empties are dropped, so nothing pending is lost.
+		clear.trim_trailing_empty_uncontain_lists()
+
 		marked_for_clearing.len--
 
 #undef ALLOWED_LOOSE_TURFS

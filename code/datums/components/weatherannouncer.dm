@@ -132,7 +132,9 @@
 
 	var/time_until_next = INFINITY
 	for(var/mining_level in mining_z_levels)
-		var/next_time = timeleft(SSweather.next_hit_by_zlevel["[mining_level ]"]) || INFINITY
+		// VOIDCREW EDIT: soonest storm across every weather site on the level, not the level's
+		// single cooldown timer - a level can carry more than one site now.
+		var/next_time = SSweather.next_hit_timeleft_for_z(mining_level) || INFINITY
 		if (next_time && next_time < time_until_next)
 			time_until_next = next_time
 	return time_until_next

@@ -111,7 +111,7 @@
 	// builder authorization and ownership transfer
 	var/list/candidates = list()
 	if(outpost.mapzone)
-		for(var/mob/living/candidate as anything in outpost.mapzone.get_mind_mobs())
+		for(var/mob/living/candidate as anything in outpost.mapzone.get_mind_mobs_in(outpost.footprint))
 			if(!candidate.ckey || candidate.ckey == outpost.founder_ckey)
 				continue
 			candidates += list(list(
@@ -195,7 +195,7 @@
 			var/mob/living/candidate = locate(params["ref"])
 			if(!istype(candidate) || !candidate.ckey)
 				return
-			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs()))
+			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs_in(outpost.footprint)))
 				return
 			outpost.authorized_builder_ckeys |= candidate.ckey
 			to_chat(candidate, span_notice("You are now authorized to use [outpost.name]'s construction console."))
@@ -207,7 +207,7 @@
 			var/mob/living/candidate = locate(params["ref"])
 			if(!istype(candidate) || !candidate.ckey)
 				return
-			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs()))
+			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs_in(outpost.footprint)))
 				return
 			if(tgui_alert(usr, "Transfer ownership of [outpost.name] to [candidate.real_name]? This cannot be undone.", "Transfer Ownership", list("Transfer", "Cancel")) != "Transfer")
 				return

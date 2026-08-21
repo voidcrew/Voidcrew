@@ -1,5 +1,69 @@
 #define BIOME_RANDOM_SQUARE_DRIFT 2
 
+/**
+ * Spacing, in tiles, of the lattice each noise field is sampled on. Every tile's real
+ * value is bilinearly interpolated from the four lattice points around it.
+ *
+ * rustg_noise_get_at_coordinates() is an FFI call whose arguments are marshalled as text
+ * and whose result comes back as text to be parsed, and the old loop made three of them
+ * per tile - roughly 49,000 round trips, 49,000 text2num parses and 98,000
+ * float-to-string interpolations for a 128x128 planet. At perlin_zoom 65 these fields
+ * vary over ~65-tile wavelengths, so a 4-tile lattice reproduces them far inside the
+ * width of a single biome band: ~3,500 calls instead of ~49,000, for the same terrain.
+ *
+ * The per-tile drift is applied to the interpolated coordinate rather than to the lattice
+ * sample, so biome borders still dither exactly as they did.
+ *
+ * Set to 1 to read every tile individually again - the lattice then lands on the integer
+ * coordinates themselves and the interpolation degenerates to an exact read - if a biome
+ * layout ever looks wrong and you need to rule this out.
+ */
+#define PLANET_NOISE_STRIDE 4
+
+/**
+ * One noise field, sampled once onto a coarse lattice and read back by interpolation -
+ * see PLANET_NOISE_STRIDE.
+ *
+ * Plain data with no outside references: built at the top of a generation pass, read once
+ * per tile, and dropped when the pass returns.
+ */
+/datum/noise_field
+	/// Lattice values, row-major and 1-indexed as `1 + gx + grid_w * gy`.
+	var/list/values
+	/// World coordinates of lattice column 0 / row 0.
+	var/min_x = 0
+	var/min_y = 0
+	/// Lattice dimensions, in lattice points (not tiles).
+	var/grid_w = 0
+	var/grid_h = 0
+
+/**
+ * Bilinear read of this field at world coordinates (x, y). Coordinates outside the
+ * sampled block clamp to its edge - which is what the drift margin the builder adds is
+ * there to keep from happening.
+ */
+/datum/noise_field/proc/sample(x, y)
+	var/fx = (x - min_x) / PLANET_NOISE_STRIDE
+	var/fy = (y - min_y) / PLANET_NOISE_STRIDE
+	// Single-argument round() is FLOOR in DM, not round-to-nearest - which is what this
+	// wants, so that tx/ty below land in [0,1) and the read interpolates between the
+	// lattice cell's own corners. (The same fact is what makes FLOOR() in
+	// code/__DEFINES/maths.dm work.) Do not "fix" this to round-to-nearest.
+	var/gx = clamp(round(fx), 0, grid_w - 2)
+	var/gy = clamp(round(fy), 0, grid_h - 2)
+	var/tx = fx - gx
+	var/ty = fy - gy
+	var/low_index = 1 + gx + grid_w * gy
+	var/high_index = low_index + grid_w
+	var/low_row = values[low_index] + (values[low_index + 1] - values[low_index]) * tx
+	var/high_row = values[high_index] + (values[high_index + 1] - values[high_index]) * tx
+	// Clamped because every consumer is a switch() over 0..1 bands, and a value that
+	// fell outside them would match no branch, leave the caller's biome level null and
+	// runtime on the next list index. A convex blend of four in-range corners cannot
+	// leave the range on its own; this is here so an edge tile that extrapolates by a
+	// hair still cannot.
+	return clamp(low_row + (high_row - low_row) * ty, 0, 1)
+
 /datum/map_generator/planet_generator
 	var/name = "Planet Generator"
 	/// Whether generation loops share the queued worldgen job's tick budget (see
@@ -13,6 +77,31 @@
 	var/smoothing_iterations = 20
 	var/birth_limit = 4
 	var/death_limit = 3
+
+/**
+ * Samples one noise field across the given lattice: one FFI call per lattice point,
+ * where the per-tile loop used to make one per tile. See PLANET_NOISE_STRIDE.
+ */
+/datum/map_generator/planet_generator/proc/build_noise_field(seed, min_x, min_y, grid_w, grid_h)
+	var/datum/noise_field/field = new
+	field.min_x = min_x
+	field.min_y = min_y
+	field.grid_w = grid_w
+	field.grid_h = grid_h
+
+	var/list/values = new /list(grid_w * grid_h)
+	var/index = 1
+	for(var/gy in 0 to grid_h - 1)
+		var/sample_y = (min_y + gy * PLANET_NOISE_STRIDE) / perlin_zoom
+		for(var/gx in 0 to grid_w - 1)
+			var/sample_x = (min_x + gx * PLANET_NOISE_STRIDE) / perlin_zoom
+			values[index] = text2num(rustg_noise_get_at_coordinates("[seed]", "[sample_x]", "[sample_y]"))
+			index++
+		// Once per lattice ROW, not per point: a row is only a few dozen calls.
+		SSovermap.worldgen_yield(throttled)
+
+	field.values = values
+	return field
 
 /datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type, is_cave, init_planet)
 	. = ..()
@@ -43,14 +132,56 @@
 
 	if (!caves && !overworld)
 		return
+
+	// Extent of the block we were handed, for the noise lattice below. Pure arithmetic
+	// over the turf list - no FFI and no allocation - so it batches its yields hard
+	// rather than offering one per tile.
+	var/min_x = INFINITY
+	var/min_y = INFINITY
+	var/max_x = 0
+	var/max_y = 0
+	for(var/turf/bounds_turf as anything in turfs)
+		if(bounds_turf.x < min_x)
+			min_x = bounds_turf.x
+		if(bounds_turf.x > max_x)
+			max_x = bounds_turf.x
+		if(bounds_turf.y < min_y)
+			min_y = bounds_turf.y
+		if(bounds_turf.y > max_y)
+			max_y = bounds_turf.y
+		SSovermap.worldgen_yield(throttled)
+	if(min_x > max_x)
+		return
+
+	// One lattice geometry, three fields sampled on it. The drift margin is built into
+	// the origin and the width so a tile jittered off the edge of the block still lands
+	// inside the lattice instead of clamping to it.
+	var/noise_min_x = min_x - BIOME_RANDOM_SQUARE_DRIFT
+	var/noise_min_y = min_y - BIOME_RANDOM_SQUARE_DRIFT
+	var/grid_w = round(((max_x + BIOME_RANDOM_SQUARE_DRIFT) - noise_min_x) / PLANET_NOISE_STRIDE) + 2
+	var/grid_h = round(((max_y + BIOME_RANDOM_SQUARE_DRIFT) - noise_min_y) / PLANET_NOISE_STRIDE) + 2
+
+	var/datum/noise_field/heat_field = build_noise_field(heat_seed, noise_min_x, noise_min_y, grid_w, grid_h)
+	var/datum/noise_field/humidity_field = build_noise_field(humidity_seed, noise_min_x, noise_min_y, grid_w, grid_h)
+	var/datum/noise_field/height_field = build_noise_field(height_seed, noise_min_x, noise_min_y, grid_w, grid_h)
+
 	for(var/t in turfs)
 		var/turf/gen_turf = t
-		var/drift_x = (gen_turf.x + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)) / perlin_zoom
-		var/drift_y = (gen_turf.y + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)) / perlin_zoom
+		var/drift_x = gen_turf.x + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)
+		var/drift_y = gen_turf.y + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)
 
-		var/heat = text2num(rustg_noise_get_at_coordinates("[heat_seed]", "[drift_x]", "[drift_y]"))
-		var/height = text2num(rustg_noise_get_at_coordinates("[height_seed]", "[drift_x]", "[drift_y]"))
-		var/humidity = text2num(rustg_noise_get_at_coordinates("[humidity_seed]", "[drift_x]", "[drift_y]"))
+		var/heat = heat_field.sample(drift_x, drift_y)
+		// VOIDCREW EDIT: height is sampled UNDRIFTED, unlike heat and humidity. Height's
+		// only consumer is the cave-vs-surface decision below, and that decision now also
+		// picks the turf's AREA - dark static cave against bright ambient surface. Sampling
+		// it at the drifted coordinates dithered that boundary tile-by-tile: invisible when
+		// every turf was /lit and light was corner-continuous, a hard bright/dark
+		// checkerboard under area lighting. Undrifted, the lighting boundary is the raw
+		// noise curve and ambient bleed shades across it; heat and humidity keep the drift
+		// so biome FLAVOR still dithers naturally on both sides.
+		var/height = height_field.sample(gen_turf.x, gen_turf.y)
+		// END VOIDCREW EDIT (was: sampled at drift_x/drift_y)
+		var/humidity = humidity_field.sample(drift_x, drift_y)
 		var/humidity_level
 
 		if(caves)
@@ -122,10 +253,98 @@
  * bypasses ChangeTurf - and with it the lighting update. That is invisible when terrain
  * generates before SSlighting comes up, and produces a black, unlit planet when it does
  * not. Planets that generate on first visit are always in the second case.
+ *
+ * So the raw swap is taken only where there is no lighting update to miss. Ambient-lit
+ * ground - a planet surface: static_lighting FALSE, ambient_lighting TRUE, a non-zero
+ * base_lighting_alpha - carries NO lighting object at all, because the area paints it
+ * wholesale (see /turf/proc/skips_lighting_object()). For those tiles ChangeTurf's entire
+ * lighting branch resolves to "delete the object you were never going to have", and what
+ * it charges to get there is a COMSIG_TURF_CHANGE signal and its callback list, a
+ * qdel()/Destroy() of the old tile, two signal-lookup list copies, a baseturfs rebuild, an
+ * atmos AfterChange, directional-opacity recalculation and a starlight neighbour sweep -
+ * on every one of a planet's ~16,000 tiles, to reach the same end state as a raw `new`.
+ *
+ * Four things keep the fast path honest:
+ *
+ * 1. `destined_for_cave`, rather than asking gen_turf what area it is in. Cave tiles are
+ *    laid down while still inside the SURFACE area and only moved into the cave area
+ *    afterwards (see generate_cave), so the tile's own answer is "ambient ground" for a
+ *    tile that is about to become a statically lit cave and genuinely needs an object.
+ *    Caves keep ChangeTurf.
+ * 2. A turf that lights ITSELF - a lava river, the fallout zone's hazard green - needs an
+ *    object for its own light to land on, which is exactly the exception
+ *    skips_lighting_object() carves out. Any type declaring a light_range takes the slow
+ *    path.
+ * 3. release_light_for_raw_swap() first. A raw swap DROPS the old tile's light source
+ *    rather than freeing it, and a dropped source is uncollectable rather than merely
+ *    garbage - it and the lighting corners it applied to hold each other under pure
+ *    refcounting. This is the same guard the cave generators carry for the same reason
+ *    (code/datums/mapgen/CaveGenerator.dm).
+ * 4. adopt_lighting_from_raw_swap() after. ChangeTurf carries the old turf's four
+ *    /datum/lighting_corner refs across its own qdel()/new() pair; a raw swap gets the
+ *    type defaults instead, and a turf with null corner refs standing on vertices that
+ *    already have corners MINTS NEW ONES and steals them from the neighbours it shares
+ *    them with. That is what a cave mouth lit on one side and black on the other is.
+ *
+
+ * The fast path only ever lays OPEN turfs, because generate_overworld only ever picks from
+ * open_turf_types. That matters for atmos: an open turf queues its own adjacency rebuild
+ * through requires_activation in /turf/Initialize, where a closed one never does and would
+ * have to be handed to CALCULATE_ADJACENT_TURFS by hand.
  */
-/datum/map_generator/planet_generator/proc/place_biome_turf(turf/gen_turf, turf/turf_type)
+/datum/map_generator/planet_generator/proc/place_biome_turf(turf/gen_turf, turf/turf_type, destined_for_cave = FALSE)
 	if(!SSlighting.initialized)
 		return new turf_type(gen_turf)
+
+	if(!destined_for_cave && !initial(turf_type.light_range))
+		var/area/ground_area = gen_turf.loc
+		if(ground_area?.ambient_lighting && !ground_area.static_lighting && ground_area.base_lighting_alpha)
+			// The two flags ChangeTurf carries across a swap; nothing else on a turf's
+			// flags is meant to survive one.
+			var/carryover_flags = (RESERVATION_TURF | UNUSED_RESERVATION_TURF) & gen_turf.turf_flags
+			// Captured before the swap, for the bleed maintenance below - which is the ONE
+			// thing ChangeTurf does on this path that is not lighting bookkeeping we are
+			// deliberately skipping. See the call at the bottom of this branch.
+			var/old_type = gen_turf.type
+			var/datum/lighting_object/old_lighting_object = gen_turf.lighting_object
+			// Second casualty of skipping ChangeTurf's qdel(src): /turf/open/space/Destroy()
+			// is what takes a lit space turf back out of GLOB.starlight, and it never runs on a
+			// raw swap. The entry is not merely stale - BYOND retargets it onto the ground turf
+			// we just laid, set_starlight() then walks the list `as anything` and relights it,
+			// and if that spot is ever lit space again enable_starlight() appends a turf that is
+			// already a member, so a churning zone grows a duplicate per cycle. Same guard
+			// place_cordon_turf() carries, for the same reason (voidcrew/datums/map_zones.dm).
+			if(isspaceturf(gen_turf) && gen_turf.light_on)
+				GLOB.starlight -= gen_turf
+			gen_turf.release_light_for_raw_swap()
+			// Third casualty, and the one that shows: the four lighting corners. A planet
+			// block is filled with LIT SPACE before we touch it (that is what the
+			// GLOB.starlight guard above exists for), so every tile already carries four
+			// corner datums shared with its neighbours - and a raw `new` drops all four
+			// refs where ChangeTurf would have carried them. The tile then mints
+			// replacements for vertices that already have them and steals the finished
+			// cave tile next door's corner out from under its lighting object. Read AFTER
+			// release_light_for_raw_swap(), which can idle a corner out from under us.
+			// See /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+			var/datum/lighting_corner/corner_ne = gen_turf.lighting_corner_NE
+			var/datum/lighting_corner/corner_se = gen_turf.lighting_corner_SE
+			var/datum/lighting_corner/corner_sw = gen_turf.lighting_corner_SW
+			var/datum/lighting_corner/corner_nw = gen_turf.lighting_corner_NW
+			var/old_dynamic_lumcount = gen_turf.dynamic_lumcount
+			var/turf/fast_turf = new turf_type(gen_turf)
+			fast_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+			fast_turf.turf_flags |= carryover_flags
+			fast_turf.assemble_baseturfs(initial(fast_turf.baseturfs) || fast_turf.type)
+			// NOT optional, and the reason the first cut of this shipped razor-hard edges.
+			// Ambient-lit ground carries no lighting object, so the only thing softening the
+			// boundary between it and a statically lit tile - a cave mouth, a ruin wall, the
+			// planet's own edge - is the bleed light this gives the tile. /turf/ChangeTurf
+			// calls it for every tile it lays (voidcrew/edits/turf.dm), so a raw swap that
+			// skips ChangeTurf has to call it itself or every such boundary becomes a
+			// one-tile step from full daylight to black.
+			fast_turf.update_ambient_bleed_after_change(old_type, old_lighting_object)
+			return fast_turf
+
 	var/turf/new_turf = gen_turf.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
 	// ChangeTurf inherits the previous occupant's baseturfs - here that's the bare space
 	// the z-level was filled with, so anything that later removes a tile (a ruin's
@@ -153,13 +372,16 @@
 	selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
 	var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
-	picked_turf = place_biome_turf(gen_turf, picked_turf)
+	// Caves are statically lit and need a real lighting object, and this tile is still in
+	// the SURFACE area right now - see place_biome_turf().
+	picked_turf = place_biome_turf(gen_turf, picked_turf, destined_for_cave = TRUE)
 	if(gen_turf.turf_flags & NO_RUINS)
 		picked_turf.turf_flags |= NO_RUINS
 	var/turf_area = get_area(picked_turf)
 	if(turf_area != cave_area)
 		picked_turf.change_area(turf_area, cave_area)
 	picked_turf.generating_biome = selected_cave_biome
+
 
 /datum/map_generator/planet_generator/populate_terrain(list/turfs, area/generate_in, zone_band)
 
@@ -178,9 +400,18 @@
 	// Megafauna are apex content and stay out of the shallow end entirely - a green-zone
 	// planet is where a crew takes its first landing.
 	var/megafauna_allowed = FALSE
-	if(isnull(zone_band) && length(turfs))
-		var/turf/zone_sample = turfs[1]
-		zone_band = SSmapping.get_planet_zone_band_for_z(zone_sample.z)
+	if(isnull(zone_band))
+		// The area is the per-planet carrier: build_planet() stamps it before population
+		// runs, and every planet gets its own area instances even when it shares a level.
+		// Only roundstart planets, whose areas are never stamped, fall through to the
+		// SSmapping registry - and that is asked with a turf, so it can consult the turf's
+		// area before assuming the whole z-level belongs to one planet.
+		var/area/overmap_encounter/planetoid/planetoid_area = generate_in
+		if(istype(planetoid_area))
+			zone_band = planetoid_area.zone_band
+		if(isnull(zone_band) && length(turfs))
+			var/turf/zone_sample = turfs[1]
+			zone_band = SSmapping.get_planet_zone_band_for_turf(zone_sample)
 	switch(zone_band)
 		if(ZONE_YELLOW)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
@@ -311,8 +542,10 @@
 					spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See
-		// worldgen_yield() in worldgen_queue.dm.
-		SSovermap.worldgen_yield(throttled)
+		// worldgen_yield() in worldgen_queue.dm. This loop's single iteration is the most
+		// expensive of any worldgen sweep - several range() scans - so it takes a lower
+		// forward-progress floor than the default, to keep its tick overshoot in line.
+		SSovermap.worldgen_yield(throttled, min_iterations = 8)
 
 	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
 	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)

@@ -34,10 +34,20 @@
 	var/turf/user_turf = get_turf(computer.ui_host())
 	if(!user_turf)
 		return
+	// VOIDCREW EDIT ADDITION: packed-level containment. Two of the three clauses below fire
+	// on a lattice encounter level (ZTRAIT_MINING is published by every one of them, and
+	// is_station_level() means "any z with a hull on it" here), so a co-tenant's supermatter
+	// appeared on the CIMS. Resolved once, outside the loop.
+	var/datum/console_region = map_region_for_turf(user_turf)
+	// VOIDCREW EDIT END
 	for(var/obj/machinery/power/supermatter_crystal/sm as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/supermatter_crystal))
 		//Exclude Syndicate owned, Delaminating, not within coverage, not on a tile.
 		if (!sm.include_in_cims || !isturf(sm.loc) || !(is_station_level(sm.z) || is_mining_level(sm.z) || sm.z == user_turf.z))
 			continue
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(console_region, get_turf(sm)))
+			continue
+		// VOIDCREW EDIT END
 		supermatters += sm
 		RegisterSignal(sm, COMSIG_QDELETING, PROC_REF(clear_supermatter))
 

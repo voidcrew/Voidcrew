@@ -193,56 +193,128 @@ SUBSYSTEM_DEF(overmap_zones)
 	return SSovermap.get_zone_band_for_turf(T)
 
 /**
- * Zone type for a z-level that belongs to a planet, or null for anything else.
+ * Zone type for the planet whose surface contains this turf, or null for anything else.
  *
  * Narrower than get_zone_type_anywhere() on purpose: effects tuned for planet
  * surfaces (ore yields, fauna) must not leak onto the space ruins, asteroid
  * fields and trader outposts that also resolve to a zone. Falls back to the
  * band SSmapping dealt a pre-generated roundstart planet pair, which is the only
  * thing that answers before a dynamic planet has an overmap marker.
+ *
+ * Takes a turf rather than a z-level because a z-level is no longer one place. Every
+ * caller already holds the turf it is asking about - a mineral wall IS its own turf - so
+ * nothing has to guess with a probe, and two planets sharing a level get their own answers.
  */
-/datum/controller/subsystem/overmap_zones/proc/planet_zone_type_for_z_level(z)
-	if(!z)
+/datum/controller/subsystem/overmap_zones/proc/planet_zone_type_for_turf(turf/checked_turf)
+	if(!checked_turf)
 		return null
-	// Planets own whole z-levels, so any turf on one identifies it.
-	var/turf/probe = locate(1, 1, z)
-	var/obj/structure/overmap/holder = probe ? get_overmap_object_for_turf(probe) : null
+	var/obj/structure/overmap/holder = get_overmap_object_for_turf(checked_turf)
 	if(istype(holder, /obj/structure/overmap/planet))
 		var/turf/overmap_turf = get_turf(holder)
 		if(istype(overmap_turf, /turf/open/overmap))
 			return resolve_zone_for_overmap_turf(overmap_turf)
+	return SSmapping.get_planet_zone_band_for_turf(checked_turf)
+
+/**
+ * DEPRECATED z-taking wrapper around planet_zone_type_for_turf(). Pass a turf instead.
+ *
+ * Kept for the callers that genuinely only hold a z (storm bookkeeping, admin tooling).
+ * It probes the CENTRE of the level, not (1, 1): the corner is cordon, which sits outside
+ * every tenant's footprint and therefore resolves to nobody, while the centre is inside the
+ * footprint of any whole-level tenant - which is every planet today. On a packed level the
+ * centre lands in the gutter and this answers null, i.e. "no scaling", which is the safe
+ * direction to be wrong in; anything that must be right there has to pass a turf.
+ */
+/datum/controller/subsystem/overmap_zones/proc/planet_zone_type_for_z_level(z)
+	if(!z)
+		return null
+	var/turf/probe = locate(round(world.maxx / 2), round(world.maxy / 2), z)
+	var/zone_type = probe ? planet_zone_type_for_turf(probe) : null
+	if(!isnull(zone_type))
+		return zone_type
 	return SSmapping.get_planet_zone_band_for_z(z)
 
 /**
  * Finds the overmap object whose loaded interior contains the given turf.
  */
 /datum/controller/subsystem/overmap_zones/proc/get_overmap_object_for_turf(turf/T)
-	// Space ruins: turf reservations on shared z-levels, bounds check
+	// Space ruins: a lattice slot on a shared z-level, bounds check
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
-		if(reservation_contains_turf(ruin.reservation, T))
+		if(ruin.footprint?.contains_turf(T))
 			return ruin
-	// Meteor storm fields: lazily-loaded reservations, same bounds check
+	// Meteor storm fields: a lattice slot on a shared level, same bounds check
 	for(var/obj/structure/overmap/event/meteor/field as anything in GLOB.meteor_fields)
-		if(reservation_contains_turf(field.reservation, T))
+		if(field.footprint?.contains_turf(T))
 			return field
 	// Trader outposts: same reservation pattern
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(reservation_contains_turf(outpost.reservation, T))
 			return outpost
-	// Planets: own whole z-levels via their mapzone
+	// Planets and flat encounters: a footprint rectangle inside a map zone's level. This
+	// is the highest-blast-radius lookup in the codebase - it feeds loot tiering, ore
+	// yields, fauna difficulty, mission kill grading and off-ship parallax - and a bare
+	// z match hands every turf on a shared level to whichever tenant happens to be first
+	// in GLOB.overmap_planets. Same shape as the reservation branches above.
 	for(var/obj/structure/overmap/planet/planet as anything in GLOB.overmap_planets)
 		if(!planet.mapzone)
 			continue
+		if(planet.footprint)
+			if(planet.footprint.contains_turf(T))
+				return planet
+			continue
+		// No footprint: a site allocated outside the slot register. Whole-level match,
+		// which is what it had before.
 		for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 			if(level.z_value == T.z)
 				return planet
-	// Player outposts: same whole-z-level pattern as planets
+	// Player outposts: same pattern. Their class deals whole-level slots today, so the
+	// footprint test is the z test - it just stops being one for free if that changes.
 	for(var/obj/structure/overmap/dynamic/player_outpost/player_outpost as anything in GLOB.player_outposts)
 		if(!player_outpost.mapzone)
+			continue
+		if(player_outpost.footprint)
+			if(player_outpost.footprint.contains_turf(T))
+				return player_outpost
 			continue
 		for(var/datum/space_level/level as anything in player_outpost.mapzone.z_levels)
 			if(level.z_value == T.z)
 				return player_outpost
+	return null
+
+/**
+ * How far the loaded interior that owns a turf reaches, as list(low_x, low_y, high_x,
+ * high_y) on that turf's own z, or null when the turf can't be tied to one.
+ *
+ * Companion to get_overmap_object_for_turf(): that answers "whose place is this", this
+ * answers "where does their place end", which is what any check that has to reason about a
+ * NEIGHBOURING turf needs - "is there an ore vent near me" being the one that matters, since
+ * a vent 130 tiles away used to be on the same z and is now on somebody else's planet.
+ *
+ * Footprint tenants (planets, flat encounters, space ruins, asteroid fields, player
+ * outposts) report their slot; trader outposts, the last reservation tenant, report their
+ * reservation block. A tenant with neither - a site allocated outside both registers -
+ * reports null, and callers should read that as "the whole level", which is what it always
+ * meant.
+ */
+/datum/controller/subsystem/overmap_zones/proc/get_interior_rect_for_turf(turf/T)
+	if(!T)
+		return null
+	var/obj/structure/overmap/holder = get_overmap_object_for_turf(T)
+	if(!holder)
+		return null
+	// Every footprint tenant answers through one virtual proc rather than an istype chain
+	// per call site - see /obj/structure/overmap/proc/get_interior_footprint().
+	var/datum/map_footprint/footprint = holder.get_interior_footprint()
+	var/datum/turf_reservation/reservation
+	if(istype(holder, /obj/structure/overmap/trader_outpost))
+		var/obj/structure/overmap/trader_outpost/outpost_holder = holder
+		reservation = outpost_holder.reservation
+	if(footprint && footprint.z_value == T.z && !isnull(footprint.low_x))
+		return list(footprint.low_x, footprint.low_y, footprint.high_x, footprint.high_y)
+	if(reservation && length(reservation.bottom_left_turfs))
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		if(bottom_left && bottom_left.z == T.z)
+			return list(bottom_left.x, bottom_left.y, bottom_left.x + reservation.width - 1, bottom_left.y + reservation.height - 1)
 	return null
 
 /**

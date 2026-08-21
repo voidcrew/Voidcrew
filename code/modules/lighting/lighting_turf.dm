@@ -97,11 +97,40 @@
 ///Transfer the lighting of one area to another
 /turf/proc/transfer_area_lighting(area/old_area, area/new_area)
 	if(SSlighting.initialized && !space_lit)
-		if (new_area.static_lighting != old_area.static_lighting)
+		var/static_lighting_changed = (new_area.static_lighting != old_area.static_lighting)
+		// VOIDCREW EDIT: remembered so the ambient bleed block below can tell whether this
+		// transfer actually took our lighting object away. See voidcrew/edits/lighting.dm.
+		var/had_lighting_object = !!lighting_object
+		// END VOIDCREW EDIT
+		if (static_lighting_changed)
 			if (new_area.static_lighting)
 				lighting_build_overlay()
-			else
+			// VOIDCREW EDIT: a turf that lights itself inside an ambient-lit area - fallout
+			// ground, a lava river - keeps its object, or its own light has nothing to render
+			// on. Everything else on the dynamic side loses it exactly as upstream.
+			else if(!new_area.ambient_lighting || skips_lighting_object())
 				lighting_clear_overlay()
+			// END VOIDCREW EDIT (was: else lighting_clear_overlay())
+		// VOIDCREW EDIT: moving into ambient-lit ground from another DYNAMIC area does not
+		// trip static_lighting_changed, but the object still has to go - that ground carries
+		// none at all.
+		else if(lighting_object && skips_lighting_object())
+			lighting_clear_overlay()
+		// END VOIDCREW EDIT
+
+		// VOIDCREW EDIT: ambient bleed. Changing area without changing type - a ship
+		// landing or taking off, a room being repainted, cave generation claiming a tile -
+		// changes both whether we bleed light ourselves and whether we are something worth
+		// bleeding onto, and nothing else on this path notices. See
+		// voidcrew/edits/lighting.dm.
+		if(static_lighting_changed || new_area.ambient_lighting != old_area.ambient_lighting || new_area.base_lighting_alpha != old_area.base_lighting_alpha || new_area.base_lighting_color != old_area.base_lighting_color)
+			update_ambient_bleed()
+		// Losing our lighting object is the side nothing else covers: it leaves the tiles
+		// around us lighting something that no longer reads light sources at all. Gaining one
+		// already wakes them through /datum/lighting_object/New().
+		if(had_lighting_object && !lighting_object)
+			reconsider_ambient_bleed_neighbors()
+		// END VOIDCREW EDIT
 
 	// We will only run this logic on turfs off the prime z layer
 	// Since on the prime z layer, we use an overlay on the area instead, to save time

@@ -137,7 +137,44 @@
 
 		// The assumption is this will be faster then changeturf, and changeturf isn't required since by this point
 		// The old tile hasn't got the chance to init yet
+		// VOIDCREW EDIT: "the old tile hasn't got the chance to init yet" is a MAPLOAD claim,
+		// and it is false for every voidcrew caller - asteroid fields carve into a live turf
+		// reservation and planet caves carve into live planet ground. The raw swap below never
+		// runs the old turf's Destroy(), so its /datum/light_source is dropped rather than
+		// freed - and a dropped source is uncollectable, not merely garbage, because it and
+		// the lighting corners it applied to hold each other under pure refcounting. Measured
+		// at ~1,700 permanently leaked sources (plus their corners) per soak cycle, almost all
+		// of them starlight on the space turfs an asteroid field paints rock over. See
+		// /turf/proc/release_light_for_raw_swap() in voidcrew/edits/turf.dm.
+		// VOIDCREW EDIT: and its second casualty. /turf/open/space/Destroy() is what takes a
+		// lit space turf back out of GLOB.starlight, and a raw swap never runs it, so the
+		// entry retargets onto the rock we just laid and set_starlight() relights it - then
+		// enable_starlight() re-appends the same turf next cycle. An asteroid field paints
+		// thousands of tiles of lit space, so this grows per churn cycle. Same guard
+		// place_cordon_turf() carries (voidcrew/datums/map_zones.dm).
+		if(isspaceturf(gen_turf) && gen_turf.light_on)
+			GLOB.starlight -= gen_turf
+		// VOIDCREW EDIT: and its third. ChangeTurf carries the old turf's four
+		// /datum/lighting_corner refs across its qdel()/new() pair; a raw swap gets the
+		// type defaults, and a turf holding null corner refs on vertices that already have
+		// corners mints new ones and steals them from every neighbour it shares them with,
+		// zeroing lum those neighbours' lighting objects were rendering. See
+		// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+		var/datum/lighting_corner/corner_ne
+		var/datum/lighting_corner/corner_se
+		var/datum/lighting_corner/corner_sw
+		var/datum/lighting_corner/corner_nw
+		var/old_dynamic_lumcount = 0
+		if(SSlighting.initialized)
+			gen_turf.release_light_for_raw_swap()
+			corner_ne = gen_turf.lighting_corner_NE
+			corner_se = gen_turf.lighting_corner_SE
+			corner_sw = gen_turf.lighting_corner_SW
+			corner_nw = gen_turf.lighting_corner_NW
+			old_dynamic_lumcount = gen_turf.dynamic_lumcount
 		new_turf = new new_turf(gen_turf)
+		if(SSlighting.initialized)
+			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS
@@ -218,7 +255,36 @@
 		else
 			// The assumption is this will be faster then changeturf, and changeturf isn't required since by this point
 			// The old tile hasn't got the chance to init yet
+			// VOIDCREW EDIT: see the identical guard in generate_terrain() above. This is the
+			// branch that actually mattered: the biome path only ever claims OPEN turfs (the
+			// comment above says so), so every CLOSED turf a cave or an asteroid field lays
+			// down - /turf/closed/mineral/random and friends, 1,531 of the 1,659 orphans in a
+			// measured cycle - is swapped in right here.
+			// VOIDCREW EDIT: and its second casualty. /turf/open/space/Destroy() is what takes a
+			// lit space turf back out of GLOB.starlight, and a raw swap never runs it, so the
+			// entry retargets onto the rock we just laid and set_starlight() relights it - then
+			// enable_starlight() re-appends the same turf next cycle. An asteroid field paints
+			// thousands of tiles of lit space, so this grows per churn cycle. Same guard
+			// place_cordon_turf() carries (voidcrew/datums/map_zones.dm).
+			if(isspaceturf(gen_turf) && gen_turf.light_on)
+				GLOB.starlight -= gen_turf
+			// VOIDCREW EDIT: same corner carry as generate_terrain() above - see
+			// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+			var/datum/lighting_corner/corner_ne
+			var/datum/lighting_corner/corner_se
+			var/datum/lighting_corner/corner_sw
+			var/datum/lighting_corner/corner_nw
+			var/old_dynamic_lumcount = 0
+			if(SSlighting.initialized)
+				gen_turf.release_light_for_raw_swap()
+				corner_ne = gen_turf.lighting_corner_NE
+				corner_se = gen_turf.lighting_corner_SE
+				corner_sw = gen_turf.lighting_corner_SW
+				corner_nw = gen_turf.lighting_corner_NW
+				old_dynamic_lumcount = gen_turf.dynamic_lumcount
 			var/turf/new_turf = new new_turf_type(gen_turf)
+			if(SSlighting.initialized)
+				new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 
 			if(gen_turf.turf_flags & NO_RUINS)
 				new_turf.turf_flags |= NO_RUINS

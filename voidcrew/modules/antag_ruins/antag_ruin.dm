@@ -99,7 +99,26 @@
 	. = ..()
 	if(template.patron_name)
 		true_name = template.patron_name
-		name = true_name
+		apply_patron_name()
+
+// The base proc renames the signal to its true_name on survey, which would undo the
+// \proper marker applied above - so re-apply it rather than let the article come back.
+/obj/structure/overmap/space_ruin/vestige/on_surveyed()
+	. = ..()
+	apply_patron_name()
+
+/**
+ * Names the signal after its patron, marked as a proper noun.
+ *
+ * Twelve of the fourteen patron names start with "the" ("the Stranger", "the Curator"),
+ * and BYOND prepends a definite article to any atom name that isn't flagged proper. Left
+ * unflagged they read - and log - as "the the Stranger", which is how round-7's crash
+ * traces name the ruin that was loading when the host died.
+ */
+/obj/structure/overmap/space_ruin/vestige/proc/apply_patron_name()
+	if(!true_name)
+		return
+	name = "\proper [true_name]"
 
 /obj/structure/overmap/space_ruin/vestige/categorize_ruin()
 	ruin_category = "vestige"
@@ -118,7 +137,7 @@
 	if(!release_interior())
 		// Same re-arm as the base proc: a refusal is usually the departing hull still
 		// mid-move, or the worldgen queue timing out - and nothing else ever retries,
-		// so giving up here would hold the reservation for the rest of the round.
+		// so giving up here would hold the slot for the rest of the round.
 		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 
 // The base proc relocates the signal to a fresh overmap square on unload;

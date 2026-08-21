@@ -165,6 +165,12 @@
 		servant.remove_waypoint(REF(src))
 		servant.active_missions -= src
 		servant = null
+	// The subsystem's list is dropped here for the same reason the ship's is: complete(),
+	// fail() and give_up() each remove themselves on the way out, but every OTHER route to
+	// qdel - force_refresh_ship_missions(), a ship despawning, an admin - left the entry
+	// behind, holding a hard reference to a qdel'd datum. SSmissions.fire()'s sweep was the
+	// only thing collecting those, once every 30 seconds, and it skipped entries while it ran.
+	SSmissions.all_active_missions -= src
 	shop = null
 	return ..()
 
@@ -491,6 +497,19 @@
 
 /**
  * Whether the quest atom is still physically inside the (now dying) site.
+ *
+ * Identity first, coordinates only as the fallback. The cached rectangle is whatever the
+ * target handed over at registration time - a SNAPSHOT - and both slots and z-levels are
+ * recycled, so once a site has given its ground back the very same rectangle belongs to
+ * whoever is dealt it next. A quest atom sitting safely in a cargo bay parked at an
+ * unrelated site can therefore alias straight into a dead site's stored rect and be
+ * destroyed by on_target_lost() as "stranded".
+ *
+ * While the target is alive it answers for itself (contains_turf() is its own footprint).
+ * Once it is gone, the rect is trusted only where no LIVE site owns that ground.
+ *
+ * Turfs a ship copied down onto its berth are inside the site's footprint and still count
+ * as stranded, exactly as they did under the level rect.
  */
 /datum/mission/proc/is_quest_atom_stranded()
 	if(!quest_atom || QDELETED(quest_atom) || !length(quest_atom_bounds))
@@ -498,9 +517,21 @@
 	var/turf/quest_turf = get_turf(quest_atom)
 	if(!quest_turf)
 		return FALSE
-	return quest_turf.z == quest_atom_bounds[5] \
-		&& quest_turf.x >= quest_atom_bounds[1] && quest_turf.x <= quest_atom_bounds[3] \
-		&& quest_turf.y >= quest_atom_bounds[2] && quest_turf.y <= quest_atom_bounds[4]
+
+	// The target is still there to ask.
+	if(target?.is_valid())
+		return target.contains_turf(quest_turf)
+
+	if(quest_turf.z != quest_atom_bounds[5] \
+		|| quest_turf.x < quest_atom_bounds[1] || quest_turf.x > quest_atom_bounds[3] \
+		|| quest_turf.y < quest_atom_bounds[2] || quest_turf.y > quest_atom_bounds[4])
+		return FALSE
+
+	// Inside the remembered rectangle is not proof of being inside the dead SITE. If a live
+	// site owns that ground now, it was re-dealt after ours let go and the atom is
+	// somewhere else entirely - somebody's hold, most likely.
+	var/obj/structure/overmap/resident_site = SSovermap_zones?.get_overmap_object_for_turf(quest_turf)
+	return isnull(resident_site)
 
 /**
  * The target object is being deleted (abandoned ruin respawning elsewhere...).
@@ -527,6 +558,16 @@
 
 /// The target's interior just loaded; let the current objective arm itself
 /datum/mission/proc/on_target_interior_loaded()
+	// A site that rebuilt its interior may not have come back on the same ground:
+	// planets relocate and re-claim, and on a packed level the slot they land in is
+	// whichever one was free. Anything still tracked was measured against the OLD
+	// rectangle, and that cached rect is what decides whether the atom gets destroyed
+	// as stranded - so re-read it while the site is healthy enough to answer. A site
+	// mid-deletion returns null and the cache is left alone, which is what it is for.
+	if(quest_atom && !QDELETED(quest_atom))
+		var/list/fresh_bounds = target?.get_interior_bounds()
+		if(length(fresh_bounds))
+			quest_atom_bounds = fresh_bounds
 	var/datum/mission_objective/field/objective = current_objective()
 	if(istype(objective))
 		objective.on_interior_loaded()

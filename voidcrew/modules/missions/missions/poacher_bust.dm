@@ -436,7 +436,15 @@
 			continue
 		if(victim.lastattackerckey && crew_mob.ckey == victim.lastattackerckey)
 			return TRUE
-		if(crew_mob.z == where.z && get_dist(crew_mob, victim) <= confirm_range)
+		// Proximity, but only within the same SITE. confirm_range is 9 tiles and the gutter
+		// between two slots on a packed level is 5, so a bare z + get_dist test banks the
+		// neighbouring crew's kills through an indestructible wall.
+		var/turf/crew_turf = get_turf(crew_mob)
+		if(!crew_turf || crew_turf.z != where.z)
+			continue
+		if(!turfs_share_map_site(crew_turf, where))
+			continue
+		if(get_dist(crew_mob, victim) <= confirm_range)
 			return TRUE
 	return FALSE
 

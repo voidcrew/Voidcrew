@@ -147,10 +147,15 @@
 /// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
 #define ASTEROID_ORE_AMOUNT_MIN 2
 #define ASTEROID_ORE_AMOUNT_MAX 5
-/// Open span between the two maximum-size ship berths in a landable meteor storm reservation
+/// DEPRECATED, kept for reference only. A landable meteor storm used to size its own turf
+/// reservation as this plus a maximum-size berth on all four sides (166x134), which no
+/// reservation z-level could ever share - so every field minted a permanent 255x255 level.
+/// Fields are now lattice tenants and take the whole of their slot's build region
+/// (MAP_SLOT_RUIN_REGION_* in planet_defines.dm), four to a z-level.
 #define EVENT_FIELD_WIDTH 48
 #define EVENT_FIELD_HEIGHT 48
-/// Extra vacuum kept around each maximum-size ship berth, beyond the normal reservation padding
+/// Extra vacuum kept around each maximum-size ship berth, beyond the normal berth padding.
+/// The slot build region applies this through PLANET_DOCK_RUIN_CLEARANCE, which matches it.
 #define EVENT_FIELD_DOCK_CLEARANCE 3
 /// Moderate-field rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field
 /// in AsteroidCaves.dm). Minor/majour subtypes override these along with the radius bounds.
@@ -189,3 +194,16 @@
 /// right now, otherwise give up". For UI paths that must answer immediately rather
 /// than hold a player's interface open while somebody else's planet finishes.
 #define WORLDGEN_QUEUE_NO_WAIT 0
+
+// Lighting settle wait (see /datum/controller/subsystem/overmap/proc/wait_for_lighting_settle)
+/// How often the settle wait samples the lighting backlog.
+#define LIGHTING_SETTLE_POLL (1 SECONDS)
+/// Consecutive zero-backlog samples that count as "settled". Two, not one, because a
+/// source feeds a corner feeds an object across separate fires - a single empty sample
+/// can land in the gap between those stages.
+#define LIGHTING_SETTLE_EMPTY_SAMPLES 2
+/// Samples the backlog may fail to reach a new low before the wait gives up on it and
+/// returns anyway. A backlog that stops SHRINKING is not a build still rendering, it is
+/// ordinary live churn - a portal's light, a mob walking with a lantern, a storm - and
+/// no amount of waiting will ever see the bottom of it.
+#define LIGHTING_SETTLE_PLATEAU_SAMPLES 5

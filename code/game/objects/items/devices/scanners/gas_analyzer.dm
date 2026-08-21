@@ -93,8 +93,10 @@
 		if(!(ongoing_weather.weather_flags & FUNCTIONAL_WEATHER))
 			to_chat(user, span_warning("[src]'s barometer function says that the next storm will breeze on by."))
 	else
-		var/next_hit = SSweather.next_hit_by_zlevel["[T.z]"]
-		var/fixed = next_hit ? timeleft(next_hit) : -1
+		// VOIDCREW EDIT: the barometer reads the weather site standing under it, not the
+		// z-level - several places can share a level and each hold its own storm cooldown.
+		var/next_hit = SSweather.next_hit_timeleft_for_turf(T)
+		var/fixed = isnull(next_hit) ? -1 : next_hit
 		if(fixed < 0)
 			to_chat(user, span_warning("[src]'s barometer function was unable to trace any weather patterns."))
 		else

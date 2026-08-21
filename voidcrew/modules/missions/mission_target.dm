@@ -225,28 +225,21 @@
 /datum/mission_target/space_ruin/contains_turf(turf/T)
 	if(!ruin || !T)
 		return FALSE
-	var/datum/turf_reservation/reservation = ruin.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
+	var/datum/map_footprint/footprint = ruin.footprint
+	if(!footprint)
 		return FALSE
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(!bottom_left || bottom_left.z != T.z)
-		return FALSE
-	return T.x >= bottom_left.x && T.x < bottom_left.x + reservation.width \
-		&& T.y >= bottom_left.y && T.y < bottom_left.y + reservation.height
+	return footprint.contains_turf(T)
 
 /datum/mission_target/space_ruin/get_interior_bounds()
-	var/datum/turf_reservation/reservation = ruin?.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
-		return null
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(!bottom_left)
+	var/datum/map_footprint/footprint = ruin?.footprint
+	if(!footprint || isnull(footprint.low_x) || !footprint.z_value)
 		return null
 	return list(
-		bottom_left.x,
-		bottom_left.y,
-		bottom_left.x + reservation.width - 1,
-		bottom_left.y + reservation.height - 1,
-		bottom_left.z,
+		footprint.low_x,
+		footprint.low_y,
+		footprint.high_x,
+		footprint.high_y,
+		footprint.z_value,
 	)
 
 /**
@@ -359,19 +352,37 @@
 	var/datum/space_level/level = planet.mapzone.z_levels[1]
 	if(!level)
 		return null
+	// Sample THIS site's rectangle, not the level's. A packed z-level's bounds span
+	// every co-tenant, so sampling the level would put roughly half of all field
+	// spawns on a neighbouring world, behind an indestructible cordon the crew has
+	// no way through - the objective would simply be unreachable. A site with no
+	// footprint falls back to the level rect, which for a sole tenant IS its rect.
+	var/datum/map_footprint/footprint = planet.footprint
+	var/has_footprint = footprint && !isnull(footprint.low_x) && footprint.z_value
+	var/site_low_x = has_footprint ? footprint.low_x : level.low_x
+	var/site_low_y = has_footprint ? footprint.low_y : level.low_y
+	var/site_high_x = has_footprint ? footprint.high_x : level.high_x
+	var/site_high_y = has_footprint ? footprint.high_y : level.high_y
+	var/site_z = has_footprint ? footprint.z_value : level.z_value
 	var/margin = 12
-	var/min_x = level.low_x + margin
-	var/max_x = level.high_x - margin
-	var/min_y = level.low_y + margin
-	var/max_y = level.high_y - margin
-	// Clear the berths, but never at the cost of leaving nothing to sample
-	var/above_docks = planet.get_dock_strip_top_y(level) + 1
+	var/min_x = site_low_x + margin
+	var/max_x = site_high_x - margin
+	var/min_y = site_low_y + margin
+	var/max_y = site_high_y - margin
+	// Clear the berths, but never at the cost of leaving nothing to sample.
+	// get_dock_strip_top_y() returns an ABSOLUTE y measured from the SITE's own low edge -
+	// the same corner create_docking_ports() anchors the berths on - so it is used directly.
+	// (It used to be measured from the level's low edge, and this call site re-based it by
+	// subtracting level.low_y; on a packed level that subtraction would have shifted the
+	// floor down by the site's offset and put field spawns back on the berths.)
+	var/dock_strip_top = planet.get_dock_strip_top_y(level)
+	var/above_docks = isnull(dock_strip_top) ? min_y : (dock_strip_top + 1)
 	if(above_docks < max_y)
 		min_y = max(min_y, above_docks)
 	if(min_x > max_x || min_y > max_y)
 		return null
 	for(var/_ in 1 to 40)
-		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), level.z_value)
+		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), site_z)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
 			continue
 		if(istype(get_area(candidate), /area/shuttle))
@@ -381,9 +392,22 @@
 		return candidate
 	return null
 
+/**
+ * "Is the player at the site" - the primitive the pylon scatter and the hunting
+ * lure both gate on.
+ *
+ * Rectangle containment, the same shape the space_ruin sibling above uses. A bare
+ * z match was correct only while a planet owned its whole level: once a level can
+ * hold co-tenants it accepts the neighbour's ground, and a lure staked on the
+ * wrong world - or pylons scattered across the gutter - reads as being on target.
+ * Falls back to the z match when the site has no footprint at all.
+ */
 /datum/mission_target/planet/contains_turf(turf/T)
 	if(!planet?.mapzone || !T)
 		return FALSE
+	var/datum/map_footprint/footprint = planet.footprint
+	if(footprint && !isnull(footprint.low_x) && footprint.z_value)
+		return footprint.contains_turf(T)
 	for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 		if(level.z_value == T.z)
 			return TRUE
@@ -392,6 +416,12 @@
 /datum/mission_target/planet/get_interior_bounds()
 	if(!planet?.mapzone || !length(planet.mapzone.z_levels))
 		return null
+	// The site's rect. Cached into the mission's quest_atom_bounds, which decides
+	// whether a quest atom left behind at a dying site gets destroyed - the level
+	// rect would condemn anything sitting on a co-tenant.
+	var/datum/map_footprint/footprint = planet.footprint
+	if(footprint && !isnull(footprint.low_x) && footprint.z_value)
+		return list(footprint.low_x, footprint.low_y, footprint.high_x, footprint.high_y, footprint.z_value)
 	var/datum/space_level/level = planet.mapzone.z_levels[1]
 	if(!level)
 		return null

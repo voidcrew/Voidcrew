@@ -146,15 +146,25 @@
 
 /**
  * Locates the techweb hosted by an R&D server somewhere on the ship's hull.
+ *
+ * Walks the server registry (GLOB.ship_research_servers, a handful of machines) and asks
+ * which hull each one is standing in, rather than walking every turf of every shuttle
+ * area and every turf's contents looking for one. The old form was O(hull turfs x turf
+ * contents); on a Phalanx that is thousands of iterations, and get_research_web()'s
+ * negative case - a hull with no server yet, which is most hulls for most of a round -
+ * re-ran it every 10 seconds for every caller. It measured 5.7 ms per call and 8.99 s of
+ * SSmissions' 9.05 s total across the ghost round.
  */
 /obj/structure/overmap/ship/proc/find_research_web()
 	if(!shuttle)
 		return null
-	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
-		for(var/turf/tile in shuttle_area)
-			for(var/obj/machinery/rnd/server/ship/server in tile)
-				if(server.stored_research)
-					return server.stored_research
+	for(var/obj/machinery/rnd/server/ship/server as anything in GLOB.ship_research_servers)
+		if(QDELETED(server) || !server.stored_research)
+			continue
+		var/area/server_area = get_area(server)
+		if(!server_area || !(server_area in shuttle.shuttle_areas))
+			continue
+		return server.stored_research
 	return null
 
 /**

@@ -63,18 +63,65 @@
 	return FALSE
 
 /datum/turf_reservation/proc/Release()
+	// VOIDCREW EDIT: the release set is rebuilt from the corners we recorded at claim time
+	// instead of trusting `reserved_turfs` to still list everything _reserve_area() took.
+	//
+	// `reserved_turfs` is handed out BY REFERENCE: SSshuttle used to alias it straight into
+	// the transit area's turfs_by_zlevel (see generate_transit_dock), and the area
+	// bookkeeping mutates that list in place - SSarea_contents removes one entry per turf
+	// that left the area, and cannonize_contained_turfs_by_zlevel() Cut()s and refills it.
+	// So the list drifted into meaning "turfs currently sitting in that area", not "turfs we
+	// claimed". A shuttle in transit subtracts its footprint; if the reservation was
+	// released before that shuttle handed its turfs back (transit dock force-destroyed while
+	// something was docked, ship deleted in transit, jumpToNullSpace) those turfs were never
+	// taken out of SSmapping.used_turfs and never returned to unused_turfs. They stayed
+	// claimed and flagged for the rest of the round, and once enough of them piled up
+	// request_turf_block_reservation() could no longer fit a block and minted a fresh
+	// permanent 255x255 reservation z-level (~65k turfs, ~48 MB) instead.
+	//
+	// Measured on the 52-cycle churn soak as +152 used_turfs a cycle, monotonic, in steps
+	// that are hull footprints rather than any rectangle perimeter (101, 172, 262, 322, 323,
+	// 383, 399 - odd sizes, and never below SSarea_contents' 100 loose-turf cut threshold).
+	//
+	// The aliasing itself is fixed at its source in SSshuttle, but the corners are ours
+	// alone and cannot be reached by anyone else, so block() over them stays the
+	// authoritative answer to "what did we take" no matter who mutates our lists.
+	var/list/released = list()
+	for(var/z_idx in 1 to min(length(bottom_left_turfs), length(top_right_turfs)))
+		var/turf/bottom_left = bottom_left_turfs[z_idx]
+		var/turf/top_right = top_right_turfs[z_idx]
+		if(isnull(bottom_left) || isnull(top_right))
+			continue
+		for(var/turf/claimed as anything in block(bottom_left, top_right))
+			released[claimed] = TRUE
+	// `as anything` on both, so a hard delete that nulled an entry in place does not throw
+	// the loop - the nulls are dropped explicitly instead.
+	for(var/turf/claimed as anything in reserved_turfs)
+		if(!isnull(claimed))
+			released[claimed] = TRUE
+	for(var/turf/cordon_turf as anything in cordon_turfs)
+		if(!isnull(cordon_turf))
+			released[cordon_turf] = TRUE
+
 	bottom_left_turfs.Cut()
 	top_right_turfs.Cut()
-
-	var/list/reserved_copy = reserved_turfs.Copy()
-	SSmapping.used_turfs -= reserved_turfs
 	reserved_turfs = list()
-
-	var/list/cordon_copy = cordon_turfs.Copy()
-	SSmapping.used_turfs -= cordon_turfs
 	cordon_turfs = list()
 
-	var/release_turfs = reserved_copy + cordon_copy
+	if(!length(released))
+		return
+
+	// Keyed above rather than appended, so a turf listed twice (the aliased transit list
+	// appends a returning shuttle turf a second time) is only handed to the drain once -
+	// releasing it twice would double-add it to the space area's contents.
+	var/list/used = SSmapping.used_turfs
+	var/list/release_turfs = list()
+	for(var/turf/claimed as anything in released)
+		var/datum/turf_reservation/holder = used[claimed]
+		if(!isnull(holder) && holder != src && !QDELETED(holder))
+			continue // somebody live owns this ground now; it is theirs to hand back
+		used -= claimed
+		release_turfs += claimed
 
 	// Landable overmap encounters reserve >20k turfs - tearing those down atomically
 	// hard-freezes the server for seconds, so large releases yield. This is safe even

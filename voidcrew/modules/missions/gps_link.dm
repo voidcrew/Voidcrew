@@ -42,9 +42,16 @@
 		var/list/signal = list()
 		signal["entrytag"] = tag
 		signal["coords"] = "[pos.x], [pos.y], [pos.z]"
+		// Same z-level is no longer the same place. An encounter level carries up to four
+		// tenants separated by a cordon band, and a beacon in the neighbouring slot would
+		// print a walking distance and a compass bearing straight through indestructible
+		// wall. Same rectangle or it is treated as off-site: the absolute coordinates above
+		// still print, which is what a mission beacon is for. On an unpacked level
+		// turfs_share_map_site() answers TRUE and nothing changes.
 		if(pos.z == curr.z)
-			signal["dist"] = max(get_dist(curr, pos), 0)
-			signal["degrees"] = round(get_angle(curr, pos))
+			if(turfs_share_map_site(curr, pos))
+				signal["dist"] = max(get_dist(curr, pos), 0)
+				signal["degrees"] = round(get_angle(curr, pos))
 		else
 			var/angle = get_linked_z_angle(curr.z, pos.z)
 			if(!isnull(angle))

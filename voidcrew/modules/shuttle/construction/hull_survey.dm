@@ -442,6 +442,11 @@
 
 	if(current_dock)
 		current_dock.forceMove(destination)
+		// The drag moves the berth's TILE without touching its dwidth/dheight, so its whole
+		// projected rectangle translates with it - as far as the hull's own extent, which is
+		// tens of tiles against three tiles of berth padding. Put it back inside the site the
+		// berth belongs to before anything reads it.
+		clamp_reserve_dock_to_site(current_dock)
 
 	port.calculate_docking_port_information()
 

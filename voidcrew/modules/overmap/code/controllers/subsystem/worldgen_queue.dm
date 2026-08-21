@@ -30,13 +30,14 @@
  *
  * ## The mapzone race is fixed at the source, not here
  *
- * find_free_mapzone() is a check-then-act over a global list, and its claim
- * (mapzone.taken = TRUE) used to land only after add_new_zlevel() had had a chance to
+ * find_free_slot() (find_free_mapzone(), before slots existed) is a check-then-act over a
+ * global list, and its claim used to land only after add_new_zlevel() had had a chance to
  * sleep on its own spinlock - so two encounters could be handed the same map zone and
  * later wipe each other's live surface. Both call sites (build_planet() and
- * spawn_dynamic_encounter()) now claim the zone before anything can yield, which is the
- * actual fix. Do not reintroduce the gap on the assumption that this queue covers it:
- * it only ever covered the planet half.
+ * spawn_dynamic_encounter()) now claim their slot through claim_free_slot(), which finds
+ * and claims in one uninterruptible step, before anything can yield. That is the actual
+ * fix. Do not reintroduce the gap on the assumption that this queue covers it: it only
+ * ever covered the planet half.
  *
  * ## Using it
  *
@@ -65,8 +66,23 @@
  * that one eventually will.
  */
 
-/// How long a caller waits in line before giving up and telling the player to retry.
-#define WORLDGEN_QUEUE_TIMEOUT (4 MINUTES)
+/**
+ * How long a caller waits WITHOUT THE LINE MOVING before giving up.
+ *
+ * Deliberately not a wall-clock cap on the whole wait. It used to be, at 4 minutes, and
+ * that made the timeout a function of queue depth rather than of anything being wrong: in
+ * the 70-crew ghost round five sites were requested in the same tick, the four ahead took
+ * 142 s / 169 s / 221 s / 260 s to be granted under contention, and the planet holding
+ * ticket 5 hit its deadline while the queue was still advancing normally. A site that
+ * fails to chart because four other sites were being charted first is a queue working
+ * exactly as designed reported as an error, and the crew has to re-press Dock for it.
+ *
+ * As a no-progress budget it means what it should: give up when the queue is stuck, not
+ * when it is busy. Kept strictly LONGER than WORLDGEN_JOB_TIMEOUT so the watchdog always
+ * gets to force-release a wedged job first - at 4 vs 5 minutes the waiters all died one
+ * minute before the rescue they were waiting for.
+ */
+#define WORLDGEN_QUEUE_TIMEOUT (6 MINUTES)
 /// How long one job may hold the queue before the watchdog assumes it died mid-build.
 #define WORLDGEN_JOB_TIMEOUT (5 MINUTES)
 /// Poll interval for waiters. Scaled by server load, like every other stoplag caller.
@@ -91,6 +107,29 @@
  */
 #define WORLDGEN_TICK_BUDGET 25
 
+/**
+ * Minimum loop iterations a worldgen job is guaranteed between two yields.
+ *
+ * Without a floor, worldgen_yield() sleeps whenever TICK_CHECK trips - and TICK_CHECK is
+ * `TICK_USAGE > Master.current_ticklimit`, which on a loaded server is ALREADY TRUE the
+ * moment a sleeping loop resumes. The loop then does one iteration, trips it again, and
+ * sleeps again: a whole tick per turf, no matter what WORLDGEN_TICK_BUDGET says. That is
+ * what turns a sweep into a stall rather than a slowdown - a 65,025-turf level teardown
+ * at one turf per 50 ms tick is fifty-four minutes, and it holds the worldgen queue for
+ * all of it. It is also why raising WORLDGEN_TICK_BUDGET does not help: the budget is not
+ * what is binding in that state, TICK_CHECK is.
+ *
+ * The floor converts that from unbounded to bounded: after each sleep the job gets at
+ * least this many iterations before it is allowed to sleep again, so wall-clock scales
+ * with (turfs / this) ticks instead of with turfs.
+ *
+ * What it costs is an overshoot: up to this many iterations of work can land past the
+ * tick limit, and everyone else on the server pays for it. So it is deliberately modest,
+ * and a loop whose per-iteration work is heavy should pass a smaller `min_iterations`
+ * rather than this being raised for everybody.
+ */
+#define WORLDGEN_MIN_ITERATIONS_PER_TICK 32
+
 /datum/controller/subsystem/overmap
 	/// The overmap object currently allowed to build or tear down its interior.
 	var/obj/structure/overmap/worldgen_owner
@@ -110,6 +149,9 @@
 	var/worldgen_slice_limit = 0
 	/// Whether the running job is being throttled at all. Set per claim.
 	var/worldgen_throttled = FALSE
+	/// Iterations the running job has managed since it last yielded the tick. Reset on
+	/// every sleep and on every claim - see WORLDGEN_MIN_ITERATIONS_PER_TICK.
+	var/worldgen_since_yield = 0
 
 /**
  * Takes the worldgen queue, sleeping until it is this caller's turn.
@@ -124,9 +166,12 @@
  *   as the reentrancy key, so nested claims from the same object are free.
  * * label - short description of the job, for logs and the stat panel.
  * * waiter - optional mob to tell about its place in line, once, if it has to wait.
- * * timeout - how long to stay in line before giving up. Null takes the default;
- *   WORLDGEN_QUEUE_NO_WAIT means take the queue only if it is free this instant,
- *   which is what UI paths want rather than holding an interface open for minutes.
+ * * timeout - how long to stay in line WITHOUT THE LINE MOVING before giving up. It is a
+ *   no-progress budget, not a cap on the total wait: each job that finishes ahead of this
+ *   caller re-arms it, so a site queued behind four others waits them out instead of
+ *   failing because the queue was busy. Null takes the default; WORLDGEN_QUEUE_NO_WAIT
+ *   means take the queue only if it is free this instant, which is what UI paths want
+ *   rather than holding an interface open for minutes.
  * * notify_ship - optional ship whose whole crew gets the queue-position messages via
  *   ship_notify (category SURVEY) instead of just `waiter` getting a to_chat. Ships no
  *   longer lock up while their survey queues, so the messages are the only thing
@@ -152,6 +197,8 @@
 	worldgen_tickets += ticket
 	var/queued_at = world.time
 	var/deadline = world.time + timeout
+	// Best (lowest) queue position seen so far. The deadline re-arms whenever this drops.
+	var/best_position = INFINITY
 	var/warned_waiter = FALSE
 	var/next_waiter_update = 0
 
@@ -160,14 +207,26 @@
 	// is atomic even though every waiter is polling the same two variables.
 	while(worldgen_owner || worldgen_tickets[1] != ticket)
 		// Tested inclusively so WORLDGEN_QUEUE_NO_WAIT gives up here on the first pass
-		// instead of sleeping once first.
+		// instead of sleeping once first. Tested BEFORE the progress re-arm below for the
+		// same reason: a zero timeout must not be able to extend itself into a sleep.
 		if(world.time >= deadline)
 			worldgen_tickets -= ticket
 			// A no-wait caller bailing is the system working, not an event; only a real
 			// wait that ran out is worth a line in the log.
 			if(timeout)
-				log_mapping("SSovermap: worldgen queue timeout - '[label]' gave up after [timeout / 10]s waiting behind '[worldgen_label]'")
+				log_mapping("SSovermap: worldgen queue stalled - '[label]' gave up after [timeout / 10]s with no queue movement, waiting behind '[worldgen_label]'")
 			return FALSE
+
+		// Forward progress re-arms the clock. Position counts the jobs ahead of us: our
+		// index in the ticket list, plus one if somebody currently holds the queue. It only
+		// ever decreases while we are in line, so this is a strict "the line moved" test and
+		// cannot be re-armed by churn behind us.
+		var/position = worldgen_tickets.Find(ticket) - 1
+		if(worldgen_owner)
+			position++
+		if(position < best_position)
+			best_position = position
+			deadline = world.time + timeout
 		if(QDELETED(requester))
 			worldgen_tickets -= ticket
 			return FALSE
@@ -189,9 +248,7 @@
 		// locked, and a single line at the start is indistinguishable from a hang.
 		if((waiter || notify_ship) && world.time >= next_waiter_update)
 			next_waiter_update = world.time + WORLDGEN_QUEUE_UPDATE_INTERVAL
-			var/ahead = worldgen_tickets.Find(ticket) - 1
-			if(worldgen_owner)
-				ahead++
+			var/ahead = position
 			var/queue_message
 			if(warned_waiter)
 				queue_message = "Still holding. [ahead] survey operation[ahead == 1 ? "" : "s"] ahead of us."
@@ -216,11 +273,14 @@
 	if(waited > 0.5)
 		WRITE_LOG(GLOB.worldgen_log, "QUEUE wt=[world.time] label=\"[label]\" wait=[round(waited, 0.01)]s tdil=[SStime_track ? SStime_track.time_dilation_current : 0]")
 
-	// Nothing is playing yet during the lobby prebuild, so there is no lag to spread and
-	// throttling would only push back the round start that the prebuild is already
-	// holding open. Decided per claim rather than per yield - it cannot change mid-job.
+	// Nothing is playing yet before the round starts, so there is no lag to spread and
+	// throttling would only push back the round start. This covers the init-time loads
+	// (roundstart hulls, space ruins, trader outposts) that claim the queue while the
+	// lobby is up; planets are no longer built ahead of time at all, they generate on
+	// first visit. Decided per claim rather than per yield - it cannot change mid-job.
 	worldgen_throttled = SSticker?.HasRoundStarted()
 	worldgen_slice_limit = TICK_USAGE + WORLDGEN_TICK_BUDGET
+	worldgen_since_yield = 0
 
 	if(warned_waiter)
 		if(notify_ship && !QDELETED(notify_ship))
@@ -249,10 +309,22 @@
  *
  * Falls back to plain CHECK_TICK when no planet is building and before the round
  * starts, so an unqueued build on a quiet server is as fast as it ever was.
+ *
+ * `min_iterations` is the forward-progress floor - how many iterations this loop is
+ * guaranteed after a sleep before it may sleep again. The default suits the ordinary
+ * turf sweep; pass something smaller from a loop whose single iteration is expensive,
+ * so its overshoot past the tick limit stays comparable.
  */
-/datum/controller/subsystem/overmap/proc/worldgen_yield(throttled = TRUE)
+/datum/controller/subsystem/overmap/proc/worldgen_yield(throttled = TRUE, min_iterations = WORLDGEN_MIN_ITERATIONS_PER_TICK)
 	if(!throttled || !worldgen_throttled || !worldgen_owner)
 		CHECK_TICK
+		return
+
+	// Forward-progress floor, checked BEFORE the tick tests below - on a loaded server
+	// those are already true when we resume, and without this the loop would sleep a whole
+	// tick for every single iteration. See WORLDGEN_MIN_ITERATIONS_PER_TICK.
+	worldgen_since_yield++
+	if(worldgen_since_yield < min_iterations)
 		return
 
 	// Second clause covers the tick being full of somebody else's work before we even
@@ -260,6 +332,7 @@
 	if(TICK_USAGE < worldgen_slice_limit && !TICK_CHECK)
 		return
 
+	worldgen_since_yield = 0
 	sleep(world.tick_lag)
 	worldgen_slice_limit = TICK_USAGE + WORLDGEN_TICK_BUDGET
 
@@ -287,6 +360,7 @@
 	worldgen_label = null
 	worldgen_throttled = FALSE
 	worldgen_slice_limit = 0
+	worldgen_since_yield = 0
 
 /**
  * Breaks a claim that is never going to be released.
@@ -347,3 +421,4 @@
 #undef WORLDGEN_QUEUE_POLL
 #undef WORLDGEN_QUEUE_UPDATE_INTERVAL
 #undef WORLDGEN_TICK_BUDGET
+#undef WORLDGEN_MIN_ITERATIONS_PER_TICK

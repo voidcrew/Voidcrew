@@ -67,8 +67,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	var/turf/hoard_turf
 	/// TRUE once link_interior() has indexed the footprint. The interior never
 	/// unloads, so linking is a once-per-round job, but load_level() is called on
-	/// every docking attempt (the base proc early-returns on an existing
-	/// reservation), so without this flag every subsequent dock would re-walk the
+	/// every docking attempt (the base proc early-returns on an existing map
+	/// zone), so without this flag every subsequent dock would re-walk the
 	/// footprint and, worse, RESPAWN Ilthuun once his corpse was gone.
 	var/linked = FALSE
 	/// Internal wideband transmitter for the galaxy-wide broadcasts.
@@ -259,7 +259,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * not worth that risk. A failure here leaves a raidable-but-unlinked lair and a
  * loud log line, which is recoverable; a bricked ship is not.
  */
-/obj/structure/overmap/space_ruin/lich_lair/load_level()
+/obj/structure/overmap/space_ruin/lich_lair/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
 	..()
 	if(!loaded)
 		return
@@ -388,7 +388,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 			.++
 
 // ===== PERSISTENCE OVERRIDES =====
-// See the file header. Both of these tear the reservation down in the base
+// See the file header. Both of these tear the interior down in the base
 // class; here they are deliberate no-ops so the raid survives a party wipe.
 
 /// No-op: the lair is never emptied, recycled or replaced. Once it loads it is
@@ -396,7 +396,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /obj/structure/overmap/space_ruin/lich_lair/check_and_respawn()
 	return
 
-/// No-op: the base proc drops the reservation and relocates the signal to a
+/// No-op: the base proc drops the map slot and relocates the signal to a
 /// fresh overmap square. The Verdigris holds both. The galaxy was told exactly
 /// where it is, and the interior is the persistent state.
 /obj/structure/overmap/space_ruin/lich_lair/unload_level()

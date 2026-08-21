@@ -73,6 +73,12 @@
 	var/list/protected_areas = list()
 	/// The list of z-levels that this weather is actively affecting
 	var/impacted_z_levels
+	// VOIDCREW EDIT ADDITION START - site scoping. See voidcrew/datums/weather_site.dm
+	/// The /datum/weather_site that scheduled this storm, if it came from one.
+	var/datum/weather_site/weather_site
+	/// Area INSTANCES this storm is confined to. Null means the z-wide get_areas(area_type) sweep.
+	var/list/scoped_areas
+	// VOIDCREW EDIT ADDITION END
 	/// A weighted list of z-levels impacted by weather, where weights reflect the total turf count on each level
 	var/list/impacted_z_levels_weighted = list()
 
@@ -142,10 +148,15 @@
 	/// The actual atom that holds our reagents that is held in nullspace
 	var/obj/effect/abstract/weather_reagent_holder
 
-/datum/weather/New(z_levels, list/weather_data)
+/datum/weather/New(z_levels, list/weather_data, datum/weather_site/site) // VOIDCREW EDIT - optional scheduling site
 	..()
 
 	impacted_z_levels = z_levels
+	// VOIDCREW EDIT ADDITION START - a site-launched storm is handed its area instances up
+	// front, so it never has to guess which of the places sharing a z-level it belongs to.
+	weather_site = site
+	scoped_areas = weather_data?["areas"] || site?.get_weather_areas()
+	// VOIDCREW EDIT ADDITION END
 	area_type = weather_data?["area"] || area_type
 	weather_flags = weather_data?["weather_flags"] || weather_flags
 	turf_thunder_chance = isnull(weather_data?["thunder_chance"]) ? turf_thunder_chance : weather_data?["thunder_chance"]
@@ -178,6 +189,41 @@
 	setup_weather_turfs()
 
 /datum/weather/Destroy()
+	// VOIDCREW EDIT ADDITION START - a finished storm must not outlive its own end().
+	//
+	// Upstream a running storm's only reference was SSweather.processing, so end() left it
+	// unreferenced and BYOND freed it on the spot. The per-site scheduler added
+	// weather_site.active_weather, which holds a FINISHED storm for the whole 5-10 minute
+	// cooldown - and a storm holds three references to every area INSTANCE it impacted
+	// (impacted_areas, impacted_areas_lookup, impacted_areas_weighted). On a planet that is
+	// the surface area, every cave area and every ruin area on it, so a planet torn down
+	// inside that window leaves its areas qdel'd but unfreeable. end() now schedules its own
+	// deletion; this is where the storm lets go of everything it was holding.
+	if(stage != END_STAGE)
+		// Abrupt deletion of a live storm. Run the real ending first so the
+		// COMSIG_WEATHER_END / COMSIG_WEATHER_ENDED_IN_AREA listeners (weather planes,
+		// storm-hating mobs) and the subtype cleanup (the GLOB.*_storm_sounds lists) still
+		// fire. The deletion end() schedules lands after we are already destroyed and no-ops.
+		end()
+	SSweather.processing -= src
+	stage = END_STAGE
+	// stage is END_STAGE, so generate_overlay_cache() hands back an empty list and this pulls
+	// the storm's overlays - and its blend mode override - back off every impacted area.
+	update_areas()
+	if(weather_site?.active_weather == src)
+		weather_site.active_weather = null
+	weather_site = null
+	scoped_areas = null
+	// Emptied rather than nulled: several readers index these directly and null[key] is a
+	// runtime, while an empty list answers the same "nothing here" to all of them.
+	impacted_areas = list()
+	impacted_areas_lookup = list()
+	impacted_areas_weighted = list()
+	impacted_areas_blend_modes = list()
+	impacted_z_levels_weighted = list()
+	current_mobs = list()
+	overlay_cache = null
+	// VOIDCREW EDIT ADDITION END
 	QDEL_NULL(weather_reagent_holder)
 	return ..()
 
@@ -203,7 +249,9 @@
 
 /datum/weather/proc/setup_weather_areas()
 	var/list/affectareas = list()
-	for(var/area/selected_area as anything in get_areas(area_type))
+	// VOIDCREW EDIT ADDITION: a site-launched storm already knows its area instances, so it
+	// skips the world-wide get_areas() sweep and never picks up a co-tenant's areas.
+	for(var/area/selected_area as anything in (scoped_areas || get_areas(area_type)))
 		affectareas += selected_area
 	for(var/area/protected_area as anything in protected_areas)
 		affectareas -= get_areas(protected_area)
@@ -309,6 +357,23 @@
 	update_areas()
 	for(var/area/impacted_area as anything in impacted_areas)
 		SEND_SIGNAL(impacted_area, COMSIG_WEATHER_ENDED_IN_AREA(type), src)
+	// VOIDCREW EDIT ADDITION START - the storm is over; let it go.
+	//
+	// Dropping the site's reference here (rather than waiting for the cooldown callback in
+	// make_site_eligible()) is what stops a dead storm pinning every area instance it
+	// impacted for the next 5-10 minutes. The deletion is what actually frees those areas,
+	// the storm's overlay cache and its nullspace reagent holder - see Destroy().
+	//
+	// Deferred by a tick instead of a bare qdel(src) because subtype end() overrides chain
+	// through ..() and then keep working: /datum/weather/ash_storm/end() reads
+	// impacted_areas and impacted_z_levels to refill dug basalt, and /datum/weather/rad_storm/end()
+	// runs its announcement after calling us. Deleting inside this call would pull those
+	// lists out from under them.
+	if(weather_site?.active_weather == src)
+		weather_site.active_weather = null
+	weather_site = null
+	QDEL_IN(src, 0)
+	// VOIDCREW EDIT ADDITION END
 
 // handles sending all alerts
 /datum/weather/proc/send_alert(alert_msg, alert_sfx, alert_sfx_vol = 100)
@@ -325,7 +390,27 @@
 // the checks for if a mob should receive alerts, returns TRUE if can
 /datum/weather/proc/can_get_alert(mob/player)
 	var/turf/mob_turf = get_turf(player)
-	return !isnull(mob_turf)
+	if(isnull(mob_turf))
+		return FALSE
+	// VOIDCREW EDIT ADDITION START - alerts follow the impacted AREAS, not the whole z-level.
+	// clients_by_zlevel alone tells a crew standing in a cave (or, once several places share
+	// a level, on the neighbouring planet) about a surface storm that cannot reach them.
+	// Storms with no area scoping at all keep the plain on-an-impacted-z behaviour.
+	//
+	// The `length(impacted_areas_lookup) &&` guard this test used to carry made the alert
+	// fail OPEN on a storm that owns no areas: it told everyone on the z-level about a storm
+	// that can affect nobody, which is the asymmetry with can_weather_act_mob() below (that
+	// one indexes the lookup unconditionally). setup_weather_areas() runs from New(), before
+	// telegraph() sends the first alert, so an empty lookup genuinely means "impacts
+	// nothing" rather than "not built yet" - the hazard telegraph is not weakened.
+	if(!impacted_areas_lookup[mob_turf.loc])
+		return FALSE
+	// Site containment on top, for the storms whose impacted areas are shared instances
+	// (flat co-tenants all sit in the one global /area/space).
+	if(weather_site && !weather_site.contains_turf(mob_turf))
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
+	return TRUE
 
 /**
  * Returns TRUE if the living mob can be affected by the weather
@@ -478,6 +563,10 @@
 /datum/weather/proc/update_areas()
 	var/list/new_overlay_cache = generate_overlay_cache()
 	for(var/area/impacted as anything in impacted_areas)
+		// VOIDCREW EDIT ADDITION - a hard-deleted area is nulled IN PLACE in this list rather
+		// than removed from it, and `as anything` skips the istype filter that would catch it.
+		if(isnull(impacted))
+			continue
 		if(length(overlay_cache))
 			impacted.overlays -= overlay_cache
 			if(impacted_areas_blend_modes[impacted])

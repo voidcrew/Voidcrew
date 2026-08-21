@@ -25,13 +25,11 @@
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 4
 	},
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/frozen_planet,
 /area/lavaland/surface)
 "eP" = (
 /obj/structure/stone_tile/slab,
-/turf/open/indestructible/boss{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
+/turf/open/indestructible/boss/frozen_planet,
 /area/lavaland/surface)
 "eV" = (
 /turf/closed/mineral/snowmountain/cavern/icemoon,
@@ -253,12 +251,10 @@
 /turf/closed/wall/mineral/cult,
 /area/lavaland/surface)
 "Ce" = (
-/turf/closed/mineral/volcanic/lava_land_surface{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet,
 /area/lavaland/surface)
 "Cp" = (
-/turf/closed/mineral/volcanic/lava_land_surface,
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet,
 /area/lavaland/surface)
 "Dq" = (
 /obj/structure/stone_tile/block/burnt{
@@ -285,12 +281,10 @@
 /turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "JE" = (
-/turf/closed/mineral/volcanic/lava_land_surface,
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet,
 /area/icemoon/underground/explored)
 "Ky" = (
-/turf/closed/mineral/volcanic/lava_land_surface{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet,
 /area/icemoon/underground/explored)
 "Nn" = (
 /turf/closed/mineral/random/snow,
@@ -377,7 +371,7 @@
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 8
 	},
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/frozen_planet,
 /area/lavaland/surface)
 "UE" = (
 /obj/structure/stone_tile/block/cracked,
@@ -414,13 +408,13 @@
 /area/lavaland/surface)
 "UY" = (
 /turf/open/genturf,
-/area/lavaland/surface/outdoors/unexplored/danger/no_ruins)
+/area/lavaland/surface/outdoors/unexplored/danger/no_ruins/frozen_planet)
 "Vh" = (
 /obj/structure/stone_tile/slab,
 /turf/open/floor/cult,
 /area/lavaland/surface)
 "Vw" = (
-/turf/closed/mineral/volcanic/lava_land_surface,
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet,
 /area/lavaland/surface/outdoors)
 "VX" = (
 /obj/structure/stone_tile/block/cracked,
@@ -471,7 +465,7 @@
 	name = "\proper the last ash drake";
 	desc = "The sole survivor of its species, hunted to the verge of extinction. This frozen hell is the final resting place for the last of the dragons."
 	},
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/frozen_planet,
 /area/lavaland/surface)
 
 (1,1,1) = {"

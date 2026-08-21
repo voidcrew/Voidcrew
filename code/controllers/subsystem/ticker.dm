@@ -193,10 +193,6 @@ SUBSYSTEM_DEF(ticker)
 				tipped = TRUE
 
 			if(timeLeft <= 0)
-				// voidcrew edit: hold the countdown at zero until roundstart planet
-				// generation (and its lighting backlog) is done - see hold_for_planet_generation()
-				if(hold_for_planet_generation())
-					return
 				SEND_SIGNAL(src, COMSIG_TICKER_ENTER_SETTING_UP)
 				current_state = GAME_STATE_SETTING_UP
 				Master.SetRunLevel(RUNLEVEL_SETUP)

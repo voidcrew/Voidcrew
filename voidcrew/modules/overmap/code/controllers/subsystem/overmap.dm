@@ -16,8 +16,8 @@ SUBSYSTEM_DEF(overmap)
 	wait = 10 // Fires every 1 second (10 deciseconds)
 	init_order = INIT_ORDER_OVERMAP // NOTE: dead - the MC overwrites init_order from the dependency graph (see Master/Initialize)
 	flags = NONE
-	// LOBBY is in here so the roundstart planets can generate while players are still
-	// picking characters - see prebuild_roundstart_planets()
+	// LOBBY is in here so the subsystem is already ticking - the worldgen watchdog and
+	// ship bookkeeping below - while the lobby is up and roundstart hulls are loading.
 	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_SETUP | RUNLEVEL_GAME
 	// Init ordering is purely dependency-topological now. With only mapping declared,
 	// the MC initialized SSovermap BEFORE SSatoms/SSair/SSlighting, so spawn_initial_ship()
@@ -78,18 +78,10 @@ SUBSYSTEM_DEF(overmap)
 	/// committing. (Preloaded planets are separate - those are the *_planet_count vars in
 	/// voidcrew/mapping/_mapping.dm, already 0.)
 	var/spawn_planets = TRUE
-	/// How many planets of each terrain type the round gets. Only the FIRST of each type is
-	/// generated during the lobby - see prebuild_roundstart_planets(). The rest are charted
-	/// contacts with no interior until a ship goes there, so raising this adds places to go
-	/// without adding anything to the round-start wait.
+	/// How many planets of each terrain type the round gets. Every one of them is a charted
+	/// contact with no interior until a ship actually goes there, so raising this adds
+	/// places to go without adding anything to the round-start wait.
 	var/dynamic_planets_per_type = 2
-	/// Whether the lobby pre-build pass has been kicked off. One-shot.
-	var/roundstart_planets_prebuilt = FALSE
-	/// TRUE once every roundstart planet is fully built AND its lighting has settled.
-	/// The pre-round countdown holds at zero until this flips - see SSticker's pregame gate.
-	var/roundstart_planets_ready = FALSE
-	/// When the prebuild pass started, for the ticker gate's failsafe cap.
-	var/prebuild_started_at = 0
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -122,9 +114,9 @@ SUBSYSTEM_DEF(overmap)
 		ship.check_manoeuvre_stalled()
 
 	// Derelict lifecycle: crewless hulls abandon, abandoned hulls eventually despawn.
-	// Gated on the round actually running - this subsystem also fires through the lobby
-	// (for the planet prebuild), and a long lobby hold must not run the crewless clock
-	// against roundstart hulls nobody has been able to board yet.
+	// Gated on the round actually running - this subsystem also fires through the lobby,
+	// and a long lobby must not run the crewless clock against roundstart hulls nobody
+	// has been able to board yet.
 	if(SSticker.IsRoundInProgress() && world.time >= next_derelict_sweep)
 		next_derelict_sweep = world.time + DERELICT_SWEEP_INTERVAL
 		sweep_derelicts()
@@ -132,19 +124,6 @@ SUBSYSTEM_DEF(overmap)
 	// A build or teardown that runtimed partway through never released the worldgen
 	// queue, and everything waiting on it would sit there for the rest of the round.
 	worldgen_watchdog()
-
-	// First tick after FULL world init: start generating the roundstart planets in the
-	// background. Flag is set before the call so a long build can't be started twice.
-	//
-	// The init_stage check is load-bearing: the MC opens the lobby and starts firing
-	// early-stage subsystems while later init stages are still running, so without it
-	// the prebuild generates terrain DURING world init. Any light source queued in that
-	// window gets stranded by the overlap between SSlighting.Initialize's direct
-	// fire() drain and the MC's regular fires (both non-resumed, each replacing
-	// current_sources) - the planet is then permanently unlit (probe rounds 768/769).
-	if(!roundstart_planets_prebuilt && Master.init_stage_completed == INITSTAGE_MAX)
-		roundstart_planets_prebuilt = TRUE
-		INVOKE_ASYNC(src, PROC_REF(prebuild_roundstart_planets))
 
 /**
  * Once-a-minute derelict bookkeeping over the whole fleet. Occupancy is the only
@@ -239,84 +218,171 @@ SUBSYSTEM_DEF(overmap)
 		ship.abandon_ship(crash = TRUE) // only actually crashes a hull that is in flight
 
 /**
- * Generates the roundstart planets during the pre-round lobby.
+ * How much queued lighting work is still outstanding for `wait_footprint`, or for the
+ * whole world when it is null.
  *
- * Planets build themselves on first visit, which is what keeps an unvisited one free -
- * but for the planets that exist at roundstart there is nothing to save: the crew is
- * going to find them. Doing it now means the ~20s per planet is spent while people are
- * still in the lobby picking characters, instead of stalling the first ship to try
- * landing somewhere.
+ * Two things this counts that the obvious version does not:
  *
- * Only one planet per type is prebuilt (marker.prebuild_at_roundstart), however many the
- * round has. The lobby hold scales with whatever is built here, so the guarantee is "a
- * lava/ice/jungle/beach/wasteland planet is ready the moment the round starts" - the
- * spares are charted contacts that generate when somebody actually flies to one.
- *
- * Sequential on purpose. Each build is already CHECK_TICK'd throughout and allocating
- * z-levels serialises anyway, so running them in parallel would just interleave the
- * lag. Anything not finished by the time the round starts still builds on arrival.
+ * 1. `SSlighting.current_sources`. Every non-resumed fire moves the WHOLE of
+ *    sources_queue into current_sources and leaves sources_queue empty behind it
+ *    (see /datum/controller/subsystem/lighting/fire), so a backlog that is actively
+ *    being chewed through lives there, not in the queue. Watching only the queue reads
+ *    "settled" in the middle of a drain.
+ * 2. The footprint. The queues are global. A packed z-level carries up to four tenants,
+ *    and the rest of the world - ships under way, a lit mob walking around a trader
+ *    outpost, weather - feeds them continuously. Counting all of that made the caller
+ *    below wait on the entire server going quiet, which on a live round never happens.
  */
-/datum/controller/subsystem/overmap/proc/prebuild_roundstart_planets()
-	prebuild_started_at = world.time
-	var/built = 0
-	var/start = REALTIMEOFDAY
-	for(var/obj/structure/overmap/planet/marker as anything in GLOB.overmap_planets.Copy())
-		if(QDELETED(marker) || marker.mapzone || marker.loading)
-			continue
-		if(!marker.is_terrain_planet())
-			continue
-		if(!marker.prebuild_at_roundstart)
-			continue
-		marker.load_level()
-		built++
-	if(built)
-		log_mapping("SSovermap: Pre-built [built] roundstart planet(s) in [(REALTIMEOFDAY - start) / 10]s")
-		// Generation queues a light source per surface turf - six figures of lighting
-		// work across the fleet of planets that SSlighting chews through at its own
-		// pace. A planet is not "done" until that has settled: without this, the round
-		// starts onto pitch-black planets that slowly fade in over the next several
-		// minutes while SSlighting eats the whole roundstart tick budget.
-		wait_for_lighting_settle()
-	roundstart_planets_ready = TRUE
-	log_mapping("SSovermap: Roundstart planets ready ([(REALTIMEOFDAY - start) / 10]s total)")
+/datum/controller/subsystem/overmap/proc/lighting_backlog_for(datum/map_footprint/wait_footprint)
+	if(isnull(wait_footprint) || !wait_footprint.z_value || isnull(wait_footprint.low_x))
+		return length(SSlighting.sources_queue) + length(SSlighting.current_sources) + length(SSlighting.corners_queue) + length(SSlighting.objects_queue)
 
-/// Sleeps until SSlighting's pipeline has fully drained (two consecutive empty checks,
-/// since sources feed corners feed objects between fires). Capped so a wedged queue
-/// can't hold the round hostage.
-/datum/controller/subsystem/overmap/proc/wait_for_lighting_settle(cap = 5 MINUTES)
+	var/low_x = wait_footprint.low_x
+	var/low_y = wait_footprint.low_y
+	var/high_x = wait_footprint.high_x
+	var/high_y = wait_footprint.high_y
+	var/z_value = wait_footprint.z_value
+	var/backlog = 0
+
+	for(var/list/source_list as anything in list(SSlighting.sources_queue, SSlighting.current_sources))
+		for(var/datum/light_source/source as anything in source_list)
+			var/turf/source_turf = source.source_turf
+			if(!isturf(source_turf) || source_turf.z != z_value)
+				continue
+			if(source_turf.x < low_x || source_turf.x > high_x || source_turf.y < low_y || source_turf.y > high_y)
+				continue
+			backlog++
+
+	// A corner's own x/y are the VERTEX, half a tile up and right of the turf that owns it
+	// as its NE, so the rect it can legitimately belong to runs half a tile past both
+	// high edges. Compared loosely rather than exactly - one tile of slop on the boundary
+	// costs nothing and getting it wrong strands the wait.
+	for(var/datum/lighting_corner/corner as anything in SSlighting.corners_queue)
+		if(corner.z != z_value)
+			continue
+		if(corner.x < low_x - 1 || corner.x > high_x + 1 || corner.y < low_y - 1 || corner.y > high_y + 1)
+			continue
+		backlog++
+
+	for(var/datum/lighting_object/lighting_object as anything in SSlighting.objects_queue)
+		var/turf/affected_turf = lighting_object.affected_turf
+		if(!isturf(affected_turf) || affected_turf.z != z_value)
+			continue
+		if(affected_turf.x < low_x || affected_turf.x > high_x || affected_turf.y < low_y || affected_turf.y > high_y)
+			continue
+		backlog++
+
+	return backlog
+
+/// TRUE when `checked` lies inside `wait_footprint`. A null footprint means the whole
+/// world, matching lighting_backlog_for(). Deliberately NOT used by that proc, which
+/// inlines the same test - it runs over the whole queue once a second, and this one only
+/// ever runs when something has already gone wrong.
+/datum/controller/subsystem/overmap/proc/footprint_holds_turf(datum/map_footprint/wait_footprint, turf/checked)
+	if(isnull(wait_footprint) || !wait_footprint.z_value || isnull(wait_footprint.low_x))
+		return TRUE
+	if(!isturf(checked) || checked.z != wait_footprint.z_value)
+		return FALSE
+	return checked.x >= wait_footprint.low_x && checked.x <= wait_footprint.high_x && checked.y >= wait_footprint.low_y && checked.y <= wait_footprint.high_y
+
+/**
+ * Names what is still sitting in the lighting queues for `wait_footprint`, as a one-line
+ * "3x /obj/thing @(61,190)" summary.
+ *
+ * This exists because "the lighting never settles" is not actionable and "the lighting
+ * never settles because eight /obj/structure/spawner/ice_moon/demonic_portal keep
+ * re-queueing" is. Only ever called off the settle wait's failure paths, so it may be as
+ * slow and as allocating as it likes.
+ */
+/datum/controller/subsystem/overmap/proc/lighting_backlog_report(datum/map_footprint/wait_footprint, max_entries = 8)
+	var/list/tally = list()
+	var/list/example_coords = list()
+
+	for(var/datum/light_source/source as anything in (SSlighting.sources_queue + SSlighting.current_sources))
+		var/turf/source_turf = source.source_turf
+		if(!footprint_holds_turf(wait_footprint, source_turf))
+			continue
+		var/atom/source_atom = source.source_atom
+		// The OWNER, not the turf under it: a lantern on a wandering mob and a self-lit
+		// lava tile are the same "source on this turf" and completely different problems.
+		var/label = "source [source_atom ? source_atom.type : "<none>"]"
+		tally[label] = (tally[label] || 0) + 1
+		example_coords[label] ||= "([source_turf.x],[source_turf.y])"
+
+	for(var/datum/lighting_corner/corner as anything in SSlighting.corners_queue)
+		if(!isnull(wait_footprint) && wait_footprint.z_value)
+			if(corner.z != wait_footprint.z_value)
+				continue
+			if(corner.x < wait_footprint.low_x - 1 || corner.x > wait_footprint.high_x + 1 || corner.y < wait_footprint.low_y - 1 || corner.y > wait_footprint.high_y + 1)
+				continue
+		var/label = "corner ([LAZYLEN(corner.affecting)] affecting)"
+		tally[label] = (tally[label] || 0) + 1
+		example_coords[label] ||= "([corner.x],[corner.y])"
+
+	for(var/datum/lighting_object/lighting_object as anything in SSlighting.objects_queue)
+		var/turf/affected_turf = lighting_object.affected_turf
+		if(!footprint_holds_turf(wait_footprint, affected_turf))
+			continue
+		var/label = "object [affected_turf ? affected_turf.type : "<none>"]"
+		tally[label] = (tally[label] || 0) + 1
+		example_coords[label] ||= "([affected_turf.x],[affected_turf.y])"
+
+	if(!length(tally))
+		return "nothing pending on the footprint"
+
+	sortTim(tally, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	var/list/lines = list()
+	for(var/label in tally)
+		lines += "[tally[label]]x [label] @[example_coords[label]]"
+		if(length(lines) >= max_entries)
+			break
+	return lines.Join(", ")
+
+/**
+ * Sleeps until the lighting work for `wait_footprint` has drained, so a crew docking onto
+ * a freshly built planet lands on a rendered surface instead of a black one.
+ *
+ * Returns when EITHER of two things is true:
+ *
+ * - the footprint's backlog is empty on two consecutive samples (it finished), or
+ * - the backlog has failed to reach a new low for LIGHTING_SETTLE_PLATEAU_SAMPLES
+ *   samples (it is not finishing).
+ *
+ * The second exit is the important one and it is not a fudge. "Wait for zero" only
+ * terminates if the thing being watched is a finite backlog draining to nothing. A live
+ * planet is not: a demonic portal's light, a lit mob wandering the surface, a storm
+ * overhead all feed the queues forever, and a wait that insists on zero simply burns its
+ * whole cap every time. Measured 2026-08-21: every ice planet in round 1068 sat out the
+ * full 90 seconds and then logged sources=3 - three sources, not a backlog. What we
+ * actually want to know is "has the initial render stopped making progress", and a
+ * backlog that has stopped shrinking answers exactly that.
+ *
+ * Capped regardless, so a wedged queue can't hold the round hostage.
+ */
+/datum/controller/subsystem/overmap/proc/wait_for_lighting_settle(cap = 5 MINUTES, datum/map_footprint/wait_footprint)
 	var/started = world.time
 	var/consecutive_empty = 0
+	var/lowest_backlog = INFINITY
+	var/samples_without_progress = 0
 	while(world.time < started + cap)
-		if(!length(SSlighting.sources_queue) && !length(SSlighting.corners_queue) && !length(SSlighting.objects_queue))
+		var/backlog = lighting_backlog_for(wait_footprint)
+		if(!backlog)
 			consecutive_empty++
-			if(consecutive_empty >= 2)
+			if(consecutive_empty >= LIGHTING_SETTLE_EMPTY_SAMPLES)
 				return TRUE
 		else
 			consecutive_empty = 0
-		sleep(1 SECONDS)
-	log_mapping("SSovermap: lighting settle wait hit its [cap / 600] minute cap (sources=[length(SSlighting.sources_queue)] corners=[length(SSlighting.corners_queue)] objects=[length(SSlighting.objects_queue)])")
+			if(backlog < lowest_backlog)
+				lowest_backlog = backlog
+				samples_without_progress = 0
+			else
+				samples_without_progress++
+				if(samples_without_progress >= LIGHTING_SETTLE_PLATEAU_SAMPLES)
+					log_mapping("SSovermap: lighting settle plateaued at [backlog] pending after [(world.time - started) / 10]s, releasing. Pending: [lighting_backlog_report(wait_footprint)]")
+					return TRUE
+		sleep(LIGHTING_SETTLE_POLL)
+	log_mapping("SSovermap: lighting settle wait hit its [cap / 600] minute cap (scoped=[lighting_backlog_for(wait_footprint)] global sources=[length(SSlighting.sources_queue)] current=[length(SSlighting.current_sources)] corners=[length(SSlighting.corners_queue)] objects=[length(SSlighting.objects_queue)]). Pending: [lighting_backlog_report(wait_footprint)]")
 	return FALSE
-
-/**
- * Whether the pre-round countdown should keep holding for planet generation.
- * Failsafe: if the prebuild has been running for an unreasonable amount of time,
- * something is wedged - let the round start rather than hold the lobby forever.
- */
-/datum/controller/subsystem/overmap/proc/roundstart_planets_pending()
-	if(roundstart_planets_ready)
-		return FALSE
-	// A dead overmap will never run the prebuild - don't deadlock the lobby over it
-	if(!initialized || !can_fire)
-		return FALSE
-	// SSovermap hasn't had its first lobby fire yet - the prebuild is still coming
-	if(!roundstart_planets_prebuilt)
-		return TRUE
-	if(prebuild_started_at && world.time - prebuild_started_at > 10 MINUTES)
-		log_mapping("SSovermap: planet prebuild failsafe tripped - starting the round without it")
-		message_admins("Roundstart planet generation exceeded 10 minutes; the round is starting without waiting for it.")
-		roundstart_planets_ready = TRUE
-		return FALSE
-	return TRUE
 
 /*
  * Bluespace jump procs
@@ -619,14 +685,10 @@ SUBSYSTEM_DEF(overmap)
  * preloaded counts are all zero: each of those is a full 255x255 z-pair sitting in
  * memory whether or not anyone ever goes there. It is also why the round's planet count
  * (dynamic_planets_per_type, one set of every type per pass) is free to be larger than
- * the number generated up front - only the first of each type is prebuilt in the lobby.
+ * anything a round will actually visit - none of it is generated until somebody flies there.
  */
 /datum/controller/subsystem/overmap/proc/setup_planets()
 	if(!spawn_planets)
-		// Nothing to build, so nothing for the pre-round countdown to wait on - flip the
-		// gate now rather than letting the lobby sit through a prebuild pass over an
-		// empty marker list.
-		roundstart_planets_ready = TRUE
 		log_mapping("SSovermap: planets disabled (spawn_planets = FALSE) - no planet contacts this round")
 		return
 
@@ -668,24 +730,36 @@ SUBSYSTEM_DEF(overmap)
 		// Transfer all of the data from the planet datum onto the planet object
 		planet_to_spawn.apply_planet_identity()
 
-		var/datum/map_zone/mapzone = find_free_mapzone()
+		// Roundstart planets own a whole level each and MUST NOT be packed: their z-level was
+		// generated at boot by SSmapping's own loadWorld() pass, at full 255x255 size, and
+		// nothing here narrows it or could re-lay it inside a lattice cell. A biome class
+		// would deal them a 123x123 slot rectangle over ground that was generated for the
+		// whole level, and - worse - hand the SECOND same-biome roundstart planet slot 2 of
+		// the FIRST one's z-level while its own pre-generated level went unregistered.
+		// MAP_TENANT_CLASS_SOLO is a whole-level, capacity-1 slot: byte-for-byte the
+		// allocation these have always had. They still go through the register so the zone
+		// pool stays one pool.
+		var/datum/map_footprint/footprint = claim_free_slot(MAP_TENANT_CLASS_SOLO, planet_to_spawn, zone_name = "Dynamic Overmap Encounter")
+		if(isnull(footprint))
+			log_mapping("SSovermap: could not claim a slot for roundstart planet '[planet]' - skipped")
+			continue
+		var/datum/map_zone/mapzone = footprint.zone
 		var/datum/space_level/zlevel
-		var/encounter_name = "Dynamic Overmap Encounter"
-		if(isnull(mapzone))
-			mapzone = create_map_zone(encounter_name)
+		// length() guard - indexing an empty z_levels list runtimes (see
+		// spawn_dynamic_encounter for the round-killing version of this mistake)
+		if(length(mapzone.z_levels))
+			zlevel = mapzone.z_levels[1]
+		else
 			zlevel = SSmapping.get_level(planets[planet]["z"])
 			mapzone.add_space_level(zlevel)
-		else
-			// length() guard - indexing an empty z_levels list runtimes (see
-			// spawn_dynamic_encounter for the round-killing version of this mistake)
-			if(length(mapzone.z_levels))
-				zlevel = mapzone.z_levels[1]
-			else
-				zlevel = SSmapping.get_level(planets[planet]["z"])
-				mapzone.add_space_level(zlevel)
+		footprint.enable_planetary_faction()
+		footprint.attach_level(zlevel)
+		// These mobs were initialized while SSmapping loaded the roundstart surface, before
+		// its overmap marker and footprint existed. Adopt them now, preserving role factions.
+		footprint.add_planetary_faction_to_existing_mobs()
 
-		mapzone.taken = TRUE
 		planet_to_spawn.mapzone = mapzone
+		planet_to_spawn.footprint = footprint
 		planet_to_spawn.loaded = TRUE
 
 	// Dynamic planets: dynamic_planets_per_type markers of every planet type SSmapping did
@@ -736,10 +810,6 @@ SUBSYSTEM_DEF(overmap)
 	// Remembered rather than re-derived, so the planet keeps its difficulty when it
 	// relocates after being abandoned
 	planet_to_spawn.zone_band = wanted_band
-	// One planet of each type is ready when the round starts; the spares are somewhere to
-	// go later, and pay for their own generation when a crew flies out to one.
-	planet_to_spawn.prebuild_at_roundstart = (pass == 1)
-
 	// Several planets of a type in one round would otherwise be several identical
 	// contacts on the chart, with no way to say which one a mission or a helm order
 	// meant. Set before the identity copy, which is what stamps it onto the name.
@@ -753,7 +823,7 @@ SUBSYSTEM_DEF(overmap)
 	// apply_planet_identity().
 	planet_to_spawn.apply_planet_identity()
 
-	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded[planet_to_spawn.prebuild_at_roundstart ? ", prebuilt" : ""]) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
+	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
 
 /// Roman numeral for a planet's place in its type, so the chart reads "Lava Planet II"
 /// rather than a second "Lava Planet".
@@ -1043,8 +1113,18 @@ SUBSYSTEM_DEF(overmap)
  *   asteroid's cave level): the build shares that job's tick budget. FALSE (default)
  *   for unqueued flat encounters, which run at plain CHECK_TICK speed and never wait
  *   behind a queued job - see worldgen_queue.dm.
+ * * tenant_class - which slot class to claim. Null lets the encounter pick for itself:
+ *   MAP_TENANT_CLASS_FLAT (four to a level) when it is genuinely flat, MAP_TENANT_CLASS_SOLO
+ *   when it needs a whole level - it carries a map generator, publishes a ZTRAIT_BASETURF,
+ *   or its ruin template is too big for a 123x123 slot. Player outposts pass OUTPOST.
+ * * tenant_owner - the overmap object the footprint belongs to, if the caller has it.
+ *
+ * Returns list(mapzone, primary_dock, secondary_dock, footprint, ruin_bottom_left).
+ * Callers MUST hold onto the footprint: it is what their teardown hands back, and what
+ * every "is this turf mine" question is answered from. The fifth entry is where the ruin
+ * template was stamped (null when there was no ruin, or it did not fit).
  */
-/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type, zone_band, throttled = FALSE)
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type, zone_band, throttled = FALSE, tenant_class = null, atom/tenant_owner = null)
 	log_shuttle("SSOVERMAP: SPAWNING DYNAMIC ENCOUNTER STARTED")
 	var/list/ruin_list
 	var/datum/map_generator/mapgen
@@ -1052,6 +1132,13 @@ SUBSYSTEM_DEF(overmap)
 	var/weather_trait
 	var/turf/ground_baseturf
 	var/datum/planet/planet_template
+	/// TRUE only for actual planetary surfaces. Crashed ships and space ruins deliberately
+	/// keep their normal faction conflicts even when they also occupy a footprint.
+	var/has_planetary_surface = FALSE
+	/// Where the ruin template was actually stamped, handed back to the caller as the
+	/// fifth return value - space ruins scope their mission spawns and interior sweeps
+	/// off it and would otherwise have to guess at the placer's arithmetic.
+	var/turf/ruin_bottom_left
 	if(!isnull(planet_type))
 		planet_type = new planet_type
 		ruin_list = get_ruin_list(planet_type.ruin_type)
@@ -1067,6 +1154,7 @@ SUBSYSTEM_DEF(overmap)
 		target_area = planet_type.target_area
 		weather_trait = planet_type.weather_trait
 		ground_baseturf = planet_type.baseturf
+		has_planetary_surface = !isnull(planet_type.surface_area)
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
 		qdel(planet_type)
@@ -1077,7 +1165,6 @@ SUBSYSTEM_DEF(overmap)
 			ruin_type = new ruin_type
 
 	var/encounter_name = "Dynamic Overmap Encounter"
-	var/datum/map_zone/mapzone = find_free_mapzone()
 	var/datum/space_level/zlevel
 	// ZTRAIT_LINKAGE = UNAFFECTED disables space transitions so construction is allowed
 	var/list/zlevel_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
@@ -1089,14 +1176,34 @@ SUBSYSTEM_DEF(overmap)
 	if(ground_baseturf)
 		zlevel_traits[ZTRAIT_BASETURF] = ground_baseturf
 
-	if(isnull(mapzone))
-		mapzone = create_map_zone(encounter_name)
+	// Which lattice this encounter belongs on. Anything that needs a one-per-z service -
+	// its own ground (ZTRAIT_BASETURF), weather, a map generator - or that simply will not
+	// fit inside a MAP_SLOT_SIDE square takes a whole level to itself, exactly as it did
+	// before packing. Everything else (empty space, crashed ships, ruinless weak signals)
+	// is genuinely flat and packs four to a level.
+	if(isnull(tenant_class))
+		tenant_class = MAP_TENANT_CLASS_FLAT
+		if(ground_baseturf || weather_trait || !isnull(mapgen))
+			tenant_class = MAP_TENANT_CLASS_SOLO
+		else if(ruin_type && !ruin_fits_in_slot(ruin_type))
+			tenant_class = MAP_TENANT_CLASS_SOLO
 
 	// Claimed before anything below can sleep, not after the level is minted -
-	// add_new_zlevel() blocks on its own spinlock, and a zone left unclaimed across that
-	// sleep gets handed to the next caller of find_free_mapzone() as well. Two encounters
-	// then share one map zone, and the first to be abandoned clears the other's level.
-	mapzone.taken = TRUE
+	// add_new_zlevel() blocks on its own spinlock, and a slot left unclaimed across that
+	// sleep gets handed to the next caller of find_free_slot() as well. Two encounters
+	// then share one footprint, and the first to be abandoned clears the other's ground.
+	var/datum/map_footprint/footprint = claim_free_slot(tenant_class, tenant_owner, zone_name = encounter_name)
+	if(isnull(footprint))
+		log_mapping("SSovermap: dynamic encounter could not claim a '[tenant_class]' slot - encounter aborted")
+		return null
+	if(has_planetary_surface)
+		footprint.enable_planetary_faction()
+	// Null for every genuinely flat encounter (that is what makes them flat), non-null only
+	// for the SOLO ground encounters selected above. Stamped anyway so the footprint is the
+	// single authority every /turf/baseturf_bottom resolution goes through - the level trait
+	// below stays as the fallback and is still what an unpacked level answers with.
+	footprint.baseturf = ground_baseturf
+	var/datum/map_zone/mapzone = footprint.zone
 
 	// length() guard, not [1]: a fresh zone from create_map_zone() has an EMPTY z_levels
 	// list, and indexing it runtimes. That runtime aborted every encounter spawn once the
@@ -1107,71 +1214,119 @@ SUBSYSTEM_DEF(overmap)
 		// A recycled level still holds the last occupant's traits. Reconcile the one that
 		// carries a value: left stale, a space encounter reusing a planet's level would
 		// bottom its turfs out in that planet's ground instead of space.
-		zlevel.set_trait(ZTRAIT_BASETURF, ground_baseturf)
+		// Only ever the first tenant on the level: on a packed level a co-tenant already
+		// built against this trait, and every packed class leaves it null anyway.
+		if(mapzone.used_slot_count() <= 1)
+			zlevel.set_trait(ZTRAIT_BASETURF, ground_baseturf)
+	else if(SSmapping.at_z_level_ceiling())
+		// claim_free_slot() refuses to MINT a zone at the ceiling, but a zone can also be
+		// dealt from the recycled pool and turn out to have no level yet (a build that
+		// failed before add_new_zlevel, an admin-made zone). Refuse here too, and hand the
+		// slot straight back rather than leaving it claimed against nothing.
+		log_mapping("SSovermap: dynamic encounter refused - world.maxz is at its configured ceiling and [footprint.describe()]'s zone has no level yet")
+		mapzone.release_slot(footprint)
+		return null
 	else
 		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 		mapzone.add_space_level(zlevel)
 
+	// add_space_level() attaches slots claimed before the level existed; this covers the
+	// recycled-level branch above, where the level was already there.
+	footprint.attach_level(zlevel)
+
 	// Dynamic levels appear after SSweather.Initialize and map zones are recycled.
 	// Replace any prior encounter's trait, active storm, and cooldown before registering
-	// the new planet's weather.
-	SSweather.set_z_level_weather_trait(zlevel, weather_trait)
+	// the new planet's weather. One climate per z, so only the first tenant may set it.
+	if(mapzone.used_slot_count() <= 1)
+		SSweather.set_z_level_weather_trait(zlevel, weather_trait)
 
 	// throttled stays FALSE for unqueued encounter builds (empty space, weak signals):
 	// they must never wait behind a queued planet job - see worldgen_yield() in
 	// worldgen_queue.dm. Queued callers (the large asteroid's cave level) pass TRUE
 	// and share the budget they already hold.
-	var/area/filled_area = zlevel.fill_in(area_override = target_area, throttled = throttled)
+	var/area/filled_area = zlevel.fill_in(area_override = target_area, throttled = throttled, footprint = footprint)
+
+	// Wall the unclaimed slots (and the world edge) off. Once per level, from the whole
+	// lattice - a second tenant arriving finds this already done and never repaints over
+	// the first one's ground. A whole-level tenant produces no cordon at all, which is
+	// what flat encounters have always had.
+	zlevel.place_cordon(throttled)
 
 	if(ruin_type)
-		var/turf/ruin_turf = locate(rand(
-			zlevel.low_x+6,
-			zlevel.high_x-ruin_type.width-6),
-			zlevel.high_y-ruin_type.height-6,
-			zlevel.z_value
-			)
+		// Bounds are the FOOTPRINT's, not the level's: on a packed level the level rect is
+		// the whole z, and a ruin placed from it lands in the gutter or on the neighbour.
+		// And the region is the slot MINUS its two reserve berths - measuring the ruin down
+		// from footprint.high_y stamps any template 73 rows or taller straight over both of
+		// them, which is a ship materialising inside ruin walls. See slot_build_region().
+		var/list/region = slot_build_region(footprint)
+		var/ruin_min_x = region[1]
+		var/ruin_min_y = region[2]
+		var/ruin_max_x = region[3] - ruin_type.width + 1
+		var/ruin_max_y = region[4] - ruin_type.height + 1
+		var/turf/ruin_turf = (ruin_min_x <= ruin_max_x && ruin_min_y <= ruin_max_y) \
+			? locate(rand(ruin_min_x, ruin_max_x), rand(ruin_min_y, ruin_max_y), footprint.z_value) \
+			: null
 		if(ruin_turf)
-			ruin_type.load(ruin_turf)
+			// /area/ruin carries UNIQUE_AREA, so the map loader hands every load of the same
+			// template the SAME area instance. On a packed level two co-tenants rolling one
+			// template would share an area straddling both footprints, and every area-scoped
+			// system - teardown, lighting, ambience, power, get_area_turfs() - would conflate
+			// the two sites. Instanced per load for the duration of OUR stamp, on OUR z only.
+			planet_ruin_area_instancing_begin(footprint.z_value)
+			// No try/catch, deliberately: wrapping template.load() swallows a partial stamp
+			// and leaves a dead half-loaded map standing.
+			var/load_result = ruin_type.load(ruin_turf)
+			planet_ruin_area_instancing_end(footprint.z_value)
+			// Only report a corner the template actually reached. Callers that need an
+			// interior (space ruins) read a null here as "no site" and hand the slot back;
+			// the ones that do not (empty space, weak signals) simply carry on ruinless.
+			if(load_result)
+				ruin_bottom_left = ruin_turf
+			else
+				log_mapping("SSovermap: dynamic encounter ruin '[ruin_type.name]' failed to load at ([ruin_turf.x],[ruin_turf.y],[ruin_turf.z])")
 		else
-			// A template too large for the level's bounds. Passing null into load()
+			// A template too large for the footprint. Passing null into load()
 			// would runtime and, through the callers' loading flags, brick the tile
 			// for the round - a ruinless encounter is the lesser failure.
 			log_mapping("SSovermap: dynamic encounter ruin '[ruin_type.name]' ([ruin_type.width]x[ruin_type.height]) \
-				does not fit z[zlevel.z_value] bounds - encounter spawned without its ruin")
+				does not fit the [MAP_SLOT_RUIN_REGION_WIDTH]x[MAP_SLOT_RUIN_REGION_HEIGHT] ruin region of [footprint.describe()] \
+				- encounter spawned without its ruin")
 
 	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
-		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
+		mapgen.generate_terrain(footprint.get_block(), planet_template, FALSE, FALSE)
 		// Terrain generation only lays turfs down and tags each one with the biome it
 		// came from - every scrap of flora, fauna and ground feature comes from the
 		// population pass, which historically only SSmapping's roundstart init ever
 		// ran. Without this a dynamically generated planet is bare landscape. The turf
-		// list is rebuilt because generation replaced every turf on the level.
-		mapgen.populate_terrain(zlevel.get_block(), filled_area, zone_band)
+		// list is rebuilt because generation replaced every turf in the footprint.
+		mapgen.populate_terrain(footprint.get_block(), filled_area, zone_band)
 	else
 		if (!isnull(mapgen))
-			mapgen.generate_terrain(zlevel.get_block(), planet_template)
+			mapgen.generate_terrain(footprint.get_block(), planet_template)
 
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()
 
 	// Anything mapgen/ruins didn't touch is still uninitialized /turf/open/space/basic,
-	// which players can't interact with (no throwing, no construction). For space
-	// encounters, empty space and player outposts that's the ENTIRE level.
-	zlevel.initialize_space_turfs()
+	// which players can't interact with (no throwing, no construction). Scoped to the
+	// footprint: an unclaimed slot must stay uninitialized until it is dealt, and this
+	// used to sweep all 65,025 turfs of the level for two 56x40 berths.
+	zlevel.initialize_space_turfs(footprint)
 
-	// locates the first dock in the bottom left, accounting for padding and the border
+	// locates the first dock in the bottom left of the FOOTPRINT, accounting for padding
+	// and the border. Anchored off the level instead, two tenants stack their berths on
+	// the same tiles - the arrival path, so this is not optional.
 	var/turf/primary_docking_turf = locate(
-		zlevel.low_x+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.z_value
+		footprint.low_x+RESERVE_DOCK_DEFAULT_PADDING+1,
+		footprint.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
+		footprint.z_value
 		)
 	if(!primary_docking_turf)
-		// Deranged level bounds (a recycled zone gone wrong). A runtime here would
+		// Deranged footprint (a recycled zone gone wrong). A runtime here would
 		// unwind the caller mid-load and wedge its loading flag for the round, so
-		// fail loudly and cleanly instead. The zone is leaked as taken on purpose:
+		// fail loudly and cleanly instead. The slot is leaked as claimed on purpose:
 		// its state is unknown and handing it to the next caller would be worse.
-		log_mapping("SSovermap: dynamic encounter build found no dock turf on z[zlevel.z_value] \
-			(bounds [zlevel.low_x],[zlevel.low_y] to [zlevel.high_x],[zlevel.high_y]) - encounter aborted")
+		log_mapping("SSovermap: dynamic encounter build found no dock turf in [footprint.describe()] - encounter aborted")
 		return null
 	// now we need to offset to account for the first dock
 	var/turf/secondary_docking_turf = locate(
@@ -1202,15 +1357,124 @@ SUBSYSTEM_DEF(overmap)
 	primary_dock.mark_reserve_home()
 	secondary_dock.mark_reserve_home()
 
-	return list(mapzone, primary_dock, secondary_dock)
+	if(has_planetary_surface)
+		footprint.add_planetary_faction_to_existing_mobs()
+
+	return list(mapzone, primary_dock, secondary_dock, footprint, ruin_bottom_left)
+
+/**
+ * The rectangle inside `footprint` a ruin template may be stamped into, as
+ * list(min_x, min_y, max_x, max_y) in absolute coordinates.
+ *
+ * A slot's bottom rows belong to its two reserve berths (see the placement in
+ * spawn_dynamic_encounter): x offsets 4..118, y offsets 4..43. This region is what is
+ * left once those and their PLANET_DOCK_RUIN_CLEARANCE collar are taken out, inset by
+ * MAP_SLOT_RUIN_MARGIN from the slot edge so a template never sits flush against cordon.
+ *
+ * A whole-level footprint (SOLO, outposts) has no lattice geometry to respect but DOES
+ * still carry the same two berths at its own origin, so the same offsets apply - it just
+ * has far more room above them.
+ */
+/datum/controller/subsystem/overmap/proc/slot_build_region(datum/map_footprint/footprint)
+	var/min_x = footprint.low_x + MAP_SLOT_RUIN_MARGIN
+	var/min_y = footprint.low_y + MAP_SLOT_RUIN_MIN_Y_OFFSET
+	var/max_x = footprint.high_x - MAP_SLOT_RUIN_MARGIN
+	var/max_y = footprint.high_y - MAP_SLOT_RUIN_MARGIN
+	return list(min_x, min_y, max_x, max_y)
+
+/**
+ * Whether a ruin template fits the region a lattice slot actually has free for it.
+ *
+ * NOT a square test against MAP_SLOT_SIDE. The berth band eats the bottom 47 rows of every
+ * slot, so the honest gate is MAP_SLOT_RUIN_REGION_WIDTH x MAP_SLOT_RUIN_REGION_HEIGHT
+ * (119 x 74) - the old `+ 12 <= 123` form accepted templates up to 111 tall and handed
+ * them to a placer that stamped them over both docking berths.
+ *
+ * Templates that fail take MAP_TENANT_CLASS_SOLO, a whole level, which costs exactly what
+ * they cost before packing. Measured 2026-08-20 against the live template list: 112 of 113
+ * pass, the outlier being russian_derelict (83x111).
+ */
+/datum/controller/subsystem/overmap/proc/ruin_fits_in_slot(datum/map_template/ruin/ruin_type)
+	if(!ruin_type)
+		return TRUE
+	return ruin_type.width <= MAP_SLOT_RUIN_REGION_WIDTH && ruin_type.height <= MAP_SLOT_RUIN_REGION_HEIGHT
+
+/**
+ * Whether a ruin template fits even a WHOLE z-level's build region - the same berth band
+ * taken out of a 255x255 footprint rather than a 123x123 one.
+ *
+ * A template failing this cannot be placed anywhere, so the site has to refuse before
+ * claiming a slot: a claimed slot handed back after a failed stamp is a quarter of a
+ * z-level lost, and the caller's loading flag bricks the overmap tile for the round.
+ * Nothing in the current pool comes close (the largest is oldstation at 112x64), but the
+ * old reservation path had exactly this guard and losing it would be a regression.
+ */
+/datum/controller/subsystem/overmap/proc/ruin_fits_in_level(datum/map_template/ruin/ruin_type)
+	if(!ruin_type)
+		return TRUE
+	return ruin_type.width <= (world.maxx - (MAP_SLOT_RUIN_MARGIN * 2)) \
+		&& ruin_type.height <= (world.maxy - MAP_SLOT_RUIN_MARGIN - MAP_SLOT_RUIN_MIN_Y_OFFSET)
 
 
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)
 	return new /datum/map_zone(new_name)
 
-/datum/controller/subsystem/overmap/proc/find_free_mapzone()
-	. = null
+/**
+ * Finds a map zone that can deal a slot of `tenant_class`, as list(zone, slot_index).
+ *
+ * Replaces find_free_mapzone(), which handed out whole zones on a single boolean. Prefers
+ * a PARTIALLY FILLED zone of the same class over an empty one - that preference is the
+ * whole point of packing, since spreading tenants across empty levels one apiece is
+ * exactly the behaviour being removed. Only when no same-class level has room does it
+ * fall back to a level with no tenants at all (which is free to take any class on).
+ *
+ * Returns null when every zone is full or of the wrong class; the caller mints one.
+ * Nothing here sleeps - see claim_free_slot().
+ */
+/datum/controller/subsystem/overmap/proc/find_free_slot(tenant_class)
+	var/datum/map_zone/empty_zone = null
 	for(var/datum/map_zone/mapzone as anything in map_zones)
-		if(!mapzone.taken)
-			return(mapzone)
+		var/occupants = mapzone.used_slot_count()
+		if(occupants)
+			if(mapzone.tenant_class == tenant_class && mapzone.has_free_slot(tenant_class))
+				return list(mapzone, mapzone.first_free_slot_index())
+			continue
+		if(isnull(empty_zone))
+			empty_zone = mapzone
+	if(empty_zone)
+		return list(empty_zone, 1)
+	return null
 
+/**
+ * Finds AND claims a slot in one go, returning the /datum/map_footprint.
+ *
+ * Atomic on purpose. find_free_slot() is a check-then-act over a global list, and every
+ * historical bug in this area (round 811 lost every dynamic encounter to one) came from a
+ * claim landing after something was allowed to sleep - add_new_zlevel() blocks on its own
+ * spinlock, so an unclaimed zone held across it is handed straight to the next caller.
+ * Nothing in this path or in claim_slot() sleeps.
+ *
+ * * tenant_class - one of the MAP_TENANT_CLASS_* keys.
+ * * new_owner - the overmap object that will hold the footprint, for logging and for the
+ *   footprint's own owner watch. May be null and set later.
+ * * create_zone - mint a fresh map zone when the pool has nothing. FALSE is for callers
+ *   that want to know the pool is dry rather than grow it.
+ *
+ * Also returns null when world.maxz is at its configured ceiling. A fresh zone has no
+ * z-level, so dealing a slot out of one always means minting one, and BYOND never frees a
+ * z-level. Callers must read a null the way they already read a dry pool - "not right
+ * now", retry later - never as a hard failure. This is a SLOT-AVAILABILITY wait and is
+ * deliberately outside the worldgen queue: a ruin or an empty-space dock may never end up
+ * waiting behind a planet build (the design rule in worldgen_queue.dm), and nothing in
+ * this path sleeps.
+ */
+/datum/controller/subsystem/overmap/proc/claim_free_slot(tenant_class, atom/new_owner, create_zone = TRUE, zone_name = "Dynamic Overmap Encounter")
+	var/list/found = find_free_slot(tenant_class)
+	var/datum/map_zone/mapzone = length(found) ? found[1] : null
+	if(isnull(mapzone))
+		if(!create_zone)
+			return null
+		if(SSmapping.at_z_level_ceiling())
+			return null
+		mapzone = create_map_zone(zone_name)
+	return mapzone.claim_slot(tenant_class, new_owner)

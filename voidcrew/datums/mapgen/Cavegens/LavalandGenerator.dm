@@ -15,3 +15,66 @@
 	smoothing_iterations = 50
 	birth_limit = 4
 	death_limit = 3
+
+/**
+ * Lavaland-looking terrain used by the volcanic encounters on frozen planets.
+ *
+ * These keep the basalt and rock appearance, but use the same infinite atmosphere
+ * as the surrounding frozen planet. Their self baseturfs also prevent explosions
+ * from uncovering a Lavaland-atmos lava source beneath the frozen terrain.
+ */
+/turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+
+/turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet
+
+/turf/open/indestructible/boss/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+	baseturfs = /turf/open/indestructible/boss/frozen_planet
+
+/turf/closed/mineral/random/volcanic/frozen_planet
+	turf_type = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+
+/turf/closed/mineral/random/volcanic/frozen_planet/mineral_chances()
+	var/list/chances = ..()
+	var/gibtonite_chance = chances[/turf/closed/mineral/gibtonite/volcanic]
+	chances -= /turf/closed/mineral/gibtonite/volcanic
+	chances[/turf/closed/mineral/gibtonite/volcanic/frozen_planet] = gibtonite_chance
+	return chances
+
+/turf/closed/mineral/gibtonite/volcanic/frozen_planet
+	turf_type = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+
+/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet
+	turf_type = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+
+/turf/closed/mineral/volcanic/lava_land_surface/do_not_chasm/frozen_planet
+	turf_type = /turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet
+	initial_gas_mix = FROZEN_ATMOS
+
+/datum/map_generator/cave_generator/lavaland/frozen_planet
+	weighted_open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet = 1)
+	weighted_closed_turf_types = list(/turf/closed/mineral/random/volcanic/frozen_planet = 1)
+
+/datum/map_generator/cave_generator/lavaland/ruin_version/frozen_planet
+	weighted_open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet = 1)
+	weighted_closed_turf_types = list(/turf/closed/mineral/volcanic/lava_land_surface/do_not_chasm/frozen_planet = 1)
+
+/area/lavaland/surface/outdoors/unexplored/frozen_planet
+	map_generator = /datum/map_generator/cave_generator/lavaland/frozen_planet
+
+/area/lavaland/surface/outdoors/unexplored/danger/no_ruins/frozen_planet
+	map_generator = /datum/map_generator/cave_generator/lavaland/ruin_version/frozen_planet

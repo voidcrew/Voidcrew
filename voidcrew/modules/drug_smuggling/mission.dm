@@ -266,7 +266,7 @@
 	if(QDELETED(lab))
 		return
 	lab.mission_locked = FALSE
-	if(!lab.reservation)
+	if(!lab.mapzone)
 		qdel(lab)
 		return
 	lab.check_and_respawn()

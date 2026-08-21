@@ -1,6 +1,8 @@
 /datum/map_generator/cave_generator/icemoon
-	open_turf_types = list(/turf/open/misc/asteroid/snow/icemoon/breathable = 19, /turf/open/misc/ice/icemoon/breathable = 1)
-	closed_turf_types = list(/turf/closed/mineral/random/snow = 1)
+	// New() rebuilds the expanded turf lists from these weighted lists. Setting
+	// open_turf_types directly silently fell back to upstream ICEMOON_ATMOS turfs.
+	weighted_open_turf_types = list(/turf/open/misc/asteroid/snow/icemoon/breathable = 19, /turf/open/misc/ice/icemoon/breathable = 1)
+	weighted_closed_turf_types = list(/turf/closed/mineral/random/snow = 1)
 
 
 	feature_spawn_list = list(/obj/structure/geyser/random = 1, /obj/structure/elite_tumor = 2)

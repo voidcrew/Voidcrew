@@ -27,6 +27,13 @@
 		waypoints.connected = TRUE
 		// Workaround around ChangeTurf that's safe because of when this proc is called
 		var/turf/cur_turf = get_turf(waypoints)
+		// VOIDCREW EDIT: "safe because of when this proc is called" is a roundstart claim, and
+		// voidcrew calls river generation mid-round too. A raw turf swap over a lit turf
+		// orphans its /datum/light_source into an uncollectable cycle with its corners - see
+		// /turf/proc/release_light_for_raw_swap() and voidcrew/mapping/rivers.dm, which fixed
+		// the voidcrew copy of this generator for exactly this reason.
+		if(SSlighting.initialized)
+			cur_turf.release_light_for_raw_swap()
 		cur_turf = new turf_type(cur_turf)
 		var/turf/target_turf = get_turf(pick(river_nodes - waypoints))
 		if(!target_turf)
@@ -57,6 +64,9 @@
 				continue
 			else
 				// Workaround around ChangeTurf that's safe because of when this proc is called
+				// VOIDCREW EDIT: see the identical guard above.
+				if(SSlighting.initialized)
+					cur_turf.release_light_for_raw_swap()
 				var/turf/river_turf = new turf_type(cur_turf)
 				river_turf.Spread(25, 11, whitelist_area)
 

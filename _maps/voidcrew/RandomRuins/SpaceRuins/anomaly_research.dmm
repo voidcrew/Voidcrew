@@ -25,7 +25,7 @@
 "aK" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "aX" = (
 /obj/machinery/light/broken/directional/north,
@@ -54,7 +54,7 @@
 "cr" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "cv" = (
 /obj/machinery/door/airlock/vault,
@@ -84,7 +84,7 @@
 /area/misc/anomaly_research)
 "dr" = (
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "ds" = (
 /obj/machinery/duct,
@@ -103,7 +103,7 @@
 "dD" = (
 /obj/structure/lattice/catwalk,
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "eq" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -198,7 +198,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "gB" = (
 /obj/effect/turf_decal/trimline/purple/line{
@@ -358,7 +358,7 @@
 /obj/structure/railing{
 	dir = 10
 	},
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "kp" = (
 /obj/effect/spawner/random/environmentally_safe_anomaly/immobile,
@@ -903,7 +903,7 @@
 /turf/closed/wall,
 /area/misc/anomaly_research)
 "xE" = (
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "xI" = (
 /obj/structure/flora/grass/green/style_random,
@@ -1084,7 +1084,7 @@
 /area/misc/anomaly_research)
 "Ek" = (
 /obj/structure/lattice,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "En" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1093,7 +1093,7 @@
 "Eo" = (
 /obj/structure/lattice,
 /obj/item/anomaly_releaser,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "Et" = (
 /obj/item/paper/fluff/ruins/anomaly_research/stabilizer,
@@ -1446,7 +1446,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "Mt" = (
 /obj/structure/flora/bush/snow/style_random,
@@ -1544,7 +1544,7 @@
 	dir = 1
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "PY" = (
 /turf/open/floor/wood,
@@ -1580,7 +1580,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "Qz" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1710,7 +1710,7 @@
 /area/misc/anomaly_research)
 "Ud" = (
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/planetary,
+/turf/open/lava/plasma/anomaly_research,
 /area/misc/anomaly_research)
 "Uo" = (
 /obj/machinery/recharge_station,

@@ -1,34 +1,3 @@
-/// One-shot flag so the planet-generation hold announcement isn't spammed every second
-/datum/controller/subsystem/ticker/var/planet_hold_announced = FALSE
-
-/**
- * Pre-round gate: keeps the lobby countdown parked at zero while the roundstart
- * planets are still generating (SSovermap.prebuild_roundstart_planets), including the
- * SSlighting backlog their terrain queues up. Without this the round starts mid-build:
- * generation and the six-figure lighting queue then compete with roundstart setup for
- * the tick, the first minutes of the round crawl, and any planet visited early is
- * pitch black until SSlighting catches up.
- *
- * Called from fire() at the moment the countdown would flip to SETTING_UP; a truthy
- * return holds the round. Covers admin "start now" too - start_immediately re-zeroes
- * timeLeft each fire, so the gate simply keeps catching it until generation is done.
- * SSovermap enforces its own failsafe cap so a wedged build can't hold the lobby
- * forever.
- */
-/datum/controller/subsystem/ticker/proc/hold_for_planet_generation()
-	if(!SSovermap.roundstart_planets_pending())
-		if(planet_hold_announced)
-			to_chat(world, span_boldnotice("Planetary generation complete. The round will now begin."))
-			planet_hold_announced = FALSE
-		return FALSE
-	// Keep the countdown a hair above zero so it never drifts negative, which the
-	// pregame branch treats as "round delayed indefinitely".
-	timeLeft = 2 SECONDS
-	if(!planet_hold_announced)
-		planet_hold_announced = TRUE
-		to_chat(world, span_boldnotice("Holding round start while planetary generation finishes..."))
-	return TRUE
-
 /**
  * Creates people's characters for ROUNDSTART ONLY
  * Sizes the roundstart fleet to turnout, deals the ready players out into one crew per

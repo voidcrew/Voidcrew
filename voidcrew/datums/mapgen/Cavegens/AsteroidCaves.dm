@@ -41,6 +41,10 @@
 	var/radius = min(maxx - minx, maxy - miny) / 2
 
 	var/list/turfs_to_gen = list()
+	// /area/centcom/asteroid/voidcrew is no longer UNIQUE_AREA (see ship_areas.dm), so the
+	// GLOB lookup is never populated and this always mints a fresh instance - one per
+	// generated field, which is what it should always have been. Left as a `||` so an
+	// admin or map that DOES register a singleton still gets it.
 	var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
 	for(var/turf/T as anything in turfs)
 		var/randradius = rand(radius - 2, radius + 2) * rand(radius - 2, radius + 2)
@@ -57,7 +61,7 @@
  * Landable meteor storm rock field generator (see events.dm /obj/structure/overmap/event/meteor).
  *
  * Same recipe as /datum/map_generator/cave_generator/asteroid above (cellular-automata
- * rock/sand mix, mining mob/geyser spawn tables, shared /area/centcom/asteroid/voidcrew)
+ * rock/sand mix, mining mob/geyser spawn tables, /area/centcom/asteroid/voidcrew ground)
  * but scattered as several independent blobs instead of one solid field, with real vacuum
  * left between and around them - "an asteroid field", not a single asteroid. Ore seeding
  * itself is handled separately by seed_asteroid_ore_block() (events.dm) after generation,
@@ -114,8 +118,7 @@
  * caller cut non-rectangular ship-berth holes out of the field; everything else is left as
  * real vacuum between and around the rock. Returns the unique turfs actually generated, so
  * the caller can pass the exact same list to populate_terrain() without re-scanning the
- * shared /area/centcom/asteroid/voidcrew (which may also contain turfs from other,
- * currently-loaded fields).
+ * field's own area instance (which the caller passes in as `generate_in`).
  */
 /datum/map_generator/cave_generator/asteroid_field/generate_terrain(list/turfs, area/generate_in)
 	var/list/turfs_to_gen = list()
@@ -124,29 +127,41 @@
 
 	var/turf/first_turf = turfs[1]
 	var/z = first_turf.z
-	var/list/allowed_turfs = list()
-	for(var/turf/allowed_turf as anything in turfs)
-		allowed_turfs[allowed_turf] = TRUE
-		SSovermap.worldgen_yield()
 	var/list/selected_turfs = list()
 
-	var/maxx
-	var/maxy
-	var/minx
-	var/miny
-	for(var/turf/T as anything in turfs)
-		if(T.x < minx || !minx)
-			minx = T.x
-		else if(T.x > maxx)
-			maxx = T.x
-		if(T.y < miny || !miny)
-			miny = T.y
-		else if(T.y > maxy)
-			maxy = T.y
+	// One pass, not two. This used to walk the candidate list once to build the
+	// membership set and again to find its bounding box - ~17,600 iterations, and just as
+	// many yield checks, on a majour field, to gather two things that cost nothing to
+	// gather together. The membership set is load-bearing and stays: the caller cuts
+	// berth-shaped holes out of the rectangle, so "is this turf a candidate" is genuinely
+	// not the same question as "is this turf inside the bounds".
+	var/list/allowed_turfs = list()
+	var/minx = INFINITY
+	var/miny = INFINITY
+	var/maxx = 0
+	var/maxy = 0
+	for(var/turf/candidate_turf as anything in turfs)
+		allowed_turfs[candidate_turf] = TRUE
+		// Four independent tests rather than the two if/else-if pairs this replaces: chained,
+		// a turf that set a new minimum could never also set the maximum, so a candidate set
+		// one tile wide left maxx/maxy null and every blob below was skipped as "too small".
+		if(candidate_turf.x < minx)
+			minx = candidate_turf.x
+		if(candidate_turf.x > maxx)
+			maxx = candidate_turf.x
+		if(candidate_turf.y < miny)
+			miny = candidate_turf.y
+		if(candidate_turf.y > maxy)
+			maxy = candidate_turf.y
 		SSovermap.worldgen_yield()
 
 	var/blob_count = rand(blob_count_min, blob_count_max)
-	var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
+	// The caller's own area instance, one per field. `generate_in` used to be accepted and
+	// then ignored in favour of the type's UNIQUE_AREA singleton, which meant every field
+	// alive at once shared one area spanning all of them - see ship_areas.dm.
+	var/area/centcom/asteroid/voidcrew/asteroid_area = generate_in
+	if(!istype(asteroid_area))
+		asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
 
 	for(var/i in 1 to blob_count)
 		var/radius = rand(blob_radius_min, blob_radius_max)

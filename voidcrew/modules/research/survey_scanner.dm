@@ -53,8 +53,15 @@
 	var/next_scan = 0
 	///Amount of research points we've generated from processing.
 	var/stored_points
-	///List of all Z levels scanned and how many times.
-	var/static/list/z_level_history = list()
+	///How many times each SITE has been scanned, keyed by get_scan_history_key().
+	///
+	///Was keyed by z-level, which meant "this site" only while a site owned a z-level of its
+	///own. Sites share levels now: crew B scanning at the encounter next door burned down
+	///crew A's payout, and could push the shared counter past SURVEY_MIN_PENALTY so that A's
+	///scanner reported "unable to locate valuable information" at ground nobody had touched.
+	///`static` also meant the count outlived the z-level itself, so a recycled level handed
+	///its next occupant a used-up site.
+	var/static/list/site_scan_history = list()
 
 /obj/machinery/survey_scanner/Initialize(mapload)
 	. = ..()
@@ -222,7 +229,8 @@
 	// the decay, so a better matter bin keeps a site productive for longer - it does NOT
 	// scale the payout. (It used to be applied as a raw multiplier, which stacked with the
 	// longer run and made a maxed scanner worth ~9x the entire techweb from one planet.)
-	var/penalty = 1 - ((z_level_history["[z]"] - 1) * SURVEY_SCAN_DECAY / max(research_power, 1))
+	var/scan_key = get_scan_history_key()
+	var/penalty = 1 - ((site_scan_history[scan_key] - 1) * SURVEY_SCAN_DECAY / max(research_power, 1))
 	if(penalty < SURVEY_MIN_PENALTY) // tapped out, and it stays that way for the round
 		say("Unable to locate valuable information in current sector, scanning stopped.")
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 20)
@@ -230,8 +238,23 @@
 		return
 
 	playsound(src, 'sound/machines/ding.ogg', 20)
-	z_level_history["[z]"]++
+	site_scan_history[scan_key]++
 	stored_points += (research_gain * penalty)
+
+/**
+ * The history key for wherever this scanner is standing.
+ *
+ * A map region (see map_region_for_turf) is the site: the planet or encounter footprint on a
+ * packed level, or the turf reservation for a ruin or asteroid field. Ground that belongs to
+ * no region - a roundstart level, a ship in deep space - falls back to the z-level, which is
+ * exactly what the whole list used to be.
+ */
+/obj/machinery/survey_scanner/proc/get_scan_history_key()
+	var/turf/here = get_turf(src)
+	if(!here)
+		return "z_[z]"
+	var/datum/region = map_region_for_turf(here)
+	return region ? "site_[REF(region)]" : "z_[here.z]"
 
 /obj/machinery/survey_scanner/wrench_act(mob/living/user, obj/item/tool)
 	if(enabled)
@@ -271,8 +294,9 @@
 		say("Unable to operate, power cell is depleted!")
 		return
 	//don't have a history here, create one.
-	if(!z_level_history["[z]"])
-		z_level_history["[z]"] = 1
+	var/scan_key = get_scan_history_key()
+	if(!site_scan_history[scan_key])
+		site_scan_history[scan_key] = 1
 	next_scan = world.time //first scan lands on the next tick, so it visibly does something
 	enabled = TRUE
 	balloon_alert_to_viewers("begins to rumble...")

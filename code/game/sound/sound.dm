@@ -69,6 +69,29 @@
 			if(get_dist(listening_ghost, turf_source) <= audible_distance)
 				listeners += listening_ghost
 
+	// VOIDCREW EDIT ADDITION: packed-level containment.
+	// ignore_walls defaults to TRUE, so the default sound path in the whole game is
+	// get_hearers_in_range() - the one hearer helper with no opacity filter and no LOS
+	// raycast. At vol 100 that reaches 14 tiles, and two tenants of a packed z-level are
+	// 6 tiles apart across the cordon, so gunfire, machinery and explosion audio inside one
+	// crew's site is heard inside an unrelated crew's site through five turfs of
+	// indestructible wall. Drop listeners standing on ground another region owns.
+	//
+	// Only SAME-Z listeners are judged: the above/below passes each ran from their own
+	// source turf, and a multi-deck hull must never be silenced by one z-bound rectangle.
+	// A source with no region of its own (the station, a ship's own level, deep space, the
+	// gutter) skips the whole block, so nothing changes off the lattice.
+	var/datum/source_region = map_region_for_turf(turf_source)
+	if(source_region && length(listeners))
+		var/list/contained_listeners = list()
+		for(var/mob/listening_mob in listeners)//had nulls sneak in here, hence the typecheck
+			var/turf/listener_turf = get_turf(listening_mob)
+			if(listener_turf && listener_turf.z == source_z && map_region_excludes_turf(source_region, listener_turf))
+				continue
+			contained_listeners += listening_mob
+		listeners = contained_listeners
+	// VOIDCREW EDIT END
+
 	for(var/mob/listening_mob in listeners)//had nulls sneak in here, hence the typecheck
 		listening_mob.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, 1, use_reverb, volume_preference)
 

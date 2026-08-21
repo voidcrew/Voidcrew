@@ -4,6 +4,10 @@
 	icon_state = "strange_event"
 	///The active turf reservation, if there is one
 	var/datum/map_zone/mapzone
+	/// This site's rectangle inside the map zone's level - the slot it was dealt. Every
+	/// "is this turf mine?" question is answered from here rather than from the z-level,
+	/// which a packed level shares with up to three neighbours. See /datum/map_footprint.
+	var/datum/map_footprint/footprint
 	///The preset ruin template to load, if/when it is loaded.
 	var/datum/map_template/template
 	///The docking port in the reserve
@@ -17,6 +21,9 @@
 	///Keep track of whether or not the docks have been reserved by a ship. This is required to prevent issues where two ships will attempt to dock in the same place due to unfortunate timing
 	var/first_dock_taken = FALSE
 	var/second_dock_taken = FALSE
+
+/obj/structure/overmap/dynamic/get_interior_footprint()
+	return footprint
 
 /obj/structure/overmap/dynamic/attack_ghost(mob/user)
 	if(reserve_dock)
@@ -33,8 +40,41 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	GLOB.overmap_planets += src
 	apply_planet_identity()
 
+/**
+ * Covers every planet and every flat encounter (/planet/empty and its crashed_ship subtype).
+ *
+ * The orderly teardowns - unload_level() and /planet/empty/unload_level() - both go through
+ * remove_mapzone(), which clears the ground and then releases the slot, and leave `mapzone`
+ * and `footprint` null before anything gets here. What lands here with either still set is a
+ * planet deleted OUT of that path: an admin Del, a runtime mid-build, a qdel from something
+ * that never knew about the map zone. Those used to leak the slot (and, before packing, the
+ * whole map zone) for the rest of the round, and with four slots to a level a leaked one is
+ * a quarter of a z-level nobody can ever be dealt again.
+ *
+ * The slot is handed back WITHOUT clearing its turfs. Destroy() is not a safe place to run a
+ * teardown sweep - it can be reentrant, it can run mid-build, and clear_reservation() yields -
+ * so the ground is left as-is and the next tenant's own fill_in() paints over it. Loud,
+ * because reaching here with a live interior is a lifecycle bug worth seeing in the logs.
+ */
 /obj/structure/overmap/planet/Destroy()
 	GLOB.overmap_planets -= src
+	// Same reasoning as the slot below: the orderly paths already did these, so anything
+	// still set here is a planet deleted out of band. A leaked weather site keeps arming
+	// storm timers on a level nobody owns; a leaked SSplanet_mobs tracker keeps a footprint
+	// ref and a share of the global fauna budget.
+	if(weather_site)
+		SSweather.unregister_weather_site(weather_site)
+		weather_site = null
+	if(planet_key)
+		SSplanet_mobs.unregister_planet(planet_key)
+		planet_key = null
+	if(footprint || mapzone)
+		var/datum/map_footprint/departing_footprint = footprint
+		var/datum/map_zone/departing_zone = mapzone || departing_footprint?.zone
+		log_mapping("SSovermap: '[display_name || name]' was deleted while still holding [departing_footprint ? departing_footprint.describe() : "a map zone with no footprint"] - releasing the slot without a teardown sweep; its ground is left for the next tenant to repaint")
+		footprint = null
+		mapzone = null
+		departing_zone?.release_slot(departing_footprint)
 	return ..()
 
 /obj/structure/overmap/planet/lava
@@ -143,7 +183,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
 		return FALSE
 
-	if(length(mapzone?.get_mind_mobs()))
+	// Footprint-scoped: three other encounters may share this z-level, and the z-wide
+	// answer would keep this one pinned for as long as ANY of them has a crew on it.
+	if(length(mapzone?.get_mind_mobs_in(footprint)))
 		return FALSE
 
 	return TRUE
@@ -178,9 +220,16 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 // work and never waits behind a planet job (see worldgen_yield())
 /obj/structure/overmap/planet/empty/remove_mapzone(throttled = TRUE)
 	if(mapzone)
-		mapzone.clear_to_uninitialized_space()
-		mapzone.taken = FALSE
+		// Per-slot: only our own rectangle goes back to uninitialized space unless we are
+		// the last tenant on the level, in which case the whole level (cordon included) is
+		// reset so the recycled zone starts clean. The footprint has to still be attached
+		// while the sweep runs - it is what names the ground we own.
+		var/datum/map_zone/departing_zone = mapzone
+		var/datum/map_footprint/departing_footprint = footprint
+		departing_zone.clear_to_uninitialized_space(departing_footprint)
+		departing_zone.release_slot(departing_footprint)
 		mapzone = null
+		footprint = null
 
 /**
  * Restores any unoccupied reserve docks to the default encounter layout.
@@ -339,12 +388,65 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 			turfs += T
 		map_generator.populate_terrain(turfs, src, zone_band)
 
-// SURFACE AREAS
+/**
+ * SURFACE AREAS
+ *
+ * Daylight on a planet surface is one ambient light per area, not a light source on
+ * every tile. The biomes used to select /lit floor subtypes, which gave a 128x128
+ * planet roughly fourteen thousand /datum/light_source instances to hold in memory and
+ * fourteen thousand corner updates to chew through while the terrain generated, all to
+ * paint a flat wash of light that never changes.
+ *
+ * base_lighting_alpha builds one BLEND_ADD overlay on the area itself
+ * (see /area/proc/add_base_lighting), and static_lighting = FALSE + ambient_lighting = TRUE
+ * say that this overlay is ALL the light the ground gets: these turfs carry no lighting
+ * objects and no lighting corners at all.
+ *
+ * That second half is where the memory goes. Keeping static_lighting TRUE and layering the
+ * ambient on top was the earlier, conservative shape of this experiment, and it left every
+ * surface turf holding a /datum/lighting_object plus the four corners it pulls into
+ * existence - measured at roughly 1600 MB against 600 MB for the same planet count with the
+ * surfaces dynamic. Ground that can never change its own light has nothing to spend that on.
+ *
+ * What it costs: a light source standing on open ground - a flashlight, a flare, a lantern -
+ * has no lighting object out there to render on, so it does not visibly brighten the
+ * surface. It still works normally the moment its holder steps into a cave, a ruin or a
+ * ship, which are the places darkness is actually a mechanic. Ambient bleed
+ * (voidcrew/edits/lighting.dm) is what keeps those boundaries from being hard black edges.
+ *
+ * Turfs that light THEMSELVES are the deliberate exception and keep an object apiece - see
+ * /turf/proc/skips_lighting_object(). That is what preserves the fallout zone's green.
+ *
+ * The colours below are the light_color the biome's /lit turfs used to emit - a
+ * saturating lighting corner normalises to the source colour, so what the ground
+ * actually produced was that colour at full strength. The alpha is the brightness knob:
+ * 255 matches the old fully-lit ground (owner's call after seeing 200's softer daylight
+ * in play). Tune it live with VV on the area (set_base_lighting is VV-wired); the bleed
+ * edges derive from the same alpha, so they follow it.
+ *
+ * NEVER set base_lighting_color on one of these to COLOR_STARLIGHT. add_base_lighting()
+ * treats that value as "follow the live nebula tint" and registers a
+ * COMSIG_STARLIGHT_COLOR_CHANGED handler on SSdcs (code/modules/lighting/lighting_area.dm),
+ * which /area/Destroy() historically never unregistered. These area instances are minted
+ * and reaped once per planet under map packing, so a signal registration that outlives the
+ * area would turn every planet teardown into a hard-delete blocker. /area/Destroy() now
+ * calls remove_base_lighting() defensively, but do not rely on that - a fixed colour costs
+ * nothing and cannot regress.
+ *
+ * Cave areas are NOT subtypes of any of these - they hang off /planetoid directly - so
+ * they keep the inherited static_lighting TRUE and stay dark. Same for ruin areas, ship
+ * areas and the outpost hangar, none of which are planet surfaces.
+ */
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
 	ambientsounds = MINING
 	planet_type = /datum/planet/lava
 	map_generator = /datum/map_generator/planet_generator/lava
+	static_lighting = FALSE
+	ambient_lighting = TRUE
+	base_lighting_alpha = 255
+	// was /turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit
+	base_lighting_color = "#F98511"
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
@@ -352,6 +454,10 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	ambientsounds = SPOOKY
 	planet_type = /datum/planet/snow
 	map_generator = /datum/map_generator/planet_generator/snow
+	static_lighting = FALSE
+	ambient_lighting = TRUE
+	// snow was lit colourless; only the frozen lakes were cyan, and they are a minority
+	base_lighting_alpha = 255
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
@@ -359,20 +465,36 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	ambientsounds = BEACH
 	planet_type = /datum/planet/beach
 	map_generator = /datum/map_generator/planet_generator/beach
+	static_lighting = FALSE
+	ambient_lighting = TRUE
+	base_lighting_alpha = 255
+	// was /turf/open/misc/asteroid/sand/beach/lit, the bulk of a beach planet's ground
+	base_lighting_color = LIGHT_COLOR_TUNGSTEN
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
 	ambientsounds = AWAY_MISSION
 	planet_type = /datum/planet/jungle
+	static_lighting = FALSE
+	ambient_lighting = TRUE
+	base_lighting_alpha = 255
 
 /area/overmap_encounter/planetoid/wasteland
 	name = "\improper Apocalyptic Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
 	ambientsounds = MINING
 	planet_type = /datum/planet/wasteland
+	static_lighting = FALSE
+	ambient_lighting = TRUE
+	// the fallout zone keeps its own green ground light on top of this - see
+	// /datum/biome/nuclear. Those turfs are the one kind of surface ground that still
+	// carries a lighting object, so the green still renders; see skips_lighting_object().
+	base_lighting_alpha = 255
 
 // CAVE AREAS
+// No base lighting here on purpose: caves are meant to be dark, and they are a subtype
+// of /planetoid rather than of any surface area, so they inherit alpha 0.
 /area/overmap_encounter/planetoid/cave
 	name = "\improper Mysterious Cave"
 	sound_environment = SOUND_ENVIRONMENT_CAVE

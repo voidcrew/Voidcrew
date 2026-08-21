@@ -193,7 +193,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 	var/turf/source_turf = get_turf(source)
 	var/z = source_turf?.z
 	var/obj/docking_port/mobile/voidcrew/hull = voidcrew_crew_sensor_hull(source)
-	var/cache_key = voidcrew_crew_sensor_cache_key(hull, z)
+	var/cache_key = voidcrew_crew_sensor_cache_key(hull, z, source_turf)
 
 	if(data_by_scope[cache_key] && last_update[cache_key] && world.time <= last_update[cache_key] + SENSORS_UPDATE_PERIOD)
 		return data_by_scope[cache_key]
@@ -217,7 +217,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		// Voidcrew: the target has to be aboard our hull, or off-hull in the same place we
 		// are - never just "on a station level", since every ship interior is one.
 		// voidcrew/edits/machinery/crew_monitor.dm
-		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z))
+		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z, source_turf))
 			continue
 
 		var/mob/living/carbon/human/tracked_human = tracked_living_mob

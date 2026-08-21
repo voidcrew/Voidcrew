@@ -50,15 +50,39 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 /obj/item/radio/proc/bind_comms_to_ship(obj/docking_port/mobile/ship)
 	comms_ship_ref = ship ? WEAKREF(ship) : null
 
+/**
+ * Network key for a physical location, for anything speaking off a ship.
+ *
+ * "zone_[z]" meant "this encounter" only for as long as each encounter owned a z-level of its
+ * own. Sites share levels now, and the net key is the ENTIRE filter here (broadcast() sends
+ * with levels = list(0), no range gate at all), so a bare z key hands crew A's away team every
+ * local transmission from crew B standing on the next site over - silent, PvP-relevant and
+ * with no feedback that it is happening.
+ *
+ * Keyed on the map region rather than on SSovermap_zones.get_overmap_object_for_turf(): this
+ * runs inside matches_comms_net(), once per candidate radio per transmission, and the region
+ * lookup is one list index plus at most four rectangle tests where the overmap-object walk is
+ * a scan of every site in the galaxy. Ground that belongs to no region keeps "zone_[z]", which
+ * is what it always meant there - a roundstart level, transit.
+ *
+ * Does NOT touch the ship-channel architecture: bound radios still key on "ship_[REF(port)]"
+ * and matches_comms_net() still matches on either, so boarders keep their own crew channel
+ * while overhearing local traffic.
+ */
+/proc/voidcrew_physical_comms_net(turf/here)
+	if(!here)
+		return null
+	var/datum/region = map_region_for_turf(here)
+	if(region)
+		return "site_[REF(region)]"
+	return "zone_[here.z]"
+
 /// Network key for wherever this radio physically is right now.
 /obj/item/radio/proc/get_physical_comms_net()
 	var/obj/docking_port/mobile/container = SSshuttle.get_containing_shuttle(src)
 	if(container)
 		return "ship_[REF(container)]"
-	var/turf/here = get_turf(src)
-	if(here)
-		return "zone_[here.z]"
-	return null
+	return voidcrew_physical_comms_net(get_turf(src))
 
 /// Network key this radio stamps onto scoped transmissions.
 /obj/item/radio/proc/get_comms_net()
@@ -123,7 +147,10 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 		if(istype(origin))
 			data["voidcrew_net"] = origin.get_comms_net()
 		else if(source_turf)
-			data["voidcrew_net"] = "zone_[source_turf.z]"
+			// Same site key the listening radios compute for themselves - see
+			// voidcrew_physical_comms_net(). A z-level key here would put every speaker on a
+			// packed encounter level onto one net.
+			data["voidcrew_net"] = voidcrew_physical_comms_net(source_turf)
 
 	// Channel tag shown in chat
 	if(isnull(data["frequency_name"]))

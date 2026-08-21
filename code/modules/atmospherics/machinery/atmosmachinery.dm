@@ -192,6 +192,16 @@
 /// This should only be called by SSair as part of the rebuild queue.
 /// Handles rebuilding pipelines after init or they've been changed.
 /obj/machinery/atmospherics/proc/rebuild_pipes()
+	// VOIDCREW EDIT: a dying machine must never mint a pipeline. get_rebuild_targets()
+	// hands back a brand new /datum/pipeline for every empty node slot, and that pipeline
+	// registers itself in SSair.networks on creation. If src is already being deleted its
+	// Destroy() has run the QDEL_NULL(parent) that was the only thing that would ever
+	// delete it again, so the new pipeline is leaked the moment it is made. Belt and
+	// braces with the guards in SSair.add_to_rebuild_queue()/process_rebuilds(): this one
+	// also covers any caller that reaches rebuild_pipes() without going through the queue.
+	if(QDELETED(src))
+		rebuilding = FALSE
+		return
 	var/list/targets = get_rebuild_targets()
 	rebuilding = FALSE
 	for(var/datum/pipeline/build_off as anything in targets)

@@ -61,3 +61,55 @@
 
 	site.ChangeTurf(original_type, original_baseturfs)
 	restore_atmos()
+
+/**
+ * Frozen planet terrain must not contain a second infinite atmosphere.
+ *
+ * A planetary turf continuously restores its initial mix. Connecting two different
+ * planetary mixes therefore leaves every turf along their boundary active forever.
+ */
+/datum/unit_test/voidcrew_frozen_planet_atmos
+
+/datum/unit_test/voidcrew_frozen_planet_atmos/Run()
+	var/list/frozen_open_turfs = list(
+		/turf/open/lava/plasma/planetary,
+		/turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet,
+		/turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet,
+		/turf/open/indestructible/boss/frozen_planet,
+	)
+	for(var/turf/open/turf_path as anything in frozen_open_turfs)
+		TEST_ASSERT_EQUAL(initial(turf_path.initial_gas_mix), FROZEN_ATMOS, "[turf_path] would fight the frozen planet's atmosphere")
+		TEST_ASSERT(initial(turf_path.planetary_atmos), "[turf_path] is meant to be a frozen planetary atmosphere source")
+		TEST_ASSERT_EQUAL(initial(turf_path.baseturfs), turf_path, "destroying [turf_path] would uncover an incompatible atmosphere source")
+	var/turf/open/lava/plasma/anomaly_research/anomaly_river = /turf/open/lava/plasma/anomaly_research
+	TEST_ASSERT_EQUAL(initial(anomaly_river.initial_gas_mix), BURNING_COLD, "the anomaly-research plasma hazard lost its toxic atmosphere")
+	TEST_ASSERT(!initial(anomaly_river.planetary_atmos), "the space ruin's plasma river became an infinite atmosphere source")
+
+	var/list/frozen_mining_turfs = list(
+		/turf/closed/mineral/random/volcanic/frozen_planet = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet,
+		/turf/closed/mineral/gibtonite/volcanic/frozen_planet = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet,
+		/turf/closed/mineral/volcanic/lava_land_surface/frozen_planet = /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet,
+		/turf/closed/mineral/volcanic/lava_land_surface/do_not_chasm/frozen_planet = /turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet,
+	)
+	for(var/turf/closed/mineral/turf_path as anything in frozen_mining_turfs)
+		var/turf/open/expected_open_turf = frozen_mining_turfs[turf_path]
+		TEST_ASSERT_EQUAL(initial(turf_path.initial_gas_mix), FROZEN_ATMOS, "[turf_path] starts with an incompatible atmosphere")
+		TEST_ASSERT_EQUAL(initial(turf_path.turf_type), expected_open_turf, "mining [turf_path] would reveal the wrong turf")
+		TEST_ASSERT_EQUAL(initial(turf_path.baseturfs), expected_open_turf, "destroying [turf_path] would reveal the wrong baseturf")
+
+	var/datum/map_generator/cave_generator/icemoon/icemoon_generator = new
+	TEST_ASSERT_EQUAL(length(icemoon_generator.open_turf_types), 20, "the icemoon generator did not expand its frozen weighted turf list")
+	for(var/turf/open/turf_path as anything in icemoon_generator.open_turf_types)
+		TEST_ASSERT_EQUAL(initial(turf_path.initial_gas_mix), FROZEN_ATMOS, "the icemoon generator can produce incompatible [turf_path]")
+		TEST_ASSERT(initial(turf_path.planetary_atmos), "the icemoon generator can produce non-planetary [turf_path]")
+	qdel(icemoon_generator)
+
+	var/datum/map_generator/cave_generator/lavaland/frozen_planet/frozen_lavaland_generator = new
+	TEST_ASSERT_EQUAL(frozen_lavaland_generator.open_turf_types[1], /turf/open/misc/asteroid/basalt/lava_land_surface/frozen_planet, "the frozen Lavaland generator expands to the wrong open turf")
+	TEST_ASSERT_EQUAL(frozen_lavaland_generator.closed_turf_types[1], /turf/closed/mineral/random/volcanic/frozen_planet, "the frozen Lavaland generator expands to the wrong closed turf")
+	qdel(frozen_lavaland_generator)
+
+	var/datum/map_generator/cave_generator/lavaland/ruin_version/frozen_planet/frozen_ruin_generator = new
+	TEST_ASSERT_EQUAL(frozen_ruin_generator.open_turf_types[1], /turf/open/misc/asteroid/basalt/lava_land_surface/no_ruins/frozen_planet, "the frozen ruin generator expands to the wrong open turf")
+	TEST_ASSERT_EQUAL(frozen_ruin_generator.closed_turf_types[1], /turf/closed/mineral/volcanic/lava_land_surface/do_not_chasm/frozen_planet, "the frozen ruin generator expands to the wrong closed turf")
+	qdel(frozen_ruin_generator)

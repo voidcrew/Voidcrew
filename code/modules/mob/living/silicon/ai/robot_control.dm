@@ -35,9 +35,17 @@
 	var/turf/ai_current_turf = get_turf(owner)
 
 	data["robots"] = list()
+	// VOIDCREW EDIT ADDITION: packed-level containment - is_valid_z_level() is bare z
+	// equality, so a co-tenant's bots were listed and remotely commandable.
+	var/datum/ai_region = map_region_for_turf(ai_current_turf)
+	// VOIDCREW EDIT END
 	for(var/mob/living/our_bot as anything in GLOB.bots_list)
 		if(!isbot(our_bot) || !is_valid_z_level(ai_current_turf, get_turf(our_bot)))
 			continue
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(ai_region, get_turf(our_bot)))
+			continue
+		// VOIDCREW EDIT END
 
 		if(isbasicbot(our_bot))
 			var/mob/living/basic/bot/basic_bot = our_bot

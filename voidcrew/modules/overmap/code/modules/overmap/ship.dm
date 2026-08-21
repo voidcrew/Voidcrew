@@ -1421,12 +1421,11 @@
 /**
  * Whether any living, connected player is standing anywhere inside `site`'s interior.
  *
- * Two shapes of interior, and they need different tests. Planets, empty space and crash
- * sites own whole z-levels through a map zone, so a z match is the whole answer. Ruins
- * and asteroid fields live in turf reservations that SHARE their z-level with every other
- * reservation on it - other ruins, outposts, hangars, ascension arenas - so those have to
- * be scoped to the reservation's own footprint, or a visitor two ruins over reads as a
- * visitor here (the same reasoning as turf_reservation_has_players()).
+ * Every site with an interior is scoped to a rectangle: a map footprint, one slot of up to
+ * four on a shared z-level. A bare z match reads the neighbouring encounter's away team as
+ * ours (the same reasoning as turf_footprint_has_players()). Only a site allocated outside
+ * the slot register falls back to matching its map zone's whole level, which is what it
+ * always did.
  *
  * GLOB.player_list is connected players only and runs a few dozen entries at most, so one
  * pass over it beats walking either interior. get_turf() rather than the mob's own z: a
@@ -1434,38 +1433,31 @@
  */
 /obj/structure/overmap/ship/proc/site_has_living_players(obj/structure/overmap/site)
 	var/list/site_z_values
-	var/datum/turf_reservation/site_reservation
-	if(istype(site, /obj/structure/overmap/planet))
+	// Rectangle bounds, when the site is scoped to one. Every site with an interior now
+	// answers with a map footprint (get_interior_footprint()) - a slot on a level it shares
+	// with up to three neighbours, so the bare z match this used to do on some branches
+	// reads a neighbour's crew as ours.
+	var/min_x = 0
+	var/min_y = 0
+	var/max_x = 0
+	var/max_y = 0
+	var/bounded = FALSE
+	var/datum/map_footprint/site_footprint = site?.get_interior_footprint()
+	if(site_footprint && !isnull(site_footprint.low_x) && site_footprint.z_value)
+		min_x = site_footprint.low_x
+		min_y = site_footprint.low_y
+		max_x = site_footprint.high_x
+		max_y = site_footprint.high_y
+		site_z_values = list(site_footprint.z_value)
+		bounded = TRUE
+	else if(istype(site, /obj/structure/overmap/planet))
+		// A site with a map zone but no footprint: allocated outside the slot register, so
+		// the whole level is the answer, exactly as it was before packing.
 		var/obj/structure/overmap/planet/planet_site = site
 		if(planet_site.mapzone)
 			site_z_values = list()
 			for(var/datum/space_level/zlevel as anything in planet_site.mapzone.z_levels)
 				site_z_values += zlevel.z_value
-	else if(istype(site, /obj/structure/overmap/space_ruin))
-		var/obj/structure/overmap/space_ruin/ruin_site = site
-		site_reservation = ruin_site.reservation
-	else if(istype(site, /obj/structure/overmap/event/meteor))
-		var/obj/structure/overmap/event/meteor/field_site = site
-		site_reservation = field_site.reservation
-
-	// Reservation bounds. Width and height are shared across the stack, so one rectangle
-	// plus the z of each level in it covers a multi-z reservation too.
-	var/min_x = 0
-	var/min_y = 0
-	var/max_x = 0
-	var/max_y = 0
-	if(site_reservation)
-		var/turf/bottom_left = LAZYACCESS(site_reservation.bottom_left_turfs, 1)
-		if(!bottom_left)
-			return FALSE
-		min_x = bottom_left.x
-		min_y = bottom_left.y
-		max_x = min_x + site_reservation.width - 1
-		max_y = min_y + site_reservation.height - 1
-		site_z_values = list()
-		for(var/turf/level_corner as anything in site_reservation.bottom_left_turfs)
-			if(level_corner)
-				site_z_values += level_corner.z
 
 	// No interior to stand in. A hull berthed at a site that has nothing loaded is exactly
 	// the stranded case this exists for, so read it as empty rather than as blocking.
@@ -1483,7 +1475,7 @@
 			continue
 		if(!(player_turf.z in site_z_values))
 			continue
-		if(site_reservation && (player_turf.x < min_x || player_turf.x > max_x || player_turf.y < min_y || player_turf.y > max_y))
+		if(bounded && (player_turf.x < min_x || player_turf.x > max_x || player_turf.y < min_y || player_turf.y > max_y))
 			continue
 		return TRUE
 	return FALSE
@@ -3455,13 +3447,21 @@
 	if(!ship_port_clear_to_berth(shuttle_b, "exit-to-exit with [shuttle_a]"))
 		return FALSE
 
-	// Calculate center position - use world.maxx/maxy as bounds since space_level doesn't track exact bounds
-	// The z-level should be large enough for both shuttles
-	var/center_x = round(world.maxx / 2)
-	var/center_y = round(world.maxy / 2)
+	// Centre of the ENCOUNTER'S OWN FOOTPRINT, not of the z-level. The old world.maxx/2
+	// pick predates bounds tracking entirely; on a packed level it lands squarely in the
+	// gutter between slots - indestructible cordon, so both hulls would be sealed in - or
+	// on a neighbouring encounter's ground. Two maximum-size hulls berthed exit-to-exit
+	// span ~112 turfs, which fits inside a MAP_SLOT_SIDE (123) square.
+	var/datum/map_footprint/footprint = empty_planet.footprint
+	var/turf/center_turf = footprint?.get_center_turf()
+	if(!center_turf)
+		center_turf = locate(round((zlevel.low_x + zlevel.high_x) / 2), round((zlevel.low_y + zlevel.high_y) / 2), zlevel.z_value)
+	if(!center_turf)
+		log_shuttle("WARNING: No centre turf for ship-to-ship docking on z[zlevel.z_value]")
+		return FALSE
 
 	// Position dock_a at center, let adjust_dock_to_shuttle handle orientation
-	dock_a.forceMove(locate(center_x, center_y, zlevel.z_value))
+	dock_a.forceMove(center_turf)
 	empty_planet.adjust_dock_to_shuttle(dock_a, shuttle_a)
 
 	// Put dock_b right across from it so the two shuttles end up exit-to-exit
@@ -3538,10 +3538,19 @@
 	var/datum/space_level/zlevel
 	if(empty_planet?.mapzone && length(empty_planet.mapzone.z_levels))
 		zlevel = empty_planet.mapzone.z_levels[1]
-	if(zlevel)
+	// The ENCOUNTER's rectangle, not the level's. Flat encounters pack four to a z-level, and
+	// the level's rect widens to the whole z as soon as a second one lands - which turns this
+	// fit test from "does the berth stay on our ground" into "is it anywhere on the map", and
+	// lets a berth be laid into the cordon gutter or straight onto a neighbour's encounter.
+	var/datum/map_footprint/site = empty_planet?.footprint
+	var/site_low_x = isnull(site?.low_x) ? zlevel?.low_x : site.low_x
+	var/site_low_y = isnull(site?.low_x) ? zlevel?.low_y : site.low_y
+	var/site_high_x = isnull(site?.low_x) ? zlevel?.high_x : site.high_x
+	var/site_high_y = isnull(site?.low_x) ? zlevel?.high_y : site.high_y
+	if(zlevel && !isnull(site_low_x))
 		var/list/corners = dock_to_place.return_coords(new_x, new_y, new_dir)
-		if(min(corners[1], corners[3]) < zlevel.low_x || max(corners[1], corners[3]) > zlevel.high_x \
-			|| min(corners[2], corners[4]) < zlevel.low_y || max(corners[2], corners[4]) > zlevel.high_y)
+		if(min(corners[1], corners[3]) < site_low_x || max(corners[1], corners[3]) > site_high_x \
+			|| min(corners[2], corners[4]) < site_low_y || max(corners[2], corners[4]) > site_high_y)
 			dock_to_place.width = old_width
 			dock_to_place.height = old_height
 			dock_to_place.dwidth = old_dwidth

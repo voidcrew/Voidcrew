@@ -146,7 +146,13 @@
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template, upgrade_selections, selected_theme)
 	if(!istype(target))
 		spawning_ship = FALSE
-		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
+		// A refusal at the map-volume ceiling is transient - transit space frees up in
+		// seconds as ships move. Say so instead of sending the buyer to the admins for
+		// a condition that fixes itself.
+		if(SSmapping.at_z_level_ceiling())
+			to_chat(src, span_warning("The shipyard is congested right now - hull assembly space frees up as ships move. Try again in a minute."))
+		else
+			to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
 		return select_ship()
 
 	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)

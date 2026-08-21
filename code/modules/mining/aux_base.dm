@@ -164,7 +164,25 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/auxiliary_base, 32)
 			var/list/all_mining_turfs = list()
 			for(var/z_level in SSmapping.levels_by_trait(ZTRAIT_MINING))
 				all_mining_turfs += Z_TURFS(z_level)
-			var/turf/LZ = pick(all_mining_turfs) //Pick a random mining Z-level turf
+			// VOIDCREW EDIT ADDITION: every lattice encounter level and every planet level
+			// publishes ZTRAIT_MINING in this fork, so a blind drop picked uniformly over
+			// the gutter, unclaimed slots and LIVE co-tenant sites - dropping a shuttle into
+			// another crew's ruin. Allocator-dealt ground is not a blind-drop target.
+			// Sampled rather than filtered: all_mining_turfs is every turf of every mining
+			// level, and walking it would be hundreds of thousands of lookups in one tick.
+			// The proc already expects to miss and ask the player to recalculate.
+			var/turf/LZ
+			if(length(all_mining_turfs))
+				for(var/attempt in 1 to 20)
+					var/turf/candidate = pick(all_mining_turfs)
+					if(map_region_for_turf(candidate))
+						continue
+					LZ = candidate
+					break
+			if(!LZ)
+				to_chat(usr, span_warning("Landing zone scan failed. Please try again."))
+				return
+			// VOIDCREW EDIT END
 			if(!ismineralturf(LZ) && !isasteroidturf(LZ))
 			//Find a suitable mining turf. Reduces chance of landing in a bad area
 				to_chat(usr, span_warning("Landing zone scan failed. Please try again."))

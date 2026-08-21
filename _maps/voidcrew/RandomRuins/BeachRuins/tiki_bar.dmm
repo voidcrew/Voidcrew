@@ -88,7 +88,9 @@
 /turf/open/misc/asteroid/sand/beach/lit,
 /area/ruin/unpowered)
 "s" = (
-/obj/structure/fence,
+/obj/structure/fence{
+	dir = 4
+	},
 /turf/open/floor/wood,
 /area/ruin/powered)
 "t" = (

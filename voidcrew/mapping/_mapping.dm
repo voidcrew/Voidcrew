@@ -36,9 +36,62 @@
 	/// Working pool for dealing roundstart planets their overmap zone bands (see next_planet_zone_band())
 	var/list/planet_zone_band_pool = list()
 
+	/// Highest world.maxz the z-ceiling warning has already been logged for, so the
+	/// approach to the cap is reported once per level rather than once per allocation.
+	var/z_ceiling_last_warned = 0
+	/// Rate limit on the at-cap admin message - every refused allocation reaches it.
+	COOLDOWN_DECLARE(z_ceiling_admin_cooldown)
+
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
 	return ..()
+
+/// How often the at-cap message may reach admins. Every refused allocation asks, and a
+/// busy round refuses several a minute.
+#define Z_CEILING_ADMIN_INTERVAL (5 MINUTES)
+
+/**
+ * Whether world.maxz is at its configured ceiling, i.e. whether minting another z-level
+ * is allowed right now.
+ *
+ * BYOND never frees a z-level: every one ever created keeps its full 255x255 turf plane
+ * for the rest of the round - ~49 MB bare, ~76 MB carrying a site - and nothing in the
+ * tree limited how many could be made. A round that churned encounters simply climbed
+ * until the 32-bit wall killed it. See /datum/config_entry/number/max_z_levels.
+ *
+ * Asked at the two runtime mint points that carry the growth: claim_free_slot() (the map
+ * zone lattice, i.e. every encounter, planet and outpost) and
+ * request_turf_block_reservation()'s add_reservation_zlevel() fallback. Both answer a
+ * refusal by returning null, which their callers already treat as "not right now" and
+ * retry - it is a slot-availability wait, never a hard failure and never a queue wait.
+ *
+ * Logging is a side effect on purpose: this proc is the only place that sees the pressure,
+ * and it is asked exactly when it matters.
+ */
+/datum/controller/subsystem/mapping/proc/at_z_level_ceiling()
+	var/ceiling = CONFIG_GET(number/max_z_levels)
+	if(ceiling <= 0) // ceiling disabled
+		return FALSE
+
+	var/warn_at = CONFIG_GET(number/max_z_levels_warn_at)
+	if(warn_at > 0 && world.maxz >= warn_at && world.maxz > z_ceiling_last_warned)
+		z_ceiling_last_warned = world.maxz
+		log_mapping("SSmapping: world.maxz has reached [world.maxz] against a ceiling of [ceiling]. Each level is roughly 49 MB of \
+			permanently committed turf plane that BYOND will never free - if this keeps climbing, sites are not recycling.")
+
+	if(world.maxz < ceiling)
+		return FALSE
+
+	if(COOLDOWN_FINISHED(src, z_ceiling_admin_cooldown))
+		COOLDOWN_START(src, z_ceiling_admin_cooldown, Z_CEILING_ADMIN_INTERVAL)
+		var/cap_message = "SSmapping: world.maxz is at its configured ceiling of [ceiling] - new map volume is being REFUSED. \
+			Sites that ask for it will wait and retry rather than fail, but nothing new can be charted until something recycles. \
+			Raise MAX_Z_LEVELS only if this host has the memory for it (~49 MB per level, never reclaimed)."
+		log_mapping(cap_message)
+		message_admins(cap_message)
+	return TRUE
+
+#undef Z_CEILING_ADMIN_INTERVAL
 
 /**
  * TRUE if a turf block of this size could ever be reserved, on a completely empty
@@ -86,9 +139,38 @@
 	return band
 
 /**
+ * The zone band of the planet that owns a turf, or null when the turf isn't on one.
+ *
+ * The turf, not its z-level, is the question a caller actually has. A z-level used to be
+ * one planet, so "which band is z 14" and "which band is this rock" were the same lookup;
+ * a packed level carries several planets and they can sit in different bands.
+ *
+ * Resolution order:
+ *  1. The planetoid area under the turf. Its `zone_band` is stamped per planet at build
+ *     (see populate_planet_level() in planet.dm) and a packed level gives every planet its
+ *     own area instances, so this is the answer that stays right as levels fill up.
+ *  2. The roundstart planet registry, which is keyed by z. Roundstart planets are dealt
+ *     dedicated z-level pairs by loadWorld() and are never packed tenants, so a z match is
+ *     exact for them - it is just blind to everything else.
+ */
+/datum/controller/subsystem/mapping/proc/get_planet_zone_band_for_turf(turf/checked_turf)
+	if(!checked_turf)
+		return null
+	var/area/overmap_encounter/planetoid/planetoid_area = get_area(checked_turf)
+	if(istype(planetoid_area) && !isnull(planetoid_area.zone_band))
+		return planetoid_area.zone_band
+	return get_planet_zone_band_for_z(checked_turf.z)
+
+/**
  * The pre-assigned zone band for a roundstart planet z-level, or null if the
  * z-level isn't one. Each planet loads as a pair of z-levels (surface = the
  * stored z, underground = z - 1), so both resolve to the planet's band.
+ *
+ * Only ever answers for the planets in `planets`, i.e. the ones loadWorld() pre-generated
+ * onto their own z-levels. Dynamic planets - every planet in a live round, since all the
+ * *_planet_count vars are 0 - are not in this registry and come back null here. Prefer
+ * get_planet_zone_band_for_turf(), which asks the planet's own area first; this is kept
+ * both as that proc's fallback and for the callers that genuinely only hold a z.
  */
 /datum/controller/subsystem/mapping/proc/get_planet_zone_band_for_z(z)
 	if(!z)

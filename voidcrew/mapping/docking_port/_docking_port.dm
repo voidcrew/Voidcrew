@@ -1,4 +1,191 @@
 /**
+ * # Map regions
+ *
+ * "Which piece of ground does this turf belong to", independent of which allocator handed
+ * it out. Two registers deal ground in this codebase and neither knows about the other:
+ *
+ *  * /datum/turf_reservation - transit, bitrunning, cargo, space ruins, asteroid fields.
+ *    Registered turf-by-turf in SSmapping.used_turfs.
+ *  * /datum/map_footprint - the map-zone slot lattice: planets, flat encounters, player
+ *    outposts. Registered as a rectangle on /datum/space_level.footprints.
+ *
+ * Everything that used to be safe because "one encounter owns one z-level" needs this
+ * instead the moment sites share a level. A z comparison answers "same level", which on a
+ * packed level is four unrelated crews; a region comparison answers "same place".
+ *
+ * Deliberately returns the register's own datum rather than a rectangle: identity is what
+ * callers actually want (a stable key, an equality test), and a rectangle would alias
+ * across recycled ground. Use map_region_rect() when the corners are genuinely needed.
+ */
+/proc/map_region_for_turf(turf/tile)
+	if(isnull(tile))
+		return null
+	var/datum/turf_reservation/reservation = SSmapping.used_turfs[tile]
+	if(reservation)
+		return reservation
+	var/z_value = tile.z
+	if(z_value < 1 || z_value > length(SSmapping.z_list))
+		return null
+	var/datum/space_level/level = SSmapping.z_list[z_value]
+	var/list/footprints = level?.footprints
+	if(!length(footprints))
+		return null
+	for(var/datum/map_footprint/footprint as anything in footprints)
+		if(footprint?.contains_turf(tile))
+			return footprint
+	return null
+
+/// Whether `tile` lies inside `region`, whichever kind of region it is. FALSE for a null
+/// region, so callers can pass an unresolved region straight in.
+/proc/map_region_contains(datum/region, turf/tile)
+	if(isnull(region) || isnull(tile))
+		return FALSE
+	if(istype(region, /datum/map_footprint))
+		var/datum/map_footprint/footprint = region
+		return footprint.contains_turf(tile)
+	if(istype(region, /datum/turf_reservation))
+		var/datum/turf_reservation/reservation = region
+		return reservation.contains_turf(tile)
+	return FALSE
+
+/**
+ * `region`'s inclusive rectangle as list(low_x, low_y, high_x, high_y), or null.
+ *
+ * `z_value` of 0 means "whichever z the region reports"; pass a real z to demand the
+ * region's rectangle ON that level (a multi-z reservation has one per level).
+ */
+/proc/map_region_rect(datum/region, z_value = 0)
+	if(isnull(region))
+		return null
+	if(istype(region, /datum/map_footprint))
+		var/datum/map_footprint/footprint = region
+		if(isnull(footprint.low_x) || !footprint.z_value)
+			return null
+		if(z_value && footprint.z_value != z_value)
+			return null
+		return list(footprint.low_x, footprint.low_y, footprint.high_x, footprint.high_y)
+	if(istype(region, /datum/turf_reservation))
+		var/datum/turf_reservation/reservation = region
+		for(var/z_index in 1 to length(reservation.bottom_left_turfs))
+			var/turf/bottom_left = reservation.bottom_left_turfs[z_index]
+			var/turf/top_right = reservation.top_right_turfs[z_index]
+			if(isnull(bottom_left) || isnull(top_right))
+				continue
+			if(z_value && bottom_left.z != z_value)
+				continue
+			return list(bottom_left.x, bottom_left.y, top_right.x, top_right.y)
+	return null
+
+/// TRUE when both turfs belong to the same map region - including "neither belongs to one",
+/// which is the roundstart-space-level case and has to keep behaving as it always did.
+/proc/map_regions_match(turf/first, turf/second)
+	if(isnull(first) || isnull(second))
+		return FALSE
+	return map_region_for_turf(first) == map_region_for_turf(second)
+
+/**
+ * TRUE when `tile` positively belongs to a DIFFERENT map region than `region`.
+ *
+ * The workhorse form of the containment rule: "never somebody else's", not "only mine".
+ * A null region (we do not know where WE are) and a tile that resolves to no region at all
+ * (the cordon gutter, a roundstart level, deep space, ground a crew built a hull out onto)
+ * both answer FALSE, so a guard written on this proc can never produce a false negative -
+ * it refuses only ground another tenant demonstrably owns.
+ *
+ * Callers that already hold their own region should resolve it ONCE and call this per
+ * candidate, rather than calling map_regions_match() per pair.
+ */
+/proc/map_region_excludes_turf(datum/region, turf/tile)
+	if(isnull(region) || isnull(tile))
+		return FALSE
+	var/datum/tile_region = map_region_for_turf(tile)
+	return tile_region && tile_region != region
+
+/**
+ * # Ship presence bookkeeping
+ *
+ * ZTRAIT_STATION is a property of a WHOLE z-level, and link_to_z_level() below flips it on
+ * as soon as a hull parks anywhere on that level - which is how stationloving, teleport
+ * targeting and a dozen upstream "are we on the station" checks keep working aboard a ship
+ * in this fork (is_station_level() here means "any ship's level", see
+ * every-ship-z-is-a-station-level). There is no finer granularity available in the trait
+ * itself, so the trait keeps z granularity and gains two things it did not have:
+ *
+ *  1. a REFERENCE COUNT, so the flag is added by the first hull to arrive and removed by
+ *     the last one to leave - including the one that leaves by being deleted, which the
+ *     old old_z_level-gated unlink silently skipped (a hull destroyed while docked left
+ *     its encounter's whole z flagged forever, and packed sites hand that ground on), and
+ *  2. a record of WHICH levels the flag was put on by a ship, so a roundstart station or
+ *     mapped station level is never stripped by a ship undocking from it.
+ *
+ * and a per-SITE occupancy count sits beside it for the consumers that need the precise
+ * answer on a packed level - see turf_has_ship_presence().
+ */
+/// "[z_level]" -> how many voidcrew hulls currently occupy that level.
+GLOBAL_LIST_EMPTY(ship_z_level_links)
+/// "[z_level]" -> TRUE for levels whose ZTRAIT_STATION flag was added by a hull linking.
+/// Only these may ever be un-flagged; anything else got the trait from the map config.
+GLOBAL_LIST_EMPTY(ship_added_station_levels)
+/// "[REF(region)]" -> how many voidcrew hulls are standing inside that map region.
+/// Keyed by REF rather than by the datum so a region is never kept alive by this list.
+GLOBAL_LIST_EMPTY(ship_site_occupancy)
+
+/// How many hulls are standing inside `region` (a /datum/map_footprint or a
+/// /datum/turf_reservation) right now.
+/proc/site_ship_occupancy(datum/region)
+	if(isnull(region))
+		return 0
+	return GLOB.ship_site_occupancy[REF(region)] || 0
+
+/**
+ * The site-scoped answer to is_station_level(): is there a SHIP on this particular piece of
+ * ground, rather than merely somewhere on this z-level?
+ *
+ * Four encounters share a z-level. One hull docked at any of them flags all four, so every
+ * `is_station_level(turf.z)` reads TRUE on three sites that have never seen a ship. Callers
+ * that are really asking about the ground under a turf - lockdown/undock refusals, assault
+ * pod targeting, stationloving relocation, weather - want this instead. A turf that belongs
+ * to no region at all (a roundstart level, the station itself) falls through to the trait,
+ * so nothing off the lattice changes behaviour.
+ */
+/proc/turf_has_ship_presence(turf/tile)
+	if(isnull(tile))
+		return FALSE
+	var/datum/region = map_region_for_turf(tile)
+	if(isnull(region))
+		return is_station_level(tile.z)
+	return site_ship_occupancy(region) > 0
+
+/**
+ * Rebuilds the ship -> station-level registers from the live port roster.
+ *
+ * The refcount's failure mode is a link that never gets its matching unlink: the count
+ * wedges above zero and the level stays flagged for the rest of the round. Rather than
+ * trusting that every path is paired, the release side calls this the moment it finds its
+ * own claim already missing, and it is safe to call at any time - it is a full recount, not
+ * a patch. Ports are counted from `linked_z_levels`, which is what they actually hold.
+ */
+/proc/reconcile_ship_station_levels()
+	var/list/counts = list()
+	for(var/obj/docking_port/mobile/voidcrew/port as anything in SSshuttle.mobile_docking_ports)
+		if(!istype(port) || QDELETED(port))
+			continue
+		for(var/z_level in port.linked_z_levels)
+			counts["[z_level]"] += 1
+	GLOB.ship_z_level_links = counts
+	for(var/key in GLOB.ship_added_station_levels.Copy())
+		if(counts[key])
+			continue
+		GLOB.ship_added_station_levels -= key
+		var/z_level = text2num(key)
+		if(isnull(z_level))
+			continue
+		SSmapping.z_trait_levels[ZTRAIT_STATION] -= list(z_level)
+		LISTASSERTLEN(GLOB.station_levels_cache, z_level, FALSE)
+		GLOB.station_levels_cache[z_level] = FALSE
+	log_shuttle("reconcile_ship_station_levels(): rebuilt ship z-links from [length(SSshuttle.mobile_docking_ports)] port(s), [length(counts)] level(s) occupied")
+
+/**
  * Frees a shuttle's transit reservation and clears its assignment.
  *
  * Every docking port answers a non-forced qdel() with QDEL_HINT_LETMELIVE
@@ -65,10 +252,16 @@
 	var/z_levels_above = 0
 	var/z_levels_below = 0
 
-	///Cache of the old z level we're on, stored to remove after the shuttle moves.
-	///We do this because on ship-spawning, the shuttle will move, init atoms, then call after move.
-	///This means that things that require stuff like stationloving, will not function, as it'll load while there's no station z level to relocate to.
-	VAR_PRIVATE/old_z_level
+	///The z-levels this hull currently holds a ZTRAIT_STATION claim on, as numbers.
+	///This is the authority for unlinking, replacing the old `old_z_level` snapshot taken in
+	///beforeShuttleMove(): that was null on every path that was not a move, so a hull deleted
+	///while docked never released its levels and left the encounter's ground flagged for the
+	///rest of the round. Read by reconcile_ship_station_levels().
+	var/list/linked_z_levels = list()
+
+	///REF() of the map region (footprint or turf reservation) this hull is counted against in
+	///GLOB.ship_site_occupancy, or null when it is not standing in one.
+	VAR_PRIVATE/occupied_site_key
 
 	///The linked overmap object, if there is one. This is set AFTER Initialize, so do not set machine inits to this.
 	var/obj/structure/overmap/ship/current_ship
@@ -116,6 +309,13 @@
 
 /obj/docking_port/mobile/voidcrew/calculate_docking_port_information(datum/map_template/shuttle/loading_from)
 	. = ..()
+	// Only Destroy() ever nulls shuttle_areas, so a null here means a stale caller
+	// (an undock-time reseat, a load helper) reached a port that is already dying.
+	// Rebuilding onto it assigns into the nulled list ("bad index" - the suite's
+	// floating runtime), and the link_to_z_level() below would re-take the z claim
+	// that Destroy()'s unlink just released, leaking ZTRAIT_STATION for the round.
+	if(QDELETED(src) || isnull(shuttle_areas))
+		return
 	// Re-populate shuttle_areas after dimensions are set (Initialize runs before dimensions are known)
 	if(!length(shuttle_areas))
 		var/list/all_turfs = return_ordered_turfs(x, y, z, dir)
@@ -414,10 +614,6 @@
 		log_shuttle("[name]: engine [engine] at [AREACOORD(mount)] stood on [mount.type] with no skipover - restamped its mount")
 	return TRUE
 
-/obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
-	old_z_level = z
-	return ..()
-
 /obj/docking_port/mobile/voidcrew/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	unlink_from_z_level()
 	link_to_z_level()
@@ -452,57 +648,143 @@
 		current_ship.initialize_nearby_space_turfs()
 	return ..()
 
-/// Links to the Z level to ensure that if there are more than one ships on a z level when one leaves it doesnt clear the z trait
+/**
+ * Claims this hull's z-levels (and its site) so ZTRAIT_STATION reflects who is actually here.
+ *
+ * Idempotent, and it has to be: calculate_docking_port_information() calls this on every hull
+ * expansion and every port reseat, not only on arrival, so a claim that counted each call
+ * would never drain back to zero. Only levels we are not already holding are claimed, and any
+ * level we hold but no longer stand on is released.
+ */
 /obj/docking_port/mobile/voidcrew/proc/link_to_z_level()
 	GLOB.the_station_areas |= shuttle_areas
 
-	var/bottom_z = z - z_levels_below
-	var/top_z = z + z_levels_above
-	for(var/z_level in bottom_z to top_z)
-		if(is_station_level(z_level))
+	var/list/wanted = list()
+	for(var/z_level in (z - z_levels_below) to (z + z_levels_above))
+		if(z_level < 1 || z_level > world.maxz)
 			continue
-		SSmapping.z_trait_levels[ZTRAIT_STATION] += list(z_level)
-		GLOB.station_levels_cache[z_level] = TRUE
+		wanted += z_level
+
+	// Swapped in before the diff runs, not after: a reconcile triggered from inside either
+	// loop counts hulls off this var, and it has to already say what we hold.
+	var/list/previous = linked_z_levels
+	linked_z_levels = wanted
+	for(var/z_level in previous)
+		if(z_level in wanted)
+			continue
+		release_station_level_link(z_level)
+	for(var/z_level in wanted)
+		if(z_level in previous)
+			continue
+		claim_station_level_link(z_level)
+	set_site_occupancy(map_region_for_turf(get_turf(src)))
 
 /**
- * Unlinks the docking port from the old z level, stored as a var.
- * If we don't have one, we will early return, as you haven't moved from anything.
- * We will also send a signal to check for other ships on the z-level, to avoid turning
- * levels that have another ship on it, into a non-station level, breaking things like stationloving for them.
+ * Releases every z-level and site claim this hull holds.
+ *
+ * No longer gated on a beforeShuttleMove() snapshot. That gate meant the only path that ever
+ * released anything was a MOVE: a hull destroyed or despawned while docked ran this, found no
+ * snapshot and returned, so its encounter's z stayed ZTRAIT_STATION forever - and on a packed
+ * level that ground is dealt to three unrelated neighbours and then to the next tenant.
+ * Clearing our own claims BEFORE releasing them keeps reconcile_ship_station_levels() honest
+ * if it has to run from inside the release.
  */
 /obj/docking_port/mobile/voidcrew/proc/unlink_from_z_level()
-	if(!old_z_level)
+	set_site_occupancy(null)
+	if(!length(linked_z_levels))
 		return
 
 	GLOB.the_station_areas -= shuttle_areas
 	for(var/area/area as anything in shuttle_areas)
+		// A null left by a hard-deleted area would runtime here and abort the release
+		// below, leaving this hull's z-level claim - and its ZTRAIT_STATION flag - held
+		// for the rest of the round. That is the exact leak this proc exists to close.
+		if(!istype(area))
+			continue
 		area.area_flags &= ~VALID_TERRITORY // don't want anyone dropped in mid shuttle move
 
-	var/bottom_z = old_z_level - z_levels_below
-	var/top_z = old_z_level + z_levels_above
-	old_z_level = null
+	var/list/releasing = linked_z_levels
+	linked_z_levels = list()
+	for(var/z_level in releasing)
+		release_station_level_link(z_level)
 
-	for(var/z_level in bottom_z to top_z)
-		var/active_ships = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_Z_SHIP_PROBE, src, z_level)
-		if(active_ships)
-			continue
-		SSmapping.z_trait_levels[ZTRAIT_STATION] -= list(z_level)
-		GLOB.station_levels_cache[z_level] = FALSE
+/// Adds one hull to `z_level`'s occupancy, flagging it ZTRAIT_STATION if we are the first.
+/// A level that is already a station level for any other reason is left alone and never
+/// recorded as ours, so a mapped station level can never be un-flagged by a ship leaving it.
+/obj/docking_port/mobile/voidcrew/proc/claim_station_level_link(z_level)
+	var/key = "[z_level]"
+	var/count = GLOB.ship_z_level_links[key]
+	GLOB.ship_z_level_links[key] = count + 1
+	if(count)
+		return
+	if(is_station_level(z_level))
+		return
+	SSmapping.z_trait_levels[ZTRAIT_STATION] += list(z_level)
+	LISTASSERTLEN(GLOB.station_levels_cache, z_level, FALSE)
+	GLOB.station_levels_cache[z_level] = TRUE
+	GLOB.ship_added_station_levels[key] = TRUE
+
+/// Drops one hull from `z_level`'s occupancy, un-flagging the level when the last one leaves.
+/obj/docking_port/mobile/voidcrew/proc/release_station_level_link(z_level)
+	var/key = "[z_level]"
+	var/count = GLOB.ship_z_level_links[key]
+	if(count > 1)
+		GLOB.ship_z_level_links[key] = count - 1
+		return
+	if(!count)
+		// Our claim is not in the register at all. Somebody released it for us, or a link was
+		// never recorded - either way the counts are no longer describable from here, so do a
+		// full recount rather than guessing at the trait.
+		log_shuttle("[name]: station-level claim for z=[z_level] was already gone when unlinking - reconciling")
+		reconcile_ship_station_levels()
+		return
+	GLOB.ship_z_level_links -= key
+	if(!GLOB.ship_added_station_levels[key])
+		return // the trait came from the map config, not from a hull
+	// Second opinion before the flag comes off. A missed claim anywhere would otherwise strip
+	// stationloving out from under a ship that is still parked on this level.
+	if(SEND_GLOBAL_SIGNAL(COMSIG_GLOB_Z_SHIP_PROBE, src, z_level))
+		reconcile_ship_station_levels()
+		return
+	GLOB.ship_added_station_levels -= key
+	SSmapping.z_trait_levels[ZTRAIT_STATION] -= list(z_level)
+	LISTASSERTLEN(GLOB.station_levels_cache, z_level, FALSE)
+	GLOB.station_levels_cache[z_level] = FALSE
+
+/// Moves this hull's entry in the per-site occupancy register to `new_region` (or off it).
+/obj/docking_port/mobile/voidcrew/proc/set_site_occupancy(datum/new_region)
+	var/new_key = isnull(new_region) ? null : REF(new_region)
+	if(occupied_site_key == new_key)
+		return
+	if(occupied_site_key)
+		var/count = GLOB.ship_site_occupancy[occupied_site_key]
+		if(count > 1)
+			GLOB.ship_site_occupancy[occupied_site_key] = count - 1
+		else
+			GLOB.ship_site_occupancy -= occupied_site_key
+	occupied_site_key = new_key
+	if(!new_key)
+		return
+	GLOB.ship_site_occupancy[new_key] += 1
 
 /**
  * ##respond_to_z_port_probe
  *
- * Sent by another docking port
- * This is our response, to prevent a level being removed from the list of station areas, if we're still here.
+ * Sent by another docking port that is releasing its claim on a z-level, as a cross-check
+ * against the reference count in GLOB.ship_z_level_links. This is our response, to prevent a
+ * level being removed from the list of station areas if we are still here.
+ *
+ * Tests the hull's whole linked range rather than bare z equality: a multi-z hull holds every
+ * level it spans, and answering only for its own centre would let one of them be un-flagged.
  * Args:
  * source - The docking port that's leaving
  * z_level - the z level that source is leaving from.
  */
 /obj/docking_port/mobile/voidcrew/proc/respond_to_z_port_probe(atom/source, obj/docking_port/mobile/voidcrew/leaving, z_level)
 	SIGNAL_HANDLER
-	if(src == leaving)
+	if(src == leaving || QDELETED(src))
 		return FALSE
-	return !!(z_level == z)
+	return !!(z_level >= (z - z_levels_below) && z_level <= (z + z_levels_above))
 
 /**
  * ##get_all_humans

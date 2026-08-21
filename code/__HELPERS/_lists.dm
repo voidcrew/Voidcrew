@@ -308,10 +308,32 @@
 ///Checks for specific types in specifically structured (Assoc "type" = TRUE|FALSE) lists ('typecaches')
 #define is_type_in_typecache(A, L) (A && length(L) && L[(ispath(A) ? A : A:type)])
 
+/**
+ * VOIDCREW ADDITION: complains once per cooldown about a typecache filter called with
+ * something that isn't a list.
+ *
+ * The filters below run per-turf inside /turf/proc/empty(), so a reservation the size of a
+ * ruin interior calls them seventeen thousand times in a row. An unguarded throw there is
+ * not one runtime, it is a runtime per turf - which is how round-7 (2026-08-16) put a
+ * quarter of a million reservation runtimes into dd.log. Rate-limited so the diagnosis
+ * itself can never become the flood.
+ */
+/proc/warn_bad_typecache_filter(filter_name, list/atoms, list/typecache)
+	var/static/next_complaint = 0
+	if(world.time < next_complaint)
+		return
+	next_complaint = world.time + 10 SECONDS
+	stack_trace("[filter_name]() called with [islist(atoms) ? "a list" : "a non-list"] of atoms and [islist(typecache) ? "a list" : "a non-list"] typecache - filtering nothing and returning empty")
+
 ///returns a new list with only atoms that are in the typecache list
 /proc/typecache_filter_list(list/atoms, list/typecache)
 	RETURN_TYPE(/list)
 	. = list()
+	// VOIDCREW EDIT: degrade to an empty result rather than throwing. Every caller reads
+	// the result as "the atoms this operation applies to", so an empty list is the no-op.
+	if(!islist(atoms) || !islist(typecache))
+		warn_bad_typecache_filter("typecache_filter_list", atoms, typecache)
+		return
 	for(var/atom/atom_checked as anything in atoms)
 		if (typecache[atom_checked.type])
 			. += atom_checked
@@ -320,6 +342,12 @@
 /proc/typecache_filter_list_reverse(list/atoms, list/typecache)
 	RETURN_TYPE(/list)
 	. = list()
+	// VOIDCREW EDIT: as above, and it matters more here - /turf/proc/empty() qdel(force)s
+	// everything this returns, so a missing typecache must never be read as "nothing is
+	// excluded". Empty means nothing gets deleted, which is the recoverable direction.
+	if(!islist(atoms) || !islist(typecache))
+		warn_bad_typecache_filter("typecache_filter_list_reverse", atoms, typecache)
+		return
 	for(var/atom/atom_checked as anything in atoms)
 		if(!typecache[atom_checked.type])
 			. += atom_checked
@@ -327,6 +355,10 @@
 ///similar to typecache_filter_list and typecache_filter_list_reverse but it supports an inclusion list and and exclusion list
 /proc/typecache_filter_multi_list_exclusion(list/atoms, list/typecache_include, list/typecache_exclude)
 	. = list()
+	// VOIDCREW EDIT: as above.
+	if(!islist(atoms) || !islist(typecache_include) || !islist(typecache_exclude))
+		warn_bad_typecache_filter("typecache_filter_multi_list_exclusion", atoms, typecache_include)
+		return
 	for(var/atom/atom_checked as anything in atoms)
 		if(typecache_include[atom_checked.type] && !typecache_exclude[atom_checked.type])
 			. += atom_checked

@@ -45,9 +45,22 @@
 		transform = translation
 		icon = smooth_icon
 
-	if(is_station_level(z))
+	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// `if(is_station_level(z))`. See the matching comment on /turf/closed/wall/Initialize().
+	// Grass is the worst offender of the three: it is planet ground, it is dealt out and
+	// recycled on every planet build, and it had no Destroy() removal at all.
+	if(is_station_level(z) && !map_region_for_turf(src))
 		GLOB.station_turfs += src
+	// VOIDCREW EDIT END
 
+// VOIDCREW EDIT ADDITION: /turf/open/misc/grass registers itself above but is a
+// /turf/open/misc, so /turf/open/floor/Destroy()'s removal never applied to it and the
+// registration was one-way even on a clean ChangeTurf.
+/turf/open/misc/grass/Destroy()
+	if(length(GLOB.station_turfs) && !map_region_for_turf(src))
+		GLOB.station_turfs -= src
+	return ..()
+// VOIDCREW EDIT END
 
 /turf/open/misc/grass/get_smooth_underlay_icon(mutable_appearance/underlay_appearance, turf/asking_turf, adjacency_dir)
 	. = ..()

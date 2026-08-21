@@ -96,7 +96,13 @@
 			continue
 		var/area/loc_area = unlit.loc
 		if(!loc_area.static_lighting)
-			continue
+			// VOIDCREW EDIT: ambient-lit ground (a planet surface) carries no lighting objects
+			// at all, with one exception - a turf that lights itself, e.g. a ruin dropping a
+			// /lit tile straight onto surface ground rather than into its own area. Its light
+			// needs somewhere to render. See /turf/proc/skips_lighting_object().
+			if(!loc_area.ambient_lighting || unlit.skips_lighting_object())
+				continue
+			// END VOIDCREW EDIT (was: continue)
 		unlit.lighting_build_overlay()
 
 	// NOTE, now that Initialize and LateInitialize run correctly, do we really

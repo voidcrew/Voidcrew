@@ -53,7 +53,21 @@
 /// that the turf has not been initialized yet. Don't call this unless you know
 /// what you're doing.
 /datum/biome/proc/generate_turf_for_terrain(turf/gen_turf)
+	// VOIDCREW EDIT: see the note on the batch version below - the raw swap this proc is
+	// built around orphans the old turf's light source forever when it runs mid-round, and
+	// drops the turf's four lighting corners, so the replacement mints fresh ones for
+	// vertices that already have them and steals them from every neighbour it shares them
+	// with. See /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+	if(!SSlighting.initialized)
+		return new turf_type(gen_turf)
+	gen_turf.release_light_for_raw_swap()
+	var/datum/lighting_corner/corner_ne = gen_turf.lighting_corner_NE
+	var/datum/lighting_corner/corner_se = gen_turf.lighting_corner_SE
+	var/datum/lighting_corner/corner_sw = gen_turf.lighting_corner_SW
+	var/datum/lighting_corner/corner_nw = gen_turf.lighting_corner_NW
+	var/old_dynamic_lumcount = gen_turf.dynamic_lumcount
 	var/turf/new_turf = new turf_type(gen_turf)
+	new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 	return new_turf
 
 
@@ -69,8 +83,40 @@
 /datum/biome/proc/generate_turfs_for_terrain(list/turf/gen_turfs)
 	var/list/turf/new_turfs = list()
 
+	// VOIDCREW EDIT: `new turf_type(gen_turf)` is a bare BYOND turf swap - the replacement is
+	// built straight over the old turf and the old turf's Destroy() never runs. That was
+	// sound for the only caller this had upstream (lavaland, generated at mapload before
+	// anything is lit), and it is not sound here: voidcrew carves asteroid fields and planet
+	// caves MID-ROUND, over reservation and planet ground that is already initialized and
+	// already lit, and a dropped /datum/light_source is uncollectable rather than merely
+	// garbage. See /turf/proc/release_light_for_raw_swap() in voidcrew/edits/turf.dm for the
+	// mechanism and the numbers - this call site alone was ~4,750 permanently leaked light
+	// sources and ~5,800 lighting corners per soak cycle, the bulk of an overnight run's
+	// 140 MB/h. Gated on SSlighting exactly like place_biome_turf() and place_river_turf()
+	// already are, so the roundstart fast path is untouched.
+	var/lighting_live = SSlighting.initialized
 	for(var/turf/gen_turf as anything in gen_turfs)
+		// VOIDCREW EDIT: the four lighting corners have to come across with the swap, or
+		// the replacement mints fresh ones for vertices that already have them and steals
+		// them from every neighbour it shares them with, zeroing lum those neighbours'
+		// lighting objects were rendering. Read AFTER release_light_for_raw_swap(), which
+		// can idle a corner out from under us. See
+		// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+		var/datum/lighting_corner/corner_ne
+		var/datum/lighting_corner/corner_se
+		var/datum/lighting_corner/corner_sw
+		var/datum/lighting_corner/corner_nw
+		var/old_dynamic_lumcount = 0
+		if(lighting_live)
+			gen_turf.release_light_for_raw_swap()
+			corner_ne = gen_turf.lighting_corner_NE
+			corner_se = gen_turf.lighting_corner_SE
+			corner_sw = gen_turf.lighting_corner_SW
+			corner_nw = gen_turf.lighting_corner_NW
+			old_dynamic_lumcount = gen_turf.dynamic_lumcount
 		var/turf/new_turf = new turf_type(gen_turf)
+		if(lighting_live)
+			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 		new_turfs += new_turf
 
 		if(gen_turf.turf_flags & NO_RUINS)

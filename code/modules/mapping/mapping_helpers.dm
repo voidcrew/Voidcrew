@@ -1147,6 +1147,14 @@ INITIALIZE_IMMEDIATE(/obj/effect/mapping_helpers/no_atoms_ontop)
 	var/datum/space_level/level = SSmapping.z_list[z]
 	if(!level || !length(traits_to_add))
 		return
+	// VOIDCREW EDIT ADDITION: a template loaded onto the slot lattice must not rewrite the
+	// LEVEL's traits - all four tenants inherit them, and one of them is ZTRAIT_BASETURF,
+	// the fallback every flat tenant resolves a scraped floor through. The level's own
+	// weather site would be rebuilt rect-less for everybody too.
+	if(map_footprint_at_turf(get_turf(src)))
+		log_mapping("ztrait_injector at [AREACOORD(src)] refused: the level is shared by more than one map tenant. Traits: [json_encode(traits_to_add)]")
+		return
+	// VOIDCREW EDIT END
 	level.traits |= traits_to_add
 	SSweather.update_z_level(level) //in case of someone adding a weather for the level, we want SSweather to update for that
 

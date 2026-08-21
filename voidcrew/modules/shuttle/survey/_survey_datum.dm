@@ -111,8 +111,22 @@
 	if(!object.mapzone || !length(object.mapzone.z_levels))
 		return
 	var/datum/space_level/level = object.mapzone.z_levels[1]
-	if(level && level.z_value)
-		living_player_count = length(SSmobs.clients_by_zlevel[level.z_value])
+	if(!level || !level.z_value)
+		return
+	var/list/clients_here = SSmobs.clients_by_zlevel[level.z_value]
+	// clients_by_zlevel is keyed by z, and a z-level holds up to four tenants. This is
+	// the pre-raid "is anyone down there" readout, so it has to answer for THIS planet's
+	// slot - counting the co-tenant's crew reports a defended world as occupied and,
+	// worse, an empty one as busy. A planet with no footprint keeps the z-wide count.
+	var/datum/map_footprint/footprint = object.footprint
+	if(!footprint)
+		living_player_count = length(clients_here)
+		return
+	var/inside_count = 0
+	for(var/mob/player as anything in clients_here)
+		if(footprint.contains_turf(get_turf(player)))
+			inside_count++
+	living_player_count = inside_count
 
 /datum/surveyed_celestial_object/star/set_values(var/obj/structure/overmap/star/object)
 	. = ..()

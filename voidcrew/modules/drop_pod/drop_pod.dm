@@ -357,14 +357,31 @@
 		eyeobj.setLoc(eyeobj.loc)
 
 /**
+ * The slot the planet below occupies on its z-level, or null when it has none.
+ *
+ * A planet z-level is shared with up to three co-tenants, separated only by a strip of
+ * cordon (see /datum/map_footprint). "The planet below" therefore means this rectangle,
+ * not this z - `SSmapping.areas_in_z` and the camera eye both cross the gutter happily.
+ * Null falls every caller back to the whole-z behaviour they had before packing.
+ */
+/obj/structure/closet/supplypod/drop_pod/proc/get_target_footprint()
+	var/obj/structure/overmap/planet/current_planet = get_current_planet()
+	return current_planet?.footprint
+
+/**
  * Where the targeting camera starts. Dynamic planets occupy a bounded footprint
  * centered in their z-level, with a dense cordon filling the rest - so (1,1) sits
  * inside the cordon, not on the planet. The reserve dock is always on the surface;
- * fall back to the center of the level's bounds if it's somehow gone.
+ * fall back to the center of the planet's own footprint if it's somehow gone.
  */
 /obj/structure/closet/supplypod/drop_pod/proc/get_map_start_turf(obj/structure/overmap/planet/current_planet, planet_z_level)
 	if(current_planet.reserve_dock)
 		return get_turf(current_planet.reserve_dock)
+	// The footprint, not the level: on a packed level the level's bounds describe the
+	// whole z, whose centre is the gutter between tenants.
+	var/turf/center = current_planet.footprint?.get_center_turf()
+	if(center)
+		return center
 	var/datum/space_level/level = current_planet.mapzone.z_levels[1]
 	if(!isnull(level.low_x))
 		return locate(round((level.low_x + level.high_x) / 2), round((level.low_y + level.high_y) / 2), planet_z_level)
@@ -384,6 +401,10 @@
 	if(!planet_z_level)
 		balloon_alert(user, "planet not surveyed!")
 		return
+	// Every co-tenant's surface areas are registered under the same z, so this list is
+	// "areas on the level", not "areas on the planet below". The footprint is what makes
+	// the difference; the turf filter further down is where it is applied.
+	var/datum/map_footprint/footprint = current_planet.footprint
 	var/list/area/planet_areas = list()
 	for (var/area/candidate_area in SSmapping.areas_in_z["[planet_z_level]"])
 		if(istype(candidate_area, /area/overmap_encounter/planetoid/cave))
@@ -405,6 +426,15 @@
 		var/area/chosen_area = pick(planet_areas)
 		planet_areas -= chosen_area
 		var/list/turf_list = get_area_turfs(chosen_area, planet_z_level)
+		// get_area_turfs() collapses its argument to a TYPEPATH, so it hands back every
+		// area of that type on the z - including a same-biome co-tenant's ground. Without
+		// this, "random drop on the planet below" lands on the neighbour.
+		if(footprint && length(turf_list))
+			var/list/turf/inside = list()
+			for(var/turf/candidate_turf as anything in turf_list)
+				if(footprint.contains_turf(candidate_turf))
+					inside += candidate_turf
+			turf_list = inside
 		var/turf/target
 		while (length(turf_list) && !target)
 			var/list_index = rand(1, turf_list.len)
@@ -512,6 +542,18 @@
 	if(!eyeturf)
 		return SHUTTLE_DOCKER_BLOCKED
 	if(!eyeturf.z || SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+
+	// The camera eye ignores density, so the cordon between two tenants does not stop it
+	// from scrolling onto a neighbouring planet the crew never surveyed. This is the gate
+	// that does - it colours the crosshair red as the eye crosses the gutter, and
+	// placeLandingSpot() refuses anything that is not LANDING_CLEAR.
+	var/datum/map_footprint/footprint = get_target_footprint()
+	if(footprint && !footprint.contains_turf(eyeturf))
+		var/image/out_of_range = eyeobj?.placement_image
+		if(out_of_range)
+			out_of_range.loc = eyeturf
+			out_of_range.icon_state = "red"
 		return SHUTTLE_DOCKER_BLOCKED
 
 	. = SHUTTLE_DOCKER_LANDING_CLEAR

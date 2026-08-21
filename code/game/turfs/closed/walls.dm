@@ -38,8 +38,17 @@
 	. = ..()
 	if(!can_engrave)
 		ADD_TRAIT(src, TRAIT_NOT_ENGRAVABLE, INNATE_TRAIT)
-	if(is_station_level(z))
+	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// `if(is_station_level(z))`. is_station_level() means "any z with a hull on it" in this
+	// fork, so a ruin stamped onto a packed level while a neighbour has a ship docked put
+	// every wall it owns into GLOB.station_turfs; the removal below is skipped because the
+	// trait is already gone by teardown time, and two teardown paths raw-swap turfs without
+	// running Destroy() at all. The list is a plain append, so a churning slot re-adds the
+	// same coordinates every cycle and nothing ever compacts it. Recycled ground has no
+	// business in a list named "station turfs" in the first place.
+	if(is_station_level(z) && !map_region_for_turf(src))
 		GLOB.station_turfs += src
+	// VOIDCREW EDIT END
 	if(smoothing_flags & SMOOTH_DIAGONAL_CORNERS && fixed_underlay) //Set underlays for the diagonal walls.
 		var/mutable_appearance/underlay_appearance = mutable_appearance(layer = LOW_FLOOR_LAYER, offset_spokesman = src, plane = FLOOR_PLANE)
 		if(fixed_underlay["space"])
@@ -67,8 +76,13 @@
 	dismantle_wall(TRUE, FALSE)
 
 /turf/closed/wall/Destroy()
-	if(is_station_level(z))
+	// VOIDCREW EDIT CHANGE: symmetric with the guard in Initialize() - original was
+	// `if(is_station_level(z))`, which is a DIFFERENT condition by the time a turf dies
+	// (the level's station flag is refcounted off the hulls standing on it, and teardown
+	// runs after the last one has left), so the entry survived its own turf.
+	if(length(GLOB.station_turfs) && !map_region_for_turf(src))
 		GLOB.station_turfs -= src
+	// VOIDCREW EDIT END
 	return ..()
 
 /turf/closed/wall/examine(mob/user)

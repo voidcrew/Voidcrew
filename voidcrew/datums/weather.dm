@@ -88,3 +88,10 @@
 	update_areas()
 	for(var/area/impacted_area as anything in impacted_areas)
 		SEND_SIGNAL(impacted_area, COMSIG_WEATHER_ENDED_IN_AREA(type), src)
+	// Mirrors the release-and-delete tail of /datum/weather/end(). Without it a planetary
+	// radiation front is the one storm type that survives its own ending, holding its site
+	// and every area instance it impacted until the round ends.
+	if(weather_site?.active_weather == src)
+		weather_site.active_weather = null
+	weather_site = null
+	QDEL_IN(src, 0)

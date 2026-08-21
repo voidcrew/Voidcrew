@@ -12,6 +12,9 @@
 		diag_hud.add_atom_to_hud(src)
 	faction += "[REF(src)]"
 	GLOB.mob_living_list += src
+	// VOIDCREW EDIT: mobs created on a planet inherit that footprint's native alliance.
+	// This is creation-only; visitors arriving later keep their existing allegiances.
+	inherit_planetary_faction(src)
 	SSpoints_of_interest.make_point_of_interest(src)
 	update_fov()
 	gravity_setup()

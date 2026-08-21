@@ -78,6 +78,15 @@ SUBSYSTEM_DEF(minor_mapping)
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		all_turfs += Z_TURFS(z)
 	for(var/turf/open/floor/plating/T in all_turfs)
+		// VOIDCREW EDIT ADDITION: is_station_level() means "any z with a hull on it", so
+		// this sweep reaches every co-tenant of every occupied encounter level - mice would
+		// spawn inside a site whose crew has not arrived, on top of the fauna budget. Also a
+		// CHECK_TICK: the loop accumulates every station level's turfs and walks the lot in
+		// one tick with no yield anywhere.
+		CHECK_TICK
+		if(map_region_for_turf(T))
+			continue
+		// VOIDCREW EDIT END
 		if(T.is_blocked_turf())
 			continue
 		//dont include multiz cables in the list because repairing them sucks

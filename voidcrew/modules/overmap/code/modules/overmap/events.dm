@@ -58,8 +58,16 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/crate_chance = 40
 	/// How many roaming zone-scaled mob packs guard the field: list(min, max)
 	var/list/mob_pack_count = list(2, 3)
-	/// Turf reservation backing the landable rock field, once loaded
-	var/datum/turf_reservation/reservation
+	/// The map zone backing the landable rock field, once loaded
+	var/datum/map_zone/mapzone
+	/// This field's rectangle inside that zone's level - the slot it was dealt. Every
+	/// "is this turf mine?" question is answered from here rather than from the z-level,
+	/// which a packed level shares with up to three neighbours. See /datum/map_footprint.
+	var/datum/map_footprint/footprint
+	/// This field's own /area/centcom/asteroid/voidcrew instance. Minted per load: the type
+	/// used to carry UNIQUE_AREA, so every field in the galaxy shared ONE area straddling
+	/// all of them, and area-scoped teardown, lighting and ambience conflated the lot.
+	var/area/centcom/asteroid/voidcrew/field_area
 	/// Primary docking port
 	var/obj/docking_port/stationary/reserve_dock
 	/// Secondary docking port
@@ -88,7 +96,23 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /obj/structure/overmap/event/meteor/Destroy()
 	GLOB.meteor_fields -= src
 	field_bottom_left = null
+	field_area = null
+	// The orderly teardown (unload_level -> remove_mapzone) leaves both of these null. What
+	// lands here with either still set is a field deleted OUT of that path - an admin Del, a
+	// runtime mid-build - and it used to leak a quarter of a z-level nobody could ever be
+	// dealt again. The ground is deliberately NOT swept: Destroy() can run mid-build and
+	// clear_to_uninitialized_space() yields, so the next tenant's own fill repaints it.
+	if(footprint || mapzone)
+		var/datum/map_footprint/departing_footprint = footprint
+		var/datum/map_zone/departing_zone = mapzone || departing_footprint?.zone
+		log_mapping("SSovermap: asteroid field '[name]' was deleted while still holding [departing_footprint ? departing_footprint.describe() : "a map zone with no footprint"] - releasing the slot without a teardown sweep")
+		footprint = null
+		mapzone = null
+		departing_zone?.release_slot(departing_footprint)
 	return ..()
+
+/obj/structure/overmap/event/meteor/get_interior_footprint()
+	return footprint
 
 /obj/structure/overmap/event/meteor/minor
 	name = "asteroid storm (minor)"
@@ -139,7 +163,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * tile and mine the rock that's causing the damage - braving live meteor traffic
  * is the toll for a denser payout than sitting at an undefended signal.
  *
- * Mirrors /obj/structure/overmap/space_ruin's turf-reservation docking pattern
+ * Mirrors /obj/structure/overmap/space_ruin's map-slot docking pattern
  * (see space_ruin.dm) but the interior is generated procedurally by a proper
  * /datum/map_generator (AsteroidCaves.dm's asteroid_field generator - the same
  * cellular-automata rock/sand technique roundstart planets use) instead of a
@@ -149,7 +173,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  */
 
 /**
- * Loads (or reuses) the field's turf reservation: carves the procedural rock
+ * Loads (or reuses) the field's map slot: carves the procedural rock
  * field, seeds ore, and stands up docking ports on opposite sides - the same
  * recipe as /obj/structure/overmap/space_ruin/load_level(), minus the static template.
  *
@@ -161,7 +185,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * contract: null takes the default, UI callers pass WORLDGEN_QUEUE_NO_WAIT.
  */
 /obj/structure/overmap/event/meteor/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
-	if(reservation)
+	if(mapzone)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, is_loaded())
 		return
 	if(loading)
@@ -178,105 +202,84 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		return
 
 	// The world moved while we queued: another caller may have loaded us already.
-	if(reservation)
+	if(mapzone)
 		SSovermap.worldgen_release(src)
 		loading = FALSE
 		worldgen_end(probe, "already-loaded")
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 
-	var/reserve_width = EVENT_FIELD_WIDTH + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-	var/reserve_height = EVENT_FIELD_HEIGHT + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-
-	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
-	if(!reservation)
+	// A lattice slot, not a turf reservation. A reservation big enough for a 48x48 field
+	// plus a max-size berth on all four sides is 166x134, which is more than half the
+	// 222x222 a reservation z-level can ever hand out - so every landable field minted a
+	// permanent 255x255 z-level of its own, ~49 MB apiece, for a site smaller than a
+	// shuttle. The slot lattice puts the two berths side by side along one edge instead
+	// and packs four sites to a level. throttled = TRUE: we already hold the worldgen
+	// queue, so the build shares the budget we took rather than running full speed on
+	// top of it (see worldgen_yield()).
+	var/list/encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE, throttled = TRUE, tenant_class = MAP_TENANT_CLASS_FLAT, tenant_owner = src)
+	if(length(encounter_values) < 4 || !encounter_values[1] || !encounter_values[2] || !encounter_values[4])
+		// Queue released FIRST, then the retry armed: the wait is for a free SLOT, not for
+		// the worldgen queue, and a field must never end up queued behind a planet build.
 		SSovermap.worldgen_release(src)
 		loading = FALSE
-		worldgen_end(probe, "reservation-failed")
+		worldgen_end(probe, "slot-failed")
+		site_load_refused_for_capacity(waiting_ship)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
+	mapzone = encounter_values[1]
+	reserve_dock = encounter_values[2]
+	reserve_dock_secondary = encounter_values[3]
+	footprint = encounter_values[4]
+
+	// The slot minus its two berths and their clearance collar - the same region a ruin
+	// template is stamped into, and computed from the berth geometry rather than restated,
+	// so a berth that moves takes the field's edge with it.
+	var/list/region = SSovermap.slot_build_region(footprint)
+	field_bottom_left = locate(region[1], region[2], footprint.z_value)
+	var/turf/field_top_right = locate(region[3], region[4], footprint.z_value)
+	if(!field_bottom_left || !field_top_right)
+		log_mapping("SSovermap: asteroid field '[name]' could not resolve its terrain region inside [footprint.describe()] - load aborted")
+		remove_docks()
+		remove_mapzone()
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "region-failed")
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	var/turf/top_right = reservation.top_right_turfs[1]
-
-	field_bottom_left = locate(
-		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	var/turf/field_top_right = locate(
-		top_right.x - RESERVE_DOCK_DEFAULT_PADDING,
-		top_right.y - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-
-	// Use the whole padded reservation as the potential field, except for both
-	// maximum-size ship berths and a clearance collar around them. The dock helper
-	// may rotate or recenter a ship inside these rectangles, but never outside them.
-	var/primary_clearance_max_x = field_bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + EVENT_FIELD_DOCK_CLEARANCE - 1
-	var/primary_clearance_max_y = field_bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + EVENT_FIELD_DOCK_CLEARANCE - 1
-	var/secondary_clearance_min_x = field_top_right.x - RESERVE_DOCK_MAX_SIZE_LONG - EVENT_FIELD_DOCK_CLEARANCE + 1
-	var/secondary_clearance_min_y = field_top_right.y - RESERVE_DOCK_MAX_SIZE_SHORT - EVENT_FIELD_DOCK_CLEARANCE + 1
-	var/list/field_candidates = list()
-	for(var/turf/candidate as anything in block(field_bottom_left, field_top_right))
-		var/in_primary_clearance = candidate.x <= primary_clearance_max_x && candidate.y <= primary_clearance_max_y
-		var/in_secondary_clearance = candidate.x >= secondary_clearance_min_x && candidate.y >= secondary_clearance_min_y
-		if(!in_primary_clearance && !in_secondary_clearance)
-			field_candidates += candidate
-		// This scan covers the whole padded reservation - yield or it pins the tick
-		SSovermap.worldgen_yield()
+	// No per-turf berth filtering any more: the region above already excludes the berth
+	// band and its collar, so every turf in it is a legal candidate.
+	var/list/field_candidates = block(field_bottom_left, field_top_right)
 
 	// Carve the rock field via the map generator framework (same architecture as
 	// planets - see AsteroidCaves.dm) then top up ore the same way asteroid space
 	// ruin signals used to, before that category was retired in favor of this field.
+	//
+	// The area is OURS, minted per load. /area/centcom/asteroid/voidcrew used to be
+	// UNIQUE_AREA, so every field alive at once shared one instance spanning all of them -
+	// which teardown, lighting, ambience and power all read as a single place.
+	field_area = new /area/centcom/asteroid/voidcrew
 	var/datum/map_generator/cave_generator/asteroid_field/mapgen = new mapgen_type()
-	var/list/field_turfs = mapgen.generate_terrain(field_candidates)
+	var/list/field_turfs = mapgen.generate_terrain(field_candidates, field_area)
 	if(length(field_turfs))
-		var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew]
-		if(asteroid_area)
-			mapgen.populate_terrain(field_turfs, asteroid_area)
+		mapgen.populate_terrain(field_turfs, field_area)
 		// One payout per field per round: the rock (and the meteor hazard) come back on
 		// every dock, but the ore roll and the cache extras only happen the first time.
 		if(!field_mined)
 			field_mined = TRUE
 			seed_asteroid_ore_block(field_bottom_left, field_top_right, ore_target_ratio, "hazard field '[name]'", ore_weights)
 			populate_field_extras(field_turfs)
+	else
+		// Nothing was carved, so nothing ever entered our area instance - and
+		// reap_emptied_areas() only collects areas a teardown takes turfs AWAY from, so an
+		// empty shell would sit there for the rest of the round.
+		QDEL_NULL(field_area)
 
-	// Leftover turfs (vacuum between/around the blobs, and the docking buffer) are
-	// uninitialized /turf/open/space/basic - fix them up before anyone can reach them
-	initialize_uninitialized_block_turfs(bottom_left, top_right)
-
-	// Create docking ports on opposite sides of the reservation (same size as planets/ruins)
-	var/turf/primary_dock_turf = locate(
-		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock = new /obj/docking_port/stationary(primary_dock_turf)
-	reserve_dock.dir = NORTH
-	reserve_dock.name = "\improper Meteor Field"
-	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock.dheight = 0
-	reserve_dock.dwidth = 0
-
-	var/turf/secondary_dock_turf = locate(
-		bottom_left.x + reserve_width - RESERVE_DOCK_MAX_SIZE_LONG - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + reserve_height - RESERVE_DOCK_MAX_SIZE_SHORT - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_dock_turf)
-	reserve_dock_secondary.dir = NORTH
-	reserve_dock_secondary.name = "\improper Meteor Field"
-	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock_secondary.dheight = 0
-	reserve_dock_secondary.dwidth = 0
-
-	// Both berths get moved and resized to fit every ship that visits; record where they started
-	// so the next arrival is placed from this layout rather than the last visitor's offset.
-	reserve_dock.mark_reserve_home()
-	reserve_dock_secondary.mark_reserve_home()
+	// spawn_dynamic_encounter() already initialized the slot's space before we carved into
+	// it, but the generator hands back rock and regolith on some of those turfs and leaves
+	// the rest alone - sweep once more so nothing it touched is left uninitialized.
+	footprint.level?.initialize_space_turfs(footprint)
 
 	worldgen_end(probe)
 	loaded = TRUE
@@ -293,11 +296,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	return loading
 
 /obj/structure/overmap/event/meteor/is_loaded()
-	// All three, not just the flag: ship_act()'s dock path needs the reservation and a
-	// berth to exist, and request_site_load()'s fast path re-invokes ship_act off this
-	// answer - answering "loaded" while the reservation is gone would bounce the two
-	// procs off each other in an unbroken INVOKE_ASYNC loop.
-	return loaded && reservation && reserve_dock
+	// All three, not just the flag: ship_act()'s dock path needs the slot and a berth to
+	// exist, and request_site_load()'s fast path re-invokes ship_act off this answer -
+	// answering "loaded" while the slot is gone would bounce the two procs off each other
+	// in an unbroken INVOKE_ASYNC loop.
+	return loaded && mapzone && reserve_dock
 
 /// A wedged load or teardown leaves these flags latched (the watchdog force-released
 /// the queue, but nothing else ever resets them), and ships may be registered for a
@@ -312,15 +315,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(reserve_dock)
 		user.forceMove(get_turf(reserve_dock))
 		return TRUE
-	else if(reservation)
-		var/turf/bottom_left = reservation.bottom_left_turfs[1]
-		if(!bottom_left)
+	else if(footprint)
+		// The footprint's centre, not the level's: locate(world.maxx/2, world.maxy/2, z)
+		// lands in the cordon gutter on a packed level.
+		var/turf/center = footprint.get_center_turf()
+		if(!center)
 			return
-		var/turf/center = locate(
-			bottom_left.x + round(reservation.width / 2),
-			bottom_left.y + round(reservation.height / 2),
-			bottom_left.z
-		)
 		user.forceMove(center)
 		return TRUE
 	return
@@ -436,7 +436,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * packs (zone_mobs.dm). Severity controls how MANY packs and whether a cache
  * drops at all; the overmap zone controls how nasty each pack rolls and what
  * the cache holds, resolution works because get_overmap_object_for_turf()
- * traces the field's reservation back to this event's overmap tile.
+ * traces the field's footprint back to this event's overmap tile.
  */
 /obj/structure/overmap/event/meteor/proc/populate_field_extras(list/field_turfs)
 	var/list/open_turfs = list()
@@ -462,17 +462,17 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		new /obj/effect/zone_mobs/asteroid(pick_n_take(open_turfs))
 
 /**
- * Releases the field's reservation and docks when nobody's using it. Unlike space ruins,
+ * Releases the field's map slot and docks when nobody's using it. Unlike space ruins,
  * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.
  */
 /obj/structure/overmap/event/meteor/proc/can_release_interior()
-	if(!reservation)
+	if(!mapzone || !footprint)
 		return FALSE
 
 	// Never while the interior is still being generated. worldgen_claim() is reentrant
 	// by requester, so a teardown fired mid-load would be granted the queue instantly
-	// (load and teardown both claim as src) and delete the reservation out from under
-	// the generator still carving into it.
+	// (load and teardown both claim as src) and reset the ground out from under the
+	// generator still carving into it.
 	if(loading)
 		return FALSE
 
@@ -486,9 +486,19 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
 		return FALSE
 
-	// Check for players within the reservation's own bounds - transit z-levels host many
-	// reservations side by side, so a level-wide check would false-positive on neighbours
-	if(turf_reservation_has_players(reservation))
+	// Check for players within our own slot - a packed level carries up to four tenants,
+	// so a level-wide check would false-positive on a neighbour's visitors
+	if(turf_footprint_has_players(footprint))
+		return FALSE
+
+	// No ship hull may overlap the slot. The field never had this guard, which the space
+	// ruin has had since round 803 - the overmap token leaves a full second before the
+	// interior physically moves, so both checks above are blind to a hull mid-departure,
+	// and the sweep below deletes every atom on the ground. That is how a departing ship
+	// loses its thrusters. See footprint_blocking_hull_reason().
+	var/blocking_reason = footprint_blocking_hull_reason(footprint)
+	if(blocking_reason)
+		log_mapping("SSovermap: asteroid field '[name]' teardown refused - [blocking_reason]")
 		return FALSE
 
 	return TRUE
@@ -498,20 +508,20 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		return
 
 	if(!can_release_interior())
-		// Already released - can_release_interior() refuses on a null reservation too,
+		// Already released - can_release_interior() refuses on a null map zone too,
 		// and there is nothing left to come back for. Terminal, or the retry below
 		// becomes a permanent heartbeat on every field that ever unloaded.
-		if(!reservation)
+		if(!mapzone)
 			return
 		// Usually the departing shuttle is still mid-move, or the field is mid-build.
 		// "The next undock re-triggers us" is not a retry: our callers are all one-shot
-		// undock timers, so a field that was busy at this instant kept its reservation,
+		// undock timers, so a field that was busy at this instant kept its slot,
 		// both berths and every mob spawner until roundend. Same 30s re-arm the queue
 		// timeout below uses - TIMER_UNIQUE, and the same callback, so they can't stack.
 		addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
-	// Freeing the field's reservation is survey-scale teardown work - queue it like
+	// Freeing the field's slot is survey-scale teardown work - queue it like
 	// every other job rather than stacking it on top of a build in progress.
 	//
 	// `concerned` is only raised once the claim is granted: the wait can run for
@@ -520,7 +530,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// the re-check below reads as "occupied" and aborts on.
 	//
 	// A queue timeout must re-arm itself: our only callers are one-shot undock timers,
-	// so giving up silently would leave the reservation, both berths and every mob
+	// so giving up silently would leave the slot, both berths and every mob
 	// spawner resident until roundend.
 	if(!SSovermap.worldgen_claim(src, "asteroid field teardown ([name])"))
 		addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
@@ -534,17 +544,17 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		SSovermap.worldgen_release(src)
 		concerned = FALSE
 		// Same reason as the refusal at the top: the timer that got us here is spent.
-		if(reservation)
+		if(mapzone)
 			addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
 	// Flag down before the sweep, not after (and before anything below can yield):
-	// is_loaded() must read FALSE the moment the reservation stops being safe to
-	// dock into, or an arriving ship's fast path resumes an approach into turfs
-	// that are mid-recycle.
+	// is_loaded() must read FALSE the moment the ground stops being safe to dock into,
+	// or an arriving ship's fast path resumes an approach into turfs that are
+	// mid-recycle.
 	loaded = FALSE
 	remove_docks()
-	remove_reservation()
+	remove_mapzone()
 	SSovermap.worldgen_release(src)
 	concerned = FALSE
 
@@ -556,10 +566,26 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		qdel(reserve_dock_secondary, TRUE)
 		reserve_dock_secondary = null
 
-/obj/structure/overmap/event/meteor/proc/remove_reservation()
-	if(reservation)
-		qdel(reservation)
-		reservation = null
+/obj/structure/overmap/event/meteor/proc/remove_mapzone()
+	if(mapzone)
+		var/datum/map_zone/departing_zone = mapzone
+		var/datum/map_footprint/departing_footprint = footprint
+		// A carved field brings no template ports of its own, but slots are recycled:
+		// anything a previous tenant left standing in ours is ours to clear before the
+		// ground goes back in the pool, and neither sweep below will touch a docking
+		// port. See reap_footprint_docking_ports().
+		reap_footprint_docking_ports(departing_footprint)
+		// Per-slot: only our own rectangle goes back to uninitialized space unless we are
+		// the last tenant on the level, in which case the whole level (cordon included) is
+		// reset so the recycled zone starts clean. The footprint has to still be attached
+		// while the sweep runs - it is what names the ground we own.
+		departing_zone.clear_to_uninitialized_space(departing_footprint)
+		departing_zone.release_slot(departing_footprint)
+		mapzone = null
+		footprint = null
+	// The sweep above reparents our rock to space and reap_emptied_areas() collects the
+	// emptied shell, so this is only dropping our reference to it.
+	field_area = null
 	field_bottom_left = null
 
 /**
@@ -575,7 +601,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  *
  * Mining itself needs no z-level traits: off mining levels, prox_to_vent() returns 0 and
  * the mineral turf machinery falls back to flat random yields, so this works fine inside
- * a turf reservation on a transit z-level.
+ * a map slot on a shared encounter z-level.
  */
 /proc/seed_asteroid_ore_block(turf/bottom_left, turf/top_right, target_ratio, source_desc, list/ore_weights)
 	if(!bottom_left || !top_right)
@@ -606,7 +632,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 			ore_bearing_count++
 			continue
 		barren_rock += rock
-		// Scans a whole reservation block mid-round - yield (see worldgen_yield())
+		// Scans a whole site block mid-round - yield (see worldgen_yield())
 		SSovermap.worldgen_yield()
 
 	var/target = CEILING(mineral_turf_count * target_ratio, 1)

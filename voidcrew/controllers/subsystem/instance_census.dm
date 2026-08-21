@@ -30,8 +30,8 @@ SUBSYSTEM_DEF(instance_census)
 /// Baseline snapshot shortly after init: the number the round-9 memory
 /// investigation was missing. Includes the blocking datum pass while it is
 /// still cheap. Not an addtimer: timers that come due while the MC is still
-/// initializing are silently dropped, and a slow init (roundstart planet
-/// prebuild) could eat the baseline that way.
+/// initializing are silently dropped, and a slow init could eat the baseline
+/// that way.
 /datum/controller/subsystem/instance_census/proc/take_baseline_census()
 	UNTIL(SSticker.current_state >= GAME_STATE_PREGAME)
 	sleep(3 MINUTES)

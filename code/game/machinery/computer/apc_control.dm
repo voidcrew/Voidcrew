@@ -102,6 +102,27 @@
 */
 
 /obj/machinery/computer/apc_control/proc/check_apc(obj/machinery/power/apc/checked_apc)
+	// VOIDCREW EDIT ADDITION: packed-level containment, and a live is_on_station.
+	// Both branches of the upstream expression are wrong once sites share a z-level:
+	//   * is_on_station FALSE -> bare z equality lists and REMOTELY OPERATES every APC on
+	//     the packed z, i.e. all three co-tenants' sites plus any hull docked at them;
+	//   * is_on_station TRUE  -> is_station_level() means "any z with a ship on it" in this
+	//     fork, i.e. every occupied encounter in the galaxy.
+	// This is the only cross-tenant leak that grants control rather than observation, and
+	// the console is mapped on a player hull (ship_pirate_irs) that carries it to every
+	// encounter its crew docks at.
+	//
+	// Refuses only an APC standing on ground another region demonstrably owns, so a console
+	// on a multi-deck hull still reaches its own other decks, an unclaimed build-out still
+	// answers, and nothing off the lattice changes.
+	var/turf/console_turf = get_turf(src)
+	if(console_turf && map_region_excludes_turf(map_region_for_turf(console_turf), get_turf(checked_apc)))
+		return FALSE
+	// Recomputed rather than trusted: is_on_station is snapshotted in Initialize() and a
+	// ship-mounted console changes z constantly, so the roundstart snapshot is stale within
+	// minutes of the round starting.
+	is_on_station = is_station_level(z)
+	// VOIDCREW EDIT END
 	return (is_on_station ? is_station_level(checked_apc.z) : checked_apc.z == z) && !checked_apc.malfhack && !checked_apc.aidisabled && !(checked_apc.obj_flags & EMAGGED) && !checked_apc.machine_stat && !istype(checked_apc.area, /area/station/ai_monitored)
 
 /obj/machinery/computer/apc_control/ui_interact(mob/user, datum/tgui/ui)

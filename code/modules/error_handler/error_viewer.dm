@@ -20,6 +20,23 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 // - error_entry datums exist for each logged error, and keep track of all
 //   relevant info about that error.
 
+/*
+ * VOIDCREW ADDITION - retention caps.
+ *
+ * This cache used to be unbounded: one /datum/error_viewer/error_entry per runtime, held
+ * for the rest of the round in two lists, each carrying the /exception plus an html-encoded
+ * copy of the full description block. Round-7 (2026-08-16) retained ~148,000 of them during
+ * a 46-second runtime storm, which is a straight line from "a bug is spamming runtimes" to
+ * "the host is out of memory" - the cache turns a log problem into a RAM problem.
+ *
+ * Counts are never lost, only the full copies: a source that blows its cap keeps tallying,
+ * and both numbers are shown in the viewer.
+ */
+/// Full copies retained per error signature (file + line).
+#define ERROR_CACHE_MAX_PER_SOURCE 50
+/// Ceiling on the flat all-errors list, across every source.
+#define ERROR_CACHE_MAX_ENTRIES 5000
+
 // Common vars and procs are kept at the error_viewer level
 /datum/error_viewer
 	var/name = ""
@@ -104,11 +121,21 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	if (!error_source)
 		error_source = new(e)
 		error_sources[erroruid] = error_source
+	error_source.total_errors++
 
-	var/datum/error_viewer/error_entry/error_entry = new(e, desclines, skip_count)
-	error_entry.error_source = error_source
-	errors += error_entry
-	error_source.errors += error_entry
+	// VOIDCREW EDIT: retain a bounded number of full copies per signature. Skip-count
+	// summaries ("Skipped N runtimes in ...") are always kept - there is one per silence
+	// window, they are what tells you how big a flood actually was, and dropping them
+	// would leave the viewer claiming a source went quiet when it did the opposite.
+	if(length(error_source.errors) >= ERROR_CACHE_MAX_PER_SOURCE && !skip_count)
+		error_source.dropped_errors++
+	else
+		var/datum/error_viewer/error_entry/error_entry = new(e, desclines, skip_count)
+		error_entry.error_source = error_source
+		errors += error_entry
+		error_source.errors += error_entry
+		trim_to_cap()
+
 	if (skip_count)
 		return // Skip notifying admins about skipped errors.
 
@@ -125,9 +152,31 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 			err_msg_delay = initial(CE.default)
 		error_source.next_message_at = world.time + err_msg_delay
 
+/**
+ * VOIDCREW ADDITION: drops the oldest retained entries once the flat log passes its cap.
+ *
+ * Unhooks each one from its source as well as the flat list. Leaving it on the source
+ * keeps the entry - and the /exception and description text hanging off it - alive, which
+ * is the entire thing this is here to stop.
+ */
+/datum/error_viewer/error_cache/proc/trim_to_cap()
+	var/overflow = length(errors) - ERROR_CACHE_MAX_ENTRIES
+	if(overflow <= 0)
+		return
+	for(var/i in 1 to overflow)
+		var/datum/error_viewer/error_entry/oldest = errors[i]
+		var/datum/error_viewer/error_source/source = oldest?.error_source
+		if(source)
+			source.errors -= oldest
+	errors.Cut(1, overflow + 1)
+
 /datum/error_viewer/error_source
 	var/list/errors = list()
 	var/next_message_at = 0
+	/// VOIDCREW ADDITION: every runtime this source has produced, retained or not.
+	var/total_errors = 0
+	/// VOIDCREW ADDITION: how many of those were counted but not kept as a full entry.
+	var/dropped_errors = 0
 
 /datum/error_viewer/error_source/New(exception/e)
 	if (!istype(e))
@@ -141,6 +190,9 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 		back_to = GLOB.error_cache
 
 	var/html = build_header(back_to)
+	// VOIDCREW ADDITION: say so when the list below is a sample rather than the whole story.
+	if(dropped_errors)
+		html += "<b>[total_errors]</b> runtimes from this source; <b>[dropped_errors]</b> were counted but not retained (cap is [ERROR_CACHE_MAX_PER_SOURCE] per source).<br><br>"
 	for (var/datum/error_viewer/error_entry/error_entry in errors)
 		html += "[error_entry.make_link(null, src)]<br>"
 
@@ -193,3 +245,6 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 
 /datum/error_viewer/error_entry/make_link(linktext, datum/error_viewer/back_to, linear)
 	return is_skip_count ? name : ..()
+
+#undef ERROR_CACHE_MAX_PER_SOURCE
+#undef ERROR_CACHE_MAX_ENTRIES

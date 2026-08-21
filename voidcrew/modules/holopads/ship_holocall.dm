@@ -88,7 +88,14 @@
 		return our_site == other_site
 	var/turf/our_turf = get_turf(src)
 	var/turf/other_turf = get_turf(other)
-	return our_turf && other_turf && our_turf.z == other_turf.z
+	if(!our_turf || !other_turf || our_turf.z != other_turf.z)
+		return FALSE
+	// Two unregistered pads on the same PACKED z-level are two unrelated crews' ruins,
+	// six turfs of cordon apart. Treating them as one site would skip the cross-site
+	// transit-drop and gate checks entirely and hand them an intra-site hologram channel.
+	// Refuses only a positively-different region, so a roundstart level, deep space and a
+	// single-tenant z all answer exactly as they did before.
+	return !map_region_excludes_turf(map_region_for_turf(our_turf), other_turf)
 
 /// Human-readable name of the site this pad transmits from, for ring announcements.
 /obj/machinery/holopad/proc/voidcrew_site_name()
@@ -173,9 +180,11 @@
 				pads_by_outpost[pad_site] += pad
 			continue
 		// Unregistered pads (ruins, wrecks): no transponder to look up, so they
-		// are only reachable from the same physical z-level ("nearby").
+		// are only reachable from the same physical z-level ("nearby") - and, on a
+		// packed z-level, from the same slot. A co-tenant's pad is not "nearby", it is
+		// another crew's site behind five turfs of indestructible cordon.
 		var/turf/pad_turf = get_turf(pad)
-		if(pad_turf && our_turf && pad_turf.z == our_turf.z)
+		if(pad_turf && our_turf && pad_turf.z == our_turf.z && !map_region_excludes_turf(map_region_for_turf(our_turf), pad_turf))
 			var/area/pad_area = get_area(pad)
 			if(pad_area && pad_area != our_area)
 				var/key = "[format_text(pad_area.name)] (nearby)"

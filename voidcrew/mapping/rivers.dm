@@ -4,7 +4,63 @@
 #define RANDOM_LOWER_X 50
 #define RANDOM_LOWER_Y 50
 
-/proc/spawn_planet_rivers(target_z, nodes, turf_type, list/whitelist_areas, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y)
+/// TRUE when a turf lies inside an inclusive list(low_x, low_y, high_x, high_y) rect.
+#define TURF_IN_RIVER_BOUNDS(T, B) (!isnull(T) && (T).x >= (B)[1] && (T).y >= (B)[2] && (T).x <= (B)[3] && (T).y <= (B)[4])
+
+/**
+ * Lays one river turf down over `target`, and returns it.
+ *
+ * The raw `new turf_type(target)` / `ChangeTurf(..., CHANGETURF_SKIP)` this file used
+ * everywhere is a bare BYOND turf swap: the replacement is constructed straight over the
+ * old turf and the old turf's Destroy() never runs. Everything that Destroy() would have
+ * freed is simply dropped instead - and a dropped /datum/light_source is not merely
+ * garbage, it is UNCOLLECTABLE, because it and the lighting corners it applied to hold
+ * each other (light.effect_str[corner] <-> corner.affecting) and BYOND is pure
+ * refcounting. The turf's four corner refs are dropped with it, so the replacement mints
+ * fresh corners for the same vertices and the old ones stay pinned by the orphan.
+ *
+ * That was sound for the only caller this code had when it was written - lavaland at
+ * mapload, where nothing is initialized and no turf is lit yet - and the comments here
+ * said so. Voidcrew planets generate MID-ROUND, over ground the terrain pass has already
+ * initialized and (on a lava planet) lit, so every river tile leaked one light source plus
+ * its corners for the rest of the round: measured at ~800 per planet, ~3,200 per
+ * four-planet z-level per build, on a 32-bit DreamDaemon with a 4 GB ceiling.
+ *
+ * The mapload fast path is kept exactly as it was, gated on the same `SSlighting.initialized`
+ * test place_biome_turf() in PlanetGenerator.dm already uses for the same reason.
+ *
+ * `new_baseturfs` is the caller's explicit override; without one the turf gets the stack
+ * its own type declares, which is what the raw `new` always produced (ChangeTurf would
+ * otherwise inherit the ground it is replacing).
+ */
+/proc/place_river_turf(turf/target, turf/turf_type, new_baseturfs)
+	if(isnull(target) || isnull(turf_type))
+		return null
+	if(!SSlighting.initialized)
+		var/turf/raw_turf = new turf_type(target)
+		if(new_baseturfs)
+			raw_turf.baseturfs = new_baseturfs
+		return raw_turf
+	var/turf/placed = target.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
+	if(isnull(placed))
+		return null
+	placed.assemble_baseturfs(new_baseturfs || initial(placed.baseturfs) || placed.type)
+	return placed
+
+/**
+ * Carves a handful of randomly pathing rivers of turf_type across a planet surface.
+ *
+ * min_x/min_y/max_x/max_y bound where the river NODES are dropped. `bounds` bounds where
+ * the river is allowed to WALK and SPREAD: list(low_x, low_y, high_x, high_y), inclusive,
+ * or null for the unclamped behaviour every roundstart caller has always had. A z-level
+ * can carry several tenants side by side now (/datum/map_footprint), and the area
+ * whitelist alone cannot hold a river in - it is type-based, and every planet's cave area
+ * is the same type - so a river reaching the footprint edge would carve straight into the
+ * neighbour's ground.
+ */
+/proc/spawn_planet_rivers(target_z, nodes, turf_type, list/whitelist_areas, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, list/bounds = null)
+	if(length(bounds) < 4)
+		bounds = null // A malformed rect must never be treated as "clamp to nothing".
 	var/list/river_nodes = list()
 	var/num_spawned = 0
 	var/width = max_x - min_x
@@ -30,9 +86,9 @@
 		if (waypoints.z != target_z || waypoints.connected)
 			continue
 		waypoints.connected = TRUE
-		// Workaround around ChangeTurf that's safe because of when this proc is called
+		// Raw swap only while nothing is initialized - see place_river_turf()
 		var/turf/cur_turf = get_turf(waypoints)
-		cur_turf = new turf_type(cur_turf)
+		cur_turf = place_river_turf(cur_turf, turf_type)
 		var/turf/target_turf = get_turf(pick(river_nodes - waypoints))
 		if(!target_turf)
 			break
@@ -53,7 +109,17 @@
 			else
 				cur_dir = get_dir(cur_turf, target_turf)
 
-			cur_turf = get_step(cur_turf, cur_dir)
+			var/turf/stepped_turf = get_step(cur_turf, cur_dir)
+			// A snaking detour that would leave the rect is refused outright: the step is
+			// discarded and the river aims straight back at its target node, which is always
+			// inside the rect, so both coordinates move back inward and the walk terminates.
+			if(bounds && !TURF_IN_RIVER_BOUNDS(stepped_turf, bounds))
+				detouring = FALSE
+				cur_dir = get_dir(cur_turf, target_turf)
+				stepped_turf = get_step(cur_turf, cur_dir)
+				if(!TURF_IN_RIVER_BOUNDS(stepped_turf, bounds))
+					break // Cornered; nothing left to carve without writing outside the rect.
+			cur_turf = stepped_turf
 			var/area/new_area = get_area(cur_turf)
 			var/valid_area = FALSE
 			for(var/whitelist_area in whitelist_areas)
@@ -63,25 +129,41 @@
 			if(!valid_area || (cur_turf.turf_flags & NO_LAVA_GEN)) //Rivers will skip ruins
 				detouring = FALSE
 				cur_dir = get_dir(cur_turf, target_turf)
-				cur_turf = get_step(cur_turf, cur_dir)
+				var/turf/skipped_turf = get_step(cur_turf, cur_dir)
+				if(bounds && !TURF_IN_RIVER_BOUNDS(skipped_turf, bounds))
+					break // Same rule for the skip-over step.
+				cur_turf = skipped_turf
 				continue
 			else
-				// Workaround around ChangeTurf that's safe because of when this proc is called
-				var/turf/river_turf = new turf_type(cur_turf)
-				river_turf.SpreadAcrossPlanet(25, 11, whitelist_areas)
+				// Raw swap only while nothing is initialized - see place_river_turf()
+				var/turf/river_turf = place_river_turf(cur_turf, turf_type)
+				river_turf.SpreadAcrossPlanet(25, 11, whitelist_areas, bounds)
 
 	for(var/waypoints_spawned in river_nodes)
 		qdel(waypoints_spawned)
 
 
-/turf/proc/SpreadAcrossPlanet(probability = 30, prob_loss = 25, list/whitelisted_areas)
+/**
+ * Bleeds this turf's type outwards a tile at a time, losing probability as it goes.
+ *
+ * `bounds` is an inclusive list(low_x, low_y, high_x, high_y) the spread may not leave,
+ * or null for the unclamped behaviour. See spawn_planet_rivers() - RANGE_TURFS does not
+ * know about footprints, so without this the last ring of a river's spread writes over
+ * the co-tenant next door.
+ */
+/turf/proc/SpreadAcrossPlanet(probability = 30, prob_loss = 25, list/whitelisted_areas, list/bounds = null)
 	if(probability <= 0)
 		return
+	if(length(bounds) < 4)
+		bounds = null
 	var/list/cardinal_turfs = list()
 	var/list/diagonal_turfs = list()
 	var/logged_turf_type
 	for(var/turf/canidate as anything in RANGE_TURFS(1, src) - src)
 		if(!canidate || (canidate.density && !ismineralturf(canidate)) || isindestructiblefloor(canidate))
+			continue
+
+		if(bounds && !TURF_IN_RIVER_BOUNDS(canidate, bounds))
 			continue
 
 		var/area/new_area = get_area(canidate)
@@ -101,28 +183,25 @@
 		else
 			diagonal_turfs += canidate
 
+	// place_river_turf() decides between the raw swap this code used to do unconditionally
+	// and a real ChangeTurf. The old blanket "safe because this only runs during mapload"
+	// comment stopped being true the moment planets started generating mid-round; see the
+	// proc's doc comment for what the raw swap leaks when the ground is already lit.
 	for(var/turf/cardinal_canidate as anything in cardinal_turfs) //cardinal turfs are always changed but don't always spread
-		// NOTE: WE ARE SKIPPING CHANGETURF HERE
-		// The calls in this proc only serve to provide a satisfactory (if it's not ALREADY this) check. They do not actually call changeturf
-		// This is safe because this proc can only be run during mapload, and nothing has initialized by now so there's nothing to inherit or delete
-		if(!istype(cardinal_canidate, logged_turf_type) && cardinal_canidate.ChangeTurf(type, baseturfs, CHANGETURF_SKIP) && prob(probability))
-			if(baseturfs)
-				cardinal_canidate.baseturfs = baseturfs
-			cardinal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas)
+		if(!istype(cardinal_canidate, logged_turf_type) && place_river_turf(cardinal_canidate, type, baseturfs) && prob(probability))
+			cardinal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds)
 
 	for(var/turf/diagonal_canidate as anything in diagonal_turfs) //diagonal turfs only sometimes change, but will always spread if changed
-		// Important NOTE: SEE ABOVE
-		if(!istype(diagonal_canidate, logged_turf_type) && prob(probability) && diagonal_canidate.ChangeTurf(type, baseturfs, CHANGETURF_SKIP))
-			if(baseturfs)
-				diagonal_canidate.baseturfs = baseturfs
-			diagonal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas)
+		if(!istype(diagonal_canidate, logged_turf_type) && prob(probability) && place_river_turf(diagonal_canidate, type, baseturfs))
+			diagonal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds)
 		else if(ismineralturf(diagonal_canidate))
 			var/turf/closed/mineral/diagonal_mineral = diagonal_canidate
-			// SEE ABOVE, THIS IS ONLY VERY RARELY SAFE
-			new diagonal_mineral.turf_type(diagonal_mineral)
+			place_river_turf(diagonal_mineral, diagonal_mineral.turf_type)
 
 #undef RANDOM_UPPER_X
 #undef RANDOM_UPPER_Y
 
 #undef RANDOM_LOWER_X
 #undef RANDOM_LOWER_Y
+
+#undef TURF_IN_RIVER_BOUNDS

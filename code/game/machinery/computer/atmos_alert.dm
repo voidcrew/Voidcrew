@@ -65,6 +65,11 @@
 	var/list/station_alert_areas = GLOB.the_station_areas + typesof(/area/mine)
 	// Setting up a variable for checking our circuit's station_only
 	var/obj/item/circuitboard/computer/atmos_alert/my_circuit = circuit
+	// VOIDCREW EDIT ADDITION: packed-level containment, resolved once per process() rather
+	// than once per alarm. The z branch below prints get_area_name() for every matching
+	// alarm, so on a packed level a local atmos console named the neighbouring crew's rooms.
+	var/datum/console_region = my_circuit.station_only ? null : map_region_for_turf(get_turf(src))
+	// VOIDCREW EDIT END
 	for (var/obj/machinery/airalarm/air_alarm as anything in GLOB.air_alarms)
 		// If the circuit has station_only, check if alarm areas are in the station list
 		if(my_circuit.station_only)
@@ -73,6 +78,10 @@
 		// Otherwise just check if alarms match the console's z-level
 		else if (air_alarm.z != z)
 			continue
+		// VOIDCREW EDIT ADDITION
+		else if (map_region_excludes_turf(console_region, get_turf(air_alarm)))
+			continue
+		// VOIDCREW EDIT END
 
 		switch (air_alarm.danger_level)
 			if (AIR_ALARM_ALERT_NONE)

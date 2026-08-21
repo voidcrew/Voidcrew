@@ -258,13 +258,19 @@
 	return TRUE
 
 /// Overmap types the console refuses to treat as survey targets
+/// Callers must treat the returned list as READ-ONLY - both are shared statics.
+/// get_current_celestial_object() is now on the per-landing-turf path (see
+/// checkLandingTurf()), which runs for every tile of the projected berth on every eye
+/// step, so this may not allocate a list per call any more.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_blacklisted_overmap_types()
-	var/list/blacklisted_types = list(
+	var/static/list/debug_blacklist = list(
 		/obj/structure/overmap/ship,
 	)
-	if(!debug_mode)
-		blacklisted_types += /obj/structure/overmap/planet/empty
-	return blacklisted_types
+	var/static/list/normal_blacklist = list(
+		/obj/structure/overmap/ship,
+		/obj/structure/overmap/planet/empty,
+	)
+	return debug_mode ? debug_blacklist : normal_blacklist
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
 	var/list/blacklisted_types = get_blacklisted_overmap_types()
@@ -603,10 +609,22 @@
 	if(!T)
 		return SHUTTLE_DOCKER_BLOCKED
 
-	// On reserved z-levels, every turf of the footprint must lie inside the
-	// orbited space ruin's own reservation - never a neighbouring reservation
-	// or unallocated transit space
-	if(SSmapping.level_has_any_trait(T.z, locked_traits) && !turf_in_current_ruin_reservation(T))
+	// Reserved z-levels stay off-limits outright. There used to be an exception for the
+	// orbited space ruin's own reservation; ruins and asteroid fields are map-zone tenants
+	// now and never sit on a ZTRAIT_RESERVED level, so nothing a player can legally land
+	// on is behind this gate any more. Their own co-tenant scoping is the footprint test
+	// in checkLandingSpot().
+	if(SSmapping.level_has_any_trait(T.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+
+	// The gate above evaporated for packed sites - lattice levels carry ZTRAIT_MINING, none
+	// of locked_traits - and checkLandingSpot()'s footprint test only judges the EYE's own
+	// tile, while this proc is called for every tile of the projected berth. Without this
+	// the only thing between a hull and the neighbour's slot is /area/misc/cordon failing
+	// the whitelisted_areas test below, i.e. the cordon's area type. A site with no
+	// footprint is unscoped and behaves exactly as it did before packing.
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint && !site_footprint.contains_turf(T))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	var/allowed_mob = TRUE
@@ -628,25 +646,46 @@
 		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
 
 
-/// Returns TRUE if the given turf lies inside the turf reservation of the space ruin
-/// OR landable asteroid field the ship is currently orbiting. Both live on
-/// ZTRAIT_RESERVED transit z-levels, which are normally forbidden for custom docking -
-/// this is the one exception, scoped to the orbited object's own footprint so
-/// neighbouring reservations and unallocated transit space stay off-limits.
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/turf_in_current_ruin_reservation(turf/tile)
-	if(!tile)
+/**
+ * The slot the orbited site occupies on its z-level, or null when it has none.
+ *
+ * This replaced turf_in_current_ruin_reservation(), which let the custom-docking gate make
+ * an exception for turfs inside the orbited space ruin's turf reservation. Ruins and
+ * asteroid fields are map-zone tenants now, so none of them sits on a ZTRAIT_RESERVED
+ * level and the exception has nothing left to grant - but their level IS shared with up to
+ * three co-tenants, separated by a strip of cordon the camera eye passes straight through,
+ * which is what this scopes. See /datum/map_footprint.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_site_footprint()
+	var/obj/structure/overmap/celestial = get_current_celestial_object()
+	return celestial?.get_interior_footprint()
+
+/**
+ * Keeps the survey eye off a co-tenant's ground.
+ *
+ * checkLandingSpot() refuses to DESIGNATE outside the orbited site, but the eye itself was
+ * never bounded - and with the research-tier mapping upgrades this console grants (mob_sight,
+ * obj_sight, see_hidden) an operator who scrolls across the cordon reads exactly who is
+ * aboard next door. A five-turf gutter of /turf/cordon stops air, sight, bullets and
+ * movement; it does not stop a camera eye.
+ *
+ * The rule is "never somebody else's", not "only mine": inside our own footprint is the fast
+ * path, and anything the site resolver cannot place - the gutter, raw space, a site with
+ * neither footprint nor reservation - stays reachable, so no console can be wedged by a
+ * lookup that comes back empty. Overrides the TRUE-by-default hook on the base console type,
+ * so upstream navigation, syndicate, whiteship and caravan consoles keep their full reach.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/eye_may_enter(turf/destination)
+	if(!destination)
 		return FALSE
 	var/obj/structure/overmap/celestial = get_current_celestial_object()
-	var/datum/turf_reservation/res
-	if(istype(celestial, /obj/structure/overmap/space_ruin))
-		var/obj/structure/overmap/space_ruin/ruin = celestial
-		res = ruin.reservation
-	else if(istype(celestial, /obj/structure/overmap/event/meteor))
-		var/obj/structure/overmap/event/meteor/field = celestial
-		res = field.reservation
-	if(!res)
-		return FALSE
-	return SSmapping.used_turfs[tile] == res
+	if(isnull(celestial))
+		return TRUE
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint?.contains_turf(destination))
+		return TRUE
+	var/obj/structure/overmap/owner = SSovermap_zones?.get_overmap_object_for_turf(destination)
+	return isnull(owner) || owner == celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
@@ -655,7 +694,13 @@
 		return SHUTTLE_DOCKER_BLOCKED
 	if(!eyeturf.z)
 		return SHUTTLE_DOCKER_BLOCKED
-	if(SSmapping.level_has_any_trait(eyeturf.z, locked_traits) && !turf_in_current_ruin_reservation(eyeturf))
+	if(SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+	// The designated landing site has to be on the object we are actually orbiting, not on
+	// whoever is sharing its z-level. A site with no footprint is unscoped and keeps the
+	// behaviour it had before packing.
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint && !site_footprint.contains_turf(eyeturf))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	. = SHUTTLE_DOCKER_LANDING_CLEAR
@@ -939,15 +984,22 @@
 		if(planet.reserve_dock)
 			docking_location = get_turf(planet.reserve_dock)
 		else
-			var/datum/space_level/lvl = planet.mapzone.z_levels[1]
-			docking_location = locate(1, 1, lvl.z_value)
+			// The middle of the planet's own slot. (1,1) is the cordon band outside every
+			// tenant's footprint, so the camera opened onto ground the console then
+			// refuses to designate - and on a packed level it is not even this planet's.
+			var/turf/planet_center = planet.footprint?.get_center_turf()
+			if(planet_center)
+				docking_location = planet_center
+			else
+				var/datum/space_level/lvl = planet.mapzone.z_levels[1]
+				docking_location = locate(1, 1, lvl.z_value)
 	else if(istype(o, /obj/structure/overmap/space_ruin))
 		var/obj/structure/overmap/space_ruin/ruin = o
-		// Ensure the ruin's reservation and docking ports exist. Same rule as the planet
+		// Ensure the ruin's map slot and docking ports exist. Same rule as the planet
 		// branch above: ruin loads queue now, and a camera refresh is no reason to hold
 		// this console open behind somebody else's survey - take the queue only if free.
 		ruin.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
-		if(!ruin.reservation)
+		if(!ruin.mapzone)
 			if(user)
 				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
@@ -957,12 +1009,12 @@
 		if(ruin.reserve_dock)
 			docking_location = get_turf(ruin.reserve_dock)
 		else
-			docking_location = ruin.reservation.bottom_left_turfs[1]
+			docking_location = ruin.footprint?.get_center_turf()
 	else if(istype(o, /obj/structure/overmap/event/meteor))
 		var/obj/structure/overmap/event/meteor/field = o
-		// Ensure the field's reservation and docking ports exist - same no-wait rule as above
+		// Ensure the field's map slot and docking ports exist - same no-wait rule as above
 		field.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
-		if(!field.reservation)
+		if(!field.mapzone)
 			if(user)
 				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
@@ -972,7 +1024,7 @@
 		if(field.reserve_dock)
 			docking_location = get_turf(field.reserve_dock)
 		else
-			docking_location = field.reservation.bottom_left_turfs[1]
+			docking_location = field.footprint?.get_center_turf()
 	else
 		// No dockable celestial in orbit - don't reuse a stale location from a previous target
 		docking_location = null

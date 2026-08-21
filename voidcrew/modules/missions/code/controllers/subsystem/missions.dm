@@ -26,17 +26,23 @@ SUBSYSTEM_DEF(missions)
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/missions/fire(resumed)
-	// Check for mission timeouts (handled by individual mission timers, but we can do cleanup here)
-	for(var/datum/mission/mission as anything in all_active_missions)
-		if(QDELETED(mission))
-			all_active_missions -= mission
-			continue
+	// Backstop sweep only - /datum/mission/Destroy() takes itself out of this list now, so
+	// reaching here means something was deleted without running Destroy at all. Walked
+	// backwards because removing from a list mid-iteration shifts every later element down
+	// one and the forward form silently skipped the entry after each removal.
+	for(var/i in length(all_active_missions) to 1 step -1)
+		if(QDELETED(all_active_missions[i]))
+			all_active_missions.Cut(i, i + 1)
 
-	// Refresh available missions for all ships
+	// Refresh available missions for all ships. CHECK_TICK between hulls: this is a
+	// SS_BACKGROUND subsystem on a 30 s period with a dozen-plus hulls to visit, and
+	// nothing in here is resumable, so without a yield point one fire runs the whole
+	// fleet inside a single tick and overruns its allocation on every fire.
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
 		if(QDELETED(ship))
 			continue
 		refresh_ship_missions(ship)
+		CHECK_TICK
 
 /**
  * Fills a ship's available missions list up to the default count.

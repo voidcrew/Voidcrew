@@ -708,7 +708,15 @@ SUBSYSTEM_DEF(shuttle)
 	new_area.parallax_movedir = travel_dir
 	new_area.contents = proposal.reserved_turfs
 	LISTASSERTLEN(new_area.turfs_by_zlevel, bottomleft.z, list())
-	new_area.turfs_by_zlevel[bottomleft.z] = proposal.reserved_turfs
+	// VOIDCREW EDIT: .Copy(), because this used to hand the area the reservation's OWN list
+	// by reference. The area bookkeeping mutates turfs_by_zlevel IN PLACE - SSarea_contents
+	// drops one entry per turf that left the area, and cannonize_contained_turfs_by_zlevel()
+	// Cut()s and refills it - so a shuttle sitting in transit silently subtracted its whole
+	// footprint from proposal.reserved_turfs. Anything released before that shuttle handed
+	// its turfs back (dock force-destroyed while docked, ship deleted in transit,
+	// jumpToNullSpace) left those turfs stuck in SSmapping.used_turfs forever. See the
+	// matching note in /datum/turf_reservation/Release().
+	new_area.turfs_by_zlevel[bottomleft.z] = proposal.reserved_turfs.Copy()
 
 	var/obj/docking_port/stationary/transit/new_transit_dock = new(midpoint)
 	new_transit_dock.reserved_area = proposal
@@ -883,6 +891,11 @@ SUBSYSTEM_DEF(shuttle)
 
 	if(!preview_shuttle)
 		load_template(loading_template)
+		// VOIDCREW EDIT: load_template() can now refuse gracefully (no transit
+		// reservation free - see the capacity note in it). Without this bail the null
+		// preview fell through to generate_transit_dock(null) and a CRASH of its own.
+		if(!preview_shuttle)
+			return
 		preview_template = loading_template
 
 	// get the existing shuttle information, if any
@@ -954,7 +967,14 @@ SUBSYSTEM_DEF(shuttle)
 		reservation_type = /datum/turf_reservation/transit,
 	)
 	if(!preview_reservation)
-		CRASH("failed to reserve an area for shuttle template loading")
+		// VOIDCREW EDIT: a null here is usually request_turf_block_reservation() refusing
+		// because world.maxz is at its configured ceiling and the reserved levels are
+		// momentarily full - a capacity condition that clears in seconds as transits
+		// recycle, not a code fault. The CRASH this used to be unwound create_ship() into
+		// "there was an error, contact admins" for every buyer who clicked at the wrong
+		// moment. Refuse gracefully instead; callers already handle a missing preview.
+		log_mapping("SSshuttle: load_template refused - no transit reservation for [loading_template.width]x[loading_template.height] '[loading_template.name]'[SSmapping.at_z_level_ceiling() ? " (world.maxz at its ceiling)" : ""]")
+		return FALSE
 	var/turf/bottom_left = preview_reservation.bottom_left_turfs[1]
 	loading_template.load(bottom_left, centered = FALSE, register = FALSE)
 
@@ -1186,6 +1206,11 @@ SUBSYSTEM_DEF(shuttle)
 								upgrade_selections[slot_key] = all_modules[module_id]
 
 				var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(S.type, upgrade_selections, theme_to_use)
+				// VOIDCREW EDIT: create_ship() refuses (returns FALSE) when no transit
+				// reservation is free - don't deref .shuttle off the refusal.
+				if(!istype(spawned))
+					to_chat(user, span_warning("Ship load refused - no transit map volume free right now. Try again in a moment."))
+					return
 				user.client?.admin_follow(spawned.shuttle)
 
 				// Clear pending selections after successful spawn
