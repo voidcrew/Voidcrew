@@ -70,6 +70,9 @@
 	// place-swapping through them (move_resist already blocks shoves/pushes).
 	ADD_TRAIT(src, TRAIT_GODMODE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOMOBSWAP, INNATE_TRAIT)
+	// move_resist only stops pulling; drag-drops (buckling to beds, stuffing
+	// into crates/disposals) never check it, so cancel them at the source.
+	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
 	shop_ui = new /datum/outpost_trader_ui/shop(src)
 	contracts_ui = new /datum/outpost_trader_ui/contracts(src)
 	setup_from_shop()
@@ -114,6 +117,12 @@
 		. += span_warning("[name] is pointedly ignoring you.")
 
 // ===== INTERACTION =====
+
+/// Cancels any attempt to drag-drop the trader onto something (beds, crates,
+/// disposals, ...): the shopkeep stays at their counter, period.
+/mob/living/basic/outpost_trader/proc/block_being_dragged(atom/over, mob/user)
+	SIGNAL_HANDLER
+	return COMPONENT_CANCEL_MOUSEDROP_ONTO
 
 /mob/living/basic/outpost_trader/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	if(user.combat_mode)

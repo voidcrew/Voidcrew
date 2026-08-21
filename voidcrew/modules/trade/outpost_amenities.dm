@@ -198,6 +198,15 @@
 	apply_dynamic_human_appearance(src, outfit_path = outfit_path)
 	// Unkillable, not protected: violence against them is pointless, not punished
 	ADD_TRAIT(src, TRAIT_GODMODE, INNATE_TRAIT)
+	// move_resist only stops pulling; drag-drops (buckling to beds, stuffing
+	// into crates/disposals) never check it, so cancel them at the source.
+	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
+
+/// Cancels any attempt to drag-drop the loiterer onto something (beds, crates,
+/// disposals, ...): they live here now, apparently, and they're staying.
+/mob/living/basic/outpost_loiterer/proc/block_being_dragged(atom/over, mob/user)
+	SIGNAL_HANDLER
+	return COMPONENT_CANCEL_MOUSEDROP_ONTO
 
 /mob/living/basic/outpost_loiterer/proc/bark_attacked()
 	if(!COOLDOWN_FINISHED(src, attacked_bark_cooldown))
