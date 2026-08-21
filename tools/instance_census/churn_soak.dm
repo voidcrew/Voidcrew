@@ -1751,6 +1751,14 @@ SUBSYSTEM_DEF(churn_soak)
 	var/sources_qdeleted = 0
 	var/list/sources_by_owner = list()
 	var/list/sources_by_z = list()
+	// Space-owned survivors, located precisely: z + area + region CLASS (footprint /
+	// reservation / no-region) + a coordinate sample. "Owned by /turf/open/space" has
+	// now supported two wrong hypotheses in a row (ship levels; hull rects) - the region
+	// class is the discriminator, because it names the teardown that should have swept
+	// the turf: a footprint's zone sweep, a reservation's Release(), or - no-region -
+	// the departure-path cleanup itself.
+	var/list/space_owned_where = list()
+	var/list/space_owned_sample = list()
 	for(var/datum/light_source/source)
 		sources_total++
 		if(QDELETED(source))
@@ -1769,10 +1777,24 @@ SUBSYSTEM_DEF(churn_soak)
 			sources_disowned++
 			label = "DISOWNED [label]"
 		sources_by_owner[label]++
+		if(isspaceturf(owner))
+			var/turf/owner_turf = owner
+			var/datum/owner_region = map_region_for_turf(owner_turf)
+			var/region_label = "no-region"
+			if(istype(owner_region, /datum/map_footprint))
+				region_label = "footprint"
+			else if(istype(owner_region, /datum/turf_reservation))
+				region_label = "reservation([owner_region.type])"
+			var/area/owner_area = owner_turf.loc
+			space_owned_where["z[owner_turf.z] [region_label] [owner_area ? "[owner_area.type]" : "null-area"]"]++
+			if(length(space_owned_sample) < 30)
+				space_owned_sample += "([owner_turf.x],[owner_turf.y],[owner_turf.z])"
 
 	soak_log("FORENSICS cycle=[cycle] light_sources total=[sources_total] no_source_atom=[sources_no_atom] dead_source_atom=[sources_dead_atom] disowned=[sources_disowned] self_qdeleted=[sources_qdeleted]")
 	soak_log("FORENSICS cycle=[cycle] light_sources by_z: [forensics_top(sources_by_z, 14)]")
 	soak_log("FORENSICS cycle=[cycle] light_sources by_owner: [forensics_top(sources_by_owner, 16)]")
+	soak_log("FORENSICS cycle=[cycle] space-owned sources by z/region/area: [forensics_top(space_owned_where, 12)]")
+	soak_log("FORENSICS cycle=[cycle] space-owned sample: [jointext(space_owned_sample, " ")]")
 	log_disowned_source_shape(cycle)
 	log_pipeline_shape(cycle)
 

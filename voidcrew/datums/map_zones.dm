@@ -203,6 +203,19 @@
 		if(whole_level)
 			SSweather.set_z_level_weather_trait(zlevel, null)
 		zlevel.clear_reservation(throttled, footprint, whole_level)
+		// The wipe above ends every turf as an INITIALIZED /turf/open/space:
+		// empty(RESERVED_TURF_TYPE) is a full ChangeTurf, and on a live encounter level
+		// each replacement comes back STARLIT - one /datum/light_source and four corners
+		// apiece, ~15k of them for a freed ruin or planet slot, standing until the slot's
+		// next claim. (The "we don't need to check its starlight" note down in the sweep
+		// is inherited from the reserved-z world, where it was true.) Chase the wipe with
+		// the flat-encounter sweep so the ground is handed back UNINITIALIZED like every
+		// other freed slot: it scrubs the fresh lighting, leaves GLOB.starlight, raw-swaps
+		// to space/basic, and repairs the co-tenant atmos ring the IGNORE_AIR wipe never
+		// touched. Measured: the churn soak's post-teardown light_sources sat at ~14k per
+		// recycled level without this, and ghost run 8 accumulated +330k lighting datums
+		// (+130 MB/h) from exactly this state across its pinned sites.
+		zlevel.clear_to_uninitialized_space(footprint, whole_level)
 	worldgen_end(probe)
 
 /// Clears contents and resets turfs to uninitialized space (for empty space cleanup).

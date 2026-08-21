@@ -88,6 +88,39 @@
 		QDEL_NULL(light)
 
 /**
+ * Returns a vacated open-space turf to uninitialized /turf/open/space/basic, freeing the
+ * lighting it accumulated while it was somebody's neighbour.
+ *
+ * Every hull departure ScrapeAway()s its rect down to the level's space - a full ChangeTurf,
+ * so what is left is an INITIALIZED /turf/open/space carrying a starlight/bleed
+ * /datum/light_source and four corners wherever it borders anything lit. Encounter slots
+ * get swept back to basic by clear_to_uninitialized_space() when the site tears down, but
+ * the open space of a ship level has no teardown - so every dock, undock and hull death
+ * left its rect permanently lit. Measured on the 2026-08-21 six-hour ghost round: +212k
+ * lit space turfs and +330k lighting datums, ~40% of the post-fill memory slope; the churn
+ * soak reproduces it as ~14k retained light sources per seven hull cycles.
+ *
+ * The four steps are the zone sweep's, in its order (see clear_to_uninitialized_space()):
+ * scrub the turf's own lighting and orphaned corner sources, detach from SSair if excited
+ * (the replacement has null air), leave GLOB.starlight (Destroy() never runs on a raw
+ * swap, and a stale entry both relights and duplicates later), then the raw swap itself.
+ *
+ * WHERE this may run is the caller's job: only on space turfs standing OUTSIDE every live
+ * map region (map_region_for_turf() null) - a berth inside a site's footprint becomes the
+ * site's ground and is the site teardown's to sweep, and transit space belongs to its
+ * reservation.
+ */
+/turf/proc/return_to_uninitialized_space()
+	scrub_lighting_for_teardown()
+	if(isopenturf(src))
+		var/turf/open/open_self = src
+		if(open_self.excited)
+			SSair.remove_from_active(src)
+	if(isspaceturf(src) && light_on)
+		GLOB.starlight -= src
+	new /turf/open/space/basic(src)
+
+/**
  * The other half of release_light_for_raw_swap(): puts back the lighting state a raw swap
  * drops. Call it on the REPLACEMENT turf, with the four corner refs and the lumcount read
  * off the old turf immediately BEFORE `new path(old_turf)`.

@@ -426,6 +426,11 @@
 		var/shuttle_tile_depth = oldT.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)
 		if (!isnull(shuttle_tile_depth))
 			oldT.ScrapeAway(shuttle_tile_depth)
+		// VOIDCREW EDIT ADDITION: same cleanup as afterShuttleMove()'s departure path - a
+		// deleted hull's rect on open space otherwise stays initialized and starlit for
+		// the rest of the round. See /turf/proc/return_to_uninitialized_space().
+		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
+			oldT.return_to_uninitialized_space()
 
 	qdel(src, force=TRUE)
 

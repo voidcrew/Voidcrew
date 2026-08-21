@@ -74,6 +74,13 @@ All ShuttleMove procs go here
 
 	if(shuttle_depth)
 		oldT.ScrapeAway(shuttle_depth)
+		// VOIDCREW EDIT ADDITION: a departure that bares open, unclaimed space leaves an
+		// initialized /turf/open/space with a starlight source nothing will ever free -
+		// ship levels have no teardown. Hand it back to uninitialized space/basic. Region
+		// guard: a berth inside a site footprint or a transit/turf reservation is that
+		// owner's ground and gets swept by ITS teardown; see return_to_uninitialized_space().
+		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
+			oldT.return_to_uninitialized_space()
 
 	if(rotation)
 		shuttleRotate(rotation) //see shuttle_rotate.dm
