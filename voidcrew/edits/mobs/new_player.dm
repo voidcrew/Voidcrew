@@ -294,6 +294,11 @@
 	// Grant captain management action if spawning as captain (officer job)
 	if(job.officer && humanc)
 		grant_captain_management(humanc, joined_ship)
+		// A real captain's arrival ends any acting command over the ship
+		joined_ship.clear_acting_captain(humanc)
+	else if(humanc)
+		// No captain aboard: the joiner holds acting command until one arrives
+		joined_ship.make_acting_captain(humanc)
 
 	// Show ship memo after spawn (with a small delay so they're fully loaded in)
 	if(joined_ship.memo && humanc)

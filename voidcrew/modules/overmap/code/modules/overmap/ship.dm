@@ -93,6 +93,9 @@
 	var/list/pending_invites = list()
 	/// Mind of whoever claimed this ship (for NPC ships without job_slots)
 	var/datum/mind/claimed_captain
+	/// Mind of the crew member holding acting command: the first joiner on a ship with
+	/// no captain. Revoked the moment a real captain (officer job spawn or claim) arrives.
+	var/datum/mind/acting_captain
 
 	///Timer between job managing delays
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
@@ -1098,6 +1101,11 @@
 	if(claimed_captain && check_mob.mind == claimed_captain)
 		return TRUE
 
+	// Acting captain: first joiner on a captainless ship. Holds command only while
+	// no real captain exists - their authority ends the moment one arrives.
+	if(acting_captain && check_mob.mind == acting_captain && !has_real_captain())
+		return TRUE
+
 	var/datum/job/captain_job = get_captain_job()
 	if(!captain_job)
 		return FALSE
@@ -1132,6 +1140,58 @@
 	return null
 
 /**
+ * Whether the ship has a real captain: a crew member holding the officer job,
+ * or a claimed captain (NPC/abandoned hulls). While FALSE, an acting captain
+ * holds command authority.
+ */
+/obj/structure/overmap/ship/proc/has_real_captain()
+	if(claimed_captain && (claimed_captain in ship_team?.members))
+		return TRUE
+	var/datum/job/captain_job = get_captain_job()
+	if(!captain_job)
+		return FALSE
+	for(var/datum/mind/member in ship_team?.members)
+		if(member.assigned_role?.type == captain_job.type)
+			return TRUE
+	return FALSE
+
+/**
+ * Hands acting command of a captainless ship to a crew member: they get the Ship
+ * Management button and captain-level checks until a real captain arrives.
+ * Returns TRUE if they were given acting command.
+ */
+/obj/structure/overmap/ship/proc/make_acting_captain(mob/living/holder)
+	if(!holder?.mind)
+		return FALSE
+	if(has_real_captain())
+		return FALSE
+	if(acting_captain && (acting_captain in ship_team?.members))
+		return FALSE // someone already holds acting command
+	acting_captain = holder.mind
+	grant_captain_management(holder, src)
+	to_chat(holder, span_boldnotice("No captain is registered aboard [name]. Command authority falls to you until a [get_captain_job()?.title || "captain"] joins."))
+	ship_notify("[holder.real_name] has assumed acting command of the vessel.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	log_game("[key_name(holder)] assumed acting command of [name] (no captain aboard)")
+	return TRUE
+
+/**
+ * Revokes acting command, because a real captain has arrived. The former acting
+ * captain loses the Ship Management button; a real captain who already held acting
+ * command over their own ship keeps theirs.
+ */
+/obj/structure/overmap/ship/proc/clear_acting_captain(mob/living/real_captain)
+	if(!acting_captain)
+		return
+	var/mob/living/former_holder = acting_captain.current
+	acting_captain = null
+	if(!former_holder || former_holder == real_captain)
+		return
+	remove_captain_management(former_holder, src)
+	to_chat(former_holder, span_boldwarning("[real_captain.real_name] has taken command of [name] - your acting command is over."))
+	ship_notify("Command authority transferred to [real_captain.real_name]. [former_holder.real_name] stands down from acting command.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	log_game("[key_name(former_holder)] lost acting command of [name]: [key_name(real_captain)] took command")
+
+/**
  * Whether this mob may rename the ship: the captain always can; if no captain is
  * available to object (dead, offline, or none assigned), any crew member can.
  */
@@ -1143,6 +1203,10 @@
 	// A claimed captain who is alive and connected keeps rename authority to themselves
 	var/mob/living/claimed = claimed_captain?.current
 	if(claimed?.client && claimed.stat != DEAD)
+		return FALSE
+	// Same for an acting captain
+	var/mob/living/acting = acting_captain?.current
+	if(acting?.client && acting.stat != DEAD)
 		return FALSE
 	// Same for a role-assigned captain
 	var/mob/living/captain_mob = get_captain()
@@ -1234,6 +1298,9 @@
 
 	// Set the claimer as captain
 	claimed_captain = claimer.mind
+
+	// A claimed captain supersedes any acting command
+	clear_acting_captain(claimer)
 
 	// Grant the Captain Management action button
 	grant_captain_management(claimer, src)

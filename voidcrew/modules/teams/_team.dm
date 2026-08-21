@@ -28,6 +28,10 @@
 	if(ship && member.current)
 		remove_captain_management(member.current, ship)
 
+	// Acting command dies with crew membership
+	if(ship?.acting_captain == member)
+		ship.acting_captain = null
+
 	// Remove this team from the member's list
 	LAZYREMOVE(member.ship_teams, src)
 

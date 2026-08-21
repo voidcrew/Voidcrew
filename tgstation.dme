@@ -6915,6 +6915,7 @@
 #include "voidcrew\modules\colosseum\colosseum_wagering.dm"
 #include "voidcrew\modules\comms\comms.dm"
 #include "voidcrew\modules\contested_cache\contested_cache.dm"
+#include "voidcrew\modules\crew_management\admin_crew_panel.dm"
 #include "voidcrew\modules\cryo\console.dm"
 #include "voidcrew\modules\cryo\machine.dm"
 #include "voidcrew\modules\cyberware\chrome_cradle.dm"
