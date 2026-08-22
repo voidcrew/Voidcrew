@@ -6893,6 +6893,7 @@
 #include "voidcrew\modules\chemistry\reagents_fun.dm"
 #include "voidcrew\modules\chemistry\reagents_other.dm"
 #include "voidcrew\modules\chemistry\recipes.dm"
+#include "voidcrew\modules\circuits\ntnet_ship_scope.dm"
 #include "voidcrew\modules\circuits\usb_cable_shuttle_move.dm"
 #include "voidcrew\modules\cloning\cloning_vat.dm"
 #include "voidcrew\modules\clothing\gloves\insulated.dm"

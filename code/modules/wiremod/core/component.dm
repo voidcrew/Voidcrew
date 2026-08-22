@@ -452,4 +452,6 @@
  * * signal_type - The signal type used for sending this global signal (optional, default is COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
  */
 /obj/item/circuit_component/proc/send_ntnet_data(datum/port/input/port, key, signal_type = COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
-	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port)))
+	// Voidcrew: the sender rides along so receivers can scope the broadcast to one ship.
+	// See on_same_ship_network() in voidcrew/modules/circuits/ntnet_ship_scope.dm.
+	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src)))

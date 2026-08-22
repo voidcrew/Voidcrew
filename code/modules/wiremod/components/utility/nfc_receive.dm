@@ -61,7 +61,17 @@
 /obj/item/circuit_component/nfc_receive/proc/nfc_receive(obj/item/circuit_component/source,obj/sender, list/data)
 	SIGNAL_HANDLER
 
-	if(get_dist(sender,parent) >= 10)
+	// Voidcrew: NFC carries across a whole ship. Sharing a hull is the range limit that matters
+	// aboard one, and the ten tile rule still governs everything else, so this does not become a
+	// free ship-to-ship or orbit-to-surface link. Locating through get_circuit_turf() also fixes
+	// circuits in unremovable shells (bots, drones), which sit in nullspace and were previously
+	// unreachable by NFC at any distance.
+	var/turf/our_turf = get_circuit_turf(parent)
+	var/turf/sender_turf = get_circuit_turf(sender)
+	if(isnull(our_turf) || isnull(sender_turf))
+		return
+
+	if(!on_same_ship_network(sender_turf, our_turf) && get_dist(sender_turf, our_turf) >= 10)
 		return
 
 	if(data["enc_key"] != enc_key.value)
