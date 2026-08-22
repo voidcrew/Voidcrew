@@ -185,6 +185,8 @@
 /obj/item/storage/bag/ore,
 /obj/item/mining_scanner,
 /obj/item/mining_scanner,
+/obj/item/clothing/glasses/welding/up,
+/obj/item/clothing/glasses/welding/up,
 /turf/open/floor/iron/dark/textured_large,
 /area/template_noop)
 "B" = (
