@@ -86,6 +86,16 @@
  * is what makes the total finite: three thresholds, three waves, however long the
  * fight takes. Crossing more than one threshold inside the wave cooldown spends
  * them all for a single wave, so burst damage is rewarded instead of punished.
+ *
+ * A threshold is only SPENT when a wave actually launches. It used to be cut
+ * first and the summon attempted afterwards, so a threshold crossed while the
+ * cooldown was still running - or while the last wave was still alive - was
+ * silently burned with nothing to show for it. Against any crew that could put
+ * 600 damage into the crystal inside one twenty second cooldown, which is most
+ * of them, that spent all three thresholds on a single wave at best and on no
+ * waves at all at worst. That is the "crystals do not spawn their hives any
+ * more" report: the crystal was answering, the answer was just being thrown away
+ * before it was ever made.
  */
 /obj/structure/spawner/sea_crystal/proc/on_integrity_changed(datum/source, old_value, new_value)
 	SIGNAL_HANDLER
@@ -94,19 +104,21 @@
 	if(new_value <= 0)
 		return // The blow that breaks it doesn't get to answer back.
 	var/remaining = new_value / max_integrity
-	var/crossed = FALSE
+	if(remaining > summon_thresholds[1])
+		return // Nothing crossed yet.
+	if(!summon_minions())
+		return // Refused - keep the threshold for the next hit that lands.
 	while(length(summon_thresholds) && remaining <= summon_thresholds[1])
 		summon_thresholds.Cut(1, 2)
-		crossed = TRUE
-	if(crossed)
-		summon_minions()
 
+/// Commits a wave if it can. Returns TRUE once the telegraph is running, which
+/// is what tells on_integrity_changed() the threshold has been paid for.
 /obj/structure/spawner/sea_crystal/proc/summon_minions()
 	if(QDELETED(src) || !COOLDOWN_FINISHED(src, summon_cooldown))
-		return
+		return FALSE
 	live_hivelords -= null // A hard deleted mob nulls its list entries in place.
 	if(length(live_hivelords) >= max_live_hivelords)
-		return
+		return FALSE
 
 	// LRP picked landing spots with three overlapping pick()s - pick(EAST, NORTHEAST)
 	// and pick(NORTHEAST, WEST) could both land on NORTHEAST, and nothing checked
@@ -120,33 +132,54 @@
 		if(length(summon_turfs) >= summon_count)
 			break
 	if(!length(summon_turfs))
-		return
+		return FALSE
 
 	COOLDOWN_START(src, summon_cooldown, cooldown_time)
 	crystal_power()
-	addtimer(CALLBACK(src, PROC_REF(summon_telegraph), summon_turfs), 2.5 SECONDS)
+	// Both legs are scheduled HERE, while the crystal is certainly alive, rather
+	// than the telegraph chaining the landing. addtimer() stack_traces when the
+	// callback's object is already qdeleting, and the whole point of the change
+	// below is that the landing has to survive the crystal dying mid-windup.
+	addtimer(CALLBACK(src, PROC_REF(summon_telegraph), summon_turfs, center), 2.5 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(summon_hivelords), summon_turfs), 3.5 SECONDS)
+	return TRUE
 
-/// Sparks and camera shake, one second before the hivelords actually land.
-/obj/structure/spawner/sea_crystal/proc/summon_telegraph(list/summon_turfs)
-	if(QDELETED(src))
+/**
+ * Sparks and camera shake, one second before the hivelords actually land.
+ *
+ * Deliberately NOT guarded on QDELETED(src), and neither is summon_hivelords():
+ * a committed wave lands even if the crystal is broken during its own three and
+ * a half second windup. Both used to bail there, which meant the harder a crew
+ * hit the crystal the less it answered with, and a fast kill produced no
+ * hivelords whatsoever - the one case the answer exists for. The landing spots
+ * were picked when the wave was committed, so nothing here needs the crystal to
+ * still be standing; `origin` is carried through because a broken spawner has
+ * been moved to nullspace and its own loc is no longer a turf.
+ */
+/obj/structure/spawner/sea_crystal/proc/summon_telegraph(list/summon_turfs, turf/origin)
+	if(!length(summon_turfs) || isnull(origin))
 		return
-	for(var/mob/mob in range(10, src))
+	for(var/mob/mob in range(10, origin))
 		if(mob.client)
 			shake_camera(mob, 2, 1)
-	playsound(loc, 'sound/effects/magic/exit_blood.ogg', 70, TRUE)
+	playsound(origin, 'sound/effects/magic/exit_blood.ogg', 70, TRUE)
 	for(var/turf/summon_turf as anything in summon_turfs)
 		new /obj/effect/temp_visual/seacrystal/sparks(summon_turf)
 		new /obj/effect/temp_visual/seacrystal/arrival(summon_turf)
-	addtimer(CALLBACK(src, PROC_REF(summon_hivelords), summon_turfs), 1 SECONDS)
 
 /obj/structure/spawner/sea_crystal/proc/summon_hivelords(list/summon_turfs)
-	if(QDELETED(src))
-		return
+	var/still_standing = !QDELETED(src)
 	for(var/turf/summon_turf as anything in summon_turfs)
 		var/mob/living/basic/mining/hivelord/beach/hivelord = new(summon_turf)
+		// A broken crystal keeps no ledger: it will never summon again, and
+		// registering on the hivelord would hold the dead spawner alive through
+		// the signal until the mob died.
+		if(!still_standing)
+			continue
 		live_hivelords += hivelord
 		RegisterSignals(hivelord, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_hivelord_gone))
-	crystal_depower()
+	if(still_standing)
+		crystal_depower()
 
 /// Free the slot on death rather than on deletion - a corpse is not a threat.
 /obj/structure/spawner/sea_crystal/proc/on_hivelord_gone(datum/source)
