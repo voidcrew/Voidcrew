@@ -534,15 +534,24 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 	else
 		ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
 
+	// A harmonic dampening array can sink some of the surges before they land
+	var/obj/machinery/ship_combat/storm_dampener/dampener = get_storm_dampener()
+	var/grounded = 0
+
 	// Create EMPs at random locations in the ship - these can destroy equipment
 	GLOB.ion_storm_pulse_active = TRUE
 	for(var/i in 1 to emp_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
+			if(dampener?.try_absorb_surge(target))
+				grounded++
+				continue
 			// empulse handles the visual effect when heavy_range > 1
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
 	GLOB.ion_storm_pulse_active = FALSE
+
+	notify_surges_grounded(grounded, emp_count)
 
 /**
  * Electrical Storm Effect
@@ -556,10 +565,18 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 
 	// Silver lining: the charged atmosphere passively feeds the ship's power storage
 	// Minor: 0.5x, Moderate: 1x, Majour: 2x (via intensity)
+	// This runs before the surges below on purpose: the charge it banks is what a
+	// dampening array then spends grounding them out.
 	var/charge_mult = intensity
 	if(istype(storm, /obj/structure/overmap/event/electric/minor))
 		charge_mult = ELECTRICAL_STORM_SMES_CHARGE_MULT_MINOR
 	electrical_storm_charge_smes(charge_mult)
+
+	// A harmonic dampening array can sink some of the surges before they land.
+	// Lightning is rolled first, so the array spends its capacity on the worst hits.
+	var/obj/machinery/ship_combat/storm_dampener/dampener = get_storm_dampener()
+	var/grounded = 0
+	var/incoming = 0
 
 	// Spawn real lightning strikes - but not on minor storms
 	// Minor: no lightning, Moderate: 1 strike (40% chance each), Major: 2-3 strikes
@@ -572,6 +589,10 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 				continue
 			var/turf/strike_target = get_random_ship_turf()
 			if(strike_target)
+				incoming++
+				if(dampener?.try_absorb_surge(strike_target))
+					grounded++
+					continue
 				// Stagger the strikes for dramatic effect
 				addtimer(CALLBACK(src, PROC_REF(lightning_strike), strike_target), rand(0.5 SECONDS, 3 SECONDS))
 
@@ -588,6 +609,7 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 			var/turf/target = get_random_ship_turf()
 			if(target)
 				do_sparks(5, FALSE, target)
+		notify_surges_grounded(grounded, incoming)
 		return
 
 	// Overload a number of lights based on intensity
@@ -601,6 +623,10 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 
 	// Make lights spark and schedule lightning strikes
 	for(var/obj/machinery/light/light as anything in chosen_lights)
+		incoming++
+		if(dampener?.try_absorb_surge(get_turf(light)))
+			grounded++
+			continue
 		light.visible_message(span_boldwarning("[light] suddenly flares brightly and begins to spark!"))
 		var/datum/effect_system/spark_spread/light_sparks = new /datum/effect_system/spark_spread()
 		light_sparks.set_up(4, 0, light)
@@ -608,6 +634,8 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 		light.flicker(10)
 		// Schedule the lightning strike from light
 		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
+
+	notify_surges_grounded(grounded, incoming)
 	// Note: Mass updates are handled by delta tracking when turfs change
 
 /**

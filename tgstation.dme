@@ -7225,6 +7225,7 @@
 #include "voidcrew\modules\ship_combat\shield_generator.dm"
 #include "voidcrew\modules\ship_combat\shield_wall.dm"
 #include "voidcrew\modules\ship_combat\ship_shieldgen.dm"
+#include "voidcrew\modules\ship_combat\storm_dampener.dm"
 #include "voidcrew\modules\ship_combat\console\camera_eye.dm"
 #include "voidcrew\modules\ship_combat\console\circuit.dm"
 #include "voidcrew\modules\ship_combat\console\console_actions.dm"
