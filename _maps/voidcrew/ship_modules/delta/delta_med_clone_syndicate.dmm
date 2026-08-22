@@ -1,0 +1,149 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/bot_red,
+/obj/structure/closet/secure_closet/medical1,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/computer/experimental_cloner{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"k" = (
+/obj/effect/turf_decal/bot_red,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"r" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/experimental_cloner_scanner,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"F" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/east,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/effect/turf_decal/box/red,
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/paper/fluff/ruins/exp_cloning/manual{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "tank rules";
+	default_raw_text = "Scan people BEFORE the job, not after. The tank holds one at a time and it is slow, so a queue is a dead cell. What comes out is a copy and it does not always come out right - look it over before you hand it a gun.";
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/red/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/machinery/light/small/red/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/experimental_cloner{
+	evil_chance = 0
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Z" = (
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_y = 4
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_y = -5
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+k
+V
+S
+"}
+(2,1,1) = {"
+L
+N
+X
+"}
+(3,1,1) = {"
+Z
+t
+r
+"}
+(4,1,1) = {"
+a
+v
+i
+"}
+(5,1,1) = {"
+a
+N
+T
+"}
+(6,1,1) = {"
+O
+F
+d
+"}

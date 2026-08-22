@@ -1,0 +1,130 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/secure_closet/medical1,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"h" = (
+/obj/machinery/computer/experimental_cloner{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"m" = (
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_y = 4
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_y = -5
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"s" = (
+/obj/item/paper{
+	name = "tank board";
+	default_raw_text = "Everyone gets scanned at the start of the tour, before anything can go wrong. The tank grows one body at a time and it is not quick, so the records have to already be here. What comes out is a copy and it is not always a clean one - give it the bed and a once-over before it goes back on shift.";
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"w" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/experimental_cloner_scanner,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"y" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/modular_map_connector,
+/obj/structure/table/glass,
+/obj/item/paper/fluff/ruins/exp_cloning/manual{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"z" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"C" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/experimental_cloner{
+	evil_chance = 0
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"I" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"U" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"W" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+W
+z
+y
+"}
+(2,1,1) = {"
+V
+U
+C
+"}
+(3,1,1) = {"
+m
+U
+w
+"}
+(4,1,1) = {"
+g
+U
+h
+"}
+(5,1,1) = {"
+g
+U
+I
+"}
+(6,1,1) = {"
+s
+U
+e
+"}
