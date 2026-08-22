@@ -7013,6 +7013,7 @@
 #include "voidcrew\modules\loot\uniques\syndicate.dm"
 #include "voidcrew\modules\loot\uniques\wardrobe.dm"
 #include "voidcrew\modules\mining\edits\fulton.dm"
+#include "voidcrew\modules\mining\edits\order_consumables.dm"
 #include "voidcrew\modules\mining\equipment\explorer_gear.dm"
 #include "voidcrew\modules\mining\lavaland\ash_flora.dm"
 #include "voidcrew\modules\mining\lavaland\edits\machine_redemption.dm"
