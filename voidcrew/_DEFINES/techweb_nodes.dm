@@ -43,6 +43,7 @@
 #define TECHWEB_NODE_SHIP_COMBAT_SIPHON "ship_combat_siphon"
 #define TECHWEB_NODE_SHIP_COMBAT_ASSAULT_PODS "ship_combat_assault_pods"
 #define TECHWEB_NODE_SHIP_COMBAT_EW "ship_combat_ew"
+#define TECHWEB_NODE_SHIP_STORM_DAMPENING "ship_storm_dampening"
 
 // Missions
 #define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"

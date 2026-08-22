@@ -73,6 +73,17 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
+// Harmonic dampening array - storm mitigation
+/datum/techweb_node/ship_storm_dampening
+	id = TECHWEB_NODE_SHIP_STORM_DAMPENING
+	display_name = "Harmonic Dampening Arrays"
+	description = "Deflector theory turned inward. A hull-wide grounding array that sinks ion surges and lightning discharges out of the ship before they reach anything delicate. Costs a heavy jolt of power for every surge it catches."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT_SHIELDS)
+	design_ids = list(
+		"ship_storm_dampener",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
 // Laser turret
 /datum/techweb_node/ship_combat_lasers
 	id = TECHWEB_NODE_SHIP_COMBAT_LASERS
@@ -203,6 +214,18 @@
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/ship_storm_dampener
+	name = "Harmonic Dampening Array Board"
+	desc = "Allows for the construction of a harmonic dampening array, which grounds out ion and electrical storm surges."
+	id = "ship_storm_dampener"
+	research_icon = 'icons/obj/machines/engine/tesla_coil.dmi'
+	research_icon_state = "grounding_rod1"
+	build_path = /obj/item/circuitboard/machine/ship_combat/storm_dampener
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design/board/ship_laser_turret
 	name = "Laser Turret Board"

@@ -370,3 +370,30 @@
 #define EW_LASER_EFFICIENCY_MULT 0.20
 /// Servo: -15% warmup time per tier
 #define EW_SERVO_WARMUP_MULT 0.15
+
+// ========== HARMONIC DAMPENING ARRAY DEFINES ==========
+// Counter to ion and electrical overmap storms. Deliberately conservative: even a
+// fully upgraded array leaves some surges through, and every catch costs real power.
+
+/// Standby draw of a dampening array (250 W)
+#define STORM_DAMPENER_IDLE_POWER (250 WATTS)
+/// Chance for an all tier 1 array to catch an incoming surge
+#define STORM_DAMPENER_BASE_CHANCE 50
+/// Added catch chance per capacitor tier above 1 (two capacitors, so +39 at tier 4)
+#define STORM_DAMPENER_CAPACITOR_CHANCE 6.5
+/// Hard ceiling on catch chance - the array is never a guarantee
+#define STORM_DAMPENER_MAX_CHANCE 90
+/// Energy drawn from the local APC per caught surge, before servo efficiency (5 kJ)
+#define STORM_DAMPENER_BASE_SURGE (5 KILO JOULES)
+/// Servo: -15% surge cost per tier above 1
+#define STORM_DAMPENER_SERVO_EFFICIENCY 0.15
+/// Floor on the surge cost multiplier, so upgrades never make catching a surge cheap
+#define STORM_DAMPENER_MIN_EFFICIENCY 0.4
+/// How many surges an all tier 1 array can sink inside one saturation window
+#define STORM_DAMPENER_BASE_CAPACITY 3
+/// Added saturation capacity per scanning module tier above 1 (9 at tier 4)
+#define STORM_DAMPENER_SCANNER_CAPACITY 2
+/// Length of a saturation window - matches the ship's hazard damage cooldown
+#define STORM_DAMPENER_WINDOW (3 SECONDS)
+/// Throttle on the array's discharge sound so a heavy storm isn't an audio wall
+#define STORM_DAMPENER_FEEDBACK_COOLDOWN (1 SECONDS)
