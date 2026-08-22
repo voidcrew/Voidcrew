@@ -66,3 +66,10 @@
 	description = "A shack built out of salvage, with the yard behind it still sorted into straight rows. Whoever kept it meant to come back."
 	suffix = "beachcomber_shack.dmm"
 	cost = 8
+
+/datum/map_template/ruin/beach/careeningcamp
+	name = "The Careening Camp"
+	id = "careeningcamp"
+	description = "A boat hauled up the sand to have its hull scraped, and the crew that is still waiting on the work to finish."
+	suffix = "careening_camp.dmm"
+	cost = 15

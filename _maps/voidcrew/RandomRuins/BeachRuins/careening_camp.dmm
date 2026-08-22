@@ -1,0 +1,523 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"b" = (
+/turf/open/water/beach,
+/area/ruin/unpowered)
+"d" = (
+/obj/item/stack/sheet/mineral/wood{
+	amount = 25;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"i" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern/on{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper/crumpled{
+	name = "work list";
+	default_raw_text = "Hull is worse than it looked from the water. Two strakes gone at the turn of the bilge and the caulking is rotten the whole run aft. That is not a day's work and it is not a week's either, so nobody is going anywhere until it is finished. Anyone who wanders off up the coast gets left behind and I will not be arguing about it. Pitch stays on the sand and out of the sun."
+	},
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"j" = (
+/obj/structure/fermenting_barrel,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"l" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"m" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"n" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"o" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"q" = (
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -4
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"s" = (
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"t" = (
+/obj/item/stack/cable_coil{
+	amount = 20;
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"u" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"v" = (
+/mob/living/basic/crab/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"w" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/mineral/wood,
+/area/ruin/unpowered)
+"y" = (
+/obj/structure/flora/rock/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"C" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"E" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"G" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"H" = (
+/obj/item/toy/seashell{
+	dir = 2
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"I" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance/three,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"J" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/unpowered)
+"K" = (
+/turf/template_noop,
+/area/template_noop)
+"L" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/gambling,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"M" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"O" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"Q" = (
+/obj/structure/chair/plastic{
+	dir = 4
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"T" = (
+/obj/structure/bonfire/prelit,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"V" = (
+/obj/structure/flora/tree/palm,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"W" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"X" = (
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+"}
+(2,1,1) = {"
+K
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+b
+b
+K
+"}
+(3,1,1) = {"
+K
+l
+l
+l
+H
+l
+l
+l
+l
+l
+d
+b
+b
+b
+K
+"}
+(4,1,1) = {"
+K
+a
+f
+l
+l
+l
+l
+l
+o
+T
+l
+b
+b
+b
+K
+"}
+(5,1,1) = {"
+K
+a
+l
+l
+J
+J
+l
+f
+l
+Q
+l
+b
+b
+b
+K
+"}
+(6,1,1) = {"
+K
+a
+l
+J
+g
+m
+J
+l
+l
+L
+l
+b
+b
+b
+K
+"}
+(7,1,1) = {"
+K
+l
+l
+J
+j
+s
+J
+l
+E
+l
+f
+b
+b
+b
+K
+"}
+(8,1,1) = {"
+K
+l
+J
+W
+s
+i
+g
+J
+d
+l
+l
+b
+b
+b
+K
+"}
+(9,1,1) = {"
+K
+V
+J
+G
+g
+s
+s
+J
+l
+l
+l
+b
+b
+b
+K
+"}
+(10,1,1) = {"
+K
+l
+w
+g
+t
+g
+s
+O
+l
+l
+d
+b
+b
+b
+K
+"}
+(11,1,1) = {"
+K
+l
+J
+X
+s
+s
+s
+O
+l
+f
+l
+b
+b
+b
+K
+"}
+(12,1,1) = {"
+K
+l
+J
+u
+g
+M
+g
+J
+q
+l
+l
+b
+b
+b
+K
+"}
+(13,1,1) = {"
+K
+y
+J
+m
+I
+s
+s
+J
+d
+l
+l
+b
+b
+b
+K
+"}
+(14,1,1) = {"
+K
+l
+l
+J
+s
+s
+J
+l
+l
+l
+o
+b
+b
+b
+K
+"}
+(15,1,1) = {"
+K
+l
+l
+J
+m
+W
+J
+l
+l
+C
+l
+b
+b
+b
+K
+"}
+(16,1,1) = {"
+K
+a
+l
+l
+J
+J
+l
+f
+l
+l
+l
+b
+b
+b
+K
+"}
+(17,1,1) = {"
+K
+a
+l
+l
+l
+l
+l
+l
+n
+l
+v
+b
+b
+b
+K
+"}
+(18,1,1) = {"
+K
+a
+V
+l
+l
+l
+l
+l
+l
+H
+l
+b
+b
+b
+K
+"}
+(19,1,1) = {"
+K
+l
+l
+l
+l
+y
+l
+l
+l
+l
+l
+b
+b
+b
+K
+"}
+(20,1,1) = {"
+K
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+b
+b
+K
+"}
+(21,1,1) = {"
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+"}
