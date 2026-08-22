@@ -2014,7 +2014,7 @@ const Chart = () => {
   const followTransform = `translate(${-focusX}px, ${-focusY}px)`;
 
   /** The overmap tile under a mouse event, via the chart's own current matrix. */
-  const tileFromEvent = (event: React.MouseEvent) => {
+  const rawTileFromEvent = (event: React.MouseEvent) => {
     const camera = cameraRef.current;
     const svg = camera?.ownerSVGElement;
     if (!camera || !svg) return null;
@@ -2025,9 +2025,47 @@ const Chart = () => {
     point.y = event.clientY;
     const local = point.matrixTransform(matrix.inverse());
     return {
-      x: clamp(Math.round((local.x + UNIT / 2) / UNIT), 2, size - 1),
-      y: clamp(Math.round(size + 1 - (local.y + UNIT / 2) / UNIT), 2, size - 1),
+      x: Math.round((local.x + UNIT / 2) / UNIT),
+      y: Math.round(size + 1 - (local.y + UNIT / 2) / UNIT),
     };
+  };
+
+  /** The same tile, clamped to somewhere a course may legally be plotted to. */
+  const tileFromEvent = (event: React.MouseEvent) => {
+    const tile = rawTileFromEvent(event);
+    if (!tile) return null;
+    return {
+      x: clamp(tile.x, 2, size - 1),
+      y: clamp(tile.y, 2, size - 1),
+    };
+  };
+
+  /**
+   * The tile the cursor is resting on, printed in the corner readout.
+   *
+   * Coordinates get passed around over comms ("meet us at 30 / 18") and the only
+   * way to find one on the chart used to be counting tiles off the border. The
+   * plot clamp above is deliberately not applied here: this is a reading of where
+   * the crew is pointing, so it says the truth on the border tiles and reads
+   * nothing at all once the cursor is off the sector entirely.
+   */
+  const [cursorTile, setCursorTile] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const trackCursor = (event: React.PointerEvent) => {
+    const tile = rawTileFromEvent(event);
+    const onChart =
+      tile && tile.x >= 1 && tile.x <= size && tile.y >= 1 && tile.y <= size
+        ? tile
+        : null;
+    // Same tile, same object: a pointermove that hasn't crossed a tile boundary
+    // must not re-render the chart, and the cursor crosses plenty of pixels per
+    // tile at any zoom.
+    setCursorTile((current) =>
+      current && onChart && current.x === onChart.x && current.y === onChart.y
+        ? current
+        : onChart,
+    );
   };
 
   /**
@@ -2178,9 +2216,15 @@ const Chart = () => {
       // client's own context menu to a player mid-manoeuvre.
       onContextMenu={(event) => openMenu(event, null)}
       onPointerDown={startPan}
-      onPointerMove={movePan}
+      onPointerMove={(event) => {
+        movePan(event);
+        trackCursor(event);
+      }}
       onPointerUp={endPan}
       onPointerCancel={endPan}
+      // The readout is about where the cursor is; with the cursor gone there is
+      // nothing to report, and a stale coordinate reads as a live one.
+      onPointerLeave={() => setCursorTile(null)}
       // Swallowed in the capture phase so the click that ends a drag never
       // reaches a contact underneath it.
       onClickCapture={(event) => {
@@ -2447,6 +2491,13 @@ const Chart = () => {
           <span className="Helm__hudKey">POS</span> {String(x).padStart(2, '0')}{' '}
           / {String(y).padStart(2, '0')}
         </div>
+        {!!cursorTile && (
+          <div className="Helm__hudLine Helm--cursor">
+            <span className="Helm__hudKey">CUR</span>{' '}
+            {String(cursorTile.x).padStart(2, '0')} /{' '}
+            {String(cursorTile.y).padStart(2, '0')}
+          </div>
+        )}
         {!!drift && (
           // Where the ship ends up on the velocity it already has, engines or
           // no engines. The track on the chart says which way; this says where.
