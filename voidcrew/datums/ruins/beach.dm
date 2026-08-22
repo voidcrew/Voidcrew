@@ -52,3 +52,10 @@
 	description = "A beach patrol post left standing when the season ended. The swim line is still roped off and the rescue boat is still inside it."
 	suffix = "lifeguard_post.dmm"
 	cost = 8
+
+/datum/map_template/ruin/beach/supplypod
+	name = "Supply Pod Landfall"
+	id = "supplypod"
+	description = "An automated resupply pod that came down on the wrong world. Somebody cut into the aft bay and gave up on the forward one. Its escort drones are still flying the pattern."
+	suffix = "supply_pod_wreck.dmm"
+	cost = 10
