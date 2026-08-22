@@ -11,6 +11,12 @@
  * * The bare hull satisfies anatomy M1-M9 with every slot empty: helm, west
  *   cycling airlocks, engine column + SMES + PACMAN bank, 4 cryopods, and
  *   APC/atmos coverage for every permanent room live outside the slots
+ * * Generator bay (x6-12, y21-23), off engineering through the firedoor at
+ *   (6,21): a thermoelectric generator with both loops plumbed and charged -
+ *   cold loop west (cyan) on a 73K freezer, hot loop east (orange) on a 573K
+ *   heater, one plasma charge tank per loop. It ships switched OFF; the four
+ *   machines (two circulation pumps, two thermomachines) are the crew's
+ *   startup job, and the PACMAN bank is what carries the ship until then
  * * It fights by boarding, not guns: the armory is a slot and the heavy gear
  *   (marine vendor, bomb/L3 kit) only returns via paid modules
  */
@@ -22,6 +28,8 @@
 		fights by boarding rather than by guns: two long internal bays, cycling airlocks and \
 		room for a big crew, with no heavy weapons on the bare hull. The lab, medbay and \
 		armory are all slots, so the marine gear only comes back if you pay for it. \
+		Engineering carries a thermoelectric generator, plumbed and charged but shut down: \
+		start it and the ship stops living off plasma sheets. \
 		The fleet's capstone unlock - expensive, and a lot of ship to keep running."
 	part_requirements = list(PART_CLASS_COMBAT = 24, PART_CLASS_SCIENCE = 12, PART_CLASS_TRADE = 12, PART_CLASS_MISC = 12)
 	has_upgrade_slots = TRUE
