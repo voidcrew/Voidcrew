@@ -23,6 +23,14 @@
  * at ship load (VOIDCREW EDITs in code/game/machinery/camera/camera.dm and
  * code/game/machinery/computer/camera.dm); machinery built mid-round binds
  * here in post_machine_initialize() by resolving the ship it is physically on.
+ *
+ * The one step that used to escape all of that was the last step of camera
+ * construction: upstream ends it with a free-text "which networks?" prompt that
+ * overwrites the binding post_machine_initialize() just made. Nothing a player
+ * can type there matches, because the key is an internal ref string and the only
+ * network name shown in game is the display name ("Metis (ship-local)") - so a
+ * crew-built camera was silently orphaned no matter what was entered. Camera
+ * construction aboard a ship now skips the prompt and binds to the hull instead.
  */
 
 /// Camera network key for a voidcrew ship: stable for the ship's lifetime, unique per ship instance.
@@ -84,10 +92,57 @@
 			voidcrew_autonames_in_areas[camera_area] = number
 			c_tag = "[format_text(camera_area.name)] #[number]"
 
+/**
+ * Finishing a camera aboard a ship wires it straight into that ship's network.
+ *
+ * Upstream asks the builder to type network names here, which is the only place in the
+ * chain that can undo the ship binding - and it always did, because the ship's key is
+ * never something a player can type. Off ship (ruins, outposts) the stock prompt stays,
+ * since those cameras have no hull to belong to.
+ */
+/obj/machinery/camera/screwdriver_act(mob/user, obj/item/tool)
+	if(camera_construction_state != CAMERA_STATE_WIRED)
+		return ..()
+	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
+	if(!ship_port)
+		return ..()
+	tool.play_tool_sound(src)
+	camera_construction_state = CAMERA_STATE_FINISHED
+	toggle_cam(user, displaymessage = FALSE)
+	network = list(voidcrew_ship_camera_net(ship_port))
+	balloon_alert(user, "wired to ship network")
+	to_chat(user, span_notice("You wire [src] into the [voidcrew_camera_net_display_name(network[1])] camera network."))
+	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/computer/security
+	/// FALSE for screens that aren't camera consoles, so they keep their mapped network.
+	var/ship_scoped_network = TRUE
+
+/// An entertainment monitor is a television, and upstream leaves it on an empty network
+/// on purpose. Binding it to the hull would turn every bar TV into a camera console.
+/obj/machinery/computer/security/telescreen/entertainment
+	ship_scoped_network = FALSE
+
 /obj/machinery/computer/security/post_machine_initialize()
 	. = ..()
+	if(!ship_scoped_network)
+		return
 	// Same as cameras: consoles built mid-round bind to the ship they're on,
 	// instead of keeping the galaxy-wide "ss13" default network.
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 	if(ship_port)
 		network = list(voidcrew_ship_camera_net(ship_port))
+
+/**
+ * SecurEye follows the tablet it is running on.
+ *
+ * The program is the one camera viewer that isn't bolted to a hull, so it can't bind
+ * once - it re-resolves the ship every time its static data is rebuilt. Without this it
+ * sat on the stock "ss13" network and listed nothing at all aboard a ship.
+ */
+/datum/computer_file/program/secureye/ui_static_data(mob/user)
+	if(computer)
+		var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(computer)
+		if(ship_port)
+			network = list(voidcrew_ship_camera_net(ship_port))
+	return ..()
