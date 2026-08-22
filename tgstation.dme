@@ -7282,6 +7282,8 @@
 #include "voidcrew\modules\shuttle\survey\survey_computer.dm"
 #include "voidcrew\modules\shuttle\survey\survey_data_disk.dm"
 #include "voidcrew\modules\shuttle\survey\survey_designs.dm"
+#include "voidcrew\modules\storage\crate_shelf.dm"
+#include "voidcrew\modules\storage\smart_locker.dm"
 #include "voidcrew\modules\surgery\experimental_dissection.dm"
 #include "voidcrew\modules\teams\_team.dm"
 #include "voidcrew\modules\trade\blueprint_imprinter.dm"
