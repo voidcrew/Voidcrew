@@ -1,0 +1,597 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"b" = (
+/obj/item/stack/medical/gauze{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"c" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"d" = (
+/obj/structure/sign/departments/medbay,
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"e" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"f" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"h" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"i" = (
+/mob/living/basic/crab/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"j" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"l" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"m" = (
+/obj/structure/closet/secure_closet/medical1,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"n" = (
+/obj/structure/bonfire/prelit,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"o" = (
+/obj/item/stack/sheet/mineral/wood{
+	amount = 12;
+	pixel_x = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"p" = (
+/obj/structure/chair/plastic{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"q" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"r" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"s" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"t" = (
+/turf/template_noop,
+/area/template_noop)
+"u" = (
+/obj/vehicle/ridden/lavaboat/dragon{
+	dir = 2
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"v" = (
+/obj/item/chair/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"w" = (
+/obj/structure/table,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/item/storage/medkit/regular{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"x" = (
+/obj/item/toy/seashell{
+	dir = 2
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"y" = (
+/obj/effect/spawner/random/trash/mess,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"z" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"A" = (
+/obj/item/stack/rods{
+	amount = 8;
+	pixel_x = -3;
+	pixel_y = -4
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"B" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"C" = (
+/obj/structure/bed/medical/emergency{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"D" = (
+/obj/structure/flora/rock/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"E" = (
+/obj/structure/table/wood,
+/obj/item/paper/crumpled{
+	name = "patrol shift log";
+	default_raw_text = "Day 19. No swimmers again. The buoy line parted overnight and washed up by the rocks, that is the third time this month. I have told central twice that we cannot keep a beach open with one boat and a radio that only receives. Still nothing back. If the season is over then say so and we will close it properly instead of leaving the flags up. First aid key is on the hook by the door."
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"F" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"G" = (
+/turf/open/water/beach,
+/area/ruin/unpowered)
+"H" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"I" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"J" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"K" = (
+/obj/structure/chair/plastic{
+	dir = 1
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"L" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"M" = (
+/obj/structure/table,
+/obj/item/binoculars{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/megaphone{
+	pixel_x = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"O" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"P" = (
+/obj/structure/flora/tree/palm,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"R" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"S" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"T" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"U" = (
+/turf/open/floor/wood,
+/area/ruin/powered)
+"V" = (
+/turf/open/floor/plating,
+/area/ruin/powered)
+"W" = (
+/obj/structure/sign/warning/no_smoking,
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"X" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"Y" = (
+/obj/structure/marker_beacon/burgundy,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"Z" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(2,1,1) = {"
+t
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+G
+t
+"}
+(3,1,1) = {"
+t
+R
+R
+h
+R
+R
+R
+U
+S
+K
+S
+Y
+G
+G
+t
+"}
+(4,1,1) = {"
+t
+R
+c
+Q
+E
+Q
+h
+k
+Y
+n
+B
+Z
+G
+G
+t
+"}
+(5,1,1) = {"
+t
+W
+m
+b
+j
+v
+d
+U
+S
+K
+g
+Z
+G
+G
+t
+"}
+(6,1,1) = {"
+t
+R
+T
+a
+a
+a
+H
+U
+S
+S
+z
+Z
+G
+G
+t
+"}
+(7,1,1) = {"
+t
+R
+C
+a
+a
+a
+R
+l
+S
+S
+S
+Z
+G
+G
+t
+"}
+(8,1,1) = {"
+t
+R
+e
+y
+Q
+Q
+h
+U
+S
+S
+S
+Z
+G
+G
+t
+"}
+(9,1,1) = {"
+t
+R
+w
+Q
+a
+a
+R
+U
+S
+S
+S
+Z
+G
+G
+t
+"}
+(10,1,1) = {"
+t
+R
+R
+R
+s
+R
+R
+U
+S
+S
+S
+Z
+G
+G
+t
+"}
+(11,1,1) = {"
+t
+R
+f
+N
+V
+N
+J
+U
+S
+S
+S
+Z
+G
+G
+t
+"}
+(12,1,1) = {"
+t
+X
+q
+F
+V
+r
+R
+U
+S
+S
+g
+S
+G
+G
+t
+"}
+(13,1,1) = {"
+t
+R
+L
+V
+V
+V
+H
+U
+S
+u
+S
+S
+G
+G
+t
+"}
+(14,1,1) = {"
+t
+R
+I
+o
+M
+A
+R
+p
+S
+S
+S
+Z
+G
+G
+t
+"}
+(15,1,1) = {"
+t
+R
+O
+V
+N
+O
+J
+U
+S
+S
+x
+Z
+G
+G
+t
+"}
+(16,1,1) = {"
+t
+R
+R
+J
+R
+R
+R
+U
+x
+S
+S
+Y
+G
+G
+t
+"}
+(17,1,1) = {"
+t
+S
+S
+P
+S
+S
+S
+S
+S
+P
+S
+S
+G
+G
+t
+"}
+(18,1,1) = {"
+t
+S
+S
+S
+S
+S
+S
+S
+D
+S
+i
+S
+G
+G
+t
+"}
+(19,1,1) = {"
+t
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+G
+t
+"}
+(20,1,1) = {"
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+"}

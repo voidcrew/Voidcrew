@@ -45,3 +45,10 @@
 	description = "A hidden contraband handoff point on a lonely stretch of shore. The last delivery is still waiting on the dock."
 	suffix = "smuggler_cove.dmm"
 	cost = 15
+
+/datum/map_template/ruin/beach/lifeguardpost
+	name = "Shoreline Patrol Post"
+	id = "lifeguardpost"
+	description = "A beach patrol post left standing when the season ended. The swim line is still roped off and the rescue boat is still inside it."
+	suffix = "lifeguard_post.dmm"
+	cost = 8
