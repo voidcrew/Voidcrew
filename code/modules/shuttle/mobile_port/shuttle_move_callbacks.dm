@@ -21,7 +21,17 @@ All ShuttleMove procs go here
 		return
 
 	var/shuttle_dir = shuttle.dir
-	for(var/atom/movable/thing as anything in contents)
+	// VOIDCREW EDIT CHANGE - original: `for(var/atom/movable/thing as anything in contents)`
+	// Every branch below pulls the atom it is looking at straight back out of contents -
+	// step() re-parents it, qdel() nullspaces it, gib() deletes the mob - and DM walks a
+	// live list by index, so each removal slides the next occupant down into the slot we
+	// have already passed and it is never visited. On a station berth that costs a stray
+	// item nobody notices. On a planet berth it is the fuel tank (or the wandering fauna)
+	// standing behind the one we just shoved: it is skipped here, the hull is copied on
+	// top of it in takeoff(), and it ends up sitting on the deck. Iterate a snapshot.
+	for(var/atom/movable/thing as anything in contents.Copy())
+		if(QDELETED(thing) || thing.loc != src)
+			continue
 		if(thing.resistance_flags & SHUTTLE_CRUSH_PROOF)
 			continue
 		if(isliving(thing))
