@@ -177,6 +177,23 @@
 			"time" = ship.pending_invites[ckey]
 		))
 
+	// Crew applications - people in the lobby asking to get past the join password.
+	// See voidcrew/modules/captain_management/join_applications.dm.
+	ship.prune_join_applications()
+	data["applications"] = list()
+	for(var/datum/ship_join_application/application as anything in ship.join_applications)
+		if(application.status != SHIP_APPLICATION_PENDING)
+			continue
+		data["applications"] += list(list(
+			"ref" = REF(application),
+			"ckey" = application.ckey,
+			"name" = application.applicant_name,
+			"message" = application.message,
+			// Seconds, so the panel can count down without a second data key per row
+			"expires_in" = round(max(0, (application.created_at + SHIP_JOIN_APPLICATION_TIMEOUT) - world.time) / 10)
+		))
+	data["ship_locked"] = !!ship.join_password
+
 	data["can_invite"] = COOLDOWN_FINISHED(ship, invite_cooldown)
 	data["can_rename"] = COOLDOWN_FINISHED(ship, rename_cooldown)
 
@@ -250,6 +267,24 @@
 		if("set_password")
 			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
 			ship.set_join_password(params["password"], captain)
+			return TRUE
+
+		if("approve_application")
+			var/datum/ship_join_application/application = locate(params["ref"])
+			if(!istype(application) || !(application in ship.join_applications))
+				to_chat(captain, span_warning("That application is no longer on the board."))
+				return TRUE
+			application.approve(captain)
+			return TRUE
+
+		if("deny_application")
+			var/datum/ship_join_application/application = locate(params["ref"])
+			if(!istype(application) || !(application in ship.join_applications))
+				to_chat(captain, span_warning("That application is no longer on the board."))
+				return TRUE
+			// A reason is optional. "No" with nothing attached is still an answer, and one
+			// the applicant gets told about either way.
+			application.deny(captain, params["reason"])
 			return TRUE
 
 // ===== INVITE SYSTEM =====

@@ -106,6 +106,25 @@
 					"slots" = slots
 				))
 
+		// Crew applications: the alternative to knowing the password. Pruned here rather
+		// than on a timer - the menu is the only place the state is ever read from.
+		active_ship.prune_join_applications()
+		var/cleared = active_ship.is_password_cleared(user.ckey)
+		var/datum/ship_join_application/application = active_ship.get_join_application(user.ckey)
+		var/application_status
+		var/application_note
+		if(application)
+			application_status = application.status
+			switch(application.status)
+				if(SHIP_APPLICATION_PENDING)
+					application_note = "Waiting on the captain - lapses in [DisplayTimeText(max(0, (application.created_at + SHIP_JOIN_APPLICATION_TIMEOUT) - world.time))]."
+				if(SHIP_APPLICATION_DENIED)
+					application_note = application.deny_reason ? "Declined: [application.deny_reason]" : "Declined, no reason given."
+				if(SHIP_APPLICATION_EXPIRED)
+					application_note = "Nobody answered in time."
+				if(SHIP_APPLICATION_WITHDRAWN)
+					application_note = "You withdrew this application."
+
 		ships += list(list(
 			"ref" = REF(active_ship),
 			"name" = active_ship.name,
@@ -114,7 +133,12 @@
 			"jobs" = jobs,
 			"memo" = active_ship.memo,
 			"locked" = !!active_ship.join_password,
-			"password_cleared" = active_ship.is_password_cleared(user.ckey)
+			"password_cleared" = cleared,
+			"application_status" = application_status,
+			"application_note" = application_note,
+			// Only offer the button where it can actually do something: a locked hull the
+			// player has no clearance for, with a seat still on it and nothing already filed.
+			"can_apply" = (!!active_ship.join_password && !cleared && ship_has_open_slots(active_ship) && isnull(application))
 		))
 
 	data["ships"] = ships
@@ -153,6 +177,24 @@
 			ui.close()
 			user.requisition_free_hull()
 
+		if("apply_to_ship")
+			var/obj/structure/overmap/ship/ship = locate(params["ship_ref"])
+			if(!istype(ship))
+				to_chat(user, span_warning("That ship is no longer available."))
+				return FALSE
+			// Prompting inside ui_act would hold the act loop open while the player types.
+			// The menu deliberately stays up behind the prompt: applying is not leaving the
+			// lobby, and they should be able to keep browsing while they wait for an answer.
+			INVOKE_ASYNC(src, PROC_REF(prompt_ship_application), ship)
+
+		if("withdraw_application")
+			var/obj/structure/overmap/ship/ship = locate(params["ship_ref"])
+			if(!istype(ship))
+				return FALSE
+			var/datum/ship_join_application/application = ship.get_join_application(user.ckey)
+			if(!application || !application.withdraw())
+				return FALSE
+
 		if("select_ship")
 			var/ship_ref = params["ship_ref"]
 			if(!ship_ref)
@@ -180,3 +222,26 @@
 			// Close menu and proceed to job selection
 			ui.close()
 			user.select_job_on_ship(ship)
+
+/**
+ * Asks the applicant for a note and files the application. The note is optional - an empty
+ * one is a perfectly good "can I come aboard", and forcing a sales pitch out of someone who
+ * only wants a seat is how you end up back at everyone locking their ships.
+ *
+ * submit_join_application() re-checks everything: this sleeps, and a captain can unlock the
+ * hull, fill the last seat or blow up while the box is open.
+ */
+/datum/ship_join_menu/proc/prompt_ship_application(obj/structure/overmap/ship/ship)
+	// encode = FALSE to match how the note is read back out into TGUI text fields, the same
+	// reason the password prompt does it.
+	var/note = tgui_input_text(
+		user,
+		"Ask [ship.name]'s captain for a seat. Add a note if you want - your ckey and character name are shown to them either way. Leave it blank to just knock.",
+		"[ship.name] - Crew Application",
+		max_length = SHIP_JOIN_APPLICATION_MSG_MAX_LEN,
+		encode = FALSE,
+		timeout = 2 MINUTES,
+	)
+	if(isnull(note) || QDELETED(ship) || QDELETED(user))
+		return
+	ship.submit_join_application(user, note)
