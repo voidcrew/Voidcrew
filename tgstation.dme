@@ -6894,6 +6894,7 @@
 #include "voidcrew\modules\chemistry\reagents_other.dm"
 #include "voidcrew\modules\chemistry\recipes.dm"
 #include "voidcrew\modules\cloning\cloning_vat.dm"
+#include "voidcrew\modules\clothing\glasses\sunglasses.dm"
 #include "voidcrew\modules\clothing\gloves\insulated.dm"
 #include "voidcrew\modules\clothing\head\helmet.dm"
 #include "voidcrew\modules\clothing\suits\armor.dm"
