@@ -59,3 +59,10 @@
 	description = "An automated resupply pod that came down on the wrong world. Somebody cut into the aft bay and gave up on the forward one. Its escort drones are still flying the pattern."
 	suffix = "supply_pod_wreck.dmm"
 	cost = 10
+
+/datum/map_template/ruin/beach/beachcomber
+	name = "The Beachcomber's Hoard"
+	id = "beachcomber"
+	description = "A shack built out of salvage, with the yard behind it still sorted into straight rows. Whoever kept it meant to come back."
+	suffix = "beachcomber_shack.dmm"
+	cost = 8
