@@ -763,10 +763,12 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	// Own group on the helm: nebulas are cover and fuel, not just something to
 	// steer around, and the concealment control keys off standing in one.
 	sensor_category = "Nebulae"
-	// Still the largest single cluster on the map (you have to be able to lose a ship in one),
-	// but trimmed from 8 as part of making nebulas slightly rarer - this is the share of a
-	// zone's event budget one nebula eats, so it is the other half of the weight cut below.
-	chain_rate = 6
+	// Half the share of a zone's event budget a nebula used to eat (was 8). This is the other
+	// half of making nebulas slightly rarer, alongside the pool weight cut below - and the
+	// half that matters most, since a guaranteed nebula per band would otherwise put more
+	// nebula on the map than the weight cut takes off. A green-band cloud still comes out
+	// around twenty tiles, which is plenty to lose a ship in.
+	chain_rate = 4
 	spread_chance = 75
 	opacity = TRUE
 	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below

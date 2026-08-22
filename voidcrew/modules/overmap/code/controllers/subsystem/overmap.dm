@@ -26,10 +26,13 @@ Performance Note:
 
 /// Fraction of a zone's tiles that may hold an event. Applied per zone, so every zone ends up
 /// with the same hazard density regardless of how much area it covers. Primary tuning knob:
-/// raise it if the overmap plays too empty, lower it if hazards feel unavoidable.
+/// raise it if the overmap plays too empty, lower it if hazards feel unavoidable. At 0.08 a
+/// round lands around 165 events and can never exceed MAX_OVERMAP_EVENTS.
 #define OVERMAP_EVENT_DENSITY 0.08
-/// How many clusters each zone is broken into. The zone quota is split between them weighted by
-/// each event type's chain_rate. Fewer, larger clusters read as distinct storm systems.
+/// How many clusters each zone is broken into: one per entry in overmap_event_guaranteed_families
+/// (four - nebula plus the three storm families) and the rest from the weighted pool. The zone
+/// quota is split between them weighted by each event type's chain_rate, so fewer, larger clusters
+/// read as distinct storm systems with clear space between them.
 #define OVERMAP_EVENT_CLUSTERS_PER_ZONE 6
 /// Tiles a new cluster tries to keep clear of any existing event, so clusters do not merge into
 /// one continuous barrier.
