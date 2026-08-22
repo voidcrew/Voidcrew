@@ -13,6 +13,7 @@ type Data = {
   recoverable_points: string;
   node_data: NodeData[];
   research_point_id: string;
+  reverse_engineerable: string[];
 };
 
 type NodeData = {
@@ -32,6 +33,7 @@ export const DestructiveAnalyzer = (props) => {
     recoverable_points,
     research_point_id,
     node_data = [],
+    reverse_engineerable = [],
   } = data;
   if (!server_connected) {
     return (
@@ -51,6 +53,11 @@ export const DestructiveAnalyzer = (props) => {
           <NoticeBox textAlign="center" danger>
             No item loaded! <br />
             Put any item inside to see what it&apos;s capable of!
+          </NoticeBox>
+          <NoticeBox textAlign="center" info>
+            Ammunition can be reverse-engineered. Destroying a cartridge,
+            magazine or ammo box teaches the linked research server how to
+            fabricate it.
           </NoticeBox>
         </Window.Content>
       </Window>
@@ -76,6 +83,19 @@ export const DestructiveAnalyzer = (props) => {
             verticalAlign="middle"
           />
         </Section>
+        {reverse_engineerable.length > 0 && (
+          <Section title="Reverse Engineering">
+            <Box>
+              Deconstruction will teach the linked research server how to
+              fabricate:
+            </Box>
+            {reverse_engineerable.map((design) => (
+              <Box key={design} bold color="good">
+                {design}
+              </Box>
+            ))}
+          </Section>
+        )}
         <Section title="Deconstruction Methods">
           {!indestructible && (
             <NoticeBox textAlign="center" danger>
