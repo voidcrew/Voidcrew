@@ -27,6 +27,33 @@
 /// Longest join password a captain may set on a player-created hull
 #define SHIP_JOIN_PASSWORD_MAX_LEN 24
 
+/**
+ * Crew applications (voidcrew/modules/captain_management/join_applications.dm).
+ *
+ * The way onto a locked hull for someone who does not have the password: the lobby
+ * player asks, the captain reads their ckey and answers. A password stops being a wall
+ * once there is a door beside it, which is the whole point - crews lock up because the
+ * alternative is no control at all, not because they want an empty ship.
+ */
+/// Longest note a lobby player may attach to a crew application
+#define SHIP_JOIN_APPLICATION_MSG_MAX_LEN 200
+/// A pending application nobody answers gives up after this. Sized for "the captain is
+/// mid-fight" rather than "the captain logged off"; there is no way to tell the two apart
+/// from the lobby, so the applicant gets told either way instead of waiting forever.
+#define SHIP_JOIN_APPLICATION_TIMEOUT (5 MINUTES)
+/// How long a ckey must wait to apply to the same hull again after giving up or timing out
+#define SHIP_JOIN_APPLICATION_COOLDOWN (2 MINUTES)
+/// Same, after an outright refusal. Longer, because "no" should not have to be typed twice.
+#define SHIP_JOIN_APPLICATION_DENY_COOLDOWN (5 MINUTES)
+/// Most pending applications one hull holds at once, so a crowd cannot bury the review list
+#define SHIP_JOIN_APPLICATION_MAX_PENDING 10
+
+//Crew application states
+#define SHIP_APPLICATION_PENDING "pending"
+#define SHIP_APPLICATION_DENIED "denied"
+#define SHIP_APPLICATION_EXPIRED "expired"
+#define SHIP_APPLICATION_WITHDRAWN "withdrawn"
+
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
 #define OVERMAP_SHIP_FLYING "flying"

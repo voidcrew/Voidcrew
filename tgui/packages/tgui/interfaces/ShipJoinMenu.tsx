@@ -16,6 +16,10 @@ type ActiveShip = {
   memo: string | null;
   locked: BooleanLike;
   password_cleared: BooleanLike;
+  /** One of 'pending' | 'denied' | 'expired' | 'withdrawn', or null if never applied. */
+  application_status: string | null;
+  application_note: string | null;
+  can_apply: BooleanLike;
 };
 
 type ShipJoinMenuData = {
@@ -258,6 +262,28 @@ const ShipCard = (props: { ship: ActiveShip }) => {
               </Stack>
             </Stack.Item>
 
+            {/* Where an application to this ship currently stands, if there is one. */}
+            {!!ship.application_note && (
+              <Stack.Item mt={0.5}>
+                <Box
+                  fontSize="11px"
+                  color={
+                    ship.application_status === 'pending' ? 'lightblue' : 'gray'
+                  }
+                >
+                  <Icon
+                    name={
+                      ship.application_status === 'pending'
+                        ? 'hourglass-half'
+                        : 'circle-info'
+                    }
+                    mr={0.5}
+                  />
+                  {ship.application_note}
+                </Box>
+              </Stack.Item>
+            )}
+
             {/* Available Jobs */}
             {displayJobs.length > 0 && (
               <Stack.Item mt={0.5}>
@@ -282,23 +308,57 @@ const ShipCard = (props: { ship: ActiveShip }) => {
           </Stack>
         </Stack.Item>
 
-        {/* Join Button */}
+        {/* Join Button, plus the way past a lock for someone without the password */}
         <Stack.Item>
-          <Button
-            icon="sign-in-alt"
-            color="blue"
-            disabled={totalSlots === 0}
-            tooltip={
-              totalSlots === 0
-                ? 'No positions available'
-                : ship.locked && !ship.password_cleared
-                  ? "Requires the crew's join password"
-                  : 'Join crew'
-            }
-            onClick={() => act('select_ship', { ship_ref: ship.ref })}
-          >
-            Join
-          </Button>
+          <Stack vertical>
+            <Stack.Item>
+              <Button
+                fluid
+                icon="sign-in-alt"
+                color="blue"
+                disabled={totalSlots === 0}
+                tooltip={
+                  totalSlots === 0
+                    ? 'No positions available'
+                    : ship.locked && !ship.password_cleared
+                      ? "Requires the crew's join password"
+                      : 'Join crew'
+                }
+                onClick={() => act('select_ship', { ship_ref: ship.ref })}
+              >
+                Join
+              </Button>
+            </Stack.Item>
+            {ship.application_status === 'pending' ? (
+              <Stack.Item>
+                <Button
+                  fluid
+                  icon="times"
+                  color="bad"
+                  tooltip="Take back your application"
+                  onClick={() =>
+                    act('withdraw_application', { ship_ref: ship.ref })
+                  }
+                >
+                  Withdraw
+                </Button>
+              </Stack.Item>
+            ) : (
+              !!ship.can_apply && (
+                <Stack.Item>
+                  <Button
+                    fluid
+                    icon="envelope"
+                    color="good"
+                    tooltip="Ask the captain to let you aboard without the password"
+                    onClick={() => act('apply_to_ship', { ship_ref: ship.ref })}
+                  >
+                    Apply
+                  </Button>
+                </Stack.Item>
+              )
+            )}
+          </Stack>
         </Stack.Item>
       </Stack>
     </Box>

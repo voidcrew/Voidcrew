@@ -35,6 +35,15 @@ type PendingInvite = {
   time: number;
 };
 
+type JoinApplication = {
+  ref: string;
+  ckey: string;
+  name: string;
+  message: string | null;
+  /** Seconds until the application lapses on its own. */
+  expires_in: number;
+};
+
 type Data = {
   ship_destroyed: BooleanLike;
   ship_name: string;
@@ -46,6 +55,8 @@ type Data = {
   crew: CrewMember[];
   available_players: AvailablePlayer[];
   pending_invites: PendingInvite[];
+  applications: JoinApplication[];
+  ship_locked: BooleanLike;
   can_invite: BooleanLike;
   can_rename: BooleanLike;
 };
@@ -53,9 +64,9 @@ type Data = {
 export const CaptainManagement = () => {
   const { data } = useBackend<Data>();
   const { ship_destroyed, ship_name, is_captain } = data;
-  const [currentTab, setCurrentTab] = useState<'crew' | 'invites' | 'settings'>(
-    'crew',
-  );
+  const [currentTab, setCurrentTab] = useState<
+    'crew' | 'invites' | 'applications' | 'settings'
+  >('crew');
 
   if (ship_destroyed) {
     return (
@@ -98,6 +109,13 @@ export const CaptainManagement = () => {
                 Invites ({data.pending_invites.length})
               </Tabs.Tab>
               <Tabs.Tab
+                selected={currentTab === 'applications'}
+                onClick={() => setCurrentTab('applications')}
+                icon="inbox"
+              >
+                Applications ({data.applications.length})
+              </Tabs.Tab>
+              <Tabs.Tab
                 selected={currentTab === 'settings'}
                 onClick={() => setCurrentTab('settings')}
                 icon="cog"
@@ -110,6 +128,7 @@ export const CaptainManagement = () => {
           <Stack.Item grow>
             {currentTab === 'crew' && <CrewTab />}
             {currentTab === 'invites' && <InvitesTab />}
+            {currentTab === 'applications' && <ApplicationsTab />}
             {currentTab === 'settings' && <SettingsTab />}
           </Stack.Item>
         </Stack>
@@ -243,6 +262,105 @@ const InvitesTab = () => {
         </Section>
       </Stack.Item>
     </Stack>
+  );
+};
+
+const ApplicationsTab = () => {
+  const { act, data } = useBackend<Data>();
+  const { applications, ship_locked } = data;
+  // Keyed by application ref: the reason typed against one row must not follow the
+  // captain onto the next one.
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+
+  const setReason = (ref: string, value: string) =>
+    setReasons((previous) => ({ ...previous, [ref]: value }));
+
+  return (
+    <Section
+      title="Crew Applications"
+      fill
+      scrollable
+      buttons={
+        <Box color="label" fontSize="11px">
+          {ship_locked ? 'Ship is password-locked' : 'Ship is open to everyone'}
+        </Box>
+      }
+    >
+      <Box mb={1} color="label" fontSize="11px">
+        Players in the lobby who do not have your join password can ask to come
+        aboard. Approving one clears that ckey permanently, exactly like an
+        invite. Unanswered applications lapse on their own.
+      </Box>
+      {applications.length === 0 ? (
+        <NoticeBox info>No applications waiting.</NoticeBox>
+      ) : (
+        <Stack vertical>
+          {applications.map((application) => (
+            <Stack.Item key={application.ref}>
+              <Section>
+                <Stack align="center">
+                  <Stack.Item grow>
+                    <Box bold>{application.name}</Box>
+                    <Box color="label" fontSize="11px">
+                      <Icon name="user" mr={0.5} />
+                      {application.ckey}
+                      <Box inline ml={1}>
+                        <Icon name="hourglass-half" mr={0.5} />
+                        lapses in {Math.ceil(application.expires_in / 60)} min
+                      </Box>
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="check"
+                      color="good"
+                      onClick={() =>
+                        act('approve_application', { ref: application.ref })
+                      }
+                      tooltip="Clear this ckey to board"
+                    >
+                      Approve
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+                {!!application.message && (
+                  <Box mt={1} italic color="good">
+                    &ldquo;{application.message}&rdquo;
+                  </Box>
+                )}
+                <Stack mt={1}>
+                  <Stack.Item grow>
+                    <Input
+                      fluid
+                      value={reasons[application.ref] ?? ''}
+                      maxLength={200}
+                      onChange={(value) =>
+                        setReason(application.ref, value ?? '')
+                      }
+                      placeholder="Reason for declining (optional)..."
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="times"
+                      color="bad"
+                      onClick={() =>
+                        act('deny_application', {
+                          ref: application.ref,
+                          reason: reasons[application.ref] ?? '',
+                        })
+                      }
+                    >
+                      Decline
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+              </Section>
+            </Stack.Item>
+          ))}
+        </Stack>
+      )}
+    </Section>
   );
 };
 
