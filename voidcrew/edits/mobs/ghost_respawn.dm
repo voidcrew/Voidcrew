@@ -1,4 +1,28 @@
 /**
+ * One accurate sentence about whether you can come back this round.
+ *
+ * The observe and ghost confirmations both hardcoded "You will not be able to play this round!",
+ * which is simply wrong on a server that allows respawning - players were being talked out of
+ * ghosting by a warning that did not apply, and pointed at nothing when it did. This reads the
+ * real respawn config and points at the button below, so the prompt matches what the server is
+ * actually running.
+ */
+/proc/get_respawn_notice()
+	var/respawn_setting = CONFIG_GET(flag/allow_respawn)
+	if(respawn_setting == RESPAWN_FLAG_DISABLED)
+		return "You will not be able to play this round!"
+
+	var/notice = "You can rejoin later: use the Respawn button in the top-left action bar, then pick a ship from the join menu."
+	if(respawn_setting == RESPAWN_FLAG_NEW_CHARACTER)
+		notice += " You will have to come back as a different character."
+
+	var/respawn_delay = CONFIG_GET(number/respawn_delay)
+	if(respawn_delay)
+		notice += " You must wait [DisplayTimeText(respawn_delay)] after death first."
+
+	return notice
+
+/**
  * Respawn action button for ghosts.
  *
  * Respawning is otherwise only reachable through the "Respawn" verb in the OOC tab, which most
