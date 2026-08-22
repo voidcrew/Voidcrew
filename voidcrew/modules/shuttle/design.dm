@@ -134,3 +134,27 @@
 		RND_CATEGORY_EQUIPMENT + RND_SUBCATEGORY_EQUIPMENT_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/ship_construction_upgrade_servo
+	name = "Ship Construction Upgrade: Fabrication Servos"
+	desc = "An upgrade disk that cuts the ship construction drone's build times by a quarter."
+	id = "ship_construction_upgrade_servo"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 2)
+	build_path = /obj/item/ship_construction_upgrade/servo
+	category = list(
+		RND_CATEGORY_EQUIPMENT + RND_SUBCATEGORY_EQUIPMENT_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/ship_construction_upgrade_servo_mk2
+	name = "Ship Construction Upgrade: Fabrication Servos Mk2"
+	desc = "An upgrade disk that halves the ship construction drone's build times. Requires the first-generation servos to be installed first."
+	id = "ship_construction_upgrade_servo_mk2"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2, /datum/material/glass = SHEET_MATERIAL_AMOUNT, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 4, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 2)
+	build_path = /obj/item/ship_construction_upgrade/servo/mk2
+	category = list(
+		RND_CATEGORY_EQUIPMENT + RND_SUBCATEGORY_EQUIPMENT_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING

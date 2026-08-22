@@ -4,6 +4,8 @@
 #define TECHWEB_NODE_SHIP_PIPING "ship_piping"
 #define TECHWEB_NODE_SHIP_TILING "ship_tiling"
 #define TECHWEB_NODE_SHIP_LIGHTING "ship_lighting"
+#define TECHWEB_NODE_SHIP_FABRICATION "ship_fabrication"
+#define TECHWEB_NODE_SHIP_FABRICATION_ADV "ship_fabrication_advanced"
 #define TECHWEB_NODE_SURVEY_SCANNER "survey_scanner"
 #define TECHWEB_NODE_SURVEY_CONSOLE "survey_console"
 #define TECHWEB_NODE_SURVEY_CONSOLE_ADV "survey_console_advanced"
