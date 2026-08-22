@@ -37,8 +37,8 @@
 	return ..()
 
 /obj/machinery/computer/security/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
-	// VOIDCREW EDIT ADDITION BEGIN - consoles aboard player ships (any subtype) watch their own ship's network only (voidcrew/edits/machinery/camera.dm)
-	if(istype(port, /obj/docking_port/mobile/voidcrew))
+	// VOIDCREW EDIT ADDITION BEGIN - consoles aboard player ships watch their own ship's network only, except screens that aren't camera consoles (voidcrew/edits/machinery/camera.dm)
+	if(ship_scoped_network && istype(port, /obj/docking_port/mobile/voidcrew))
 		network = list(voidcrew_ship_camera_net(port))
 		return
 	// VOIDCREW EDIT ADDITION END
