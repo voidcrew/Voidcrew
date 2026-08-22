@@ -315,7 +315,7 @@
      7
     ]
    },
-   "src_md5": "faa8555e632f82e7d1f35f941e00245f"
+   "src_md5": "267199d7ba5bda16e4bc475677aa5cb2"
   },
   "nano_phalanx_b": {
    "png": "ship_nano_phalanx_b.png",
@@ -343,7 +343,7 @@
      7
     ]
    },
-   "src_md5": "f18a14ad52b50cc49754b739d7714319"
+   "src_md5": "bb006fb9a4b709b5c30984fda5a4d961"
   },
   "nano_phalanx_c": {
    "png": "ship_nano_phalanx_c.png",
@@ -371,7 +371,7 @@
      7
     ]
    },
-   "src_md5": "33a6c38520d7c0a18c626612dc11847d"
+   "src_md5": "c032db000f089caca9297d53ece16e32"
   },
   "nano_phalanx_d": {
    "png": "ship_nano_phalanx_d.png",
@@ -399,7 +399,7 @@
      7
     ]
    },
-   "src_md5": "356791b10f9de7a79f196a52e9b0b0ed"
+   "src_md5": "3d42591afdf473ea02521b3f81127ce6"
   },
   "pill": {
    "png": "ship_pill.png",
@@ -534,7 +534,7 @@
     1
    ],
    "png": "delta_delta_cargo_salvage.png",
-   "src_md5": "0b14657fa61321127bfaf110a0329d87",
+   "src_md5": "f75091d0fc7e6007158a0d4ef3d1a5ee",
    "themes": {
     "cult": {
      "width": 7,
@@ -544,7 +544,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_cult.png",
-     "src_md5": "bdf5d2f688ac785f4e7da0a83f43da94"
+     "src_md5": "692683a3218752ab1a7e899df6672c5b"
     },
     "lightship": {
      "width": 7,
@@ -554,7 +554,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_lightship.png",
-     "src_md5": "9d735253ba3b10b2e92d1c927041bbcb"
+     "src_md5": "fb0b6999e654f2ce8d7be25f556feee4"
     },
     "syndicate": {
      "width": 7,
@@ -564,7 +564,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_syndicate.png",
-     "src_md5": "ffc029c18248c9d44644565e0879ef45"
+     "src_md5": "d1c030dd71524e20f0cc4bfb5a7be474"
     }
    }
   },
@@ -744,7 +744,7 @@
     1
    ],
    "png": "delta_delta_cafe_shop.png",
-   "src_md5": "67af4a9b825b1220d12c07baa8ea5e95",
+   "src_md5": "fa12cfda68211273b5015b98c9990782",
    "themes": {
     "cult": {
      "width": 7,
@@ -754,7 +754,7 @@
       1
      ],
      "png": "delta_delta_cafe_shop_cult.png",
-     "src_md5": "d611a4d84b7e212444e20c707f51e946"
+     "src_md5": "8fa9852789935b5e3b43aa12495cce55"
     },
     "lightship": {
      "width": 7,
@@ -764,7 +764,7 @@
       1
      ],
      "png": "delta_delta_cafe_shop_lightship.png",
-     "src_md5": "9bb911b9bbeca18b74cc36bf2e86de67"
+     "src_md5": "762f558a506fb813595cba70e1c3aa0b"
     },
     "syndicate": {
      "width": 7,
@@ -774,7 +774,7 @@
       1
      ],
      "png": "delta_delta_cafe_shop_syndicate.png",
-     "src_md5": "bc9d282c285dd8b9fa2368fd7645d7e4"
+     "src_md5": "6a2e120ba4957e76169d3de570cfd046"
     }
    }
   },
@@ -943,6 +943,48 @@
      ],
      "png": "delta_delta_med_cryo_syndicate.png",
      "src_md5": "87fe02e52f752fd51559250469b80aaf"
+    }
+   }
+  },
+  "delta/delta_med_clone.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_med_clone.png",
+   "src_md5": "94eeb5ad8179a2be2a997a658d716fdf",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clone_cult.png",
+     "src_md5": "c33fbe4c7f4c50f9231d821cdd7756f5"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clone_lightship.png",
+     "src_md5": "f2e38131c44dde71f8da5af7eab73e60"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clone_syndicate.png",
+     "src_md5": "90167730a3f0d50c412dbb9a1309a4cb"
     }
    }
   },
@@ -1374,7 +1416,7 @@
     1
    ],
    "png": "goon_goon_mining_salvage.png",
-   "src_md5": "11e5dd22f78d15485fa769e291a7b719",
+   "src_md5": "f9348e7700cbe18e8b2bc17a19156e32",
    "themes": {
     "slumber": {
      "width": 4,
@@ -1384,7 +1426,7 @@
       1
      ],
      "png": "goon_goon_mining_salvage_slumber.png",
-     "src_md5": "ac67d52d422fa20df599fe44b63792cb"
+     "src_md5": "2da22c0d59237048b4f4818144216df0"
     },
     "syndicate": {
      "width": 4,
@@ -1394,7 +1436,7 @@
       1
      ],
      "png": "goon_goon_mining_salvage_syndicate.png",
-     "src_md5": "28c8a12836dd64dd92818f5a4ca9cb96"
+     "src_md5": "c5ae842b2454dbf2c21a1cd14bb201f7"
     },
     "void": {
      "width": 4,
@@ -1404,7 +1446,7 @@
       1
      ],
      "png": "goon_goon_mining_salvage_void.png",
-     "src_md5": "f9369e23f9f2c79852c53ba32c8c1111"
+     "src_md5": "fd16f835ff00a3087edb62b21365e3d3"
     }
    }
   },
@@ -2910,7 +2952,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_basic_medical.png",
-     "src_md5": "f76941eb1d275a5ff181fb2487376a4a"
+     "src_md5": "492ccaa809f033765d47848ba7b2201f"
     },
     "mining": {
      "width": 7,
@@ -2920,7 +2962,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_basic_mining.png",
-     "src_md5": "24fc9eb947ef7860a3eebbf188ac2e5c"
+     "src_md5": "910f4505cdb7d1da564b93f2754d158d"
     },
     "syndicate": {
      "width": 7,
@@ -2930,7 +2972,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_basic_syndicate.png",
-     "src_md5": "6c84e11afdc4fe6fe5949abbd0dc6696"
+     "src_md5": "9b8338dd594fda89ddd2a321f809aa76"
     }
    }
   },
@@ -2950,7 +2992,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_engi_medical.png",
-     "src_md5": "824699ba8da39dbd703c4b8db88d2624"
+     "src_md5": "0f3ef31000309eff9c4167590e6e6a08"
     },
     "mining": {
      "width": 7,
@@ -2960,7 +3002,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_engi_mining.png",
-     "src_md5": "22a734e6af3230b6a06077fcc5d4f1f6"
+     "src_md5": "64ea12d637c332852ae1977908ffd2b3"
     },
     "syndicate": {
      "width": 7,
@@ -2970,7 +3012,7 @@
       2
      ],
      "png": "scarab_scarab_cargo_engi_syndicate.png",
-     "src_md5": "2f0feabe263a26c65eed4a3c40c31105"
+     "src_md5": "bd080eded3d732535f684111100d713d"
     }
    }
   },
