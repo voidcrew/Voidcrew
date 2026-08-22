@@ -11,6 +11,13 @@
 /// Minimum gap between keystroke sounds. The comms field asks for one per keypress.
 #define TYPING_SOUND_COOLDOWN (0.4 SECONDS)
 
+/// How drunk a pilot has to be before the helm starts punishing manual course changes.
+#define HELM_DRUNK_THRESHOLD 10
+/// Added chance, in percent, that a heading input goes astray per point of drunkenness past the threshold.
+#define HELM_DRUNK_CHANCE_PER_POINT 0.8
+/// Ceiling on the chance that a heading input goes astray, no matter how far gone the pilot is.
+#define HELM_DRUNK_MAX_CHANCE 50
+
 /datum/armor/computer_helm
 	melee = 50
 	bullet = 30
@@ -759,6 +766,39 @@
 	last_integrity_percent = display_percent
 
 /**
+ * Rolls to see whether a drunk pilot fumbles a manual course change.
+ *
+ * Only ever called from a manual course input on this console, the direction pad and the
+ * keyboard flight keys. Autopilot, braking, docking and undocking never route through here,
+ * so however far gone the pilot is they can always still stop the ship.
+ * * user - The mob that asked for the course.
+ * * requested_dir - The direction they asked for.
+ * Returns the direction the ship should actually burn in.
+ */
+/obj/machinery/computer/helm/proc/drunken_heading(mob/user, requested_dir)
+	if(!requested_dir || !isliving(user))
+		return requested_dir
+	var/mob/living/pilot = user
+	var/drunkenness = pilot.get_drunk_amount()
+	if(drunkenness <= HELM_DRUNK_THRESHOLD)
+		return requested_dir
+	var/fumble_chance = min((drunkenness - HELM_DRUNK_THRESHOLD) * HELM_DRUNK_CHANCE_PER_POINT, HELM_DRUNK_MAX_CHANCE)
+	if(!prob(fumble_chance))
+		return requested_dir
+	var/list/wrong_directions = GLOB.alldirs - requested_dir
+	if(!length(wrong_directions))
+		return requested_dir
+	var/static/list/fumble_messages = list(
+		"Your vision swims and you yank the controls the wrong way",
+		"You lean on the console harder than you meant to and the ship lurches off course",
+		"You misjudge the distance to the controls and slap in the wrong heading",
+	)
+	to_chat(user, span_warning("[pick(fumble_messages)]..."))
+	balloon_alert(user, "wrong way!")
+	playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
+	return pick(wrong_directions)
+
+/**
  * This proc manually rechecks that the helm computer is connected to a proper ship
  */
 /obj/machinery/computer/helm/proc/reload_ship()
@@ -947,6 +987,8 @@
 					// Touching the helm takes the ship off autopilot. Quietly, the
 					// crew just did it on purpose and doesn't need to be told.
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
+					// A drunk pilot has a chance to send the ship somewhere else entirely
+					new_direction = drunken_heading(usr, new_direction)
 					// Toggle off if clicking the course already held, back to a coast
 					if(new_direction == current_ship.commanded_course)
 						current_ship.command_course(BURN_NONE)
@@ -961,6 +1003,9 @@
 					if(isnull(new_direction) || !(new_direction in list(0, NORTH, SOUTH, EAST, WEST, NORTH|EAST, NORTH|WEST, SOUTH|EAST, SOUTH|WEST)))
 						return
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
+					// Same fumble roll the buttons get. A press to coast (0) is left
+					// alone; taking the engines off is not a course to get wrong.
+					new_direction = drunken_heading(usr, new_direction)
 					current_ship.command_course(new_direction)
 					return
 				if("autopilot")
@@ -1140,6 +1185,9 @@
 
 
 
+#undef HELM_DRUNK_CHANCE_PER_POINT
+#undef HELM_DRUNK_MAX_CHANCE
+#undef HELM_DRUNK_THRESHOLD
 #undef JUMP_STATE_OFF
 #undef JUMP_STATE_CHARGING
 #undef JUMP_STATE_IONIZING
