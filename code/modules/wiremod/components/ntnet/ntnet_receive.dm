@@ -36,9 +36,18 @@
 /obj/item/circuit_component/ntnet_receive/proc/ntnet_receive(obj/item/circuit_component/ntnet_send/source, list/data)
 	SIGNAL_HANDLER
 
-	if(!find_functional_ntnet_relay())
+	// Voidcrew: ships are their own NTNet node, and the broadcast is scoped to one of them.
+	// The global signal reaches every receiver in the world, so without this a crew could
+	// read - and jam - the circuit traffic of a ship they have never met.
+	var/turf/our_turf = get_circuit_turf(parent)
+	if(!ntnet_reachable_from(our_turf))
 		return
 	if(data["enc_key"] != enc_key.value)
+		return
+
+	var/datum/weakref/sender_ref = data["sender"]
+	var/obj/item/circuit_component/sender = sender_ref?.resolve()
+	if(isnull(sender) || !on_same_ship_network(get_circuit_turf(sender.parent), our_turf))
 		return
 
 	var/datum/weakref/ref = data["port"]
