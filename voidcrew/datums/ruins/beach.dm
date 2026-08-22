@@ -45,3 +45,31 @@
 	description = "A hidden contraband handoff point on a lonely stretch of shore. The last delivery is still waiting on the dock."
 	suffix = "smuggler_cove.dmm"
 	cost = 15
+
+/datum/map_template/ruin/beach/lifeguardpost
+	name = "Shoreline Patrol Post"
+	id = "lifeguardpost"
+	description = "A beach patrol post left standing when the season ended. The swim line is still roped off and the rescue boat is still inside it."
+	suffix = "lifeguard_post.dmm"
+	cost = 8
+
+/datum/map_template/ruin/beach/supplypod
+	name = "Supply Pod Landfall"
+	id = "supplypod"
+	description = "An automated resupply pod that came down on the wrong world. Somebody cut into the aft bay and gave up on the forward one. Its escort drones are still flying the pattern."
+	suffix = "supply_pod_wreck.dmm"
+	cost = 10
+
+/datum/map_template/ruin/beach/beachcomber
+	name = "The Beachcomber's Hoard"
+	id = "beachcomber"
+	description = "A shack built out of salvage, with the yard behind it still sorted into straight rows. Whoever kept it meant to come back."
+	suffix = "beachcomber_shack.dmm"
+	cost = 8
+
+/datum/map_template/ruin/beach/careeningcamp
+	name = "The Careening Camp"
+	id = "careeningcamp"
+	description = "A boat hauled up the sand to have its hull scraped, and the crew that is still waiting on the work to finish."
+	suffix = "careening_camp.dmm"
+	cost = 15

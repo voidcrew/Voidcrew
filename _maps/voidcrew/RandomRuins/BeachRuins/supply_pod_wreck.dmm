@@ -1,0 +1,510 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"d" = (
+/obj/structure/table/wood,
+/obj/item/paper/crumpled{
+	name = "scratched tally";
+	default_raw_text = "Bay one is open. Everything in it was packing foam and ration crates, all of it already spoiled. Bay two has a pressure door and I have nothing that will cut it. The drones do not come up the dune, so the camp is safe, but they will not let me stand at the hull long enough to work. Going to walk the coast north and see if anyone else came down here. If you find this and you have a torch, bay two is worth your time."
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"e" = (
+/turf/template_noop,
+/area/template_noop)
+"f" = (
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"g" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance/three,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"i" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"l" = (
+/obj/structure/chair/plastic{
+	dir = 1
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"m" = (
+/turf/closed/wall/mineral/titanium,
+/area/ruin/unpowered)
+"n" = (
+/mob/living/basic/crab/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"o" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"p" = (
+/obj/effect/decal/cleanable/glass{
+	dir = 2
+	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"q" = (
+/obj/structure/flora/tree/palm,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"s" = (
+/obj/item/flashlight/lantern/on{
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"t" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"u" = (
+/obj/structure/flora/rock/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"v" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/wrench{
+	pixel_x = 6
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"x" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/mineral/titanium,
+/area/ruin/unpowered)
+"y" = (
+/obj/item/stack/rods{
+	amount = 5;
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"z" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"A" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"C" = (
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"D" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"F" = (
+/obj/effect/decal/cleanable/glass{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"G" = (
+/obj/machinery/door/airlock/external,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"H" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"K" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"L" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"P" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"Q" = (
+/obj/effect/decal/cleanable/glass{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"S" = (
+/turf/open/water/beach,
+/area/ruin/unpowered)
+"T" = (
+/obj/effect/spawner/random/decoration/glowstick,
+/turf/open/floor/mineral/titanium,
+/area/ruin/unpowered)
+"U" = (
+/obj/structure/bonfire/prelit,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"V" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"W" = (
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/item/bedsheet/rainbow{
+	dir = 2
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"Y" = (
+/obj/item/toy/seashell{
+	dir = 2
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+"}
+(2,1,1) = {"
+e
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+S
+S
+e
+"}
+(3,1,1) = {"
+e
+L
+W
+U
+H
+y
+H
+u
+H
+H
+H
+S
+S
+S
+e
+"}
+(4,1,1) = {"
+e
+L
+k
+l
+F
+H
+H
+H
+H
+Y
+S
+S
+S
+S
+e
+"}
+(5,1,1) = {"
+e
+L
+t
+d
+H
+k
+H
+H
+H
+H
+S
+S
+S
+S
+e
+"}
+(6,1,1) = {"
+e
+H
+H
+H
+m
+p
+m
+m
+H
+H
+S
+S
+S
+S
+e
+"}
+(7,1,1) = {"
+e
+H
+H
+m
+K
+A
+m
+C
+m
+H
+S
+S
+S
+S
+e
+"}
+(8,1,1) = {"
+e
+H
+H
+m
+z
+s
+m
+f
+g
+m
+S
+S
+S
+S
+e
+"}
+(9,1,1) = {"
+e
+H
+H
+x
+A
+f
+G
+f
+f
+A
+m
+S
+S
+S
+e
+"}
+(10,1,1) = {"
+e
+H
+H
+m
+Q
+v
+m
+o
+P
+f
+m
+S
+S
+S
+e
+"}
+(11,1,1) = {"
+e
+H
+H
+m
+b
+A
+m
+A
+T
+m
+S
+S
+S
+S
+e
+"}
+(12,1,1) = {"
+e
+H
+H
+m
+i
+i
+m
+z
+m
+H
+S
+S
+S
+S
+e
+"}
+(13,1,1) = {"
+e
+H
+H
+H
+m
+m
+m
+m
+H
+H
+S
+S
+S
+S
+e
+"}
+(14,1,1) = {"
+e
+H
+H
+H
+H
+H
+H
+H
+H
+H
+S
+S
+S
+S
+e
+"}
+(15,1,1) = {"
+e
+H
+u
+H
+V
+D
+H
+H
+n
+H
+S
+S
+S
+S
+e
+"}
+(16,1,1) = {"
+e
+q
+H
+H
+H
+H
+k
+H
+H
+Y
+S
+S
+S
+S
+e
+"}
+(17,1,1) = {"
+e
+H
+H
+q
+H
+H
+H
+H
+H
+H
+H
+S
+S
+S
+e
+"}
+(18,1,1) = {"
+e
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+S
+S
+e
+"}
+(19,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+"}
