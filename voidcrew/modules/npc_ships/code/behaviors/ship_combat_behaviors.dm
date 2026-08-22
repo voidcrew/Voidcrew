@@ -64,6 +64,19 @@
 	if(!ship.hostile)
 		return AI_BEHAVIOR_DELAY
 
+	// A ship whose weapons have been destroyed is done fighting. Without this gate the
+	// disarm loop never ends: check_weapons sends it into RETREATING, the retreat timer
+	// or distance check drops it back to IDLE, and the very next scan re-acquires the
+	// same victim - hail, demand, engage, notice the guns are gone, flee, repeat.
+	// Uses has_intact_weapons(), not has_any_weapons(): the latter reads FALSE while
+	// turrets are on cooldown or in a band that forbids firing, which would disarm
+	// every healthy ship that ever idled in a yellow zone.
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+	if(ship.retreat_without_weapons && combat && !combat.has_intact_weapons())
+		// Don't clear an existing target here: in ENGAGING/COMBAT that belongs to
+		// check_weapons, which needs the target intact to enter RETREATING properly.
+		return AI_BEHAVIOR_DELAY
+
 	// Only attack in zones where combat is allowed (weapons OR interdiction)
 	var/turf/ship_loc = get_turf(ship)
 	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_loc)
@@ -909,6 +922,11 @@
 
 /// Helper proc to transition retreating ship back to patrol
 /datum/ai_behavior/npc_ship/retreat_escape/proc/return_to_patrol(datum/ai_controller/npc_ship/controller)
+	// Read who we were fleeing before clearing it - a disarmed ship's victim gets told
+	// the hunt is over for good.
+	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
+
 	// Clear retreat state
 	controller.blackboard[BB_NPC_RETREAT_REASON] = null
 	controller.blackboard[BB_NPC_LAST_TARGET] = null
@@ -916,6 +934,20 @@
 	// Return to idle/patrol
 	controller.clear_target()
 	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
+
+	// Disarmed ships are out of the fight for good: scan_threats refuses to acquire
+	// for a hull with no intact weapons, so free its pool slot for a replacement
+	// instead of leaving a toothless hulk holding a spawn budget forever. Keyed on
+	// physical disarmament rather than the retreat reason - guns blown off mid-siphon
+	// end the career just the same. The hull itself stays in the world: crew aboard,
+	// hold full, boardable.
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+	if(!ship || !combat || combat.has_intact_weapons())
+		return
+
+	ship.notify_spawner_resolved("disarmed")
+	last_target?.ship_notify("[ship.name] is disarmed and has broken off for good.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 25)
 
 // ========== ACTIVATE SIPHON ==========
 

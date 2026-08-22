@@ -226,6 +226,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	)
 	// The cold has nothing left to take from the man who wore this. It has
 	// plenty to take from you, but the robe doesn't know that.
+	clothing_flags = CASTING_CLOTHES | STOPSPRESSUREDAMAGE
 	cold_protection = CHEST|GROIN|ARMS|LEGS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	heat_protection = CHEST|GROIN|ARMS|LEGS
@@ -296,6 +297,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	inhand_icon_state = "lich_crown_inhand"
 	armor_type = /datum/armor/head_verdigris_crown
 	dog_fashion = null
+	clothing_flags = SNUG_FIT | CASTING_CLOTHES | STOPSPRESSUREDAMAGE
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -526,6 +528,14 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
  * It cannot save a gibbed or dusted body. There is nothing left to pour into,
  * and it refuses rather than spends itself in any case it cannot fix: see
  * `pour_the_draught()` for why it must NOT ask `can_be_revived()` up front.
+ *
+ * Every outcome, trigger, refusal and success, is told to the player's ghost as
+ * well as the body. `death()` ghostizes the client BEFORE COMSIG_LIVING_DEATH
+ * fires when the dead-keyloop lag switch is on, and everyone else ghosts during
+ * the pour delay, so `to_chat(corpse)` alone lands nowhere. A refusal the player
+ * cannot see is indistinguishable from the item being broken, which is exactly
+ * the bug report that produced this paragraph. Every outcome is also `log_game`'d
+ * for the same reason.
  */
 /obj/item/verdigris_phylactery
 	name = "spent phylactery"
@@ -547,9 +557,14 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 /obj/item/verdigris_phylactery/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+	// This is NOT the revive trigger; that stays strictly equipped()/dropped().
+	// It exists so that dying with the gourd in a bag gets an explanation instead
+	// of silence. See on_unheard_death().
+	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH, PROC_REF(on_unheard_death))
 
 /obj/item/verdigris_phylactery/Destroy()
 	stop_listening()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
 	return ..()
 
 /obj/item/verdigris_phylactery/examine(mob/user)
@@ -584,7 +599,13 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 
 /obj/item/verdigris_phylactery/proc/on_holder_died(mob/living/source, gibbed)
 	SIGNAL_HANDLER
-	if(spent || gibbed)
+	// A gibbed body has nothing left to pour into. Say so: a refusal the player
+	// cannot see is indistinguishable from the gourd being broken.
+	if(gibbed)
+		source.notify_revival("The gourd on your person stirs, and goes still. There is nothing left of you to pour into.", 'sound/effects/magic/RATTLEMEBONES.ogg', src)
+		log_game("LICH: spent phylactery could not revive [key_name(source)]: gibbed.")
+		return
+	if(spent)
 		return
 	// Claimed, not consumed. Nothing here is irreversible until the pour succeeds.
 	// The gourd only unstoppers, so a refusal below can honestly put it back.
@@ -594,7 +615,28 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 		span_green("Ilthuun's last swallow finds you on its way past, and it does not ask first."),
 	)
 	playsound(src, 'sound/effects/magic/RATTLEMEBONES.ogg', 60, TRUE)
+	// The client is usually not in the body for any of this (death() ghostizes it
+	// before COMSIG_LIVING_DEATH fires under the dead-keyloop lag switch, and anyone
+	// else ghosts during the pour delay), so every outcome message goes to the ghost
+	// as well as the body from here on.
+	source.notify_revival("The gourd on your corpse unstoppers itself. In [LICH_PHYLACTERY_DELAY / 10] seconds it pours its last swallow into you.", 'sound/effects/magic/RATTLEMEBONES.ogg', src)
+	log_game("LICH: spent phylactery triggered for [key_name(source)] at [AREACOORD(source)].")
 	addtimer(CALLBACK(src, PROC_REF(pour_the_draught), source), LICH_PHYLACTERY_DELAY)
+
+/**
+ * The gourd was somewhere on a mob that just died, but NOT in a slot it listens
+ * from, a bag, a box, anywhere `equipped()` does not reach. It stays inert
+ * (that contract is deliberate, see the type docblock), but the ghost deserves
+ * to know why nothing happened instead of filing a bug report.
+ */
+/obj/item/verdigris_phylactery/proc/on_unheard_death(datum/source, mob/living/died, gibbed)
+	SIGNAL_HANDLER
+	if(died == listening_to) // equipped deaths go through on_holder_died
+		return
+	if(!(src in died.get_all_contents()))
+		return
+	to_chat(died, span_warning("The gourd rattles once, and goes still."))
+	died.notify_revival("The gourd rattles once, and goes still. It only spends its swallow from your hand, pocket, belt or suit storage, never from inside a bag.", 'sound/effects/magic/RATTLEMEBONES.ogg', src)
 
 /**
  * The pour. Heals FIRST, then lets the heal make the revive legal.
@@ -620,6 +662,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 /obj/item/verdigris_phylactery/proc/pour_the_draught(mob/living/drinker)
 	if(QDELETED(drinker))
 		// Body left the world between the death and the pour. Nobody to tell.
+		log_game("LICH: spent phylactery lost its drinker: body deleted before the pour landed.")
 		refuse_draught()
 		return
 	if(drinker.stat != DEAD)
@@ -633,12 +676,19 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 		span_boldwarning("[drinker] jerks upright in a wash of green light, and somewhere a jar breaks."),
 	)
 	if(!came_back)
+		// to_chat alone is not enough here: a failed pour means the player is
+		// still a ghost, watching a body with no client in it.
 		to_chat(drinker, span_warning("The green pours itself into you, finds nothing that will hold it, and climbs back into the glass."))
+		drinker.notify_revival("The gourd pours its last swallow into your body, and the body will not take it. The gourd keeps its charge.", 'sound/effects/magic/RATTLEMEBONES.ogg', src)
+		log_game("LICH: spent phylactery failed to revive [key_name(drinker)] at [AREACOORD(drinker)] (husked, missing brain, or otherwise unrevivable). Charge refunded.")
 		refuse_draught()
 		return
 
 	drinker.Paralyze(LICH_PHYLACTERY_STUN)
 	to_chat(drinker, span_green("You're back, and you're very aware that it wasn't your doing."))
+	// If the ghost grab inside revive() missed, the player is still orbiting a
+	// living body with no idea it stood up. Tell them.
+	drinker.notify_revival("The gourd has put your body back on its feet. Re-enter your corpse if you are not in it!", 'sound/effects/magic/RATTLEMEBONES.ogg', src)
 	drinker.log_message("was revived by a spent phylactery ([src])", LOG_ATTACK, color = "green")
 	log_game("LICH: [key_name(drinker)] was revived by a spent phylactery.")
 	shatter()

@@ -24,6 +24,12 @@
 	/// Default missile type for this NPC (light, standard, heavy)
 	var/default_missile_type = "standard"
 
+	/// TRUE once this ship has ever scanned in an intact weapon. Disarmament checks
+	/// (pool reconcile) key on this so a hypothetical template mapped with no weapons
+	/// at all reads as "never armed", not "disarmed" - otherwise it would resolve its
+	/// pool slot at birth and churn the spawner in a loop.
+	var/ever_had_weapons = FALSE
+
 /datum/npc_combat_interface/Destroy()
 	owner_ship = null
 	linked_laser_turrets.Cut()
@@ -60,6 +66,9 @@
 
 	// Pre-load all missile launchers with virtual missiles
 	load_all_launchers()
+
+	if(length(linked_laser_turrets) || length(linked_missile_launchers))
+		ever_had_weapons = TRUE
 
 	return TRUE
 
@@ -109,6 +118,9 @@
 
 	// Re-load all missile launchers
 	load_all_launchers()
+
+	if(length(linked_laser_turrets) || length(linked_missile_launchers))
+		ever_had_weapons = TRUE
 
 	return TRUE
 
@@ -269,6 +281,30 @@
  */
 /datum/npc_combat_interface/proc/has_any_weapons()
 	return get_working_laser_count() > 0 || get_working_launcher_count() > 0
+
+/**
+ * Returns whether the ship still physically HAS weapons - an intact turret or launcher
+ * aboard, regardless of whether it could fire this instant. Deliberately cheaper and
+ * dumber than has_any_weapons(): can_fire() folds in fire cooldowns, power and the
+ * zone's weapons_allowed check, so a fully-armed ship reads as weaponless while its
+ * turrets cycle or whenever it sits in a band that forbids firing. A ship that fled
+ * on destroyed guns must never read as re-armed, and an armed ship idling in a yellow
+ * band must never read as disarmed - both of those bugs loop the AI.
+ */
+/datum/npc_combat_interface/proc/has_intact_weapons()
+	for(var/obj/machinery/ship_combat/laser_turret/turret as anything in linked_laser_turrets)
+		if(QDELETED(turret))
+			continue
+		if(turret.machine_stat & BROKEN)
+			continue
+		return TRUE
+	for(var/obj/machinery/ship_combat/missile_launcher/launcher as anything in linked_missile_launchers)
+		if(QDELETED(launcher))
+			continue
+		if(launcher.machine_stat & BROKEN)
+			continue
+		return TRUE
+	return FALSE
 
 /**
  * Returns whether we have a working cloak device that can activate.
