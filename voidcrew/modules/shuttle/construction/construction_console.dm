@@ -351,9 +351,18 @@
 		qdel(rcd_effect)
 		return FALSE
 
-	// Build the wall
+	// Build the wall.
+	// place_on_top() rather than ChangeTurf() so the floor we are building over is pushed
+	// onto the wall's baseturf stack. ChangeTurf() copies the *old* turf's baseturfs onto
+	// the new wall (voidcrew/edits/turf.dm), which throws the floor away and leaves the
+	// wall sitting straight on space - deconstructing it then drops you into vacuum
+	// instead of leaving plating behind, and the scraped tile stops being a shuttle turf
+	// so clear_empty_shuttle_turfs() drops it out of the hull entirely. This is the same
+	// marker-less-chain problem restamp_hull_marker() below papers over for breach
+	// repairs; stacking properly fixes it at the source for walls. Matches how hand-built
+	// walls (girders) and the standard RCD (/turf/open/floor/rcd_act) raise walls.
 	var/wall_path = get_selected_wall_path()
-	var/turf/new_wall = target.ChangeTurf(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_wall = target.place_on_top(wall_path, flags = CHANGETURF_INHERIT_AIR)
 	restamp_hull_marker(new_wall)
 	rcd_effect.end_animation()
 	return TRUE
