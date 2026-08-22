@@ -810,6 +810,12 @@ $caption: 1.6cqw;
   &.Helm--driftHazard {
     color: $crit;
   }
+
+  // The tile under the cursor. Dimmer than the ship's own position on purpose:
+  // it reports where the crew is pointing, not where the hull is.
+  &.Helm--cursor {
+    color: $ice-dim;
+  }
 }
 
 .Helm__hudKey {
