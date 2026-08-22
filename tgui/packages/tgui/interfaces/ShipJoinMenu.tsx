@@ -27,11 +27,22 @@ type ShipJoinMenuData = {
   ships: ActiveShip[];
   can_requisition: BooleanLike;
   wiki_url: string | null;
+  hardcore_enabled: BooleanLike;
+  hardcore_available: BooleanLike;
+  hardcore_reason: string | null;
 };
 
 export const ShipJoinMenu = () => {
   const { act, data } = useBackend<ShipJoinMenuData>();
-  const { player_name, ships, can_requisition, wiki_url } = data;
+  const {
+    player_name,
+    ships,
+    can_requisition,
+    wiki_url,
+    hardcore_enabled,
+    hardcore_available,
+    hardcore_reason,
+  } = data;
 
   return (
     <Window
@@ -60,6 +71,16 @@ export const ShipJoinMenu = () => {
           <Stack.Item>
             <RequisitionSection canRequisition={!!can_requisition} />
           </Stack.Item>
+
+          {/* Hardcore Drop Section - hidden entirely when the server has it off */}
+          {!!hardcore_enabled && (
+            <Stack.Item>
+              <HardcoreDropSection
+                available={!!hardcore_available}
+                reason={hardcore_reason}
+              />
+            </Stack.Item>
+          )}
 
           {/* Join Existing Ship Section */}
           <Stack.Item grow>
@@ -146,6 +167,61 @@ const RequisitionSection = (props: { canRequisition: boolean }) => {
             {canRequisition ? 'Requisition a Hull (Free)' : 'Fleet Has Room'}
           </Button>
         </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const HardcoreDropSection = (props: {
+  available: boolean;
+  reason: string | null;
+}) => {
+  const { act } = useBackend<ShipJoinMenuData>();
+  const { available, reason } = props;
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="parachute-box" mr={1} />
+          Hardcore Drop
+        </Box>
+      }
+    >
+      <Stack vertical>
+        <Stack.Item>
+          <Box color="gray" fontSize="13px" mb={1}>
+            No ship, no crew, no pickup. You land alone on a random world in a
+            pod with one crate of supplies and build from nothing. The only
+            channel that reaches anyone is Wideband, and the only way off is
+            somebody choosing to come and get you.
+          </Box>
+        </Stack.Item>
+        <Stack.Item>
+          <Button
+            fluid
+            icon="mountain-sun"
+            color={available ? 'bad' : undefined}
+            disabled={!available}
+            fontSize="14px"
+            textAlign="center"
+            tooltip={
+              available
+                ? 'Drops you alone on a planet surface. There is no going back.'
+                : (reason ?? 'Unavailable')
+            }
+            onClick={() => act('hardcore_drop')}
+          >
+            {available ? 'Drop Me Somewhere' : 'Unavailable'}
+          </Button>
+        </Stack.Item>
+        {!available && !!reason && (
+          <Stack.Item>
+            <Box color="gray" fontSize="12px" mt={0.5}>
+              {reason}
+            </Box>
+          </Stack.Item>
+        )}
       </Stack>
     </Section>
   );

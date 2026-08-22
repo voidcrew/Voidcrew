@@ -7,6 +7,22 @@ ALLOW_VOTE_TRANSFER
 
 # FREE_SHIPS
 
+## Hardcore drop: a join-menu option that puts a player alone on a planet surface in a
+## pod with one supply crate and no ship. Off by default - uncomment to enable.
+## See voidcrew/GUIDES/HARDCORE_SPAWN_DESIGN.md before turning this on.
+
+# HARDCORE_DROP
+
+## How many castaways may be alive on planets at once. Each drop onto an unvisited world
+## costs a map slot (a quarter of a z-level) until the castaway dies or is picked up, so
+## this is budgeted against MAX_Z_LEVELS.
+
+HARDCORE_DROP_MAX_ACTIVE 2
+
+## Minutes a player must wait between hardcore drops. 0 disables the cooldown.
+
+HARDCORE_DROP_COOLDOWN_MINUTES 30
+
 ## Player wiki. Drives the lobby wiki button, the OOC > Wiki verb, and the Wiki entry
 ## under Resources in the escape menu. Blank it out to hide all three.
 

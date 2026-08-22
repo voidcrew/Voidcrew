@@ -143,6 +143,15 @@
 
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)
+
+	// Hardcore drop (voidcrew/modules/hardcore_drop/). Config-gated and off by default;
+	// when the flag is down the section is not rendered at all rather than shown greyed,
+	// since "this server does not do that" is not a state worth advertising.
+	data["hardcore_enabled"] = CONFIG_GET(flag/hardcore_drop)
+	var/hardcore_refusal = hardcore_drop_refusal(user)
+	data["hardcore_available"] = isnull(hardcore_refusal)
+	data["hardcore_reason"] = hardcore_refusal
+
 	return data
 
 /datum/ship_join_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -194,6 +203,17 @@
 			var/datum/ship_join_application/application = ship.get_join_application(user.ckey)
 			if(!application || !application.withdraw())
 				return FALSE
+
+		if("hardcore_drop")
+			// Re-checked in attempt_hardcore_drop() too - the UI is never the authority
+			// on this, and the cap, the cooldown and the pool of habitable worlds all
+			// move while the menu sits open.
+			var/refusal = hardcore_drop_refusal(user)
+			if(refusal)
+				to_chat(user, span_warning("[refusal]"))
+				return FALSE
+			ui.close()
+			user.attempt_hardcore_drop()
 
 		if("select_ship")
 			var/ship_ref = params["ship_ref"]
