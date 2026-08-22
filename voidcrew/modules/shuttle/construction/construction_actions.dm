@@ -139,11 +139,15 @@
 		owner.changeNext_move(CLICK_CD_RANGE)
 		check_rcd()
 
+		// Fabrication servo upgrades shorten the job
+		var/obj/item/construction/rcd/internal/ship/camera_rcd = base_console.internal_rcd
+		var/camera_decon_time = SHIP_CAMERA_DECONSTRUCT_DELAY * camera_rcd.get_build_speed_mod()
+
 		// Show deconstruction effect
-		var/obj/effect/constructing_effect/camera_rcd_effect = new(target_turf, SHIP_CAMERA_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
+		var/obj/effect/constructing_effect/camera_rcd_effect = new(target_turf, camera_decon_time, RCD_DECONSTRUCT)
 
 		// Delay for deconstruction
-		if(!base_console.internal_rcd.build_delay(owner, SHIP_CAMERA_DECONSTRUCT_DELAY, target_camera))
+		if(!camera_rcd.build_delay(owner, camera_decon_time, target_camera))
 			qdel(camera_rcd_effect)
 			return
 
@@ -174,11 +178,14 @@
 		// Say what the tear-out costs before it happens
 		remote_eye.balloon_alert(owner, "cost: [ship_rcd.charge_readout(airlock_cost)]")
 
+		// Fabrication servo upgrades shorten the job
+		var/decon_time = SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY * ship_rcd.get_build_speed_mod()
+
 		// Show construction effect
-		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
+		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, decon_time, RCD_DECONSTRUCT)
 
 		// Delay for deconstruction
-		if(!ship_rcd.build_delay(owner, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, target_airlock))
+		if(!ship_rcd.build_delay(owner, decon_time, target_airlock))
 			qdel(rcd_effect)
 			return
 
