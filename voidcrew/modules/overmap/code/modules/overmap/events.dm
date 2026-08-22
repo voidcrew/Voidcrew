@@ -1,3 +1,7 @@
+/// Weight nebulas get in the random event pool. Lowered from 60 to make them slightly rarer;
+/// this is the knob to turn if nebulas end up too common (or too scarce) in play.
+#define OVERMAP_NEBULA_SPAWN_WEIGHT 50
+
 /obj/structure/overmap/event
 	name = "generic overmap event"
 	// Hazards show on the helm chart whenever they are inside the sensor bubble,
@@ -6,9 +10,10 @@
 	// buy the region's star chart, which records them the same as anything else.
 	sensor_category = "Hazards"
 
-	/// Chance to spread to nearby tiles if spawned
+	/// Chance a neighbouring tile is pulled into this event's cluster. Higher = rounder, denser blobs.
 	var/spread_chance = 0
-	/// How many additional tiles to spawn at once in the selected orbit
+	/// Relative size of a cluster of this event. The zone's tile quota is split between its
+	/// clusters in proportion to this, so a nebula covers more ground than a minor ion storm.
 	var/chain_rate = 0
 	/// Which storm the helm chart draws for this event. Each family gets its own
 	/// silhouette, a rock field and an ion front are steered around differently,
@@ -758,7 +763,10 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	// Own group on the helm: nebulas are cover and fuel, not just something to
 	// steer around, and the concealment control keys off standing in one.
 	sensor_category = "Nebulae"
-	chain_rate = 8
+	// Still the largest single cluster on the map (you have to be able to lose a ship in one),
+	// but trimmed from 8 as part of making nebulas slightly rarer - this is the share of a
+	// zone's event budget one nebula eats, so it is the other half of the weight cut below.
+	chain_rate = 6
 	spread_chance = 75
 	opacity = TRUE
 	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below
@@ -853,7 +861,36 @@ GLOBAL_LIST_EMPTY(nebula_events)
 
 // voidcrew TODO: reimplement wormholes once ships are working again
 
-/// List of event types that MUST spawn at least once - ensures map diversity
+/// Event families that every zone is guaranteed a cluster of, so no zone is ever missing one.
+/// One severity variant is picked per family, per zone.
+///
+/// The nebula entry is what keeps every band's gas table reachable - a nebula rolls its gas from
+/// the band it sits in, so a band with no nebula is a band whose gases nobody can scoop. Nebulas
+/// are made rarer by weight and cluster size (see OVERMAP_NEBULA_SPAWN_WEIGHT and chain_rate),
+/// not by leaving a third of the map without one.
+GLOBAL_LIST_INIT(overmap_event_guaranteed_families, list(
+	list(
+		/obj/structure/overmap/event/nebula,
+	),
+	list(
+		/obj/structure/overmap/event/meteor/minor,
+		/obj/structure/overmap/event/meteor,
+		/obj/structure/overmap/event/meteor/majour,
+	),
+	list(
+		/obj/structure/overmap/event/emp/minor,
+		/obj/structure/overmap/event/emp,
+		/obj/structure/overmap/event/emp/majour,
+	),
+	list(
+		/obj/structure/overmap/event/electric/minor,
+		/obj/structure/overmap/event/electric,
+		/obj/structure/overmap/event/electric/majour,
+	),
+))
+
+/// List of event types that MUST spawn at least once - ensures map diversity.
+/// Only used by the legacy concentric placement pattern.
 GLOBAL_LIST_INIT(overmap_event_guaranteed_list, list(
 	/obj/structure/overmap/event/nebula,
 	/obj/structure/overmap/event/meteor/minor,
@@ -869,7 +906,7 @@ GLOBAL_LIST_INIT(overmap_event_guaranteed_list, list(
 
 /// Weighted list for random event selection after guaranteed spawns
 GLOBAL_LIST_INIT(overmap_event_pick_list, list(
-	/obj/structure/overmap/event/nebula = 60,
+	/obj/structure/overmap/event/nebula = OVERMAP_NEBULA_SPAWN_WEIGHT,
 	/obj/structure/overmap/event/electric/minor = 45,
 	/obj/structure/overmap/event/electric = 40,
 	/obj/structure/overmap/event/electric/majour = 35,
@@ -880,3 +917,5 @@ GLOBAL_LIST_INIT(overmap_event_pick_list, list(
 	/obj/structure/overmap/event/meteor = 40,
 	/obj/structure/overmap/event/meteor/majour = 35
 ))
+
+#undef OVERMAP_NEBULA_SPAWN_WEIGHT

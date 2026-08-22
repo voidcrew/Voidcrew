@@ -11,6 +11,32 @@ Performance Note:
 #define MAX_OVERMAP_EVENTS 200
 #define MAX_OVERMAP_PLACEMENT_ATTEMPTS 40
 
+/*
+ * Event placement patterns, see setup_dangers().
+ *
+ * "concentric" is the original behaviour: pick a random orbit ring, then fill that whole ring end
+ * to end at the event's spread chance. It produced closed annulus walls of hazards, wildly uneven
+ * coverage between zones (a ring either got picked or it didn't), and roughly 700-800 events.
+ *
+ * "zonal" gives each zone its own tile quota and spends it on compact, separated clusters, then
+ * checks the finished grid is actually traversable. Far fewer events, spread evenly.
+ */
+#define OVERMAP_EVENT_PATTERN_CONCENTRIC "concentric"
+#define OVERMAP_EVENT_PATTERN_ZONAL "zonal"
+
+/// Fraction of a zone's tiles that may hold an event. Applied per zone, so every zone ends up
+/// with the same hazard density regardless of how much area it covers. Primary tuning knob:
+/// raise it if the overmap plays too empty, lower it if hazards feel unavoidable.
+#define OVERMAP_EVENT_DENSITY 0.08
+/// How many clusters each zone is broken into. The zone quota is split between them weighted by
+/// each event type's chain_rate. Fewer, larger clusters read as distinct storm systems.
+#define OVERMAP_EVENT_CLUSTERS_PER_ZONE 6
+/// Tiles a new cluster tries to keep clear of any existing event, so clusters do not merge into
+/// one continuous barrier.
+#define OVERMAP_EVENT_CLUSTER_SPACING 4
+/// Safety valve on how many sealed-off pockets the traversability pass will carve open.
+#define MAX_OVERMAP_LANE_CARVES 60
+
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
 	wait = 10 // Fires every 1 second (10 deciseconds)
@@ -43,6 +69,9 @@ SUBSYSTEM_DEF(overmap)
 	var/list/events = list()
 
 	var/size = OVERMAP_SIZE
+	/// Which pattern setup_dangers() places events with. Set to OVERMAP_EVENT_PATTERN_CONCENTRIC
+	/// to restore the old whole-ring fill.
+	var/overmap_event_pattern = OVERMAP_EVENT_PATTERN_ZONAL
 	//List of all mapzones
 	var/list/map_zones = list()
 	///List of all simulated ships
@@ -599,7 +628,386 @@ SUBSYSTEM_DEF(overmap)
 	return turf_to_return
 
 
+/**
+ * Places every roundstart overmap event.
+ *
+ * See the OVERMAP_EVENT_PATTERN_* defines at the top of this file for what the two patterns do.
+ */
 /datum/controller/subsystem/overmap/proc/setup_dangers()
+	if(overmap_event_pattern == OVERMAP_EVENT_PATTERN_CONCENTRIC)
+		setup_dangers_concentric()
+		return
+	setup_dangers_zonal()
+
+/**
+ * Zone-quota event placement.
+ *
+ * Every zone gets a share of the map's event budget proportional to its size, so the hazard
+ * density a crew flies through is the same wherever they are, and no zone can come up empty
+ * because one global roll happened to land somewhere else. Each zone's share is then spent on a
+ * fixed number of compact clusters - one of each guaranteed family plus weighted picks - rather
+ * than smeared across a whole orbit ring.
+ *
+ * Once everything is down, carve_traversal_lanes() makes sure the result is still flyable, and the
+ * MIN_OVERMAP_ASTEROID_FIELDS mining guarantee is topped up exactly as the concentric path does it.
+ */
+/datum/controller/subsystem/overmap/proc/setup_dangers_zonal()
+	var/list/all_turfs = get_area_turfs(/area/overmap, target_z = OVERMAP_Z_LEVEL)
+	// Indexed by zone type. ZONE_GREEN/YELLOW/RED are 1/2/3, so a plain three-slot list works and
+	// sidesteps DM's number-key-vs-index ambiguity on associative lists.
+	var/list/zone_pools = list(list(), list(), list())
+	// turf -> zone type, kept around for the traversability pass.
+	var/list/zone_of = list()
+	var/list/navigable = list()
+
+	for(var/turf/open/overmap/tile as anything in all_turfs)
+		if(!istype(tile))
+			continue
+		// SSovermap_zones has not initialized yet, so this is the band formula, same as
+		// everything else placed from here (planets, outposts, nebula gas tables).
+		var/zone_type = get_zone_band_for_turf(tile)
+		zone_of[tile] = zone_type
+		navigable += tile
+		// The sun (and anything else already placed) is not up for grabs.
+		if(locate(/obj/structure/overmap) in tile)
+			continue
+		var/list/pool = zone_pools[zone_type]
+		pool[tile] = TRUE
+
+	if(!length(navigable))
+		return
+
+	var/total_spawned = 0
+	for(var/zone_type in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		var/list/zone_pool = zone_pools[zone_type]
+		if(!length(zone_pool))
+			continue
+		var/quota = min(round(length(zone_pool) * OVERMAP_EVENT_DENSITY), MAX_OVERMAP_EVENTS - total_spawned)
+		if(quota <= 0)
+			continue
+		total_spawned += populate_zone_with_events(zone_pool, quota)
+
+	// Placement is random, so it can still seal a pocket shut. Carve it back open, relocating what
+	// we pull out where we can. The second pass has relocation off, so it is guaranteed to finish
+	// with a connected map even if a relocated event landed somewhere awkward.
+	var/carved = carve_traversal_lanes(navigable, zone_of, relocate = TRUE)
+	carved += carve_traversal_lanes(navigable, zone_of, relocate = FALSE)
+
+	// Same mining guarantee the concentric path carries: every meteor tile is a landable asteroid
+	// field, and space mining has to be a dependable loop rather than a lucky roll. Every zone is
+	// guaranteed a meteor cluster above, so this only ever fires if the map had no room for them.
+	var/meteor_count = length(GLOB.meteor_fields)
+	while (meteor_count < MIN_OVERMAP_ASTEROID_FIELDS)
+		var/turf/turf_for_field = get_unused_overmap_square()
+		if (!turf_for_field)
+			break
+		new /obj/structure/overmap/event/meteor(turf_for_field)
+		meteor_count++
+		log_mapping("SSovermap: Spawned guaranteed asteroid field event")
+
+	log_mapping("SSovermap: Placed [total_spawned] overmap events across 3 zones ([meteor_count] asteroid fields, [carved] cleared to keep the map traversable)")
+
+/**
+ * Fills one zone's tile quota with event clusters.
+ *
+ * Arguments:
+ * * zone_pool - associative list of free turfs in this zone. Filled turfs are removed from it.
+ * * quota - how many tiles of this zone may be covered.
+ *
+ * Returns how many event tiles were actually placed.
+ */
+/datum/controller/subsystem/overmap/proc/populate_zone_with_events(list/zone_pool, quota)
+	var/list/cluster_types = list()
+	// One cluster of each family per zone. That is what makes the zones equivalent: every band
+	// gets its own asteroid field to mine, its own storms to route around, and its own nebula -
+	// which matters more than it looks, since a nebula rolls its gas from its band's table.
+	for(var/list/family as anything in GLOB.overmap_event_guaranteed_families)
+		cluster_types += pick(family)
+	while(length(cluster_types) < OVERMAP_EVENT_CLUSTERS_PER_ZONE)
+		cluster_types += pick_weight(GLOB.overmap_event_pick_list)
+
+	// Split the quota between the clusters in proportion to how big each event wants to be.
+	var/total_weight = 0
+	for(var/obj/structure/overmap/event/event_type as anything in cluster_types)
+		total_weight += 1 + initial(event_type.chain_rate)
+	if(total_weight <= 0)
+		return 0
+
+	var/spawned = 0
+	for(var/obj/structure/overmap/event/event_type as anything in cluster_types)
+		if(spawned >= quota)
+			break
+		var/target_size = clamp(round(quota * (1 + initial(event_type.chain_rate)) / total_weight), 1, quota - spawned)
+		spawned += grow_event_cluster(zone_pool, event_type, target_size)
+	return spawned
+
+/**
+ * Grows a single compact cluster of one event type out of a random anchor tile.
+ *
+ * The blob spreads to neighbouring tiles at the event's spread_chance, so a nebula comes out as a
+ * dense round cloud while a majour electrical storm comes out ragged and scattered. It never
+ * leaves the zone pool it was handed, which is what keeps the per-zone quotas honest.
+ *
+ * Returns how many tiles were filled - possibly fewer than asked for, if the blob ran out of room.
+ */
+/datum/controller/subsystem/overmap/proc/grow_event_cluster(list/zone_pool, obj/structure/overmap/event/event_type, target_size)
+	if(target_size <= 0)
+		return 0
+	var/turf/anchor = pick_cluster_anchor(zone_pool)
+	if(isnull(anchor))
+		return 0
+
+	// Events that barely spread would otherwise never be more than a single tile.
+	var/spread_chance = max(initial(event_type.spread_chance), 25)
+
+	var/list/frontier = list(anchor)
+	var/list/considered = list()
+	considered[anchor] = TRUE
+	var/placed = 0
+	// The frontier can grow as it is consumed, so bound the walk.
+	var/iterations_left = target_size * 24
+
+	while(placed < target_size && length(frontier) && iterations_left > 0)
+		iterations_left--
+		var/index = rand(1, length(frontier))
+		var/turf/tile = frontier[index]
+		frontier.Cut(index, index + 1)
+		if(!zone_pool[tile] || (locate(/obj/structure/overmap) in tile))
+			continue
+		new event_type(tile)
+		zone_pool -= tile
+		placed++
+		for(var/direction in GLOB.alldirs)
+			var/turf/neighbour = get_step(tile, direction)
+			if(isnull(neighbour) || considered[neighbour] || !zone_pool[neighbour])
+				continue
+			if(!prob(spread_chance))
+				continue
+			considered[neighbour] = TRUE
+			frontier += neighbour
+
+	return placed
+
+/**
+ * Picks somewhere to start a cluster, preferring tiles that are not already crowded by another
+ * cluster. Keeping anchors apart is what stops separate clusters from fusing into a barrier.
+ */
+/datum/controller/subsystem/overmap/proc/pick_cluster_anchor(list/zone_pool)
+	if(!length(zone_pool))
+		return null
+	for(var/_ in 1 to 20)
+		var/turf/candidate = pick(zone_pool)
+		if(!has_event_within(candidate, OVERMAP_EVENT_CLUSTER_SPACING))
+			return candidate
+	return pick(zone_pool)
+
+/// Returns TRUE if any overmap event sits within `radius` tiles of `centre`.
+/datum/controller/subsystem/overmap/proc/has_event_within(turf/centre, radius)
+	for(var/turf/tile as anything in RANGE_TURFS(radius, centre))
+		if(locate(/obj/structure/overmap/event) in tile)
+			return TRUE
+	return FALSE
+
+/**
+ * Returns the event that stops travel through this tile, if any.
+ *
+ * Deliberately matches overmap_turf_blocked(): nebulas are scenery to hide in, not an obstacle,
+ * so they do not count as a wall here either.
+ */
+/datum/controller/subsystem/overmap/proc/get_blocking_event(turf/tile)
+	for(var/obj/structure/overmap/event/found in tile)
+		if(istype(found, /obj/structure/overmap/event/nebula))
+			continue
+		return found
+	return null
+
+/**
+ * Traversability pass - makes sure no run of hazards walls part of the map off.
+ *
+ * Labels every connected region of hazard-free space, takes the largest one as "the map", and for
+ * each region cut off from it digs the shortest possible run of hazard tiles to reconnect it. The
+ * search is a 0-1 BFS: crossing open space is free, crossing a hazard costs one, so the lane it
+ * finds is the thinnest part of the wall rather than an arbitrary hole.
+ *
+ * Arguments:
+ * * navigable_turfs - every overmap tile a ship could occupy.
+ * * zone_of - turf -> zone type, used to keep relocated events in their own zone.
+ * * relocate - whether displaced events get a new home instead of being deleted.
+ *
+ * Returns how many hazard tiles had to be cleared.
+ */
+/datum/controller/subsystem/overmap/proc/carve_traversal_lanes(list/navigable_turfs, list/zone_of, relocate = TRUE)
+	var/list/blocked = list()
+	var/list/open = list()
+	for(var/turf/tile as anything in navigable_turfs)
+		var/obj/structure/overmap/event/blocker = get_blocking_event(tile)
+		if(blocker)
+			blocked[tile] = blocker
+		else
+			open[tile] = TRUE
+
+	if(!length(open))
+		return 0
+
+	// Flood fill open space into regions.
+	var/list/region_of = list()
+	var/list/regions = list()
+	for(var/turf/seed as anything in open)
+		if(region_of[seed])
+			continue
+		var/region_id = length(regions) + 1
+		var/list/region = list(seed)
+		region_of[seed] = region_id
+		var/cursor = 1
+		while(cursor <= length(region))
+			var/turf/current = region[cursor++]
+			for(var/direction in GLOB.cardinals)
+				var/turf/neighbour = get_step(current, direction)
+				if(isnull(neighbour) || !open[neighbour] || region_of[neighbour])
+					continue
+				region_of[neighbour] = region_id
+				region += neighbour
+		regions += list(region)
+
+	if(length(regions) <= 1)
+		return 0
+
+	// The largest region is the open space everyone is actually flying around in.
+	var/main_id = 1
+	for(var/i in 2 to length(regions))
+		var/list/region = regions[i]
+		var/list/biggest = regions[main_id]
+		if(length(region) > length(biggest))
+			main_id = i
+
+	var/cleared = 0
+	var/carves = 0
+	for(var/i in 1 to length(regions))
+		if(i == main_id)
+			continue
+		if(carves++ >= MAX_OVERMAP_LANE_CARVES)
+			break
+		var/list/lane = find_cheapest_lane(regions[i], region_of, main_id, open, blocked)
+		if(!length(lane))
+			continue
+		for(var/turf/tile as anything in lane)
+			var/obj/structure/overmap/event/displaced = blocked[tile]
+			blocked -= tile
+			open[tile] = TRUE
+			region_of[tile] = main_id
+			cleared++
+			if(relocate && relocate_event(displaced, open, blocked, zone_of, lane))
+				continue
+			qdel(displaced)
+		// The pocket now hangs off the main region, so later searches can terminate on it.
+		for(var/turf/tile as anything in regions[i])
+			region_of[tile] = main_id
+
+	return cleared
+
+/**
+ * 0-1 BFS from a cut-off region to the main region. Open tiles are free to cross, hazard tiles
+ * cost one each, so the first route found crosses the fewest hazards possible.
+ *
+ * Returns the list of hazard turfs along that route, or an empty list if there is no way through.
+ */
+/datum/controller/subsystem/overmap/proc/find_cheapest_lane(list/source_region, list/region_of, main_id, list/open, list/blocked)
+	var/list/came_from = list()
+	var/list/seen = list()
+	var/list/current = list()
+	for(var/turf/tile as anything in source_region)
+		seen[tile] = TRUE
+		current += tile
+
+	var/list/next_layer = list()
+	while(length(current))
+		var/cursor = 1
+		while(cursor <= length(current))
+			var/turf/tile = current[cursor++]
+			for(var/direction in GLOB.cardinals)
+				var/turf/neighbour = get_step(tile, direction)
+				if(isnull(neighbour) || seen[neighbour])
+					continue
+				if(open[neighbour])
+					seen[neighbour] = TRUE
+					came_from[neighbour] = tile
+					if(region_of[neighbour] == main_id)
+						return build_lane(neighbour, came_from, blocked)
+					// Free move - stays in this layer.
+					current += neighbour
+					continue
+				if(!blocked[neighbour])
+					continue // Map edge, or something we have no business digging through.
+				seen[neighbour] = TRUE
+				came_from[neighbour] = tile
+				next_layer += neighbour
+		current = next_layer
+		next_layer = list()
+
+	return list()
+
+/// Walks a find_cheapest_lane() route back to its start, collecting the hazard tiles on it.
+/datum/controller/subsystem/overmap/proc/build_lane(turf/endpoint, list/came_from, list/blocked)
+	var/list/lane = list()
+	var/turf/cursor = endpoint
+	while(cursor)
+		if(blocked[cursor])
+			lane += cursor
+		cursor = came_from[cursor]
+	return lane
+
+/**
+ * Finds a new home for an event pulled out of a travel lane, so opening a lane costs the map
+ * atmosphere rather than content.
+ *
+ * The replacement tile has to be in the same zone (quotas stay honest), well clear of the lane we
+ * just cut, and have at least three open neighbours - a tile that open can't be the chokepoint of
+ * a one-wide corridor, so relocating cannot obviously seal something new.
+ *
+ * Returns TRUE if the event was moved, FALSE if the caller should just delete it.
+ */
+/datum/controller/subsystem/overmap/proc/relocate_event(obj/structure/overmap/event/displaced, list/open, list/blocked, list/zone_of, list/lane)
+	if(QDELETED(displaced))
+		return FALSE
+	var/wanted_zone = zone_of[get_turf(displaced)]
+	if(isnull(wanted_zone))
+		return FALSE
+
+	for(var/_ in 1 to MAX_OVERMAP_PLACEMENT_ATTEMPTS)
+		var/turf/candidate = pick(open)
+		if(!open[candidate] || blocked[candidate] || zone_of[candidate] != wanted_zone)
+			continue
+		if(locate(/obj/structure/overmap) in candidate)
+			continue
+
+		var/too_close = FALSE
+		for(var/turf/lane_tile as anything in lane)
+			if(get_dist(candidate, lane_tile) <= OVERMAP_EVENT_CLUSTER_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+
+		var/open_neighbours = 0
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbour = get_step(candidate, direction)
+			if(!isnull(neighbour) && open[neighbour])
+				open_neighbours++
+		if(open_neighbours < 3)
+			continue
+
+		displaced.forceMove(candidate)
+		open -= candidate
+		blocked[candidate] = displaced
+		return TRUE
+
+	return FALSE
+
+/**
+ * Legacy concentric event placement: pick a random orbit ring and fill the whole ring at the
+ * event's spread chance. Kept behind overmap_event_pattern for comparison and rollback.
+ */
+/datum/controller/subsystem/overmap/proc/setup_dangers_concentric()
 	var/list/orbits = list()
 	for (var/i in 2 to LAZYLEN(radius_tiles))
 		orbits += "[i]"
@@ -871,18 +1279,24 @@ SUBSYSTEM_DEF(overmap)
 
 	var/list/used_ruins = list() // Track which ruins we've already spawned (for allow_duplicates check)
 
+	// Ruins used to take one global random orbit each, which regularly dealt a run of them into
+	// the same band and left another with nothing worth flying to. Deal bands in rotation
+	// instead, the same way planets and trader outposts already do. Counts are unchanged - this
+	// only decides where a ruin lands, never how many there are.
+	var/zone_cursor = ZONE_GREEN
+
 	for(var/i in 1 to ruins_to_spawn)
-		if(!length(orbits))
-			break // No more space in orbits
-
-		// Pick a random orbit
-		var/selected_orbit = text2num(pick(orbits))
-
-		// Find an unused tile in this orbit
-		var/turf/turf_for_ruin = get_unused_overmap_square_in_radius(selected_orbit)
-		if(!turf_for_ruin || !istype(turf_for_ruin))
-			orbits -= "[selected_orbit]" // This orbit is full
-			continue
+		var/turf/turf_for_ruin = get_unused_overmap_square_in_zone_band(zone_cursor, tries = 80) // red band is ~9% of tiles, needs generous sampling
+		if(turf_for_ruin)
+			zone_cursor = (zone_cursor % 3) + 1
+		else // fallback: legacy random-orbit placement
+			if(!length(orbits))
+				break // No more space in orbits
+			var/selected_orbit = text2num(pick(orbits))
+			turf_for_ruin = get_unused_overmap_square_in_radius(selected_orbit)
+			if(!turf_for_ruin || !istype(turf_for_ruin))
+				orbits -= "[selected_orbit]" // This orbit is full
+				continue
 
 		// Pick a ruin template (respecting allow_duplicates)
 		var/datum/map_template/ruin/space/selected_ruin
@@ -912,7 +1326,7 @@ SUBSYSTEM_DEF(overmap)
 		// Track that we've used this ruin
 		used_ruins += selected_ruin
 
-		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at orbit [selected_orbit]")
+		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' in zone band [get_zone_band_for_turf(turf_for_ruin)] at ([turf_for_ruin.x], [turf_for_ruin.y])")
 
 	// Asteroid mining no longer has a guarantee here - space ruin signals retired the
 	// "asteroid" category entirely. The equivalent guarantee (MIN_OVERMAP_ASTEROID_FIELDS)
