@@ -50,6 +50,9 @@
 	. += span_notice("Launcher ID: [launcher_id]")
 	if(loaded_missile)
 		. += span_notice("Loaded: [loaded_missile["name"]] ([loaded_missile["damage"]] damage)")
+		var/obj/item/stored_payload = loaded_missile["payload"]
+		if(stored_payload && !QDELETED(stored_payload))
+			. += span_notice("Payload: [stored_payload].")
 	else
 		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
 	if(!is_on_exterior())
@@ -108,10 +111,10 @@
 		to_chat(user, span_warning("[missile] has no valid payload!"))
 		return
 
-	// If this is a chemical missile, move the grenade into the launcher to protect it from qdel
-	var/obj/item/grenade/chem_grenade/extracted_grenade = fire_data["grenade"]
-	if(extracted_grenade)
-		extracted_grenade.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
+	// If this is a chemical missile, move the payload into the launcher to protect it from qdel
+	var/obj/item/extracted_payload = fire_data["payload"]
+	if(extracted_payload)
+		extracted_payload.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
 
 	// Load the missile
 	loaded_missile = fire_data
@@ -175,12 +178,14 @@
 	return ..()
 
 /obj/machinery/ship_combat/missile_launcher/on_deconstruction(disassembled)
-	// Clean up any chemical grenades stored in the launcher
-	for(var/obj/item/grenade/chem_grenade/grenade in contents)
+	// Clean up any chemical payloads (chem grenades or chemical payload cores) stored in the launcher
+	for(var/obj/item/stored_payload in contents)
+		if(!istype(stored_payload, /obj/item/grenade/chem_grenade) && !istype(stored_payload, /obj/item/bombcore/chemical))
+			continue
 		if(disassembled)
-			grenade.forceMove(drop_location())  // Drop grenade if disassembled cleanly
+			stored_payload.forceMove(drop_location())  // Hand the payload back if disassembled cleanly
 		else
-			qdel(grenade)  // Delete grenade if destroyed
+			qdel(stored_payload)  // Delete the payload if destroyed
 	// Loaded missile data is lost on deconstruction
 	loaded_missile = null
 
@@ -213,16 +218,33 @@
 	new_missile.tracking = new /obj/item/electronics/ship_missile_tracking(new_missile)
 
 	// Create the appropriate warhead (bomb core)
-	// Note: Chemical missiles use grenades which can't be recreated from stored data
+	// Note: Chemical missiles carry a real item, so we hand the original back instead
 	var/effect_type = loaded_missile["effect_type"]
 	var/warhead_type
 	if(effect_type == /obj/effect/ship_missile/chemical)
-		// Chemical grenades can't be recreated - their reagents are unique
-		// The missile is unloadable but will be empty (just the frame)
-		to_chat(user, span_warning("The chemical payload cannot be recovered - the grenade was consumed."))
-		new_missile.construction_state = MISSILE_STATE_TRACKING
+		// The chem grenade / chemical payload core is stashed in our contents - give it back
+		var/obj/item/stored_payload = loaded_missile["payload"]
+		if(QDELETED(stored_payload) || stored_payload.loc != src)
+			to_chat(user, span_warning("The chemical payload is gone - only the frame comes back out."))
+			new_missile.construction_state = MISSILE_STATE_TRACKING
+			new_missile.update_appearance()
+			loaded_missile = null
+			update_appearance()
+			return
+		stored_payload.forceMove(new_missile)
+		if(istype(stored_payload, /obj/item/grenade/chem_grenade))
+			var/obj/item/grenade/chem_grenade/recovered_grenade = stored_payload
+			new_missile.chemical_grenade = recovered_grenade
+		else if(istype(stored_payload, /obj/item/bombcore/chemical))
+			var/obj/item/bombcore/chemical/recovered_core = stored_payload
+			new_missile.chemical_core = recovered_core
+		new_missile.construction_state = MISSILE_STATE_ARMED
 		new_missile.update_appearance()
 		loaded_missile = null
+		user.visible_message(
+			span_notice("[user] removes a missile from [src]."),
+			span_notice("You remove the missile from [src].")
+		)
 		update_appearance()
 		return
 	else
@@ -345,7 +367,7 @@
 
 	// Store missile data before clearing
 	var/effect_type = loaded_missile["effect_type"]
-	var/obj/item/grenade/chem_grenade/grenade_to_pass = loaded_missile["grenade"]
+	var/obj/item/payload_to_pass = loaded_missile["payload"]
 	var/missile_damage = loaded_missile["damage"]
 	var/missile_devastation = loaded_missile["devastation"]
 	var/missile_heavy = loaded_missile["heavy"]
@@ -386,7 +408,7 @@
 		to_chat(user, span_notice("Missile away! Target: [target_ship ? target_ship.name : "unknown"]"))
 
 	// Delay actual missile spawn so the launch visual can fly off-screen first
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_ship_missile), effect_type, spawn_turf, target, target_ship, source_ship, missile_damage, missile_devastation, missile_heavy, missile_light, missile_flame, missile_icon_state, grenade_to_pass), 1.5 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_ship_missile), effect_type, spawn_turf, target, target_ship, source_ship, missile_damage, missile_devastation, missile_heavy, missile_light, missile_flame, missile_icon_state, payload_to_pass), 1.5 SECONDS)
 
 	update_appearance()
 	return TRUE

@@ -3,7 +3,7 @@
 // Based on meteor movement patterns - spawns at edge of target ship and flies in
 
 /// Global proc to create a ship missile after a delay (called via timer from launcher)
-/proc/create_ship_missile(effect_type, turf/spawn_turf, turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship, damage, devastation, heavy, light, flame, icon_state, obj/item/grenade/chem_grenade/grenade)
+/proc/create_ship_missile(effect_type, turf/spawn_turf, turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship, damage, devastation, heavy, light, flame, icon_state, obj/item/payload)
 	if(!spawn_turf || !target)
 		return
 	new effect_type(
@@ -17,7 +17,7 @@
 		light,
 		flame,
 		icon_state,
-		grenade,
+		payload,
 	)
 
 /obj/effect/ship_missile
@@ -289,19 +289,48 @@
 /obj/effect/ship_missile/chemical
 	name = "chemical ship missile"
 	desc = "A chemical warhead missile streaking through space."
-	/// The grenade payload to detonate on impact
-	var/obj/item/grenade/chem_grenade/payload_grenade
+	// Our payload detonates on our terms, in impact(). Don't let the impact explosion
+	// set it off from inside our contents first.
+	flags_1 = PREVENT_CONTENTS_EXPLOSION_1
+	/// The payload to detonate on impact - a chem grenade or a chemical payload bomb core
+	var/obj/item/payload_item
 
-/obj/effect/ship_missile/chemical/Initialize(mapload, turf/target, obj/structure/overmap/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon, obj/item/grenade/chem_grenade/grenade)
+/obj/effect/ship_missile/chemical/Initialize(mapload, turf/target, obj/structure/overmap/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon, obj/item/payload)
 	. = ..()
-	if(grenade)
-		payload_grenade = grenade
-		// Move the grenade into the missile so it travels with us
-		grenade.forceMove(src)
+	// The payload was stashed in the launcher during flight prep; it can legitimately be
+	// gone by now if the launcher was destroyed in the meantime.
+	if(payload && !QDELETED(payload))
+		payload_item = payload
+		// Move the payload into the missile so it travels with us.
+		// This is a plain forceMove, so it works even when the launcher and the target
+		// ship are on different z-levels.
+		payload.forceMove(src)
 
 /obj/effect/ship_missile/chemical/Destroy()
-	payload_grenade = null
+	// If we died without impacting (left the z-level, admin delete, ...) don't strand
+	// the payload in our contents.
+	if(payload_item)
+		QDEL_NULL(payload_item)
 	return ..()
+
+/// Detonates whatever payload we carry at the impact turf.
+/// The payload's own detonate() is reused verbatim, so the reagent volume and the
+/// spread radius are exactly what that item does when it goes off on foot - the
+/// missile adds nothing. Works across z-levels because the payload rides inside us
+/// and is simply moved onto the impact turf first.
+/obj/effect/ship_missile/chemical/proc/detonate_payload(turf/impact_loc)
+	if(QDELETED(payload_item) || !impact_loc)
+		return
+	var/obj/item/payload = payload_item
+	payload_item = null
+	payload.forceMove(impact_loc)
+	if(istype(payload, /obj/item/grenade))
+		var/obj/item/grenade/nade = payload
+		nade.detonate()
+		return
+	if(istype(payload, /obj/item/bombcore))
+		var/obj/item/bombcore/core = payload
+		core.detonate()
 
 /obj/effect/ship_missile/chemical/impact()
 	if(exploded)
@@ -335,11 +364,8 @@
 	// Ship-limited explosion effects
 	ship_explosion_effects(impact_loc, target_ship)
 
-	// Detonate the chemical grenade at the impact location
-	if(payload_grenade && !QDELETED(payload_grenade))
-		// Move grenade to impact location and trigger native detonation
-		payload_grenade.forceMove(impact_loc)
-		payload_grenade.detonate()
+	// Detonate the chemical payload at the impact location
+	detonate_payload(impact_loc)
 
 	// Screen shake for nearby players on the target ship only
 	shake_camera_ship(impact_loc, 7, 2, 1, target_ship)
@@ -374,10 +400,10 @@
 	// Ship-limited explosion effects
 	ship_explosion_effects(impact_loc, target_ship)
 
-	// Chemical payload is blocked by shields - grenade does NOT detonate
-	// The grenade is simply destroyed along with the missile
-	if(payload_grenade && !QDELETED(payload_grenade))
-		qdel(payload_grenade)
+	// Chemical payload is blocked by shields - it does NOT detonate
+	// The payload is simply destroyed along with the missile
+	if(payload_item)
+		QDEL_NULL(payload_item)
 
 	// Screen shake on target ship only
 	shake_camera_ship(impact_loc, 7, 2, 1, target_ship)

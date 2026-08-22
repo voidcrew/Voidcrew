@@ -365,8 +365,9 @@
 		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 15,
 	)
 
-// Chemical missiles now use standard chemical grenades inserted into missile frames
-// No separate warhead needed - players build grenades and insert them directly
+// Chemical missiles use standard chemical grenades or crafted chemical payload cores
+// (/obj/item/bombcore/chemical) inserted into missile frames. No separate warhead
+// design is needed - players build the payload and insert it directly.
 
 // ========== EW EXPLOIT CARTRIDGE DESIGNS ==========
 // Tier 1 software only. Every stronger exploit is black-market stock and has
