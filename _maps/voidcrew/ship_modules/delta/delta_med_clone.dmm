@@ -1,0 +1,113 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/experimental_cloner_scanner,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"l" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"p" = (
+/obj/machinery/computer/experimental_cloner{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/experimental_cloner{
+	evil_chance = 0
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"w" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/secure_closet/medical1,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"x" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"B" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"G" = (
+/obj/modular_map_connector,
+/obj/structure/table/glass,
+/obj/item/paper/fluff/ruins/exp_cloning/manual{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/machinery/light/small/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"K" = (
+/obj/structure/rack,
+/obj/item/clothing/under/color/grey{
+	pixel_y = 4
+	},
+/obj/item/clothing/shoes/sneakers/black{
+	pixel_y = -5
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"L" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+L
+q
+G
+"}
+(2,1,1) = {"
+l
+B
+v
+"}
+(3,1,1) = {"
+K
+B
+e
+"}
+(4,1,1) = {"
+L
+S
+p
+"}
+(5,1,1) = {"
+L
+B
+x
+"}
+(6,1,1) = {"
+L
+B
+w
+"}

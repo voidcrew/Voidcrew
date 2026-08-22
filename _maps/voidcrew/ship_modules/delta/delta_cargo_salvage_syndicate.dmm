@@ -91,6 +91,9 @@
 	pixel_x = 6;
 	pixel_y = -3
 	},
+/obj/item/clothing/glasses/welding/up{
+	pixel_y = -5
+	},
 /obj/item/crowbar/large{
 	pixel_x = -6;
 	pixel_y = -3
@@ -227,6 +230,7 @@
 "Y" = (
 /obj/structure/rack,
 /obj/item/gun/energy/plasmacutter,
+/obj/item/clothing/glasses/welding/up,
 /obj/item/extraction_pack,
 /obj/item/fulton_core,
 /obj/item/gps/mining,

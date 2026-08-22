@@ -273,6 +273,23 @@
 		),
 	)
 
+/datum/ship_upgrade_module/delta/med_clone
+	id = "delta_med_clone"
+	name = "Cloning Bay"
+	desc = "A pre-ban cloning prototype wedged into the medbay: scanner, growth \
+		tank and control console, with a morgue tray and a change of clothes for \
+		whatever comes out. Scan the crew while they are still walking around - \
+		the tank grows one body at a time, slowly, and the copy is not always a \
+		clean one."
+	slot = "delta_med"
+	map_file = "delta/delta_med_clone.dmm"
+	// Deliberately the most expensive module in the fleet, in two part classes.
+	// Nothing on the techweb prints these boards, so this is not buying past a
+	// research node - it is buying a machine a crew otherwise only gets by
+	// finding the cloning-facility space ruin, and it is a respawn route on top
+	// of that. Owner: this number is the balance dial, tune it here.
+	part_cost = list(PART_CLASS_SCIENCE = 10, PART_CLASS_MISC = 6)
+
 // -- delta_dorms: the crew deck.
 
 /datum/ship_upgrade_module/delta/dorms_cabins
