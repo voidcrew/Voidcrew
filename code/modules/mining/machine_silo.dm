@@ -244,6 +244,14 @@
 	data["materials"] =  materials.ui_data()
 
 	data["machines"] = list()
+	// VOIDCREW EDIT: a connection whose machine died (or hard-deleted to a null entry)
+	// must not crash the whole window. Pruned from the real list, not skipped in the
+	// data, because ui_act's hold/remove actions index into ore_connected_machines -
+	// a display list that skips entries would point those buttons at the wrong machine.
+	for(var/datum/component/remote_materials/stale as anything in ore_connected_machines.Copy())
+		if(!stale || QDELETED(stale) || QDELETED(stale.parent))
+			ore_connected_machines -= stale
+	// VOIDCREW EDIT END
 	for(var/datum/component/remote_materials/remote as anything in ore_connected_machines)
 		var/atom/parent = remote.parent
 		data["machines"] += list(

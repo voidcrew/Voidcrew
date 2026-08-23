@@ -151,14 +151,19 @@ const MachineList = (props: MachineListProps) => {
 
   return machines.length > 0 ? (
     <Section fill scrollable>
-      {machines.map((machine, index) => (
-        <MachineDisplay
-          key={index}
-          machine={machine}
-          onPause={() => onPause(index + 1)}
-          onRemove={() => onRemove(index + 1)}
-        />
-      ))}
+      {machines.map(
+        (machine, index) =>
+          // VOIDCREW EDIT: a null entry killed the whole window; keep the index so
+          // pause/remove still address the right slot server-side
+          machine && (
+            <MachineDisplay
+              key={index}
+              machine={machine}
+              onPause={() => onPause(index + 1)}
+              onRemove={() => onRemove(index + 1)}
+            />
+          ),
+      )}
     </Section>
   ) : (
     <NoticeBox>No machines connected!</NoticeBox>
