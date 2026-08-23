@@ -157,16 +157,11 @@
 
 	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
 
-	// The buyer decides up front whether their hull is locked. Held off the join menu
-	// while they type, or a stranger can take the captain's seat mid-prompt; the input
-	// times out so a disconnect can't leave the hull closed forever.
+	// Hulls spawn open; the captain locks theirs from Ship Management if they want one.
+	// The buyer is cleared anyway so a password set before they seat themselves (or
+	// after a failed spawn) can never lock them out of the hull they paid for.
 	target.password_cleared_ckeys[ckey] = TRUE
-	target.joining_allowed = FALSE
-	var/wanted_password = tgui_input_text(src, "Set a join password for your ship, or leave blank to let anyone join. You can change it later from Ship Management; crew you invite never need it.", "[target.name] - Join Password", max_length = SHIP_JOIN_PASSWORD_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
-	if(!QDELETED(target))
-		target.joining_allowed = TRUE
-		if(wanted_password)
-			target.set_join_password(wanted_password, src)
+	to_chat(src, span_notice("Your ship is open for anyone to join. To lock it, set a join password from Ship Management once aboard."))
 
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
 		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
