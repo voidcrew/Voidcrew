@@ -145,11 +145,6 @@
 			selector.ui_interact(user)
 
 		if("requisition_hull")
-			// A fresh hull comes with a fresh loadout, so the cryo cooldown covers it too.
-			var/requisition_wait = cryo_rejoin_wait(user.ckey)
-			if(requisition_wait)
-				to_chat(user, span_warning("You returned to cryosleep too recently to take a new posting. Try again in [DisplayTimeText(requisition_wait)]."))
-				return FALSE
 			// Re-checked in requisition_free_hull() too - the UI is never the authority
 			// on this, and the fleet can fill up while the menu sits open
 			if(!can_requisition_hull(user))
@@ -182,11 +177,12 @@
 				to_chat(user, span_warning("That ship has no spawn points available."))
 				return FALSE
 
-			// The other half of the cryopod's anti-dupe rule: whoever just cryo'd out
-			// waits out the cooldown before drawing a new loadout anywhere.
-			var/rejoin_wait = cryo_rejoin_wait(user.ckey)
+			// The other half of the cryopod's anti-dupe rule: whoever just cryo'd out of
+			// THIS ship waits out the cooldown before taking a seat on it again. Any
+			// other ship is open to them right away.
+			var/rejoin_wait = cryo_rejoin_wait(user.ckey, ship)
 			if(rejoin_wait)
-				to_chat(user, span_warning("You returned to cryosleep too recently to take a new posting. Try again in [DisplayTimeText(rejoin_wait)]."))
+				to_chat(user, span_warning("You left this ship's crew for cryosleep too recently to rejoin it. Try again in [DisplayTimeText(rejoin_wait)], or join a different ship."))
 				return FALSE
 
 			// Close menu and proceed to job selection

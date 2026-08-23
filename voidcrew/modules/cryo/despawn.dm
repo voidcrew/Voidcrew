@@ -36,26 +36,29 @@
  * cancels the whole thing with nothing lost. Only a cycle that finishes with the same
  * person still sealed inside takes them out of the round.
  *
- * Leaving also starts a rejoin cooldown on the player, checked at the join menu: no new
- * posting and no hull requisition until it lapses. Without it the pod is a gear printer -
- * cryo out, rejoin the freed seat, draw a fresh loadout, repeat. The old kit is deleted,
- * but the new one is minted every cycle; ten minutes of bench time makes the loop useless
- * while barely touching someone who genuinely wants to switch ships.
+ * Leaving also starts a rejoin cooldown on the player FOR THAT SHIP, checked at the join
+ * menu. Without it the pod is a gear printer - strip your kit onto the deck, cryo out,
+ * rejoin the freed seat, draw a fresh loadout, repeat. Ten minutes of bench time on the
+ * hull they just left makes the loop useless, while switching to a different ship (or
+ * requisitioning a new hull) stays instant - that is a fresh start, not a dupe.
  */
 
 /// How long the pod's cryostasis cycle runs after confirmation - the climb-out-and-cancel window.
 #define CRYO_DESPAWN_GRACE (15 SECONDS)
-/// How long after a voluntary despawn the player is barred from taking a new posting.
+/// How long after a voluntary despawn the player is barred from rejoining the ship they left.
 #define CRYO_REJOIN_COOLDOWN (10 MINUTES)
 
-/// ckey -> world.time when they may join a crew again, written on every voluntary despawn.
+/// "ckey@shipref" -> world.time when that player may rejoin that ship, written on despawn.
 GLOBAL_LIST_EMPTY(cryo_rejoin_cooldowns)
 
 /**
- * Deciseconds until this ckey may take a new posting, or 0 if they are clear now.
+ * Deciseconds until this ckey may rejoin this specific ship, or 0 if they are clear now.
+ * Other ships are never gated - the cooldown exists to stop same-seat loadout cycling.
  */
-/proc/cryo_rejoin_wait(ckey)
-	var/until = GLOB.cryo_rejoin_cooldowns[ckey]
+/proc/cryo_rejoin_wait(ckey, obj/structure/overmap/ship/ship)
+	if(!ship)
+		return 0
+	var/until = GLOB.cryo_rejoin_cooldowns["[ckey]@[REF(ship)]"]
 	if(!until || world.time >= until)
 		return 0
 	return until - world.time
@@ -127,7 +130,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 
 	var/confirm = tgui_alert(
 		user,
-		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens. The pod takes [CRYO_DESPAWN_GRACE / 10] seconds to cycle - climbing out cancels it - and you will not be able to take a new posting for [CRYO_REJOIN_COOLDOWN / 600] minutes afterwards.",
+		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens. The pod takes [CRYO_DESPAWN_GRACE / 10] seconds to cycle - climbing out cancels it - and you will not be able to rejoin THIS ship for [CRYO_REJOIN_COOLDOWN / 600] minutes afterwards. Other ships stay open to you.",
 		"Return to Cryosleep",
 		list("Return to Cryosleep", "Stay Awake"),
 		timeout = 30 SECONDS,
@@ -202,9 +205,11 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 		span_notice("[src] hums as the cryostasis cycle completes."),
 		span_notice("The cold takes hold, and the round ends here for you."),
 	)
-	// The dupe-loop half of the anti-dupe rule: the freed seat exists, but this player
-	// cannot take it (or any other) until the cooldown lapses. Checked at the join menu.
-	GLOB.cryo_rejoin_cooldowns[player_ckey] = world.time + CRYO_REJOIN_COOLDOWN
+	// The dupe-loop half of the anti-dupe rule: the seat this player just freed on THIS
+	// hull is barred to them until the cooldown lapses. Checked at the join menu; every
+	// other ship, and hull requisition, stays open to them immediately.
+	if(owner)
+		GLOB.cryo_rejoin_cooldowns["[player_ckey]@[REF(owner)]"] = world.time + CRYO_REJOIN_COOLDOWN
 
 	// Announced before the roster edit, so the notice still reaches a crew of one.
 	owner?.ship_notify("[despawn_name] has entered cryogenic storage.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 40)
