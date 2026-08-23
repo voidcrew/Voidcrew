@@ -122,6 +122,15 @@ SUBSYSTEM_DEF(weather)
 	for(var/datum/weather_site/site as anything in eligible_sites_cache)
 		if(QDELETED(site) || !length(site.weather_types))
 			continue
+		if(site.awaiting_owned_areas())
+			// Registered, but the areas it owns do not exist yet - a planet's site outlives
+			// apply_planet_level_traits() by the whole of fill_in(), which is minutes. Rolling now
+			// would hand the storm the z-wide get_areas(area_type) sweep in setup_weather_areas()
+			// and paint every co-tenant packed onto the level. Stay eligible so the site storms as
+			// soon as its ground exists, rather than burning this roll and a 5-10 minute cooldown
+			// on a storm that can only land in the wrong place.
+			eligible_sites |= site
+			continue
 		if(site.has_active_weather())
 			// This site's own storm is still winding down. Nothing else on the level blocks it.
 			eligible_sites |= site

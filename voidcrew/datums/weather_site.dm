@@ -43,6 +43,24 @@
 	 * back to the z-wide `get_areas(area_type)` walk in setup_weather_areas().
 	 */
 	var/list/owned_areas
+	/**
+	 * TRUE when this site's storms MUST stay inside `owned_areas`, i.e. the z-wide fallback
+	 * in setup_weather_areas() is not allowed to answer for it.
+	 *
+	 * A tenant's site exists before its areas do. A planet registers its site in
+	 * apply_planet_level_traits(), and the surface area it owns is not created until
+	 * fill_in() returns - a tick-yielding walk of ~15k turfs, minutes later. SSweather fires
+	 * every second and a site is eligible the moment it is registered, so a storm rolled
+	 * inside that window found `owned_areas` empty, fell back to
+	 * get_areas(/area/overmap_encounter/planetoid) and painted - and burned - every OTHER
+	 * planet packed onto the level. That is how a lava co-tenant's ash storm landed on a
+	 * jungle planet, with no telegraph, because can_get_alert() filters on the site rect and
+	 * can_weather_act_mob() does not.
+	 *
+	 * Sites that legitimately cover a whole level and describe themselves by area TYPE
+	 * (roundstart levels, flat encounters, admin weather) leave this FALSE and keep the sweep.
+	 */
+	var/area_scoped = FALSE
 	/// Random-weather weight table: weather typepath -> probability.
 	var/list/weather_types
 	/// TIMER_STOPPABLE id of the pending cooldown callback, if a storm is on cooldown here.
@@ -147,6 +165,21 @@
 		if(!QDELETED(owned))
 			live_areas += owned
 	return length(live_areas) ? live_areas : null
+
+/**
+ * Marks this site as one whose storms are confined to the areas it owns.
+ *
+ * Set by the tenant that registers the site, not inferred from `owned_areas` - the whole
+ * point is to describe a site that does not have its areas YET.
+ */
+/datum/weather_site/proc/set_area_scoped(scoped = TRUE)
+	area_scoped = scoped
+	return src
+
+/// TRUE while an area-scoped site is still waiting for the areas its storms would fall on.
+/// A site in this state is registered and armed but has nothing to storm on yet.
+/datum/weather_site/proc/awaiting_owned_areas()
+	return area_scoped && !length(get_weather_areas())
 
 /// Replaces the site's random-weather weight table.
 /datum/weather_site/proc/set_weather_types(list/new_types)

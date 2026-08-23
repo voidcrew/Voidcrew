@@ -249,9 +249,20 @@
 
 /datum/weather/proc/setup_weather_areas()
 	var/list/affectareas = list()
-	// VOIDCREW EDIT ADDITION: a site-launched storm already knows its area instances, so it
-	// skips the world-wide get_areas() sweep and never picks up a co-tenant's areas.
-	for(var/area/selected_area as anything in (scoped_areas || get_areas(area_type)))
+	// VOIDCREW EDIT ADDITION START - a site-launched storm already knows its area instances, so
+	// it skips the world-wide get_areas() sweep and never picks up a co-tenant's areas.
+	//
+	// An area-scoped site that owns NOTHING impacts nothing, rather than falling through to the
+	// sweep: every voidcrew planet storm shares area_type = /area/overmap_encounter/planetoid,
+	// so on a packed level that sweep matches all four tenants' surfaces and caves - which is
+	// the exact thing the scoping exists to prevent. SSweather holds such a site back until its
+	// areas exist (see fire()); this is the net for a storm that reaches here by another route,
+	// or whose areas were torn down under it.
+	var/list/candidate_areas = scoped_areas
+	if(isnull(candidate_areas) && !weather_site?.area_scoped)
+		candidate_areas = get_areas(area_type)
+	// VOIDCREW EDIT ADDITION END
+	for(var/area/selected_area as anything in candidate_areas)
 		affectareas += selected_area
 	for(var/area/protected_area as anything in protected_areas)
 		affectareas -= get_areas(protected_area)

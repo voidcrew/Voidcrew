@@ -50,8 +50,20 @@ type Log = {
   amount: number;
   time: string;
   noun: string;
-  user_data: UserData;
+  user_data: UserData | null;
 };
+
+// VOIDCREW EDIT ADDITION START - unattended machines (conveyor deposits, fabricator
+// withdrawals, smelters) log with no user, and an unreadable ID logs a failure record.
+// Reading .name/.assignment off those blind took the entire window down with a
+// "Cannot read properties of null" crash.
+const describeUser = (user?: UserData | null) => {
+  if (!user || user.id_read_failure || !user.name) {
+    return { name: 'Unknown', assignment: 'No ID' };
+  }
+  return { name: user.name, assignment: user.assignment || 'Unassigned' };
+};
+// VOIDCREW EDIT ADDITION END
 
 enum Tab {
   Machines,
@@ -266,18 +278,8 @@ const LogsList = (props: LogsListProps) => {
 };
 
 const UserItem = (props: UserData) => {
-  const {
-    name,
-    age,
-    assignment,
-    account_id,
-    account_holder,
-    account_assignment,
-    accesses,
-    chameleon_override,
-    silicon_override,
-    id_read_failure,
-  } = props;
+  const { account_id, silicon_override, id_read_failure } = props;
+  const { name, assignment } = describeUser(props); // VOIDCREW EDIT - was reading name/assignment straight off the record
   const { act, data } = useBackend<Data>();
   const { banned_users } = data;
   return (
@@ -320,9 +322,10 @@ const LogEntry = (props: Log) => {
     noun,
     user_data,
   } = props;
+  const user = describeUser(user_data); // VOIDCREW EDIT - user_data can be absent on machine-driven entries
   return (
     <Collapsible
-      title={`${action.toUpperCase()} ${formatAmount(action, amount)} ${noun}, [${user_data.name} | ${user_data.assignment.toUpperCase()}]`}
+      title={`${action.toUpperCase()} ${formatAmount(action, amount)} ${noun}, [${user.name} | ${user.assignment.toUpperCase()}]`}
     >
       <Section className="__LogEntry">
         <LabeledList>
@@ -338,7 +341,7 @@ const LogEntry = (props: Log) => {
             {raw_materials}
           </LabeledList.Item>
           <LabeledList.Item label="User">
-            <UserItem {...user_data} />
+            {user_data ? <UserItem {...user_data} /> : user.name}
           </LabeledList.Item>
         </LabeledList>
       </Section>

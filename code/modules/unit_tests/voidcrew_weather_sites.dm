@@ -155,3 +155,69 @@
 	turf_beta.change_area(beta_area, original_beta_area)
 	qdel(alpha_area)
 	qdel(beta_area)
+
+/**
+ * # A tenant's site must not storm before it owns any ground
+ *
+ * A planet registers its /datum/weather_site in apply_planet_level_traits(), minutes before
+ * fill_in() creates the surface area that site owns. SSweather fires every second and makes a
+ * site eligible the moment it is registered, so a storm rolled inside that window used to find
+ * `owned_areas` empty and fall back to the z-wide get_areas(area_type) sweep - which on a
+ * packed level matches every co-tenant's areas, because all four planet storms share
+ * area_type = /area/overmap_encounter/planetoid. That is how a lava planet's ash storm landed
+ * on the jungle planet next door.
+ */
+/datum/unit_test/weather_site_build_window
+
+/datum/unit_test/weather_site_build_window/Run()
+	var/turf/turf_alpha = run_loc_floor_bottom_left
+	var/turf/turf_beta = locate(turf_alpha.x + 1, turf_alpha.y, turf_alpha.z)
+	TEST_ASSERT(isturf(turf_beta), "the unit test zone had no second turf to build a weather site on")
+	var/test_z = turf_alpha.z
+
+	var/area/original_alpha_area = turf_alpha.loc
+	var/area/original_beta_area = turf_beta.loc
+	var/area/weather_site_unit_test/alpha/alpha_area = new
+	var/area/weather_site_unit_test/beta/beta_area = new
+	turf_alpha.change_area(original_alpha_area, alpha_area)
+	turf_beta.change_area(original_beta_area, beta_area)
+
+	// A site mid-build: it knows its climate, it does not have its areas yet.
+	var/datum/weather_site/building_site = new("unit-test-building", test_z, list(/datum/weather/unit_test/site_scoped = 100))
+	building_site.set_area_scoped()
+	building_site.add_footprint_rect(turf_alpha.x, turf_alpha.y, turf_alpha.x, turf_alpha.y)
+
+	TEST_ASSERT(building_site.awaiting_owned_areas(), \
+		"an area-scoped site with no owned areas did not report itself as still waiting for them")
+
+	// The bug, exactly: a storm launched from that site must impact NOTHING rather than
+	// sweeping up every area of its type on the level.
+	var/datum/weather/early_storm = allocate(/datum/weather/unit_test/site_scoped, list(test_z), null, building_site)
+	TEST_ASSERT(!length(early_storm.impacted_areas), \
+		"a storm from an area-scoped site that owns nothing fell back to the z-wide area sweep")
+	TEST_ASSERT(!early_storm.impacted_areas_lookup[alpha_area] && !early_storm.impacted_areas_lookup[beta_area], \
+		"a storm rolled inside a tenant's build window painted areas on its z-level")
+
+	// Control: a site-less storm is upstream's, and upstream's answer is the type sweep. If this
+	// stops finding the areas, the assertions above stop proving anything.
+	var/datum/weather/unscoped_storm = allocate(/datum/weather/unit_test/site_scoped, list(test_z), null, null)
+	TEST_ASSERT(unscoped_storm.impacted_areas_lookup[alpha_area] && unscoped_storm.impacted_areas_lookup[beta_area], \
+		"a storm with no weather site at all stopped falling back to get_areas(area_type)")
+
+	// fill_in() has returned: the site owns its surface and is free to storm on it, and only it.
+	building_site.add_owned_area(alpha_area)
+	TEST_ASSERT(!building_site.awaiting_owned_areas(), \
+		"an area-scoped site that has been handed its areas was still held out of the scheduler")
+
+	var/datum/weather/armed_storm = allocate(/datum/weather/unit_test/site_scoped, list(test_z), null, building_site)
+	TEST_ASSERT(armed_storm.impacted_areas_lookup[alpha_area], \
+		"a site that owns an area launched a storm that did not impact it")
+	TEST_ASSERT(!armed_storm.impacted_areas_lookup[beta_area], \
+		"a site-scoped storm reached an area its site does not own")
+
+	// The site is left to GC, as the sites in the test above are: the storms hold the last
+	// references to it and each drops its own in Destroy().
+	turf_alpha.change_area(alpha_area, original_alpha_area)
+	turf_beta.change_area(beta_area, original_beta_area)
+	qdel(alpha_area)
+	qdel(beta_area)

@@ -931,7 +931,15 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		set_sight(initial(sight))
 
 /mob/dead/observer/AltClickOn(atom/target)
-	client.loot_panel.open(get_turf(target))
+	// VOIDCREW EDIT: ghosts get the loot panel on the clicked tile, so they can reach
+	// things buried under other atoms instead of only whatever is on top.
+	// Deliberately skips COMSIG_CLICK_ALT and click_alt() - ghosts look, they don't act.
+	if(SEND_SIGNAL(src, COMSIG_MOB_ALTCLICKON, target) & COMSIG_MOB_CANCEL_CLICKON)
+		return
+	var/turf/tile = get_turf(target)
+	if(isnull(tile) || isnull(client))
+		return
+	client.loot_panel.open(tile)
 
 /mob/dead/observer/AltClickSecondaryOn(atom/target)
 	if(client && check_rights_for(client, R_DEBUG))

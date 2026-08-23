@@ -300,7 +300,7 @@
 /obj/machinery/ship_combat/pod_launcher
 	name = "assault pod tube"
 	desc = "A hull-mounted tube for throwing a crewed drop pod at somebody else's ship. Drag a sealed pod onto it to load, then link it to a weapons system with a multitool. Use a wrench to secure or unsecure."
-	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
+	icon = 'voidcrew/icons/obj/machines/pod_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
 	anchored = TRUE

@@ -6766,6 +6766,7 @@
 #include "voidcrew\datums\votes\transfer_vote.dm"
 #include "voidcrew\edits\config.dm"
 #include "voidcrew\edits\gps.dm"
+#include "voidcrew\edits\hyperspace_overboard.dm"
 #include "voidcrew\edits\id_card.dm"
 #include "voidcrew\edits\jobs.dm"
 #include "voidcrew\edits\keybindings.dm"

@@ -19,8 +19,10 @@
 	var/warmup_timer
 	/// The empty space we're docking to
 	var/obj/structure/overmap/planet/empty/docked_at
-	/// Transit dock reservation
-	var/obj/docking_port/stationary/transit/transit_dock
+	/// The turf reservation the shuttle is parked in while "in transit". Held BARE on
+	/// this datum on purpose - never wrapped in an /obj/docking_port/stationary/transit.
+	/// See the doc comment on spawn_shuttle() for why the dock was fatal.
+	var/datum/turf_reservation/transit_reservation
 	/// Time when warmup started (for timer display)
 	var/warmup_started
 	/// world.time past which an unresolved warmup is treated as stalled. 0 when idle or docked.
@@ -170,25 +172,25 @@
 	docked_at = null
 
 /**
- * Spawns the cargo shuttle using SSshuttle's transit system
+ * Spawns the cargo shuttle into a bare turf reservation
  * Returns TRUE on success
  *
- * Order matters here, and not for readability. SSshuttle.fire() force-qdels every
- * transit port whose `owner` is null, on every tick - that sweep is how orphaned transit
- * space gets reclaimed. Both of the expensive steps below yield for multiple seconds:
- * request_turf_block_reservation() opens with an UNTIL() on the reservation z-level, and
- * template.load() sleeps in dispatch() waiting on modular map roots. Creating the transit
- * port before either of them - as this used to - leaves an ownerless port sitting in
- * SSshuttle.transit_docking_ports across that whole window, and any SSshuttle fire inside
- * it destroys the port out from under us.
- *
- * The delivery then proceeds on a dead transit dock and the datum never leaves
- * CARGO_SHUTTLE_ARRIVING, which the helm reads as "cargo shuttle present" and refuses to
- * undock on - a permanently stuck ship (round 837, 2026-08-04; the tell in runtime.log is
- * "Attempted to add a new component of type [/datum/component/shuttle_cling] to a
- * qdeleting parent of type [/obj/docking_port/stationary/transit]" raised from
- * spawn_shuttle()). So the port is built last, and owned before control can leave this
- * proc, which is the same invariant SSshuttle's own generate_transit_dock() holds.
+ * The parking ground is deliberately held on this datum as a naked reservation and NOT
+ * wrapped in an /obj/docking_port/stationary/transit. SSshuttle.transit_docking_ports
+ * has a contract - "a shuttle is flying through this hyperspace zone" - and SSshuttle's
+ * fire() enforces it: once transit_utilized crosses SOFT_TRANSIT_RESERVATION_THRESHOLD
+ * (90k tiles, ~31 concurrent ships), every transit dock whose owner is SHUTTLE_IDLE and
+ * not physically docked to it is force-qdel'd to reclaim the space. The ferry never
+ * docks to a transit port and its mode never leaves SHUTTLE_IDLE, so the dock this proc
+ * used to build was always reclaimable by construction: past the threshold the sweep
+ * released the reservation mid-warmup, the release emptied every hull turf, and the
+ * surviving zero-turf port went on to "dock" with DOCKING_SUCCESS and deliver nothing
+ * while the console announced an arrival (round 12, 2026-08-23 - cargo dead fleet-wide
+ * for the rest of the round, permanently, since ship count only grows). Nothing ever
+ * consumed the dock: the ferry docks straight onto the encounter berth on arrival, and
+ * departure destroys it in place (complete_departure()), so the dock's only real job
+ * was owning the reservation - which the datum now does directly, out of the sweep's
+ * reach. Nothing force-releases a live bare reservation.
  */
 /datum/voidcrew_cargo_shuttle/proc/spawn_shuttle()
 	// Always spawn fresh - clean up any existing shuttle first
@@ -223,6 +225,13 @@
 		qdel(template)
 		return FALSE
 
+	// The block we were just granted is recycled ground and can contain docking ports
+	// stranded by an earlier tenant: /turf/proc/empty() excludes /obj/docking_port from
+	// every reservation sweep, so stale ports survive release. The locate() below adopts
+	// the first mobile port it finds, ghost or not (round 12, 2026-08-23: a stranded port
+	// hijacked every delivery that landed on its coordinates). Reap them by name first.
+	reap_reservation_docking_ports(reservation)
+
 	var/turf/transit_turf = reservation.bottom_left_turfs[1]
 	// Offset by border to center shuttle in reservation
 	transit_turf = locate(transit_turf.x + SHUTTLE_TRANSIT_BORDER, transit_turf.y + SHUTTLE_TRANSIT_BORDER, transit_turf.z)
@@ -250,14 +259,10 @@
 	shuttle_port.shuttle_id = "voidcrew_cargo_[REF(src)]"
 	shuttle_port.name = "Voidcrew Cargo Shuttle"
 
-	// Set up transit. Nothing between the new() and the owner assignment may yield.
-	transit_dock = new()
-	transit_dock.owner = shuttle_port
-	shuttle_port.assigned_transit = transit_dock
-	transit_dock.reserved_area = reservation
-	transit_dock.width = template.width
-	transit_dock.height = template.height
-	transit_dock.forceMove(transit_turf)
+	// Take ownership of the parking ground directly - no transit dock, no
+	// assigned_transit (see the doc comment above). The only consumer either ever had
+	// was the SSshuttle sweep that kept reclaiming us.
+	transit_reservation = reservation
 
 	template.post_load(shuttle_port)
 	qdel(template)
@@ -441,7 +446,7 @@
 	var/tardiness = stall_deadline ? "[(world.time - stall_deadline) / 10]s past its deadline" : "no deadline armed"
 	log_shuttle("CARGO SHUTTLE STALL: delivery to [target_ship || "unknown ship"] stuck in state [state], \
 		[tardiness] (shuttle_port=[shuttle_port ? "live" : "gone"], \
-		transit=[transit_dock ? "live" : "gone"]) - forcing recovery")
+		transit=[transit_reservation ? "live" : "gone"]) - forcing recovery")
 	state = CARGO_SHUTTLE_AWAY
 	target_ship?.ship_notify("Cargo shuttle failed to arrive and has been recalled. Re-order when ready.", \
 		"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
@@ -486,7 +491,7 @@
 	load_retries = 0
 
 	log_shuttle("CARGO SHUTTLE: arrival for [target_ship] at [docked_at] - berth=[cargo_dock_index], \
-		shuttle_port=[shuttle_port || "GONE"], transit=[transit_dock || "GONE"], retries=[load_retries]")
+		shuttle_port=[shuttle_port || "GONE"], reservation=[transit_reservation ? "live" : "GONE"], retries=[load_retries]")
 
 	// Find the player's ship shuttle
 	var/obj/docking_port/mobile/voidcrew/ship_shuttle = target_ship.shuttle
@@ -527,6 +532,19 @@
 		cleanup_shuttle()
 		return FALSE
 
+	// A shuttle "docks" by transplanting the turfs of its areas, so a ferry whose turfs
+	// were deleted out from under it during the warmup still gets DOCKING_SUCCESS - and
+	// then delivers nothing while the console announces an arrival. The reservation fix
+	// in spawn_shuttle() removes the known cause; this guard makes any unknown one cost a
+	// single refused, retryable delivery instead of a silent round-long outage (round 12,
+	// 2026-08-23: forty minutes of phantom "docked" reports before a player report).
+	if(!length(get_cargo_bay_turfs()))
+		log_shuttle("CARGO SHUTTLE: refusing arrival for [target_ship] - shuttle hull has no turfs left (reservation=[transit_reservation ? "live" : "GONE"])")
+		state = CARGO_SHUTTLE_AWAY
+		linked_console?.say("Error: Cargo shuttle was lost in transit. Re-order when ready.")
+		cleanup_shuttle()
+		return FALSE
+
 	// Calculate the correct dir for ship_dock based on ship_shuttle's current geometry
 	// We can't call adjust_dock_to_shuttle because it also moves the dock
 	// This is necessary because construction console port relocation updates port_direction
@@ -555,7 +573,7 @@
 	// move was even attempted. An "attempting dock" with no matching "dock returned" is
 	// that stall; both lines present with a non-success code is an ordinary refusal.
 	log_shuttle("CARGO SHUTTLE: attempting dock for [target_ship] - shuttle=[shuttle_port] at [AREACOORD(shuttle_port)] \
-		currently on [shuttle_port.get_docked() || "NO DOCK"], transit=[transit_dock || "GONE"], \
+		currently on [shuttle_port.get_docked() || "NO DOCK"], reservation=[transit_reservation ? "live" : "GONE"], \
 		target dock [cargo_dock] at [AREACOORD(cargo_dock)] dir=[cargo_dock.dir] berth=[cargo_dock_index]")
 	var/cargo_result = shuttle_port.initiate_docking(cargo_dock, force = TRUE)
 	log_shuttle("CARGO SHUTTLE: dock returned [cargo_result] for [target_ship]")
@@ -663,18 +681,12 @@
  * Completely destroys the shuttle - deletes all turfs and objects
  */
 /datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
-	// Clean up transit dock and its reservation FIRST. Must be forced: every docking
-	// port answers a bare qdel() with QDEL_HINT_LETMELIVE, and transit/Destroy() does
-	// ALL of its cleanup - unregistering, freeing the reservation, nulling `owner` -
-	// inside if(force). The old non-forced qdel was a no-op that left the port alive
-	// with `owner` still pointing at the supply shuttle, which is the one ref that
-	// hard-deleted the shuttle on every teardown (see release_assigned_transit()).
-	if(transit_dock && !QDELETED(transit_dock))
-		if(transit_dock.reserved_area)
-			qdel(transit_dock.reserved_area)
-			transit_dock.reserved_area = null
-		qdel(transit_dock, force = TRUE)
-	transit_dock = null
+	// Hand the parking ground back first. The reservation is held bare on this datum
+	// (see spawn_shuttle()) - Release() via qdel is its whole teardown, with none of the
+	// force/QDEL_HINT_LETMELIVE dance the old transit dock needed.
+	if(transit_reservation && !QDELETED(transit_reservation))
+		qdel(transit_reservation)
+	transit_reservation = null
 
 	if(!shuttle_port || QDELETED(shuttle_port))
 		shuttle_port = null
@@ -684,8 +696,6 @@
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
 
-	// Unlink from transit dock
-	shuttle_port.assigned_transit = null
 
 	// Get all turfs in shuttle areas before we delete the port
 	var/list/shuttle_turfs = list()

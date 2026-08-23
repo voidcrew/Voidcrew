@@ -367,11 +367,10 @@
 		)
 	var/area/surface_area = surface_level.fill_in(area_override = surface_area_type, footprint = footprint)
 	// Scope the weather site to our surface the moment that surface exists, rather than
-	// waiting for the full owned-areas list further down. A site with NO owned areas falls
-	// back to get_areas(/area/overmap_encounter/planetoid) in setup_weather_areas(), which on
-	// a shared level matches a CO-TENANT's surface and caves as happily as ours - so a storm
-	// rolled inside the build window would paint a neighbouring planet, now potentially of a
-	// different biome entirely. The cave areas join the list once terrain has carved them.
+	// waiting for the full owned-areas list further down. Until this line the site owns
+	// nothing, and an area-scoped site that owns nothing is held out of the scheduler
+	// (SSweather.fire() -> awaiting_owned_areas()) - this is the line that arms us. The cave
+	// areas join the list once terrain has carved them.
 	if(weather_site && surface_area)
 		weather_site.add_owned_area(surface_area)
 	// Once per level, from the complement of the whole lattice - a second tenant arriving
@@ -526,6 +525,14 @@
 		SSovermap_zones.weather_downtime_multiplier_for_zone(zone_band),
 		"planet-[REF(src)]",
 	)
+
+	// Our storms live and die inside the areas we own, and we have none yet: the surface area
+	// is not created until fill_in() returns, minutes from here. SSweather makes a site
+	// eligible the moment it is registered, so without this flag the storm rolled during our
+	// own build would find no owned areas, fall back to
+	// get_areas(/area/overmap_encounter/planetoid) and hit every planet on this level.
+	// See /datum/weather_site.area_scoped.
+	weather_site?.set_area_scoped()
 
 	// Scope the site to our rectangle, so a storm telegraphs, paints and alerts on THIS
 	// planet only. A whole-level tenant deliberately stays rect-less: a footprinted site is
