@@ -814,3 +814,106 @@
 		after_raise.zone?.release_slot(after_raise)
 
 	CONFIG_SET(number/max_z_levels, original_ceiling)
+
+/**
+ * # Population-scaled z ceiling
+ *
+ * The flat ceiling was written for a 40-player round. A 118-player one found it sitting
+ * comfortably ABOVE the actual memory wall: the levels were inside budget and the server
+ * died anyway, because everything that is not turf plane - mobs, atoms, per-client
+ * rendering state - scales with pop and the ceiling did not. effective_z_ceiling() takes a
+ * level off per max_z_levels_pop_scale_per clients past max_z_levels_pop_scale_start.
+ *
+ * The curve is pure arithmetic over four config entries, so it is asserted directly rather
+ * than by driving allocations - the allocation side is already covered above. `pop` is an
+ * argument on the proc precisely so this can drive the whole curve with nobody connected.
+ *
+ * Also covers z_headroom(), the multi-level form the colosseum needs: a caller that mints a
+ * stack in a loop cannot ask a single-level predicate, which is how the venue used to take
+ * two levels past a gate that had only cleared it for one.
+ *
+ * Every entry is saved and restored, as the ceiling test above does.
+ */
+/datum/unit_test/voidcrew_map_z_ceiling_pop_scaling
+
+/datum/unit_test/voidcrew_map_z_ceiling_pop_scaling/Run()
+	var/original_ceiling = CONFIG_GET(number/max_z_levels)
+	var/original_start = CONFIG_GET(number/max_z_levels_pop_scale_start)
+	var/original_per = CONFIG_GET(number/max_z_levels_pop_scale_per)
+	var/original_floor = CONFIG_GET(number/max_z_levels_pop_floor)
+
+	// ---- 1. The curve, with a floor ---------------------------------------------------
+	CONFIG_SET(number/max_z_levels, 24)
+	CONFIG_SET(number/max_z_levels_pop_scale_start, 80)
+	CONFIG_SET(number/max_z_levels_pop_scale_per, 10)
+	CONFIG_SET(number/max_z_levels_pop_floor, 18)
+
+	check_ceiling(0, 24, "an empty server must get the configured ceiling untouched")
+	check_ceiling(79, 24, "one client below the scaling start is still below it")
+	check_ceiling(80, 24, "the start is the last population that pays nothing, not the first that pays")
+	check_ceiling(89, 24, "a partial step must not round up - the ceiling steps on whole multiples of `per` only")
+	check_ceiling(90, 23, "start + per is the first whole step and must cost exactly one level")
+	check_ceiling(120, 20, "four steps past the start must cost four levels")
+	check_ceiling(300, 18, "the floor has to hold - 22 steps would leave 2 levels and strand the whole round")
+
+	// ---- 2. No floor -------------------------------------------------------------------
+	CONFIG_SET(number/max_z_levels_pop_floor, 0)
+	check_ceiling(300, 2, "with the floor disabled the scaling has to actually run down")
+	// <= 0 is the "ceiling disabled" signal. Scaling past zero would turn the cap OFF at
+	// exactly the population it exists for, which is worse than having no cap at all.
+	var/runaway = SSmapping.effective_z_ceiling(100000)
+	if(runaway <= 0)
+		TEST_FAIL("effective_z_ceiling() returned [runaway] for an absurd population with the floor disabled. \
+			Callers read <= 0 as 'no ceiling', so this silently removes the cap at the pop it was written for.")
+
+	// ---- 3. Scaling disabled -----------------------------------------------------------
+	CONFIG_SET(number/max_z_levels_pop_floor, 18)
+	CONFIG_SET(number/max_z_levels_pop_scale_start, 0)
+	check_ceiling(500, 24, "a start of 0 disables pop scaling and must hand back the configured ceiling")
+	// The `per <= 0` half of that guard is unreachable from the config API - the entry has
+	// min_val 1 and Set() clamps - so it is defence against a VV edit only. Assert the clamp
+	// rather than a branch that cannot be reached, so a future min_val change is noticed.
+	CONFIG_SET(number/max_z_levels_pop_scale_per, 0)
+	if(CONFIG_GET(number/max_z_levels_pop_scale_per) < 1)
+		TEST_FAIL("max_z_levels_pop_scale_per accepted 0. It is the divisor of the scaling step - a zero divides by zero every allocation.")
+	CONFIG_SET(number/max_z_levels_pop_scale_per, 10)
+
+	// ---- 4. The floor never raises the ceiling -----------------------------------------
+	CONFIG_SET(number/max_z_levels_pop_scale_start, 80)
+	CONFIG_SET(number/max_z_levels, 10)
+	check_ceiling(0, 10, "a floor of 18 over a configured ceiling of 10 must not hand out 18 - the host meant the smaller number")
+
+	// ---- 5. Disabled ceiling stays disabled --------------------------------------------
+	CONFIG_SET(number/max_z_levels, 0)
+	check_ceiling(500, 0, "MAX_Z_LEVELS 0 disables the ceiling; scaling a disabled ceiling must not invent one")
+
+	// ---- 6. z_headroom -----------------------------------------------------------------
+	// Scaling off, so the headroom arithmetic is exact regardless of who is connected.
+	CONFIG_SET(number/max_z_levels_pop_scale_start, 0)
+	var/starting_maxz = world.maxz
+	CONFIG_SET(number/max_z_levels, starting_maxz + 2)
+	if(!SSmapping.z_headroom(1))
+		TEST_FAIL("z_headroom(1) refused with 2 levels of room ([starting_maxz] of [starting_maxz + 2])")
+	if(!SSmapping.z_headroom(2))
+		TEST_FAIL("z_headroom(2) refused with exactly 2 levels of room ([starting_maxz] of [starting_maxz + 2]) - a stack that fits exactly must be allowed")
+	if(SSmapping.z_headroom(3))
+		TEST_FAIL("z_headroom(3) allowed a stack that ends at [starting_maxz + 3], one past the ceiling of [starting_maxz + 2]. \
+			This is the colosseum bypass: a multi-level mint that clears a gate it does not fit through.")
+
+	CONFIG_SET(number/max_z_levels, 0)
+	if(!SSmapping.z_headroom(50))
+		TEST_FAIL("z_headroom() refused with the ceiling disabled (MAX_Z_LEVELS 0)")
+
+	CONFIG_SET(number/max_z_levels, original_ceiling)
+	CONFIG_SET(number/max_z_levels_pop_scale_start, original_start)
+	CONFIG_SET(number/max_z_levels_pop_scale_per, original_per)
+	CONFIG_SET(number/max_z_levels_pop_floor, original_floor)
+
+/// One point on the effective_z_ceiling() curve, with the reason it matters in the failure.
+/datum/unit_test/voidcrew_map_z_ceiling_pop_scaling/proc/check_ceiling(pop, expected, why)
+	var/got = SSmapping.effective_z_ceiling(pop)
+	if(got == expected)
+		return
+	TEST_FAIL("effective_z_ceiling([pop]) returned [got], expected [expected] (base [CONFIG_GET(number/max_z_levels)], \
+		start [CONFIG_GET(number/max_z_levels_pop_scale_start)], per [CONFIG_GET(number/max_z_levels_pop_scale_per)], \
+		floor [CONFIG_GET(number/max_z_levels_pop_floor)]): [why].")

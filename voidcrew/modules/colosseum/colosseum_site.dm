@@ -279,6 +279,20 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		loading = FALSE
 		return
 
+	// The venue is the one thing in the tree that mints REAL z-levels outside the map
+	// zone lattice, and a whole stack of them at once - so ask for the whole stack up
+	// front. add_new_zlevel() enforces nothing on its own, which is how this used to walk
+	// straight past the ceiling and cost the round two permanent levels without a log line.
+	if(!SSmapping.z_headroom(template.z_count))
+		var/refusal = "COLOSSEUM: load refused - needs [template.z_count] z-level\s, world.maxz [world.maxz] against effective ceiling \
+			[SSmapping.effective_z_ceiling()]. Raise MAX_Z_LEVELS or wait for pop/sites to fall."
+		log_mapping(refusal)
+		message_admins(refusal)
+		// Same shape as the other aborts below: no levels minted, no bottom-left, not
+		// loaded - open_venue() sees !loaded and retires the site.
+		loading = FALSE
+		return
+
 	// Mint the stack bottom-up with LoadGroup-style trait autosetup (bottom
 	// gets UP, top gets DOWN, middles both) so manage_z_level assigns real
 	// plane offsets. GET_TURF_ABOVE/update_plane_tracking assume linked levels

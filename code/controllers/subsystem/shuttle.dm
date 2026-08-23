@@ -12,7 +12,12 @@
 #define MAX_TRANSIT_TILE_COUNT (400 ** 2)
 /// How many turfs to allow before we start freeing up existing "soft reserved" transit docks
 /// If we're under load we want to allow for cycling, but if not we want to preserve already generated docks for use
-#define SOFT_TRANSIT_RESERVATION_THRESHOLD (300 ** 2)
+///
+/// Kept LOW for the fleet: a docked ship's transit block sits empty the whole time it is
+/// berthed, and blocks that linger fragment the reserved levels until the allocator mints a
+/// fresh z (~120 MB, never freed). 40k keeps roughly a dozen hulls' blocks warm; past that,
+/// docked ships hand their ground back and re-request on undock, which is the normal path.
+#define SOFT_TRANSIT_RESERVATION_THRESHOLD (200 ** 2)
 //END VOID EDIT
 
 

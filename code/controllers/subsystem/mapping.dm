@@ -678,6 +678,13 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		if(tgui_alert(user, "There's no home gateway on the station. You sure you want to continue ?", "Uh oh", list("Yes", "No")) != "Yes")
 			return
 
+	// VOIDCREW EDIT: load_new_z() mints a z-level through add_new_zlevel(), which enforces
+	// nothing. An away mission is a deliberate admin act, so this asks rather than refuses -
+	// but the cost is permanent, BYOND never frees a z-level. See effective_z_ceiling().
+	if(!SSmapping.z_headroom(1))
+		if(tgui_alert(user, "world.maxz is [world.maxz], at the effective ceiling of [SSmapping.effective_z_ceiling()] (configured [CONFIG_GET(number/max_z_levels)], scaled for [length(GLOB.clients)] clients). An away mission mints another z-level and BYOND never frees one - that is roughly 120 MB of address space gone for the rest of the round, on top of a server that is already at its budget. Load anyway?", "Z ceiling", list("Load anyway", "Cancel")) != "Load anyway")
+			return
+
 	var/list/possible_options = GLOB.potentialRandomZlevels + "Custom"
 	var/away_name
 	var/datum/space_level/away_level
@@ -744,6 +751,18 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 			if(reserve.reserve(width, height, z_size, i))
 				return reserve
 		//If we didn't return at this point, theres a good chance we ran out of room on the exisiting reserved z levels, so lets try a new one
+		// VOIDCREW EDIT: releases drain asynchronously through fire(), so a load that races a
+		// teardown sees the departing ground as still claimed and can buy a permanent z-level
+		// that one more drain pass would have made unnecessary. Wait out any queued releases
+		// (bounded - a stuck drain must not wedge every requester) and retry the existing
+		// levels before reaching for a mint.
+		if(length(lists_to_reserve))
+			var/drain_deadline = world.time + 30 SECONDS
+			while(length(lists_to_reserve) && world.time < drain_deadline)
+				stoplag()
+			for(var/i in levels_by_trait(ZTRAIT_RESERVED))
+				if(reserve.reserve(width, height, z_size, i))
+					return reserve
 		// VOIDCREW EDIT: but never past the world.maxz ceiling. A reservation z-level is
 		// permanent - BYOND never frees one - so an unbounded fallback here is a straight
 		// line to the 32-bit wall on a round that churns transits. Callers already handle
