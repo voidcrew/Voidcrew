@@ -28,7 +28,37 @@
  * anyone but themselves, the confirmation prompt is answered by the person going in, and
  * they must be awake and connected the whole way through. Stuffing a corpse or a
  * cuffed prisoner into a cryopod does nothing at all.
+ *
+ * ###A cold-feet window, then a cooldown
+ *
+ * Confirming does not delete anyone on the spot. The pod seals and runs a fifteen-second
+ * cryostasis cycle first; climbing out (resist or move) any time before it completes
+ * cancels the whole thing with nothing lost. Only a cycle that finishes with the same
+ * person still sealed inside takes them out of the round.
+ *
+ * Leaving also starts a rejoin cooldown on the player, checked at the join menu: no new
+ * posting and no hull requisition until it lapses. Without it the pod is a gear printer -
+ * cryo out, rejoin the freed seat, draw a fresh loadout, repeat. The old kit is deleted,
+ * but the new one is minted every cycle; ten minutes of bench time makes the loop useless
+ * while barely touching someone who genuinely wants to switch ships.
  */
+
+/// How long the pod's cryostasis cycle runs after confirmation - the climb-out-and-cancel window.
+#define CRYO_DESPAWN_GRACE (15 SECONDS)
+/// How long after a voluntary despawn the player is barred from taking a new posting.
+#define CRYO_REJOIN_COOLDOWN (10 MINUTES)
+
+/// ckey -> world.time when they may join a crew again, written on every voluntary despawn.
+GLOBAL_LIST_EMPTY(cryo_rejoin_cooldowns)
+
+/**
+ * Deciseconds until this ckey may take a new posting, or 0 if they are clear now.
+ */
+/proc/cryo_rejoin_wait(ckey)
+	var/until = GLOB.cryo_rejoin_cooldowns[ckey]
+	if(!until || world.time >= until)
+		return 0
+	return until - world.time
 
 /**
  * Item types the pod will not take out of the round. Carrying one blocks the despawn
@@ -75,6 +105,10 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 	if(occupant && occupant != user)
 		balloon_alert(user, "already occupied!")
 		return
+	if(user.loc == src)
+		// Already sealed in with the cycle running. Climbing out is the only input that
+		// matters now - re-confirming would arm a second countdown timer.
+		return
 	if(user.stat != CONSCIOUS)
 		balloon_alert(user, "you must be awake!")
 		return
@@ -93,7 +127,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 
 	var/confirm = tgui_alert(
 		user,
-		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens.",
+		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens. The pod takes [CRYO_DESPAWN_GRACE / 10] seconds to cycle - climbing out cancels it - and you will not be able to take a new posting for [CRYO_REJOIN_COOLDOWN / 600] minutes afterwards.",
 		"Return to Cryosleep",
 		list("Return to Cryosleep", "Stay Awake"),
 		timeout = 30 SECONDS,
@@ -117,10 +151,45 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 		to_chat(user, span_warning("You are still carrying [passenger]."))
 		return
 
+	begin_cryo_countdown(user)
+
+/**
+ * Seals the confirmed leaver in and starts the cryostasis cycle. Nothing irreversible
+ * happens here: for the length of the grace window they are an ordinary occupant, and
+ * container_resist_act() / relaymove() let them climb straight back out, which makes
+ * finish_cryo_countdown() find the pod empty and quietly drop the whole thing.
+ */
+/obj/machinery/cryopod/proc/begin_cryo_countdown(mob/living/carbon/user)
+	// Sealed in before anything is taken apart, so that if an unequip handler decides to drop
+	// something rather than let it be deleted, it lands in the pod and not on the deck. The
+	// pod's contents are swept at despawn either way.
+	user.visible_message(
+		span_notice("[user] climbs into [src], and the lid swings shut."),
+		span_notice("You climb into [src] and the cryostasis cycle begins. You have [CRYO_DESPAWN_GRACE / 10] seconds to climb back out if you change your mind."),
+	)
+	icon_state = close_state
+	user.forceMove(src)
+	set_occupant(user)
+	addtimer(CALLBACK(src, PROC_REF(finish_cryo_countdown), user), CRYO_DESPAWN_GRACE)
+
+/**
+ * The end of the grace window. Anything that interrupted the cycle - they climbed out,
+ * someone wrenched the pod apart, the hull went with the ship - cancels the despawn;
+ * a leaver who lost their connection mid-cycle is released rather than deleted, since a
+ * player who cannot cancel any more must not be held to a choice they cannot revisit.
+ */
+/obj/machinery/cryopod/proc/finish_cryo_countdown(mob/living/carbon/user)
+	if(QDELETED(src) || QDELETED(user) || occupant != user || user.loc != src)
+		return
+	if(!user.client || user.stat != CONSCIOUS)
+		visible_message(span_notice("[src] clicks and reopens without completing its cycle."))
+		open_machine()
+		return
 	do_cryo_despawn(user)
 
 /**
- * Takes the character out of the round. Assumed already validated by try_return_to_cryo().
+ * Takes the character out of the round. Assumed already validated and sealed in by the
+ * countdown path above.
  */
 /obj/machinery/cryopod/proc/do_cryo_despawn(mob/living/carbon/user)
 	var/obj/structure/overmap/ship/owner = linked_ship?.current_ship
@@ -130,15 +199,12 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 	var/player_ckey = user.ckey
 
 	user.visible_message(
-		span_notice("[user] climbs into [src] and settles back into cryosleep."),
-		span_notice("You climb into [src]. The cold takes hold, and the round ends here for you."),
+		span_notice("[src] hums as the cryostasis cycle completes."),
+		span_notice("The cold takes hold, and the round ends here for you."),
 	)
-	// Sealed in before anything is taken apart, so that if an unequip handler decides to drop
-	// something rather than let it be deleted, it lands in the pod and not on the deck. The
-	// pod's contents are swept below either way.
-	icon_state = close_state
-	user.forceMove(src)
-	set_occupant(user)
+	// The dupe-loop half of the anti-dupe rule: the freed seat exists, but this player
+	// cannot take it (or any other) until the cooldown lapses. Checked at the join menu.
+	GLOB.cryo_rejoin_cooldowns[player_ckey] = world.time + CRYO_REJOIN_COOLDOWN
 
 	// Announced before the roster edit, so the notice still reaches a crew of one.
 	owner?.ship_notify("[despawn_name] has entered cryogenic storage.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 40)
@@ -237,3 +303,6 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 		balloon_alert(user, "they have to climb in themselves!")
 		return
 	try_return_to_cryo(user)
+
+#undef CRYO_DESPAWN_GRACE
+#undef CRYO_REJOIN_COOLDOWN
