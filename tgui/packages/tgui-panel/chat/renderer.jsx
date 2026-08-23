@@ -366,6 +366,16 @@ class ChatRenderer {
     const countByType = {};
     let node;
     for (const payload of batch) {
+      // VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+      // Not a message to render - it retextes a line that is already on
+      // screen. Emitted as an event rather than handled here so renderer.jsx
+      // keeps no dependency on the translation module (that direction would
+      // be an import cycle).
+      if (payload?.type === 'internal/translation') {
+        this.events.emit('translation', payload);
+        continue;
+      }
+      // VOIDCREW EDIT ADDITION END
       const message = createMessage(payload);
       // Combine messages
       const combinable = this.getCombinableMessage(message);

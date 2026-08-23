@@ -299,8 +299,14 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	// Less than or equal to 0 means normal hearing. More than 0 and less than or equal to EAVESDROP_EXTRA_RANGE means
 	// partial hearing. More than EAVESDROP_EXTRA_RANGE means no hearing. Exception for GOOD_HEARING trait
 	var/dist = get_dist(speaker, src) - message_range
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE - track whether stars() mangled the text
+	var/message_obscured = FALSE
+	// VOIDCREW EDIT ADDITION END
 	if(dist > 0 && dist <= EAVESDROP_EXTRA_RANGE && !HAS_TRAIT(src, TRAIT_GOOD_HEARING) && !isobserver(src)) // ghosts can hear all messages clearly
 		raw_message = stars(raw_message)
+		// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+		message_obscured = TRUE
+		// VOIDCREW EDIT ADDITION END
 	if(message_range != INFINITY && dist > EAVESDROP_EXTRA_RANGE && !HAS_TRAIT(src, TRAIT_GOOD_HEARING) && !isobserver(src))
 		// Too far away and don't have good hearing, you can't hear anything
 		if(is_blind() || HAS_TRAIT(speaker, TRAIT_INVISIBLE_MAN)) // Can't see them speak either
@@ -364,16 +370,33 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 		deaf_message = span_notice("You can't hear yourself!")
 		deaf_type = MSG_AUDIBLE // Since you should be able to hear yourself without looking
 
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+	// Marks the spoken text so the chat panel can find it later. The wrapper
+	// spans are stripped by generate_image(), so runechat is unaffected.
+	var/datum/translated_speech/translation = try_begin_translation(speaker, raw_message, is_custom_emote, understood, message_obscured)
+	if(translation)
+		raw_message = translation.wrapped_text()
+	// VOIDCREW EDIT ADDITION END
+
 	// Create map text prior to modifying message for goonchat
 	if (use_runechat && can_hear())
 		if (message_mods[MODE_CUSTOM_SAY_ERASE_INPUT])
 			create_chat_message(speaker, null, message_mods[MODE_CUSTOM_SAY_EMOTE], spans, EMOTE_MESSAGE)
 		else
-			create_chat_message(speaker, message_language, raw_message, spans)
+			// VOIDCREW EDIT CHANGE BEGIN - AUTOTRANSLATE - capture the bubble so it can be retexted
+			// ORIGINAL: create_chat_message(speaker, message_language, raw_message, spans)
+			var/datum/chatmessage/bubble = create_chat_message(speaker, message_language, raw_message, spans)
+			translation?.attach_runechat(bubble)
+			// VOIDCREW EDIT CHANGE END
 
 	// Recompose message for AI hrefs, language incomprehension.
 	message = compose_message(speaker, message_language, raw_message, radio_freq, radio_freq_name, radio_freq_color, spans, message_mods)
 	var/show_message_success = show_message(message, MSG_AUDIBLE, deaf_message, deaf_type, avoid_highlight)
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+	// Dispatched last: a cache hit resolves synchronously, so both surfaces
+	// have to exist before this runs.
+	translation?.begin()
+	// VOIDCREW EDIT ADDITION END
 	return understood && show_message_success
 
 /mob/living/send_speech(message_raw, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language = null, list/message_mods = list(), forced = null, tts_message, list/tts_filter)
