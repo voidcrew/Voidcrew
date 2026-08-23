@@ -1,0 +1,127 @@
+/**
+ * Auto-translation affordances.
+ *
+ * Three states a spoken line can be in:
+ *   .tsl-pending-text  waiting on the backend - dotted underline + tooltip
+ *   .tsl-morphing      mid-animation - tinted so the churn reads as deliberate
+ *   .tsl-translated    settled - faint underline, hover shows the original
+ *
+ * DM emits the pending classes (see wrap_translatable() in
+ * voidcrew/modules/autotranslate/_autotranslate.dm), the panel
+ * swaps them as the translation lands.
+ */
+
+// Kept dim rather than saturated: this decorates ordinary speech and a busy
+// room should not turn into a wall of underlines.
+$tsl-accent: hsl(190, 45%, 60%);
+
+.tsl-pending-text {
+  cursor: help;
+  text-decoration: underline dotted
+    oklch(from #{$tsl-accent} l c h / 55%);
+  text-underline-offset: 2px;
+  opacity: 0.85;
+}
+
+// The trailing animated dots. DM renders an empty span and the content comes
+// from here, so the dots never end up in copied text or in the runechat path.
+.tsl-pending {
+  color: $tsl-accent;
+  font-weight: bold;
+  margin-left: 0.15em;
+  opacity: 0.8;
+
+  &::after {
+    content: '.';
+    animation: tsl-pending-dots 1.2s steps(1, end) infinite;
+  }
+}
+
+@keyframes tsl-pending-dots {
+  0% {
+    content: '.';
+  }
+  33% {
+    content: '..';
+  }
+  66% {
+    content: '...';
+  }
+}
+
+// Translation is not coming - backend error, or nothing ever answered. The
+// original text stands, but the player is told why rather than being left to
+// wonder whether the line was eligible in the first place.
+$tsl-failed: hsl(38, 70%, 62%);
+
+.tsl-failed {
+  cursor: help;
+  text-decoration: underline dotted oklch(from #{$tsl-failed} l c h / 50%);
+  text-underline-offset: 2px;
+}
+
+.tsl-failed-marker {
+  cursor: help;
+  color: $tsl-failed;
+  font-weight: bold;
+  margin-left: 0.15em;
+  opacity: 0.9;
+
+  // Plain ASCII on purpose - glyphs like the warning sign are missing from
+  // some of the fonts players set the chat to.
+  &::after {
+    content: '!';
+  }
+}
+
+// Distinct from a reported failure: nothing ever came back at all. Kept
+// greyer and quieter, because a timeout is usually the server being busy
+// rather than anything actually wrong.
+$tsl-timeout: hsl(0, 0%, 58%);
+
+.tsl-timeout {
+  cursor: help;
+  text-decoration: underline dotted oklch(from #{$tsl-timeout} l c h / 50%);
+  text-underline-offset: 2px;
+}
+
+.tsl-timeout-marker {
+  cursor: help;
+  color: $tsl-timeout;
+  font-weight: bold;
+  margin-left: 0.15em;
+  opacity: 0.9;
+
+  // No animation here - see markFailed(). A line that has given up must stop
+  // advertising that it is still working.
+  &::after {
+    content: '?';
+  }
+}
+
+.tsl-morphing {
+  color: $tsl-accent;
+  // No transition - the text itself is changing every frame and easing the
+  // colour on top of that just reads as mush.
+}
+
+.tsl-translated {
+  cursor: help;
+  text-decoration: underline dotted
+    oklch(from #{$tsl-accent} l c h / 30%);
+  text-underline-offset: 2px;
+}
+
+// Safety net for the case where there is no original to show. A help cursor
+// with no tooltip behind it is worse than no affordance at all.
+.tsl-no-tooltip {
+  cursor: inherit;
+}
+
+// Some players will not want speech moving around at all.
+@media (prefers-reduced-motion: reduce) {
+  .tsl-pending::after {
+    animation: none;
+    content: '...';
+  }
+}

@@ -19,6 +19,13 @@ import { setupHotReloading } from 'tgui-dev-server/link/client';
 
 import { audioMiddleware, audioReducer } from './audio';
 import { chatMiddleware, chatReducer } from './chat';
+// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+// Side-effect import. This module registers its renderer event subscription
+// and its watchdog at module scope, and nothing else imports it - without
+// this line the bundler tree-shakes the whole feature out and translations
+// silently never apply.
+import './chat/translation';
+// VOIDCREW EDIT ADDITION END
 import { gameMiddleware, gameReducer } from './game';
 import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
