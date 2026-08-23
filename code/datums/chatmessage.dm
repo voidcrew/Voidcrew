@@ -184,10 +184,22 @@
 			LAZYSET(language_icons, language_icon_key, language_icon)
 		LAZYADD(prefixes, "\icon[language_icon]")
 
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+	// Capture the body and its icon prefixes separately so set_display_text()
+	// can re-render just the body later. See voidcrew/modules/autotranslate/runechat.dm
+	translate_prefix = prefixes?.Join("&nbsp;")
+	translate_body = text
+	// VOIDCREW EDIT ADDITION END
+
 	text = "[prefixes?.Join("&nbsp;")][text]"
 
 	// We dim italicized text to make it more distinguishable from regular text
 	var/tgt_color = extra_classes.Find("italics") ? target.chat_color_darkened : target.chat_color
+
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+	translate_wrapper_open = "<span style='color: [tgt_color]'><span class='center [extra_classes.Join(" ")]'>"
+	translate_wrapper_close = "</span></span>"
+	// VOIDCREW EDIT ADDITION END
 
 	// Approximate text height
 	var/complete_text = "<span style='color: [tgt_color]'><span class='center [extra_classes.Join(" ")]'>[owner.apply_message_emphasis(text)]</span></span>"
@@ -299,7 +311,16 @@
 	RegisterSignal(message_loc, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(loc_z_changed))
 
 	// Register with the runechat SS to handle destruction
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), lifespan + CHAT_MESSAGE_GRACE_PERIOD, TIMER_DELETE_ME, SSrunechat)
+	// VOIDCREW EDIT CHANGE BEGIN - AUTOTRANSLATE
+	// Keep the timer id and the fade timings so extend_lifespan() can push the
+	// fadeout back when a translation lands. The timings are captured because
+	// the CHAT_MESSAGE_* defines are #undef'd at the bottom of this file and
+	// so are unreachable from the modular code.
+	// ORIGINAL: addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), lifespan + CHAT_MESSAGE_GRACE_PERIOD, TIMER_DELETE_ME, SSrunechat)
+	translate_eol_fade = CHAT_MESSAGE_EOL_FADE
+	translate_grace_period = CHAT_MESSAGE_GRACE_PERIOD
+	destruction_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), lifespan + CHAT_MESSAGE_GRACE_PERIOD, TIMER_DELETE_ME | TIMER_STOPPABLE, SSrunechat)
+	// VOIDCREW EDIT CHANGE END
 
 /datum/chatmessage/proc/get_current_alpha(time_spent)
 	if(time_spent < CHAT_MESSAGE_SPAWN_TIME)
@@ -344,7 +365,9 @@
 		return
 
 	// Display visual above source
-	new /datum/chatmessage(
+	// VOIDCREW EDIT CHANGE BEGIN - AUTOTRANSLATE - return the datum so callers can retext it later
+	// ORIGINAL: new /datum/chatmessage(...) with no return
+	return new /datum/chatmessage(
 		text = raw_message,
 		target = speaker,
 		owner = src,
@@ -352,6 +375,7 @@
 		extra_classes = classes,
 		message_mods = message_mods,
 	)
+	// VOIDCREW EDIT CHANGE END
 
 #undef CHAT_LAYER_MAX_Z
 #undef CHAT_LAYER_Z_STEP

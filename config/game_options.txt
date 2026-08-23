@@ -588,3 +588,13 @@ SPY_HARD_REWARD_TC_THRESHOLD 15
 
 ## Minimum time before a heretic can ascend, in minutes
 # MINIMUM_ASCENSION_TIME 3
+
+## AUTO-TRANSLATION (voidcrew/modules/autotranslate)
+## Base URL of a LibreTranslate-compatible endpoint. Keep it on loopback.
+## Leaving this unset keeps the whole feature switched off.
+## See tools/autotranslate/ for install scripts (docker, ~1GB RAM for the RU/EN pack).
+#TRANSLATE_HTTP_URL http://127.0.0.1:5000
+## Only needed if the instance was started with LT_API_KEYS enabled.
+#TRANSLATE_HTTP_TOKEN yourkeyhere
+## Per-request timeout in seconds.
+#TRANSLATE_HTTP_TIMEOUT_SECONDS 5
