@@ -768,10 +768,10 @@
  * The controller owns the actual "is anyone left" judgement and its grace window; this
  * just polls it. See check_crew_eliminated().
  */
-/datum/ai_behavior/npc_ship/check_crew_wipe
-	action_cooldown = 5 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/check_crew_wipe
+	time_between_perform = 5 SECONDS
 
-/datum/ai_behavior/npc_ship/check_crew_wipe/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/check_crew_wipe/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/target = controller.get_target()

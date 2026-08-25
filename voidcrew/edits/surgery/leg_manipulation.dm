@@ -1,26 +1,18 @@
 /**
- * Organ manipulation on the legs.
+ * Organ manipulation on the legs - closed by the 2026 upstream surgery rework, kept as a note.
  *
- * Between them, upstream's organ-manipulation surgeries cover the chest, head,
- * groin, eyes, mouth and both arms. No leg, and for good reason upstream: not a
- * single tg organ lives in one, so a leg incision would open onto nothing.
+ * The old /datum/surgery API gated each surgery on a `possible_locs` whitelist, and between
+ * them upstream's organ-manipulation surgeries covered the chest, head, groin, eyes, mouth
+ * and both arms - no leg, since no tg organ lives in one. This fork's chrome does: Shock
+ * Coils, Hopper Pistons and the Meteor Piledriver all sit in the calves on
+ * ORGAN_SLOT_CYBERWARE_LEGS, so with no leg surgery the insert step was unreachable and leg
+ * chrome could only be fitted at a Chrome Cradle. This file used to add the two missing
+ * whitelist entries.
  *
- * This fork's chrome does live there. Shock Coils, Hopper Pistons and the Meteor
- * Piledriver all sit in the calves on ORGAN_SLOT_CYBERWARE_LEGS, and
- * manipulate_organs refuses any insert where the surgery's zone isn't the
- * organ's own. With no surgery whose possible_locs held a leg, the insert step
- * was unreachable: leg chrome could only ever go in at a Chrome Cradle, which
- * means at a ripperdoc parlor. Buy the Shock Coils off the first-tier catalog,
- * fly home, and there was no way to put them on.
+ * /datum/surgery_operation/limb/organ_manipulation replaced all of that: it is generic over
+ * whichever limb the surgeon is working on and decides what may go in via zone_check()
+ * against the organ's own zone, so a leg is operable with no fork edit at all.
  *
- * These two fill the gap with their parents' step lists untouched, so a leg
- * operates exactly like an arm does - same incisions, same tools, same times.
- * The organic one is the one that matters; the mechanic twin is here because
- * upstream's Hardware Manipulation has the identical hole, and a crewmate with
- * augmented legs should not be the one person who still can't fit pistons.
+ * Kept (empty) rather than deleted so the next person to go looking for "why can't I fit
+ * pistons" finds the answer instead of the hole.
  */
-/datum/surgery/organ_manipulation/soft/legs
-	possible_locs = list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
-
-/datum/surgery/organ_manipulation/mechanic/soft/legs
-	possible_locs = list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)

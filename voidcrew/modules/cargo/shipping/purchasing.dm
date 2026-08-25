@@ -58,7 +58,7 @@
 		// in a secure crate type, which arrives locked - anyone aboard can toggle it
 		// open, but the crew shouldn't have to unlock cargo they just paid for.
 		var/turf/spawn_turf = pick(cargo_turfs)
-		if(spawning_order.pack.goody)
+		if(istype(spawning_order.pack, /datum/supply_pack/goody)) // VOIDCREW EDIT: upstream dropped the goody var for a subtype
 			// Goody packs have no crate type: upstream never routes them through
 			// generate() (it hand-packs them into account-locked cases), so calling
 			// it here CRASHed and the whole shipment loop died with the money spent.

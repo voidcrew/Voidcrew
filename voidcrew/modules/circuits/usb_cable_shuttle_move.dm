@@ -47,22 +47,17 @@
 		return
 
 	if(IN_GIVEN_RANGE(attached_circuit, parent, USB_CABLE_MAX_RANGE))
+		// Still linked - but a shuttle move destroys the beam even when both ends travelled
+		// together, so it has to be rebuilt. No-op while the existing beam is alive.
+		//
+		// This used to be a pair of after_parent_shuttle_move()/after_physical_object_shuttle_move()
+		// overrides. The 2026 upstream merge replaced that latch with
+		// /datum/component/shuttle_move_deferred_checks, which holds every check until the whole
+		// en-masse move has finished and then calls this proc - so the post-move rebuild belongs
+		// here now, and the deferral this file worked around is gone.
+		refresh_usb_cable_beam()
 		return
 
-	queue_usb_link_recheck()
-
-/datum/component/usb_port/after_parent_shuttle_move()
-	SIGNAL_HANDLER
-
-	. = ..()
-	// Always re-check after a shuttle move, even if the link never left range: the beam is
-	// destroyed by the move regardless and has to be rebuilt.
-	queue_usb_link_recheck()
-
-/datum/component/usb_port/after_physical_object_shuttle_move()
-	SIGNAL_HANDLER
-
-	. = ..()
 	queue_usb_link_recheck()
 
 /// Schedules settle_usb_link() for once the current en-masse move has finished.

@@ -917,7 +917,7 @@
 			continue
 		// A ship docked against us parks its own nacelles inside our ring - their
 		// engines are their business, not a fault on our report.
-		var/obj/docking_port/mobile/owner = engine.connected_ship_ref?.resolve()
+		var/obj/docking_port/mobile/owner = engine.connected_ship // VOIDCREW EDIT: upstream swapped the weakref for a hard ref
 		if(owner && owner != shuttle)
 			continue
 		var/reason = engine.link_refusal_reason(shuttle)

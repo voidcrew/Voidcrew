@@ -20,13 +20,10 @@
  * about getting out of a closet or a grab rather than about combat.
  */
 /datum/ai_controller/basic_controller/legion
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/random_speech/legion,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/targeted_mob_ability,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree/legion,
-	)
+	// The old planning_subtrees list one-for-one, as a tree. It is upstream's own legion tree
+	// with the keep-your-distance leaf swapped for a melee swing, which is the whole edit -
+	// see legion.bt.json beside this file. Re-sync it if upstream reworks legion.bt.json.
+	behavior_tree_json = "voidcrew/modules/mob/living/simple_animal/hostile/mining_mobs/legion.bt.json"
 
 /**
  * A legion's targeting strategy deliberately picks up wounded friendlies as well
@@ -34,13 +31,16 @@
  * Melee has to honour that exception or a legion would beat its own wounded to
  * death; upstream's flee subtree carried the same check for the same reason.
  */
-/datum/ai_planning_subtree/basic_melee_attack_subtree/legion
+/// Was `/datum/ai_planning_subtree/basic_melee_attack_subtree/legion/SelectBehaviors()`; the
+/// subtree that guarded the swing is a leaf now, so the pure predicate becomes a decorator.
+/datum/bt_node/decorator/legion_target_is_hostile
+	observer_abort = BT_ABORT_SELF
 
-/datum/ai_planning_subtree/basic_melee_attack_subtree/legion/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if (QDELETED(target) || target.faction_check_atom(controller.pawn))
-		return // Only swing at a hostile target; friendlies are getting healed, not hit.
-	return ..()
+/datum/bt_node/decorator/legion_target_is_hostile/check_condition(datum/ai_controller/controller)
+	var/mob/living/target = controller.blackboard[BB_CURRENT_TARGET]
+	if(QDELETED(target) || target.faction_check_atom(controller.pawn))
+		return FALSE // Only swing at a hostile target; friendlies are getting healed, not hit.
+	return TRUE
 
 /mob/living/basic/mining/legion/wasteland
 	faction = list(FACTION_WASTELAND)

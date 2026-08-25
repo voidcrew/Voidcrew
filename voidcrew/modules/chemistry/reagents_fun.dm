@@ -64,13 +64,13 @@
 
 /datum/reagent/shakeium/overdose_process(mob/living/affected_mob, seconds_per_tick, times_fired)
 	. = ..()
-	var/need_mob_update = affected_mob.adjustBruteLoss(damage_amount * REM * seconds_per_tick, updating_health = FALSE)
+	var/need_mob_update = affected_mob.adjust_brute_loss(damage_amount * REM * seconds_per_tick, updating_health = FALSE)
 	if(intensity > 15)
 		intensity += seconds_per_tick
 		damage_amount += seconds_per_tick
 	if(damage_amount > 10)
 		to_chat(affected_mob, span_warning("Your brain is rattling around inside your skull. You need a doctor."))
-		need_mob_update += affected_mob.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3 * REM * seconds_per_tick, required_organ_flag = affected_organ_flags)
+		need_mob_update += affected_mob.adjust_organ_loss(ORGAN_SLOT_BRAIN, 3 * REM * seconds_per_tick, required_organ_flag = affected_organ_flags)
 	if(damage_amount > 20 && !triggered_breakdown && iscarbon(affected_mob))
 		to_chat(affected_mob, span_userdanger("You can't hold yourself together any longer!"))
 		triggered_breakdown = TRUE

@@ -272,7 +272,7 @@ SUBSYSTEM_DEF(overmap)
 			continue
 		backlog++
 
-	for(var/datum/lighting_object/lighting_object as anything in SSlighting.objects_queue)
+	for(var/atom/movable/lighting_object/lighting_object as anything in SSlighting.objects_queue)
 		var/turf/affected_turf = lighting_object.affected_turf
 		if(!isturf(affected_turf) || affected_turf.z != z_value)
 			continue
@@ -327,7 +327,7 @@ SUBSYSTEM_DEF(overmap)
 		tally[label] = (tally[label] || 0) + 1
 		example_coords[label] ||= "([corner.x],[corner.y])"
 
-	for(var/datum/lighting_object/lighting_object as anything in SSlighting.objects_queue)
+	for(var/atom/movable/lighting_object/lighting_object as anything in SSlighting.objects_queue)
 		var/turf/affected_turf = lighting_object.affected_turf
 		if(!footprint_holds_turf(wait_footprint, affected_turf))
 			continue

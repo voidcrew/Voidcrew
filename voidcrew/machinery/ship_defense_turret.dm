@@ -253,28 +253,79 @@
 
 	return our_turf
 
-/// Planning subtrees that mean "this creature goes looking for something to attack".
-GLOBAL_LIST_INIT(ship_turret_aggressive_subtrees, typecacheof(list(
-	/datum/ai_planning_subtree/simple_find_target,
-	/datum/ai_planning_subtree/simple_find_wounded_target,
-	/datum/ai_planning_subtree/find_target_prioritize_traits,
-	/datum/ai_planning_subtree/aggressive_find_target,
+/// This creature's AI goes looking for something to attack.
+#define SHIP_TURRET_AI_AGGRESSIVE (1<<0)
+/// It picks a target only to run away from it.
+#define SHIP_TURRET_AI_SKITTISH (1<<1)
+/// It only fights back once something has started on it.
+#define SHIP_TURRET_AI_PROVOKED (1<<2)
+
+// The 2026 upstream merge replaced planning_subtrees with compiled behavior trees, so the
+// three buckets below name BT node types and the walker further down reads the live tree
+// instead of a flat subtree list. Same question either way: does this creature's AI go
+// looking for a fight, only answer one, or just run?
+
+/// Behavior-tree nodes that mean "this creature goes looking for something to attack".
+GLOBAL_LIST_INIT(ship_turret_aggressive_nodes, typecacheof(list(
+	/datum/bt_node/subtree/basic_find_target,
+	/datum/bt_node/subtree/simple_hostile_combat,
+	/datum/bt_node/subtree/simple_ranged_combat,
+	/datum/bt_node/subtree/simple_ability_combat,
+	/datum/bt_node/subtree/move_to_and_hunt,
+	/datum/bt_node/subtree/dog_harassment,
 )))
 
-/// Subtrees that pick a target only to run away from it. Checked first, because
-/// simple_find_target/to_flee is a subtype of an aggressive one and typecacheof()
+/// Nodes that pick a target only to run away from it. Checked first, because the fearful
+/// combat subtrees sit under the same families as the aggressive ones and typecacheof()
 /// covers subtypes.
-GLOBAL_LIST_INIT(ship_turret_fleeing_subtrees, typecacheof(list(
-	/datum/ai_planning_subtree/simple_find_target/to_flee,
-	/datum/ai_planning_subtree/simple_find_nearest_target_to_flee,
-	/datum/ai_planning_subtree/find_nearest_thing_which_attacked_me_to_flee,
+GLOBAL_LIST_INIT(ship_turret_fleeing_nodes, typecacheof(list(
+	/datum/bt_node/subtree/run_away_from_target,
+	/datum/bt_node/subtree/simple_fearful_combat,
 )))
 
-/// Subtrees that only pick a fight once something has already picked one with them.
-GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
-	/datum/ai_planning_subtree/target_retaliate,
-	/datum/ai_planning_subtree/capricious_retaliate,
+/// Nodes that only pick a fight once something has already picked one with them.
+GLOBAL_LIST_INIT(ship_turret_retaliating_nodes, typecacheof(list(
+	/datum/bt_node/subtree/pick_retaliate_target,
+	/datum/bt_node/subtree/capricious_pick_target,
+	/datum/bt_node/subtree/forage_and_retaliate,
+	/datum/bt_node/subtree/simple_hostile_combat_with_retaliate,
+	/datum/bt_node/subtree/simple_ranged_retaliate_combat,
+	/datum/bt_node/subtree/simple_ability_retaliate_combat,
 )))
+
+/**
+ * Classifies a controller's compiled behavior tree: does its AI go looking for a fight, only
+ * answer one, or just run?
+ *
+ * Composites hold `children`, decorators a single `child`, and a subtree node its own `root`,
+ * so a flat scan of `behavior_nodes` would only ever see the top of the tree - the
+ * target-picking subtrees this turret cares about usually sit two or three levels down. An
+ * unresolved subtree root (nothing has ticked that controller yet) is skipped rather than
+ * built: a turret sweep is not the place to compile somebody's AI.
+ *
+ * Returns a bitfield of SHIP_TURRET_AI_* flags.
+ */
+/proc/ship_turret_classify_bt(datum/bt_node/node, depth = 0)
+	if(isnull(node) || depth > 12) // depth guard: a malformed tree must not hang the sweep
+		return NONE
+	. = NONE
+	if(GLOB.ship_turret_fleeing_nodes[node.type])
+		. |= SHIP_TURRET_AI_SKITTISH
+	else if(GLOB.ship_turret_aggressive_nodes[node.type])
+		. |= SHIP_TURRET_AI_AGGRESSIVE
+	else if(GLOB.ship_turret_retaliating_nodes[node.type])
+		. |= SHIP_TURRET_AI_PROVOKED
+
+	if(istype(node, /datum/bt_node/composite))
+		var/datum/bt_node/composite/comp = node
+		for(var/datum/bt_node/child as anything in comp.children)
+			. |= ship_turret_classify_bt(child, depth + 1)
+	else if(istype(node, /datum/bt_node/decorator))
+		var/datum/bt_node/decorator/dec = node
+		. |= ship_turret_classify_bt(dec.child, depth + 1)
+	else if(istype(node, /datum/bt_node/subtree))
+		var/datum/bt_node/subtree/sub = node
+		. |= ship_turret_classify_bt(sub.root, depth + 1)
 
 /**
  * Would this creature's own targeting strategy ever pick a person-sized mob?
@@ -302,10 +353,9 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
  * something a threat is how its AI picks targets, not how hard it hits - a ranged trooper
  * with no melee attack at all is exactly what these are for.
  *
- * Read off the live planning subtrees rather than the mob's type, so a controller that
- * inherits its planning_subtrees from a parent (the viscerator, most of the trooper tree)
- * still classifies correctly. Subtree instances are shared singletons out of
- * GLOB.ai_subtrees, so this is a handful of list lookups.
+ * Read off the live behavior tree rather than the mob's type, so a controller that inherits
+ * its tree from a parent (the viscerator, most of the trooper tree) still classifies
+ * correctly.
  */
 /obj/machinery/porta_turret/ship_defense/proc/is_hostile_creature(mob/living/creature)
 	// The /hostile branch of the old simple animal tree is aggressive by definition; its
@@ -326,22 +376,19 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
 	if(!controller)
 		return FALSE
 
-	var/provoked = FALSE
-	var/skittish = FALSE
-	for(var/datum/ai_planning_subtree/subtree as anything in controller.planning_subtrees)
-		if(GLOB.ship_turret_fleeing_subtrees[subtree.type])
-			skittish = TRUE
-			continue
-		if(GLOB.ship_turret_aggressive_subtrees[subtree.type])
-			return TRUE
-		if(GLOB.ship_turret_retaliating_subtrees[subtree.type])
-			provoked = TRUE
+	var/ai_shape = NONE
+	for(var/datum/bt_node/node as anything in controller.behavior_nodes)
+		ai_shape |= ship_turret_classify_bt(node)
+	var/skittish = ai_shape & SHIP_TURRET_AI_SKITTISH
+	var/provoked = ai_shape & SHIP_TURRET_AI_PROVOKED
+	if((ai_shape & SHIP_TURRET_AI_AGGRESSIVE) && !skittish)
+		return TRUE
 
 	// Retaliators are left alone until they have actually settled on someone to maul, at
 	// which point they are as much of a problem as anything else out there. Skittish mobs
 	// are excluded because some of them park what they are running away from in the same
 	// blackboard key an attacker would go in.
-	return provoked && !skittish && !isnull(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+	return provoked && !skittish && !isnull(controller.blackboard[BB_CURRENT_TARGET])
 
 /**
  * Is this something the turret is willing to shoot?
@@ -478,3 +525,6 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
 	return ..()
 
 #undef SHIP_TURRET_LETHAL
+#undef SHIP_TURRET_AI_AGGRESSIVE
+#undef SHIP_TURRET_AI_SKITTISH
+#undef SHIP_TURRET_AI_PROVOKED

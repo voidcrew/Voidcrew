@@ -218,7 +218,7 @@
 
 // The tube's sprite tracks the racked pod's hatch, so every path that touches
 // the door has to poke it - UI buttons, crowbars and landings alike.
-/obj/structure/closet/supplypod/drop_pod/setOpened()
+/obj/structure/closet/supplypod/drop_pod/set_opened()
 	. = ..()
 	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
 	tube?.update_appearance()

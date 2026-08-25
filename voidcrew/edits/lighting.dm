@@ -194,7 +194,7 @@
  * ordinary surface ground in the surface area, is_ambient is TRUE, and the scan finds
  * whatever static tiles are still standing next to them.
  */
-/turf/proc/update_ambient_bleed_after_change(old_type, datum/lighting_object/old_lighting_object)
+/turf/proc/update_ambient_bleed_after_change(old_type, atom/movable/lighting_object/old_lighting_object)
 	var/area/our_area = loc
 	var/area_bleeds = (our_area.ambient_lighting && !our_area.static_lighting && our_area.base_lighting_alpha)
 

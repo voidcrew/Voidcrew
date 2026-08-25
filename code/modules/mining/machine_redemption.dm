@@ -312,7 +312,6 @@
 			rejected_any = TRUE
 			continue
 		deposited_any = TRUE
-		SEND_SIGNAL(src, COMSIG_ORM_COLLECTED_ORE)
 	if(!deposited_any)
 		balloon_alert(user, "nothing in [tool.name] can be smelted!")
 		return ITEM_INTERACT_BLOCKING

@@ -326,7 +326,7 @@
 	forceMove(destination)
 	new /obj/effect/temp_visual/small_smoke/halfsecond(destination)
 	new /obj/effect/temp_visual/circle_wave/verdigris(destination)
-	playsound(destination, 'sound/effects/magic/RATTLEMEBONES2.ogg', 60, vary = TRUE)
+	playsound(destination, 'sound/effects/magic/RATTLEMEBONES.ogg', 60, vary = TRUE)
 	visible_message(span_boldwarning("Ilthuun comes apart, and puts himself back together standing on his own floor."))
 	log_game("LICH: Ilthuun was recalled to his sanctum from [left_behind ? AREACOORD(left_behind) : "nullspace"].")
 

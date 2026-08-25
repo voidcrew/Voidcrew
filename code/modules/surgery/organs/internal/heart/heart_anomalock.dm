@@ -70,7 +70,7 @@
 	// VOIDCREW EDIT START - BAL-4: the arc effect is an overlay on the BEARER,
 	// and `owner` is already null by the time we get here. Left alone it either
 	// stuck to the body for good or fired its clear timer on an ownerless heart.
-	drop_lightning_overlay(organ_owner)
+	clear_lightning_overlay(organ_owner)
 	// VOIDCREW EDIT END
 	if(!core)
 		return

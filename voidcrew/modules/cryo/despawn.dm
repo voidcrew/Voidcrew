@@ -112,7 +112,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 		// Already sealed in with the cycle running. Climbing out is the only input that
 		// matters now - re-confirming would arm a second countdown timer.
 		return
-	if(user.stat != CONSCIOUS)
+	if(user.stat != STABLE)
 		balloon_alert(user, "you must be awake!")
 		return
 	if(!crew_can_modify(user))
@@ -140,7 +140,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 
 	// Everything above can change while the box is open: they can be shot, cuffed, dragged
 	// off, handed the mission item, or the pod can be filled by a joiner arriving.
-	if(QDELETED(src) || QDELETED(user) || !user.client || user.stat != CONSCIOUS)
+	if(QDELETED(src) || QDELETED(user) || !user.client || user.stat != STABLE)
 		return
 	if(!user.Adjacent(src) || (occupant && occupant != user))
 		balloon_alert(user, "can't reach!")
@@ -184,7 +184,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 /obj/machinery/cryopod/proc/finish_cryo_countdown(mob/living/carbon/user)
 	if(QDELETED(src) || QDELETED(user) || occupant != user || user.loc != src)
 		return
-	if(!user.client || user.stat != CONSCIOUS)
+	if(!user.client || user.stat != STABLE)
 		visible_message(span_notice("[src] clicks and reopens without completing its cycle."))
 		open_machine()
 		return

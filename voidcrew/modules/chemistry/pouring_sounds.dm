@@ -58,7 +58,7 @@
 
 /// Plays a pour sound scaled to the amount transferred. Pass the source turf to
 /// play from, since a transfer can empty us into something across the tile.
-/obj/item/reagent_containers/cup/proc/after_pour(trans, atom/transed_to, mob/user)
+/obj/item/reagent_containers/cup/after_pour(trans, atom/transed_to, mob/user)
 	playsound(get_turf(transed_to || src), get_pouring_sound(trans), 60, TRUE, use_reverb = TRUE)
 
 /obj/item/reagent_containers/cup/proc/get_pouring_sound(trans)
@@ -78,5 +78,5 @@
 		'sound/chemistry/transfer/dropper2.ogg',
 	)
 
-/obj/item/reagent_containers/dropper/proc/after_pour(trans, atom/transed_to, mob/user)
+/obj/item/reagent_containers/dropper/after_pour(trans, atom/transed_to, mob/user)
 	playsound(get_turf(src), pick(dropper_sounds), 60, TRUE, use_reverb = TRUE)

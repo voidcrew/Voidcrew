@@ -229,8 +229,6 @@
 	tradable = TRUE
 	tradable_base_quantity = MATERIAL_QUANTITY_RARE
 	// VOIDCREW EDIT END
-	beauty_modifier = 0.15
-	armor_modifiers = list(MELEE = 1.4, BULLET = 0.7, ENERGY = 1.2, BIO = 1.2, ACID = 0.5)
 	mineral_rarity = MATERIAL_RARITY_PRECIOUS
 	points_per_unit = 15 / SHEET_MATERIAL_AMOUNT
 	points_per_boulder_unit = 2 / SHEET_MATERIAL_AMOUNT

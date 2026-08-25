@@ -543,7 +543,7 @@
 		for(var/mob/living/victim in tile)
 			if(!can_burn(victim))
 				continue
-			victim.adjustFireLoss(burn_per_tick)
+			victim.adjust_fire_loss(burn_per_tick)
 			to_chat(victim, span_danger("The grave-dirt sears you from below!"))
 	// The first application lands at ignition, so reschedule only while the NEXT one
 	// would still fall inside the window: 7 ticks total, not 8.

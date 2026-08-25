@@ -10,7 +10,7 @@
 SUBSYSTEM_DEF(instance_census)
 	name = "Instance Census"
 	wait = 30 MINUTES
-	flags = SS_BACKGROUND
+	ss_flags = SS_BACKGROUND
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 
 	/// Monotonic snapshot counter for this round.
@@ -63,7 +63,7 @@ SUBSYSTEM_DEF(instance_census)
 	var/list/entry = list(
 		"census" = census_number,
 		"world_time" = world.time,
-		"realtime" = time_stamp(),
+		"realtime" = server_timestamp(),
 		"atom_walk_seconds" = (REALTIMEOFDAY - start_realtime) * 0.1,
 		"atoms_total" = atoms_total,
 		"maxz" = world.maxz,

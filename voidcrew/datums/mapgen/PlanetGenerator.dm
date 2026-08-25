@@ -328,7 +328,7 @@
 			// thing ChangeTurf does on this path that is not lighting bookkeeping we are
 			// deliberately skipping. See the call at the bottom of this branch.
 			var/old_type = gen_turf.type
-			var/datum/lighting_object/old_lighting_object = gen_turf.lighting_object
+			var/atom/movable/lighting_object/old_lighting_object = gen_turf.lighting_object
 			// Second casualty of skipping ChangeTurf's qdel(src): /turf/open/space/Destroy()
 			// is what takes a lit space turf back out of GLOB.starlight, and it never runs on a
 			// raw swap. The entry is not merely stale - BYOND retargets it onto the ground turf

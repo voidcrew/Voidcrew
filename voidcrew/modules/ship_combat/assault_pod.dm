@@ -259,7 +259,7 @@
 		var/obj/structure/closet/supplypod/drop_pod/advanced/armoured = pod
 		armoured.ignore_next_open = TRUE
 
-	pod.preOpen()
+	pod.pre_open()
 	pod = null
 
 /// A shield stops the pod dead. Everyone strapped in dies with it.
@@ -570,7 +570,7 @@
 	// deconstruction as usual (which is blocked while loaded anyway).
 	if(W.tool_behaviour == TOOL_CROWBAR && loaded_pod && !panel_open)
 		if(loaded_pod.opened)
-			loaded_pod.setClosed()
+			loaded_pod.set_closed()
 			balloon_alert(user, "hatch sealed")
 		else
 			loaded_pod.open_pod(loaded_pod)

@@ -194,14 +194,14 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 // =========================================================================
 // GARB: verdigris robe
 // Subtypes /obj/item/clothing/suit/wizrobe (code/modules/clothing/suits/wiz_robe.dm:111)
-// for slot behaviour, strip delays, CASTING_CLOTHES and the fishing-difficulty
+// for slot behaviour, strip delays, the casting-clothing trait and the fishing-difficulty
 // component. Icon, worn icon, armour and cold protection are all overridden.
 // DMI states wanted: "lich_robe" (world), "lich_robe_worn" (worn overlay),
 // "lich_robe_inhand" (carried, same state used for both hands).
 // =========================================================================
 
 /**
- * Wizard garb, honestly. Inheriting `clothing_flags = CASTING_CLOTHES` from
+ * Wizard garb, honestly. Inheriting TRAIT_CASTING_CLOTHING from
  * wizrobe is the whole point of the item: the robe and crown together are what
  * let a plain crewmember cast the garb-locked half of this codebase's magic
  * (staves of change, a `granter/action/spell/random` roll that landed on
@@ -227,7 +227,9 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	)
 	// The cold has nothing left to take from the man who wore this. It has
 	// plenty to take from you, but the robe doesn't know that.
-	clothing_flags = CASTING_CLOTHES | STOPSPRESSUREDAMAGE
+	// CASTING_CLOTHES is gone: upstream turned it into TRAIT_CASTING_CLOTHING, added by
+	// /obj/item/clothing/suit/wizrobe/Initialize(), which this inherits.
+	clothing_flags = STOPSPRESSUREDAMAGE
 	cold_protection = CHEST|GROIN|ARMS|LEGS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	heat_protection = CHEST|GROIN|ARMS|LEGS
@@ -259,7 +261,7 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 // =========================================================================
 // GARB: verdigris crown
 // Subtypes /obj/item/clothing/head/wizard (code/modules/clothing/suits/wiz_robe.dm:1)
-// for SNUG_FIT|CASTING_CLOTHES, strip delays and armour baseline.
+// for SNUG_FIT plus the casting trait, strip delays and armour baseline.
 // DMI states wanted: "lich_crown" (world), "lich_crown_worn" (worn overlay),
 // "lich_crown_inhand" (carried, same state used for both hands).
 // =========================================================================
@@ -298,7 +300,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	inhand_icon_state = "lich_crown_inhand"
 	armor_type = /datum/armor/head_verdigris_crown
 	dog_fashion = null
-	clothing_flags = SNUG_FIT | CASTING_CLOTHES | STOPSPRESSUREDAMAGE
+	// See the robe above - the casting half is TRAIT_CASTING_CLOTHING on the parent now.
+	clothing_flags = SNUG_FIT | STOPSPRESSUREDAMAGE
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
 	heat_protection = HEAD

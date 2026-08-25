@@ -135,7 +135,7 @@
  */
 /obj/machinery/power/shuttle_engine/ship/examine(mob/user)
 	. = ..()
-	var/obj/docking_port/mobile/port = connected_ship_ref?.resolve()
+	var/obj/docking_port/mobile/port = connected_ship // VOIDCREW EDIT: upstream swapped the weakref for a hard ref
 	if(port)
 		. += span_notice("It is registered to [port.name].")
 	else
@@ -185,7 +185,7 @@
  */
 /obj/machinery/power/shuttle_engine/ship/default_unfasten_wrench(mob/user, obj/item/tool, time = 20)
 	. = ..()
-	if(. == SUCCESSFUL_UNFASTEN && anchored && !connected_ship_ref?.resolve())
+	if(. == SUCCESSFUL_UNFASTEN && anchored && !connected_ship) // VOIDCREW EDIT: hard ref, see above
 		balloon_alert(user, "no vessel claims this tile!")
 		to_chat(user, span_warning("[src] is bolted down, but the tile under it is not part of any \
 			ship's hull, so no helm will register it. Mount it on your ship's own deck - on a \
