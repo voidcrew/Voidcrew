@@ -238,9 +238,9 @@
 		playsound(src, 'sound/machines/terminal/terminal_button01.ogg', 40, TRUE)
 		return TRUE
 
-	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
+	if(default_deconstruction_screwdriver(user, W))
 		return
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 	return ..()
 

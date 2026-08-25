@@ -98,7 +98,7 @@
 	ship.notify_scoop_activity()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "scoop_open", "scoop", tool))
+	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/wrench_act(mob/living/user, obj/item/tool)
@@ -115,7 +115,7 @@
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/crowbar_act(mob/living/user, obj/item/tool)
 	if(default_pry_open(tool))
 		return ITEM_INTERACT_SUCCESS
-	if(default_deconstruction_crowbar(tool))
+	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator
@@ -203,7 +203,7 @@
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "sublimator_open", "sublimator", tool))
+	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/wrench_act(mob/living/user, obj/item/tool)
@@ -220,7 +220,7 @@
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/crowbar_act(mob/living/user, obj/item/tool)
 	if(default_pry_open(tool))
 		return ITEM_INTERACT_SUCCESS
-	if(default_deconstruction_crowbar(tool))
+	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 #undef SUBLIMATOR_MOLES_PER_SHEET

@@ -180,10 +180,10 @@
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/outpost_shield_generator/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	if(default_deconstruction_screwdriver(user, "shieldgen_open", "shieldgen", attacking_item))
+	if(default_deconstruction_screwdriver(user, attacking_item))
 		update_appearance()
 		return
-	if(default_deconstruction_crowbar(attacking_item))
+	if(default_deconstruction_crowbar(user, attacking_item))
 		return
 	return ..()
 

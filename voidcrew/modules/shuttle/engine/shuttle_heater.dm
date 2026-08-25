@@ -176,7 +176,7 @@
 		return min(starting_amt, amount)
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_closed, tool))
+	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/wrench_act(mob/living/user, obj/item/tool)
@@ -201,7 +201,7 @@
 /obj/machinery/atmospherics/components/unary/shuttle/heater/crowbar_act(mob/living/user, obj/item/tool)
 	if(default_pry_open(tool))
 		return ITEM_INTERACT_SUCCESS
-	if(default_deconstruction_crowbar(tool))
+	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/attackby(obj/item/I, mob/living/user, params)

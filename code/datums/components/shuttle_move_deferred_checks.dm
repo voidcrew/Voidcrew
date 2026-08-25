@@ -61,7 +61,12 @@
 
 /datum/component/shuttle_move_deferred_checks/proc/after_target_shuttle_move(atom/source)
 	SIGNAL_HANDLER
-	LAZYOR(moving_targets, source)
+	// VOIDCREW EDIT: was LAZYOR, which added to the in-flight set instead of draining it - so
+	// moving_targets never emptied, the guard below could never pass, and call_check() was
+	// unreachable for the rest of the round. on_target_moved() is gated on the same set, so
+	// after a hull's first shuttle move EVERY deferred check died permanently. Load-bearing
+	// here: usb_port's range re-check and beam rebuild reach on_moved() only through this.
+	LAZYREMOVE(moving_targets, source)
 	if(!LAZYLEN(moving_targets))
 		call_check()
 

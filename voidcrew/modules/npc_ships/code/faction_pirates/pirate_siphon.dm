@@ -212,9 +212,9 @@
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE
 
-	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
+	if(default_deconstruction_screwdriver(user, W))
 		return
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 	return ..()
 

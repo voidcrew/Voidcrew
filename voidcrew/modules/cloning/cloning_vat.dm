@@ -425,11 +425,11 @@
 
 /obj/machinery/cloning_vat/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
-	return default_deconstruction_screwdriver(user, icon_state, icon_state, tool)
+	return default_deconstruction_screwdriver(user, tool)
 
 /obj/machinery/cloning_vat/crowbar_act(mob/living/user, obj/item/tool)
 	. = ..()
-	return default_deconstruction_crowbar(tool)
+	return default_deconstruction_crowbar(user, tool)
 
 /obj/machinery/cloning_vat/on_deconstruction(disassembled)
 	if(growth_progress >= growth_time * CLONING_VAT_MESS_THRESHOLD)

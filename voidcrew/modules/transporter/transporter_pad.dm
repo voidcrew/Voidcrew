@@ -153,11 +153,11 @@
 		transponder.pair_to_pad(src, user)
 		return TRUE
 
-	if(default_deconstruction_screwdriver(user, "[base_icon_state]_open", base_icon_state, weapon))
+	if(default_deconstruction_screwdriver(user, weapon))
 		update_appearance(UPDATE_ICON_STATE)
 		return TRUE
 
-	if(default_deconstruction_crowbar(weapon))
+	if(default_deconstruction_crowbar(user, weapon))
 		return TRUE
 
 	return ..()

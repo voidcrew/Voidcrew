@@ -266,12 +266,12 @@
 /obj/machinery/survey_scanner/screwdriver_act(mob/living/user, obj/item/tool)
 	if(enabled)
 		return FALSE
-	if(!default_deconstruction_screwdriver(user, "[initial(icon_state)]-o", initial(icon_state), tool))
+	if(!default_deconstruction_screwdriver(user, tool))
 		return FALSE
 	return TRUE
 
 /obj/machinery/survey_scanner/crowbar_act(mob/living/user, obj/item/tool)
-	if(!default_deconstruction_crowbar(tool))
+	if(!default_deconstruction_crowbar(user, tool))
 		return FALSE
 	return TRUE
 

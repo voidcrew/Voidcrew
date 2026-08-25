@@ -201,7 +201,7 @@
 
 /obj/machinery/power/shuttle_engine/ship/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
-	if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_closed, tool))
+	if(default_deconstruction_screwdriver(user, tool))
 		return TRUE
 	update_appearance(UPDATE_ICON)
 	return FALSE
@@ -211,6 +211,6 @@
 	if(!panel_open)
 		user.balloon_alert(user, "open panel first!")
 		return FALSE
-	if(default_deconstruction_crowbar(tool))
+	if(default_deconstruction_crowbar(user, tool))
 		return TRUE
 	return FALSE

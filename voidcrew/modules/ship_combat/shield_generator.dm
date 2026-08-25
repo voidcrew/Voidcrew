@@ -1863,9 +1863,9 @@
 		return TRUE
 
 	// Standard deconstruction
-	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
+	if(default_deconstruction_screwdriver(user, W))
 		return
-	if(default_deconstruction_crowbar(W))
+	if(default_deconstruction_crowbar(user, W))
 		return
 	return ..()
 
