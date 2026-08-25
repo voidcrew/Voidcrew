@@ -519,28 +519,26 @@
 /datum/unit_test/voidcrew_cyberware_surgical_reach
 
 /datum/unit_test/voidcrew_cyberware_surgical_reach/Run()
-	// The zones an INTERNAL organ-manipulation surgery can open. The external
-	// "Feature manipulation" surgeries are excluded on purpose: their step only
-	// accepts ORGAN_EXTERNAL organs, and no chrome is one, so counting them
-	// would make an unreachable zone look covered.
-	var/list/reachable = list()
-	for(var/datum/surgery/organ_manipulation/procedure in GLOB.surgeries_list)
-		var/takes_internal = FALSE
-		for(var/step_path in procedure.steps)
-			if(ispath(step_path, /datum/surgery_step/manipulate_organs/internal) || ispath(step_path, /datum/surgery_step/manipulate_organs/any))
-				takes_internal = TRUE
-				break
-		if(!takes_internal)
-			continue
-		for(var/zone in procedure.possible_locs)
-			reachable[zone] = TRUE
+	// The 2026 upstream surgery rework replaced the /datum/surgery possible_locs whitelist -
+	// which is what made a leg unreachable in the first place - with one operation that is
+	// generic over whichever limb is being cut into and answers per organ through zone_check().
+	// So the question this test asks is the same, but it is asked of the operation directly:
+	// would organ manipulation accept this ware on the limb the ware lives in?
+	var/datum/surgery_operation/limb/organ_manipulation/procedure = 		GLOB.operations.operations_by_typepath[/datum/surgery_operation/limb/organ_manipulation/internal]
+	TEST_ASSERT(procedure, "no internal organ-manipulation operation is registered, so nothing here proves anything")
 
-	TEST_ASSERT(reachable[BODY_ZONE_L_LEG] && reachable[BODY_ZONE_R_LEG], "No organ-manipulation surgery opens a leg. Every piece of leg chrome is Chrome Cradle-only again")
+	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+		var/obj/item/organ/leg_ware = allocate(/obj/item/organ/cyberimp/cyberware/piledriver)
+		leg_ware.zone = zone
+		TEST_ASSERT(procedure.zone_check(leg_ware, deprecise_zone(zone), zone), 			"Organ manipulation refuses [zone]. Every piece of leg chrome is Chrome Cradle-only again")
 
 	var/list/all_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/eyes/robotic/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
-	for(var/obj/item/organ/ware as anything in all_ware)
-		var/zone = initial(ware.zone)
-		TEST_ASSERT(reachable[zone], "[ware] lives in [zone], which no organ-manipulation surgery can open. It can never be installed by surgery")
+	for(var/obj/item/organ/ware_type as anything in all_ware)
+		if(initial(ware_type.abstract_type) == ware_type)
+			continue
+		var/obj/item/organ/ware = allocate(ware_type)
+		var/zone = ware.zone
+		TEST_ASSERT(procedure.zone_check(ware, deprecise_zone(zone), zone), 			"[ware_type] lives in [zone], which organ manipulation will not open. It can never be installed by surgery")
 
 /// (m) Chrome salvage: a body coming apart leaves its hardware on the floor.
 /// Upstream, gibbing without DROP_ORGANS (which is most gib calls), dusting,

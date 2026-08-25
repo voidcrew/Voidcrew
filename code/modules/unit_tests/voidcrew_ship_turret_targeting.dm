@@ -41,7 +41,7 @@
 	var/mob/living/basic/goat/angry_goat = allocate(/mob/living/basic/goat)
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
 	TEST_ASSERT(angry_goat.ai_controller, "the test goat spawned without an AI controller")
-	angry_goat.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, victim)
+	angry_goat.ai_controller.set_blackboard_key(BB_CURRENT_TARGET, victim)
 	TEST_ASSERT(turret.valid_target(angry_goat), "the turret held fire on a goat that had already picked a victim")
 
 	// Players are never targets, whatever they are riding.

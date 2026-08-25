@@ -53,9 +53,18 @@
 	// 1. Never offered as a landing spot.
 	var/precision = get_dist(run_loc_floor_bottom_left, cordon)
 	TEST_ASSERT(precision > 0, "The two test landmarks are the same turf - there is no radius that reaches the cordon")
-	var/list/candidates = get_teleport_turfs(run_loc_floor_bottom_left, precision)
-	TEST_ASSERT(length(candidates), "get_teleport_turfs() returned nothing at all, so the exclusion below proves nothing")
-	TEST_ASSERT(!(cordon in candidates), "get_teleport_turfs() offered the world border as a landing spot - an imprecise teleport can seal somebody inside it")
+	// get_teleport_turfs() became get_valid_teleport_turf(), which picks ONE turf out of the
+	// candidates rather than handing back the list, so the exclusion is sampled instead of
+	// asserted against a list. 200 draws over a radius this small covers every candidate many
+	// times over; a cordon that could be offered would show up in the first handful.
+	var/offered_any = FALSE
+	for(var/attempt in 1 to 200)
+		var/turf/landing = get_valid_teleport_turf(run_loc_floor_bottom_left, run_loc_floor_bottom_left, precision)
+		if(isnull(landing))
+			continue
+		offered_any = TRUE
+		TEST_ASSERT(landing != cordon, "get_valid_teleport_turf() offered the world border as a landing spot - an imprecise teleport can seal somebody inside it")
+	TEST_ASSERT(offered_any, "get_valid_teleport_turf() returned nothing at all, so the exclusion above proves nothing")
 
 	// 2. Refused outright, which is the only guard the precision-0 path has.
 	TEST_ASSERT(!check_teleport_valid(traveller, cordon), "check_teleport_valid() accepted a cordon turf as a destination")

@@ -49,7 +49,8 @@
 		var/obj/item/ammo_box/pristine = allocate(design.build_path)
 		var/obj/item/ammo_box/printed = allocate(design.build_path)
 		// Exactly what /obj/machinery/autolathe/proc/do_make_item() does to a fresh print.
-		split_materials_uniformly(design.materials, coefficient, printed)
+		// (split_materials_uniformly() was folded into /datum/design/transfer_materials().)
+		design.transfer_materials(design.materials, coefficient, printed)
 
 		var/pristine_worth = scrap_value(pristine)
 		var/printed_worth = scrap_value(printed)
