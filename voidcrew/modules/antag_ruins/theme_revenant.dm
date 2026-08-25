@@ -1,25 +1,25 @@
 /**
- * # The Wake — revenant vestige
+ * # The Wake: revenant vestige
  *
  * A hospice barge whose every passenger died on the same night, and something
  * stayed behind to grieve them. Trials are acts of mourning: gathering last
  * breaths, keeping an unbroken vigil, sitting with the badly hurt. The
- * revenant's body IS the antag (invisible, phasing — unportable), so every
+ * revenant's body IS the antag (invisible, phasing, unportable), so every
  * boon here is a local human-castable port:
  * same behavior as upstream, no revenant mob, no essence economy (the
  * upstream spells stack-trace and qdel themselves when granted to a
- * non-revenant, hence the copies). Two upgrade chains — the overload and the
- * mourner's touch — plus a defile port and a short walk behind the veil.
+ * non-revenant, hence the copies). Two upgrade chains, the overload and the
+ * mourner's touch, plus a defile port and a short walk behind the veil.
  */
 
 // Tuning constants for the Mourner's ports (file-local, #undef at bottom)
 /// Body heat (K) one Mourner's Touch pours out of a victim
 #define VESTIGE_MOURNING_CHILL 65
-/// The touch never chills a victim below this — a frozen witness learns nothing
+/// The touch never chills a victim below this, a frozen witness learns nothing
 #define VESTIGE_MOURNING_CHILL_FLOOR (BODYTEMP_COLD_DAMAGE_LIMIT - 45)
 /// Stamina one Mourner's Touch saps
 #define VESTIGE_MOURNING_STAMINA 40
-/// Last Rites cracks glass in this band — never enough to shatter a healthy pane outright
+/// Last Rites cracks glass in this band, never enough to shatter a healthy pane outright
 #define VESTIGE_RITES_WINDOW_DAMAGE_MIN 10
 #define VESTIGE_RITES_WINDOW_DAMAGE_MAX 25
 
@@ -57,7 +57,7 @@
 	idle_lines = list(
 		"Forty beds, one night. I sat with every one of them. It didn't help, and I'm still here doing it.",
 		"The dying always keep one breath back for the end. Nobody's ever around to hear it.",
-		"You smell of the living. Don't apologize — it's almost nostalgic.",
+		"You smell of the living. Don't apologize. It's almost nostalgic.",
 		"The lights flicker in here because I asked them to. Steady light makes people too comfortable.",
 		"The medicine was never the point. Staying was. Anyone can light a candle; almost nobody sticks around for the rest of it.",
 	)
@@ -67,7 +67,7 @@
 	renounce_line = "Put it down now and it comes back heavier later. Your choice."
 	claim_line = "You're owed something for that. Take it before you go looking for more trouble."
 	exhausted_line = "I've nothing left to give you but the grief itself, and you'll come by that on your own."
-	remember_line = "You died. I noticed — I notice all of them. Your things were kept safe at the foot of the bed."
+	remember_line = "You died. I noticed. I notice all of them. Your things were kept safe at the foot of the bed."
 
 // ===== VIGIL OF THE LAST BREATH =====
 
@@ -183,7 +183,7 @@
 	var/datum/mind/keeper
 	/// The body being sat with
 	var/mob/living/carbon/human/watched
-	/// Whether the flame guttered last tick — one warning tick of grace before it goes out
+	/// Whether the flame guttered last tick, one warning tick of grace before it goes out
 	var/guttering = FALSE
 
 /obj/item/vestige_candle/Destroy()
@@ -231,7 +231,7 @@
 	playsound(src, 'sound/items/match_strike.ogg', 20, TRUE)
 	user.visible_message(
 		span_warning("[user] lights a pale candle beside [body] and settles in to keep a vigil."),
-		span_notice("The wick catches with a pale flame. Stay within arm's reach of [body] — if you wander off, it goes out."),
+		span_notice("The wick catches with a pale flame. Stay within arm's reach of [body]. If you wander off, it goes out."),
 	)
 	START_PROCESSING(SSobj, src)
 
@@ -379,10 +379,10 @@
 		span_boldnotice("The shaking stops. Someone stayed with you, and it helped."),
 	)
 	playsound(patient, 'sound/effects/ghost2.ogg', 20, TRUE)
-	trial.tend(patient) // may complete (and delete) the trial — nothing touches it after this
+	trial.tend(patient) // may complete (and delete) the trial, nothing touches it after this
 	return ITEM_INTERACT_SUCCESS
 
-/// Everything that hurts, totaled — the cloth answers to pain of every kind
+/// Everything that hurts, totaled: the cloth answers to pain of every kind
 /obj/item/vestige_cloth/proc/get_suffering(mob/living/patient)
 	return patient.get_brute_loss() + patient.get_fire_loss() + patient.get_tox_loss() + patient.get_oxy_loss() + patient.get_stamina_loss()
 
@@ -484,7 +484,7 @@
 /**
  * The overload mastered: the same port with a shorter mourning period, and
  * every light it shocks through is broken afterward (break_light_tube), so
- * the flare leaves honest dark behind. A replacement tube undoes it — the
+ * the flare leaves honest dark behind. A replacement tube undoes it, the
  * upgrade's twist is darkness, not bigger numbers.
  */
 /datum/action/cooldown/spell/aoe/vestige_overload/requiem
@@ -500,7 +500,7 @@
 
 /**
  * A grief-touch in the revenant's register, built on the standard touch-spell
- * chassis (see the shock-touch mutation) rather than on revenant code — the
+ * chassis (see the shock-touch mutation) rather than on revenant code, the
  * revenant keeps its draining inside the harvest cycle, which can't leave the
  * antag datum. One bare palm, one living victim: a vigil's worth of cold and
  * weariness. The chill obeys a hard floor, so it slows and shakes but never
@@ -549,7 +549,7 @@
 
 /**
  * The touch mastered: the same cold, and it also takes the breath the victim
- * was keeping for the end — a few missed breaths and a short silence. They
+ * was keeping for the end, a few missed breaths and a short silence. They
  * keep their legs and their radio keys; they just can't shout about it yet.
  */
 /datum/action/cooldown/spell/touch/vestige_mourning_touch/last_breath
@@ -642,15 +642,15 @@
 /**
  * A sliver of the revenant's incorporeality, worn secondhand: an ethereal
  * jaunt on the standard wizard chassis (no revenant code involved) with
- * revenant dressing — and the Wake's own gate: the walk only BEGINS within
+ * revenant dressing, and the Wake's own gate: the walk only BEGINS within
  * arm's reach of the dead. Every other phase in the module has a gate
  * (darkness, blood pools, glass, ash's short leash); this one's is grief.
- * In exchange the walk itself is generous — five seconds behind the veil —
+ * In exchange the walk itself is generous, five seconds behind the veil,
  * and the slow, audible materialization the jaunt chassis enforces still
  * makes arriving the loud part. Blessed ground blocks the walk, as it should.
  * The gate is checked in can_cast_spell so a refused walk never pays the
  * cooldown; a walker already behind the veil is never gated (belt and
- * suspenders — the ethereal jaunt times out on its own).
+ * suspenders, the ethereal jaunt times out on its own).
  */
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk
 	name = "Widow's Walk"
@@ -671,7 +671,7 @@
 /**
  * The gate moves with the caster, so the button has to be told to re-read it.
  * Action buttons only re-evaluate IsAvailable() when something rebuilds them,
- * and nothing does that for "am I standing next to a corpse" — so the button
+ * and nothing does that for "am I standing next to a corpse", so the button
  * sat bright and ready in an empty corridor and dark next to a body. Every step
  * re-checks it now. A corpse that appears (or is dragged off) while the caster
  * stands still is the one case this misses, and the next step fixes that.
@@ -680,7 +680,7 @@
 	. = ..()
 	if(owner)
 		// override: Grant returns early when re-granted to the same owner, and
-		// this line runs anyway — the base uses the same guard for its own hooks
+		// this line runs anyway. The base uses the same guard for its own hooks
 		RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(update_status_on_signal), override = TRUE)
 
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk/Remove(mob/remove_from)

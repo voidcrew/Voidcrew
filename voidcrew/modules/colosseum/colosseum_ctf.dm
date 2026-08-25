@@ -6,7 +6,7 @@
  * team to CTF_CAPS_TO_WIN captures wins. Flags imitate the tg CTF banner's
  * carry mechanics (heavy, slowing, undestroyable, auto-returns when left on
  * the ground) but are wired to the colosseum controller instead of the
- * station CTF controller — that system is inseparable from its own team/
+ * station CTF controller, that system is inseparable from its own team/
  * faction machinery.
  */
 
@@ -17,7 +17,7 @@
 
 /obj/item/colosseum_flag
 	name = "war banner"
-	desc = "A ceremonial war banner. It goes wherever its bearer does — slowly."
+	desc = "A ceremonial war banner. It goes wherever its bearer does, slowly."
 	icon = 'icons/obj/banner.dmi'
 	icon_state = "banner"
 	inhand_icon_state = "banner"
@@ -66,7 +66,7 @@
 		else
 			to_chat(user, span_warning("You can't move your own banner!"))
 		return
-	// Enemy contestant: the anchored dance mirrors tg's flag — anchored blocks
+	// Enemy contestant: the anchored dance mirrors tg's flag, anchored blocks
 	// pickup, so it drops only for the actual grab attempt.
 	STOP_PROCESSING(SSobj, src)
 	anchored = FALSE
@@ -192,7 +192,7 @@
 	captures[entry.team] = (captures[entry.team] || 0) + 1
 	carrier.dropItemToGround(flag, force = TRUE)
 	flag.return_home()
-	announce("CAPTURE! [carrier.real_name] scores for team [entry.team] — [captures[entry.team]]/[CTF_CAPS_TO_WIN]!")
+	announce("CAPTURE! [carrier.real_name] scores for team [entry.team], [captures[entry.team]]/[CTF_CAPS_TO_WIN]!")
 	if(captures[entry.team] >= CTF_CAPS_TO_WIN)
 		controller.resolve(live_team_minds(entry.team))
 

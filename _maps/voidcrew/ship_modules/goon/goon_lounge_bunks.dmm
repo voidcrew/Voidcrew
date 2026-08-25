@@ -21,7 +21,7 @@
 /obj/effect/spawner/random/food_or_drink/donkpockets,
 /obj/item/storage/cans/sixbeer,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/soap/nanotrasen,
+/obj/item/soap,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "G" = (

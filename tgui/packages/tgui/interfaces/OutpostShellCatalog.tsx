@@ -43,13 +43,13 @@ export const OutpostShellCatalog = (props) => {
   const canFound = !denial && outpostName.trim().length > 0 && !!selectedShell;
 
   return (
-    <Window title="Colonial Registry — Land Claim" width={460} height={520}>
+    <Window title="Colonial Registry: Land Claim" width={460} height={520}>
       <Window.Content scrollable>
         {denial ? (
           <NoticeBox danger>{denial}</NoticeBox>
         ) : (
           <NoticeBox success={!!isProtected} warning={!isProtected}>
-            Claim site is in the {zone_name} zone —{' '}
+            Claim site is in the {zone_name} zone, {' '}
             {isProtected
               ? 'patrolled space. Your outpost will be protected from ship weapons.'
               : 'unpatrolled space. Your outpost CAN be attacked by other ships.'}

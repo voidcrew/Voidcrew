@@ -28,7 +28,7 @@
 	icon_state = amount > 1 ? "void-vouchers" : "void-voucher"
 
 /**
- * Total trade vouchers anywhere in the mob's inventory — hands, bags, pockets.
+ * Total trade vouchers anywhere in the mob's inventory, hands, bags, pockets.
  * Payment is stateless, but nobody enjoys fishing chits out of a backpack.
  */
 /proc/count_trade_vouchers(mob/living/user)

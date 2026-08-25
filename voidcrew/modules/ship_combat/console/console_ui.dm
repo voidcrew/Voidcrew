@@ -1,10 +1,10 @@
 // ========== TGUI INTERFACE ==========
 
 /**
- * Faceplate art for the tactical interface. Composited by
- * tools/combat_plate/make_plate.py from a generated metal texture; re-run that
- * script if the panel GEOMETRY in ShipCombatConsole.tsx changes, or the bezels
- * will no longer line up with the wells.
+ * Faceplate art for the tactical interface. Its bezels are drawn at the exact
+ * panel GEOMETRY coordinates in ShipCombatConsole.tsx, so the art has to be
+ * redrawn if that layout moves, or the bezels will no longer line up with the
+ * wells.
  */
 /datum/asset/simple/combat_faceplate
 	assets = list(
@@ -17,6 +17,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/attack_hand(mob/user, list/modifiers)
 	// Don't call parent - we handle our own UI
 	if(machine_stat & (NOPOWER|BROKEN))
+		balloon_alert(user, (machine_stat & BROKEN) ? "console broken!" : "no power!")
 		return
 
 	attempt_ship_connection()
@@ -238,6 +239,25 @@
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
 
+	// Get assault pod tube status
+	var/list/pod_tubes = list()
+	var/pods_ready_count = 0
+	var/pods_total_count = 0
+	for(var/datum/weakref/ref in linked_pod_tubes.Copy())
+		var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+		if(!tube)
+			linked_pod_tubes -= ref
+			continue
+		pods_total_count++
+		if(tube.can_fire(target_ship))
+			pods_ready_count++
+		pod_tubes += list(tube.get_status(target_ship))
+	data["pod_tubes"] = pod_tubes
+	data["pod_tubes_ready"] = pods_ready_count
+	data["pod_tubes_total"] = pods_total_count
+	// Boarding into a live shield kills the pod crew - the plate says so up front
+	data["target_shields_up"] = target_shields_up()
+
 	// Get laser turret status
 	var/list/turrets = list()
 	var/turrets_ready_count = 0
@@ -408,6 +428,11 @@
 		data["siphon_goal"] = siphon_status["siphon_goal"]
 		data["siphon_goal_progress"] = siphon_status["goal_progress"]
 		data["siphon_target_name"] = siphon_status["target_name"]
+		// What the locked target is actually carrying - the panel greys the button
+		// out on an empty hull instead of letting the siphon spin up and bounce.
+		// Outposts and other non-ship targets hold no account, so they read zero.
+		var/obj/structure/overmap/ship/siphon_target = target_ship
+		data["siphon_target_credits"] = istype(siphon_target) ? (siphon_target.ship_account?.account_balance || 0) : 0
 	else
 		data["siphon_active"] = FALSE
 		data["siphon_warming_up"] = FALSE
@@ -416,6 +441,7 @@
 		data["siphon_goal"] = 0
 		data["siphon_goal_progress"] = 0
 		data["siphon_target_name"] = null
+		data["siphon_target_credits"] = 0
 
 	return data
 
@@ -470,6 +496,11 @@
 			fire_all(ui.user)
 			return TRUE
 
+		if("launch_pod")
+			// Can stop to ask about shields, so it doesn't get to block the UI loop
+			INVOKE_ASYNC(src, PROC_REF(launch_pod), ui.user)
+			return TRUE
+
 		if("start_interdict")
 			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
 			if(!interdictor)
@@ -500,6 +531,7 @@
 		// Shield power allocation (0-200%) - applies to ship's shared shield pool
 		if("set_shield_power")
 			if(!current_ship || !length(current_ship.linked_shield_generators))
+				to_chat(ui.user, span_warning("No shield generators are linked to the ship."))
 				return FALSE
 			var/new_power = params["power"]
 			if(!isnum(new_power))
@@ -508,6 +540,14 @@
 			var/power_mult = new_power / 100
 			current_ship.set_shield_power_allocation(power_mult)
 			invalidate_shield_cache()  // Force immediate UI refresh
+			// The crew just asked for shields. If they cannot come up, say why -
+			// a slider that silently does nothing reads as "shields refuse to work"
+			// (round 4). Generators activate on their next process tick, so report
+			// the blocking condition rather than polling for the state change.
+			if(power_mult > 0 && !current_ship.shields_active)
+				var/reason = current_ship.get_shield_blocker_reason()
+				if(reason)
+					to_chat(ui.user, span_warning(reason))
 			return TRUE
 
 		// Shield burst - sacrifice shields to break interdiction

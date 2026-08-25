@@ -1,0 +1,75 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"g" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/table/reinforced,
+/obj/item/radio,
+/obj/item/storage/medkit/regular{
+	pixel_x = -5;
+	pixel_y = 8
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"q" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"I" = (
+/obj/modular_map_connector,
+/obj/machinery/light/cold,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"K" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/obj/machinery/light/cold{
+	dir = 1
+	},
+/obj/item/radio/intercom{
+	pixel_y = 28
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+"Y" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/template_noop)
+
+(1,1,1) = {"
+K
+Y
+I
+"}
+(2,1,1) = {"
+g
+q
+a
+"}

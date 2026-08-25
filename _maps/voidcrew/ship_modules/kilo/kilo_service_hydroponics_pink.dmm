@@ -31,7 +31,7 @@
 /area/template_noop)
 "e" = (
 /obj/machinery/hydroponics/constructable,
-/obj/machinery/light{
+/obj/machinery/light/warm{
 	dir = 1
 	},
 /obj/structure/sign/poster/official/fruit_bowl{
@@ -96,11 +96,12 @@
 "k" = (
 /obj/machinery/biogenerator,
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 4
 	},
 /turf/open/floor/grass/dollhouse,
 /area/template_noop)
-"F" = (
+"K" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -127,7 +128,7 @@ d
 (2,1,1) = {"
 e
 f
-c
+K
 g
 "}
 (3,1,1) = {"
@@ -138,7 +139,7 @@ h
 "}
 (4,1,1) = {"
 i
-F
+c
 j
 k
 "}

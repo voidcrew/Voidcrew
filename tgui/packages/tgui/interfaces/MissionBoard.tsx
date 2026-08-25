@@ -393,8 +393,8 @@ type MissionCardProps = {
 };
 
 /**
- * Renders a mission's full payout — credits, each item in the reward bundle
- * (rare picks accented), research points and vouchers — as " + "-joined
+ * Renders a mission's full payout: credits, each item in the reward bundle
+ * (rare picks accented), research points and vouchers, as " + "-joined
  * segments. `full` spells out "credits" for the detail view; the compact form
  * says "cr".
  */

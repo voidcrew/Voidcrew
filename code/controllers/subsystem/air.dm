@@ -29,6 +29,31 @@ SUBSYSTEM_DEF(air)
 	var/list/rebuild_queue = list()
 	//Subservient to rebuild queue
 	var/list/expansion_queue = list()
+	/// VOIDCREW ADDITION: pipelines that lost their last member to a pipe steal in
+	/// expand_pipeline() while they were still flagged `building`. That call site cannot
+	/// qdel one on the spot - /datum/pipeline/Destroy() edits expansion_queue, which is the
+	/// list that drain is walking - so the husk is parked here and reaped on a later fire,
+	/// once `building` has cleared and it is provably still empty. Without this a
+	/// stacked-pipe map (every voidcrew hull has some) leaks one member-less pipeline into
+	/// SSair.networks per site build, processed every tick for the rest of the round.
+	var/list/datum/pipeline/pipeline_husks = list()
+	/// VOIDCREW ADDITION: how many consecutive orphan sweeps a pipeline has to be found
+	/// empty on before it is reaped. build_pipeline() legitimately leaves a pipeline with
+	/// no members for the window between `new /datum/pipeline` and its queued expansion,
+	/// so one strike is not proof of a leak - two separate sweeps is.
+	var/orphan_pipeline_strikes = 2
+	/// VOIDCREW ADDITION: world.time the next orphan-pipeline sweep may run. The sweep is
+	/// O(networks * members) and nothing it catches is urgent, so it is rate limited.
+	var/next_orphan_sweep = 0
+	/// VOIDCREW ADDITION: how long between orphan-pipeline sweeps. Short on purpose: two
+	/// strikes at this interval is how long an orphan can survive, and the churn soak
+	/// samples 20 seconds after a teardown. At 5 seconds an orphan made during teardown is
+	/// always gone before the sample, so `pipelines_orphan` reads a real state rather than
+	/// whatever happened to be in flight. Sweeping ~70 networks costs nothing.
+	var/orphan_sweep_interval = 5 SECONDS
+	/// VOIDCREW ADDITION: running total of pipelines the orphan sweep has reaped, for the
+	/// churn-soak harness and for `SSair` debug output.
+	var/orphan_pipelines_reaped = 0
 	/// List of turfs to recalculate adjacent turfs on before processing
 	var/list/adjacent_rebuild = list()
 	/// A list of machines that will be processed when currentpart == SSAIR_ATMOSMACHINERY. Use SSair.begin_processing_machine and SSair.stop_processing_machine to add and remove machines.
@@ -121,9 +146,18 @@ SUBSYSTEM_DEF(air)
 		if(state != SS_RUNNING)
 			return
 
+	// VOIDCREW ADDITION: rate-limited sweep for member-less pipelines. Deliberately here,
+	// outside process_rebuilds() - that block only runs when a queue is non-empty, and an
+	// orphan by definition is not in any queue. Runs before the drain so it can never be
+	// editing networks/expansion_queue while expand_pipeline() is walking them.
+	reap_orphan_pipelines()
+
 	// Every time we fire, we want to make sure pipenets are rebuilt. The game state could have changed between each fire() proc call
 	// and anything missing a pipenet can lead to unintended behaviour at worse and various runtimes at best.
-	if(length(rebuild_queue) || length(expansion_queue))
+	// VOIDCREW EDIT: pipeline_husks in the condition too - a husk parked by
+	// expand_pipeline() is usually the LAST thing that drain produces, so by the time it
+	// can be reaped both queues are empty again and process_rebuilds() would never run.
+	if(length(rebuild_queue) || length(expansion_queue) || length(pipeline_husks))
 		timer = TICK_USAGE_REAL
 		process_rebuilds()
 		//This does mean that the apperent rebuild costs fluctuate very quickly, this is just the cost of having them always process, no matter what
@@ -285,6 +319,13 @@ SUBSYSTEM_DEF(air)
 			return
 
 /datum/controller/subsystem/air/proc/add_to_rebuild_queue(obj/machinery/atmospherics/atmos_machine)
+	// VOIDCREW EDIT: never queue a machine that is already dying. Its Destroy() has run (or
+	// is running) its own pipenet teardown, so a rebuild can only mint a pipeline that
+	// nothing will ever delete - see reap_orphan_pipelines(). Site teardown reaches this
+	// constantly: pipe/nullify_node() queues the neighbour it just disconnected from, and
+	// during a mass deletion that neighbour is very often already in the qdel queue.
+	if(QDELETED(atmos_machine))
+		return
 	if(istype(atmos_machine, /obj/machinery/atmospherics) && !atmos_machine.rebuilding)
 		rebuild_queue += atmos_machine
 		atmos_machine.rebuilding = TRUE
@@ -296,10 +337,11 @@ SUBSYSTEM_DEF(air)
 	expansion_queue += list(new_packet)
 
 /datum/controller/subsystem/air/proc/remove_from_expansion(datum/pipeline/line)
-	for(var/list/packet in expansion_queue)
+	// VOIDCREW EDIT: remove every packet for this pipeline, not just the first, and
+	// iterate a copy so the removal can't skip entries in the live list
+	for(var/list/packet in expansion_queue.Copy())
 		if(packet[SSAIR_REBUILD_PIPELINE] == line)
 			expansion_queue -= packet
-			return
 
 /datum/controller/subsystem/air/proc/process_atoms(resumed = FALSE)
 	if(!resumed)
@@ -402,14 +444,91 @@ SUBSYSTEM_DEF(air)
 		if (MC_TICK_CHECK)
 			return
 
+/**
+ * VOIDCREW ADDITION: deletes the member-less pipelines expand_pipeline() had to park.
+ *
+ * Runs before the drain rather than inside it: /datum/pipeline/Destroy() calls
+ * remove_from_expansion(), which edits the very list expand_pipeline() walks. By the time
+ * we get here that drain has finished (or has not started), so the edit is safe.
+ *
+ * A husk is only deleted once `building` has cleared - while it is set the pipeline is
+ * still queued for expansion and may legitimately pick members back up.
+ */
+/datum/controller/subsystem/air/proc/reap_pipeline_husks()
+	if(!length(pipeline_husks))
+		return
+	for(var/datum/pipeline/husk as anything in pipeline_husks.Copy())
+		if(QDELETED(husk))
+			pipeline_husks -= husk
+			continue
+		if(husk.building)
+			continue
+		pipeline_husks -= husk
+		// VOIDCREW EDIT: has_live_members() rather than length(). A husk that was holding
+		// a machine which then hard deleted reads as length 1 with a null inside, and the
+		// old length test let it walk away as if it were still in use.
+		if(husk.has_live_members())
+			continue
+		qdel(husk)
+
+/**
+ * VOIDCREW ADDITION: reaps member-less pipelines that never went through the husk list.
+ *
+ * `reap_pipeline_husks()` only ever sees pipelines parked by the pipe-steal branch of
+ * `expand_pipeline()`. The other way a pipeline ends up empty in `SSair.networks` is a
+ * machine that was already dying when something queued it for a rebuild: `rebuild_pipes()`
+ * mints a fresh `/datum/pipeline` for it, the machine's `Destroy()` has already run its
+ * `QDEL_NULL(parent)`, and so nothing is ever going to delete that pipeline again. It sits
+ * in `networks` being processed every fire for the rest of the round, and it holds a hard
+ * ref to the dead machine while it is at it. The source guards below stop new ones being
+ * made; this sweep clears any that still get through.
+ *
+ * Two details this has to get right:
+ * * `length(members)` is not the test. A hard-deleted machine leaves a null entry in the
+ *   list rather than shortening it, so a leaked pipeline reads as `members = list(null)` -
+ *   length 1, live members 0. `has_live_members()` counts what is actually there.
+ * * `/datum/pipeline/Destroy()` edits `networks`, `expansion_queue` and `pipeline_husks`.
+ *   So: walk a copy, collect, and qdel only after the walk is over - and run outside the
+ *   expansion drain, the same placement `reap_pipeline_husks()` already uses.
+ */
+/datum/controller/subsystem/air/proc/reap_orphan_pipelines()
+	if(world.time < next_orphan_sweep)
+		return
+	next_orphan_sweep = world.time + orphan_sweep_interval
+	var/list/datum/pipeline/doomed = list()
+	for(var/datum/pipeline/net as anything in networks.Copy())
+		if(isnull(net) || QDELETED(net))
+			continue
+		// Still queued for expansion - it is allowed to be empty and may pick members up.
+		if(net.building)
+			net.orphan_strikes = 0
+			continue
+		if(net.has_live_members())
+			net.orphan_strikes = 0
+			continue
+		net.orphan_strikes++
+		if(net.orphan_strikes < orphan_pipeline_strikes)
+			continue
+		doomed += net
+	if(!length(doomed))
+		return
+	orphan_pipelines_reaped += length(doomed)
+	for(var/datum/pipeline/net as anything in doomed)
+		qdel(net)
+
 /datum/controller/subsystem/air/proc/process_rebuilds()
+	reap_pipeline_husks()
 	//Yes this does mean rebuilding pipenets can freeze up the subsystem forever, but if we're in that situation something else is very wrong
 	var/list/currentrun = rebuild_queue
 	while(currentrun.len || length(expansion_queue))
 		while(currentrun.len && !length(expansion_queue)) //If we found anything, process that first
 			var/obj/machinery/atmospherics/remake = currentrun[currentrun.len]
 			currentrun.len--
-			if (!remake)
+			// VOIDCREW EDIT: QDELETED, not just null. A machine queued while alive can be
+			// deleted before the drain reaches it, and the old null check does not see
+			// that - a queued-for-deletion machine is still a live ref. Rebuilding one
+			// mints a pipeline its Destroy() has already stopped being able to clean up.
+			if (!remake || QDELETED(remake))
 				continue
 			remake.rebuild_pipes()
 			if (MC_TICK_CHECK)
@@ -459,7 +578,28 @@ SUBSYSTEM_DEF(air)
 			border += item
 
 			net.air.volume += item.volume
+			// VOIDCREW EDIT: this is the one place a pipe is taken off a LIVE pipeline
+			// without that pipeline being merged or destroyed - see the warning logged
+			// above, which is exactly the case that reaches it. replace_pipenet() now
+			// prunes the pipe out of its old pipeline's members, so stealing the last one
+			// leaves a husk with no members and no machines that nothing but
+			// SSair.networks points at: never garbage collected, and processed every
+			// SSair tick for the rest of the round. Delete it, guarded the same way
+			// components already guard theirs in nullify_pipenet(). Deliberately NOT done
+			// inside replace_pipenet() itself - merge() calls that with a pipeline whose
+			// members it has already detached and whose air it has not yet taken, so a
+			// qdel there would drop the merged gas on the floor.
+			var/datum/pipeline/stolen_from = item.parent
 			item.replace_pipenet(item.parent, net)
+			// A `building` husk cannot be deleted here: its Destroy() would edit
+			// expansion_queue, which is the list this very drain is walking. Park it and
+			// let reap_pipeline_husks() take it on a later fire - leaving it was a
+			// permanent member-less pipeline in SSair.networks, one per site build.
+			if(stolen_from && stolen_from != net && !QDELETED(stolen_from) && !length(stolen_from.members) && !length(stolen_from.other_atmos_machines))
+				if(stolen_from.building)
+					pipeline_husks |= stolen_from
+				else
+					qdel(stolen_from)
 
 			if(item.air_temporary)
 				net.air.merge(item.air_temporary)
@@ -714,6 +854,11 @@ SUBSYSTEM_DEF(air)
 // pipenet can be built.
 /datum/controller/subsystem/air/proc/setup_pipenets()
 	for (var/obj/machinery/atmospherics/AM in atmos_machinery)
+		// VOIDCREW EDIT: same reason as rebuild_pipes() - get_rebuild_targets() mints a
+		// pipeline into SSair.networks, and a machine that deleted itself during its own
+		// Initialize() will never delete that pipeline again.
+		if(QDELETED(AM))
+			continue
 		var/list/targets = AM.get_rebuild_targets()
 		for(var/datum/pipeline/build_off as anything in targets)
 			build_off.build_pipeline_blocking(AM)
@@ -743,6 +888,11 @@ GLOBAL_LIST_EMPTY(colored_images)
 
 	for(var/A in 1 to atmos_machines.len)
 		AM = atmos_machines[A]
+		// VOIDCREW EDIT: a template's atmos machine can delete itself during atmos_init()
+		// (stacked pipes on one turf, which every voidcrew hull has some of). Minting a
+		// pipeline for it leaks one per template load, and this soak loads constantly.
+		if(QDELETED(AM))
+			continue
 		var/list/targets = AM.get_rebuild_targets()
 		for(var/datum/pipeline/build_off as anything in targets)
 			build_off.build_pipeline_blocking(AM)
@@ -796,6 +946,13 @@ GLOBAL_LIST_EMPTY(colored_images)
 		var/path = id
 		if(!ispath(path))
 			path = gas_id2path(path) //a lot of these strings can't have embedded expressions (especially for mappers), so support for IDs needs to stick around
+		// VOIDCREW EDIT: an unknown id (a mapper typo, or a gas string from another
+		// codebase that was never ported - "ws_atmos") resolves to "" here, and the
+		// assignment below would then key the mix on null once per turf that uses the
+		// string. Warn once for the mix instead and leave that component out.
+		if(!ispath(path))
+			stack_trace("parse_gas_string(): unknown gas id \"[id]\" in gas string \"[gas_string]\" - ignoring it.")
+			continue
 		cached_moles[path] = text2num(gas[id])
 
 	if(istype(canonical_mix, /datum/gas_mixture/immutable))

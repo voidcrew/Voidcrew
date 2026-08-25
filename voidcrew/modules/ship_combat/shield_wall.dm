@@ -12,6 +12,11 @@
 	opacity = FALSE
 	layer = ABOVE_MOB_LAYER
 	resistance_flags = INDESTRUCTIBLE
+	// INDESTRUCTIBLE only stops damage - strong fauna (move_force >= 2x move_resist) can
+	// still force-push anchored structures via PushAM, and the attempted Move() re-points
+	// dir even when blocked. dir IS this wall's connector shape, so any shove visibly
+	// rotates the shield (or displaces the segment outright if the far turf is clear).
+	move_resist = INFINITY
 	light_range = 2
 	light_power = 0.5
 	light_color = LIGHT_COLOR_BLUE
@@ -52,10 +57,12 @@
 		shield_mult = SHIELD_DAMAGE_MULT_MISSILE  // Missiles do reduced shield damage
 		// Let the missile explode against the shield (visual/audio feedback)
 		// shield_impact() creates explosion effects but with reduced damage since shield absorbed it
+		// Player assault pods ride the same effect type, so this is also what kills a
+		// boarding party that launched before the shields were down - see assault_pod.dm.
 		missile.shield_impact()
-	// Note: Boarding pods use the supplypod drop-from-above system and don't physically
-	// travel through space, so they can't hit shields. The AI checks if shields are down
-	// before launching boarding pods.
+	// Note: NPC boarding pods use the supplypod drop-from-above system and don't
+	// physically travel through space, so they can't hit shields. The AI checks if
+	// shields are down before launching them.
 	else if(istype(AM, /obj/effect/meteor))
 		var/obj/effect/meteor/meteor = AM
 		damage = get_meteor_damage(meteor)

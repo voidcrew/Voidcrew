@@ -1,0 +1,124 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/closet/secure_closet/medical1,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"c" = (
+/obj/item/paper{
+	name = "callout board";
+	default_raw_text = "Two beds, one table, and whatever comes through the airlock. Keep the stasis bed clear and the kits packed. If we are bringing someone back, the medic radios ahead so this room is ready.";
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"n" = (
+/obj/item/storage/medkit/regular{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"t" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/freezer,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/random,
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/modular_map_connector,
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"z" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/stasis,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"A" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"C" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"J" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"S" = (
+/obj/structure/table/optable,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+g
+U
+v
+"}
+(2,1,1) = {"
+S
+J
+z
+"}
+(3,1,1) = {"
+A
+J
+C
+"}
+(4,1,1) = {"
+Q
+J
+n
+"}
+(5,1,1) = {"
+Q
+J
+t
+"}
+(6,1,1) = {"
+c
+J
+a
+"}

@@ -234,6 +234,12 @@
 					clothes.take_damage_zone(body_zone, damage, BRUTE)
 				else if(wounding_type == WOUND_BURN)
 					clothes.take_damage_zone(body_zone, damage, BURN)
+		// VOIDCREW EDIT START - D6: wound armor living in physiology (subdermal
+		// chrome) was dead: this proc only ever tabulated worn clothing, so the
+		// `wound` ratings on /datum/armor/cyberware_dermal_mesh and
+		// /datum/armor/cyberware_slabskin never applied to anything.
+		armor_ablation += human_owner.physiology?.armor.get_rating(WOUND) || 0
+		// VOIDCREW EDIT END
 
 	injury_mod += wound_bonus
 

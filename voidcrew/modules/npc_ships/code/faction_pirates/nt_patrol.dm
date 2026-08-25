@@ -77,6 +77,11 @@
 	max_negotiation_demand = 5000
 	pirate_faction = "nt_patrol"
 
+	// Fines collected earlier on the patrol route, sitting in the corvette's own
+	// accounts. Robbing a customs vessel is exactly as legal as it sounds.
+	hold_credits_min = 2000
+	hold_credits_max = 4000
+
 	// Boarding pods during open ship combat - compliance teams
 	boarding_pods_enabled = TRUE
 	boarding_pods_min = 1

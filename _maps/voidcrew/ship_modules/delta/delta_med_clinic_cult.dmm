@@ -1,0 +1,161 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/stasis,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"l" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"p" = (
+/obj/structure/table/optable,
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -11;
+	pixel_y = 9
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"r" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 1;
+	pixel_y = 28
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"E" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/flashlight/flare/candle{
+	pixel_x = 10;
+	pixel_y = -8
+	},
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/table/glass,
+/obj/item/storage/medkit/regular{
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/item/paper{
+	name = "ward notes";
+	default_raw_text = "Blood in the freezer is for patients. If you need it for the shrine, draw your own. Sheets get changed after every use and the table gets scrubbed before the next person goes on it.";
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/freezer,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/random,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/closet/secure_closet/medical1,
+/obj/item/clothing/suit/hooded/cultrobes,
+/obj/item/clothing/head/hooded/cult_hoodie,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+l
+r
+H
+"}
+(2,1,1) = {"
+p
+d
+f
+"}
+(3,1,1) = {"
+x
+n
+G
+"}
+(4,1,1) = {"
+t
+N
+U
+"}
+(5,1,1) = {"
+E
+N
+R
+"}
+(6,1,1) = {"
+V
+t
+T
+"}

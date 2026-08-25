@@ -4,7 +4,7 @@
 /area/icemoon/surface/outdoors/unexplored)
 "b" = (
 /obj/structure/sign/poster/contraband/lusty_xenomorph,
-/turf/closed/indestructible/syndicate,
+/turf/closed/wall/mineral/plastitanium,
 /area/icemoon/surface/outdoors)
 "c" = (
 /turf/open/floor/mineral/diamond,
@@ -30,7 +30,6 @@
 /area/icemoon/surface/outdoors)
 "f" = (
 /obj/structure/falsewall/plastitanium,
-/obj/structure/sign/poster/contraband/lusty_xenomorph,
 /turf/open/floor/mineral/diamond,
 /area/icemoon/surface/outdoors)
 

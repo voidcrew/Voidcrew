@@ -21,7 +21,7 @@ GLOBAL_DATUM(outpost_hangar_template, /datum/map_template/outpost_hangar)
 
 // Deliberately NOT UNIQUE_AREA: the template loads once per berth, and each
 // load must get its own area instance (UNIQUE_AREA map loads are global
-// singletons — six berths would merge into one area).
+// singletons, six berths would merge into one area).
 /area/voidcrew/outpost_hangar
 	name = "\improper Outpost Hangar"
 	icon_state = "away"
@@ -66,7 +66,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 /**
  * Static hangar signage. The berth pad is 56x40 and ships land dead centre of it,
  * so a crew stepping off a small hull is standing in the middle of an empty field
- * with every wall outside view range — these say which way the way out is. Text is
+ * with every wall outside view range. These say which way the way out is. Text is
  * mapper-set and never changes, so no host wiring: unlike the berth display these
  * are deliberately NOT an /outpost_berth subtype, so link_hangar_contents() leaves
  * them alone.
@@ -142,7 +142,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_QDELETING))
 		ship = null
 	// Deregister the floor first so the elevator stops offering it, then get
-	// everyone out — releasing the reservation force-deletes living mobs.
+	// everyone out, releasing the reservation force-deletes living mobs.
 	if(outpost?.berths && berth_number && outpost.berths[berth_number] == src)
 		outpost.berths[berth_number] = null
 	eject_occupants()
@@ -186,7 +186,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 
 /datum/outpost_berth/proc/on_ship_docked(datum/source)
 	SIGNAL_HANDLER
-	// The ship could complete a dock elsewhere if this attempt was aborted —
+	// The ship could complete a dock elsewhere if this attempt was aborted,
 	// only count an arrival that is physically on our port.
 	if(dock?.get_docked() != ship.shuttle)
 		return
@@ -194,7 +194,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	if(arrival_watchdog)
 		deltimer(arrival_watchdog)
 		arrival_watchdog = null
-	ship.ship_notify("Docked at [outpost.name] — Hangar Berth [berth_number]. Follow the painted arrows to the hangar's south wall; the airlock there leads to the elevator, which connects to the concourse and the other berths.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("Docked at [outpost.name], Hangar Berth [berth_number]. Follow the painted arrows to the hangar's south wall; the airlock there leads to the elevator, which connects to the concourse and the other berths.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /datum/outpost_berth/proc/on_ship_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -207,7 +207,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 /datum/outpost_berth/proc/check_arrival()
 	arrival_watchdog = null
 	if(dock?.get_docked())
-		// Something landed after all — the berth is in use.
+		// Something landed after all: the berth is in use.
 		arrived = TRUE
 		return
 	log_shuttle("OUTPOST BERTH: [ship] never arrived at [outpost] berth [berth_number], freeing.")
@@ -233,7 +233,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 			dock_turf = hangar_turf
 			qdel(dock_mark)
 		// block() iterates y-major then x, so alcove turfs collect in the same
-		// deterministic order on every floor — the ride maps turf i to turf i.
+		// deterministic order on every floor, the ride maps turf i to turf i.
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in hangar_turf)
 			alcove_turfs += hangar_turf
 			qdel(alcove_mark)
@@ -247,6 +247,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = outpost
+		// Berth fixtures (lights, signage, the lift panel) are outpost property.
+		// The docked ship arrives after this sweep, so its own machinery and
+		// structures stay player-serviceable.
+		for(var/obj/fixture in hangar_turf)
+			if(ismachinery(fixture) || isstructure(fixture))
+				fixture.AddElement(/datum/element/outpost_property)
 	if(!dock_turf)
 		log_mapping("OUTPOST BERTH: hangar template has no /obj/effect/landmark/outpost_berth_dock.")
 		return FALSE
@@ -302,10 +308,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 			var/turf/destination = length(eject_to) ? pick(eject_to) : fallback
 			occupant.forceMove(destination)
 			if(ismob(occupant))
-				to_chat(occupant, span_warning("Berth [berth_number] is being cleared for departure — outpost staff usher you back to the concourse."))
+				to_chat(occupant, span_warning("Berth [berth_number] is being cleared for departure, outpost staff usher you back to the concourse."))
 			else
 				for(var/mob/living/rider in occupant.get_all_contents())
-					to_chat(rider, span_warning("Berth [berth_number] is being cleared for departure — outpost staff haul you back to the concourse."))
+					to_chat(rider, span_warning("Berth [berth_number] is being cleared for departure, outpost staff haul you back to the concourse."))
 
 // ===== HOST-SIDE BERTH MANAGEMENT =====
 // Defined on the overmap base so both trader outposts and player outposts

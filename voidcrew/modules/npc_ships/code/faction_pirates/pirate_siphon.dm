@@ -44,6 +44,11 @@
 	var/siphon_goal_percent = 0
 	/// Whether goal has been reached this session
 	var/goal_reached = FALSE
+	/// credits_stored as it was when the current run started. The goal is measured
+	/// against what THIS run has taken - without it, loot left in the machine from
+	/// the last victim instantly satisfies the goal on the next one, and the second
+	/// target gets robbed of nothing while the pirate declares success and retreats.
+	var/run_start_credits = 0
 
 /obj/machinery/shuttle_scrambler/ship_siphon/Initialize(mapload)
 	. = ..()
@@ -159,7 +164,7 @@
 	// Goal progress
 	if(siphon_goal > 0)
 		status["siphon_goal"] = siphon_goal
-		status["goal_progress"] = clamp((credits_stored / siphon_goal) * 100, 0, 100)
+		status["goal_progress"] = clamp((get_run_take() / siphon_goal) * 100, 0, 100)
 	else
 		status["siphon_goal"] = 0
 		status["goal_progress"] = 0
@@ -245,6 +250,10 @@
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/get_target_ship()
 	return target_ship_ref?.resolve()
 
+/// Credits taken off the current target since this run started
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/get_run_take()
+	return max(credits_stored - run_start_credits, 0)
+
 /// Sets the target ship to siphon from
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/set_target(obj/structure/overmap/ship/target)
 	if(target)
@@ -265,10 +274,11 @@
 
 	// Calculate siphon goal based on target's current money
 	goal_reached = FALSE
+	run_start_credits = credits_stored
 	if(siphon_goal_percent > 0 && target.ship_account)
 		var/target_balance = target.ship_account.account_balance
-		// If target is broke (less than 50 credits), don't bother siphoning
-		if(target_balance < 50)
+		// If target is broke, don't bother siphoning
+		if(target_balance < SIPHON_MINIMUM_TARGET_BALANCE)
 			var/obj/structure/overmap/ship/owner = get_owner_ship()
 			owner?.ship_notify("Target vessel has insufficient funds. Aborting siphon.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 50)
 			// Trigger retreat if we have a goal-based behavior
@@ -303,8 +313,9 @@
 	var/obj/structure/overmap/ship/target = get_target_ship()
 
 	if(was_active && target)
-		target.ship_notify("Data siphon connection severed. Total credits lost: [credits_stored].", "FINANCE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
-		owner?.ship_notify("Siphon link lost. Total credits acquired: [credits_stored].", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
+		var/run_take = get_run_take()
+		target.ship_notify("Data siphon connection severed. Total credits lost: [run_take]. Accounts unlock in [SIPHON_ACCOUNT_LOCK_GRACE / 10] seconds.", "FINANCE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
+		owner?.ship_notify("Siphon link lost. Total credits acquired: [run_take].", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
 
 	target_ship_ref = null
 	STOP_PROCESSING(SSobj, src)
@@ -317,25 +328,39 @@
 		return
 
 	var/datum/bank_account/target_account = target.ship_account
-	var/siphoned = min(target_account.account_balance, siphon_per_tick)
+	// Freeze the account before taking anything. While the tap is live the crew can't
+	// spend, withdraw or escrow their way out from under it - otherwise the answer to
+	// being robbed is to dump the balance into a holochip and hand us nothing.
+	target_account.mark_siphoned()
+
+	// forced_withdraw, not adjust_money: the freeze we just set would refuse our own
+	// withdrawal, since adjust_money() checks has_money() on negative amounts.
+	var/siphoned = target_account.forced_withdraw(siphon_per_tick, "Piracy: data siphon")
 
 	if(siphoned <= 0)
+		// Nothing left to take. The goal was measured off the balance at activation and
+		// can end up out of reach - tribute paid to someone else, an account that was
+		// already near empty - and a pirate holding a lock while draining zero forever
+		// is a stalemate, not a threat. Call the run done and disengage.
+		if(!goal_reached)
+			goal_reached = TRUE
+			on_goal_reached(target, "Target accounts drained dry. [get_run_take()] credits acquired. Disengaging from target.")
 		return
 
-	target_account.adjust_money(-siphoned)
 	credits_stored += siphoned
 
-	// Check if we've reached our siphon goal
-	if(siphon_goal > 0 && credits_stored >= siphon_goal && !goal_reached)
+	// Check if we've reached our siphon goal - measured against this run's take,
+	// not the machine's lifetime total
+	if(siphon_goal > 0 && get_run_take() >= siphon_goal && !goal_reached)
 		goal_reached = TRUE
 		on_goal_reached(target)
 
 /// Called when siphon goal is reached - triggers retreat behavior
-/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_goal_reached(obj/structure/overmap/ship/target)
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_goal_reached(obj/structure/overmap/ship/target, owner_message)
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
 
 	// Announce goal reached
-	owner?.ship_notify("Siphon goal reached! [credits_stored] credits acquired. Disengaging from target.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	owner?.ship_notify(owner_message || "Siphon goal reached! [get_run_take()] credits acquired. Disengaging from target.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	target?.ship_notify("The attacker has finished siphoning and is disengaging.", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 
 	// Deactivate the siphon
@@ -371,6 +396,7 @@
 	log_game("[key_name(user)] recovered [credits_stored] siphoned credits from [owner ? owner.name : "unknown ship"]'s data siphon.")
 
 	credits_stored = 0
+	run_start_credits = 0
 
 /obj/machinery/shuttle_scrambler/ship_siphon/examine(mob/user)
 	. = ..()
@@ -424,15 +450,19 @@
 	// Set the target
 	set_target(target)
 
-	// Calculate 25% goal for player usage
 	goal_reached = FALSE
+	run_start_credits = credits_stored
 	if(target.ship_account)
 		var/target_balance = target.ship_account.account_balance
-		if(target_balance < 50)
+		if(target_balance < SIPHON_MINIMUM_TARGET_BALANCE)
 			to_chat(user, span_warning("Target vessel has insufficient funds to siphon."))
 			target_ship_ref = null
 			return FALSE
-		siphon_goal = round(target_balance * 0.25)
+		// A crewed ship only gets skimmed - a quarter of the balance per run, so no
+		// single robbery strips another crew bare. A pirate hull has no such
+		// protection: take the whole hold if you can hold the lock long enough.
+		var/goal_fraction = istype(target, /obj/structure/overmap/ship/npc) ? 1 : 0.25
+		siphon_goal = round(target_balance * goal_fraction)
 		siphon_goal = max(siphon_goal, 100)
 
 	// Start warmup
@@ -494,8 +524,11 @@
 			// Warmup complete - activate siphon
 			warming_up = FALSE
 			active = TRUE
+			// Freeze on the same tick the alert goes out, so there is no window between
+			// the crew learning they're being robbed and the account locking.
+			target.ship_account?.mark_siphoned()
 			owner?.ship_notify("Data siphon active. Draining target accounts.", "SIPHON SYSTEM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-			target.ship_notify("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 20)
+			target.ship_notify("CRITICAL: CREDIT SIPHONING OCCURRING! Ship accounts are locked until the tap is broken.", "FINANCE ALERT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 20)
 		return
 
 	// If not active (shouldn't happen but safety check)
@@ -530,7 +563,7 @@
 	// Goal progress
 	if(siphon_goal > 0)
 		data["siphon_goal"] = siphon_goal
-		data["goal_progress"] = clamp((credits_stored / siphon_goal) * 100, 0, 100)
+		data["goal_progress"] = clamp((get_run_take() / siphon_goal) * 100, 0, 100)
 	else
 		data["siphon_goal"] = 0
 		data["goal_progress"] = 0
@@ -553,12 +586,21 @@
 		data["target_name"] = null
 		data["target_credits"] = 0
 
-	// Can activate check
-	data["can_activate"] = !active && !warming_up && !!console?.target_ship && !(machine_stat & (BROKEN|NOPOWER)) && anchored
+	// What a run off this target would take: a quarter off a crewed ship, the lot
+	// off a pirate hull. Mirrors the split in player_activate_siphon().
+	var/obj/structure/overmap/ship/preview_target = target || console?.target_ship
+	data["goal_fraction"] = istype(preview_target, /obj/structure/overmap/ship/npc) ? 1 : 0.25
+
+	// Can activate check. A target with nothing in its accounts is rejected here
+	// rather than at activation, so the button never looks live on a broke hull.
+	var/target_has_funds = data["target_credits"] >= SIPHON_MINIMUM_TARGET_BALANCE
+	data["can_activate"] = !active && !warming_up && !!console?.target_ship && target_has_funds && !(machine_stat & (BROKEN|NOPOWER)) && anchored
 	if(!console)
 		data["no_lock_reason"] = "Not linked to a weapons system."
 	else if(!console.target_ship)
 		data["no_lock_reason"] = "No target locked on combat console."
+	else if(!target_has_funds)
+		data["no_lock_reason"] = "Target's accounts are empty."
 	else if(machine_stat & NOPOWER)
 		data["no_lock_reason"] = "No power."
 	else if(machine_stat & BROKEN)

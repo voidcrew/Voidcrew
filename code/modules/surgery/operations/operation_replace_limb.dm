@@ -73,7 +73,11 @@
 		return // should never happen
 
 	var/mob/living/patient = limb.owner // owner's about to be nulled
-	if(!tool.replace_limb(patient))
+	// VOIDCREW EDIT: pass special = TRUE so the organs of the replaced limb (brain, eyes, tongue for heads)
+	// are re-inserted into the new augmented limb by try_attach_limb(). Without this they are stranded in
+	// nullspace while still registered to the mob, so a later decapitation removes no brain and the victim
+	// survives losing their head. Matches every other hot-swap caller (species change, psyker, etc).
+	if(!tool.replace_limb(patient, special = TRUE))
 		display_results(
 			surgeon,
 			patient,

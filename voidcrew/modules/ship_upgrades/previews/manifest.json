@@ -22,7 +22,8 @@
      20,
      12
     ]
-   }
+   },
+   "src_md5": "63e5f51eb1150c082fd6f691c5dff663"
   },
   "delta_b": {
    "png": "ship_delta_b.png",
@@ -45,7 +46,8 @@
      20,
      12
     ]
-   }
+   },
+   "src_md5": "bd06bb31e461a690a1546ab8d9af57a9"
   },
   "delta_c": {
    "png": "ship_delta_c.png",
@@ -68,7 +70,8 @@
      20,
      12
     ]
-   }
+   },
+   "src_md5": "31a10cadf0b6f479fe17a473f9bdf3b2"
   },
   "delta_d": {
    "png": "ship_delta_d.png",
@@ -91,7 +94,8 @@
      20,
      12
     ]
-   }
+   },
+   "src_md5": "9f5f8c33b949c6692148ead008441da8"
   },
   "goon_a": {
    "png": "ship_goon_a.png",
@@ -118,7 +122,8 @@
      17,
      5
     ]
-   }
+   },
+   "src_md5": "822138ee70207aefd2c228b5775229ed"
   },
   "goon_b": {
    "png": "ship_goon_b.png",
@@ -145,7 +150,8 @@
      17,
      5
     ]
-   }
+   },
+   "src_md5": "002ce753dcd6cdf8c0be2f9424a2d22e"
   },
   "goon_c": {
    "png": "ship_goon_c.png",
@@ -172,7 +178,8 @@
      17,
      5
     ]
-   }
+   },
+   "src_md5": "9b8d4d8a211f571ce7e776782d59ed42"
   },
   "goon_d": {
    "png": "ship_goon_d.png",
@@ -199,7 +206,8 @@
      17,
      5
     ]
-   }
+   },
+   "src_md5": "9fd5c90ea5a03c14e61596d3698affbe"
   },
   "kilo_a": {
    "png": "ship_kilo_a.png",
@@ -218,7 +226,8 @@
      12,
      7
     ]
-   }
+   },
+   "src_md5": "c4bcba5638801f9eeb077104b800e506"
   },
   "kilo_b": {
    "png": "ship_kilo_b.png",
@@ -237,7 +246,8 @@
      12,
      7
     ]
-   }
+   },
+   "src_md5": "aad1801213a044d8f0e512f5fca44579"
   },
   "kilo_c": {
    "png": "ship_kilo_c.png",
@@ -256,7 +266,8 @@
      12,
      7
     ]
-   }
+   },
+   "src_md5": "33e735236e728c9163d9250fb09d99cb"
   },
   "kilo_d": {
    "png": "ship_kilo_d.png",
@@ -275,7 +286,8 @@
      12,
      7
     ]
-   }
+   },
+   "src_md5": "225bb6e4fc2fbdace0d3fdab61441a7e"
   },
   "nano_phalanx_a": {
    "png": "ship_nano_phalanx_a.png",
@@ -302,7 +314,8 @@
      46,
      7
     ]
-   }
+   },
+   "src_md5": "faa8555e632f82e7d1f35f941e00245f"
   },
   "nano_phalanx_b": {
    "png": "ship_nano_phalanx_b.png",
@@ -329,7 +342,8 @@
      46,
      7
     ]
-   }
+   },
+   "src_md5": "f18a14ad52b50cc49754b739d7714319"
   },
   "nano_phalanx_c": {
    "png": "ship_nano_phalanx_c.png",
@@ -356,7 +370,8 @@
      46,
      7
     ]
-   }
+   },
+   "src_md5": "33a6c38520d7c0a18c626612dc11847d"
   },
   "nano_phalanx_d": {
    "png": "ship_nano_phalanx_d.png",
@@ -383,7 +398,8 @@
      46,
      7
     ]
-   }
+   },
+   "src_md5": "356791b10f9de7a79f196a52e9b0b0ed"
   },
   "pill": {
    "png": "ship_pill.png",
@@ -394,13 +410,15 @@
      3,
      1
     ]
-   }
+   },
+   "src_md5": "b97454a5c7614e32e60d56c1ff6c301e"
   },
   "pill_black": {
    "png": "ship_pill_black.png",
    "width": 3,
    "height": 1,
-   "slots": {}
+   "slots": {},
+   "src_md5": "4ef3c6301ad2b84f27693d5c1f5ff714"
   },
   "scarab_a": {
    "png": "ship_scarab_a.png",
@@ -423,7 +441,8 @@
      23,
      7
     ]
-   }
+   },
+   "src_md5": "5f38590742794e6cfe7660b5c984eb3e"
   },
   "scarab_b": {
    "png": "ship_scarab_b.png",
@@ -446,7 +465,8 @@
      23,
      7
     ]
-   }
+   },
+   "src_md5": "8e2b39eebdb2cd59c2b18f890cbe4b08"
   },
   "scarab_c": {
    "png": "ship_scarab_c.png",
@@ -469,7 +489,8 @@
      23,
      7
     ]
-   }
+   },
+   "src_md5": "250efd19fcf01d79756a98e68ca8af2e"
   },
   "test_modular": {
    "png": "ship_test_modular.png",
@@ -484,7 +505,8 @@
      3,
      7
     ]
-   }
+   },
+   "src_md5": "28810c6c6ee9d3eca86e7df8f233d1bc"
   },
   "test_modular_pirate": {
    "png": "ship_test_modular_pirate.png",
@@ -499,7 +521,8 @@
      3,
      7
     ]
-   }
+   },
+   "src_md5": "fcc6155af3c3721249bb6e068e0ef93a"
   }
  },
  "modules": {
@@ -510,7 +533,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cargo_salvage.png"
+   "png": "delta_delta_cargo_salvage.png",
+   "src_md5": "0b14657fa61321127bfaf110a0329d87",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_salvage_cult.png",
+     "src_md5": "bdf5d2f688ac785f4e7da0a83f43da94"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_salvage_lightship.png",
+     "src_md5": "9d735253ba3b10b2e92d1c927041bbcb"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_salvage_syndicate.png",
+     "src_md5": "ffc029c18248c9d44644565e0879ef45"
+    }
+   }
   },
   "delta/delta_cargo_mining.dmm": {
    "width": 7,
@@ -519,7 +575,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cargo_mining.png"
+   "png": "delta_delta_cargo_mining.png",
+   "src_md5": "21417b84f11dd2403c282d526f380500",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_mining_cult.png",
+     "src_md5": "206834107600b6bcbbe6140a70e75c6b"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_mining_lightship.png",
+     "src_md5": "562cd42034656c99f5855731657716fe"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_mining_syndicate.png",
+     "src_md5": "f61e8aa0b1164ad1a28d89d9b2d32365"
+    }
+   }
   },
   "delta/delta_cargo_gundeck.dmm": {
    "width": 7,
@@ -528,7 +617,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cargo_gundeck.png"
+   "png": "delta_delta_cargo_gundeck.png",
+   "src_md5": "43dcd176bb75c2bfe51b292ec072d87f",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_gundeck_cult.png",
+     "src_md5": "e10fa2b6ac3041e551fe3312baef0b32"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_gundeck_lightship.png",
+     "src_md5": "d40ab03d71fe932484c6d9c7c2586ec0"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cargo_gundeck_syndicate.png",
+     "src_md5": "c8696c250e69cfaf5ea433b9737d7fbc"
+    }
+   }
   },
   "delta/delta_cafe_diner.dmm": {
    "width": 7,
@@ -538,15 +660,17 @@
     1
    ],
    "png": "delta_delta_cafe_diner.png",
+   "src_md5": "291870951900a202a667ad6a395bf36f",
    "themes": {
-    "archive": {
+    "cult": {
      "width": 7,
      "height": 5,
      "connector": [
       1,
       1
      ],
-     "png": "delta_delta_cafe_diner_archive.png"
+     "png": "delta_delta_cafe_diner_cult.png",
+     "src_md5": "53511578c099dc2fc8951433648f2517"
     },
     "lightship": {
      "width": 7,
@@ -555,16 +679,18 @@
       1,
       1
      ],
-     "png": "delta_delta_cafe_diner_lightship.png"
+     "png": "delta_delta_cafe_diner_lightship.png",
+     "src_md5": "3708050e51a37f26af4e47d22dee00bf"
     },
-    "market": {
+    "syndicate": {
      "width": 7,
      "height": 5,
      "connector": [
       1,
       1
      ],
-     "png": "delta_delta_cafe_diner_market.png"
+     "png": "delta_delta_cafe_diner_syndicate.png",
+     "src_md5": "a4df7587a5da340d22ddd31cb574d5b2"
     }
    }
   },
@@ -575,7 +701,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cafe_greenhouse.png"
+   "png": "delta_delta_cafe_greenhouse.png",
+   "src_md5": "67956ff6d0b71f4624e0404705db317e",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_greenhouse_cult.png",
+     "src_md5": "f8e7963ba52513a493a5b086efdb96e3"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_greenhouse_lightship.png",
+     "src_md5": "e500bf6638519f68b581c207bfbccd51"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_greenhouse_syndicate.png",
+     "src_md5": "bfe191264a9c4082b810e4e2960baed4"
+    }
+   }
   },
   "delta/delta_cafe_shop.dmm": {
    "width": 7,
@@ -584,7 +743,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cafe_shop.png"
+   "png": "delta_delta_cafe_shop.png",
+   "src_md5": "67af4a9b825b1220d12c07baa8ea5e95",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_shop_cult.png",
+     "src_md5": "d611a4d84b7e212444e20c707f51e946"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_shop_lightship.png",
+     "src_md5": "9bb911b9bbeca18b74cc36bf2e86de67"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_shop_syndicate.png",
+     "src_md5": "bc9d282c285dd8b9fa2368fd7645d7e4"
+    }
+   }
   },
   "delta/delta_cafe_bitrunning.dmm": {
    "width": 7,
@@ -593,7 +785,40 @@
     1,
     1
    ],
-   "png": "delta_delta_cafe_bitrunning.png"
+   "png": "delta_delta_cafe_bitrunning.png",
+   "src_md5": "26f9e2273b6de0a3bfff1ac1a0cd7080",
+   "themes": {
+    "cult": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_bitrunning_cult.png",
+     "src_md5": "a603d40992dc1af9c83939efeb7435af"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_bitrunning_lightship.png",
+     "src_md5": "ff4d704d4b8be96cc98aac027e00c163"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_bitrunning_syndicate.png",
+     "src_md5": "39ad00aabdf96003cc6d11d099e36889"
+    }
+   }
   },
   "delta/delta_med_clinic.dmm": {
    "width": 6,
@@ -602,7 +827,40 @@
     1,
     1
    ],
-   "png": "delta_delta_med_clinic.png"
+   "png": "delta_delta_med_clinic.png",
+   "src_md5": "9197ce0e5dd6e1556540f60ea9661b64",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clinic_cult.png",
+     "src_md5": "f75198dcf4264a54bdde7751f7818f90"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clinic_lightship.png",
+     "src_md5": "1acf51c0b1477ca221d88a2fca4d1ae3"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_clinic_syndicate.png",
+     "src_md5": "9530bdf0afcec1a69e8cb5a271b6b83f"
+    }
+   }
   },
   "delta/delta_med_chem.dmm": {
    "width": 6,
@@ -611,7 +869,40 @@
     1,
     1
    ],
-   "png": "delta_delta_med_chem.png"
+   "png": "delta_delta_med_chem.png",
+   "src_md5": "be69212aee40679f56071c7b9605e734",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_chem_cult.png",
+     "src_md5": "da22c7bec0edfd699d292364c10c98ec"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_chem_lightship.png",
+     "src_md5": "bda365d4a3371cb943bad0d0f1938140"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_chem_syndicate.png",
+     "src_md5": "e3756358de811ae0e19c528325099018"
+    }
+   }
   },
   "delta/delta_med_cryo.dmm": {
    "width": 6,
@@ -620,7 +911,40 @@
     1,
     1
    ],
-   "png": "delta_delta_med_cryo.png"
+   "png": "delta_delta_med_cryo.png",
+   "src_md5": "7b5d598f70eeabf7b9f7140beb0e75cc",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_cryo_cult.png",
+     "src_md5": "0aae2249cb089d0029771343fd1d7f1a"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_cryo_lightship.png",
+     "src_md5": "f3ed6d38b621c1ca644c4841698a1adb"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_med_cryo_syndicate.png",
+     "src_md5": "87fe02e52f752fd51559250469b80aaf"
+    }
+   }
   },
   "delta/delta_dorms_cabins.dmm": {
    "width": 6,
@@ -630,15 +954,17 @@
     1
    ],
    "png": "delta_delta_dorms_cabins.png",
+   "src_md5": "0273b57f09b53311152bc7bb2a234dff",
    "themes": {
-    "archive": {
+    "cult": {
      "width": 6,
      "height": 3,
      "connector": [
       1,
       1
      ],
-     "png": "delta_delta_dorms_cabins_archive.png"
+     "png": "delta_delta_dorms_cabins_cult.png",
+     "src_md5": "c596a482d7731e2219d8768d94582899"
     },
     "lightship": {
      "width": 6,
@@ -647,16 +973,18 @@
       1,
       1
      ],
-     "png": "delta_delta_dorms_cabins_lightship.png"
+     "png": "delta_delta_dorms_cabins_lightship.png",
+     "src_md5": "67241b27329540bb34c717a01aac3ede"
     },
-    "market": {
+    "syndicate": {
      "width": 6,
      "height": 3,
      "connector": [
       1,
       1
      ],
-     "png": "delta_delta_dorms_cabins_market.png"
+     "png": "delta_delta_dorms_cabins_syndicate.png",
+     "src_md5": "a705a7e8135168bdda1057240179b676"
     }
    }
   },
@@ -667,7 +995,40 @@
     1,
     1
    ],
-   "png": "delta_delta_dorms_bunkhouse.png"
+   "png": "delta_delta_dorms_bunkhouse.png",
+   "src_md5": "99b86d129be87cdb1bf1ec3473ec8fe8",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_bunkhouse_cult.png",
+     "src_md5": "21a1025f9ac9c1d0e0b5a659a9310862"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_bunkhouse_lightship.png",
+     "src_md5": "aef0a3e4ffddbd6dd95967b8eec903b1"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_bunkhouse_syndicate.png",
+     "src_md5": "11532856af4eb24a2ccd294d5a6d2101"
+    }
+   }
   },
   "delta/delta_dorms_den.dmm": {
    "width": 6,
@@ -676,7 +1037,40 @@
     1,
     1
    ],
-   "png": "delta_delta_dorms_den.png"
+   "png": "delta_delta_dorms_den.png",
+   "src_md5": "ac6a731a74f1ffbeb6f99233949023f8",
+   "themes": {
+    "cult": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_den_cult.png",
+     "src_md5": "a062a360cbec01b04e8e51191464b7c9"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_den_lightship.png",
+     "src_md5": "e36591ee8229715810440c2129d6c453"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_den_syndicate.png",
+     "src_md5": "a14b3db853e153ebf8ec28cfaf4b2b88"
+    }
+   }
   },
   "goon/goon_port_infirmary.dmm": {
    "width": 6,
@@ -685,7 +1079,40 @@
     1,
     1
    ],
-   "png": "goon_goon_port_infirmary.png"
+   "png": "goon_goon_port_infirmary.png",
+   "src_md5": "23dce5c75fee74acb0c981697d16d009",
+   "themes": {
+    "slumber": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_infirmary_slumber.png",
+     "src_md5": "543bdc31e295564534a88f46fd831344"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_infirmary_syndicate.png",
+     "src_md5": "1338a83ac50e48c3807f8740a680a69d"
+    },
+    "void": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_infirmary_void.png",
+     "src_md5": "6cfb75c6d66e39f91539d7ffbd605c7e"
+    }
+   }
   },
   "goon/goon_port_brig.dmm": {
    "width": 6,
@@ -694,7 +1121,40 @@
     1,
     1
    ],
-   "png": "goon_goon_port_brig.png"
+   "png": "goon_goon_port_brig.png",
+   "src_md5": "7ac01a992e590e0d52b7349635ddf126",
+   "themes": {
+    "slumber": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_brig_slumber.png",
+     "src_md5": "ae7b60ff33f495ee9cb89c8aabe32eaf"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_brig_syndicate.png",
+     "src_md5": "65d018c3319e5c491cab305bda724910"
+    },
+    "void": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_brig_void.png",
+     "src_md5": "dfd630632034fa8bc9c2d1eb917ff7f2"
+    }
+   }
   },
   "goon/goon_port_chemlab.dmm": {
    "width": 6,
@@ -703,7 +1163,40 @@
     1,
     1
    ],
-   "png": "goon_goon_port_chemlab.png"
+   "png": "goon_goon_port_chemlab.png",
+   "src_md5": "7dd7e22484556ae492b6336c0a04883d",
+   "themes": {
+    "slumber": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_chemlab_slumber.png",
+     "src_md5": "5065d24011cc656103dbbad6b7d1b4b3"
+    },
+    "syndicate": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_chemlab_syndicate.png",
+     "src_md5": "6bbaee169ae68ee645aa34b1c631b246"
+    },
+    "void": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_port_chemlab_void.png",
+     "src_md5": "4753c6c1f9c878c6510823a1a39f59ba"
+    }
+   }
   },
   "goon/goon_engineering_pacman.dmm": {
    "width": 4,
@@ -712,7 +1205,40 @@
     1,
     1
    ],
-   "png": "goon_goon_engineering_pacman.png"
+   "png": "goon_goon_engineering_pacman.png",
+   "src_md5": "4c0b78d54032ce3728e5cf30592c4c22",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_pacman_slumber.png",
+     "src_md5": "d11819eb71a08090fd6e623dcdcc64cc"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_pacman_syndicate.png",
+     "src_md5": "61a42dfd2acc9a51c406376faaf2a5df"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_pacman_void.png",
+     "src_md5": "342f215454f52e5ebfec47b7fa7151f9"
+    }
+   }
   },
   "goon/goon_engineering_rtg.dmm": {
    "width": 4,
@@ -721,7 +1247,40 @@
     1,
     1
    ],
-   "png": "goon_goon_engineering_rtg.png"
+   "png": "goon_goon_engineering_rtg.png",
+   "src_md5": "f8eda9c50eaae3652d46cbd3c8807dee",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_rtg_slumber.png",
+     "src_md5": "c54ff2f888e4888b16fa194004eb7346"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_rtg_syndicate.png",
+     "src_md5": "67059e0a50f86582a0e91df4bde5759e"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_rtg_void.png",
+     "src_md5": "bbfedbe60885347753675745077458eb"
+    }
+   }
   },
   "goon/goon_engineering_teg.dmm": {
    "width": 4,
@@ -730,7 +1289,40 @@
     1,
     1
    ],
-   "png": "goon_goon_engineering_teg.png"
+   "png": "goon_goon_engineering_teg.png",
+   "src_md5": "09e80bc3297e4b9504aadafa044cbc09",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_teg_slumber.png",
+     "src_md5": "d94257a0f54ce7ca3198de1e51fab3f5"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_teg_syndicate.png",
+     "src_md5": "78fafcbf7b0b886f0cd177c02c01b647"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_engineering_teg_void.png",
+     "src_md5": "949431ce21108def088be4bc2c174734"
+    }
+   }
   },
   "goon/goon_mining_prospector.dmm": {
    "width": 4,
@@ -739,7 +1331,40 @@
     1,
     1
    ],
-   "png": "goon_goon_mining_prospector.png"
+   "png": "goon_goon_mining_prospector.png",
+   "src_md5": "6d7c22c64f8f02a3f13e9c4c30520e05",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_prospector_slumber.png",
+     "src_md5": "b349ad3610c4e7fee8f4866cf9b1ac66"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_prospector_syndicate.png",
+     "src_md5": "e395c50d89598f59ebb5a3d68094ba04"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_prospector_void.png",
+     "src_md5": "45d031a463d8f75295f456caa5d4a45f"
+    }
+   }
   },
   "goon/goon_mining_salvage.dmm": {
    "width": 4,
@@ -748,7 +1373,40 @@
     1,
     1
    ],
-   "png": "goon_goon_mining_salvage.png"
+   "png": "goon_goon_mining_salvage.png",
+   "src_md5": "11e5dd22f78d15485fa769e291a7b719",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_salvage_slumber.png",
+     "src_md5": "ac67d52d422fa20df599fe44b63792cb"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_salvage_syndicate.png",
+     "src_md5": "28c8a12836dd64dd92818f5a4ca9cb96"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_salvage_void.png",
+     "src_md5": "f9369e23f9f2c79852c53ba32c8c1111"
+    }
+   }
   },
   "goon/goon_mining_freight.dmm": {
    "width": 4,
@@ -757,7 +1415,40 @@
     1,
     1
    ],
-   "png": "goon_goon_mining_freight.png"
+   "png": "goon_goon_mining_freight.png",
+   "src_md5": "e2ac6452ba3d3d88db2366287770d7c9",
+   "themes": {
+    "slumber": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_freight_slumber.png",
+     "src_md5": "3b4f59300943763bafb4be94f578b11a"
+    },
+    "syndicate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_freight_syndicate.png",
+     "src_md5": "fb4f0790b52e1f8acc0eee449905186d"
+    },
+    "void": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_mining_freight_void.png",
+     "src_md5": "eefdff7ce174276a37f99c11e73798fd"
+    }
+   }
   },
   "goon/goon_lounge_bunks.dmm": {
    "width": 3,
@@ -766,7 +1457,40 @@
     1,
     1
    ],
-   "png": "goon_goon_lounge_bunks.png"
+   "png": "goon_goon_lounge_bunks.png",
+   "src_md5": "81cd072c820eb27fa15bbec10fddb030",
+   "themes": {
+    "slumber": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_bunks_slumber.png",
+     "src_md5": "c0321ade6c3ec3eb5da584c4425b2cbf"
+    },
+    "syndicate": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_bunks_syndicate.png",
+     "src_md5": "28525166e14c24e9a9e379a89504a57d"
+    },
+    "void": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_bunks_void.png",
+     "src_md5": "6e32329eb48fabb34fa40875c1aa48f5"
+    }
+   }
   },
   "goon/goon_lounge_mess.dmm": {
    "width": 3,
@@ -775,7 +1499,40 @@
     1,
     1
    ],
-   "png": "goon_goon_lounge_mess.png"
+   "png": "goon_goon_lounge_mess.png",
+   "src_md5": "e1e2ad35ee13a2df7f7f42f760736d09",
+   "themes": {
+    "slumber": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_mess_slumber.png",
+     "src_md5": "a900c36a808a5188de83eed41fbda36e"
+    },
+    "syndicate": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_mess_syndicate.png",
+     "src_md5": "35ae67ae02ba0795afb36c15de485ade"
+    },
+    "void": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_lounge_mess_void.png",
+     "src_md5": "337a6eccaedaebbcc8248b36e289c0c8"
+    }
+   }
   },
   "goon/goon_cockpit_standard.dmm": {
    "width": 2,
@@ -784,7 +1541,40 @@
     1,
     1
    ],
-   "png": "goon_goon_cockpit_standard.png"
+   "png": "goon_goon_cockpit_standard.png",
+   "src_md5": "3a393899d602082e969a45a184d10eaf",
+   "themes": {
+    "slumber": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_standard_slumber.png",
+     "src_md5": "927a77bef3bc6d80e4a02ae8c5bd9cff"
+    },
+    "syndicate": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_standard_syndicate.png",
+     "src_md5": "a5ba2dae26fbd0287bb378a6477bff1a"
+    },
+    "void": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_standard_void.png",
+     "src_md5": "b8fec657c00c59ea613de538bfaf25e5"
+    }
+   }
   },
   "goon/goon_cockpit_command.dmm": {
    "width": 2,
@@ -793,7 +1583,40 @@
     1,
     1
    ],
-   "png": "goon_goon_cockpit_command.png"
+   "png": "goon_goon_cockpit_command.png",
+   "src_md5": "a4b6a21d78a8b9a92aba43f0873c3b3f",
+   "themes": {
+    "slumber": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_command_slumber.png",
+     "src_md5": "de795f6a69de19e75a9269c480efa81c"
+    },
+    "syndicate": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_command_syndicate.png",
+     "src_md5": "2810678355d2cd09719c0cb01a0af5ef"
+    },
+    "void": {
+     "width": 2,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "goon_goon_cockpit_command_void.png",
+     "src_md5": "7b73ae2757810ec80b5e135001af5926"
+    }
+   }
   },
   "kilo/kilo_service_galley.dmm": {
    "width": 4,
@@ -803,6 +1626,7 @@
     1
    ],
    "png": "kilo_kilo_service_galley.png",
+   "src_md5": "a78de2b376c9122657e671022ffff23f",
    "themes": {
     "clean": {
      "width": 4,
@@ -811,7 +1635,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_galley_clean.png"
+     "png": "kilo_kilo_service_galley_clean.png",
+     "src_md5": "0d88958c8dc2172aee7b23c5b6ba9e2a"
     },
     "pink": {
      "width": 4,
@@ -820,7 +1645,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_galley_pink.png"
+     "png": "kilo_kilo_service_galley_pink.png",
+     "src_md5": "84257e7c30e6f3175a2649d9166a36c7"
     },
     "saloon": {
      "width": 4,
@@ -829,7 +1655,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_galley_saloon.png"
+     "png": "kilo_kilo_service_galley_saloon.png",
+     "src_md5": "53d72974bc2e61898cffe993231aa579"
     }
    }
   },
@@ -841,6 +1668,7 @@
     1
    ],
    "png": "kilo_kilo_service_hydroponics.png",
+   "src_md5": "7c134d7bb17023010b362b1dd15da402",
    "themes": {
     "clean": {
      "width": 4,
@@ -849,7 +1677,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_hydroponics_clean.png"
+     "png": "kilo_kilo_service_hydroponics_clean.png",
+     "src_md5": "b6029dddadd425c5a36a871739c94f5b"
     },
     "pink": {
      "width": 4,
@@ -858,7 +1687,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_hydroponics_pink.png"
+     "png": "kilo_kilo_service_hydroponics_pink.png",
+     "src_md5": "c268ac5f3977de70ee60fe663bb6a763"
     },
     "saloon": {
      "width": 4,
@@ -867,7 +1697,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_hydroponics_saloon.png"
+     "png": "kilo_kilo_service_hydroponics_saloon.png",
+     "src_md5": "01a01b914bb2ada3c52445f736006bfd"
     }
    }
   },
@@ -879,6 +1710,7 @@
     1
    ],
    "png": "kilo_kilo_service_surgery.png",
+   "src_md5": "fcc730f948d7d27e0c2fd159d6d09f0d",
    "themes": {
     "clean": {
      "width": 4,
@@ -887,7 +1719,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_surgery_clean.png"
+     "png": "kilo_kilo_service_surgery_clean.png",
+     "src_md5": "589ff13259b7a9e177f8db419be5b661"
     },
     "pink": {
      "width": 4,
@@ -896,7 +1729,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_surgery_pink.png"
+     "png": "kilo_kilo_service_surgery_pink.png",
+     "src_md5": "1e41f61fef8131a72568dbd7b47b24f9"
     },
     "saloon": {
      "width": 4,
@@ -905,7 +1739,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_surgery_saloon.png"
+     "png": "kilo_kilo_service_surgery_saloon.png",
+     "src_md5": "9324484de4201f779d2f8bb0340fb4ba"
     }
    }
   },
@@ -917,6 +1752,7 @@
     1
    ],
    "png": "kilo_kilo_service_saloon_bar.png",
+   "src_md5": "63a23e07e3f19de873f3e3388133d6d7",
    "themes": {
     "clean": {
      "width": 4,
@@ -925,7 +1761,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_saloon_bar_clean.png"
+     "png": "kilo_kilo_service_saloon_bar_clean.png",
+     "src_md5": "6f3211c8ad293d2193765ec40e5ecde8"
     },
     "pink": {
      "width": 4,
@@ -934,7 +1771,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_service_saloon_bar_pink.png"
+     "png": "kilo_kilo_service_saloon_bar_pink.png",
+     "src_md5": "09f206bb9cccd986a91c4d903c9904ca"
     }
    }
   },
@@ -946,6 +1784,7 @@
     1
    ],
    "png": "kilo_kilo_dock_prep.png",
+   "src_md5": "9839c13e2929961b493e136c1c42ccfd",
    "themes": {
     "clean": {
      "width": 3,
@@ -954,7 +1793,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_prep_clean.png"
+     "png": "kilo_kilo_dock_prep_clean.png",
+     "src_md5": "2c68d23b4f4b975607261dc6634a5452"
     },
     "pink": {
      "width": 3,
@@ -963,7 +1803,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_prep_pink.png"
+     "png": "kilo_kilo_dock_prep_pink.png",
+     "src_md5": "8ee54cf843e1687d41b0af6e67bbda4c"
     },
     "saloon": {
      "width": 3,
@@ -972,7 +1813,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_prep_saloon.png"
+     "png": "kilo_kilo_dock_prep_saloon.png",
+     "src_md5": "08f6402dc709eb0a775e3139ee80ecdd"
     }
    }
   },
@@ -984,6 +1826,7 @@
     1
    ],
    "png": "kilo_kilo_dock_refinery.png",
+   "src_md5": "05584bd98f7caa5fe10565f6f5c55232",
    "themes": {
     "clean": {
      "width": 3,
@@ -992,7 +1835,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_refinery_clean.png"
+     "png": "kilo_kilo_dock_refinery_clean.png",
+     "src_md5": "fc58b23bfd4d9391bac3747cb91b01b7"
     },
     "pink": {
      "width": 3,
@@ -1001,7 +1845,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_refinery_pink.png"
+     "png": "kilo_kilo_dock_refinery_pink.png",
+     "src_md5": "017bd6b008845508bd0d22d37cdc8795"
     },
     "saloon": {
      "width": 3,
@@ -1010,7 +1855,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_dock_refinery_saloon.png"
+     "png": "kilo_kilo_dock_refinery_saloon.png",
+     "src_md5": "68f35cfba8d972541a91f4eced56d015"
     }
    }
   },
@@ -1022,6 +1868,7 @@
     1
    ],
    "png": "kilo_kilo_hold_freight.png",
+   "src_md5": "6a2c34338cc9728b58495cc7b075194b",
    "themes": {
     "clean": {
      "width": 3,
@@ -1030,7 +1877,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_freight_clean.png"
+     "png": "kilo_kilo_hold_freight_clean.png",
+     "src_md5": "ce88425fff95c5bbd77415f9478a973e"
     },
     "pink": {
      "width": 3,
@@ -1039,7 +1887,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_freight_pink.png"
+     "png": "kilo_kilo_hold_freight_pink.png",
+     "src_md5": "e3cf1dc307431b6b87613fb2e21496ac"
     },
     "saloon": {
      "width": 3,
@@ -1048,7 +1897,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_freight_saloon.png"
+     "png": "kilo_kilo_hold_freight_saloon.png",
+     "src_md5": "370329780286d9d6d57b9224478ac69c"
     }
    }
   },
@@ -1060,6 +1910,7 @@
     1
    ],
    "png": "kilo_kilo_hold_eva.png",
+   "src_md5": "5b7bfb939100fdc20c2816027e1c0ceb",
    "themes": {
     "clean": {
      "width": 3,
@@ -1068,7 +1919,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_eva_clean.png"
+     "png": "kilo_kilo_hold_eva_clean.png",
+     "src_md5": "db90ea285cdcf3dcbfff194f268dfe4e"
     },
     "pink": {
      "width": 3,
@@ -1077,7 +1929,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_eva_pink.png"
+     "png": "kilo_kilo_hold_eva_pink.png",
+     "src_md5": "de9b77cc02021d5ae1f691794f893193"
     },
     "saloon": {
      "width": 3,
@@ -1086,7 +1939,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_eva_saloon.png"
+     "png": "kilo_kilo_hold_eva_saloon.png",
+     "src_md5": "2551cd0ba4cab24968533bcae18a5238"
     }
    }
   },
@@ -1098,6 +1952,7 @@
     1
    ],
    "png": "kilo_kilo_hold_vault.png",
+   "src_md5": "8f0a154eeefcd96a5cc8b4b2a739f6d9",
    "themes": {
     "clean": {
      "width": 3,
@@ -1106,7 +1961,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_vault_clean.png"
+     "png": "kilo_kilo_hold_vault_clean.png",
+     "src_md5": "8008caa21a0612ef18ef50ae72d4d02b"
     },
     "pink": {
      "width": 3,
@@ -1115,7 +1971,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_vault_pink.png"
+     "png": "kilo_kilo_hold_vault_pink.png",
+     "src_md5": "9070f1f3282958e28c3fd02ba104e509"
     },
     "saloon": {
      "width": 3,
@@ -1124,7 +1981,8 @@
       1,
       1
      ],
-     "png": "kilo_kilo_hold_vault_saloon.png"
+     "png": "kilo_kilo_hold_vault_saloon.png",
+     "src_md5": "a1d13a7ae08536648e098af69aaab49f"
     }
    }
   },
@@ -1136,6 +1994,7 @@
     1
    ],
    "png": "phalanx_phalanx_bay_north_muster.png",
+   "src_md5": "743b953ea2363f4d92d89cbea3cf1d94",
    "themes": {
     "hearth": {
      "width": 11,
@@ -1144,7 +2003,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_north_muster_hearth.png"
+     "png": "phalanx_phalanx_bay_north_muster_hearth.png",
+     "src_md5": "dec6549cb061d133660436154acec2ac"
     },
     "springs": {
      "width": 11,
@@ -1153,7 +2013,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_north_muster_springs.png"
+     "png": "phalanx_phalanx_bay_north_muster_springs.png",
+     "src_md5": "dc42dc0c1ddce4f31b13916b132b0c97"
     },
     "verdant": {
      "width": 11,
@@ -1162,7 +2023,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_north_muster_verdant.png"
+     "png": "phalanx_phalanx_bay_north_muster_verdant.png",
+     "src_md5": "191d6084be35dc3614d89cd2ad5839ac"
     }
    }
   },
@@ -1173,7 +2035,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_bay_north_mech.png"
+   "png": "phalanx_phalanx_bay_north_mech.png",
+   "src_md5": "579092051ff5628938039a0ecb731162",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_mech_hearth.png",
+     "src_md5": "6d41c51dbdf5c289c8a0b67ec6cda7b3"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_mech_springs.png",
+     "src_md5": "d758e73d05b0ea9d1a7ba3eed315e772"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_mech_verdant.png",
+     "src_md5": "2142c93889488115136c9548bc580c99"
+    }
+   }
   },
   "phalanx/phalanx_bay_north_garden.dmm": {
    "width": 11,
@@ -1182,7 +2077,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_bay_north_garden.png"
+   "png": "phalanx_phalanx_bay_north_garden.png",
+   "src_md5": "5e66fb3bb039fff56fb09fb4b20c4f6f",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_garden_hearth.png",
+     "src_md5": "7be6e6a6056a1569dd86fdd9c1982a95"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_garden_springs.png",
+     "src_md5": "1f5f8d1da8b614dac6d0dd238d155789"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_garden_verdant.png",
+     "src_md5": "e720c0302474798fbbbbab7b60381f86"
+    }
+   }
   },
   "phalanx/phalanx_bay_south_freight.dmm": {
    "width": 11,
@@ -1192,6 +2120,7 @@
     1
    ],
    "png": "phalanx_phalanx_bay_south_freight.png",
+   "src_md5": "7d436ed3d99421f3ea594e7c1a0a7cc0",
    "themes": {
     "hearth": {
      "width": 11,
@@ -1200,7 +2129,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_south_freight_hearth.png"
+     "png": "phalanx_phalanx_bay_south_freight_hearth.png",
+     "src_md5": "4c2311f3de243a09018ef8d871161d8c"
     },
     "springs": {
      "width": 11,
@@ -1209,7 +2139,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_south_freight_springs.png"
+     "png": "phalanx_phalanx_bay_south_freight_springs.png",
+     "src_md5": "0cc2da9bda37a907362b31663c8c1872"
     },
     "verdant": {
      "width": 11,
@@ -1218,7 +2149,8 @@
       1,
       1
      ],
-     "png": "phalanx_phalanx_bay_south_freight_verdant.png"
+     "png": "phalanx_phalanx_bay_south_freight_verdant.png",
+     "src_md5": "fb01a8fb74e9659300c72c3e3c3df5ac"
     }
    }
   },
@@ -1229,7 +2161,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_bay_south_workshop.png"
+   "png": "phalanx_phalanx_bay_south_workshop.png",
+   "src_md5": "d84ca3274a853d94fd081e40f7908052",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_workshop_hearth.png",
+     "src_md5": "820ccc5cdfb50adcac816e7b385b4054"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_workshop_springs.png",
+     "src_md5": "2fb19ad29a590aa531e19e57d729e61b"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_workshop_verdant.png",
+     "src_md5": "c85d8add0ed5a942d17a6881988ef31d"
+    }
+   }
   },
   "phalanx/phalanx_bay_south_gym.dmm": {
    "width": 11,
@@ -1238,7 +2203,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_bay_south_gym.png"
+   "png": "phalanx_phalanx_bay_south_gym.png",
+   "src_md5": "4e6a480284107a2407c51f837056ccdd",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_gym_hearth.png",
+     "src_md5": "7e209a5bd0bacb23a18f8038adf05d57"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_gym_springs.png",
+     "src_md5": "4668f60276acbd35c7f0add8df920395"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_gym_verdant.png",
+     "src_md5": "1f49fdfed851fc8eb1e7bbf4784dfa07"
+    }
+   }
   },
   "phalanx/phalanx_lab_nanite.dmm": {
    "width": 10,
@@ -1247,7 +2245,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_lab_nanite.png"
+   "png": "phalanx_phalanx_lab_nanite.png",
+   "src_md5": "bad65e080170bf2bb2ebebf884c811f2",
+   "themes": {
+    "hearth": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_nanite_hearth.png",
+     "src_md5": "1c4405da32b6e35acaa886481ca82bc2"
+    },
+    "springs": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_nanite_springs.png",
+     "src_md5": "f3bf1aa107ac6c7731223c749efab7e6"
+    },
+    "verdant": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_nanite_verdant.png",
+     "src_md5": "00c10cdefb808977d30b960009e042a9"
+    }
+   }
   },
   "phalanx/phalanx_lab_chem.dmm": {
    "width": 10,
@@ -1256,7 +2287,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_lab_chem.png"
+   "png": "phalanx_phalanx_lab_chem.png",
+   "src_md5": "cf01e3251e94d232ca2d1d899a72c38e",
+   "themes": {
+    "hearth": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_chem_hearth.png",
+     "src_md5": "b48a930d8076c9c1d110eab377835508"
+    },
+    "springs": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_chem_springs.png",
+     "src_md5": "a99a38a5848c9d1315709afd7df8a79d"
+    },
+    "verdant": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_chem_verdant.png",
+     "src_md5": "97d12f3a08c1bfb3bb9ba7960666f065"
+    }
+   }
   },
   "phalanx/phalanx_lab_xenobio.dmm": {
    "width": 10,
@@ -1265,7 +2329,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_lab_xenobio.png"
+   "png": "phalanx_phalanx_lab_xenobio.png",
+   "src_md5": "543f0976bad25544aef6a3851c96d97d",
+   "themes": {
+    "hearth": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_xenobio_hearth.png",
+     "src_md5": "b3ff1a0d5620e0c91061cadd89c592bc"
+    },
+    "springs": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_xenobio_springs.png",
+     "src_md5": "96b88eee63d1b572916bec48e25530a6"
+    },
+    "verdant": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_lab_xenobio_verdant.png",
+     "src_md5": "6f1efc1f39186a26b9ba4df82d573a47"
+    }
+   }
   },
   "phalanx/phalanx_medical_theatre.dmm": {
    "width": 10,
@@ -1274,7 +2371,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_medical_theatre.png"
+   "png": "phalanx_phalanx_medical_theatre.png",
+   "src_md5": "f1c5b1e40f871ad0384c74ea3a565a9e",
+   "themes": {
+    "hearth": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_theatre_hearth.png",
+     "src_md5": "c807fee6f37f9fe440753e564e2031ec"
+    },
+    "springs": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_theatre_springs.png",
+     "src_md5": "b01da2908e1d0792a8d305c9ad4bd5c3"
+    },
+    "verdant": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_theatre_verdant.png",
+     "src_md5": "e371b68d69598cb4ca8a0f79271ccccc"
+    }
+   }
   },
   "phalanx/phalanx_medical_ward.dmm": {
    "width": 10,
@@ -1283,7 +2413,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_medical_ward.png"
+   "png": "phalanx_phalanx_medical_ward.png",
+   "src_md5": "9abce81745015206d927e5dd61f95c33",
+   "themes": {
+    "hearth": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_ward_hearth.png",
+     "src_md5": "3ec454b3b8e3601ba73d2fecdaa7e6ea"
+    },
+    "springs": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_ward_springs.png",
+     "src_md5": "ee771c313098ff5fdd54814371a042be"
+    },
+    "verdant": {
+     "width": 10,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_medical_ward_verdant.png",
+     "src_md5": "12311ab58c2325724f56f2f69eb9469e"
+    }
+   }
   },
   "phalanx/phalanx_armory_post.dmm": {
    "width": 6,
@@ -1292,7 +2455,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_armory_post.png"
+   "png": "phalanx_phalanx_armory_post.png",
+   "src_md5": "c945841b37945e0879f9312cb8f63eb7",
+   "themes": {
+    "hearth": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_post_hearth.png",
+     "src_md5": "f77e4a6e039a4e147e0873f69f004e9d"
+    },
+    "springs": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_post_springs.png",
+     "src_md5": "9a9a027e0f47dc8e8a18428cdf87ab98"
+    },
+    "verdant": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_post_verdant.png",
+     "src_md5": "7401c4bf75652a591e0c0afa4a66e2be"
+    }
+   }
   },
   "phalanx/phalanx_armory_full.dmm": {
    "width": 6,
@@ -1301,7 +2497,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_armory_full.png"
+   "png": "phalanx_phalanx_armory_full.png",
+   "src_md5": "6ac071c6072012fdc4df1015ac5eb640",
+   "themes": {
+    "hearth": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_full_hearth.png",
+     "src_md5": "63bd3e243c4fa1196a71518d12b2e2ed"
+    },
+    "springs": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_full_springs.png",
+     "src_md5": "6e02f245e2aa075614967d19276d252e"
+    },
+    "verdant": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_full_verdant.png",
+     "src_md5": "b7c3fe51e5976545a1951361c97e6ac1"
+    }
+   }
   },
   "phalanx/phalanx_armory_brig.dmm": {
    "width": 6,
@@ -1310,7 +2539,40 @@
     1,
     1
    ],
-   "png": "phalanx_phalanx_armory_brig.png"
+   "png": "phalanx_phalanx_armory_brig.png",
+   "src_md5": "853c53f8af53ec1eef235251158181cc",
+   "themes": {
+    "hearth": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_brig_hearth.png",
+     "src_md5": "83af9bcb3da7090829f1e8f9d2754ee6"
+    },
+    "springs": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_brig_springs.png",
+     "src_md5": "138f0efbec8769f0cc8eb4dbe2a7654c"
+    },
+    "verdant": {
+     "width": 6,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_armory_brig_verdant.png",
+     "src_md5": "f91eef9f5a4c3d7250940857cf9ae652"
+    }
+   }
   },
   "pill/pill_extra_empty.dmm": {
    "width": 1,
@@ -1319,7 +2581,8 @@
     1,
     1
    ],
-   "png": "pill_pill_extra_empty.png"
+   "png": "pill_pill_extra_empty.png",
+   "src_md5": "09a695689a9a3003388d057d88c38e87"
   },
   "pill/pill_extra_medical.dmm": {
    "width": 1,
@@ -1328,7 +2591,8 @@
     1,
     1
    ],
-   "png": "pill_pill_extra_medical.png"
+   "png": "pill_pill_extra_medical.png",
+   "src_md5": "9345b51ca9145d6d411621665e2244a0"
   },
   "pill/pill_extra_weapons.dmm": {
    "width": 1,
@@ -1337,7 +2601,8 @@
     1,
     1
    ],
-   "png": "pill_pill_extra_weapons.png"
+   "png": "pill_pill_extra_weapons.png",
+   "src_md5": "3f99ca091844c107a7dc4c24ef2d94cd"
   },
   "pill/pill_extra_engineering.dmm": {
    "width": 1,
@@ -1346,7 +2611,8 @@
     1,
     1
    ],
-   "png": "pill_pill_extra_engineering.png"
+   "png": "pill_pill_extra_engineering.png",
+   "src_md5": "d59cc5bc18d05fe50a141da7f92c4b62"
   },
   "scarab/scarab_med_basic.dmm": {
    "width": 3,
@@ -1363,7 +2629,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_basic_medical.png"
+     "png": "scarab_scarab_med_basic_medical.png",
+     "src_md5": "48a080a61d15a44eac0eac8af4d3d548"
     },
     "mining": {
      "width": 3,
@@ -1372,7 +2639,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_basic_mining.png"
+     "png": "scarab_scarab_med_basic_mining.png",
+     "src_md5": "82f43ba0156fb180277573fd2672c05f"
     },
     "syndicate": {
      "width": 3,
@@ -1381,7 +2649,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_basic_syndicate.png"
+     "png": "scarab_scarab_med_basic_syndicate.png",
+     "src_md5": "205d47c21679ff6d58a1e23cbf2c92ff"
     }
    }
   },
@@ -1400,7 +2669,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_surgery_medical.png"
+     "png": "scarab_scarab_med_surgery_medical.png",
+     "src_md5": "2e7c0d24c26a47e9ce0f577651830c85"
     },
     "mining": {
      "width": 3,
@@ -1409,7 +2679,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_surgery_mining.png"
+     "png": "scarab_scarab_med_surgery_mining.png",
+     "src_md5": "0e688ba900825165229b2a1c98470b11"
     },
     "syndicate": {
      "width": 3,
@@ -1418,7 +2689,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_surgery_syndicate.png"
+     "png": "scarab_scarab_med_surgery_syndicate.png",
+     "src_md5": "569605d20ff52f97672f2815ca9c3531"
     }
    }
   },
@@ -1437,7 +2709,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_chem_medical.png"
+     "png": "scarab_scarab_med_chem_medical.png",
+     "src_md5": "807d9345f4fb5c82cd0b8cdbfdeed6c8"
     },
     "mining": {
      "width": 3,
@@ -1446,7 +2719,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_chem_mining.png"
+     "png": "scarab_scarab_med_chem_mining.png",
+     "src_md5": "501476358b379ecf3aca9bf266bf3df1"
     },
     "syndicate": {
      "width": 3,
@@ -1455,7 +2729,8 @@
       2,
       3
      ],
-     "png": "scarab_scarab_med_chem_syndicate.png"
+     "png": "scarab_scarab_med_chem_syndicate.png",
+     "src_md5": "a965ee6f5c2b6e9779e0dc65d423d954"
     }
    }
   },
@@ -1474,7 +2749,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_basic_medical.png"
+     "png": "scarab_scarab_engineering_basic_medical.png",
+     "src_md5": "02293d117952d40e96b2bd9ba857efbc"
     },
     "mining": {
      "width": 8,
@@ -1483,7 +2759,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_basic_mining.png"
+     "png": "scarab_scarab_engineering_basic_mining.png",
+     "src_md5": "2131b9389bce3b0590336e4a63a8cbef"
     },
     "syndicate": {
      "width": 8,
@@ -1492,7 +2769,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_basic_syndicate.png"
+     "png": "scarab_scarab_engineering_basic_syndicate.png",
+     "src_md5": "b12fc94b61426bad4173f5e73005d240"
     }
    }
   },
@@ -1511,7 +2789,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_teg_medical.png"
+     "png": "scarab_scarab_engineering_teg_medical.png",
+     "src_md5": "7ed19ad9895179aac0719bf3f0319ed6"
     },
     "mining": {
      "width": 8,
@@ -1520,7 +2799,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_teg_mining.png"
+     "png": "scarab_scarab_engineering_teg_mining.png",
+     "src_md5": "48fe94a480bbb3594abc9cbea578db9f"
     },
     "syndicate": {
      "width": 8,
@@ -1529,7 +2809,8 @@
       3,
       4
      ],
-     "png": "scarab_scarab_engineering_teg_syndicate.png"
+     "png": "scarab_scarab_engineering_teg_syndicate.png",
+     "src_md5": "bfe6a7a282d2c8bf494fb60a7f9e6d23"
     }
    }
   },
@@ -1548,7 +2829,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_basic_medical.png"
+     "png": "scarab_scarab_common_basic_medical.png",
+     "src_md5": "67e37df4deb88f29a4d2314fe9e6cef4"
     },
     "mining": {
      "width": 8,
@@ -1557,7 +2839,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_basic_mining.png"
+     "png": "scarab_scarab_common_basic_mining.png",
+     "src_md5": "7a31d008e1f00d3fb9feb7072f2ec003"
     },
     "syndicate": {
      "width": 8,
@@ -1566,7 +2849,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_basic_syndicate.png"
+     "png": "scarab_scarab_common_basic_syndicate.png",
+     "src_md5": "7bd06e44cb18cfe55fa7621a9b14ce6e"
     }
    }
   },
@@ -1585,7 +2869,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_cryo_medical.png"
+     "png": "scarab_scarab_common_cryo_medical.png",
+     "src_md5": "a99b5f0c628299abc4f478999ad23dd4"
     },
     "mining": {
      "width": 8,
@@ -1594,7 +2879,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_cryo_mining.png"
+     "png": "scarab_scarab_common_cryo_mining.png",
+     "src_md5": "9f8571c11a162ad3db6839c1829e9bfa"
     },
     "syndicate": {
      "width": 8,
@@ -1603,7 +2889,8 @@
       4,
       1
      ],
-     "png": "scarab_scarab_common_cryo_syndicate.png"
+     "png": "scarab_scarab_common_cryo_syndicate.png",
+     "src_md5": "b966dba73b22ba3ffeb893432041dec5"
     }
    }
   },
@@ -1622,7 +2909,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_basic_medical.png"
+     "png": "scarab_scarab_cargo_basic_medical.png",
+     "src_md5": "f76941eb1d275a5ff181fb2487376a4a"
     },
     "mining": {
      "width": 7,
@@ -1631,7 +2919,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_basic_mining.png"
+     "png": "scarab_scarab_cargo_basic_mining.png",
+     "src_md5": "24fc9eb947ef7860a3eebbf188ac2e5c"
     },
     "syndicate": {
      "width": 7,
@@ -1640,7 +2929,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_basic_syndicate.png"
+     "png": "scarab_scarab_cargo_basic_syndicate.png",
+     "src_md5": "6c84e11afdc4fe6fe5949abbd0dc6696"
     }
    }
   },
@@ -1659,7 +2949,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_engi_medical.png"
+     "png": "scarab_scarab_cargo_engi_medical.png",
+     "src_md5": "824699ba8da39dbd703c4b8db88d2624"
     },
     "mining": {
      "width": 7,
@@ -1668,7 +2959,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_engi_mining.png"
+     "png": "scarab_scarab_cargo_engi_mining.png",
+     "src_md5": "22a734e6af3230b6a06077fcc5d4f1f6"
     },
     "syndicate": {
      "width": 7,
@@ -1677,7 +2969,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_engi_syndicate.png"
+     "png": "scarab_scarab_cargo_engi_syndicate.png",
+     "src_md5": "2f0feabe263a26c65eed4a3c40c31105"
     }
    }
   },
@@ -1696,7 +2989,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_med_medical.png"
+     "png": "scarab_scarab_cargo_med_medical.png",
+     "src_md5": "48e836a81c42fb2caf15c2c2c3eef718"
     },
     "mining": {
      "width": 7,
@@ -1705,7 +2999,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_med_mining.png"
+     "png": "scarab_scarab_cargo_med_mining.png",
+     "src_md5": "1410bbaf7bbfcd9e53d21ca1a6f5be44"
     },
     "syndicate": {
      "width": 7,
@@ -1714,7 +3009,8 @@
       4,
       2
      ],
-     "png": "scarab_scarab_cargo_med_syndicate.png"
+     "png": "scarab_scarab_cargo_med_syndicate.png",
+     "src_md5": "66e8ff01f98b321a659511fbb302edcd"
     }
    }
   },
@@ -1726,6 +3022,7 @@
     2
    ],
    "png": "test_modular_cargo_basic.png",
+   "src_md5": "f230bb5182459b8923fe987bf2d11d51",
    "themes": {
     "pirate": {
      "width": 3,
@@ -1734,7 +3031,8 @@
       2,
       2
      ],
-     "png": "test_modular_cargo_basic_pirate.png"
+     "png": "test_modular_cargo_basic_pirate.png",
+     "src_md5": "541c6358c29f30186d39d69902a2aec8"
     }
    }
   },
@@ -1745,7 +3043,8 @@
     2,
     2
    ],
-   "png": "test_modular_cargo_expanded.png"
+   "png": "test_modular_cargo_expanded.png",
+   "src_md5": "5d117b528993ddc16eee783f9ad1b7d6"
   },
   "test_modular/engine_basic.dmm": {
    "width": 3,
@@ -1754,7 +3053,8 @@
     2,
     2
    ],
-   "png": "test_modular_engine_basic.png"
+   "png": "test_modular_engine_basic.png",
+   "src_md5": "49a5a51135d7533c5eb8df717af5560e"
   },
   "test_modular/engine_advanced.dmm": {
    "width": 3,
@@ -1763,7 +3063,8 @@
     2,
     2
    ],
-   "png": "test_modular_engine_advanced.png"
+   "png": "test_modular_engine_advanced.png",
+   "src_md5": "877870976b96c178dadb80522108f340"
   }
  }
 }

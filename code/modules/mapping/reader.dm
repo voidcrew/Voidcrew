@@ -917,8 +917,23 @@ GLOBAL_LIST_EMPTY(map_model_default)
 		var/area/area_instance = loaded_areas[members[index]]
 		if(!area_instance)
 			var/area_type = members[index]
-			// If this parsed map doesn't have that area already, we check the global cache
-			area_instance = GLOB.areas_by_type[area_type]
+			// VOIDCREW EDIT ADDITION START - per-load ruin areas on packed planets.
+			// /area/ruin keeps UNIQUE_AREA, so two planets rolling the same ruin template
+			// would share ONE area instance straddling both of their footprints - and only
+			// the first would ever run its map generator. While a planet is seeding ruins
+			// onto this z (planet_ruin_area_instancing_begin, planet.dm) a ruin area whose
+			// singleton is already in use somewhere gets its own instance instead. Nothing
+			// else in the game sets that flag, so station and space-ruin loading is unchanged.
+			var/instance_ruin_area = FALSE
+			if(ispath(area_type, /area/ruin) && planet_ruin_area_instancing_on_z(crds.z))
+				var/area/existing_singleton = GLOB.areas_by_type[area_type]
+				instance_ruin_area = existing_singleton?.has_contained_turfs()
+			if(instance_ruin_area)
+				area_instance = new_planet_ruin_area(area_type)
+			// VOIDCREW EDIT ADDITION END
+			else
+				// If this parsed map doesn't have that area already, we check the global cache
+				area_instance = GLOB.areas_by_type[area_type]
 			// If the global list DOESN'T have this area it's either not a unique area, or it just hasn't been created yet
 			if (!area_instance)
 				area_instance = new area_type(null)

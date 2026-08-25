@@ -1,4 +1,9 @@
 GLOBAL_REAL(logger, /datum/log_holder)
+
+/// VOIDCREW ADDITION: how long the structured log path stays parked after it throws.
+/// Short - one unlucky file write should not blind the round's logs for long.
+#define LOG_HOLDER_FAILURE_BACKOFF (5 SECONDS)
+
 /**
  * Main datum to manage logging actions
  */
@@ -29,6 +34,10 @@ GLOBAL_REAL(logger, /datum/log_holder)
 
 	var/initialized = FALSE
 	var/shutdown = FALSE
+
+	/// VOIDCREW ADDITION: world.time until which Log() skips the structured path and writes
+	/// flat world.log lines instead. Set by logging_failed().
+	var/structured_logging_broken_until = 0
 
 GENERAL_PROTECT_DATUM(/datum/log_holder)
 
@@ -298,10 +307,36 @@ ADMIN_VERB(log_viewer_new, R_ADMIN, "View Round Logs", "View the rounds logs.", 
 		waiting_log_calls += list(list(category, message, data))
 		return
 
-	if(disabled_categories[category])
+	// VOIDCREW ADDITION: the logger recently threw, so don't go back through the structured
+	// path yet - get the line out flat instead of losing it. See logging_failed().
+	if(world.time < structured_logging_broken_until)
+		SEND_TEXT(world.log, "\[LOG FALLBACK]\[[category]] [message]")
 		return
 
-	var/datum/log_category/log_category = log_categories[category]
+	// VOIDCREW EDIT: the category lookups are two plain assoc-list reads, and in round-7
+	// (2026-08-16) plain assoc-list reads were exactly what stopped working world-wide.
+	// `disabled_categories[category]` threw "bad list", which killed this proc - and with
+	// it runtime.log, game.log, debug.log and every other log the round was writing, ten
+	// minutes before the host died with no record of why. Worse, world/Error's last act is
+	// log_runtime() -> here, so the logger's own failure raised a fresh runtime from inside
+	// the runtime handler, which is how a single bug became 3.75 million dd.log lines.
+	//
+	// Narrow on purpose: recursive_jsonify() below stays outside, because it raises
+	// stack_trace()s as part of normal operation and swallowing those would hide real bugs.
+	var/category_disabled = FALSE
+	var/datum/log_category/log_category
+	try
+		if(disabled_categories[category])
+			category_disabled = TRUE
+		else
+			log_category = log_categories[category]
+	catch(var/exception/lookup_failure)
+		logging_failed(category, message, lookup_failure)
+		return
+
+	if(category_disabled)
+		return
+
 	if(!log_category)
 		Log(LOG_CATEGORY_INTERNAL_CATEGORY_NOT_FOUND, message, data)
 		CRASH("Attempted to log to a category that doesn't exist! [category]")
@@ -310,7 +345,28 @@ ADMIN_VERB(log_viewer_new, R_ADMIN, "View Round Logs", "View the rounds logs.", 
 	if(length(data))
 		semver_store = list()
 		data = recursive_jsonify(data, semver_store)
-	log_category.create_entry(message, data, semver_store)
+
+	try
+		log_category.create_entry(message, data, semver_store)
+	catch(var/exception/write_failure)
+		logging_failed(category, message, write_failure)
+
+/**
+ * VOIDCREW ADDITION: last resort for when the structured logger itself throws.
+ *
+ * Writes the line flat to world.log and parks the structured path for a few seconds, so a
+ * world whose list allocator is failing produces one line per log call instead of a
+ * BYOND-default stack dump per log call. Touches no lists and calls nothing that logs -
+ * this proc has to work in the state where nothing else does.
+ *
+ * The message body does go to world.log here, secret categories included. That is a
+ * deliberate trade: world.log is host-side only, and the alternative is losing the record
+ * of whatever was happening at the moment the server stopped being able to write records.
+ */
+/datum/log_holder/proc/logging_failed(category, message, failure)
+	structured_logging_broken_until = world.time + LOG_HOLDER_FAILURE_BACKOFF
+	SEND_TEXT(world.log, "\[LOG FALLBACK]\[[category]] [message]")
+	SEND_TEXT(world.log, "  STRUCTURED LOGGING FAILED ([failure]) - flat world.log lines for the next [LOG_HOLDER_FAILURE_BACKOFF / 10] seconds.")
 
 /// Recursively converts an associative list of datums into their jsonified(list) form
 /datum/log_holder/proc/recursive_jsonify(list/data_list, list/semvers)
@@ -351,3 +407,5 @@ ADMIN_VERB(log_viewer_new, R_ADMIN, "View Round Logs", "View the rounds logs.", 
 		jsonified_list[key] = data
 
 	return jsonified_list
+
+#undef LOG_HOLDER_FAILURE_BACKOFF

@@ -3,12 +3,12 @@
  *
  * Parimutuel betting on match contestants, run from the bookmaker console in
  * the wagering hall. Bets are cash-in (hard-light holochips only) and pay out
- * as physical betting slips — stealable, tradeable, ransomable, exactly as a
+ * as physical betting slips, stealable, tradeable, ransomable, exactly as a
  * voidcrew financial instrument should be.
  *
  * The book opens at roster lock and closes when the gates open. Winning bets
  * return their stake plus a share of the losing pool (minus the house's 10%
- * rake on that pool — a won bet never pays less than its stake). In team
+ * rake on that pool. A won bet never pays less than its stake). In team
  * modes a bet on any member of the winning team pays. Draws and cancelled
  * matches refund face value. Settled books are archived on the controller so
  * old slips stay redeemable for the rest of the round.
@@ -38,7 +38,7 @@
 	var/winning_stakes = 0
 	/// Winning minds at settle (assoc mind -> TRUE)
 	var/list/winners = list()
-	/// Minds scratched before the fight — no-shows struck from the roster.
+	/// Minds scratched before the fight: no-shows struck from the roster.
 	/// Their stakes leave the pool and their slips refund at face value.
 	var/list/scratched = list()
 
@@ -69,7 +69,7 @@
 /**
  * A backed fighter never made it to the sand (no-show struck at seating close,
  * or knocked out before the gates opened). Standard parimutuel: their stakes
- * leave the pool and their slips refund at face value — bettors shouldn't eat
+ * leave the pool and their slips refund at face value. Bettors shouldn't eat
  * a loss on a fight that never happened.
  */
 /datum/colosseum_book/proc/scratch(datum/mind/target)
@@ -84,7 +84,7 @@
 
 /**
  * Locks in the result. Empty winner list = refunds. If nobody backed a
- * winner, everyone refunds too — the house doesn't keep orphaned pools.
+ * winner, everyone refunds too. The house doesn't keep orphaned pools.
  */
 /datum/colosseum_book/proc/settle(list/datum/mind/winner_minds)
 	if(settled)
@@ -95,7 +95,7 @@
 	for(var/datum/mind/winner as anything in winner_minds)
 		winners[winner] = TRUE
 	// Team victories pay the whole side: a bet on any member of the winning
-	// team pays, dead or alive — the fighter's team won the match they backed.
+	// team pays, dead or alive, the fighter's team won the match they backed.
 	var/datum/colosseum_game/mode = controller?.mode
 	if(length(winners) && mode?.team_based)
 		var/list/winning_teams = list()
@@ -197,7 +197,7 @@
 	. += book.open ? span_boldnotice("The book is OPEN for match [book.match_number]. Pool: [book.total_pool] cr.") : span_notice("The book for match [book.match_number] is closed. Pool: [book.total_pool] cr.")
 	for(var/datum/mind/target as anything in book.stakes)
 		var/datum/colosseum_contestant/entry = site.controller.entry_for_mind(target)
-		. += span_info("— [entry ? "[entry.display_name] ([entry.ship_name])" : "unknown fighter"]: [book.stakes[target]] cr")
+		. += span_info("- [entry ? "[entry.display_name] ([entry.ship_name])" : "unknown fighter"]: [book.stakes[target]] cr")
 
 /obj/machinery/computer/colosseum_bookmaker/interact(mob/user)
 	. = ..()
@@ -214,11 +214,11 @@
 		return
 	var/list/choices = list()
 	for(var/datum/colosseum_contestant/entry as anything in controller.live_entries())
-		choices["[entry.display_name] ([entry.ship_name]) — [book.stakes[entry.mind] || 0] cr staked"] = entry
+		choices["[entry.display_name] ([entry.ship_name]), [book.stakes[entry.mind] || 0] cr staked"] = entry
 	if(!length(choices))
 		balloon_alert(user, "no contestants!")
 		return
-	var/chosen_label = tgui_input_list(user, "Back a fighter (parimutuel — winners split the losing pool, house takes [COLOSSEUM_BOOK_RAKE * 100]% of it)", "Bookmaker", choices)
+	var/chosen_label = tgui_input_list(user, "Back a fighter (parimutuel: winners split the losing pool, house takes [COLOSSEUM_BOOK_RAKE * 100]% of it)", "Bookmaker", choices)
 	if(!chosen_label || !site?.controller || site.controller.book != book || !book.open)
 		return
 	var/datum/colosseum_contestant/target = choices[chosen_label]
@@ -234,7 +234,7 @@
 		balloon_alert(user, "payment failed!")
 		return
 	if(!book.record_stake(target.mind, amount))
-		// The fighter was struck (or the book slammed shut) mid-dialog — hand
+		// The fighter was struck (or the book slammed shut) mid-dialog, hand
 		// the money straight back rather than printing a dead slip.
 		var/obj/item/holochip/refund = new(get_turf(user), amount)
 		user.put_in_hands(refund)
@@ -246,7 +246,7 @@
 	slip.target_name = "[target.display_name] ([target.ship_name])"
 	slip.amount = amount
 	slip.match_number = book.match_number
-	slip.name = "betting slip — [amount] cr on [target.display_name]"
+	slip.name = "betting slip, [amount] cr on [target.display_name]"
 	user.put_in_hands(slip)
 	balloon_alert(user, "wager placed!")
 	playsound(src, 'sound/machines/ping.ogg', 40, TRUE)

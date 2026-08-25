@@ -91,11 +91,7 @@
 /turf/open/floor/iron,
 /area/template_noop)
 "x" = (
-/obj/structure/girder/displaced,
-/obj/item/stack/sheet/mineral/titanium,
-/obj/item/stack/rods,
-/obj/item/stack/cable_coil,
-/turf/open/floor/plating/airless,
+/turf/template_noop,
 /area/template_noop)
 "z" = (
 /obj/effect/decal/cleanable/dirt/dust,

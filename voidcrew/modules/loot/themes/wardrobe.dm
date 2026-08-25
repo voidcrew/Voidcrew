@@ -1,13 +1,13 @@
 // =========================================================================
-// WARDROBE THEME — identity loot: clothes and character pieces so crews
+// WARDROBE THEME: identity loot: clothes and character pieces so crews
 // stop looking like quintuplets. Common is thrift-store, uncommon is
 // somebody's good coat, prime is armored fashion you'll be recognized by.
 // Liner wrecks keep their passengers: guarded by the restless dead
 // (undead markers, themes/occult.dm).
 // Cyberware: the two pieces of the parlor roster that are a look before
-// they're a tool — programmable ink and matte black eyes. Both draw on the
+// they're a tool. Programmable ink and matte black eyes. Both draw on the
 // body, which is exactly what this theme is for.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -59,8 +59,8 @@
 		/obj/item/clothing/head/helmet/knight = 7,
 		/obj/item/clothing/head/cowboy/black/syndicate = 6,
 		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
+		// the helmet is the suit's hood, it comes with it. never rolled alone
 		/obj/item/clothing/suit/hooded/berserker = 4,
-		/obj/item/clothing/head/hooded/berserker = 4,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat = 2,

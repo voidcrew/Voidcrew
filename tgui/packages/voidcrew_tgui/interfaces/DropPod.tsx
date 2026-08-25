@@ -1,19 +1,19 @@
-import { useBackend } from '../../tgui/backend';
 import { Button, NoticeBox, Section, Stack } from 'tgui-core/components';
+import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
 
 interface Data {
-  mappingEnabled: number;
   used: number;
   teleporterLinked: number;
   teleporterUsed: number;
   overPlanet: number;
+  /** Racked in an assault pod tube, the weapons system owns the launch. */
+  inTube: number;
 }
 
 export const DropPod = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { used, overPlanet, teleporterLinked, teleporterUsed, mappingEnabled } =
-    data;
+  const { used, overPlanet, teleporterLinked, teleporterUsed, inTube } = data;
 
   let canTeleport = false;
   let teleportTooltip;
@@ -35,15 +35,14 @@ export const DropPod = (props, context) => {
     teleportTooltip = 'not linked to a quantum pad';
   }
 
-  let canDrop = false;
-  if (!used && overPlanet === 1) {
-    canDrop = true;
-  }
-
-  let canMap = false;
-  if (canDrop && mappingEnabled === 1) {
-    canMap = true;
-  }
+  const canDrop = !used && overPlanet === 1 && inTube !== 1;
+  const dropTooltip = inTube
+    ? 'loaded in a launch tube. The weapons officer fires this pod'
+    : used
+      ? 'this pod has already been launched'
+      : overPlanet !== 1
+        ? 'no surveyed celestial body below'
+        : undefined;
 
   return (
     <Window width={300} height={450} title="Drop pod">
@@ -64,9 +63,7 @@ export const DropPod = (props, context) => {
                 ? 'yellow'
                 : teleportStatus === 'LINKED'
                   ? 'green'
-                  : teleportStatus === 'NOT LINKED'
-                    ? 'red'
-                    : 'red'
+                  : 'red'
             }
             textColor="white"
           >
@@ -79,7 +76,7 @@ export const DropPod = (props, context) => {
 
           <Button
             tooltip={teleportTooltip}
-            disabled={canTeleport ? false : true}
+            disabled={!canTeleport}
             onClick={() => act('teleport')}
           >
             Teleport
@@ -87,13 +84,23 @@ export const DropPod = (props, context) => {
         </Section>
         <Stack />
         <Section title="Drop options" textAlign="center" fontSize={1.2}>
+          {!!inTube && (
+            <NoticeBox ml={'10%'} mr={'10%'} backgroundColor="red">
+              LOADED IN LAUNCH TUBE
+            </NoticeBox>
+          )}
           <Button
-            disabled={canDrop ? false : true}
+            tooltip={dropTooltip}
+            disabled={!canDrop}
             onClick={() => act('randomDrop')}
           >
             Random launch
           </Button>
-          <Button disabled={canMap ? false : true} onClick={() => act('map')}>
+          <Button
+            tooltip={dropTooltip}
+            disabled={!canDrop}
+            onClick={() => act('map')}
+          >
             Directed launch
           </Button>
         </Section>

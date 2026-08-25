@@ -23,7 +23,8 @@
 	if(!.)
 		return FALSE
 	/// If the server is down, don't use power or attempt to send data
-	return find_functional_ntnet_relay()
+	// Voidcrew: see ntnet_send.dm - ships are their own NTNet node.
+	return ntnet_reachable_from(get_circuit_turf(parent))
 
 /obj/item/circuit_component/list_literal/ntnet_send/input_received(datum/port/input/port)
 	. = ..()

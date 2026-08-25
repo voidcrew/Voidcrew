@@ -1,20 +1,20 @@
 /**
- * # The Silent Dojo — space ninja vestige
+ * # The Silent Dojo: space ninja vestige
  *
  * A Spider Clan training hall drifting cold, mats still swept. The master's
  * suit still kneels at the head of the room; the master, as far as anyone can
- * tell, is not in it. Trials are lessons — the thrown star (precision), the
+ * tell, is not in it. Trials are lessons, the thrown star (precision), the
  * unseen hand (silence), stillness (patience). Ninja kit is pure gear (zero
  * antag coupling), so the boons are the clan's own kit and drills: the blade
  * (its dash action rides the item and grants on equip, verified upstream), a
  * finite case of true stars, and smoke/footwork techniques built as
- * standalone spells — every upstream ninja ABILITY lives on the MOD suit's
+ * standalone spells, every upstream ninja ABILITY lives on the MOD suit's
  * modules and checks mod.wearer (modules_ninja.dm), so none of those port;
  * the techniques here are local reimplementations.
  */
 
 // Stars the clan hands over before it makes you wait. Keep the boon desc's
-// "three" in sync — initial() values must be compile-time constant, so no
+// "three" in sync, initial() values must be compile-time constant, so no
 // interpolation there.
 #define VESTIGE_CLAN_STAR_CHARGES 3
 // How long the clan takes to hand over another three
@@ -115,7 +115,9 @@
 	if(!isliving(hit_atom))
 		return
 	var/mob/living/victim = hit_atom
-	var/mob/living/thrower = throwingdatum?.thrower
+	// thrownthing.thrower is a WEAKREF, not a mob; reading it raw made this
+	// istype always fail, so no hit ever counted. Resolve it properly.
+	var/mob/living/thrower = throwingdatum?.get_thrower()
 	if(!istype(thrower) || thrower == victim || victim.stat == DEAD)
 		return
 	var/datum/vestige_trial/thrown_star/trial = thrower.mind?.active_vestige_trial
@@ -179,7 +181,7 @@
 		balloon_alert(user, "they'd see you!")
 		return
 	// A short silent press. The channel's cog is the tell a watchful room gets,
-	// and the victim stepping away breaks it — turning around is checked at the end.
+	// and the victim stepping away breaks it. Turning around is checked at the end.
 	if(!do_after(user, VESTIGE_SEAL_PRESS_TIME, target = victim))
 		return
 	if(!user.is_holding(src))
@@ -266,7 +268,7 @@
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
-// Setting the incense down breaks the vigil on the spot — the process tick
+// Setting the incense down breaks the vigil on the spot, the process tick
 // would catch it within two seconds anyway, but a lesson should not be laggy
 /obj/item/vestige_incense/dropped(mob/user, silent = FALSE)
 	. = ..()
@@ -296,7 +298,7 @@
 		trial.break_stillness()
 		return
 	// ...and only without an inch of drift. Taking a hit and holding the pose
-	// is allowed — the master is not unreasonable, merely empty.
+	// is allowed, the master is not unreasonable, merely empty.
 	var/turf/here = get_turf(holder)
 	var/spot = here ? "[here.x]:[here.y]:[here.z]" : null
 	if(!spot || spot != trial.last_spot)
@@ -331,7 +333,7 @@
 // The stars themselves are pure gear: /obj/item/throwing_star/stamina/ninja is
 // just a name and throwforce bump over the shock star (ninja_stars.dm), and
 // its embedding datum (pain_stam_pct 0.8) trades most of the hurt for stamina
-// pain — folds legs long before it stops hearts. What the boon grants is the
+// pain, folds legs long before it stops hearts. What the boon grants is the
 // clan's willingness to keep handing them over: three, then a minute's wait.
 /datum/vestige_boon/spell/clan_stars
 	name = "The Clan's Stars"
@@ -346,7 +348,7 @@
  * hand: the spell waves off the automatic cooldown and starts either the short
  * beat between draws or the full minute, so the button's timer always counts
  * down the thing the caster is actually waiting for. A spent handful restocks
- * on the way through the next cast rather than on a timer of its own — a cast
+ * on the way through the next cast rather than on a timer of its own, a cast
  * can only land once the minute is up, so the two amount to the same thing.
  */
 /datum/action/cooldown/spell/vestige_clan_stars
@@ -424,10 +426,10 @@
 /**
  * The clan's smoke bomb, built local. The upstream ninja-kit smoke spell
  * (/datum/action/cooldown/spell/smoke, sold to traitors as a granter book) is
- * already standalone, but it is the choking kind — /bad smoke drops held
+ * already standalone, but it is the choking kind, /bad smoke drops held
  * items and stacks oxyloss on a 12-second cooldown. The crew-earnable art is
  * the polite version: plain opaque smoke (vision denial only, ~10 second
- * lifetime, no mob effects — verified in effects_smoke.dm) on a longer leash.
+ * lifetime, no mob effects, verified in effects_smoke.dm) on a longer leash.
  * The smoke itself is spawned by the spell base's after_cast, driven by
  * smoke_type/smoke_amt (smoke_amt is a RANGE; 3 covers a decent room).
  */
@@ -449,13 +451,13 @@
 /**
  * The mastered form: the same cloud, and the caster is quietly elsewhere by
  * the time it settles. Rides the wizard blink chassis
- * (/datum/action/cooldown/spell/teleport/radius_turf — verified standalone,
+ * (/datum/action/cooldown/spell/teleport/radius_turf, verified standalone,
  * no garb or antag checks beyond spell_requirements, which we clear).
  * do_teleport runs unforced under TELEPORT_CHANNEL_MAGIC, so TRAIT_NO_TELEPORT
- * and NOTELEPORT areas still say no — the smoke drops either way, the step
+ * and NOTELEPORT areas still say no. The smoke drops either way, the step
  * simply fails. Origin smoke is spawned by hand in cast(): the base class's
  * smoke_type/smoke_amt puffs in after_cast at the owner's CURRENT turf, which
- * is post-teleport — the wrong end of a vanishing act.
+ * is post-teleport, the wrong end of a vanishing act.
  */
 /datum/action/cooldown/spell/teleport/radius_turf/vestige_vanishing_smoke
 	name = "Vanishing Smoke"
@@ -469,7 +471,7 @@
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
 	inner_tele_radius = 1
-	outer_tele_radius = 3 // a sidestep, not an escape — the wizard blink this rides on reaches 6
+	outer_tele_radius = 3 // a sidestep, not an escape, the wizard blink this rides on reaches 6
 	destination_flags = TELEPORT_SPELL_SKIP_SPACE | TELEPORT_SPELL_SKIP_DENSE | TELEPORT_SPELL_SKIP_BLOCKED
 	post_teleport_sound = null // arriving loudly would defeat the syllabus
 
@@ -483,13 +485,13 @@
 	cover.start()
 
 /**
- * Silent footwork as a held stance. There is no upstream spell to port — the
+ * Silent footwork as a held stance. There is no upstream spell to port, the
  * ninja gets TRAIT_SILENT_FOOTSTEPS from the MOD cloaking module
- * (modules_ninja.dm), which is suit-bound — so this is a from-scratch toggle
+ * (modules_ninja.dm), which is suit-bound, so this is a from-scratch toggle
  * on the same trait (name verified against __DEFINES/traits/declarations.dm).
  * Traits are keyed to REF(src) and stripped in Remove(), so an upgrade
- * replacing this action — or a body swap re-homing it (action Destroy and
- * mind transfer both route through Remove) — can never strand them; the
+ * replacing this action, or a body swap re-homing it (action Destroy and
+ * mind transfer both route through Remove). Can never strand them; the
  * stance simply drops and must be retaken.
  */
 /datum/action/cooldown/spell/vestige_soundless_step
@@ -507,7 +509,7 @@
 	/// Whether the stance is currently held
 	var/stance_up = FALSE
 
-// The perfected stance adds galoshes-tier footing (water and ice only —
+// The perfected stance adds galoshes-tier footing (water and ice only,
 // TRAIT_NO_SLIP_ALL stays with the heretics; space lube still wins)
 /datum/action/cooldown/spell/vestige_soundless_step/weightless
 	name = "Weightless Step"

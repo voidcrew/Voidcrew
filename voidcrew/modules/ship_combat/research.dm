@@ -106,7 +106,22 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
-// Electronic warfare — the suite plus the basic exploit software. Stronger
+// Assault pods - the boarding half of ship combat. Pods used to be a crafted
+// closet gated behind the survey tree; they belong here, with the tube that
+// throws them and the guns that have to bring the shields down first.
+/datum/techweb_node/ship_combat_assault_pods
+	id = TECHWEB_NODE_SHIP_COMBAT_ASSAULT_PODS
+	display_name = "Assault Pods"
+	description = "Hull-mounted tubes that fire a crewed drop pod at another vessel. The pod cuts its own entry hole through the plating - provided the target's shields are already down."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ship_pod_launcher",
+		"ship_assault_pod",
+		"ship_assault_pod_advanced",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+// Electronic warfare: the suite plus the basic exploit software. Stronger
 // exploit tiers are never researchable; the black market is the only source.
 /datum/techweb_node/ship_combat_ew
 	id = TECHWEB_NODE_SHIP_COMBAT_EW
@@ -219,6 +234,16 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
+/datum/design/board/ship_pod_launcher
+	name = "Assault Pod Tube Board"
+	desc = "Allows for the construction of a hull-mounted assault pod tube."
+	id = "ship_pod_launcher"
+	build_path = /obj/item/circuitboard/machine/ship_combat/pod_launcher
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
 /datum/design/board/ew_suite
 	name = "Electronic Warfare Suite Board"
 	desc = "Allows for the construction of an electronic warfare suite. Executes exploit software against targeted ships."
@@ -247,6 +272,36 @@
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 	research_icon = 'voidcrew/icons/obj/supplypods.dmi'
 	research_icon_state = "missile_nowire"
+
+// ========== ASSAULT POD DESIGNS ==========
+
+/datum/design/ship_assault_pod
+	name = "Orbital Drop Pod"
+	desc = "A one-shot pod for riding down to a celestial body, or for being fired through somebody else's hull out of an assault pod tube. Too heavy to carry - must be dragged."
+	id = "ship_assault_pod"
+	build_type = PROTOLATHE | AWAY_LATHE
+	build_path = /obj/structure/closet/supplypod/drop_pod
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5,
+	)
+	category = list(
+		RND_CATEGORY_EQUIPMENT + RND_SUBCATEGORY_EQUIPMENT_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+	research_icon = 'voidcrew/icons/obj/supplypods.dmi'
+	research_icon_state = "darkpod"
+
+/datum/design/ship_assault_pod/advanced
+	name = "Advanced Orbital Drop Pod"
+	desc = "An armoured drop pod, insulated against whatever it lands in. It doesn't pop its own hatch on arrival."
+	id = "ship_assault_pod_advanced"
+	build_path = /obj/structure/closet/supplypod/drop_pod/advanced
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/silver = SHEET_MATERIAL_AMOUNT * 5,
+	)
 
 // ========== MISSILE TRACKING CIRCUIT DESIGN ==========
 
@@ -310,8 +365,9 @@
 		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 15,
 	)
 
-// Chemical missiles now use standard chemical grenades inserted into missile frames
-// No separate warhead needed - players build grenades and insert them directly
+// Chemical missiles use standard chemical grenades or crafted chemical payload cores
+// (/obj/item/bombcore/chemical) inserted into missile frames. No separate warhead
+// design is needed - players build the payload and insert it directly.
 
 // ========== EW EXPLOIT CARTRIDGE DESIGNS ==========
 // Tier 1 software only. Every stronger exploit is black-market stock and has

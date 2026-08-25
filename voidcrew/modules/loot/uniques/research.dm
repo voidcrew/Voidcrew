@@ -1,10 +1,10 @@
 /**
- * # Research uniques — priority specimen cache
+ * # Research uniques: priority specimen cache
  *
  * Six unique prizes for the RESEARCH loot theme (see the "priority specimen
- * cache" `loot_uniques` shelf in voidcrew/modules/loot/themes/ — this file
+ * cache" `loot_uniques` shelf in voidcrew/modules/loot/themes/, this file
  * does not touch those tables; slotting these in is a separate pass).
- * Design source: obsidian vault `Rare-loot-uniques.md`, "RESEARCH — priority
+ * Design source: obsidian vault `Rare-loot-uniques.md`, "RESEARCH: priority
  * specimen cache" section.
  *
  * Every item here is a one-of-a-kind mechanic, not a stat stick, and every
@@ -28,8 +28,8 @@
 // =========================================================================
 /// Alpha at or below which the calibration prism's pulse treats something as
 /// hiding. The MOD cloaking modules sit at 50 (prototype) and 20 (ninja), and
-/// the guardian assassin's stealth at 15. Merely translucent things — the
-/// heretic ascension buff at 180, say — are left alone.
+/// the guardian assassin's stealth at 15. Merely translucent things, the
+/// heretic ascension buff at 180, say, are left alone.
 #define PRISM_STEALTH_ALPHA 120
 /// How far the prism's pulse reaches, in tiles.
 #define PRISM_PULSE_RANGE 7
@@ -45,7 +45,7 @@
 #define EVENTIDE_RUMMAGE_TIME (2 SECONDS)
 
 // =========================================================================
-// GREEN — Calibration prism
+// GREEN: Calibration prism
 // =========================================================================
 
 /// Action button: fire the reveal pulse. /datum/action/item_action's default
@@ -56,25 +56,25 @@
 	desc = "Throw a band of hard light that forces anything cloaked nearby back into view."
 
 /**
- * Calibration prism — subtypes science goggles purely for the sprite AND
+ * Calibration prism: subtypes science goggles purely for the sprite AND
  * because /obj/item/clothing/glasses/science already carries
  * TRAIT_REAGENT_SCANNER (see code/modules/clothing/glasses/_glasses.dm),
  * which is the actual mechanism reagent containers use to decide whether an
  * examiner sees exact contents/volumes (code/modules/mob/mob_helpers.dm).
  * That means the doc's first bullet ("examine any reagent container to see
- * its exact contents") is inherited for free — no new examine hook needed.
+ * its exact contents") is inherited for free, no new examine hook needed.
  *
  * The second bullet (see cloaked/invisible things) needs TWO mechanisms,
  * because this codebase hides people in two unrelated ways:
  *
  * 1. Invisibility. The atom's `invisibility` var is raised above the viewer's
- *    `see_invisible` — ghosts, revenants, jaunting mobs. `invis_override`
+ *    `see_invisible`: ghosts, revenants, jaunting mobs. `invis_override`
  *    below counters this passively, and that is the part that already worked.
  *    (`invis_view` would not: carbon/update_sight() min()s it against the
  *    wearer's base see_invisible, so it can only ever REDUCE what you see.)
  *
  * 2. Alpha. The mob's `alpha` is animated down toward 0 and its `invisibility`
- *    is never touched at all — /obj/item/mod/module/stealth (both the
+ *    is never touched at all, /obj/item/mod/module/stealth (both the
  *    prototype and the ninja advanced module, code/modules/mod/modules/modules_ninja.dm)
  *    does exactly `animate(mod.wearer, alpha = stealth_alpha)` with
  *    stealth_alpha 50/20, and the guardian assassin's stealth status effect
@@ -88,7 +88,7 @@
  * is unreachable while the prism is on your eyes.
  *
  * Not countered, and out of scope: appearance-swap stealth, which is a third
- * mechanism again — the heretic's shadow cloak (add_alt_appearance with an
+ * mechanism again, the heretic's shadow cloak (add_alt_appearance with an
  * override image) and the chameleon projector (walking around inside an
  * /obj/effect/dummy/chameleon) both leave alpha and invisibility completely
  * normal, so neither lever here touches them.
@@ -99,13 +99,13 @@
  */
 /obj/item/clothing/glasses/science/calibration_prism
 	name = "calibration prism"
-	desc = "Lab glasses with a wedge of doped crystal where the left lens should be. Property of E.E.A. — return if found, please."
+	desc = "Lab glasses with a wedge of doped crystal where the left lens should be. Property of E.E.A. Return if found, please."
 	// Counters invisibility-based hiding (ghosts and the like). Observer tier
 	// means ghosts shimmer at the edge of the lens too; the E.E.A. would call
 	// that a feature. Alpha-based cloaks are handled by the pulse instead.
 	invis_override = SEE_INVISIBLE_OBSERVER
 	// attack_self only fires with the item in hand, and this is worn on the
-	// eyes — the action button is the only reachable activation path.
+	// eyes, the action button is the only reachable activation path.
 	actions_types = list(/datum/action/item_action/prism_pulse)
 	COOLDOWN_DECLARE(pulse_cooldown)
 
@@ -154,7 +154,7 @@
 			continue
 		// Already caught by an earlier pulse: re-revealing would overwrite the
 		// saved alpha with 255 and strand it there when the timer fires.
-		// (Mobs don't need this guard — the status effect is STATUS_EFFECT_UNIQUE
+		// (Mobs don't need this guard. The status effect is STATUS_EFFECT_UNIQUE
 		// and refreshes rather than stacking.)
 		if(hidden_object.get_filter(PRISM_OUTLINE_FILTER))
 			continue
@@ -173,7 +173,7 @@
 	hidden_object.add_filter(PRISM_OUTLINE_FILTER, 2, outline_filter(1, COLOR_CYAN))
 	addtimer(CALLBACK(src, PROC_REF(unreveal_object), hidden_object, old_alpha), PRISM_REVEAL_DURATION)
 
-/// Puts a revealed object back how it was. Objects, unlike mobs, do get their old alpha restored — plenty of them are translucent for reasons that have nothing to do with stealth.
+/// Puts a revealed object back how it was. Objects, unlike mobs, do get their old alpha restored. Plenty of them are translucent for reasons that have nothing to do with stealth.
 /obj/item/clothing/glasses/science/calibration_prism/proc/unreveal_object(obj/hidden_object, old_alpha)
 	if(QDELETED(hidden_object))
 		return
@@ -186,7 +186,7 @@
  * Alpha-based stealth is not invisibility, so the only counter is to push the
  * target's alpha back up and hold it there. A cloak switched back on during
  * the window re-runs its own animate() against the same var, so this
- * re-asserts on every tick — a non-parallel animate() replaces whatever
+ * re-asserts on every tick, a non-parallel animate() replaces whatever
  * animation is pending, so the prism wins inside a second.
  */
 /datum/status_effect/prism_revealed
@@ -219,11 +219,11 @@
 	return ..()
 
 // =========================================================================
-// GREEN — Annex notebook, vol. IX
+// GREEN: Annex notebook, vol. IX
 // =========================================================================
 
 /**
- * Annex notebook, vol. IX — subtypes a plain book for its behaviour (the type
+ * Annex notebook, vol. IX: subtypes a plain book for its behaviour (the type
  * is safe to subtype, it's spawned standalone elsewhere) with a custom
  * "annex_notebook" state in uniques.dmi over the top, since the library book
  * sprite read as generic set dressing in playtest. Overriding icon_state is
@@ -232,13 +232,13 @@
  * from the plain book's own Initialize().
  *
  * Use on a machine: prints its parts manifest (machinery/display_parts(),
- * the same readout the RPED uses — code/game/machinery/_machinery.dm) and
+ * the same readout the RPED uses, code/game/machinery/_machinery.dm) and
  * upgrades one random stock part already inside by one tier, mirroring how
  * the RPED (code/modules/research/part_replacer.dm) exchanges parts, but
  * self-contained (no RPED storage needed). Three uses, then it's a diary.
  *
  * Only handles legacy /obj/item/stock_parts parts (capacitor, scanning
- * module, servo, micro laser, matter bin) — modern /datum/stock_part
+ * module, servo, micro laser, matter bin), modern /datum/stock_part
  * machines are silently skipped by the typed for-loop below, same as the
  * doc's simplification allowance suggests for anything not cleanly
  * generalizable.
@@ -302,7 +302,7 @@
 	to_chat(user, target_machine.display_parts(user))
 
 	// Machines hold a mix of legacy /obj/item/stock_parts and modern
-	// /datum/stock_part singletons — most tiered machines use the datums
+	// /datum/stock_part singletons, most tiered machines use the datums
 	// now, so both families are upgrade candidates.
 	var/list/upgrade_map = get_upgrade_map()
 	var/list/candidates = list()
@@ -329,7 +329,7 @@
 		target_machine.component_parts -= old_part
 		target_machine.component_parts += new_part
 		target_machine.RefreshParts()
-		to_chat(user, span_notice("A margin note describes a modification the manufacturer never approved — [new_part.name()] clicks into place."))
+		to_chat(user, span_notice("A margin note describes a modification the manufacturer never approved, [new_part.name()] clicks into place."))
 	else
 		var/obj/item/stock_parts/old_item = chosen
 		var/new_type = upgrade_map[old_item.type]
@@ -339,7 +339,7 @@
 		upgraded.forceMove(target_machine)
 		target_machine.component_parts += upgraded
 		target_machine.RefreshParts()
-		to_chat(user, span_notice("A margin note describes a modification the manufacturer never approved — [upgraded.name] clicks into place."))
+		to_chat(user, span_notice("A margin note describes a modification the manufacturer never approved, [upgraded.name] clicks into place."))
 
 	return ITEM_INTERACT_SUCCESS
 
@@ -352,11 +352,11 @@
 	return null
 
 // =========================================================================
-// YELLOW — Entangled pair
+// YELLOW: Entangled pair
 // =========================================================================
 
 /**
- * Entangled pair — subtypes a plain beaker. Spawns linked: the first
+ * Entangled pair: subtypes a plain beaker. Spawns linked: the first
  * instance's Initialize() spawns its twin alongside it and links both
  * weakrefs in one pass (an explicit `..(mapload)` keeps the twin's partner
  * arg from leaking further up the beaker/reagent_containers Initialize
@@ -364,7 +364,7 @@
  *
  * Sprite note: the "entangled_beaker" state in uniques.dmi is drawn on the
  * vanilla beaker's exact silhouette, tinted violet with a brass collar and
- * serial tag. That geometry is load-bearing, not laziness — the liquid
+ * serial tag. That geometry is load-bearing, not laziness, the liquid
  * overlay does NOT come from `icon`. reagent_containers/update_overlays()
  * builds it from a separate file, `fill_icon`
  * ('icons/obj/medical/reagent_fillings.dmi'), keyed "[fill_icon_state ||
@@ -379,7 +379,7 @@
  * COMSIG_REAGENTS_HOLDER_UPDATED in create_reagents()). Whenever this
  * beaker's contents change and it isn't already relaying, it moves its
  * entire volume to the twin via reagents.trans_to() (default move
- * semantics, not copy) — "poured into one, exists in the other instead."
+ * semantics, not copy), "poured into one, exists in the other instead."
  * A `relaying` guard on both beakers (set before the transfer, cleared
  * after) stops the reentrant COMSIG_REAGENTS_HOLDER_UPDATED firing on
  * either side from bouncing the volume back and forth forever.
@@ -389,7 +389,7 @@
 	desc = "Two beakers with identical serial numbers. Anything you pour into one turns up in the other instead."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "entangled_beaker"
-	// Keeps the liquid overlay pointed at the vanilla beaker fill art — see
+	// Keeps the liquid overlay pointed at the vanilla beaker fill art, see
 	// the sprite note above.
 	fill_icon_state = "beaker"
 	/// Weakref to this beaker's paired twin.
@@ -428,18 +428,18 @@
 	relaying = FALSE
 
 // =========================================================================
-// YELLOW — Displacer fork
+// YELLOW: Displacer fork
 // =========================================================================
 
 /**
- * Displacer fork — fresh root type (no existing "tuning fork" sprite to
+ * Displacer fork: fresh root type (no existing "tuning fork" sprite to
  * subtype, and the closest thematic donor, /obj/item/resonator, carries its
  * own mode/field vars and attack_self that would fight with this item's).
  * Per the sprite rules, its icon/icon_state/inhand fields are copied
  * verbatim from /obj/item/resonator (code/modules/mining/equipment/resonator.dm).
  *
  * Use in hand: walks up to 5 tiles along the user's facing direction (plain
- * get_step() calls, no density/line-of-sight checks — "walls don't
+ * get_step() calls, no density/line-of-sight checks, "walls don't
  * matter"), finds the first movable atom there, and swaps turfs with it via
  * forceMove(). Both ends get a brief dizzy status (set_dizzy_if_lower())
  * if they're living. 20-second cooldown via the same COOLDOWN_* macros the
@@ -482,7 +482,7 @@
 	if(!user_turf || !target_turf)
 		return
 
-	user.visible_message(span_notice("[user] strikes [src] against the air — [user] and [target] flicker and trade places!"), \
+	user.visible_message(span_notice("[user] strikes [src] against the air, [user] and [target] flicker and trade places!"), \
 		span_notice("You strike [src]. The world lurches sideways."))
 
 	user.forceMove(target_turf)
@@ -495,7 +495,7 @@
 		var/mob/living/living_target = target
 		living_target.set_dizzy_if_lower(3 SECONDS)
 
-/// Walks up to 5 tiles along the user's facing direction and returns the first movable found (ignoring the user and anchored atoms). Deliberately ignores density — "walls don't matter, the fork doesn't care."
+/// Walks up to 5 tiles along the user's facing direction and returns the first movable found (ignoring the user and anchored atoms). Deliberately ignores density, "walls don't matter, the fork doesn't care."
 /obj/item/displacer_fork/proc/find_swap_target(mob/user)
 	var/turf/current = get_turf(user)
 	for(var/i in 1 to 5)
@@ -512,18 +512,18 @@
 	return null
 
 // =========================================================================
-// RED — Chronal splint
+// RED: Chronal splint
 // =========================================================================
 
 /**
- * Chronal splint — subtypes fingerless gloves for the slot. There is no wrist
+ * Chronal splint: subtypes fingerless gloves for the slot. There is no wrist
  * inventory slot in this codebase, so the "wrist brace" flavor is kept as
  * description text on a hand-slot item; flagged as a deviation.
  *
  * Sprite: custom "chronal_splint" states in uniques.dmi (item) and
  * uniques_worn.dmi (worn, 4 dirs, drawn on the vanilla fingerless-glove hand
  * mask so the hands land in the right places). worn_icon_state MUST be set
- * alongside icon_state — build_worn_icon() resolves the worn state as
+ * alongside icon_state, build_worn_icon() resolves the worn state as
  * `worn_icon_state || icon_state` (code/modules/mob/living/carbon/human/human_update_icons.dm),
  * so a custom icon_state on its own would send the glove layer looking for
  * "chronal_splint" in the stock hands.dmi and render nothing. Overriding the
@@ -533,12 +533,12 @@
  * occult.dm).
  *
  * Mechanic: every SSobj tick (2 seconds, matching the doc's sample rate
- * exactly — code/controllers/subsystem/processing/obj.dm) while worn, it
+ * exactly, code/controllers/subsystem/processing/obj.dm) while worn, it
  * snapshots the wearer's turf and the four damage types + stamina into a
  * 5-entry ring buffer (~10 seconds of history). On COMSIG_MOB_STATCHANGE
- * reaching HARD_CRIT or DEAD — the same signal/registration pattern the
- * godslayer armour uses (code/modules/mining/lavaland/mining_loot/godslayer.dm)
- * — it restores the oldest snapshot (position + damage values via the
+ * reaching HARD_CRIT or DEAD, the same signal/registration pattern the
+ * godslayer armour uses (code/modules/mining/lavaland/mining_loot/godslayer.dm),
+ * it restores the oldest snapshot (position + damage values via the
  * mob/living setXLoss() setters, reviving first if the wearer died) and
  * then destroys itself. One rewind per splint.
  */
@@ -631,7 +631,7 @@
 	var/turf/target_turf = snap["turf"]
 	if(target_turf)
 		user.forceMove(target_turf)
-	// Restore the snapshot's damage BEFORE reviving — revive() with no heal
+	// Restore the snapshot's damage BEFORE reviving, revive() with no heal
 	// flags leaves current damage in place, and a still-lethal total would
 	// just kill the wearer again on the next health update
 	user.set_brute_loss(snap["brute"])
@@ -648,11 +648,11 @@
 	qdel(src)
 
 // =========================================================================
-// RED — Eventide courier coat
+// RED: Eventide courier coat
 // =========================================================================
 
 /**
- * Eventide courier coat — subtypes the plain labcoat.
+ * Eventide courier coat: subtypes the plain labcoat.
  *
  * Sprite: custom states in uniques.dmi (item) and uniques_worn.dmi (worn,
  * 4 dirs, drawn on the vanilla labcoat's worn pixel mask so the body zones
@@ -661,21 +661,21 @@
  * "<state>" and "<state>_t": /obj/item/clothing/suit/toggle adds
  * /datum/component/toggle_icon, whose do_icon_toggle() flips icon_state
  * between base_icon_state and "[base_icon_state]_t" on alt-click. This type
- * deliberately does NOT set worn_icon_state — exactly like the vanilla
- * labcoat — so build_worn_icon()'s `worn_icon_state || icon_state` fallback
+ * deliberately does NOT set worn_icon_state, exactly like the vanilla
+ * labcoat, so build_worn_icon()'s `worn_icon_state || icon_state` fallback
  * lets the worn sprite follow the toggle too. Pinning worn_icon_state would
  * freeze the worn sprite in the closed state forever.
  *
  * There's no storage-component way to hold an object "of any size"
  * (max_specific_storage caps by w_class, and mobs/structures aren't
- * insertable into /datum/storage at all), so — per the doc's own fallback
- * suggestion — this uses a bespoke single-slot holder instead, the same
+ * insertable into /datum/storage at all), so, per the doc's own fallback
+ * suggestion, this uses a bespoke single-slot holder instead, the same
  * pattern body bags use for arbitrary-size contents
  * (code/game/objects/items/bodybag.dm's bluespace variant forceMoves
  * anything in `contents` directly).
  *
- * Insertion: drag the target atom onto the coat (mouse_drop_receive() —
- * the same drag-and-drop hook /obj/structure/closet uses to accept items
+ * Insertion: drag the target atom onto the coat (mouse_drop_receive().
+ * The same drag-and-drop hook /obj/structure/closet uses to accept items
  * and mobs dragged into it, code/game/objects/structures/crates_lockers/closets.dm).
  * Works whether the coat is on the ground or worn (dragging onto the
  * inventory slot icon routes to the same proc). Getting something in takes a

@@ -1,10 +1,10 @@
 /**
- * # Quartermain Depot — the Fitting Bay
+ * # Quartermain Depot: the Fitting Bay
  *
  * Wick's stall: the galaxy's only honest MODsuit counter. Chassis, cores,
  * frame parts, plating and the module catalogue, plus the environment
  * clothing a normal outfitter doesn't bother stocking. The modsuit bench
- * (/obj/machinery/modsuit_bench) sits in this stall — Wick sells the parts,
+ * (/obj/machinery/modsuit_bench) sits in this stall. Wick sells the parts,
  * the bench fits them.
  *
  * Why this shelf exists: every MOD part in the game is a MECHFAB design, and
@@ -17,8 +17,8 @@
  * - No overlap with Sarge's counter (she keeps arms, armor and combat vests)
  *   or with Boffin's (he keeps the power-cell ladder and stock parts). Wick
  *   sells one basic cell so a bare core is usable; anything better is Boffin's.
- * - The illegal tier — syndicate/infiltrator/elite plating and antag modules —
- *   is the Undertow's, not Wick's. Nothing here is contraband.
+ * - The illegal tier: syndicate/infiltrator/elite plating and antag modules.
+ *   Is the Undertow's, not Wick's. Nothing here is contraband.
  * - The core shelf is the ladder spine; the rotating and rare pools carry the
  *   breadth, so a round shows a slice of ~200 modules rather than all of them.
  *   Plating rotates on purpose: which themes you can BUILD varies by round.
@@ -29,7 +29,7 @@
  */
 
 // =========================================================================
-// THE FITTING BAY — Wick, depot suit fitter
+// THE FITTING BAY: Wick, depot suit fitter
 // =========================================================================
 
 /**
@@ -69,7 +69,7 @@
 		"Environment Gear",
 	)
 	sku_types = list(
-		// MOD Chassis — two finished suits plus the whole build route
+		// MOD Chassis: two finished suits plus the whole build route
 		/datum/shop_sku/fitter/suit_civilian,
 		/datum/shop_sku/fitter/suit_engineering,
 		/datum/shop_sku/fitter/shell,
@@ -127,7 +127,7 @@
 		/datum/shop_sku/fitter/rotating/suit_research,
 		/datum/shop_sku/fitter/rotating/suit_security,
 		/datum/shop_sku/fitter/rotating/suit_loader,
-		// Plating of the week — decides what themes you can build this round
+		// Plating of the week: decides what themes you can build this round
 		/datum/shop_sku/fitter/rotating/plating_engineering,
 		/datum/shop_sku/fitter/rotating/plating_atmospheric,
 		/datum/shop_sku/fitter/rotating/plating_medical,
@@ -926,7 +926,7 @@
 // =========================================================================
 // WICK'S SALVAGE BENCH (buybacks)
 // Credits only, and nothing a fabricator prints. Modules, frame parts and
-// plating are all MECHFAB designs — buying those back would be a money loop
+// plating are all MECHFAB designs. Buying those back would be a money loop
 // for any crew with an exosuit fabricator, so Wick doesn't take them.
 // =========================================================================
 

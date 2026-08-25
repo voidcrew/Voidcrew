@@ -19,6 +19,16 @@
 	src.title = title
 	src.camera_view = camera_view
 	listener = new(alarm_types, listener_z_level, listener_areas)
+	// VOIDCREW EDIT ADDITION: packed-level containment for the Z-SCOPED listeners only.
+	// "Same z-level" is up to four unrelated crews' sites once encounters pack onto the
+	// slot lattice, and every alarm carries its area NAME plus that area's camera refs -
+	// so a local alert console listed the neighbouring crew's rooms and handed an AI or
+	// borg a camera to jump to. Area-scoped listeners (the station_only branch, the NTOS
+	// program) are deliberately left alone: their area list already scopes them, and a
+	// region test there would fight it. Weakref, so this never blocks a hard delete.
+	if(isatom(holder) && length(listener_z_level))
+		listener.region_anchor_ref = WEAKREF(holder)
+	// VOIDCREW EDIT END
 
 /datum/station_alert/Destroy()
 	QDEL_NULL(listener)

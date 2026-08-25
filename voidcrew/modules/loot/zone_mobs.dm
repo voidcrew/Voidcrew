@@ -7,22 +7,22 @@
  * ruin template plays soft in the green ring and bares its teeth in the red.
  *
  * Mappers place themed markers (pirate/syndicate/cult/undead/bug/wildlife/
- * robot — subtypes live beside their loot theme in themes/<theme>.dm),
+ * robot, subtypes live beside their loot theme in themes/<theme>.dm),
  * typically guarding the ruin's loot cache and its chokepoints. Every ruin
  * that carries a cache must carry at least one marker, and every ruin with a
- * /rare cache must carry a /boss marker — the loot audit unit test enforces
+ * /rare cache must carry a /boss marker, the loot audit unit test enforces
  * both.
  *
  * Each marker resolves its zone through the shared /datum/zone_resolver
- * (zone_resolution.dm) — pinned to the spawn turf, retrying while the level
- * finishes registering — then rolls a mob count for that zone, scatters the
+ * (zone_resolution.dm), pinned to the spawn turf, retrying while the level
+ * finishes registering, then rolls a mob count for that zone, scatters the
  * spawns over nearby open turfs, and deletes itself. Unresolvable zones fall
  * back to green (the weakest table), so a broken resolution can never flood
  * a ruin.
  *
  * The /boss variants are single-slot setpiece markers: green gets the
  * theme's lieutenant, red gets the real monster. "Real monster" tops out at
- * elite-tier ("harder versions of normal mobs") — megafauna are BANNED from
+ * elite-tier ("harder versions of normal mobs"). Megafauna are BANNED from
  * the zone system, and from ruin maps outside the purpose-built boss-arena
  * whitelist in the unit test; the test enforces both.
  */
@@ -69,7 +69,7 @@
 
 /**
  * Resolver result: spawn the pack and retire the marker. A null zone means
- * every retry failed — fall back to green, the weakest table.
+ * every retry failed, fall back to green, the weakest table.
  */
 /obj/effect/zone_mobs/proc/on_zone_resolved(zone_type)
 	if(QDELETED(src))

@@ -1,10 +1,10 @@
 /**
- * # Undertow Exchange — vendor stalls
+ * # Undertow Exchange: vendor stalls
  *
  * The Undertow's side businesses: Dram behind the bar at the Dregs, and
  * Sawbones running the Patch-Up Clinic. Each is a full /datum/outpost_shop
- * (own stock, own buyback ledger, own voice) fronted by its own trader NPC —
- * the mobs carry a shop_type and the outpost links them to their vendor shop
+ * (own stock, own buyback ledger, own voice) fronted by its own trader NPC.
+ * The mobs carry a shop_type and the outpost links them to their vendor shop
  * on interior load (see outpost.dm get_shop(), trader_npc.dm for the mobs).
  *
  * Balance notes:
@@ -17,7 +17,7 @@
  */
 
 // =========================================================================
-// THE DREGS — Dram, barkeep
+// THE DREGS: Dram, barkeep
 // =========================================================================
 
 /// Abstract grouping parent for the Undertow's side businesses
@@ -25,7 +25,7 @@
 
 /**
  * Dram: shirt, slacks, work apron, and a glass he is always in the middle of
- * drying. Deliberately the plainest fit on the station — the Undertow is full
+ * drying. Deliberately the plainest fit on the station. The Undertow is full
  * of people signalling what they are, and the barkeep signals nothing at all.
  */
 /datum/outfit/dregs_dram
@@ -52,7 +52,7 @@
 		"Oddities",
 	)
 	sku_types = list(
-		// Top Shelf — the bottles the Booze-O-Mat is too proud (or too legal) to stock
+		// Top Shelf: the bottles the Booze-O-Mat is too proud (or too legal) to stock
 		/datum/shop_sku/dregs/champagne,
 		/datum/shop_sku/dregs/absinthe_premium,
 		/datum/shop_sku/dregs/patron,
@@ -62,7 +62,7 @@
 		/datum/shop_sku/dregs/bitters,
 		/datum/shop_sku/dregs/fernet,
 		/datum/shop_sku/dregs/party_keg,
-		// Greasy Spoon — whatever's under the heat lamp
+		// Greasy Spoon: whatever's under the heat lamp
 		/datum/shop_sku/dregs/fry_basket,
 		/datum/shop_sku/dregs/pizza_slice,
 		/datum/shop_sku/dregs/monkey_kebab,
@@ -95,7 +95,7 @@
 			"Cheers. To repeat business and functioning livers.",
 		),
 		TRADER_LINE_REFUSAL = list(
-			"You're cut off. Not by me — by the station. Impressive, really.",
+			"You're cut off. Not by me, by the station. Impressive, really.",
 			"Embargoed crews drink at the OTHER bar. There is no other bar.",
 			"Tab's frozen until your ship's ledger thaws. House rules.",
 		),
@@ -272,7 +272,7 @@
 
 // ===== DRAM'S CELLAR LEDGER (buybacks) =====
 // Credits only, and strictly bottle types the cantina's own Booze-O-Mat never
-// dispenses — no buying back the house stock.
+// dispenses, no buying back the house stock.
 
 /datum/shop_buyback/dregs/moonshine
 	name = "genuine moonshine"
@@ -311,7 +311,7 @@
 	demand_max = 2
 
 // =========================================================================
-// PATCH-UP CLINIC — Sawbones, practitioner (license pending since forever)
+// PATCH-UP CLINIC: Sawbones, practitioner (license pending since forever)
 // =========================================================================
 
 /**
@@ -320,7 +320,7 @@
  * obsolete and worn because patients expect a doctor to have one. No coat, no
  * credentials, and the analyzer never leaves their hand.
  *
- * Kept visually clear of Splice two doors down (voidcrew/modules/cyberware) —
+ * Kept visually clear of Splice two doors down (voidcrew/modules/cyberware),
  * different scrubs, different gloves, no leather, no cigarette.
  */
 /datum/outfit/clinic_sawbones
@@ -371,7 +371,7 @@
 		/datum/shop_sku/clinic/liver,
 		/datum/shop_sku/clinic/lungs,
 		/datum/shop_sku/clinic/autosurgeon,
-		// Job Packs — the crate lives in shop_catalog_job_packs.dm
+		// Job Packs: the crate lives in shop_catalog_job_packs.dm
 		/datum/shop_sku/clinic/job_pack_genetics,
 	)
 	rotating_pool = list(
@@ -395,7 +395,7 @@
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
-			"Sold. Shake it before use. Or don't — dealer's choice.",
+			"Sold. Shake it before use. Or don't, dealer's choice.",
 			"Excellent choice. Side effects are listed somewhere. Probably.",
 			"That'll fix you right up, or at least differently.",
 			"Payment received. The warranty died on the table, sorry.",
@@ -668,7 +668,7 @@
 
 /datum/shop_buyback/clinic/monster_gland
 	name = "monster gland (any)"
-	desc = "Rush glands, brimdust sacs, regenerative cores — if it came out of something that tried to eat you, Sawbones wants it on ice."
+	desc = "Rush glands, brimdust sacs, regenerative cores: if it came out of something that tried to eat you, Sawbones wants it on ice."
 	category = "Organ Intake"
 	item_path = /obj/item/organ/monster_core
 	pay_credits = 250

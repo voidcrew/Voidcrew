@@ -12,10 +12,17 @@
  * - Automatic shuttle shrinking when deconstructing
  * - Docking port relocation
  * - Ore silo resource link
+ * - Camera placement bound to the ship's camera network
  */
 
 /// How much material per RCD unit when using silo link (1/4 sheet per unit)
 #define SHIP_RCD_SILO_USE_AMOUNT (SHEET_MATERIAL_AMOUNT / 4)
+
+/// Deconstruction is charged in vanilla RCD matter units, but this console builds
+/// straight out of the silo at a far cheaper rate - 100 iron to lay a plating tile
+/// against 825 to pull one back up. Scale every deconstruct charge down so tearing
+/// out is never dearer than putting in.
+#define SHIP_RCD_DECONSTRUCT_COST_MULT 0.25
 
 // ============================================
 // Ship Internal RCD - bypasses account checks
@@ -103,10 +110,28 @@
 	else if(user)
 		balloon_alert(user, message)
 
+/// Applies the deconstruction discount to an RCD matter cost. Never returns zero -
+/// a demolition should still show up on the silo, just not cost more than the build.
+/obj/item/construction/rcd/internal/ship/proc/deconstruct_cost(cost)
+	return max(1, round(cost * SHIP_RCD_DECONSTRUCT_COST_MULT))
+
+/// Human-readable price of `units` RCD matter units, as drawn from whatever this RCD
+/// is actually paying with. Used to tell the operator what a spend costs BEFORE it
+/// happens - playtesting read the silent per-tile sheet burn as a bug.
+/obj/item/construction/rcd/internal/ship/proc/charge_readout(units)
+	if(silo_link && silo_mats?.mat_container)
+		return "[round(units * SHIP_RCD_SILO_USE_AMOUNT / SHEET_MATERIAL_AMOUNT, 0.1)] iron sheet\s"
+	return "[units] matter unit\s"
+
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
 /// VOIDCREW: upstream folded checkResource() into useResource()'s dry_run branch, so the
 /// old checkResource override lives on below as the dry_run half of this proc.
 /obj/item/construction/rcd/internal/ship/useResource(amount, mob/user, dry_run = FALSE)
+	// rcd_create() charges the raw rcd_vals cost itself, so the discount has to land
+	// here rather than at the action's pre-check.
+	if(mode == RCD_DECONSTRUCT)
+		amount = deconstruct_cost(amount)
+
 	if(dry_run)
 		if(!silo_mats || !silo_mats.mat_container || !silo_link)
 			return ..()
@@ -141,6 +166,7 @@
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
 	silo_mats.use_materials(list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "ship construction", user_data = user_data)
 	return TRUE
+
 
 // ============================================
 // Ship RCD TGUI Interface
@@ -324,9 +350,19 @@
 		qdel(rcd_effect)
 		return FALSE
 
-	// Build the wall
+	// Build the wall.
+	// place_on_top() rather than ChangeTurf() so the floor we are building over is pushed
+	// onto the wall's baseturf stack. ChangeTurf() copies the *old* turf's baseturfs onto
+	// the new wall (voidcrew/edits/turf.dm), which throws the floor away and leaves the
+	// wall sitting straight on space - deconstructing it then drops you into vacuum
+	// instead of leaving plating behind, and the scraped tile stops being a shuttle turf
+	// so clear_empty_shuttle_turfs() drops it out of the hull entirely. This is the same
+	// marker-less-chain problem restamp_hull_marker() below papers over for breach
+	// repairs; stacking properly fixes it at the source for walls. Matches how hand-built
+	// walls (girders) and the standard RCD (/turf/open/floor/rcd_act) raise walls.
 	var/wall_path = get_selected_wall_path()
-	target.ChangeTurf(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_wall = target.place_on_top(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	restamp_hull_marker(new_wall)
 	rcd_effect.end_animation()
 	return TRUE
 
@@ -350,9 +386,56 @@
 
 	// Build the floor
 	var/floor_path = get_selected_floor_path()
-	target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	restamp_hull_marker(new_floor)
 	rcd_effect.end_animation()
 	return TRUE
+
+/**
+ * A breach's ScrapeAway() walks past /turf/baseturf_skipover/shuttle and deletes it
+ * (baseturfs.dm), and ChangeTurf() carries the marker-less chain onto the rebuilt tile.
+ * The repair then fails isshuttleturf(), fromShuttleMove() never grants it MOVE_TURF,
+ * and the tile is left behind at the berth on the next move - "I repaired my ship with
+ * the drone console and when I undock the repairs went with it".
+ *
+ * reconcile_hull_before_move() deliberately cannot restamp these: by move time it has
+ * no way to tell a repaired deck tile from site ground adopted through the breach. At
+ * rebuild time we still can - a console build inside a hull area is explicit deck
+ * repair - so restore the marker here, the same way build_with_floor_tiles() does for
+ * manual tile repairs (see /turf/open/build_with_floor_tiles in _open.dm).
+ */
+/obj/item/construction/rcd/internal/ship/proc/restamp_hull_marker(turf/built)
+	if(isnull(built) || !istype(built.loc, /area/shuttle) || isshuttleturf(built))
+		return
+	built.insert_baseturf(turf_type = /turf/baseturf_skipover/shuttle)
+
+/// Build a finished security camera on the target turf, hung on the wall in wall_dir.
+/// Returns the new camera so the caller can finish setup (network binding), or null on failure.
+/obj/item/construction/rcd/internal/ship/proc/build_camera(turf/target, wall_dir, mob/user)
+	var/list/camera_materials = list(
+		/datum/material/iron = SHIP_CAMERA_IRON_COST,
+		/datum/material/glass = SHIP_CAMERA_GLASS_COST,
+	)
+	if(!check_materials(camera_materials, user))
+		return null
+
+	// Show construction effect
+	var/obj/effect/constructing_effect/rcd_effect = new(target, SHIP_CAMERA_BUILD_DELAY, RCD_STRUCTURE)
+
+	// Delay for building
+	if(!build_delay(user, SHIP_CAMERA_BUILD_DELAY, target))
+		qdel(rcd_effect)
+		return null
+
+	// Double check materials after delay
+	if(!use_materials(camera_materials, user))
+		qdel(rcd_effect)
+		return null
+
+	// Mount the camera like a handheld wallframe would: on the open turf, facing its wall
+	var/obj/machinery/camera/new_camera = new(target, wall_dir, TRUE)
+	rcd_effect.end_animation()
+	return new_camera
 
 // ============================================
 // Ship Internal RTD - bypasses proximity checks
@@ -639,6 +722,9 @@
 	var/tray_mode = SHIP_TRAY_MODE_OFF
 	/// Pipe connection images for T-ray pipe mode
 	var/list/tray_connection_images = list()
+	/// Rate limit on the "new sections have no air" warning - a room is many tiles,
+	/// and the builder only needs telling once per build session, not per tile
+	COOLDOWN_DECLARE(airless_warning_cooldown)
 
 // ============================================
 // Initialization
@@ -697,9 +783,12 @@
 
 	var/range = 3
 
-	// Clean up old images that are out of range
-	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images)
-		if(get_dist(eyeobj, smart) > range)
+	// Clean up old images that are out of range. Iterate a copy (removing the current
+	// entry mid-walk skips the next), and drop deleted pipes explicitly - the assoc
+	// KEY is a hard ref, and get_dist() on a nullspaced pipe is not reliably > range,
+	// so a pipe deleted while a console sat in pipe mode was pinned forever
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images.Copy())
+		if(QDELETED(smart) || get_dist(eyeobj, smart) > range)
 			tray_connection_images -= smart
 
 	// Show connection arrows on smart pipes
@@ -785,16 +874,19 @@
 		var/obj/item/rcd_upgrade/rcd_disk = tool
 		// If it's a silo link upgrade, install it on RTD and RLD too
 		if(rcd_disk.upgrade & RCD_UPGRADE_SILO_LINK)
+			var/obj/machinery/ore_silo/linked_silo = get_linked_silo()
 			// Forward to RTD
 			if(internal_rtd)
 				internal_rtd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 				if(!internal_rtd.silo_mats)
 					internal_rtd.silo_mats = new /datum/remote_materials(internal_rtd, FALSE, FALSE)
+				link_internal_device(internal_rtd, internal_rtd.silo_mats, linked_silo)
 			// Forward to RLD
 			if(internal_rld)
 				internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 				if(!internal_rld.silo_mats)
 					internal_rld.silo_mats = new /datum/remote_materials(internal_rld, FALSE, FALSE)
+				link_internal_device(internal_rld, internal_rld.silo_mats, linked_silo)
 		if(internal_rcd.install_upgrade(tool, user))
 			balloon_alert(user, "upgrade installed")
 		return ITEM_INTERACT_SUCCESS
@@ -817,6 +909,10 @@
 		// Install the upgrade
 		console_upgrades |= upgrade_disk.upgrade_flags
 
+		// Inherit whatever silo the console is already linked to - the multitool linkup usually
+		// happened rounds' worth of construction ago and nothing else will relink these devices.
+		var/obj/machinery/ore_silo/linked_silo = get_linked_silo()
+
 		// Create internal devices as needed
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RTD) && !internal_rtd)
 			internal_rtd = new(src)
@@ -824,6 +920,7 @@
 			// Enable silo link by default for RTD
 			internal_rtd.silo_mats = new /datum/remote_materials(internal_rtd, FALSE, FALSE)
 			internal_rtd.silo_link = TRUE
+			link_internal_device(internal_rtd, internal_rtd.silo_mats, linked_silo)
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RPD) && !internal_rpd)
 			internal_rpd = new(src)
@@ -831,6 +928,7 @@
 			// Enable silo link by default for RPD
 			internal_rpd.silo_mats = new /datum/remote_materials(internal_rpd, FALSE, FALSE)
 			internal_rpd.silo_link = TRUE
+			link_internal_device(internal_rpd, internal_rpd.silo_mats, linked_silo)
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RLD) && !internal_rld)
 			internal_rld = new(src)
@@ -839,6 +937,7 @@
 			internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 			internal_rld.silo_mats = new /datum/remote_materials(internal_rld, FALSE, FALSE)
 			internal_rld.silo_link = TRUE
+			link_internal_device(internal_rld, internal_rld.silo_mats, linked_silo)
 
 		playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
 		balloon_alert(user, "upgrade installed")
@@ -850,6 +949,24 @@
 
 	return ..()
 
+/// Point one internal device's material component at `silo`. A device is created when its upgrade
+/// disk goes in, which is normally long after the console was multitooled to the silo, and its
+/// fresh remote_materials component connects to nothing - so the device reports "no silo linked!"
+/// forever even though the console next to it is drawing from the silo fine. Anything that creates
+/// or relinks a device goes through here.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/link_internal_device(obj/item/device, datum/remote_materials/mats, obj/machinery/ore_silo/silo)
+	if(isnull(device) || isnull(mats) || QDELETED(silo))
+		return FALSE
+	if(mats.silo == silo)
+		return TRUE
+	mats.disconnect()
+	silo.connect_receptacle(mats, device)
+	return TRUE
+
+/// The silo the console's RCD is currently drawing from, if any.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_linked_silo()
+	return internal_rcd?.silo_mats?.silo
+
 /// Forward multitool interactions to the internal RCD for silo linking
 /obj/machinery/computer/camera_advanced/base_construction/ship/multitool_act(mob/living/user, obj/item/multitool/M)
 	. = ..()
@@ -859,35 +976,28 @@
 	// Forward the multitool interaction to the internal RCD's remote_materials datum
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
 		var/obj/machinery/ore_silo/silo = M.buffer
-		if(internal_rcd.silo_mats.silo == silo)
-			balloon_alert(user, "already linked")
-			to_chat(user, span_warning("[src]'s RCD is already connected to [silo]."))
-			return ITEM_INTERACT_SUCCESS
+		// Don't bail out when the RCD is already on this silo - relinking is how a player repairs
+		// an RTD/RPD/RLD that was installed after the console was linked, and each call below is
+		// a no-op for anything already connected.
+		var/already_linked = internal_rcd.silo_mats.silo == silo
 
-		internal_rcd.silo_mats.disconnect()
-		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
+		link_internal_device(internal_rcd, internal_rcd.silo_mats, silo)
 		internal_rcd.silo_link = TRUE  // Enable silo link mode
 
 		// Also link the RTD to the silo if installed
-		if(internal_rtd?.silo_mats)
-			internal_rtd.silo_mats.disconnect()
-			silo.connect_receptacle(internal_rtd.silo_mats, internal_rtd)
+		if(link_internal_device(internal_rtd, internal_rtd?.silo_mats, silo))
 			internal_rtd.silo_link = TRUE
 
 		// Also link the RPD to the silo if installed
-		if(internal_rpd?.silo_mats)
-			internal_rpd.silo_mats.disconnect()
-			silo.connect_receptacle(internal_rpd.silo_mats, internal_rpd)
+		if(link_internal_device(internal_rpd, internal_rpd?.silo_mats, silo))
 			internal_rpd.silo_link = TRUE
 
 		// Also link the RLD to the silo if installed
-		if(internal_rld?.silo_mats)
-			internal_rld.silo_mats.disconnect()
-			silo.connect_receptacle(internal_rld.silo_mats, internal_rld)
+		if(link_internal_device(internal_rld, internal_rld?.silo_mats, silo))
 			internal_rld.silo_link = TRUE
 
-		balloon_alert(user, "linked")
-		to_chat(user, span_notice("You connect [src]'s RCD to [silo]."))
+		balloon_alert(user, already_linked ? "relinked" : "linked")
+		to_chat(user, span_notice("You connect [src]'s tools to [silo]."))
 		return ITEM_INTERACT_SUCCESS
 
 	return .
@@ -901,11 +1011,26 @@
 		return
 	current_ship = port.current_ship
 
+/// Bind a freshly placed camera to this console's ship network. Done by the console rather
+/// than relying on the camera's own ship detection so it works even on freshly claimed
+/// turfs that no shuttle linkup will ever touch. Outpost consoles have no docking port, so
+/// their cameras keep the upstream default network - which is what the default security
+/// consoles and non-ship AIs there can actually see.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/setup_placed_camera(obj/machinery/camera/placed_camera)
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(port)
+		placed_camera.network = list(voidcrew_ship_camera_net(port))
+	// post_machine_initialize() already area-names cameras; this is just a backstop
+	if(!placed_camera.c_tag)
+		var/area/camera_area = get_area(placed_camera)
+		placed_camera.c_tag = "[format_text(camera_area?.name || "Unknown")] Camera"
+
 /obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
 	// Core RCD actions
 	actions += new /datum/action/innate/construction/ship/configure_mode(src)
 	actions += new /datum/action/innate/construction/ship/build(src)
 	actions += new /datum/action/innate/construction/ship/deconstruct(src)
+	actions += new /datum/action/innate/construction/ship/camera_build(src)
 	// RTD actions (added if upgrade is installed)
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
 		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
@@ -1000,6 +1125,12 @@
 	return get_turf(src)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/CreateEye()
+	// Reuse the existing drone if it's still around. The parent camera_advanced only ever
+	// creates one eye per console; without this check, every entry into construction mode
+	// orphaned the previous drone mob, which lingered in the world and showed up in the
+	// ghost orbit menu.
+	if(eyeobj && !QDELETED(eyeobj))
+		return TRUE
 	var/turf/spawn_spot = find_spawn_spot()
 	if(!spawn_spot)
 		return FALSE
@@ -1197,6 +1328,12 @@
 	// Every drone-built tile is credited as weightless without this - see
 	// recount_hull_after_expansion() in hull_survey.dm for why.
 	recount_hull_after_expansion(port)
+
+	// New deck tiles start with no atmosphere - round 2 sent two engineers into a
+	// fresh room without saying so. Once per minute, not per tile.
+	if(user && COOLDOWN_FINISHED(src, airless_warning_cooldown))
+		COOLDOWN_START(src, airless_warning_cooldown, 1 MINUTES)
+		to_chat(user, span_warning("Note: newly built sections have no air. Extend atmospherics piping and a vent into the new room, or open it to the rest of the ship, before anyone works there unprotected."))
 
 	return TRUE
 

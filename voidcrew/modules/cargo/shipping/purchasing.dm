@@ -22,18 +22,27 @@
 
 	var/value = 0
 	var/purchases = 0
+	var/unpaid = 0
 
 	// Group orders by pack name for cleaner history
 	var/list/order_counts = list()
 	var/list/order_costs = list()
 
-	for(var/datum/supply_order/spawning_order as anything in checkout_list)
+	// Iterate a copy: paid orders leave checkout_list inside the loop.
+	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
 		var/price = spawning_order.pack.get_cost()
 		if(spawning_order.applied_coupon)
 			price *= (1 - spawning_order.applied_coupon.discount_pct_off)
 
-		// Actually deduct the cost from the bank account
-		bank_account_holder.synced_bank_account.adjust_money(-price)
+		// Pay first, ship second. The balance can move between calling the shuttle and
+		// its arrival - a pirate siphon empties an account in seconds - and adjust_money()
+		// refuses a withdrawal it can't cover. This used to ignore that and spawn the
+		// crate regardless, handing out free cargo to anyone who got robbed in transit.
+		// price can legitimately be 0 (a fully discounted coupon), and adjust_money(0)
+		// reports failure, so only bill when there is something to bill.
+		if(price > 0 && !bank_account_holder.synced_bank_account.adjust_money(-price))
+			unpaid++
+			continue
 
 		// VOIDCREW EDIT: SSeconomy.track_purchase() was renamed add_audit_entry(); same args.
 		SSeconomy.add_audit_entry(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
@@ -49,10 +58,23 @@
 		// in a secure crate type, which arrives locked - anyone aboard can toggle it
 		// open, but the crew shouldn't have to unlock cargo they just paid for.
 		var/turf/spawn_turf = pick(cargo_turfs)
-		var/obj/structure/closet/crate/delivered_crate = spawning_order.generate(spawn_turf)
-		if(delivered_crate?.locked)
-			delivered_crate.locked = FALSE
-			delivered_crate.update_appearance()
+		if(spawning_order.pack.goody)
+			// Goody packs have no crate type: upstream never routes them through
+			// generate() (it hand-packs them into account-locked cases), so calling
+			// it here CRASHed and the whole shipment loop died with the money spent.
+			// Ship-paid orders belong to the whole crew, so a plain box does.
+			var/obj/item/storage/box/goody_box = new(spawn_turf)
+			goody_box.name = "goody package - [spawning_order.pack.name]"
+			// Manifest errors can qdel contents; a goody is often a single item
+			ADD_TRAIT(goody_box, TRAIT_NO_MISSING_ITEM_ERROR, TRAIT_GENERIC)
+			ADD_TRAIT(goody_box, TRAIT_NO_MANIFEST_CONTENTS_ERROR, TRAIT_GENERIC)
+			spawning_order.pack.fill(goody_box)
+			spawning_order.generateManifest(goody_box, "Cargo", spawning_order.pack, price)
+		else
+			var/obj/structure/closet/crate/delivered_crate = spawning_order.generate(spawn_turf)
+			if(delivered_crate?.locked)
+				delivered_crate.locked = FALSE
+				delivered_crate.update_appearance()
 
 		SSblackbox.record_feedback("nested tally", "cargo_imports", 1, list("[price]", "[spawning_order.pack.name]"))
 
@@ -65,6 +87,10 @@
 	// Record purchases in history
 	for(var/pack_name in order_counts)
 		cargo_shuttle.record_transaction("buy", pack_name, order_counts[pack_name], order_costs[pack_name])
+
+	if(unpaid)
+		var/obj/structure/overmap/ship/paying_ship = get_ship_from_atom(src)
+		paying_ship?.ship_notify("[unpaid] order[unpaid > 1 ? "s" : ""] could not be paid for and [unpaid > 1 ? "remain" : "remains"] in the cart.", "CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 	SSeconomy.import_total += value
 	investigate_log("[purchases] orders in this shipment, worth [value] credits. [bank_account_holder.synced_bank_account.account_balance] credits left.", INVESTIGATE_CARGO)

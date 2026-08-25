@@ -38,7 +38,7 @@
 
 /**
  * One HUD mark: a coloured blip only its viewer can see, sitting over some
- * target atom and — this is the whole point — drawn THROUGH walls.
+ * target atom and (this is the whole point) drawn THROUGH walls.
  *
  * The image is parented to the VIEWER's own turf and pushed onto the target
  * with pixel offsets, never to the target itself. A client image parented to
@@ -149,7 +149,7 @@
  * Raises one HUD mark. Returns it, or null if there was nothing to mark.
  *
  * Pass `registry` to file the mark into a list the caller owns, so that owner
- * can drop it early — every ware that raises marks clears them on the way
+ * can drop it early. Every ware that raises marks clears them on the way
  * out. Add `registry_key` for an associative list; the mark strikes itself
  * off either shape when it dies, so no caller is left holding a dead ref.
  */
@@ -175,16 +175,16 @@
  * # Icepick Jack (T2, arm aug, load 3)
  *
  * The raid hacker's data spike. Two channels on hostile turrets in line of
- * sight — a 3s suppress that drops one offline for 15s, and a 6s subvert
- * that turns its IFF your way for 10s — plus a slow force on bolted or
+ * sight, a 3s suppress that drops one offline for 15s, and a 6s subvert
+ * that turns its IFF your way for 10s, plus a slow force on bolted or
  * unpowered doors, spike to frame.
  *
  * The hard rules: outpost sanctuary turrets are IMMUNE (the embargo lever
  * stays sacred); jacking anything mounted on a player-owned ship works but
  * instantly trips an intrusion alarm to the owning crew; NPC and ruin
  * hardware goes down silently. Each turret family is disabled through its
- * own machinery — porta-turrets via toggle_on plus their disabled_time
- * cooldown, ship laser turrets via their own fire_cooldown — never a raw
+ * own machinery, porta-turrets via toggle_on plus their disabled_time
+ * cooldown, ship laser turrets via their own fire_cooldown, never a raw
  * emp_act.
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
@@ -211,7 +211,7 @@
 	var/obj/structure/overmap/ship/owning_ship = get_ship_from_atom(machine)
 	if(!istype(owning_ship) || istype(owning_ship, /obj/structure/overmap/ship/npc))
 		return
-	owning_ship.ship_notify("WARNING: Intrusion countermeasure alert — [machine.name] interface breached.", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 40)
+	owning_ship.ship_notify("WARNING: Intrusion countermeasure alert, [machine.name] interface breached.", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 40)
 
 /// Shared trunk for both Icepick channels: the LOS/range gate lives here,
 /// off the general cyberware bridge, so nothing else inherits it.
@@ -228,10 +228,10 @@
 	return TRUE
 
 /datum/action/cooldown/cyberware/icepick/suppress
-	name = "Icepick — Suppress"
+	name = "Icepick: Suppress"
 	desc = "Spike a hostile turret in line of sight to knock it offline for a while, or slowly force open a bolted or unpowered door you're standing at."
 	// Both channels are on the same spike, so both need their own face on the
-	// HUD — two identical buttons is a misclick waiting to happen.
+	// HUD: two identical buttons is a misclick waiting to happen.
 	button_icon_state = "act_icepick_suppress"
 	cooldown_time = 30 SECONDS
 
@@ -281,7 +281,7 @@
 			bearer.balloon_alert(bearer, "already open!")
 			return FALSE
 		if(door.hasPower() && !door.locked)
-			bearer.balloon_alert(bearer, "door's live — just open it!")
+			bearer.balloon_alert(bearer, "door's live, just open it!")
 			return FALSE
 		bearer.balloon_alert(bearer, "forcing door...")
 		playsound(door, 'sound/machines/airlock/airlockforced.ogg', 30, TRUE)
@@ -297,7 +297,7 @@
 	return FALSE
 
 /datum/action/cooldown/cyberware/icepick/subvert
-	name = "Icepick — Subvert"
+	name = "Icepick: Subvert"
 	desc = "A longer crack that rewrites a hostile turret's IFF: for ten seconds it fights for you."
 	button_icon_state = "act_icepick_subvert"
 	cooldown_time = 90 SECONDS
@@ -311,7 +311,7 @@
 		bearer.balloon_alert(bearer, "hardened firmware!")
 		return FALSE
 	if(istype(target, /obj/machinery/porta_turret/ship_defense))
-		// Hull defense turrets can't be aimed at people at all — there is
+		// Hull defense turrets can't be aimed at people at all, there is
 		// nothing for a subverted IFF to shoot. Suppress them instead.
 		bearer.balloon_alert(bearer, "targeting bus rejects the handshake!")
 		return FALSE
@@ -338,7 +338,7 @@
 /**
  * # Skyhook Wrist (T2, arm aug, load 3)
  *
- * A launched anchor and motorised winch in the forearm — the grapple gun's
+ * A launched anchor and motorised winch in the forearm, the grapple gun's
  * zipline, surgically installed. Pick a dense, anchored wall or structure
  * within seven tiles and the line hauls you across, obstacle checks
  * courtesy of the throw physics. The cable is drawn with the same
@@ -426,7 +426,7 @@
  *
  * Surveyor optics on the golem ore-sight pattern: a player-triggered pulse
  * (never periodic processing) that lights ore veins through rock out to
- * nine tiles — the printable scanner can't see through walls, this can —
+ * nine tiles, the printable scanner can't see through walls, this can,
  * and flags any zone loot caches in the same sweep.
  */
 /obj/item/organ/eyes/robotic/cyberware/prospector
@@ -476,7 +476,7 @@
 	playsound(bearer, 'sound/machines/sonar-ping.ogg', 25, TRUE)
 	var/caches = 0
 	for(var/obj/structure/closet/crate/zone_loot/cache in range(CYBERWARE_PROSPECTOR_RANGE, bearer))
-		// Marks go up through the rock the same way the ore reveal does — a
+		// Marks go up through the rock the same way the ore reveal does, a
 		// cache you can already see was never the thing worth pinging for.
 		cyberware_hud_mark(bearer, cache, "#ffb347", 6 SECONDS, registry = marks)
 		caches++
@@ -491,7 +491,7 @@
  * # Hemoglass Filter (T2, chest, filter slot, load 2)
  *
  * A glass-lined dialysis loop on the bloodstream. Toxins scrub out
- * continuously; drugs and alcohol scrub even faster — effective immunity —
+ * continuously; drugs and alcohol scrub even faster, effective immunity,
  * unless you flip party mode, which idles those two channels rather than
  * fighting your evening. Radiation takes about thirty seconds of
  * filtration to clear. Toxin scrubbing never stops, party or not.
@@ -513,7 +513,7 @@
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/ui_action_click()
 	party_mode = !party_mode
-	owner.balloon_alert(owner, party_mode ? "party mode — recreational channels open" : "filter scrubbing everything")
+	owner.balloon_alert(owner, party_mode ? "party mode, recreational channels open" : "filter scrubbing everything")
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -542,7 +542,7 @@
  *
  * Circulating coolant woven through the torso: heat exposure damage is
  * trait-gated off, burns hit at half strength, and open flame on you gets
- * starved down fast. Deliberately NOT fireproof — enough flamer fuel still
+ * starved down fast. Deliberately NOT fireproof, enough flamer fuel still
  * wins, which keeps the buyable MOD flamethrower an honest counter. Sits
  * on the seal ladder above Second Wind: pick your climate.
  */
@@ -556,21 +556,32 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	organ_traits = list(TRAIT_RESISTHEAT)
+	/// TRUE while the burn-halving physiology mod is applied. Guards the
+	/// failing-gated passive hooks against double multiply/divide.
+	var/coolant_mod_applied = FALSE
 
-/obj/item/organ/cyberimp/cyberware/coolant/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+// The burn halving (and, through the base hooks, TRAIT_RESISTHEAT) rides the
+// failing-gated passive layer (BAL-4): EMP-scrambled or browned-out loops
+// don't circulate, so heat and burns land at full strength until the ware
+// reboots or gets repaired.
+// Physiology persists across species changes (physiology.dm:1).
+/obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner))
+	if(coolant_mod_applied || !ishuman(bearer))
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	// Physiology persists across species changes (physiology.dm:1).
-	human_owner.physiology.burn_mod *= 0.5
+	coolant_mod_applied = TRUE
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.burn_mod *= 0.5
 
-/obj/item/organ/cyberimp/cyberware/coolant/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+/obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	if(!ishuman(organ_owner) || QDELETED(organ_owner))
+	if(!coolant_mod_applied)
 		return
-	var/mob/living/carbon/human/human_owner = organ_owner
-	human_owner.physiology.burn_mod /= 0.5
+	coolant_mod_applied = FALSE // reset before the validity skip, see Shock Coils
+	if(!ishuman(bearer) || QDELETED(bearer))
+		return
+	var/mob/living/carbon/human/human_bearer = bearer
+	human_bearer.physiology.burn_mod /= 0.5
 
 /obj/item/organ/cyberimp/cyberware/coolant/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -586,14 +597,14 @@
  *
  * Toggle sonar in the mastoid bone. Living things that MOVE within nine
  * tiles paint through walls; hold still for four seconds and you drop off
- * the display entirely — the Aliens rule, and the PvP counterplay. Machines
+ * the display entirely, the Aliens rule, and the PvP counterplay. Machines
  * never paint. The ping is real, symmetric audio: it plays at your
  * position with normal falloff, so anyone close can faintly hear you
  * listening.
  *
  * A contact's blip rides the contact rather than the tile it happened to be
  * on when the sonar last swept, and it re-aims whenever the BEARER moves as
- * well — both ends run off COMSIG_MOVABLE_MOVED, so the display is live
+ * well, both ends run off COMSIG_MOVABLE_MOVED, so the display is live
  * rather than a two-second-old snapshot. Every step a contact takes pushes
  * its blip's expiry back out, which is the whole motion gate: stop walking
  * and you fade off the display without the sonar having to compare turfs.
@@ -770,7 +781,7 @@
 			drop_contact(contact)
 		contacts.Cut()
 		return
-	// Backstop for anything that walked into range while we stood still — an
+	// Backstop for anything that walked into range while we stood still, an
 	// unhooked contact has no way to tell us it moved.
 	sweep_watchlist()
 	var/nearest_mover = INFINITY
@@ -780,7 +791,7 @@
 		nearest_mover = min(nearest_mover, get_dist(owner, contact))
 	if(nearest_mover == INFINITY)
 		return
-	// Louder as they close; audible around you either way — that's the deal.
+	// Louder as they close; audible around you either way. That's the deal.
 	var/ping_volume = clamp(45 - nearest_mover * 3, 15, 45)
 	playsound(owner, 'sound/machines/sonar-ping.ogg', ping_volume, TRUE)
 	if(nearest_mover <= 3) // close contact: the beep doubles up
@@ -793,15 +804,15 @@
  *
  * A data spike for the dead: three seconds in a corpse's skull reads whatever
  * duty data rotted in there. Loot caches nearby paint amber, patrol contacts
- * paint red — both through walls, which is the only reason the intel is worth
- * the twenty-second cooldown — and once in a while a stale vault phrase
+ * paint red, both through walls, which is the only reason the intel is worth
+ * the twenty-second cooldown, and once in a while a stale vault phrase
  * decrypts cache transponders across the whole site. Every officer corpse
  * becomes a lockpick for the level. Each body reads once; the spike burns
  * what it drains.
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber
 	name = "\improper Graverobber's Jack"
-	desc = "A spike for reading the dead. A skull holds onto more than anyone bothers to wipe: patrol routes, cargo manifests, the occasional vault phrase. Three seconds a body."
+	desc = "An arm-mounted data spike that reads intel out of dead bodies. Spend three seconds on an adjacent corpse and nearby loot caches and hostile patrols get marked on your HUD."
 	icon_state = "graverobber"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -809,6 +820,12 @@
 	/// Intel marks the last read raised, so pulling the spike takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/examine(mob/user)
+	. = ..()
+	. += span_notice("Once installed, use the Data-Spike the Dead ability on a dead body next to you. The read takes 3 seconds. It marks loot caches within [CYBERWARE_GRAVEROBBER_SWEEP_RANGE] tiles in amber and hostile patrols in red on your HUD for a few seconds.")
+	. += span_notice("Occasionally a read recovers a vault phrase, marking caches within [CYBERWARE_GRAVEROBBER_DEEP_SWEEP_RANGE] tiles instead.")
+	. += span_notice("Each body can only be read once, and the spike takes 20 seconds to recharge between reads.")
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
 	clear_marks()
@@ -889,13 +906,13 @@
  *
  * The Skyhook's hardware wound the other way round. That one fires a line
  * into an anchor and drags you to it; this one fires a line at a target and
- * drags the target to you — a loose item or a small creature, up to six
+ * drags the target to you, a loose item or a small creature, up to six
  * tiles out. Anything oversized or bolted down wins the tug and hauls YOU
  * one tile toward it instead, which is a fair chunk of the appeal.
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
 	name = "\improper Harpoon Spool"
-	desc = "A forearm winch spooled with monofilament under a barbed head. Fired, it drags loose gear and small creatures to you from six tiles out — anything heavier drags you instead."
+	desc = "A forearm winch spooled with monofilament under a barbed head. Fired, it drags loose gear and small creatures to you from six tiles out, anything heavier drags you instead."
 	icon_state = "angler"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -940,7 +957,7 @@
 			StartCooldown()
 			return TRUE
 
-	// Everything else holds its ground — the winch moves the lighter end.
+	// Everything else holds its ground. The winch moves the lighter end.
 	fire_line(bearer, target)
 	bearer.visible_message(
 		span_warning("[bearer]'s line goes taut against [target] and hauls [bearer.p_them()] forward!"),

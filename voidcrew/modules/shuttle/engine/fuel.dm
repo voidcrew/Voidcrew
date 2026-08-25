@@ -52,6 +52,24 @@
 	if(!panel_open)
 		update_icon_state()
 
+/obj/machinery/power/shuttle_engine/ship/fueled/examine(mob/user)
+	. = ..()
+	// A never-burned engine has not gone looking for its heater yet - do that now so a
+	// fresh, correctly-built engine doesn't examine as broken.
+	if(!attached_heater?.resolve())
+		set_heater()
+	if(!attached_heater?.resolve())
+		. += span_warning("No engine heater is feeding it. It needs a heater on an adjacent tile, \
+			facing the same direction as the thruster, bolted down with its panel closed.")
+
+/obj/machinery/power/shuttle_engine/ship/fueled/thrust_refusal_reason()
+	if(!attached_heater?.resolve())
+		return "no engine heater is feeding it. It needs a heater on an adjacent tile, facing the \
+			same direction as the thruster, bolted down with its panel closed."
+	if(!return_fuel())
+		return "its heater has no usable fuel in it."
+	return ..()
+
 ///This proc makes the area the shuttle is in EXTREMELY hot. I don't know how it does this, but that's what it does.
 /obj/machinery/power/shuttle_engine/proc/heat_engine()
 	var/turf/heatTurf = loc

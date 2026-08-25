@@ -42,7 +42,33 @@
 	if(!istype(controller))
 		return FALSE
 	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
-	return ship && ship.state == OVERMAP_SHIP_FLYING
+	if(!ship)
+		return FALSE
+	// VOIDCREW: standing down is not the same as going silent. Note the park (one log
+	// line, idempotent) so the parked branch of the movement tree can undock us again -
+	// without it, one player force-dock killed an NPC hull's AI permanently, because
+	// nothing else in the game ever returns an NPC hull to FLYING. DOCKING/UNDOCKING/
+	// ACTING are transitional and reconciled by check_manoeuvre_stalled() on SSovermap's
+	// poll, so they are simply waited out.
+	if(ship.state != OVERMAP_SHIP_FLYING)
+		controller.note_ai_parked()
+		return FALSE
+	controller.note_ai_recovered()
+	return TRUE
+
+/**
+ * VOIDCREW: the mirror of the gate above - true only for a hull sitting berthed, which is
+ * the one non-flying state something can be done about. See
+ * /datum/bt_node/ai_behavior/npc_ship/undock_recovery.
+ */
+/datum/bt_node/decorator/npc_ship_parked
+	observer_abort = BT_ABORT_SELF
+
+/datum/bt_node/decorator/npc_ship_parked/check_condition(datum/ai_controller/npc_ship/controller)
+	if(!istype(controller))
+		return FALSE
+	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	return ship && ship.state == OVERMAP_SHIP_IDLE
 
 /**
  * VOIDCREW: matches one NPC combat state. Subtypes below pin the state they answer for.
@@ -184,8 +210,13 @@
 	if(target && !target.is_interdicted)
 		action_weights[NPC_ACTION_USE_INTERDICTOR] = 25
 
-	// Siphon is available if ship has siphon goals (weight: 15)
-	if(ship?.siphon_goal_percent > 0)
+	// Siphon is available if ship has siphon goals (weight: 15) - but never in the red
+	// band. The siphon is the yellow-band mugging tool; red settles it with guns and
+	// boarders (acquire_lock and hail_escalates_to_siphon gate on the same check).
+	// Without this, a red-zone pirate that rolled the siphon skimmed its goal and then
+	// ended the whole fight via on_goal_reached()'s retreat - and retreating ships
+	// ignore further player aggression entirely.
+	if(ship?.siphon_goal_percent > 0 && !controller.is_red_zone_raid())
 		action_weights[NPC_ACTION_ACTIVATE_SIPHON] = 15
 
 	// If only weapons available, just return that

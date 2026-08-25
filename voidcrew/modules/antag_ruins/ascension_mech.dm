@@ -4,10 +4,10 @@
  * The Hollow Master's capstone. See voidcrew/modules/antag_ruins/ascension.dm for
  * the framework this plugs into; this file owns three things it names:
  *
- * - [/mob/living/basic/vestige_warframe] — the boss of the Standing Opponent arena.
- * - [/datum/vestige_boon/spell/machine_communion] — the capstone boon.
- * - [/datum/action/cooldown/spell/machine_communion] — the click ability it grants.
- * - [/datum/action/cooldown/spell/mass_hack] — the room ability it grants alongside it.
+ * - [/mob/living/basic/vestige_warframe]: the boss of the Standing Opponent arena.
+ * - [/datum/vestige_boon/spell/machine_communion]: the capstone boon.
+ * - [/datum/action/cooldown/spell/machine_communion]: the click ability it grants.
+ * - [/datum/action/cooldown/spell/mass_hack]: the room ability it grants alongside it.
  *
  * ## The Warframe
  *
@@ -32,19 +32,19 @@
  * Four abilities, each asking a different question, plus a passive that decides which
  * question gets asked:
  *
- * - **The Read** — it samples your range every couple of seconds and keeps a running
+ * - **The Read**: it samples your range every couple of seconds and keeps a running
  *   score. Play at range and it favours the closer and the floor;
  *   stay in melee and it favours the guard and the sweep. It announces the switch out
  *   loud, because the whole point is that you can learn it.
- * - **Iai** — the anti-kite. Fixes a line, paints it, then cuts down it very fast.
+ * - **Iai**: the anti-kite. Fixes a line, paints it, then cuts down it very fast.
  *   Sidestep during the telegraph and it overshoots and is wide open for a second.
- * - **The Standing Guard** — the anti-mash. It raises guard for three and a half
+ * - **The Standing Guard**: the anti-mash. It raises guard for three and a half
  *   seconds and every melee hit that lands is deflected and answered. The counterplay
  *   is to stop swinging, which is a harder ask than it sounds. It cannot move, swing or
  *   cast while guarding, so it is also a free repositioning window.
- * - **Sweep of the Lower Hall** — the anti-hug. A telegraphed arc in its facing out to
+ * - **Sweep of the Lower Hall**: the anti-hug. A telegraphed arc in its facing out to
  *   three tiles that throws you clear. Walk around behind it or get out of range.
- * - **Live Floor** — second round only. It energises a scatter of the hall's own deck
+ * - **Live Floor**: second round only. It energises a scatter of the hall's own deck
  *   plates for five seconds. Pure footwork.
  *
  * At half health it bows and starts the second round: Live Floor comes online, every
@@ -56,7 +56,7 @@
  * - `/mob/living/basic/emp_act` deals **maxHealth** damage to any MOB_ROBOTIC basic mob
  *   on a heavy EMP (basic_defense.dm:171-184). A single EMP grenade would delete the
  *   boss outright. [/mob/living/basic/vestige_warframe/proc/emp_reaction] is overridden
- *   to a stagger and a modest chunk instead — keep it that way if you touch the biotype.
+ *   to a stagger and a modest chunk instead. Keep it that way if you touch the biotype.
  * - Everything that repositions it is `forceMove`, not `do_teleport`. The arena area is
  *   NOTELEPORT (ascension.dm), so anything routed through `do_teleport` silently no-ops.
  * - It is leashed to an invisible anchor on its spawn turf, because the arena has an
@@ -67,7 +67,7 @@
  * A passive and two buttons.
  *
  * The passive hands the owner TRAIT_SILICON_ACCESS and TRAIT_AI_ACCESS, so every machine
- * on the ship treats them as the AI and ID locks stop applying — the same pair the machine
+ * on the ship treats them as the AI and ID locks stop applying, the same pair the machine
  * wand grants (code/game/objects/items/machine_wand.dm:30-31).
  *
  * **Machine Communion** is the click ability: a quickhack list opened on whatever you
@@ -75,7 +75,7 @@
  * seconds. One target, one effect, cheap enough to use several in a fight.
  *
  * **Mass Hack** is the room ability, and it is what puts this capstone in the same company
- * as the other two. No target — it takes the room you are standing in and, on a two-to-
+ * as the other two. No target. It takes the room you are standing in and, on a two-to-
  * three minute cooldown, either detonates every machine in it, has every powered machine
  * throw current at whoever is nearest, or stands them all up to fight for you. Voice of the
  * Word ends a fight from across the room every three minutes and Greater Telekinesis is a
@@ -84,7 +84,7 @@
  * What was cut, and why: there is no AI eye. Camera-hopping a human across the ship is a
  * large amount of fragile silicon plumbing and it would make the owner a spectator rather
  * than a person in the room, so the reach is nine tiles for a click and seven for the room,
- * and you have to be there for both. The single-target hacks are likewise local — Kill the
+ * and you have to be there for both. The single-target hacks are likewise local, Kill the
  * Power is one APC's area, not the grid; Silence is one bubble, not the ship.
  */
 
@@ -106,7 +106,7 @@
 /// How far it may get from its spawn mark before the leash drags it home. Sized to
 /// cover the whole arena template from the boss landmark: the leash exists to
 /// guarantee it can never end up outside the map, not to stop it chasing you through
-/// the approach — [/mob/living/basic/vestige_warframe/proc/handle_disengagement] is
+/// the approach, [/mob/living/basic/vestige_warframe/proc/handle_disengagement] is
 /// what punishes running away.
 #define WARFRAME_LEASH_RANGE 20
 /// How long it tolerates losing its opponent before it calls the match and starts repairing.
@@ -129,7 +129,7 @@
 /// Extra weight an ability gets when the read favours it.
 #define WARFRAME_READ_WEIGHT 4
 
-// Iai — the drawn cut. Range matches the rotation's engagement range on purpose: an
+// Iai: the drawn cut. Range matches the rotation's engagement range on purpose: an
 // ability that can be picked at a distance it cannot reach just burns planning ticks.
 #define WARFRAME_IAI_RANGE 9
 #define WARFRAME_IAI_TELEGRAPH (1.3 SECONDS)
@@ -162,7 +162,7 @@
 /// Shortest gap between two shocks from the same plate on the same person.
 #define WARFRAME_PLATE_REFRACTORY (2 SECONDS)
 
-// The hall breaker — the optional in-fight interaction.
+// The hall breaker: the optional in-fight interaction.
 #define WARFRAME_BREAKER_STAGGER (3 SECONDS)
 #define WARFRAME_BREAKER_BROWNOUT (25 SECONDS)
 #define WARFRAME_BREAKER_RESET (60 SECONDS)
@@ -198,7 +198,7 @@
 
 // ===== THE MASS HACKS =====
 // The second button. Everything below is room-scale, and the descs quote these
-// numbers literally — keep them in sync.
+// numbers literally, keep them in sync.
 
 /// How far a mass hack reaches from the caster. Shorter than the single-target reach
 /// on purpose: this is the room you are standing in, not the room next door.
@@ -210,8 +210,8 @@
 #define COMMUNION_MASS_OVERLOAD_DELAY (5 SECONDS)
 /// Gap between two machines going up, so a dozen explosions do not land on one tick.
 #define COMMUNION_MASS_OVERLOAD_STAGGER (0.2 SECONDS)
-/// Blast radii of one machine in a mass overload. Identical to the single-target blast —
-/// this is a dozen full Overloads going off at once, not a dozen small ones. EXPLODE_HEAVY
+/// Blast radii of one machine in a mass overload. Identical to the single-target blast.
+/// This is a dozen full Overloads going off at once, not a dozen small ones. EXPLODE_HEAVY
 /// on a wall is `dismantle_wall(prob(50), TRUE)`, which always takes the wall, so a room
 /// that goes up this way is stripped to the girders and an outer wall may well go with it.
 /// That is the intent; the five-second buzz is what everybody in the room gets instead.
@@ -293,13 +293,13 @@
 
 	ai_controller = /datum/ai_controller/basic_controller/vestige_warframe
 
-	/// Iai — the drawn cut.
+	/// Iai: the drawn cut.
 	var/datum/action/cooldown/mob_cooldown/warframe_iai/iai
-	/// The Standing Guard — the parry window.
+	/// The Standing Guard: the parry window.
 	var/datum/action/cooldown/mob_cooldown/warframe_guard/guard
-	/// Sweep of the Lower Hall — the arc.
+	/// Sweep of the Lower Hall: the arc.
 	var/datum/action/cooldown/mob_cooldown/warframe_sweep/sweep
-	/// Live Floor — second round only.
+	/// Live Floor, second round only.
 	var/datum/action/cooldown/mob_cooldown/warframe_live_floor/live_floor
 
 	/// Which round of the match it is on. 2 is the last one.
@@ -344,7 +344,7 @@
 
 	// The controller is built inside /atom/Initialize, i.e. before any of the above
 	// existed, so the kit has to be handed over now. Live Floor is deliberately held
-	// back — the first round does not have it.
+	// back, the first round does not have it.
 	var/datum/ai_controller/basic_controller/vestige_warframe/brain = ai_controller
 	if(istype(brain))
 		brain.register_kit(iai, guard, sweep)
@@ -396,7 +396,7 @@
  * Lock or unlock it for the length of a move.
  *
  * While committed it cannot walk, swing or start anything else. Iai still travels,
- * because `forceMove` does not care about TRAIT_IMMOBILIZED — that is the point of
+ * because `forceMove` does not care about TRAIT_IMMOBILIZED, that is the point of
  * using it. Every ability in the kit funnels through here so the "it is doing a thing
  * right now" state has exactly one owner.
  */
@@ -510,8 +510,8 @@
  *
  * `/mob/living/basic/emp_act` hands any MOB_ROBOTIC basic mob `maxHealth` damage on a
  * heavy pulse (basic_defense.dm:171-184), so without this override one ion rifle shot
- * ends the capstone fight instantly. Bringing EMP is still worth doing — it buys a real
- * opening — it just is not an "I win" button.
+ * ends the capstone fight instantly. Bringing EMP is still worth doing. It buys a real
+ * opening, it just is not an "I win" button.
  */
 /mob/living/basic/vestige_warframe/emp_reaction(severity)
 	var/damage = (severity == EMP_HEAVY) ? (maxHealth * 0.08) : (maxHealth * 0.04)
@@ -678,8 +678,8 @@
 /**
  * Publishes the first-round kit onto the blackboard.
  *
- * Called from its Initialize, because the controller is built inside /atom/Initialize —
- * i.e. before it has created a single action — so the keys cannot be seeded above.
+ * Called from its Initialize, because the controller is built inside /atom/Initialize.
+ * I.e. before it has created a single action, so the keys cannot be seeded above.
  * Live Floor is registered later, by [/mob/living/basic/vestige_warframe/proc/begin_second_round].
  */
 /datum/ai_controller/basic_controller/vestige_warframe/proc/register_kit(
@@ -727,7 +727,7 @@
 // override bought, so the override is no longer carried separately.
 
 // =========================================================================
-// IAI — THE DRAWN CUT
+// IAI: THE DRAWN CUT
 // =========================================================================
 
 /**
@@ -912,7 +912,7 @@
  * melee (item_attack.dm:341), `/mob/living/basic/attack_hand` fires for punches
  * (basic_defense.dm:26) and `/mob/living/hitby` fires for thrown things. Projectiles only
  * route through it on humans, so a basic-mob owner that wants to catch bullets has to
- * handle `bullet_act` itself — the Warframe does.
+ * handle `bullet_act` itself, the Warframe does.
  */
 /datum/status_effect/warframe_guard
 	id = "warframe_guard"
@@ -963,7 +963,7 @@
 	INVOKE_ASYNC(src, PROC_REF(deflect), hit_by, attack_text)
 	return SUCCESSFUL_BLOCK
 
-/// The parry and the counter. Async — it messages, plays sound and hurts people.
+/// The parry and the counter. Async, it messages, plays sound and hurts people.
 /datum/status_effect/warframe_guard/proc/deflect(atom/hit_by, attack_text)
 	if(QDELETED(owner))
 		return
@@ -1177,7 +1177,7 @@
 
 /**
  * A deck plate with the hall's power running through it. Spawned by Live Floor and by
- * the contact plate in the drop pool — one implementation, two callers, so retuning the
+ * the contact plate in the drop pool, one implementation, two callers, so retuning the
  * numbers here retunes both.
  *
  * Pass whoever put it down as the second `new` argument; they walk over their own plates.
@@ -1301,7 +1301,7 @@
 /**
  * Levers. Deliberately structures rather than machinery.
  *
- * The arena area is `requires_power = FALSE`, so a powered gate would in fact work —
+ * The arena area is `requires_power = FALSE`, so a powered gate would in fact work,
  * but these are one-shot set pieces with one job each, and a gate that cannot be
  * de-powered, EMPed or hacked shut is a gate that cannot strand a supplicant in the
  * approach with the clock running. The gate is destructible as a second way out.
@@ -1441,7 +1441,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 
 /**
  * The gate into the lower hall. Levered open, and beatable with a weapon if the lever is
- * somehow unreachable — a run that cannot be finished is worse than a shortcut.
+ * somehow unreachable, a run that cannot be finished is worse than a shortcut.
  */
 /obj/structure/warframe_gate
 	name = "hall gate"
@@ -1524,7 +1524,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 
 /**
  * The player's version of the guard. Shorter, on a much longer leash, and it never
- * catches bullets — the second-round upgrade stayed with the machine.
+ * catches bullets, the second-round upgrade stayed with the machine.
  *
  * It does not commit its user the way the boss's does. A player who cannot move for
  * three seconds in a firefight is a player who does not use the item.
@@ -1555,7 +1555,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
  * Jackpot. Live Floor in your hand: the same plates, dropped where you are standing.
  *
  * Spawned with you as the creator, so unlike the Matriarch's Heart it does spare its
- * owner — the boss's version does the same, and a floor hazard you cannot walk on is a
+ * owner, the boss's version does the same, and a floor hazard you cannot walk on is a
  * floor hazard nobody deploys.
  */
 /obj/item/warframe_contact_plate
@@ -1677,12 +1677,12 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	return
 
 // =========================================================================
-// MACHINE COMMUNION — THE CAPSTONE
+// MACHINE COMMUNION: THE CAPSTONE
 // =========================================================================
 
 /datum/vestige_boon/spell/machine_communion
 	name = "Machine Communion"
-	desc = "Machines treat you as the station AI, so ID locks stop applying. You get a quickhack list for anything in sight — blow it up, bolt or electrify a door, kill an area's power — and a second button that turns every machine in the room loose at once."
+	desc = "Machines treat you as the station AI, so ID locks stop applying. You get a quickhack list for anything in sight (blow it up, bolt or electrify a door, kill an area's power) and a second button that turns every machine in the room loose at once."
 	grant_text = "Something settles in behind your ear and starts listing every powered thing in the room."
 	spell_type = /datum/action/cooldown/spell/machine_communion
 
@@ -1708,8 +1708,8 @@ GLOBAL_LIST_EMPTY(warframe_gates)
  * The capstone ability.
  *
  * Two halves, and the passive one matters as much as the button. On Grant it hands the
- * owner TRAIT_SILICON_ACCESS and TRAIT_AI_ACCESS — the same pair the machine wand grants
- * a person holding it (machine_wand.dm:30-31) — which is what "as if you were an AI"
+ * owner TRAIT_SILICON_ACCESS and TRAIT_AI_ACCESS, the same pair the machine wand grants
+ * a person holding it (machine_wand.dm:30-31), which is what "as if you were an AI"
  * actually means in this codebase: airlock and APC interfaces open for you, access checks
  * stop applying, and nothing has to be reimplemented to make that true.
  *
@@ -1877,7 +1877,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 /**
  * Straight off `/datum/action/innate/ai/ranged/overload_machine` (malf_ai_modules.dm:521),
  * including its blacklist, with a smaller blast because this one is repeatable rather
- * than two uses a purchase. Lights burst instead of exploding — a light bulb should not
+ * than two uses a purchase. Lights burst instead of exploding. A light bulb should not
  * take out a wall.
  */
 /datum/machine_quickhack/overload
@@ -1900,7 +1900,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	playsound(victim, SFX_SPARKS, 60, TRUE)
 	user.playsound_local(user, 'sound/misc/interference.ogg', 40, FALSE)
 	// ADMIN_VERBOSEJMP expands to a ternary over its argument, so it needs a plain
-	// variable — a proc call inlined here doesn't parse inside the string
+	// variable, a proc call inlined here doesn't parse inside the string
 	var/turf/blast_site = get_turf(victim)
 	message_admins("[ADMIN_LOOKUPFLW(user)] overloaded [victim.name] ([victim.type]) at [ADMIN_VERBOSEJMP(blast_site)] with Machine Communion.")
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(communion_burst_machine), victim, 1, 3), COMMUNION_OVERLOAD_DELAY)
@@ -1910,7 +1910,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  * The end of an overload, single or mass: the machine comes apart and takes the tile
  * with it. Lights burst instead of exploding, because a light bulb should not take out
  * a wall. Blast radii are arguments because the mass version fires a dozen of these and
- * has to be much smaller per machine — see [/datum/machine_masshack/overload].
+ * has to be much smaller per machine, see [/datum/machine_masshack/overload].
  */
 /proc/communion_burst_machine(obj/machinery/victim, heavy_range = 1, light_range = 3, flash_range = null)
 	if(QDELETED(victim))
@@ -1989,13 +1989,13 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 /**
  * Stock electrification alone is not worth a capstone hack. A shock through the frame is
  * `ELECTROCUTE_DAMAGE(area APC's spare energy)`, which is 0 below a kilojoule and jumps
- * straight to 20 above it — so on a derelict with a flat cell the door does nothing at all,
+ * straight to 20 above it, so on a derelict with a flat cell the door does nothing at all,
  * no burn and no stun, and `shock()` returning FALSE means it opens for them anyway.
  *
  * So a door the vestige has electrified carries its own current: a flat
  * [COMMUNION_ELECTRIFY_DAMAGE] burn and a [COMMUNION_ELECTRIFY_STUN] stun no matter how little
- * the local powernet has left in it. The door still has to be powered at all, same as ever —
- * the hack cannot be cast on a dead one. That is what `communion_live` below is for.
+ * the local powernet has left in it. The door still has to be powered at all, same as ever.
+ * The hack cannot be cast on a dead one. That is what `communion_live` below is for.
  */
 /datum/machine_quickhack/electrify
 	name = "Electrify"
@@ -2034,7 +2034,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  * which reads its damage off the area's APC and refuses non-carbons outright.
  *
  * `electrocute_act` with default flags still runs the victim's siemens coefficient, so
- * insulated gloves zero it out and nothing lands — same as an ordinary electrified door.
+ * insulated gloves zero it out and nothing lands, same as an ordinary electrified door.
  * The explicit Paralyze is what carries the stun onto simple and basic mobs, whose
  * `electrocute_act` only ever adjusts fire loss.
  */
@@ -2088,7 +2088,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  * The malf blackout, aimed at one APC instead of every APC on the station.
  *
  * It breaks the tubes directly rather than going through `overload_lighting()`, which
- * silently does nothing when the APC's cell is flat (apc_main.dm:732-736) — a hack that
+ * silently does nothing when the APC's cell is flat (apc_main.dm:732-736), a hack that
  * fails invisibly is worse than one that does not exist.
  */
 /datum/machine_quickhack/burst_lights
@@ -2128,7 +2128,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  *
  * The shock scales with what they were carrying, so this is a hard counter to somebody
  * walking around with an armoury and close to nothing against somebody in a jumpsuit.
- * SHOCK_NOGLOVES is deliberate — the current is coming out of their own belt, and
+ * SHOCK_NOGLOVES is deliberate, the current is coming out of their own belt, and
  * insulated gloves have nothing to do with it.
  */
 /datum/machine_quickhack/feedback_surge
@@ -2165,7 +2165,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 // ===== CUTOUT =====
 
 /**
- * The quiet half of the same trick. No shock, no stun, no announcement — their gear
+ * The quiet half of the same trick. No shock, no stun, no announcement, their gear
  * simply stops working and their radios stop transmitting, and they find out when they
  * pull a trigger. Half the cooldown, none of the damage.
  */
@@ -2258,7 +2258,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	QDEL_IN(src, COMMUNION_JAM_DURATION)
 
 // =========================================================================
-// MASS HACK — THE ROOM BUTTON
+// MASS HACK: THE ROOM BUTTON
 // =========================================================================
 
 /**
@@ -2270,13 +2270,13 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  * minutes and Greater Telekinesis is a permanent combat mode; a list of doors you can bolt
  * is not in that company.
  *
- * So this is the other kind of button. No target — it takes the room you are standing in,
+ * So this is the other kind of button. No target. It takes the room you are standing in,
  * out to [COMMUNION_MASS_RANGE] tiles of line of sight, and does one of three things to
  * every machine in it at once. The cooldowns are on the Voice of the Word scale (two to
  * three minutes) because these are fight-deciders, not utilities.
  *
- * Structurally it is the quickhack pattern again — stateless singletons in a global list,
- * a radial built from the ones that have something to work on — but the menu is opened
+ * Structurally it is the quickhack pattern again, stateless singletons in a global list,
+ * a radial built from the ones that have something to work on, but the menu is opened
  * from `before_cast` rather than an async chain, because nothing had to be clicked first.
  */
 /datum/action/cooldown/spell/mass_hack
@@ -2315,7 +2315,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 
 /**
  * The radial goes here rather than in an async chain off `cast` because this ability is
- * not clicked onto anything — `Activate` is already the whole interaction, and
+ * not clicked onto anything, `Activate` is already the whole interaction, and
  * `before_cast` is the documented place to sleep for target input. Backing out costs
  * nothing; the cooldown is charged in `cast` once a hack has actually landed.
  */
@@ -2379,7 +2379,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 // =========================================================================
 
 /**
- * One thing Mass Hack can do to one room. Stateless singletons like the quickhacks —
+ * One thing Mass Hack can do to one room. Stateless singletons like the quickhacks,
  * built once into a global list and shared by every owner, so nothing here may hold
  * per-cast state. Timers hang off the singleton, which is fine because it is never
  * deleted; anything a timer needs comes in as a callback argument.
@@ -2425,13 +2425,13 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  * - **Anything hidden.** Power terminals and buried plumbing sit on the tile at
  *   INVISIBILITY_MAXIMUM. If the caster cannot see it, it is not "in the room".
  *
- * `standing_only` narrows it further to the free-standing machines — dense, and not a
+ * `standing_only` narrows it further to the free-standing machines, dense, and not a
  * door. That is the set Wake the Machines uses, because a light switch getting up and
  * walking around is not the effect anybody wants.
  *
  * `skip_lights` drops light fixtures. Overload the Room uses it so that a room with six
  * ceiling tubes does not spend half its twelve-machine budget on bulbs; it bursts them
- * separately and for free. Arc Flash deliberately leaves them in — a light tube arcing at
+ * separately and for free. Arc Flash deliberately leaves them in, a light tube arcing at
  * somebody is exactly the effect.
  */
 /proc/communion_mass_machines(turf/center, cap = COMMUNION_MASS_CAP, standing_only = FALSE, skip_lights = FALSE)
@@ -2479,7 +2479,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 /**
  * The single-target Overload, applied to everything at once, at full strength.
  *
- * Every machine gets the same blast the single-target hack gives one — heavy 1, light 3 —
+ * Every machine gets the same blast the single-target hack gives one, heavy 1, light 3,
  * so this is twelve real explosions in a room, not twelve small ones. It levels the room:
  * EXPLODE_HEAVY always dismantles a wall, EXPLODE_LIGHT takes one at `prob(hardness)`, and
  * an outer wall in the pattern means the compartment vents. One EXPLODE_LIGHT alone is 30
@@ -2491,7 +2491,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  *
  * Two things keep it from being unbounded rather than merely enormous. The twelve-machine
  * cap holds the tick cost and the blast pattern to something a room can contain, and the
- * 0.2s stagger means the blasts land one at a time — which also means a machine killed by
+ * 0.2s stagger means the blasts land one at a time, which also means a machine killed by
  * an earlier blast simply no-ops when its own timer comes up, so the cascade eats itself
  * from the middle outwards instead of double-counting.
  */
@@ -2500,7 +2500,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 	desc = "Feed every machine around you power at once, each one at full overload strength. Five seconds of the whole \
 		room buzzing, then up to twelve real explosions land a fifth of a second apart. It takes the walls with it and \
 		it will breach a hull if one is in the pattern. Lights just burst. Nothing that goes up comes back, and you are \
-		standing in the middle of it — leave."
+		standing in the middle of it, leave."
 	radial_icon_state = "overload_machine"
 	cooldown = 3 MINUTES
 
@@ -2627,14 +2627,14 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  * melee are all upstream's. Three things are ours:
  *
  * - The AI controller uses `/datum/targeting_strategy/basic/not_friends`. The stock mimic
- *   uses plain `/basic`, which reads factions only — and `befriend` writes the owner's
+ *   uses plain `/basic`, which reads factions only, and `befriend` writes the owner's
  *   REF into the MIMIC'S faction list, not the owner's, so a plain faction check does not
  *   match and the machine happily attacks the person who woke it. `not_friends` is the
  *   strategy that reads `BB_FRIENDS_LIST`, which is the half of `befriend` that knows who
  *   woke this thing up.
  *
  *   The catch, and it bit: `not_friends` also overrides `faction_check` to return FALSE
- *   unconditionally — "friends dont care about factions". Factions stop being a reason to
+ *   unconditionally, "friends dont care about factions". Factions stop being a reason to
  *   spare anyone at all, so two woken machines sharing FACTION_MIMIC will happily beat each
  *   other to death. The friends list is the ONLY authority under this strategy, which is why
  *   [/datum/machine_masshack/wake] introduces every machine in a batch to every other one
@@ -2645,7 +2645,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  * - Twice the health and twice the melee, because eight of these have to be worth three
  *   minutes on the same button as Overload the Room.
  *
- * The machine is consumed — `destroy_original` is TRUE, same as the malf module, because
+ * The machine is consumed, `destroy_original` is TRUE, same as the malf module, because
  * the alternative (storing it inside the mob and dropping it on death, which is what
  * animated structures do) means forceMoving live machinery into a mob's contents and all
  * the power and pipe bookkeeping that implies. It is a real cost and the desc says so.
@@ -2654,7 +2654,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 	name = "Wake the Machines"
 	desc = "Stand every free-standing machine in the room up to fight for you. Up to eight of them, twice as tough as an \
 		animated machine and hitting twice as hard, for two minutes before they fall apart. They know you and nobody \
-		else — everyone else in the room is a stranger to them. The machines do not come back."
+		else, everyone else in the room is a stranger to them. The machines do not come back."
 	radial_icon_state = "override_machine"
 	cooldown = 3 MINUTES
 
@@ -2693,7 +2693,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 	ai_controller = /datum/ai_controller/basic_controller/mimic_copy/machine/communion
 
 /datum/ai_controller/basic_controller/mimic_copy/machine/communion
-	// not_friends is the whole point — see the file comment. It reads BB_FRIENDS_LIST,
+	// not_friends is the whole point. See the file comment. It reads BB_FRIENDS_LIST,
 	// which is the half of befriend() that actually knows who woke this thing up.
 	// The lines used to be a random_speech/when_has_target subtree. Upstream moved
 	// mimic speech onto the blackboard and bakes the speech loop into the inherited
@@ -2764,7 +2764,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  * Empties every power cell inside an atom and returns the total charge taken, in joules.
  *
  * Works off `get_cell()`, which is the codebase's one honest answer to "does this thing
- * hold a charge" — energy guns, security batons, MOD suits, tablets, defibs, cyborgs and
+ * hold a charge", energy guns, security batons, MOD suits, tablets, defibs, cyborgs and
  * bare cells all implement it. Cells are deduplicated because a gun and the cell inside
  * it both show up in `get_all_contents()` and both resolve to the same cell.
  */

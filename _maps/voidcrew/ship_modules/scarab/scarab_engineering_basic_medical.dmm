@@ -80,6 +80,14 @@
 	},
 /turf/open/floor/plating,
 /area/template_noop)
+"n" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/machinery/power/smes/ship{
+	name = "engine power storage"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
 "q" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -111,7 +119,11 @@
 "w" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
-/obj/machinery/power/smes/engineering,
+/obj/machinery/power/smes/ship{
+	name = "main power storage";
+	output_level = 25000;
+	input_level = 25000
+	},
 /turf/open/floor/plating,
 /area/template_noop)
 "x" = (
@@ -183,7 +195,9 @@
 /obj/machinery/power/terminal{
 	dir = 4
 	},
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
 /obj/item/stack/sheet/mineral/plasma/thirty,
@@ -250,7 +264,9 @@
 /obj/machinery/power/terminal{
 	dir = 8
 	},
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
 /obj/item/radio/intercom/directional/north,
@@ -382,7 +398,7 @@ Q
 a
 "}
 (2,1,1) = {"
-w
+n
 V
 y
 m

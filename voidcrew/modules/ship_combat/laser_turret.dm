@@ -7,13 +7,14 @@
 
 /obj/machinery/ship_combat/laser_turret
 	name = "laser turret"
-	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a weapons system with a multitool and control power levels from there. Has an internal power cell that can be replaced."
+	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a weapons system with a multitool and control power levels from there. Has an internal power cell that can be replaced. Unwrench it and drag it onto a hull wall to sink it into the plating."
 	icon = 'icons/obj/weapons/turrets.dmi'
 	icon_state = "standard_off"
 	density = TRUE
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/laser_turret
+	wall_mountable = TRUE
 	/// How much power we draw from the grid to charge our cell per process tick
 	idle_power_usage = 0
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 2
@@ -38,14 +39,16 @@
 	COOLDOWN_DECLARE(fire_cooldown)
 	/// Our internal power cell
 	var/obj/item/stock_parts/power_store/cell/cell
+	/// Skips the internal cell entirely - shots cost nothing and never run the cell down.
+	/// Set on NPC turrets, whose hulls run on an unlimited APC. Without it the cell is the
+	/// real cadence limit (it trickles back at charge_rate while a shot costs thousands),
+	/// so an NPC fires an opening burst and then goes quiet for as long as it takes to
+	/// refill - the AI keeps choosing to shoot and can_fire() keeps refusing.
+	var/infinite_power = FALSE
 	/// How much power we transfer from powernet to cell per second (affected by capacitor upgrades)
 	var/charge_rate = LASER_CHARGE_RATE_BASE
 	/// Whether we had enough power to fire last tick (for detecting power loss)
 	var/had_power = FALSE
-	/// Cached exterior check result (turrets don't move while anchored)
-	var/cached_exterior_check
-	/// Whether the exterior cache is valid
-	var/exterior_cache_valid = FALSE
 
 /obj/machinery/ship_combat/laser_turret/Initialize(mapload)
 	. = ..()
@@ -53,7 +56,7 @@
 	name = "[initial(name)] ([turret_id])"
 	RefreshParts()
 	// Initialize power state based on cell
-	had_power = cell && cell.charge >= get_power_per_shot()
+	had_power = infinite_power || (cell && cell.charge >= get_power_per_shot())
 	update_power_draw()
 	// Try to auto-link to a combat console on the same ship after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
@@ -65,7 +68,7 @@
 
 /obj/machinery/ship_combat/laser_turret/process(seconds_per_tick)
 	// Check for power state transitions
-	var/has_power_now = cell && cell.charge >= get_power_per_shot()
+	var/has_power_now = infinite_power || (cell && cell.charge >= get_power_per_shot())
 	if(had_power && !has_power_now)
 		// Lost power - play shutdown sound
 		playsound(src, 'sound/items/xbow_lock.ogg', 50, TRUE)
@@ -160,7 +163,7 @@
 		icon_state = "standard_broken"
 	else if(machine_stat & (NOPOWER))
 		icon_state = "standard_off"
-	else if(!cell || cell.charge < get_power_per_shot())
+	else if(!infinite_power && (!cell || cell.charge < get_power_per_shot()))
 		icon_state = "standard_off"
 	else if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		icon_state = "standard_lethal"
@@ -249,12 +252,14 @@
 	if(!our_ship)
 		return
 
+	// The turret cap is per hull, counted across every console aboard - checking one
+	// console's list would let each extra console grant another LASER_MAX_TURRETS
+	if(our_ship.count_linked_turrets() >= LASER_MAX_TURRETS)
+		return
+
 	// Find a combat console on this ship
 	for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
 		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
-			// Check if console is at max turrets
-			if(length(console.linked_turrets) >= LASER_MAX_TURRETS)
-				continue
 			// Found one - link to it
 			if(link_console(console))
 				// Also add ourselves to the console's turret list
@@ -269,49 +274,6 @@
 
 // ========== FIRING ==========
 
-/// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
-/// Weapons must be on the exterior to fire - they need line of sight to space/outside
-/// Result is cached while anchored since turrets don't move
-/obj/machinery/ship_combat/laser_turret/proc/is_on_exterior()
-	// Return cached result if valid (only valid while anchored)
-	if(exterior_cache_valid && anchored)
-		return cached_exterior_check
-
-	var/turf/our_turf = get_turf(src)
-	if(!our_turf)
-		return FALSE
-
-	// Get the shuttle areas for our ship
-	var/area/our_area = get_area(src)
-	var/list/shuttle_areas
-	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-		if(!S.shuttle)
-			continue
-		if(our_area in S.shuttle.shuttle_areas)
-			shuttle_areas = S.shuttle.shuttle_areas
-			break
-
-	// Check all adjacent tiles (including diagonals)
-	var/result = FALSE
-	for(var/turf/T in range(1, our_turf))
-		if(T == our_turf)
-			continue
-		var/area/tile_area = get_area(T)
-		// If adjacent tile is not in shuttle areas, we're on exterior
-		if(!tile_area || !(tile_area in shuttle_areas))
-			result = TRUE
-			break
-
-	// Cache the result
-	cached_exterior_check = result
-	exterior_cache_valid = TRUE
-
-	return result
-
-/// Invalidates the exterior check cache (call when turret is moved/anchored)
-/obj/machinery/ship_combat/laser_turret/proc/invalidate_exterior_cache()
-	exterior_cache_valid = FALSE
-
 /// Checks if the turret can fire
 /obj/machinery/ship_combat/laser_turret/proc/can_fire()
 	if(machine_stat & (BROKEN|NOPOWER))
@@ -320,10 +282,11 @@
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		return FALSE
-	if(!cell)
-		return FALSE
-	if(cell.charge < get_power_per_shot())
-		return FALSE
+	if(!infinite_power)
+		if(!cell)
+			return FALSE
+		if(cell.charge < get_power_per_shot())
+			return FALSE
 	if(!is_on_exterior())
 		return FALSE
 	// Zone restriction check - weapons disabled in neutral and contested zones
@@ -346,14 +309,15 @@
 		return FALSE
 
 	// Use power from internal cell
-	var/power_needed = get_power_per_shot()
-	if(!cell || cell.charge < power_needed)
-		if(user)
-			to_chat(user, span_warning("[src] doesn't have enough power! ([round(cell?.charge || 0)]/[round(power_needed)] required)"))
-		return FALSE
+	if(!infinite_power)
+		var/power_needed = get_power_per_shot()
+		if(!cell || cell.charge < power_needed)
+			if(user)
+				to_chat(user, span_warning("[src] doesn't have enough power! ([round(cell?.charge || 0)]/[round(power_needed)] required)"))
+			return FALSE
 
-	// Drain the cell
-	cell.use(power_needed)
+		// Drain the cell
+		cell.use(power_needed)
 
 	// Start cooldown
 	COOLDOWN_START(src, fire_cooldown, get_effective_cooldown())
@@ -446,7 +410,11 @@
 	. = ITEM_INTERACT_BLOCKING
 	default_unfasten_wrench(user, tool)
 	invalidate_exterior_cache()  // Position may have changed
+	eject_from_wall(user)  // Loose inside hull plating is a dead end - pop it onto the deck
 	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/laser_turret/after_wall_mount(mob/user)
+	attempt_auto_link()
 
 // Alt+click to rotate when unwrenched
 /obj/machinery/ship_combat/laser_turret/click_alt(mob/user)

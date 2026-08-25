@@ -530,10 +530,23 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 		else
 			creaking = FALSE
 
+	// VOIDCREW EDIT ADDITION: packed-level containment. Resolved once, outside the loop.
+	// The walk below is GLOB.player_list filtered on bare z, and its reach is
+	// heavy_impact_range * 15 + devastation_range * 20 - well over 100 tiles for a large
+	// blast, against the 6 tiles that separate two tenants of a packed level. playsound_local()
+	// is client-side, so it bypasses walls, opacity and the spatial grid entirely, and
+	// shake_camera() actively disrupts whatever the neighbouring crew was doing. Null region
+	// (station, a ship's own level, deep space) leaves the loop byte-for-byte as it was.
+	var/datum/blast_region = map_region_for_turf(epicenter)
+	// VOIDCREW EDIT END
 	for(var/mob/listener as anything in GLOB.player_list)
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || listener_turf.z != blast_z)
 			continue
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(blast_region, listener_turf))
+			continue
+		// VOIDCREW EDIT END
 
 		var/distance = get_dist(epicenter, listener_turf)
 		if(epicenter == listener_turf)

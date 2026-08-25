@@ -399,7 +399,7 @@
 
 /**
  * The grab bag. Anything from a lightgeist to a bear, so the crew have no idea what they
- * are dealing with until it is already out of the vent — which is the entire joke.
+ * are dealing with until it is already out of the vent, which is the entire joke.
  *
  * It keeps its lack of a size gate, because most of this table is harmless and the
  * surprise is the point: it is the one clog that can still catch out a crew who have

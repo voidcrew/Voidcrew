@@ -6,7 +6,7 @@
  */
 
 // =========================================================================
-// GO TO COORDINATES — fly within range of the mission target
+// GO TO COORDINATES, fly within range of the mission target
 // =========================================================================
 
 /datum/mission_objective/goto_coords
@@ -66,7 +66,7 @@
 	return "[round(dist)] tiles away"
 
 // =========================================================================
-// SCAN CELESTIALS — survey console counter
+// SCAN CELESTIALS: survey console counter
 // =========================================================================
 
 /datum/mission_objective/scan_celestial

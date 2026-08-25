@@ -1,12 +1,30 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
 /obj/modular_map_connector,
-/obj/item/storage/belt/utility/full,
-/obj/item/pipe_dispenser,
-/obj/item/clothing/gloves/color/yellow,
-/obj/item/stack/sheet/iron/fifty,
-/obj/item/stack/sheet/glass/fifty,
-/obj/item/stack/cable_coil,
+/obj/item/storage/belt/utility/full{
+	pixel_x = -7;
+	pixel_y = -7
+	},
+/obj/item/pipe_dispenser{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/obj/item/clothing/gloves/color/yellow{
+	pixel_x = -9;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = 1;
+	pixel_y = -9
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -1;
+	pixel_y = 6
+	},
 /turf/template_noop,
 /area/template_noop)
 

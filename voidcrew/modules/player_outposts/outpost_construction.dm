@@ -4,7 +4,7 @@
  * The ship construction console rebound to a player outpost: same internal
  * RCD/RTD/RPD/RLD tools and ore-silo plumbing, same remote drone, but the
  * build envelope is the outpost's fixed rectangular build region instead of
- * shuttle areas — so all the shuttle-expansion machinery is switched off.
+ * shuttle areas, so all the shuttle-expansion machinery is switched off.
  * Nothing here flies, so there is no docked-state gate either.
  *
  * Access is per-ckey: the outpost owner plus anyone they authorize at the

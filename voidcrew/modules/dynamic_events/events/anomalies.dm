@@ -6,12 +6,12 @@
  * only if the selected turf still belongs to the target ship.
  *
  * ALL OF THESE ARE ADMIN-ONLY. Every control below is weight 0 / max_occurrences 0, and
- * none of them roll naturally. Anomalies now generate on planet surfaces instead — see
+ * none of them roll naturally. Anomalies now generate on planet surfaces instead, see
  * voidcrew/datums/mapgen/planet_anomalies.dm and the ZONE_PLANET_ANOMALY_BUDGET_* defines.
  *
  * The reason is that a shuttle is the worst possible venue for one. A ship has a single
  * route between compartments, so an anomaly spawned in a corridor is not a hazard the
- * crew can route around — it is a toll on reaching engineering, payable in burns, for as
+ * crew can route around. It is a toll on reaching engineering, payable in burns, for as
  * long as the event runs. The crew did nothing to invite it and can do nothing to end it
  * short of a neutralizer they probably have not researched yet.
  *
@@ -46,7 +46,7 @@
 	announce_when = ANOMALY_ANNOUNCE_HARMFUL_TIME
 	// Our announcement names the area the anomaly picked, which setup() chooses. False
 	// Alarm builds its borrowed event without ever calling setup(), so a faked anomaly
-	// has no spawn turf and announce() bails on the first line — it would burn a False
+	// has no spawn turf and announce() bails on the first line. It would burn a False
 	// Alarm occurrence and say nothing at all.
 	fakeable = FALSE
 	/// Area containing the selected spawn turf, used for the rough-location warning.
@@ -100,7 +100,7 @@
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_bioscrambler
 	min_players = 1
 	// Admin-only. The announcement names a compartment, but the anomaly wanders out of it
-	// and a swapped limb needs surgery to put right — the crew eats a permanent injury for
+	// and a swapped limb needs surgery to put right. The crew eats a permanent injury for
 	// walking down the wrong corridor. Every other anomaly's damage ends when it does.
 	max_occurrences = 0
 	weight = 0
@@ -281,7 +281,7 @@
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_vortex
 	min_players = 2
 	// Admin-only. It eats whatever it reaches, crew and cargo alike, and there is nothing
-	// to do about it but be elsewhere — which the announcement does not give you time for.
+	// to do about it but be elsewhere, which the announcement does not give you time for.
 	max_occurrences = 0
 	weight = 0
 	description = "This anomaly sucks in and detonates items."

@@ -344,6 +344,12 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 		var/list/area_turfs = checked_area.get_turfs_by_zlevel(z)
 		if(!checked_area.allow_shuttle_docking)
 			. |= INTERSECTS_NON_WHITELISTED_AREA
+		// VOIDCREW EDIT ADDITION: a virtual domain's reservation floor is plain
+		// /area/space, which whitelists docking. Without this a bitrunner frames up a
+		// shuttle inside VR and flies it - and everything they looted - back to the ship.
+		else if(SSbitrunning.is_domain_turf(checked_turf))
+			. |= INTERSECTS_NON_WHITELISTED_AREA
+		// VOIDCREW EDIT END
 		if(checked_area.apc)
 			var/obj/machinery/power/apc/apc = checked_area.apc
 			if(turfs[get_turf(apc)])

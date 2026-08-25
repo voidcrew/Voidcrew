@@ -228,6 +228,17 @@
 	for(var/turf/turf as anything in RANGE_TURFS(range, center))
 		if(turf.is_transition_turf())
 			continue // Avoid picking these at all cost
+		// VOIDCREW EDIT ADDITION: never offer the world border as a landing spot. Upstream
+		// only ever reaches cordon through /area/misc/cordon, which the NOTELEPORT test
+		// below catches; packed lattice levels paint their band with a raw turf swap that
+		// leaves the AREA alone (place_cordon_turf() in voidcrew/datums/map_zones.dm), so
+		// the band is /turf/cordon standing in plain /area/space and the area test sees
+		// nothing wrong with it. Filtering here rather than only refusing in
+		// check_teleport_valid() means an imprecise teleport picks other ground instead of
+		// failing outright. See the matching guard in check_teleport_valid().
+		if(istype(turf, /turf/cordon))
+			continue
+		// VOIDCREW EDIT END
 		if(skip_restrictions)
 			turfs.Add(turf)
 			continue
@@ -260,10 +271,65 @@
 	if(HAS_TRAIT(teleported_atom, TRAIT_NO_TELEPORT) || HAS_TRAIT(destination_turf, TRAIT_NO_TELEPORT))
 		return FALSE
 
+	// VOIDCREW EDIT ADDITION: never land anybody inside the world border.
+	//
+	// /turf/cordon is dense, opaque, airless and indestructible - ScrapeAway() returns
+	// itself, Melt() no-ops, explosions and acid do nothing - so a mob that arrives inside
+	// one is not "stuck in a wall" in the usual diggable-out sense. Unless it lands on the
+	// single ring of band that touches live ground, every neighbour is cordon too, so it
+	// cannot step out either, and the turf carries no air. It is a silent soft-lock ending
+	// in suffocation, with no way for anyone but an admin to reach the body.
+	//
+	// Upstream never had to guard this because upstream cordon only exists around a turf
+	// reservation, where generate_cordon() moves the turfs into /area/misc/cordon - a
+	// NOTELEPORT area, refused a few lines below, whose Entered() dusts trespassers so the
+	// case is at least loud. Packed lattice levels paint their band by raw turf swap and
+	// never touch the area (place_cordon_turf(), voidcrew/datums/map_zones.dm), leaving
+	// /turf/cordon sitting in plain /area/space: no NOTELEPORT, no Entered() handler.
+	// The footprint test further down does not cover it either, since the gutter belongs to
+	// no tenant and map_region_for_turf() answers null for it, which that check treats as
+	// unclaimed ground and lets through.
+	//
+	// This is how a planet's bluespace anomaly put two crewmembers in the border in round 12:
+	// it teleports anyone within a tile to a random turf up to 4 away (8 on a Bumped()), a
+	// planet's ground runs to the very edge of its 123x123 slot, and the band starts one turf
+	// later. Both were standing at x=134 on a slot whose western edge is x=131, both landed on
+	// x=130 - the last column of the five-turf gutter, exactly 4 away - logged as plain
+	// "Space", gasping, and neither could walk back out under their own power.
+	//
+	// Keyed on the turf type rather than the area so it holds wherever cordon is painted.
+	if(istype(destination_turf, /turf/cordon))
+		return FALSE
+	// VOIDCREW EDIT END
+
 	// prevent unprecise teleports from landing you outside of the destination's reserved area
 	if(is_reserved_level(destination_turf.z) && istype(original_destination) \
 		&& SSmapping.get_reservation_from_turf(destination_turf) != SSmapping.get_reservation_from_turf(get_turf(original_destination)))
 		return FALSE
+
+	// VOIDCREW EDIT ADDITION: the same containment, on the slot lattice.
+	// The reserved-level test above was the ONLY thing keeping an imprecise teleport inside
+	// the site it aimed at, and it only ever worked because ruins and asteroid fields lived
+	// on ZTRAIT_RESERVED levels. Packed sites do not - lattice levels are minted
+	// ZTRAIT_MINING + ZTRAIT_LINKAGE - so that test is skipped for them entirely. Meanwhile
+	// a bag of holding pushes precision to at least 100 (see do_teleport() above), and
+	// get_teleport_turfs() is RANGE_TURFS(precision, center): a 201x201 landing square that
+	// covers every slot on a 255x255 packed level. The cordon band is excluded by the turf
+	// test above - NOT, as this comment used to claim, because it is NOTELEPORT; a packed
+	// level's band keeps whatever area it was painted over, which is normally plain
+	// /area/space. A co-tenant's /area/space and /area/ruin carry no flag either.
+	//
+	// Refuses only ground that POSITIVELY resolves to a DIFFERENT region, so unclaimed
+	// ground - a roundstart level, deep space, the gutter, a build-out - passes exactly as
+	// it does today and this can never wedge a teleport that currently works.
+	if(istype(original_destination) && destination_turf)
+		var/turf/wanted_turf = get_turf(original_destination)
+		var/datum/wanted_region = wanted_turf ? map_region_for_turf(wanted_turf) : null
+		if(wanted_region)
+			var/datum/landing_region = map_region_for_turf(destination_turf)
+			if(landing_region && landing_region != wanted_region)
+				return FALSE
+	// VOIDCREW EDIT END
 
 	if((origin_area.area_flags & NOTELEPORT) || (destination_area.area_flags & NOTELEPORT))
 		return FALSE
@@ -271,6 +337,15 @@
 	// If one of the areas you're trying to tp to has local_teleport, and they're not the same, return.
 	if(((origin_area.area_flags & LOCAL_TELEPORT) || (destination_area.area_flags & LOCAL_TELEPORT)) && destination_area != origin_area)
 		return FALSE
+
+	// VOIDCREW EDIT ADDITION: bitrunning containment. The LOCAL_TELEPORT check above
+	// only covers tiles a domain template painted an area onto - the untouched floor of
+	// the reservation is plain /area/space, which has no such flag. A quantum pad built
+	// on one of those tiles teleports real loot out of VR and past the byteforge, which
+	// is the only sanctioned way anything leaves a domain. Gate on the reservation.
+	if(SSbitrunning.is_domain_turf(get_turf(teleported_atom)) != SSbitrunning.is_domain_turf(destination_turf))
+		return FALSE
+	// VOIDCREW EDIT END
 
 	return TRUE
 

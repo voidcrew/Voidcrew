@@ -22,7 +22,17 @@ All ShuttleMove procs go here
 		return
 
 	var/shuttle_dir = shuttle.dir
-	for(var/atom/movable/thing as anything in contents)
+	// VOIDCREW EDIT CHANGE - original: `for(var/atom/movable/thing as anything in contents)`
+	// Every branch below pulls the atom it is looking at straight back out of contents -
+	// step() re-parents it, qdel() nullspaces it, gib() deletes the mob - and DM walks a
+	// live list by index, so each removal slides the next occupant down into the slot we
+	// have already passed and it is never visited. On a station berth that costs a stray
+	// item nobody notices. On a planet berth it is the fuel tank (or the wandering fauna)
+	// standing behind the one we just shoved: it is skipped here, the hull is copied on
+	// top of it in takeoff(), and it ends up sitting on the deck. Iterate a snapshot.
+	for(var/atom/movable/thing as anything in contents.Copy())
+		if(QDELETED(thing) || thing.loc != src)
+			continue
 		if(thing.resistance_flags & SHUTTLE_CRUSH_PROOF)
 			continue
 		if(isliving(thing))
@@ -75,6 +85,13 @@ All ShuttleMove procs go here
 
 	if(shuttle_depth)
 		oldT.ScrapeAway(shuttle_depth)
+		// VOIDCREW EDIT ADDITION: a departure that bares open, unclaimed space leaves an
+		// initialized /turf/open/space with a starlight source nothing will ever free -
+		// ship levels have no teardown. Hand it back to uninitialized space/basic. Region
+		// guard: a berth inside a site footprint or a transit/turf reservation is that
+		// owner's ground and gets swept by ITS teardown; see return_to_uninitialized_space().
+		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
+			oldT.return_to_uninitialized_space()
 
 	if(rotation)
 		shuttleRotate(rotation, params = ALL) //see shuttle_rotate.dm
@@ -383,11 +400,46 @@ All ShuttleMove procs go here
 
 /obj/structure/cable/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
-	cut_cable_from_powernet(FALSE)
+	// Voidcrew: gated on MOVE_AREA, matching /obj/structure/lattice above. Without it a
+	// cable the move is NOT carrying gets cut anyway - and never reconnected, because
+	// afterShuttleMove()'s Connect_cable() only runs for atoms in moved_atoms, which
+	// needs MOVE_CONTENTS. Any foreign cable that ends up inside the move rectangle (a
+	// co-tenant's grid on a packed z-level, ground the hull is merely parked on) is
+	// therefore killed silently and permanently by a ship taking off next to it.
+	if(!(. & MOVE_AREA))
+		return
+	// No neighbour re-propagation: every neighbour is also about to be cut and moved,
+	// and the deferred timers would fire mid-transplant (the move CHECK_TICK-yields),
+	// pinning half-built powernets onto cables that afterShuttleMove() then trusts.
+	cut_cable_from_powernet(FALSE, FALSE)
+
+/obj/structure/cable/shuttleRotate(rotation, params)
+	. = ..()
+	// linked_dirs is direction data like any dir, so a rotated landing must rotate it
+	// too. afterShuttleMove()'s powernet rebuild walks the grid through EVERY cable's
+	// linked_dirs (get_cable_connections()), not just the cable being reconnected, so
+	// one cable still carrying pre-rotation bits stalls the walk there and strands
+	// everything beyond it on a separate, sourceless powernet - wired but dead.
+	if(!linked_dirs)
+		return
+	var/rotated_dirs = 0
+	for(var/check_dir in GLOB.cardinals)
+		if(linked_dirs & check_dir)
+			rotated_dirs |= angle2dir(rotation + dir2angle(check_dir))
+	linked_dirs = rotated_dirs
 
 /obj/structure/cable/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	connect_cable(TRUE)
+
+/obj/structure/cable/lateShuttleMove(turf/oldT, list/movement_force, move_dir)
+	. = ..()
+	// Deliberately NOT in afterShuttleMove(): the powernet walk trusts every walked
+	// cable's linked_dirs, and those are only per-cable correct as each cable's
+	// afterShuttleMove() runs. Propagating from the first landed cable while later
+	// cables still carry stale bits splits one physical grid into several nets, and
+	// propagate_if_no_network() never revisits a cable that has one. By the late
+	// pass every cable has relinked, so the first propagate covers the whole grid.
 	propagate_if_no_network()
 
 /obj/machinery/power/shuttle_engine/hypotheticalShuttleMove(move_mode)

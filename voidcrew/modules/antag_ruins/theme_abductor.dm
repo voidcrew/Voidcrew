@@ -1,14 +1,14 @@
 /**
- * # The Menagerie — abductor vestige
+ * # The Menagerie: abductor vestige
  *
  * A two-abductor survey vessel gone quiet mid-study. The scientist is still
  * at its bench, keeping the log; the agent is unaccounted for, and so is the
- * occupant of the specimen cell that stands torn open — from the inside.
+ * occupant of the specimen cell that stands torn open, from the inside.
  * Trials are the survey's field protocols, run on the crew's own terms: a
  * catalogue reading (keep a tagged subject in a lens's focus), a benign graft
  * (gift a stranger a healing gland), and baseline telemetry (probe readings
  * off people still on their feet). Every protocol wants a live, minded
- * subject and releases them no worse than it found them — the Curator is a
+ * subject and releases them no worse than it found them. The Curator is a
  * cataloguer, not a butcher, and the ethics of HOW the subject is kept still
  * are left, pointedly, to the supplicant. The Curator's boons (the baton,
  * the anchor tag, the silence field, the gland graft) are defined with the
@@ -18,7 +18,7 @@
 // How long the specimen tag takes to press home (the subject's window to object)
 #define VESTIGE_TAG_APPLY_TIME (2.5 SECONDS)
 // One unbroken reading, subject in focus throughout. Keep the trial desc's
-// "thirty" in sync — initial() values must be compile-time constant, so no
+// "thirty" in sync, initial() values must be compile-time constant, so no
 // interpolation there.
 #define VESTIGE_READING_DURATION (30 SECONDS)
 // How far from the lens the subject may drift mid-reading. Keep the trial
@@ -39,7 +39,7 @@
 #define VESTIGE_PROBE_READINGS_NEEDED 6
 // Most readings any single subject can credit. Keep the trial desc's "two" in sync.
 #define VESTIGE_PROBE_READINGS_PER_SUBJECT 2
-// Stamina sting per credited probe reading — enough to make the reading
+// Stamina sting per credited probe reading, enough to make the reading
 // honest, nowhere near enough to fold anyone
 #define VESTIGE_PROBE_STING 15
 // The probe recalibrates between readings; no machine-gunning a sparring partner
@@ -80,7 +80,7 @@
 	fulfilled_line = "That protocol is closed. Re-running a closed study proves nothing but nostalgia."
 	renounce_line = "Withdrawal recorded. The subject joins the control group. The control group has never produced anything. That is what it is for."
 	claim_line = "Compensation is outstanding on the subject's file. Collect it. An unbalanced ledger invites review."
-	exhausted_line = "Inventory is exhausted. The subject has been — the log searches for the clinical term — thorough."
+	exhausted_line = "Inventory is exhausted. The subject has been (the log searches for the clinical term) thorough."
 	remember_line = "Subject expired; subject resumed. Noted without comment. The file was never closed. We do not close files over technicalities."
 
 // ===== PROTOCOL: ACQUISITION =====
@@ -89,7 +89,7 @@
 	name = "Protocol: Acquisition"
 	// Keep the numbers in sync with VESTIGE_READING_DURATION / VESTIGE_READING_RADIUS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the tag and the lens. Pick a live, conscious humanoid — the protocol needs someone actually home behind the eyes — and affix the tag. Deploy the lens, start the reading, and keep the subject within three tiles of it for thirty unbroken seconds, alive and out of crit. How you manage that is up to you: barricades, bargains, a firm grip or plain consent all produce the same data. A finished reading releases the subject unharmed."
+	desc = "Take the tag and the lens. Pick a live, conscious humanoid (the protocol needs someone actually home behind the eyes) and affix the tag. Deploy the lens, start the reading, and keep the subject within three tiles of it for thirty unbroken seconds, alive and out of crit. How you manage that is up to you: barricades, bargains, a firm grip or plain consent all produce the same data. A finished reading releases the subject unharmed."
 	/// The currently tagged subject (weakref; retagging moves the tag and restarts any reading)
 	var/datum/weakref/tagged_ref
 	/// Deciseconds of the current reading, zeroed whenever it aborts
@@ -108,9 +108,9 @@
 		return "No subject is tagged. Press the applicator to a live, conscious humanoid."
 	if(reading_underway)
 		return "The reading of [subject] stands at [round(reading_progress / 10)] of [VESTIGE_READING_DURATION / 10] seconds. Keep [subject.p_them()] within [VESTIGE_READING_RADIUS] tiles of the lens, alive and out of collapse."
-	return "[subject] is tagged. Deploy the lens, begin the reading, and keep [subject.p_them()] in focus — however you can."
+	return "[subject] is tagged. Deploy the lens, begin the reading, and keep [subject.p_them()] in focus, however you can."
 
-/// Tags a new subject. Restarts any reading in progress — a new specimen is a new file.
+/// Tags a new subject. Restarts any reading in progress. A new specimen is a new file.
 /datum/vestige_trial/acquisition/proc/tag_subject(mob/living/subject)
 	tagged_ref = WEAKREF(subject)
 	reading_progress = 0
@@ -118,7 +118,7 @@
 
 /**
  * Accrues reading time from the lens. On a finished reading the subject is
- * released — politely, intact — and the trial completes (and deletes itself).
+ * released (politely, intact) and the trial completes (and deletes itself).
  * Returns TRUE when it did; the caller must not touch the trial after that.
  */
 /datum/vestige_trial/acquisition/proc/advance_reading(deciseconds)
@@ -134,7 +134,7 @@
 	complete()
 	return TRUE
 
-/// Zeroes the current reading. The attempt fails; the tag — and the trial — hold.
+/// Zeroes the current reading. The attempt fails; the tag (and the trial) hold.
 /datum/vestige_trial/acquisition/proc/abort_reading()
 	reading_underway = FALSE
 	var/lost = reading_progress
@@ -144,11 +144,11 @@
 		return
 	var/mob/living/user = owner?.current
 	if(isliving(user))
-		to_chat(user, span_warning("The reading collapses — [round(lost / 10)] seconds of telemetry, discarded. The tag holds. Begin again."))
+		to_chat(user, span_warning("The reading collapses. [round(lost / 10)] seconds of telemetry, discarded. The tag holds. Begin again."))
 
 /obj/item/vestige_specimen_tag
 	name = "specimen tag applicator"
-	desc = "A silver abductor instrument ending in a ring of fine needles. It leaves nothing a scalpel could find later — just a point of violet light under the skin that something else can read from across a room."
+	desc = "A silver abductor instrument ending in a ring of fine needles. It leaves nothing a scalpel could find later, just a point of violet light under the skin that something else can read from across a room."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "gizmo_mark"
 	inhand_icon_state = "silencer"
@@ -163,7 +163,7 @@
 		return
 	var/mob/living/subject = trial.tagged_ref?.resolve()
 	if(subject)
-		. += span_notice("Its display reads, in tidy alien script: SUBJECT — [subject].")
+		. += span_notice("Its display reads, in tidy alien script: SUBJECT: [subject].")
 
 /obj/item/vestige_specimen_tag/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!ishuman(target) || target == user)
@@ -181,8 +181,8 @@
 	if(trial.tagged_ref?.resolve() == subject)
 		balloon_alert(user, "already tagged!")
 		return
-	// A short channel, in the open. The tag is not a secret; it is a selection —
-	// the subject gets their whole window to object, flee, or shake hands.
+	// A short channel, in the open. The tag is not a secret; it is a selection.
+	// The subject gets their whole window to object, flee, or shake hands.
 	subject.visible_message(
 		span_warning("[user] presses a small silver instrument against [subject]'s shoulder!"),
 		span_userdanger("[user] presses something cold and precise against your shoulder!"),
@@ -239,7 +239,7 @@
 
 /**
  * The unfolded lens. Holds the keeper's MIND, never the trial (the wake-candle
- * exception) — the reading resolves the keeper's active pact every tick, so a
+ * exception), the reading resolves the keeper's active pact every tick, so a
  * renounced pact powers it down and a completed one folds it away. Breaking it
  * or wrenching it off-target costs the attempt, never the trial: the folded
  * core always survives to be redeployed.
@@ -265,7 +265,7 @@
 
 /obj/structure/vestige_observation_lens/examine(mob/user)
 	. = ..()
-	. += span_notice("A tap starts a reading — or disrupts one already running. Alt-click folds it back into its carried form.")
+	. += span_notice("A tap starts a reading, or disrupts one already running. Alt-click folds it back into its carried form.")
 	if(scanning)
 		. += span_warning("It is mid-reading, tracking something with total attention.")
 
@@ -331,7 +331,7 @@
 		stop_reading()
 		visible_message(span_notice("[src] powers down mid-reading and swings back to its rest position."))
 		return
-	// Anyone else needs a moment hands-on — the keeper's window to stop them
+	// Anyone else needs a moment hands-on, the keeper's window to stop them
 	balloon_alert(user, "wrenching the lens aside...")
 	if(!do_after(user, VESTIGE_LENS_DISRUPT_TIME, target = src))
 		return
@@ -368,7 +368,7 @@
 	INVOKE_ASYNC(src, PROC_REF(try_fold), user)
 	return CLICK_ACTION_SUCCESS
 
-/// Folds the lens back down — the keeper packing up, or anyone else confiscating it
+/// Folds the lens back down: the keeper packing up, or anyone else confiscating it
 /obj/structure/vestige_observation_lens/proc/try_fold(mob/living/user)
 	balloon_alert(user, "folding the lens...")
 	if(!do_after(user, VESTIGE_LENS_FOLD_TIME, target = src))
@@ -397,16 +397,16 @@
 		return
 	var/mob/living/subject = trial.tagged_ref?.resolve()
 	if(!istype(subject) || !focus_holds(subject))
-		visible_message(span_warning("[src] chirps sourly and swings back to its rest position — the reading has lost its subject."))
+		visible_message(span_warning("[src] chirps sourly and swings back to its rest position. The reading has lost its subject."))
 		stop_reading()
 		return
 	// The tether advertises the reading to the whole room; keeping the subject
-	// inside it — by rhetoric, barricade, or bear hug — is the supplicant's job
+	// inside it (by rhetoric, barricade, or bear hug) is the supplicant's job
 	if(SPT_PROB(60, seconds_per_tick))
 		Beam(subject, icon_state = "purple_lightning", time = 1 SECONDS)
 	if(SPT_PROB(8, seconds_per_tick))
 		to_chat(subject, span_warning("You can feel the lens watching you, steady and unblinking."))
-	if(trial.advance_reading(seconds_per_tick * (1 SECONDS))) // may complete the pact, deleting the trial — touch it no further
+	if(trial.advance_reading(seconds_per_tick * (1 SECONDS))) // may complete the pact, deleting the trial, touch it no further
 		scanning = FALSE
 		STOP_PROCESSING(SSobj, src)
 		set_light(l_on = FALSE)
@@ -420,12 +420,12 @@
 	name = "Protocol: Graft"
 	// Keep the count in sync with VESTIGE_GRAFT_STEPS (initial values must be
 	// constant, so no define interpolation here)
-	desc = "Take the kit. Pick a live humanoid subject — conscious, or sedated by arrangement — and lay them on a table or bed. The graft runs in four bedside steps: incise, calibrate, implant, seal. An interrupted step costs only that step. The implant is a replicator gland, and it is a gift: it will spend the rest of the subject's life quietly repairing them. We have taken a great deal over the years. Giving something back is new, and the early data is promising."
+	desc = "Take the kit. Pick a live humanoid subject (conscious, or sedated by arrangement) and lay them on a table or bed. The graft runs in four bedside steps: incise, calibrate, implant, seal. An interrupted step costs only that step. The implant is a replicator gland, and it is a gift: it will spend the rest of the subject's life quietly repairing them. We have taken a great deal over the years. Giving something back is new, and the early data is promising."
 	/// The subject mid-procedure (weakref; switching subjects restarts the graft)
 	var/datum/weakref/patient_ref
 	/// Steps completed on the current subject, of VESTIGE_GRAFT_STEPS
 	var/steps_done = 0
-	/// Step names, in procedure order (shared with the kit's flavor lists — keep aligned)
+	/// Step names, in procedure order (shared with the kit's flavor lists, keep aligned)
 	var/static/list/step_names = list("incision", "calibration", "implantation", "seal")
 
 /datum/vestige_trial/vivisection/on_accepted(mob/living/user)
@@ -440,8 +440,8 @@
 
 /**
  * Credits one completed graft step on the given subject; a different subject
- * restarts the protocol from the top. May complete (and delete) the trial —
- * callers must not touch it after this.
+ * restarts the protocol from the top. May complete (and delete) the trial.
+ * Callers must not touch it after this.
  */
 /datum/vestige_trial/vivisection/proc/advance_step(mob/living/patient)
 	if(patient_ref?.resolve() != patient)
@@ -458,21 +458,21 @@
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "belt"
 	w_class = WEIGHT_CLASS_NORMAL
-	/// Channel sounds, one per step — order matches /datum/vestige_trial/vivisection/step_names
+	/// Channel sounds, one per step: order matches /datum/vestige_trial/vivisection/step_names
 	var/static/list/step_sounds = list(
 		'sound/items/handling/surgery/scalpel1.ogg',
 		'sound/machines/terminal/terminal_processing.ogg',
 		'sound/items/handling/surgery/organ2.ogg',
 		'sound/items/handling/surgery/cautery1.ogg',
 	)
-	/// What the room sees as each step begins — order matches step_names
+	/// What the room sees as each step begins, order matches step_names
 	var/static/list/step_start_messages = list(
 		"draws a glowing line down %PATIENT%'s sternum with an instrument from the kit",
 		"holds a chattering instrument over the incision while it reads %PATIENT%'s biology",
 		"lifts a fist-sized gland from the kit and seats it, unhurried, in %PATIENT%'s chest",
 		"draws a sealing wand along the incision, and it closes over",
 	)
-	/// What the subject feels as each step begins — order matches step_names
+	/// What the subject feels as each step begins, order matches step_names
 	var/static/list/step_feel_messages = list(
 		"A line of painless cold draws itself down your chest. It doesn't even bleed.",
 		"Something reads you, organ by organ, and takes notes.",
@@ -524,7 +524,7 @@
 	// The seal: the gland goes in for real, and the protocol closes
 	if(!implant_gland(patient, user))
 		return ITEM_INTERACT_BLOCKING
-	trial.advance_step(patient) // completes (and deletes) the trial — nothing touches it after this
+	trial.advance_step(patient) // completes (and deletes) the trial, nothing touches it after this
 	return ITEM_INTERACT_SUCCESS
 
 /// The graft's standing terms, checked before and after every step, with a word about whatever is missing
@@ -535,7 +535,7 @@
 	if(patient.stat >= SOFT_CRIT) // in crit; the dead case already returned above
 		balloon_alert(user, "stabilize the subject first!")
 		return FALSE
-	// Someone must be home to receive the gift (mind check — no monkey wards)
+	// Someone must be home to receive the gift (mind check, no monkey wards)
 	if(!patient.mind)
 		balloon_alert(user, "nobody home to graft for!")
 		return FALSE
@@ -552,11 +552,11 @@
 	return TRUE
 
 /**
- * Seats the replicator gland — the upstream abductor heal gland, which rides
+ * Seats the replicator gland: the upstream abductor heal gland, which rides
  * the heart slot and self-starts on insert (uses = -1, on_mob_insert). The
  * subject's own heart comes back out of the graft intact and is handed to the
  * surgeon, neatly sleeved: no lasting harm means nothing of theirs is lost,
- * only upgraded. The compliance hardware ships decommissioned — this is a
+ * only upgraded. The compliance hardware ships decommissioned, this is a
  * gift, not a leash.
  */
 /obj/item/vestige_graft_kit/proc/implant_gland(mob/living/carbon/human/patient, mob/living/user)
@@ -591,7 +591,7 @@
 	// Keep the counts in sync with VESTIGE_PROBE_READINGS_NEEDED /
 	// VESTIGE_PROBE_READINGS_PER_SUBJECT (initial values must be constant, so
 	// no define interpolation here)
-	desc = "Take the probe. The catalogue needs baseline telemetry from humanoids under load: conscious, upright and unrestrained. Six readings, and no more than two from any one subject. The probe announces itself on contact, which is deliberate — a subject who knows they are being measured pushes back, and the pushing back is the data."
+	desc = "Take the probe. The catalogue needs baseline telemetry from humanoids under load: conscious, upright and unrestrained. Six readings, and no more than two from any one subject. The probe announces itself on contact, which is deliberate. A subject who knows they are being measured pushes back, and the pushing back is the data."
 	/// Readings credited so far
 	var/readings_taken = 0
 	/// Readings credited per subject (weakref -> count), capping farm-a-friend
@@ -651,7 +651,7 @@
 	if(!subject.mind)
 		balloon_alert(user, "nobody home to measure!")
 		return
-	if(!trial.record_reading(subject)) // may complete (and delete) the trial — resolve it no further
+	if(!trial.record_reading(subject)) // may complete (and delete) the trial, resolve it no further
 		balloon_alert(user, "this subject's file is complete!")
 		return
 	COOLDOWN_START(src, recalibration, VESTIGE_PROBE_RECALIBRATE_TIME)
@@ -677,7 +677,7 @@
 #undef VESTIGE_PROBE_RECALIBRATE_TIME
 
 /**
- * # The Menagerie — abductor vestige BOONS (patron: the Curator)
+ * # The Menagerie: abductor vestige BOONS (patron: the Curator)
  *
  * The boon half of the abductor theme: the Curator pays out in equipment and
  * procedures, catalogued like everything else it owns. Upstream abductor gear
@@ -693,7 +693,7 @@
  * their granted gear/spells.
  */
 
-// Boon and gear descs quote these numbers literally — keep them in sync.
+// Boon and gear descs quote these numbers literally. Keep them in sync.
 /// Recharge between successful motor-interruption (stun) discharges on the base instrument
 #define VESTIGE_INSTRUMENT_STUN_RECHARGE (8 SECONDS)
 /// Recharge between stun discharges on the perfected instrument
@@ -725,8 +725,8 @@
 
 // The instrument is a local port of the abductor baton (abductor_items.dm):
 // same sprite family, same mode structure, minus the training lock, the probe
-// mode, and the worst of the numbers. Modes are trimmed from four to two —
-// stun and restraints — with per-mode internal recharges so the tool is a
+// mode, and the worst of the numbers. Modes are trimmed from four to two,
+// stun and restraints, with per-mode internal recharges so the tool is a
 // scalpel, not a crowd-control firehose. Sleep induction is held back for the
 // revision, since taking a specimen off the board entirely is the strongest
 // thing the tool does.
@@ -751,7 +751,7 @@
 
 /**
  * /datum/vestige_boon/item has no upgrade-replacement logic (only spells do),
- * so the perfected boon handles the swap itself — and it revises rather than
+ * so the perfected boon handles the swap itself, and it revises rather than
  * replaces: the first unrevised instrument the claimant is carrying is
  * upgraded where it sits, so the tool keeps its slot, its bag, and its charge
  * timers. Only a claimant carrying no instrument at all (stashed in a locker,
@@ -771,7 +771,7 @@
 // own rules. The anchor is a physical tag rather than a stored turf on
 // purpose: this fork's ships are shuttles whose turfs are copied wholesale
 // when they transit, so a turf ref would strand the anchor in the empty space
-// the ship departed — a tag object rides the deck it is planted on.
+// the ship departed, a tag object rides the deck it is planted on.
 /datum/vestige_boon/spell/anchor_tag
 	name = "Recall Anchor"
 	// Keep the duration in sync with VESTIGE_ANCHOR_RECALL_COOLDOWN
@@ -791,23 +791,23 @@
 
 // The null field translates the abductor silencer (abductor_items.dm) for
 // crew hands. Upstream shuts down radio HARDWARE; the boon enforces silence
-// on the speakers themselves — the mute status effect
+// on the speakers themselves, the mute status effect
 // (/datum/status_effect/silenced, applied via set_silence_if_lower, verified
-// in status_effects.dm) — which reads the same in play and cannot be undone
+// in status_effects.dm), which reads the same in play and cannot be undone
 // by toggling a headset back on.
 /datum/vestige_boon/spell/silence_field
 	name = "Null Field"
 	// Keep the numbers in sync with VESTIGE_NULL_FIELD_RADIUS /
 	// VESTIGE_NULL_FIELD_DURATION (initial values must be constant, so no
 	// define interpolation here)
-	desc = "Silence every voice close around you for a while. Yours keeps working. It does no damage and makes no noise doing it — most procedures go smoother without commentary."
+	desc = "Silence every voice close around you for a while. Yours keeps working. It does no damage and makes no noise doing it. Most procedures go smoother without commentary."
 	grant_text = "You find you know exactly how to take a room's voice away."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_null_field
 
 /**
  * The Gift: the upstream abductor HEAL gland (/obj/item/organ/heart/gland/heal,
- * glands/heal.dm), implanted directly. The organ carries no antag coupling —
- * its activate() loop runs off owner alone, ejecting implants, regrowing
+ * glands/heal.dm), implanted directly. The organ carries no antag coupling.
+ * Its activate() loop runs off owner alone, ejecting implants, regrowing
  * failing organs and limbs, and purging toxins/restoring blood on a 20-40
  * second cycle (verified in gland.dm/heal.dm; on_mob_insert Start()s it for
  * any non-surgical insertion). It replaces the heart in-slot: the displaced
@@ -816,7 +816,7 @@
  * squeamish can reverse the procedure surgically later.
  *
  * Body-bound by nature: the gland lives in the flesh, not the mind, so it is
- * lost with the body — the vestige record re-runs grant() on respawn restore,
+ * lost with the body. The vestige record re-runs grant() on respawn restore,
  * which implants a fresh one. The desc says so honestly.
  */
 /datum/vestige_boon/gland_graft
@@ -832,7 +832,7 @@
 	// Decommissioned like the trial kit's graft: the upstream gland ships with
 	// 3 mind-control charges any abductor console could spend on the bearer
 	gift.mind_control_uses = 0
-	// Boons must land on plain humans, and they will — but a granting ritual
+	// Boons must land on plain humans, and they will, but a granting ritual
 	// should never eat the pick on an exotic body. Non-carbons get the organ
 	// in hand for later surgical installation instead.
 	if(!iscarbon(user))
@@ -859,7 +859,7 @@
  *
  * The base pipeline's shared stun cooldown (var/cooldown) gates EVERY
  * left-click mode behind one timer, which would break the tool's identity
- * combo (stun, switch settings, restrain) — so it is zeroed, upstream-style,
+ * combo (stun, switch settings, restrain), so it is zeroed, upstream-style,
  * and each mode meters itself inside baton_effect() instead. A stun attempt
  * during recharge is a harmless zero-force bonk with a balloon.
  */
@@ -881,7 +881,7 @@
 	affect_cyborg = TRUE
 	actions_types = list(/datum/action/item_action/toggle_mode)
 	action_slots = ALL
-	/// Current setting — always one of the entries in modes
+	/// Current setting, always one of the entries in modes
 	var/mode = BATON_STUN
 	/// The settings this pattern carries, in cycle order (the revision splices in BATON_SLEEP)
 	var/list/modes = list(BATON_STUN, BATON_CUFF)
@@ -983,8 +983,8 @@
 /**
  * Sleep induction (perfected pattern only), ported from upstream SleepAttack
  * with the round-deleting edges filed off: full effect only lands on a target
- * already stopped — incapacitated (ignoring mere cuffs or grabs, upstream's
- * own test) or flat on the deck — sleeps for 30 seconds instead of two
+ * already stopped, incapacitated (ignoring mere cuffs or grabs, upstream's
+ * own test) or flat on the deck, sleeps for 30 seconds instead of two
  * minutes, and the inducer recharges 20 seconds between doses. Standing
  * targets get token drowsiness; the stun setting exists for a reason.
  */
@@ -1023,7 +1023,7 @@
 /**
  * Restraint fabrication, ported from upstream CuffAttack unchanged in the
  * ways that matter: a 3 second channel, then upstream's self-tightening
- * hard-light restraints — 45 second breakout, and they discharge into sparks
+ * hard-light restraints, 45 second breakout, and they discharge into sparks
  * the moment they come off (energy/used is DROPDEL; verified in
  * abductor_items.dm).
  */
@@ -1103,14 +1103,14 @@
  * The pull refuses to cross z-levels. There is no upstream rule to match
  * (this tree's vest lost its blink-back), and in an overmap fork a cross-z
  * recall is a free ride home from anywhere in the galaxy. Because the tag is
- * a physical object, it transits WITH a ship that moves — so "same z" always
+ * a physical object, it transits WITH a ship that moves, so "same z" always
  * reads as "same local space", and a ship undocking without you honestly
  * strands you. do_teleport runs unforced on the magic channel: NOTELEPORT
  * areas and TRAIT_NO_TELEPORT keep their veto.
  */
 /datum/action/cooldown/spell/vestige_recall_anchor
 	name = "Recall Anchor"
-	desc = "Teleport back to your anchor tag. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
+	desc = "Teleport back to your anchor tag, from anywhere on the same world. It cannot reach a tag on a ship out in space or on another world. The pull takes a while to wind up and breaks if anything moves you. Right-click to plant or move the tag."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "vortex_recall"
 	background_icon_state = "bg_alien"
@@ -1137,7 +1137,7 @@
 	if(!replant_requested)
 		return ..()
 	// The button's timer is the pull's recharge, which is the number a player
-	// needs to see — but planting was never gated by it. Lift the timer for the
+	// needs to see, but planting was never gated by it. Lift the timer for the
 	// length of this trigger and hand back whatever is left of it, so a replant
 	// during the recharge goes through without clearing (or refreshing) it.
 	// Nothing on the planting path sleeps, so no tick can land in the gap.
@@ -1161,7 +1161,7 @@
 	if(. & SPELL_CANCEL_CAST)
 		return
 	// Both halves start their own cooldown (plant_tag and pull_to_tag), so the
-	// automatic one is waved off — otherwise planting, which is free, would
+	// automatic one is waved off. Otherwise planting, which is free, would
 	// stamp the pull's minute onto the button on its way out
 	. |= SPELL_NO_IMMEDIATE_COOLDOWN
 	if(planting_this_cast)
@@ -1176,13 +1176,15 @@
 		return . | SPELL_CANCEL_CAST
 	if(!here || here.z != destination.z)
 		owner.balloon_alert(owner, "anchor out of reach!")
-		to_chat(owner, span_warning("The tag answers faintly, from somewhere the pull cannot reach."))
+		// Say the rule out loud: players who left the tag on a ship now in orbit
+		// read the old vague line as the power being broken (round 14)
+		to_chat(owner, span_warning("The tag answers faintly from another space entirely. The pull only reaches a tag on the same world - it cannot cross to a ship out in space."))
 		return . | SPELL_CANCEL_CAST
 	// The wind-up lives here rather than in cast(): a broken pull cancels the
-	// whole cast, so it pays no recharge at all — standing still IS the cost
+	// whole cast, so it pays no recharge at all. Standing still IS the cost
 	if(!channel_pull(cast_on))
 		return . | SPELL_CANCEL_CAST
-	// Five seconds is long enough for the world to move underneath the tag — or
+	// Five seconds is long enough for the world to move underneath the tag, or
 	// for the caster to stop being one
 	if(QDELETED(owner) || QDELETED(cast_on))
 		return . | SPELL_CANCEL_CAST
@@ -1205,7 +1207,7 @@
  * on the caster's own tile so anyone watching gets the same warning the caster
  * does. do_after does the enforcing: walking off, being dragged, being thrown
  * or being stunned all break it, and a broken pull costs only the time. What
- * the caster is holding is left out of it — the pull is a thing done to the
+ * the caster is holding is left out of it. The pull is a thing done to the
  * body, and there is no reason swapping hands should interrupt it.
  */
 /datum/action/cooldown/spell/vestige_recall_anchor/proc/channel_pull(mob/living/user)
@@ -1238,7 +1240,7 @@
 	playsound(spot, 'sound/machines/click.ogg', 30, TRUE)
 	user.balloon_alert(user, "anchor planted")
 	StartCooldown(VESTIGE_ANCHOR_BUTTON_COOLDOWN) // planting is free; this is only anti-spam
-	// A tag in a warded area plants fine and then refuses every pull —
+	// A tag in a warded area plants fine and then refuses every pull,
 	// complain now, not at the worst possible moment
 	var/area/spot_area = get_area(spot)
 	if(spot_area.area_flags & NOTELEPORT)
@@ -1261,7 +1263,7 @@
 		user.start_pulling(passenger, supress_message = TRUE)
 		to_chat(passenger, span_warning("The deck blinks, and you are somewhere else. You are still held."))
 	else
-		to_chat(user, span_warning("The pull arrives alone — your passenger was refused."))
+		to_chat(user, span_warning("The pull arrives alone. Your passenger was refused."))
 
 /// Who comes along for the pull. The base anchor takes nobody.
 /datum/action/cooldown/spell/vestige_recall_anchor/proc/gather_passenger(mob/living/user)
@@ -1284,7 +1286,7 @@
 /// shuttle transits carry it with the deck it is planted on, where a stored
 /// turf ref would point forever at the tile the ship left behind. Effects
 /// are indestructible and immovable by default, so the counterplay is
-/// spotting it (it glows, faintly) and camping it — not breaking it.
+/// spotting it (it glows, faintly) and camping it, not breaking it.
 /obj/effect/vestige_anchor_tag
 	name = "recall anchor"
 	desc = "A stubby alien beacon planted flat against the deck. It stays with whatever it is stuck to, wherever that ends up going."
@@ -1325,9 +1327,9 @@
  * The abductor silencer, translated from hardware to procedure. Upstream
  * (abductor_items.dm) switches off radios in a small view radius; the boon
  * spec reads that as enforced silence and applies the mute status effect
- * (/datum/status_effect/silenced — TRAIT_MUTE under a timer, cleared on
+ * (/datum/status_effect/silenced, TRAIT_MUTE under a timer, cleared on
  * death/fullheal) to everyone caught in the field at cast. One application,
- * no lingering zone, no damage, and — deliberately — no sound or room-wide
+ * no lingering zone, no damage, and (deliberately) no sound or room-wide
  * message: a silencer that announced itself would be a contradiction. The
  * caster is exempt, as upstream exempts its user.
  *
@@ -1359,7 +1361,7 @@
 
 /datum/action/cooldown/spell/aoe/vestige_null_field/cast_on_thing_in_aoe(mob/living/victim, atom/caster)
 	if(victim.can_block_magic(antimagic_flags, charge_cost = 0))
-		to_chat(victim, span_notice("A pressure closes around your throat for a heartbeat — and something you carry shrugs it away."))
+		to_chat(victim, span_notice("A pressure closes around your throat for a heartbeat, and something you carry shrugs it away."))
 		return
 	victim.set_silence_if_lower(VESTIGE_NULL_FIELD_DURATION)
 	to_chat(victim, span_warning("Your voice goes somewhere you can't reach it. The room has gone completely silent."))

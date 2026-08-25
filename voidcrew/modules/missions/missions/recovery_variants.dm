@@ -1,5 +1,5 @@
 /**
- * # Recovery Mission Variants — Survey & Hot Extraction
+ * # Recovery Mission Variants: Survey & Hot Extraction
  *
  * Two voucher-mission types on the recovery pipeline that ask for a VERB
  * under pressure instead of a walk-and-grab:

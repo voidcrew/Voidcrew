@@ -1,5 +1,5 @@
 /**
- * # Waystation Halcyon — the green-zone general store
+ * # Waystation Halcyon: the green-zone general store
  *
  * Sundries, survival kit and honest prices for the safe outer ring. Credits
  * only; the most dangerous thing on the shelf is the chili in the rations.
@@ -8,7 +8,7 @@
 
 /**
  * Barnaby: thirty years on the same side of the same counter. Everything reads
- * soft and worn rather than professional — the sweater jacket and flat cap are
+ * soft and worn rather than professional. The sweater jacket and flat cap are
  * a shopkeeper's clothes, not a uniform, the reading glasses say he still does
  * the ledger by hand, and the mug is the bad coffee the shop is famous for.
  */
@@ -98,9 +98,11 @@
 		/datum/shop_sku/general/glass_sheets,
 		/datum/shop_sku/general/plasteel,
 		/datum/shop_sku/general/soap,
+		/datum/shop_sku/general/autolathe_board,
+		/datum/shop_sku/general/supply_console_board,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
-		// Intel & Charts — the cheap always-available rung; the dealt chart
+		// Intel & Charts: the cheap always-available rung; the dealt chart
 		// shelf below stocks the star charts and the named ruin coordinates
 		/datum/shop_sku/rumor,
 		// Barter
@@ -123,7 +125,7 @@
 		/datum/shop_sku/favor/field_contract_pad,
 		/datum/shop_sku/favor/freight_beacon,
 	)
-	// Charts are a mix — any outpost can end up holding the coordinates for
+	// Charts are a mix. Any outpost can end up holding the coordinates for
 	// anywhere. Named ruins are dealt without repeats across all three shops.
 	chart_pool = list(
 		/datum/shop_sku/chart/green,
@@ -150,6 +152,7 @@
 		/datum/shop_buyback/general/bear_pelt,
 		/datum/shop_buyback/general/spice_pods,
 		/datum/shop_buyback/general/pearl_clam,
+		/datum/shop_buyback/general/sea_crystal,
 	)
 	// Waystation restocking: gentle asks for the outer ring
 	// Pike's stall makes this the outpost that posts angling requests, and
@@ -165,6 +168,7 @@
 		list("type" = /obj/item/fish, "name" = "fresh planet-caught fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/sea_crystal, "name" = "sea crystal", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 	// Under the counter: hard contracts only, never sold
 	exclusive_rewards = list(
@@ -181,7 +185,7 @@
 		),
 		TRADER_LINE_SALE = list(
 			"There you are. Safe travels out there!",
-			"Lovely. Do come again — we're literally always here.",
+			"Lovely. Do come again. We're literally always here.",
 			"Wonderful choice. I'd have picked the same, and I picked all of it.",
 			"All wrapped up. Wave at the mechanic on your way out, she likes that.",
 		),
@@ -490,7 +494,7 @@
 	stock_min = 3
 	stock_max = 6
 
-// Hull stock. Ships take damage and not every crew can mine — Barnaby is the
+// Hull stock. Ships take damage and not every crew can mine, Barnaby is the
 // boring, reliable place to buy the material back.
 /datum/shop_sku/general/iron_sheets
 	name = "iron sheets (30)"
@@ -523,10 +527,10 @@
 	stock_max = 3
 
 // The fuel dock: plasma at a comfortable waystation markup. The deeper depots
-// pump it cheaper — the commute is the discount.
+// pump it cheaper, the commute is the discount.
 /datum/shop_sku/general/plasma_canister
 	name = "plasma canister (full)"
-	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots — you're paying for the haul out to the safe ring."
+	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots. You're paying for the haul out to the safe ring."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
 	price_credits = 1800
@@ -534,7 +538,7 @@
 	stock_max = 3
 
 // Generator fuel. The sheets are the lifeline for any hull with no ore redemption
-// machine aboard — without them a ship that burns its plasma has no way back.
+// machine aboard, without them a ship that burns its plasma has no way back.
 // The ore is the cheaper option per sheet, but only if you can actually smelt it.
 /datum/shop_sku/general/plasma_sheets
 	name = "solid plasma (20)"
@@ -581,7 +585,33 @@
 	item_path = /obj/item/soap
 	price_credits = 60
 
-// Chart and rumor SKUs live in shop_catalog_charts.dm — Barnaby draws his
+// Bootstrap insurance. An autolathe board only prints at a circuit imprinter,
+// and the imprinter kit only prints at an autolathe - a crew that loses its
+// lathe is locked out of the whole fabrication chain with no way back. Barnaby
+// stocking the board is the way back. (Round 15: a crew traded away an
+// autosurgeon because there was no other way to get one.)
+/datum/shop_sku/general/autolathe_board
+	name = "autolathe board"
+	desc = "The circuit board for an autolathe. If yours is gone, this is the only way to start fabricating again, so Barnaby keeps a couple in the back."
+	category = "Ship Sundries"
+	item_path = /obj/item/circuitboard/machine/autolathe
+	price_credits = 500 // invented, unplaytested
+	stock_min = 1
+	stock_max = 2
+
+// Same story for the supply console: the board design exists on the techweb
+// (Civilian Consoles, imprinter-printed), but a crew without an imprinter has
+// no path to one. Sold here so a broken or missing console isn't permanent.
+/datum/shop_sku/general/supply_console_board
+	name = "supply console board"
+	desc = "The circuit board for a ship supply console, the one that calls the cargo shuttle. Barnaby finds it very funny to sell you the thing you buy things with."
+	category = "Ship Sundries"
+	item_path = /obj/item/circuitboard/computer/voidcrew_cargo
+	price_credits = 500 // invented, unplaytested
+	stock_min = 1
+	stock_max = 2
+
+// Chart and rumor SKUs live in shop_catalog_charts.dm, Barnaby draws his
 // through chart_pool above rather than defining his own.
 
 // ===== ROTATING SHELF =====
@@ -670,10 +700,10 @@
 	demand_max = 4
 
 // The jungle planets' good: pod clusters foraged off the surface biomes.
-// Wild stock only — the vine can't be grown aboard, so there's nothing to farm.
+// Wild stock only: the vine can't be grown aboard, so there's nothing to farm.
 /datum/shop_buyback/general/spice_pods
 	name = "wild spice pods"
-	desc = "Pods snipped off jungle-world strangler vines, picked wild. Barnaby buys every cluster that comes through the door — apparently they do wonders for a stew."
+	desc = "Pods snipped off jungle-world strangler vines, picked wild. Barnaby buys every cluster that comes through the door. Apparently they do wonders for a stew."
 	category = "Forage"
 	item_path = /obj/item/stack/spice_pods
 	amount = 3
@@ -682,15 +712,28 @@
 	demand_max = 5
 
 // The beach planets' good: a rare live catch off the shore-water fishing table.
-// Bought sealed — Barnaby does the candling, and the pearl never leaves the back room.
+// Bought sealed: Barnaby does the candling, and the pearl never leaves the back room.
 /datum/shop_buyback/general/pearl_clam
 	name = "pearl clam (unopened)"
-	desc = "A live lagoon clam off the beach worlds, shell shut tight. Barnaby candles them behind the counter and pays for the glow — cracked or shucked ones are worth exactly nothing."
+	desc = "A live lagoon clam off the beach worlds, shell shut tight. Barnaby candles them behind the counter and pays for the glow. Cracked or shucked ones are worth exactly nothing."
 	category = "Trapper & Angler"
 	item_path = /obj/item/pearl_clam
 	pay_credits = 350
 	demand_min = 2
 	demand_max = 4
+
+// The beach planets' deep-water trophy: one crystal per guarded spawning
+// nexus (see voidcrew/modules/mob/living/simple_animal/friendly/sea_crystal.dm),
+// so supply is a fight and not a fishing rod. Priced well above the renewable
+// beach goods, demand kept short - a little of this stock goes a long way.
+/datum/shop_buyback/general/sea_crystal
+	name = "sea crystal"
+	desc = "A deep-ocean crystal off the beach worlds, cut out of a spawning nexus guarded by the very things it was making. Barnaby asks no questions about how it came off the reef, and says even less about why the buyers want them."
+	category = "Trapper & Angler"
+	item_path = /obj/item/sea_crystal
+	pay_credits = 800
+	demand_min = 1
+	demand_max = 2
 
 // Barter demo SKU: Barnaby pays in kit for raw plasma
 /datum/shop_sku/barter/plasma_for_medkit
@@ -703,7 +746,7 @@
 
 // ===== BACK ROOM =====
 // Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
-// per crew per round. Priced above the rare shelf on purpose — standing opens
+// per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/pike_ledger

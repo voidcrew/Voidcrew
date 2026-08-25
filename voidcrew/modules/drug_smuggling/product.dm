@@ -2,7 +2,7 @@
  * # Drug product
  *
  * The finished batch from the lab, packaged by purity tier. A mission-bound
- * recovery item like any other — the pad only takes it for the contract that
+ * recovery item like any other. The pad only takes it for the contract that
  * cooked it; binding vars and the contract examine come from the parent.
  */
 /obj/item/mission_recovery/drug_product
@@ -61,4 +61,4 @@
 	. += span_notice("Decrypted formula: <b>[recipe.street_name]</b>.")
 	for(var/list/entry in recipe.ingredients)
 		var/datum/overmap/planet/biome = entry["biome"]
-		. += span_notice("Requires: [entry["name"]] — harvested on a [initial(biome.name)].")
+		. += span_notice("Requires: [entry["name"]], harvested on a [initial(biome.name)].")

@@ -1,12 +1,30 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
 /obj/modular_map_connector,
-/obj/item/defibrillator/loaded,
-/obj/item/storage/medkit/brute,
-/obj/item/storage/medkit/fire,
-/obj/item/healthanalyzer,
-/obj/item/emergency_bed,
-/obj/item/bodybag,
+/obj/item/defibrillator/loaded{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/item/storage/medkit/brute{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/obj/item/storage/medkit/fire{
+	pixel_x = -7;
+	pixel_y = -7
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/obj/item/emergency_bed{
+	pixel_x = 9;
+	pixel_y = 1
+	},
+/obj/item/bodybag{
+	pixel_x = -2;
+	pixel_y = -9
+	},
 /turf/template_noop,
 /area/template_noop)
 

@@ -3,12 +3,12 @@
  *
  * A rampant "brand intelligence" takes over the target ship's vending machines,
  * which hurl their stock at the crew until the original carrier (Patient Zero)
- * is silenced — flip its speaker switch or cut all of its wires. If every vendor
+ * is silenced, flip its speaker switch or cut all of its wires. If every vendor
  * aboard is subverted first, the machines rise up and hunt the crew directly.
  *
  * Vendors are sourced only from the target ship's shuttle areas (never the global
  * machine list), and the spread re-checks area membership every tick so vendors
- * that left the ship — or foreign vendors near wherever it docked — are never
+ * that left the ship (or foreign vendors near wherever it docked) are never
  * infected.
  */
 /datum/round_event_control/voidcrew/brand_intelligence
@@ -100,7 +100,7 @@
 			origin_machine.visible_message(span_notice("[origin_machine] beeps and seems lifeless."))
 		kill()
 		return
-	// Only vendors still aboard may be infected — the ship may have docked
+	// Only vendors still aboard may be infected. The ship may have docked
 	// somewhere with foreign vendors since the candidate list was built.
 	for(var/obj/machinery/vending/vendor as anything in vending_machines)
 		if(QDELETED(vendor) || !target_ship.is_aboard(vendor))

@@ -16,6 +16,16 @@
 	var/safety_threshold = 50
 	///0 if not connected to the cloud, 1-100 to set a determined cloud backup to draw from
 	var/cloud_id = 0
+	/**
+	 * Weakref to the /obj/structure/overmap/ship whose cloud network these nanites are paired to.
+	 * Nanite clouds are SHIP-LOCAL: pairing is set to whatever ship the host is physically aboard
+	 * at the moment the cloud ID is assigned (nanite chambers can only do this to an occupant, so
+	 * linking requires physical access to that ship). Cloud sync only matches backups stored on
+	 * cloud controllers aboard the paired ship, so a matching ID number on another ship's
+	 * controller is a different, unrelated cloud. This is what stops the old exploit of guessing
+	 * IDs 1-100 to hijack or poison someone else's cloud from across the sector.
+	 */
+	var/datum/weakref/cloud_ship_ref
 	///if false, won't sync to the cloud
 	var/cloud_active = TRUE
 	///How long until the next sync to cloud
@@ -59,8 +69,11 @@
 		host_mob.hud_set_nanite_indicator()
 		START_PROCESSING(SSnanites, src)
 
-		if(cloud_id && cloud_active)
-			cloud_sync()
+		if(cloud_id)
+			//Pair to the ship the host is aboard right now (e.g. the public chamber that injected them)
+			cloud_ship_ref = WEAKREF(get_ship_from_atom(host_mob))
+			if(cloud_active)
+				cloud_sync()
 
 /datum/component/nanites/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_HAS_NANITES, PROC_REF(confirm_nanites))
@@ -169,12 +182,15 @@
 
 /datum/component/nanites/proc/cloud_sync()
 	if(cloud_id)
-		var/datum/nanite_cloud_backup/backup = SSnanites.get_cloud_backup(cloud_id)
-		if(backup)
-			var/datum/component/nanites/cloud_copy = backup.nanites
-			if(cloud_copy)
-				sync(null, cloud_copy)
-				return
+		//Clouds are ship-local: only search backups stored aboard the ship we were paired to
+		var/obj/structure/overmap/ship/cloud_ship = cloud_ship_ref?.resolve()
+		if(cloud_ship)
+			var/datum/nanite_cloud_backup/backup = SSnanites.get_cloud_backup(cloud_id, FALSE, cloud_ship)
+			if(backup)
+				var/datum/component/nanites/cloud_copy = backup.nanites
+				if(cloud_copy)
+					sync(null, cloud_copy)
+					return
 	//Without cloud syncing nanites can accumulate errors and/or defects
 	if(prob(NANITE_FAILURE_CHANCE) && programs.len)
 		var/datum/nanite_program/NP = pick(programs)
@@ -209,7 +225,11 @@
 		INVOKE_ASYNC(src, PROC_REF(delete_nanites))
 
 /datum/component/nanites/proc/set_nanite_bar(remove = FALSE)
-	var/image/holder = host_mob.hud_list[DATA_HUD_DIAGNOSTIC]
+	// DIAG_HUD is a hud_list image key; DATA_HUD_DIAGNOSTIC is a GLOB.huds index and
+	// was never valid here. Mobs without the image (humans) have nothing to paint on.
+	var/image/holder = host_mob.hud_list?[DIAG_HUD]
+	if(!holder)
+		return
 	var/icon/I = icon(host_mob.icon, host_mob.icon_state, host_mob.dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = null
@@ -226,6 +246,7 @@
 	adjust_nanites(null, -(rand(5, 50)))		//Lose 5-50 flat nanite volume
 	if(prob(40/severity))
 		cloud_id = 0
+		cloud_ship_ref = null
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
 		NP.on_emp(severity)
@@ -318,6 +339,9 @@
 	SIGNAL_HANDLER
 
 	cloud_id = clamp(amount, 0, 100)
+	//Re-pair to the ship the host is standing on when the ID is assigned. Chambers can only
+	//set this on their occupant, so joining a ship's cloud requires being physically aboard it.
+	cloud_ship_ref = (cloud_id && host_mob) ? WEAKREF(get_ship_from_atom(host_mob)) : null
 
 /datum/component/nanites/proc/set_cloud_sync(datum/source, method)
 	SIGNAL_HANDLER
@@ -371,7 +395,8 @@
 		to_chat(user, span_info("================"))
 		to_chat(user, span_info("Saturation: [nanite_volume]/[max_nanites]"))
 		to_chat(user, span_info("Safety Threshold: [safety_threshold]"))
-		to_chat(user, span_info("Cloud ID: [cloud_id ? cloud_id : "None"]"))
+		var/obj/structure/overmap/ship/scan_cloud_ship = cloud_ship_ref?.resolve()
+		to_chat(user, span_info("Cloud ID: [cloud_id ? "[cloud_id] (network: [scan_cloud_ship ? scan_cloud_ship.name : "unreachable"])" : "None"]"))
 		to_chat(user, span_info("Cloud Sync: [cloud_active ? "Active" : "Disabled"]"))
 		to_chat(user, span_info("================"))
 		to_chat(user, span_info("Program List:"))
@@ -391,6 +416,8 @@
 	data["safety_threshold"] = safety_threshold
 	data["cloud_id"] = cloud_id
 	data["cloud_active"] = cloud_active
+	var/obj/structure/overmap/ship/ui_cloud_ship = cloud_ship_ref?.resolve()
+	data["cloud_ship"] = ui_cloud_ship ? ui_cloud_ship.name : null
 	var/list/mob_programs = list()
 	var/id = 1
 	for(var/X in programs)

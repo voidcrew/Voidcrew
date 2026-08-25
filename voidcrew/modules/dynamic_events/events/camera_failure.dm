@@ -1,12 +1,12 @@
 /**
  * Ship-scoped port of TG's Camera Failure (code/modules/events/camerafailure.dm).
- * Exemplar for the dynamic-event porting pattern — see
+ * Exemplar for the dynamic-event porting pattern, see
  * voidcrew/GUIDES/dynamic_events_port_spec.md
  */
 /datum/round_event_control/voidcrew/camera_failure
 	name = "Ship Camera Failure"
 	typepath = /datum/round_event/voidcrew/camera_failure
-	weight = 25 // was 100 — one event owning 13% of every roster roll starved the rest of the table
+	weight = 25 // was 100, one event owning 13% of every roster roll starved the rest of the table
 	max_occurrences = 20
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_ENGINEERING

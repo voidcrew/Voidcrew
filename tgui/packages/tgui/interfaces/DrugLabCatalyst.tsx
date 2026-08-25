@@ -7,8 +7,8 @@
  * server checks impossible, so this window plays the server-issued chart
  * locally with requestAnimationFrame and reports totals once. The server
  * rebuilds the same deterministic chart and rejects implausible reports
- * (count mismatches, finishes faster than the chart span, stale nonces) —
- * nothing here is trusted beyond plausibility.
+ * (count mismatches, finishes faster than the chart span, stale nonces).
+ * Nothing here is trusted beyond plausibility.
  */
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -167,7 +167,7 @@ export const DrugLabCatalyst = (props) => {
   };
 
   // A fresh nonce means a fresh attempt: rebuild local state and count down.
-  // game_active dropping means the server resolved the attempt — stand down.
+  // game_active dropping means the server resolved the attempt, stand down.
   useEffect(() => {
     if (
       data.game_active &&
@@ -285,7 +285,7 @@ export const DrugLabCatalyst = (props) => {
               <Section fill title="Reaction Feed">
                 <NoticeBox info>
                   <Icon name="hourglass-half" mr={1} />
-                  Waiting on the mixer — the column has nothing to catalyze
+                  Waiting on the mixer: the column has nothing to catalyze
                   yet.
                 </NoticeBox>
               </Section>
@@ -484,7 +484,7 @@ export const DrugLabCatalyst = (props) => {
                           mr={1}
                         />
                         Attempt scored {data.last_attempt_score}/100
-                        {data.botched ? ' — the column reacted violently!' : ''}
+                        {data.botched ? ', the column reacted violently!' : ''}
                       </NoticeBox>
                     </Stack.Item>
                   )}
@@ -532,7 +532,7 @@ export const DrugLabCatalyst = (props) => {
                             icon="rotate-left"
                             color="average"
                             disabled={data.next_cap === null}
-                            tooltip="Retries can only raise your score, but each one caps lower — and retrying a botch is how columns catch fire."
+                            tooltip="Retries can only raise your score, but each one caps lower, and retrying a botch is how columns catch fire."
                             onClick={() => act('start_attempt')}
                           >
                             {data.next_cap === null
@@ -554,7 +554,7 @@ export const DrugLabCatalyst = (props) => {
                 </NoticeBox>
                 {data.stage < DrugLabStage.Done ? (
                   <NoticeBox info>
-                    The batch has moved on — work the crystallization chamber.
+                    The batch has moved on. Work the crystallization chamber.
                   </NoticeBox>
                 ) : (
                   <NoticeBox color="good">

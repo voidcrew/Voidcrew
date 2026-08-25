@@ -20,6 +20,11 @@
 	/// Loaded coupons that can be applied to orders
 	var/list/obj/item/coupon/loaded_coupons
 
+	/// The cargo shuttle datum that last registered us as its linked_console - kept so
+	/// Destroy can sever that back-ref directly. Re-deriving the ship from position
+	/// fails mid-teardown (areas already swept), which left the datum pinning us.
+	var/datum/weakref/linked_shuttle_ref
+
 /obj/machinery/computer/voidcrew_cargo/Initialize(mapload)
 	. = ..()
 	//Mapped-in consoles have no multitool link yet, so adopt the ship's own bank machine.
@@ -69,6 +74,13 @@
 		on_bank_deletion(bank_account_holder)
 	QDEL_LIST(checkout_list)
 	QDEL_LAZYLIST(loaded_coupons)
+	// The ship's cargo shuttle datum outlives its consoles; its linked_console
+	// back-ref is otherwise only cleared in the datum's own Destroy. Prefer the
+	// stored handle - positional lookup fails once the teardown sweep is underway.
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = linked_shuttle_ref?.resolve() || get_cargo_shuttle()
+	if(cargo_shuttle?.linked_console == src)
+		cargo_shuttle.linked_console = null
+	linked_shuttle_ref = null
 	return ..()
 
 /obj/machinery/computer/voidcrew_cargo/on_construction(mob/user)
@@ -111,7 +123,10 @@
 	if(board)
 		board.contraband = TRUE
 		board.obj_flags |= EMAGGED
-	update_static_data(user)
+	// The catalog is static data now, so refresh every viewer - not just the emagger.
+	// Anyone else with the console open would otherwise keep the pre-emag pack list
+	// until they closed and reopened it.
+	update_static_data_for_all_viewers()
 	return TRUE
 
 /obj/machinery/computer/voidcrew_cargo/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
@@ -133,6 +148,9 @@
 /obj/machinery/computer/voidcrew_cargo/Exited(atom/movable/gone, direction)
 	. = ..()
 	if(istype(gone, /obj/item/coupon))
+		var/obj/item/coupon/leaving = gone
+		if(leaving.inserted_console == src)
+			leaving.inserted_console = null
 		LAZYREMOVE(loaded_coupons, gone)
 
 /obj/machinery/computer/voidcrew_cargo/proc/on_bank_deletion(atom/source)
@@ -150,6 +168,26 @@
 /obj/machinery/computer/voidcrew_cargo/ui_static_data(mob/user)
 	var/list/data = list()
 	data["max_order"] = CARGO_MAX_ORDER
+
+	// The pack catalog is ~200 KiB of JSON. It has to live in static data, which is sent
+	// once on open: ui_data() is re-serialized and pushed to every viewer every SStgui
+	// tick (0.9s) and again after every ui_act, so building it there costs ~220 KiB/s per
+	// open console. That is invisible on a local host and saturates a real connection,
+	// backing up the same BYOND queue that carries player input - it reads as the whole
+	// client lagging, not just the console.
+	// Nothing in here changes mid-round: pack cost is only scaled by
+	// SSeconomy.pack_price_modifier, which roundstart station traits set and nothing else
+	// touches. The one exception is the emag contraband unlock, and emag_act() refreshes
+	// static data itself.
+	data["supplies"] = list()
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(!data["supplies"][pack.group])
+			data["supplies"][pack.group] = list(
+				"name" = pack.group,
+				"packs" = get_packs_data(pack.group),
+			)
+
 	return data
 
 /**
@@ -184,16 +222,8 @@
 /obj/machinery/computer/voidcrew_cargo/ui_data(mob/user)
 	var/list/data = list()
 
-	// Build supplies list (in ui_data to ensure SSshuttle is initialized)
-	data["supplies"] = list()
-	for(var/pack_id in SSshuttle.supply_packs)
-		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
-		if(!data["supplies"][pack.group])
-			data["supplies"][pack.group] = list(
-				"name" = pack.group,
-				"packs" = get_packs_data(pack.group),
-			)
-
+	// The pack catalog is deliberately NOT built here - see ui_static_data(). Everything
+	// below is small and genuinely per-tick; keep it that way.
 	data["has_bank_account"] = !!bank_account_holder
 	if(!bank_account_holder?.synced_bank_account)
 		data["shuttle_error"] = "NO BANK ACCOUNT CONNECTED"
@@ -324,6 +354,16 @@
 		usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 		return
 
+	// The cart is the manifest of an in-flight delivery: credits were checked when the
+	// shuttle was called, but buy() doesn't charge until it docks. Editing it mid-flight
+	// would shrink a dispatched shipment or tack on items that were never credit-checked.
+	if(action in list("add", "add_by_name", "remove", "modify", "clear"))
+		var/datum/voidcrew_cargo_shuttle/manifest_shuttle = get_cargo_shuttle()
+		if(manifest_shuttle && manifest_shuttle.state != CARGO_SHUTTLE_AWAY)
+			balloon_alert(usr, "order already dispatched")
+			usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
+			return TRUE
+
 	switch(action)
 		/**
 		 * CARGO ORDERING
@@ -412,6 +452,7 @@
 
 			// Set linked console for callbacks
 			cargo_shuttle.linked_console = src
+			linked_shuttle_ref = WEAKREF(cargo_shuttle)
 
 			switch(cargo_shuttle.state)
 				if(CARGO_SHUTTLE_AWAY)
@@ -422,6 +463,13 @@
 
 					// Check if we have enough credits for the order
 					var/total_cost = get_cart_total()
+					// A siphon on the account freezes ordering: shipping the balance out
+					// as crates while a pirate drains it is just laundering. A loan-only
+					// call brings credits in, so that one still goes.
+					if(total_cost > 0 && bank_account_holder.synced_bank_account.is_siphon_locked())
+						say("Error: accounts locked - hostile intrusion detected. Orders cannot be placed.")
+						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
+						return TRUE
 					var/available = bank_account_holder.synced_bank_account.account_balance
 					if(total_cost > available)
 						say("Error: Insufficient credits. Need [total_cost], have [available].")

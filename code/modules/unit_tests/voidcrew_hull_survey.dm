@@ -278,8 +278,32 @@
 	// Leave nothing behind: these areas and the port outlive the reservation otherwise.
 	reset_block()
 	qdel(port)
+	// Hand the tiles back to space BEFORE the areas die. reset_block() only swaps turf
+	// types, and ChangeTurf keeps a turf's area, so all nine tiles are still standing in
+	// these two /area/shuttle instances. Areas are meant to live forever; /area/Destroy()
+	// nulls turfs_by_zlevel and turfs_to_uncontain_by_zlevel, and every turf left inside
+	// one goes on pointing at the corpse. When this test's reservation is released a few
+	// milliseconds later, SSmapping/fire() reads exactly that null list - and because the
+	// runtime unwinds fire() before the packet entry is consumed, it retries the same turf
+	// every fire for the rest of the round, so no reservation ever drains again. The dead
+	// areas are also permanent hard-delete blockers (a turf's loc is a real reference),
+	// which is minutes of REF SEARCH per area in a test run.
+	evacuate_area(fresh)
+	evacuate_area(default_area)
 	qdel(fresh)
 	qdel(default_area)
+
+/// Moves every turf still inside `leaving` back into the reserved block's own space area,
+/// so the area can be deleted without stranding turfs in a destroyed datum. See the call site.
+/datum/unit_test/voidcrew_hull_survey/proc/evacuate_area(area/leaving)
+	if(isnull(leaving))
+		return
+	var/area/space_area = GLOB.areas_by_type[world.area]
+	if(isnull(space_area) || space_area == leaving)
+		return
+	// get_turfs_from_all_zlevels() builds a fresh list, so moving turfs out underneath it is safe
+	for(var/turf/tile as anything in leaving.get_turfs_from_all_zlevels())
+		tile.change_area(leaving, space_area)
 
 /// Lays a 5x5 at (2,2)-(6,6): a ring of walls around a 3x3 of plating.
 /datum/unit_test/voidcrew_hull_survey/proc/build_walled_room()

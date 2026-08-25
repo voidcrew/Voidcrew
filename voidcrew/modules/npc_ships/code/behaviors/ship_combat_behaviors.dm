@@ -70,6 +70,19 @@
 	if(!ship.hostile)
 		return AI_BEHAVIOR_DELAY
 
+	// A ship whose weapons have been destroyed is done fighting. Without this gate the
+	// disarm loop never ends: check_weapons sends it into RETREATING, the retreat timer
+	// or distance check drops it back to IDLE, and the very next scan re-acquires the
+	// same victim - hail, demand, engage, notice the guns are gone, flee, repeat.
+	// Uses has_intact_weapons(), not has_any_weapons(): the latter reads FALSE while
+	// turrets are on cooldown or in a band that forbids firing, which would disarm
+	// every healthy ship that ever idled in a yellow zone.
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+	if(ship.retreat_without_weapons && combat && !combat.has_intact_weapons())
+		// Don't clear an existing target here: in ENGAGING/COMBAT that belongs to
+		// check_weapons, which needs the target intact to enter RETREATING properly.
+		return AI_BEHAVIOR_DELAY
+
 	// Only attack in zones where combat is allowed (weapons OR interdiction)
 	var/turf/ship_loc = get_turf(ship)
 	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_loc)
@@ -146,6 +159,16 @@
 				var/scanned_time = scanned_ships[REF(potential_target)]
 				if(scanned_time && (world.time - scanned_time) < NPC_SCAN_MEMORY_TIME)
 					continue  // Skip - we scanned this ship recently
+
+		// Skip hulls with nobody alive aboard. There's nothing to rob off a ship whose crew
+		// is dead or gone, and without this a pirate that had just wiped a crew and broken
+		// off would re-acquire the same corpse ship on its next scan and start the whole
+		// engagement over, with no one left aboard who could ever end it.
+		// count_living_crew() returns -1 for a ship it can't read, which is not an empty one.
+		// Left until last on purpose: it's the only check here that walks a list, so every
+		// cheap rejection above it - distance, zone, line of sight - has already run.
+		if(controller.count_living_crew(potential_target) == 0)
+			continue
 
 		// Found a valid target!
 		log_shuttle("NPC_SHIP: [ship.name] targeting [potential_target.name] - dist=[get_dist(ship, potential_target)], territory=[ship.territory_range]")
@@ -731,6 +754,34 @@
 
 	return AI_BEHAVIOR_DELAY
 
+// ========== CHECK CREW WIPE ==========
+
+/**
+ * Breaks the engagement off once there's nobody left alive on the target.
+ *
+ * Runs in every state where we're actually doing something to a crew - ship weapons,
+ * boarding waves, the boss phase - because all of them can finish a crew off and none of
+ * them noticed. Pods fired from normal ship combat (fire_boarding_pods) never registered
+ * anything at all, so a pirate that wiped a hull that way would go on shelling the corpse
+ * and holding the interdiction indefinitely.
+ *
+ * The controller owns the actual "is anyone left" judgement and its grace window; this
+ * just polls it. See check_crew_eliminated().
+ */
+/datum/ai_behavior/npc_ship/check_crew_wipe
+	action_cooldown = 5 SECONDS
+
+/datum/ai_behavior/npc_ship/check_crew_wipe/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/target = controller.get_target()
+	if(!target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	controller.check_crew_eliminated(target)
+
+	return AI_BEHAVIOR_DELAY
+
 // ========== CHECK DISENGAGE ==========
 
 /**
@@ -811,6 +862,7 @@
 
 /**
  * Escape behavior for retreating ships.
+ * Checks every escape condition FIRST, then handles interdiction/cloaking.
  * If interdicted: tries to shield burst to break free.
  * If not interdicted (or just broke free): tries to cloak.
  */
@@ -826,6 +878,42 @@
 	if(!ship || !combat)
 		return AI_BEHAVIOR_DELAY
 
+	// ===== Escape conditions, all evaluated BEFORE the interdiction branch. The old
+	// shape early-returned every tick while interdicted and never read its own exit
+	// conditions, and its only exit needed 15+ tiles of separation - which a
+	// zone-confined ship fleeing a chaser that stays put can never open. Round 4 left
+	// two pirates wedged here for 21 hours. =====
+
+	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
+
+	// Nothing left worth fleeing: chaser gone, docked/crashed, or nobody alive aboard.
+	// count_living_crew() returns -1 for a ship it can't read - that is not an empty one.
+	if(!last_target || QDELETED(last_target) || last_target.state != OVERMAP_SHIP_FLYING || controller.count_living_crew(last_target) == 0)
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// Clean escape - far enough away
+	var/turf/our_loc = get_turf(ship)
+	var/turf/target_loc = get_turf(last_target)
+	var/distance = (our_loc && target_loc) ? get_dist(our_loc, target_loc) : null
+	if(!isnull(distance) && distance >= 15)
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// Timed out - the chaser is still around but the encounter is over. Write it off
+	// and go back to hunting rather than shuffling along a band boundary forever.
+	var/retreat_start = controller.blackboard[BB_NPC_RETREAT_START]
+	if(!retreat_start)
+		retreat_start = world.time
+		controller.set_blackboard_key(BB_NPC_RETREAT_START, retreat_start)
+	if(world.time - retreat_start > NPC_RETREAT_TIME_LIMIT)
+		log_shuttle("NPC_SHIP: [ship.name] retreat timed out at [isnull(distance) ? "?" : distance]/15 tiles from [last_target.name] - returning to patrol")
+		return_to_patrol(controller)
+		return AI_BEHAVIOR_DELAY
+
+	// ===== Still fleeing =====
+
 	// If interdicted, try to break free with shield burst
 	if(ship.is_interdicted)
 		if(ship.can_burst_shields())
@@ -839,32 +927,35 @@
 	if(ship.invisibility <= INVISIBILITY_NONE && combat.has_working_cloak())
 		combat.activate_cloak()
 
-	// Check if we've escaped far enough from the last target to return to patrol
-	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
-	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
-
-	if(last_target && !QDELETED(last_target))
-		var/turf/our_loc = get_turf(ship)
-		var/turf/target_loc = get_turf(last_target)
-		if(our_loc && target_loc)
-			var/distance = get_dist(our_loc, target_loc)
-			// If we're far enough away (15+ tiles), return to patrol
-			if(distance >= 15)
-				return_to_patrol(controller)
-	else
-		// No last target to escape from - just return to patrol
-		return_to_patrol(controller)
-
 	return AI_BEHAVIOR_DELAY
 
 /// Helper proc to transition retreating ship back to patrol
 /datum/bt_node/ai_behavior/npc_ship/retreat_escape/proc/return_to_patrol(datum/ai_controller/npc_ship/controller)
+	// Read who we were fleeing before clearing it - a disarmed ship's victim gets told
+	// the hunt is over for good.
+	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
 	// Clear retreat state
 	controller.blackboard[BB_NPC_RETREAT_REASON] = null
 	controller.blackboard[BB_NPC_LAST_TARGET] = null
+	controller.clear_blackboard_key(BB_NPC_RETREAT_START)
 	// Return to idle/patrol
 	controller.clear_target()
 	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
+
+	// Disarmed ships are out of the fight for good: scan_threats refuses to acquire
+	// for a hull with no intact weapons, so free its pool slot for a replacement
+	// instead of leaving a toothless hulk holding a spawn budget forever. Keyed on
+	// physical disarmament rather than the retreat reason - guns blown off mid-siphon
+	// end the career just the same. The hull itself stays in the world: crew aboard,
+	// hold full, boardable.
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+	if(!ship || !combat || combat.has_intact_weapons())
+		return
+
+	ship.notify_spawner_resolved("disarmed")
+	last_target?.ship_notify("[ship.name] is disarmed and has broken off for good.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 25)
 
 // ========== ACTIVATE SIPHON ==========
 

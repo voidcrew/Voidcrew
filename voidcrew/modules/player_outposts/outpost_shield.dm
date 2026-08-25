@@ -8,7 +8,7 @@
  * generator is destroyed, missiles strike home as before.
  *
  * The charge pool recharges from outpost APC power, pausing for a short delay
- * after every absorbed hit — sustained bombardment outpaces regeneration.
+ * after every absorbed hit, sustained bombardment outpaces regeneration.
  *
  * Only ONE generator holds the shield at a time (the first registered one that
  * is operational). Extra generators are cold standbys: they don't charge and
@@ -101,7 +101,7 @@
 	if(!is_active_unit())
 		set_charging(FALSE)
 	else if(charge >= max_charge || !COOLDOWN_FINISHED(src, recharge_suppressed))
-		// Full, or suppressed by recent hits — hold the field, don't charge
+		// Full, or suppressed by recent hits. Hold the field, don't charge
 		set_charging(FALSE)
 	else
 		set_charging(TRUE)
@@ -215,8 +215,8 @@
 
 /**
  * Player-outpost shield interception. Called from missile_effect.dm: on every
- * Moved() step (so the missile detonates at the shield envelope's edge — the
- * outpost's build region — rather than on the target building) and as a
+ * Moved() step (so the missile detonates at the shield envelope's edge, the
+ * outpost's build region, rather than on the target building) and as a
  * last-chance guard at the top of impact().
  *
  * Returns TRUE when the missile was absorbed; the missile then detonates via

@@ -18,14 +18,14 @@
 			sample_by_type[active.type] = "([active.x],[active.y],[active.z]) in [sample_area ? sample_area.name : "null area"]"
 
 	var/list/out = list()
-	out += "ACTIVE TURF AUDIT — [length(SSair.active_turfs)] active, [planetary_count] of them planetary_atmos"
+	out += "ACTIVE TURF AUDIT: [length(SSair.active_turfs)] active, [planetary_count] of them planetary_atmos"
 
 	out += "By z-level:"
 	for(var/z_key in count_by_z)
 		out += "  z[z_key]: [count_by_z[z_key]]"
 
 	out += "By type (sample coordinate + area):"
-	// selection sort by count, descending — type list is small
+	// selection sort by count, descending. Type list is small
 	var/list/remaining = count_by_type.Copy()
 	while(length(remaining))
 		var/best_type
@@ -34,7 +34,7 @@
 			if(remaining[turf_type] > best_count)
 				best_type = turf_type
 				best_count = remaining[turf_type]
-		out += "  [best_count]x [best_type] — [sample_by_type[best_type]]"
+		out += "  [best_count]x [best_type], [sample_by_type[best_type]]"
 		remaining -= best_type
 
 	var/msg = out.Join("\n")

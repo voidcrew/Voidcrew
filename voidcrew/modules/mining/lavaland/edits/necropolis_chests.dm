@@ -49,7 +49,7 @@
 		if(18)
 			new /obj/item/borg/upgrade/modkit/lifesteal(src)
 			new /obj/item/bedsheet/cult(src)
-		// was if(29) — unreachable on a rand(1,19) roll, so a 19 landed in the
+		// was if(29), unreachable on a rand(1,19) roll, so a 19 landed in the
 		// CRASH below with an empty chest and memento mori could never drop
 		if(19)
 			new /obj/item/clothing/neck/necklace/memento_mori(src)

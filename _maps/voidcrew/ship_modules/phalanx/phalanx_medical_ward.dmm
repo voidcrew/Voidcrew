@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/airalarm/directional/east,
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "f" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart,
@@ -11,6 +18,18 @@
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"h" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/cryoxadone{
+	pixel_x = 4
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "i" = (
 /obj/structure/table/glass,
 /obj/item/reagent_containers/cup/beaker/cryoxadone{
@@ -20,6 +39,14 @@
 /obj/item/reagent_containers/cup/beaker/cryoxadone{
 	pixel_x = 4
 	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"j" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/machinery/cryo_cell,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "k" = (
@@ -53,6 +80,12 @@
 	pixel_y = 28
 	},
 /obj/machinery/iv_drip,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"q" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 1
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "s" = (
@@ -110,6 +143,14 @@
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"L" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "P" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -139,6 +180,14 @@
 	dir = 1
 	},
 /obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Y" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/co2{
+	dir = 8
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "Z" = (
@@ -176,22 +225,22 @@ n
 g
 "}
 (7,1,1) = {"
-A
+j
 C
 U
 "}
 (8,1,1) = {"
 t
 C
-i
+h
 "}
 (9,1,1) = {"
-t
-C
-A
+q
+Y
+L
 "}
 (10,1,1) = {"
 D
 f
-z
+b
 "}

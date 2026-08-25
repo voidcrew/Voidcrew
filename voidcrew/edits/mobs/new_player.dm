@@ -24,6 +24,29 @@
 		return
 	usr.client?.wiki()
 
+/**
+ * Fullscreen static starfield behind the lobby menu, drawn with the overmap's own
+ * turf sprite so the lobby keeps its "floating over the star chart" look.
+ *
+ * The lobby used to sit on a live overmap tile, letting people watch real ships and
+ * planets from the title menu (and metagame off it). The lobby anchor now parks over
+ * empty space far away from the overmap (see SSovermap.relocate_lobby()); this
+ * backdrop supplies the view, with no live tactical information behind it.
+ *
+ * Instantiated automatically by /datum/hud/new_player/New alongside every other
+ * /atom/movable/screen/lobby subtype. always_shown so it does not slide off-screen
+ * with the buttons when the lobby menu is collapsed.
+ */
+/atom/movable/screen/lobby/starfield
+	name = "space"
+	icon = 'voidcrew/modules/overmap/icons/turf/overmap.dmi'
+	icon_state = "overmap"
+	screen_loc = "WEST,SOUTH to EAST,NORTH"
+	// Below every lobby element AND below cinematics (CINEMATIC_LAYER), so a round-end
+	// cinematic still draws over the backdrop for anyone watching from the lobby
+	layer = CINEMATIC_LAYER - 1
+	always_shown = TRUE
+
 /datum/latejoin_menu/ui_interact(mob/dead/new_player/user, datum/tgui/ui)
 	user.select_ship() //override ui_interact and send to our latejoin menu instead
 	return TRUE
@@ -47,6 +70,18 @@
 		var/memo_accept = tgui_alert(src, "Current ship memo: [ship.memo]", "[ship.name] Memo", list("OK", "Cancel"))
 		if(memo_accept != "OK")
 			return select_ship() // Send them back to ship selection
+
+	// Password gate. Cleared ckeys (the buyer, past crew, invitees) are never asked.
+	// encode = FALSE: captains set the password through raw TGUI params, so the attempt
+	// must stay raw too or any password with an HTML-special character never matches.
+	if(!ship.is_password_cleared(ckey))
+		var/attempt = tgui_input_text(src, "This ship is password-locked by its crew. Enter the join password.", "[ship.name] - Join Password", max_length = SHIP_JOIN_PASSWORD_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
+		if(isnull(attempt) || QDELETED(ship))
+			return select_ship() // Cancelled, timed out, or the ship died mid-prompt
+		if(!ship.check_join_password(attempt))
+			to_chat(src, span_warning("Incorrect join password for [ship.name]."))
+			return select_ship()
+		ship.password_cleared_ckeys[ckey] = TRUE
 
 	// Build job choices
 	var/list/job_choices = list()
@@ -111,10 +146,23 @@
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template, upgrade_selections, selected_theme)
 	if(!istype(target))
 		spawning_ship = FALSE
-		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
+		// A refusal at the map-volume ceiling is transient - transit space frees up in
+		// seconds as ships move. Say so instead of sending the buyer to the admins for
+		// a condition that fixes itself.
+		if(SSmapping.at_z_level_ceiling())
+			to_chat(src, span_warning("The shipyard is congested right now - hull assembly space frees up as ships move. Try again in a minute."))
+		else
+			to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
 		return select_ship()
 
 	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
+
+	// Hulls spawn open; the captain locks theirs from Ship Management if they want one.
+	// The buyer is cleared anyway so a password set before they seat themselves (or
+	// after a failed spawn) can never lock them out of the hull they paid for.
+	target.password_cleared_ckeys[ckey] = TRUE
+	to_chat(src, span_notice("Your ship is open for anyone to join. To lock it, set a join password from Ship Management once aboard."))
+
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
 		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
 
@@ -136,7 +184,7 @@
 		to_chat(src, span_danger("The round is either not ready, or has already finished..."))
 		return
 
-	if(!can_requisition_hull())
+	if(!can_requisition_hull(src))
 		to_chat(src, span_warning("A position opened up in the fleet while you were deciding. Join a crew instead."))
 		return select_ship()
 
@@ -172,6 +220,12 @@
 
 	if(!joined_ship.job_slots[job])
 		to_chat(usr, span_danger("There are no more [job.title] positions available on this ship!"))
+		return FALSE
+
+	// Every UI path prompts for this upstream; the check here covers the window where a
+	// captain sets a password between the menu opening and the spawn going through.
+	if(!joined_ship.is_password_cleared(ckey))
+		to_chat(usr, span_warning("[joined_ship.name] is password-locked by its crew."))
 		return FALSE
 
 	//Removes a job slot
@@ -227,14 +281,16 @@
 	log_manifest(character.mind.key, character.mind, character, latejoin = TRUE)
 	log_shuttle("[character.mind.key] / [character.mind.name] has joined [joined_ship.name] as [job.title]")
 
-	if(joined_ship.deletion_timer)
-		joined_ship.end_deletion_timer()
-
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
 
 	// Grant captain management action if spawning as captain (officer job)
 	if(job.officer && humanc)
 		grant_captain_management(humanc, joined_ship)
+		// A real captain's arrival ends any acting command over the ship
+		joined_ship.clear_acting_captain(humanc)
+	else if(humanc)
+		// No captain aboard: the joiner holds acting command until one arrives
+		joined_ship.make_acting_captain(humanc)
 
 	// Show ship memo after spawn (with a small delay so they're fully loaded in)
 	if(joined_ship.memo && humanc)

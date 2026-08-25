@@ -1,5 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "h" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/coffeepot{
@@ -87,18 +86,7 @@
 /turf/open/floor/iron/white,
 /area/template_noop)
 "y" = (
-/obj/machinery/light/directional/east,
-/obj/structure/plaque/static_plaque{
-	name = "hull patch plate";
-	desc = "The wing was open to vacuum from here out to the outer frame. The plate went in over four days and the mess reopened the week after."
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 2
-	},
-/turf/open/floor/plating,
+/turf/template_noop,
 /area/template_noop)
 "C" = (
 /obj/structure/extinguisher_cabinet/directional/west,

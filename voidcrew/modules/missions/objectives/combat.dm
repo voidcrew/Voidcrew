@@ -6,7 +6,7 @@
  */
 
 // =========================================================================
-// FIELD OBJECTIVE MIXIN — steps that place things inside the mission target
+// FIELD OBJECTIVE MIXIN: steps that place things inside the mission target
 // =========================================================================
 
 /**
@@ -22,6 +22,13 @@
 	var/spawned = FALSE
 	/// How many times the site has refused to hand over a spawn turf
 	var/spawn_attempts = 0
+	/// Weakrefs to every mob this step marked contract-critical, so the mark can
+	/// be dropped again when the contract stops needing them
+	var/list/datum/weakref/field_mob_refs
+
+/datum/mission_objective/field/Destroy()
+	release_field_mobs()
+	return ..()
 
 /datum/mission_objective/field/activate()
 	. = ..()
@@ -29,6 +36,9 @@
 
 /datum/mission_objective/field/reset()
 	. = ..()
+	// A retarget re-arms at a fresh site; whatever is still standing in the old
+	// one stopped being the contract's business the moment it was abandoned
+	release_field_mobs()
 	spawned = FALSE
 	spawn_attempts = 0
 
@@ -51,7 +61,7 @@
  * Places this objective's things at the site.
  *
  * A site that can't offer a clear turf right now is not a site that never
- * can — the sampler rejects blocked and closed tiles, and a ruin, a landed
+ * can, the sampler rejects blocked and closed tiles, and a ruin, a landed
  * ship or a passing storm can hold every roll it makes. Bailing out silently
  * (which is what this used to do) leaves the contract live on the board with
  * nothing in the world to find and no beacon to follow: the crew flies out,
@@ -94,7 +104,7 @@
  * Marks a mob the contract can't finish without, so the planet's fauna sweep
  * leaves it alone (SSplanet_mobs clears every unclaimed living mob off an empty
  * planet after its grace period, and does not know a mission put this one here).
- * Untracked flavour mobs — entourage guards, caged critters — are deliberately
+ * Untracked flavour mobs (entourage guards, caged critters) are deliberately
  * NOT marked: losing those costs nothing and they should age out like any other
  * wildlife.
  */
@@ -102,6 +112,25 @@
 	if(QDELETED(protected))
 		return
 	ADD_TRAIT(protected, TRAIT_MISSION_FIELD_MOB, INNATE_TRAIT)
+	LAZYADD(field_mob_refs, WEAKREF(protected))
+
+/**
+ * Hands every mob this step marked back to the world.
+ *
+ * The mark is an exemption from the planet's fauna sweep, and it used to be
+ * permanent: nothing ever removed the trait, so a poacher squad, a marked
+ * specimen or a survivor from a contract that timed out three hours ago stayed
+ * immune to cleanup for the rest of the round, on a planet with nobody on it.
+ * The exemption is only meant to last as long as the contract needs the mob
+ * alive, so it comes off when the objective is torn down or re-armed elsewhere.
+ */
+/datum/mission_objective/field/proc/release_field_mobs()
+	for(var/datum/weakref/mob_ref as anything in field_mob_refs)
+		var/mob/living/marked = mob_ref.resolve()
+		if(QDELETED(marked))
+			continue
+		REMOVE_TRAIT(marked, TRAIT_MISSION_FIELD_MOB, INNATE_TRAIT)
+	field_mob_refs = null
 
 /// Open turfs near a spot for scattering extra spawns
 /datum/mission_objective/field/proc/get_nearby_open_turf(turf/around, radius = 2)
@@ -112,7 +141,7 @@
 	return length(open_turfs) ? pick(open_turfs) : around
 
 // =========================================================================
-// NAMED KILL — hunt the name, bring back the tag
+// NAMED KILL, hunt the name, bring back the tag
 // =========================================================================
 
 /datum/mission_objective/field/kill_named
@@ -175,7 +204,7 @@
 	return "Eliminate [mission?.objective_name || "the target"]"
 
 // =========================================================================
-// KILL COUNT — suppression sweeps
+// KILL COUNT, suppression sweeps
 // =========================================================================
 
 /**
@@ -242,7 +271,15 @@
 			continue
 		if(victim.lastattackerckey && crew_mob.ckey == victim.lastattackerckey)
 			return TRUE
-		if(crew_mob.z == where.z && get_dist(crew_mob, victim) <= confirm_range)
+		// Proximity, but only within the same SITE. confirm_range is 9 tiles and the gutter
+		// between two slots on a packed level is 5, so a bare z + get_dist test banks the
+		// neighbouring crew's kills through an indestructible wall.
+		var/turf/crew_turf = get_turf(crew_mob)
+		if(!crew_turf || crew_turf.z != where.z)
+			continue
+		if(!turfs_share_map_site(crew_turf, where))
+			continue
+		if(get_dist(crew_mob, victim) <= confirm_range)
 			return TRUE
 	return FALSE
 

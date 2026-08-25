@@ -10,6 +10,12 @@
 #define SHOWER_EXPOSURE_MULTIPLIER 2 // Showers effectively double exposed reagents
 /// How long we run in TIMED mode
 #define SHOWER_TIMED_LENGTH (15 SECONDS)
+// VOIDCREW EDIT: reserve a dry shower must rebuild before it auto-resumes.
+// Without it, a shower left switched on re-fires the moment it recollects one
+// spray's worth (5u) and dumps it the same tick, so it never visibly recovers.
+// 50u = 10 seconds of spray. Invented/unplaytested value.
+#define SHOWER_RESTART_VOLUME 50
+// VOIDCREW EDIT END
 
 /// Run the shower until we run out of reagents.
 #define SHOWER_MODE_UNTIL_EMPTY 0
@@ -48,7 +54,7 @@ GLOBAL_LIST_INIT(shower_mode_descriptions, list(
 	///How much reagent capacity should the shower begin with when built.
 	var/reagent_capacity = 200
 	///How many units the shower refills every second.
-	var/refill_rate = 0.5
+	var/refill_rate = 2.5 // VOIDCREW EDIT: was 0.5 - a 40s shower took ~7 minutes to recover, which crews read as "never refills". Invented/unplaytested value.
 	///Does the shower have a water recycler to recollect its water supply?
 	var/has_water_reclaimer = TRUE
 	///Which mode the shower is operating in.
@@ -325,9 +331,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 		// Don't turn back on.
 		if(mode != SHOWER_MODE_FOREVER)
 			intended_on = FALSE
-	else
+	// VOIDCREW EDIT: an off-but-wanted-on shower waits for a working reserve
+	// (SHOWER_RESTART_VOLUME) instead of firing one spray per refill cycle.
+	// Deliberate clicks (interact) still start it at one spray's worth.
+	else if(!(intended_on && !actually_on && reagents.total_volume < SHOWER_RESTART_VOLUME))
 		// Cycle: update_actually_on() will only change state if appropriate.
 		update_actually_on(intended_on)
+	// VOIDCREW EDIT END
 
 	// Reclaim water
 	if(!actually_on)
@@ -424,6 +434,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 #undef SHOWER_MODE_FOREVER
 #undef SHOWER_MODE_COUNT
 #undef SHOWER_TIMED_LENGTH
+#undef SHOWER_RESTART_VOLUME // VOIDCREW EDIT
 #undef SHOWER_SPRAY_VOLUME
 #undef SHOWER_EXPOSURE_MULTIPLIER
 #undef SHOWER_BOILING_TEMP

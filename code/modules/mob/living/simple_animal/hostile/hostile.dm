@@ -609,8 +609,18 @@
 /mob/living/simple_animal/hostile/proc/ListTargetsLazy(_Z)//Step 1, find out what we can see
 	var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha))
 	. = list()
+	// VOIDCREW EDIT ADDITION: packed-level containment. vision_range is 9 by default and two
+	// tenants' nearest live turfs are 6 apart, so a mob at the edge of its slot acquired a
+	// player in the NEXT slot - one it can never reach, because /turf/cordon is never
+	// Adjacent(), so it paths at them for the rest of its life. Resolved once per call.
+	var/datum/own_region = map_region_for_turf(get_turf(src))
+	// VOIDCREW EDIT END
 	for (var/I in SSmobs.clients_by_zlevel[_Z])
 		var/mob/M = I
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(own_region, get_turf(M)))
+			continue
+		// VOIDCREW EDIT END
 		if (get_dist(M, src) < vision_range)
 			if (isturf(M.loc))
 				. += M

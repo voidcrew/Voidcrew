@@ -269,12 +269,6 @@
 /obj/structure/marker_beacon/cerulean,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering/a)
-"hC" = (
-/obj/machinery/porta_turret/ship_defense{
-	dir = 1
-	},
-/turf/closed/wall/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "hI" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 9
@@ -1441,9 +1435,6 @@
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
 "Nr" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/autolathe,
-/obj/structure/sign/poster/official/soft_cap_pop_art/directional/east,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "NN" = (

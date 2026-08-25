@@ -208,7 +208,9 @@
 /obj/machinery/power/terminal{
 	dir = 4
 	},
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
 /obj/item/stack/sheet/mineral/plasma/thirty,
@@ -281,7 +283,9 @@
 /obj/machinery/power/terminal{
 	dir = 8
 	},
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
 /obj/item/radio/intercom/directional/north,

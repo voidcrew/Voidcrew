@@ -116,10 +116,10 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	stun_projectile_sound = 'sound/items/weapons/plasma_cutter.ogg'
 	icon_state = "syndie_off"
 	base_icon_state = "syndie"
-	// Players' default faction IS "neutral" — including FACTION_NEUTRAL here (like
+	// Players' default faction IS "neutral", including FACTION_NEUTRAL here (like
 	// the pacifist centcom turrets do) would faction-exempt every player from targeting
 	faction = list(FACTION_TURRET)
-	mode = 1 // TURRET_LETHAL — the define is file-local to portable_turret.dm
+	mode = 1 // TURRET_LETHAL, the define is file-local to portable_turret.dm
 	turret_flags = NONE
 
 	/// The outpost this turret defends (set by the outpost on interior load)
@@ -143,7 +143,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /obj/machinery/porta_turret/outpost/allowed(mob/accessor)
 	return FALSE
 
-// No settings UI at all — the power toggle in ui_act() isn't gated on `locked`,
+// No settings UI at all: the power toggle in ui_act() isn't gated on `locked`,
 // so the panel must never open in the first place
 /obj/machinery/porta_turret/outpost/ui_interact(mob/user, datum/tgui/ui)
 	return
@@ -172,7 +172,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
  * # Outpost Defense Laser
  *
  * Fired only by outpost turrets. Phases harmlessly through bystanders and only
- * impacts valid turret targets — marked aggressors and embargoed crew — so
+ * impacts valid turret targets (marked aggressors and embargoed crew) so
  * enforcement never catches innocent shoppers in the crossfire. Dense obstacles
  * (walls, structures) still stop it as normal.
  */
@@ -212,7 +212,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	/// The berth host this door belongs to (set by the outpost on interior/hangar load)
 	var/obj/structure/overmap/outpost
 
-// See-through variant for storefronts that want their interior on display —
+// See-through variant for storefronts that want their interior on display,
 // the Chop Shop's parlor door. Same sanctuary armor, glass panes.
 /obj/machinery/door/airlock/outpost/glass
 	name = "outpost glass airlock"
@@ -273,68 +273,144 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 // =========================================================================
 
 /**
- * Marks fixed machinery as outpost property: it can't be unbolted, unscrewed,
- * pried apart or stripped for parts, and hitting it is aggression.
+ * Marks a machine or structure as outpost property: it can't be damaged,
+ * unbolted, unscrewed, pried apart or stripped for parts, and hitting it is
+ * aggression.
  *
- * INDESTRUCTIBLE on the type covers damage and nothing else — tool deconstruction
- * never consults resistance flags, which is the same trap the berth display's
- * wrench fell into (see outpost_hangar.dm). Blocking on COMSIG_ATOM_TOOL_ACT
- * closes every route at one point: that signal fires inside tool_act() ahead of
+ * INDESTRUCTIBLE covers damage (and the RCD, whose deconstruct mode checks the
+ * flag) and nothing else, tool deconstruction never consults resistance flags,
+ * which is the same trap the berth display's wrench fell into (see
+ * outpost_hangar.dm). Blocking on COMSIG_ATOM_TOOL_ACT closes every route at
+ * one point: that signal fires inside tool_act() ahead of
  * crowbar_act/screwdriver_act/wrench_act, and a blocking return there ends the
- * click chain before attackby ever runs — so the machines that deconstruct out of
- * attackby instead (the food processor and the deep fryer both do) need no
- * special handling here.
+ * click chain before attackby ever runs, so the machines that deconstruct out
+ * of attackby instead (the food processor and the deep fryer both do) need no
+ * special handling here. Right clicks raise COMSIG_ATOM_SECONDARY_TOOL_ACT,
+ * a separate signal, so both are blocked, tables and chairs deconstruct from
+ * their _secondary tool acts.
+ *
+ * Attached per-type by the outpost machine subtypes, and swept over everything
+ * the interior/hangar templates placed at link time, so bare tg types on the
+ * maps (the door fans, seating, lockers) are covered without a subtype each.
+ * Attach is guarded by TRAIT_OUTPOST_PROPERTY, so those two paths can overlap
+ * in either order.
  */
 /datum/element/outpost_property
 
 /datum/element/outpost_property/Attach(datum/target)
 	. = ..()
-	if(!ismachinery(target))
+	if(!ismachinery(target) && !isstructure(target))
 		return ELEMENT_INCOMPATIBLE
+	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY))
+		return
+	ADD_TRAIT(target, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
+
+	// Never restored on Detach, which only ever runs at qdel
+	var/obj/property = target
+	property.resistance_flags |= INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 	RegisterSignals(target, list(
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
 		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
 		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WIRECUTTER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WIRECUTTER),
 	), PROC_REF(block_tool))
-	RegisterSignal(target, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(block_part_replacer))
+	RegisterSignals(target, list(
+		COMSIG_ATOM_ITEM_INTERACTION,
+		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
+	), PROC_REF(block_part_replacer))
 
-	// relay_attackers folds melee, projectiles, thrown items, hulks and mechs into
-	// one signal, so aggression doesn't need a proc per attack route
-	var/atom/movable/property = target
-	property.AddElement(/datum/element/relay_attackers)
-	RegisterSignal(target, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
+	// Deliberately NOT /datum/element/relay_attackers: its bare-hand route
+	// (COMSIG_ATOM_ATTACK_HAND) reports *any* empty-handed click as a damaging
+	// attack as long as combat mode is on, and attack_hand is also the click that
+	// opens a machine's UI. Riding the hangar elevator with combat mode left on
+	// therefore cost the rider an aggression strike per floor. Empty hands can't
+	// scratch INDESTRUCTIBLE property anyway, so only the routes that carry real
+	// force count here.
+	RegisterSignal(target, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_melee_attack))
+	RegisterSignal(target, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_hit))
+	RegisterSignal(target, COMSIG_ATOM_PREHITBY, PROC_REF(on_thrown_hit))
+	RegisterSignal(target, COMSIG_ATOM_HULK_ATTACK, PROC_REF(on_hulk_attack))
+	RegisterSignal(target, COMSIG_ATOM_ATTACK_MECH, PROC_REF(on_mech_attack))
 
 /datum/element/outpost_property/Detach(datum/source, ...)
 	UnregisterSignal(source, list(
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
 		COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER),
 		COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_TOOL_ACT(TOOL_WIRECUTTER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_CROWBAR),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_SCREWDRIVER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WRENCH),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WELDER),
+		COMSIG_ATOM_SECONDARY_TOOL_ACT(TOOL_WIRECUTTER),
 		COMSIG_ATOM_ITEM_INTERACTION,
-		COMSIG_ATOM_WAS_ATTACKED,
+		COMSIG_ATOM_ITEM_INTERACTION_SECONDARY,
+		COMSIG_ATOM_AFTER_ATTACKEDBY,
+		COMSIG_PROJECTILE_PREHIT,
+		COMSIG_ATOM_PREHITBY,
+		COMSIG_ATOM_HULK_ATTACK,
+		COMSIG_ATOM_ATTACK_MECH,
 	))
+	REMOVE_TRAIT(source, TRAIT_OUTPOST_PROPERTY, ELEMENT_TRAIT(type))
 	return ..()
 
-/datum/element/outpost_property/proc/block_tool(obj/machinery/source, mob/living/user, obj/item/tool)
+/datum/element/outpost_property/proc/block_tool(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
-	source.balloon_alert(user, "bolted down!")
+	source.balloon_alert(user, "outpost property!")
 	return ITEM_INTERACT_BLOCKING
 
 /**
  * A bluespace RPED skips the panel_open check in exchange_parts(), so blocking the
  * screwdriver doesn't keep the parts inside on its own.
  */
-/datum/element/outpost_property/proc/block_part_replacer(obj/machinery/source, mob/living/user, obj/item/tool)
+/datum/element/outpost_property/proc/block_part_replacer(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
 	if(!istype(tool, /obj/item/storage/part_replacer))
 		return NONE
 	source.balloon_alert(user, "casing is sealed!")
 	return ITEM_INTERACT_BLOCKING
 
-/// Shoves and stamina hits aren't vandalism; only a real damaging hit is
-/datum/element/outpost_property/proc/on_attacked(obj/machinery/source, atom/attacker, attack_flags)
-	SIGNAL_HANDLER
-	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
+/// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
+/datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker)
+	if(!isliving(attacker))
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(source))
 	outpost?.register_aggression(attacker)
+
+/datum/element/outpost_property/proc/on_melee_attack(obj/source, obj/item/weapon, mob/attacker, list/modifiers, list/attack_modifiers)
+	SIGNAL_HANDLER
+	if(!weapon.force || weapon.damtype == STAMINA)
+		return
+	register_hit(source, attacker)
+
+/datum/element/outpost_property/proc/on_projectile_hit(obj/source, obj/projectile/hit_projectile)
+	SIGNAL_HANDLER
+	if(!hit_projectile.is_hostile_projectile() || hit_projectile.damage_type == STAMINA)
+		return
+	register_hit(source, hit_projectile.firer)
+
+/datum/element/outpost_property/proc/on_thrown_hit(obj/source, atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(!isitem(hit_atom))
+		return
+	var/obj/item/hit_item = hit_atom
+	if(!hit_item.throwforce || hit_item.damtype == STAMINA)
+		return
+	register_hit(source, throwingdatum?.get_thrower())
+
+/datum/element/outpost_property/proc/on_hulk_attack(obj/source, mob/attacker)
+	SIGNAL_HANDLER
+	register_hit(source, attacker)
+
+/// The mecha is the attacker as far as the signal is concerned; the pilot is who the outpost blames
+/datum/element/outpost_property/proc/on_mech_attack(obj/source, obj/vehicle/sealed/mecha/mecha_attacker, mob/living/pilot)
+	SIGNAL_HANDLER
+	register_hit(source, pilot)

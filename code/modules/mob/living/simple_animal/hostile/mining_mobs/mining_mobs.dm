@@ -4,7 +4,24 @@
 	vision_range = 2
 	atmos_requirements = null
 	faction = list(FACTION_MINING)
-	weather_immunities = list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE)
+	// VOIDCREW EDIT: TRAIT_SNOWSTORM_IMMUNE added. /mob/living/basic/mining - the newer
+	// base every other icemoon mob already sits on - grants all THREE of these
+	// (see its Initialize), and this one being two-thirds of that list is an oversight
+	// upstream never felt because on icemoon the plasma rivers are mapped, not carved.
+	//
+	// Here they are carved, and TRAIT_SNOWSTORM_IMMUNE is not only about the weather:
+	// /turf/open/lava/plasma - the ice planet's river turf - uses it as its `immunity_trait`.
+	// Without it a polar bear (weight 35 in /datum/biome/snow, one of the commonest
+	// spawns) that a river is carved through takes the full lava path: do_burn() gives it
+	// TRAIT_NO_EXTINGUISH and a perma_fire_overlay, ignite_mob() hangs an
+	// /obj/effect/dummy/lighting_obj/moblight/fire on it, and from then on every single
+	// step it takes re-queues that light source into SSlighting forever. That is what made
+	// wait_for_lighting_settle() never see the bottom of the queue on ice planets and only
+	// on ice planets - a lava planet's rivers key off TRAIT_LAVA_IMMUNE, which this list
+	// already had. Rivers are carved AFTER populate_terrain, so the mobs are standing there
+	// before the plasma arrives; it is not a choice anything made.
+	weather_immunities = list(TRAIT_LAVA_IMMUNE, TRAIT_ASHSTORM_IMMUNE, TRAIT_SNOWSTORM_IMMUNE)
+	// END VOIDCREW EDIT (was: list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE))
 	obj_damage = 30
 	environment_smash = ENVIRONMENT_SMASH_WALLS
 	minbodytemp = 0

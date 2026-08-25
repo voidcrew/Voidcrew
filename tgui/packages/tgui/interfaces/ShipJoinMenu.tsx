@@ -14,6 +14,8 @@ type ActiveShip = {
     slots: number;
   }>;
   memo: string | null;
+  locked: BooleanLike;
+  password_cleared: BooleanLike;
 };
 
 type ShipJoinMenuData = {
@@ -118,8 +120,8 @@ const RequisitionSection = (props: { canRequisition: boolean }) => {
         <Stack.Item>
           <Box color="gray" fontSize="13px" mb={1}>
             {canRequisition
-              ? 'No ship in the fleet has a position open for you, so the yard will issue you one at no cost. The class, theme and fittings are whatever is on the line — buy from the shipyard if you want to choose.'
-              : 'Available only when the fleet has no room left. There are still open positions below — join one of those.'}
+              ? 'No ship in the fleet has a position open for you, so the yard will issue you one at no cost. The class, theme and fittings are whatever is on the line. Buy from the shipyard if you want to choose.'
+              : 'Available only when the fleet has no room left. There are still open positions below, join one of those.'}
           </Box>
         </Stack.Item>
         <Stack.Item>
@@ -239,6 +241,20 @@ const ShipCard = (props: { ship: ActiveShip }) => {
                     open
                   </Box>
                 </Stack.Item>
+                {!!ship.locked && (
+                  <Stack.Item ml={1.5}>
+                    <Box
+                      fontSize="12px"
+                      color={ship.password_cleared ? 'lightgreen' : 'yellow'}
+                    >
+                      <Icon
+                        name={ship.password_cleared ? 'unlock' : 'lock'}
+                        mr={0.5}
+                      />
+                      {ship.password_cleared ? 'Cleared' : 'Password'}
+                    </Box>
+                  </Stack.Item>
+                )}
               </Stack>
             </Stack.Item>
 
@@ -272,7 +288,13 @@ const ShipCard = (props: { ship: ActiveShip }) => {
             icon="sign-in-alt"
             color="blue"
             disabled={totalSlots === 0}
-            tooltip={totalSlots === 0 ? 'No positions available' : 'Join crew'}
+            tooltip={
+              totalSlots === 0
+                ? 'No positions available'
+                : ship.locked && !ship.password_cleared
+                  ? "Requires the crew's join password"
+                  : 'Join crew'
+            }
             onClick={() => act('select_ship', { ship_ref: ship.ref })}
           >
             Join

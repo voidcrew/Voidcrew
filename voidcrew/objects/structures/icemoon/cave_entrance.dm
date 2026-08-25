@@ -9,23 +9,23 @@
 	faction = list(FACTION_WASTELAND)
 
 /**
- * Portal payout — zone-aware.
+ * Portal payout: zone-aware.
  *
  * The old ~850-line jackpot switch (clown hell, the wizard shelf, god-loot
  * at flat odds on any planet the portal touched) is gone. Destroying a
  * portal now pays through the zone loot system: one themed cache rolled
- * against the zone the planet actually occupies — deep-space worlds pay
- * red-table prizes, safe-ring worlds pay green — plus a themed guard wave
+ * against the zone the planet actually occupies. Deep-space worlds pay
+ * red-table prizes, safe-ring worlds pay green, plus a themed guard wave
  * with a guaranteed presence in any zone, so the payout is never free.
  *
  * Where the old drops went: everything necropolis-tier still exists in the
  * tendril chest (necropolis tendrils, elite tumors and ruin fishing all
- * spawn it — see mining/lavaland/edits/necropolis_chests.dm); the
+ * spawn it, see mining/lavaland/edits/necropolis_chests.dm); the
  * bloodletter knife and plant flamethrower moved into the occult/industrial
  * theme tables; the wizard shelf, His Grace and the clown kit live on at
  * low weight in the occult/research/wardrobe RARE tables (all in
  * modules/loot/themes/, by owner request). The doom blood-drunk miner is
- * gone for good — megafauna are banned from loot payouts; arenas built FOR
+ * gone for good, megafauna are banned from loot payouts; arenas built FOR
  * them are the only exception.
  */
 /obj/effect/collapsing_demonic_portal/drop_loot()

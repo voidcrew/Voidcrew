@@ -57,7 +57,7 @@
 	cut_remaining--
 	if(cut_remaining > 0)
 		return
-	// Quota met — defer the turnaround out of the death-signal stack.
+	// Quota met: defer the turnaround out of the death-signal stack.
 	intermission = TRUE
 	addtimer(CALLBACK(src, PROC_REF(end_round)), 1 SECONDS, TIMER_UNIQUE)
 
@@ -90,7 +90,7 @@
 	controller.reset_arena()
 
 	var/survivors = length(controller.live_entries())
-	site.venue_message(span_boldannounce("Round [round_number] is over — [survivors] advance. The next round begins in [COLOSSEUM_TOURNAMENT_INTERMISSION / 10] seconds."))
+	site.venue_message(span_boldannounce("Round [round_number] is over, [survivors] advance. The next round begins in [COLOSSEUM_TOURNAMENT_INTERMISSION / 10] seconds."))
 	round_number++
 	addtimer(CALLBACK(src, PROC_REF(next_round)), COLOSSEUM_TOURNAMENT_INTERMISSION, TIMER_UNIQUE)
 

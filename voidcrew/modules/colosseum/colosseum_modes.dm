@@ -25,7 +25,7 @@
 	/// Prize pool scale factor
 	var/reward_multiplier = 1
 	/// Whether the dynamic arena event scheduler runs during this mode
-	/// (crate drops, hazards, pop-up cover — see colosseum_arena_events.dm)
+	/// (crate drops, hazards, pop-up cover, see colosseum_arena_events.dm)
 	var/arena_events = FALSE
 	/// Back-reference, set by the controller at roster lock
 	var/datum/colosseum_controller/controller
@@ -44,7 +44,7 @@
  * Team assignment at roster lock. Team modes keep shipmates together:
  * contestants are grouped by crew team and whole groups are dealt to the
  * smaller team, largest group first. Unaffiliated contestants are each their
- * own group (keyed by their own entry — grouping them by the shared
+ * own group (keyed by their own entry, grouping them by the shared
  * "Unaffiliated" ship NAME would deal every random to one side as a block).
  * Solo modes leave everyone COLOSSEUM_TEAM_SOLO.
  */
@@ -207,7 +207,7 @@
 
 /**
  * The classic: solo cells, every gate opens, last fighter standing takes the
- * purse. Clock expiry is a draw — hiding out the timer pays nobody.
+ * purse. Clock expiry is a draw. Hiding out the timer pays nobody.
  */
 /datum/colosseum_game/deathmatch
 	name = "Free-for-All Deathmatch"
@@ -298,7 +298,7 @@
 			continue
 		if(!(get_turf(entry.body) in dais_turfs))
 			continue
-		if(holder) // contested — nobody accrues
+		if(holder) // contested, nobody accrues
 			if(!contested_announced)
 				contested_announced = TRUE
 				controller.site.venue_message(span_notice("The dais is CONTESTED - nobody gains time!"))

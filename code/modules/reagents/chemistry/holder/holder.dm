@@ -195,11 +195,14 @@
  * * [list_reagents][list] - list to add. Format it like this: list(/datum/reagent/toxin = 10, "beer" = 15)
  * * [data][list] - additional data to add
  * * [added_purity][number] - an override to the default purity for each reagent to add.
+ * * [temperature][number] - the temperature to add each reagent at. VOIDCREW EDIT: added
+ *   for the chemistry circuits; defaults to add_reagent's own default so existing callers
+ *   are unaffected.
  */
-/datum/reagents/proc/add_reagent_list(list/list_reagents, list/data = null, added_purity = null)
+/datum/reagents/proc/add_reagent_list(list/list_reagents, list/data = null, added_purity = null, temperature = DEFAULT_REAGENT_TEMPERATURE)
 	for(var/r_id in list_reagents)
 		var/amt = list_reagents[r_id]
-		add_reagent(r_id, amt, data, added_purity = added_purity)
+		add_reagent(r_id, amt, data, reagtemp = temperature, added_purity = added_purity)
 
 /**
  * Removes a specific reagent. can supress reactions if needed
@@ -586,8 +589,8 @@
 	var/list/deleted_reagents = list()
 	var/chem_index = 1
 	var/num_reagents = length(cached_reagents)
-	var/total_ph = 0
 	var/reagent_volume = 0
+	var/total_ph = 0
 	. = 0
 
 	//responsible for removing reagents and computing total ph & volume

@@ -27,6 +27,8 @@
 	var/list/linked_launchers = list()
 	/// List of linked laser turrets (weakrefs)
 	var/list/linked_turrets = list()
+	/// List of linked assault pod tubes (weakrefs)
+	var/list/linked_pod_tubes = list()
 	/// List of linked shield generators (weakrefs). The ship runs one shared shield
 	/// pool fed by every generator aboard, so this has to be a list - most hulls mount
 	/// two or three and a single slot silently drops all but the last one.
@@ -81,6 +83,7 @@
 	actions += new /datum/action/innate/ship_combat/fire_laser(src)
 	actions += new /datum/action/innate/ship_combat/fire_all_lasers(src)
 	actions += new /datum/action/innate/ship_combat/adjust_laser_power(src)
+	actions += new /datum/action/innate/ship_combat/launch_pod(src)
 
 	reticle = new(null, src)
 
@@ -126,6 +129,11 @@
 		if(gen)
 			gen.unlink_console()
 	linked_shields.Cut()
+	for(var/datum/weakref/ref in linked_pod_tubes)
+		var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+		if(tube)
+			tube.unlink_console()
+	linked_pod_tubes.Cut()
 	QDEL_NULL(reticle)
 	current_ship = null
 	return ..()
@@ -134,6 +142,7 @@
 	. = ..()
 	. += span_notice("Linked launchers: [length(linked_launchers)]")
 	. += span_notice("Linked laser turrets: [length(linked_turrets)]")
+	. += span_notice("Linked assault pod tubes: [length(linked_pod_tubes)]")
 	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
 	if(interdictor)
 		. += span_notice("Linked interdictor: [interdictor.name]")

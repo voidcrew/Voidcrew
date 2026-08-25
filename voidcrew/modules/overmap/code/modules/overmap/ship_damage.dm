@@ -171,6 +171,10 @@
 	for(var/obj/structure/overmap/planet/planet_below in close_overmap_objects)
 		if(istype(planet_below, /obj/structure/overmap/planet/empty))
 			continue
+		// A planet mid-teardown is deleting every atom on its level - a hull docked
+		// into that gets wiped along with the terrain. Crash into open space instead.
+		if(planet_below.unloading)
+			continue
 		crash_land_on_planet(planet_below)
 		return
 	// Also check turf contents directly
@@ -179,11 +183,26 @@
 		for(var/obj/structure/overmap/planet/planet_below in our_turf.contents)
 			if(istype(planet_below, /obj/structure/overmap/planet/empty))
 				continue
+			if(planet_below.unloading)
+				continue
 			crash_land_on_planet(planet_below)
 			return
 
 	// No planet - create crashed ship marker at current location
-	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
+	make_crash_site()
+
+/**
+ * Creates a fresh crashed-ship site at the ship's current overmap tile and docks the
+ * hull into it. The no-planet crash path, and the fallback for every planet-crash
+ * attempt that finds its planet missing, tearing down, or never finishing its build -
+ * those used to just return, leaving the hull stranded on the transit level with
+ * has_crash_landed latched and no way to ever land it.
+ */
+/obj/structure/overmap/ship/proc/make_crash_site()
+	var/turf/site_turf = get_turf(src)
+	if(!site_turf)
+		return
+	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(site_turf)
 
 	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
 
@@ -221,25 +240,77 @@
 	finish_crash_land_on_planet(planet)
 
 /**
- * Finishes the crash landing onto a planet - picks a random spot and slams down
+ * Finishes the crash landing onto a planet - picks a random spot and slams down.
+ *
+ * Every bail-out goes through make_crash_site() rather than a bare return: a bare
+ * return leaves the hull stranded on the transit level with has_crash_landed latched,
+ * unlandable and unfindable for the rest of the round.
+ *
+ * `retries` counts the 2-second waits spent on a planet that is still building. A
+ * queued terrain build holds the worldgen queue for upwards of a minute, and docking
+ * into a half-generated level is how a hull gets overwritten by the terrain fill or
+ * entombed by the cordon pass that runs late in the build.
  */
-/obj/structure/overmap/ship/proc/finish_crash_land_on_planet(obj/structure/overmap/planet/planet)
-	if(!planet || !shuttle || !planet.mapzone)
+/obj/structure/overmap/ship/proc/finish_crash_land_on_planet(obj/structure/overmap/planet/planet, retries = 0)
+	if(!shuttle)
+		return
+
+	// The planet can be gone, or tearing its level down, by the time we fall - never
+	// dock into a level that is being wiped.
+	if(!planet || QDELETED(planet) || planet.unloading || !planet.mapzone)
+		make_crash_site()
+		return
+
+	// Still building - wait it out (up to 3 minutes), then give up and crash in space
+	if(planet.loading || !planet.loaded)
+		if(retries < 90)
+			addtimer(CALLBACK(src, PROC_REF(finish_crash_land_on_planet), planet, retries + 1), 2 SECONDS)
+		else
+			make_crash_site()
 		return
 
 	// Get the planet's z-level
 	var/datum/space_level/zlevel = planet.mapzone.z_levels[1]
-	if(!zlevel)
+	if(!zlevel || isnull(zlevel.low_x))
+		make_crash_site()
 		return
 
-	// Find a random spot on the planet that can fit the shuttle
-	// Add some padding from edges to avoid clipping off the map
+	// Pick a random spot that keeps the whole hull inside THIS PLANET's footprint.
+	//
+	// The site rect bounds the buildable surface; everything outside it is either
+	// indestructible cordon or - on a packed z-level - a different planet's ground. A hull
+	// force-docked into the cordon is sealed in for good, and one force-docked onto the
+	// neighbour lands on a world its crew never surveyed, past a cordon they cannot cross,
+	// while :317-320 below records it as docked to THIS planet. The bounds were once
+	// low + world.maxx/maxy, which on a 128x128 planet put roughly half the random range in
+	// the cordon (or off the map) - round 4's 10-hour hull was entombed exactly that way by
+	// its own derelict auto-crash. The level's rect is the same class of mistake once a level
+	// is shared, since it widens to the whole z the moment a second tenant lands.
+	var/datum/map_footprint/site = planet.footprint
+	var/has_footprint = site && !isnull(site.low_x) && site.z_value
+	var/site_low_x = has_footprint ? site.low_x : zlevel.low_x
+	var/site_low_y = has_footprint ? site.low_y : zlevel.low_y
+	var/site_high_x = has_footprint ? site.high_x : zlevel.high_x
+	var/site_high_y = has_footprint ? site.high_y : zlevel.high_y
+	var/site_z = has_footprint ? site.z_value : zlevel.z_value
 	var/padding = max(shuttle.width, shuttle.height) + 5
-	var/target_x = rand(zlevel.low_x + padding, zlevel.low_x + world.maxx - padding)
-	var/target_y = rand(zlevel.low_y + padding, zlevel.low_y + world.maxy - padding)
-	var/turf/crash_turf = locate(target_x, target_y, zlevel.z_value)
+	var/min_x = site_low_x + padding
+	var/max_x = site_high_x - padding
+	var/min_y = site_low_y + padding
+	var/max_y = site_high_y - padding
+	var/target_x
+	var/target_y
+	if(min_x > max_x || min_y > max_y)
+		// Hull too large for a padded pick - aim for the middle of the footprint
+		target_x = round((site_low_x + site_high_x) / 2)
+		target_y = round((site_low_y + site_high_y) / 2)
+	else
+		target_x = rand(min_x, max_x)
+		target_y = rand(min_y, max_y)
+	var/turf/crash_turf = locate(target_x, target_y, site_z)
 
 	if(!crash_turf)
+		make_crash_site()
 		return
 
 	// Create a temporary docking port at the crash site
@@ -264,8 +335,9 @@
 	commanded_course = BURN_NONE
 	zone_resume_burn = BURN_NONE
 
-	// Clean up the temporary dock
-	qdel(crash_dock)
+	// Clean up the temporary dock - forced, or docking_port/Destroy answers with
+	// QDEL_HINT_LETMELIVE and the port leaks in SSshuttle.stationary_docking_ports
+	qdel(crash_dock, force = TRUE)
 
 	// Crash effects
 	on_crash_dock_complete()
@@ -306,6 +378,10 @@
 	SIGNAL_HANDLER
 	UnregisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 
+	// Both crash paths land here, so this is the one place to catch a hull that has
+	// somehow ended up against the reservation cordon.
+	audit_cordon_seal("crash landing")
+
 	// Play explosion sound to all crew
 	play_ship_sound('sound/effects/explosion/explosioncreak1.ogg', 100)
 
@@ -314,6 +390,35 @@
 
 	// Fling everything on the ship violently - simulates crash impact
 	crash_throw_contents()
+
+/**
+ * Loud alarm for a hull sealed in by the reservation cordon.
+ *
+ * Scans the shuttle's footprint plus a one-tile border for /turf/cordon. The cordon
+ * ring is indestructible, so a hull whose rect touches it cannot be recovered by the
+ * crew - only an admin can move it - and the only way to end up there is a lifecycle
+ * bug, which is exactly why it has to be reported the moment it happens instead of
+ * being discovered by a ghost hours later (round 4, "Shithole").
+ */
+/obj/structure/overmap/ship/proc/audit_cordon_seal(context = "docking")
+	if(!shuttle)
+		return
+	var/turf/origin = get_turf(shuttle)
+	if(!origin)
+		return
+	var/list/coords = shuttle.return_coords()
+	if(!coords || coords.len < 4)
+		return
+	var/scan_min_x = max(1, min(coords[1], coords[3]) - 1)
+	var/scan_min_y = max(1, min(coords[2], coords[4]) - 1)
+	var/scan_max_x = min(world.maxx, max(coords[1], coords[3]) + 1)
+	var/scan_max_y = min(world.maxy, max(coords[2], coords[4]) + 1)
+	for(var/turf/scanned as anything in block(locate(scan_min_x, scan_min_y, origin.z), locate(scan_max_x, scan_max_y, origin.z)))
+		if(!istype(scanned, /turf/cordon))
+			continue
+		log_shuttle("[name]: hull touches the reservation cordon after [context] - footprint ([scan_min_x],[scan_min_y]) to ([scan_max_x],[scan_max_y]) on z[origin.z], first cordon turf at ([scanned.x],[scanned.y]). The ship is likely sealed in and needs admin recovery.")
+		message_admins("\[SHUTTLE]: [name] is touching the reservation cordon after [context] and is likely sealed in! [ADMIN_COORDJMP(origin)]")
+		return
 
 /**
  * Restores ship systems after crash landing
@@ -396,24 +501,48 @@
 	else if(istype(hazard, /obj/structure/overmap/event/nebula))
 		apply_nebula_effect(hazard)
 
+/// TRUE only for the length of an ion storm's EMP burst, which is a synchronous
+/// loop of empulse() calls - nothing between the two writes below sleeps, so this
+/// cannot be left raised or observed by an unrelated EMP. Read by the SMES
+/// emp_act() override in voidcrew/edits/machinery/power.dm; see there for why the
+/// SMES is treated differently from everything else the burst touches.
+GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
+
 /**
  * Ion Storm Effect
  * EMPs random areas of the ship - no direct hull damage, but EMP can destroy electronics
  * If turfs are destroyed, delta tracking will automatically update mass
+ *
+ * The front also takes the ship's velocity. Braking is a helm command, the helm is
+ * a computer, and the burst below is about to take every computer in its radius
+ * offline for a minute (see /obj/machinery/power/apc/emp_act) - so a ship that kept
+ * its velocity here would coast on with no way to stop, taking a fresh burst on
+ * every storm tile it crossed and ending up somewhere else entirely. Killing the
+ * velocity is what makes a storm a place the crew can be rather than something that
+ * happens to them on the way past; surveying one needs 60 uninterrupted seconds
+ * parked on the tile (survey_computer.dm), which was otherwise unreachable.
  */
 /obj/structure/overmap/ship/proc/apply_ion_storm_damage(obj/structure/overmap/event/emp/storm)
 	var/intensity = storm.intensity
 	var/emp_count = 2 + (intensity * 2)
 
-	ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
+	var/was_moving = !is_still()
+	full_stop()
+
+	if(was_moving)
+		ship_notify("Ion front impact! Ship velocity lost. Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
+	else
+		ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
 
 	// Create EMPs at random locations in the ship - these can destroy equipment
+	GLOB.ion_storm_pulse_active = TRUE
 	for(var/i in 1 to emp_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
 			// empulse handles the visual effect when heavy_range > 1
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
+	GLOB.ion_storm_pulse_active = FALSE
 
 /**
  * Electrical Storm Effect
@@ -591,7 +720,7 @@
  * ship's own footprint. Rocks used to be spawned on the reservation edge with no
  * termination condition at all: one that missed kept flying for its full three-minute
  * lifetime, straight across the transit z-level and into whatever ship was parked next
- * to us — and on reaching the reservation's hard cordon was teleported onto a live
+ * to us, and on reaching the reservation's hard cordon was teleported onto a live
  * space z-level rather than deleted.
  */
 /obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)

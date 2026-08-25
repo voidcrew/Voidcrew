@@ -1,0 +1,76 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"d" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"e" = (
+/turf/template_noop,
+/area/template_noop)
+"g" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"l" = (
+/obj/machinery/light/cold{
+	dir = 4
+	},
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"q" = (
+/obj/machinery/light/cold{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/engineering_personal,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"v" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"A" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"L" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+q
+g
+d
+"}
+(2,1,1) = {"
+A
+g
+L
+"}
+(3,1,1) = {"
+c
+g
+v
+"}
+(4,1,1) = {"
+l
+g
+e
+"}

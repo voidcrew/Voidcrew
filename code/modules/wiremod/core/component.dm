@@ -203,11 +203,13 @@
  * Arguments:
  * * name - The name of the output port
  * * type - The datatype it handles.
+ * * port_type - VOIDCREW EDIT: the /datum/port/output subtype to instantiate. Lets a
+ *   component ask for a /datum/port/output/singular. Note we build the constructor
+ *   arguments by hand rather than reusing arglist(args), because args would carry
+ *   port_type itself through into /datum/port/New().
  */
-/obj/item/circuit_component/proc/add_output_port(name, type, order = 1)
-	var/list/arguments = list(src)
-	arguments += args
-	var/datum/port/output/output_port = new(arglist(arguments))
+/obj/item/circuit_component/proc/add_output_port(name, type, order = 1, port_type = /datum/port/output) //VOIDCREW EDIT: added port_type
+	var/datum/port/output/output_port = new port_type(src, name, type, order) //VOIDCREW EDIT: was new(arglist(list(src) + args))
 	output_ports += output_port
 	sortTim(output_ports, GLOBAL_PROC_REF(cmp_port_order_asc))
 	if(parent)
@@ -226,6 +228,19 @@
 	if(parent)
 		SStgui.update_uis(parent)
 	return null //explicitly set the port to null if used like this: `port = remove_output_port(port)`
+
+//VOIDCREW EDIT ADDITION: hook for components that need to clear transient port values
+//once a trigger has finished, so a chemical payload isn't re-sent on the next pulse.
+/obj/item/circuit_component/proc/after_work_call()
+	return
+
+//VOIDCREW EDIT ADDITION: lets a component vary its own power draw per trigger instead of
+//always paying the flat energy_usage_per_input. The chemistry synthesiser uses this to
+//charge more when it has to fabricate matter without precursor feedstock.
+//(Name keeps the upstream monkestation typo so ported components match.)
+/obj/item/circuit_component/proc/check_power_modifictions()
+	return energy_usage_per_input
+//VOIDCREW EDIT END
 
 
 /**
@@ -256,6 +271,7 @@
 
 	if(circuit_flags & CIRCUIT_FLAG_OUTPUT_SIGNAL)
 		trigger_output.set_output(COMPONENT_SIGNAL)
+	after_work_call() //VOIDCREW EDIT ADDITION: chemistry circuits
 	return TRUE
 
 /obj/item/circuit_component/proc/set_circuit_size(new_size)
@@ -287,10 +303,11 @@
 			message_admins("[display_name] tried to execute on [parent.get_creator_admin()] that has admin_only set to 0")
 			return FALSE
 
-		var/flags = SEND_SIGNAL(parent, COMSIG_CIRCUIT_PRE_POWER_USAGE, energy_usage_per_input)
+		var/power_usage = check_power_modifictions() //VOIDCREW EDIT: was energy_usage_per_input, see check_power_modifictions()
+		var/flags = SEND_SIGNAL(parent, COMSIG_CIRCUIT_PRE_POWER_USAGE, power_usage) //VOIDCREW EDIT
 		if(!(flags & COMPONENT_OVERRIDE_POWER_USAGE))
 			var/obj/item/stock_parts/power_store/cell = parent.get_cell()
-			if(!cell?.use(energy_usage_per_input))
+			if(!cell?.use(power_usage)) //VOIDCREW EDIT
 				return FALSE
 
 	if((!port || port.trigger == PROC_REF(input_received)) && (circuit_flags & CIRCUIT_FLAG_INPUT_SIGNAL) && !COMPONENT_TRIGGERED_BY(trigger_input, port))
@@ -436,4 +453,6 @@
  * * signal_type - The signal type used for sending this global signal (optional, default is COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
  */
 /obj/item/circuit_component/proc/send_ntnet_data(datum/port/input/port, key, signal_type = COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
-	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port)))
+	// Voidcrew: the sender rides along so receivers can scope the broadcast to one ship.
+	// See on_same_ship_network() in voidcrew/modules/circuits/ntnet_ship_scope.dm.
+	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src)))

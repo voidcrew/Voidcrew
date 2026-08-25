@@ -25,7 +25,7 @@
  * Staging is contestants-only, enforced at the area boundary: the controller
  * seats the roster by teleport, so anyone else stepping (or being dragged) in
  * gets carried straight back to the concourse by the wardens. Mindless,
- * clientless mobs (arena beasts) are left to the gates — bouncing them into
+ * clientless mobs (arena beasts) are left to the gates, bouncing them into
  * the lobby would be worse than where they are.
  */
 /area/voidcrew/colosseum/staging/Entered(atom/movable/arrived, area/old_area)

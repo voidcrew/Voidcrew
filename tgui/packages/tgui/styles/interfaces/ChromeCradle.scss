@@ -41,7 +41,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   user-select: none;
 }
 
-// Procedural fallback for the generated backplate — see PLATE_ASSET in
+// Procedural fallback for the generated backplate (see PLATE_ASSET in)
 // ChromeCradle.tsx. Same red-lit black slab, without the brackets or grain.
 .Cradle__plate {
   position: absolute;
@@ -64,7 +64,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 
 // Generated plate in use: its grain and scanlines are already baked into the
 // art. Stretched to 100% x 100% because its brackets are drawn at the same
-// coordinates the panels are positioned from — cover/contain would desync them.
+// coordinates the panels are positioned from. Cover/contain would desync them.
 .Cradle__plate--art {
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -392,7 +392,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 }
 
 // The hover card. Lives inside tgui's own tooltip shell, so it sets no
-// background of its own — only the type.
+// background of its own, only the type.
 .Cradle__hover {
   max-width: 260px;
   font-family: $stencil;

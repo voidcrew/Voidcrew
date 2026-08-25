@@ -74,12 +74,12 @@
 	return MISSION_ITEM_PROGRESS
 
 // =========================================================================
-// BOUND ITEM — a specific quest item this mission spawned
+// BOUND ITEM: a specific quest item this mission spawned
 // =========================================================================
 
 /**
  * Accepts only an /obj/item/mission_recovery whose binding resolves to this
- * objective's mission — the recovery family's carry-home step.
+ * objective's mission, the recovery family's carry-home step.
  */
 /datum/mission_objective/deliver/bound
 	required_name = "the objective"
@@ -115,7 +115,7 @@
 	return ..()
 
 // =========================================================================
-// GAS TANK — a tank carrying enough of a specific gas
+// GAS TANK: a tank carrying enough of a specific gas
 // =========================================================================
 
 /**
@@ -156,7 +156,7 @@
 	return "Tank holds [round(carried)]/[required_moles] mol of [required_name]."
 
 // =========================================================================
-// FISH — the angler's ask
+// FISH: the angler's ask
 // =========================================================================
 
 /**
@@ -186,7 +186,7 @@
 	return ..()
 
 // =========================================================================
-// COOKED DISH — the diner's ask
+// COOKED DISH: the diner's ask
 // =========================================================================
 
 /**

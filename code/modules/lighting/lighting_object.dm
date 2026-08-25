@@ -53,6 +53,23 @@
 	for(var/turf/open/space/space_tile in RANGE_TURFS(1, affected_turf))
 		space_tile.enable_starlight()
 
+	// VOIDCREW EDIT: ambient bleed, the same wake-up the loop above does for starlight,
+	// generalised to any area that paints its light on the area instead of on its turfs
+	// (ambient_lighting - planet surfaces). Those turfs carry no lighting objects and emit
+	// nothing, so this brand new statically lit tile would render as a hard black edge
+	// against bright ground unless the ground around it lights up for it. Only a tile that
+	// is actually a dark edge is worth waking anything for - a tile whose own area paints it
+	// has nothing to gain - and the area reads are inlined ahead of any proc call, because
+	// this path is really hot. See voidcrew/edits/lighting.dm.
+	var/area/lit_area = affected_turf.loc
+	if(!lit_area.ambient_lighting && !istype(affected_turf, /turf/cordon))
+		for(var/turf/bleed_tile as anything in RANGE_TURFS(1, affected_turf))
+			var/area/bleed_area = bleed_tile.loc
+			if(!bleed_area.ambient_lighting || bleed_area.static_lighting || !bleed_area.base_lighting_alpha)
+				continue
+			bleed_tile.enable_ambient_bleed(bleed_area)
+	// END VOIDCREW EDIT
+
 	needs_update = TRUE
 	SSlighting.objects_queue += src
 
@@ -115,7 +132,17 @@
 			00, 00, 00, 01
 		)
 
-	luminosity = set_luminosity
+	// VOIDCREW EDIT: an area with active base lighting is lit by a BLEND_ADD overlay on
+	// the area, not by light sources on its turfs, so every corner here reads dark and
+	// set_luminosity comes out 0. BYOND culls a luminosity 0 lighting object's tile out of
+	// clients' view, which on a base-lit planet surface would leave the ground looking
+	// bright while every mob and item standing on it went invisible. Floor those tiles at
+	// luminosity 1. One var deref, no proc call - this proc is the hot one.
+	// (Upstream moved this var off the turf and onto the lighting object itself; the turf
+	// is held at 1 by Initialize()/Destroy() now.)
+	var/area/turf_area = affected_turf.loc
+	luminosity = set_luminosity || turf_area.area_has_base_lighting
+	// END VOIDCREW EDIT (was: luminosity = set_luminosity)
 
 // Variety of overrides so the overlays don't get affected by weird things.
 
@@ -124,25 +151,3 @@
 
 /atom/movable/lighting_object/singularity_act()
 	return
-
-/atom/movable/lighting_object/singularity_pull()
-	return
-
-/atom/movable/lighting_object/blob_act()
-	return
-
-/atom/movable/lighting_object/on_changed_z_level(turf/old_turf, turf/new_turf, same_z_layer, notify_contents = TRUE)
-	SHOULD_CALL_PARENT(FALSE)
-	return
-
-/atom/movable/lighting_object/wash(clean_types)
-	SHOULD_CALL_PARENT(FALSE) // lighting objects are dirty, confirmed
-	return
-
-// Override here to prevent things accidentally moving around overlays.
-/atom/movable/lighting_object/forceMove(atom/destination, no_tp = FALSE, harderforce = FALSE)
-	if(harderforce)
-		return ..()
-
-/atom/movable/lighting_object/ref_search_details()
-	return "[text_ref(src)] (turf: [affected_turf ? "[affected_turf.type] @ [AREACOORD(affected_turf)]" : "null"] needs_update: [needs_update ? "true" : "false"])"

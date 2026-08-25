@@ -62,6 +62,20 @@
 		if(!QDELETED(reserved_area))
 			qdel(reserved_area)
 		reserved_area = null
+		// VOIDCREW EDIT: free the area too. SSshuttle.generate_transit_dock() news an
+		// /area/shuttle/transit per transit dock and nothing anywhere qdel'd it -
+		// reap_emptied_areas() skips /area/shuttle by design, so every transit dock left one
+		// behind permanently. The 52-cycle soak counted /area/shuttle/transit 5 -> 105
+		// (+2.00/cycle) with 78 of them holding no resident turfs at the end.
+		//
+		// After reserved_area, not before: releasing the reservation is what hands the
+		// ground back to the space area. The release drain is async, so this can qdel an
+		// area that still nominally holds turfs - which is safe, because
+		// SSmapping.fire()'s reservation drain already guards a dead area explicitly
+		// (the isnull(old_area.turfs_to_uncontain_by_zlevel) branch).
+		if(!QDELETED(assigned_area))
+			qdel(assigned_area)
+		assigned_area = null
 	return ..()
 
 /obj/docking_port/stationary/picked

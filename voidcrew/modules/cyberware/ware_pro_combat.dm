@@ -1,20 +1,20 @@
 /**
  * # Tier 2 combat chrome
  *
- * Deadeye Link, Slipwire, Dead Channel, Hopper Pistons — plus the two pieces
+ * Deadeye Link, Slipwire, Dead Channel, Hopper Pistons, plus the two pieces
  * of shared infrastructure the combat roster leans on:
  *
- * - /datum/component/cyberware_dodge — THE one projectile-dodge arbiter.
+ * - /datum/component/cyberware_dodge: THE one projectile-dodge arbiter.
  *   Slipwire registers a 15% source here, Cascade Lattice (ware_legend.dm)
  *   registers a 40% source during its window, and the component rolls the
  *   single HIGHEST live source. Never additive: Slipwire + Cascade together
  *   is still 40%, not 49%. Any future dodge chrome must register a source
  *   through cyberware_register_dodge_source() rather than hanging its own
  *   COMSIG_ATOM_PRE_BULLET_ACT handler.
- * - cyberware_is_ally() — the crew filter for auto-targeting ware (Deadeye's
+ * - cyberware_is_ally(): the crew filter for auto-targeting ware (Deadeye's
  *   tag, Widowline's cleave). Allies are people who share a ship team with
  *   you; NPC boarders standing on your deck are NOT allies, and rival players
- *   are fair game. Manual swings never consult this — it exists only so
+ *   are fair game. Manual swings never consult this, it exists only so
  *   automatic effects can't be aimed at your own crew.
  */
 
@@ -33,7 +33,7 @@
  * - Moving-only: no dodge unless the bearer moved within the last second.
  * - Never point-blank: adjacent shooters always hit.
  * - Always visible and audible: the dodge is a one-tile blur sidestep with a
- *   fading decoy and a bullet-miss crack — dodging reads to the shooter.
+ *   fading decoy and a bullet-miss crack. Dodging reads to the shooter.
  * - COMPONENT_BULLET_PIERCED means the round keeps flying into whoever is
  *   behind; accepted as flavor.
  */
@@ -109,7 +109,7 @@
 /**
  * Adds (or refreshes) a keyed dodge source on the bearer, creating the
  * arbiter component on first use. The callback is polled per incoming
- * projectile and must return the source's CURRENT chance — return 0 while
+ * projectile and must return the source's CURRENT chance, return 0 while
  * disabled (ORGAN_FAILING etc.) rather than unregistering per-flicker.
  */
 /proc/cyberware_register_dodge_source(mob/living/bearer, key, datum/callback/chance_callback)
@@ -131,7 +131,7 @@
 
 /**
  * The ship team this mob is crew of, or null. Checks the ship they are
- * standing on first (free), then the global register — so crewmates raiding
+ * standing on first (free), then the global register, so crewmates raiding
  * a ruin together still read as one crew with the hull parked outside.
  */
 /proc/cyberware_crew_team(mob/living/crewmate)
@@ -151,7 +151,7 @@
  * TRUE when target is someone this user's AUTO-targeting chrome must refuse:
  * themselves, or a fellow crew member of the same ship team. Mindless mobs
  * are never allies (an NPC boarder on your own deck stays a valid target),
- * and rival players are always fair game — this is a PvP server.
+ * and rival players are always fair game. This is a PvP server.
  */
 /proc/cyberware_is_ally(mob/living/user, mob/living/target)
 	if(user == target)
@@ -171,7 +171,7 @@
 #define CYBERWARE_DEADEYE_TAG_RANGE 9
 /// Homing shots granted per tag.
 #define CYBERWARE_DEADEYE_TAG_SHOTS 3
-/// The tag dies on its own after this long, spent or not — homing windows
+/// The tag dies on its own after this long, spent or not, homing windows
 /// stay short (homing projectiles revert to segmented processing; perf).
 #define CYBERWARE_DEADEYE_TAG_DURATION (15 SECONDS)
 /// Filter key for the reticle painted on the tagged target.
@@ -181,8 +181,8 @@
  * # Deadeye Link (T2, eyes, load 3)
  *
  * Milspec optics with an active target processor: tag a hostile in view and
- * your next three shots hard-track them. The tag is an explicit click —
- * nothing is ever auto-acquired — and refuses your own crew outright. The
+ * your next three shots hard-track them. The tag is an explicit click.
+ * Nothing is ever auto-acquired, and refuses your own crew outright. The
  * reticle on the victim is visible to everyone including the victim, and
  * every homing round paints a crosshair flash as it corrects: getting
  * deadeye'd is loud, legible, and answered by breaking line of sight.
@@ -285,7 +285,7 @@
 		owner.balloon_alert(owner, "no target lock!")
 		return FALSE
 	if(cyberware_is_ally(owner, victim))
-		owner.balloon_alert(owner, "friendly — tag refused!")
+		owner.balloon_alert(owner, "friendly, tag refused!")
 		return FALSE
 	if(!can_see(owner, victim, CYBERWARE_DEADEYE_TAG_RANGE))
 		owner.balloon_alert(owner, "no line of sight!")
@@ -306,14 +306,14 @@
  *
  * A reflex shunt spliced through the spinal trunk. While you are moving,
  * 15% of incoming projectiles are answered with a visible one-tile blur
- * sidestep — never point-blank, never while browned out — plus a small
+ * sidestep (never point-blank, never while browned out) plus a small
  * always-on gait boost. The dodge itself lives in the shared arbiter above;
  * this organ just contributes a source whose chance drops to zero the moment
  * the ware is EMP-scrambled or browned out.
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own — roughly one shot in seven misses because your body moved before you told it to."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own, roughly one shot in seven misses because your body moved before you told it to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -324,12 +324,22 @@
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	cyberware_register_dodge_source(organ_owner, REF(src), CALLBACK(src, PROC_REF(get_dodge_chance)))
-	organ_owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
 
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	cyberware_unregister_dodge_source(organ_owner, REF(src))
-	organ_owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+
+// The gait boost rides the failing-gated passive layer (BAL-4): the dodge
+// already zeroed itself while failing (get_dodge_chance), but the speed kept
+// running through EMP downtime. Movespeed modifiers are keyed by type, so
+// add/remove is idempotent and needs no applied-state guard.
+/obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	bearer?.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+
+/obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	bearer?.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
 
 /// Dodge-source callback: dead weight while failing, 15% otherwise.
 /obj/item/organ/cyberimp/cyberware/slipwire/proc/get_dodge_chance()
@@ -354,7 +364,7 @@
  * # Dead Channel (T2, chest, nervous slot, load 4)
  *
  * A pain editor: the nervous slot's other answer, competing with Slipwire.
- * Pain reporting is cut entirely (no pain messages, no soft crit — you stand
+ * Pain reporting is cut entirely (no pain messages, no soft crit, you stand
  * until hard crit), stamina damage is halved, and damage slowdown never
  * reaches your legs. The cost is information: the only gauge you get is the
  * world quietly desaturating as the meat racks up damage you can't feel.
@@ -363,7 +373,7 @@
  * "You can't tell how bad it's gotten" is enforced rather than implied. While
  * the editor is actually running, the bearer loses every readout of their own
  * condition:
- * - health bar and health doll, through tg's fake_healthy screwy-hud — the
+ * - health bar and health doll, through tg's fake_healthy screwy-hud: the
  *   same primitive the Numb quirk uses, and grouped, so wearing both is fine;
  * - the brute and crit damage vignettes, through TRAIT_NO_DAMAGE_OVERLAY and
  *   TRAIT_NOCRITOVERLAY, plus a manual clear for the oxygen one (upstream
@@ -373,15 +383,15 @@
  * None of that changes what anyone ELSE sees: examine a Dead Channel bearer
  * and their wounds and injuries read exactly as they would on anyone.
  *
- * All of it lifts the moment the ware stops running — browned out, EMP
- * scrambled, broken or pulled — the same way the colour does.
+ * All of it lifts the moment the ware stops running, browned out, EMP
+ * scrambled, broken or pulled. The same way the colour does.
  *
  * (The design's -25% stun-duration line was dropped at freeze: no clean
  * partial-stun primitive exists in this vintage and we don't fake one.)
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel
 	name = "\improper Dead Channel pain editor"
-	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten — the colour draining out of the world is the only gauge you get."
+	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten. The colour draining out of the world is the only gauge you get."
 	icon_state = "dead_channel"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -394,13 +404,12 @@
 	/// TRUE while the bearer's own damage feedback is actually cut. Only ever
 	/// flipped through set_feedback_cut(), which owns every piece of it.
 	var/feedback_cut = FALSE
+	/// TRUE while the stamina mod and slowdown immunity are applied. Guards
+	/// the failing-gated passive hooks against double multiply/divide.
+	var/channel_mods_applied = FALSE
 
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.stamina_mod *= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
-	organ_owner.add_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
 	desat_colour = organ_owner.add_client_colour(/datum/client_colour/cyberware_dead_channel, REF(src))
 	RegisterSignal(organ_owner, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_health_update))
 	RegisterSignal(organ_owner, COMSIG_ATOM_EXAMINE, PROC_REF(on_owner_examined))
@@ -408,10 +417,38 @@
 	refresh_feedback_cut()
 	on_health_update(organ_owner)
 
+// The pain edit itself now rides the failing-gated passive layer (BAL-4):
+// while the editor is EMP-scrambled or browned out, TRAIT_ANALGESIA and
+// TRAIT_NOSOFTCRIT (through the base hooks), the stamina halving and the
+// damage-slowdown immunity all drop, and every injury the bearer racked up
+// arrives at once. The readouts were already gated through feedback_cut;
+// this makes the protection match what the HUD was claiming.
+/obj/item/organ/cyberimp/cyberware/dead_channel/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(channel_mods_applied || isnull(bearer))
+		return
+	channel_mods_applied = TRUE
+	if(ishuman(bearer))
+		var/mob/living/carbon/human/human_bearer = bearer
+		human_bearer.physiology.stamina_mod *= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
+	bearer.add_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
+
+/obj/item/organ/cyberimp/cyberware/dead_channel/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(!channel_mods_applied)
+		return
+	channel_mods_applied = FALSE // reset before the validity skip, see Shock Coils
+	if(isnull(bearer) || QDELETED(bearer))
+		return
+	if(ishuman(bearer))
+		var/mob/living/carbon/human/human_bearer = bearer
+		human_bearer.physiology.stamina_mod /= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
+	bearer.remove_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
+
 /obj/item/organ/cyberimp/cyberware/dead_channel/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	// Hand the readouts back BEFORE anything else runs. mob_remove() nulls
 	// `owner` before calling us, so this is the last moment the teardown still
-	// has a mob to give the HUD and the vignettes back to — get it wrong and
+	// has a mob to give the HUD and the vignettes back to. Get it wrong and
 	// the ex-bearer walks away with a health bar permanently pinned to full.
 	set_feedback_cut(FALSE, organ_owner)
 	UnregisterSignal(organ_owner, list(
@@ -420,17 +457,15 @@
 		COMSIG_LIVING_HEALTH_UPDATE,
 	))
 	. = ..()
-	if(ishuman(organ_owner))
-		var/mob/living/carbon/human/human_owner = organ_owner
-		human_owner.physiology.stamina_mod /= CYBERWARE_DEAD_CHANNEL_STAMINA_MULT
-	organ_owner.remove_movespeed_mod_immunities(REF(src), /datum/movespeed_modifier/damage_slowdown)
+	// The stamina mod and slowdown immunity come off in chrome_passives_off(),
+	// which the component fires from this same removal (COMSIG_ORGAN_REMOVED).
 	organ_owner.remove_client_colour(REF(src))
 	desat_colour = null
 
 /**
  * The heartbeat behind the cut. updatehealth() covers every case where damage
  * moves, but the ware can go dark (brownout, EMP reboot finishing) while the
- * bearer stands perfectly still and takes no damage at all — this settles the
+ * bearer stands perfectly still and takes no damage at all, this settles the
  * state once a tick regardless. Still called while ORGAN_FAILING, which is
  * exactly when it matters.
  */
@@ -477,13 +512,13 @@
  * Anyone else looking at a Dead Channel bearer reads their wounds and
  * injuries completely normally.
  *
- * The brute and burn severity lines are already gone by the time this runs —
- * upstream skips those on a self-examine while fake_healthy is up. What is
+ * The brute and burn severity lines are already gone by the time this runs.
+ * Upstream skips those on a self-examine while fake_healthy is up. What is
  * left is the per-wound descriptions and the disabled-limb lines, rebuilt the
  * way carbon/examine.dm built them and removed by value.
  *
  * Left alone on purpose: embedded objects, bleeding, blood-loss pallor and
- * missing limbs. The editor sits on the pain nerves, not on the eyes — a
+ * missing limbs. The editor sits on the pain nerves, not on the eyes, a
  * knife in your leg is still a knife you can look down and see.
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_owner_examined(mob/living/carbon/source, mob/examiner, list/examine_list)
@@ -507,7 +542,7 @@
  * Signal proc for [COMSIG_CARBON_CHECKING_BODYPART] on the bearer: the
  * check-yourself-for-injuries pass reads damage the bearer cannot feel, so
  * every limb comes back clean while the editor runs. Fires only on a self
- * check — check_for_injuries() is never called with anyone else as examiner.
+ * check, check_for_injuries() is never called with anyone else as examiner.
  * Same hook tg's fake health-doll hallucination uses, pointed the other way.
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_owner_checks_limb(mob/living/carbon/source, obj/item/bodypart/checked_part, list/check_list, list/limb_damage)
@@ -521,7 +556,7 @@
  * Signal proc for [COMSIG_LIVING_HEALTH_UPDATE]: ease the world toward
  * grayscale as damage mounts, settle the cut, and clear the one damage
  * overlay upstream applies with no trait gate. While the ware is browned out
- * or scrambled the editor stops editing and colour comes back — the one time
+ * or scrambled the editor stops editing and colour comes back, the one time
  * it "fails safe".
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel/proc/on_health_update(mob/living/source)
@@ -564,17 +599,24 @@
  * # Hopper Pistons (T2, legs, load 3)
  *
  * Coiled myomer pistons in both calves: leap up to four tiles to any open
- * floor you can see, clearing tables, mobs and gaps outright. Rung two of
- * the leg ladder — evicts Shock Coils, gets evicted by the Meteor
- * Piledriver. Mechanism follows tg's dash (decoy + move + miss-whoosh) with
- * a click-targeted destination and a hard density check on the landing tile.
+ * floor you can see with a clear lane to it, clearing tables, mobs and gaps
+ * outright. Walls, windows and shut doors are jumped over by nobody, see
+ * [/datum/action/cooldown/cyberware/proc/arc_blocker]. Rung two of the leg
+ * ladder, evicts Shock Coils, gets evicted by the Meteor Piledriver.
+ * Mechanism follows tg's dash (decoy + move + miss-whoosh) with a
+ * click-targeted destination and a hard density check on the landing tile.
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way."
+	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way. Flat is the operative word: they will not put you over a wall."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
+	// Either calf is a valid incision site; see the Shock Coils for the why.
+	valid_zones = list(
+		BODY_ZONE_L_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+		BODY_ZONE_R_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+	)
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -583,7 +625,7 @@
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
-	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see."
+	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
@@ -608,6 +650,9 @@
 		return FALSE
 	if(destination.is_blocked_turf() || islava(destination) || ischasm(destination))
 		jumper.balloon_alert(jumper, "landing blocked!")
+		return FALSE
+	if(arc_blocker(here, destination))
+		jumper.balloon_alert(jumper, "no room for the jump!")
 		return FALSE
 	StartCooldown()
 	playsound(here, 'sound/items/weapons/punchmiss.ogg', 40, TRUE, -1)

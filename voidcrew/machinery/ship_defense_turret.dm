@@ -13,9 +13,9 @@
 /obj/machinery/porta_turret/ship_defense
 	name = "hull defense turret"
 	desc = "A stubby laser mount bolted into the hull plating. The targeting computer only \
-		recognises wildlife and boarding parties, and the emitter is detuned so its beams \
-		pass through people entirely. The housing is thin enough that anything with claws \
-		can wreck it in a few swings, but a welder puts it back together."
+		recognises hostile wildlife and boarding parties, and the emitter is detuned so its \
+		beams pass through people entirely. The housing is thin enough that anything with \
+		claws can wreck it in a few swings, but a welder puts it back together."
 	icon_state = "standard_lethal"
 	base_icon_state = "standard"
 	mode = SHIP_TURRET_LETHAL
@@ -49,8 +49,10 @@
 	// polar bears, migos, geese, ants - would count as friendly. That cuts both ways through
 	// in_faction(): the turret refuses to shoot them, and both AI targeting paths refuse to
 	// let them fight back, so the turret is invulnerable to exactly the wildlife it exists
-	// to shoot. Bots and other turrets are still spared by the two factions left here.
-	faction = list(FACTION_SILICON, FACTION_TURRET)
+	// to shoot. Bots and other turrets are still spared by the two silicon factions, and
+	// FACTION_STATION covers the crew's own hardware - only the minebot and the node drone
+	// carry it, and both hunt fauna alongside the turret rather than against it.
+	faction = list(FACTION_STATION, FACTION_SILICON, FACTION_TURRET)
 
 	/// Swings from a creature needed to knock this out. Each one deals a flat share of max_integrity.
 	var/mob_hits_to_disable = 3
@@ -58,6 +60,10 @@
 	var/repair_time = 4 SECONDS
 	/// How long it takes to bolt an unanchored turret into a wall by dragging it there.
 	var/mount_time = 5 SECONDS
+	/// Whether the turret engages hostile wildlife. Off means it holds fire for everything
+	/// except boarding parties, so the crew can farm the local fauna themselves. Toggled by
+	/// alt-clicking the housing; crew of the owning ship only.
+	var/target_wildlife = TRUE
 
 /datum/armor/machinery_ship_defense_turret
 	melee = 0 // Creature swings bypass armor entirely, see attack_generic().
@@ -88,6 +94,87 @@
 /// Silicons hijacking a turret would let them put beams wherever they liked, including into people.
 /obj/machinery/porta_turret/ship_defense/give_control(mob/controller)
 	return FALSE
+
+/**
+ * May this person work the turret's controls?
+ *
+ * A req_access lock is a dead letter here - voidcrew/edits/ship_access.dm opens every
+ * access check inside a crewed hull for whoever is standing in it, boarders included,
+ * and an anti-boarding gun that boarders can switch off is not doing its job. So the
+ * gate is crew membership itself: the panel answers to minds on the owning ship's
+ * team, which is exactly the set of people the turret exists to protect.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/allowed_operator(mob/user)
+	if(isAdminGhostAI(user))
+		return TRUE
+	var/area/shuttle/voidcrew/ship_area = get_area(src)
+	if(!istype(ship_area))
+		return TRUE // Workshop floor, outpost, ruin - nobody's ship, nobody's lock.
+	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
+	if(isnull(ship))
+		return TRUE
+	if(ship.ai_controller) // An NPC hull's defenses answer to nobody until the hull is claimed.
+		return FALSE
+	if(isnull(ship.ship_team) || ship.abandoned) // A derelict is run by whoever is standing in it.
+		return TRUE
+	return !isnull(user.mind) && LAZYFIND(user.mind.ship_teams, ship.ship_team)
+
+/**
+ * Clicking the housing is the on/off switch. This replaces the stock station-turret
+ * TGUI, whose settings (criminals, unauthorized weapons, mindshields) are all about
+ * shooting people - the one thing this turret refuses to do - and whose panel players
+ * reported not being able to find at all. Everything the turret can be told to do is
+ * on the housing itself and spelled out in its examine text.
+ */
+/// No TGUI at all: every remaining path to the stock panel (ghost clicks included) dead-ends
+/// here, so the housing controls in interact() and click_alt() are the whole interface.
+/obj/machinery/porta_turret/ship_defense/ui_interact(mob/user, datum/tgui/ui)
+	return
+
+/obj/machinery/porta_turret/ship_defense/interact(mob/user)
+	update_last_used(user)
+	if(!allowed_operator(user))
+		balloon_alert(user, "controls locked to crew!")
+		return TRUE
+	toggle_on(!on)
+	balloon_alert(user, on ? "turret switched on" : "turret switched off")
+	user.visible_message(
+		span_notice("[user] switches [src] [on ? "on" : "off"]."),
+		span_notice("You switch [src] [on ? "on" : "off"]."),
+	)
+	return TRUE
+
+/**
+ * Swiping an ID does nothing, and says so.
+ *
+ * The stock turret's ID branch flips `locked`, which used to gate the TGUI panel. There is
+ * no panel any more and allowed_operator() decides who may work the controls, so a swipe
+ * would have printed "Controls are now locked." and changed nothing at all - the worst kind
+ * of feedback, since a crew would think they had secured the gun. Every other branch of the
+ * parent (crowbar salvage, wrench bolts) is left alone.
+ */
+/obj/machinery/porta_turret/ship_defense/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	if(!(machine_stat & BROKEN) && attacking_item.GetID())
+		balloon_alert(user, "no card reader")
+		to_chat(user, span_notice("[src] has no card reader. Its controls answer to the crew of the ship it is bolted to."))
+		return TRUE
+	return ..()
+
+/// Alt-click toggles wildlife targeting, leaving the turret watching for boarders only.
+/obj/machinery/porta_turret/ship_defense/click_alt(mob/user)
+	if(machine_stat & BROKEN)
+		balloon_alert(user, "it's wrecked!")
+		return CLICK_ACTION_BLOCKING
+	if(!allowed_operator(user))
+		balloon_alert(user, "controls locked to crew!")
+		return CLICK_ACTION_BLOCKING
+	target_wildlife = !target_wildlife
+	balloon_alert(user, target_wildlife ? "targeting wildlife" : "holding fire on wildlife")
+	user.visible_message(
+		span_notice("[user] adjusts [src]'s targeting computer."),
+		span_notice("You set [src] to [target_wildlife ? "fire on hostile wildlife and boarders" : "fire on boarding parties only"]."),
+	)
+	return CLICK_ACTION_SUCCESS
 
 /**
  * Drag an unbolted turret onto an adjacent wall to mount it there.
@@ -166,6 +253,96 @@
 
 	return our_turf
 
+/// Planning subtrees that mean "this creature goes looking for something to attack".
+GLOBAL_LIST_INIT(ship_turret_aggressive_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/simple_find_target,
+	/datum/ai_planning_subtree/simple_find_wounded_target,
+	/datum/ai_planning_subtree/find_target_prioritize_traits,
+	/datum/ai_planning_subtree/aggressive_find_target,
+)))
+
+/// Subtrees that pick a target only to run away from it. Checked first, because
+/// simple_find_target/to_flee is a subtype of an aggressive one and typecacheof()
+/// covers subtypes.
+GLOBAL_LIST_INIT(ship_turret_fleeing_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/simple_find_target/to_flee,
+	/datum/ai_planning_subtree/simple_find_nearest_target_to_flee,
+	/datum/ai_planning_subtree/find_nearest_thing_which_attacked_me_to_flee,
+)))
+
+/// Subtrees that only pick a fight once something has already picked one with them.
+GLOBAL_LIST_INIT(ship_turret_retaliating_subtrees, typecacheof(list(
+	/datum/ai_planning_subtree/target_retaliate,
+	/datum/ai_planning_subtree/capricious_retaliate,
+)))
+
+/**
+ * Would this creature's own targeting strategy ever pick a person-sized mob?
+ *
+ * Stoats and crabs hunt, but only things strictly smaller than themselves - mice, roaches.
+ * They cannot lay a finger on the crew and are not what the turret is out here for. This
+ * mirrors /datum/targeting_strategy/basic/of_size/can_attack() with the target's size
+ * pinned to a person's, so it stays honest if that strategy gains more variants.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/threatens_people(mob/living/creature)
+	var/datum/targeting_strategy/basic/of_size/sizer = GET_TARGETING_STRATEGY(creature.ai_controller?.blackboard[BB_TARGETING_STRATEGY])
+	if(!istype(sizer)) // Anything not size-gated will take a swing at whatever it can reach.
+		return TRUE
+	if(sizer.inclusive && creature.mob_size == MOB_SIZE_HUMAN)
+		return TRUE
+	if(creature.mob_size > MOB_SIZE_HUMAN)
+		return sizer.find_smaller
+	return !sizer.find_smaller
+
+/**
+ * Would this creature start a fight on its own?
+ *
+ * A goat, a goose, an ant or a stoat has teeth and will use them if you shove it, but it
+ * is not a threat to a landed ship and the turret has no business shooting it. What makes
+ * something a threat is how its AI picks targets, not how hard it hits - a ranged trooper
+ * with no melee attack at all is exactly what these are for.
+ *
+ * Read off the live planning subtrees rather than the mob's type, so a controller that
+ * inherits its planning_subtrees from a parent (the viscerator, most of the trooper tree)
+ * still classifies correctly. Subtree instances are shared singletons out of
+ * GLOB.ai_subtrees, so this is a handful of list lookups.
+ */
+/obj/machinery/porta_turret/ship_defense/proc/is_hostile_creature(mob/living/creature)
+	// The /hostile branch of the old simple animal tree is aggressive by definition; its
+	// retaliate-only subtypes were all moved over to /mob/living/basic long ago.
+	if(istype(creature, /mob/living/simple_animal/hostile))
+		return TRUE
+
+	// Somebody's pet, whatever its AI says. Cats and foxes both carry a full hunting
+	// subtree - the cat's is for squabbling over territory with other cats - and would
+	// otherwise read as aggressive.
+	if(istype(creature, /mob/living/basic/pet))
+		return FALSE
+
+	if(!threatens_people(creature))
+		return FALSE
+
+	var/datum/ai_controller/controller = creature.ai_controller
+	if(!controller)
+		return FALSE
+
+	var/provoked = FALSE
+	var/skittish = FALSE
+	for(var/datum/ai_planning_subtree/subtree as anything in controller.planning_subtrees)
+		if(GLOB.ship_turret_fleeing_subtrees[subtree.type])
+			skittish = TRUE
+			continue
+		if(GLOB.ship_turret_aggressive_subtrees[subtree.type])
+			return TRUE
+		if(GLOB.ship_turret_retaliating_subtrees[subtree.type])
+			provoked = TRUE
+
+	// Retaliators are left alone until they have actually settled on someone to maul, at
+	// which point they are as much of a problem as anything else out there. Skittish mobs
+	// are excluded because some of them park what they are running away from in the same
+	// blackboard key an attacker would go in.
+	return provoked && !skittish && !isnull(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+
 /**
  * Is this something the turret is willing to shoot?
  *
@@ -184,7 +361,12 @@
 		return FALSE
 	if(in_faction(creature)) // Bots, pets and other turrets.
 		return FALSE
-	if(!creature.melee_damage_upper) // Passive wildlife gets left alone.
+	// With wildlife targeting off the turret only watches for boarding parties, which are
+	// all trooper-type humanoids (pirates and their kin). Lets the crew hunt the local
+	// fauna themselves without the turret stealing every kill.
+	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper))
+		return FALSE
+	if(!is_hostile_creature(creature)) // Livestock, pets and passive fauna get left alone.
 		return FALSE
 	return TRUE
 
@@ -249,6 +431,10 @@
 		. += span_warning("It has been smashed apart. Welding the housing back together would fix it.")
 	else if(atom_integrity < max_integrity)
 		. += span_notice("The housing is dented and scorched. A welder would sort that out.")
+
+	if(!(machine_stat & BROKEN))
+		. += span_notice("It is switched [on ? "on" : "off"], and set to fire on [target_wildlife ? "hostile wildlife and boarding parties" : "boarding parties only"].")
+	. += span_notice("Click the housing to switch it on or off, or alt-click it to toggle wildlife targeting. The controls only answer to the crew of the ship it is bolted to.")
 
 	if(anchored)
 		. += span_notice("It is bolted down. Switch it off and use a wrench to free it.")

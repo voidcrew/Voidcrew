@@ -33,6 +33,14 @@
 	linked_port = port
 	port.cryo_console = src
 
+/obj/machinery/computer/cryopod/Destroy()
+	// The mobile port outlives its console and its cryo_console back-ref is otherwise
+	// only dropped when the port itself dies
+	if(linked_port?.cryo_console == src)
+		linked_port.cryo_console = null
+	linked_port = null
+	return ..()
+
 /obj/machinery/computer/cryopod/ui_data(mob/user)
 	var/list/data = ..()
 

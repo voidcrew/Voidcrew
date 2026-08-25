@@ -96,6 +96,13 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 	if(trunk)
 		trunk.linked = null
 		trunk = null
+	// VOIDCREW EDIT: `stored` is created in nullspace (Initialize does
+	// `new /obj/structure/disposalconstruct(null, ...)`) so it is in no turf's contents and
+	// /turf/proc/empty() can never reach it - a site teardown deletes the bin and leaves the
+	// construct alive forever. The outlet and the pipe both already QDEL_NULL(stored) in
+	// their own Destroy(); the bin was the one that forgot. Measured at +1.4/cycle across
+	// the 52-cycle soak (3 -> 74), tracking the ruin RNG's disposal bins.
+	QDEL_NULL(stored)
 	return ..()
 
 /obj/machinery/disposal/Exited(atom/movable/gone, direction)

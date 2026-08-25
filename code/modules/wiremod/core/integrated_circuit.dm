@@ -259,6 +259,9 @@ GLOBAL_LIST_EMPTY_TYPED(integrated_circuits, /obj/item/integrated_circuit)
 	if(to_add.parent)
 		return FALSE
 
+	if(is_component_blacklisted(to_add)) //VOIDCREW EDIT ADDITION: see is_component_blacklisted()
+		return FALSE //VOIDCREW EDIT ADDITION
+
 	if(SEND_SIGNAL(src, COMSIG_CIRCUIT_ADD_COMPONENT, to_add, user) & COMPONENT_CANCEL_ADD_COMPONENT)
 		return FALSE
 
@@ -291,6 +294,18 @@ GLOBAL_LIST_EMPTY_TYPED(integrated_circuits, /obj/item/integrated_circuit)
 	if(shell)
 		to_add.register_shell(shell)
 	return TRUE
+
+//VOIDCREW EDIT ADDITION: hard per-board component restrictions.
+//Overridden rather than driven by a list var so a module can express "no subtype of X"
+//without core having to know the module's type paths. Default is "everything allowed",
+//which is the historic behaviour for every stock board.
+/**
+ * Whether this circuit board refuses to hold the given component at all.
+ * Checked before anything else in add_component(), so it also blocks remote printing.
+ */
+/obj/item/integrated_circuit/proc/is_component_blacklisted(obj/item/circuit_component/to_check)
+	return FALSE
+//VOIDCREW EDIT END
 
 /**
  * Adds a component to the circuitboard through a manual action.

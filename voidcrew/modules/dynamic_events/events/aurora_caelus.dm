@@ -8,7 +8,7 @@
  * another. Rather than fake it with a per-ship overlay, it is honest about being weather:
  * a cloud drifts through the sector and everyone gets the show.
  *
- * The colour is still one global — GLOB.starlight_color and the shared space overlays
+ * The colour is still one global, GLOB.starlight_color and the shared space overlays
  * move for the whole sector on every step. What is scoped is the per-turf relight:
  * TG's map is one station z, but this fork runs dozens of space z-levels, and relighting
  * every starlight turf on all of them per colour step floods SSlighting for the whole
@@ -19,12 +19,15 @@
  * in `/area/station/service/kitchen` and make the cook scream about a ruined roast. There
  * is no station kitchen area here, and chasing the gag onto ship galleys would mean
  * setting a random crew's food on fire during the harmless pretty-lights event.
+ *
+ * DISABLED. Kept in the tree for the starlight-fade machinery, but no longer rolls
+ * in the event rotation (weight 0, max_occurrences 0); admins can still force it.
  */
 /datum/round_event_control/voidcrew/aurora_caelus
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/voidcrew/aurora_caelus
-	weight = 2
-	max_occurrences = 1
+	weight = 0
+	max_occurrences = 0
 	earliest_start = 15 MINUTES
 	event_scope = EVENT_SCOPE_GALAXY
 	category = EVENT_CATEGORY_FRIENDLY
@@ -120,7 +123,7 @@
 	// over everything ever tinted trues the sector back up.
 	set_starlight(end_color, end_range, end_power, tinted_zs)
 
-/// Z-stacks with at least one player in them — the only turfs whose relight anyone can see.
+/// Z-stacks with at least one player in them. The only turfs whose relight anyone can see.
 /datum/round_event/voidcrew/aurora_caelus/proc/get_watched_zs()
 	var/list/watched = list()
 	for(var/mob/watcher as anything in GLOB.player_list)

@@ -261,6 +261,7 @@
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_hold"
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/a)
 "kt" = (
@@ -383,6 +384,10 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
+"lW" = (
+/obj/structure/cable,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/dorms/a)
 "mb" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -656,6 +661,7 @@
 /area/shuttle/voidcrew/kilo/cafe/a)
 "wZ" = (
 /obj/effect/turf_decal/trimline/neutral/warning,
+/obj/structure/cable,
 /obj/machinery/door/airlock/shuttle{
 	name = "Bunk A"
 	},
@@ -1169,6 +1175,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
+"Pi" = (
+/obj/structure/cable,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "Pt" = (
 /obj/effect/turf_decal/stripes{
 	dir = 10
@@ -1201,6 +1211,7 @@
 /area/shuttle/voidcrew/kilo/cargo/a)
 "Qu" = (
 /obj/effect/turf_decal/stripes,
+/obj/structure/cable,
 /obj/machinery/light/small{
 	dir = 1
 	},
@@ -1731,7 +1742,7 @@ Rm
 mb
 ZJ
 ZJ
-Rm
+Pi
 wK
 wK
 ls
@@ -1746,7 +1757,7 @@ ob
 zF
 ZJ
 ZJ
-Iq
+lW
 Qu
 wZ
 hA

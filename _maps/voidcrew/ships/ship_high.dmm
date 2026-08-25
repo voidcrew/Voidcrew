@@ -616,7 +616,7 @@
 /turf/closed/wall,
 /area/shuttle/voidcrew/high/bridge/reception)
 "mO" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer4{
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer2{
 	dir = 8
 	},
 /turf/open/floor/plating,
@@ -2248,7 +2248,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/high/engineering)
 "Sh" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/layer4{
 	dir = 8
 	},
 /turf/open/floor/plating,

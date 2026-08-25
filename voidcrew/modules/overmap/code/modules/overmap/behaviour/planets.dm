@@ -13,7 +13,13 @@
 	var/spawn_rate = 20
 	///Size of the generated region on the planet's z-levels. The rest of each level is
 	///cordoned off - see /datum/space_level/set_bounds(). Clamped to PLANET_MIN_SIZE.
-	var/planet_size = 128
+	///
+	///123 = MAP_SLOT_SIDE = PLANET_MIN_SIZE, the smallest a planet may be and still fit its
+	///two side-by-side reserve berths. It was 128; the 5 turfs per axis are the entire price
+	///of packing four planets onto one z-level (-3.9% linear, -7.7% area), since a lattice
+	///cell is exactly PLANET_MIN_SIZE. A larger value here would be clamped back down to the
+	///slot by build_planet() rather than growing into the neighbour.
+	var/planet_size = 123
 	///The list of ruins that can spawn here
 	var/ruin_type
 	///The map generator to use
@@ -31,8 +37,17 @@
 	///chain ending in /turf/baseturf_bottom, which ChangeTurf resolves to open space
 	///unless the z-level names a replacement. Every ruin floor and half the biome ground
 	///on a planet without this opens a hole into vacuum when broken.
-	///Use the LIT variant of the planet's ground: surfaces here are lit almost entirely
-	///by their own turfs, so an unlit baseturf reads as a black pit.
+	///Use the plain, UNLIT variant of the planet's ground. This used to be the /lit
+	///subtype, back when a surface was lit by a light source on each of its own turfs and
+	///an unlit baseturf read as a black pit. Daylight is now one ambient overlay on the
+	///surface AREA (see /area/overmap_encounter/planetoid/* and voidcrew/edits/lighting.dm),
+	///so the ground needs no light of its own - and a /lit baseturf here would be actively
+	///wrong: light_range 2 makes /turf/proc/skips_lighting_object() return FALSE, so every
+	///scraped-through ruin floor and blown-out plating tile bottoming out into this type
+	///would mint a lighting object AND a light source inside an ambient area. That is a slow
+	///re-accretion of exactly the memory the ambient system removes, and it renders as a
+	///bright halo blob on otherwise flat daylight.
+	///The /lit types themselves stay alive for the ruin .dmms that place them directly.
 	var/turf/baseturf
 	///Weather controller for planet specific weather
 	var/datum/weather/weather_controller_type
@@ -58,7 +73,7 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/lava
 	surface_area = /area/overmap_encounter/planetoid/lava
-	baseturf = /turf/open/misc/asteroid/basalt/lava_land_surface/lit
+	baseturf = /turf/open/misc/asteroid/basalt/lava_land_surface
 	weather_controller_type = /datum/weather/particle/ash_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
@@ -77,7 +92,7 @@
 	// NOT plain /turf/open/misc/asteroid/snow/icemoon: that one's own baseturf is
 	// /turf/open/openspace/icemoon, so it would drop diggers through the floor of a
 	// single-z planet.
-	baseturf = /turf/open/misc/asteroid/snow/icemoon/breathable/lit
+	baseturf = /turf/open/misc/asteroid/snow/icemoon/breathable
 	weather_controller_type = /datum/weather/snow_storm
 	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
@@ -93,7 +108,7 @@
 	mapgen = /datum/map_generator/planet_generator/beach
 	target_area = /area/overmap_encounter/planetoid/beach
 	surface_area = /area/overmap_encounter/planetoid/beach
-	baseturf = /turf/open/misc/asteroid/sand/beach/lit
+	baseturf = /turf/open/misc/asteroid/sand/beach
 	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/beach
@@ -108,7 +123,7 @@
 	mapgen = /datum/map_generator/planet_generator
 	target_area = /area/overmap_encounter/planetoid/jungle
 	surface_area = /area/overmap_encounter/planetoid/jungle
-	baseturf = /turf/open/misc/dirt/jungle/lit
+	baseturf = /turf/open/misc/dirt/jungle
 	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/jungle
@@ -123,7 +138,7 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/wasteland
 	surface_area = /area/overmap_encounter/planetoid/wasteland
-	baseturf = /turf/open/misc/wasteland/lit
+	baseturf = /turf/open/misc/wasteland
 	weather_controller_type = /datum/weather/sand_storm
 	weather_trait = ZTRAIT_SANDSTORM
 	planet_template = /datum/planet/wasteland

@@ -23,6 +23,7 @@ export const NaniteChamberControlContent = (props, context) => {
     regen_rate,
     safety_threshold,
     cloud_id,
+    cloud_ship,
     scan_level,
   } = data;
 
@@ -115,9 +116,17 @@ export const NaniteChamberControlContent = (props, context) => {
                       }
                     />
                   </LabeledList.Item>
+                  <LabeledList.Item label="Cloud Network">
+                    {cloud_id ? cloud_ship || 'Unreachable' : 'None'}
+                  </LabeledList.Item>
                 </LabeledList>
               </Flex.Item>
             </Flex>
+            <Box mt={1} color="label">
+              Nanite clouds are ship-local. Setting a cloud ID here links these
+              nanites to the matching backup on this ship&apos;s cloud
+              controller; the same ID on another ship is a different cloud.
+            </Box>
           </Section>
           <Section title="Programs" level={2}>
             {mob_programs.map((program) => {

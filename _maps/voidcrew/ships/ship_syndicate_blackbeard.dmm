@@ -16,7 +16,7 @@
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/hallway/fore)
 "aM" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer4,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer4,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
 "aP" = (
@@ -131,7 +131,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/blackbeard/engineering)
 "fR" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer4{
+/obj/machinery/atmospherics/components/unary/vent_pump/layer4{
 	dir = 1
 	},
 /turf/open/floor/catwalk_floor,
@@ -267,7 +267,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer2{
 	dir = 1
 	},
 /turf/open/floor/catwalk_floor,
@@ -911,7 +911,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer2,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
 "Yt" = (

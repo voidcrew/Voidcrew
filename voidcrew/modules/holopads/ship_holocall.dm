@@ -7,7 +7,7 @@
  *
  * Instead the dial list is site-aware. A holopad resolves the "site" it is on
  * lazily, at dial time (nothing is cached, so mid-round construction and
- * z-hops can never leave a stale binding — same idiom as the per-ship camera
+ * z-hops can never leave a stale binding, same idiom as the per-ship camera
  * networks in voidcrew/edits/machinery/camera.dm):
  *
  * * Ships, via the mobile docking port (SSshuttle.get_containing_shuttle()).
@@ -25,7 +25,7 @@
  * allowed galaxy-wide, consistent with the infrastructure-free Wideband radio.
  * The gate is re-checked for the life of a cross-site call, and a cross-site
  * call drops gracefully the moment either endpoint physically moves (ship
- * jump, dock, undock) — the fiction being that bluespace transit breaks the
+ * jump, dock, undock), the fiction being that bluespace transit breaks the
  * carrier lock. Same-site calls are untouched: both ends move together.
  *
  * The only upstream change is the dial-list block of ui_act("holocall") in
@@ -88,7 +88,14 @@
 		return our_site == other_site
 	var/turf/our_turf = get_turf(src)
 	var/turf/other_turf = get_turf(other)
-	return our_turf && other_turf && our_turf.z == other_turf.z
+	if(!our_turf || !other_turf || our_turf.z != other_turf.z)
+		return FALSE
+	// Two unregistered pads on the same PACKED z-level are two unrelated crews' ruins,
+	// six turfs of cordon apart. Treating them as one site would skip the cross-site
+	// transit-drop and gate checks entirely and hand them an intra-site hologram channel.
+	// Refuses only a positively-different region, so a roundstart level, deep space and a
+	// single-tenant z all answer exactly as they did before.
+	return !map_region_excludes_turf(map_region_for_turf(our_turf), other_turf)
 
 /// Human-readable name of the site this pad transmits from, for ring announcements.
 /obj/machinery/holopad/proc/voidcrew_site_name()
@@ -113,7 +120,7 @@
  * Currently galaxy-wide: the galaxy already has infrastructure-free
  * galaxy-wide voice (Wideband, voidcrew/modules/comms/comms.dm), so holo-calls
  * reaching just as far is consistent. To tighten later (e.g. same overmap
- * zone or sensor range only), put the check here — it is enforced when
+ * zone or sensor range only), put the check here. It is enforced when
  * building the dial list AND re-checked every process tick for the life of a
  * cross-site call, so an out-of-range mid-call ship drops automatically.
  */
@@ -173,9 +180,11 @@
 				pads_by_outpost[pad_site] += pad
 			continue
 		// Unregistered pads (ruins, wrecks): no transponder to look up, so they
-		// are only reachable from the same physical z-level ("nearby").
+		// are only reachable from the same physical z-level ("nearby") - and, on a
+		// packed z-level, from the same slot. A co-tenant's pad is not "nearby", it is
+		// another crew's site behind five turfs of indestructible cordon.
 		var/turf/pad_turf = get_turf(pad)
-		if(pad_turf && our_turf && pad_turf.z == our_turf.z)
+		if(pad_turf && our_turf && pad_turf.z == our_turf.z && !map_region_excludes_turf(map_region_for_turf(our_turf), pad_turf))
 			var/area/pad_area = get_area(pad)
 			if(pad_area && pad_area != our_area)
 				var/key = "[format_text(pad_area.name)] (nearby)"
@@ -222,7 +231,7 @@
  * like upstream. For cross-site calls it additionally:
  *
  * * refuses keycard-auth forced auto-connection (nobody projects onto someone
- *   else's ship uninvited — the receiving crew always chooses to answer),
+ *   else's ship uninvited, the receiving crew always chooses to answer),
  * * announces the caller's site name on the ringing pads,
  * * drops the call gracefully if either endpoint physically moves (the far
  *   ship jumping, docking or undocking mid-call) or the range gate closes,
@@ -259,9 +268,9 @@
 /**
  * A dialed pad that drops out mid-ring is only pruned from `dialed_holopads` by the
  * parent; our two lists would keep hard-referencing it for the rest of the call, which
- * is a harddel if the pad was destroyed. Every teardown path — Disconnect(), a pad
- * going non-operational in Check(), Answer() dropping the pads that lost the race —
- * funnels through here, so this is the one place that needs to forget it.
+ * is a harddel if the pad was destroyed. Every teardown path, Disconnect(), a pad
+ * going non-operational in Check(), Answer() dropping the pads that lost the race.
+ * Funnels through here, so this is the one place that needs to forget it.
  */
 /datum/holocall/voidcrew/ConnectionFailure(obj/machinery/holopad/disconnected_holopad, graceful = FALSE)
 	if(endpoint_turfs)

@@ -4,17 +4,17 @@
  * A fixed 1200x760 faceplate: top rail, three-column body (instrument stack /
  * navigation chart / contact drawer) and a bottom control console. Every panel
  * is positioned from GEOMETRY below, in percentages, so the whole console scales
- * with the window. GEOMETRY is also the source geometry for the background-plate
- * mask (tools/helm_plate/make_mask.py); keep the two in step.
+ * with the window. GEOMETRY is also the source geometry for the background
+ * plate art; keep the two in step.
  *
  * The chart is drawn here rather than piped through a BYOND camera map, which is
  * what lets it zoom, label contacts, take clicks, and interpolate movement. The
  * ship moves one whole overmap tile per `tick_move()` with no sub-tile position
- * in DM at all; we glide the camera and the token over exactly `moveIntervalMs`
- * — the same interval the move timer is scheduled on — so each authoritative
+ * in DM at all; we glide the camera and the token over exactly `moveIntervalMs`.
+ * The same interval the move timer is scheduled on, so each authoritative
  * jump reads as continuous flight.
  *
- * Flight is fly-by-wire: the rose — or W/A/S/D at the keyboard — commands a
+ * Flight is fly-by-wire: the rose (or W/A/S/D at the keyboard) commands a
  * course, and the ship sheds contrary drift, burns up to its cruise speed and
  * coasts holding it. See the key handler in Faceplate.
  */
@@ -60,7 +60,7 @@ const GEOMETRY = {
 /**
  * The faceplate art, served by /datum/asset/simple/helm_faceplate. Its bezels are
  * composited at the exact GEOMETRY coordinates above, so it is stretched to
- * 100% x 100% rather than covered — the panels are positioned in percentages and
+ * 100% x 100% rather than covered. The panels are positioned in percentages and
  * the two have to track each other. Set to null to fall back to the CSS plate.
  */
 const FACEPLATE_ASSET: string | null = 'helm_faceplate.png';
@@ -105,14 +105,14 @@ type Contact = {
   /**
    * One step finer than `kind`: which terrain a planet is, which storm a hazard
    * is, which gas a nebula carries. Null where the helm has nothing finer to
-   * say — an unsurveyed ruin, a mission pin dropped on bare coordinates.
+   * say, an unsurveyed ruin, a mission pin dropped on bare coordinates.
    * See get_contact_variant() in ship_sensors.dm.
    */
   variant?: string | null;
   /** Storms only, 1-3. Sizes the glyph; 0 elsewhere. */
   severity?: number;
   ref: string | null;
-  /** Seen right now, versus merely charted — drawn solid rather than faded. */
+  /** Seen right now, versus merely charted, drawn solid rather than faded. */
   live?: BooleanLike;
   /** Vessels only: FALSE until a scan or the top radar tier names them. */
   identified?: BooleanLike;
@@ -146,7 +146,7 @@ type Engine = {
 
 /**
  * An entry in the permanent charted table (ui_static_data). Carries no distance,
- * bearing or live flag — those are derived per-frame by useContacts().
+ * bearing or live flag. Those are derived per-frame by useContacts().
  */
 type ChartedContact = {
   name: string;
@@ -159,10 +159,24 @@ type ChartedContact = {
   target: string;
 };
 
+/**
+ * Flight-policy toggles. Keys are exactly what act('autopilot_pref') sends and
+ * the server whitelists in set_autopilot_pref(); the checked state shown is
+ * whatever the server last confirmed, so a rejected key simply never moves.
+ */
+type AutopilotPrefs = {
+  crossMeteor: BooleanLike;
+  crossElectric: BooleanLike;
+  crossEmp: BooleanLike;
+  avoidHostiles: BooleanLike;
+  zoneCaution: BooleanLike;
+  hazardLanding: BooleanLike;
+};
+
 /** A plotted course. See ship_autopilot.dm. */
 type Autopilot = {
   engaged: BooleanLike;
-  /** Server-side label for the destination — never echoed back from the client. */
+  /** Server-side label for the destination, never echoed back from the client. */
   label: string | null;
   /** Why the last course ended, shown until a new one is plotted. */
   status: string | null;
@@ -173,6 +187,10 @@ type Autopilot = {
   remaining?: number;
   /** Remaining course, next step first, in relative overmap coordinates. */
   path: [number, number][];
+  /** Present engaged or idle: the policy panel works while nothing is flown. */
+  prefs?: AutopilotPrefs;
+  /** Shields are up, so asteroid impacts are absorbed (crossMeteor hint). */
+  shieldsActive?: BooleanLike;
 };
 
 /** One thing the Dock button could do from the tile the ship is on. */
@@ -322,8 +340,8 @@ const KEY_AXIS: Record<string, number> = {
 /**
  * Keycodes the manual-control toggle takes away from the game while armed.
  *
- * tgui forwards letter keys to the BYOND client as movement/hotkey macros —
- * that is how you walk around with a UI focused — so steering on W/A/S/D
+ * tgui forwards letter keys to the BYOND client as movement/hotkey macros,
+ * that is how you walk around with a UI focused, so steering on W/A/S/D
  * without acquiring them flies the ship AND marches the pilot into a wall.
  * X (swap hands in game) rides along for the coast key. Arrows and Space are
  * in tgui's default acquired set and never reach the game from a focused
@@ -338,7 +356,7 @@ const STEER_KEYCODES = [87, 65, 83, 68, 88]; // W A S D X
  * silhouette, `variant` is one step finer and picks the colour. A navigator
  * reading the chart should be able to say what a mark is from its shape alone
  * and what sort of one it is from its colour, without a legend and without
- * hovering — which is why no two families share an outline and no two members
+ * hovering, which is why no two families share an outline and no two members
  * of a family share a hue.
  *
  * Family colour, used where the helm knows the family but nothing finer.
@@ -375,8 +393,8 @@ const PLANET_COLOR: Record<string, string> = {
 };
 
 /**
- * Storm families. Each is flown around differently — rock damages the hull, ion
- * kills the electronics — so none of the three share a colour, and all three
+ * Storm families. Each is flown around differently, rock damages the hull, ion
+ * kills the electronics, so none of the three share a colour, and all three
  * stay out of the crit red the console reserves for hostile vessels.
  */
 const HAZARD_COLOR: Record<string, string> = {
@@ -420,7 +438,7 @@ const SEVERITY_SCALE: Record<number, number> = { 1: 0.82, 2: 1, 3: 1.2 };
  * Planets and Ruins are charted out to the sensor ring and persist. Ships are
  * identified in place out to the view ring and are never charted. Hazards are
  * absent deliberately: our own sensors can't pin a storm, which is what a bought
- * star chart is for — it records the whole band, storms included.
+ * star chart is for, it records the whole band, storms included.
  */
 const SCAN_TYPES = ['Planets', 'Ruins', 'Ships'];
 
@@ -441,7 +459,7 @@ const contactKey = (contact: Pick<Contact, 'ref' | 'name' | 'x' | 'y'>) =>
 
 /**
  * Whether "Travel & dock" can be offered on a contact: only the kinds a ship
- * can actually berth into, and only from a distance — on top of one, the Dock
+ * can actually berth into, and only from a distance, on top of one, the Dock
  * button already does the job.
  */
 const DOCKABLE_KINDS: ContactKind[] = ['planet', 'ruin', 'outpost'];
@@ -449,7 +467,7 @@ const canTravelDock = (contact: Contact) =>
   DOCKABLE_KINDS.includes(contact.kind) && contact.dist > 0 && !!contact.target;
 
 /**
- * Port of overmap_delta_to_compass() in ship_waypoints.dm — the 0.4142 is
+ * Port of overmap_delta_to_compass() in ship_waypoints.dm: the 0.4142 is
  * tan(22.5°), which is what splits the compass into eight even sectors.
  *
  * Bearing and distance are derived from two positions the client already has, so
@@ -469,7 +487,7 @@ const bearingOf = (dx: number, dy: number) => {
  * The live contact set and the permanent charted table as one list.
  *
  * Static data can't know what is in sight this second, so the charted table
- * carries everything the ship has ever seen — including whatever it happens to be
+ * carries everything the ship has ever seen, including whatever it happens to be
  * looking at right now. Dropping the duplicates is the client's job, keyed on the
  * object each entry came from.
  */
@@ -501,7 +519,7 @@ const useContacts = (): Contact[] => {
  * How long the ship needs to reach a tile at the speed it is already carrying.
  *
  * Nothing on the helm used to answer this. `eta` from the server is the clock on
- * the movement timer — the next TILE, not the destination — and the drift track's
+ * the movement timer (the next TILE, not the destination) and the drift track's
  * own clocks run to a rolling horizon that slides along with the ship, so its
  * label reads the same number forever. Under thrust the speed changes every
  * fifth of a second and all of it moves, which is why this only ever looked
@@ -511,13 +529,13 @@ const useContacts = (): Contact[] => {
  * tick_move() steps each axis by the SIGN of its velocity, so one interval buys a
  * tile on BOTH axes at once: the hop count to a tile is its Chebyshev distance,
  * not the straight-line one the rows report alongside it. Wraparound counts, for
- * the same reason useDrift() walks it — the map's edges are joined, and the short
+ * the same reason useDrift() walks it. The map's edges are joined, and the short
  * way to a contact near the far edge is off the near one.
  *
  * It is the honest "at this speed" figure rather than a promise: it assumes the
  * crew steers the short way and holds the magnitude they have. Deliberately NOT
- * gated on the current heading — a ship coasting the wrong way still wants to
- * know what the trip costs before it commits to turning — and absent entirely
+ * gated on the current heading. A ship coasting the wrong way still wants to
+ * know what the trip costs before it commits to turning, and absent entirely
  * with the ship stopped, where there is no answer to give.
  */
 const useTravelClock = () => {
@@ -554,7 +572,7 @@ const Selection = createContext<{
 
 /**
  * A request to bring an overmap tile into view. `nonce` is what makes a second
- * click on the same contact a fresh request — the coordinates alone are
+ * click on the same contact a fresh request. The coordinates alone are
  * identical, so the chart would never see the request change.
  */
 type FocusRequest = { x: number; y: number; nonce: number };
@@ -565,7 +583,7 @@ type FocusRequest = { x: number; y: number; nonce: number };
  * The camera lives inside Chart, because pan and zoom are the things that own
  * it, so the register can't move it directly: it posts a tile here and the
  * chart decides what to do about it. That indirection is what lets the chart
- * ignore a request for a mark that is already on screen — the common case, and
+ * ignore a request for a mark that is already on screen, the common case, and
  * one where moving the camera would detach it from the ship for no gain.
  */
 const ChartFocus = createContext<{
@@ -597,7 +615,7 @@ const MENU_SIZE = { w: 260, h: 210 };
  *
  * At the root rather than inside the panel it was opened from, because every
  * panel well is `overflow: hidden`: a menu owned by the chart gets clipped at
- * the chart's edge, and the drawer is under 300px wide — too narrow to read one
+ * the chart's edge, and the drawer is under 300px wide, too narrow to read one
  * in at all. Anchored on the console it can open at the cursor wherever the
  * cursor is.
  */
@@ -612,7 +630,7 @@ const MenuControl = createContext<
 /**
  * Where the Dock button's option picker is pinned. A separate context from
  * MenuControl above because its contents come straight from `dockOptions`
- * rather than from a selected contact — but it needs the same
+ * rather than from a selected contact, but it needs the same
  * rendered-at-the-root treatment, for the same reason: the OPS panel is
  * `overflow: hidden` and only 152px tall, nowhere near enough to hold a list
  * of options without clipping it.
@@ -711,7 +729,7 @@ const Faceplate = () => {
 
   /**
    * Whether the keyboard is currently steering the ship. Off, every key does
-   * what it always did — including walking your character, which is exactly
+   * what it always did, including walking your character, which is exactly
    * why steering can't simply be always-on: tgui forwards letters to the game,
    * so unarmed W/A/S/D would fly the ship and march the pilot at once. The
    * switch lives in the Helm panel's caption; closing the console or losing
@@ -723,7 +741,7 @@ const Faceplate = () => {
   // through this ref rather than closing over one render's worth of it.
   // Abandoned is its own gate: useLocked() deliberately unlocks an abandoned
   // ship so the claim button works, but every mouse control sits behind the
-  // claim overlay — the keyboard must not steer past it unclaimed.
+  // claim overlay, the keyboard must not steer past it unclaimed.
   const keyGuards = useRef({
     manual: false,
     locked: true,
@@ -748,9 +766,9 @@ const Faceplate = () => {
 
   /**
    * Whether this window currently has the keyboard. The manual-control claim
-   * only exists inside the window's own input handling — unfocused, keystrokes
+   * only exists inside the window's own input handling, unfocused, keystrokes
    * go straight to the BYOND client and walk the pilot as normal, whatever the
-   * switch says — so the switch reads "live" only while this is true, and
+   * switch says, so the switch reads "live" only while this is true, and
    * "armed" while it merely waits for the window to be clicked back into.
    * tgui-core's focus signal is debounced, so focus hopping between elements
    * inside the window doesn't flicker it.
@@ -764,8 +782,8 @@ const Faceplate = () => {
 
   /**
    * While armed, take the steering letters away from the game so the pilot's
-   * character stands fast. Acquire/release is tgui's own claim mechanism —
-   * preventDefault can't do this job, because the passthrough that forwards
+   * character stands fast. Acquire/release is tgui's own claim mechanism.
+   * PreventDefault can't do this job, because the passthrough that forwards
    * keys to BYOND has usually already run by the time this handler sees the
    * event. Paired exactly: armed acquires, the cleanup releases on disarm and
    * on unmount, so a closed console never leaves W/A/S/D dead.
@@ -780,18 +798,18 @@ const Faceplate = () => {
 
   /**
    * Keyboard steering, live only while manual control is armed (the switch in
-   * the Helm panel's caption — see the acquisition effect above for why it
+   * the Helm panel's caption (see the acquisition effect above for why it)
    * can't be always-on). W/A/S/D and the arrow keys command a course from the
    * union of the held movement keys (opposite keys cancel on their axis);
-   * Space brakes, and pressing it again while braking coasts — the server owns
+   * Space brakes, and pressing it again while braking coasts, the server owns
    * that toggle; X cuts straight to coast. Tap-to-command rather than
    * hold-to-thrust: velocity persists in space, so a held key would add
    * nothing over a press, and the commanded course lives server-side until it
-   * is replaced — which is why releasing a key sends nothing.
+   * is replaced, which is why releasing a key sends nothing.
    *
    * Stands down over any typing surface (the rename field must never steer
    * the ship), over modifier chords, and behind anything that consumed the
-   * key first — the throttle's own arrow handling preventDefaults, and this
+   * key first, the throttle's own arrow handling preventDefaults, and this
    * defers to it. preventDefault here is limited to keys actually handled, so
    * Space and the arrows keep their scroll behaviour wherever this declines.
    */
@@ -929,8 +947,8 @@ const Faceplate = () => {
                   !manualControl
                     ? 'Steer from the keyboard: WASD and arrows fly, Space brakes, X coasts. Your character stands fast while it is on.'
                     : windowFocused
-                      ? 'Keyboard is steering the ship — click to hand W/A/S/D back to your character'
-                      : 'Armed — steering resumes when this console window is focused. Right now your keys move your character as normal.'
+                      ? 'Keyboard is steering the ship, click to hand W/A/S/D back to your character'
+                      : 'Armed, steering resumes when this console window is focused. Right now your keys move your character as normal.'
                 }
                 onClick={() => setManualControl(!manualControl)}
               >
@@ -982,7 +1000,7 @@ const Panel = (props: {
   rect: Rect;
   label?: string;
   aux?: string;
-  /** Right-aligned control in the caption bar — the label row is the only
+  /** Right-aligned control in the caption bar. The label row is the only
    * chrome a well owns, so a panel-scoped switch lives there or nowhere. */
   action?: React.ReactNode;
   children;
@@ -1015,7 +1033,7 @@ const useLocked = () => {
 /**
  * Shrinks the ship name until it fits the ident slot, down to a floor, past which
  * it ellipsises. The plate is fixed art with a fixed-width ident bezel and ship
- * names are player-set and unbounded, so the name is what has to give — letting it
+ * names are player-set and unbounded, so the name is what has to give, letting it
  * run on simply pushed it off the end of the panel.
  *
  * The measurement is taken with the scale forced back to 1, otherwise each pass
@@ -1051,7 +1069,7 @@ const useFitToWidth = (text: string, minScale: number) => {
 
     measure();
     // The console is sized in container units, so a window resize changes the
-    // base font size as well as the slot — both have to be re-measured.
+    // base font size as well as the slot. Both have to be re-measured.
     const observer = new ResizeObserver(measure);
     observer.observe(box);
     return () => observer.disconnect();
@@ -1061,7 +1079,7 @@ const useFitToWidth = (text: string, minScale: number) => {
    * Verify after paint, and shrink again if the name is still clipped.
    *
    * The measurement above is only as good as the font metrics in force when it
-   * ran, and the stencil stack starts at 'Arial Narrow' — a host without it falls
+   * ran, and the stencil stack starts at 'Arial Narrow'. A host without it falls
    * back to something markedly wider. Measure with one font, render with another,
    * and the ellipsis comes back with nothing left to re-check it. Container units
    * resolving late do the same thing.
@@ -1110,7 +1128,7 @@ const Ident = () => {
               { '--helm-name-scale': scale } as React.CSSProperties
             }
             disabled={locked}
-            title={locked ? shipInfo.name : `${shipInfo.name} — rename vessel`}
+            title={locked ? shipInfo.name : `${shipInfo.name}, rename vessel`}
             onClick={() => setEditing(true)}
           >
             {shipInfo.name}
@@ -1175,7 +1193,7 @@ const ZoneBadge = () => {
 
 /**
  * Only conditions that are true right now, ranked critical first. Anything the
- * crew can't act on stays out — this rail is for things that change what you do
+ * crew can't act on stays out. This rail is for things that change what you do
  * in the next few seconds.
  */
 const AlertStrip = () => {
@@ -1187,12 +1205,12 @@ const AlertStrip = () => {
     alerts.push(['crit', 'Crew authorization required']);
   }
   if (data.shipDisabled) {
-    alerts.push(['crit', 'Hull critical — systems offline']);
+    alerts.push(['crit', 'Hull critical, systems offline']);
   }
   if (data.isInterdicted) {
     alerts.push([
       'crit',
-      `Interdicted — engines at ${Math.round(data.speedMultiplier * 100)}%`,
+      `Interdicted, engines at ${Math.round(data.speedMultiplier * 100)}%`,
     ]);
   }
   if (data.state === 'flying' && !data.canThrust) {
@@ -1205,7 +1223,7 @@ const AlertStrip = () => {
       drift.intercept.ms <= 15000 ? 'crit' : 'warn',
       // "Heading into" rather than "drifting into": the track is the velocity,
       // so it is just as true of a ship burning straight at the thing.
-      `Heading into ${drift.intercept.contact.name} — ${clockOf(drift.intercept.ms)}`,
+      `Heading into ${drift.intercept.contact.name}, ${clockOf(drift.intercept.ms)}`,
     ]);
   }
   // Sits above the transition line: a crew that can't survive where they're
@@ -1219,7 +1237,7 @@ const AlertStrip = () => {
   if (data.zone_transitioning) {
     alerts.push([
       'warn',
-      `Entering ${data.zone_transition_target ?? 'new zone'} — ${data.zone_transition_remaining}s`,
+      `Entering ${data.zone_transition_target ?? 'new zone'}, ${data.zone_transition_remaining}s`,
     ]);
   }
   if (data.cargoShuttlePresent) {
@@ -1231,7 +1249,7 @@ const AlertStrip = () => {
   if (data.autopilot?.engaged) {
     alerts.push([
       'info',
-      `Autopilot — ${data.autopilot.label ?? 'plotted course'} in ${data.autopilot.remaining ?? 0}${
+      `Autopilot, ${data.autopilot.label ?? 'plotted course'} in ${data.autopilot.remaining ?? 0}${
         data.autopilot.dockOnArrival ? ' · docking on arrival' : ''
       }`,
     ]);
@@ -1244,7 +1262,7 @@ const AlertStrip = () => {
       `Concealing in ${deciToSeconds(data.nebulaHideRemaining)}s`,
     ]);
   } else if (data.onNebula) {
-    alerts.push(['info', 'Nebula — concealment available']);
+    alerts.push(['info', 'Nebula, concealment available']);
   }
 
   return (
@@ -1526,7 +1544,7 @@ const UNIT = 10;
  * The chart is smooth and the overmap is not: the ship moves in whole-tile hops,
  * but a projection drawn as a polyline is a diagonal-free straight edge that
  * lines up with nothing, so the crew can read a heading off it and not the tiles
- * it actually passes through. The fix is to mark the tiles themselves — but at
+ * it actually passes through. The fix is to mark the tiles themselves, but at
  * full tile size, consecutive cells on a straight track share their edges and
  * merge back into one unbroken corridor. The inset is the gap that keeps them
  * reading as separate hops.
@@ -1548,7 +1566,7 @@ const TILE_DETAIL_SPAN = 17;
 /**
  * Zoom is continuous, measured in overmap tiles visible across the chart, and
  * driven by the wheel or the slider under it. It replaced three preset buttons
- * (tactical / sector / whole chart) — the presets were always either too tight to
+ * (tactical / sector / whole chart). The presets were always either too tight to
  * see where you were going or too wide to pick a contact out of.
  *
  * The wheel steps multiplicatively and the slider is logarithmic over the same
@@ -1575,8 +1593,8 @@ const FOCUS_INSET = 0.08;
 
 /**
  * The camera's pan onto a selected contact. Long enough to read as travel
- * across the chart — a cut leaves the crew working out what they are looking at
- * — and short enough that it is over before the next click.
+ * across the chart, a cut leaves the crew working out what they are looking at.
+ * And short enough that it is over before the next click.
  */
 const FOCUS_PAN_MS = 260;
 
@@ -1586,7 +1604,7 @@ const clamp = (value: number, low: number, high: number) =>
 /**
  * Ceiling on how far ahead a coasting ship is projected. A minute out, at the
  * speeds a slow hull crosses tiles, the projection is stale long before the ship
- * arrives — something will have moved or been steered around.
+ * arrives, something will have moved or been steered around.
  */
 const DRIFT_HORIZON_MS = 60000;
 
@@ -1597,8 +1615,8 @@ const ZONE_TRANSITION_MS = 10000;
  * Which concentric band a tile falls in, as calculate_zone_for_turf() decides it:
  * distance from the sun over the map's max radius, against the two ring ratios.
  *
- * Every input is server-supplied — `centre` is SSovermap.overmap_centre, the
- * ratios are ZONE_INNER/MIDDLE_RING_RATIO — so this is the same arithmetic the
+ * Every input is server-supplied, `centre` is SSovermap.overmap_centre, the
+ * ratios are ZONE_INNER/MIDDLE_RING_RATIO, so this is the same arithmetic the
  * ship runs rather than a client-side guess at it. Only the band index matters;
  * which colour it is doesn't.
  */
@@ -1632,7 +1650,7 @@ type Drift = {
   /**
    * Set when a zone line cuts the projection short. The ship coasts to the last
    * tile on this side of it and stops there for the crossing rather than
-   * carrying on — so `tiles` ends at the hold, and this is the tile beyond it.
+   * carrying on, so `tiles` ends at the hold, and this is the tile beyond it.
    * When it is reached is `endMs`, the same as any other end of the projection.
    */
   hold: { x: number; y: number } | null;
@@ -1647,7 +1665,7 @@ const interceptRank = (contact: Contact) =>
  *
  * Nothing out here slows a hull down: cut thrust and the velocity you have is
  * the velocity you keep, so "coasting" is a course rather than a pause. The helm
- * used to say nothing at all about it — the chart drew its heading tick off
+ * used to say nothing at all about it, the chart drew its heading tick off
  * `burnDirection`, so the moment the crew stopped burning the only thing on
  * screen pointing anywhere vanished, while the ship carried on crossing a tile
  * every few seconds.
@@ -1657,7 +1675,7 @@ const interceptRank = (contact: Contact) =>
  *
  * The track runs as far as the sensor ring and no further. The console has no
  * business drawing a course through space this hull has no way of knowing
- * anything about — the same reason hazards are never charted beyond sight — and
+ * anything about (the same reason hazards are never charted beyond sight) and
  * it keeps the projection inside the chart at the zoom the crew actually flies
  * at, so the ghost at the end of it is on screen rather than somewhere off past
  * the edge. It also means the radar tree buys reach on this too: base sensors
@@ -1739,8 +1757,8 @@ const useDrift = (contacts: Contact[]): Drift | null => {
     }
   }
 
-  // Falls back to the ship's own tile for a crossing that is one step away —
-  // there the projection is "you stop where you are", which is the truth.
+  // Falls back to the ship's own tile for a crossing that is one step away.
+  // There the projection is "you stop where you are", which is the truth.
   const end = tiles.length ? tiles[tiles.length - 1] : { x, y, step: 0 };
 
   return {
@@ -1752,6 +1770,55 @@ const useDrift = (contacts: Contact[]): Drift | null => {
     intercept,
     hold,
   };
+};
+
+/** The policy rows, in the order the panel lists them. */
+const AUTOPILOT_POLICY_ROWS: { key: keyof AutopilotPrefs; label: string }[] = [
+  { key: 'crossMeteor', label: 'Cross asteroid fields' },
+  { key: 'crossElectric', label: 'Cross ion storms' },
+  { key: 'crossEmp', label: 'Cross EMP clouds' },
+  { key: 'avoidHostiles', label: 'Avoid known hostiles' },
+  { key: 'zoneCaution', label: 'Prefer safer zones' },
+  { key: 'hazardLanding', label: 'Allow hazardous destination' },
+];
+
+/**
+ * The autopilot's flight-policy checkboxes, opened from the gear beside the
+ * autopilot readout. Editable engaged or idle; a change while a course is
+ * being flown re-plans it on the spot under the new rules (server side, see
+ * set_autopilot_pref in ship_autopilot.dm).
+ */
+const AutopilotPolicyPanel = () => {
+  const { act, data } = useBackend<Data>();
+  const locked = useLocked();
+  const prefs = data.autopilot?.prefs;
+  if (!prefs) return null;
+  return (
+    <div className="Helm__policyPanel">
+      <div className="Helm__policyTitle">FLIGHT POLICY</div>
+      {AUTOPILOT_POLICY_ROWS.map((row) => (
+        <label key={row.key} className="Helm__policyRow">
+          <input
+            type="checkbox"
+            checked={!!prefs[row.key]}
+            disabled={locked}
+            onChange={(event) =>
+              act('autopilot_pref', {
+                key: row.key,
+                value: event.currentTarget.checked ? 1 : 0,
+              })
+            }
+          />
+          {row.label}
+          {row.key === 'crossMeteor' && !!data.autopilot?.shieldsActive && (
+            <span className="Helm__policyHint">
+              Shields online — impacts absorbed
+            </span>
+          )}
+        </label>
+      ))}
+    </div>
+  );
 };
 
 const Chart = () => {
@@ -1783,6 +1850,8 @@ const Chart = () => {
   // there was one) and the tile it was over, because plotting a course is an
   // action on the position rather than on any mark.
   const [hovered, setHovered] = useState<string | null>(null);
+  // The flight-policy panel, opened from the gear beside the autopilot readout.
+  const [showPolicy, setShowPolicy] = useState(false);
   const openActionMenu = useContext(MenuControl);
   const viewportRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<SVGGElement>(null);
@@ -1814,8 +1883,8 @@ const Chart = () => {
   // Contact glyphs sit in a group that counter-scales against the camera zoom
   // (see ContactMark/TransmissionPulse/PlottedCourse below), which is what
   // keeps a mark legible at any zoom instead of shrinking to a dot at max
-  // zoom-in. Left uncorrected, though, that counter-scale is exact — 1/scale
-  // exactly cancels the camera's scale(${scale}) — so a glyph is the IDENTICAL
+  // zoom-in. Left uncorrected, though, that counter-scale is exact, 1/scale
+  // exactly cancels the camera's scale(${scale}), so a glyph is the IDENTICAL
   // screen size zoomed all the way out as zoomed all the way in. At the
   // zoomed-out end that reads as clutter: dozens of full-size glyphs packed
   // into the same screen space that one tile's worth occupies up close.
@@ -1873,7 +1942,7 @@ const Chart = () => {
    * Whether it is on screen is measured through the camera's own on-screen
    * matrix rather than worked back out of the zoom span. The chart is a square
    * viewBox sliced into a well half again as wide as it is tall, so the tiles
-   * visible per axis differ and the slice crops the top and bottom — the matrix
+   * visible per axis differ and the slice crops the top and bottom, the matrix
    * already accounts for both, and for whatever the window has been resized to.
    */
   const { request: focusRequest } = useContext(ChartFocus);
@@ -1945,7 +2014,7 @@ const Chart = () => {
   const followTransform = `translate(${-focusX}px, ${-focusY}px)`;
 
   /** The overmap tile under a mouse event, via the chart's own current matrix. */
-  const tileFromEvent = (event: React.MouseEvent) => {
+  const rawTileFromEvent = (event: React.MouseEvent) => {
     const camera = cameraRef.current;
     const svg = camera?.ownerSVGElement;
     if (!camera || !svg) return null;
@@ -1956,16 +2025,54 @@ const Chart = () => {
     point.y = event.clientY;
     const local = point.matrixTransform(matrix.inverse());
     return {
-      x: clamp(Math.round((local.x + UNIT / 2) / UNIT), 2, size - 1),
-      y: clamp(Math.round(size + 1 - (local.y + UNIT / 2) / UNIT), 2, size - 1),
+      x: Math.round((local.x + UNIT / 2) / UNIT),
+      y: Math.round(size + 1 - (local.y + UNIT / 2) / UNIT),
     };
+  };
+
+  /** The same tile, clamped to somewhere a course may legally be plotted to. */
+  const tileFromEvent = (event: React.MouseEvent) => {
+    const tile = rawTileFromEvent(event);
+    if (!tile) return null;
+    return {
+      x: clamp(tile.x, 2, size - 1),
+      y: clamp(tile.y, 2, size - 1),
+    };
+  };
+
+  /**
+   * The tile the cursor is resting on, printed in the corner readout.
+   *
+   * Coordinates get passed around over comms ("meet us at 30 / 18") and the only
+   * way to find one on the chart used to be counting tiles off the border. The
+   * plot clamp above is deliberately not applied here: this is a reading of where
+   * the crew is pointing, so it says the truth on the border tiles and reads
+   * nothing at all once the cursor is off the sector entirely.
+   */
+  const [cursorTile, setCursorTile] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const trackCursor = (event: React.PointerEvent) => {
+    const tile = rawTileFromEvent(event);
+    const onChart =
+      tile && tile.x >= 1 && tile.x <= size && tile.y >= 1 && tile.y <= size
+        ? tile
+        : null;
+    // Same tile, same object: a pointermove that hasn't crossed a tile boundary
+    // must not re-render the chart, and the cursor crosses plenty of pixels per
+    // tile at any zoom.
+    setCursorTile((current) =>
+      current && onChart && current.x === onChart.x && current.y === onChart.y
+        ? current
+        : onChart,
+    );
   };
 
   /**
    * Drag-to-pan, on either the left or the middle button.
    *
    * Nothing happens until the pointer has travelled PAN_THRESHOLD, so a plain
-   * left click still selects the contact under it — only a real drag is treated
+   * left click still selects the contact under it, only a real drag is treated
    * as a pan. The pixel delta is divided by the camera's own on-screen matrix
    * rather than by a scale we recompute, so panning tracks the cursor exactly at
    * any zoom.
@@ -2082,7 +2189,7 @@ const Chart = () => {
   // than the distance to the destination: the route detours around storms and
   // standoff bands, and the tiles it spends doing that are tiles the ship flies.
   // PlottedCourse deliberately draws no per-step clocks, on the grounds that the
-  // destination one lives here — it just never did until now.
+  // destination one lives here. It just never did until now.
   const courseEta =
     moveIntervalMs && autopilot?.remaining
       ? clockOf(autopilot.remaining * moveIntervalMs)
@@ -2091,7 +2198,7 @@ const Chart = () => {
   const gridLines: number[] = [];
   for (let i = 0; i <= size; i += 5) gridLines.push(i);
 
-  // The overmap moves in whole tiles, so the projection marks are tile-shaped —
+  // The overmap moves in whole tiles, so the projection marks are tile-shaped,
   // and a tile-shaped mark on a five-tile grid reads as an arbitrary rectangle
   // floating in open space. The fine grid is the lattice it sits on. Only drawn
   // once zoomed in far enough for the lines to be distinguishable from each
@@ -2109,9 +2216,15 @@ const Chart = () => {
       // client's own context menu to a player mid-manoeuvre.
       onContextMenu={(event) => openMenu(event, null)}
       onPointerDown={startPan}
-      onPointerMove={movePan}
+      onPointerMove={(event) => {
+        movePan(event);
+        trackCursor(event);
+      }}
       onPointerUp={endPan}
       onPointerCancel={endPan}
+      // The readout is about where the cursor is; with the cursor gone there is
+      // nothing to report, and a stale coordinate reads as a live one.
+      onPointerLeave={() => setCursorTile(null)}
       // Swallowed in the capture phase so the click that ends a drag never
       // reaches a contact underneath it.
       onClickCapture={(event) => {
@@ -2119,7 +2232,7 @@ const Chart = () => {
         didPan.current = false;
         event.stopPropagation();
       }}
-      // Closing the menu is the console root's job — the click bubbles to it.
+      // Closing the menu is the console root's job, the click bubbles to it.
       onDoubleClick={() => setAnchor(null)}
     >
       <svg
@@ -2144,7 +2257,7 @@ const Chart = () => {
           {/*
             Everything decorative, behind the marks and deaf to the mouse. The
             zone discs are filled, and a filled SVG shape takes hits across its
-            whole area — without this they'd eat right-clicks meant for the chart.
+            whole area, without this they'd eat right-clicks meant for the chart.
           */}
           <g pointerEvents="none">
           {rings.map(([radius, colour]) => (
@@ -2233,7 +2346,7 @@ const Chart = () => {
           {/*
             Under the plotted course: where a course is flying the ship, the
             drift is only ever a step behind it, and the two lines lie on top of
-            each other. Amber, because this is the ship's own state — the green
+            each other. Amber, because this is the ship's own state, the green
             line is where it means to go, the amber one is where it is going.
           */}
           {!!drift && (
@@ -2300,7 +2413,7 @@ const Chart = () => {
             Deaf to the mouse. The view ring below is a filled disc four tiles
             across drawn on top of every mark inside it, so while it took hits it
             silently swallowed hover and right-click for every contact the ship
-            was closest to — the ones the crew most wants to inspect.
+            was closest to, the ones the crew most wants to inspect.
           */}
           <g
             className="Helm__shipToken"
@@ -2314,7 +2427,7 @@ const Chart = () => {
             {/*
               Two rings, and the gap between them is the radar tree made visible.
               Solid inner: what the crew can see, free and fixed. Dashed outer:
-              how far a scan reaches — everything charted came from this band.
+              how far a scan reaches, everything charted came from this band.
               At base radar they sit on top of each other, which is the honest
               picture of a ship that has researched nothing.
             */}
@@ -2378,6 +2491,13 @@ const Chart = () => {
           <span className="Helm__hudKey">POS</span> {String(x).padStart(2, '0')}{' '}
           / {String(y).padStart(2, '0')}
         </div>
+        {!!cursorTile && (
+          <div className="Helm__hudLine Helm--cursor">
+            <span className="Helm__hudKey">CUR</span>{' '}
+            {String(cursorTile.x).padStart(2, '0')} /{' '}
+            {String(cursorTile.y).padStart(2, '0')}
+          </div>
+        )}
         {!!drift && (
           // Where the ship ends up on the velocity it already has, engines or
           // no engines. The track on the chart says which way; this says where.
@@ -2404,19 +2524,20 @@ const Chart = () => {
       <div className="Helm__hud Helm--tr">
         <div className="Helm__hudBig">{speed?.toFixed(1) ?? '0.0'}</div>
         {/*
-          `eta` is the movement timer's own clock — the next TILE, not the next
+          `eta` is the movement timer's own clock, the next TILE, not the next
           anywhere. Calling it ETA next to a chart full of destinations invited
           exactly one reading, and it is the wrong one: it never counts toward a
           contact, and at a steady coast it cycles the same figure forever. The
           arrival clocks live on the contacts themselves (see useTravelClock).
         */}
         <div className="Helm__hudLine">
-          <span className="Helm__hudKey">SPM · TILE</span> {eta || '—'}
+          <span className="Helm__hudKey">SPM · TILE</span> {eta || '-'}
         </div>
       </div>
       {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
 
       <div className="Helm__hud Helm--bl">
+        {!!showPolicy && <AutopilotPolicyPanel />}
         <div className="Helm__hudLine" style={{ color: '#3d6a76' }}>
           <span className="Helm__hudKey">SENSOR</span> {sensorRange} TILES
         </div>
@@ -2438,11 +2559,33 @@ const Chart = () => {
             >
               Cancel
             </button>
+            <button
+              type="button"
+              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
+              title="Autopilot flight policy"
+              onClick={() => setShowPolicy((open) => !open)}
+            >
+              ⚙
+            </button>
           </div>
         )}
-        {!autopilot?.engaged && !!autopilot?.status && (
-          <div className="Helm__courseStatus">
-            AUTOPILOT OFF · {autopilot.status}
+        {!autopilot?.engaged && (
+          // The gear stays reachable with no course engaged; the readout line
+          // only appears once there is an outcome to report.
+          <div className="Helm__course">
+            <span className="Helm__courseStatus" style={{ marginTop: 0 }}>
+              {autopilot?.status
+                ? `AUTOPILOT OFF · ${autopilot.status}`
+                : 'AUTOPILOT'}
+            </span>
+            <button
+              type="button"
+              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
+              title="Autopilot flight policy"
+              onClick={() => setShowPolicy((open) => !open)}
+            >
+              ⚙
+            </button>
           </div>
         )}
       </div>
@@ -2492,7 +2635,7 @@ const Chart = () => {
  * The drift track: the tiles the ship crosses from here on the velocity it
  * already has, and a ghost of it at the end of the horizon.
  *
- * Segments split on wraparound for the same reason PlottedCourse's do — a drift
+ * Segments split on wraparound for the same reason PlottedCourse's do, a drift
  * that leaves one edge and re-enters the other would otherwise draw one line
  * straight back across the whole chart.
  */
@@ -2507,7 +2650,7 @@ const DriftTrack = (props: {
   const { drift, from, toX, toY, scale, span } = props;
   const { tiles, end, intercept, hold } = drift;
   // A crossing one step away leaves no tiles to draw, but the hold still has to
-  // be marked — that case is precisely the one the crew most needs to see.
+  // be marked, that case is precisely the one the crew most needs to see.
   if (!tiles.length && !hold) return null;
 
   const segments: string[][] = [];
@@ -2537,7 +2680,7 @@ const DriftTrack = (props: {
       {/*
         The thread between the cells. It carries the whole reading when the tiles
         are too small to mark individually, and drops back to a hint once they
-        aren't — at that zoom the cells say everything it does, and a dashed line
+        aren't, at that zoom the cells say everything it does, and a dashed line
         run through the middle of each of them only fights their clocks.
       */}
       {segments.map((segment) => (
@@ -2560,7 +2703,7 @@ const DriftTrack = (props: {
         glyphs: a mark that means "this tile" has to be the size of the tile at
         every zoom, or it stops being an answer to which tile. Zoomed in far
         enough for the cell to hold it, each one is labelled with the clock the
-        ship reaches it at — the per-tile version of the single endpoint ETA the
+        ship reaches it at, the per-tile version of the single endpoint ETA the
         HUD line carries.
 
         The track fades along its length. The near tiles are the ones a crew
@@ -2687,7 +2830,7 @@ const DriftTrack = (props: {
           />
           {/*
             Zoomed out past the per-tile clocks, the ghost carries the endpoint
-            one on its own — otherwise the whole projection loses its timing at
+            one on its own. Otherwise the whole projection loses its timing at
             exactly the zoom where the crew is looking furthest ahead.
           */}
           {span > TILE_DETAIL_SPAN && (
@@ -2844,7 +2987,7 @@ const ContactMark = (props: {
       <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
         {/*
           Invisible hit area. The glyphs are 5-6 units across at chart scale,
-          which is a punishing target with a mouse — this gives every contact a
+          which is a punishing target with a mouse, this gives every contact a
           consistent grab radius without changing how it looks.
         */}
         <circle r={11} fill="transparent" />
@@ -2971,7 +3114,7 @@ const ContactReadout = (props: { contact: Contact }) => {
 
 /**
  * Contextual actions for a contact, opened by right-click on its mark on the
- * chart or on its row in the contact drawer — the two are the same list seen two
+ * chart or on its row in the contact drawer. The two are the same list seen two
  * ways, so they answer a right-click identically.
  *
  * The menu is anchored on a tile, not on a mark: plotting a course is an action
@@ -3111,7 +3254,7 @@ const ContactMenu = (props: {
 
 /**
  * The Dock button's option picker, opened only when `dockOptions` holds more
- * than one entry (OpsRow dispatches straight to `act('dock', ...)` otherwise —
+ * than one entry (OpsRow dispatches straight to `act('dock', ...)` otherwise,
  * see runDock() there). Rendered at the console root for the same clipping
  * reason as ContactMenu above.
  */
@@ -3184,7 +3327,7 @@ const ContactBadge = (props: { contact: Contact }) => {
 
 /**
  * An unscanned vessel: a dashed ring with no heading and no shape. Deliberately
- * shares nothing with the solid arrowhead an identified ship gets — at a glance
+ * shares nothing with the solid arrowhead an identified ship gets, at a glance
  * the crew should be able to count how many contacts they have not looked at.
  */
 const UnknownGlyph = (props: { colour: string }) => (
@@ -3204,8 +3347,8 @@ const UnknownGlyph = (props: { colour: string }) => (
  * Everything the chart draws that isn't the ship.
  *
  * One silhouette per family, and within the two families where the difference
- * changes what a crew does — the things orbiting a star, and the things trying
- * to kill you on the way there — one per variant as well. All of it is monoline
+ * changes what a crew does, the things orbiting a star, and the things trying
+ * to kill you on the way there. One per variant as well. All of it is monoline
  * at a single weight and inside a ~6-unit box, so a chart full of contacts reads
  * as one instrument rather than a sticker sheet.
  */
@@ -3220,7 +3363,7 @@ const ContactGlyph = (props: {
 
   switch (kind) {
     case 'planet':
-      // A rock in orbit is a ring with a core, whatever it's made of — the
+      // A rock in orbit is a ring with a core, whatever it's made of, the
       // terrain is carried entirely by PLANET_COLOR. The three variants that
       // aren't really planets get out of the family instead of miscolouring it.
       if (variant === 'asteroid') {
@@ -3249,7 +3392,7 @@ const ContactGlyph = (props: {
       if (variant === 'wreck') {
         // A hull on its side, hollow and broken open. Every other glyph on the
         // chart sits upright, so lying over is by itself enough to say this one
-        // isn't flying — which is what keeps it off the hostile arrowhead.
+        // isn't flying, which is what keeps it off the hostile arrowhead.
         return (
           <g transform="rotate(125)">
             <path d="M0,-5.2 L3.7,4.2 L0,1.9 L-3.7,4.2 Z" {...line} />
@@ -3265,7 +3408,7 @@ const ContactGlyph = (props: {
       );
 
     case 'ruin':
-      // Empty until surveyed — an outline with nothing identified inside it. The
+      // Empty until surveyed, an outline with nothing identified inside it. The
       // core arrives with the survey; an encrypted signal is still unsurveyed and
       // stays hollow, and says what it is in gold instead.
       return (
@@ -3317,7 +3460,7 @@ const ContactGlyph = (props: {
       );
 
     case 'hazard':
-      // Sized by severity — the only glyph on the chart that changes scale, and
+      // Sized by severity: the only glyph on the chart that changes scale, and
       // it earns it: how bad the storm is decides whether you route around it.
       return (
         <g
@@ -3345,7 +3488,7 @@ const ContactGlyph = (props: {
 
     case 'rumor':
       // Same diamond as a mission, hollow: a lead, not an assignment. Hollow
-      // rather than dashed — a dash pattern this size disintegrates a polygon
+      // rather than dashed, a dash pattern this size disintegrates a polygon
       // into loose marks well before the chart is zoomed out.
       return <path d="M0,-5.2 L5.2,0 L0,5.2 L-5.2,0 Z" {...line} />;
 
@@ -3482,7 +3625,7 @@ const ContactList = () => {
 
   // A nebula bank or asteroid storm is dozens of identically-named tiles. The
   // register lists the nearest one and counts the rest, so a single field reads
-  // as a single entry — the chart is where its actual shape lives.
+  // as a single entry. The chart is where its actual shape lives.
   const collapse = (contacts: Contact[]) => {
     const nearest = new Map<string, { contact: Contact; count: number }>();
     for (const contact of contacts) {
@@ -3524,13 +3667,13 @@ const ContactList = () => {
                   } ${selected === key ? 'Helm--selected' : ''}`}
                   title={
                     contact.kind === 'ship' && !contact.identified
-                      ? 'Unidentified vessel — right-click for actions, or run a Ships scan to resolve it'
+                      ? 'Unidentified vessel, right-click for actions, or run a Ships scan to resolve it'
                       : 'Bring it up on the chart · right-click to set course'
                   }
                   /*
                    * Highlight it and take the chart to it. A charted contact can
-                   * be anywhere in the sector — the register remembers
-                   * everything the ship has ever seen — so on a list of tiles
+                   * be anywhere in the sector, the register remembers
+                   * everything the ship has ever seen, so on a list of tiles
                    * mostly off the far edge of the view, a highlight alone left
                    * the crew hunting for the mark they had just clicked.
                    */
@@ -3542,7 +3685,7 @@ const ContactList = () => {
                    * The same menu the chart mark opens, on the same contact. A
                    * course is plotted to the contact's own tile, so for a
                    * collapsed field (see collapse() above) that is the nearest
-                   * tile of it — which is the one the row is reporting anyway.
+                   * tile of it, which is the one the row is reporting anyway.
                    */
                   onContextMenu={(event) =>
                     openActionMenu(event, key, { x: contact.x, y: contact.y })
@@ -3585,7 +3728,7 @@ const ContactList = () => {
                   </span>
                   {/*
                    * The same course actions the right-click menu leads with,
-                   * surfaced on the selected row — a context menu is an
+                   * surfaced on the selected row. A context menu is an
                    * invisible affordance, and these are the two things a
                    * navigator actually does from the register. stopPropagation
                    * keeps a button press from re-toggling the selection.
@@ -3596,7 +3739,7 @@ const ContactList = () => {
                         <button
                           type="button"
                           className="Helm__btn"
-                          title="Autopilot flies there — routes around known hazards"
+                          title="Autopilot flies there, routes around known hazards"
                           onClick={(event) => {
                             event.stopPropagation();
                             act('autopilot', { x: contact.x, y: contact.y });
@@ -3635,7 +3778,7 @@ const ContactList = () => {
 };
 
 /**
- * Objects sharing the ship's tile — the only contacts that can actually be
+ * Objects sharing the ship's tile: the only contacts that can actually be
  * acted on, which is why they get their own tab and a count badge.
  */
 const AtLocation = () => {
@@ -3773,7 +3916,7 @@ const Intel = () => {
             className="Helm__btn"
             style={{ width: '100%' }}
             disabled={locked}
-            title="Spawns the signal in the deep lanes and charts it. The mark is visible to anyone who scans for it — ready the crew first."
+            title="Spawns the signal in the deep lanes and charts it. The mark is visible to anyone who scans for it, ready the crew first."
             onClick={() => act('reveal_rumor', { chart: rumor.ref })}
           >
             Reveal coordinates
@@ -3822,7 +3965,7 @@ const Throttle = () => {
   };
 
   // Hand the knob back to the backend only once it agrees, so releasing a drag
-  // doesn't snap the knob back for the length of a round trip — frames arrive
+  // doesn't snap the knob back for the length of a round trip, frames arrive
   // every tile crossed and one of them would land mid-flight. If the backend
   // never agrees the console refused the change, so stop lying about it.
   useEffect(() => {
@@ -3979,11 +4122,11 @@ const HelmRose = () => {
                   ? zone_transitioning
                     ? 'Cancel zone transition'
                     : burnDirection === BURN_STOP
-                      ? 'Braking — click to coast'
+                      ? 'Braking, click to coast'
                       : 'Brake'
                   : lit
-                    ? `Flying ${name.toLowerCase()} — click to coast`
-                    : `Fly ${name.toLowerCase()} — drift is shed automatically`
+                    ? `Flying ${name.toLowerCase()}, click to coast`
+                    : `Fly ${name.toLowerCase()}, drift is shed automatically`
               }
               disabled={isStop ? !flyable && !zone_transitioning : !canMove}
               onClick={() =>
@@ -4048,11 +4191,11 @@ const VelocityCluster = () => {
                     : 'Hold'}
           </span>
         </div>
-        {/* The tile clock, not an arrival time — see the HUD copy of it. */}
+        {/* The tile clock, not an arrival time, see the HUD copy of it. */}
         <div className="Helm__metric">
           <span className="Helm__k">Next tile</span>
           <span className="Helm__v" style={{ fontSize: '1cqw' }}>
-            {eta || '—'}
+            {eta || '-'}
           </span>
         </div>
         <div
@@ -4136,7 +4279,7 @@ const OpsRow = () => {
   const openDockPicker = useContext(DockMenuControl);
   const flyable = state === 'flying' && !shipDisabled && !locked;
   // Dock assist: at or below the limit the ship kills its remaining way itself
-  // before the warmup starts — the server enforces the same threshold, this
+  // before the warmup starts, the server enforces the same threshold, this
   // gate just keeps the button honest about it. A server that doesn't send the
   // limit falls back to 0 here, which is the old dead-stop rule.
   const dockSpeedLimit = dockAssistMaxSpeed ?? 0;
@@ -4162,7 +4305,7 @@ const OpsRow = () => {
 
   // 'docking', 'undocking' and 'acting' disable every control on this panel, so the ship
   // looks neither docked nor flying and no button reacts. Name the state instead of
-  // shrugging with "Already underway" — a crew that can see "docking sequence in progress"
+  // shrugging with "Already underway". A crew that can see "docking sequence in progress"
   // knows to wait (or to call it in) rather than assuming the console is dead.
   const manoeuvring =
     state === 'docking' || state === 'undocking' || state === 'acting';
@@ -4176,16 +4319,16 @@ const OpsRow = () => {
   const undockReason = () => {
     if (undockWarmup)
       return `Undocking in ${deciToSeconds(undockWarmupRemaining)}s`;
-    if (cargoShuttlePresent) return 'Cargo shuttle aboard — send it away first';
+    if (cargoShuttlePresent) return 'Cargo shuttle aboard. Send it away first';
     if (undockCooldown)
-      return `Systems stabilising — ${deciToSeconds(undockCooldownRemaining)}s`;
+      return `Systems stabilising, ${deciToSeconds(undockCooldownRemaining)}s`;
     if (undockLocked)
-      return `Interdiction lockout — ${deciToSeconds(undockLockoutRemaining)}s`;
-    // Says "hull failure", not "hull damaged" — by the time a crew reads this the breach is
+      return `Interdiction lockout, ${deciToSeconds(undockLockoutRemaining)}s`;
+    // Says "hull failure", not "hull damaged". By the time a crew reads this the breach is
     // usually welded and the integrity gauge is back on 100%, and a reason phrased in the
     // present tense would look like the console arguing with its own readout.
     if (integrityLockout)
-      return `Hull failure — recertification ${deciToClock(integrityLockoutRemaining)}`;
+      return `Hull failure, recertification ${deciToClock(integrityLockoutRemaining)}`;
     if (manoeuvring) return manoeuvringLabel;
     if (state !== 'idle' && state !== 'undocking') return 'Already underway';
     return 'Clear moorings and get underway';
@@ -4247,7 +4390,7 @@ const OpsRow = () => {
         label="Dock"
         // Says what is actually under the ship. This button used to only ever dock
         // into empty space and refused outright when anything shared the tile, then
-        // only ever offered the first real candidate found — now it lists every
+        // only ever offered the first real candidate found, now it lists every
         // dockable thing sharing the tile and only asks the crew to choose when
         // there's more than one.
         sub={
@@ -4314,7 +4457,7 @@ const OpsRow = () => {
         title={
           calibrating
             ? 'Cancel the bluespace jump'
-            : 'Calibrate a bluespace jump — this ends the round for your ship'
+            : 'Calibrate a bluespace jump, this ends the round for your ship'
         }
         onClick={() => act('bluespace_jump')}
       />

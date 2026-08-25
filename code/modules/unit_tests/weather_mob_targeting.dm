@@ -37,9 +37,32 @@
 /datum/controller/subsystem/weather/unit_test/New()
 	return
 
+/**
+ * Both scratch datums below keep MOB references for the duration of the test, and both are
+ * allocate()d, so both are soft-deleted the moment the test ends and then sit in the GC
+ * queue with their vars intact. That is enough to poison `create_and_destroy`: it
+ * hard-deletes the mobs it creates, BYOND reuses their refs, and REFERENCE_TRACKING's
+ * search then FINDS the reused ref sitting in one of these lists and reports the brand new
+ * mob as un-collectable. Each such report costs a full REF SEARCH over every atom and datum
+ * in the world - measured at ~3.5 minutes apiece on 2026-08-19, which is what stopped the
+ * local suite from ever reaching its verdict.
+ *
+ * Dropping the references on Destroy() costs nothing (the test has already made its
+ * assertions by then) and keeps the scratch state from outliving the test that made it.
+ */
+/datum/controller/subsystem/weather/unit_test/Destroy(force)
+	mobs_by_z_cache = null
+	processing = null
+	currentrun = null
+	return ..()
+
 /datum/weather/unit_test/resume_tracking
 	weather_flags = WEATHER_MOBS
 	var/list/hit_counts = list()
+
+/datum/weather/unit_test/resume_tracking/Destroy(force)
+	hit_counts = null
+	return ..()
 
 /datum/weather/unit_test/resume_tracking/can_weather_act_mob(mob/living/mob_to_check)
 	return TRUE
@@ -103,7 +126,8 @@
 	var/removed_old_index = !(test_level.z_value in SSmapping.z_trait_levels[ZTRAIT_ASHSTORM])
 	var/added_new_trait = test_level.traits[ZTRAIT_SANDSTORM]
 	var/added_new_index = (test_level.z_value in SSmapping.z_trait_levels[ZTRAIT_SANDSTORM])
-	var/list/new_weather_weights = test_subsystem.weather_types_by_zlevel["[test_level.z_value]"]
+	var/datum/weather_site/level_site = test_subsystem.get_level_weather_site(test_level.z_value)
+	var/list/new_weather_weights = level_site?.weather_types
 	var/replaced_weather_weights = length(new_weather_weights) && new_weather_weights[/datum/weather/sand_storm] && !new_weather_weights[/datum/weather/particle/ash_storm]
 
 	// Restore the global trait index before making assertions that may return early.

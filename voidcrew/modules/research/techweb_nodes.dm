@@ -6,7 +6,8 @@
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
-		"shuttle_heater", // was orphaned from every node — the heater design existed but nothing unlocked it
+		"engine_oil", // had no design at all before rounds 14/15 - the depot was its only source
+		"shuttle_heater", // was orphaned from every node, the heater design existed but nothing unlocked it
 		"shuttle_helm",
 		"shuttle_scoop",
 		"shuttle_sublimator",
@@ -64,6 +65,35 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
+// The TEG, its circulators and the RTG had circuit boards but no research route
+// anywhere in the web - the only ones in the game were mapped into hulls. Six
+// players rediscovered that in rounds 14/15. Both node costs are invented and
+// unplaytested. The RTG is quiet passive power one tier above the starter
+// thrusters; the TEG is priced a tier above the PACMAN it outclasses, and hangs
+// off the same atmos node, because the Scarab's TEG engineering module is already
+// costed as a top-tier power spike ("TEG is pretty OP", ship_upgrades/ships/scarab.dm)
+// and its research route should not be an early pickup.
+/datum/techweb_node/rtg
+	id = TECHWEB_NODE_RTG
+	display_name = "Radioisotope Generators"
+	description = "A sealed block of uranium wrapped in thermocouples. Slow, steady power with no fuel line and no moving parts."
+	prereq_ids = list(TECHWEB_NODE_ENERGY_MANIPULATION)
+	design_ids = list(
+		"rtg",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/teg
+	id = TECHWEB_NODE_TEG
+	display_name = "Thermoelectric Generation"
+	description = "A generator that turns the temperature difference between two circulating gas loops into serious power. Ships as a generator core and two circulators."
+	prereq_ids = list(TECHWEB_NODE_PLASMA_CONTROL)
+	design_ids = list(
+		"teg",
+		"teg_circulator",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
 /datum/techweb_node/survey_scanner
 	id = TECHWEB_NODE_SURVEY_SCANNER
 	display_name = "Survey Scanners"
@@ -92,8 +122,6 @@
 		"nanite_cloud_control",
 		"relay_nanites",
 		"monitoring_nanites",
-		"research_nanites",
-		"researchplus_nanites",
 		"access_nanites",
 		"repairing_nanites",
 		"sensor_nanite_volume",
@@ -140,7 +168,10 @@
 	id = "nanite_bio"
 	display_name = "Biological Nanite Programming"
 	description = "Nanite programs that require complex biological interaction."
-	prereq_ids = list("nanite_base","biotech")
+	// "biotech" was an old-tg node id that no longer exists; SSresearch stripped it at
+	// boot ("Invalid techweb nodes detected"). Advanced medbay gear is its closest
+	// living relative for "complex biological interaction".
+	prereq_ids = list("nanite_base", TECHWEB_NODE_MEDBAY_EQUIP_ADV)
 	design_ids = list(
 		"regenerative_nanites",
 		"bloodheal_nanites",
@@ -175,7 +206,9 @@
 	id = "nanite_synaptic"
 	display_name = "Synaptic Nanite Programming"
 	description = "Nanite programs affecting mind and thoughts."
-	prereq_ids = list("nanite_neural","neural_programming")
+	// "neural_programming" was an old-tg node id that no longer exists (boot warning).
+	// Brain-computer interfaces are the modern node for machine-mind meddling.
+	prereq_ids = list("nanite_neural", TECHWEB_NODE_BCI)
 	design_ids = list(
 		"mindshield_nanites",
 		"pacifying_nanites",
@@ -248,14 +281,17 @@
 	id = "sleepertech"
 	display_name = "Sleeper Unit Construction"
 	description = "The technological peak of medical equipment within human space."
-	prereq_ids = list("adv_biotech", "adv_engi")
+	// "adv_biotech"/"adv_engi" were old-tg node ids that no longer exist (boot warning);
+	// with both stripped this node dangled with NO prerequisites at all. Advanced medbay
+	// equipment + advanced parts is the same medical-plus-engineering gate they used to be.
+	prereq_ids = list(TECHWEB_NODE_MEDBAY_EQUIP_ADV, TECHWEB_NODE_PARTS_ADV)
 	design_ids = list("sleeper")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 // Station-only supply and records consoles. A ship has no station cargo department
 // to file requests with and no station payroll to audit, so they come out of their
-// upstream nodes; the ship bank machine — already unlocked by the consoles node —
-// is what crews use instead.
+// upstream nodes; the ship bank machine, already unlocked by the consoles node.
+// Is what crews use instead.
 // These edits used to sit on /datum/techweb_node/basic_mining, /comptech and
 // /comp_recordkeeping. None of those types exist here, so DM quietly created them
 // with a null id, initialize_all_techweb_nodes() skipped them, and the removals
@@ -279,9 +315,20 @@
 		"bluespace_pod"
 	)
 
+// Explosives gated itself behind the Low-Yield Explosives ordnance experiment, which is
+// only completable by catching an explosion on a Tachyon-Doppler array and publishing the
+// reading through the NT Frontier app - an ordnance lab's workflow, and no ship has one.
+// That left the node unreachable no matter how many points a crew banked, and with it
+// everything downstream: Exotic Ammunition and the rest of that branch. Points gate it now.
+// The experiment itself is untouched and still pays out through a scientific partner
+// (code/modules/research/ordnance/scipaper_partner.dm) for any crew that does build the array.
+/datum/techweb_node/explosives/New()
+	. = ..()
+	required_experiments -= /datum/experiment/ordnance/explosive/lowyieldbomb
+
 // The extra dissection tiers hang off the surgery ladder that gates the surgeries
 // beneath them. Same orphaned-parent story as above: these were on /adv_surgery and
-// /exp_surgery, which don't exist — the real node types are surgery_adv/surgery_exp.
+// /exp_surgery, which don't exist. The real node types are surgery_adv/surgery_exp.
 /datum/techweb_node/surgery_adv/New()
 	. = ..()
 	design_ids += list(
@@ -366,7 +413,7 @@
 	required_surveyed_objects = list(stars = 1, planets = 5, asteroids = 2)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
-// Radar array — the ship's overmap sensor suite. A dedicated ladder separate
+// Radar array: the ship's overmap sensor suite. A dedicated ladder separate
 // from the survey console: each tier widens the active-scan radius, and the
 // upper tiers add ruin identification and live player-ship tracking. Read by
 // the ship's sensor procs in ship_sensors.dm; the nodes unlock no designs.
@@ -380,7 +427,7 @@
 
 /datum/techweb_node/radar_array_advanced
 	id = TECHWEB_NODE_RADAR_ARRAY_ADV
-	display_name = "Radar Array — Signal Analysis"
+	display_name = "Radar Array: Signal Analysis"
 	description = "Spectral analysis of charted signals. Widens the scan radius further, and identifies what a space ruin actually is as soon as it's charted, no survey needed."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY)
 	design_ids = list()
@@ -388,13 +435,13 @@
 
 /datum/techweb_node/radar_array_elite
 	id = TECHWEB_NODE_RADAR_ARRAY_ELITE
-	display_name = "Radar Array — Vessel Tracking"
+	display_name = "Radar Array: Vessel Tracking"
 	description = "Active vessel tracking. Maximises the scan radius and plots other crews' ships within sensor range. Those contacts disappear as soon as either ship moves out of range."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
-// Transporter — the late-game replacement for the drop pod. A drop pod is a one-way
+// Transporter: the late-game replacement for the drop pod. A drop pod is a one-way
 // crate you fire at a planet; a transporter moves people both ways, from orbit, over
 // and over. The ladder below is deliberately expensive: the first node is a working
 // but crude lift, and the two above it are what make it precise and safe.

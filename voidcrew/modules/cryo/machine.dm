@@ -8,6 +8,9 @@
 	anchored = TRUE
 	state_open = TRUE
 	resistance_flags = INDESTRUCTIBLE|LAVA_PROOF|FIRE_PROOF|UNACIDABLE|ACID_PROOF
+	// Leaving the round cannot depend on the hull still having power - a crew stranded on a
+	// dead ship is exactly who needs the pod. See voidcrew/modules/cryo/despawn.dm.
+	interaction_flags_machine = parent_type::interaction_flags_machine | INTERACT_MACHINE_OFFLINE
 
 	///The icon state while the machine is closed.
 	var/close_state = "cryopod"
@@ -63,6 +66,7 @@
 /obj/machinery/cryopod/examine(mob/user)
 	. = ..()
 	. += span_notice("Its floor bolts can be [anchored ? "loosened" : "tightened"] with a wrench.")
+	. += span_notice("Climbing back in - click it, or drag yourself onto it - puts you back into cryosleep and ends your round. Everything you are carrying is stored with you.")
 
 /obj/machinery/cryopod/wrench_act(mob/living/user, obj/item/tool)
 	if(occupant)

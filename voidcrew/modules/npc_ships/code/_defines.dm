@@ -11,6 +11,14 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define BB_NPC_COMBAT_STATE "npc_combat_state"        // idle/engaging/combat
 #define BB_NPC_RETREAT_REASON "npc_retreat_reason"    // Why we're retreating (siphon_goal, no_weapons)
 #define BB_NPC_LAST_TARGET "npc_last_target"          // Who we were fighting before retreating
+#define BB_NPC_RETREAT_START "npc_retreat_start"      // world.time the current retreat began (stamped by set_combat_state)
+
+/// Hard cap on how long a ship stays in RETREATING before writing the encounter off and
+/// returning to patrol. The distance-based escape (15+ tiles from the last target) is
+/// unreachable for a zone-confined ship whose chaser simply stays nearby - round 4 left
+/// two pirates wedged in RETREATING for 21 hours (156,929 retreat_escape calls against a
+/// single return_to_patrol all round), which emptied the yellow band of working pirates.
+#define NPC_RETREAT_TIME_LIMIT (2 MINUTES)
 
 // Movement blackboard keys
 #define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // patrol/chase/return_to_route/roaming
@@ -99,6 +107,10 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define BB_NPC_BOARDING_WAVE_START_TIME "npc_boarding_wave_start"   // World.time when current wave started
 #define BB_NPC_BOARDING_TARGET_POS "npc_boarding_target_pos"        // Target position at boarding start (for movement detection)
 
+// Crew-wipe tracking (applies to every engaged state, not just phased boarding)
+#define BB_NPC_TARGET_CREW_SEEN "npc_target_crew_seen"  // TRUE once we've read at least one living crewmember aboard the current target
+#define BB_NPC_CREW_WIPE_SINCE "npc_crew_wipe_since"    // World.time we first read zero living crew aboard the target
+
 // Boarding signals
 #define COMSIG_BOARDING_WAVE_COMPLETE "boarding_wave_complete"      // Fired when all boarders in wave die
 #define COMSIG_BOARDING_BOSS_KILLED "boarding_boss_killed"          // Fired when boss is killed
@@ -114,6 +126,11 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
 #define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation
 #define NPC_BOARDING_SPACE_CHECK_INTERVAL (10 SECONDS)  // How often to check if boarders fell into space
+/// How long a target has to read as "nobody alive aboard" before we call it a wipe and
+/// break off. A grace window, not a formality: a defib or a crit-recovery inside it puts
+/// the raid straight back on, and it also rides out the momentary zero a ship reads while
+/// it's mid-dock or mid-z-transit.
+#define NPC_CREW_WIPE_CONFIRM_TIME (15 SECONDS)
 
 // Ship combat boarding pod constants
 #define NPC_SHIP_COMBAT_MAX_BOARDERS 10            // Max hostile mobs during ship combat phase
@@ -128,6 +145,15 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_PIRATE_CREW_HEALTH_MULT 1.8
 /// Same, for the faction boss that drops in after the last wave is repelled.
 #define NPC_PIRATE_BOSS_HEALTH_MULT 1.6
+
+// ========== NPC HULL WEALTH ==========
+// What a pirate is carrying in its own accounts, and therefore what a crew can
+// take back off it with a data siphon. Rolled per hull from the faction's
+// hold_credits_min/max at spawn and scaled by the zone it spawned in - a red
+// zone raider is running with a fuller hold than a yellow zone shakedown crew.
+#define NPC_HOLD_ZONE_MULT_GREEN 0.75
+#define NPC_HOLD_ZONE_MULT_YELLOW 1
+#define NPC_HOLD_ZONE_MULT_RED 1.5
 
 // Additional boarding blackboard keys
 #define BB_NPC_BOARDING_LAST_SPACE_CHECK "npc_boarding_space_check"  // Last time we checked for boarders in space
@@ -159,6 +185,22 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 
 // How long to remember a scanned ship before re-scanning (5 minutes)
 #define NPC_SCAN_MEMORY_TIME (5 MINUTES)
+
+// ========== PARKED-SHIP RECOVERY ==========
+// Both AI subtrees stand down whenever the ship isn't OVERMAP_SHIP_FLYING, and nothing
+// else in the game ever undocks an NPC hull - so before the recovery behavior existed,
+// a single player force-dock (or a crash-land) was a permanent kill switch for that
+// ship's AI. Round 4's Ghostship docked at 04:34 and sat AI-silent for the rest of a
+// 22-hour round with its crew alive aboard.
+
+/// world.time the AI first noticed its ship parked (state != FLYING). Cleared, with a
+/// log line, the first planning pass after the ship is flying again.
+#define BB_NPC_PARKED_SINCE "npc_parked_since"
+/// How long a ship must have been parked before the AI tries to undock and resume
+/// patrol. Longer than the 2 minute interdictor force-dock lockout on purpose, so a
+/// force-docked pirate doesn't launch back out into the face of whoever boarded it the
+/// second its clamps release. INVENTED value, not playtested.
+#define NPC_PARKED_RECOVERY_DELAY (3 MINUTES)
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"

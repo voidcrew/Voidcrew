@@ -1,6 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "c" = (
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/machinery/power/terminal{
 	dir = 4
 	},
@@ -39,7 +41,9 @@
 /turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "A" = (
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/item/stack/sheet/mineral/plasma/five,
 /obj/effect/turf_decal/box,

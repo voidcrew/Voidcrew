@@ -180,10 +180,13 @@
 /**
  * TRUE if a turf belongs to the object the ship is currently orbiting.
  *
- * Planets get a plain z-level check. Space ruins and meteor fields sit on shared
- * reserved z-levels alongside other crews' reservations, so those have to be checked
- * against the specific reservation - otherwise a console could reach into a
- * neighbouring ruin it isn't anywhere near.
+ * Every branch is scoped to the orbited object's own footprint, never to "the same
+ * z-level". Space ruins and meteor fields sit on shared reserved z-levels alongside
+ * other crews' reservations; planets and flat encounters now share a z-level with up
+ * to three co-tenants of their own (see /datum/map_footprint). Either way a bare
+ * z-match would let a console reach into a site the ship is nowhere near - and this
+ * proc is the console's security gate: validate_site(), get_locked_site() and
+ * get_reachable_transponders() all sit behind it.
  */
 /obj/machinery/computer/transporter/proc/turf_in_range(turf/tile)
 	if(!tile)
@@ -196,21 +199,23 @@
 		var/obj/structure/overmap/planet/planet = target
 		if(!planet.mapzone)
 			return FALSE
+		// The planet's slot on its level, which is what "the planet below" means once a
+		// level holds more than one of them. A site with no footprint (nothing has dealt
+		// it a slot) falls back to the z-match this always used.
+		if(planet.footprint)
+			return planet.footprint.contains_turf(tile)
 		for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 			if(level.z_value == tile.z)
 				return TRUE
 		return FALSE
 
-	var/datum/turf_reservation/reservation
-	if(istype(target, /obj/structure/overmap/space_ruin))
-		var/obj/structure/overmap/space_ruin/ruin = target
-		reservation = ruin.reservation
-	else if(istype(target, /obj/structure/overmap/event/meteor))
-		var/obj/structure/overmap/event/meteor/field = target
-		reservation = field.reservation
-	if(!reservation)
-		return FALSE
-	return SSmapping.used_turfs[tile] == reservation
+	// Sites on the slot lattice answer with a rectangle; the remaining reservation tenants
+	// answer with their block. Both are the same question - "is this turf the target's".
+	var/datum/map_footprint/site_footprint = target?.get_interior_footprint()
+	if(site_footprint)
+		return site_footprint.contains_turf(tile)
+
+	return FALSE
 
 /**
  * TRUE for terrain with open sky above it, which is all a coarse pattern lock can
@@ -300,10 +305,16 @@
 	if(!istype(planet) || !planet.mapzone)
 		return null
 
-	// Area type to the z-level we want it on. get_area_turfs() collapses whatever it
-	// is handed down to a typepath and then returns every area of that type in the
-	// world, and planet area types are shared by every loaded planet - so the z has
-	// to be carried through or this reaches onto other crews' worlds.
+	// This planet's slot on its level. Everything below is scoped to it: the level is
+	// shared with up to three co-tenants, whose surface areas are registered under the
+	// same z AND, for a same-biome neighbour, are the same area TYPE.
+	var/datum/map_footprint/footprint = planet.footprint
+
+	// Area INSTANCE to the z-level we want it on. Keying by type collapsed two
+	// same-biome tenants into one entry, and the carried z - which used to be what kept
+	// this off other crews' worlds - no longer distinguishes them either. The footprint
+	// filter below is what does that now; the z is still carried because get_area_turfs()
+	// needs it.
 	var/list/candidate_areas = list()
 	for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 		for(var/area/site_area as anything in SSmapping.areas_in_z["[level.z_value]"])
@@ -312,20 +323,30 @@
 			if(istype(site_area, /area/overmap_encounter/planetoid/cave))
 				continue
 			if(istype(site_area, /area/overmap_encounter/planetoid))
-				candidate_areas[site_area.type] = level.z_value
+				candidate_areas[site_area] = level.z_value
 	if(!length(candidate_areas))
 		return null
 
-	// One turf list per area type, reused across attempts. get_area_turfs() copies every
+	// One turf list per area, reused across attempts. get_area_turfs() copies every
 	// turf of the area on that z - roughly 16,000 on a 128x128 surface - and re-picking
 	// the same area used to pay for that again. Reusing the list also carries the Cut()s
 	// forward, so a later attempt never re-tests a turf an earlier one already rejected.
 	var/list/turfs_by_area = list()
 	for(var/attempt in 1 to 5)
-		var/chosen = pick(candidate_areas)
+		var/area/chosen = pick(candidate_areas)
 		var/list/turf/tiles = turfs_by_area[chosen]
 		if(isnull(tiles))
 			tiles = get_area_turfs(chosen, candidate_areas[chosen])
+			// get_area_turfs() collapses its argument back to a TYPEPATH, so what comes
+			// back is every area of that type on the z - the co-tenant's ground included.
+			// Filtered once here rather than leaned on validate_site(), so a run of
+			// samples cannot be spent entirely on turfs that were never ours.
+			if(footprint && length(tiles))
+				var/list/turf/inside = list()
+				for(var/turf/tile as anything in tiles)
+					if(footprint.contains_turf(tile))
+						inside += tile
+				tiles = inside
 			turfs_by_area[chosen] = tiles
 		for(var/sample in 1 to 40)
 			if(!length(tiles))
@@ -438,11 +459,11 @@
 	if(!target)
 		return null
 
-	// Targeting a planet forces a build of somewhere the ship never docked at, which is
-	// the whole point of the scanner - but it opens an interface, so it takes the worldgen
-	// queue only if the queue is free. Behind somebody else's planet it reports no target
-	// rather than holding the window open until they are finished. Ruins and hazard fields
-	// are not queued at all, so they just load.
+	// Targeting a planet, ruin or hazard field forces a build of somewhere the ship never
+	// docked at, which is the whole point of the scanner - but it opens an interface, so
+	// every branch takes the worldgen queue only if the queue is free. Behind somebody
+	// else's survey it reports no target rather than holding the window open until they
+	// are finished.
 	if(istype(target, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/planet = target
 		planet.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
@@ -450,22 +471,28 @@
 			return null
 		if(planet.reserve_dock)
 			return get_turf(planet.reserve_dock)
+		// The middle of THIS planet's slot. The middle of the z-level is the gutter
+		// between tenants - indestructible cordon, and turf_in_range() refuses it, so
+		// the scanner eye would open onto a turf it is then not allowed to leave.
+		var/turf/center = planet.footprint?.get_center_turf()
+		if(center)
+			return center
 		var/datum/space_level/level = planet.mapzone.z_levels[1]
 		return locate(round(world.maxx * 0.5), round(world.maxy * 0.5), level.z_value)
 
 	if(istype(target, /obj/structure/overmap/space_ruin))
 		var/obj/structure/overmap/space_ruin/ruin = target
-		ruin.load_level()
-		if(!ruin.reservation)
+		ruin.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
+		if(!ruin.mapzone)
 			return null
-		return ruin.reserve_dock ? get_turf(ruin.reserve_dock) : ruin.reservation.bottom_left_turfs[1]
+		return ruin.reserve_dock ? get_turf(ruin.reserve_dock) : ruin.footprint?.get_center_turf()
 
 	if(istype(target, /obj/structure/overmap/event/meteor))
 		var/obj/structure/overmap/event/meteor/field = target
-		field.load_level()
-		if(!field.reservation)
+		field.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
+		if(!field.mapzone)
 			return null
-		return field.reserve_dock ? get_turf(field.reserve_dock) : field.reservation.bottom_left_turfs[1]
+		return field.reserve_dock ? get_turf(field.reserve_dock) : field.footprint?.get_center_turf()
 
 	return null
 

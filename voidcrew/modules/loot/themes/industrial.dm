@@ -1,5 +1,5 @@
 // =========================================================================
-// INDUSTRIAL THEME — the Helios-Betna Forgeworks config (rare_foundry ruin)
+// INDUSTRIAL THEME: the Helios-Betna Forgeworks config (rare_foundry ruin)
 // and every dead factory and freight depot. Foundry output: common =
 // material stacks and tier-2 parts, uncommon = good alloys and tier-3 parts,
 // prime = premium materials and tier-4 parts, with the RPED/loader-suit
@@ -7,9 +7,9 @@
 //  - flamethrower/full came over from the retired icemoon-portal jackpot
 //    (see cave_entrance.dm): industrial plant equipment, uncommon-tier.
 //  - cyberware: shop-floor chrome, the kind a plant fits to keep a line
-//    running — omnitool fingers, then the coolant lattice for hot work and
+//    running, omnitool fingers, then the coolant lattice for hot work and
 //    the myomer arms that pull a dead airlock open.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune against outpost shop material prices and
 // the Boffin stall parts SKUs in theme_skus.
 // =========================================================================
@@ -40,7 +40,7 @@
 		/obj/item/storage/toolbox/mechanical = 5,
 		/obj/item/weldingtool/largetank = 5,
 		// the line's own prototype SMG, never finished, still fires
-		/obj/item/gun/ballistic/automatic/proto = 5,
+		/obj/item/gun/ballistic/automatic/proto/unrestricted = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 	)

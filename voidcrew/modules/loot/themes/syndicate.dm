@@ -1,14 +1,14 @@
 // =========================================================================
-// SYNDICATE THEME — contraband tiered by what it's worth. Tables follow the
+// SYNDICATE THEME: contraband tiered by what it's worth. Tables follow the
 // black-market shop's price ladder (modules/trade/shop.dm and the SKUs in
 // theme_skus below) so the gamble channel and the certainty channel stay on
 // one curve.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop_catalog_black_market.dm.
 // Weapon blueprints are seeded across both channels: the outfitter sells the
 // c20r/wt550/carbine schematics (uncommon-tier), the black market sells the
-// l6_saw/sniper/bulldog three (prime-tier) — the same blueprints ride these
+// l6_saw/sniper/bulldog three (prime-tier), the same blueprints ride these
 // cache tables at matching tiers. Craft them from the recipe anywhere, once
 // you have the part and a firing pin (modules/weapons_bench/blueprint.dm).
 // Cyberware rides the same two channels: the parlor's smuggling cavity and
@@ -72,7 +72,7 @@
 		/obj/item/melee/energy/sword/saber = 4,
 		// finished blueprint gun, prime only: an operative's issued weapon,
 		// not the schematic the black market fences
-		/obj/item/gun/ballistic/automatic/c20r = 4,
+		/obj/item/gun/ballistic/automatic/c20r/unrestricted = 4,
 		/obj/item/pen/sleepy = 4,
 		/obj/item/grenade/syndieminibomb = 3,
 		/obj/item/card/emag = 2,
@@ -81,7 +81,7 @@
 		/obj/item/blueprint/gun/bulldog = 3,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
-		/obj/item/gun/ballistic/automatic/l6_saw = 3,
+		/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = 3,
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
 		// operative chrome, 2-4 vouchers over the counter: the reflex shunt,
 		// the wire, and the refraction weave that drops the moment you swing
@@ -109,7 +109,7 @@
 	theme = /datum/loot_theme/syndicate
 
 /// The black market's premium cache SKU (shop_catalog_black_market.dm). Same
-/// tables as any other syndicate cache — it is simply packed fuller, which is
+/// tables as any other syndicate cache. It is simply packed fuller, which is
 /// what the extra vouchers buy.
 /obj/structure/closet/crate/zone_loot/syndicate/reinforced
 	name = "reinforced syndicate cache"

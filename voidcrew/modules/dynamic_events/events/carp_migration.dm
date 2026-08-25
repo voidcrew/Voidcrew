@@ -9,7 +9,7 @@
  * and scenery for everyone else.
  *
  * Getting inside is handled by the frozen-carp meteor, which already exists upstream and
- * does exactly the right thing — punches through the plating and leaves a live carp in
+ * does exactly the right thing. Punches through the plating and leaves a live carp in
  * the compartment. That is the boarding half of the event; the swimmers outside are the
  * warning that it is coming.
  *

@@ -1,5 +1,5 @@
 /datum/biome/wasteland
-	open_turf_types = list(/turf/open/misc/wasteland/lit = 1)
+	open_turf_types = list(/turf/open/misc/wasteland = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/asteroid = 30,
 		/obj/structure/flora/tree/dead/tall = 10,
@@ -38,13 +38,13 @@
 	)
 
 /datum/biome/wasteland/plains
-	open_turf_types = list(/turf/open/misc/dust/lit = 1)
+	open_turf_types = list(/turf/open/misc/dust = 1)
 	flora_spawn_list = list(/obj/structure/flora/deadgrass/tall = 50, /obj/structure/flora/deadgrass/tall/dense = 5, /obj/structure/flora/rock/wasteland = 1)
 	flora_spawn_chance = 45
 	mob_spawn_chance = 15
 
 /datum/biome/wasteland/forest
-	open_turf_types = list(/turf/open/misc/dirt/dry/lit = 1)
+	open_turf_types = list(/turf/open/misc/dirt/dry = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/dead/tall = 35,
 		/obj/structure/flora/branches = 10,
@@ -60,6 +60,21 @@
  * Its ground lights itself green (see /turf/open/misc/asteroid/sand/lit/nuclear) so
  * the zone is identifiable from outside it - the surrounding wasteland biomes light
  * neutral, and the boundary between them is the warning.
+ *
+ * These are the only planet surface turfs that still carry their own light source.
+ * Every other biome dropped its /lit turfs for one area-wide ambient light
+ * (see /area/overmap_encounter/planetoid/wasteland); the fallout green is a hazard
+ * telegraph rather than daylight, so it has to stay on the ground that is dangerous
+ * and nowhere else. It now reads as green added on top of the neutral ambient
+ * instead of green replacing it, so the boundary is softer than it used to be.
+ *
+ * Surface areas are dynamic - their ground carries no lighting objects at all - so these
+ * tiles are also the one kind of surface ground that still gets one, on the strength of
+ * lighting itself. /turf/proc/skips_lighting_object() is the rule, and every place that
+ * builds a lighting object honours it. A contaminated blob therefore renders green tile by
+ * tile; what it no longer does is spill green a couple of tiles into the clean wasteland
+ * around it, because that ground has nothing to render the spill on. The boundary is a
+ * step again rather than a fade, which is arguably the better telegraph.
  */
 /datum/biome/nuclear
 	open_turf_types = list(/turf/open/misc/asteroid/sand/lit/nuclear = 5, /turf/open/misc/asteroid/sand/dark/lit/nuclear = 1)
@@ -89,7 +104,7 @@
 	)
 
 /datum/biome/ruins
-	open_turf_types = list(/turf/open/misc/dust/lit = 45, /turf/open/floor/plating/rust = 1)
+	open_turf_types = list(/turf/open/misc/dust = 45, /turf/open/floor/plating/rust = 1)
 	feature_spawn_chance = 5
 	feature_spawn_list = list(
 		/obj/structure/barrel/flaming = 6,

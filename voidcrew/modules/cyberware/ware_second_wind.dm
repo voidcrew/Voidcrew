@@ -2,7 +2,7 @@
  * # Second Wind Bladder (T1, chest, seal slot, load 1)
  *
  * The framework's pilot ware: a polymer air bladder that quietly feeds you
- * when the room stops doing it. No tank object anywhere — organ-held tanks
+ * when the room stops doing it. No tank object anywhere, organ-held tanks
  * fail invalid_internals(), so this rides COMSIG_CARBON_ATTEMPT_BREATHE and
  * simply supplies the blocked breath itself while reserve lasts. Reserve
  * covers ~3 minutes of vacuum and refills at twice that rate in air.
@@ -31,7 +31,7 @@
 	icon_state = "internal1"
 
 /// The mask-breathing loop the bladder runs while it is feeding you. Quiet
-/// and short-ranged — the wearer is meant to hear it, the room is meant to
+/// and short-ranged, the wearer is meant to hear it, the room is meant to
 /// only just notice.
 /datum/looping_sound/breathing/cyberware_second_wind
 	volume = 20
@@ -86,8 +86,8 @@
 	SIGNAL_HANDLER
 	shut_down(source)
 
-/// Everything the engaged state owns, torn down without the disengage beats —
-/// for the paths (death, extraction) where nobody is left to hear them.
+/// Everything the engaged state owns, torn down without the disengage beats.
+/// For the paths (death, extraction) where nobody is left to hear them.
 /obj/item/organ/cyberimp/cyberware/second_wind/proc/shut_down(mob/living/carbon/source)
 	engaged = FALSE
 	low_warned = FALSE
@@ -98,7 +98,7 @@
  * Signal proc for [COMSIG_CARBON_ATTEMPT_BREATHE]. Fires at the very top of
  * every breath: in breathable air we top the reserve up, in anything else we
  * spend reserve and block the breath outright. Blocking skips the whole
- * breathe() chain — including its alert bookkeeping — so we settle
+ * breathe() chain (including its alert bookkeeping) so we settle
  * failed_last_breath and the oxygen alert ourselves.
  */
 /obj/item/organ/cyberimp/cyberware/second_wind/proc/on_attempt_breathe(mob/living/carbon/source, seconds_per_tick, times_fired)
@@ -109,7 +109,7 @@
 		return NONE
 	if(HAS_TRAIT(source, TRAIT_NOBREATH))
 		return NONE
-	if(source.internal || source.external) // on tank internals — their air, not ours
+	if(source.internal || source.external) // on tank internals, their air, not ours
 		if(engaged)
 			set_engaged(source, FALSE)
 		return NONE
@@ -133,7 +133,7 @@
 	update_alert(source)
 	if(!low_warned && reserve <= CYBERWARE_SECOND_WIND_LOW)
 		low_warned = TRUE
-		to_chat(source, span_warning("Your bladder gauge drops into the red — <b>[round(reserve / (1 SECONDS))]</b> seconds of air left."))
+		to_chat(source, span_warning("Your bladder gauge drops into the red, <b>[round(reserve / (1 SECONDS))]</b> seconds of air left."))
 		playsound(source, 'sound/machines/buzz/buzz-two.ogg', 30, TRUE)
 	// This IS a successful breath as far as the body is concerned.
 	source.failed_last_breath = FALSE
@@ -151,7 +151,7 @@
 		source.balloon_alert(source, "second wind engages")
 		source.visible_message(
 			span_notice("[source] takes a sharp breath, and something under [source.p_their()] ribs starts working."),
-			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you — you have [round(reserve / (1 SECONDS))] seconds of air."),
+			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you. You have [round(reserve / (1 SECONDS))] seconds of air."),
 			span_hear("You hear a pneumatic hiss and the rhythm of mask breathing."),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 		)
@@ -187,7 +187,7 @@
 /**
  * Whether the mob's surroundings hold enough oxygen to breathe unassisted:
  * environmental O2 partial pressure (plus pluoxium at its usual 8x weight)
- * against the lungs' 16 kPa floor. Deliberately O2-only — exotic breathers
+ * against the lungs' 16 kPa floor. Deliberately O2-only, exotic breathers
  * get little from a bladder that stores baseline air, and toxic-but-oxygenated
  * rooms are the Hemoglass Filter's problem, not the seal ladder's.
  */

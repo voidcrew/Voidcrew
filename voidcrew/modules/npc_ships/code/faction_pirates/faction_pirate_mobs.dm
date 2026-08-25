@@ -126,7 +126,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -325,7 +325,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -389,7 +389,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 

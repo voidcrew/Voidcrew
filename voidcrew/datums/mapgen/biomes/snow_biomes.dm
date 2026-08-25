@@ -1,6 +1,6 @@
 
 /datum/biome/snow
-	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable/lit = 25)
+	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 25)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/pine = 2,
 		/obj/structure/flora/rock/icy = 2,
@@ -35,14 +35,14 @@
 	)
 
 /datum/biome/snow/lush
-	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable/lit = 25)
+	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 25)
 	flora_spawn_list = list(
 		/obj/structure/flora/grass/both = 1,
 	)
 	flora_spawn_chance = 30
 
 /datum/biome/snow/thawed
-	open_turf_types = list(/turf/open/misc/dirt/snow/lit = 1)
+	open_turf_types = list(/turf/open/misc/dirt/snow = 1)
 	flora_spawn_chance = 40
 	flora_spawn_list = list(
 		/obj/structure/flora/ausbushes/fullgrass = 1,
@@ -84,10 +84,10 @@
 	)
 
 /datum/biome/arctic
-	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 1)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(/obj/structure/statue/snow/snowman = 3, /obj/structure/statue/snow/snowlegion = 1)
-	// Open windswept flats are legion country — the snowmen aren't all statues.
+	// Open windswept flats are legion country. The snowmen aren't all statues.
 	mob_spawn_list = list(
 		/mob/living/basic/mining/wolf/random = 15,
 		/obj/structure/spawner/ice_moon = 3,
@@ -113,7 +113,7 @@
 	)
 
 /datum/biome/icey
-	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable/lit = 5, /turf/open/misc/ice/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 5, /turf/open/misc/ice = 1)
 	mob_spawn_chance = 2
 	// Frozen lakes are demon territory; things get worse the further out on the ice you go.
 	mob_spawn_list = list(
@@ -137,7 +137,7 @@
 	)
 
 /datum/biome/icey/lake
-	open_turf_types = list(/turf/open/misc/ice/lit = 1)
+	open_turf_types = list(/turf/open/misc/ice = 1)
 
 // /datum/biome/plasma
 // 	open_turf_types = list(/turf/open/lava/plasma/ice_moon = 5, /turf/open/misc/dirt/jungle/dark = 1)

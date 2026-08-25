@@ -1,0 +1,167 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/clothing/under/syndicate,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"o" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/machinery/light/small/red/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"r" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/structure/closet/syndicate{
+	name = "ration locker";
+	desc = "A squat black locker bolted to the deck. Somebody stencilled a meal count on the door and then crossed it out."
+	},
+/obj/item/food/canned/beans,
+/obj/item/food/canned/peaches,
+/obj/item/food/canned/pine_nuts,
+/obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"t" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/item/paper{
+	name = "rack bill";
+	default_raw_text = "Racks are first come. Strip your sheet before you go into the pod so the next watch is not sleeping in yours. The ration locker is not a personal locker.";
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"w" = (
+/obj/machinery/light/small/red/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"A" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light/small/directional/north,
+/obj/structure/dresser,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"C" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"F" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"O" = (
+/obj/structure/bed,
+/obj/item/bedsheet/syndie,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+
+(1,1,1) = {"
+s
+o
+F
+"}
+(2,1,1) = {"
+d
+t
+N
+"}
+(3,1,1) = {"
+P
+O
+Q
+"}
+(4,1,1) = {"
+P
+V
+f
+"}
+(5,1,1) = {"
+A
+C
+N
+"}
+(6,1,1) = {"
+G
+w
+S
+"}

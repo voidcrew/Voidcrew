@@ -46,6 +46,27 @@
 
 	return ..()
 
+// A pirate siphon on the ship's accounts locks the vault. Emptying the balance into a
+// holochip is the fastest way to make a robbery come up empty, so it is the one path
+// that has to refuse loudly rather than fail somewhere down in the economy code.
+/obj/machinery/computer/bank_machine/ui_act(action, params, datum/tgui/ui)
+	if(action == "siphon" && synced_bank_account?.is_siphon_locked())
+		say("Error: hostile intrusion detected on the account. Withdrawals are locked out.")
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE)
+		return TRUE
+	return ..()
+
+// A withdrawal already running when the pirate's tap lands gets cut off. Upstream's
+// process() would stop it anyway once has_money() starts refusing, but it announces
+// "depleted", which is a lie when the balance is untouched and merely frozen. Credits
+// already pulled stay pulled - end_siphon() drops them as a holochip.
+/obj/machinery/computer/bank_machine/process(seconds_per_tick)
+	if(siphoning && synced_bank_account?.is_siphon_locked())
+		say("Hostile intrusion detected on the account. Halting withdrawal.")
+		end_siphon()
+		return
+	return ..()
+
 /obj/machinery/computer/bank_machine/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	. = ..()
 	if(!istype(port))

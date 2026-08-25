@@ -71,12 +71,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		if(null)
 			return
 		if(/turf/baseturf_bottom)
-			path = SSmapping.level_trait(z, ZTRAIT_BASETURF) || /turf/open/space
+			// VOIDCREW EDIT: kept in lockstep with the copy in voidcrew/edits/turf.dm, which
+			// is the body that actually runs (it is the outermost link of the duplicate-
+			// definition chain and never calls ..()). The map FOOTPRINT under the turf is
+			// asked before the z-level: a level holds up to four planets of different biomes
+			// and ZTRAIT_BASETURF is one value per level, so it can only be right for one of
+			// them. Null falls through to the upstream lookup unchanged.
+			var/footprint_ground = footprint_baseturf_for_turf(src)
+			path = footprint_ground || SSmapping.level_trait(z, ZTRAIT_BASETURF) || /turf/open/space
 			if (!ispath(path))
 				path = text2path(path)
 				if (!ispath(path))
-					warning("Z-level [z] has invalid baseturf '[SSmapping.level_trait(z, ZTRAIT_BASETURF)]'")
+					warning("Z-level [z] has invalid baseturf '[footprint_ground || SSmapping.level_trait(z, ZTRAIT_BASETURF)]'")
 					path = /turf/open/space
+			// END VOIDCREW EDIT
 		if(/turf/open/space/basic)
 			// basic doesn't initialize and this will cause issues
 			// no warning though because this can happen naturaly as a result of it being built on top of
@@ -173,12 +181,55 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
-			if(old_lighting_object)
-				lighting_object = old_lighting_object
-				vis_contents += lighting_object
-			// Should have a lighting object if we never had one
+			// VOIDCREW EDIT: upstream turned /datum/lighting_object into /atom/movable/lighting_object.
+			// It is constructed with a null loc and the turf as the second arg (a turf loc trips a
+			// stack_trace in its Initialize), it assigns turf.lighting_object itself and adds itself
+			// to vis_contents - so the reuse branch has to do that part by hand.
+			//
+			// Two rules composed here:
+			// 1. The AREA gate that SSlighting.create_all_lighting_objects() and map_template.dm
+			//    both apply. Without it every mid-round ChangeTurf into a static_lighting = FALSE
+			//    area (/area/overmap, /area/centcom/asteroid/voidcrew, /area/space, holodecks)
+			//    accretes a lighting object that roundstart init deliberately skipped and nothing
+			//    ever reclaims.
+			// 2. Ambient-lit ground (a planet surface: static_lighting FALSE + ambient_lighting
+			//    TRUE) is a special case of that gate with ONE exception - a turf that lights
+			//    ITSELF, like the fallout zone's hazard green or a lava river, keeps an object or
+			//    its own light has nothing to render on. That is what preserves the nuclear biome's
+			//    telegraph. See /turf/proc/skips_lighting_object() in voidcrew/edits/lighting.dm.
+			// Ordered so the ambient test costs one var read on every non-planet turf in the game
+			// and the proc call only ever runs on planet ground.
+			//
+			// The block also has to be idempotent. AfterChange() above can run an area transfer
+			// (transfer_area_lighting -> lighting_build_overlay), and a nested ChangeTurf inside
+			// new path(src) - e.g. /turf/closed/mineral/random rerolling its ore type during
+			// Initialize - can already have built an object for this spot. Building another one
+			// blindly double-assigns and stack-traces ("a lighting object was assigned to a turf
+			// that already had a lighting object!"). Reconcile instead, with force = TRUE, since a
+			// plain qdel on a lighting object returns QDEL_HINT_LETMELIVE and would leave it
+			// orphaned in vis_contents.
+			var/area/lit_area = new_turf.loc
+			var/wants_lighting_object = (!lit_area || lit_area.static_lighting)
+			if(!wants_lighting_object && lit_area.ambient_lighting && !skips_lighting_object())
+				wants_lighting_object = TRUE
+			if(wants_lighting_object)
+				if(old_lighting_object && lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE) // drop the nested duplicate, keep the original
+				if(old_lighting_object)
+					lighting_object = old_lighting_object
+					vis_contents += lighting_object
+				// Should have a lighting object if we never had one
+				else if(!lighting_object)
+					new /atom/movable/lighting_object(null, src)
 			else
-				new /atom/movable/lighting_object(null, src)
+				// Same outcome transfer_area_lighting() reaches via lighting_clear_overlay() when a
+				// turf moves into one. Drop a nested duplicate first, since qdel'ing the old object
+				// nulls the turf's pointer either way.
+				if(lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE)
+				if(old_lighting_object)
+					qdel(old_lighting_object, force = TRUE)
+			// END VOIDCREW EDIT
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 
@@ -210,6 +261,17 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	else if(ispath(old_type, /turf/open/space))
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, src))
 			space_tile.enable_starlight()
+
+	// VOIDCREW EDIT: ambient bleed, the same three cases the starlight branches above
+	// handle, generalised from "space turf" to "turf in an area that lights it wholesale".
+	// Our own capability can have flipped (we became or stopped being a cordon or a space
+	// tile), and we can have started or stopped being something for the base-lit ground
+	// around us to bleed onto. NOTE: this copy of ChangeTurf is dead - voidcrew/edits/turf.dm
+	// declares a full duplicate that never calls parent and wins on include order - but the
+	// two bodies are kept in lockstep. See voidcrew/edits/lighting.dm.
+	if(SSlighting.initialized)
+		update_ambient_bleed_after_change(old_type, old_lighting_object)
+	// END VOIDCREW EDIT
 
 	if(old_opacity != opacity && SSticker)
 		SScameras.bare_major_chunk_change(src)

@@ -204,6 +204,18 @@
 	if(isliving(target))
 		var/mob/living/dust_mob = target
 		if(dust_mob.stat == DEAD)
+			// VOIDCREW EDIT START: death bolts no longer erase player bodies.
+			// Dusting deletes the corpse and everything carried on it (including the ID
+			// whose bank account holds their mining points), permanently removing the
+			// player from the round. Player bodies now stay behind as recoverable
+			// remains, with their gear blasted onto the ground; mindless mobs still dust.
+			if(dust_mob.mind || dust_mob.ckey)
+				if(length(dust_mob.get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD)))
+					dust_mob.visible_message(span_danger("The death bolt scorches [dust_mob]'s body, blasting [dust_mob.p_their()] gear onto the ground!"))
+					dust_mob.investigate_log("has had their gear scattered by a death bolt (colossus); body left intact.", INVESTIGATE_DEATHS)
+					dust_mob.unequip_everything()
+				return
+			// VOIDCREW EDIT END
 			dust_mob.investigate_log("has been dusted by a death bolt (colossus).", INVESTIGATE_DEATHS)
 			dust_mob.dust()
 		return

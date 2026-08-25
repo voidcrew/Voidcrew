@@ -41,6 +41,29 @@
 	return ..()
 
 /**
+ * Hostile NPC boarders never benefit from the crewed-ship access waiver.
+ *
+ * The waiver above exists so a five-person crew is not locked out of its own
+ * toolbox; it was never meant to hold the door for pirates. Without this check a
+ * boarding party bumping any access-locked door on a crewed hull sails straight
+ * through it - check_access_list() has no idea who is asking, so the waiver
+ * answered yes for everyone, and playtest crews watched boarders "walk thru"
+ * doors they had deliberately locked. Their AI already knows how to bash a door
+ * that refuses them (mob_patrol.dm pre-marks access-locked doors for attack), so
+ * denying here restores break-in behavior instead of a free stroll.
+ *
+ * Scoped tightly: only clientless pirate-faction mobs, only doors that actually
+ * carry an access requirement, and only where the waiver itself would have
+ * applied. Doors mapped with no access at all still open for anyone, pirates
+ * included, exactly as they would upstream for any ID-less mob.
+ */
+/obj/machinery/door/allowed(mob/M)
+	if(isliving(M) && !M.client && (FACTION_PIRATE in M.faction) \
+		&& (length(req_access) || length(req_one_access)) && in_unrestricted_ship())
+		return FALSE
+	return ..()
+
+/**
  * Lockers never check access at all, anywhere.
  *
  * /tg/ maps department access onto most of its secure furniture, which on a hull

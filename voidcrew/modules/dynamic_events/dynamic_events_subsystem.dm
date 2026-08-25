@@ -2,7 +2,7 @@
  * Voidcrew's scheduler for ship-scoped dynamic events.
  *
  * SSevents stays alive but inert (allow_random_events is FALSE), and still
- * processes the running list — event instances register themselves with
+ * processes the running list, event instances register themselves with
  * SSevents in /datum/round_event/New(), so ticking is inherited for free.
  * This subsystem only handles selection: roll a ported event from the roster,
  * let the control pick a target ship, fire.
@@ -22,7 +22,7 @@ SUBSYSTEM_DEF(dynamic_events)
 	/// Scheduling bounds, expressed PER CREW rather than fleet-wide: this is how long
 	/// one ship should go between ambient events. The global cadence is this divided by
 	/// the number of crewed ships (see reschedule()), because each firing only hits one
-	/// of them — so a solo player and a six-ship fleet each get hit at about the same
+	/// of them, so a solo player and a six-ship fleet each get hit at about the same
 	/// rate, instead of the solo player absorbing the entire fleet's event budget.
 	var/frequency_lower = 25 MINUTES
 	var/frequency_upper = 45 MINUTES
@@ -56,7 +56,7 @@ SUBSYSTEM_DEF(dynamic_events)
 	scheduled = world.time + max(round(interval / crewed_ship_count()), minimum_interval)
 
 /**
- * Ships with at least one living, connected player aboard — the divisor that turns the
+ * Ships with at least one living, connected player aboard, the divisor that turns the
  * per-crew interval into a global cadence. Never returns less than 1: with nobody aboard
  * anything there is no event to schedule, and dividing by zero is worse than waiting.
  */

@@ -33,8 +33,10 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	. = ..()
 	UnregisterSignal(SSdcs, COMSIG_GLOB_CREWMEMBER_JOINED)
 
-	for(var/mob/living/carbon/target in GLOB.player_list)
-		// some players might be off the z-level or dead but we still need to cure them
+	// carbon_list, not player_list: player_list only holds mobs with a client attached, and a
+	// dead player who ghosted leaves their cursed body clientless. Miss the body here and they
+	// revive still babbling, with the cure already destroyed.
+	for(var/mob/living/carbon/target in GLOB.carbon_list)
 		cure_curse_of_babel(target)
 
 /datum/tower_of_babel/proc/handle_new_player(datum/source, mob/living/new_crewmember, rank)
@@ -60,13 +62,11 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 /proc/cure_curse_of_babel(mob/living/carbon/to_cure)
 	if(!iscarbon(to_cure))
 		return
-	if(!to_cure.mind)
+	// A body whose mind left mid-curse (respawn, borging, mind swap) has no mind to carry
+	// the babel trait but still holds the permanent status effect. Cure it unconditionally;
+	// the minded early-out below only protects people who were never cursed by this source.
+	if(to_cure.mind && !HAS_TRAIT_FROM(to_cure.mind, TRAIT_TOWER_OF_BABEL, TRAUMA_TRAIT))
 		return
-
-	// anyone who has this trait from another source is immune to being cursed by tower of babel
-	if(!HAS_TRAIT_FROM(to_cure.mind, TRAIT_TOWER_OF_BABEL, TRAUMA_TRAIT))
-		return
-
 	to_cure.remove_status_effect(/datum/status_effect/tower_of_babel/magical)
 
 /client/proc/tower_of_babel()

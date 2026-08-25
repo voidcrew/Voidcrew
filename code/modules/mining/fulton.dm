@@ -79,6 +79,13 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	if(area != target_area && ((area.area_flags & LOCAL_TELEPORT) || (target_area.area_flags & LOCAL_TELEPORT)))
 		balloon_alert(user, "unable to activate!")
 		return ITEM_INTERACT_BLOCKING
+	// VOIDCREW EDIT ADDITION: fultons don't go through do_teleport(), so they need the
+	// bitrunning boundary check of their own. The LOCAL_TELEPORT test above misses a
+	// domain's reservation floor, which is plain /area/space.
+	if(SSbitrunning.is_domain_turf(get_turf(thing)) != SSbitrunning.is_domain_turf(get_turf(beacon)))
+		balloon_alert(user, "unable to activate!")
+		return ITEM_INTERACT_BLOCKING
+	// VOIDCREW EDIT END
 	if(!safe_for_living_creatures && check_for_living_mobs(thing))
 		to_chat(user, span_warning("[src] is not safe for use with living creatures, they wouldn't survive the trip back!"))
 		balloon_alert(user, "not safe!")

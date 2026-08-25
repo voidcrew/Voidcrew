@@ -9,11 +9,11 @@ Research in Voidcrew is **per-ship**. Your crew's tech tree lives on a hard driv
 
 ## The suite
 
-Almost every hull carries an autolathe, and that one machine is enough. Print the **Research & Development Kit** — twenty sheets of iron and forty of glass, no research required — and the box holds the boards for the whole chain: R&D console, protolathe, destructive analyzer, circuit imprinter, ship R&D server, and the **source code disk** that goes in the server. See [Ship Systems](ship-systems.md) for where these sit aboard.
+Almost every hull carries an autolathe, and that one machine is enough. Print the **Research & Development Kit** (twenty sheets of iron and forty of glass, no research required) and the box holds the boards for the whole chain: R&D console, protolathe, destructive analyzer, circuit imprinter, ship R&D server, and the **source code disk** that goes in the server. See [Ship Systems](ship-systems.md) for where these sit aboard.
 
 The disk *is* the techweb. Slot it into the server and that server hosts your research; pull it out and the research goes with it. The autolathe prints a spare disk for two sheets of glass, but a fresh disk is a fresh blank tree, not a copy.
 
-Everything that earns or spends points has to be told which server it belongs to. Slotting the source disk into the server **claims every scanner and operating computer aboard that has no link yet**, so build the server whenever you like and anything you made earlier falls in behind it. Everything else — R&D console, orbital survey console, protolathe, nanite chamber, destructive scanner — is linked by hand: **multitool** the server, then the machine. One click, including to move a machine from one server to another.
+Everything that earns or spends points has to be told which server it belongs to. Slotting the source disk into the server **claims every scanner and operating computer aboard that has no link yet**, so build the server whenever you like and anything you made earlier falls in behind it. Everything else, R&D console, orbital survey console, protolathe, nanite chamber, destructive scanner. Is linked by hand: **multitool** the server, then the machine. One click, including to move a machine from one server to another.
 
 A scanner with no server says so when you examine it and buzzes when you try to use it, so an unlinked machine is obvious rather than silently useless.
 
@@ -34,7 +34,7 @@ Ships launch with **no research income at all**. No hull is mapped with a survey
 | Dissection | 10 per body, up to 2,000 with the full ladder | Nothing to start |
 | Robbing another ship's server | 2,500 per attempt | Boarding somebody |
 
-### Experiments — the best thing you can do in the first ten minutes
+### Experiments: the best thing you can do in the first ten minutes
 
 This is the strongest early faucet in the game and it costs nothing. Every completed experiment pays a flat **2,000 points**.
 
@@ -43,11 +43,11 @@ The **Experi-Scanner** is a protolathe design your web already has at round star
 - Scan three patches of blood or vomit. That is the whole experiment.
 - Scan three different species of fish. A basic fishing rod is also a free design.
 - Scan a beaker of a named chemical at high purity.
-- Autopsy a corpse on an operating table wired to your server. That one is done with an **autopsy scanner**, which cannot be printed — order the Autopsy Kit crate from your [cargo console](money-and-trade.md).
+- Autopsy a corpse on an operating table wired to your server. That one is done with an **autopsy scanner**, which cannot be printed: order the Autopsy Kit crate from your [cargo console](money-and-trade.md).
 
 More experiments appear as you research deeper into a branch, so the supply does not dry up. The fishing chain pays a small bonus on top of the flat 2,000.
 
-**Ordnance experiments** pay the same 2,000, but they are finished differently: you capture a tank explosion on a doppler array or burst a gas tank in a tank compressor, print the data to a disk, and publish it through the **NT Frontier** app. Nine of them exist — five explosive and four gas — and each pays the first time a paper actually completes it. Publishing further tiers of an experiment you have already finished pays nothing.
+**Ordnance experiments** pay the same 2,000, but they are finished differently: you capture a tank explosion on a doppler array or burst a gas tank in a tank compressor, print the data to a disk, and publish it through the **NT Frontier** app. Nine of them exist (five explosive and four gas) and each pays the first time a paper actually completes it. Publishing further tiers of an experiment you have already finished pays nothing.
 
 ### Research notes
 
@@ -59,7 +59,7 @@ Salvaged documents can also be **sold** through the cargo console at half a cred
 
 ### The orbital survey console
 
-The **Orbital survey console** costs a single **40-point** node, which makes it the first thing most crews research. It surveys whatever your ship is sharing an overmap tile with — you sit in orbit alongside it, you do not have to dock.
+The **Orbital survey console** costs a single **40-point** node, which makes it the first thing most crews research. It surveys whatever your ship is sharing an overmap tile with. You sit in orbit alongside it, you do not have to dock. The one exception is storms: electric and EMP storms can also be scanned from up to **3 tiles away**, at **60%** of the normal payout, so you never have to fly into one just to log it.
 
 A survey takes **60 seconds** and is cancelled the moment the ship moves, so park first. It pays points and an identical amount in credits, both banked in the console: **Print research** turns the points into a research-notes document, and **Cash out** spits the credits out as physical bills.
 
@@ -92,9 +92,9 @@ A better **micro-laser** cuts the power draw, which matters: a scanner on the ch
 
 Feed a **refined anomaly core** to the destructive analyzer and it pays **200 points**. Nine core types exist and each pays once per techweb, so the full set is 1,800. Load an item and the analyzer tells you what it is worth before you pull the trigger.
 
-Getting there is about 240 points of bluespace research — Bluespace Theory, Applied Bluespace, then **Anomaly Research** for the refinery. Raw cores come from anomalies that turn up aboard your ship as a [dynamic event](dynamic-events.md), and from research-themed loot caches.
+Getting there is about 240 points of bluespace research: Bluespace Theory, Applied Bluespace, then **Anomaly Research** for the refinery. Raw cores come from anomalies that turn up aboard your ship as a [dynamic event](dynamic-events.md), and from research-themed loot caches.
 
-Cores are the only thing deconstruction pays for. The analyzer's other job — revealing hidden nodes from illegal or alien hardware — is often the more valuable one.
+Cores are the only thing deconstruction pays for. The analyzer's other job (revealing hidden nodes from illegal or alien hardware) is often the more valuable one.
 
 ### Dissection
 
@@ -102,18 +102,18 @@ Any crew can perform **Dissection** on a corpse with no research at all, and it 
 
 | Tier | Pays (human) | Unlocked by |
 | --- | --- | --- |
-| Dissection | 10 | Nothing — you have it at round start |
+| Dissection | 10 | Nothing: you have it at round start |
 | Advanced Dissection | 1,000 | Advanced Surgery (80 points) |
 | Superior Dissection | 1,500 | Experimental Surgery (120 points) |
-| Elite Dissection | 2,000 | Alien Surgery — hidden, deep in the alien-technology branch |
+| Elite Dissection | 2,000 | Alien Surgery: hidden, deep in the alien-technology branch |
 
-Advanced Surgery also wants the human autopsy experiment done, which you were going to do anyway for its 2,000 points. Counting its prerequisite, going from the 10-point dissection to the 1,000-point one costs about 120 points — one of the better returns on the tree.
+Advanced Surgery also wants the human autopsy experiment done, which you were going to do anyway for its 2,000 points. Counting its prerequisite, going from the 10-point dissection to the 1,000-point one costs about 120 points. One of the better returns on the tree.
 
 Species change the figure: monkeys pay a fifth, most animals a sixth, jelly and pod people double, golems and zombies triple, abductors quadruple, adult xenomorphs five times and a royal xenomorph ten times. Each body can only be dissected once, and the result comes out as research notes.
 
 ### Robbing somebody
 
-Right-click another ship's R&D server in combat mode and hold still for ten seconds to strip **2,500 points** off their techweb and print it as a document you can carry home. They have to actually have the points, and you can repeat it while they do. Destroying the server outright drops its source disk on the floor — and that disk is their entire tech tree.
+Right-click another ship's R&D server in combat mode and hold still for ten seconds to strip **2,500 points** off their techweb and print it as a document you can carry home. They have to actually have the points, and you can repeat it while they do. Destroying the server outright drops its source disk on the floor, and that disk is their entire tech tree.
 
 ### What does not pay
 
@@ -123,7 +123,7 @@ Right-click another ship's R&D server in combat mode and hold still for ten seco
 
 ## Spending points
 
-Nodes are bought at the R&D console, one at a time, by hand — or queued, and bought for you.
+Nodes are bought at the R&D console, one at a time, by hand, or queued and bought for you.
 
 ### The research queue
 
@@ -133,7 +133,7 @@ It also solves the survey-gated nodes. Queue the elite survey console or a trans
 
 ### Department access is cheap
 
-What your crew can build is gated by how far up the tree you have climbed, not by which hull you bought — and the inherited /tg/station tree is **cheap**, mostly 40 to 200 points a node. Robotics and the botany root are free from the start; Hydroponics is 80, Cytology 80, Xenobiology 120, Gene Engineering 160. Standing up a department is an afternoon's work, not a fortune. The expensive nodes are the Voidcrew ones, and they are what the big faucets are for.
+What your crew can build is gated by how far up the tree you have climbed, not by which hull you bought, and the inherited /tg/station tree is **cheap**, mostly 40 to 200 points a node. Robotics and the botany root are free from the start; Hydroponics is 80, Cytology 80, Xenobiology 120, Gene Engineering 160. Standing up a department is an afternoon's work, not a fortune. The expensive nodes are the Voidcrew ones, and they are what the big faucets are for.
 
 ### Ship systems worth buying
 
@@ -141,10 +141,11 @@ What your crew can build is gated by how far up the tree you have climbed, not b
 | --- | --- | --- |
 | Orbital survey console | 40 | The survey console board. Research this first. |
 | Basic Shuttle Research | 40 | Plasma and ion engines, engine heaters, helm consoles, ram scoop, plasma sublimator |
-| Shuttle Construction | 80 | The ship construction console — see [Ship Upgrades](ship-upgrades.md) |
+| Shuttle Construction | 80 | The ship construction console. See [Ship Upgrades](ship-upgrades.md) |
 | Shuttle Warfare Systems | 80 | The weapons console, and the gateway to every combat node below |
 | Shuttle Shield Systems / Cloaking Systems / Missile Ordnance | 120 each | Shield generators, the cloak, and the missile launcher with its light warhead |
 | Shuttle Laser Systems | 160 | Laser turrets |
+| Electronic Warfare Systems | 160 | The electronic warfare suite board and the tier-1 exploit cartridges. Stronger exploits are never researchable. See [Ship Hacking](ship-hacking.md) |
 | Shuttle Interdiction Systems / Ship Data Siphon | 200 each | The interdictor, and the siphon that drains a locked-on ship's account |
 | Mission Logistics | 500 | Replacement mission board and pad |
 | Survey Scanners | 1,000 | The survey scanner above |
@@ -155,13 +156,13 @@ All the ship combat hardware is covered properly in [Ship Combat](ship-combat.md
 
 ### The radar ladder
 
-Three nodes, each widening how far an active scan reaches from the helm. They unlock no printable object — the ship simply gets better sensors. See [Piloting Your Ship](piloting.md).
+Three nodes, each widening how far an active scan reaches from the helm. They unlock no printable object. The ship simply gets better sensors. See [Piloting Your Ship](piloting.md).
 
 | Node | Cost | Scan range |
 | --- | --- | --- |
 | Radar Array | 1,000 | 6 tiles |
-| Radar Array — Signal Analysis | 2,500 | 8 tiles, and space ruins are named on the chart without a survey |
-| Radar Array — Vessel Tracking | 5,000 | 10 tiles, and other crews' ships are plotted out to full range |
+| Radar Array: Signal Analysis | 2,500 | 8 tiles, and space ruins are named on the chart without a survey |
+| Radar Array: Vessel Tracking | 5,000 | 10 tiles, and other crews' ships are plotted out to full range |
 
 ### The survey console ladder
 
@@ -181,7 +182,7 @@ Three more nodes at 12,000, 20,000 and 30,000 points, gated on planets and aster
 
 ## Your first thirty minutes
 
-1. Print the **R&D Kit** at the autolathe and build the console, protolathe, imprinter and server. Put the source disk in the server — that is the step that switches everything on, so do it first and the rest is easy.
+1. Print the **R&D Kit** at the autolathe and build the console, protolathe, imprinter and server. Put the source disk in the server. That is the step that switches everything on, so do it first and the rest is easy.
 2. **Multitool the server, then the R&D console.** Nothing works until they are talking.
 3. Print an **Experi-Scanner**. Built after the server is up it links itself; built before, the server claims it when the disk goes in. Examine it to check. Then pick an experiment off the console's list and go do it. That is 2,000 points.
 4. Buy the **Orbital survey console** node for 40 points, print its board on the imprinter, build it, and multitool it to the server.

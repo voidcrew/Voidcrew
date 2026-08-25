@@ -186,21 +186,22 @@
 
 /datum/mod_theme/civilian
 	name = "civilian"
-	desc = "A light-weight civilian suit that offers unmatched ease of movement but no protection from the vacuum of space."
-	extended_desc = "An experimental design by Nakamura Engineering, intended to be marketed towards planet-bound customers. \
-		This model sacrifices the protection from biological and chemical threats and the vacuum of space in exchange for \
-		vastly improved mobility. Due to the slimmed-down profile, it also has less capacity for modifications compared to \
-		mainline models."
+	desc = "A light-weight civilian suit that offers unmatched ease of movement without giving up a vacuum seal."
+	extended_desc = "An experimental design by Nakamura Engineering, intended to be marketed towards civilian customers. \
+		This model sacrifices the protection from biological and chemical threats in exchange for \
+		vastly improved mobility, though the seals were kept intact for vacuum work. Due to the slimmed-down profile, \
+		it also has less capacity for modifications compared to mainline models."
 	default_skin = "civilian"
 	armor_type = /datum/armor/mod_theme_civilian
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
-	min_cold_protection_temperature = ARMOR_MIN_TEMP_PROTECT
+	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	complexity_max = DEFAULT_MAX_COMPLEXITY - 3
 	slowdown_deployed = 0
 	variants = list(
 		"civilian" = list(
 			/obj/item/clothing/head/mod = list(
 				UNSEALED_CLOTHING = SNUG_FIT|THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|HEADINTERNALS,
 				UNSEALED_MESSAGE = HELMET_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = HELMET_SEAL_MESSAGE,
 				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS|HIDEEYES|HIDEHAIR|HIDESNOUT,
@@ -208,18 +209,21 @@
 			),
 			/obj/item/clothing/suit/mod = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
 				SEALED_INVISIBILITY = HIDEJUMPSUIT,
 				UNSEALED_MESSAGE = CHESTPLATE_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = CHESTPLATE_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/gloves/mod = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = GAUNTLET_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = GAUNTLET_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/shoes/mod = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = BOOT_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = BOOT_SEAL_MESSAGE,
@@ -505,7 +509,7 @@
 	armor_type = /datum/armor/mod_theme_mining
 	resistance_flags = FIRE_PROOF|LAVA_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	complexity_max = DEFAULT_MAX_COMPLEXITY - 2
 	charge_drain = DEFAULT_CHARGE_DRAIN * 2
 	inbuilt_modules = list(/obj/item/mod/module/ash_accretion, /obj/item/mod/module/sphere_transform)
@@ -593,10 +597,10 @@
 
 /datum/mod_theme/loader
 	name = "loader"
-	desc = "An unsealed experimental motorized harness manufactured by Scarborough Arms for quick and efficient munition supplies."
-	extended_desc = "This powered suit is an experimental spinoff of in-atmosphere Engineering suits. \
+	desc = "An experimental motorized harness manufactured by Scarborough Arms for quick and efficient munition supplies."
+	extended_desc = "This powered suit is an experimental spinoff of standard Engineering suits. \
 		This fully articulated titanium exoskeleton is Scarborough Arms' suit of choice for their munition delivery men, \
-		and what it lacks in EVA protection, it makes up for in strength and flexibility. The primary feature of \
+		sealing against vacuum while still offering exceptional strength and flexibility. The primary feature of \
 		this suit are the two manipulator arms, carefully synchronized with the user's thoughts and \
 		duplicating their motions almost exactly. These are driven by myomer, an artificial analog of muscles, \
 		requiring large amounts of voltage to function; occasionally sparking under load with the sheer power of a \
@@ -606,7 +610,7 @@
 	default_skin = "loader"
 	armor_type = /datum/armor/mod_theme_loader
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
-	min_cold_protection_temperature = ARMOR_MIN_TEMP_PROTECT
+	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	siemens_coefficient = 0.25
 	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
 	slowdown_deployed = 0
@@ -621,6 +625,7 @@
 		"loader" = list(
 			/obj/item/clothing/head/mod = list(
 				UNSEALED_CLOTHING = SNUG_FIT|THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|HEADINTERNALS,
 				UNSEALED_INVISIBILITY = HIDEEARS|HIDEHAIR,
 				SEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEYES|HIDEFACE|HIDESNOUT,
 				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES|PEPPERPROOF,
@@ -629,17 +634,18 @@
 			),
 			/obj/item/clothing/suit/mod = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
 				UNSEALED_MESSAGE = CHESTPLATE_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = CHESTPLATE_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/gloves/mod = list(
-				SEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = GAUNTLET_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = GAUNTLET_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/shoes/mod = list(
-				SEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = BOOT_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = BOOT_SEAL_MESSAGE,
@@ -1409,6 +1415,7 @@
 		"infiltrator" = list(
 			/obj/item/clothing/head/mod = list(
 				UNSEALED_CLOTHING = SNUG_FIT|THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|HEADINTERNALS,
 				UNSEALED_INVISIBILITY = HIDEEARS|HIDEHAIR,
 				SEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEYES|HIDEFACE|HIDESNOUT|HIDEANTENNAE,
 				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES|PEPPERPROOF,
@@ -1418,19 +1425,20 @@
 			),
 			/obj/item/clothing/suit/mod = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
 				SEALED_INVISIBILITY = HIDEJUMPSUIT|HIDEMUTWINGS,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = CHESTPLATE_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = CHESTPLATE_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/gloves/mod = list(
-				SEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = GAUNTLET_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = GAUNTLET_SEAL_MESSAGE,
 			),
 			/obj/item/clothing/shoes/mod = list(
-				SEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
 				CAN_OVERSLOT = TRUE,
 				UNSEALED_MESSAGE = BOOT_UNSEAL_MESSAGE,
 				SEALED_MESSAGE = BOOT_SEAL_MESSAGE,

@@ -17,6 +17,9 @@
 	voucher_count = 1
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "RESQ"
+	// The survivor cannot defend themselves, so this contract does not share a
+	// wreck with a bounty's entourage or anybody else's spawns
+	exclusive_site = TRUE
 	// Green-band pay; the unharmed bonus doubles credits at turn-in
 	value_min = 800
 	value_max = 1100
@@ -47,6 +50,7 @@
 	desc = "A [objective_name]'s survival beacon is still pinging inside the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
 		Get them out and bring them to your mission pad breathing - the fee doubles if they can still walk. \
 		They'll follow whoever offers a hand, or ride a fireman carry. \
+		If their vitals stop, the beacon holds their tag for a few minutes: get them breathing again inside that window and the contract still pays, minus the bonus. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to receive the survivor's beacon ([gps_tag])."
 
@@ -58,10 +62,20 @@
  *
  * The living objective: friendly, fragile, and clingy on request. An empty
  * hand toggles follow; they never fight back.
+ *
+ * They are immune to the environment on purpose. The contract puts them inside
+ * wrecks, and a wreck is airless and near absolute zero: on tg's basic-mob
+ * defaults this mob takes 1 brute (no air to breathe) plus 2 burn (body temp
+ * under 250K, which it reaches in a single tick at -30K/s) every two-second
+ * Life tick from the moment it spawns. That is 60 HP of survivor in forty
+ * seconds, and the survivor spawns when the crew's ship docks - so they were
+ * dead before anyone could walk across the ruin to them, every single time, on
+ * every airless site. Their suit is what they have been surviving in; only
+ * violence gets to kill them.
  */
 /mob/living/basic/mission_survivor
 	name = "survivor"
-	desc = "Somebody who has had a very long week and would love to see a ship interior again."
+	desc = "Somebody who has had a very long week and would love to see a ship interior again. Their emergency softsuit is patched in three places and still holding."
 	icon = 'icons/mob/simple/simple_human.dmi'
 	maxHealth = 60
 	health = 60
@@ -70,7 +84,9 @@
 	combat_mode = FALSE
 	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
 	sentience_type = SENTIENCE_HUMANOID
-	unsuitable_atmos_damage = 0.5
+	unsuitable_atmos_damage = 0
+	unsuitable_cold_damage = 0
+	unsuitable_heat_damage = 0
 	speak_emote = list("croaks")
 
 	/// Who the survivor is currently following, if anyone

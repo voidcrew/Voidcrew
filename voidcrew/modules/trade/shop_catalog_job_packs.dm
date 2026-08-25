@@ -8,7 +8,7 @@
  *
  * Why they're worth buying: machine boards only print on a circuit imprinter,
  * and while any ship can build one from roundstart (the autolathe stocks the
- * R&D Kit — see voidcrew/modules/research/designs/autolathe_designs.dm), the
+ * R&D Kit: see voidcrew/modules/research/designs/autolathe_designs.dm), the
  * boards themselves still sit behind the techweb. Robotics and basic botany are
  * starting nodes and effectively free; xenobiology is tier 3 behind the whole
  * cytology ladder, and gene engineering is tier 4 behind xenobiology on top of
@@ -19,7 +19,7 @@
  * - Botany      -> Fern, Waystation Halcyon (green). Credits only; she runs the
  *                  seed counter and this is her department.
  * - Robotics    -> Boffin, Quartermain Depot (yellow). Cheap, because robotics
- *                  is a starting node — the crate buys a fab, not research.
+ *                  is a starting node. The crate buys a fab, not research.
  * - Xenobiology -> Boffin, Quartermain Depot (yellow). Dearer; tier-3 chain.
  * - Genetics    -> Sawbones, the Undertow (red). Dearest; tier-4 chain, and a
  *                  black-market clinic is the right counter to sell it over.
@@ -27,7 +27,7 @@
  * Balance notes:
  * - Crates, not boxes. /obj/item/storage/box caps at seven slots and every pack
  *   here is bigger than that. Crates also dispense at the buyer's feet, which
- *   the shop already handles — see dispense() in shop.dm.
+ *   the shop already handles, see dispense() in shop.dm.
  * - No stock parts in any pack. Tier-1 parts print on a stock ship autolathe for
  *   free, so bundling them would pad the price without adding capability. Boffin
  *   sells the tier-2 ladder separately and that stays the upgrade path.
@@ -118,7 +118,7 @@
 // conventions. The category string must match an entry in the shop's
 // categories list or the SKU never renders.
 
-/// Fern, The Potting Shed — Waystation Halcyon (green zone)
+/// Fern, The Potting Shed: Waystation Halcyon (green zone)
 /datum/shop_sku/potting/job_pack_botany
 	category = "Job Packs"
 	name = "botany starter pack"
@@ -128,7 +128,7 @@
 	stock_min = 1
 	stock_max = 2
 
-/// Boffin, The Skunkworks — Quartermain Depot (yellow zone)
+/// Boffin, The Skunkworks: Quartermain Depot (yellow zone)
 /datum/shop_sku/skunk/job_pack_robotics
 	category = "Job Packs"
 	name = "robotics starter pack"
@@ -139,7 +139,7 @@
 	stock_min = 1
 	stock_max = 2
 
-/// Boffin, The Skunkworks — Quartermain Depot (yellow zone)
+/// Boffin, The Skunkworks: Quartermain Depot (yellow zone)
 /datum/shop_sku/skunk/job_pack_xenobiology
 	category = "Job Packs"
 	name = "xenobiology starter pack"
@@ -150,11 +150,11 @@
 	stock_min = 1
 	stock_max = 1
 
-/// Sawbones, the Patch-Up Clinic — the Undertow (red zone)
+/// Sawbones, the Patch-Up Clinic: the Undertow (red zone)
 /datum/shop_sku/clinic/job_pack_genetics
 	category = "Job Packs"
 	name = "genetics starter pack"
-	desc = "A complete genetics lab in board form — scanner, console and infuser — with a sequence scanner and blank disks. Sawbones does not ask what you intend to do with it."
+	desc = "A complete genetics lab in board form (scanner, console and infuser) with a sequence scanner and blank disks. Sawbones does not ask what you intend to do with it."
 	item_path = /obj/structure/closet/crate/medical/genetics_pack
 	price_credits = 2500
 	price_vouchers = 4

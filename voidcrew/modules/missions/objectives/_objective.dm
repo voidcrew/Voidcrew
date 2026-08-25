@@ -12,7 +12,7 @@
  *
  * Cross-cutting state deliberately does NOT live here: the mission target
  * (mission_target.dm) and the tracked quest atom + GPS beacon (the shell)
- * outlive and span objectives — a ruin dying affects every stage at once.
+ * outlive and span objectives, a ruin dying affects every stage at once.
  */
 /datum/mission_objective
 	/// The mission this objective belongs to (set on add)

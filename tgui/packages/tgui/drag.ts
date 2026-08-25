@@ -20,6 +20,8 @@ const pixelRatio = window.devicePixelRatio ?? 1;
 let windowKey = Byond.windowId;
 let dragging = false;
 let resizing = false;
+/// VOIDCREW EDIT: a drag holds until screenOffset has been re-measured for this grab.
+let screenOffsetSynced = false;
 let screenOffset: Point = [0, 0];
 let screenOffsetPromise: Promise<Point>;
 let dragPointOffset: Point;
@@ -273,10 +275,21 @@ function constraintPosition(pos: Point, size: Point): [boolean, Point] {
 export function dragStartHandler(event): void {
   logger.log('drag start');
   dragging = true;
+  screenOffsetSynced = false;
+  const windowPosition = getWindowPosition();
   dragPointOffset = vecSubtract(
     [event.screenX * pixelRatio, event.screenY * pixelRatio],
-    getWindowPosition(),
+    windowPosition,
   ) as Point;
+  // screenOffset is measured once at startup and goes stale when the
+  // window's monitor or DPI context changes; applying a stale offset on
+  // the first winset flings the window to a screen edge. Re-measure it
+  // on every grab, and hold the drag until the fresh value arrives.
+  Byond.winget(Byond.windowId, 'pos').then((pos) => {
+    screenOffset = [pos.x - windowPosition[0], pos.y - windowPosition[1]];
+    screenOffsetSynced = true;
+    dragMoveHandler(event);
+  });
   // Focus click target
   (event.target as HTMLElement)?.focus();
   document.addEventListener('mousemove', dragMoveHandler);
@@ -297,7 +310,7 @@ function dragEndHandler(event): void {
 
 // Move the window while dragging
 function dragMoveHandler(event: MouseEvent): void {
-  if (!dragging) {
+  if (!dragging || !screenOffsetSynced) {
     return;
   }
   event.preventDefault();

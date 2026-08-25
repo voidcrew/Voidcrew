@@ -11,13 +11,6 @@
 "i" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood/large,
-/area/template_noop)
-"A" = (
-/turf/template_noop,
-/area/template_noop)
-"K" = (
 /obj/structure/closet/crate/wooden{
 	name = "outfitters crate"
 	},
@@ -26,11 +19,24 @@
 /obj/item/storage/box/lights/mixed,
 /obj/item/mining_scanner,
 /obj/item/gun/energy/recharge/kinetic_accelerator,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"A" = (
+/turf/template_noop,
+/area/template_noop)
+"K" = (
 /obj/effect/turf_decal/box/corners,
 /obj/effect/turf_decal/box/corners{
 	dir = 1
 	},
 /obj/structure/sign/departments/cargo/directional/south,
+/obj/item/stack/sheet/mineral/wood{
+	amount = 20
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = 8;
+	pixel_y = -5
+	},
 /turf/open/floor/wood,
 /area/template_noop)
 "L" = (
@@ -70,7 +76,6 @@
 	},
 /obj/item/reagent_containers/cup/glass/bottle/whiskey,
 /obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/warm{
 	dir = 4
 	},
@@ -84,14 +89,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/item/stack/sheet/mineral/wood{
-	amount = 20
-	},
-/obj/item/flashlight/lantern{
-	pixel_x = 8;
-	pixel_y = -5
-	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/template_noop)
 "Z" = (

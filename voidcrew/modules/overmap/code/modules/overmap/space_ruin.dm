@@ -20,8 +20,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	/// The ruin template this object will spawn
 	var/datum/map_template/ruin/space/ruin_template
-	/// The turf reservation for this ruin (smaller than full z-level)
-	var/datum/turf_reservation/reservation
+	/// The map zone backing this ruin's interior, once loaded
+	var/datum/map_zone/mapzone
+	/// This ruin's rectangle inside that zone's level - the slot it was dealt. Every
+	/// "is this turf mine?" question is answered from here rather than from the z-level,
+	/// which a packed level shares with up to three neighbours. See /datum/map_footprint.
+	var/datum/map_footprint/footprint
 	/// Primary docking port
 	var/obj/docking_port/stationary/reserve_dock
 	/// Secondary docking port
@@ -55,6 +59,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	/// A mission owns this ruin's lifecycle: the empty-ruin cleanup in
 	/// check_and_respawn() is suppressed until the mission releases it
 	var/mission_locked = FALSE
+	/// One contract has taken this ruin for its own and no other contract may aim
+	/// here while it holds. Used by the jobs whose objective is a living thing that
+	/// somebody else's spawns would kill (see /datum/mission/var/exclusive_site).
+	var/mission_exclusive = FALSE
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
@@ -65,7 +73,23 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /obj/structure/overmap/space_ruin/Destroy()
 	GLOB.space_ruin_signals -= src
 	ruin_bottom_left = null
+	// The orderly teardowns (release_interior -> remove_mapzone) leave both of these null.
+	// What lands here with either still set is a ruin deleted OUT of that path - an admin
+	// Del, a runtime mid-build, a subtype qdel'ing itself - and with four slots to a level
+	// a leaked one is a quarter of a z-level nobody can ever be dealt again. The ground is
+	// deliberately NOT swept: Destroy() can be reentrant and can run mid-build, and the
+	// sweeps yield, so the next tenant's own fill repaints it instead.
+	if(footprint || mapzone)
+		var/datum/map_footprint/departing_footprint = footprint
+		var/datum/map_zone/departing_zone = mapzone || departing_footprint?.zone
+		log_mapping("SSovermap: space ruin '[name]' was deleted while still holding [departing_footprint ? departing_footprint.describe() : "a map zone with no footprint"] - releasing the slot without a teardown sweep")
+		footprint = null
+		mapzone = null
+		departing_zone?.release_slot(departing_footprint)
 	return ..()
+
+/obj/structure/overmap/space_ruin/get_interior_footprint()
+	return footprint
 
 /**
  * Sets the ruin template and extracts relevant info
@@ -125,7 +149,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 /**
  * What the chart draws this signal as. An unsurveyed ruin is a signal and nothing
- * more, so it deliberately gives up nothing but the encryption — which is already
+ * more, so it deliberately gives up nothing but the encryption, which is already
  * public, being the whole point of a rumour chart.
  */
 /obj/structure/overmap/space_ruin/get_contact_variant()
@@ -178,17 +202,32 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	update_icon_for_category()
 
 /**
- * Load the ruin using a turf reservation (smaller than full z-level)
+ * Loads the ruin's interior into a map-zone slot, under the worldgen queue.
+ *
+ * * user - The mob that asked, if any. Told where it stands if the worldgen queue is busy.
+ * * waiting_ship - The ship holding a docking approach on this ruin; routed to
+ *   worldgen_claim()'s notify_ship so queue progress reaches the whole crew.
+ * * queue_timeout - How long to wait for the worldgen queue. Null takes the default;
+ *   UI callers that cannot hold an interface open pass WORLDGEN_QUEUE_NO_WAIT.
+ *
+ * Sends COMSIG_VOIDCREW_SITE_LOAD_FINISHED (TRUE/FALSE) on every exit except the
+ * in-flight guard (that load owns the signal) - a ship may already be registered for
+ * it by request_site_load() when this is entered, and a silent exit latches that ship
+ * out of this site for the rest of the round.
  */
-/obj/structure/overmap/space_ruin/proc/load_level()
-	if(reservation)
+/obj/structure/overmap/space_ruin/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
+	if(mapzone)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, is_loaded())
 		return
 	if(loading)
-		return
+		return // the in-flight load sends the completion signal
 	if(!ruin_template)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
 	loading = TRUE
+
+	var/datum/worldgen_probe/probe = worldgen_begin("ruin", "[name] ([ruin_template.name])")
 
 	// Check if ruin template has valid dimensions
 	if(!ruin_template.width || !ruin_template.height)
@@ -200,107 +239,125 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 			ruin_template.preload_size(template_path, TRUE)
 		else
 			loading = FALSE
+			worldgen_end(probe, "preload-failed")
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 			return
 
-	// Calculate reservation size: ruin size + buffer for docking on two sides
-	// Use the same dock sizes as planets to support large ships
-	var/reserve_width = ruin_template.width + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-	var/reserve_height = ruin_template.height + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-
-	// Asking for a block no reservation z-level can hold is not a retryable "full right
-	// now": request_turf_block_reservation() reads it that way, allocates a fresh
-	// 255x255 z-level, fails on that too and returns null while keeping the level - so
-	// every attempt leaks one. Bail before that. Templates this big are meant to be
-	// unpickable (see /datum/map_template/ruin/space/oldstation) and the
-	// voidcrew_ruin_reservation_fit unit test keeps them out of the spawn pools, so
-	// reaching here means one surfaced by chart, mission or admin spawn instead.
-	if(!SSmapping.reservation_can_ever_fit(reserve_width, reserve_height))
-		log_mapping("SPACE RUIN: '[ruin_template.name]' is [ruin_template.width]x[ruin_template.height], \
-			needing a [reserve_width]x[reserve_height] reservation - too large to ever fit. Ruin is unboardable.")
+	// A template that fits a lattice slot's build region packs FOUR to a z-level; one
+	// that does not takes a whole level to itself, which is exactly what every ruin used
+	// to cost. Measured 2026-08-20 over the live template list: 112 of 113 pack, the sole
+	// outlier being russian_derelict at 83x111. See ruin_fits_in_slot().
+	//
+	// This replaces the old reservation-size gate. A ruin used to ask for
+	// template + 118 x template + 86 - two maximum-size berths' worth of padding on BOTH
+	// sides of BOTH axes - against a 222x222 reservation ceiling, which is why the
+	// smallest map in the pool still could not share a z-level with anything.
+	var/tenant_class = SSovermap.ruin_fits_in_slot(ruin_template) ? MAP_TENANT_CLASS_FLAT : MAP_TENANT_CLASS_SOLO
+	if(!SSovermap.ruin_fits_in_level(ruin_template))
+		// Too big even for a whole z-level. Bail before allocating one: passing an
+		// unplaceable template through leaves a slot claimed and a ruinless site, and
+		// through the caller's loading flag bricks the tile for the round.
+		log_mapping("SPACE RUIN: '[ruin_template.name]' is [ruin_template.width]x[ruin_template.height] - larger than a whole z-level's build region. Ruin is unboardable.")
 		loading = FALSE
+		worldgen_end(probe, "too-large")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
-	// Request a turf reservation instead of a full z-level
-	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
-	if(!reservation)
+	// Heavy work from here on - take the worldgen queue like every other survey.
+	if(!SSovermap.worldgen_claim(src, "ruin survey ([name])", user, queue_timeout, waiting_ship))
 		loading = FALSE
+		worldgen_end(probe, "queue-timeout")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-
-	// Load the ruin with buffer space around it
-	var/ruin_x = bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING
-	var/ruin_y = bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING
-	var/turf/ruin_turf = locate(ruin_x, ruin_y, bottom_left.z)
-	ruin_bottom_left = ruin_turf
-
-	// Try to load the ruin, handle failures gracefully
-	var/load_success = FALSE
-	try
-		load_success = ruin_template.load(ruin_turf)
-	catch(var/exception/e)
-		log_mapping("SPACE RUIN: Failed to load '[ruin_template.name]': [e]")
-		load_success = FALSE
-
-	if(!load_success)
-		// Clean up the reservation if loading failed
-		qdel(reservation)
-		reservation = null
-		ruin_bottom_left = null
+	// The world moved while we queued: another caller may have loaded us already.
+	if(mapzone)
+		SSovermap.worldgen_release(src)
 		loading = FALSE
+		worldgen_end(probe, "already-loaded")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 
-	// The reservation's buffer space (everything outside the ruin's own footprint)
-	// is left as uninitialized /turf/open/space/basic - fix it up before anyone can reach it
-	initialize_reservation_space_turfs()
+	// The whole build - slot claim, cordon, template stamp (wrapped in the per-load ruin
+	// area instancing window), space init and both berths - happens in here. throttled =
+	// TRUE because we already hold the worldgen queue and the build shares that budget.
+	//
+	// Deliberately NO try/catch around the template load, here or inside: try/catch around
+	// template.load() swallows a partial stamp and leaves a dead map behind.
+	var/list/encounter_values = SSovermap.spawn_dynamic_encounter(null, TRUE, ruin_type = ruin_template, throttled = TRUE, tenant_class = tenant_class, tenant_owner = src)
+	if(length(encounter_values) < 4 || !encounter_values[1] || !encounter_values[2] || !encounter_values[4])
+		// Queue released FIRST, then the retry armed: the wait is for a free SLOT, not for
+		// the worldgen queue, and a ruin must never end up queued behind a planet build.
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "slot-failed")
+		site_load_refused_for_capacity(waiting_ship)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
 
-	// Create docking ports on opposite sides of the ruin (same size as planets)
-	var/turf/primary_dock_turf = locate(
-		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock = new /obj/docking_port/stationary(primary_dock_turf)
-	reserve_dock.dir = NORTH
-	reserve_dock.name = "\improper Space Ruin"
-	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock.dheight = 0
-	reserve_dock.dwidth = 0
+	mapzone = encounter_values[1]
+	reserve_dock = encounter_values[2]
+	reserve_dock_secondary = encounter_values[3]
+	footprint = encounter_values[4]
+	// Where the template actually landed. Missions, the contested cache's vault link and
+	// the lich's interior index all measure from here, so it comes back from the placer
+	// rather than being re-derived from arithmetic that would then have to be kept in step.
+	ruin_bottom_left = LAZYACCESS(encounter_values, 5)
 
-	var/turf/secondary_dock_turf = locate(
-		bottom_left.x + reserve_width - RESERVE_DOCK_MAX_SIZE_LONG - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + reserve_height - RESERVE_DOCK_MAX_SIZE_SHORT - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_dock_turf)
-	reserve_dock_secondary.dir = NORTH
-	reserve_dock_secondary.name = "\improper Space Ruin"
-	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock_secondary.dheight = 0
-	reserve_dock_secondary.dwidth = 0
+	if(!ruin_bottom_left)
+		// The slot was built but the template never went down. A ruin with no interior is
+		// not a boardable site, so hand the ground straight back rather than leaving a
+		// dockable empty box on the chart.
+		log_mapping("SPACE RUIN: '[ruin_template.name]' ([ruin_template.width]x[ruin_template.height]) could not be placed inside [footprint.describe()] - site aborted")
+		remove_docks()
+		remove_mapzone()
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "load-failed")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
 
+	worldgen_end(probe)
 	loaded = TRUE
 	loading = FALSE
 	visited = TRUE
+	SSovermap.worldgen_release(src)
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
+
+/obj/structure/overmap/space_ruin/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	INVOKE_ASYNC(src, PROC_REF(load_level), user, waiting_ship)
+
+/obj/structure/overmap/space_ruin/is_loading()
+	return loading
+
+/obj/structure/overmap/space_ruin/is_loaded()
+	// All three, not just the flag: ship_act()'s dock path needs the slot and a berth to
+	// exist, and request_site_load()'s fast path re-invokes ship_act off this answer -
+	// answering "loaded" while the slot is gone would bounce the two procs off each other
+	// in an unbroken INVOKE_ASYNC loop.
+	return loaded && mapzone && reserve_dock
+
+/// A wedged load or teardown leaves these flags latched (the watchdog force-released
+/// the queue, but nothing else ever resets them), and ships may be registered for a
+/// completion signal the dead job will now never send - so send the failure here, or
+/// the site reads "survey underway" and holds its waiters for the rest of the round.
+/obj/structure/overmap/space_ruin/on_worldgen_timeout()
+	loading = FALSE
+	concerned = FALSE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 
 /obj/structure/overmap/space_ruin/attack_ghost(mob/user)
 	if(reserve_dock)
 		user.forceMove(get_turf(reserve_dock))
 		return TRUE
-	else if(reservation)
-		var/turf/bottom_left = reservation.bottom_left_turfs[1]
-		if(!bottom_left)
+	else if(footprint)
+		// The footprint's centre, not the level's: locate(world.maxx/2, world.maxy/2, z)
+		// lands in the cordon gutter on a packed level.
+		var/turf/center = footprint.get_center_turf()
+		if(!center)
 			return
-		// Go to center of reservation
-		var/turf/center = locate(
-			bottom_left.x + round(reservation.width / 2),
-			bottom_left.y + round(reservation.height / 2),
-			bottom_left.z
-		)
 		user.forceMove(center)
 		return TRUE
 	return
@@ -314,32 +371,42 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	return "[name] (boarding)"
 
 /obj/structure/overmap/space_ruin/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
-	// dock() refuses interdicted ships only after the dock slot below is claimed
-	// and the ship is locked into ACTING - refuse up front instead
+	// dock() refuses interdicted ships only after the dock slot below is claimed -
+	// refuse up front instead
 	if(acting.is_interdicted)
-		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		if(user)
+			to_chat(user, span_warning("Cannot dock while interdicted!"))
+		else
+			acting.ship_notify("Cannot dock while interdicted!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 	if(concerned)
-		to_chat(user, span_notice("Too much traffic, try again later!"))
+		if(user)
+			to_chat(user, span_notice("Too much traffic, try again later!"))
+		else
+			acting.ship_notify("Approach on [name] aborted: too much traffic, try again later!", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
+
+	// Interior not generated yet (or torn back down): request it in the background and
+	// return the helm immediately. The ship stays fully controllable; request_site_load()
+	// broadcasts the survey's progress and resumes this approach itself when the ruin
+	// charts. Gated on the same is_loaded() the resume path re-checks, so the two can
+	// never disagree about whether this ruin is dockable.
+	if(!is_loaded())
+		acting.request_site_load(src, user)
+		return
+
 	concerned = TRUE
-
-	var/prev_state = acting.state
-	acting.state = OVERMAP_SHIP_ACTING
-	balloon_alert(user, "starting docking process..")
-
-	// Load the level first
-	load_level()
-
-	if(!reservation || !reserve_dock)
-		acting.state = prev_state
-		concerned = FALSE
-		to_chat(user, span_warning("Failed to load the location."))
-		return
+	if(user)
+		balloon_alert(user, "starting docking process..")
 
 	var/is_survey = FALSE
 	var/obj/docking_port/stationary/dock_to_use = null
 	var/selected_dock_index = 0
+
+	// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put the free
+	// ones back before choosing one, or the last visitor's offset is carried into this placement
+	// and compounds on every arrival.
+	reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 
 	// Port destinations are set by survey console
 	if(acting.shuttle.port_destinations)
@@ -354,9 +421,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 			selected_dock_index = 2
 
 	if(!dock_to_use)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_notice("All potential docking locations occupied."))
+		if(user)
+			to_chat(user, span_notice("All potential docking locations occupied."))
+		else
+			acting.ship_notify("All potential docking locations at [name] are occupied.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Adjust dock and check if shuttle can fit BEFORE committing to docking
@@ -365,9 +434,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	// Check if shuttle can actually fit in the dock
 	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
-		acting.state = prev_state
 		concerned = FALSE
-		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		if(user)
+			to_chat(user, span_warning("Ship is too large to dock at this location."))
+		else
+			acting.ship_notify("Ship is too large to dock at [name].", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	// Now that we know docking will work, set the flags
@@ -382,7 +453,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	// to the whole crew by ship_notify()
 	var/dock_result = acting.dock(src, dock_to_use)
 	if(dock_result)
-		to_chat(user, span_notice("[dock_result]"))
+		if(user)
+			to_chat(user, span_notice("[dock_result]"))
+		else
+			acting.ship_notify("[dock_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 	concerned = FALSE
 
@@ -396,57 +470,55 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	adjust_reserve_dock_to_shuttle(dock_to_adjust, shuttle)
 
 /**
- * Whether the ruin's reservation is genuinely abandoned, ignoring the in-progress flag
- * the caller manages itself. Asked once before joining the worldgen queue and again on
- * the way out of it, because the wait is long enough for the answer to change.
+ * Whether the ruin's slot is genuinely abandoned, ignoring the in-progress flag the
+ * caller manages itself. Asked once before joining the worldgen queue and again on the
+ * way out of it, because the wait is long enough for the answer to change.
  */
 /obj/structure/overmap/space_ruin/proc/can_release_interior()
-	if(!reservation)
+	if(!mapzone || !footprint)
+		return FALSE
+
+	// Never while the interior is still being generated. worldgen_claim() is reentrant
+	// by requester, so a teardown fired mid-load would be granted the queue instantly
+	// (load and teardown both claim as src) and reset the ground out from under the
+	// template still stamping into it.
+	if(loading)
+		return FALSE
+
+	// A claimed berth means a ship is somewhere between "approach started" and "undock
+	// complete" - possibly in hyperspace transit, which the contents and hull-overlap
+	// checks below are both blind to.
+	if(first_dock_taken || second_dock_taken)
 		return FALSE
 
 	// Check if any ships are still docked here (docked ships move INTO the ruin, so check contents)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
 		return FALSE
 
-	// Check for players within the reservation bounds (not the whole z-level since reservations share z-levels)
-	if(has_players_in_reservation())
+	// Players inside OUR rectangle - a packed level carries up to three neighbours, and a
+	// level-wide check would keep this site pinned for as long as any of them has a crew
+	// standing on it.
+	if(has_players_in_site())
 		return FALSE
 
-	// No ship hull may overlap the reservation. The overmap token leaves a full second
-	// before the interior physically moves (complete_undock_warmup schedules both), and
-	// the undock recycling fires 0.5s after the token leaves - so both checks above are
-	// blind to an interior still mid-departure, and a teardown landing in that window
-	// resets turfs out from under the transplant, or deletes whatever a bad move
-	// stranded (round 803: Delta's four thrusters died to exactly this).
-	var/turf/reservation_bottom_left = reservation.bottom_left_turfs[1]
-	var/turf/reservation_top_right = reservation.top_right_turfs[1]
-	if(reservation_bottom_left && reservation_top_right)
-		var/res_z = reservation_bottom_left.z
-		for(var/obj/docking_port/mobile/port as anything in SSshuttle.mobile_docking_ports)
-			if(port.z == res_z)
-				var/list/port_rect = port.return_coords()
-				if(max(port_rect[1], port_rect[3]) >= reservation_bottom_left.x \
-					&& min(port_rect[1], port_rect[3]) <= reservation_top_right.x \
-					&& max(port_rect[2], port_rect[4]) >= reservation_bottom_left.y \
-					&& min(port_rect[2], port_rect[4]) <= reservation_top_right.y)
-					log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name] still overlaps the reservation (parked or mid-departure)")
-					return FALSE
-			// Stranded hull: a registered ship area still holding turfs inside our block
-			for(var/area/ship_area as anything in port.shuttle_areas)
-				for(var/turf/held_turf as anything in ship_area.get_turfs_by_zlevel(res_z))
-					if(held_turf.x >= reservation_bottom_left.x && held_turf.x <= reservation_top_right.x \
-						&& held_turf.y >= reservation_bottom_left.y && held_turf.y <= reservation_top_right.y)
-						log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name]'s [ship_area.type] still holds [held_turf] at [AREACOORD(held_turf)]")
-						return FALSE
-			// Stranded engines: connected thrusters standing in our block (their tile may
-			// sit in an orphaned area the sweep above can't see)
-			for(var/obj/machinery/power/shuttle_engine/engine as anything in port.engine_list)
-				var/turf/engine_turf = get_turf(engine)
-				if(engine_turf?.z == res_z \
-					&& engine_turf.x >= reservation_bottom_left.x && engine_turf.x <= reservation_top_right.x \
-					&& engine_turf.y >= reservation_bottom_left.y && engine_turf.y <= reservation_top_right.y)
-					log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name]'s [engine] is standing at [AREACOORD(engine_turf)]")
-					return FALSE
+	// Anyone with a mind standing on our ground, client or not: the same gate the flat
+	// encounters use, scoped to the slot rather than the z (map_zones.dm get_mind_mobs_in).
+	// Catches a crewman who disconnected inside the ruin, whom the client sweep above
+	// cannot see and whose body the teardown would delete.
+	if(length(mapzone.get_mind_mobs_in(footprint)))
+		return FALSE
+
+	// No ship hull may overlap the slot. The overmap token leaves a full second before the
+	// interior physically moves (complete_undock_warmup schedules both), and the undock
+	// recycling fires 0.5s after the token leaves - so both checks above are blind to an
+	// interior still mid-departure, and a teardown landing in that window resets turfs out
+	// from under the transplant, or deletes whatever a bad move stranded (round 803:
+	// Delta's four thrusters died to exactly this). Shared with the asteroid field, which
+	// used to have no such guard at all - see footprint_blocking_hull_reason().
+	var/blocking_reason = footprint_blocking_hull_reason(footprint)
+	if(blocking_reason)
+		log_mapping("SSovermap: Space ruin '[name]' teardown refused - [blocking_reason]")
+		return FALSE
 
 	return TRUE
 
@@ -455,7 +527,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
  *
  * Every teardown path funnels through here - undock recycling, mission cleanup, event
  * retirement, and the subtypes that keep their own variants. They differ only in what
- * happens *after* the reservation is gone (relocate, hold position, respawn a
+ * happens *after* the interior is gone (relocate, hold position, respawn a
  * replacement, delete the signal), so the guarding, queueing and re-checking are done
  * once, here, rather than in four copies that each have to remember all three.
  *
@@ -470,7 +542,26 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	if(!can_release_interior())
 		return FALSE
 
+	// The teardown qdels every atom standing on our slot - far too heavy to
+	// run alongside a planet build or another survey, so it takes the worldgen queue
+	// like every other job. A timeout is a soft failure: callers retry later.
+	//
+	// `concerned` is only raised once the claim is granted: the wait can run for
+	// minutes, and holding the flag through it would refuse every arriving ship for
+	// a teardown that may yet stand down. An arrival mid-wait claims a berth, which
+	// the re-check below reads as "occupied" and aborts on.
+	if(!SSovermap.worldgen_claim(src, "ruin teardown ([name])"))
+		return FALSE
+
 	concerned = TRUE
+
+	// Asked twice, once before joining the queue and again now that we hold it: the
+	// wait can run for minutes, and someone sneaking back aboard mid-wait must stop
+	// the teardown - we are about to delete every atom on our slot.
+	if(!can_release_interior())
+		SSovermap.worldgen_release(src)
+		concerned = FALSE
+		return FALSE
 
 	// Announce the teardown before anything is actually torn down, and with the
 	// loaded flag already down so a listener that re-arms itself waits for the
@@ -479,8 +570,9 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_RUIN_UNLOADING)
 
 	remove_docks()
-	remove_reservation()
+	remove_mapzone()
 
+	SSovermap.worldgen_release(src)
 	concerned = FALSE
 	return TRUE
 
@@ -494,18 +586,47 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	forceMove(SSovermap.get_unused_overmap_square())
 
 /**
- * Sweeps the reservation for uninitialized turfs (leftover /turf/open/space/basic)
- * and initializes them so players can interact with the buffer space around the ruin.
+ * Sweeps our slot for uninitialized turfs (leftover /turf/open/space/basic) and
+ * initializes them so players can interact with the space around the ruin.
+ *
+ * spawn_dynamic_encounter() already does this on the way in, AFTER the template is
+ * stamped; this stays as the hook for anything that lays more ground down later.
  */
-/obj/structure/overmap/space_ruin/proc/initialize_reservation_space_turfs()
-	if(!reservation)
+/obj/structure/overmap/space_ruin/proc/initialize_site_space_turfs()
+	if(!footprint)
 		return
-	initialize_uninitialized_block_turfs(reservation.bottom_left_turfs[1], reservation.top_right_turfs[1])
+	footprint.level?.initialize_space_turfs(footprint)
 
-/obj/structure/overmap/space_ruin/proc/remove_reservation()
-	if(reservation)
-		qdel(reservation)
-		reservation = null
+/**
+ * Hands the ruin's ground and its slot back.
+ *
+ * Deliberately here rather than in release_interior(), so the harness's forced path and
+ * every subtype that frees its interior by hand get the full sequence.
+ */
+/obj/structure/overmap/space_ruin/proc/remove_mapzone()
+	if(mapzone)
+		var/datum/map_zone/departing_zone = mapzone
+		var/datum/map_footprint/departing_footprint = footprint
+		// Ports FIRST, while the footprint still knows where it is. Neither teardown sweep
+		// will touch an /obj/docking_port - clear_reservation() goes through
+		// /turf/proc/empty(), which excludes them, and a non-forced qdel on a port answers
+		// QDEL_HINT_LETMELIVE - so the ports this ruin's TEMPLATE brought with it (the
+		// Cyborg Mothership's, the pirate cutter's) outlive the slot unless taken by name,
+		// and then permanently pin the coordinates against every later tenant's teardown.
+		// See reap_footprint_docking_ports().
+		reap_footprint_docking_ports(departing_footprint)
+		// clear_reservation() rather than clear_to_uninitialized_space(): a ruin interior
+		// is dense content (walls, machinery, cables, atmos), and this is the ChangeTurf
+		// path that runs each turf's own Destroy - the same wipe the reservation Release()
+		// used to give it, and what planets (the other content-heavy tenant) use. Per-slot:
+		// only our rectangle is reset unless we are the last tenant, in which case the
+		// whole level including the cordon goes back so the zone recycles clean.
+		//
+		// throttled = TRUE: release_interior() holds the worldgen queue over this call.
+		departing_zone.clear_reservation(TRUE, departing_footprint)
+		departing_zone.release_slot(departing_footprint)
+		mapzone = null
+		footprint = null
 	ruin_bottom_left = null
 
 /**
@@ -533,6 +654,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		// a mission objective on it and the ship flies away with it when it undocks.
 		if(istype(get_area(interior_turf), /area/shuttle))
 			continue
+		// And never outside our own slot. The template rect is inside it by construction,
+		// but a hand-set ruin_bottom_left or a template that grew past its preloaded size
+		// would otherwise put a mission objective on the neighbour's ground.
+		if(footprint && !footprint.contains_turf(interior_turf))
+			continue
 		candidates += interior_turf
 	if(!length(candidates))
 		return null
@@ -547,12 +673,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		reserve_dock_secondary = null
 
 /**
- * Checks if any players with clients are within the reservation bounds.
+ * Checks if any players with clients are standing inside this ruin's own slot.
  * Thin wrapper around the shared helper (see map_zones.dm) - kept as an instance
- * proc since several ruin subtypes (contested_cache, vestige) call it by name.
+ * proc so subtypes can override or call it by name.
  */
-/obj/structure/overmap/space_ruin/proc/has_players_in_reservation()
-	return turf_reservation_has_players(reservation)
+/obj/structure/overmap/space_ruin/proc/has_players_in_site()
+	return turf_footprint_has_players(footprint)
 
 /**
  * Called when a ship undocks - checks if the ruin should be cleaned up and respawned
@@ -567,17 +693,17 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	// Store the ruin template before we clean up
 	var/datum/map_template/ruin/space/old_template = ruin_template
 
-	// Guards, queues and frees the reservation, or refuses because somebody is still
+	// Guards, queues and frees the slot, or refuses because somebody is still
 	// aboard. Nothing below may run unless it actually went through. A refusal is
 	// usually the departing ship's interior still mid-move (the hull-overlap guard in
 	// can_release_interior()), so try again once the departure has finished rather
-	// than holding the reservation until the next visitor undocks.
+	// than holding the slot until the next visitor undocks.
 	if(!release_interior())
 		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
 	// A live contract is pointed here. The interior is gone either way - it was
-	// empty, and holding a reservation open for a crew that may never come back
+	// empty, and holding a slot open for a crew that may never come back
 	// is what the recycle exists to stop - but the signal itself stays put, on
 	// the same tile the contract charted. Deleting it would move the job to a
 	// different ruin the moment its crew undocked, which from the helm reads as
@@ -610,8 +736,20 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	if(!available_ruins || !length(available_ruins))
 		return
 
+	// Every template a signal on the chart is already using. Roundstart seeding tracks
+	// this (used_ruins, setup_space_ruins) but the respawn path never did, so the same
+	// template accumulated copies over a round - which under packing is the collision
+	// case that matters: two co-tenants of one z-level rolling one template share an
+	// /area/ruin instance unless the loader is told to instance it per load.
+	var/list/live_templates = list()
+	for(var/obj/structure/overmap/space_ruin/live as anything in GLOB.space_ruin_signals)
+		if(QDELETED(live) || !live.ruin_template)
+			continue
+		live_templates[live.ruin_template] = TRUE
+
 	// Build pickable list excluding the old template if it doesn't allow duplicates
 	var/list/ruin_pool = list()
+	var/list/duplicate_pool = list()
 	for(var/ruin_id in available_ruins)
 		var/datum/map_template/ruin/space/ruin = available_ruins[ruin_id]
 		if(!istype(ruin) || ruin.unpickable)
@@ -619,7 +757,18 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		// Skip the excluded template to add variety (unless it allows duplicates)
 		if(ruin == excluded_template && !ruin.allow_duplicates)
 			continue
+		if(live_templates[ruin])
+			// A hard rule when the template forbids duplicates, a preference otherwise:
+			// held back so the sector keeps its variety and only used if the pool would
+			// otherwise be empty. (The pre-existing excluded_template test above cannot
+			// do this on its own - allow_duplicates defaults to TRUE, so it never fires.)
+			if(ruin.allow_duplicates)
+				duplicate_pool += ruin
+			continue
 		ruin_pool += ruin
+
+	if(!length(ruin_pool))
+		ruin_pool = duplicate_pool
 
 	if(preserved_category)
 		var/list/category_pool = list()

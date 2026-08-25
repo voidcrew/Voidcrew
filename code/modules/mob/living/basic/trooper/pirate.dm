@@ -25,13 +25,13 @@
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
 	attack_vis_effect = ATTACK_EFFECT_SLASH
+	// VOIDCREW EDIT: upstream re-declared loot below this to a guaranteed
+	// /obj/item/melee/energy/sword/pirate, which shadowed the corpse drop and made
+	// every swashbuckler in every ruin a free esword. Only the corpse drops now.
 	loot = list(/obj/effect/mob_spawn/corpse/human/pirate/melee)
 	light_range = 2
 	light_power = 2.5
 	light_color = COLOR_SOFT_RED
-	loot = list(
-		/obj/item/melee/energy/sword/pirate,
-	)
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/melee
 	r_hand = /obj/item/melee/energy/sword/pirate

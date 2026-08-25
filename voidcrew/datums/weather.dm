@@ -34,7 +34,7 @@
  * unavailable and the crew simply absorbed it.
  *
  * A planet is where that design works. The storm gets a 40-second telegraph before it does
- * anything, and there are three separate ways to not be caught by it — go underground, go
+ * anything, and there are three separate ways to not be caught by it, go underground, go
  * back to the ship, or wear rad-protective clothing. It also arrives on the planet's own
  * weather schedule rather than the event roster, so it is a thing about the place the crew
  * flew to, not a thing that follows them around.
@@ -55,13 +55,13 @@
 	 * Surface only, unlike the station version.
 	 *
 	 * Dropping WEATHER_INDOORS makes setup_weather_areas() skip every area with
-	 * outdoors = FALSE, which on a planet is the whole cave system — so rock overhead
+	 * outdoors = FALSE, which on a planet is the whole cave system, so rock overhead
 	 * shelters a crew. Their own hull already does: ship areas are /area/shuttle/voidcrew/...,
 	 * which `area_type` never matches to begin with.
 	 */
 	weather_flags = WEATHER_MOBS
 
-	/// TG's list is fourteen station area types — maintenance, the AI satellite, the brig.
+	/// TG's list is fourteen station area types, maintenance, the AI satellite, the brig.
 	/// None of them exist out here, and each one costs a get_areas() sweep at setup.
 	protected_areas = list()
 
@@ -76,8 +76,8 @@
 /**
  * Everything below is /datum/weather/end() verbatim, deliberately.
  *
- * /datum/weather/rad_storm/end() announces to GLOB.player_list — every player in the
- * round, including crews several sectors away who cannot see this planet — and DM has no
+ * /datum/weather/rad_storm/end() announces to GLOB.player_list, every player in the
+ * round, including crews several sectors away who cannot see this planet, and DM has no
  * way to call a grandparent implementation. The base proc is stable bookkeeping (stage,
  * processing list, area refresh, two signals) and the player-facing end_message is sent
  * from wind_down() instead, so nothing is lost by not reaching the parent.
@@ -93,3 +93,10 @@
 	update_areas()
 	for(var/area/impacted_area as anything in impacted_areas)
 		SEND_SIGNAL(impacted_area, COMSIG_WEATHER_ENDED_IN_AREA(type), src)
+	// Mirrors the release-and-delete tail of /datum/weather/end(). Without it a planetary
+	// radiation front is the one storm type that survives its own ending, holding its site
+	// and every area instance it impacted until the round ends.
+	if(weather_site?.active_weather == src)
+		weather_site.active_weather = null
+	weather_site = null
+	QDEL_IN(src, 0)

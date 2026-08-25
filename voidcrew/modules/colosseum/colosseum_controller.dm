@@ -9,11 +9,11 @@
  * * IDLE -> SIGNUP: a player at the signup console (or an admin verb).
  * * SIGNUP -> SEATING: the signup window timer (roster lock). Fizzles back to
  *   IDLE if fewer than two contestants registered.
- * * SEATING -> LIVE: the seating timer — absentees are dropped, non-contestants
+ * * SEATING -> LIVE: the seating timer: absentees are dropped, non-contestants
  *   ejected from staging, the rear seals close, contestants are seated, and
  *   after a short countdown the mode's gates pop. Fizzles to IDLE if the
  *   survivors no longer satisfy the mode's minimum.
- * * LIVE -> RESOLVED: win detection — death/deletion signals on contestants,
+ * * LIVE -> RESOLVED: win detection: death/deletion signals on contestants,
  *   disconnect grace timers, area-sensitivity forfeits, mode victory checks,
  *   or the match time limit.
  * * RESOLVED -> RESET -> IDLE: automatic timers. The spoils claim window runs
@@ -23,7 +23,7 @@
  * clock (king of the hill) opt into SSprocessing for the LIVE phase only.
  */
 
-/// One registered contestant. Keyed by mind — bodies can change, minds don't.
+/// One registered contestant. Keyed by mind. Bodies can change, minds don't.
 /datum/colosseum_contestant
 	/// The registered mind
 	var/datum/mind/mind
@@ -34,7 +34,7 @@
 	/// Ship affiliation recorded at signup ("Unaffiliated" if none)
 	var/ship_name = "Unaffiliated"
 	/// The crew team recorded at signup (null when unaffiliated). Team modes
-	/// group by this ref — names can collide, team datums can't.
+	/// group by this ref. Names can collide, team datums can't.
 	var/datum/team/voidcrew/crew_team
 	/// Team id (COLOSSEUM_TEAM_*), assigned at roster lock
 	var/team = COLOSSEUM_TEAM_SOLO
@@ -151,7 +151,7 @@
 /datum/colosseum_controller/proc/claim_window_active()
 	return claim_until && world.time < claim_until && length(winner_minds)
 
-/// Number of distinct crew groups on the roster — each crewed ship is one
+/// Number of distinct crew groups on the roster. Each crewed ship is one
 /// group, each unaffiliated contestant their own. Team modes need at least
 /// two, or one side of the arena would stand empty.
 /datum/colosseum_controller/proc/count_ship_groups()
@@ -265,7 +265,7 @@
 		track_contestant(entry)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(close_seating)), COLOSSEUM_SEATING_DURATION, TIMER_STOPPABLE)
 	site.broadcast_galaxy("Roster LOCKED: [length(roster)] contestants. Game: [mode.name]. Arena condition: [modifier.name]. Stakes: [mode.stakes_text(length(roster))]. Contestants, stay at the venue - your berthed ship counts. The wardens will seat you when the seals close in [DisplayTimeText(COLOSSEUM_SEATING_DURATION)]. Bets close when the gates open.")
-	site.venue_message(span_notice("<b>[mode.name]</b> — [mode.desc]<br><b>[modifier.name]</b> — [modifier.desc]"))
+	site.venue_message(span_notice("<b>[mode.name]</b>: [mode.desc]<br><b>[modifier.name]</b>: [modifier.desc]"))
 	log_game("COLOSSEUM: roster locked with [length(roster)] contestants, mode [mode.name], modifier [modifier.name].")
 
 /// Weighted-random match modifier eligible for the roster size. Never null.
@@ -300,7 +300,7 @@
 		eligible[mode_type] = initial(candidate.weight)
 	var/chosen_type = pick_weight(eligible)
 	if(!chosen_type)
-		// Every mode's max_players is exceeded — a full house. Waive the caps
+		// Every mode's max_players is exceeded, a full house. Waive the caps
 		// rather than fizzle the best-attended match of the round; seating
 		// round-robins overflow into the ready rooms, so big fields still work.
 		for(var/fallback_type in subtypesof(/datum/colosseum_game))
@@ -324,7 +324,7 @@
 		modifier.on_match_end() // admin cancel mid-LIVE: beasts/walls must not linger
 	QDEL_NULL(modifier)
 	settle_book(list()) // all bets refund at face value
-	// A cancel mid-fight leaves contestants sealed behind closed gates — collect
+	// A cancel mid-fight leaves contestants sealed behind closed gates, collect
 	// their bodies now, walk them out once the tracking signals are gone.
 	var/list/mob/living/stranded = list()
 	for(var/datum/colosseum_contestant/entry as anything in roster)
@@ -350,7 +350,7 @@
 /**
  * SEATING -> LIVE. Drops absentees, ejects gatecrashers, seals staging, seats
  * everyone in their mode-assigned positions and starts the gate countdown.
- * Contestants don't walk to staging themselves — being anywhere inside the
+ * Contestants don't walk to staging themselves. Being anywhere inside the
  * venue is enough, and seat_contestants() teleports them to their assigned
  * cell or ready room (one contestant per solo cell).
  */
@@ -390,7 +390,7 @@
 		fizzle("Too many no-shows. The [mode.name] match is called off.")
 		return
 
-	// A team match with an empty side would resolve at the bell — no free purses.
+	// A team match with an empty side would resolve at the bell, no free purses.
 	if(mode.team_based)
 		var/red_present = FALSE
 		var/blue_present = FALSE
@@ -426,9 +426,9 @@
 	if(book)
 		book.close_book()
 		if(book.total_pool)
-			site.venue_message(span_boldannounce("The book is CLOSED — [book.total_pool] credits ride on this match!"))
-	site.broadcast_galaxy("The gates are OPEN — [mode.name] has begun at the Grand Colosseum! [length(live_entries())] contestants. Time limit: [DisplayTimeText(time_limit)].")
-	log_game("COLOSSEUM: match live — [mode.name], [length(live_entries())] contestants.")
+			site.venue_message(span_boldannounce("The book is CLOSED, [book.total_pool] credits ride on this match!"))
+	site.broadcast_galaxy("The gates are OPEN, [mode.name] has begun at the Grand Colosseum! [length(live_entries())] contestants. Time limit: [DisplayTimeText(time_limit)].")
+	log_game("COLOSSEUM: match live, [mode.name], [length(live_entries())] contestants.")
 	// A death during the countdown can already have decided things
 	check_victory()
 
@@ -502,7 +502,7 @@
 
 /**
  * Disconnect grace expiry. The mind may have moved into a fresh connected body
- * (body swap fires logout on the old shell) — re-sync instead of forfeiting
+ * (body swap fires logout on the old shell), re-sync instead of forfeiting
  * when the player is demonstrably still in the fight.
  */
 /datum/colosseum_controller/proc/check_disconnect(datum/colosseum_contestant/entry)
@@ -547,7 +547,7 @@
 
 /**
  * Knocks a contestant out of the running and lets the mode react. The corpse
- * (if any) stays where it fell — the end-of-match sweep collects it.
+ * (if any) stays where it fell, the end-of-match sweep collects it.
  */
 /datum/colosseum_controller/proc/eliminate(datum/colosseum_contestant/entry, reason)
 	if(entry.eliminated)
@@ -573,7 +573,7 @@
 	if(islist(winners))
 		resolve(winners)
 
-/// Match clock expiry: the mode names winners (possibly none — a draw).
+/// Match clock expiry: the mode names winners (possibly none, a draw).
 /datum/colosseum_controller/proc/on_time_limit()
 	match_timer = null
 	if(state != COLOSSEUM_STATE_LIVE || !mode)
@@ -616,7 +616,7 @@
 		site.broadcast_galaxy("The match is DECIDED! Winner[length(winner_names) > 1 ? "s" : ""] of the [mode.name]: [english_list(winner_names)]. Their prizes are in the spoils vault. The claim window closes in [DisplayTimeText(COLOSSEUM_CLAIM_WINDOW)].")
 	else
 		site.broadcast_galaxy("The [mode.name] ends in a draw. The spoils vault is open to anyone who walks in.")
-	log_game("COLOSSEUM: match resolved — winners: [length(winner_names) ? english_list(winner_names) : "none"].")
+	log_game("COLOSSEUM: match resolved, winners: [length(winner_names) ? english_list(winner_names) : "none"].")
 
 	// Open everything: winners and stragglers walk off the floor while the
 	// wardens sweep. Gates return to idle posture at RESET.
@@ -705,7 +705,7 @@
  * The prize pool is one pot per MATCH, split between however many minds won
  * it: a team victory deals the same parts/credits/vouchers out in equal
  * shares, one champion's extraction case per winner (parts ride in the cases
- * so they extract alongside a standard case — see extraction.dm). A draw
+ * so they extract alongside a standard case, see extraction.dm). A draw
  * banks a single unclaimed case for whoever dares the public vault.
  */
 /datum/colosseum_controller/proc/award_prizes(contestant_count)
@@ -788,7 +788,7 @@
 			if(istype(fixture, /obj/machinery) || istype(fixture, /obj/effect) || istype(fixture, /obj/docking_port))
 				continue
 			arena_baseline_objects += list(list(fixture.type, arena_turf, fixture.dir))
-	log_game("COLOSSEUM: arena snapshot — [length(arena_baseline_turfs)] turfs, [length(arena_baseline_objects)] baseline objects.")
+	log_game("COLOSSEUM: arena snapshot, [length(arena_baseline_turfs)] turfs, [length(arena_baseline_objects)] baseline objects.")
 
 /**
  * Restores the arena footprint from the snapshot: relocates any straggler

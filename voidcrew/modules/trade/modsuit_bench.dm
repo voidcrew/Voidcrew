@@ -64,7 +64,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
  *
  * Which bench upgrades a given suit has already bought. Lives on the suit as a
  * component rather than as vars on /obj/item/mod/control, so the record travels
- * with the suit between benches, outposts and owners, and dies with it — a
+ * with the suit between benches, outposts and owners, and dies with it, a
  * list on the machine would forget everything the moment you shopped somewhere
  * else, and an element is a shared singleton with nowhere to put per-suit state.
  */
@@ -79,7 +79,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 /**
  * # MOD upgrade
  *
- * One purchasable, permanent modification. Singletons — all per-suit state
+ * One purchasable, permanent modification. Singletons: all per-suit state
  * lives in the /datum/component/mod_upgrades record on the suit itself.
  */
 /datum/mod_upgrade
@@ -273,7 +273,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
  * The ladder's capstone clears whatever slowdown is left rather than another
  * fixed slice, so a heavy chassis gets a real payoff at the end of the climb
  * instead of needing rungs that don't exist. Light suits usually hit zero on
- * the cheap rungs first and are refused this one — the denial from the servo
+ * the cheap rungs first and are refused this one, the denial from the servo
  * parent handles that.
  */
 /datum/mod_upgrade/servo/nullweight
@@ -343,7 +343,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
  * Suit shells shred zone by zone under fire (see clothing.dm take_damage_zone),
  * and a shredded part stops armoring the limb entirely. The normal fix is
  * patching each piece by hand with cloth; the bench does the whole shell in
- * one paid job. Repeatable — it repairs state, it doesn't add anything.
+ * one paid job. Repeatable. It repairs state, it doesn't add anything.
  */
 /datum/mod_upgrade/recondition
 	id = "recondition"
@@ -493,7 +493,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 /obj/machinery/modsuit_bench/examine(mob/user)
 	. = ..()
 	. += span_notice("Step in wearing a MOD control unit, then click the frame to shut it.")
-	. += span_notice("Module swaps, paint and engraving are free. Plating, module capacity, actuator work, cell swaps and shell repairs are paid — credits off your ID, vouchers off your person.")
+	. += span_notice("Module swaps, paint and engraving are free. Plating, module capacity, actuator work, cell swaps and shell repairs are paid: credits off your ID, vouchers off your person.")
 	. += span_notice("The frame charges the suit's cell the whole time it's shut.")
 
 // --- Occupancy ----------------------------------------------------------
@@ -511,8 +511,8 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 
 /obj/machinery/modsuit_bench/Exited(atom/movable/gone, direction)
 	. = ..()
-	// Anything that yanks the occupant out without going through us — a
-	// teleport, a gib, an admin — would otherwise leave a dangling ref.
+	// Anything that yanks the occupant out without going through us, a
+	// teleport, a gib, an admin. Would otherwise leave a dangling ref.
 	if(gone == occupant)
 		set_occupant(null)
 		update_appearance()
@@ -536,7 +536,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 
 /**
  * While the frame is shut it trickle-charges the suit's core off the outpost
- * grid, at the cell's own charge rate — the same pit-stop treatment a wall
+ * grid, at the cell's own charge rate. The same pit-stop treatment a wall
  * charger gives a handheld.
  */
 /obj/machinery/modsuit_bench/process(seconds_per_tick)
@@ -574,7 +574,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	return TRUE
 
 /**
- * The MOD control unit a given mob is wearing, or null. Never cached — the
+ * The MOD control unit a given mob is wearing, or null. Never cached, the
  * suit can be stripped, dropped or destroyed at any point in a session.
  */
 /obj/machinery/modsuit_bench/proc/get_worn_control(mob/living/carbon/human/target)
@@ -594,7 +594,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 /**
  * Why install() would refuse this module on this suit, or null if it wouldn't.
  * Mirrors install()'s checks in its order (mod_control.dm), because install()
- * itself only reports failure as a balloon on the suit — from inside the frame
+ * itself only reports failure as a balloon on the suit, from inside the frame
  * the occupant would just hear a buzz with no reason attached.
  */
 /obj/machinery/modsuit_bench/proc/get_module_denial(obj/item/mod/control/mod, obj/item/mod/module/module)
@@ -737,7 +737,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 		))
 	data["installed_modules"] = installed_modules
 
-	// "Loose" means anything the occupant brought in with them — hands, belt,
+	// "Loose" means anything the occupant brought in with them, hands, belt,
 	// bag. There is no separate hopper on the bench to lose modules inside.
 	var/list/loose_modules = list()
 	for(var/obj/item/mod/module/module in human_occupant.get_all_contents())
@@ -782,7 +782,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	return data
 
 /**
- * Base64 preview of one of the theme's skins, cached globally — the icon()
+ * Base64 preview of one of the theme's skins, cached globally, the icon()
  * call is far too expensive to redo every UI tick.
  */
 /obj/machinery/modsuit_bench/proc/get_skin_icon(obj/item/mod/control/mod, skin_name)
@@ -802,7 +802,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	. = ..()
 	if(.)
 		return
-	// Taken off the ui, never off a tracked var — ui.close() nulls those.
+	// Taken off the ui, never off a tracked var. Ui.close() nulls those.
 	var/mob/acting = ui.user
 	if(acting != occupant)
 		return TRUE
@@ -887,7 +887,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 
 		if("custom_paint")
 			// The picker blocks until the client answers, so everything checked
-			// above has to be re-checked below — they can step out, strip the
+			// above has to be re-checked below. They can step out, strip the
 			// suit or seal it while the dialog sits open.
 			var/hex = input(user, "Pick a paint colour", name, mod.color || COLOR_WHITE) as color|null
 			if(!hex || QDELETED(src) || QDELETED(mod) || user != occupant || mod != get_suit())

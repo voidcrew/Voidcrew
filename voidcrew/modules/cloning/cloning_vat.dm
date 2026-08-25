@@ -31,6 +31,9 @@
 #define CLONING_VAT_GROWTH_TIME (12 MINUTES)
 /// While unpowered/broken/unanchored, progress decays at this multiple of the growth rate.
 #define CLONING_VAT_DECAY_MULT 0.5
+/// A grown clone stays viable until decay drops it below this fraction of growth_time. Gives
+/// brownouts a grace band, so a flickering powernet can't spam the "clone is ready" chime.
+#define CLONING_VAT_READY_BAND 0.95
 /// Fraction of growth above which deconstruction/destruction leaves a mess.
 #define CLONING_VAT_MESS_THRESHOLD 0.25
 
@@ -63,6 +66,9 @@
 	var/body_ready = FALSE
 	/// Whether we have successfully delivered a "your clone is ready" prompt for the holder's current death.
 	var/death_notified = FALSE
+	/// Whether we have already announced this clone finishing growth. Cleared once the clone
+	/// decays out of the ready band, so only a real outage earns a second announcement.
+	var/completion_announced = FALSE
 
 /obj/machinery/cloning_vat/Initialize(mapload)
 	. = ..()
@@ -166,6 +172,7 @@
 	growth_progress = 0
 	body_ready = FALSE
 	death_notified = FALSE
+	completion_announced = FALSE
 	if(use_power != IDLE_POWER_USE)
 		update_use_power(IDLE_POWER_USE)
 	update_appearance(UPDATE_ICON_STATE)
@@ -182,16 +189,22 @@
 		if(growth_progress <= 0)
 			return
 		growth_progress = max(0, growth_progress - seconds_per_tick * 10 * CLONING_VAT_DECAY_MULT)
-		if(body_ready && growth_progress < growth_time)
-			body_ready = FALSE
-			visible_message(span_warning("The clone in [src] twitches as the nutrient feed cuts out."))
-			update_appearance(UPDATE_ICON_STATE)
+		// A grown clone rides out short outages. Only once decay eats into the ready band is it
+		// actually spoiled, so a browning-out powernet doesn't cycle ready/not-ready every tick.
+		if(growth_progress < growth_time * CLONING_VAT_READY_BAND)
+			completion_announced = FALSE
+			if(body_ready)
+				body_ready = FALSE
+				visible_message(span_warning("The clone in [src] twitches as the nutrient feed cuts out."))
+				update_appearance(UPDATE_ICON_STATE)
 		if(growth_progress <= 0)
 			visible_message(span_warning("The half-formed clone in [src] dissolves into the fluid."))
 			update_appearance(UPDATE_ICON_STATE)
 		return
 
 	if(body_ready)
+		// Top back up whatever a brief outage nibbled off; the clone is viable either way.
+		growth_progress = growth_time
 		if(use_power != IDLE_POWER_USE)
 			update_use_power(IDLE_POWER_USE)
 		check_death_notify(mind)
@@ -210,9 +223,13 @@
 /// The clone has finished growing.
 /obj/machinery/cloning_vat/proc/finish_growth()
 	body_ready = TRUE
-	death_notified = FALSE
-	playsound(src, 'sound/machines/ping.ogg', vol = 40, vary = TRUE)
-	visible_message(span_notice("[src] chimes; the clone inside has finished growing."))
+	// Announce (and re-arm the death prompt) only for a clone that genuinely regrew, never for
+	// one that just topped back off after a power flicker.
+	if(!completion_announced)
+		completion_announced = TRUE
+		death_notified = FALSE
+		playsound(src, 'sound/machines/ping.ogg', vol = 40, vary = TRUE)
+		visible_message(span_notice("[src] chimes; the clone inside has finished growing."))
 	update_use_power(IDLE_POWER_USE)
 	update_appearance(UPDATE_ICON_STATE)
 
@@ -374,6 +391,7 @@
 	growth_progress = 0
 	body_ready = FALSE
 	death_notified = FALSE
+	completion_announced = FALSE
 	update_use_power(ACTIVE_POWER_USE)
 	update_appearance(UPDATE_ICON_STATE)
 
@@ -452,4 +470,5 @@
 
 #undef CLONING_VAT_GROWTH_TIME
 #undef CLONING_VAT_DECAY_MULT
+#undef CLONING_VAT_READY_BAND
 #undef CLONING_VAT_MESS_THRESHOLD

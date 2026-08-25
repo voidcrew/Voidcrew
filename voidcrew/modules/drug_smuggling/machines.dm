@@ -7,7 +7,7 @@
  *
  * The cook objective wires session_ref when the ruin interior loads
  * (objectives.dm, wire_lab()); an unwired machine shows a dormant UI. All
- * three run NO_POWER_USE because the ruin has no APC — powered() short-
+ * three run NO_POWER_USE because the ruin has no APC, powered() short-
  * circuits TRUE for unpowered machines, so machine_stat never gains NOPOWER
  * and can_interact()/TGUI work in the dead area with no extra flags.
  */
@@ -65,7 +65,7 @@
 		. += span_warning("Its console idles on a lock screen. Without an authenticated formula, it's just furniture.")
 		return
 	if(is_live_station(session))
-		. += span_boldnotice("The console is live — this is the batch's current station.")
+		. += span_boldnotice("The console is live. This is the batch's current station.")
 	else
 		. += span_notice("The console is tracking the batch, waiting for its stage to come up.")
 
@@ -132,7 +132,7 @@
 			return TRUE
 
 /**
- * Botch fallout dispatcher — the session calls this when a catalyst or
+ * Botch fallout dispatcher: the session calls this when a catalyst or
  * crystallizer attempt lands under DRUG_HAZARD_BOTCH_SCORE. `harsher` marks a
  * retry taken right after a botch: pushing a curdled batch again is asking
  * for it, so overrides may widen their nastiest band. The mixer keeps its own
@@ -142,7 +142,7 @@
 	return
 
 // =========================================================================
-// THE MIXER — hopper loading, the Simon minigame, and the botch hazard
+// THE MIXER: hopper loading, the Simon minigame, and the botch hazard
 // =========================================================================
 
 /obj/machinery/drug_lab/mixer
@@ -165,7 +165,7 @@
 
 /**
  * A botched mixer attempt has consequences: always sparks, and one d100 roll
- * against the hazard defines — low band ignites the housing, middle band vents
+ * against the hazard defines, low band ignites the housing, middle band vents
  * a caustic acid cloud over the machine (and whoever is working it). The batch
  * itself is never harmed; the score already was the punishment.
  */
@@ -176,7 +176,7 @@
 	do_sparks(3, FALSE, src)
 	var/roll = rand(1, 100)
 	if(roll <= DRUG_HAZARD_FIRE_CHANCE)
-		visible_message(span_danger("[src] backfires — burning residue spatters across its housing!"))
+		visible_message(span_danger("[src] backfires, burning residue spatters across its housing!"))
 		new /obj/effect/hotspot(here)
 		return
 	if(roll <= DRUG_HAZARD_FIRE_CHANCE + DRUG_HAZARD_FUME_CHANCE)
@@ -186,7 +186,7 @@
 	visible_message(span_warning("[src] shrieks and rattles as the batch curdles inside it."))
 
 // =========================================================================
-// THE CATALYST COLUMN — the rhythm game and its electrical botch hazard
+// THE CATALYST COLUMN: the rhythm game and its electrical botch hazard
 // =========================================================================
 
 /obj/machinery/drug_lab/catalyst
@@ -199,7 +199,7 @@
 
 /**
  * A botched catalysis run is an ELECTRICAL problem: always sparks, one
- * exclusive d100 against the shared hazard bands — low band dumps the
+ * exclusive d100 against the shared hazard bands, low band dumps the
  * capacitor bank through whoever is on the controls (gloves and clothing
  * conduct normally; the numbers are a nasty jolt, nowhere near lethal from
  * health), middle band arcs a spark shower over every adjacent mob. The
@@ -227,7 +227,7 @@
 	visible_message(span_warning("[src] hums up an octave, then settles. The batch inside smells scorched."))
 
 // =========================================================================
-// THE CRYSTALLIZER — the catch game and its thermal botch hazard
+// THE CRYSTALLIZER: the catch game and its thermal botch hazard
 // =========================================================================
 
 /obj/machinery/drug_lab/crystallizer
@@ -240,7 +240,7 @@
 
 /**
  * A botched crystallization is a THERMAL problem: always sparks, one
- * exclusive d100 — low band over-pressurizes the dome into a small blast
+ * exclusive d100, low band over-pressurizes the dome into a small blast
  * (light impact only, never devastating), middle band ignites the housing.
  * Retrying straight off a botch (`harsher`) doubles the blast band: pushing
  * a hot, curdled batch is exactly how kitchens end up as craters.

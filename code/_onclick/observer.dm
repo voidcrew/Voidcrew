@@ -34,7 +34,14 @@
 			MiddleClickOn(A, params)
 		return
 	if(LAZYACCESS(modifiers, ALT_CLICK))
-		base_click_alt(A)
+		// VOIDCREW EDIT: split alt / alt-right the way /mob/ClickOn() does, so the observer's
+		// own AltClickOn() (loot panel) and AltClickSecondaryOn() (admin tagging) actually run.
+		// base_click_alt() is a dead end for ghosts: can_perform_action() is always false for them,
+		// so alt clicking as a ghost did nothing at all.
+		if(LAZYACCESS(modifiers, RIGHT_CLICK))
+			AltClickSecondaryOn(A)
+		else
+			AltClickOn(A)
 		return
 	if(LAZYACCESS(modifiers, CTRL_CLICK))
 		CtrlClickOn(A)

@@ -5,8 +5,8 @@
  * growing), and the type cap.
  *
  * `mission_limit` used to be enforced only where offers are *generated*. Boards
- * can hold more copies of a capped contract than the cap allows — the
- * generation roll only counts live missions — so N ships could each accept the
+ * can hold more copies of a capped contract than the cap allows, the
+ * generation roll only counts live missions, so N ships could each accept the
  * same "limit 1" job and all run it at once. The cap has to hold at accept
  * time too, which is what mission_type_within_limit(type, excluding) exists
  * for; `excluding` is how an offer being accepted avoids counting against its
@@ -18,7 +18,7 @@
  *
  * weight 0 keeps it out of SSmissions' generation pool (Initialize only
  * collects types with weight > 0), and the generation override keeps it from
- * reaching for an overmap that a CIBUILDING world — which boots MetaStation —
+ * reaching for an overmap that a CIBUILDING world, which boots MetaStation,
  * does not have.
  */
 /datum/mission/unit_test_capped
@@ -43,7 +43,7 @@
 
 	SSmissions.all_active_missions += first
 	TEST_ASSERT(!mission_type_within_limit(/datum/mission/unit_test_capped, second), "a limit-1 contract was still 'within limit' with one already running, so a second ship can accept the same capped job. Boards hold more copies than the cap allows, so the cap has to hold at accept time (see /obj/structure/overmap/ship/proc/accept_mission).")
-	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "the running mission counted against its own cap — accept_mission passes the mission being accepted as `excluding` for exactly this reason")
+	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "the running mission counted against its own cap, accept_mission passes the mission being accepted as `excluding` for exactly this reason")
 
 	SSmissions.all_active_missions -= first
 	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, second), "the cap did not free up after the running mission ended")
@@ -65,7 +65,7 @@
 			continue // the fixture above
 		checked++
 		if(!length(initial(mission_type.name)))
-			TEST_FAIL("[mission_type] has no name — the board lists a blank contract")
+			TEST_FAIL("[mission_type] has no name, the board lists a blank contract")
 		if(!length(initial(mission_type.desc)))
 			TEST_FAIL("[mission_type] has no desc")
 		var/value_min = initial(mission_type.value_min)
@@ -75,7 +75,7 @@
 		if(value_min < 0)
 			TEST_FAIL("[mission_type] has a negative pay floor ([value_min])")
 		if(initial(mission_type.duration) <= 0)
-			TEST_FAIL("[mission_type] has duration [initial(mission_type.duration)] — the timeout fires the moment it is accepted")
+			TEST_FAIL("[mission_type] has duration [initial(mission_type.duration)]. The timeout fires the moment it is accepted")
 		if(initial(mission_type.weight) < 0)
 			TEST_FAIL("[mission_type] has a negative weight")
 		if(initial(mission_type.mission_limit) < 0)
@@ -99,7 +99,7 @@
 		if(required && !ispath(required, /obj/item))
 			TEST_FAIL("[objective_type].required_type [required] is not an item path, so can_turn_in() can never match anything")
 		if(initial(objective_type.required_amount) < 1)
-			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something — it can never be satisfied by handing anything over")
+			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something. It can never be satisfied by handing anything over")
 
 /**
  * # Ruin contracts never point at an occupied site
@@ -112,7 +112,7 @@
  * the interior out from under the contract. From the helm, taking a job and
  * leaving made the job disappear.
  *
- * `loaded` is the tell — a ruin is only ever loaded because somebody is there or
+ * `loaded` is the tell. A ruin is only ever loaded because somebody is there or
  * has just left. All three tiers of the pick are exercised here, because the two
  * preferences are not interchangeable and the first attempt at this fix folded
  * them into one set: with the boards holding enough offers to keep most of the
@@ -125,7 +125,7 @@
 /datum/unit_test/voidcrew_mission_ruin_target_picker/Run()
 	var/list/obj/structure/overmap/space_ruin/live_ruins = list()
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
-		if(QDELETED(ruin) || ruin.mission_locked)
+		if(QDELETED(ruin) || ruin.mission_locked || ruin.mission_exclusive)
 			continue
 		if(!istype(get_turf(ruin), /turf/open/overmap))
 			continue
@@ -175,9 +175,92 @@
 	// than fail generation and drop the contract off the board entirely.
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = TRUE
-	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back — recovery contracts stop generating entirely")
+	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back. Recovery contracts stop generating entirely")
 
 	qdel(target)
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		ruin.loaded = saved_loaded[ruin]
+		ruin.mission_claims = saved_claims[ruin]
+
+/**
+ * A contract that marks itself exclusive_site must get a wreck to itself.
+ *
+ * Double-booking a ruin is cosmetic for salvage and fatal for a rescue. A bounty
+ * contract spawns its named target plus a paid entourage at a random interior
+ * turf; a rescue spawns a 60 HP survivor who never fights back at another random
+ * interior turf in the same small template. Playtesting turned that up the
+ * obvious way - the crew flew out to a rescue, found the survivor dead, and left
+ * with the identification tag of somebody else's bounty target instead.
+ *
+ * So: an exclusive pick only ever comes out of the cold-and-unclaimed tier, it
+ * flags the site so nothing else can aim there, it refuses to generate rather
+ * than share, and it gives the flag back when the contract lets go.
+ */
+/datum/unit_test/voidcrew_mission_exclusive_site
+
+/datum/unit_test/voidcrew_mission_exclusive_site/Run()
+	var/list/obj/structure/overmap/space_ruin/live_ruins = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
+		if(QDELETED(ruin) || ruin.mission_locked || ruin.mission_exclusive)
+			continue
+		if(!istype(get_turf(ruin), /turf/open/overmap))
+			continue
+		live_ruins += ruin
+	if(length(live_ruins) < 3)
+		return // no overmap worth testing against in this world
+
+	var/list/saved_loaded = list()
+	var/list/saved_claims = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		saved_loaded[ruin] = ruin.loaded
+		saved_claims[ruin] = ruin.mission_claims
+		ruin.loaded = FALSE
+		ruin.mission_claims = 0
+
+	var/datum/mission/exclusive_mission = new()
+	exclusive_mission.exclusive_site = TRUE
+	var/datum/mission/sharing_mission = new()
+
+	var/datum/mission_target/space_ruin/exclusive_target = new(exclusive_mission)
+	var/datum/mission_target/space_ruin/sharing_target = new(sharing_mission)
+
+	if(!exclusive_target.resolve())
+		TEST_FAIL("an exclusive contract found no site with [length(live_ruins)] cold, unclaimed ruins on the overmap")
+	else
+		var/obj/structure/overmap/space_ruin/taken = exclusive_target.ruin
+		TEST_ASSERT(taken.mission_exclusive, "an exclusive contract claimed a ruin without flagging it exclusive, so the next contract can still aim into it")
+
+		// Nobody else may land on it, however many rolls they get. Released between
+		// rolls so the "never re-pick the previous site" rule doesn't starve the
+		// candidate set on a small overmap and read as a failure.
+		for(var/_ in 1 to 40)
+			sharing_target.unhook()
+			if(!sharing_target.resolve())
+				TEST_FAIL("a normal contract found no site at all while [length(live_ruins) - 1] unclaimed ruins were free")
+				break
+			if(sharing_target.ruin == taken)
+				TEST_FAIL("a normal contract targeted a ruin an exclusive contract is holding - this is the bounty-in-the-rescue's-wreck case that kills the survivor before the crew arrives")
+				break
+
+		// Nothing cold and unclaimed left: refuse rather than share
+		sharing_target.unhook() // its claim would otherwise come back off below
+		for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+			if(ruin != taken)
+				ruin.mission_claims = 1
+		var/datum/mission_target/space_ruin/starved_target = new(exclusive_mission)
+		TEST_ASSERT(!starved_target.resolve(), "an exclusive contract double-booked a site once every other ruin was claimed; it should fail generation and let the board roll something else")
+		qdel(starved_target)
+
+		// ...and the flag comes back off when the contract lets go
+		qdel(exclusive_target)
+		exclusive_target = null
+		TEST_ASSERT(!taken.mission_exclusive, "a released exclusive claim left the ruin flagged, so no contract can ever target that site again this round")
+
+	if(exclusive_target)
+		qdel(exclusive_target)
+	qdel(sharing_target)
+	qdel(exclusive_mission)
+	qdel(sharing_mission)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]

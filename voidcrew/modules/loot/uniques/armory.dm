@@ -1,17 +1,17 @@
 /**
- * # Armory uniques — sealed ordnance cache
+ * # Armory uniques: sealed ordnance cache
  *
  * Six one-off prizes for the ARMORY loot tables (voidcrew/modules/loot/zone_loot.dm,
  * see /obj/structure/closet/crate/zone_loot/armory). Each item
  * carries a bespoke mechanic rather than a stat bump, per the design catalog at
- * obsidian/voidcrew/Rare-loot-uniques.md ("ARMORY — sealed ordnance cache").
+ * obsidian/voidcrew/Rare-loot-uniques.md ("ARMORY: sealed ordnance cache").
  *
  * Tiers: green = Handloader's vise, Sergeant's whistle. Yellow = Phalanx buckler,
  * Marksman's cant. Red = The garrison standard, "Knock-Knock".
  *
  * All six carry TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so duplicators like the
  * Helios pattern stamp refuse to copy them. None of these are wired into the loot
- * tables yet — that's a follow-up edit to zone_loot.dm, out of scope here.
+ * tables yet, that's a follow-up edit to zone_loot.dm, out of scope here.
  */
 
 /// Delay between rounds revived by the handloader's vise (a magazine's worth a minute)
@@ -54,7 +54,7 @@
 #define KNOCK_KNOCK_THROW_RANGE 4
 
 // =============================================================================
-// GREEN — Handloader's vise
+// GREEN: Handloader's vise
 // Table-mount reloading press: consumes spent casings + iron sheets, reviving the
 // casings into live rounds one at a time via newshot() (see
 // /obj/item/ammo_casing/proc/newshot, code/modules/projectiles/ammunition/_ammunition.dm).
@@ -186,7 +186,7 @@
 	return null
 
 // =============================================================================
-// GREEN — Sergeant's whistle
+// GREEN: Sergeant's whistle
 // Subtypes the existing police whistle (/obj/item/clothing/mask/whistle,
 // code/modules/clothing/masks/hailer.dm) for its sprite and worn-mask action-button
 // wiring. Blast halves the remaining duration of hearers' active stun/knockdown
@@ -278,7 +278,7 @@
 	multiplicative_slowdown = -0.35
 
 // =============================================================================
-// YELLOW — Phalanx buckler
+// YELLOW: Phalanx buckler
 // Subtypes the riot shield (/obj/item/shield/riot, code/game/objects/items/shields.dm)
 // for its sprite, armor, and baseline block_chance/hit_reaction. Raising it adds a
 // heavy movespeed penalty and registers COMSIG_PROJECTILE_PREHIT on the wielder and
@@ -396,7 +396,7 @@
 	multiplicative_slowdown = 0.6
 
 // =============================================================================
-// YELLOW — Marksman's cant
+// YELLOW: Marksman's cant
 // Subtypes plain sunglasses (/obj/item/clothing/glasses/sunglasses,
 // code/modules/clothing/glasses/_glasses.dm) for its behaviour. Standing still for
 // MARKSMANS_CANT_STILLNESS "settles" the cant; the next shot fired zeroes bonus
@@ -510,7 +510,7 @@
 	settled = FALSE
 	COOLDOWN_START(src, settle_cooldown, MARKSMANS_CANT_COOLDOWN)
 	balloon_alert(user, "cant spent")
-	// Queue the next settle now — without this, a shooter who stays perfectly still
+	// Queue the next settle now, without this, a shooter who stays perfectly still
 	// after firing would never settle again until they moved. reset_stillness_timer()
 	// won't let it land before the 30 second cooldown is up.
 	reset_stillness_timer()
@@ -525,7 +525,7 @@
 	hit_mob.Knockdown(MARKSMANS_CANT_STAGGER)
 
 // =============================================================================
-// RED — The garrison standard
+// RED: The garrison standard
 // Fresh item, sprite copied verbatim from the Nanotrasen banner
 // (/obj/item/station_charter/banner, code/game/objects/items/charter.dm) rather than
 // subtyped, since the banner's station-renaming mechanic has nothing to do with this
@@ -700,7 +700,7 @@
 		new /obj/effect/temp_visual/heal(owner_turf, GARRISON_STANDARD_AURA_COLOR)
 
 // =============================================================================
-// RED — "Knock-Knock"
+// RED: "Knock-Knock"
 // Fresh gloves, sprite copied verbatim from boxing gloves
 // (/obj/item/clothing/gloves/boxing and /boxing/evil, code/modules/clothing/gloves/boxing.dm)
 // rather than subtyped, to avoid dragging in boxing's martial-art-giver component,
@@ -782,7 +782,7 @@
 /// Signal handler for COMSIG_LIVING_UNARMED_ATTACK: breaches walls, doors and door frames, or hits and throws back mobs.
 /obj/item/clothing/gloves/knock_knock/proc/on_unarmed_attack(mob/living/puncher, atom/target, proximity_flag, list/modifiers)
 	SIGNAL_HANDLER
-	// Combat mode only — this signal fires on every empty-hand click, and the
+	// Combat mode only: this signal fires on every empty-hand click, and the
 	// gauntlet must not breach the airlock you're just trying to open (or
 	// launch someone you're helping up)
 	if(!proximity_flag || !puncher.combat_mode)

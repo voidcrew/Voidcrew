@@ -15,6 +15,14 @@
 	},
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/goon/medbay/a)
+"aT" = (
+/obj/item/toy/plush/beeplushie{
+	desc = "A cute toy resembling THE motherfucking captain.";
+	layer = 3.1;
+	name = "The Captain of This God Damn Ship"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
 "bj" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -102,7 +110,9 @@
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
 "lX" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
@@ -153,8 +163,12 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/a)
 "qO" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -275,6 +289,10 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/a)
+"BO" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
 "Ca" = (
 /obj/structure/table/reinforced,
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -500,7 +518,6 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
 "Yp" = (
-/obj/structure/closet/supplypod/drop_pod,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
 "Yx" = (
@@ -549,8 +566,8 @@ kc
 (3,1,1) = {"
 zq
 fz
-zs
-zs
+BO
+BO
 zs
 si
 zA
@@ -734,7 +751,7 @@ IZ
 gb
 gb
 OT
-OT
+aT
 nX
 gb
 cI

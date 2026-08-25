@@ -12,17 +12,20 @@
 #define OVERMAP_SOUTH_SIDE_COORD (OVERMAP_NORTH_SIDE_COORD - (OVERMAP_SIZE - 1))
 
 /**
- * How far a ship can SEE, in overmap tiles — the free, unresearchable ring the
+ * How far a ship can SEE, in overmap tiles, the free, unresearchable ring the
  * old camera console rendered with view(SHIP_VIEW_RANGE). Everything physically
  * inside it draws on the helm chart with no research and no scanning.
  *
  * Deliberately distinct from the ship's SENSOR range (ship_sensors.dm), which
  * starts equal to this and grows with the radar research tree. Sensors do not
- * widen what the crew can see — they reach past sight, so a scan can chart
+ * widen what the crew can see. They reach past sight, so a scan can chart
  * things into the waypoint list that were never visible. Keep the two apart:
  * collapsing them makes the whole radar tree a spectator upgrade.
  */
 #define SHIP_VIEW_RANGE 4
+
+/// Longest join password a captain may set on a player-created hull
+#define SHIP_JOIN_PASSWORD_MAX_LEN 24
 
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
@@ -30,6 +33,47 @@
 #define OVERMAP_SHIP_ACTING "acting"
 #define OVERMAP_SHIP_DOCKING "docking"
 #define OVERMAP_SHIP_UNDOCKING "undocking"
+
+/**
+ * Derelict lifecycle (see SSovermap.sweep_derelicts()).
+ *
+ * Crew death was never the only way a ship empties: crews log off, cryo out, or walk
+ * away, and none of those paths ever flagged the hull. Occupancy is the one honest
+ * signal, so the sweep runs on it - but occupancy means the crew is still THERE, not
+ * that they are standing inside the hull. A landing party exploring the planet their
+ * ship is parked on is a crew, and losing the ship they walked out of is not a
+ * lifecycle rule, it is a bug. has_active_crew() is the predicate: anyone aboard, or
+ * any of this hull's own roster alive, connected and on the hull's z-level.
+ *
+ * What is left after that is the case the clocks are actually for - everybody dead,
+ * logged off, cryoed out or genuinely gone elsewhere. That hull IS the abandoned ship.
+ * Getting it back afterwards is one claim at the helm.
+ */
+/// No living, connected crew aboard or on the hull's z-level for this long -> the hull
+/// is abandoned (claimable derelict). Hulls that never had a crew at all skip the
+/// derelict window and despawn outright.
+#define SHIP_CREWLESS_ABANDON_TIME (20 MINUTES)
+/// An abandoned hull older than this despawns for good, releasing its berth, its map
+/// zone pin and its transit reservation. Claiming stops the clock; merely being aboard
+/// only postpones the teardown. Forty minutes, end to end, from the last crewman
+/// leaving to the hull ceasing to exist.
+#define SHIP_DERELICT_DESPAWN_TIME (20 MINUTES)
+/// Cadence of the occupancy sweep. A minute of slack on twenty-minute clocks is nothing.
+#define DERELICT_SWEEP_INTERVAL (1 MINUTES)
+/**
+ * A hull docked at a dynamic encounter - a planet, a space ruin, an asteroid field, the
+ * crash site its own hull failure minted - with nothing alive at the site for this long
+ * is force-undocked back into open space.
+ *
+ * A docked hull holds one of the site's berth flags and parks its overmap token in the
+ * site's contents, and can_release_interior() refuses on either. Nothing else undocks a
+ * hull whose crew is dead, so the site's map zone (or turf reservation, and often a whole
+ * z-level under it) stayed pinned until the hull itself despawned - the crewless clock
+ * plus the claim window, forty minutes later. Five minutes instead. The derelict
+ * clocks above are untouched and keep running; they just run in open space, where they
+ * cost a hull rather than a hull and an encounter.
+ */
+#define SHIP_SITE_DEAD_UNDOCK_TIME (5 MINUTES)
 
 /// Fraction of max_speed at or below which the helm's Dock button finishes the stop itself; any faster and the approach is refused.
 #define DOCK_ASSIST_SPEED_FRACTION 0.5
@@ -110,10 +154,15 @@
 /// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
 #define ASTEROID_ORE_AMOUNT_MIN 2
 #define ASTEROID_ORE_AMOUNT_MAX 5
-/// Open span between the two maximum-size ship berths in a landable meteor storm reservation
+/// DEPRECATED, kept for reference only. A landable meteor storm used to size its own turf
+/// reservation as this plus a maximum-size berth on all four sides (166x134), which no
+/// reservation z-level could ever share - so every field minted a permanent 255x255 level.
+/// Fields are now lattice tenants and take the whole of their slot's build region
+/// (MAP_SLOT_RUIN_REGION_* in planet_defines.dm), four to a z-level.
 #define EVENT_FIELD_WIDTH 48
 #define EVENT_FIELD_HEIGHT 48
-/// Extra vacuum kept around each maximum-size ship berth, beyond the normal reservation padding
+/// Extra vacuum kept around each maximum-size ship berth, beyond the normal berth padding.
+/// The slot build region applies this through PLANET_DOCK_RUIN_CLEARANCE, which matches it.
 #define EVENT_FIELD_DOCK_CLEARANCE 3
 /// Moderate-field rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field
 /// in AsteroidCaves.dm). Minor/majour subtypes override these along with the radius bounds.
@@ -152,3 +201,16 @@
 /// right now, otherwise give up". For UI paths that must answer immediately rather
 /// than hold a player's interface open while somebody else's planet finishes.
 #define WORLDGEN_QUEUE_NO_WAIT 0
+
+// Lighting settle wait (see /datum/controller/subsystem/overmap/proc/wait_for_lighting_settle)
+/// How often the settle wait samples the lighting backlog.
+#define LIGHTING_SETTLE_POLL (1 SECONDS)
+/// Consecutive zero-backlog samples that count as "settled". Two, not one, because a
+/// source feeds a corner feeds an object across separate fires - a single empty sample
+/// can land in the gap between those stages.
+#define LIGHTING_SETTLE_EMPTY_SAMPLES 2
+/// Samples the backlog may fail to reach a new low before the wait gives up on it and
+/// returns anyway. A backlog that stops SHRINKING is not a build still rendering, it is
+/// ordinary live churn - a portal's light, a mob walking with a lantern, a storm - and
+/// no amount of waiting will ever see the bottom of it.
+#define LIGHTING_SETTLE_PLATEAU_SAMPLES 5

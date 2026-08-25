@@ -172,6 +172,15 @@
 	)
 	use_shared_exports = FALSE
 
+// VOIDCREW EDIT: plasma trades on the materials market here (see basemats.dm).
+// This prices plasma stock blocks and market sales; note the static
+// /datum/export/material/plasma above is declared earlier, so raw sheet stacks
+// still price through it - only /obj/item/stock_block sales need this datum.
+/datum/export/material/market/plasma
+	message = "cm3 of plasma"
+	material_id = /datum/material/plasma
+// VOIDCREW EDIT END
+
 /datum/export/material/market/iron
 	message = "cm3 of iron"
 	material_id = /datum/material/iron

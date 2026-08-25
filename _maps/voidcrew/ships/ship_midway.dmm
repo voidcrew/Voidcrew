@@ -369,6 +369,7 @@
 	pixel_y = 6
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/dorms)
 "ly" = (
@@ -641,11 +642,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/hallway)
-"ud" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/midway/hallway)
 "uX" = (
 /obj/structure/mop_bucket/janitorialcart,
 /turf/open/floor/plating,
@@ -749,6 +745,7 @@
 /obj/structure/chair{
 	dir = 4
 	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/dorms)
 "yq" = (
@@ -1416,7 +1413,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/dorms)
 "Ta" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1596,11 +1593,6 @@
 "Yj" = (
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/dorms)
-"Yl" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/tile/blue/anticorner,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/midway/bridge)
 "YG" = (
 /obj/structure/bed,
 /obj/item/bedsheet/brown,

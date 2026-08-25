@@ -1,5 +1,5 @@
 /datum/biome/lavaland
-	open_turf_types = list(/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/planetary_basalt/lava_land_surface = 1)
 	// flora_spawn_chance = 10
 	// flora_spawn_list = list(
 	// 	/obj/structure/flora/ausbushes/sparsegrass/hell = 100,
@@ -21,7 +21,7 @@
 		/obj/structure/spawner/planetary/goliath = 1,
 	)
 	// Meaner tier for dangerous-zone planets: nests instead of lone mobs
-	// (megafauna rolls are exempt from the upgrade — see dangerous_mob_spawn_list)
+	// (megafauna rolls are exempt from the upgrade (see dangerous_mob_spawn_list))
 	dangerous_mob_spawn_list = list(
 		/obj/structure/spawner/planetary = 1,
 		/obj/structure/spawner/planetary/legion = 1,

@@ -11,6 +11,13 @@
 /// Minimum gap between keystroke sounds. The comms field asks for one per keypress.
 #define TYPING_SOUND_COOLDOWN (0.4 SECONDS)
 
+/// How drunk a pilot has to be before the helm starts punishing manual course changes.
+#define HELM_DRUNK_THRESHOLD 10
+/// Added chance, in percent, that a heading input goes astray per point of drunkenness past the threshold.
+#define HELM_DRUNK_CHANCE_PER_POINT 0.8
+/// Ceiling on the chance that a heading input goes astray, no matter how far gone the pilot is.
+#define HELM_DRUNK_MAX_CHANCE 50
+
 /datum/armor/computer_helm
 	melee = 50
 	bullet = 30
@@ -222,9 +229,9 @@
 	return TRUE
 
 /**
- * Faceplate art for the helm interface. Composited by tools/helm_plate/make_plate.py
- * from a generated metal texture; re-run that script if the panel GEOMETRY in
- * HelmComputer.tsx changes, or the bezels will no longer line up with the wells.
+ * Faceplate art for the helm interface. Its bezels are drawn at the exact panel
+ * GEOMETRY coordinates in HelmComputer.tsx, so the art has to be redrawn if that
+ * layout moves, or the bezels will no longer line up with the wells.
  */
 /datum/asset/simple/helm_faceplate
 	assets = list(
@@ -296,7 +303,7 @@
 	// Unified navigation readout: live distance/bearing from current position,
 	// grouped by category on the helm. Trader outposts are permanent fixtures,
 	// always listed (no per-ship state, no clear button). Most other entries are
-	// charted waypoints — missions, bounties, active-scan contacts. Ship
+	// charted waypoints, missions, bounties, active-scan contacts. Ship
 	// contacts are appended live (not charted) when the top radar tier is
 	// researched: they vanish the moment either ship leaves the bubble.
 	data["sensorRange"] = current_ship.get_sensor_range()
@@ -366,7 +373,7 @@
 
 	// What the Dock button offers from this tile. It used to only ever dock into
 	// empty space and refused outright when anything shared the tile, then only
-	// ever offered the first real candidate found — this lists every one, so a
+	// ever offered the first real candidate found, this lists every one, so a
 	// tile with more than one dockable thing on it lets the crew choose.
 	var/list/dock_candidates = get_dock_candidates()
 	var/list/dock_options = list()
@@ -378,7 +385,7 @@
 				"isEmpty" = FALSE,
 			))
 	else
-		// Nebulas aren't a docking target — concealment is the Cloak control's job —
+		// Nebulas aren't a docking target. Concealment is the Cloak control's job,
 		// but sitting in one and being told only "empty space" reads as the console
 		// having missed it, so the label says where the empty space is.
 		var/dock_name = (locate(/obj/structure/overmap/event/nebula) in T) \
@@ -532,21 +539,21 @@
 		// middle: overmap_centre (and the sun placed on it) sits at index
 		// (OVERMAP_SIZE - 1) / 2, one tile off from round((SIZE + 1) / 2), because
 		// setup_overmap() computes it that way ("not actually the centre but close
-		// enough" — see overmap.dm). calculate_zone_for_turf() measures every
+		// enough", see overmap.dm). calculate_zone_for_turf() measures every
 		// zone boundary from that same off-centre point, so the rings drawn here
 		// have to be centred on it too, or the yellow/red boundaries on the chart
 		// read as smaller than where a ship actually crosses into them.
 		"centre" = (OVERMAP_SIZE - 1) / 2,
 		"ringInner" = ZONE_INNER_RING_RATIO,
 		"ringMiddle" = ZONE_MIDDLE_RING_RATIO,
-		// The free sight radius, drawn as the solid inner ring. Fixed forever —
-		// research moves the sensor ring, never this one (see ship_sensors.dm).
+		// The free sight radius, drawn as the solid inner ring. Fixed forever.
+		// Research moves the sensor ring, never this one (see ship_sensors.dm).
 		"viewRange" = SHIP_VIEW_RANGE,
 	)
 
 	// Check if user is a crew member of this ship
 	// Everything the ship has ever seen. Static because it only changes on a new
-	// discovery, which pushes a refresh (see get_charted_contacts) — it is much
+	// discovery, which pushes a refresh (see get_charted_contacts), it is much
 	// the largest table the helm sends, and re-sending it every frame was the
 	// whole cost of charting the map as you go.
 	data["chartedContacts"] = current_ship.get_charted_contacts()
@@ -574,7 +581,7 @@
 /**
  * Every object the Dock button could act on from the ship's current tile, or an
  * empty list when there is nothing here and docking means holding station in
- * empty space. Order is whatever close_overmap_objects happens to hold — the
+ * empty space. Order is whatever close_overmap_objects happens to hold, the
  * console doesn't rank docking options, it just lists them.
  */
 /obj/machinery/computer/helm/proc/get_dock_candidates()
@@ -589,7 +596,7 @@
 /**
  * Names an autopilot destination from the ship's own contact set, so the label the
  * crew sees in chat is one the server already knows about. The client never gets to
- * supply this text — it ends up inside ship_notify() output, and a client-supplied
+ * supply this text, it ends up inside ship_notify() output, and a client-supplied
  * string there is an injection waiting to happen.
  */
 /obj/machinery/computer/helm/proc/describe_autopilot_destination(rel_x, rel_y)
@@ -632,17 +639,37 @@
 		say("Bluespace Jump Calibration is currently recharging. ETA: [jump_wait].")
 		return
 	if(jump_state != JUMP_STATE_OFF && !inline)
-		return // This exists to prefent Href exploits to call process_jump more than once by a client
+		// Guards against href exploits calling this more than once per client. It used
+		// to return in total silence, which meant any jump that failed mid-sequence
+		// bricked the console for the rest of the round with no way to tell.
+		say("Bluespace Jump sequence already underway.")
+		return
 	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
 	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
 	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = TRUE
 	return TRUE
 
+/**
+ * Aborts a jump, whether it is still calibrating or already running the launch
+ * sequence, and puts the console back to a state that can jump again.
+ *
+ * jump_state has to be reset here: leaving it non-OFF makes calibrate_jump()
+ * refuse every future attempt. deltimer() has to cover the sequence timers too -
+ * jump_timer only ever held the initial calibration timer, so a cancel after
+ * calibration finished left the chain running and unstoppable.
+ */
 /obj/machinery/computer/helm/proc/cancel_jump()
 	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+	reset_jump()
+
+/// Clears all jump state and any pending sequence timer.
+/obj/machinery/computer/helm/proc/reset_jump()
 	calibrating = FALSE
-	deltimer(jump_timer)
+	jump_state = JUMP_STATE_OFF
+	if(jump_timer)
+		deltimer(jump_timer)
+		jump_timer = null
 
 /obj/machinery/computer/helm/proc/jump_sequence()
 	switch(jump_state)
@@ -658,16 +685,27 @@
 		if(JUMP_STATE_FIRING)
 			jump_state = JUMP_STATE_FINALIZED
 			current_ship?.ship_notify("Bluespace Pylon launched.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'sound/effects/magic/lightning_chargeup.ogg', 50)
-			addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS)
+			jump_timer = addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS, TIMER_STOPPABLE)
 			return
-	addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY)
+	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY, TIMER_STOPPABLE)
 
 /obj/machinery/computer/helm/proc/do_jump()
+	jump_timer = null
 	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	if(!current_ship)
+		reset_jump()
+		return
 	// Extract ship parts from all players on the ship before jumping
-	if(current_ship)
-		extract_ship_parts_from_ship(current_ship, "bluespace_jump")
-	current_ship.destroy_ship(TRUE)
+	extract_ship_parts_from_ship(current_ship, "bluespace_jump")
+	// ignore_crew: the jump is supposed to take the crew with it, and the console
+	// asked for confirmation before any of this started.
+	if(current_ship.destroy_ship(TRUE, ignore_crew = TRUE))
+		return
+	// Never strand the console in a state it cannot leave - a failed jump has to be
+	// retryable, and the crew has to hear that it failed.
+	current_ship.ship_notify("Bluespace Pylon misfire. Jump aborted; recalibration required.", "BLUESPACE", SHIP_NOTIFY_DANGER, 'voidcrew/sound/notify.ogg', 50)
+	stack_trace("Bluespace jump failed to destroy ship [current_ship] - the console has been reset.")
+	reset_jump()
 
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))
@@ -728,6 +766,39 @@
 	last_integrity_percent = display_percent
 
 /**
+ * Rolls to see whether a drunk pilot fumbles a manual course change.
+ *
+ * Only ever called from a manual course input on this console, the direction pad and the
+ * keyboard flight keys. Autopilot, braking, docking and undocking never route through here,
+ * so however far gone the pilot is they can always still stop the ship.
+ * * user - The mob that asked for the course.
+ * * requested_dir - The direction they asked for.
+ * Returns the direction the ship should actually burn in.
+ */
+/obj/machinery/computer/helm/proc/drunken_heading(mob/user, requested_dir)
+	if(!requested_dir || !isliving(user))
+		return requested_dir
+	var/mob/living/pilot = user
+	var/drunkenness = pilot.get_drunk_amount()
+	if(drunkenness <= HELM_DRUNK_THRESHOLD)
+		return requested_dir
+	var/fumble_chance = min((drunkenness - HELM_DRUNK_THRESHOLD) * HELM_DRUNK_CHANCE_PER_POINT, HELM_DRUNK_MAX_CHANCE)
+	if(!prob(fumble_chance))
+		return requested_dir
+	var/list/wrong_directions = GLOB.alldirs - requested_dir
+	if(!length(wrong_directions))
+		return requested_dir
+	var/static/list/fumble_messages = list(
+		"Your vision swims and you yank the controls the wrong way",
+		"You lean on the console harder than you meant to and the ship lurches off course",
+		"You misjudge the distance to the controls and slap in the wrong heading",
+	)
+	to_chat(user, span_warning("[pick(fumble_messages)]..."))
+	balloon_alert(user, "wrong way!")
+	playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
+	return pick(wrong_directions)
+
+/**
  * This proc manually rechecks that the helm computer is connected to a proper ship
  */
 /obj/machinery/computer/helm/proc/reload_ship()
@@ -776,6 +847,13 @@
 			if(waypoint)
 				current_ship.delete_waypoint(waypoint)
 			return
+		if("autopilot_pref")
+			// Flight policy is editable whether or not a course is being flown,
+			// which is why this sits with the universal topics. The key is
+			// whitelisted server-side in set_autopilot_pref(); an unknown one
+			// is dropped there without touching anything.
+			current_ship.set_autopilot_pref(params["key"], params["value"])
+			return
 		if("reveal_rumor")
 			var/datum/rumor_chart/chart = locate(params["chart"]) in current_ship.pending_rumors
 			if(!chart)
@@ -796,6 +874,20 @@
 			return
 		if("reload_engines")
 			current_ship.refresh_engines()
+			// The refresh itself is silent, and an unregistered thruster is invisible
+			// on this console - read back what was found and why anything was refused,
+			// so a missing engine is a diagnosis instead of a fifteen-minute mystery.
+			var/list/engine_report = current_ship.engine_diagnostic_report()
+			var/registered = 0
+			for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle?.engine_list)
+				if(!QDELETED(E))
+					registered++
+			if(registered)
+				say("Engine refresh complete. [registered] thruster\s registered.")
+			else
+				say("Engine refresh complete. No thrusters registered to this hull.")
+			for(var/line in engine_report)
+				say("[line]")
 			return
 		if("typing_sound")
 			// The comms field asks for this on every keypress, so the console decides
@@ -892,10 +984,12 @@
 					return
 				if("change_heading")
 					var/new_direction = text2num(params["dir"])
-					// Touching the helm takes the ship off autopilot. Quietly — the
+					// Touching the helm takes the ship off autopilot. Quietly, the
 					// crew just did it on purpose and doesn't need to be told.
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
-					// Toggle off if clicking the course already held — back to a coast
+					// A drunk pilot has a chance to send the ship somewhere else entirely
+					new_direction = drunken_heading(usr, new_direction)
+					// Toggle off if clicking the course already held, back to a coast
 					if(new_direction == current_ship.commanded_course)
 						current_ship.command_course(BURN_NONE)
 					else
@@ -903,19 +997,22 @@
 					return
 				if("set_course")
 					// Keyboard flight: non-toggling, so a held key holds the course
-					// instead of strobing it on and off. The dir comes off the wire —
+					// instead of strobing it on and off. The dir comes off the wire,
 					// only real courses (or 0 to coast) get through.
 					var/new_direction = text2num(params["dir"])
 					if(isnull(new_direction) || !(new_direction in list(0, NORTH, SOUTH, EAST, WEST, NORTH|EAST, NORTH|WEST, SOUTH|EAST, SOUTH|WEST)))
 						return
 					current_ship.disengage_autopilot("manual heading", notify = FALSE)
+					// Same fumble roll the buttons get. A press to coast (0) is left
+					// alone; taking the engines off is not a course to get wrong.
+					new_direction = drunken_heading(usr, new_direction)
 					current_ship.command_course(new_direction)
 					return
 				if("autopilot")
 					// Travel & dock: a contact row can ask for the course to end in a
 					// docking approach. The ref comes off the wire, so it only counts
 					// when it resolves to a dockable non-ship overmap object (ships
-					// keep their consensual request/accept handshake) — anything else
+					// keep their consensual request/accept handshake), anything else
 					// degrades to a plain course to the clicked tile.
 					var/obj/structure/overmap/dock_target
 					if(params["dock"])
@@ -924,7 +1021,7 @@
 							dock_target = located
 					var/result
 					if(dock_target)
-						// Plot to the target's LIVE position — its .x/.y are already
+						// Plot to the target's LIVE position. Its .x/.y are already
 						// the absolute turf coordinates engage_autopilot() takes. The
 						// label is the console's own naming, never client text (see
 						// describe_autopilot_destination above for why).
@@ -968,7 +1065,7 @@
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
 						return
-					// Brake always brakes — burning, cruising or coasting, the first
+					// Brake always brakes: burning, cruising or coasting, the first
 					// press is BURN_STOP. Only a second press while already braking
 					// releases back to a coast.
 					if(current_ship.burn_direction == BURN_STOP)
@@ -990,7 +1087,7 @@
 					// outright whenever a ruin or planet shared the tile, so the only
 					// way to land on one was the contact list's Interact button.
 					//
-					// Auto-stop assist: a slow approach is close enough — the console
+					// Auto-stop assist: a slow approach is close enough, the console
 					// finishes the stop itself rather than bouncing the crew to the
 					// brake button. Above the assist ceiling the refusal stands, or
 					// Dock would double as a crash-stop from full cruise. Runs before
@@ -998,7 +1095,7 @@
 					// gate either path has - dock_in_empty_space() never had its own.
 					if(!current_ship.is_still())
 						if(MAGNITUDE(current_ship.speed[1], current_ship.speed[2]) > current_ship.max_speed * DOCK_ASSIST_SPEED_FRACTION)
-							say("ERROR: Too fast for a docking approach — slow below [round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION)] tiles/min.")
+							say("ERROR: Too fast for a docking approach. Slow below [round(current_ship.max_speed * 600 * DOCK_ASSIST_SPEED_FRACTION)] tiles/min.")
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 							return
 						current_ship.full_stop()
@@ -1007,7 +1104,7 @@
 					if(length(dock_candidates))
 						// The client always sends the option it clicked once there is
 						// more than one, but re-validate against close_overmap_objects
-						// rather than trusting the ref on its own — same reason
+						// rather than trusting the ref on its own, same reason
 						// "act_overmap" above does.
 						var/target_ref = params["target"]
 						if(target_ref)
@@ -1020,7 +1117,7 @@
 						else if(length(dock_candidates) == 1)
 							dock_candidate = dock_candidates[1]
 						else
-							say("ERROR: Multiple docking options here — choose one from the Dock button.")
+							say("ERROR: Multiple docking options here. Choose one from the Dock button.")
 							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 							return
 						current_ship.disengage_autopilot("docking", notify = FALSE)
@@ -1088,6 +1185,9 @@
 
 
 
+#undef HELM_DRUNK_CHANCE_PER_POINT
+#undef HELM_DRUNK_MAX_CHANCE
+#undef HELM_DRUNK_THRESHOLD
 #undef JUMP_STATE_OFF
 #undef JUMP_STATE_CHARGING
 #undef JUMP_STATE_IONIZING

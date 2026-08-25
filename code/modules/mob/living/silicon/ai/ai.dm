@@ -339,6 +339,15 @@ GAME_VERB_DESC(/mob/living/silicon/ai, pick_status_display, "Set AI Status Displ
 	if (!is_valid_z_level(ai_turf, target_turf))
 		return FALSE
 
+	// VOIDCREW EDIT ADDITION: packed-level containment. can_see() in
+	// voidcrew/edits/machinery/silicon_ship_systems.dm scopes an AI that is aboard a HULL;
+	// an AI with no hull scope (an outpost core, a ruin, an admin spawn) falls through to
+	// cameranet.checkTurfVis(), and a co-tenant ruin with its own mapped cameras is lit for
+	// every eye standing in the shared chunk. This is interaction, not just sight.
+	if(map_region_excludes_turf(map_region_for_turf(ai_turf), target_turf))
+		return FALSE
+	// VOIDCREW EDIT END
+
 	if (istype(loc, /obj/item/aicard))
 		if (!ai_turf)
 			return FALSE
@@ -597,12 +606,24 @@ GAME_VERB_PROC(/mob/living/silicon/ai, ai_network_change, "Jump To Network", "AI
 
 	var/mob/living/silicon/ai/U = usr
 
+	// VOIDCREW EDIT ADDITION: packed-level containment, resolved once outside the loop.
+	// Lattice encounter levels and planet levels both publish ZTRAIT_MINING, and in this
+	// fork is_station_level() means "any z with a hull on it", so both clauses below admit a
+	// co-tenant's cameras. The eye is already refused entry by silicon_ship_systems.dm, but
+	// this verb still published the NETWORK NAMES - i.e. exactly which ruin template is
+	// sitting in the slot next door.
+	var/datum/ai_region = map_region_for_turf(get_turf(src))
+	// VOIDCREW EDIT END
 	for (var/obj/machinery/camera/C in SScameras.cameras)
 		var/turf/camera_turf = get_turf(C) //get camera's turf in case it's built into something so we don't get z=0
 
 		var/list/tempnetwork = C.network
 		if(!camera_turf || !(is_station_level(camera_turf.z) || is_mining_level(camera_turf.z) || (CAMERANET_NETWORK_SS13 in tempnetwork)))
 			continue
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(ai_region, camera_turf))
+			continue
+		// VOIDCREW EDIT END
 		if(!C.can_use())
 			continue
 		tempnetwork.Remove(CAMERANET_NETWORK_RD, CAMERANET_NETWORK_ORDNANCE, CAMERANET_NETWORK_PRISON)

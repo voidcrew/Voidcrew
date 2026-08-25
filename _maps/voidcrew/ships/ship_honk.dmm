@@ -111,9 +111,6 @@
 /turf/open/floor/mineral/bananium,
 /area/shuttle/voidcrew/honk)
 "rq" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
-	dir = 4
-	},
 /obj/machinery/conveyor/auto{
 	dir = 10
 	},
@@ -201,9 +198,6 @@
 /turf/open/floor/mineral/bananium,
 /area/shuttle/voidcrew/honk)
 "xT" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
-	dir = 4
-	},
 /obj/machinery/conveyor/auto{
 	dir = 6
 	},
@@ -359,9 +353,6 @@
 /turf/open/floor/mineral/bananium,
 /area/shuttle/voidcrew/honk)
 "Jl" = (
-/obj/machinery/atmospherics/components/unary/vent_pump{
-	dir = 8
-	},
 /obj/machinery/conveyor/auto{
 	dir = 5
 	},
@@ -406,9 +397,6 @@
 /turf/open/floor/mineral/bananium,
 /area/shuttle/voidcrew/honk)
 "LJ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump{
-	dir = 8
-	},
 /obj/machinery/conveyor/auto{
 	dir = 9
 	},

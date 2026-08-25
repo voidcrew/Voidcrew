@@ -1,14 +1,14 @@
 // =========================================================================
-// ARMORY THEME — military/security hardware for ruins with a garrison story
+// ARMORY THEME: military/security hardware for ruins with a garrison story
 // (weapons labs, chokepoints, fortresses, crashed patrol ships, the
 // Bastion-6 chart ruin). Common is mall-cop kit, uncommon is line infantry,
 // prime is the riot line's back room. Guarded by whatever outlived the garrison:
 // asset-denial automation (robot markers) or the holdouts themselves
 // (syndicate markers).
-// Cyberware: chrome a garrison would have issued rather than bought — light
+// Cyberware: chrome a garrison would have issued rather than bought, light
 // weave and knuckle plate on the line, and in the back room the ceramic
 // plating, the targeting optics and the frame that stops a limb coming off.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune against the outfitter armor/gun prices
 // in theme_skus.
 // =========================================================================
@@ -81,7 +81,7 @@
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
-		/obj/item/gun/energy/lasercannon = 3,
+		/obj/item/gun/energy/lasercannon/unrestricted = 3,
 		// the back room's chrome, all voucher-grade at the parlor: ceramic
 		// plate, the targeting link, and the truss that keeps limbs attached
 		/obj/item/organ/cyberimp/cyberware/slabskin = 3,

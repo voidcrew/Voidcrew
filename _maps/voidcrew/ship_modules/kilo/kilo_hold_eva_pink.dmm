@@ -28,17 +28,16 @@
 	color = "#ff9ecd";
 	dir = 8
 	},
-/turf/open/floor/iron/dollhouse/checker,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dollhouse,
 /area/template_noop)
 "v" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/trimline/white/filled/line{
 	color = "#ff9ecd";
 	dir = 1
 	},
 /obj/structure/sign/warning/vacuum/directional/south,
-/turf/open/floor/iron/dollhouse,
+/turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 "D" = (
 /obj/structure/cable,
@@ -70,6 +69,7 @@
 "U" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/mining/eva,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "Y" = (

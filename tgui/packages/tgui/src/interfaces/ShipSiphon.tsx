@@ -12,6 +12,7 @@ type SiphonData = {
   target_credits: number;
   siphon_goal: number;
   goal_progress: number;
+  goal_fraction: number;
   can_activate: boolean;
   no_lock_reason: string;
   siphon_rate: number;
@@ -34,6 +35,7 @@ export const ShipSiphon = (props) => {
     target_credits,
     siphon_goal,
     goal_progress,
+    goal_fraction,
     can_activate,
     no_lock_reason,
     siphon_rate,
@@ -65,7 +67,7 @@ export const ShipSiphon = (props) => {
             </LabeledList.Item>
           </LabeledList>
 
-          {warming_up && (
+          {!!warming_up && (
             <ProgressBar
               value={warmup_progress}
               maxValue={100}
@@ -98,8 +100,10 @@ export const ShipSiphon = (props) => {
               <LabeledList.Item label="Target Credits">
                 {target_credits} cr
               </LabeledList.Item>
-              <LabeledList.Item label="25% Goal">
-                {Math.round(target_credits * 0.25)} cr
+              <LabeledList.Item
+                label={goal_fraction >= 1 ? 'Full Drain' : '25% Goal'}
+              >
+                {Math.round(target_credits * (goal_fraction || 0.25))} cr
               </LabeledList.Item>
             </LabeledList>
           ) : (

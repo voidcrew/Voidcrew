@@ -6,6 +6,38 @@
 		return null
 	return get_turf(eyeobj)
 
+/**
+ * If zone rules are what's stopping the shot, tell the gunner so instead of
+ * leaving them with a generic "not ready" (or nothing at all). Returns TRUE
+ * when the zone blocks fire and a message was sent.
+ *
+ * honor_siege_exception: missiles and pods may still fire at a raidable player
+ * outpost outside the red zone; when that exception applies the zone isn't the
+ * blocker, so stay quiet and let the normal fallback message run. Lasers have
+ * no such exception and pass FALSE.
+ */
+/obj/machinery/computer/camera_advanced/ship_combat/proc/explain_zone_weapons_lock(mob/user, honor_siege_exception = TRUE)
+	if(!user)
+		return FALSE
+	if(SSovermap_zones.weapons_allowed_at(src))
+		return FALSE
+	if(honor_siege_exception)
+		for(var/datum/weakref/ref in linked_launchers)
+			var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
+			if(launcher?.is_siege_shot_allowed(target_ship))
+				return FALSE
+		for(var/datum/weakref/ref in linked_pod_tubes)
+			var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+			if(tube?.is_siege_shot_allowed(target_ship))
+				return FALSE
+	var/zone_name = "this zone"
+	if(current_ship)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(get_turf(current_ship))
+		if(zone)
+			zone_name = zone.name
+	to_chat(user, span_warning("Weapons are safed in [zone_name]. Ship weapons can only fire in the [ZONE_NAME_RED]."))
+	return TRUE
+
 /// Fire at the current target location with all missiles from all launchers
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_all(mob/user)
 	if(!attack_mode)
@@ -60,8 +92,11 @@
 	if(fired_count > 0 && current_ship)
 		SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
 
-	if(user && fired_count > 0)
-		to_chat(user, span_danger("Fired [fired_count] missile[fired_count > 1 ? "s" : ""]!"))
+	if(user)
+		if(fired_count > 0)
+			to_chat(user, span_danger("Fired [fired_count] missile[fired_count > 1 ? "s" : ""]!"))
+		else if(!explain_zone_weapons_lock(user))
+			to_chat(user, span_warning("No missiles ready to fire!"))
 
 	return fired_count
 
@@ -97,11 +132,85 @@
 			return TRUE
 
 	if(user)
+		if(explain_zone_weapons_lock(user))
+			return FALSE
 		if(selected_missile_type)
 			to_chat(user, span_warning("No [selected_missile_type] missiles ready to fire!"))
 		else
 			to_chat(user, span_warning("No launchers ready to fire!"))
 	return FALSE
+
+/**
+ * Launch one loaded assault pod at the current target location.
+ *
+ * Unlike the fire keys this can be carrying people, so a shielded target gets a
+ * confirmation rather than a chat warning after the fact - a pod that meets a
+ * live shield kills everyone strapped into it.
+ */
+/obj/machinery/computer/camera_advanced/ship_combat/proc/launch_pod(mob/user)
+	if(!attack_mode)
+		to_chat(user, span_warning("Enter attack mode first!"))
+		return FALSE
+
+	var/turf/target_turf = get_target_turf()
+	if(!target_ship || !target_turf)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return FALSE
+
+	var/obj/machinery/ship_combat/pod_launcher/tube = get_ready_pod_tube()
+	if(!tube)
+		if(user && !explain_zone_weapons_lock(user))
+			to_chat(user, span_warning("No assault pod tubes ready to launch!"))
+		return FALSE
+
+	if(target_shields_up())
+		var/choice = tgui_alert(
+			user,
+			"[target_ship.display_name] still has shields up. The pod will detonate against them and everyone aboard it will die. Launch anyway?",
+			"Shields Detected",
+			list("Hold", "Launch"),
+		)
+		if(choice != "Launch")
+			to_chat(user, span_notice("Launch held."))
+			return FALSE
+		// The wait is long enough for the shot to have gone stale
+		if(!attack_mode || QDELETED(target_ship))
+			return FALSE
+		target_turf = get_target_turf()
+		if(!target_turf)
+			return FALSE
+		tube = get_ready_pod_tube()
+		if(!tube)
+			to_chat(user, span_warning("No assault pod tubes ready to launch!"))
+			return FALSE
+
+	if(!tube.fire(target_turf, target_ship, current_ship, user, selected_approach_direction))
+		return FALSE
+
+	// Launching breaks cloak, same as any other shot
+	if(current_ship)
+		SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
+	return TRUE
+
+/// First linked pod tube that could launch right now, dropping dead refs as we go
+/obj/machinery/computer/camera_advanced/ship_combat/proc/get_ready_pod_tube()
+	for(var/datum/weakref/ref in linked_pod_tubes.Copy())
+		var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
+		if(!tube)
+			linked_pod_tubes -= ref
+			continue
+		if(!tube.can_fire(target_ship))
+			continue
+		return tube
+	return null
+
+/// Whether the locked target is currently holding a shield up
+/obj/machinery/computer/camera_advanced/ship_combat/proc/target_shields_up()
+	var/obj/structure/overmap/ship/target_vessel = target_ship
+	if(!istype(target_vessel))
+		return FALSE
+	return target_vessel.shield_health > 0
 
 /// Fire one ready laser turret at the current target location
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_laser_one(mob/user)
@@ -118,7 +227,7 @@
 	// Lasers remain ship-to-ship only; sieging outposts is missile work
 	if(!istype(target_ship, /obj/structure/overmap/ship))
 		if(user)
-			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets — use missiles."))
+			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets. Use missiles."))
 		return FALSE
 
 	for(var/datum/weakref/ref in linked_turrets)
@@ -131,7 +240,7 @@
 		if(turret.fire(target_turf, target_ship, current_ship, user, approach_direction = selected_approach_direction))
 			return TRUE
 
-	if(user)
+	if(user && !explain_zone_weapons_lock(user, honor_siege_exception = FALSE))
 		to_chat(user, span_warning("No laser turrets ready to fire!"))
 	return FALSE
 
@@ -151,7 +260,7 @@
 	// Lasers remain ship-to-ship only; sieging outposts is missile work
 	if(!istype(target_ship, /obj/structure/overmap/ship))
 		if(user)
-			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets — use missiles."))
+			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets. Use missiles."))
 		return 0
 
 	// Collect all ready turrets and calculate combined damage
@@ -168,7 +277,7 @@
 		combined_damage += turret.get_effective_damage()
 
 	if(!length(ready_turrets))
-		if(user)
+		if(user && !explain_zone_weapons_lock(user, honor_siege_exception = FALSE))
 			to_chat(user, span_warning("No laser turrets ready to fire!"))
 		return 0
 

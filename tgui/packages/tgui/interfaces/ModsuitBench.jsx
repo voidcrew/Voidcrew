@@ -53,7 +53,7 @@ const SuitSummary = (props) => {
             held_vouchers={held_vouchers}
             account_credits={account_credits}
           />{' '}
-          <Tooltip content="Engrave a new designation — free.">
+          <Tooltip content="Engrave a new designation, free.">
             <Button icon="pen" disabled={locked} onClick={() => act('rename')}>
               Engrave
             </Button>
@@ -85,7 +85,7 @@ const SuitSummary = (props) => {
           {suit.seal_time}s per part
         </LabeledList.Item>
         <LabeledList.Item label="Core">
-          {suit.core_name ? `${suit.core_name} — ${suit.charge_text}` : 'none'}
+          {suit.core_name ? `${suit.core_name}, ${suit.charge_text}` : 'none'}
           {!!charging && (
             <Box inline color="good" ml={1}>
               ⚡ charging off the frame
@@ -148,7 +148,7 @@ const ModulesTab = (props) => {
               buttonIcon="minus"
               buttonText="Remove"
               disabled={locked || !module.removable}
-              note={!module.removable ? 'Fixed in place — part of the suit.' : null}
+              note={!module.removable ? 'Fixed in place, part of the suit.' : null}
             />
           ))}
         </Section>

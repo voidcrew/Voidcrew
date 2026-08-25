@@ -1,14 +1,14 @@
 /**
- * # The Roost — space dragon vestige
+ * # The Roost: space dragon vestige
  *
  * A bulk hauler eaten from the inside: the dragon chewed in through the bow,
  * ate cargo, crew and half the deck plating, coiled up on what was left and
- * starved anyway — hunger that size was never going to fit inside a meal. The
+ * starved anyway, hunger that size was never going to fit inside a meal. The
  * patron is the appetite it left behind, heaped over a hoard it can no longer
  * taste. The trials are a dragon's parenting, farmed out: keep a clutch alive
  * (the Broodwatch), kill with flame and nothing else (the Ember Feast), and
- * refuse a lunge at the last length (the Wingbeat). The boons — the breath,
- * the gust, the carrion feast — live in theme_dragon_boons.dm; this file only
+ * refuse a lunge at the last length (the Wingbeat). The boons, the breath,
+ * the gust, the carrion feast. Live in theme_dragon_boons.dm; this file only
  * points the patron at them.
  *
  * Every trial here is built to be PLAYED, not waited out: the egg summons
@@ -17,7 +17,7 @@
  */
 
 // Trial tuning (file-local, #undef at bottom). Trial descs quote these
-// numbers literally — keep them in sync.
+// numbers literally, keep them in sync.
 /// Tides of brood carp the Broodwatch egg must survive
 #define VESTIGE_BROOD_WAVES 3
 /// Delay from one tide's arrival to the next tide's herald
@@ -26,7 +26,7 @@
 #define VESTIGE_BROOD_WARNING_TIME (5 SECONDS)
 /// How far from the egg the brood surfaces (never closer than 3)
 #define VESTIGE_BROOD_SPAWN_RANGE 7
-/// Hard lifespan on every brood carp — abandoned assaults always clean themselves up
+/// Hard lifespan on every brood carp. Abandoned assaults always clean themselves up
 #define VESTIGE_BROOD_LIFESPAN (4 MINUTES)
 /// The planted egg's integrity: real, and worth standing in front of
 #define VESTIGE_EGG_INTEGRITY 300
@@ -38,16 +38,16 @@
 #define VESTIGE_EMBER_RANGE 3
 /// Burn damage the cone deals on contact
 #define VESTIGE_EMBER_BURN 8
-/// Fire stacks the cone sets — enough to catch, not enough to skip the hunt
+/// Fire stacks the cone sets, enough to catch, not enough to skip the hunt
 #define VESTIGE_EMBER_FIRE_STACKS 2
 /// Temperature and volume of the cone's hotspots (the welder standard)
 #define VESTIGE_EMBER_TEMP 700
 #define VESTIGE_EMBER_VOLUME 50
 /// Lunges the Wingbeat must turn aside
 #define VESTIGE_WINGBEAT_PARRIES_NEEDED 8
-/// Most parries any single beast can credit — the same meal twice is beneath the wing
+/// Most parries any single beast can credit. The same meal twice is beneath the wing
 #define VESTIGE_WINGBEAT_PARRIES_PER_MENACE 2
-/// The gust charm's cooldown — short on purpose; the trial is timing, not rationing
+/// The gust charm's cooldown: short on purpose; the trial is timing, not rationing
 #define VESTIGE_WINGBEAT_COOLDOWN (6 SECONDS)
 /// How close a beast must be for the gust to reach (and the parry to count)
 #define VESTIGE_WINGBEAT_REACH 2
@@ -58,7 +58,7 @@
  * TRUE when a mob is honest quarry for the Unfed's lessons: wild fauna
  * (basic-mob or simple-animal stock), not a person, not a pacifist, not the
  * hunter's own pack, and not something under godmode (patrons, trader mobs).
- * Both the ember-jaw and the gust charm gate their credit through this — the
+ * Both the ember-jaw and the gust charm gate their credit through this, the
  * pact pays for hunting, never for people.
  */
 /proc/vestige_is_wild_quarry(mob/living/beast, mob/living/hunter)
@@ -112,7 +112,7 @@
 	busy_line = "You're still carrying scraps from another table. Finish them, or spit them out where you found them."
 	fulfilled_line = "That meal is eaten. Even I never chewed the same bite twice."
 	renounce_line = "Then starve politely, like everything else out here."
-	claim_line = "You're owed a portion. Take it now — I don't keep anything warm."
+	claim_line = "You're owed a portion. Take it now. I don't keep anything warm."
 	exhausted_line = "There's nothing of mine left to serve. You have eaten a dragon down to nothing but the appetite."
 	remember_line = "Death swallowed you and spat you back out. It does that with the stringy ones. Your portions are still yours."
 
@@ -121,7 +121,7 @@
 /**
  * The clutch the Unfed never went home to, handed to a supplicant: plant the
  * cold egg on ground you can hold, wake it, and stand between it and three
- * tides of brood carp. The egg is a real structure with real integrity — an
+ * tides of brood carp. The egg is a real structure with real integrity, an
  * undefended egg dies in seconds, so the defense IS the trial. Losing the egg
  * resets everything but soft-locks nothing: the pact stays renounceable, and
  * renouncing and re-accepting the same sticky assignment hands out a fresh
@@ -153,9 +153,9 @@
 		if(!egg_structure.assault_underway)
 			return "The egg sits where you planted it. Wake it once you have picked your ground."
 		if(egg_structure.stage < VESTIGE_BROOD_WAVES)
-			return "Wave [egg_structure.stage] of [VESTIGE_BROOD_WAVES] — [length(egg_structure.brood)] of the brood are still circling the egg."
+			return "Wave [egg_structure.stage] of [VESTIGE_BROOD_WAVES], [length(egg_structure.brood)] of the brood are still circling the egg."
 		if(length(egg_structure.brood))
-			return "Last wave — [length(egg_structure.brood)] of the brood are still circling the egg."
+			return "Last wave, [length(egg_structure.brood)] of the brood are still circling the egg."
 		return "The brood is dealt with. Something is moving inside the egg."
 	if(egg_item && !QDELETED(egg_item))
 		return "The egg is still cold in your hands. Plant it on open ground you can hold, then wake it."
@@ -171,7 +171,7 @@
 	color = "#7c8fb5" // cold through and through
 	w_class = WEIGHT_CLASS_BULKY
 	resistance_flags = FIRE_PROOF | LAVA_PROOF // dragon stock
-	/// Mind of the supplicant keeping this watch — the egg only answers its own keeper
+	/// Mind of the supplicant keeping this watch, the egg only answers its own keeper
 	var/datum/mind/bound_mind
 
 /obj/item/vestige_dragon_egg/Destroy()
@@ -230,7 +230,7 @@
 
 /**
  * The nest: a real structure with real integrity, woken by its keeper's hand.
- * It orchestrates the tides itself — heralds, spawns, converging stragglers —
+ * It orchestrates the tides itself: heralds, spawns, converging stragglers,
  * and holds no trial reference: everything resolves through bound_mind at the
  * moment it's needed, the same rule the kit items follow. Every brood carp it
  * spawns carries its own despawn timer, so an abandoned or failed watch never
@@ -250,7 +250,7 @@
 	var/datum/mind/bound_mind
 	/// Tides unleashed so far (0 while dormant)
 	var/stage = 0
-	/// Whether the watch has been woken — set once, never unset
+	/// Whether the watch has been woken. Set once, never unset
 	var/assault_underway = FALSE
 	/// Whether the hatch has been scheduled (guards the deferred timer)
 	var/hatching = FALSE
@@ -259,8 +259,8 @@
 
 /obj/structure/vestige_dragon_egg/Destroy()
 	STOP_PROCESSING(SSobj, src)
-	// Whatever ends the egg — a broken shell, a renounced pact, a hatching —
-	// the remaining brood dissolves, staggered so it reads as an ebb, not a wipe
+	// Whatever ends the egg: a broken shell, a renounced pact, a hatching.
+	// The remaining brood dissolves, staggered so it reads as an ebb, not a wipe
 	for(var/mob/living/basic/carp/vestige_brood/hunter as anything in brood)
 		UnregisterSignal(hunter, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 		addtimer(CALLBACK(hunter, TYPE_PROC_REF(/mob/living/basic/carp/vestige_brood, dissolve)), rand(0.5 SECONDS, 3 SECONDS))
@@ -273,7 +273,7 @@
 	bound_mind = null
 	return ..()
 
-/// The bound soul's broodwatch, if it still runs — resolved fresh every time, never stored (renounce-safe)
+/// The bound soul's broodwatch, if it still runs, resolved fresh every time, never stored (renounce-safe)
 /obj/structure/vestige_dragon_egg/proc/get_bound_trial()
 	var/datum/vestige_trial/broodwatch/trial = bound_mind?.active_vestige_trial
 	if(istype(trial))
@@ -292,7 +292,7 @@
 	else if(atom_integrity < max_integrity * 0.7)
 		. += span_warning("The shell is chipped and scored.")
 
-// The same shell-noises as the ash walker eggs — a struck egg should sound like one
+// The same shell-noises as the ash walker eggs. A struck egg should sound like one
 /obj/structure/vestige_dragon_egg/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
 		if(BRUTE)
@@ -336,7 +336,7 @@
 		if("Take it up")
 			take_up(user, trial)
 
-/// Returns the egg to hand — only offered before the watch is woken
+/// Returns the egg to hand, only offered before the watch is woken
 /obj/structure/vestige_dragon_egg/proc/take_up(mob/living/user, datum/vestige_trial/broodwatch/trial)
 	var/obj/item/vestige_dragon_egg/shell = new(get_turf(src))
 	shell.bound_mind = bound_mind
@@ -361,11 +361,11 @@
 	trial?.refresh_tracker()
 	addtimer(CALLBACK(src, PROC_REF(herald_wave)), VESTIGE_BROOD_WARNING_TIME)
 
-/// Each tide announces itself before it lands — the defender's cue to set their feet
+/// Each tide announces itself before it lands, the defender's cue to set their feet
 /obj/structure/vestige_dragon_egg/proc/herald_wave()
 	if(QDELETED(src) || !assault_underway)
 		return
-	visible_message(span_boldwarning("The space around [src] begins to churn — something is coming through!"))
+	visible_message(span_boldwarning("The space around [src] begins to churn. Something is coming through!"))
 	playsound(src, 'sound/effects/magic/wand_teleport.ogg', 40, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(unleash_wave)), VESTIGE_BROOD_WARNING_TIME)
 
@@ -397,7 +397,7 @@
 	brood += hunter
 	RegisterSignal(hunter, COMSIG_LIVING_DEATH, PROC_REF(on_brood_slain))
 	RegisterSignal(hunter, COMSIG_QDELETING, PROC_REF(on_brood_gone))
-	// The lifespan rides the CARP, not the egg — orphans always clean themselves up
+	// The lifespan rides the CARP, not the egg. Orphans always clean themselves up
 	addtimer(CALLBACK(hunter, TYPE_PROC_REF(/mob/living/basic/carp/vestige_brood, dissolve)), VESTIGE_BROOD_LIFESPAN)
 	if(egg_bound)
 		hunter.ai_controller?.set_blackboard_key(BB_CURRENT_TARGET, src)
@@ -443,7 +443,7 @@
 		return
 	hatching = TRUE
 	visible_message(span_boldwarning("The tapping inside [src] becomes a knocking."))
-	// A beat of theater between the last kill and the crack — and it keeps the
+	// A beat of theater between the last kill and the crack, and it keeps the
 	// hatch out of the middle of a death signal chain
 	addtimer(CALLBACK(src, PROC_REF(hatch)), 1.5 SECONDS)
 
@@ -463,9 +463,9 @@
 		to_chat(keeper, span_boldnotice("Somewhere far off, something enormous shifts its coils, very slowly and very carefully."))
 	qdel(src) // clears the trial's structure pointer on the way out
 	if(istype(trial))
-		trial.complete() // deletes the trial — nothing touches it after this
+		trial.complete() // deletes the trial, nothing touches it after this
 
-/// The shell breaks: the watch fails, the brood ebbs, and the pact resets to nothing — renounceable, never soft-locked
+/// The shell breaks: the watch fails, the brood ebbs, and the pact resets to nothing, renounceable, never soft-locked
 /obj/structure/vestige_dragon_egg/atom_destruction(damage_flag)
 	assault_underway = FALSE // no tide lands on a broken shell, no hatch check passes
 	visible_message(span_boldwarning("[src] caves in with a wet crack, and the warmth goes out of it all at once."))
@@ -480,7 +480,7 @@
 
 /**
  * The little cousins: spectral carp sent to eat the heir. Ordinary carp
- * chassis (teeth, rifts, door-chewing) with the self-preservation burned out —
+ * chassis (teeth, rifts, door-chewing) with the self-preservation burned out,
  * they never flee, they dissolve rather than despawn-linger, and they leave no
  * corpse, no meat and no trophy: a failed watch pays nothing, and a finished
  * one pays only through the patron.
@@ -560,8 +560,8 @@
 
 /**
  * What was in the egg: a carp, gold as a coal, hatched warm into the
- * defender's care. Pet chassis — retaliates if hurt, follows commands, never
- * hunts — and tamed to the keeper by the constructor's tamer argument.
+ * defender's care. Pet chassis, retaliates if hurt, follows commands, never
+ * hunts, and tamed to the keeper by the constructor's tamer argument.
  */
 /mob/living/basic/carp/pet/vestige_hatchling
 	name = "dragonet"
@@ -590,7 +590,7 @@
 
 /**
  * The hunting trial: only deaths YOUR flame is still eating count, tracked by
- * honest attribution — the jaw marks what it ignites, an extinguished mark is
+ * honest attribution, the jaw marks what it ignites, an extinguished mark is
  * released, and only a mark that dies burning credits the feast. Somebody
  * else's fire, somebody else's kill and your own crowbar all pay nothing.
  */
@@ -598,8 +598,8 @@
 	name = "The Ember Feast"
 	// Keep the count in sync with VESTIGE_EMBER_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the jaw. It remembers a little of my fire — enough to start a meal, not enough to skip the hunt. Six wild things, dead while my flame is still on them. Burn them and finish the job yourself, before the fire goes out or something else takes the kill. Nothing killed cold with a crowbar counts."
-	/// Prey already savored (weakref -> TRUE) — a revived and re-cooked beast is still one meal
+	desc = "Take the jaw. It remembers a little of my fire, enough to start a meal, not enough to skip the hunt. Six wild things, dead while my flame is still on them. Burn them and finish the job yourself, before the fire goes out or something else takes the kill. Nothing killed cold with a crowbar counts."
+	/// Prey already savored (weakref -> TRUE). A revived and re-cooked beast is still one meal
 	var/list/devoured = list()
 
 /datum/vestige_trial/ember_feast/on_accepted(mob/living/user)
@@ -622,7 +622,7 @@
 
 /**
  * The ember-jaw: a bone fetish that exhales a three-tile cone of dragonfire
- * on a short cooldown — a weak taste of the breath boon. Inert without an
+ * on a short cooldown, a weak taste of the breath boon. Inert without an
  * active Ember Feast (same rule as the Gloaming's censer), so the pact's
  * flamethrower never outlives the pact. Attribution rides mark_prey below.
  */
@@ -647,7 +647,7 @@
 
 /obj/item/vestige_ember_jaw/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count — if the fire goes out, or something else lands the kill, it doesn't.")
+	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count. If the fire goes out, or something else lands the kill, it doesn't.")
 
 /obj/item/vestige_ember_jaw/attack_self(mob/user, modifiers)
 	. = ..()
@@ -706,7 +706,7 @@
 				cone += flank
 	return cone
 
-/// One mouthful of the fire: burn, ignite, and — for honest quarry — a mark for the feast's ledger
+/// One mouthful of the fire: burn, ignite, and (for honest quarry) a mark for the feast's ledger
 /obj/item/vestige_ember_jaw/proc/sear(mob/living/prey, mob/living/hunter)
 	prey.adjust_fire_loss(VESTIGE_EMBER_BURN)
 	prey.adjust_fire_stacks(VESTIGE_EMBER_FIRE_STACKS)
@@ -723,7 +723,7 @@
 
 /**
  * Attribution, done properly: a mark means OUR flame is on them right now.
- * Extinguished — by water, foam, a helpful friend — releases the mark, so a
+ * Extinguished (by water, foam, a helpful friend) releases the mark, so a
  * later death pays nothing. Death while marked (and still burning, belt and
  * suspenders) credits the hunter's live trial, resolved fresh at that moment.
  */
@@ -752,7 +752,7 @@
 	if(!istype(trial))
 		return
 	var/mob/living/hunter = hunter_mind.current
-	if(trial.savor(prey) && isliving(hunter)) // savor may complete (and delete) the trial — nothing touches it after this
+	if(trial.savor(prey) && isliving(hunter)) // savor may complete (and delete) the trial, nothing touches it after this
 		to_chat(hunter, span_notice("[prey] dies with your flame still on it. Somewhere, an old hunger counts the portion."))
 		playsound(hunter, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
 
@@ -769,7 +769,7 @@
 /**
  * The timing trial: stand your ground in a fauna pack and refuse the lunges.
  * The gust charm repulses everything close, but only a beast that is BOTH
- * within two tiles AND currently hunting a living person counts — a
+ * within two tiles AND currently hunting a living person counts, a
  * last-instant parry, not a crowd-clearing habit. Deduped per beast so eight
  * credits means reading eight real attacks, not juggling one carp.
  */
@@ -778,7 +778,7 @@
 	// Keep the counts in sync with VESTIGE_WINGBEAT_PARRIES_NEEDED /
 	// VESTIGE_WINGBEAT_PARRIES_PER_MENACE (initial values must be constant,
 	// so no define interpolation here)
-	desc = "Teeth are the second lesson. The wing is the first. Take the charm and go stand somewhere with teeth in it. When a wild thing throws itself at somebody, beat it back. It only counts if the beast was actually mid-hunt and close enough to reach — a gust at empty air teaches nothing. Eight lunges turned aside, and no single beast counts more than twice."
+	desc = "Teeth are the second lesson. The wing is the first. Take the charm and go stand somewhere with teeth in it. When a wild thing throws itself at somebody, beat it back. It only counts if the beast was actually mid-hunt and close enough to reach, a gust at empty air teaches nothing. Eight lunges turned aside, and no single beast counts more than twice."
 	/// Total lunges turned aside so far
 	var/parries = 0
 	/// Parries credited per beast (weakref -> count), capping repeat lessons
@@ -805,10 +805,10 @@
 	return TRUE
 
 /**
- * The gust charm: a point-blank repulse on a short cooldown — a weak taste of
+ * The gust charm: a point-blank repulse on a short cooldown, a weak taste of
  * the wing gust boon. Everything living nearby is thrown back (the module's
  * safe_throw_at pattern; walls stop bodies honestly), but only honest,
- * mid-hunt beasts are gripped hard, floored and credited — bystanders are
+ * mid-hunt beasts are gripped hard, floored and credited, bystanders are
  * tossed gently and owe the trial nothing. Inert without an active Wingbeat,
  * same rule as the ember-jaw.
  */
@@ -822,7 +822,7 @@
 
 /obj/item/vestige_gust_charm/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeeze it in your hand to beat one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. It only counts as a parry if the beast was wild, that close, and mid-lunge at a living person — and the same beast only counts [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
+	. += span_notice("Squeeze it in your hand to beat one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. It only counts as a parry if the beast was wild, that close, and mid-lunge at a living person, and the same beast only counts [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
 
 /obj/item/vestige_gust_charm/attack_self(mob/user, modifiers)
 	. = ..()
@@ -854,7 +854,7 @@
 	for(var/mob/living/blown in range(VESTIGE_WINGBEAT_REACH, keeper))
 		if(blown == keeper || blown.stat == DEAD || HAS_TRAIT(blown, TRAIT_GODMODE))
 			continue
-		// Judge the lunge BEFORE the throw — the whole point is what they were doing when the wing met them
+		// Judge the lunge BEFORE the throw. The whole point is what they were doing when the wing met them
 		var/creditable = is_lunging_menace(blown, keeper)
 		var/fling_dir = get_dir(keeper, blown) || pick(GLOB.cardinals)
 		var/thrown = blown.safe_throw_at(get_edge_target_turf(keeper, fling_dir), VESTIGE_WINGBEAT_THROW, 2, keeper, gentle = !creditable)
@@ -865,16 +865,16 @@
 	// Credits run after the throws so a mid-loop completion can't strand anyone mid-air
 	for(var/mob/living/menace as anything in parried)
 		var/datum/vestige_trial/wingbeat/trial = keeper.mind?.active_vestige_trial
-		if(!istype(trial)) // completed (or renounced) partway through the pile — the rest were just thrown
+		if(!istype(trial)) // completed (or renounced) partway through the pile. The rest were just thrown
 			break
-		if(trial.parry(menace)) // may complete (and delete) the trial — resolved fresh each loop
+		if(trial.parry(menace)) // may complete (and delete) the trial, resolved fresh each loop
 			to_chat(keeper, span_notice("[menace] is beaten out of the air mid-lunge."))
 		else
 			to_chat(keeper, span_warning("[menace] has been thrown around enough. Find something else."))
 
 /**
  * TRUE when a beast's throw should count as a parry: wild quarry (shared gate
- * above), conscious, and currently hunting a living person — you, or anyone
+ * above), conscious, and currently hunting a living person, you, or anyone
  * with a soul. Basic mobs report their hunt through the AI blackboard; the
  * old simple_animal hostiles still carry theirs on a target var.
  */
@@ -898,7 +898,7 @@
 	// The parry defends people: the keeper, or any living soul the beast was hunting
 	return mark == keeper || mark.mind || ishuman(mark)
 
-/// The wingbeat's shockwave — pale storm-grey, one wing wide
+/// The wingbeat's shockwave: pale storm-grey, one wing wide
 /obj/effect/temp_visual/circle_wave/vestige_wingbeat
 	color = "#cfd8e4"
 	duration = 0.4 SECONDS
@@ -924,15 +924,15 @@
 #undef VESTIGE_WINGBEAT_THROW
 
 /**
- * # The Roost — space dragon boons
+ * # The Roost: space dragon boons
  *
  * The Unfed's half of the bargain: what an ancient, starving leviathan pays
- * with when a trial is kept. The space dragon's body IS the antag — four
- * hundred health of serpent that eats crews whole — so nothing here grants
+ * with when a trial is kept. The space dragon's body IS the antag, four
+ * hundred health of serpent that eats crews whole, so nothing here grants
  * the dragon. Each boon is instead the human-sized cut of one of its three
  * verbs: the fire it cooks with (a straight subtype of upstream's fire_breath
  * machinery, retuned to corridor scale), the wingbeat it clears room with
- * (rebuilt on the aoe spell base — the upstream buffet is welded to dragon
+ * (rebuilt on the aoe spell base. The upstream buffet is welded to dragon
  * icon states and an endlag self-stun no human wants), and the carrion it
  * heals by eating (rebuilt as a channelled feed that marks the meal rather
  * than destroying it). Patron and trials live in the theme file; only the
@@ -941,7 +941,7 @@
 
 // Tuning constants for the Unfed's ports (file-local, #undef at bottom)
 
-/// Tiles of corridor Dragonfire reaches (upstream carp breath reaches 20 — this is a ship)
+/// Tiles of corridor Dragonfire reaches (upstream carp breath reaches 20. This is a ship)
 #define VESTIGE_BREATH_RANGE 4
 /// Burn damage a direct lick of Dragonfire deals (upstream carp breath deals 30)
 #define VESTIGE_BREATH_DAMAGE 15
@@ -949,13 +949,13 @@
 #define VESTIGE_BREATH_STACKS 2
 /// Breaths per Dragonfire cooldown
 #define VESTIGE_BREATH_COOLDOWN (40 SECONDS)
-/// How hot the breath burns (carp 700, drake 500 — hot enough to hurt, not to remodel the ship)
+/// How hot the breath burns (carp 700, drake 500, hot enough to hurt, not to remodel the ship)
 #define VESTIGE_BREATH_TEMP 600
 /// Tiles of corridor Consuming Flame reaches
 #define VESTIGE_CONSUMING_RANGE 6
 /// Burn damage a direct lick of Consuming Flame deals
 #define VESTIGE_CONSUMING_DAMAGE 18
-/// Fire stacks Consuming Flame slathers on — victims stay lit
+/// Fire stacks Consuming Flame slathers on, victims stay lit
 #define VESTIGE_CONSUMING_STACKS 4
 /// Breaths per Consuming Flame cooldown
 #define VESTIGE_CONSUMING_COOLDOWN (25 SECONDS)
@@ -964,7 +964,7 @@
 
 /// Radius of bodies a Wing Gust hurls back
 #define VESTIGE_GUST_RADIUS 2
-/// Tiles a gusted body flies (safe_throw_at — it stops at whatever it meets)
+/// Tiles a gusted body flies (safe_throw_at. It stops at whatever it meets)
 #define VESTIGE_GUST_THROW 3
 /// How long a gusted body stays floored
 #define VESTIGE_GUST_KNOCKDOWN (2 SECONDS)
@@ -983,7 +983,7 @@
 #define VESTIGE_FEAST_CHANNEL (4 SECONDS)
 /// Brute AND burn each that one Carrion Feast closes (~40 total)
 #define VESTIGE_FEAST_HEAL 20
-/// Brute the meal itself is mauled for — mostly-consumed, not destroyed
+/// Brute the meal itself is mauled for, mostly-consumed, not destroyed
 #define VESTIGE_FEAST_MAULING 60
 /// Feedings per Carrion Feast cooldown
 #define VESTIGE_FEAST_COOLDOWN (35 SECONDS)
@@ -1000,7 +1000,7 @@
 /// How long the fed-dragon hide lasts after a Marrow Feast
 #define VESTIGE_FED_DURATION (30 SECONDS)
 
-/// Marks a corpse that has already fed a feaster — one body feeds one dragon, ever
+/// Marks a corpse that has already fed a feaster. One body feeds one dragon, ever
 #define TRAIT_VESTIGE_DEVOURED "vestige_devoured"
 
 // ===== BOONS =====
@@ -1040,7 +1040,7 @@
 /datum/vestige_boon/spell/carrion_feast
 	name = "Carrion Feast"
 	desc = "Kneel over a corpse and take back the strength it isn't using anymore."
-	grant_text = "Your stomach turns over once — and then, horribly, settles."
+	grant_text = "Your stomach turns over once, and then, horribly, settles."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_carrion_feast
 
 /datum/vestige_boon/spell/carrion_feast/marrow
@@ -1057,7 +1057,7 @@
  * code/datums/actions/mobs/fire_breath.dm: the whole chain (Activate ->
  * attack_sequence -> fire_line -> progressive_fire_line -> burn_turf) runs
  * off owner and the clicked target with zero mob-type checks, so a
- * mind-targeted grant to a plain human works — the same precedent as the
+ * mind-targeted grant to a plain human works, the same precedent as the
  * Aperture's dash (mob_cooldown/charge). Ship-safety is inherited, not
  * hoped for: the line stops at the first blocked turf (is_blocked_turf),
  * and hotspots scorch tiles (burn_tile) without ever deleting a floor.
@@ -1076,15 +1076,15 @@
 	/// Fire stacks a direct lick slathers on before striking the match
 	var/ignite_stacks = VESTIGE_BREATH_STACKS
 
-// The parent handles the burn damage and the chat; this adds the clinging —
-// dragonfire doesn't just hurt, it stays lit on you
+// The parent handles the burn damage and the chat; this adds the clinging.
+// Dragonfire doesn't just hurt, it stays lit on you
 /datum/action/cooldown/mob_cooldown/fire_breath/vestige/on_burn_mob(mob/living/barbecued, mob/living/source)
 	. = ..()
 	barbecued.adjust_fire_stacks(ignite_stacks)
 	barbecued.ignite_mob()
 
 /**
- * The breath mastered: longer, stickier, quicker between mouthfuls — and the
+ * The breath mastered: longer, stickier, quicker between mouthfuls, and the
  * breather spends a few seconds as the one thing in the room the fire will
  * not touch, so the flame becomes ground to fight on rather than a fence.
  */
@@ -1096,7 +1096,7 @@
 	fire_damage = VESTIGE_CONSUMING_DAMAGE
 	ignite_stacks = VESTIGE_CONSUMING_STACKS
 
-// The immunity lands before the first flame does — the whole point is
+// The immunity lands before the first flame does. The whole point is
 // following your own breath in
 /datum/action/cooldown/mob_cooldown/fire_breath/vestige/consuming/Activate(atom/target_atom)
 	if(isliving(owner))
@@ -1129,7 +1129,7 @@
 
 /atom/movable/screen/alert/status_effect/vestige_inner_fire
 	name = "Inner Fire"
-	desc = "For the moment, fire — including your own — won't burn you."
+	desc = "For the moment, fire (including your own) won't burn you."
 	icon_state = "fire"
 
 // ===== WING GUST =====
@@ -1140,9 +1140,9 @@
  * TRAIT_WING_BUFFET, carries an escalating endlag self-stun tuned for a
  * 400-health boss, and aims its knockback at the action's target rather than
  * each victim (an upstream quirk this rebuild declines to inherit). What it
- * keeps is what matters aboard a hull: safe_throw_at knockback — bodies stop
+ * keeps is what matters aboard a hull: safe_throw_at knockback, bodies stop
  * at the first obstacle, nothing is thrown through or into space that a plain
- * shove couldn't manage — plus a brief knockdown. No faction check: wind has
+ * shove couldn't manage, plus a brief knockdown. No faction check: wind has
  * no friends. Corpses, the buckled and the anchored are left where they are.
  */
 /datum/action/cooldown/spell/aoe/vestige_wing_gust
@@ -1202,7 +1202,7 @@
 	animate(pixel_y = base_y, time = 0.2 SECONDS)
 
 /**
- * The wingbeat as weather: wider, heavier, and housekeeping — loose small
+ * The wingbeat as weather: wider, heavier, and housekeeping, loose small
  * items are swept off the deck (gently: swept goods bruise nobody), and any
  * fire riding the beater is blown out. Storms do not burn.
  */
@@ -1245,13 +1245,13 @@
 /**
  * The dragon's corpse-eating, rebuilt as a channelled feed. Upstream the
  * dragon swallows bodies whole and regurgitates them if they revive inside it
- * (space_dragon.dm, eaten_stat_changed) — that is, even the dragon never
+ * (space_dragon.dm, eaten_stat_changed), that is, even the dragon never
  * actually destroys a corpse. This port keeps that spirit deliberately: the
  * meal is mauled for heavy brute and marked with TRAIT_VESTIGE_DEVOURED, but
  * never gibbed or dusted. Player corpses stay retrievable for objectives and
  * revival (a defib may want a surgeon's help first, which is fair for a body
  * that has been fed on), and the mark stops one corpse from healing the same
- * dragon — or a chain of dragons — forever. Works on any organic dead
+ * dragon (or a chain of dragons) forever. Works on any organic dead
  * /mob/living, fauna included; the channel lives in before_cast so an
  * interrupted meal never spends the cooldown.
  */
@@ -1266,7 +1266,7 @@
 	cooldown_time = VESTIGE_FEAST_COOLDOWN
 	spell_requirements = NONE
 	cast_range = 1
-	aim_assist = FALSE // the meal is clicked, never guessed — aim assist would happily hand you the live mob standing over it
+	aim_assist = FALSE // the meal is clicked, never guessed. Aim assist would happily hand you the live mob standing over it
 	active_msg = "You look at the deck with an appetite..."
 	deactive_msg = "You swallow the appetite back down."
 	/// Brute AND burn each that one feeding closes
@@ -1307,7 +1307,7 @@
 	playsound(meal, 'sound/items/eatfood.ogg', 60, TRUE)
 	if(!do_after(owner, channel_time, target = meal))
 		return . | SPELL_CANCEL_CAST
-	// Re-resolve the whole meal: it may have been dragged off, eaten by a rival, or — awkwardly — gotten better
+	// Re-resolve the whole meal: it may have been dragged off, eaten by a rival, or (awkwardly) gotten better
 	if(QDELETED(meal) || meal.stat != DEAD || HAS_TRAIT(meal, TRAIT_VESTIGE_DEVOURED))
 		return . | SPELL_CANCEL_CAST
 	if(get_dist(get_turf(owner), get_turf(meal)) > cast_range)
@@ -1316,7 +1316,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/cast(mob/living/meal)
 	. = ..()
-	// The mark comes first: one body, one feeding, ever — no farming a freezer
+	// The mark comes first: one body, one feeding, ever, no farming a freezer
 	ADD_TRAIT(meal, TRAIT_VESTIGE_DEVOURED, TRAIT_GENERIC)
 	meal.adjust_brute_loss(VESTIGE_FEAST_MAULING, forced = TRUE)
 	new /obj/effect/decal/cleanable/blood/gibs(get_turf(meal))
@@ -1344,7 +1344,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/marrow/feast_effects(mob/living/feaster)
 	. = ..()
-	// Top up, never overfill — and never bother a bloodless species about it
+	// Top up, never overfill, and never bother a bloodless species about it
 	if(!HAS_TRAIT(feaster, TRAIT_NOBLOOD) && feaster.blood_volume < BLOOD_VOLUME_NORMAL)
 		feaster.blood_volume = min(feaster.blood_volume + VESTIGE_MARROW_BLOOD, BLOOD_VOLUME_NORMAL)
 	feaster.adjust_stamina_loss(-VESTIGE_MARROW_STAMINA)
@@ -1352,8 +1352,8 @@
 
 /**
  * A fed dragon's hide, sized for a person: incoming brute and burn are dulled
- * for the duration. Human physiology only (the same guard blooddrunk uses) —
- * a non-human feaster still gets the meal, just not the hide.
+ * for the duration. Human physiology only (the same guard blooddrunk uses).
+ * A non-human feaster still gets the meal, just not the hide.
  */
 /datum/status_effect/vestige_fed_dragon
 	id = "vestige_fed_dragon"
@@ -1380,7 +1380,7 @@
 
 /atom/movable/screen/alert/status_effect/vestige_fed_dragon
 	name = "Fed"
-	desc = "A recent meal sits on you like scale — incoming blows and burns are dulled while it lasts."
+	desc = "A recent meal sits on you like scale. Incoming blows and burns are dulled while it lasts."
 	icon_state = "food_buff_3"
 
 #undef VESTIGE_BREATH_RANGE

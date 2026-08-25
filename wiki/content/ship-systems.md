@@ -9,9 +9,9 @@ Every purchasable hull launches with the same core set of machines: something to
 
 ## Bridge
 
-The **helm control console** is the ship. It flies, scans, charts, docks and undocks — all of it is covered in [Piloting Your Ship](piloting.md). Larger hulls also carry wall-mounted **ship viewscreens**, which mirror the helm display for anyone who isn't at the bridge but give no controls.
+The **helm control console** is the ship. It flies, scans, charts, docks and undocks. All of it is covered in [Piloting Your Ship](piloting.md). Larger hulls also carry wall-mounted **ship viewscreens**, which mirror the helm display for anyone who isn't at the bridge but give no controls.
 
-The **cryogenic oversight console** manages your crew roster: which job slots are open, and who is asleep in the freezers. The **cryopods** themselves are where players joining your ship mid-round appear, and where crew who log out end up instead of lying on the deck — a ship with no cryopod cannot be joined at all.
+The **cryogenic oversight console** manages your crew roster: which job slots are open, and who is asleep in the freezers. The **cryopods** themselves are where players joining your ship mid-round appear, and where crew who log out end up instead of lying on the deck. A ship with no cryopod cannot be joined at all.
 
 ## Earning and spending
 
@@ -28,7 +28,7 @@ Both the bank and the cargo console are explained properly in [Money & Trade](mo
 
 ## Fabrication and research
 
-Almost every ship has an **autolathe** somewhere aboard — on modular hulls it arrives with one of the modules — and that single machine is what makes research reachable on any ship. Print the **Research & Development Kit** from it — 20 sheets of iron and 40 of glass — and the box contains the boards for the whole suite:
+Almost every ship has an **autolathe** somewhere aboard (on modular hulls it arrives with one of the modules) and that single machine is what makes research reachable on any ship. Print the **Research & Development Kit** from it (20 sheets of iron and 40 of glass) and the box contains the boards for the whole suite:
 
 - R&D console
 - Protolathe
@@ -40,17 +40,17 @@ The imprinter is the important one: machine boards can *only* be printed there, 
 
 The server holds your ship's techweb, and the source disk is where it actually lives. Slot the disk into the server and link consoles and machines to it with a multitool. What your crew can build is gated by how far up the tech tree you have climbed, not by which hull you bought.
 
-Your ship starts with no research points and no income — everything is earned. How to earn it, and what the tree is worth spending on, is all on one page: see [Research](research.md).
+Your ship starts with no research points and no income. Everything is earned. How to earn it, and what the tree is worth spending on, is all on one page: see [Research](research.md).
 
-Several ship systems read the techweb directly rather than unlocking a printable object — the radar tiers behind your [sensor range](piloting.md), and the research gating on [transporters](transporters.md), both work this way.
+Several ship systems read the techweb directly rather than unlocking a printable object: the radar tiers behind your [sensor range](piloting.md), and the research gating on [transporters](transporters.md), both work this way.
 
 ## Power
 
 Ship power is ordinary /tg/station power with a ship-sized budget. Each area has its own **APC**, and hulls launch with charged **SMES units** feeding them.
 
-Generation is usually a **portable generator** burning plasma sheets. A few hulls carry solar panels instead or as well. Ion thrusters draw straight off the same grid, so a ship flying on ion drives is spending its battery to move — watch the SMES charge, not a fuel tank.
+Generation is usually a **portable generator** burning plasma sheets. A few hulls carry solar panels instead or as well. Ion thrusters draw straight off the same grid, so a ship flying on ion drives is spending its battery to move, watch the SMES charge, not a fuel tank.
 
-Engines and their heaters are covered in [Piloting Your Ship](piloting.md), and the renewable fuel machines — the nebula ram scoop and the plasma sublimator — in [Gas & Fuel](gas-economy.md).
+Engines and their heaters are covered in [Piloting Your Ship](piloting.md), and the renewable fuel machines (the nebula ram scoop and the plasma sublimator) in [Gas & Fuel](gas-economy.md).
 
 ## Air and gravity
 
@@ -58,7 +58,7 @@ Atmospherics aboard a ship are standard: distro and scrubber loops, vents, air a
 
 First, hull breaches are routine. Ship combat, meteors and hard landings all open your deck to space, so knowing how to patch a wall and re-pressurise a room is a core skill rather than an emergency one.
 
-Second, **gravity comes from the deck plating itself** — there is no gravity generator aboard to find or repair. If gravity fails it is because something switched it off ship-wide, and it comes back on its own.
+Second, **gravity comes from the deck plating itself**. There is no gravity generator aboard to find or repair. If gravity fails it is because something switched it off ship-wide, and it comes back on its own.
 
 ## Comms and cameras
 
@@ -68,11 +68,12 @@ Ships carry one or more **holopads**, which do double duty: they place calls to 
 
 ## Defence
 
-Weapons are not standard equipment — most hulls launch unarmed and you buy or build up from there. What you will eventually bolt on:
+Weapons are not standard equipment. Most hulls launch unarmed and you buy or build up from there. What you will eventually bolt on:
 
 - **Shield generators**, which soak damage before the hull does and draw power to regenerate.
 - **Laser turrets** and **missile launchers**, aimed from a ship combat console.
 - An **interdictor**, which pins another ship in place so it cannot undock or run.
+- An **electronic warfare suite**, which hacks a locked ship's systems instead of firing on it. See [Ship Hacking](ship-hacking.md).
 
 All of it is covered in [Ship Combat](ship-combat.md).
 

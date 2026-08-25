@@ -15,7 +15,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "o" = (
 /obj/structure/chair/sofa/right{
@@ -62,7 +62,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "u" = (
 /obj/structure/closet/crate/bin,
@@ -83,6 +83,7 @@
 	pixel_y = 5
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#deefff";
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -96,6 +97,7 @@
 	dir = 4
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#deefff";
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -132,11 +134,11 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "P" = (
-/obj/machinery/vending/coffee,
-/turf/open/floor/mineral/plastitanium,
+/obj/machinery/vending/boozeomat,
+/turf/open/floor/iron/dark,
 /area/template_noop)
 "W" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{

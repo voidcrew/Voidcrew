@@ -5,7 +5,7 @@
 
 /obj/machinery/ship_combat/missile_launcher
 	name = "missile launcher"
-	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a weapons system with a multitool. Use a wrench to secure or unsecure."
+	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a weapons system with a multitool. Use a wrench to secure or unsecure, or drag it onto a hull wall to sink it into the plating."
 	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
@@ -17,6 +17,7 @@
 	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 	pixel_x = -16
 	pixel_y = -16
+	wall_mountable = TRUE
 	/// Loaded missile data (list of missile properties, or null if empty)
 	var/list/loaded_missile
 	/// Reference to our linked combat console
@@ -25,10 +26,6 @@
 	var/launcher_id
 	/// Time to load a missile
 	var/load_time = MISSILE_LAUNCHER_LOAD_TIME
-	/// Cached exterior check result (launchers don't move while anchored)
-	var/cached_exterior_check
-	/// Whether the exterior cache is valid
-	var/exterior_cache_valid = FALSE
 
 /obj/machinery/ship_combat/missile_launcher/Initialize(mapload)
 	. = ..()
@@ -53,6 +50,9 @@
 	. += span_notice("Launcher ID: [launcher_id]")
 	if(loaded_missile)
 		. += span_notice("Loaded: [loaded_missile["name"]] ([loaded_missile["damage"]] damage)")
+		var/obj/item/stored_payload = loaded_missile["payload"]
+		if(stored_payload && !QDELETED(stored_payload))
+			. += span_notice("Payload: [stored_payload].")
 	else
 		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
 	if(!is_on_exterior())
@@ -111,10 +111,10 @@
 		to_chat(user, span_warning("[missile] has no valid payload!"))
 		return
 
-	// If this is a chemical missile, move the grenade into the launcher to protect it from qdel
-	var/obj/item/grenade/chem_grenade/extracted_grenade = fire_data["grenade"]
-	if(extracted_grenade)
-		extracted_grenade.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
+	// If this is a chemical missile, move the payload into the launcher to protect it from qdel
+	var/obj/item/extracted_payload = fire_data["payload"]
+	if(extracted_payload)
+		extracted_payload.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
 
 	// Load the missile
 	loaded_missile = fire_data
@@ -138,7 +138,11 @@
 		return
 	default_unfasten_wrench(user, tool)
 	invalidate_exterior_cache()  // Position may have changed
+	eject_from_wall(user)  // Loose inside hull plating is a dead end - pop it onto the deck
 	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/missile_launcher/after_wall_mount(mob/user)
+	attempt_auto_link()
 
 // Alt+click to rotate when unwrenched
 /obj/machinery/ship_combat/missile_launcher/click_alt(mob/user)
@@ -174,12 +178,14 @@
 	return ..()
 
 /obj/machinery/ship_combat/missile_launcher/on_deconstruction(disassembled)
-	// Clean up any chemical grenades stored in the launcher
-	for(var/obj/item/grenade/chem_grenade/grenade in contents)
+	// Clean up any chemical payloads (chem grenades or chemical payload cores) stored in the launcher
+	for(var/obj/item/stored_payload in contents)
+		if(!istype(stored_payload, /obj/item/grenade/chem_grenade) && !istype(stored_payload, /obj/item/bombcore/chemical))
+			continue
 		if(disassembled)
-			grenade.forceMove(drop_location())  // Drop grenade if disassembled cleanly
+			stored_payload.forceMove(drop_location())  // Hand the payload back if disassembled cleanly
 		else
-			qdel(grenade)  // Delete grenade if destroyed
+			qdel(stored_payload)  // Delete the payload if destroyed
 	// Loaded missile data is lost on deconstruction
 	loaded_missile = null
 
@@ -212,16 +218,33 @@
 	new_missile.tracking = new /obj/item/electronics/ship_missile_tracking(new_missile)
 
 	// Create the appropriate warhead (bomb core)
-	// Note: Chemical missiles use grenades which can't be recreated from stored data
+	// Note: Chemical missiles carry a real item, so we hand the original back instead
 	var/effect_type = loaded_missile["effect_type"]
 	var/warhead_type
 	if(effect_type == /obj/effect/ship_missile/chemical)
-		// Chemical grenades can't be recreated - their reagents are unique
-		// The missile is unloadable but will be empty (just the frame)
-		to_chat(user, span_warning("The chemical payload cannot be recovered - the grenade was consumed."))
-		new_missile.construction_state = MISSILE_STATE_TRACKING
+		// The chem grenade / chemical payload core is stashed in our contents - give it back
+		var/obj/item/stored_payload = loaded_missile["payload"]
+		if(QDELETED(stored_payload) || stored_payload.loc != src)
+			to_chat(user, span_warning("The chemical payload is gone - only the frame comes back out."))
+			new_missile.construction_state = MISSILE_STATE_TRACKING
+			new_missile.update_appearance()
+			loaded_missile = null
+			update_appearance()
+			return
+		stored_payload.forceMove(new_missile)
+		if(istype(stored_payload, /obj/item/grenade/chem_grenade))
+			var/obj/item/grenade/chem_grenade/recovered_grenade = stored_payload
+			new_missile.chemical_grenade = recovered_grenade
+		else if(istype(stored_payload, /obj/item/bombcore/chemical))
+			var/obj/item/bombcore/chemical/recovered_core = stored_payload
+			new_missile.chemical_core = recovered_core
+		new_missile.construction_state = MISSILE_STATE_ARMED
 		new_missile.update_appearance()
 		loaded_missile = null
+		user.visible_message(
+			span_notice("[user] removes a missile from [src]."),
+			span_notice("You remove the missile from [src].")
+		)
 		update_appearance()
 		return
 	else
@@ -317,49 +340,6 @@
 
 // ========== FIRING ==========
 
-/// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
-/// Weapons must be on the exterior to fire - they need line of sight to space/outside
-/// Result is cached while anchored since launchers don't move
-/obj/machinery/ship_combat/missile_launcher/proc/is_on_exterior()
-	// Return cached result if valid (only valid while anchored)
-	if(exterior_cache_valid && anchored)
-		return cached_exterior_check
-
-	var/turf/our_turf = get_turf(src)
-	if(!our_turf)
-		return FALSE
-
-	// Get the shuttle areas for our ship
-	var/area/our_area = get_area(src)
-	var/list/shuttle_areas
-	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-		if(!S.shuttle)
-			continue
-		if(our_area in S.shuttle.shuttle_areas)
-			shuttle_areas = S.shuttle.shuttle_areas
-			break
-
-	// Check all adjacent tiles (including diagonals)
-	var/result = FALSE
-	for(var/turf/T in range(1, our_turf))
-		if(T == our_turf)
-			continue
-		var/area/tile_area = get_area(T)
-		// If adjacent tile is not in shuttle areas, we're on exterior
-		if(!tile_area || !(tile_area in shuttle_areas))
-			result = TRUE
-			break
-
-	// Cache the result
-	cached_exterior_check = result
-	exterior_cache_valid = TRUE
-
-	return result
-
-/// Invalidates the exterior check cache (call when launcher is moved/anchored)
-/obj/machinery/ship_combat/missile_launcher/proc/invalidate_exterior_cache()
-	exterior_cache_valid = FALSE
-
 /// Attempts to fire the loaded missile at the target turf
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys
 /// approach_dir is the direction missiles come FROM (NORTH means missiles come from north, fly south)
@@ -387,7 +367,7 @@
 
 	// Store missile data before clearing
 	var/effect_type = loaded_missile["effect_type"]
-	var/obj/item/grenade/chem_grenade/grenade_to_pass = loaded_missile["grenade"]
+	var/obj/item/payload_to_pass = loaded_missile["payload"]
 	var/missile_damage = loaded_missile["damage"]
 	var/missile_devastation = loaded_missile["devastation"]
 	var/missile_heavy = loaded_missile["heavy"]
@@ -428,150 +408,9 @@
 		to_chat(user, span_notice("Missile away! Target: [target_ship ? target_ship.name : "unknown"]"))
 
 	// Delay actual missile spawn so the launch visual can fly off-screen first
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_ship_missile), effect_type, spawn_turf, target, target_ship, source_ship, missile_damage, missile_devastation, missile_heavy, missile_light, missile_flame, missile_icon_state, grenade_to_pass), 1.5 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_ship_missile), effect_type, spawn_turf, target, target_ship, source_ship, missile_damage, missile_devastation, missile_heavy, missile_light, missile_flame, missile_icon_state, payload_to_pass), 1.5 SECONDS)
 
 	update_appearance()
-	return TRUE
-
-/// Calculates where to spawn a missile - outside the target, in the transit space
-/// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated to find a clear path.
-/obj/machinery/ship_combat/missile_launcher/proc/get_missile_spawn_turf(turf/target, obj/structure/overmap/tgt_ship, approach_dir = null)
-	if(!target)
-		return null
-
-	// Get target footprint bounds (ships: shuttle rect; outposts: build region)
-	var/min_x = target.x
-	var/max_x = target.x
-	var/min_y = target.y
-	var/max_y = target.y
-
-	var/list/bounds = tgt_ship?.get_combat_bounds()
-	if(bounds && bounds.len >= 4)
-		min_x = bounds[1]
-		min_y = bounds[2]
-		max_x = bounds[3]
-		max_y = bounds[4]
-
-	// How far outside the ship to spawn (between ship edge and black wall)
-	var/spawn_dist = 10
-
-	var/spawn_x = target.x
-	var/spawn_y = target.y
-
-	// Calculate direction if not provided - find a clear path through hull breaches
-	var/dir = approach_dir
-	if(!dir)
-		dir = find_clear_approach_direction(target, min_x, max_x, min_y, max_y, spawn_dist)
-
-	// Spawn missiles from the selected direction
-	switch(dir)
-		if(NORTH)
-			// Missiles come FROM the north, spawn above the ship
-			spawn_y = max_y + spawn_dist
-			spawn_x = target.x
-		if(SOUTH)
-			// Missiles come FROM the south, spawn below the ship
-			spawn_y = min_y - spawn_dist
-			spawn_x = target.x
-		if(EAST)
-			// Missiles come FROM the east, spawn to the right of the ship
-			spawn_x = max_x + spawn_dist
-			spawn_y = target.y
-		if(WEST)
-			// Missiles come FROM the west, spawn to the left of the ship
-			spawn_x = min_x - spawn_dist
-			spawn_y = target.y
-
-	return locate(spawn_x, spawn_y, target.z)
-
-/// Finds the best approach direction for a missile to reach a target
-/// Prioritizes clear paths (through hull breaches), then picks the shortest among them
-/// If no clear paths exist, falls back to the shortest path overall
-/// Returns a direction constant (NORTH, SOUTH, EAST, WEST)
-/obj/machinery/ship_combat/missile_launcher/proc/find_clear_approach_direction(turf/target, min_x, max_x, min_y, max_y, spawn_dist)
-	var/list/clear_directions = list()
-	var/list/direction_distances = list()
-
-	// Calculate path distance and clearance for each direction
-	for(var/check_dir in list(NORTH, SOUTH, EAST, WEST))
-		var/spawn_x = target.x
-		var/spawn_y = target.y
-		var/distance
-
-		switch(check_dir)
-			if(NORTH)
-				spawn_y = max_y + spawn_dist
-				distance = spawn_y - target.y
-			if(SOUTH)
-				spawn_y = min_y - spawn_dist
-				distance = target.y - spawn_y
-			if(EAST)
-				spawn_x = max_x + spawn_dist
-				distance = spawn_x - target.x
-			if(WEST)
-				spawn_x = min_x - spawn_dist
-				distance = target.x - spawn_x
-
-		var/turf/spawn_turf = locate(spawn_x, spawn_y, target.z)
-		if(!spawn_turf)
-			continue
-
-		direction_distances["[check_dir]"] = distance
-
-		// Check if path from spawn to target is clear (no dense walls blocking)
-		if(check_path_clear(spawn_turf, target))
-			clear_directions += check_dir
-
-	// If we found clear paths, return the shortest one
-	if(length(clear_directions))
-		var/best_dir
-		var/best_distance = INFINITY
-		for(var/dir in clear_directions)
-			var/dist = direction_distances["[dir]"]
-			if(dist < best_distance)
-				best_distance = dist
-				best_dir = dir
-		return best_dir
-
-	// No clear paths - return the shortest direction overall (will hit walls)
-	var/best_dir
-	var/best_distance = INFINITY
-	for(var/dir_key in direction_distances)
-		var/dist = direction_distances[dir_key]
-		if(dist < best_distance)
-			best_distance = dist
-			best_dir = text2num(dir_key)
-	return best_dir
-
-/// Checks if there's a clear line-of-sight path between two turfs
-/// Returns TRUE if the path is clear (no dense walls), FALSE otherwise
-/obj/machinery/ship_combat/missile_launcher/proc/check_path_clear(turf/start, turf/end)
-	if(!start || !end)
-		return FALSE
-
-	// Get all turfs in the line from start to end
-	var/list/path_turfs = get_line(start, end)
-
-	for(var/turf/T in path_turfs)
-		// Skip the start and end turfs
-		if(T == start || T == end)
-			continue
-
-		// Check if this turf itself is dense (like a wall turf)
-		if(T.density)
-			return FALSE
-
-		// Check for dense objects on this turf (walls, airlocks, etc)
-		for(var/obj/O in T)
-			// Skip objects that missiles can pass through
-			if(!O.density)
-				continue
-			// Windows and grilles can be broken through - consider them passable
-			if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
-				continue
-			// Dense object blocks the path
-			return FALSE
-
 	return TRUE
 
 /// Checks if the launcher can fire. Pass the console's locked target (if any)

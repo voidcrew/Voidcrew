@@ -258,6 +258,12 @@
 	// Too close to the map edge is never allowed
 	if(!T || T.x <= 10 || T.y <= 10 || T.x >= world.maxx - 10 || T.y >= world.maxy - 10)
 		return SHUTTLE_DOCKER_BLOCKED
+	// VOIDCREW EDIT ADDITION: no designating a pad inside a live bitrunning domain. The
+	// reservation floor is plain /area/space, so the allow_shuttle_docking check further
+	// down happily clears it, and a shuttle is a door into VR that runs both ways.
+	if(SSbitrunning.is_domain_turf(T))
+		return SHUTTLE_DOCKER_BLOCKED
+	// VOIDCREW EDIT END
 	// If it's one of our shuttle areas assume it's ok to be there
 	if(shuttle_port.shuttle_areas[T.loc])
 		return SHUTTLE_DOCKER_LANDING_CLEAR
@@ -310,11 +316,32 @@
 	var/list/image/placed_images = list()
 
 /mob/eye/camera/remote/shuttle_docker/setLoc(turf/destination, force_update = FALSE)
-	. = ..()
 	var/obj/machinery/origin = origin_ref?.resolve()
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = null
 	if(istype(origin, /obj/machinery/computer/camera_advanced/shuttle_docker))
-		var/obj/machinery/computer/camera_advanced/shuttle_docker/console = origin
-		console.checkLandingSpot()
+		console = origin
+	// Voidcrew: the eye is refused BEFORE the move, not corrected after it - one frame
+	// standing on a neighbour's ground is one frame of their crew on somebody's screen.
+	// Default answer is TRUE, so every upstream navigation console is unaffected; see
+	// the survey console's override for the one that bounds itself.
+	if(console && !console.eye_may_enter(destination))
+		return
+	. = ..()
+	console?.checkLandingSpot()
+
+/**
+ * Whether this console's camera eye may be moved onto `destination`.
+ *
+ * A hook rather than a blanket restriction on the eye type: every shuttle-docker console in
+ * the game shares /mob/eye/camera/remote/shuttle_docker, and upstream navigation, syndicate,
+ * whiteship and caravan consoles are all supposed to be able to scroll wherever their z_lock
+ * allows. Only the voidcrew survey console has co-tenants to be kept out of.
+ *
+ * Counterpart of /mob/eye/camera/remote/transporter/setLoc(), which does the same job for the
+ * transporter's targeting scanner (voidcrew/modules/transporter/transporter_console.dm).
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/proc/eye_may_enter(turf/destination)
+	return TRUE
 
 /mob/eye/camera/remote/shuttle_docker/update_remote_sight(mob/living/user)
 	user.set_sight(BLIND|SEE_TURFS)
@@ -359,6 +386,14 @@
 
 	playsound(console, 'sound/machines/terminal/terminal_prompt_deny.ogg', 25, FALSE)
 
+	// VOIDCREW EDIT ADDITION: packed-level containment for the destination list.
+	// locked_traits is (ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY) and a lattice encounter
+	// level carries none of them, so a berth or a nav beacon sitting inside a CO-TENANT's
+	// slot became a "Jump to Location" destination. Deliberately narrowed to the SAME-Z case:
+	// that is the packing leak, and anything cross-z keeps whatever reach it has today.
+	var/turf/console_turf = get_turf(console)
+	var/datum/console_region = map_region_for_turf(console_turf)
+	// VOIDCREW EDIT END
 	var/list/L = list()
 	for(var/V in SSshuttle.stationary_docking_ports)
 		if(!V)
@@ -367,6 +402,11 @@
 		var/obj/docking_port/stationary/S = V
 		if(console.z_lock.len && !(S.z in console.z_lock))
 			continue
+		// VOIDCREW EDIT ADDITION
+		var/turf/port_turf = get_turf(S)
+		if(port_turf && console_turf && port_turf.z == console_turf.z && map_region_excludes_turf(console_region, port_turf))
+			continue
+		// VOIDCREW EDIT END
 		if(console.jump_to_ports[S.shuttle_id])
 			L["([L.len])[S.name]"] = S
 
@@ -377,6 +417,11 @@
 		var/obj/machinery/spaceship_navigation_beacon/nav_beacon = V
 		if(!nav_beacon.z || SSmapping.level_has_any_trait(nav_beacon.z, console.locked_traits))
 			break
+		// VOIDCREW EDIT ADDITION
+		var/turf/beacon_turf = get_turf(nav_beacon)
+		if(beacon_turf && console_turf && beacon_turf.z == console_turf.z && map_region_excludes_turf(console_region, beacon_turf))
+			continue
+		// VOIDCREW EDIT END
 		if(!nav_beacon.locked)
 			L["([L.len]) [nav_beacon.name] located: [nav_beacon.x] [nav_beacon.y] [nav_beacon.z]"] = nav_beacon
 		else

@@ -62,6 +62,14 @@ GLOBAL_LIST_EMPTY(scanned_fish_by_techweb)
 	message += "</span>"
 	examine_list += message
 
+/**
+ * The scanned list is shared between every fish experiment of a techweb, so the tally keeps climbing
+ * past the requirement of the ones already done. Clamp it so a completed experiment doesn't read "8/7".
+ */
+/datum/experiment/scanning/fish/serialize_progress_stage(atom/target, list/seen_instances)
+	var/required = required_atoms[target]
+	return EXPERIMENT_PROG_INT(scan_message, min(length(seen_instances), required), required)
+
 ///Only scannable fish will contribute towards the experiment.
 /datum/experiment/scanning/fish/final_contributing_index_checks(datum/component/experiment_handler/experiment_handler, obj/item/fish/target, typepath)
 	return target.fish_flags & FISH_FLAG_EXPERIMENT_SCANNABLE

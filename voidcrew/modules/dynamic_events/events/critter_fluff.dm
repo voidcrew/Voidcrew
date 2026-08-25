@@ -16,9 +16,9 @@
 	min_crew_aboard = 1
 
 /datum/round_event/voidcrew/mice_migration
-	/// Smallest migration pack — scaled down from TG's 5 for a ship's handful of crew.
+	/// Smallest migration pack: scaled down from TG's 5 for a ship's handful of crew.
 	var/minimum_mice = 2
-	/// Largest migration pack — scaled down from TG's 15.
+	/// Largest migration pack: scaled down from TG's 15.
 	var/maximum_mice = 4
 
 /datum/round_event/voidcrew/mice_migration/announce(fake)
@@ -45,7 +45,7 @@
 	for(var/i in 1 to rand(minimum_mice, maximum_mice))
 		var/turf/open/floor/spawn_turf = target_ship.get_random_open_ship_turf()
 		if(!spawn_turf)
-			return // Nowhere open left aboard — the rest of the horde stays in the walls.
+			return // Nowhere open left aboard, the rest of the horde stays in the walls.
 		new /mob/living/basic/mouse(spawn_turf)
 
 /datum/round_event_control/voidcrew/wisdom_cow
@@ -148,7 +148,7 @@
 		return
 	var/list/mob/dead/observer/candidates = SSpolling.poll_ghost_candidates(check_jobban = ROLE_SENTIENCE, role = ROLE_SENTIENCE, alert_pic = /obj/item/slimepotion/sentience, role_name_text = role_name)
 	if(length(candidates) < minimum_required)
-		message_admins("[role_name] event aboard [target_ship.display_name || target_ship.name] got no ghost volunteers — fizzling.")
+		message_admins("[role_name] event aboard [target_ship.display_name || target_ship.name] got no ghost volunteers, fizzling.")
 		deadchat_broadcast(" did not get enough candidates ([minimum_required]) to spawn.", "<b>[role_name]</b>", message_type = DEADCHAT_ANNOUNCEMENT)
 		announce_chance = 0
 		return

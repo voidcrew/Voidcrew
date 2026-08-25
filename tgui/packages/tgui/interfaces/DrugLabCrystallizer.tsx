@@ -6,7 +6,7 @@
  * Same trust model as the catalyst: CLIENT-RUN, SERVER-VALIDATED. The
  * window plays the server-issued drop table locally and reports catch
  * totals once; the server rebuilds the deterministic table and rejects
- * implausible reports. Tainted crystals only hurt when CAUGHT — dodged
+ * implausible reports. Tainted crystals only hurt when CAUGHT, dodged
  * ones fall past harmlessly.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -167,7 +167,7 @@ export const DrugLabCrystallizer = (props) => {
   };
 
   // A fresh nonce means a fresh attempt; game_active dropping means the
-  // server resolved it — stand down.
+  // server resolved it, stand down.
   useEffect(() => {
     if (
       data.game_active &&
@@ -268,7 +268,7 @@ export const DrugLabCrystallizer = (props) => {
               <Section fill title="Growth Chamber">
                 <NoticeBox info>
                   <Icon name="hourglass-half" mr={1} />
-                  Waiting on the catalyst column — nothing to crystallize yet.
+                  Waiting on the catalyst column: nothing to crystallize yet.
                 </NoticeBox>
               </Section>
             )}
@@ -475,7 +475,7 @@ export const DrugLabCrystallizer = (props) => {
                         />
                         Attempt scored {data.last_attempt_score}/100
                         {data.botched
-                          ? ' — the chamber is running dangerously hot!'
+                          ? ', the chamber is running dangerously hot!'
                           : ''}
                       </NoticeBox>
                     </Stack.Item>
@@ -491,8 +491,8 @@ export const DrugLabCrystallizer = (props) => {
                         and{' '}
                         <Box inline bold style={{ color: TAINTED_COLOR }}>
                           dodge the tainted growths
-                        </Box>{' '}
-                        — tainted only spoil the batch if they land in the
+                        </Box>
+                        . Tainted only spoil the batch if they land in the
                         tray.
                       </NoticeBox>
                     </Stack.Item>
@@ -520,7 +520,7 @@ export const DrugLabCrystallizer = (props) => {
                             fluid
                             icon="check"
                             color="good"
-                            tooltip="Lock the chamber in at its best score and finish the cook — the product prints right here."
+                            tooltip="Lock the chamber in at its best score and finish the cook, the product prints right here."
                             onClick={() => act('commit')}
                           >
                             Commit {data.station_score}/100
@@ -532,7 +532,7 @@ export const DrugLabCrystallizer = (props) => {
                             icon="rotate-left"
                             color="average"
                             disabled={data.next_cap === null}
-                            tooltip="Retries can only raise your score, but each one caps lower — and re-pressurizing a botched batch widens the blast band."
+                            tooltip="Retries can only raise your score, but each one caps lower, and re-pressurizing a botched batch widens the blast band."
                             onClick={() => act('start_attempt')}
                           >
                             {data.next_cap === null
@@ -550,7 +550,7 @@ export const DrugLabCrystallizer = (props) => {
               <Section fill title="Growth Chamber">
                 <NoticeBox color="good">
                   <Icon name="check" mr={1} />
-                  Chamber locked in at {data.station_score}/100 — the cook is
+                  Chamber locked in at {data.station_score}/100, the cook is
                   complete.
                 </NoticeBox>
                 <NoticeBox info>

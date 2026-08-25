@@ -5,7 +5,7 @@
 
 /obj/item/organ/heart/cybernetic/anomalock
 	name = "voltaic combat cyberheart"
-	desc = "A cutting-edge cyberheart, originally designed for Nanotrasen killsquad usage but later declassified for normal research. Voltaic technology allows the heart to keep the body upright in dire circumstances, alongside redirecting anomalous flux energy to fully shield the user from shocks and electro-magnetic pulses. Requires a refined Flux core as a power source."
+	desc = "A cutting-edge cyberheart, originally designed for Nanotrasen killsquad usage but later declassified for normal research. Voltaic technology allows the heart to keep the body upright in dire circumstances and shields the user from shocks. Its flux capacitors can soak up one electro-magnetic pulse whole, but need time to vent the charge before they can catch another. Requires a refined Flux core as a power source." // VOIDCREW EDIT - BAL-4: was "fully shield the user from ... electro-magnetic pulses"
 	icon_state = "anomalock_heart"
 	beat_noise = "an astonishing <b>BZZZ</b> of immense electrical power"
 	bleed_prevention = TRUE
@@ -15,6 +15,19 @@
 	custom_materials = list(/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5, /datum/material/diamond = SHEET_MATERIAL_AMOUNT, /datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT)
 	///Cooldown for the activation of the organ
 	var/survival_cooldown_time = 5 MINUTES
+	// VOIDCREW EDIT START - BAL-4: the old behavior put a permanent
+	// EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS element on the whole MOB, so no
+	// organ, implant or held item ever received emp_act() while this heart was
+	// cored. That silently deleted EMP as the designed counter to cyberware.
+	// New behavior: the heart absorbs ONE full pulse, then its capacitors are
+	// drained for a cooldown during which EMPs land normally. The heart itself
+	// stays EMP-immune while cored (it is the EMP-protection organ).
+	COOLDOWN_DECLARE(emp_absorb_cooldown)
+	/// How long the flux capacitors take to recharge after eating a pulse.
+	/// Invented, unplaytested number: long enough that a follow-up EMP inside
+	/// the same fight lands, short enough that the heart matters every fight.
+	var/emp_absorb_cooldown_time = 1 MINUTES
+	// VOIDCREW EDIT END
 	///The lightning effect on our mob when the implant is active
 	var/mutable_appearance/lightning_overlay
 	///how long the lightning lasts
@@ -48,18 +61,22 @@
 		return
 	add_lightning_overlay(30 SECONDS)
 	playsound(organ_owner, 'sound/items/eshield_recharge.ogg', 40)
-	organ_owner.AddElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS|EMP_NO_EXAMINE)
+	RegisterSignal(organ_owner, COMSIG_ATOM_PRE_EMP_ACT, PROC_REF(absorb_emp)) // VOIDCREW EDIT - BAL-4: one-pulse absorb, was a permanent AddElement(empprotection, SELF|CONTENTS)
 	RegisterSignal(organ_owner, COMSIG_MOB_STATCHANGE, PROC_REF(activate_survival_comsig))
 	RegisterSignal(organ_owner, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp_act))
 
 /obj/item/organ/heart/cybernetic/anomalock/on_mob_remove(mob/living/carbon/organ_owner, special, movement_flags)
 	. = ..()
+	// VOIDCREW EDIT START - BAL-4: the arc effect is an overlay on the BEARER,
+	// and `owner` is already null by the time we get here. Left alone it either
+	// stuck to the body for good or fired its clear timer on an ownerless heart.
+	drop_lightning_overlay(organ_owner)
+	// VOIDCREW EDIT END
 	if(!core)
 		return
 	clear_lightning_overlay(organ_owner)
 	UnregisterSignal(organ_owner, COMSIG_MOB_STATCHANGE)
-	UnregisterSignal(organ_owner, COMSIG_ATOM_EMP_ACT)
-	organ_owner.RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS|EMP_NO_EXAMINE)
+	UnregisterSignal(organ_owner, list(COMSIG_ATOM_PRE_EMP_ACT, COMSIG_ATOM_EMP_ACT)) // VOIDCREW EDIT - BAL-4: matches the insert-side registrations
 	tesla_zap(source = organ_owner, zap_range = 20, power = 2.5e5, cutoff = 1e3)
 	QDEL_IN(src, 0)
 
@@ -80,11 +97,41 @@
 	user.emote("scream")
 	return TRUE
 
-/obj/item/organ/heart/cybernetic/anomalock/proc/on_emp_act(severity)
+// VOIDCREW EDIT START - BAL-4: the one-pulse absorb.
+/// Signal proc for [COMSIG_ATOM_PRE_EMP_ACT] on the bearer: while the flux
+/// capacitors hold charge, eat the whole pulse (self and contents, exactly
+/// what the old permanent element granted) and start the recharge clock.
+/// While drained this returns nothing and the EMP lands normally, which is
+/// what makes EMP a live counter to a chromed-out bearer again.
+/obj/item/organ/heart/cybernetic/anomalock/proc/absorb_emp(datum/source, severity)
+	SIGNAL_HANDLER
+	if(!core || !owner)
+		return NONE
+	if(!COOLDOWN_FINISHED(src, emp_absorb_cooldown))
+		return NONE
+	COOLDOWN_START(src, emp_absorb_cooldown, emp_absorb_cooldown_time)
+	addtimer(CALLBACK(src, PROC_REF(notify_absorb_recharged)), emp_absorb_cooldown_time)
+	add_lightning_overlay(10 SECONDS)
+	playsound(owner, 'sound/items/eshield_recharge.ogg', 60)
+	owner.balloon_alert(owner, "pulse absorbed!")
+	to_chat(owner, span_boldwarning("Your cyberheart shunts the pulse into its flux core. The capacitors are drained; the next one will get through."))
+	return EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS
+
+/// Tells the bearer the capacitors are ready to eat another pulse.
+/obj/item/organ/heart/cybernetic/anomalock/proc/notify_absorb_recharged()
+	if(!owner || !core)
+		return
+	balloon_alert(owner, "flux capacitors recharged")
+	playsound(owner, 'sound/items/eshield_recharge.ogg', 40)
+// VOIDCREW EDIT END
+
+/obj/item/organ/heart/cybernetic/anomalock/proc/on_emp_act(datum/source, severity, protection) // VOIDCREW EDIT - BAL-4: real signal-handler signature (severity used to receive the source atom)
 	SIGNAL_HANDLER
 	add_lightning_overlay(10 SECONDS)
 
 /obj/item/organ/heart/cybernetic/anomalock/proc/add_lightning_overlay(time_to_last = 10 SECONDS)
+	if(!owner) // VOIDCREW EDIT - BAL-4: nothing to draw the arc on, and arming the timer anyway is what used to runtime later
+		return
 	if(lightning_overlay)
 		lightning_timer = addtimer(CALLBACK(src, PROC_REF(clear_lightning_overlay), owner), time_to_last, (TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE|TIMER_DELETE_ME))
 		return
@@ -97,6 +144,7 @@
 	if(lightning_timer)
 		deltimer(lightning_timer)
 	lightning_overlay = null
+// VOIDCREW EDIT END
 
 /obj/item/organ/heart/cybernetic/anomalock/attack_self(mob/user, modifiers)
 	. = ..()
@@ -161,6 +209,7 @@
 	balloon_alert(user, "core installed")
 	playsound(src, 'sound/machines/click.ogg', 30, TRUE)
 	add_organ_trait(TRAIT_SHOCKIMMUNE)
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF) // VOIDCREW EDIT - BAL-4: the cored heart itself never fries, the rest of the body's chrome is only covered while the absorb capacitor holds charge
 	blood_regeneration_multiplier = 21
 	update_icon_state()
 	return ITEM_INTERACT_SUCCESS
@@ -183,6 +232,7 @@
 		user.put_in_hands(core)
 	core = null
 	remove_organ_trait(TRAIT_SHOCKIMMUNE)
+	RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF) // VOIDCREW EDIT - BAL-4
 	update_icon_state()
 
 /obj/item/organ/heart/cybernetic/anomalock/update_icon_state()
@@ -192,7 +242,8 @@
 /obj/item/organ/heart/cybernetic/anomalock/prebuilt/Initialize(mapload)
 	. = ..()
 	core = new /obj/item/assembly/signaler/anomaly/flux(src)
-	add_organ_trait(TRAIT_SHOCKIMMUNE)
+	add_organ_trait(TRAIT_SHOCKIMMUNE) // VOIDCREW EDIT - BAL-4: prebuilt never went through item_interaction, so it shipped without the cored heart's shock immunity or self-shield
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF) // VOIDCREW EDIT - BAL-4
 	blood_regeneration_multiplier = 21
 	update_icon_state()
 

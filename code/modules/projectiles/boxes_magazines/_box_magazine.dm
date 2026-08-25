@@ -35,6 +35,9 @@
 
 	///Whether the magazine should start with nothing in it
 	var/start_empty = FALSE
+	//VOIDCREW EDIT ADDITION BEGIN - what this box is actually worth, snapshotted before a lathe can stamp its print cost over custom_materials. See get_material_composition().
+	var/list/intrinsic_materials
+	//VOIDCREW EDIT ADDITION END
 
 	/// If this and ammo_band_icon aren't null, run update_ammo_band(). Is the color of the band, such as blue on the detective's Iceblox.
 	var/ammo_band_color
@@ -55,7 +58,46 @@
 		qdel(prototype)
 		set_custom_materials(new_materials)
 
+	// VOIDCREW EDIT ADDITION - snapshotted after upstream's start_empty adjustment, so an
+	// empty box is worth its shell and not a full one. See get_material_composition().
+	intrinsic_materials = custom_materials
+	// VOIDCREW EDIT ADDITION END
+
 	update_icon_state()
+
+//VOIDCREW EDIT ADDITION BEGIN
+/**
+ * Report what this box is intrinsically worth rather than whatever was last stamped onto
+ * custom_materials.
+ *
+ * Lathes overwrite a printed item's custom_materials with the whole print cost, via
+ * split_materials_uniformly(), which is meant to spread that cost across the item *and its
+ * contents*. An ammo box has no contents at that moment: top_off(starting = TRUE) fills
+ * stored_ammo with type paths and the rounds are only instantiated later, by get_round() /
+ * ammo_list(). So the box takes that proc's "I am just one thing" fast path and banks the
+ * entire cost of a full box of ammunition all by itself.
+ *
+ * Left alone, you could print a box, empty it into a magazine, feed the empty box back to
+ * the lathe for a full refund and repeat - free ammunition forever, plus the scrap value of
+ * every round on top. A printed box could also be sold on the cargo export pad for its whole
+ * print cost. Note that both halves of the print cost cancel out, so upgrading the lathe's
+ * servos neither opened nor closed the loop.
+ *
+ * Rounds still listed in stored_ammo are deliberately not counted here. Once instantiated
+ * they live in contents, and the material container's user_insert() already walks contents
+ * and credits them separately - counting them here too would pay out twice.
+ */
+/obj/item/ammo_box/get_material_composition(flags)
+	if(isnull(intrinsic_materials))
+		return list()
+
+	. = list()
+	for(var/mat in intrinsic_materials)
+		var/datum/material/material = GET_MATERIAL_REF(mat)
+		var/list/material_comp = material.return_composition(intrinsic_materials[mat], flags)
+		for(var/comp_mat in material_comp)
+			.[comp_mat] += material_comp[comp_mat]
+//VOIDCREW EDIT ADDITION END
 
 /obj/item/ammo_box/Destroy(force)
 	for (var/obj/item/ammo_casing/casing as anything in stored_ammo)

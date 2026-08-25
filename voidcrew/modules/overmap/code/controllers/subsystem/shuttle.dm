@@ -3,6 +3,58 @@
 /datum/controller/subsystem/shuttle
 	var/obj/structure/overmap/ship/loading_ship
 
+/// How long a mid-round berth waits for somebody else's shuttle-template load before
+/// giving up and loading anyway. See setup_shuttle_late().
+#define SHUTTLE_LATE_SETUP_MAX_WAIT (2 MINUTES)
+
+/**
+ * Serialised mid-round shuttle-template load for one stationary berth.
+ *
+ * /obj/docking_port/stationary/LateInitialize() fires once per port, independently, and a
+ * port carrying a roundstart_template answers it by calling action_load() - which SLEEPS
+ * (the map template load and initiate_docking() both yield) while writing to the
+ * SUBSYSTEM-WIDE preview_shuttle, preview_template and preview_reservation.
+ *
+ * Roundstart is safe: SSshuttle/Initialize() runs setup_shuttles() over every mapped port
+ * in one synchronous loop, and LateInitialize does not fire at all before the subsystem is
+ * up. Mid-round is not. Voidcrew stamps whole ruins into reservations mid-round and several
+ * space ruins map more than one templated berth - the Syndicate Ambush maps four - so four
+ * LateInitialize()s land in the same tick and interleave inside one set of singletons: the
+ * second call sees the first's preview_shuttle, jumpToNullSpace()s it and QDEL_NULLs the
+ * reservation it is still standing in, and the first wakes to write into a null
+ * preview_shuttle ("Cannot modify null.timer", the CRASH at shuttle.dm:927).
+ *
+ * What an interleave strands is permanent: a registered mobile port that never docked
+ * anywhere, its stationary port, the transit reservation it was loaded into, and every
+ * pipeline in its hull. Measured on the 2026-08-19 soak, one Syndicate Ambush ruin leaked
+ * 4 mobile ports, 4 stationary ports, 2 turf reservations and 32 pipelines in a single
+ * load - and the leaked ports then made every later ruin reservation allocated over their
+ * coordinates refuse its own teardown, because can_release_interior() reads a port
+ * standing in the block as a hull that must not be recycled.
+ *
+ * Takes the same `shuttle_loading` latch create_ship() and the NPC ship spawner already
+ * take, so all three mid-round producers queue behind each other rather than each only
+ * behind itself. Bounded rather than a bare UNTIL(): a runtime inside somebody else's
+ * latched load unwinds without clearing the flag, and a berth that waits forever is a
+ * worse failure than one that loads late.
+ */
+/datum/controller/subsystem/shuttle/proc/setup_shuttle_late(obj/docking_port/stationary/port)
+	var/give_up_at = world.time + SHUTTLE_LATE_SETUP_MAX_WAIT
+	while(shuttle_loading)
+		if(world.time >= give_up_at)
+			stack_trace("SSshuttle: a shuttle template load held shuttle_loading for over [SHUTTLE_LATE_SETUP_MAX_WAIT / 10]s - loading [port]'s template anyway.")
+			break
+		stoplag(1)
+
+	if(QDELETED(port))
+		return
+
+	shuttle_loading = TRUE
+	port.load_roundstart()
+	shuttle_loading = FALSE
+
+#undef SHUTTLE_LATE_SETUP_MAX_WAIT
+
 /datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme)
 	RETURN_TYPE(/obj/structure/overmap/ship)
 
@@ -47,6 +99,8 @@
 		else
 			stack_trace("Ship theme [selected_theme.id] points at a missing map: [template_instance.mappath]")
 
+	var/datum/worldgen_probe/probe = worldgen_begin("ship", "[template_instance.name] theme=[selected_theme?.id || "default"]")
+
 	// Create ship and set template directly as a workaround for Initialize arg passing
 	// Ships spawn in the green zone (outer ring) for safety
 	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
@@ -55,6 +109,7 @@
 	if(!ship_to_spawn || QDELETED(ship_to_spawn))
 		stack_trace("Unable to properly load ship [ship_template_to_spawn].")
 		shuttle_loading = FALSE
+		worldgen_end(probe, "spawn-failed")
 		return FALSE
 
 	// Store upgrade selections and theme BEFORE setup_from_template (module job_slots_add
@@ -69,6 +124,7 @@
 		stack_trace("Ship failed to setup from template [ship_template_to_spawn].")
 		qdel(ship_to_spawn)
 		shuttle_loading = FALSE
+		worldgen_end(probe, "setup-failed")
 		return FALSE
 
 	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
@@ -83,9 +139,18 @@
 	shuttle_loading = FALSE
 
 	if(!loaded)
-		stack_trace("Unable to properly load ship template [ship_to_spawn.source_template].")
+		// A refusal for want of transit map volume (world.maxz at its ceiling with the
+		// reserved levels momentarily full) is a capacity condition that clears in
+		// seconds, not a code fault - log it as such and spare the stack trace for
+		// loads that fail with room available.
+		var/at_capacity = SSmapping.at_z_level_ceiling()
+		if(at_capacity)
+			log_mapping("SSshuttle: create_ship refused for '[ship_to_spawn.source_template]' - no transit map volume free (world.maxz at its ceiling)")
+		else
+			stack_trace("Unable to properly load ship template [ship_to_spawn.source_template].")
 		loading_ship = null
 		qdel(ship_to_spawn)
+		worldgen_end(probe, at_capacity ? "load-refused-capacity" : "load-failed")
 		return FALSE
 
 	loaded.current_ship = ship_to_spawn
@@ -96,9 +161,11 @@
 	// the template load asserted on our areas
 	ship_to_spawn.update_flight_parallax()
 
-	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
-
+	// Mass must exist before the signal: SHIP_LOADED handlers (shield generators among
+	// them) read ship.mass for power pricing, and at this point it is still null
 	ship_to_spawn.calculate_mass()
+
+	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 
 	// assign landmarks as needed - use shuttle areas or fallback to shuttle location
 	var/turf/safe_turf
@@ -118,6 +185,12 @@
 		new /obj/effect/landmark/blobstart(safe_turf) // Stationloving component
 		new /obj/effect/landmark/observer_start(safe_turf) // Observer and Unit tests
 
+	// No hull configuration may launch without breathing gear, or without a
+	// surgical kit if it has somewhere to operate (BAL-6) - see
+	// voidcrew/modules/shuttle/ship_parts/starter_supplies.dm
+	loaded.ensure_starter_supplies()
+
+	worldgen_end(probe)
 	return ship_to_spawn
 
 /client/add_admin_verbs()

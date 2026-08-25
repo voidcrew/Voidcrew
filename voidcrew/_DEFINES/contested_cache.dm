@@ -1,4 +1,4 @@
-// Contested cache — galaxy-wide announced PvP loot event.
+// Contested cache: galaxy-wide announced PvP loot event.
 // See voidcrew/modules/contested_cache/contested_cache.dm
 
 /// Earliest the first contested cache may surface into the round.

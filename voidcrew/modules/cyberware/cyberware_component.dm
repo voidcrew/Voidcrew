@@ -2,10 +2,10 @@
  * # Cyberware component
  *
  * The one datum that makes an organ count as chrome. Both organ bases
- * (/obj/item/organ/cyberimp/cyberware and /obj/item/organ/eyes/robotic/cyberware
- * — single inheritance forces the split) attach one of these, and everything
- * that has to treat "all cyberware" uniformly — load sums, capacity, the
- * brownout monitor, install contexts, EMP downtime — reads and writes it
+ * (/obj/item/organ/cyberimp/cyberware and /obj/item/organ/eyes/robotic/cyberware,
+ * single inheritance forces the split) attach one of these, and everything
+ * that has to treat "all cyberware" uniformly. Load sums, capacity, the
+ * brownout monitor, install contexts, EMP downtime. Reads and writes it
  * through GetComponent rather than caring which base a ware hangs off.
  *
  * Chrome load is never stored as a counter on the mob: it is recomputed live
@@ -16,8 +16,8 @@
  * The brownout monitor self-wires: COMSIG_ORGAN_IMPLANTED / _REMOVED are sent
  * on the organ itself, so the component hears its own installs without either
  * organ base carrying any monitor code. While a body's total load exceeds its
- * capacity, EVERY installed piece of chrome gains ORGAN_FAILING — legible,
- * all-or-nothing — and recovers the moment the load drops back under.
+ * capacity, EVERY installed piece of chrome gains ORGAN_FAILING, legible,
+ * all-or-nothing, and recovers the moment the load drops back under.
  * Removal is never blocked; pulling ware out IS the fix.
  */
 /datum/component/cyberware
@@ -25,13 +25,17 @@
 	var/chrome_load = 0
 	/// CYBERWARE_TIER_*, drives accent colours and Splice's bedside manner.
 	var/tier = CYBERWARE_TIER_1
-	/// Chrome capacity this ware ADDS to its bearer while installed — the
+	/// Chrome capacity this ware ADDS to its bearer while installed, the
 	/// Overclock Governor hook. Load 0 + bonus 6 is a Governor.
 	var/capacity_bonus = 0
 	/// TRUE while the bearer is over capacity and this ware is browned out.
 	var/browned_out = FALSE
 	/// TRUE while rebooting from an EMP hit.
 	var/emp_down = FALSE
+	/// TRUE while the ware's failing-gated passive layer (organ_traits,
+	/// physiology armor/mods) is applied to a bearer. The edge latch behind
+	/// chrome_passives_on/off, so those hooks fire exactly once per flip.
+	var/passives_online = FALSE
 	/// Timer for the pending EMP reboot.
 	var/emp_timer
 	/// Who this ware currently has an install window open for. Weakref so a
@@ -39,6 +43,10 @@
 	var/datum/weakref/install_context_ref
 	/// world.time at which the install window closes.
 	var/install_context_until = 0
+	/// TRUE when the open window was granted by admin fiat. A forced window
+	/// waives the capacity ceiling as well as the context check, the ware goes
+	/// in over budget and the brownout monitor takes it from there.
+	var/install_context_forced = FALSE
 
 /datum/component/cyberware/Initialize(chrome_load = 0, tier = CYBERWARE_TIER_1, capacity_bonus = 0)
 	if(!isorgan(parent))
@@ -59,6 +67,7 @@
 		deltimer(emp_timer)
 		emp_timer = null
 	install_context_ref = null
+	install_context_forced = FALSE
 	return ..()
 
 // ---- Brownout monitor --------------------------------------------------
@@ -68,20 +77,34 @@
 /datum/component/cyberware/proc/on_implanted(datum/source, mob/living/carbon/new_owner)
 	SIGNAL_HANDLER
 	RegisterSignals(new_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN), PROC_REF(on_owner_organs_changed))
+	// Per-tick settle: catches ORGAN_FAILING flips that never pass through
+	// this component (tg's apply_organ_damage() sets/clears the flag directly
+	// at the damage ceiling). Two comparisons a tick; Dead Channel precedent.
+	RegisterSignal(new_owner, COMSIG_LIVING_LIFE, PROC_REF(on_owner_life))
 	cyberware_reevaluate_brownout(new_owner)
+	settle_passives(new_owner)
+	if(!passives_online)
+		// Inserted while still failing (EMP reboot ticking outside the body,
+		// or straight into a brownout): tg's on_mob_insert just granted the
+		// organ_traits unconditionally, so take the passive layer back off.
+		var/obj/item/organ/ware = parent
+		ware.chrome_passives_off(new_owner)
 
 /// Signal proc for [COMSIG_ORGAN_REMOVED]: chrome outside a body is just a
-/// part again — drop the brownout (EMP downtime keeps ticking) and let the
+/// part again, drop the brownout (EMP downtime keeps ticking) and let the
 /// old bearer's remaining chrome re-settle without our load.
 /datum/component/cyberware/proc/on_removed(datum/source, mob/living/carbon/old_owner)
 	SIGNAL_HANDLER
-	UnregisterSignal(old_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN))
+	UnregisterSignal(old_owner, list(COMSIG_CARBON_GAIN_ORGAN, COMSIG_CARBON_LOSE_ORGAN, COMSIG_LIVING_LIFE))
+	// Owner is already null by the time this signal fires, so this settles the
+	// passive layer OFF while we still hold a real bearer to take it off of.
+	settle_passives(old_owner)
 	set_browned_out(FALSE)
 	cyberware_reevaluate_brownout(old_owner)
 
 /// Signal proc for [COMSIG_CARBON_GAIN_ORGAN] and [COMSIG_CARBON_LOSE_ORGAN]
 /// on the bearer. Every installed ware listens with its own component, so a
-/// change re-evaluates N times — the evaluation is idempotent and only the
+/// change re-evaluates N times. The evaluation is idempotent and only the
 /// first caller does the flipping.
 /datum/component/cyberware/proc/on_owner_organs_changed(mob/living/carbon/source, obj/item/organ/changed, special)
 	SIGNAL_HANDLER
@@ -120,7 +143,7 @@
 		ware.owner.balloon_alert(ware.owner, "[ware.name] back online")
 
 /// Cradle tune-up: cancels any pending EMP reboot and repairs the organ
-/// outright. Cannot fix a brownout — that is a load problem, not damage.
+/// outright. Cannot fix a brownout, that is a load problem, not damage.
 /datum/component/cyberware/proc/tune_up()
 	if(emp_timer)
 		deltimer(emp_timer)
@@ -139,16 +162,60 @@
 		ware.organ_flags |= ORGAN_FAILING
 	else if(ware.damage < ware.maxHealth)
 		ware.organ_flags &= ~ORGAN_FAILING
+	// Removal settles through on_removed() with the old bearer instead; owner
+	// is already null on that path and the passive layer needs a real mob.
+	if(ware.owner)
+		settle_passives(ware.owner)
+
+/**
+ * Edge-settles the ware's failing-gated passive layer (BAL-4).
+ *
+ * Passives are ON exactly while the ware is installed in `bearer` and not
+ * ORGAN_FAILING; everything else, EMP reboot, brownout, damage failure,
+ * removal, is OFF. The passives_online latch makes each flip fire the
+ * matching chrome_passives_on/off hook exactly once, which is what lets the
+ * hooks carry non-idempotent physiology work.
+ *
+ * Our own two failure sources are read directly as well as through the flag.
+ * ORGAN_FAILING is a shared bit that anything may write: tg's
+ * apply_organ_damage() clears it unconditionally the moment damage drops
+ * below the ceiling, so a single point of organ healing landing on a bearer
+ * mid-EMP would otherwise hand the whole passive layer back before the
+ * reboot timer had run. Reading browned_out/emp_down too can only ever hold
+ * passives down longer, never bring them up early.
+ */
+/datum/component/cyberware/proc/settle_passives(mob/living/carbon/bearer)
+	var/obj/item/organ/ware = parent
+	var/installed_here = !QDELETED(ware) && bearer && ware.owner == bearer
+	var/ware_running = !browned_out && !emp_down && !(ware.organ_flags & ORGAN_FAILING)
+	var/should_be_online = installed_here && ware_running
+	if(passives_online == !!should_be_online)
+		return
+	passives_online = !!should_be_online
+	if(passives_online)
+		ware.chrome_passives_on(bearer)
+	else
+		ware.chrome_passives_off(bearer)
+
+/// Signal proc for [COMSIG_LIVING_LIFE] on the bearer: the per-tick catch-all
+/// settle (see the registration comment in on_implanted()).
+/datum/component/cyberware/proc/on_owner_life(mob/living/carbon/source, seconds_per_tick, times_fired)
+	SIGNAL_HANDLER
+	settle_passives(source)
 
 // ---- Install context ---------------------------------------------------
 // Cyberware refuses Insert() outside a legit context: organ-manipulation
 // surgery opens a window in pre_surgical_insertion, the Chrome Cradle opens
-// one right before it inserts, and special = TRUE (init/admin) bypasses the
-// gate entirely. Bare autosurgeons never open one — that is the point.
+// one right before it inserts, the "Cyberware: Install Chrome" admin verb
+// opens a forced one, and special = TRUE (init) bypasses the gate entirely.
+// Bare autosurgeons never open one, that is the point. VV-inserting an organ
+// onto a mob goes through the same live Insert(), so it hits the same wall;
+// the admin verb is the supported way in.
 
-/datum/component/cyberware/proc/grant_install_context(mob/living/carbon/target, duration = CYBERWARE_INSTALL_CONTEXT_WINDOW)
+/datum/component/cyberware/proc/grant_install_context(mob/living/carbon/target, duration = CYBERWARE_INSTALL_CONTEXT_WINDOW, forced = FALSE)
 	install_context_ref = WEAKREF(target)
 	install_context_until = world.time + duration
+	install_context_forced = forced
 
 /datum/component/cyberware/proc/has_install_context(mob/living/carbon/target)
 	return target && install_context_ref?.resolve() == target && world.time <= install_context_until
@@ -156,6 +223,7 @@
 /datum/component/cyberware/proc/clear_install_context()
 	install_context_ref = null
 	install_context_until = 0
+	install_context_forced = FALSE
 
 // ---- Global helpers ----------------------------------------------------
 
@@ -238,7 +306,7 @@
 			any_recovered = TRUE
 	if(newly_tripped)
 		target.balloon_alert(target, "chrome brownout!")
-		to_chat(target, span_boldwarning("Your chrome browns out — too much load on the wetware. Shed some ware to bring it back."))
+		to_chat(target, span_boldwarning("Your chrome browns out. Too much load on the wetware. Shed some ware to bring it back."))
 		do_sparks(2, TRUE, target)
 	else if(any_recovered)
 		target.balloon_alert(target, "chrome back online")

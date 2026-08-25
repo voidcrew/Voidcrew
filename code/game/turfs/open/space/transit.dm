@@ -36,6 +36,21 @@
 /turf/open/space/transit/proc/initialize_drifting(atom/entered, atom/movable/enterer)
 	SIGNAL_HANDLER
 
+	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
+	// does not take hold. The tiles are still vacuum and you still get around by pushing off
+	// the hull; all the grace buys is not being dragged off the instant you step out of an
+	// airlock in flight. See voidcrew/edits/hyperspace_overboard.dm. Deliberately ahead of the
+	// TRAIT_HYPERSPACED check below, so somebody hyperspace ALREADY has hold of gets caught
+	// when they drift back into a hull's lee. Living mobs only, and never anything holding
+	// a hyperspace exemption - confined ship debris is meant to keep flying (ship_debris.dm).
+	if(isliving(enterer) && !HAS_TRAIT(enterer, TRAIT_FREE_HYPERSPACE_MOVEMENT))
+		var/obj/docking_port/mobile/holding = hyperspace_hull_near(src)
+		if(holding)
+			if(!enterer.GetComponent(/datum/component/hyperspace_hull_grip))
+				enterer.AddComponent(/datum/component/hyperspace_hull_grip, holding)
+			return
+	// VOIDCREW EDIT ADDITION END
+
 	if(enterer && !HAS_TRAIT(enterer, TRAIT_HYPERSPACED) && !HAS_TRAIT(src, TRAIT_HYPERSPACE_STOPPED))
 		enterer.AddComponent(/datum/component/shuttle_cling, REVERSE_DIR(dir))
 
@@ -64,6 +79,16 @@
 	if(HAS_TRAIT(dumpee, TRAIT_DEL_ON_SPACE_DUMP))
 		qdel(dumpee)
 		return
+
+	// VOIDCREW EDIT ADDITION START - land them somewhere that exists. The CROSSLINKED levels
+	// the throw below picks from are this fork's unused "Ruin Area"/"Empty Area" z-levels:
+	// uninitialised space from corner to corner, no gravity and nothing to push off, which
+	// makes landing on one a permanent softlock. See voidcrew/edits/hyperspace_overboard.dm.
+	// Falls through to upstream only when the round has no loaded site and no other ship
+	// anywhere, which outside of unit tests it never does.
+	if(voidcrew_dump_in_space(dumpee))
+		return
+	// VOIDCREW EDIT ADDITION END
 
 	var/max = world.maxx-TRANSITIONEDGE
 	var/min = 1+TRANSITIONEDGE

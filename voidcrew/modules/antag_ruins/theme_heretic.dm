@@ -1,13 +1,13 @@
 /**
- * # The Reliquary — heretic vestige
+ * # The Reliquary: heretic vestige
  *
  * A shrine ship parked in front of a door to the Mansus that never opened.
  * The scholar aboard transcribed at that threshold for a lifetime while the
- * rust — the door's toll, paid in iron — ate the ship around them. The trials
+ * rust (the door's toll, paid in iron) ate the ship around them. The trials
  * are the Scrivener's own work, farmed out: spreading the rust, transcribing
  * locked doors, paying tolls; the boons are pages copied from the threshold: clean
  * heretic path spells granted directly where their cast chains carry no
- * IS_HERETIC gate (ash jaunt, ashen walk, shadow cloak — verified against
+ * IS_HERETIC gate (ash jaunt, ashen walk, shadow cloak, verified against
  * live code), and local ports where the upstream spell couples to the
  * heretic datum (the rusted grasp; see each spell's doc comment).
  */
@@ -94,7 +94,7 @@
 	if(!do_after(user, 2 SECONDS, interacting_with))
 		return ITEM_INTERACT_BLOCKING
 	interacting_with.rust_heretic_act()
-	// Some turfs refuse the element (space, already-special turfs) — only credit a real conversion
+	// Some turfs refuse the element (space, already-special turfs), only credit a real conversion
 	if(!HAS_TRAIT(interacting_with, TRAIT_RUSTY))
 		balloon_alert(user, "it won't take!")
 		return ITEM_INTERACT_BLOCKING
@@ -156,7 +156,7 @@
 	if(!istype(trial))
 		balloon_alert(user, "the quill won't write!")
 		return ITEM_INTERACT_BLOCKING
-	// No pressing it to the vestige's own doors — those pages are the patron's, already written
+	// No pressing it to the vestige's own doors. Those pages are the patron's, already written
 	if(istype(get_area(door), /area/ruin/space/has_grav/vestige))
 		balloon_alert(user, "these doors don't count!")
 		return ITEM_INTERACT_BLOCKING
@@ -178,7 +178,7 @@
 	trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
 		return ITEM_INTERACT_BLOCKING
-	// Opening the door mid-reading breaks the line — its keepers can foil the rite by simply using it
+	// Opening the door mid-reading breaks the line. Its keepers can foil the rite by simply using it
 	if(!has_sentence(door))
 		balloon_alert(user, "the door opened!")
 		return ITEM_INTERACT_BLOCKING
@@ -205,9 +205,9 @@
 	// Keep the desc's "six" and its roll-call in sync with toll_instruments below
 	// (initial values must be constant, so no define interpolation here)
 	desc = "Every threshold takes a toll. Take the casket and feed it six different tools - screwdriver, wrench, wirecutters, crowbar, welder, multitool. Each one has to be paid standing next to a door. Tools are the only coin a threshold takes."
-	/// Tool behaviours the toll accepts — the six instruments of opening
+	/// Tool behaviours the toll accepts: the six instruments of opening
 	var/list/toll_instruments = list(TOOL_SCREWDRIVER, TOOL_WRENCH, TOOL_WIRECUTTER, TOOL_CROWBAR, TOOL_WELDER, TOOL_MULTITOOL)
-	/// Instruments already fed to the casket (tool behaviour -> TRUE) — duplicates are not payment
+	/// Instruments already fed to the casket (tool behaviour -> TRUE). Duplicates are not payment
 	var/list/instruments_paid = list()
 
 /datum/vestige_trial/rite_of_toll/on_accepted(mob/living/user)
@@ -268,7 +268,7 @@
 	var/instrument_kind = tool.tool_behaviour
 	if(!(instrument_kind in trial.toll_instruments) || trial.instruments_paid[instrument_kind])
 		return ITEM_INTERACT_BLOCKING
-	// Take the payment before crediting it — a tool that refuses to leave the hand pays nothing
+	// Take the payment before crediting it. A tool that refuses to leave the hand pays nothing
 	if(!user.temporarilyRemoveItemFromInventory(tool))
 		balloon_alert(user, "it won't leave your hand!")
 		return ITEM_INTERACT_BLOCKING
@@ -278,7 +278,7 @@
 	)
 	playsound(src, 'sound/items/tools/welder.ogg', 50, TRUE)
 	qdel(tool)
-	trial.pay(instrument_kind) // may complete (and delete) the trial — nothing below may touch it
+	trial.pay(instrument_kind) // may complete (and delete) the trial. Nothing below may touch it
 	return ITEM_INTERACT_SUCCESS
 
 /// The toll is paid in a door's shadow: TRUE if any door stands within a step of the casket
@@ -295,7 +295,7 @@
 
 // The passage, the walk and the cloak are "clean" heretic magic used directly:
 // spell_requirements = NONE upstream, no IS_HERETIC gate anywhere in their
-// cast chains (the whole spell_types/jaunt/ module is antag-free — verified).
+// cast chains (the whole spell_types/jaunt/ module is antag-free, verified).
 // The rust boons further down are local ports; each spell's doc comment
 // records exactly what upstream coupling forced the copy.
 /datum/vestige_boon/spell/ashen_passage
@@ -342,8 +342,8 @@
 
 /**
  * The passage, slowed down and given a voice. Upstream's ash jaunt is silent
- * on purpose — it nulls both the cast sound and exit_jaunt_sound the base
- * ethereal jaunt carries — and recharges in 15 seconds, which for a crewman is
+ * on purpose, it nulls both the cast sound and exit_jaunt_sound the base
+ * ethereal jaunt carries, and recharges in 15 seconds, which for a crewman is
  * a wall that may as well not be there. Subtyped rather than edited in place so
  * the heretic's own passage keeps upstream's numbers.
  */
@@ -362,23 +362,23 @@
 
 /**
  * A rust-fist in the Scrivener's style, standing in for the Mansus grasp. The
- * upstream grasp is hard-coupled — its can_cast_spell demands IS_HERETIC or
+ * upstream grasp is hard-coupled. Its can_cast_spell demands IS_HERETIC or
  * IS_LUNATIC, and all of its interesting effects ride heretic knowledge
- * signals — so this is a fresh touch spell on the same chassis (the touch
- * base class in _touch.dm carries no antag checks — verified).
+ * signals, so this is a fresh touch spell on the same chassis (the touch
+ * base class in _touch.dm carries no antag checks, verified).
  *
  * One hand, four confessions, all tuned below the antag original (which
  * deals 80 stamina plus a 5-second knockdown on a 10-second loop):
  * - the living: a stamina sap and a rusted tongue; no knockdown at this tier
- * - airlocks: loseMainPower — ~60 seconds without power, pryable meanwhile
+ * - airlocks: loseMainPower: ~60 seconds without power, pryable meanwhile
  * - machines and structures: corrosion damage plus the rust element, so the
  *   hit is visible; still far below the flat 500 the heretic
  *   rust_heretic_act deals to machinery. The damage carries no armour flag on
- *   purpose — machinery melee armour was soaking a third to a half of it, and
+ *   purpose, machinery melee armour was soaking a third to a half of it, and
  *   plating is not an argument against oxidation.
  * - walls and floors: a single aimed turf rusted, never a spread. Strength 2
  *   reads basic and reinforced iron; the second reading's 3 adds titanium and
- *   plastitanium, which in this fork means ship hulls and shuttle plating —
+ *   plastitanium, which in this fork means ship hulls and shuttle plating,
  *   most of what a crewman ever stands on. Earth (planet ground, ice, sand,
  *   wood: RUST_RESISTANCE_ORGANIC) answers to neither tier, and an already
  *   rusted turf is refused rather than scraped away, so the grasp cannot
@@ -398,18 +398,18 @@
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	antimagic_flags = MAGIC_RESISTANCE | MAGIC_RESISTANCE_HOLY
 	hand_path = /obj/item/melee/touch_attack/vestige_rust
-	/// Strength passed to rust_heretic_act — 2 reads basic and reinforced iron, 3 (the second reading) reads titanium hulls
+	/// Strength passed to rust_heretic_act: 2 reads basic and reinforced iron, 3 (the second reading) reads titanium hulls
 	var/rust_strength = 2
 	/// Stamina sapped from living victims
 	var/stamina_sap = 50
 	/// Brute dealt to machines and structures
 	var/corrosion_damage = 150
-	/// Knockdown applied to living victims — 0 until the second reading
+	/// Knockdown applied to living victims: 0 until the second reading
 	var/knockdown_time = 0
 
 /**
  * The second reading: mastery, not arithmetic. The loop tightens, the rust
- * learns titanium, and the living buckle for a moment — still well short of
+ * learns titanium, and the living buckle for a moment, still well short of
  * the antag grasp's 5-second drop.
  */
 /datum/action/cooldown/spell/touch/vestige_rusted_grasp/second_reading
@@ -441,7 +441,7 @@
 	if(ismachinery(victim) || isstructure(victim))
 		return grasp_object(victim, caster)
 	caster.balloon_alert(caster, "nothing to rust!")
-	return FALSE // no confession in it — keep the hand
+	return FALSE // no confession in it, keep the hand
 
 /// The living confess in stamina: a sap, a rusted tongue, and (once upgraded) buckled knees
 /datum/action/cooldown/spell/touch/vestige_rusted_grasp/proc/grasp_living(mob/living/victim, mob/living/carbon/caster)
@@ -471,8 +471,8 @@
 		caster.balloon_alert(caster, "already rusted!")
 		return FALSE
 	surface.rust_heretic_act(rust_strength)
-	// Anything that was never iron — planet ground, ice, wood, space itself —
-	// refuses the reading. Keep the hand rather than waste it, and say why
+	// Anything that was never iron, planet ground, ice, wood, space itself.
+	// Refuses the reading. Keep the hand rather than waste it, and say why
 	if(!HAS_TRAIT(surface, TRAIT_RUSTY))
 		caster.balloon_alert(caster, "it won't take!")
 		to_chat(caster, span_warning("[surface] does not answer. Whatever it is made of was never iron."))
@@ -531,7 +531,7 @@
  * whole separate boon on its own cooldown, so the gate meant "this boon does
  * nothing unless you also took that one". The wall the spell raises is rusted
  * regardless (the parent's cast rusts it as it goes up), which is the part that
- * ever mattered. Closed turfs are still refused up front — the parent would
+ * ever mattered. Closed turfs are still refused up front, the parent would
  * crumble them through the heretic-only do_rust_heretic_act path, which
  * silently does nothing for a plain crewman.
  */

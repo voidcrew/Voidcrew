@@ -1,0 +1,256 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/template_noop,
+/area/template_noop)
+"ak" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"al" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/glass{
+	pixel_y = 6
+	},
+/obj/item/stack/sheet/iron{
+	pixel_y = 2
+	},
+/obj/item/stack/cable_coil/five{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"am" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 2
+	},
+/obj/machinery/light/directional/south,
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high{
+	pixel_x = -8;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ao" = (
+/obj/item/stack/sheet/iron{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ap" = (
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"as" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"at" = (
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"au" = (
+/obj/item/t_scanner{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"az" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 4
+	},
+/obj/item/multitool{
+	pixel_x = 7;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aH" = (
+/obj/structure/table/reinforced,
+/obj/item/assembly/prox_sensor{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/storage/part_replacer{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aI" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/modular_map_connector,
+/obj/structure/closet/toolcloset,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aJ" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aK" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aN" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aO" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/machinery/rnd/production/techfab,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aP" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aV" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/machinery/rnd/production/circuit_imprinter,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aZ" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"fQ" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 2
+	},
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"us" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 2
+	},
+/obj/machinery/light/directional/south,
+/obj/structure/rack,
+/obj/item/weldingtool{
+	pixel_y = 7
+	},
+/obj/item/wirecutters{
+	pixel_y = 1
+	},
+/obj/item/screwdriver{
+	pixel_y = -5
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Jp" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"UQ" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	dir = 1
+	},
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/iron,
+/obj/item/analyzer,
+/obj/item/pipe_dispenser,
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+aJ
+aK
+aK
+az
+aI
+"}
+(2,1,1) = {"
+aV
+aP
+au
+at
+aZ
+"}
+(3,1,1) = {"
+aO
+ao
+aP
+aP
+aZ
+"}
+(4,1,1) = {"
+al
+aP
+aP
+aH
+am
+"}
+(5,1,1) = {"
+ak
+aP
+aN
+aP
+aZ
+"}
+(6,1,1) = {"
+Jp
+as
+aP
+as
+fQ
+"}
+(7,1,1) = {"
+UQ
+as
+aa
+as
+us
+"}

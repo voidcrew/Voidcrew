@@ -1,119 +1,132 @@
 {
 	"dm_type": "/datum/bt_node/subtree/npc_ship_movement",
-	"type": "decorator",
-	"decorator": "/datum/bt_node/decorator/npc_ship_flying",
-	"child": {
-		"type": "selector",
-		"children": [
-			{
-				"type": "decorator",
-				"decorator": "/datum/bt_node/decorator/npc_movement_retreating",
-				"child": {
-					"type": "leaf",
-					"behavior": "/datum/bt_node/ai_behavior/npc_ship/retreat"
-				}
-			},
-			{
-				"type": "decorator",
-				"decorator": "/datum/bt_node/decorator/npc_outside_spawn_zone",
-				"child": {
-					"type": "parallel",
-					"success_policy": "BT_PARALLEL_SUCCESS_ALL",
-					"children": [
-						{
-							"type": "leaf",
-							"behavior": "/datum/bt_node/ai_behavior/npc_ship/leave_zone_cleanup"
-						},
-						{
-							"type": "leaf",
-							"behavior": "/datum/bt_node/ai_behavior/npc_ship/return_to_zone"
-						}
-					]
-				}
-			},
-			{
-				"type": "decorator",
-				"decorator": "/datum/bt_node/decorator/npc_has_combat_target",
-				"child": {
-					"type": "parallel",
-					"success_policy": "BT_PARALLEL_SUCCESS_ALL",
-					"children": [
-						{
-							"type": "leaf",
-							"behavior": "/datum/bt_node/ai_behavior/npc_ship/mark_had_target"
-						},
-						{
-							"type": "leaf",
-							"behavior": "/datum/bt_node/ai_behavior/npc_ship/chase"
-						}
-					]
-				}
-			},
-			{
-				"type": "parallel",
-				"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+	"type": "selector",
+	"children": [
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/npc_ship_flying",
+			"child": {
+				"type": "selector",
 				"children": [
 					{
-						"type": "leaf",
-						"behavior": "/datum/bt_node/ai_behavior/npc_ship/resolve_lost_target"
+						"type": "decorator",
+						"decorator": "/datum/bt_node/decorator/npc_movement_retreating",
+						"child": {
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/retreat"
+						}
 					},
 					{
-						"type": "selector",
+						"type": "decorator",
+						"decorator": "/datum/bt_node/decorator/npc_outside_spawn_zone",
+						"child": {
+							"type": "parallel",
+							"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+							"children": [
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/leave_zone_cleanup"
+								},
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/return_to_zone"
+								}
+							]
+						}
+					},
+					{
+						"type": "decorator",
+						"decorator": "/datum/bt_node/decorator/npc_has_combat_target",
+						"child": {
+							"type": "parallel",
+							"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+							"children": [
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/mark_had_target"
+								},
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/chase"
+								}
+							]
+						}
+					},
+					{
+						"type": "parallel",
+						"success_policy": "BT_PARALLEL_SUCCESS_ALL",
 						"children": [
 							{
-								"type": "decorator",
-								"decorator": "/datum/bt_node/decorator/npc_movement_mode/idle",
-								"child": {
-									"type": "leaf",
-									"behavior": "/datum/bt_node/ai_behavior/npc_ship/movement_hold"
-								}
+								"type": "leaf",
+								"behavior": "/datum/bt_node/ai_behavior/npc_ship/resolve_lost_target"
 							},
 							{
-								"type": "decorator",
-								"decorator": "/datum/bt_node/decorator/npc_movement_mode/patrol",
-								"child": {
-									"type": "leaf",
-									"behavior": "/datum/bt_node/ai_behavior/npc_ship/patrol"
-								}
-							},
-							{
-								"type": "decorator",
-								"decorator": "/datum/bt_node/decorator/npc_movement_mode/return_to_route",
-								"child": {
-									"type": "leaf",
-									"behavior": "/datum/bt_node/ai_behavior/npc_ship/return_to_route"
-								}
-							},
-							{
-								"type": "decorator",
-								"decorator": "/datum/bt_node/decorator/npc_movement_mode/roaming",
-								"child": {
-									"type": "leaf",
-									"behavior": "/datum/bt_node/ai_behavior/npc_ship/roaming"
-								}
-							},
-							{
-								"type": "decorator",
-								"decorator": "/datum/bt_node/decorator/npc_movement_mode/chase",
-								"child": {
-									"type": "parallel",
-									"success_policy": "BT_PARALLEL_SUCCESS_ALL",
-									"children": [
-										{
+								"type": "selector",
+								"children": [
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/npc_movement_mode/idle",
+										"child": {
 											"type": "leaf",
-											"behavior": "/datum/bt_node/ai_behavior/npc_ship/chase_mode_reset"
-										},
-										{
+											"behavior": "/datum/bt_node/ai_behavior/npc_ship/movement_hold"
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/npc_movement_mode/patrol",
+										"child": {
 											"type": "leaf",
 											"behavior": "/datum/bt_node/ai_behavior/npc_ship/patrol"
 										}
-									]
-								}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/npc_movement_mode/return_to_route",
+										"child": {
+											"type": "leaf",
+											"behavior": "/datum/bt_node/ai_behavior/npc_ship/return_to_route"
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/npc_movement_mode/roaming",
+										"child": {
+											"type": "leaf",
+											"behavior": "/datum/bt_node/ai_behavior/npc_ship/roaming"
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/npc_movement_mode/chase",
+										"child": {
+											"type": "parallel",
+											"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+											"children": [
+												{
+													"type": "leaf",
+													"behavior": "/datum/bt_node/ai_behavior/npc_ship/chase_mode_reset"
+												},
+												{
+													"type": "leaf",
+													"behavior": "/datum/bt_node/ai_behavior/npc_ship/patrol"
+												}
+											]
+										}
+									}
+								]
 							}
 						]
 					}
 				]
 			}
-		]
-	}
+		},
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/npc_ship_parked",
+			"child": {
+				"type": "leaf",
+				"behavior": "/datum/bt_node/ai_behavior/npc_ship/undock_recovery"
+			}
+		}
+	]
 }

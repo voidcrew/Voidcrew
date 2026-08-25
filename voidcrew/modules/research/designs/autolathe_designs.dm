@@ -21,3 +21,24 @@
 		RND_CATEGORY_MODULAR_COMPUTERS + RND_SUBCATEGORY_MODULAR_COMPUTERS_PARTS,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/**
+ * Crews here live off salvaged ballistics, and on a station-less map "hack the
+ * autolathe" is the only path tg leaves to the common calibers - running dry
+ * mid-fight was a recorded playtest death (BAL-6). Unlock the basic lethal
+ * calibers on every autolathe from the start.
+ *
+ * Kept to the workhorse rounds looted guns actually chamber (9mm, 10mm, .45,
+ * .310 surplus). The .357 casing, incendiary slugs and chemical darts stay
+ * behind the hacked list on purpose.
+ */
+/datum/techweb/autounlocking/autolathe/New()
+	. = ..()
+	var/static/list/voidcrew_extra_designs = list(
+		"c9mm",
+		"c10mm",
+		"c45",
+		"strilka310_surplus",
+	)
+	for(var/design_id in voidcrew_extra_designs)
+		add_design_by_id(design_id)

@@ -25,6 +25,12 @@ SUBSYSTEM_DEF(pathfinder)
 // We'll use a copy for this just to be nice to people reading the mc panel
 /datum/controller/subsystem/pathfinder/fire(resumed)
 	if(!resumed)
+		// wait is 0.5, so this subsystem fires roughly seventeen times a second for the whole
+		// round whether or not anything asked it for a path. With both queues empty every line
+		// below this is a no-op, but the two list copies (one of them a deep_copy_list) still
+		// get paid ~78k times a round. Bail before allocating anything.
+		if(!length(active_pathing) && !length(source_to_maps))
+			return
 		src.currentrun = active_pathing.Copy()
 		src.currentmaps = deep_copy_list(source_to_maps)
 

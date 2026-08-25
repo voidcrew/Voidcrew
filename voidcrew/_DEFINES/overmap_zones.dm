@@ -69,7 +69,7 @@
 // ========== ZONE PLANET EFFECTS ==========
 // Planet surfaces feel their overmap zone: storms come more often, hit with
 // less warning and last longer in dangerous space, and biome fauna spawns
-// denser and meaner. Zones scale AMOUNTS, never kinds — deeper bands mine
+// denser and meaner. Zones scale AMOUNTS, never kinds, deeper bands mine
 // more of the same ores, but no zone-gated ore types or loot tables.
 
 /// Multiplier on the downtime between scheduled storms (SSweather's 5-10 minute gap) per zone
@@ -131,7 +131,7 @@
 /// is nearly all taken simply seeds fewer than its budget rather than spinning.
 #define PLANET_ANOMALY_PLACEMENT_ATTEMPTS 400
 
-/// Multiplier on ore mined per planet rock wall (mineralAmt), per zone — green stays baseline (x1). Applied in /turf/closed/mineral/proc/zone_scaled_ore_amount()
+/// Multiplier on ore mined per planet rock wall (mineralAmt), per zone, green stays baseline (x1). Applied in /turf/closed/mineral/proc/zone_scaled_ore_amount()
 #define ZONE_PLANET_ORE_MULT_YELLOW 1.5
 #define ZONE_PLANET_ORE_MULT_RED 2
 

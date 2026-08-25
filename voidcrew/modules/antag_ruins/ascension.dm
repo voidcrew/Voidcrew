@@ -1,5 +1,5 @@
 /**
- * # Vestige ascension — the capstone tier
+ * # Vestige ascension: the capstone tier
  *
  * The end of the boon ladder. A patron whose every trial you have fulfilled will,
  * late enough in the round, offer one last thing: it opens a way into a private
@@ -17,7 +17,7 @@
  *
  * ## The rules that shape everything here
  *
- * **Solo.** One mind goes in. Nobody follows, nothing docks — there is no overmap
+ * **Solo.** One mind goes in. Nobody follows, nothing docks. There is no overmap
  * object and no docking port, just a turf reservation the run owns outright and
  * frees when it ends. The arena areas are NOTELEPORT so neither the supplicant nor
  * a friend outside can shortcut the walls.
@@ -25,7 +25,7 @@
  * **One-way for the body.** Dying in there deletes the corpse and frees the ghost
  * with no re-entry (see [/datum/vestige_ascension_run/proc/on_supplicant_death]).
  * There is nothing to clone, nothing to drag home, and the arena unloads behind
- * them. A respawned soul that still meets the gate may ask again — the ledger
+ * them. A respawned soul that still meets the gate may ask again, the ledger
  * remembers the boons, not the failure.
  *
  * **One capstone per soul, ever.** `/datum/vestige_record.ascension_boon` is set the
@@ -33,7 +33,7 @@
  * three is not on the table; the choice of which one to chase is the point.
  *
  * **Solo-defeatable by design.** These bosses face exactly one player, always. They
- * are tuned as a hard single-player fight, not a raid boss with the HP divided —
+ * are tuned as a hard single-player fight, not a raid boss with the HP divided,
  * see each boss file for its own budget.
  *
  * ## State ownership
@@ -44,7 +44,7 @@
  * MIND so it survives the supplicant's body being swapped out from under it.
  *
  * The run datum owns the reservation, the boss and the timers, and is the only
- * thing that may free them — every exit path funnels through
+ * thing that may free them, every exit path funnels through
  * [/datum/vestige_ascension_run/proc/finish].
  */
 
@@ -56,11 +56,11 @@
 	/// The capstone boon typepath this soul has taken. Non-null locks out all three.
 	var/ascension_boon
 	/// Ascension typepaths this soul has walked into and not walked out of. Flavor
-	/// and logging only — a failed run does not bar a retry.
+	/// and logging only, a failed run does not bar a retry.
 	var/list/ascension_failures = list()
 
 // =========================================================================
-// THE OFFER — one per host patron
+// THE OFFER: one per host patron
 // =========================================================================
 
 /**
@@ -137,7 +137,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 /**
  * Why this mind can't ascend through this patron right now, as a line the patron
- * can say out loud — or null if it can.
+ * can say out loud, or null if it can.
  *
  * Reads completions off the soul record rather than the mind so that a respawned
  * player who has already had their legacy restored is judged on everything they
@@ -157,7 +157,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		return "You already took one. You only get one."
 	if(STATION_TIME_PASSED() < VESTIGE_ASCENSION_UNLOCK_TIME)
 		return "Not yet. Come back later in the shift."
-	// "Maxed out" — every trial this patron has, fulfilled. Two for some, three for most.
+	// "Maxed out", every trial this patron has, fulfilled. Two for some, three for most.
 	for(var/trial_type in patron.trial_types)
 		if(!(trial_type in record.completed_trials))
 			return "You haven't finished my work. Come back when there's nothing of mine left to do."
@@ -210,8 +210,8 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
  * every timer that can end it.
  *
  * Held on the mind (`active_ascension_run`) rather than on the body, so the run
- * survives anything that swaps the supplicant's mob. Every ending — victory,
- * death, timeout, the player disconnecting into oblivion — lands in [finish],
+ * survives anything that swaps the supplicant's mob. Every ending, victory,
+ * death, timeout, the player disconnecting into oblivion, lands in [finish],
  * which is the only place the reservation is allowed to be freed.
  */
 /datum/vestige_ascension_run
@@ -235,7 +235,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	var/datum/weakref/home_ship_ref
 	/// Timer id of the hard time limit
 	var/deadline_timer
-	/// TRUE once the boss is dead — the arena is safe and the exit is open
+	/// TRUE once the boss is dead. The arena is safe and the exit is open
 	var/won = FALSE
 	/// Guards [finish] against re-entry from stacked signal handlers
 	var/finishing = FALSE
@@ -263,8 +263,8 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 /**
  * Stands the arena up and puts the supplicant in it. Returns FALSE and cleans up
- * after itself if anything fails, in which case the caller reports the failure —
- * a half-loaded arena must never be left holding a reservation.
+ * after itself if anything fails, in which case the caller reports the failure.
+ * A half-loaded arena must never be left holding a reservation.
  */
 /datum/vestige_ascension_run/proc/begin(mob/living/user)
 	if(!offer || !supplicant || QDELETED(user))
@@ -310,7 +310,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 /// Reserves space for the template plus a thin blank margin and loads it. Sets [reservation] on success.
 /datum/vestige_ascension_run/proc/load_arena(datum/map_template/vestige_arena/template)
 	// New() already parsed the bounds off mappath; this only catches a missing file.
-	// (prefix/suffix are /datum/map_template/ruin vars — arenas aren't ruins.)
+	// (prefix/suffix are /datum/map_template/ruin vars. Arenas aren't ruins.)
 	if(!template.width || !template.height)
 		log_mapping("VESTIGE ASCENSION: couldn't read bounds from '[template.mappath]'")
 		return FALSE
@@ -325,7 +325,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	// Deliberately NOT wrapped in try/catch. stack_trace() is CRASH-based: left alone
 	// it ends its own frame and the caller carries on, but inside a try block it
 	// unwinds everything up to the catch. Loading an arena raises those warnings as a
-	// matter of course — a reservation hands back recycled turfs and turfs keep their
+	// matter of course, a reservation hands back recycled turfs and turfs keep their
 	// signal registrations when they are replaced, so every wall built where a wall
 	// already stood warns once as it re-registers itself. Catching that threw away a
 	// working arena and made the second run of any arena impossible. A missing or
@@ -369,8 +369,8 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	RegisterSignal(user, COMSIG_QDELETING, PROC_REF(on_supplicant_deleted), override = TRUE)
 
 /**
- * The whole point of the tier. The body is deleted outright — no corpse, no
- * cloning, no drag-it-home — and the ghost is freed without re-entry. The arena
+ * The whole point of the tier. The body is deleted outright, no corpse, no
+ * cloning, no drag-it-home, and the ghost is freed without re-entry. The arena
  * goes with them.
  *
  * The retry is deliberately left open: a respawned soul that still meets the gate
@@ -400,7 +400,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	qdel(user)
 	finish("death")
 
-/// Gibbed, admin-deleted, or otherwise unmade without a death — same ending.
+/// Gibbed, admin-deleted, or otherwise unmade without a death, same ending.
 /datum/vestige_ascension_run/proc/on_supplicant_deleted(mob/living/user)
 	SIGNAL_HANDLER
 	if(finishing || won)
@@ -413,7 +413,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 // ===== WINNING =====
 
 /**
- * The kill. Grants the capstone immediately (no radial — there is exactly one
+ * The kill. Grants the capstone immediately (no radial. There is exactly one
  * thing on offer and it was named up front), locks the soul out of the other two,
  * and opens the way home.
  *
@@ -475,7 +475,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 /**
  * The single exit. Sends a living supplicant home if there is one, then tears the
- * arena down. Idempotent — every caller may assume it is safe to call twice.
+ * arena down. Idempotent, every caller may assume it is safe to call twice.
  */
 /datum/vestige_ascension_run/proc/finish(reason)
 	if(finishing)
@@ -497,7 +497,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 /**
  * Puts the supplicant back where they left from.
  *
- * Usually that turf is still there — they flew to the patron and their ship is
+ * Usually that turf is still there. They flew to the patron and their ship is
  * still docked, which is what keeps the ruin interior loaded. But a crew that
  * leaves without them frees the ruin's reservation, and returning someone into
  * freed turfs would be worse than any of the fallbacks.
@@ -505,7 +505,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
  * "Still there" cannot be a z-level check: ruin interiors live in turf
  * reservations, so the remembered turf is ALWAYS on a reserved z whether the
  * ruin stands or not. Instead the turf's current area is compared against the
- * area it belonged to when the way opened — a freed (or reused) reservation
+ * area it belonged to when the way opened, a freed (or reused) reservation
  * fails that. So: remembered turf if its area still stands, else the ship they
  * arrived on, else anywhere safe at all.
  */
@@ -543,7 +543,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 /obj/structure/vestige_way_home
 	name = "the way back"
 	desc = "A doorway standing up on its own with no wall around it. The other side is wherever you were when you agreed to this."
-	// The stock portal swirl (what /obj/effect/portal wears). NOT gateway.dmi —
+	// The stock portal swirl (what /obj/effect/portal wears). NOT gateway.dmi,
 	// that file has no "portal" state and renders nothing at all.
 	icon = 'icons/obj/anomaly.dmi'
 	icon_state = "portal"
@@ -571,7 +571,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 // =========================================================================
 
 /**
- * Arena templates. Never seeded, never docked at, never on the overmap — the run
+ * Arena templates. Never seeded, never docked at, never on the overmap, the run
  * instantiates one, loads it into a reservation, and frees both when it ends.
  *
  * These deliberately do NOT go through `SSmapping.map_templates`. That registry is
@@ -582,7 +582,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
  * be worse: that drops them into `ruins_templates` and the themed-ruin seeding
  * pool, which is exactly where a solo one-way arena must never appear.
  *
- * So `mappath` is set directly (not prefix/suffix — `/datum/map_template/New` reads
+ * So `mappath` is set directly (not prefix/suffix, `/datum/map_template/New` reads
  * mappath and nothing else) and the run just news the typepath it was given.
  *
  * Every arena map MUST place exactly one entry landmark and exactly one boss
@@ -640,9 +640,9 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 // =========================================================================
 
 /**
- * Skips the gate entirely and drops you into an arena. The run is real — the boss,
+ * Skips the gate entirely and drops you into an arena. The run is real, the boss,
  * the death rule and the capstone all behave exactly as they would in a live
- * attempt — so this is a playtest tool, not a viewer.
+ * attempt, so this is a playtest tool, not a viewer.
  */
 ADMIN_VERB(open_vestige_ascension, R_FUN, "Open Vestige Ascension", "Drop into an endgame vestige arena. The death rule applies.", ADMIN_CATEGORY_EVENTS)
 	var/mob/living/body = user.mob
@@ -657,7 +657,7 @@ ADMIN_VERB(open_vestige_ascension, R_FUN, "Open Vestige Ascension", "Drop into a
 		return
 
 	// Build the picker off the live offers, so the name shown resolves straight back
-	// to the instance the run needs — no re-deriving it from a typepath.
+	// to the instance the run needs, no re-deriving it from a typepath.
 	var/list/choices = list()
 	for(var/patron_type in GLOB.vestige_ascensions_by_patron)
 		var/datum/vestige_ascension/candidate = GLOB.vestige_ascensions_by_patron[patron_type]
@@ -677,7 +677,7 @@ ADMIN_VERB(open_vestige_ascension, R_FUN, "Open Vestige Ascension", "Drop into a
 	var/datum/vestige_ascension_run/run = new(offer, body)
 	if(!run.begin(body))
 		qdel(run)
-		to_chat(user, span_warning("The arena failed to load — check the mapping log."))
+		to_chat(user, span_warning("The arena failed to load. Check the mapping log."))
 		return
 	log_admin("[key_name(user)] opened vestige ascension '[offer.name]' on themselves.")
 	message_admins("[key_name_admin(user)] opened vestige ascension '[offer.name]' on themselves.")

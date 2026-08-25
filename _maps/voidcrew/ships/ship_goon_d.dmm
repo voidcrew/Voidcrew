@@ -55,8 +55,12 @@
 	},
 /area/shuttle/voidcrew/goon/commons/d)
 "cx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -127,7 +131,9 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/d)
 "gM" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
@@ -201,6 +207,10 @@
 	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
 	},
 /area/shuttle/voidcrew/goon/engineering/d)
+"nn" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
 "no" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -672,7 +682,7 @@
 /obj/machinery/shower/directional/west,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/south,
-/turf/open/floor/iron/dollhouse,
+/turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/medbay/d)
 "QG" = (
 /obj/machinery/light{
@@ -747,7 +757,6 @@
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/medbay/d)
 "Un" = (
-/obj/structure/closet/supplypod/drop_pod,
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
 "UH" = (
@@ -898,8 +907,8 @@ qd
 (3,1,1) = {"
 VI
 SM
-Eh
-Eh
+nn
+nn
 Eh
 rI
 GD

@@ -1,0 +1,169 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"c" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/machinery/smartfridge/chemistry/preloaded,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/box/pillbottles{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/closet/secure_closet/chemical,
+/obj/item/clothing/suit/hooded/cultrobes,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/machinery/chem_master,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 10;
+	pixel_y = 9
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"s" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"t" = (
+/obj/machinery/defibrillator_mount/loaded{
+	dir = 4;
+	pixel_x = 28
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/obj/machinery/chem_dispenser,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"z" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/box,
+/obj/machinery/chem_heater/withbuffer,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"C" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/box/beakers{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/storage/box/syringes{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/paper{
+	name = "bench rules";
+	default_raw_text = "Anything brewed for the shrine gets its own beaker and its own label. Unlabelled reagents in the fridge get poured out. The grinder is not a sharps bin.";
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/reagentgrinder,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 9;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+C
+Q
+E
+"}
+(2,1,1) = {"
+u
+s
+z
+"}
+(3,1,1) = {"
+n
+y
+K
+"}
+(4,1,1) = {"
+P
+b
+f
+"}
+(5,1,1) = {"
+S
+b
+j
+"}
+(6,1,1) = {"
+M
+t
+c
+"}

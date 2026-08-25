@@ -145,6 +145,24 @@
 	open_turf_types = expand_weights(weighted_open_turf_types)
 	closed_turf_types = expand_weights(weighted_closed_turf_types)
 
+
+/**
+ * VOIDCREW EDIT: reports how long a generation pass took.
+ *
+ * Upstream only ever runs these generators at mapload, so shouting the timings at
+ * `world` reached nobody but the lobby. Here they also run MID-ROUND (asteroid
+ * fields, planet builds, mapgen-bearing encounters), so every player on every ship
+ * got a bold "Asteroid Field Generator terrain generation finished in 4.2s!" each
+ * time somebody, anybody, docked a rock field. Keep the lobby behaviour as-is;
+ * once the round is running it is admin-only. The log line is unconditional.
+ */
+/datum/map_generator/cave_generator/proc/announce_generation_time(message)
+	if(SSticker?.HasRoundStarted())
+		to_chat(GLOB.admins, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
+	else
+		to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
+	log_world(message)
+
 /datum/map_generator/cave_generator/generate_terrain(list/turfs, area/generate_in)
 	. = ..()
 	if(!(generate_in.area_flags_mapping & CAVES_ALLOWED))
@@ -163,14 +181,64 @@
 
 		// The assumption is this will be faster then changeturf, and changeturf isn't required since by this point
 		// The old tile hasn't got the chance to init yet
+		// VOIDCREW EDIT: "the old tile hasn't got the chance to init yet" is a MAPLOAD claim,
+		// and it is false for every voidcrew caller - asteroid fields carve into a live turf
+		// reservation and planet caves carve into live planet ground. The raw swap below never
+		// runs the old turf's Destroy(), so its /datum/light_source is dropped rather than
+		// freed - and a dropped source is uncollectable, not merely garbage, because it and
+		// the lighting corners it applied to hold each other under pure refcounting. Measured
+		// at ~1,700 permanently leaked sources (plus their corners) per soak cycle, almost all
+		// of them starlight on the space turfs an asteroid field paints rock over. See
+		// /turf/proc/release_light_for_raw_swap() in voidcrew/edits/turf.dm.
+		// VOIDCREW EDIT: and its second casualty. /turf/open/space/Destroy() is what takes a
+		// lit space turf back out of GLOB.starlight, and a raw swap never runs it, so the
+		// entry retargets onto the rock we just laid and set_starlight() relights it - then
+		// enable_starlight() re-appends the same turf next cycle. An asteroid field paints
+		// thousands of tiles of lit space, so this grows per churn cycle. Same guard
+		// place_cordon_turf() carries (voidcrew/datums/map_zones.dm).
+		if(isspaceturf(gen_turf) && gen_turf.light_on)
+			GLOB.starlight -= gen_turf
+		// VOIDCREW EDIT: and its third. ChangeTurf carries the old turf's four
+		// /datum/lighting_corner refs across its qdel()/new() pair; a raw swap gets the
+		// type defaults, and a turf holding null corner refs on vertices that already have
+		// corners mints new ones and steals them from every neighbour it shares them with,
+		// zeroing lum those neighbours' lighting objects were rendering. See
+		// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
+		var/datum/lighting_corner/corner_ne
+		var/datum/lighting_corner/corner_se
+		var/datum/lighting_corner/corner_sw
+		var/datum/lighting_corner/corner_nw
+		var/old_dynamic_lumcount = 0
+		if(SSlighting.initialized)
+			gen_turf.release_light_for_raw_swap()
+			corner_ne = gen_turf.lighting_corner_NE
+			corner_se = gen_turf.lighting_corner_SE
+			corner_sw = gen_turf.lighting_corner_SW
+			corner_nw = gen_turf.lighting_corner_NW
+			old_dynamic_lumcount = gen_turf.dynamic_lumcount
 		new_turf = new new_turf(gen_turf)
+		if(SSlighting.initialized)
+			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS
 
-	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+		// VOIDCREW EDIT: upstream only ever runs this at mapload, where SSair init
+		// recomputes the whole map afterwards - here it also runs MID-ROUND (asteroid
+		// encounters, meteor fields, planet builds) over live turfs. The raw `new` above
+		// bypasses ChangeTurf, so a closed turf laid over open space stays inside every
+		// neighbour's atmos_adjacent_turfs and LINDA runtimes on it (enemy_tile.run_later)
+		// every cycle, forever. Open turfs self-queue a rebuild via requires_activation in
+		// /turf/Initialize; closed turfs never do, so queue them here.
+		if(SSair.initialized && isclosedturf(new_turf))
+			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
+
+		// VOIDCREW EDIT: same mid-round reality as above - thousands of turfs with no
+		// yield is a hard freeze. Shares the worldgen queue's budget when a job holds
+		// it, degrades to CHECK_TICK everywhere else (see worldgen_yield()).
+		SSovermap.worldgen_yield()
+
+	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 /**
@@ -258,9 +326,7 @@
 			generated_turfs_per_area_biome[biome] = area_list
 		area_list[generate_in] = generated_turfs
 
-	var/message = "[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 /// Returns a biome datum that the turf was initialized with, or would be if it is present on our Z level and we use a consistent shared seed
 /// Not consistent between calls by itself due to using RNG in perlin zoom, needs a static coordinate-based formula
@@ -384,9 +450,7 @@
 			megafauna_spawn_list = expand_weights(weighted_megafauna_spawn_list)
 			megas_allowed = megas_allowed && length(megafauna_spawn_list)
 
-	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 /**
  * This handles the population of terrain with biomes. Should only be called by
@@ -406,9 +470,7 @@
 
 	// No sense in doing anything here if nothing is allowed anyway.
 	if(!flora_allowed && !features_allowed && !fauna_allowed)
-		var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-		to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-		log_world(message)
+		announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 		return
 
 	for(var/biome in generated_turfs_per_area_biome)
@@ -418,9 +480,7 @@
 
 		CHECK_TICK
 
-	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
+	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
 ///Generates the cave shape using Rust-G

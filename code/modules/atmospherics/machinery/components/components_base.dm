@@ -174,8 +174,12 @@
 	 */
 
 	if(!length(reference.other_atmos_machines) && !length(reference.members))
+		// VOIDCREW EDIT: pipeline Destroy() now empties its lists before nullifying
+		// each component, so reaching this while the pipeline is already dying is the
+		// expected teardown path, not an error - the old CRASH here fired once per
+		// pipeline with components on every hull/zone teardown
 		if(QDESTROYING(reference))
-			CRASH("nullify_pipenet() called on qdeleting [reference]")
+			return
 		qdel(reference)
 
 /obj/machinery/atmospherics/components/return_pipenet_airs(datum/pipeline/reference)

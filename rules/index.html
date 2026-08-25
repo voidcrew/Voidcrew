@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Rules</title>
+<style>
+  :root {
+    --bg: #0a0d13;
+    --panel: #121722;
+    --panel-border: #1f2735;
+    --text: #d6dde8;
+    --muted: #8b96a8;
+    --green: #3ddc84;
+    --yellow: #f5c542;
+    --red: #ff4d4d;
+    --accent: #6ccfff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(1px 1px at 25px 35px, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 130px 90px, rgba(255,255,255,.35), transparent),
+      radial-gradient(1.5px 1.5px at 70px 150px, rgba(255,255,255,.25), transparent),
+      radial-gradient(1px 1px at 200px 60px, rgba(255,255,255,.3), transparent);
+    background-size: 250px 250px;
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 20px 64px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  header .tag {
+    color: var(--accent);
+    font-family: "Courier New", monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: 2.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 8px 0 10px;
+  }
+
+  header p {
+    color: var(--muted);
+  }
+
+  h2 {
+    font-size: 1.05rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 8px;
+    margin: 40px 0 18px;
+  }
+
+  /* Zone cards */
+  .zones {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .zones { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-top: 3px solid;
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+
+  .card h3 {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .card p { color: var(--text); font-size: 0.95rem; }
+
+  .card.green  { border-top-color: var(--green); }
+  .card.green h3  { color: var(--green); }
+  .card.yellow { border-top-color: var(--yellow); }
+  .card.yellow h3 { color: var(--yellow); }
+  .card.red    { border-top-color: var(--red); }
+  .card.red h3    { color: var(--red); }
+
+  /* Rule sections */
+  section.block {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 18px 22px;
+  }
+
+  ul.rules {
+    list-style: none;
+  }
+
+  ul.rules li {
+    padding: 8px 0 8px 26px;
+    position: relative;
+  }
+
+  ul.rules li + li { border-top: 1px solid var(--panel-border); }
+
+  ul.rules li::before {
+    content: "»";
+    position: absolute;
+    left: 4px;
+    color: var(--accent);
+  }
+
+  .ok::before   { color: var(--green) !important; }
+  .warn::before { color: var(--red) !important; }
+
+  .no-erp {
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  footer {
+    margin-top: 56px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">// Voidcrew</div>
+    <h1>Server Rules</h1>
+    <p>Know the zones. Ignorance is not an excuse.</p>
+  </header>
+
+  <h2>Zone Rules</h2>
+  <div class="zones">
+    <div class="card green">
+      <h3>Green Zone</h3>
+      <p>No combat or stealing. No griefing at all.</p>
+    </div>
+    <div class="card yellow">
+      <h3>Yellow Zone</h3>
+      <p>Piracy and stealing are allowed. Escalation is required for murder — if someone steals your stuff or attacks you, they're free game.</p>
+    </div>
+    <div class="card red">
+      <h3>Red Zone</h3>
+      <p>Kill on sight.</p>
+    </div>
+  </div>
+
+  <h2>Outposts</h2>
+  <section class="block">
+    <ul class="rules">
+      <li>No griefing the outpost itself.</li>
+      <li>Otherwise, combat follows the zone rules.</li>
+    </ul>
+  </section>
+
+  <h2>Metagaming</h2>
+  <section class="block">
+    <ul class="rules">
+      <li class="ok">Discord / metacomming is totally fine.</li>
+      <li class="warn">Don't metagame — no multikeying, no using ghost to scope something out.</li>
+    </ul>
+  </section>
+
+  <h2>Conduct</h2>
+  <section class="block">
+    <ul class="rules">
+      <li class="warn">No slurs, and don't be excessively shitty.</li>
+      <li class="warn"><span class="no-erp">NO ERP.</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    Rules are enforced at admin discretion. When in doubt, ahelp.
+  </footer>
+
+</div>
+</body>
+</html>

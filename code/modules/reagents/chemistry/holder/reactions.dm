@@ -67,6 +67,11 @@
 						continue
 				if(isliving(cached_my_atom) && !reaction.mob_react) //Makes it so certain chemical reactions don't occur in mobs
 					continue
+
+				//VOIDCREW EDIT ADDITION: keeps mob-spawning mixtures out of plant chemistry
+				if((reaction.reaction_flags & REACTION_NOT_IN_PLANTS) && istype(cached_my_atom, /obj/item/food/grown))
+					continue
+				//VOIDCREW EDIT END
 			else if(reaction.required_container)
 				continue
 
@@ -77,8 +82,10 @@
 				continue
 
 			//do we have the required ph? in range of min - ph_range & max + ph_range
-			if(ph < reaction.optimal_ph_min - reaction.determin_ph_range && ph > reaction.optimal_ph_max + reaction.determin_ph_range)
+			//VOIDCREW EDIT: only recipes that opt in with REACTION_USES_PURITY are gated on pH.
+			if((reaction.reaction_flags & REACTION_USES_PURITY) && (ph < reaction.optimal_ph_min - reaction.determin_ph_range && ph > reaction.optimal_ph_max + reaction.determin_ph_range))
 				continue
+			//VOIDCREW EDIT END
 
 			//user defined checks
 			if(!reaction.pre_reaction_other_checks(src))

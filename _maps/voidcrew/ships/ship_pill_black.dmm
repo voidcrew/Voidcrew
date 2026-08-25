@@ -4,11 +4,6 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/on{
 	dir = 4
 	},
-/obj/machinery/syndicatebomb/self_destruct{
-	minimum_timer = 180;
-	name = "Alternative Bluespace Jump Device";
-	timer_set = 180
-	},
 /obj/machinery/power/shuttle_engine/ship/electric{
 	dir = 4
 	},
@@ -28,10 +23,19 @@
 	dir = 1
 	},
 /obj/machinery/cryopod{
+	density = 0;
 	dir = 4
 	},
 /obj/machinery/computer/cryopod{
 	pixel_y = 9
+	},
+/obj/machinery/syndicatebomb/self_destruct{
+	anchored = 1;
+	minimum_timer = 180;
+	name = "Alternative Bluespace Jump Device";
+	pixel_x = 7;
+	pixel_y = -7;
+	timer_set = 180
 	},
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/iron/dark,
@@ -58,6 +62,12 @@
 	},
 /obj/item/storage/toolbox/mechanical/old,
 /obj/item/circuitboard/machine/autolathe,
+/obj/item/paper{
+	name = "fuel notes";
+	default_raw_text = "Fuel notes. The generator burns solid plasma sheets and nothing else, so do not try to put ore in it. A welder will smelt iron ore and sand into sheets, but it will not touch plasma. Plasma needs an ore redemption machine and this ship does not have one. If you run dry, build the autolathe from the board in this pile, print the Research and Development Kit from it, and work up to a redemption machine from there. The thirty sheets you start with will not last the trip.";
+	pixel_x = -5;
+	pixel_y = -3
+	},
 /obj/item/tank/internals/emergency_oxygen,
 /obj/item/tank/internals/emergency_oxygen,
 /obj/item/tank/internals/emergency_oxygen,
@@ -76,6 +86,9 @@
 /obj/item/pickaxe/improvised,
 /obj/item/pickaxe/improvised,
 /obj/item/pickaxe/improvised,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
 /obj/item/bedsheet/black,
 /obj/item/reagent_containers/cup/beaker/large,
 /obj/item/reagent_containers/cup/beaker/large,
@@ -85,6 +98,7 @@
 	dir = 4
 	},
 /obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1;
 	density = 0
 	},
 /obj/docking_port/mobile/voidcrew/pill_black{

@@ -1,9 +1,9 @@
 /**
- * # Quartermain Depot — vendor stalls
+ * # Quartermain Depot: vendor stalls
  *
  * The depot's side business: Boffin's Skunkworks, the R&D annex where the
  * "legal-ish" tech gets bench-tested and the neural imprinter hums in the
- * corner. Full /datum/outpost_shop fronted by its own trader NPC — same
+ * corner. Full /datum/outpost_shop fronted by its own trader NPC, same
  * wiring as the Undertow's stalls (see outpost.dm get_shop(), trader_npc.dm).
  *
  * Balance notes:
@@ -14,18 +14,18 @@
  *   can research parts, and a laser turret takes a swappable cell, so the cell
  *   ladder here is a real ship upgrade path. Don't thin it out.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
- *   slime extracts, and raw exotics out of the ground. No circuit boards —
- *   anything a lathe spits out is a money loop waiting to happen.
+ *   slime extracts, and raw exotics out of the ground. No circuit boards.
+ *   Anything a lathe spits out is a money loop waiting to happen.
  */
 
 // =========================================================================
-// THE SKUNKWORKS — Boffin, depot researcher
+// THE SKUNKWORKS: Boffin, depot researcher
 // =========================================================================
 
 /**
  * Boffin: a research coat that has clearly been in a fire, over the black
  * jumpsuit of somebody who works with their hands. Green rather than the
- * standard-issue white — the annex buys its own supplies and nobody here has
+ * standard-issue white, the annex buys its own supplies and nobody here has
  * ever filed for a replacement. Goggles on, multitool out, permanently.
  */
 /datum/outfit/skunkworks_boffin
@@ -57,7 +57,7 @@
 		/datum/shop_sku/skunk/signaler,
 		/datum/shop_sku/skunk/adv_analyzer,
 		/datum/shop_sku/skunk/science_gps,
-		// Ship Retrofit — tier-2 parts to tune up a ship's machines
+		// Ship Retrofit: tier-2 parts to tune up a ship's machines
 		/datum/shop_sku/skunk/capacitor,
 		/datum/shop_sku/skunk/servo,
 		/datum/shop_sku/skunk/micro_laser,
@@ -69,7 +69,7 @@
 		/datum/shop_sku/skunk/science_glasses,
 		/datum/shop_sku/skunk/diagnostic_hud,
 		/datum/shop_sku/skunk/night_vision,
-		// Job Packs — the crates live in shop_catalog_job_packs.dm
+		// Job Packs: the crates live in shop_catalog_job_packs.dm
 		/datum/shop_sku/skunk/job_pack_robotics,
 		/datum/shop_sku/skunk/job_pack_xenobiology,
 	)
@@ -105,13 +105,13 @@
 			"Sarge sells the guns. I sell everything that makes a gun jealous.",
 			"Bring me anomaly cores. Intact, please. INTACT. We've had incidents.",
 			"The imprinter is perfectly safe. The screaming is a licensing formality.",
-			"Slime extracts, glands, crystals — if a planet made it and it shouldn't exist, I'm buying.",
+			"Slime extracts, glands, crystals: if a planet made it and it shouldn't exist, I'm buying.",
 			"A tier-two servo doubles your lathe speed. That's not a sales pitch, that's just the spec sheet.",
 			"The convoy escort calls this annex 'the spooky room'. The convoy escort is correct.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"Convoy's in. New components, and the crate only ticked a LITTLE.",
-			"Fresh stock on the bench. The experimental shelf rotated — go see what survived QA.",
+			"Fresh stock on the bench. The experimental shelf rotated. Go see what survived QA.",
 			"Resupply's landed. QA passed everything. QA is me. QA was in a good mood.",
 		),
 	)

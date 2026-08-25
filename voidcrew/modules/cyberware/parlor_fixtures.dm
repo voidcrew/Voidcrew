@@ -5,7 +5,7 @@
  * door and the stock cases behind the counter glass.
  *
  * The sign is a 64x32 neon board that never goes dark. It carries no power
- * draw and no interaction — it exists to throw magenta light on the operating
+ * draw and no interaction, it exists to throw magenta light on the operating
  * cradle and tell the Dregs which door the ripperdoc is behind.
  *
  * The O runs on a failing ballast. That lives entirely in the icon: the
@@ -18,7 +18,7 @@
 // CHROME SIGN
 // =========================================================================
 
-/// Emissive left on the board while the neon is cut — enough to make out dead
+/// Emissive left on the board while the neon is cut, enough to make out dead
 /// tubing in a dark parlor, not enough to read as lit.
 #define CHROME_SIGN_DARK_EMISSIVE 45
 
@@ -27,8 +27,8 @@
 	desc = "A neon board buzzing over the ripperdoc's counter. One letter flickers on a bad ballast, and has done for years."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_signs.dmi'
 	icon_state = "chrome_sign"
-	// 64x32 art: map it on the LEFT tile of a two-tile blank wall stretch —
-	// it reads across that tile and the one to its right. Keep doors and
+	// 64x32 art: map it on the LEFT tile of a two-tile blank wall stretch.
+	// It reads across that tile and the one to its right. Keep doors and
 	// windows out from under it.
 	pixel_x = 0
 	layer = ABOVE_WINDOW_LAYER
@@ -50,7 +50,7 @@
 
 /obj/machinery/chrome_sign/update_overlays()
 	. = ..()
-	// The whole board is neon tubing, so the whole sprite self-illuminates — it
+	// The whole board is neon tubing, so the whole sprite self-illuminates, it
 	// reads through the parlor's deliberately low light, and sharing icon_state
 	// with the base sprite gets the ballast flicker on the glow for free.
 	//
@@ -60,7 +60,7 @@
 	// to be made here rather than in the icon.
 	. += emissive_appearance(icon, icon_state, src, alpha = lit ? src.alpha : CHROME_SIGN_DARK_EMISSIVE)
 
-/// Kill the neon for a beat, then bring it back — the cradle stutters every
+/// Kill the neon for a beat, then bring it back, the cradle stutters every
 /// fixture in the room during a legend-tier install.
 /obj/machinery/chrome_sign/proc/flicker()
 	set_lit(FALSE)

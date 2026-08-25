@@ -24,6 +24,10 @@
 	var/survey_value = 0
 	/// Display name used by nav/combat UIs; defaults to name on Initialize. Ships keep theirs synced on rename.
 	var/display_name
+	/// world.time gate on the "no charting capacity" crew notification, so the 30-second
+	/// capacity retries do not each replay the warning klaxon. 0 = the next refusal is a
+	/// fresh hold and warns loudly; see site_load_refused_for_capacity().
+	var/capacity_notice_next = 0
 
 	// Hangar berth / elevator host state (see voidcrew/modules/trade/outpost_hangar.dm).
 	// Trader outposts always host berths; player outposts do once a hangar elevator
@@ -46,12 +50,12 @@
 	to_chat(user, "<span class='notice'>You don't think there's anything you can do here.</span>")
 
 /**
- * What the helm's Dock button means when this object shares the ship's tile —
+ * What the helm's Dock button means when this object shares the ship's tile,
  * a short noun phrase ("Trader Halcyon", "derelict signal"), or null if a ship
  * can't dock with this at all.
  *
  * Null is the default and covers everything a ship flies past rather than lands
- * on: storms, and nebulas (whose ship_act conceals rather than docks — that's the
+ * on: storms, and nebulas (whose ship_act conceals rather than docks, that's the
  * Cloak control's job). Other vessels are excluded by the helm itself, since
  * ship-to-ship docking is a consensual flow with its own request/accept handshake.
  *
@@ -63,8 +67,110 @@
 	return null
 
 /**
+ * What crew-facing survey broadcasts call this object. Falls back through
+ * display_name to name for objects that deliberately are not Dock-button targets:
+ * the dock-in-empty-space placeholder returns null from get_dock_description() by
+ * design, and a null would otherwise interpolate as a blank into every
+ * request_site_load() message ("Survey request logged for .").
+ */
+/obj/structure/overmap/proc/get_site_label()
+	return get_dock_description() || display_name || name
+
+/**
+ * Kicks off generation of this object's interior in the background, if it has one.
+ *
+ * Overridden by planets, space ruins and meteor fields to INVOKE_ASYNC their own
+ * load_level() (whose signatures differ per type). The caller - a ship's
+ * request_site_load() - has already registered for COMSIG_VOIDCREW_SITE_LOAD_FINISHED,
+ * which every load path sends on success and failure, so this never needs to return
+ * a status. Base: the object has no loadable interior, nothing happens.
+ *
+ * * user - The mob that asked, if any. Told where it stands if the worldgen queue is busy.
+ * * waiting_ship - The ship holding a docking approach on this object; routed to
+ *   worldgen_claim()'s notify_ship so queue progress reaches the whole crew.
+ */
+/obj/structure/overmap/proc/start_level_load(mob/user, obj/structure/overmap/ship/waiting_ship)
+	return
+
+/// Whether this object's interior is currently being generated. Base: it never is.
+/obj/structure/overmap/proc/is_loading()
+	return FALSE
+
+/// Whether this object's interior is generated and dockable. Base: it never is.
+/obj/structure/overmap/proc/is_loaded()
+	return FALSE
+
+/**
+ * The map-zone slot this object's loaded interior occupies, or null when it has none.
+ *
+ * The single answer to "which turfs are this site's" for every caller that used to
+ * open-code an istype chain over planet.footprint / ruin.reservation / field.reservation.
+ * A z-level is shared by up to four tenants, so the rectangle - not the z - is the
+ * boundary; see /datum/map_footprint.
+ *
+ * Null means "this site is not scoped to a rectangle", and callers must read it the way
+ * they always did: as the whole level. Trader outposts (still on turf reservations) and
+ * unloaded sites both answer null.
+ */
+/obj/structure/overmap/proc/get_interior_footprint()
+	return null
+
+/**
+ * Standard response to a site load that was refused for want of MAP VOLUME rather than
+ * for anything the crew did.
+ *
+ * BYOND never frees a z-level, so world.maxz carries a configured ceiling
+ * (/datum/config_entry/number/max_z_levels) and the allocator answers "not right now" once
+ * it is reached. That is a wait, not a failure: slots free up constantly as sites recycle,
+ * so the site says so, arms its own retry and gets on with it.
+ *
+ * The retry is armed AFTER the worldgen queue has been released by the caller, and is a
+ * plain timer rather than a queue entry - a routine dock may never end up waiting behind
+ * somebody else's minute-long survey (the design rule in worldgen_queue.dm).
+ */
+/obj/structure/overmap/proc/site_load_refused_for_capacity(obj/structure/overmap/ship/waiting_ship)
+	// The first refusal of a hold warns loudly, with the sound. The 30-second retries
+	// after it stay quiet, with a soft reminder every few minutes so a long hold is
+	// still distinguishable from a hang. Without the gate every retry replayed the
+	// warning klaxon - a crew camped on a busy chart was pinged twenty times in ten
+	// minutes for a condition the first message already told them to sit out.
+	// retry_capacity_wait() zeroes the gate when the hold ends, so the NEXT hold's
+	// first refusal is loud again.
+	if(!QDELETED(waiting_ship) && world.time >= capacity_notice_next)
+		if(capacity_notice_next)
+			waiting_ship.ship_notify("Still waiting on charting capacity for [display_name || name]. The attempt keeps repeating on its own - nothing to do at the helm.", "SURVEY", SHIP_NOTIFY_NOTICE)
+		else
+			waiting_ship.ship_notify("Charting [display_name || name] is held up: every mapping volume in the sector is committed right now. \
+				The attempt repeats on its own shortly - nothing to do at the helm.", "SURVEY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+		capacity_notice_next = world.time + SITE_CAPACITY_RENOTIFY_INTERVAL
+	log_mapping("SSovermap: '[display_name || name]' load refused for want of map volume - re-arming a retry")
+	addtimer(CALLBACK(src, PROC_REF(retry_capacity_wait)), SITE_CAPACITY_RETRY_DELAY, TIMER_UNIQUE)
+
+/**
+ * The capacity retry itself.
+ *
+ * Only fires while a ship is still sitting on this contact's overmap tile. An unattended
+ * retry would build an interior nobody asked for and pin the very slot it was waiting on;
+ * a crew that flew off simply presses Dock again, which starts a fresh attempt. No hard
+ * ref to the original ship is kept for the same reason - a timer holding one for thirty
+ * seconds is a hard-delete blocker on a hull that may be being scrapped.
+ */
+/obj/structure/overmap/proc/retry_capacity_wait()
+	// Either exit means the hold is over - the interior came up, or the crew flew off.
+	// Zero the notification gate so the next hold's first refusal warns loudly again
+	// instead of arriving as a mid-hold reminder.
+	if(QDELETED(src) || is_loading() || is_loaded())
+		capacity_notice_next = 0
+		return
+	var/obj/structure/overmap/ship/still_waiting = locate() in loc
+	if(!still_waiting)
+		capacity_notice_next = 0
+		return
+	start_level_load(null, still_waiting)
+
+/**
  * Whether a ship parked at this object is standing in gravity that comes from the
- * location rather than from its own deck plating — a planet surface, an outpost deck.
+ * location rather than from its own deck plating, a planet surface, an outpost deck.
  *
  * Ship gravity is `default_gravity` on the shuttle areas, so anything that switches
  * the ship's plating off is only meaningful where the ship is the sole source of
@@ -100,7 +206,7 @@
 	return FALSE
 
 /// Areas that scope combat sounds/shakes/camera static to the target.
-/// Null means "don't filter" — correct for targets that own their whole z-level.
+/// Null means "don't filter", correct for targets that own their whole z-level.
 /obj/structure/overmap/proc/get_combat_target_areas()
 	return null
 
@@ -156,7 +262,7 @@
   * Mutually syncs the close-objects lists with every overmap object already sharing
   * this object's turf. on_entered only fires on movement, so an object spawned onto
   * an occupied tile (e.g. a freshly founded outpost under a still ship) is invisible
-  * to docking and sensors until something re-crosses — call this to register it now.
+  * to docking and sensors until something re-crosses. Call this to register it now.
   */
 /obj/structure/overmap/proc/sync_close_overmap_objects()
 	var/turf/our_turf = loc

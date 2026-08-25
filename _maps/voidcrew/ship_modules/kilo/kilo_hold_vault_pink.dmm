@@ -45,9 +45,6 @@
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 "R" = (
-/obj/structure/closet/secure_closet/personal{
-	name = "jewellery locker"
-	},
 /obj/effect/turf_decal/delivery,
 /obj/structure/sign/departments/vault/directional/south,
 /turf/open/floor/iron/dollhouse/white,
@@ -63,6 +60,9 @@
 "Z" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot_red,
+/obj/structure/closet/secure_closet/personal{
+	name = "jewellery locker"
+	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 

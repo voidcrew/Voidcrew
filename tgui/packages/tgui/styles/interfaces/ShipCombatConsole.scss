@@ -4,7 +4,7 @@
 // percentages from the GEOMETRY table in ShipCombatConsole.tsx, and all
 // internal sizing is in `cqw` against the console's own container, so the
 // whole thing scales with the window without a single media query. Same
-// plate/well system as the helm — a player glancing between the two should
+// plate/well system as the helm. A player glancing between the two should
 // see two instruments from the same bridge.
 //
 // Colour carries meaning: amber is always the ship's own state (shields,
@@ -47,7 +47,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   user-select: none;
 }
 
-// Procedural faceplate. Swapped for the generated PNG when one is present —
+// Procedural faceplate. Swapped for the generated PNG when one is present,
 // see FACEPLATE_ASSET in ShipCombatConsole.tsx.
 .Tac__plate {
   position: absolute;
@@ -66,7 +66,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   &::before {
     // Seams along the structural panel divisions: horizontal at y=44 and
     // y=592, vertical at x=232 and x=900. The vertical pair only runs
-    // between the two seam rows — the top rail and the bottom console span
+    // between the two seam rows, the top rail and the bottom console span
     // the full width, so a seam through either would cut across a bezel.
     content: '';
     position: absolute;
@@ -140,7 +140,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 // Generated faceplate in use: the seams, grain and hazard strip are already
 // baked into the art, so drop the procedural ones rather than doubling them
 // up. Stretched to 100% x 100% because its bezels are composited at the same
-// coordinates the panels are positioned from — cover/contain would desync
+// coordinates the panels are positioned from. Cover/contain would desync
 // them.
 .Tac__plate--art {
   background-repeat: no-repeat;
@@ -174,7 +174,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   z-index: 1;
 }
 
-// A recessed well — the region a generated plate must leave flat and black.
+// A recessed well: the region a generated plate must leave flat and black.
 .Tac__well {
   position: absolute;
   inset: 0;
@@ -188,7 +188,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 }
 
 // Panel captions live INSIDE the well, not on the bezel above it. The plate's
-// wells are separated by as little as 8px of metal in places — a label in
+// wells are separated by as little as 8px of metal in places, a label in
 // that band lands on the raised lip of the panel above it and on the
 // structural seam, which is illegible however it is coloured. On the flat
 // black of the well it always reads, and the metal stays clean.
@@ -205,7 +205,7 @@ $caption: 1.6cqw;
   z-index: 2;
   display: flex;
   // A flex container strips leading whitespace from each item, so the space
-  // ahead of the "/" separator is gone whatever the markup says — the gap is
+  // ahead of the "/" separator is gone whatever the markup says, the gap is
   // what actually holds the two halves apart.
   gap: 0.4em;
   align-items: center;
@@ -230,13 +230,13 @@ $caption: 1.6cqw;
 
 // The single content root of a labelled well starts below the caption. Every
 // panel body is either `inset: 0` absolute or the flex `.Tac__pad`, so
-// pushing the direct child's top edge is enough — nothing else needs to know.
+// pushing the direct child's top edge is enough. Nothing else needs to know.
 .Tac__well--labelled > :not(.Tac__wellLabel) {
   top: $caption;
 }
 
 // The caption already supplies the top breathing room, and the left stack has
-// no slack to spare — HULL is 64px tall including its bezel.
+// no slack to spare, HULL is 64px tall including its bezel.
 .Tac__well--labelled > .Tac__pad {
   padding-top: 0.3cqw;
   padding-bottom: 0.55cqw;
@@ -356,7 +356,7 @@ $caption: 1.6cqw;
   margin-top: 0.4cqw;
 }
 
-// The two fire keys and ENGAGE FIELD: red, guarded style — the plate's way of
+// The two fire keys and ENGAGE FIELD: red, guarded style, the plate's way of
 // saying a click here spends ordnance.
 .Tac__fireKey {
   flex: 1;
@@ -565,7 +565,7 @@ $caption: 1.6cqw;
 }
 
 // Pinned to the bottom of the well rather than spaced off the number above
-// it. HULL is the tightest panel on the console — a fixed gap leaves the
+// it. HULL is the tightest panel on the console. A fixed gap leaves the
 // bar's bottom edge riding the rounding.
 .Tac__hullBar {
   margin-top: auto;
@@ -662,7 +662,7 @@ $caption: 1.6cqw;
 
 .Tac__shipName {
   // min-width: 0 is what lets a flex item shrink below its content width at
-  // all — without it the name pushes the class readout and the TACTICAL tag
+  // all, without it the name pushes the class readout and the TACTICAL tag
   // off the end of the plate instead of giving way.
   flex: 1 1 auto;
   min-width: 0;
@@ -828,7 +828,7 @@ $caption: 1.6cqw;
   }
 }
 
-// The rotating radar wedge. Six seconds per turn, ice, faint — dressing, not
+// The rotating radar wedge. Six seconds per turn, ice, faint, dressing, not
 // data, which is why reduced-motion removes it outright.
 .Tac__sweep {
   animation: tac-sweep 6s linear infinite;

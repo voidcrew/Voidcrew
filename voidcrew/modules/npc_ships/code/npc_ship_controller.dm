@@ -333,8 +333,20 @@
 	var/old_state = blackboard[BB_NPC_COMBAT_STATE]
 	set_blackboard_key(BB_NPC_COMBAT_STATE, new_state)
 
+	// Every transition gets one log line. Round-4 forensics had to reconstruct 21 hours
+	// of a wedged state machine from profiler call ratios, because the only NPC-ship
+	// logging in the tree was the target-acquisition line.
+	if(old_state != new_state)
+		var/obj/structure/overmap/ship/npc/state_ship = get_ship()
+		log_shuttle("NPC_SHIP: [state_ship?.name || "unknown vessel"] combat state: [old_state || "none"] -> [new_state]")
+
+	// Track when a retreat began; retreat_escape gives up after NPC_RETREAT_TIME_LIMIT
+	if(old_state == NPC_COMBAT_RETREATING && new_state != NPC_COMBAT_RETREATING)
+		clear_blackboard_key(BB_NPC_RETREAT_START)
+
 	// When entering retreat mode, lose weapon lock and cancel interdiction
 	if(new_state == NPC_COMBAT_RETREATING && old_state != NPC_COMBAT_RETREATING)
+		set_blackboard_key(BB_NPC_RETREAT_START, world.time)
 		var/obj/structure/overmap/ship/target = get_target()
 		var/obj/structure/overmap/ship/npc/ship = get_ship()
 
@@ -368,6 +380,41 @@
 	return blackboard[BB_NPC_COMBAT_STATE]
 
 /**
+ * Stamps and logs the moment the AI notices its ship parked (any state other than
+ * OVERMAP_SHIP_FLYING). Both subtrees stand down while parked, so before this the
+ * transition was completely silent - round 4's Ghostship docked mid-round and simply
+ * vanished from every log for the remaining ~18 hours, crew alive aboard.
+ *
+ * Also drops any live engagement: a berthed ship can't fight, and a stale target
+ * holds hails, interdiction and the target's engaging_pirate_ref open against a
+ * ship that will not be acting on any of it. The dock signal (on_ship_docked)
+ * already does this for force-docks; this covers the crash-land paths too.
+ *
+ * Called from SelectBehaviors, so it must not sleep.
+ */
+/datum/ai_controller/npc_ship/proc/note_ai_parked()
+	if(blackboard[BB_NPC_PARKED_SINCE])
+		return
+	set_blackboard_key(BB_NPC_PARKED_SINCE, world.time)
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	log_shuttle("NPC_SHIP: [ship?.name || "unknown vessel"] AI parked - state=[ship?.state], docked=[ship?.docked || "null"], crashed=[(ship?.has_crash_landed) ? "yes" : "no"], combat_state=[get_combat_state() || "none"]")
+	if(get_target() || get_combat_state() != NPC_COMBAT_IDLE)
+		INVOKE_ASYNC(src, PROC_REF(clear_target))
+
+/**
+ * Clears the parked stamp and logs the recovery, the first planning pass after the
+ * ship reads as flying again - whether our own undock_recovery got it there or an
+ * admin/check_loc() reconciliation did.
+ */
+/datum/ai_controller/npc_ship/proc/note_ai_recovered()
+	var/parked_since = blackboard[BB_NPC_PARKED_SINCE]
+	if(!parked_since)
+		return
+	clear_blackboard_key(BB_NPC_PARKED_SINCE)
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	log_shuttle("NPC_SHIP: [ship?.name || "unknown vessel"] AI recovered to flight after [round((world.time - parked_since) / (1 MINUTES), 0.1)] minutes parked")
+
+/**
  * Sets the current target ship.
  * Also marks the target as engaged by this pirate (prevents other pirates from engaging same target).
  */
@@ -376,6 +423,13 @@
 
 	// Clear engaging_pirate on old target if we had one
 	var/obj/structure/overmap/ship/old_target = blackboard[BB_NPC_TARGET]
+
+	// Crew-wipe findings are about one hull. Don't carry "I've seen them alive" or a
+	// half-elapsed wipe timer over onto whoever we point at next.
+	if(old_target != target)
+		clear_blackboard_key(BB_NPC_TARGET_CREW_SEEN)
+		clear_blackboard_key(BB_NPC_CREW_WIPE_SINCE)
+
 	if(old_target && !QDELETED(old_target) && old_target != target)
 		if(old_target.engaging_pirate_ref?.resolve() == our_ship)
 			old_target.engaging_pirate_ref = null
@@ -1096,35 +1150,123 @@
 	INVOKE_ASYNC(src, PROC_REF(check_player_crew_status))
 
 /**
- * Check if all player crew are dead - pirates win!
+ * A tracked crewmember died - re-read the target and see if that was the last of them.
+ *
+ * The tracked list itself is only a prompt to look, never the verdict. It's a snapshot
+ * taken when the raid opened, so it misses anyone who latejoined, was EVA or on a planet
+ * at the time, or got cloned since - all of whom are still very much aboard and shooting.
  */
 /datum/ai_controller/npc_ship/proc/check_player_crew_status()
-	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
-	if(!tracked_crew)
-		return
+	check_crew_eliminated()
 
-	// Count living, connected players
-	var/living_players = 0
-	for(var/mob/living/carbon/human/H as anything in tracked_crew)
-		if(!QDELETED(H) && H.stat != DEAD && H.client)
-			living_players++
+/**
+ * How many living crew are aboard `target` right now.
+ *
+ * Returns -1 when the ship can't be read at all (no shuttle, areas not resolved yet) so
+ * callers can tell "nobody left" apart from "couldn't look" - treating the second as the
+ * first would hand the pirate a victory every time a ship is mid-transit.
+ *
+ * Counts connected carbons and silicons only. Boarders are /mob/living/basic and don't
+ * qualify even if a ghost is driving one, and a body whose player has disconnected isn't
+ * defending anything, so it doesn't hold the raid open either.
+ */
+/datum/ai_controller/npc_ship/proc/count_living_crew(obj/structure/overmap/ship/target)
+	if(QDELETED(target))
+		target = get_target()
+	if(QDELETED(target))
+		return -1
 
-	if(living_players > 0)
-		return
+	var/list/shuttle_areas = target.shuttle?.shuttle_areas
+	if(!length(shuttle_areas))
+		return -1
 
-	// All players dead - pirates win!
+	// Walk the (small) player list and test their area against the shuttle's, rather than
+	// walking every turf of every shuttle area - this runs on a 5 second poll per pirate.
+	var/count = 0
+	for(var/mob/living/crew in GLOB.player_list)
+		if(crew.stat == DEAD)
+			continue
+		if(!iscarbon(crew) && !issilicon(crew))
+			continue
+		var/area/crew_area = get_area(crew)
+		if(!crew_area || !shuttle_areas[crew_area])
+			continue
+		count++
+	return count
+
+/**
+ * Check whether we've killed everyone aboard our target, and break off if we have.
+ *
+ * Two gates keep this from firing on a ship we simply can't see into:
+ * - we only ever call a wipe on a ship we have previously read living crew aboard, so an
+ *   unreadable ship or one nobody was ever on is left alone;
+ * - zero has to hold for NPC_CREW_WIPE_CONFIRM_TIME, so a defib, a crit recovery or a
+ *   momentary unreadable ship puts the raid straight back on.
+ *
+ * Returns TRUE if this call declared the wipe.
+ */
+/datum/ai_controller/npc_ship/proc/check_crew_eliminated(obj/structure/overmap/ship/target)
+	if(QDELETED(target))
+		target = get_target()
+	if(QDELETED(target))
+		return FALSE
+
+	// Already leaving (or already finished with them) - nothing to declare.
+	var/combat_state = get_combat_state()
+	if(combat_state == NPC_COMBAT_DISENGAGING || combat_state == NPC_COMBAT_DISABLED || combat_state == NPC_COMBAT_IDLE)
+		return FALSE
+
+	var/living_crew = count_living_crew(target)
+	if(living_crew < 0)
+		return FALSE // couldn't read the ship - not the same thing as an empty one
+
+	if(living_crew > 0)
+		set_blackboard_key(BB_NPC_TARGET_CREW_SEEN, TRUE)
+		clear_blackboard_key(BB_NPC_CREW_WIPE_SINCE)
+		return FALSE
+
+	// Never seen anyone alive on this ship - it's not a crew we wiped, so it isn't ours to
+	// declare victory over.
+	if(!blackboard[BB_NPC_TARGET_CREW_SEEN])
+		return FALSE
+
+	var/wipe_since = blackboard[BB_NPC_CREW_WIPE_SINCE]
+	if(!wipe_since)
+		set_blackboard_key(BB_NPC_CREW_WIPE_SINCE, world.time)
+		return FALSE
+
+	if(world.time < wipe_since + NPC_CREW_WIPE_CONFIRM_TIME)
+		return FALSE
+
+	// Scanning or hailing means we never laid a finger on them - whatever killed this crew,
+	// it wasn't us. Drop the mark quietly rather than claiming a victory over it.
+	// clear_target() silences the hail ring on the way out.
+	if(combat_state == NPC_COMBAT_SCANNING || combat_state == NPC_COMBAT_HAILING)
+		var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+		our_ship?.ship_notify("No life signs aboard [target.name]. Breaking off.", "SCANNER", SHIP_NOTIFY_NOTICE)
+		clear_target()
+		return TRUE
+
 	pirates_win()
+	return TRUE
 
 /**
  * Pirates have won - all player crew eliminated.
  * Pirates disengage and leave.
  */
 /datum/ai_controller/npc_ship/proc/pirates_win()
+	// Guard against a second call arriving from another path (a late death signal, the
+	// poll behavior) while we're already leaving.
+	if(get_combat_state() == NPC_COMBAT_DISENGAGING)
+		return
+
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 
-	// Clean up
+	// Clean up. The boarders themselves stay aboard - there's no route back off the hull
+	// for them - but nothing about the raid is live any more.
 	cleanup_boarding_signals()
+	clear_blackboard_key(BB_NPC_CREW_WIPE_SINCE)
 
 	// Announce victory
 	ship?.ship_notify("All hostiles eliminated. Disengaging.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
@@ -1155,21 +1297,8 @@
 
 	SEND_SIGNAL(src, COMSIG_BOARDING_ESCALATED)
 
-	// Clean up boarding state
+	// Clean up boarding state - any boarders already aboard are on their own now
 	cleanup_boarding_signals()
-
-	// Clear any remaining boarders (they're now on their own)
-	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
-	if(wave_boarders)
-		for(var/mob/living/boarder as anything in wave_boarders)
-			UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
-
-	// Clear boss tracking
-	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
-	if(boss && !QDELETED(boss))
-		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
 
 	// Announce escalation
 	ship?.ship_notify("Hostile action detected! Switching to weapons combat!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
@@ -1180,14 +1309,29 @@
 
 /**
  * Clean up all boarding-related signals and state.
+ *
+ * Unregisters the boarders and boss as well as the crew. Every caller wanted that and
+ * every caller tried to do it themselves *after* calling this - reading blackboard keys
+ * this proc had already cleared, so the loops always ran over nothing. Doing it here is
+ * the only place the lists still exist.
  */
 /datum/ai_controller/npc_ship/proc/cleanup_boarding_signals()
 	// Unregister from player crew deaths
 	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
-	if(tracked_crew)
-		for(var/mob/living/crew as anything in tracked_crew)
-			if(!QDELETED(crew))
-				UnregisterSignal(crew, COMSIG_LIVING_DEATH)
+	for(var/mob/living/crew as anything in tracked_crew)
+		if(!QDELETED(crew))
+			UnregisterSignal(crew, COMSIG_LIVING_DEATH)
+
+	// Unregister from boarder deaths - the mobs stay aboard, but their deaths no longer
+	// feed wave logic for a raid that's over
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	for(var/mob/living/boarder as anything in wave_boarders)
+		if(!QDELETED(boarder))
+			UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+
+	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
+	if(!QDELETED(boss))
+		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
 
 	// Clear boarding blackboard keys
 	clear_blackboard_key(BB_NPC_BOARDING_WAVE)
@@ -1204,22 +1348,8 @@
  * Cleans up all boarding state and returns to IDLE without a target.
  */
 /datum/ai_controller/npc_ship/proc/abort_boarding()
-	// Clean up boarding state
+	// Clean up boarding state - anything already dropped aboard stays there
 	cleanup_boarding_signals()
-
-	// Clear any remaining boarders (unregister death signals)
-	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
-	if(wave_boarders)
-		for(var/mob/living/boarder as anything in wave_boarders)
-			if(!QDELETED(boarder))
-				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
-
-	// Clear boss tracking
-	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
-	if(boss && !QDELETED(boss))
-		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
 
 	// Fully disengage - clear target and return to idle
 	clear_target()
@@ -1232,22 +1362,8 @@
 /datum/ai_controller/npc_ship/proc/escalate_boarding_to_combat(reason)
 	SEND_SIGNAL(src, COMSIG_BOARDING_ESCALATED, reason)
 
-	// Clean up boarding state
+	// Clean up boarding state - any boarders already aboard are on their own now
 	cleanup_boarding_signals()
-
-	// Clear any remaining boarders (they're now on their own)
-	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
-	if(wave_boarders)
-		for(var/mob/living/boarder as anything in wave_boarders)
-			if(!QDELETED(boarder))
-				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
-
-	// Clear boss tracking
-	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
-	if(boss && !QDELETED(boss))
-		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
-	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
 
 	// Transition to standard combat (will acquire lock then fight)
 	set_combat_state(NPC_COMBAT_ENGAGING)

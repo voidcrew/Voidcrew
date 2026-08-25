@@ -102,8 +102,19 @@
 	return parent
 
 /obj/machinery/atmospherics/pipe/replace_pipenet(datum/pipeline/old_pipenet, datum/pipeline/new_pipenet)
-	if(parent && has_gas_visuals)
+	// VOIDCREW EDIT: QDELETED guard - GetGasVisual() creates the overlay on demand,
+	// so calling it on a dying pipeline (the get_rebuild_targets path) minted a fresh
+	// overlay object onto a pipeline whose Destroy had already run
+	if(parent && has_gas_visuals && !QDELETED(parent))
 		vis_contents -= parent.GetGasVisual('icons/obj/pipes_n_cables/!pipe_gas_overlays.dmi')
+
+	// VOIDCREW EDIT: honour old_pipenet. members was append-only - no code anywhere
+	// removed a single pipe from a pipeline's members, so every re-parent left the
+	// old pipeline holding this pipe forever. Orphaned pipelines never qdel (nothing
+	// but SSair.networks points at them), so each stale entry was a permanent
+	// GC-blocking ref: round 4 spent ~275 s hard-deleting pipes pinned this way.
+	if(old_pipenet && old_pipenet != new_pipenet)
+		old_pipenet.members -= src
 
 	parent = new_pipenet
 

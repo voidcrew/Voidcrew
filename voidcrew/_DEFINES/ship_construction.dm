@@ -14,3 +14,11 @@
 #define SHIP_TRAY_MODE_TRAY "t-ray"
 #define SHIP_TRAY_MODE_PIPE "pipe"
 #define SHIP_TRAY_MODE_THERMAL "thermal"
+
+// Silo material costs for a console-built camera (mirrors /obj/item/wallframe/camera custom_materials)
+#define SHIP_CAMERA_IRON_COST (SMALL_MATERIAL_AMOUNT * 4)
+#define SHIP_CAMERA_GLASS_COST (SMALL_MATERIAL_AMOUNT * 2.5)
+// Delay to mount a camera with the console drone
+#define SHIP_CAMERA_BUILD_DELAY (2 SECONDS)
+// Delay to remove a camera with the console drone
+#define SHIP_CAMERA_DECONSTRUCT_DELAY (2 SECONDS)

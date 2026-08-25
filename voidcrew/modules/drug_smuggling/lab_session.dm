@@ -4,7 +4,7 @@
  * The authoritative state of one cook: which ingredients are banked, which
  * stage the batch is at, and every station's attempts and scores. Owned by the
  * mission (created in generate_details, qdel'd with it), so the batch survives
- * lab machine deletion — the machines are stateless TGUI views that the cook
+ * lab machine deletion, the machines are stateless TGUI views that the cook
  * objective points at this datum whenever the ruin interior loads.
  *
  * The mixer minigame is SERVER-AUTHORITATIVE: every hopper press is a ui_act
@@ -52,7 +52,7 @@
 	var/game_attempt_score = 0
 	/// Whether that attempt botched (scored under the hazard floor)
 	var/game_botched = FALSE
-	/// The live attempt is a retry taken right after a botch — hazards bite harder
+	/// The live attempt is a retry taken right after a botch, hazards bite harder
 	var/game_retry_harsher = FALSE
 	/// Current round of the active attempt, 1..DRUG_MIXER_ROUNDS
 	var/mixer_round = 0
@@ -100,7 +100,7 @@
 	return ..()
 
 // =========================================================================
-// MACHINE PLUMBING — stateless views registering with the state
+// MACHINE PLUMBING: stateless views registering with the state
 // =========================================================================
 
 /// Tracks a live lab machine so mutations can push its UI (wire_lab calls this)
@@ -140,7 +140,7 @@
 	return null
 
 // =========================================================================
-// LOADING — bank the shopping list into the hoppers
+// LOADING: bank the shopping list into the hoppers
 // =========================================================================
 
 /**
@@ -173,12 +173,12 @@
 	playsound(get_station_machine(DRUG_STATION_MIXER) || user, 'sound/machines/click.ogg', 40, TRUE)
 	if(length(banked) >= length(mission.recipe.ingredients))
 		stage = DRUG_LAB_STAGE_MIXER
-		mission.servant?.ship_notify("All precursors banked. The mixer is live — run the hopper sequence.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
+		mission.servant?.ship_notify("All precursors banked. The mixer is live. Run the hopper sequence.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
 	push_ui_updates()
 	return TRUE
 
 // =========================================================================
-// MIXER MINIGAME — server-side Simon-says over the hoppers
+// MIXER MINIGAME: server-side Simon-says over the hoppers
 // =========================================================================
 
 /// Starts (or retries) a mixer attempt: fresh round 1 sequence, cursor zeroed
@@ -264,7 +264,7 @@
 	commit_station(DRUG_STATION_MIXER, scores[DRUG_STATION_MIXER])
 
 // =========================================================================
-// CATALYST & CRYSTALLIZER — client-run real-time games, server-validated
+// CATALYST & CRYSTALLIZER: client-run real-time games, server-validated
 // =========================================================================
 
 /**
@@ -296,7 +296,7 @@
 
 /**
  * The catalyst client reports its finished run. The nonce must match the live
- * attempt (single-use — consumed here); the totals are validated against the
+ * attempt (single-use, consumed here); the totals are validated against the
  * authoritative chart, and an implausible report simply scores 0, flowing
  * through the same finish path (cheaters get the botch hazard for free).
  */
@@ -356,7 +356,7 @@
 /**
  * Shared tail of both real-time games: cap the validated score by the attempt
  * number's ceiling, keep the station's best, vent the machine's hazard on a
- * botch, then either lock in (attempts spent) or offer Commit/Retry — the
+ * botch, then either lock in (attempts spent) or offer Commit/Retry, the
  * mixer's exact flow. `deliver_hazard` FALSE skips the fallout (abandoned-game
  * reclaims: nobody is standing there to deserve it).
  */
@@ -386,13 +386,13 @@
  * A live client-run attempt whose window died mid-run never sends a finish,
  * which would wedge the station forever. When a fresh start arrives past the
  * whole chart span plus DRUG_GAME_ABANDON_GRACE, the abandoned attempt
- * finalizes at 0 (its slot was already spent; no hazard — nobody owns the
+ * finalizes at 0 (its slot was already spent; no hazard, nobody owns the
  * botch) and the station unblocks. Returns TRUE when a stale game was cleared.
  */
 /datum/drug_lab_session/proc/reclaim_abandoned_game(mob/user)
 	var/list/live_chart = catalyst_chart || crystallizer_table
 	if(!islist(live_chart) || !length(live_chart))
-		// A live game with no chart is the mixer's — server-stepped, never stale
+		// A live game with no chart is the mixer's, server-stepped, never stale
 		return FALSE
 	var/list/last_entry = live_chart[length(live_chart)]
 	var/duration_ds = (last_entry["t"] + DRUG_GAME_LEAD_IN_MS) / 100
@@ -403,7 +403,7 @@
 	return TRUE
 
 // =========================================================================
-// RESULT VALIDATORS — pure procs, no session state (unit-testable directly)
+// RESULT VALIDATORS: pure procs, no session state (unit-testable directly)
 // =========================================================================
 
 /**
@@ -503,7 +503,7 @@
 	mission.on_cook_finished(get_product_drop_turf())
 
 /**
- * An open tile beside the live crystallizer machine — where the finished
+ * An open tile beside the live crystallizer machine, where the finished
  * product prints. Null when the lab isn't loaded right now (the machine
  * weakrefs are dead), in which case the mission falls back to the pad.
  */
@@ -518,11 +518,11 @@
 	return get_turf(machine)
 
 // =========================================================================
-// UI DATA — each machine's payload, built here so the machines stay thin
+// UI DATA: each machine's payload, built here so the machines stay thin
 // =========================================================================
 
 /// The full ui_data payload for one station's machine. The heavy chart lists
-/// only ride the payload while their game is actually live — data pushes
+/// only ride the payload while their game is actually live, data pushes
 /// re-send everything, so idle payloads stay lean.
 /datum/drug_lab_session/proc/ui_data_for(station)
 	var/list/data = list(

@@ -12,7 +12,7 @@
  *    and spend the trial for nothing with no way to retake it.
  * 2. **Every vestige ruin map places exactly one patron.** A copy-paste slip
  *    gives a ruin with nothing in it, and there is no in-game signal that
- *    anything is wrong — the crew just flies to an empty hulk.
+ *    anything is wrong, the crew just flies to an empty hulk.
  * 3. **Ascension wiring resolves.** Arena templates deliberately bypass
  *    SSmapping.map_templates and hardcode a mappath, so a renamed file fails
  *    only at run time, inside a live one-way attempt.
@@ -30,7 +30,7 @@
 /datum/unit_test/vestige_boon_pools/Run()
 	var/list/sources = list()
 	vc_test_collect_dm_files(VESTIGE_SOURCE_ROOT, sources)
-	TEST_ASSERT(length(sources) > 10, "the vestige source scan found only [length(sources)] .dm files under [VESTIGE_SOURCE_ROOT] — wrong root?")
+	TEST_ASSERT(length(sources) > 10, "the vestige source scan found only [length(sources)] .dm files under [VESTIGE_SOURCE_ROOT], wrong root?")
 
 	// Pools are list vars: initial() cannot read them, and instantiating a
 	// patron to read them off the instance dresses an appearance dummy through
@@ -41,14 +41,14 @@
 	TEST_ASSERT(length(patrons), "no vestige patrons are defined")
 	// If the source format ever drifts, this test must fail loudly rather than
 	// pass while checking nothing.
-	TEST_ASSERT_EQUAL(length(pools), length(patrons), "the boon-pool scan matched [length(pools)] of [length(patrons)] patrons — the source format changed and this test is no longer checking anything")
+	TEST_ASSERT_EQUAL(length(pools), length(patrons), "the boon-pool scan matched [length(pools)] of [length(patrons)] patrons. The source format changed and this test is no longer checking anything")
 
 	var/total_boons = 0
 	var/list/owner_of = list()
 	for(var/patron_type in pools)
 		var/list/pool = pools[patron_type]
 		if(!length(pool))
-			TEST_FAIL("[patron_type] offers no boons — every trial it assigns pays out nothing")
+			TEST_FAIL("[patron_type] offers no boons. Every trial it assigns pays out nothing")
 			continue
 		if(!length(trials[patron_type]))
 			TEST_FAIL("[patron_type] has no trials, so nothing can ever be earned from it")
@@ -63,8 +63,8 @@
 			owner_of[boon_type] = patron_type
 			var/prerequisite = initial(boon_type.upgrades_from)
 			if(prerequisite && !(prerequisite in pool))
-				TEST_FAIL("[patron_type] offers [boon_type], whose upgrades_from ([prerequisite]) is not in the same pool — get_eligible_vestige_boons() can never offer it, so the upgrade is unreachable through this patron.")
-	TEST_ASSERT(total_boons > 50, "only [total_boons] boons were scanned across [length(pools)] patrons — the scan is not seeing the real pools")
+				TEST_FAIL("[patron_type] offers [boon_type], whose upgrades_from ([prerequisite]) is not in the same pool, get_eligible_vestige_boons() can never offer it, so the upgrade is unreachable through this patron.")
+	TEST_ASSERT(total_boons > 50, "only [total_boons] boons were scanned across [length(pools)] patrons. The scan is not seeing the real pools")
 
 	// A boon that is neither a spell nor an item has no icon to derive, so it
 	// must supply its own or the reward radial renders the generic placeholder.
@@ -84,7 +84,7 @@
 		if(!owner_of[boon_type])
 			continue // not offered by anyone; the pool check above owns that case
 		if(isnull(initial(boon_type.radial_icon)))
-			TEST_FAIL("[boon_type] is neither a spell nor an item boon and sets no radial_icon — it renders the generic placeholder in the claim radial")
+			TEST_FAIL("[boon_type] is neither a spell nor an item boon and sets no radial_icon, it renders the generic placeholder in the claim radial")
 
 /datum/unit_test/vestige_ruin_patrons
 	priority = TEST_LONGER
@@ -112,7 +112,7 @@
 			unplaced -= patron_type
 		if(found != 1)
 			TEST_FAIL("[template.suffix] places [found] patrons; every vestige ruin must place exactly one. A ruin with none is a dead end the crew flies to for nothing, and nothing in game says so.")
-	TEST_ASSERT(templates_seen >= 10, "only [templates_seen] vestige ruin templates are registered — expected the full themed set")
+	TEST_ASSERT(templates_seen >= 10, "only [templates_seen] vestige ruin templates are registered. Expected the full themed set")
 	if(length(unplaced))
 		TEST_FAIL("these patrons are authored but appear in no vestige ruin map, so they can never be met: [english_list(unplaced)]")
 
@@ -141,11 +141,11 @@
 			TEST_FAIL("[patron_type] hosts both [hosts[patron_type]] and [offer_type]; get_vestige_ascension() keys offers by host patron and only one survives")
 		hosts[patron_type] = offer_type
 		if(!ispath(boss_type, /mob/living))
-			TEST_FAIL("[offer_type].boss_type ([boss_type]) is not a /mob/living — the run would open an empty arena")
+			TEST_FAIL("[offer_type].boss_type ([boss_type]) is not a /mob/living. The run would open an empty arena")
 		if(!ispath(boon_type, /datum/vestige_boon))
-			TEST_FAIL("[offer_type].boon_type ([boon_type]) is not a boon — the kill would pay out nothing")
+			TEST_FAIL("[offer_type].boon_type ([boon_type]) is not a boon. The kill would pay out nothing")
 		else if(boon_type in pools[patron_type])
-			TEST_FAIL("[offer_type]'s capstone [boon_type] is also in [patron_type]'s ordinary boon pool — a plain trial could pay out the capstone without the arena")
+			TEST_FAIL("[offer_type]'s capstone [boon_type] is also in [patron_type]'s ordinary boon pool. A plain trial could pay out the capstone without the arena")
 		if(!ispath(arena_type, /datum/map_template/vestige_arena))
 			TEST_FAIL("[offer_type].template_type ([arena_type]) is not an arena template; open_arena() bails with a log line and the supplicant is told nothing")
 			continue
@@ -157,12 +157,12 @@
 			TEST_FAIL("[offer_type]'s arena map '[mappath]' does not exist. Arena templates bypass SSmapping.map_templates, so a renamed file only fails inside a live one-way attempt.")
 			continue
 		if(!vc_test_map_has_path(text, /obj/effect/landmark/vestige_arena/entry))
-			TEST_FAIL("[mappath] has no entry landmark — the run refuses to open and the supplicant is left standing at the patron")
+			TEST_FAIL("[mappath] has no entry landmark. The run refuses to open and the supplicant is left standing at the patron")
 		if(!vc_test_map_has_path(text, /obj/effect/landmark/vestige_arena/boss))
-			TEST_FAIL("[mappath] has no boss landmark — the run refuses to open")
+			TEST_FAIL("[mappath] has no boss landmark, the run refuses to open")
 	TEST_ASSERT(offers >= 3, "only [offers] ascension offers are defined; expected one per host patron")
 	for(var/arena_type in subtypesof(/datum/map_template/vestige_arena))
 		if(!arenas_used[arena_type])
-			TEST_FAIL("[arena_type] is authored but no /datum/vestige_ascension points at it — the arena can never be opened")
+			TEST_FAIL("[arena_type] is authored but no /datum/vestige_ascension points at it. The arena can never be opened")
 
 #undef VESTIGE_SOURCE_ROOT

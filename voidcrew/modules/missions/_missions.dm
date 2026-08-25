@@ -33,7 +33,7 @@
 	/// Item type path to spawn on completion (optional). The single-reward
 	/// convenience; get_reward_types() folds it together with mission_rewards.
 	var/mission_reward
-	/// Additional item type paths to spawn on completion — the multi-reward
+	/// Additional item type paths to spawn on completion, the multi-reward
 	/// channel (a whole bundle, potentially mixed rarity). May hold duplicates
 	/// (e.g. two of the same warhead), which spawn as separate items.
 	var/list/mission_rewards
@@ -46,7 +46,7 @@
 	var/list/reward_amounts
 	/// Multiplier on the difficulty pay band for outpost-board contracts.
 	/// Difficulty alone can't tell "hand over 30 cable coil you already have"
-	/// from "fly to a hostile ruin and kill a named boss" — both roll EASY in
+	/// from "fly to a hostile ruin and kill a named boss", both roll EASY in
 	/// green space. Archetypes that cost a trip and a fight set this above 1.
 	var/contract_pay_mult = 1
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
@@ -59,8 +59,11 @@
 	var/voucher_count = 0
 	/// Research points paid on completion, handed over as a research-notes
 	/// dossier at the turn-in point (the crew slots it into an R&D console).
-	/// Types set their GREEN-zone band; apply_zone_scaling() multiplies it up
-	/// alongside credits.
+	/// Types set one of the MISSION_RESEARCH_PAY_* bands as their GREEN-zone
+	/// value; apply_zone_scaling() multiplies it up by the zone's research_mult,
+	/// which is deliberately flatter than the credit one. Never hand-write a
+	/// number here - the bands are what keeps the board in line with the rest of
+	/// the point economy.
 	var/research_reward = 0
 	/// Field of study printed on that dossier ("notes of xenofauna")
 	var/research_origin = "field work"
@@ -102,6 +105,14 @@
 	var/preferred_zone
 	/// Display name of the target's zone at generation time
 	var/target_zone_name = MISSION_ZONE_UNKNOWN
+	/// This contract needs its site to itself: target selection only accepts a
+	/// site no other contract is pointed at, and locks other contracts out of it
+	/// for as long as this one holds it. For the jobs whose objective is alive and
+	/// helpless - a bounty's named target arrives with paid muscle, and muscle
+	/// spawned twenty tiles from a rescue's survivor kills the survivor long before
+	/// the crew walks in. Costs a generation roll when every site is spoken for, so
+	/// only the contracts that genuinely can't share should set it.
+	var/exclusive_site = FALSE
 	/// Flavor name of the thing being recovered/hunted/planted, if any
 	var/objective_name
 
@@ -154,6 +165,12 @@
 		servant.remove_waypoint(REF(src))
 		servant.active_missions -= src
 		servant = null
+	// The subsystem's list is dropped here for the same reason the ship's is: complete(),
+	// fail() and give_up() each remove themselves on the way out, but every OTHER route to
+	// qdel - force_refresh_ship_missions(), a ship despawning, an admin - left the entry
+	// behind, holding a hard reference to a qdel'd datum. SSmissions.fire()'s sweep was the
+	// only thing collecting those, once every 30 seconds, and it skipped entries while it ran.
+	SSmissions.all_active_missions -= src
 	shop = null
 	return ..()
 
@@ -230,17 +247,23 @@
  */
 /datum/mission/proc/apply_zone_scaling(zone_type)
 	var/static/list/zone_scaling = list(
-		"[ZONE_GREEN]" = list("name" = ZONE_NAME_GREEN, "difficulty" = MISSION_DIFFICULTY_EASY, "value_mult" = 1, "voucher_bonus" = 0),
-		"[ZONE_YELLOW]" = list("name" = ZONE_NAME_YELLOW, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "value_mult" = 1.7, "voucher_bonus" = 0),
-		"[ZONE_RED]" = list("name" = ZONE_NAME_RED, "difficulty" = MISSION_DIFFICULTY_HARD, "value_mult" = 2.6, "voucher_bonus" = 1),
+		"[ZONE_GREEN]" = list("name" = ZONE_NAME_GREEN, "difficulty" = MISSION_DIFFICULTY_EASY, "value_mult" = 1, "research_mult" = 1, "voucher_bonus" = 0),
+		"[ZONE_YELLOW]" = list("name" = ZONE_NAME_YELLOW, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "value_mult" = 1.7, "research_mult" = 1.4, "voucher_bonus" = 0),
+		"[ZONE_RED]" = list("name" = ZONE_NAME_RED, "difficulty" = MISSION_DIFFICULTY_HARD, "value_mult" = 2.6, "research_mult" = 1.8, "voucher_bonus" = 1),
 	)
 	var/list/row = zone_scaling["[zone_type]"] || zone_scaling["[ZONE_GREEN]"]
 	target_zone_name = row["name"]
 	difficulty = row["difficulty"]
 	value_min = round(value_min * row["value_mult"], 10)
 	value_max = round(value_max * row["value_mult"], 10)
+	// Points scale slower than credits on purpose. Credits are spent and gone, so a
+	// deep-band contract can pay several times a green one without distorting
+	// anything; research is permanent progress on a tree the whole ship shares, and
+	// riding the 2.6x credit multiplier put one Lawless contract ahead of every other
+	// point faucet in the game combined. The danger premium is paid in credits and
+	// vouchers - the band (MISSION_RESEARCH_PAY_*) is what sets the science.
 	if(research_reward > 0)
-		research_reward = round(research_reward * row["value_mult"], 50)
+		research_reward = round(research_reward * row["research_mult"], 10)
 	if(voucher_count > 0)
 		voucher_count += row["voucher_bonus"]
 
@@ -474,6 +497,19 @@
 
 /**
  * Whether the quest atom is still physically inside the (now dying) site.
+ *
+ * Identity first, coordinates only as the fallback. The cached rectangle is whatever the
+ * target handed over at registration time - a SNAPSHOT - and both slots and z-levels are
+ * recycled, so once a site has given its ground back the very same rectangle belongs to
+ * whoever is dealt it next. A quest atom sitting safely in a cargo bay parked at an
+ * unrelated site can therefore alias straight into a dead site's stored rect and be
+ * destroyed by on_target_lost() as "stranded".
+ *
+ * While the target is alive it answers for itself (contains_turf() is its own footprint).
+ * Once it is gone, the rect is trusted only where no LIVE site owns that ground.
+ *
+ * Turfs a ship copied down onto its berth are inside the site's footprint and still count
+ * as stranded, exactly as they did under the level rect.
  */
 /datum/mission/proc/is_quest_atom_stranded()
 	if(!quest_atom || QDELETED(quest_atom) || !length(quest_atom_bounds))
@@ -481,9 +517,21 @@
 	var/turf/quest_turf = get_turf(quest_atom)
 	if(!quest_turf)
 		return FALSE
-	return quest_turf.z == quest_atom_bounds[5] \
-		&& quest_turf.x >= quest_atom_bounds[1] && quest_turf.x <= quest_atom_bounds[3] \
-		&& quest_turf.y >= quest_atom_bounds[2] && quest_turf.y <= quest_atom_bounds[4]
+
+	// The target is still there to ask.
+	if(target?.is_valid())
+		return target.contains_turf(quest_turf)
+
+	if(quest_turf.z != quest_atom_bounds[5] \
+		|| quest_turf.x < quest_atom_bounds[1] || quest_turf.x > quest_atom_bounds[3] \
+		|| quest_turf.y < quest_atom_bounds[2] || quest_turf.y > quest_atom_bounds[4])
+		return FALSE
+
+	// Inside the remembered rectangle is not proof of being inside the dead SITE. If a live
+	// site owns that ground now, it was re-dealt after ours let go and the atom is
+	// somewhere else entirely - somebody's hold, most likely.
+	var/obj/structure/overmap/resident_site = SSovermap_zones?.get_overmap_object_for_turf(quest_turf)
+	return isnull(resident_site)
 
 /**
  * The target object is being deleted (abandoned ruin respawning elsewhere...).
@@ -510,6 +558,16 @@
 
 /// The target's interior just loaded; let the current objective arm itself
 /datum/mission/proc/on_target_interior_loaded()
+	// A site that rebuilt its interior may not have come back on the same ground:
+	// planets relocate and re-claim, and on a packed level the slot they land in is
+	// whichever one was free. Anything still tracked was measured against the OLD
+	// rectangle, and that cached rect is what decides whether the atom gets destroyed
+	// as stranded - so re-read it while the site is healthy enough to answer. A site
+	// mid-deletion returns null and the cache is left alone, which is what it is for.
+	if(quest_atom && !QDELETED(quest_atom))
+		var/list/fresh_bounds = target?.get_interior_bounds()
+		if(length(fresh_bounds))
+			quest_atom_bounds = fresh_bounds
 	var/datum/mission_objective/field/objective = current_objective()
 	if(istype(objective))
 		objective.on_interior_loaded()
@@ -630,7 +688,7 @@
 /**
  * The best item in the user's hands to offer this contract: the first that
  * satisfies the ask outright, or failing that the first that is the right KIND
- * of goods. The near-miss matters — it lets a refusal name the real shortfall
+ * of goods. The near-miss matters. It lets a refusal name the real shortfall
  * ("Need 30, only have 12") instead of telling someone holding the goods to go
  * hold the goods. Returns null when nothing in hand is even close.
  *
@@ -682,7 +740,7 @@
  * * turned_in_item - Optional item that was offered (consumed by the objective)
  * * force - Skip objective validation (admin testing); state guards still apply
  *
- * Returns TRUE when the offer was accepted — the mission may have completed
+ * Returns TRUE when the offer was accepted. The mission may have completed
  * (it is qdeleted by then) or just advanced a counted hand-over.
  */
 /datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)

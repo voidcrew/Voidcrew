@@ -1,5 +1,5 @@
 /**
- * Ship-scoped helpers for dynamic events — the replacements for TG's station
+ * Ship-scoped helpers for dynamic events: the replacements for TG's station
  * helpers (get_random_station_turf, GLOB.station_turfs, priority_announce, ...).
  *
  * Everything here resolves through shuttle.shuttle_areas, never through z-levels:
@@ -11,7 +11,7 @@
 	var/last_dynamic_event = 0
 
 /// Living, client-connected players physically aboard. This is the population that
-/// matters for event eligibility — ship_team membership means nothing if everyone
+/// matters for event eligibility, ship_team membership means nothing if everyone
 /// is off exploring a ruin.
 /obj/structure/overmap/ship/proc/get_event_crew()
 	var/list/aboard = list()
@@ -28,7 +28,7 @@
 			aboard += living_player
 	return aboard
 
-/// Every living mob physically aboard, player or not — for effects that hit everyone.
+/// Every living mob physically aboard, player or not, for effects that hit everyone.
 /obj/structure/overmap/ship/proc/get_all_mobs_aboard(include_dead = FALSE)
 	var/list/aboard = list()
 	if(!shuttle?.shuttle_areas)
@@ -47,7 +47,7 @@
 	var/area/thing_area = get_area(thing)
 	return thing_area && (thing_area in shuttle.shuttle_areas)
 
-/// Random area of this ship — the replacement for random_station_area().
+/// Random area of this ship: the replacement for random_station_area().
 /obj/structure/overmap/ship/proc/get_random_ship_area()
 	if(!shuttle?.shuttle_areas?.len)
 		return null
@@ -62,7 +62,7 @@
 	return null
 
 /**
- * Mapper-placed /obj/effect/landmark/event_spawn markers aboard this ship — the
+ * Mapper-placed /obj/effect/landmark/event_spawn markers aboard this ship, the
  * ship-scoped replacement for GLOB.generic_event_spawns.
  *
  * The global list spans every loaded z: ruins, outposts and other crews' hulls are all
@@ -92,7 +92,7 @@
 				machines += machine
 	return machines
 
-/// Priority announcement heard only aboard this ship — the replacement for
+/// Priority announcement heard only aboard this ship, the replacement for
 /// priority_announce() in ported events. Sender defaults to the ship's own name,
 /// framed as the ship computer talking to its crew.
 /obj/structure/overmap/ship/proc/ship_event_announce(text, title = "", sound, sender_override)

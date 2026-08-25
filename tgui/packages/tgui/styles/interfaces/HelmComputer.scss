@@ -41,7 +41,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   user-select: none;
 }
 
-// Procedural faceplate. Swapped for the generated PNG when one is present —
+// Procedural faceplate. Swapped for the generated PNG when one is present,
 // see FACEPLATE_ASSET in HelmComputer.tsx.
 .Helm__plate {
   position: absolute;
@@ -116,7 +116,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 // Generated faceplate in use: the seams, grain and hazard strip are already
 // baked into the art, so drop the procedural ones rather than doubling them up.
 // Stretched to 100% x 100% because its bezels are composited at the same
-// coordinates the panels are positioned from — cover/contain would desync them.
+// coordinates the panels are positioned from. Cover/contain would desync them.
 .Helm__plate--art {
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -147,7 +147,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
   z-index: 1;
 }
 
-// A recessed well — the region a generated plate must leave flat and black.
+// A recessed well: the region a generated plate must leave flat and black.
 .Helm__well {
   position: absolute;
   inset: 0;
@@ -161,7 +161,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 }
 
 // Panel captions live INSIDE the well, not on the bezel above it. The plate's
-// wells are separated by as little as 8px of metal in places — a label in that
+// wells are separated by as little as 8px of metal in places, a label in that
 // band lands on the raised lip of the panel above it and on the structural seam,
 // which is illegible however it is coloured. On the flat black of the well it
 // always reads, and the metal stays clean.
@@ -178,7 +178,7 @@ $caption: 1.6cqw;
   z-index: 2;
   display: flex;
   // A flex container strips leading whitespace from each item, so the space
-  // ahead of the "/" separator is gone whatever the markup says — the gap is
+  // ahead of the "/" separator is gone whatever the markup says, the gap is
   // what actually holds the two halves apart.
   gap: 0.4em;
   align-items: center;
@@ -227,13 +227,13 @@ $caption: 1.6cqw;
 
 // The single content root of a labelled well starts below the caption. Every
 // panel body is either `inset: 0` absolute or the flex `.Helm__pad`, so pushing
-// the direct child's top edge is enough — nothing else needs to know.
+// the direct child's top edge is enough. Nothing else needs to know.
 .Helm__well--labelled > :not(.Helm__wellLabel) {
   top: $caption;
 }
 
 // The caption already supplies the top breathing room, and the left stack has
-// no slack to spare — HULL and DRIVE are within a couple of pixels of their
+// no slack to spare, HULL and DRIVE are within a couple of pixels of their
 // wells even before one is added.
 .Helm__well--labelled > .Helm__pad {
   padding-top: 0.25cqw;
@@ -258,7 +258,7 @@ $caption: 1.6cqw;
   // Flex items default to min-width: auto, which refuses to shrink below the
   // label/value's own content width. The parent well clips overflow (see
   // .Helm__well), so a metric row wider than the panel doesn't wrap or
-  // truncate — it just silently vanishes past the edge. min-width: 0 lets it
+  // truncate, it just silently vanishes past the edge. min-width: 0 lets it
   // shrink instead, and Helm__v below takes it the rest of the way with an
   // ellipsis so a long value degrades instead of disappearing.
   min-width: 0;
@@ -362,7 +362,7 @@ $caption: 1.6cqw;
 }
 
 // The name's slot. min-width: 0 is what lets a flex item shrink below its content
-// width at all — without it the name simply pushes the class and position readouts
+// width at all, without it the name simply pushes the class and position readouts
 // off the end of the plate instead of giving way.
 .Helm__identName {
   flex: 1 1 auto;
@@ -566,7 +566,7 @@ $caption: 1.6cqw;
 }
 
 // Pinned to the bottom of the well rather than spaced off the number above it.
-// HULL is the tightest panel on the console — a fixed gap leaves the bar's
+// HULL is the tightest panel on the console. A fixed gap leaves the bar's
 // bottom edge riding the rounding, and a clipped hull bar is a lie about the
 // one reading the crew checks first.
 .Helm__hullBar {
@@ -677,7 +677,7 @@ $caption: 1.6cqw;
   letter-spacing: 0.1em;
 }
 
-// The dial takes whatever vertical room is left and sizes itself from that —
+// The dial takes whatever vertical room is left and sizes itself from that,
 // never from its own width. Scaling off the width overflowed the well and
 // pushed the scan buttons out of the console entirely, which is a control the
 // crew cannot reach rather than a cosmetic clip.
@@ -720,7 +720,7 @@ $caption: 1.6cqw;
   letter-spacing: 0.16em;
 }
 
-// flex: none on both — the dial gives up space, these never do. They are the
+// flex: none on both. The dial gives up space, these never do. They are the
 // scan controls; if anything has to lose room it is the picture, not the button.
 .Helm__scanState {
   flex: none;
@@ -731,8 +731,8 @@ $caption: 1.6cqw;
 
 // Three categories across a 212px well: the default button type is too wide for
 // "Planets" to survive the split, so these run smaller and tighter. Wrapping is
-// the safety valve if a client's font is wider than the stencil stack expects —
-// the dial gives up the height for a second row rather than clipping a label.
+// the safety valve if a client's font is wider than the stencil stack expects.
+// The dial gives up the height for a second row rather than clipping a label.
 .Helm__scanRow {
   display: flex;
   flex: none;
@@ -801,7 +801,7 @@ $caption: 1.6cqw;
   font-size: 1.05cqw;
 
   // The projected drift is the ship's own state rather than something outside
-  // it, so it takes the amber side of the console's colour split — and matches
+  // it, so it takes the amber side of the console's colour split, and matches
   // the track the chart draws for it.
   &.Helm--drift {
     color: $amber;
@@ -809,6 +809,12 @@ $caption: 1.6cqw;
 
   &.Helm--driftHazard {
     color: $crit;
+  }
+
+  // The tile under the cursor. Dimmer than the ship's own position on purpose:
+  // it reports where the crew is pointing, not where the hull is.
+  &.Helm--cursor {
+    color: $ice-dim;
   }
 }
 
@@ -942,6 +948,66 @@ $caption: 1.6cqw;
   text-transform: uppercase;
 }
 
+// The flight-policy gear and its panel, anchored in the bottom-left HUD next
+// to the autopilot readout.
+
+.Helm__policyGear {
+  padding: 0.16cqw 0.4cqw;
+  font-size: 0.95cqw;
+  line-height: 1;
+}
+
+.Helm__policyPanel {
+  width: max-content;
+  max-width: 20cqw;
+  margin-bottom: 0.4cqw;
+  padding: 0.5cqw 0.7cqw 0.55cqw;
+  border: 1px solid $steel-700;
+  background: rgba(6, 12, 13, 0.92);
+  // The parent HUD is pointer-events: none so the chart stays draggable
+  // through it; the panel has controls, so it opts back in.
+  pointer-events: auto;
+}
+
+.Helm__policyTitle {
+  margin-bottom: 0.35cqw;
+  color: $ice-dim;
+  font-family: $stencil;
+  font-size: 0.8cqw;
+  letter-spacing: 0.14em;
+}
+
+.Helm__policyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4cqw;
+  color: $label;
+  font-family: $mono;
+  font-size: 0.82cqw;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  & + & {
+    margin-top: 0.18cqw;
+  }
+}
+
+.Helm__policyHint {
+  flex-basis: 100%;
+  padding-left: 1.3cqw;
+  color: $ice-dim;
+  font-size: 0.7cqw;
+}
+
 .Helm__contact {
   cursor: pointer;
 
@@ -1062,7 +1128,7 @@ $caption: 1.6cqw;
   text-transform: uppercase;
 }
 
-// Bounded so the edge-clamp in openMenu() has a width it can actually rely on —
+// Bounded so the edge-clamp in openMenu() has a width it can actually rely on,
 // "Set course · <contact name>" is otherwise as wide as the longest ship name
 // anyone has typed.
 .Helm__menu {
@@ -1270,7 +1336,7 @@ $caption: 1.6cqw;
   white-space: nowrap;
 }
 
-// "x4" on a field collapsed to one row — see collapse() in the drawer.
+// "x4" on a field collapsed to one row, see collapse() in the drawer.
 .Helm__rowCount {
   color: $steel-500;
   font-family: $mono;
@@ -1302,7 +1368,7 @@ $caption: 1.6cqw;
   font-size: 0.76cqw;
 }
 
-// Course actions under the selected register row — the same two things its
+// Course actions under the selected register row, the same two things its
 // right-click menu leads with, as visible buttons. Spans the row grid like
 // Helm__rowCoord; the buttons run at the drawer's compact scale.
 .Helm__rowActions {
@@ -1617,7 +1683,7 @@ $caption: 1.6cqw;
   display: flex;
   flex: 1;
   // flex: 1 sets flex-basis: 0%, but that's still floored by the default
-  // min-width: auto (content size) — this is what actually lets it shrink
+  // min-width: auto (content size). This is what actually lets it shrink
   // past that floor when Helm__velBig's number crowds it.
   min-width: 0;
   flex-direction: column;

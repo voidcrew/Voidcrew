@@ -3,7 +3,7 @@
  *
  * One /datum/outpost_shop instance per trader outpost, holding the per-round
  * shared stock its trader NPC sells from. SKUs have fixed,
- * simple prices: vouchers and/or credits, or an item barter — never a mixed
+ * simple prices: vouchers and/or credits, or an item barter, never a mixed
  * freeform payment UI.
  *
  * Stock is built from three shelves:
@@ -20,7 +20,7 @@
  */
 
 /**
- * The fallback look for a shop that never set trader_outfit — a nondescript
+ * The fallback look for a shop that never set trader_outfit, a nondescript
  * independent merchant. Every shipped shop names its own outfit next to its
  * catalog; this only exists so a new one that forgets doesn't inherit somebody
  * else's character.
@@ -59,7 +59,7 @@
 	/// Max rare picks per round (min 1 whenever the pool is non-empty)
 	var/rare_picks_max = 2
 	/// SKU typepaths on the favor-locked back-room shelf, stocked every round
-	/// (see trader_favor.dm — supply is per-crew, not shared)
+	/// (see trader_favor.dm, supply is per-crew, not shared)
 	var/list/favor_sku_types = list()
 	/// Chart/rumor SKU typepaths this shop's chart shelf draws from. Every
 	/// outpost draws from the same galaxy-wide pool: charts are deliberately
@@ -70,7 +70,7 @@
 	var/chart_picks = 3
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
-	/// Buyback typepaths — what this trader buys from players (see shop_buyback.dm)
+	/// Buyback typepaths: what this trader buys from players (see shop_buyback.dm)
 	var/list/buyback_types = list()
 	/// Live buyback instances (hold the shared per-round demand)
 	var/list/datum/shop_buyback/buybacks = list()
@@ -83,7 +83,7 @@
 	/// Supply request table for the outpost mission board: list of
 	/// list("type" = path, "name" = text, "amount" = num, "difficulty" = MISSION_DIFFICULTY_*)
 	var/list/mission_requests = list()
-	/// Items only ever awarded by this shop's hard contracts — never sold on
+	/// Items only ever awarded by this shop's hard contracts, never sold on
 	/// any shelf. The depth hook: chasing the trader's board is the sole road
 	/// to these.
 	var/list/exclusive_rewards = list()
@@ -138,7 +138,7 @@
  *
  * Ruin charts are dealt globally without repeats. Each one names a specific
  * ruin that only ever exists because somebody bought the tip, so two outposts
- * stocking the same chart would be selling the same ruin twice — the second
+ * stocking the same chart would be selling the same ruin twice, the second
  * buyer's purchase would be refused at the counter. GLOB.dealt_rumor_charts
  * remembers every ruin chart handed to any shop this round and this deal skips
  * them. Star charts and the generic rumor tip are not unique and stay eligible
@@ -214,7 +214,7 @@
 	// One sold-out rotating slot gets replaced with something new off the manifest.
 	// Chart picks are deliberately excluded: they ride the rotating shelf but came
 	// from chart_pool, so the replacement drawn from rotating_pool would silently
-	// swap a sold tip for an unrelated good. Re-dealing instead is worse — a ruin
+	// swap a sold tip for an unrelated good. Re-dealing instead is worse, a ruin
 	// chart is claimed globally on purchase, so the reissued copy would name a ruin
 	// that can never be revealed again and would be refused at the counter. A sold
 	// chart is meant to stay sold, so the slot just stays empty.
@@ -274,7 +274,7 @@
  * Assigns the item bundle an outpost-board contract pays out, drawn from this
  * shop's own stock. These contracts settle in goods rather than money, so the
  * bundle IS the pay and has to be assembled to hit a credit-equivalent target
- * instead of picked at random — a flat draw over the shelves hands out a 30cr
+ * instead of picked at random. A flat draw over the shelves hands out a 30cr
  * can of beans and a 4800cr engine board with exactly equal probability.
  *
  * The target comes from the difficulty band, floored by what the contracted
@@ -301,7 +301,7 @@
 		if(!sku.item_path)
 			continue
 		// Favor uniques are earned standing at the counter, never rolled into a
-		// contract's pay bundle — that would leak the back room past its gate
+		// contract's pay bundle, that would leak the back room past its gate
 		if(sku.shelf == SHELF_FAVOR)
 			continue
 		var/worth = get_sku_value(sku)
@@ -407,7 +407,7 @@
 	var/name
 	/// Display description (defaults to the item's desc)
 	var/desc
-	/// What you get — any movable atom (crates and machines dispense at the terminal's feet)
+	/// What you get, any movable atom (crates and machines dispense at the terminal's feet)
 	var/atom/movable/item_path
 	/// UI category tab this SKU lists under
 	var/category = "General"
@@ -422,7 +422,7 @@
 	var/crew_limit = 0
 	/// TRUE on the intel SKUs (star charts, ruin charts, rumor tips). Whenever
 	/// one of these lands on the rotating shelf, convoy_restock must never
-	/// refill its slot from rotating_pool — see the comment there.
+	/// refill its slot from rotating_pool, see the comment there.
 	var/is_chart = FALSE
 	/// Price in credits (0 = credits play no part)
 	var/price_credits = 0
@@ -460,7 +460,7 @@
 /**
  * The credit price after discounts, rounded down to a clean 5. With a buyer,
  * their crew's favor discount competes with the special: the better of the two
- * applies (max, not stacked — favor shouldn't turn a 30%-off special into 45%).
+ * applies (max, not stacked. Favor shouldn't turn a 30%-off special into 45%).
  * Without a buyer (catalog/static contexts) only the authored special shows.
  */
 /datum/shop_sku/proc/get_credit_price(mob/living/user)
@@ -526,13 +526,13 @@
 		return "Unavailable."
 	var/favor = shop.get_favor(crew_ship)
 	if(favor < favor_required)
-		return "Requires [favor_required] standing with [shop.favor_trader_name()] — your crew has [favor]."
+		return "Requires [favor_required] standing with [shop.favor_trader_name()]. Your crew has [favor]."
 	if(crew_limit > 0 && shop.get_crew_purchases(crew_ship, type) >= crew_limit)
 		return "Your crew has had its [crew_limit] this round."
 	return null
 
 /**
- * Why the user can't buy — shown as a tooltip / chat line.
+ * Why the user can't buy, shown as a tooltip / chat line.
  */
 /datum/shop_sku/proc/get_denial_reason(mob/living/user)
 	if(stock <= 0 && shelf != SHELF_FAVOR)
@@ -615,7 +615,7 @@
  *
  * Item-for-item trade as its own SKU type: hand over the asked item, get the
  * goods. No vouchers or credits involved. Barter goods stay hold-in-hand on
- * purpose — you slap the trade on the counter.
+ * purpose, you slap the trade on the counter.
  */
 /datum/shop_sku/barter
 	category = "Barter Deals"
@@ -684,7 +684,7 @@
 	return TRUE
 
 /**
- * The first ship this user crews for (first team with a live ship) — the same
+ * The first ship this user crews for (first team with a live ship), the same
  * mind-to-ship mapping the embargo and the contract board use.
  */
 /proc/get_crew_ship(mob/user)

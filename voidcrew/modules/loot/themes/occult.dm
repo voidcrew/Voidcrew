@@ -1,12 +1,12 @@
 // =========================================================================
-// OCCULT THEME — the Pilgrim's Vow Reliquary config (rare_reliquary ruin)
+// OCCULT THEME: the Pilgrim's Vow Reliquary config (rare_reliquary ruin)
 // and every grave, chapel and plague site. Grave-goods and occult
 // curiosities: mechanically useful, none of it cult-antag power. Common is
 // candlelight and pocket votives, uncommon is solid valuables and curios,
 // prime is genuine prizes. Guarded by cult remnants and the restless dead.
 //  - soulstone/anybody/purified is the chaplain-issue stone: anyone can use
 //    it, it can't be corrupted, and without shells it only carries a willing
-//    shade — a companion gimmick, not an army.
+//    shade, a companion gimmick, not an army.
 //  - coin/eldritch is a cursed curio (diamond+plasma mats, bites
 //    non-heretics for 5 on a flip). Flavor tax included.
 //  - knife/bloodletter came over from the retired icemoon-portal jackpot
@@ -17,9 +17,9 @@
 //  - EXCEPTION to "no antag-tier power" (owner request, 2026-07-21): the
 //    portal's wizard/demon shelf sits at the bottom of prime, His Grace
 //    included. These are the rarest things the theme can pay. A green-band
-//    cache can pay them — it just very rarely gets a prime draw at all, and
+//    cache can pay them. It just very rarely gets a prime draw at all, and
 //    the shelf is the long tail of that draw.
-// TODO: review/balance-pass all four tiers — first-draft weights and
+// TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
 

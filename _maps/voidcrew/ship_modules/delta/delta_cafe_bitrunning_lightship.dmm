@@ -1,0 +1,251 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ah" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aj" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 2
+	
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"al" = (
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"am" = (
+/obj/effect/turf_decal/tile/dark_blue,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"an" = (
+/obj/effect/turf_decal/box,
+/obj/machinery/byteforge,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ap" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 2
+	
+	},
+/obj/machinery/computer/quantum_console{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ar" = (
+/obj/effect/turf_decal/siding/red{
+	
+	dir = 8
+	
+	},
+/obj/structure/table/reinforced,
+/obj/item/modular_computer/laptop/preset/civilian{
+	pixel_y = 4
+	},
+/obj/item/bitrunning_host_monitor{
+	pixel_x = -7;
+	pixel_y = -3
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"au" = (
+/obj/machinery/netpod,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/template_noop)
+"av" = (
+/obj/effect/turf_decal/siding/red{
+	
+	dir = 8
+	
+	},
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/tile/dark_blue,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ax" = (
+/turf/template_noop,
+/area/template_noop)
+"aB" = (
+/obj/effect/turf_decal/tile/dark_blue,
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aL" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aN" = (
+/obj/machinery/quantum_server,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aR" = (
+/obj/effect/turf_decal/siding/red{
+	
+	dir = 8
+	
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aS" = (
+/obj/effect/turf_decal/siding/red{
+	
+	dir = 8
+	
+	},
+/obj/modular_map_connector,
+/obj/structure/rack,
+/obj/item/clothing/suit/jacket/leather_trenchcoat{
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/sunglasses/oval{
+	pixel_y = -2
+	},
+/obj/item/bitrunning_disk/ability/tier1{
+	pixel_x = 7;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aT" = (
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"aV" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"ff" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 1
+	
+	},
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"kQ" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 2
+	
+	},
+/obj/machinery/light/directional/south,
+/obj/structure/rack,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 6
+	},
+/obj/item/multitool{
+	pixel_y = 1
+	},
+/obj/item/stack/cable_coil{
+	pixel_y = -5
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"ru" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 1
+	
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Dq" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 2
+	
+	},
+/obj/machinery/light/directional/south,
+/obj/item/multitool{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/obj/item/stack/cable_coil/five{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"UW" = (
+/obj/effect/turf_decal/siding/dark_blue{
+	
+	dir = 1
+	
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+av
+aR
+aR
+ar
+aS
+"}
+(2,1,1) = {"
+au
+aB
+am
+ah
+aj
+"}
+(3,1,1) = {"
+au
+ah
+am
+aN
+ap
+"}
+(4,1,1) = {"
+au
+aT
+am
+an
+Dq
+"}
+(5,1,1) = {"
+UW
+ah
+aL
+al
+aj
+"}
+(6,1,1) = {"
+ru
+aV
+ah
+aV
+aj
+"}
+(7,1,1) = {"
+ff
+aV
+ax
+aV
+kQ
+"}

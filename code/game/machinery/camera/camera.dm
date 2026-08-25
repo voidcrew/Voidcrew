@@ -205,6 +205,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/xray, 0)
 /obj/machinery/camera/examine(mob/user)
 	. = ..()
 
+	// VOIDCREW EDIT ADDITION START - surface the network name; there was no in-game way to learn it (voidcrew/edits/machinery/camera.dm)
+	if(length(network))
+		var/list/network_names = list()
+		for(var/net in network)
+			network_names += voidcrew_camera_net_display_name(net)
+		. += span_notice("It is broadcasting on the [english_list(network_names)] camera network[length(network_names) == 1 ? "" : "s"].")
+	// VOIDCREW EDIT ADDITION END
+
 	if(isEmpProof(TRUE)) //don't reveal it's upgraded if was done via MALF AI Upgrade Camera Network ability
 		. += span_info("It has electromagnetic interference shielding installed.")
 	else

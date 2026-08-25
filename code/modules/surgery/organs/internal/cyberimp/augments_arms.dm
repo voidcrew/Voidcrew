@@ -528,6 +528,7 @@
 		return NONE
 	if(!COOLDOWN_FINISHED(src, slam_cooldown) && ishuman(target))
 		return NONE
+	cyberware_unarmed_roll_paid(source) // VOIDCREW EDIT - D5: this punch swallows the attack chain but still rolls the hand's unarmed damage below, so tell the Redline window its arm bonus has already been paid once (ware_legend.dm)
 	if(!source.can_unarmed_attack())
 		return COMPONENT_SKIP_ATTACK
 

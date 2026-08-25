@@ -8,16 +8,17 @@
 //   Superior Dissection 400
 //   Elite Dissection    600
 //
-// Target multipliers in check_value() below scale these. Fauna is graded by threat
-// rather than paid a flat rate: megafauna x10, elite x3, anything with a melee
-// attack /3, passive critters /6.
-//
-// Ported from the pre-2026 surgery API (/datum/surgery + /datum/surgery_step) to the
-// operation API (/datum/surgery_operation). Old -> new mapping used here:
-//   requires_tech = TRUE   -> operation_flags | OPERATION_LOCKED
-//   requires_tech = FALSE  -> operation_flags without OPERATION_LOCKED
-//   replaced_by            -> replaced_by (unchanged, same semantics)
-//   steps + step time      -> the operation's own time (the step list is gone)
+// A body is not consumed forever by the tier that opened it: dissection_points_paid below
+// records what has been extracted so far, and a higher tier can reopen the body for the
+// difference. Before this, a corpse dissected at a low tier was permanently dead to the
+// higher tiers, so researching a better dissection punished crews for every body they had
+// already processed - playtest crews were told to stop researching so as not to "waste"
+// corpses.
+
+/mob/living
+	/// Research points already paid out by experimental dissection on this body.
+	/// A higher dissection tier can reopen the body and collect the difference.
+	var/dissection_points_paid = 0
 
 /datum/surgery_operation/basic/dissection
 	// VOIDCREW EDIT: the fork's base dissection needs no research (old API: requires_tech = FALSE).
@@ -26,6 +27,26 @@
 	replaced_by = /datum/surgery_operation/basic/dissection/advanced
 	///Research points a baseline human corpse is worth. Upgraded dissection tiers raise this.
 	var/base_value = 100
+
+/**
+ * Research points this tier could still pull out of a body that was already opened at some
+ * lower tier. Zero means this tier has nothing new to say about it.
+ *
+ * The old API needed a spare /datum/surgery_step instance to price a body without running
+ * the surgery; check_value() is a proc on the operation itself now, so the tier prices its
+ * own work directly.
+ */
+/datum/surgery_operation/basic/dissection/proc/dissection_value_remaining(mob/living/target)
+	return max(check_value(target) - target.dissection_points_paid, 0)
+
+/// VOIDCREW EDIT: upstream refuses a body that carries TRAIT_DISSECTED at all. A tier that
+/// is worth more than what has already been paid out may reopen it for the difference.
+/datum/surgery_operation/basic/dissection/state_check(mob/living/patient)
+	if(patient.stat != DEAD)
+		return FALSE
+	if(!HAS_TRAIT_FROM(patient, TRAIT_DISSECTED, EXPERIMENTAL_SURGERY_TRAIT))
+		return TRUE
+	return dissection_value_remaining(patient) > 0
 
 // VOIDCREW EDIT: replaces upstream's flat ~10-point table with the tiered base_value.
 // Humans keep upstream's species multipliers; fauna is graded by how dangerous it is,
@@ -85,3 +106,42 @@
 	operation_flags = parent_type::operation_flags | OPERATION_LOCKED
 	time = 1 SECONDS
 	base_value = 600
+
+/**
+ * VOIDCREW EDIT: pay out only what this tier is worth ON TOP of whatever an earlier tier
+ * already took, and bank the total. Upstream hands over the full check_value() every time,
+ * which with reopening allowed would let a crew farm one corpse up the tier ladder.
+ *
+ * A botch consumes the whole remaining value for one percent of it, exactly as upstream's
+ * failure path burns the body for a token payout.
+ */
+/datum/surgery_operation/basic/dissection/on_success(mob/living/patient, mob/living/surgeon, tool, list/operation_args)
+	var/points_earned = dissection_value_remaining(patient)
+	patient.dissection_points_paid += points_earned
+	display_results(
+		surgeon,
+		patient,
+		span_warning("You dissect [patient], discovering [points_earned] point\s of data!"),
+		span_warning("[surgeon] dissects [patient]."),
+		span_warning("[surgeon] dissects [patient]."),
+	)
+	if(points_earned > 0)
+		give_paper(surgeon, points_earned)
+	patient.apply_damage(80, BRUTE, BODY_ZONE_CHEST)
+	ADD_TRAIT(patient, TRAIT_DISSECTED, EXPERIMENTAL_SURGERY_TRAIT)
+
+/datum/surgery_operation/basic/dissection/on_failure(mob/living/patient, mob/living/surgeon, tool, list/operation_args)
+	var/remaining_value = dissection_value_remaining(patient)
+	var/points_earned = round(remaining_value * 0.01)
+	patient.dissection_points_paid += remaining_value
+	display_results(
+		surgeon,
+		patient,
+		span_warning("You dissect [patient], but don't find anything particularly interesting."),
+		span_warning("[surgeon] dissects [patient]."),
+		span_warning("[surgeon] dissects [patient]."),
+	)
+	if(points_earned > 0)
+		give_paper(surgeon, points_earned)
+	patient.apply_damage(80, BRUTE, BODY_ZONE_CHEST)
+	ADD_TRAIT(patient, TRAIT_DISSECTED, EXPERIMENTAL_SURGERY_TRAIT)

@@ -2,7 +2,7 @@
 	id = TECHWEB_NODE_OFFICE_EQUIP
 	starting_node = TRUE
 	display_name = "Office Equipment"
-	description = "Nanotrasen's finest in ergonomic office tech, ensuring station admin stays productive and compliant with corporate policies — because even in space, paperwork never stops."
+	description = "Nanotrasen's finest in ergonomic office tech, ensuring station admin stays productive and compliant with corporate policies, because even in space, paperwork never stops."
 	design_ids = list(
 		"fax",
 		"sec_pen",

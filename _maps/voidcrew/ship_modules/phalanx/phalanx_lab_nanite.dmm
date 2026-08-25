@@ -1,4 +1,10 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
 "e" = (
 /obj/modular_map_connector,
 /obj/machinery/light/small/directional/west,
@@ -134,6 +140,12 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/template_noop)
+"X" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/template_noop)
 "Y" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -167,9 +179,9 @@ G
 E
 "}
 (6,1,1) = {"
-t
+X
 G
-t
+c
 "}
 (7,1,1) = {"
 q

@@ -573,15 +573,6 @@
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
-"xN" = (
-/obj/effect/turf_decal/lunar_sand/plating,
-/obj/effect/turf_decal/weather/dirt{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode{
-	requires_power = 0
-	})
 "xS" = (
 /obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6/directional/north,
 /obj/item/stack/ore/silver,
@@ -1230,6 +1221,16 @@
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
+"Yx" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "YK" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/chair/wood{
@@ -1364,7 +1365,7 @@ fO
 IP
 DM
 JL
-DM
+Yx
 SP
 Ih
 nk
@@ -1386,7 +1387,7 @@ nR
 WR
 Oq
 Mc
-xN
+pO
 wd
 ga
 Od

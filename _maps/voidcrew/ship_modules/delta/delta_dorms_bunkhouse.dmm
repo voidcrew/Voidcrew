@@ -14,6 +14,12 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"f" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/dresser,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "g" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bed,
@@ -81,6 +87,15 @@
 "G" = (
 /turf/template_noop,
 /area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "Y" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bed,
@@ -103,17 +118,17 @@ Y
 v
 "}
 (3,1,1) = {"
-e
+S
 E
 v
 "}
 (4,1,1) = {"
-e
+S
 z
 v
 "}
 (5,1,1) = {"
-b
+f
 l
 v
 "}

@@ -1,5 +1,5 @@
 /**
- * # Verdigris wards — the four layer gates
+ * # Verdigris wards: the four layer gates
  *
  * The raid's structure in one object. Each ward stands in one defense layer,
  * holds that layer's id-matched poddoors shut, and sweeps the layer on a slow
@@ -9,7 +9,7 @@
  * a four-stage fight instead of a corridor sprint to the boss.
  *
  * Door control goes through the site (lich_site.dm set_ward_doors) on mapped
- * poddoor ids, exactly like the colosseum drives its arena gates — so a mapper
+ * poddoor ids, exactly like the colosseum drives its arena gates, so a mapper
  * can wire extra buttons to the same ids and everything stays coherent.
  *
  * These are machines rather than structures purely for the free SSmachines
@@ -23,7 +23,7 @@
 /// halls with skeletons (FACTION_SKELETON), zombies (FACTION_HOSTILE) and
 /// constructs (FACTION_CULT). Counting by an allowlist means a crew pet, a
 /// borrowed bot or anything else a raiding party drags in cannot be the reason a
-/// hall reads as "not yet cleared" — that failure mode is invisible from inside
+/// hall reads as "not yet cleared", that failure mode is invisible from inside
 /// the lair and there is no console, no hack and no welder to undo it.
 GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
 	FACTION_LICH,
@@ -87,7 +87,7 @@ GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
 	if(unsealed)
 		. += span_notice("The crystal is dark and still. Whatever it was holding shut is open now.")
 	else
-		. += span_boldwarning("It is humming. The [layer_name] is not clear — something in here is still standing.")
+		. += span_boldwarning("It is humming. The [layer_name] is not clear. Something in here is still standing.")
 	var/obj/structure/overmap/space_ruin/lich_lair/site = site_ref?.resolve()
 	if(!site)
 		return
@@ -183,7 +183,7 @@ GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
 //
 // One ward per defense layer, in the order a boarding party meets them.
 //
-// MAPPING CONTRACT — the poddoors tagged with a ward's id are the doors leading
+// MAPPING CONTRACT: the poddoors tagged with a ward's id are the doors leading
 // OUT of that ward's own layer. So "lich_ward_atrium" is the gate at the far end
 // of the atrium (atrium -> ossuary), and "lich_ward_sanctum" is the gate at the
 // far end of the sanctum: the reliquary, which only opens once Ilthuun himself
@@ -205,7 +205,7 @@ GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
 	layer_name = "ossuary"
 
 /// Layer 3: the warrens his risen dead are quarried out of. Its gate is the
-/// sanctum door — clear the warrens and the boss fight starts.
+/// sanctum door, clear the warrens and the boss fight starts.
 /obj/machinery/lich_ward/warrens
 	name = "verdigris ward of the warrens"
 	ward_id = LICH_WARD_WARRENS
@@ -213,7 +213,7 @@ GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
 	layer_name = "warrens"
 
 /// Layer 4: the sanctum itself, and the last hum in the lair. Ilthuun stands in
-/// the layer this ward is watching, so it cannot gutter out until he does —
+/// the layer this ward is watching, so it cannot gutter out until he does,
 /// which is exactly the point: it seals the reliquary his garb is kept in.
 /obj/machinery/lich_ward/sanctum
 	name = "verdigris ward of the sanctum"

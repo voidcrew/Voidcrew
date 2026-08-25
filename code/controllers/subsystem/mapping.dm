@@ -66,6 +66,16 @@ SUBSYSTEM_DEF(mapping)
 	var/list/used_turfs = list() //list of turf = datum/turf_reservation
 	/// List of lists of turfs to reserve
 	var/list/lists_to_reserve = list()
+	// VOIDCREW EDIT ADDITION: one-shot latch for the dead-area recovery in fire() below.
+	/// Whether we have already reported a reservation turf found sitting in a destroyed area.
+	var/warned_about_dead_reservation_area = FALSE
+	// VOIDCREW EDIT ADDITION: released reservation turfs whose starlight has been switched
+	/// off and which still have to be taken out of GLOB.starlight. Assoc turf -> TRUE so the
+	/// compaction below is a membership test rather than a search. See release_reservation_starlight().
+	var/list/starlight_release_queue
+	// VOIDCREW EDIT ADDITION: world.time the next used_turfs orphan sweep may run at.
+	/// Rate limit for reconcile_used_turfs(), which walks all of used_turfs.
+	var/next_used_turf_reconcile = 0
 
 	var/list/reservation_ready = list()
 	var/clearing_reserved_turfs = FALSE
@@ -197,17 +207,63 @@ SUBSYSTEM_DEF(mapping)
 			if(MC_TICK_CHECK)
 				if(index)
 					lists_to_reserve.Cut(1, index)
+				// VOIDCREW EDIT ADDITION: compact the darkened turfs out of GLOB.starlight
+				// on the way out of a long drain, so a release spanning many fires does not
+				// carry the whole queue to the end. Only fires once the batch is worth a
+				// pass; the finish below always flushes what is left.
+				release_reservation_starlight()
 				return
 			var/turf/reserving_turf = packet[packetlen]
 			reserving_turf.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, TRUE)
 			LAZYINITLIST(unused_turfs["[reserving_turf.z]"])
 			unused_turfs["[reserving_turf.z]"][reserving_turf] = TRUE
 			var/area/old_area = reserving_turf.loc
-			LISTASSERTLEN(old_area.turfs_to_uncontain_by_zlevel, reserving_turf.z, list())
-			old_area.turfs_to_uncontain_by_zlevel[reserving_turf.z] += reserving_turf
+			// VOIDCREW EDIT ADDITION START - never wedge the reservation queue on a dead area.
+			// /area/Destroy() nulls turfs_to_uncontain_by_zlevel, so a turf still standing in an
+			// area that was qdel'd while it held turfs makes LISTASSERTLEN runtime right here.
+			// That runtime unwinds fire() BEFORE `packet.len--` consumes the entry, so the same
+			// turf is retried on every single fire and the reservation queue never drains again
+			// for the rest of the round - every later reserve/release silently starves behind it.
+			// The turf is still handed back to the space area below (world_contents += ...),
+			// which is all the reservation system actually needs; only the departing area's own
+			// bookkeeping is skipped, and a destroyed area has no bookkeeping left to keep.
+			if(isnull(old_area) || isnull(old_area.turfs_to_uncontain_by_zlevel))
+				if(!warned_about_dead_reservation_area)
+					warned_about_dead_reservation_area = TRUE
+					stack_trace("SSmapping: reservation turf ([reserving_turf.x],[reserving_turf.y],[reserving_turf.z]) was queued while sitting in [isnull(old_area) ? "no area at all" : "the destroyed area [old_area.type]"]. Something qdel'd an area without moving its turfs out of it first. Recovering by handing the turf straight back to space; further occurrences are not logged.")
+			else
+				LISTASSERTLEN(old_area.turfs_to_uncontain_by_zlevel, reserving_turf.z, list())
+				old_area.turfs_to_uncontain_by_zlevel[reserving_turf.z] += reserving_turf
+			// VOIDCREW EDIT ADDITION END
 			reserving_turf.turf_flags = UNUSED_RESERVATION_TURF
 			// reservation turfs are not allowed to interact with atmos at all
 			reserving_turf.blocks_air = TRUE
+			// VOIDCREW EDIT ADDITION - darken a released reservation turf.
+			//
+			// A reservation is filled with space, content is stamped or carved into it, and the
+			// space turfs bordering that content light themselves through enable_starlight().
+			// When the block is released, empty() above asks ChangeTurf for space on a turf
+			// that IS already space - and ChangeTurf no-ops on `path == type` (see the early
+			// return in voidcrew/edits/turf.dm), so the turf keeps the /datum/light_source and
+			// the lighting corners it lit itself with. Nothing ever asks it again: the block is
+			// now uniformly space, and update_starlight() is only ever driven by a NEIGHBOUR
+			// changing type. Every lit turf of every released reservation therefore stays lit
+			// for the rest of the round, on ground that is by definition unused, unreachable
+			// and invisible. Measured on the 2026-08-19 soak as the whole of the residual
+			// ~980 light sources and ~1,140 lighting corners per cycle.
+			//
+			// The light itself goes now - set_light(l_on = FALSE) runs update_light(), which
+			// QDEL_NULLs the source and lets SSlighting idle out the corners it was holding.
+			// The GLOB.starlight bookkeeping is deferred instead of done here on purpose:
+			// `GLOB.starlight -= reserving_turf` is a linear scan of a list that can hold tens
+			// of thousands of entries, and this loop runs once per released turf, so doing it
+			// inline is quadratic - a multi-second freeze on a large release. The turf is
+			// queued instead and the whole batch is compacted out in ONE pass over
+			// GLOB.starlight by release_reservation_starlight() below.
+			if(reserving_turf.light_on && isspaceturf(reserving_turf))
+				reserving_turf.set_light(l_on = FALSE)
+				LAZYSET(starlight_release_queue, reserving_turf, TRUE)
+			// VOIDCREW EDIT ADDITION END
 
 			world_contents += reserving_turf
 			LISTASSERTLEN(world_turf_contents_by_z, reserving_turf.z, list())
@@ -217,6 +273,53 @@ SUBSYSTEM_DEF(mapping)
 
 		index++
 	lists_to_reserve.Cut(1, index)
+	// VOIDCREW EDIT ADDITION: the drain is done for this fire - take whatever is left.
+	release_reservation_starlight(force = TRUE)
+	// VOIDCREW EDIT ADDITION: only once the drain is idle, and rate limited inside.
+	reconcile_used_turfs()
+
+/**
+ * VOIDCREW ADDITION: takes the turfs darkened by the reservation drain out of
+ * GLOB.starlight, in one linear pass over the list rather than one linear scan per turf.
+ *
+ * `GLOB.starlight -= turf` inside the drain loop is the obvious spelling and it is
+ * quadratic: the loop runs once per released turf and the list can hold as many entries
+ * again, which on a large release is a multi-second world freeze. Rebuilding the list once
+ * against an assoc membership set is O(len(GLOB.starlight)) no matter how many turfs were
+ * released, and the drain only pays it once per REBUILD_STARLIGHT_AFTER turfs plus once at
+ * the end of each fire.
+ *
+ * Leaving the entries in place instead is not an option: enable_starlight() only appends
+ * when `!light_on`, so a member whose light we switched off would be appended a SECOND
+ * time the next time that ground is lit, and BYOND's Remove() only ever drops one of them.
+ * That trades a bounded datum leak for an unbounded list leak.
+ *
+ * A turf that was re-lit between being queued and being flushed is kept: the queue is a
+ * request to drop the entry, `light_on` is the ground truth about whether it still belongs.
+ */
+/// Turfs the reservation drain may darken before the GLOB.starlight compaction is worth a pass.
+#define REBUILD_STARLIGHT_AFTER 1000
+
+/datum/controller/subsystem/mapping/proc/release_reservation_starlight(force = FALSE)
+	var/list/released = starlight_release_queue
+	if(!length(released))
+		return
+	if(!force && length(released) < REBUILD_STARLIGHT_AFTER)
+		return
+	starlight_release_queue = null
+
+	var/list/kept = list()
+	for(var/turf/open/space/lit as anything in GLOB.starlight)
+		// `as anything`, so this also drops the nulls a hard delete leaves in place and
+		// anything a raw turf swap retargeted into something that is no longer space.
+		if(isnull(lit))
+			continue
+		if(released[lit] && !lit.light_on)
+			continue
+		kept += lit
+	GLOB.starlight = kept
+
+#undef REBUILD_STARLIGHT_AFTER
 
 /datum/controller/subsystem/mapping/proc/calculate_default_z_level_gravities()
 	for(var/z_level in 1 to length(z_list))
@@ -607,6 +710,13 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		if(tgui_alert(user, "There's no home gateway on the station. You sure you want to continue ?", "Uh oh", list("Yes", "No")) != "Yes")
 			return
 
+	// VOIDCREW EDIT: load_new_z() mints a z-level through add_new_zlevel(), which enforces
+	// nothing. An away mission is a deliberate admin act, so this asks rather than refuses -
+	// but the cost is permanent, BYOND never frees a z-level. See effective_z_ceiling().
+	if(!SSmapping.z_headroom(1))
+		if(tgui_alert(user, "world.maxz is [world.maxz], at the effective ceiling of [SSmapping.effective_z_ceiling()] (configured [CONFIG_GET(number/max_z_levels)], scaled for [length(GLOB.clients)] clients). An away mission mints another z-level and BYOND never frees one - that is roughly 120 MB of address space gone for the rest of the round, on top of a server that is already at its budget. Load anyway?", "Z ceiling", list("Load anyway", "Cancel")) != "Load anyway")
+			return
+
 	var/list/possible_options = GLOB.potentialRandomZlevels + "Custom"
 	var/away_name
 	var/datum/space_level/away_level
@@ -653,6 +763,17 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 	reservation_type = /datum/turf_reservation,
 	turf_type_override = null,
 )
+	// VOIDCREW EDIT: a request too big for ANY reservation z-level cannot be answered by
+	// the "no room right now" fallback below, but that fallback still runs: it adds a
+	// permanent 255x255 reservation level, fails to fit on that one too, and returns
+	// null. The level is never removed, so every attempt leaks one. The check used to
+	// live at the callers and only one of the six ever made it (space_ruin.dm, which
+	// still does its own so it can pick a different ruin). Refuse here instead.
+	if(!reservation_can_ever_fit(width, height))
+		log_mapping("request_turf_block_reservation: refused an impossible [width]x[height] reservation - the ceiling is \
+			[world.maxx - (SHUTTLE_TRANSIT_BORDER * 2) - 1]x[world.maxy - (SHUTTLE_TRANSIT_BORDER * 2) - 1]. Granting it \
+			is impossible and attempting it leaks a reservation z-level per try.")
+		return null
 	UNTIL((!z_reservation || reservation_ready["[z_reservation]"]) && !clearing_reserved_turfs)
 	var/datum/turf_reservation/reserve = new reservation_type
 	if(!isnull(turf_type_override))
@@ -662,6 +783,28 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 			if(reserve.reserve(width, height, z_size, i))
 				return reserve
 		//If we didn't return at this point, theres a good chance we ran out of room on the exisiting reserved z levels, so lets try a new one
+		// VOIDCREW EDIT: releases drain asynchronously through fire(), so a load that races a
+		// teardown sees the departing ground as still claimed and can buy a permanent z-level
+		// that one more drain pass would have made unnecessary. Wait out any queued releases
+		// (bounded - a stuck drain must not wedge every requester) and retry the existing
+		// levels before reaching for a mint.
+		if(length(lists_to_reserve))
+			var/drain_deadline = world.time + 30 SECONDS
+			while(length(lists_to_reserve) && world.time < drain_deadline)
+				stoplag()
+			for(var/i in levels_by_trait(ZTRAIT_RESERVED))
+				if(reserve.reserve(width, height, z_size, i))
+					return reserve
+		// VOIDCREW EDIT: but never past the world.maxz ceiling. A reservation z-level is
+		// permanent - BYOND never frees one - so an unbounded fallback here is a straight
+		// line to the 32-bit wall on a round that churns transits. Callers already handle
+		// null as "no room right now" and retry (cargo_shuttle.dm:215, lazy_template.dm:63,
+		// outpost.dm:165); see at_z_level_ceiling() in voidcrew/mapping/_mapping.dm.
+		if(at_z_level_ceiling())
+			log_mapping("request_turf_block_reservation: refused a [width]x[height] reservation - world.maxz is at its configured ceiling \
+				and no existing reserved level had room. The caller will retry.")
+			QDEL_NULL(reserve)
+			return null
 		var/datum/space_level/newReserved = add_reservation_zlevel()
 		initialize_reserved_level(newReserved.z_value)
 		if(reserve.reserve(width, height, z_size, newReserved.z_value))
@@ -712,6 +855,63 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 	lists_to_reserve += list(turfs)
 	if(await)
 		UNTIL(!length(turfs))
+
+// VOIDCREW ADDITION: how often the used_turfs orphan sweep below may run.
+#define USED_TURF_RECONCILE_INTERVAL (2 MINUTES)
+// VOIDCREW ADDITION: how many orphans one sweep may hand back, so a pathological
+// backlog is drained over several passes instead of in one unbounded release.
+#define USED_TURF_RECONCILE_MAX_RECLAIM 5000
+
+/**
+ * VOIDCREW ADDITION: self-healing sweep for SSmapping.used_turfs.
+ *
+ * used_turfs maps turf -> the /datum/turf_reservation that claimed it, and the only thing
+ * that ever removes an entry is that reservation's Release(). An entry whose reservation
+ * is gone is therefore ground that is claimed forever: it keeps RESERVATION_TURF, never
+ * goes back into unused_turfs, and _reserve_area() will never hand it out again. Enough of
+ * those and request_turf_block_reservation() cannot fit a block on any existing reservation
+ * z-level and mints a permanent new 255x255 one (~65k turfs, ~48 MB) per shortfall.
+ *
+ * Release() is the fix for the known way that happened (see the note there); this is the
+ * net for any path that is still missed, and it also cleans up entries stranded before this
+ * code existed. It is deliberately narrow: an entry is only dropped when nothing live owns
+ * it - a null value (the reservation hard deleted, which nulls the ref in place) or a
+ * QDELETED one. A reservation that still exists is never touched, so this cannot race a
+ * live claim, and turfs claimed but not yet published are impossible because _reserve_area()
+ * writes used_turfs[T] and the datum ref in the same unyielding pass.
+ *
+ * O(length(used_turfs)) with no sleeps, capped and rate limited.
+ */
+/datum/controller/subsystem/mapping/proc/reconcile_used_turfs()
+	if(!initialized || clearing_reserved_turfs)
+		return
+	if(world.time < next_used_turf_reconcile)
+		return
+	next_used_turf_reconcile = world.time + USED_TURF_RECONCILE_INTERVAL
+
+	var/list/orphans = list()
+	// `as anything` - a hard delete can null a key in place, and those are skipped rather
+	// than reclaimed: there is no turf left to hand back.
+	for(var/turf/claimed as anything in used_turfs)
+		if(isnull(claimed))
+			continue
+		var/datum/turf_reservation/holder = used_turfs[claimed]
+		if(!QDELETED(holder))
+			continue
+		orphans += claimed
+		if(length(orphans) >= USED_TURF_RECONCILE_MAX_RECLAIM)
+			break
+
+	if(!length(orphans))
+		return
+
+	used_turfs -= orphans
+	log_mapping("SSmapping: reconciled [length(orphans)] used_turfs entr[length(orphans) == 1 ? "y" : "ies"] whose \
+		reservation no longer exists - the ground was claimed with nothing left to release it. Handing it back.")
+	reserve_turfs(orphans)
+
+#undef USED_TURF_RECONCILE_INTERVAL
+#undef USED_TURF_RECONCILE_MAX_RECLAIM
 
 //DO NOT CALL THIS PROC DIRECTLY, CALL wipe_reservations().
 /datum/controller/subsystem/mapping/proc/do_wipe_turf_reservations()

@@ -514,7 +514,7 @@
 /obj/item/bodybag,
 /obj/item/paper/crumpled{
 	name = "morgue intake ledger";
-	default_raw_text = "Tray 1: HULL, J. Tray 2: OKAFOR, B. Tray 3: empty. Tray 3 was not empty yesterday. Tray 4: DR WREN — entry struck through — tray 4 is empty. They open from the inside now. I have stopped locking them."
+	default_raw_text = "Tray 1: HULL, J. Tray 2: OKAFOR, B. Tray 3: empty. Tray 3 was not empty yesterday. Tray 4: DR WREN (entry struck through), tray 4 is empty. They open from the inside now. I have stopped locking them."
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/chrysalis)
@@ -661,8 +661,8 @@
 "JX" = (
 /obj/structure/table/glass,
 /obj/item/paper/crumpled{
-	name = "intake log — final page";
-	default_raw_text = "Day 224: 30 souls aboard. Day 225: 29 souls — Dr. Wren lost stabilizing the boarding casualty. Day 226: 30 souls. Count corrected and signed, Dr. Wren."
+	name = "intake log, final page";
+	default_raw_text = "Day 224: 30 souls aboard. Day 225: 29 souls. Dr. Wren lost stabilizing the boarding casualty. Day 226: 30 souls. Count corrected and signed, Dr. Wren."
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,

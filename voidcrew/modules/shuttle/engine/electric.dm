@@ -27,6 +27,22 @@
 	. = ..()
 	connect_to_network()
 
+/obj/machinery/power/shuttle_engine/ship/electric/examine(mob/user)
+	. = ..()
+	if(!powernet)
+		. += span_warning("It is not connected to a power grid. It needs a cable under it.")
+	else if(!avail() && !newavail())
+		. += span_warning("Its power grid is supplying nothing. Burns draw live power off the wire, \
+			not stored charge - check the SMES output and the cabling.")
+
+/obj/machinery/power/shuttle_engine/ship/electric/thrust_refusal_reason()
+	if(!powernet)
+		return "no powered cable under it."
+	if(!avail() && !newavail())
+		return "its power grid is supplying nothing. Burns draw live power off the wire, not stored \
+			charge - check the SMES output and the cabling."
+	return ..()
+
 /obj/machinery/power/shuttle_engine/ship/electric/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS, burn_seconds = 1)
 	. = ..()
 	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
@@ -41,7 +57,7 @@
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel()
 	// Burns draw live wattage off the wire (see burn_engine), not stored charge. A
 	// full SMES with its output disabled would otherwise read 100% on the helm while
-	// the engine produces nothing — report a dead wire as an empty tank instead.
+	// the engine produces nothing, report a dead wire as an empty tank instead.
 	if(!avail() && !newavail())
 		return 0
 	if(length(powernet?.nodes) >= 1)

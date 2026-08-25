@@ -5,7 +5,7 @@
  * ("Arena condition: ..."). Where the arena-event scheduler sprinkles one-off
  * surprises, a modifier shapes the whole match: beast waves, killing heat or
  * cold, walls that rearrange the floor, or a sky that rains weapon crates.
- * Modifiers are mode-agnostic — KOTH scoring ignores beasts (only roster
+ * Modifiers are mode-agnostic, KOTH scoring ignores beasts (only roster
  * entries hold the dais) and CTF flags can't be carried by mobs, so every
  * combination stays sane.
  *
@@ -95,7 +95,7 @@
 		if(spot)
 			spawn_turfs += spot
 			new /obj/effect/temp_visual/colosseum_warning(spot)
-	controller.site.venue_message(span_boldannounce("The undercroft grates rattle — BEASTS take the sand!"))
+	controller.site.venue_message(span_boldannounce("The undercroft grates rattle, BEASTS take the sand!"))
 	playsound(controller.site.spoils_vault || controller.site.signup_console, 'sound/machines/warning-buzzer.ogg', 60, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(spawn_wave), spawn_turfs, beast_weights), COLOSSEUM_EVENT_TELEGRAPH, TIMER_STOPPABLE)
 	if(waves_left > 0)
@@ -159,12 +159,12 @@
 /**
  * The arena bakes or freezes: contestants on the sand fight their body
  * temperature as well as each other. Retreating through an open gate into
- * staging pauses the pressure — at the cost of ground.
+ * staging pauses the pressure, at the cost of ground.
  */
 /datum/colosseum_modifier/temperature
 	/// Body-temperature push per second while in the arena area
 	var/delta = 0
-	/// Clamps passed to adjust_bodytemperature — dangerous, not instantly lethal
+	/// Clamps passed to adjust_bodytemperature: dangerous, not instantly lethal
 	var/min_temp = 0
 	var/max_temp = INFINITY
 	/// Occasional flavor line shown to affected fighters
@@ -256,7 +256,7 @@
 				new /obj/effect/temp_visual/colosseum_warning(cursor)
 			cursor = get_step(cursor, direction)
 	if(length(wall_turfs))
-		controller.site.venue_message(span_boldannounce("The sand churns — the walls are shifting!"))
+		controller.site.venue_message(span_boldannounce("The sand churns, the walls are shifting!"))
 		addtimer(CALLBACK(src, PROC_REF(raise_walls), wall_turfs), COLOSSEUM_EVENT_TELEGRAPH, TIMER_STOPPABLE)
 	shift_timer = addtimer(CALLBACK(src, PROC_REF(shift)), 60 SECONDS, TIMER_STOPPABLE)
 
@@ -284,7 +284,7 @@
 
 /**
  * Weapon crates fall constantly. Independent of the one-off scheduler, so it
- * works in every mode — including the ones that turn the scheduler off.
+ * works in every mode, including the ones that turn the scheduler off.
  */
 /datum/colosseum_modifier/raining_steel
 	name = "Raining Steel"

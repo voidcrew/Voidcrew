@@ -261,10 +261,23 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	build_plane_groups(old_max_offset + 1, new_max_offset)
 
 /// Creates the required plane masters to fill out new z layers (because each "level" of multiz gets its own plane master set)
+/// Note that this runs mid-round, whenever the first map of a given stack depth loads. By then our group is already
+/// attached to us, so nothing is going to call show_hud() on our behalf the way group creation does - we have to show
+/// the new planes ourselves. Skipping that leaves the new offset's planes off the client's screen entirely, and a plane
+/// with no plane master doesn't just go missing, it stops being managed: anything drawn to it (the parallax plane's
+/// mirror relays especially, which get added to the screen the moment the offset grows) renders raw and unmasked
+/// straight over the game, which is where "the colosseum spawned and now I can see space through walls" came from.
 /datum/hud/proc/build_plane_groups(starting_offset, ending_offset)
 	for(var/group_key in master_groups)
 		var/datum/plane_master_group/group = master_groups[group_key]
-		group.build_plane_masters(starting_offset, ending_offset)
+		var/list/atom/movable/screen/plane_master/new_planes = group.build_plane_masters(starting_offset, ending_offset)
+		if(!length(new_planes))
+			continue
+		for(var/atom/movable/screen/plane_master/plane as anything in new_planes)
+			group.show_plane(plane)
+		// Match what group creation does after show_hud(), so the planes we just added get the same multiz
+		// scaling and in/out of bounds treatment a client who connected after the load would have gotten
+		group.build_planes_offset(src, current_plane_offset)
 
 /// Returns the plane master that matches the input plane from the passed in group
 /datum/hud/proc/get_plane_master(plane, group_key = PLANE_GROUP_MAIN)

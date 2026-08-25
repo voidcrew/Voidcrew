@@ -92,7 +92,7 @@
 
 	/// /datum/overmap/planet typepath this contract is themed on
 	var/capture_planet_type
-	/// The rolled capture table row (points into the static table — never mutate)
+	/// The rolled capture table row (points into the static table, never mutate)
 	var/list/capture_row
 	/// The rolled buyer-flavor line (stable across text rebuilds)
 	var/flavor_line
@@ -185,7 +185,7 @@
 	return data
 
 // =========================================================================
-// THE CAPTURE — find the marked specimen, wear it down, seal it in
+// THE CAPTURE: find the marked specimen, wear it down, seal it in
 // =========================================================================
 
 /**
@@ -307,7 +307,7 @@
 	return "Subdue the marked specimen and seal it in the capture crate"
 
 // =========================================================================
-// LIVE CARGO TURN-IN — the sealed crate, occupant breathing
+// LIVE CARGO TURN-IN, the sealed crate, occupant breathing
 // =========================================================================
 
 /**

@@ -1,19 +1,19 @@
 /**
- * # The Facsimile — morph vestige
+ * # The Facsimile: morph vestige
  *
  * The parlor deck of a luxury liner, preserved mid-soiree. A morph fed here
  * for months and did it thoroughly: ate everything, became everything, twice
- * over — the second time is the important one, the first is only tracing —
+ * over, the second time is the important one, the first is only tracing,
  * and practiced being the passengers until the practicing wore through. What
  * remains is the Understudy, a patron that can no longer hold any shape at
  * all and is desperately fond of anyone who can.
  *
  * Trials are performances, and every one of them keeps the supplicant moving:
- * the Perfect Copy (wear a shape, creep close, burst out — fresh shape, fresh
+ * the Perfect Copy (wear a shape, creep close, burst out, fresh shape, fresh
  * face, every time), the Snatched Meal (feed the maw things still warm from
  * someone else's hands), and the Understudy (wear a person and tail them
  * while they live their life; a parked quarry pays nothing). The disguises
- * are appearance-deep and kit-driven — no antag datum, no species swap; the
+ * are appearance-deep and kit-driven, no antag datum, no species swap; the
  * second skin stamps a borrowed appearance over a plain human and takes it
  * back off again.
  *
@@ -29,7 +29,7 @@
 // How long any one borrowed object shape holds before it sloughs off. Keep
 // the trial desc's "three-quarters of a minute" in sync.
 #define VESTIGE_SKIN_FORM_TIME (45 SECONDS)
-// Jitter left on a startled victim — flavor and shakes, never a stun
+// Jitter left on a startled victim, flavor and shakes, never a stun
 #define VESTIGE_STARTLE_JITTER (10 SECONDS)
 // Movespeed slowdown while creeping around inside an object shape
 #define VESTIGE_SKIN_CREEP_SLOWDOWN 4
@@ -54,7 +54,7 @@
 #define VESTIGE_STUDY_TIME (5 SECONDS)
 // How close the tail must stay to its quarry for the clock to run
 #define VESTIGE_SHADOW_RANGE 7
-// How recently the quarry must have moved for the clock to run — a seated or
+// How recently the quarry must have moved for the clock to run, a seated or
 // AFK quarry pauses the tail without punishing it
 #define VESTIGE_QUARRY_IDLE_GRACE (10 SECONDS)
 
@@ -73,7 +73,7 @@
 	icon_state = "morph"
 	icon_living = "morph"
 	speak_emote = list("gurgles")
-	appearance_tint = "#b8d49c" // curdled, queasy — a green that has been reused too many times
+	appearance_tint = "#b8d49c" // curdled, queasy. A green that has been reused too many times
 	trial_types = list(
 		/datum/vestige_trial/perfect_copy,
 		/datum/vestige_trial/snatched_meal,
@@ -110,7 +110,7 @@
 	name = "The Perfect Copy"
 	// Keep the numbers in sync with VESTIGE_STARTLES_NEEDED / VESTIGE_SKIN_FORM_TIME
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the skin and press it against something ordinary — a crate, a mop bucket, whatever is handy — and you will be that thing. You can creep around in it, slowly. When somebody wanders within a step of you, burst out at them. Three different people, and a different shape for each one; a shape you have already used goes baggy and won't play twice. The skin only holds any shape for three-quarters of a minute, so keep moving."
+	desc = "Take the skin and press it against something ordinary (a crate, a mop bucket, whatever is handy) and you will be that thing. You can creep around in it, slowly. When somebody wanders within a step of you, burst out at them. Three different people, and a different shape for each one; a shape you have already used goes baggy and won't play twice. The skin only holds any shape for three-quarters of a minute, so keep moving."
 	/// Victims already startled (weakref -> TRUE); each face jumps for you exactly once
 	var/list/startled = list()
 	/// Object typepaths already worn for a credited reveal; a worn shape never plays twice
@@ -130,7 +130,7 @@
 	return "You have burst out at [length(startled)] of [VESTIGE_STARTLES_NEEDED] unsuspecting people. A shape you have used won't work twice."
 
 /**
- * Credits a burst-out reveal. May complete (and delete) the trial — and the
+ * Credits a burst-out reveal. May complete (and delete) the trial, and the
  * loaned skin with it, so the skin must call this last and touch nothing after.
  * Returns FALSE if this victim has already jumped or this shape already played.
  */
@@ -201,11 +201,11 @@
 
 /obj/item/vestige_gnash_maw/examine(mob/user)
 	. = ..()
-	. += span_notice("Use it on an item that left a living person's hand moments ago — knocked loose, taken, or handed over — and it swallows the item whole. It won't take two items from the same person, and it ignores anything it didn't just watch being held.")
+	. += span_notice("Use it on an item that left a living person's hand moments ago (knocked loose, taken, or handed over) and it swallows the item whole. It won't take two items from the same person, and it ignores anything it didn't just watch being held.")
 
 // The maw watches the room from its carrier's person, noting every item in a
-// living hand it can see. This memory — not any global last-owner var, which
-// this fork does not keep — is what "still warm" means at devour time.
+// living hand it can see. This memory, not any global last-owner var, which
+// this fork does not keep. Is what "still warm" means at devour time.
 /obj/item/vestige_gnash_maw/process(seconds_per_tick)
 	var/mob/living/carrier = loc
 	if(!istype(carrier))
@@ -240,9 +240,9 @@
 	if(morsel.resistance_flags & INDESTRUCTIBLE)
 		balloon_alert(user, "it would chip a tooth!")
 		return ITEM_INTERACT_BLOCKING
-	// It must have LEFT their possession — a held thing is a meal not yet snatched
+	// It must have LEFT their possession. A held thing is a meal not yet snatched
 	if(ismob(morsel.loc) && morsel.loc != user)
-		balloon_alert(user, "still in their grip — take it first!")
+		balloon_alert(user, "still in their grip, take it first!")
 		return ITEM_INTERACT_BLOCKING
 	if(!isturf(morsel.loc) && morsel.loc != user)
 		balloon_alert(user, "drag it into the open first!")
@@ -281,7 +281,7 @@
 	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
 	seen_warm -= WEAKREF(morsel)
 	qdel(morsel)
-	trial.devour(last_holder) // may complete (and delete) the trial — nothing touches it after this
+	trial.devour(last_holder) // may complete (and delete) the trial, nothing touches it after this
 	return ITEM_INTERACT_SUCCESS
 
 // ===== THE UNDERSTUDY =====
@@ -290,7 +290,7 @@
 	name = "The Understudy"
 	// Keep the numbers in sync with VESTIGE_SHADOW_SECONDS_NEEDED / VESTIGE_STUDY_TIME
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Now a person. Stand next to one and study them for five seconds — they will notice, everyone notices — then put their face on and follow them. Stay close while they are up and moving: a full minute of tailing them, all told. If they stop moving the clock stops too, and losing them or taking the face off doesn't cost you anything you have already banked."
+	desc = "Now a person. Stand next to one and study them for five seconds (they will notice, everyone notices) then put their face on and follow them. Stay close while they are up and moving: a full minute of tailing them, all told. If they stop moving the clock stops too, and losing them or taking the face off doesn't cost you anything you have already banked."
 	/// Cumulative deciseconds spent actively shadowing the quarry
 	var/shadow_time = 0
 	/// The loaned skin, reclaimed (deleted, breaking any worn face) the moment the pact ends
@@ -307,7 +307,7 @@
 /datum/vestige_trial/understudy/get_progress_text()
 	return "You have shadowed your quarry for [DisplayTimeText(shadow_time)] of [DisplayTimeText(VESTIGE_SHADOW_SECONDS_NEEDED SECONDS)]."
 
-/// Accrues tailing time. May complete (and delete) the trial — and the loaned
+/// Accrues tailing time. May complete (and delete) the trial, and the loaned
 /// skin with it, so the skin must call this last and touch nothing after.
 /datum/vestige_trial/understudy/proc/shadow(deciseconds)
 	shadow_time += deciseconds
@@ -320,9 +320,9 @@
 
 /**
  * The Facsimile's shared kit: a wearable appearance, morph-style, stamped onto
- * a plain human. Both disguise trials speak through it — pressed to an object
+ * a plain human. Both disguise trials speak through it, pressed to an object
  * it serves the Perfect Copy, held to a studied person it serves the
- * Understudy — and each mode wakes only for its own pact, resolved off the
+ * Understudy, and each mode wakes only for its own pact, resolved off the
  * wielder's mind at interaction time (the kit rule: no trial refs, ever).
  *
  * A worn form is appearance-deep and honest about it: examine at close range
@@ -339,7 +339,7 @@
 	icon_state = "sheet-hide"
 	color = "#b8d49c"
 	w_class = WEIGHT_CLASS_SMALL
-	/// SKIN_FORM_* — the disguise currently worn
+	/// SKIN_FORM_*: the disguise currently worn
 	var/form = SKIN_FORM_NONE
 	/// The mob wearing the form (weakref; the skin rides their person, but never trust a loc)
 	var/datum/weakref/wearer_ref
@@ -347,7 +347,7 @@
 	var/saved_appearance
 	/// The wearer's real_name from before a person form went on (null outside person forms)
 	var/saved_real_name
-	/// The finished disguise, re-stamped every tick — human icon rebuilds love to undo it
+	/// The finished disguise, re-stamped every tick, human icon rebuilds love to undo it
 	var/form_appearance
 	/// Typepath of the object the current form copies (the Perfect Copy's dedup key)
 	var/form_source_type
@@ -402,7 +402,7 @@
 
 /**
  * The Perfect Copy's mode: wear an honest object where it stands. Refuses
- * shapes the pact has already been paid for — a spent shape at forming time
+ * shapes the pact has already been paid for, a spent shape at forming time
  * would only waste the wearer's forty-five seconds.
  */
 /obj/item/vestige_second_skin/proc/wear_object(obj/shape, mob/living/user)
@@ -424,7 +424,7 @@
 		return ITEM_INTERACT_BLOCKING
 	if(shape.type in copy_trial.spent_shapes)
 		balloon_alert(user, "that shape is spent!")
-		to_chat(user, span_warning("The skin sags off [shape] and won't take. You have already used that shape once — find a new one."))
+		to_chat(user, span_warning("The skin sags off [shape] and won't take. You have already used that shape once. Find a new one."))
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like wax, pooling into the shape of [shape]!"),
@@ -439,8 +439,8 @@
 	return ITEM_INTERACT_SUCCESS
 
 /**
- * The Understudy's mode: study an adjacent person — loudly, they are told —
- * then wear them and go follow. The mind check is the usual anti-farm clause;
+ * The Understudy's mode: study an adjacent person. Loudly, they are told.
+ * Then wear them and go follow. The mind check is the usual anti-farm clause;
  * the skin has no interest in bodies nobody is living in.
  */
 /obj/item/vestige_second_skin/proc/study_person(mob/living/target, mob/living/user)
@@ -483,7 +483,7 @@
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like tallow and sets again as [quarry]'s exact double!"),
-		span_notice("You pull [quarry] on. Now follow them — the clock only runs while they are up and moving."),
+		span_notice("You pull [quarry] on. Now follow them. The clock only runs while they are up and moving."),
 	)
 	playsound(user, 'sound/effects/blob/attackblob.ogg', 30, TRUE)
 	apply_form(user, quarry)
@@ -519,9 +519,9 @@
 
 /**
  * The Perfect Copy's payoff: tear out of the worn shape at whoever stands
- * within a step. Everyone adjacent gets the scream; at most one fresh face —
+ * within a step. Everyone adjacent gets the scream; at most one fresh face,
  * conscious, minded, never startled before, and only from a never-credited
- * shape — pays the pact. The burst always spends the form, hit or miss.
+ * shape, pays the pact. The burst always spends the form, hit or miss.
  */
 /obj/item/vestige_second_skin/proc/burst(mob/living/user)
 	if(form != SKIN_FORM_OBJECT || wearer_ref?.resolve() != user)
@@ -553,7 +553,7 @@
 		to_chat(user, span_warning("Plenty of gasps, but no new ones. It only counts with a new shape and someone who hasn't jumped for you before."))
 		return
 	to_chat(user, span_notice("The jump! The little scream! Somewhere, something applauds."))
-	copy_trial.startle(credit_victim, shape_type) // may complete (and delete) the trial — and us with it; nothing after this
+	copy_trial.startle(credit_victim, shape_type) // may complete (and delete) the trial, and us with it; nothing after this
 
 /obj/item/vestige_second_skin/process(seconds_per_tick)
 	if(form == SKIN_FORM_NONE)
@@ -569,13 +569,13 @@
 			shed_form(wearer)
 			return
 		if(form_expires && world.time >= form_expires)
-			to_chat(wearer, span_warning("The shape goes baggy and sloughs off. The skin can only hold one for so long — pick another."))
+			to_chat(wearer, span_warning("The shape goes baggy and sloughs off. The skin can only hold one for so long. Pick another."))
 			shed_form(wearer)
 			return
 		stamp_form(wearer)
 		return
 	// Person form: the tail. Credit flows only while both parties are conscious,
-	// the wearer is close behind, and the quarry has moved recently — a parked
+	// the wearer is close behind, and the quarry has moved recently, a parked
 	// quarry pauses the clock without ever refunding it.
 	var/datum/vestige_trial/understudy/tail_trial = wearer.mind?.active_vestige_trial
 	if(!istype(tail_trial))
@@ -604,10 +604,10 @@
 		return
 	if(SPT_PROB(3, seconds_per_tick))
 		to_chat(wearer, span_notice("You fall into step behind them. The skin approves."))
-	tail_trial.shadow(seconds_per_tick * (1 SECONDS)) // may complete (and delete) the trial — and us with it; nothing after this
+	tail_trial.shadow(seconds_per_tick * (1 SECONDS)) // may complete (and delete) the trial, and us with it; nothing after this
 
 /// Re-applies the disguise snapshot. Humans rebuild their icon on all sorts of
-/// triggers (equip changes, regenerate calls) — the stamp quietly wins the
+/// triggers (equip changes, regenerate calls), the stamp quietly wins the
 /// argument once a tick. Facing is preserved; a chair that whips south every
 /// two seconds is a poor chair.
 /obj/item/vestige_second_skin/proc/stamp_form(mob/living/wearer)
@@ -619,7 +619,7 @@
 
 /**
  * Takes the shape off, restores the wearer, and clears every scrap of form
- * state. Safe to call with no form up, with a known wearer, or with none —
+ * state. Safe to call with no form up, with a known wearer, or with none,
  * it re-resolves from the weakref and touches only what still exists.
  */
 /obj/item/vestige_second_skin/proc/shed_form(mob/living/known_wearer, feedback = TRUE)
@@ -650,7 +650,7 @@
 	quarry_last_spot = null
 	quarry_last_moved = 0
 
-/// Any real hurt shakes the shape apart — a disguise you can tank in would be a bunker
+/// Any real hurt shakes the shape apart. A disguise you can tank in would be a bunker
 /obj/item/vestige_second_skin/proc/on_wearer_hurt(mob/living/source, damage, damagetype)
 	SIGNAL_HANDLER
 	if(damage <= 0)
@@ -658,7 +658,7 @@
 	to_chat(source, span_warning("The hit jolts through the borrowed shape and it can't hold!"))
 	shed_form(source)
 
-/// Swinging a weapon while worn ends the act — violence and the shape cannot share one body
+/// Swinging a weapon while worn ends the act, violence and the shape cannot share one body
 /obj/item/vestige_second_skin/proc/on_wearer_armed_attack(mob/living/source, mob/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
 	to_chat(source, span_warning("The shape convulses off you. It doesn't do violence."))
@@ -702,13 +702,13 @@
 #undef SKIN_FORM_PERSON
 
 /**
- * # The Facsimile — morph boons
+ * # The Facsimile: morph boons
  *
  * The Understudy's half of the bargain: what an eager, imitative thing pays
- * with when a trial is kept. The morph's body IS the antag — a pile of flesh
- * that plays prop hunt with the crew — so nothing here grants the morph.
+ * with when a trial is kept. The morph's body IS the antag, a pile of flesh
+ * that plays prop hunt with the crew, so nothing here grants the morph.
  * Each boon is the human-sized cut of one of its tricks: the disguise
- * (rebuilt on the shapeshift-spell rail — upstream's assume_form action is
+ * (rebuilt on the shapeshift-spell rail. Upstream's assume_form action is
  * explicitly not carbon-safe, see the Borrowed Shape doc comment), the
  * swallowing (rebuilt as a one-slot internal stash rather than the morph's
  * everything-eating maw), the ambush (built on the same charge primitive the
@@ -721,9 +721,9 @@
 
 /// Health of the borrowed shape (kept equal to human maxHealth so converted damage carries ~1:1)
 #define VESTIGE_MIMIC_HEALTH 100
-/// Varspeed slowdown of the base borrowed shape — a slow, suspicious creep
+/// Varspeed slowdown of the base borrowed shape, a slow, suspicious creep
 #define VESTIGE_MIMIC_CREEP_SPEED 4
-/// Varspeed slowdown of the flawless shape — very nearly a walking pace
+/// Varspeed slowdown of the flawless shape, very nearly a walking pace
 #define VESTIGE_MIMIC_FLAWLESS_SPEED 1
 /// Lockout before a broken Borrowed Shape can be worn again
 #define VESTIGE_MIMIC_REFORM_COOLDOWN (15 SECONDS)
@@ -769,7 +769,7 @@
 
 /datum/vestige_boon/spell/mimic_form/flawless
 	name = "Perfect Facsimile"
-	desc = "My best work. No — YOUR best work, I only coached. The damp is gone, I fixed the damp. You move at very nearly your own pace, anyone can put their nose right up against you and find nothing wrong, and swapping shapes is almost instant now."
+	desc = "My best work. No, YOUR best work, I only coached. The damp is gone, I fixed the damp. You move at very nearly your own pace, anyone can put their nose right up against you and find nothing wrong, and swapping shapes is almost instant now."
 	grant_text = "The last tell dries up. You are bone dry and completely convincing."
 	upgrades_from = /datum/vestige_boon/spell/mimic_form
 	spell_type = /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless
@@ -784,7 +784,7 @@
 
 /datum/vestige_boon/spell/devour/gluttony
 	name = "Bottomless Gullet"
-	desc = "Wider! Several things at once now, and bigger ones — I practiced on furniture. And if what you swallow happens to be food, the gullet patches you up a little on the way down."
+	desc = "Wider! Several things at once now, and bigger ones. I practiced on furniture. And if what you swallow happens to be food, the gullet patches you up a little on the way down."
 	grant_text = "Your new pocket yawns. It isn't picky anymore."
 	upgrades_from = /datum/vestige_boon/spell/devour
 	spell_type = /datum/action/cooldown/spell/vestige_devour/gluttony
@@ -801,7 +801,7 @@
 
 /datum/vestige_boon/rubber_bones
 	name = "Rubber Bones"
-	desc = "I loosened everything. Don't ask how. Strip all the way down — the ducting insists — and you can pour yourself through the vents the way I do. Climbing gets quick and short falls stop hurting. This is in the meat, not the soul, so a new body has to be loosened again."
+	desc = "I loosened everything. Don't ask how. Strip all the way down (the ducting insists) and you can pour yourself through the vents the way I do. Climbing gets quick and short falls stop hurting. This is in the meat, not the soul, so a new body has to be loosened again."
 	grant_text = "Every joint in you loosens by a degree no anatomy chart allows."
 	radial_icon = 'icons/obj/antags/abductor.dmi'
 	radial_icon_state = "vent"
@@ -817,14 +817,14 @@
  * with-items on a human (the trait monkeys and rat-organ infusees get is the
  * nude one; ALWAYS is reserved for mobs whose whole body is the antag) would
  * make every vent a zero-counterplay smuggling lane. Nude-only keeps the
- * morph fantasy — the flesh does it bare — and the tradeoff real. Note the
+ * morph fantasy (the flesh does it bare) and the tradeoff real. Note the
  * intended synergy: the nudity check counts equipped and held items only
  * (get_equipped_items + get_num_held_items, ventcrawling.dm), so a keeping
  * swallowed into the Gullet rides through the ducts with you. That is the
  * combo, and it costs two boons.
  *
  * TRAIT_FREERUNNING is the cheap verified flavor bonus: short falls land
- * unscathed (living.dm z-impact) and climbing is quick (climbable.dm) — both
+ * unscathed (living.dm z-impact) and climbing is quick (climbable.dm), both
  * exactly what rubber bones ought to do, no new code.
  */
 /datum/vestige_boon/rubber_bones/grant(mob/living/user, datum/mind/owner)
@@ -839,11 +839,11 @@
  * rather than ported. Upstream's own primitive
  * (/datum/action/cooldown/mob_cooldown/assume_form) copies the target's
  * appearance onto the OWNER and resets it with initial(icon)/initial(
- * icon_state) — its header warns it "will likely shit the bricks" on
+ * icon_state), its header warns it "will likely shit the bricks" on
  * anything carbon; a human's sprite is overlay-composited and that reset
  * would wreck it. So the appearance copy happens on a disposable basic mob
  * instead (born, imprinted once with the morph's exact field-set, deleted on
- * unshift — the un-resettable reset never has to happen), and the human
+ * unshift, the un-resettable reset never has to happen), and the human
  * rides inside via /datum/status_effect/shapechange_mob/from_spell, the same
  * rail every wizard shapeshift trusts.
  *
@@ -854,7 +854,7 @@
  *   of either party restores or cleans up (on_caster_deleted / on_remove).
  * - Wabbajack and mob-type changes are intercepted (on_pre_wabbajack).
  * - Remove() (boon upgrade replacing this spell, mind leaving) unshifts
- *   first (shapeshift/Remove -> unshift_owner) — nobody is stranded as a
+ *   first (shapeshift/Remove -> unshift_owner). Nobody is stranded as a
  *   crate.
  * - Casting while ventcrawling is refused outright in can_cast_spell:
  *   upstream's rail for shifting-in-a-vent is eject_from_vents, which GIBS.
@@ -924,7 +924,7 @@
 		return FALSE
 	return TRUE
 
-// Shedding a shape needs no target — someone caught out as a crate should not
+// Shedding a shape needs no target. Someone caught out as a crate should not
 // have to arm a cursor and click themselves to stop being a crate. Only picking
 // a NEW shape asks for a click.
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/Trigger(mob/clicker, trigger_flags, atom/target)
@@ -957,7 +957,7 @@
 // Forming takes its model from the click and skips the immediate cooldown, so
 // the shape can always be shrugged off at will. Unforming falls through
 // untouched: Activate's StartCooldown after cast() is exactly the reform
-// lockout. Either way the shapeshift rail upstream is handed the OWNER — the
+// lockout. Either way the shapeshift rail upstream is handed the OWNER, the
 // click target is a model to copy, not a thing to transform.
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/before_cast(atom/cast_on)
 	var/atom/movable/model = (cast_on == owner) ? null : cast_on
@@ -997,7 +997,7 @@
 	return TRUE
 
 // The imprint happens at birth, before the shapechange status effect moves
-// the player in — one tick, no visible blob frame in practice
+// the player in, one tick, no visible blob frame in practice
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/create_shapeshift_mob(atom/loc)
 	var/mob/living/basic/vestige_mimic/shape = ..()
 	var/atom/movable/model = chosen_model
@@ -1006,8 +1006,8 @@
 		shape.imprint(model)
 	return shape
 
-// Every exit from the shape — recast, break-on-damage, break-on-attack,
-// Remove — funnels through here, so every exit pays the reform lockout.
+// Every exit from the shape: recast, break-on-damage, break-on-attack,
+// Remove, funnels through here, so every exit pays the reform lockout.
 // (Voluntary recasts also pay it via Activate; same value, harmless restart.)
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/do_unshapeshift(mob/living/caster)
 	. = ..()
@@ -1030,8 +1030,8 @@
 		)
 		return
 	// Formed: owner is now the shape, already wearing the prop's face.
-	// (If the shift somehow failed — the rail stack-traces that itself —
-	// there is no shape and no theatre to perform.)
+	// (If the shift somehow failed, the rail stack-traces that itself.
+	// There is no shape and no theatre to perform.)
 	if(!istype(owner, /mob/living/basic/vestige_mimic))
 		return
 	playsound(owner, 'sound/effects/magic/mutate.ogg', 50, TRUE)
@@ -1044,15 +1044,15 @@
 
 /**
  * The borrowed shape itself: a disposable basic mob wearing an object's
- * appearance (the morph's exact field-set — appearance, overlays, alpha,
- * transform, base pixel offsets — which also carries name and desc for the
+ * appearance (the morph's exact field-set, appearance, overlays, alpha,
+ * transform, base pixel offsets, which also carries name and desc for the
  * examine header). It has no attacks and no hands; it can only creep, be
- * believed, and come apart. It never resets its appearance — every exit
- * deletes it — which is the whole reason the carbon-unsafe reset problem
+ * believed, and come apart. It never resets its appearance, every exit
+ * deletes it, which is the whole reason the carbon-unsafe reset problem
  * disappears.
  *
  * Health is 1:1 with a human so converted damage carries honestly. Atmos is
- * moot for it (morph pattern: habitable_atmos = null, TCMB floor) — a crate
+ * moot for it (morph pattern: habitable_atmos = null, TCMB floor), a crate
  * does not shiver, and the human inside is in stasis. Med huds are blanked
  * the way the morph blanks them: a health bar over a chair is a hard tell.
  */
@@ -1100,7 +1100,7 @@
 
 // Examine is the prop's own, morph-style, with the near-range tell the
 // flawless shape exists to remove. If the prop is gone, the impression
-// carries on from memory (base examine of a wet shape — its own tell).
+// carries on from memory (base examine of a wet shape, its own tell).
 /mob/living/basic/vestige_mimic/examine(mob/user)
 	var/atom/movable/model = model_ref?.resolve()
 	if(isnull(model))
@@ -1110,7 +1110,7 @@
 	if(has_tell && get_dist(user, src) <= 3)
 		. += span_warning("It looks slightly damp.")
 
-// A health bar floating over a chair is a hard tell — blank the huds, morph-style
+// A health bar floating over a chair is a hard tell, blank the huds, morph-style
 /mob/living/basic/vestige_mimic/med_hud_set_health()
 	set_hud_image_state(HEALTH_HUD, null)
 
@@ -1127,7 +1127,7 @@
 		queue_break()
 	return FALSE
 
-/// Any damage breaks the form — deferred a tick so the blow finishes resolving first
+/// Any damage breaks the form, deferred a tick so the blow finishes resolving first
 /mob/living/basic/vestige_mimic/proc/on_damaged(datum/source)
 	SIGNAL_HANDLER
 	queue_break()
@@ -1145,7 +1145,7 @@
  * Comes apart, restoring the rider. Routed through the granting spell's
  * do_unshapeshift so the reform lockout is paid; if the spell is somehow
  * gone, removing the status effect is the rail's own supported teardown
- * (on_remove -> restore_caster) — nobody is ever left inside. If damage
+ * (on_remove -> restore_caster), nobody is ever left inside. If damage
  * outright killed the shape first, on_shape_death already restored the
  * caster and deleted us, and this finds nothing to do.
  */
@@ -1172,10 +1172,10 @@
 /**
  * The morph's swallowing, rebuilt as an internal stash. The morph's own
  * version is eatable.forceMove(src) plus /datum/element/content_barfer to
- * spill on death — content_barfer barfs a mob's ENTIRE contents, which on a
+ * spill on death, content_barfer barfs a mob's ENTIRE contents, which on a
  * human means organs, implants and worn equipment, so the port keeps its own
  * container instead: a real /obj holder riding nullspace, owned by the spell
- * (mind-bound — the stash follows the player across bodies with the action,
+ * (mind-bound, the stash follows the player across bodies with the action,
  * exactly like the flavor says: it is in YOUR gullet, whoever you are today).
  *
  * One action, two verbs, fork-quirk-proof (all bail-outs are before_cast
@@ -1188,7 +1188,7 @@
  *   re-registered on each Grant so it tracks body swaps; on gib the items are
  *   safe in nullspace, not in the corpse, and spill at the turf).
  * - The spell being destroyed (a boon upgrade replacing it) spills at the
- *   owner's feet first — upgrading The Gullet means briefly, humiliatingly,
+ *   owner's feet first. Upgrading The Gullet means briefly, humiliatingly,
  *   coughing up your stash for the wider one.
  */
 /datum/action/cooldown/spell/vestige_devour
@@ -1256,7 +1256,7 @@
 		UnregisterSignal(remove_from, COMSIG_LIVING_DEATH)
 	return ..()
 
-/// Death or gib: the gullet keeps nothing from a corpse — everything spills where the body dropped
+/// Death or gib: the gullet keeps nothing from a corpse, everything spills where the body dropped
 /datum/action/cooldown/spell/vestige_devour/proc/on_owner_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	if(!length(stash?.contents))
@@ -1271,7 +1271,7 @@
 	playsound(spill_loc, 'sound/effects/splat.ogg', 50, TRUE)
 	empty_gullet(spill_loc)
 
-/// Turns the stash out onto the given turf. With no turf there is nowhere left to put anything — noted loudly, because it should never happen while contents exist.
+/// Turns the stash out onto the given turf. With no turf there is nowhere left to put anything. Noted loudly, because it should never happen while contents exist.
 /datum/action/cooldown/spell/vestige_devour/proc/empty_gullet(turf/spill_loc)
 	if(!length(stash?.contents))
 		return
@@ -1403,13 +1403,13 @@
 // ===== AMBUSH INSTINCT =====
 
 /**
- * The morph's glomp-from-hiding, built on the generic charge action — the
+ * The morph's glomp-from-hiding, built on the generic charge action, the
  * same primitive the Aperture's Cosmic Dash already grants to plain humans
  * (in-module precedent; the charge only ever touches owner). The leap is a
  * move-loop, not a teleport: it bumps to a stop on anything dense, so no
  * TRAIT_NOTELEPORT-class rule is ever sidestepped. destroy_objects stays off
  * (nobody's ambush should explode a wall) and the base charge's
- * meteor-impact footfalls are silenced — it is an AMBUSH.
+ * meteor-impact footfalls are silenced. It is an AMBUSH.
  *
  * Landing on someone floors them briefly; every pounce, hit or miss, leaves
  * a short window of lent savagery (see the status effect below). Bursting
@@ -1435,7 +1435,7 @@
 	// shape first, and the pouncer erupts from it mid-leap. break_form
 	// restores the player and re-grants this action to them synchronously
 	// (mind transfer), so owner is the human again by the time the charge
-	// actually launches — and the mimic's reform lockout is paid as normal.
+	// actually launches, and the mimic's reform lockout is paid as normal.
 	if(istype(owner, /mob/living/basic/vestige_mimic))
 		var/mob/living/basic/vestige_mimic/shape = owner
 		shape.break_form()
@@ -1445,7 +1445,7 @@
 	var/mob/living/pouncer = owner
 	pouncer.apply_status_effect(/datum/status_effect/vestige_predation)
 
-// A wet uncoiling instead of the base charge's bubblegum theatrics — the thing
+// A wet uncoiling instead of the base charge's bubblegum theatrics, the thing
 // that leaves the floor is meat, not a swinging weapon, and it should sound it
 /datum/action/cooldown/mob_cooldown/charge/vestige_pounce/do_charge_indicator(atom/charger, atom/charge_target)
 	playsound(charger, 'sound/effects/blob/attackblob.ogg', 60, TRUE)
@@ -1456,7 +1456,7 @@
 	SIGNAL_HANDLER
 	return
 
-// Landing on someone: no trample damage, just the floor — the damage is
+// Landing on someone: no trample damage, just the floor, the damage is
 // whatever you swing in the savagery window you just earned
 /datum/action/cooldown/mob_cooldown/charge/vestige_pounce/hit_target(atom/movable/source, mob/living/target, damage_dealt)
 	target.visible_message(
@@ -1469,12 +1469,12 @@
 
 /**
  * The lent savagery: for a short window after a pounce, the next melee blow
- * carries bonus force. Armed strikes get it the supported way — a
+ * carries bonus force. Armed strikes get it the supported way, a
  * COMSIG_MOB_ITEM_ATTACK handler adding MODIFY_ATTACK_FORCE to the attack
  * chain's by-reference attack_modifiers list (melee_attack_chain always
  * passes a real list; blood_drunk's saw is the in-tree precedent for the
  * macro). Punch damage has no modifier hook, so an unarmed harm-mode strike
- * spends the window on a rider hit of its own instead — a claw-rake with its
+ * spends the window on a rider hit of its own instead, a claw-rake with its
  * own message, which lands whether or not the punch under it connects
  * (fiction holds: the rake is its own attack). Shoves and help-intent
  * touches don't spend it.

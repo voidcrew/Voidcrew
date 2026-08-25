@@ -5,8 +5,8 @@
  * picks victim areas by station department typepath (/area/station/...) and
  * reaches them through global signals; ships have no department types and share
  * z-levels with bystanders, so this port picks 1-2 of the ship's own shuttle
- * areas (only ones that actually contain airlocks) and calls prison_open() —
- * the same proc TG's airlock signal handler invokes — directly on each airlock
+ * areas (only ones that actually contain airlocks) and calls prison_open(),
+ * the same proc TG's airlock signal handler invokes, directly on each airlock
  * in them. All effects stay inside target_ship's shuttle areas.
  */
 /datum/round_event_control/voidcrew/grey_tide
@@ -34,7 +34,7 @@
 	fakeable = FALSE
 	/// The number of areas to be hit by the event: 1 (light) or 2 (severe).
 	var/severity = 1
-	/// The ship areas hit by the event — area instances, not typepaths like TG.
+	/// The ship areas hit by the event, area instances, not typepaths like TG.
 	var/list/area/grey_tide_areas = list()
 
 /datum/round_event/voidcrew/grey_tide/setup()
@@ -62,7 +62,7 @@
 	if(!target_valid())
 		return
 	if(!length(grey_tide_areas))
-		kill() // Nothing aboard worth hitting — fizzle quietly.
+		kill() // Nothing aboard worth hitting, fizzle quietly.
 
 /**
  * Mirrors TG's periodic COMSIG_GLOB_GREY_TIDE_LIGHT pulse (which only lights
@@ -82,7 +82,7 @@
 /**
  * Mirrors TG's COMSIG_GLOB_GREY_TIDE, per handler: airlocks (skipping
  * critical_machine ones) get prison_open(), secure lockers unlock, and APCs cut
- * their lighting channel — all scoped to the victim areas aboard the ship.
+ * their lighting channel, all scoped to the victim areas aboard the ship.
  */
 /datum/round_event/voidcrew/grey_tide/end()
 	if(!target_valid())

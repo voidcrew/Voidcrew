@@ -163,6 +163,10 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 1 SECONDS)
 
 /mob/dead/observer/Destroy()
+	// VOIDCREW EDIT: only Logout() and reset_perspective() ever ran this - a ghost
+	// deleted while still observing someone (clientless cleanup, admin delete) stayed
+	// in the observed mob's `observers` list and hard-deleted on that one ref
+	cleanup_observe()
 	if(ghost_hud_flags & GHOST_DATA_HUDS)
 		remove_data_huds()
 
@@ -314,7 +318,7 @@ GAME_VERB_DESC(/mob/living, ghost, "Ghost", "Relinquish your life and enter the 
 		if(!HAS_TRAIT(src, TRAIT_CORPSELOCKED)) //corpse-locked have to confirm with the alert below
 			ghostize(TRUE)
 			return TRUE
-	var/response = tgui_alert(usr, "Are you sure you want to ghost? You won't be able to re-enter your body!", "Confirm Ghost Observe", list("Ghost", "Stay in Body"))
+	var/response = tgui_alert(usr, "Are you sure you want to ghost? You won't be able to re-enter your body! [get_respawn_notice()]", "Confirm Ghost Observe", list("Ghost", "Stay in Body"))
 	if(response != "Ghost")
 		return FALSE//didn't want to ghost after-all
 	ghostize(FALSE) // FALSE parameter is so we can never re-enter our body. U ded.
@@ -925,7 +929,15 @@ GAME_VERB_HIDDEN(/mob/dead/observer, add_view_range, "Add View Range", input as 
 		set_sight(initial(sight))
 
 /mob/dead/observer/AltClickOn(atom/target)
-	client.loot_panel.open(get_turf(target))
+	// VOIDCREW EDIT: ghosts get the loot panel on the clicked tile, so they can reach
+	// things buried under other atoms instead of only whatever is on top.
+	// Deliberately skips COMSIG_CLICK_ALT and click_alt() - ghosts look, they don't act.
+	if(SEND_SIGNAL(src, COMSIG_MOB_ALTCLICKON, target) & COMSIG_MOB_CANCEL_CLICKON)
+		return
+	var/turf/tile = get_turf(target)
+	if(isnull(tile) || isnull(client))
+		return
+	client.loot_panel.open(tile)
 
 /mob/dead/observer/AltClickSecondaryOn(atom/target)
 	if(client && check_rights_for(client, R_DEBUG))

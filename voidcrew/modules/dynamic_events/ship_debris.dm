@@ -1,5 +1,5 @@
 /**
- * Exterior debris for ship-scoped dynamic events — meteors, space dust, immovable
+ * Exterior debris for ship-scoped dynamic events, meteors, space dust, immovable
  * rods: everything TG throws *across* a station z-level rather than spawning inside it.
  *
  * These are the events the dynamic-event port deferred, because they are the only
@@ -12,7 +12,7 @@
  *
  * The fix is a per-launch corridor: a rectangle covering only the target ship's own
  * footprint plus a margin, clamped inside its reservation. Debris spawns on the edge
- * of that rectangle, crosses the hull, and is culled the instant it leaves — so a rock
+ * of that rectangle, crosses the hull, and is culled the instant it leaves, so a rock
  * that misses is gone rather than continuing for its full three-minute lifetime into a
  * neighbour. Nothing here reads a z-level trait or a station global; the corridor is
  * derived from the shuttle's own projected bounds.
@@ -88,7 +88,7 @@
  * Up to `count` distinct random turfs aboard, sampled in one pass over the ship's areas.
  *
  * get_random_ship_turf() rebuilds the ship's entire turf list on every call, which is
- * fine once but wasteful when a meteor wave wants several aim points at a time — and
+ * fine once but wasteful when a meteor wave wants several aim points at a time, and
  * this way a wave can't throw two rocks at the same tile.
  */
 /obj/structure/overmap/ship/proc/get_random_ship_turfs(count = 1)
@@ -201,7 +201,7 @@
  *
  * The three exemption traits are what let it exist in reserved space at all: without
  * them the transit reservation's soft cordon dumps it, hyperspace drift shoves it, and
- * the shuttle-cling component grabs it. TRAIT_DEL_ON_SPACE_DUMP is the counterweight —
+ * the shuttle-cling component grabs it. TRAIT_DEL_ON_SPACE_DUMP is the counterweight,
  * if debris somehow does reach the reservation's hard cordon, it dies there instead of
  * being teleported onto a live z-level by dump_in_space().
  */
@@ -215,7 +215,7 @@
 
 	// A "heavy" meteor shakes the camera of every player sharing its z-level on death.
 	// On a transit z that is every other crew in the sector feeling a rock they can't
-	// see hit a ship they aren't on, so confined rocks give that up — the launching
+	// see hit a ship they aren't on, so confined rocks give that up, the launching
 	// event rumbles its own ship instead (see /datum/round_event/voidcrew/meteor_strike).
 	var/obj/effect/meteor/rock = debris
 	if(istype(rock))

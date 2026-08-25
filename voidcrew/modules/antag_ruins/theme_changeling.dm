@@ -1,5 +1,5 @@
 /**
- * # The Chrysalis — changeling vestige
+ * # The Chrysalis: changeling vestige
  *
  * A medical frigate the hive ate from the inside; what's left of the hive
  * still wants to hear new life. Trials revolve around birth and stolen faces;
@@ -273,7 +273,7 @@
 	return iscarbon(cast_on)
 
 // The cancel lives here: no blade to fold and no hand to grow one in means the
-// cast never happens and the cooldown is never paid — this fork's Activate()
+// cast never happens and the cooldown is never paid, this fork's Activate()
 // ignores cast()'s return value, so an in-cast reset_spell_cooldown() is dead code
 /datum/action/cooldown/spell/vestige_armblade/before_cast(atom/cast_on)
 	. = ..()
@@ -302,7 +302,7 @@
 		// An old model from before the upgrade: the blade is NODROP, so an
 		// upgrade claimed mid-form must reshape it in place or strand it forever
 	// The blade announces its own arrival (arm_blade's Initialize prints the
-	// visible message), but it does it silently — the noise is ours to make
+	// visible message), but it does it silently. The noise is ours to make
 	playsound(cast_on, 'sound/effects/blob/blobattack.ogg', 60, TRUE)
 	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))

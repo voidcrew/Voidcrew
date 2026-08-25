@@ -4,6 +4,7 @@
 	dir = 4
 	},
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 8
 	},
 /obj/structure/sign/poster/official/love_ian{
@@ -69,6 +70,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 "h" = (
@@ -148,6 +157,7 @@
 "o" = (
 /obj/structure/closet/secure_closet/medical1,
 /obj/machinery/light/small{
+	bulb_colour = "#fae5c1";
 	dir = 4
 	},
 /obj/machinery/vending/wallmed/directional/east,
@@ -173,14 +183,6 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/closet/crate/freezer/food,
-/obj/item/storage/box/donkpockets,
-/obj/item/storage/box/donkpockets/donkpocketteriyaki,
-/obj/item/food/canned/beans,
-/obj/item/food/canned/beans,
-/obj/item/food/sosjerky,
-/obj/item/food/energybar,
-/obj/item/reagent_containers/condiment/milk,
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 

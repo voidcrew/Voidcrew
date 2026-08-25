@@ -37,7 +37,7 @@
 	return FALSE
 
 /**
- * Whether a free hull can be requisitioned right now.
+ * Whether a free hull can be requisitioned right now, for this player.
  *
  * Requisition is the fleet's floor, not a way around it. It opens only when there is
  * nowhere left in the fleet to sit - every ship full, or every ship destroyed. While
@@ -45,11 +45,18 @@
  * keeps a wiped crew regrouping onto one replacement rather than scattering onto a
  * hull each, and keeps parts worth saving: they buy you the hull you want on demand,
  * not access to a hull at all.
+ *
+ * Per-player because of join passwords: a locked hull is not a seat for someone who
+ * can't get through its door, and without this a fleet of nothing but locked ships
+ * would leave a newcomer unable to join anything OR requisition.
  */
-/proc/can_requisition_hull()
+/proc/can_requisition_hull(mob/user)
 	for(var/obj/structure/overmap/ship/ship as anything in get_joinable_ships())
-		if(ship_has_open_slots(ship))
-			return FALSE
+		if(!ship_has_open_slots(ship))
+			continue
+		if(!ship.is_password_cleared(user?.ckey))
+			continue
+		return FALSE
 	return TRUE
 
 /datum/ship_join_menu/New(mob/dead/new_player/player)
@@ -105,11 +112,13 @@
 			"class_name" = class_name,
 			"crew_count" = crew_count,
 			"jobs" = jobs,
-			"memo" = active_ship.memo
+			"memo" = active_ship.memo,
+			"locked" = !!active_ship.join_password,
+			"password_cleared" = active_ship.is_password_cleared(user.ckey)
 		))
 
 	data["ships"] = ships
-	data["can_requisition"] = can_requisition_hull()
+	data["can_requisition"] = can_requisition_hull(user)
 	return data
 
 /datum/ship_join_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -138,7 +147,7 @@
 		if("requisition_hull")
 			// Re-checked in requisition_free_hull() too - the UI is never the authority
 			// on this, and the fleet can fill up while the menu sits open
-			if(!can_requisition_hull())
+			if(!can_requisition_hull(user))
 				to_chat(user, span_warning("There are still open positions in the fleet. Join one of those instead."))
 				return FALSE
 			ui.close()
@@ -166,6 +175,14 @@
 
 			if(length(ship.shuttle?.spawn_points) <= 0)
 				to_chat(user, span_warning("That ship has no spawn points available."))
+				return FALSE
+
+			// The other half of the cryopod's anti-dupe rule: whoever just cryo'd out of
+			// THIS ship waits out the cooldown before taking a seat on it again. Any
+			// other ship is open to them right away.
+			var/rejoin_wait = cryo_rejoin_wait(user.ckey, ship)
+			if(rejoin_wait)
+				to_chat(user, span_warning("You left this ship's crew for cryosleep too recently to rejoin it. Try again in [DisplayTimeText(rejoin_wait)], or join a different ship."))
 				return FALSE
 
 			// Close menu and proceed to job selection

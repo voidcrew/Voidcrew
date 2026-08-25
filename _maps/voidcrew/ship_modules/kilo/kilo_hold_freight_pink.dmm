@@ -57,6 +57,14 @@
 "G" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/glitter{
+	name = "party supply crate"
+	},
+/obj/item/shovel,
+/obj/item/pickaxe,
+/obj/item/storage/box/lights/mixed,
+/obj/item/mining_scanner,
+/obj/item/gun/energy/recharge/kinetic_accelerator,
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
 "H" = (
@@ -66,13 +74,6 @@
 /obj/effect/turf_decal/trimline/white/filled/line{
 	color = "#ff9ecd";
 	dir = 8
-	},
-/obj/item/stack/wrapping_paper{
-	amount = 15
-	},
-/obj/item/toy/balloon/heart{
-	pixel_x = 8;
-	pixel_y = 7
 	},
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
@@ -88,19 +89,18 @@
 /turf/template_noop,
 /area/template_noop)
 "Z" = (
-/obj/structure/closet/crate/glitter{
-	name = "party supply crate"
-	},
-/obj/item/shovel,
-/obj/item/pickaxe,
-/obj/item/storage/box/lights/mixed,
-/obj/item/mining_scanner,
-/obj/item/gun/energy/recharge/kinetic_accelerator,
 /obj/effect/turf_decal/box/corners,
 /obj/effect/turf_decal/box/corners{
 	dir = 1
 	},
 /obj/structure/sign/poster/official/ian/directional/south,
+/obj/item/stack/wrapping_paper{
+	amount = 15
+	},
+/obj/item/toy/balloon/heart{
+	pixel_x = 8;
+	pixel_y = 7
+	},
 /turf/open/floor/iron/dollhouse/white,
 /area/template_noop)
 

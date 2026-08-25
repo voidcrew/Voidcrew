@@ -1,0 +1,333 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/obj/effect/turf_decal/box,
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"k" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"l" = (
+/obj/structure/rack,
+/obj/item/gun/energy/plasmacutter,
+/obj/item/extraction_pack,
+/obj/item/fulton_core,
+/obj/item/gps/mining,
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/bag/ore,
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/runed_metal{
+	amount = 10;
+	 pixel_y = 3
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 6;
+	 pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -4;
+	 pixel_y = 4
+	},
+/obj/item/hand_labeler{
+	pixel_x = 5;
+	 pixel_y = -2
+	},
+/obj/item/paper{
+	default_raw_text = "Log every load before it goes in a crate. Weight, which wreck it came off, who carried it. Chalk the crate lid so it matches the book.";
+	 name = "hold log";
+	 pixel_x = 4;
+	 pixel_y = 8
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"z" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 6;
+	 pixel_y = -3
+	},
+/obj/item/crowbar/large{
+	pixel_x = -6;
+	 pixel_y = -3
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -5;
+	 pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -5;
+	 pixel_y = 6
+	},
+/obj/item/folder{
+	pixel_x = 6;
+	 pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"I" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"K" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/runed_metal{
+	amount = 20;
+	 pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 7;
+	 pixel_y = 7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	 pixel_y = -5
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"N" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/ore_box,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"O" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/destructible/cult/item_dispenser/altar,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/sheet/plasteel{
+	amount = 10
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/noticeboard/directional/west,
+/obj/item/paper{
+	default_raw_text = "Hold watch rotates at every undock. Keep the blast-hatch lane swept and the candle by the desk lit. If the hatch cycles while you are on watch, call it before you open it.";
+	 name = "hold watch bill"
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/closet/crate,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Y" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+x
+S
+J
+q
+m
+"}
+(2,1,1) = {"
+G
+H
+R
+V
+P
+"}
+(3,1,1) = {"
+f
+g
+R
+o
+I
+"}
+(4,1,1) = {"
+Q
+k
+R
+h
+U
+"}
+(5,1,1) = {"
+O
+M
+Y
+B
+z
+"}
+(6,1,1) = {"
+L
+N
+K
+c
+p
+"}
+(7,1,1) = {"
+l
+u
+u
+u
+T
+"}

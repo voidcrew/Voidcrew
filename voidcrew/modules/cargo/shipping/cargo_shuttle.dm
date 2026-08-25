@@ -19,8 +19,10 @@
 	var/warmup_timer
 	/// The empty space we're docking to
 	var/obj/structure/overmap/planet/empty/docked_at
-	/// Transit dock reservation
-	var/obj/docking_port/stationary/transit/transit_dock
+	/// The turf reservation the shuttle is parked in while "in transit". Held BARE on
+	/// this datum on purpose - never wrapped in an /obj/docking_port/stationary/transit.
+	/// See the doc comment on spawn_shuttle() for why the dock was fatal.
+	var/datum/turf_reservation/transit_reservation
 	/// Time when warmup started (for timer display)
 	var/warmup_started
 	/// world.time past which an unresolved warmup is treated as stalled. 0 when idle or docked.
@@ -139,8 +141,19 @@
 
 /**
  * Cleans up all shuttle resources (for error states, not normal departure)
+ *
+ * Forces state back to AWAY, and does it first. This proc used to clear the timer, the
+ * deadline and docked_at while leaving state wherever it happened to be - but the helm
+ * gates undock on state alone, so a delivery that got cleaned up mid-claim stayed
+ * "present" forever. That was the round 7 (2026-08-16) stranding: ten "send" clicks in
+ * thirteen seconds raced through spawn_shuttle() on this per-ship singleton, one
+ * invocation's cleanup nulled docked_at under another's berth lookup, and the runtime
+ * left state parked at ARRIVING with nothing left armed to notice. Every caller that
+ * reaches for this proc wants the console back at AWAY; call_shuttle()'s post-spawn
+ * check relies on it to catch a spawn that was torn down while it yielded.
  */
 /datum/voidcrew_cargo_shuttle/proc/cleanup_shuttle()
+	state = CARGO_SHUTTLE_AWAY
 	if(warmup_timer)
 		deltimer(warmup_timer)
 		warmup_timer = null
@@ -161,30 +174,37 @@
 	docked_at = null
 
 /**
- * Spawns the cargo shuttle using SSshuttle's transit system
+ * Spawns the cargo shuttle into a bare turf reservation
  * Returns TRUE on success
  *
- * Order matters here, and not for readability. SSshuttle.fire() force-qdels every
- * transit port whose `owner` is null, on every tick - that sweep is how orphaned transit
- * space gets reclaimed. Both of the expensive steps below yield for multiple seconds:
- * request_turf_block_reservation() opens with an UNTIL() on the reservation z-level, and
- * template.load() sleeps in dispatch() waiting on modular map roots. Creating the transit
- * port before either of them - as this used to - leaves an ownerless port sitting in
- * SSshuttle.transit_docking_ports across that whole window, and any SSshuttle fire inside
- * it destroys the port out from under us.
- *
- * The delivery then proceeds on a dead transit dock and the datum never leaves
- * CARGO_SHUTTLE_ARRIVING, which the helm reads as "cargo shuttle present" and refuses to
- * undock on - a permanently stuck ship (round 837, 2026-08-04; the tell in runtime.log is
- * "Attempted to add a new component of type [/datum/component/shuttle_cling] to a
- * qdeleting parent of type [/obj/docking_port/stationary/transit]" raised from
- * spawn_shuttle()). So the port is built last, and owned before control can leave this
- * proc, which is the same invariant SSshuttle's own generate_transit_dock() holds.
+ * The parking ground is deliberately held on this datum as a naked reservation and NOT
+ * wrapped in an /obj/docking_port/stationary/transit. SSshuttle.transit_docking_ports
+ * has a contract - "a shuttle is flying through this hyperspace zone" - and SSshuttle's
+ * fire() enforces it: once transit_utilized crosses SOFT_TRANSIT_RESERVATION_THRESHOLD
+ * (90k tiles, ~31 concurrent ships), every transit dock whose owner is SHUTTLE_IDLE and
+ * not physically docked to it is force-qdel'd to reclaim the space. The ferry never
+ * docks to a transit port and its mode never leaves SHUTTLE_IDLE, so the dock this proc
+ * used to build was always reclaimable by construction: past the threshold the sweep
+ * released the reservation mid-warmup, the release emptied every hull turf, and the
+ * surviving zero-turf port went on to "dock" with DOCKING_SUCCESS and deliver nothing
+ * while the console announced an arrival (round 12, 2026-08-23 - cargo dead fleet-wide
+ * for the rest of the round, permanently, since ship count only grows). Nothing ever
+ * consumed the dock: the ferry docks straight onto the encounter berth on arrival, and
+ * departure destroys it in place (complete_departure()), so the dock's only real job
+ * was owning the reservation - which the datum now does directly, out of the sweep's
+ * reach. Nothing force-releases a live bare reservation.
  */
 /datum/voidcrew_cargo_shuttle/proc/spawn_shuttle()
 	// Always spawn fresh - clean up any existing shuttle first
 	if(shuttle_port && !QDELETED(shuttle_port))
 		cleanup_shuttle()
+		// cleanup_shuttle() just forced the whole datum back to AWAY, watchdog included -
+		// but the caller claimed ARRIVING before calling us and the work below yields for
+		// seconds. Re-assert the claim and its deadline so the console and helm keep
+		// reading this spawn as in-flight, and so a spawn that never returns is recovered.
+		state = CARGO_SHUTTLE_ARRIVING
+		warmup_started = world.time
+		stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
 	shuttle_port = null // Ensure it's null even if QDELETED
 
 	// Use the existing cargo_box template
@@ -207,6 +227,13 @@
 		qdel(template)
 		return FALSE
 
+	// The block we were just granted is recycled ground and can contain docking ports
+	// stranded by an earlier tenant: /turf/proc/empty() excludes /obj/docking_port from
+	// every reservation sweep, so stale ports survive release. The locate() below adopts
+	// the first mobile port it finds, ghost or not (round 12, 2026-08-23: a stranded port
+	// hijacked every delivery that landed on its coordinates). Reap them by name first.
+	reap_reservation_docking_ports(reservation)
+
 	var/turf/transit_turf = reservation.bottom_left_turfs[1]
 	// Offset by border to center shuttle in reservation
 	transit_turf = locate(transit_turf.x + SHUTTLE_TRANSIT_BORDER, transit_turf.y + SHUTTLE_TRANSIT_BORDER, transit_turf.z)
@@ -226,6 +253,21 @@
 		qdel(template)
 		return FALSE
 
+	// The stock supply shuttle map locks both of its airlocks to ACCESS_CARGO - each one
+	// carries /obj/effect/mapping_helpers/airlock/access/all/supply/general, which is a
+	// station assumption: a quartermaster hands out the card. Here the shuttle docks
+	// against a hull whose crew is issued no cargo access at all, so the delivery arrived
+	// sealed and the order it was carrying could not be unloaded.
+	//
+	// The blanket ship waiver in voidcrew/edits/ship_access.dm does not cover this: it is
+	// scoped to /area/shuttle/voidcrew, and this template loads into /area/shuttle/supply.
+	// Clear the locks on the doors themselves instead. The helpers are `late = TRUE`, so
+	// they have already run by the time template.load() returns and this overwrites them.
+	for(var/turf/shuttle_turf as anything in affected)
+		for(var/obj/machinery/door/shuttle_door in shuttle_turf)
+			shuttle_door.req_access = null
+			shuttle_door.req_one_access = null
+
 	// Don't let this become SSshuttle.supply
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
@@ -234,14 +276,10 @@
 	shuttle_port.shuttle_id = "voidcrew_cargo_[REF(src)]"
 	shuttle_port.name = "Voidcrew Cargo Shuttle"
 
-	// Set up transit. Nothing between the new() and the owner assignment may yield.
-	transit_dock = new()
-	transit_dock.owner = shuttle_port
-	shuttle_port.assigned_transit = transit_dock
-	transit_dock.reserved_area = reservation
-	transit_dock.width = template.width
-	transit_dock.height = template.height
-	transit_dock.forceMove(transit_turf)
+	// Take ownership of the parking ground directly - no transit dock, no
+	// assigned_transit (see the doc comment above). The only consumer either ever had
+	// was the SSshuttle sweep that kept reclaiming us.
+	transit_reservation = reservation
 
 	template.post_load(shuttle_port)
 	qdel(template)
@@ -322,11 +360,48 @@
 		return "Ship hull extends past its docking port. Move the docking port to the \
 			outermost hull door before ordering a delivery"
 
+	// Lock the state before spawn_shuttle() yields for the template load: the console
+	// credit-checked the cart already, but buy() charges at dock time, so the cart must
+	// read as dispatched from this point on. Failure paths below hand it back to AWAY.
+	// The claim cannot wait for the spawn's return. spawn_shuttle() yields for seconds and
+	// this datum is a per-ship singleton, so every "send" click landing in that window used
+	// to pass the guard above and start a second concurrent spawn on it: round 7
+	// (2026-08-16) logged ten calls in thirteen seconds, the interleaved spawns ran
+	// cleanup_shuttle() on each other, and the berth lookup below dereferenced the
+	// docked_at that cleanup had just nulled. The runtime returned null to the console,
+	// which reports null as success - so every failed call was announced as "Cargo shuttle
+	// called" while the datum sat parked at ARRIVING and the helm refused to undock.
+	// Nothing between the guard and this block yields (hull_overhangs_port() is a pure
+	// turf scan), so the guard and the claim are atomic as a pair.
+	state = CARGO_SHUTTLE_ARRIVING
+	warmup_started = world.time
+	// Deliberately the full warmup plus grace, not grace alone, and armed in the same
+	// block as the state. spawn_shuttle() below can legitimately run long - a reservation
+	// UNTIL() plus a template load - and the console the orderer is staring at polls
+	// check_stalled() every ui_data tick. check_stalled() now reads a non-terminal state
+	// with no deadline as a stall to recover on sight, so claiming ARRIVING while leaving
+	// stall_deadline at 0 would tear down this healthy in-flight delivery at the next
+	// tick; a watchdog that merely expired inside the spawn would do the same.
+	stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
+
 	// Spawn shuttle fresh
 	if(!spawn_shuttle())
+		state = CARGO_SHUTTLE_AWAY
+		warmup_started = null
+		stall_deadline = 0
 		target_ship = null
 		docked_at = null
 		return "Could not prepare a cargo shuttle"
+
+	// spawn_shuttle() yielded, so the watchdog may have torn the order down while we were
+	// inside it - and cleanup_shuttle() now resets state and docked_at on ANY teardown it
+	// performs, including the stale-port branch at the top of the spawn. Bail rather than
+	// runtime on the null below; the refusal returns the datum to AWAY and consistent.
+	if(!docked_at || state != CARGO_SHUTTLE_ARRIVING)
+		state = CARGO_SHUTTLE_AWAY
+		cleanup_shuttle()
+		target_ship = null
+		return "Cargo shuttle preparation was interrupted"
 
 	// Claim the berth now and hold it for the whole flight. Re-checked here rather than
 	// trusting the console's pre-click check because spawn_shuttle() yields while it
@@ -334,13 +409,13 @@
 	var/list/berth = docked_at.get_cargo_berth(ship.shuttle)
 	var/berth_error = berth["error"]
 	if(berth_error)
+		state = CARGO_SHUTTLE_AWAY
 		cleanup_shuttle() // tears the fresh shuttle back down; we hold no berth to release
 		target_ship = null
 		return berth_error
 	claim_berth(berth["index"])
 
 	// Start warmup
-	state = CARGO_SHUTTLE_ARRIVING
 	warmup_started = world.time
 	load_retries = 0
 	stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
@@ -362,20 +437,33 @@
  * second timer: the failure mode being covered IS a lost callback, so the recovery path
  * must not depend on one.
  *
+ * The order of the checks below is the point. Terminal states are excused first; a
+ * non-terminal state with no deadline armed is then treated as already stalled, not as
+ * nothing-to-watch. State and deadline are always armed in the same assignment block, so
+ * one without the other is wreckage, not calm - and the old order (`if(!stall_deadline)
+ * return FALSE` first) read exactly that wreckage as calm, which is how the round 7
+ * (2026-08-16) stranding survived every poll for the rest of the round.
+ *
  * Returns TRUE if it tore a stalled delivery down.
  */
 /datum/voidcrew_cargo_shuttle/proc/check_stalled()
-	if(!stall_deadline)
-		return FALSE
+	// Terminal states first. DOCKED is a legitimate resting state - the shuttle sits at
+	// its berth with no timer running while the crew unloads - and AWAY means resolved.
 	if(state == CARGO_SHUTTLE_AWAY || state == CARGO_SHUTTLE_DOCKED)
 		stall_deadline = 0 // resolved normally; nothing to watch
 		return FALSE
-	if(world.time <= stall_deadline)
+	// A non-terminal state with no deadline armed is not "nothing to watch" - it IS the
+	// lost callback. Every path into ARRIVING/DEPARTING arms stall_deadline in the same
+	// block as the state (call_shuttle(), send_shuttle(), the complete_*() re-arms), so
+	// a zero here means whatever armed it was torn down underneath the delivery. There is
+	// no deadline left to wait for, and waiting is what stranded round 7: recover now.
+	if(stall_deadline && world.time <= stall_deadline)
 		return FALSE
 
-	log_shuttle("CARGO SHUTTLE STALL: delivery to [target_ship || "unknown ship"] stuck in state [state] \
-		[(world.time - stall_deadline) / 10]s past its deadline (shuttle_port=[shuttle_port ? "live" : "gone"], \
-		transit=[transit_dock ? "live" : "gone"]) - forcing recovery")
+	var/tardiness = stall_deadline ? "[(world.time - stall_deadline) / 10]s past its deadline" : "no deadline armed"
+	log_shuttle("CARGO SHUTTLE STALL: delivery to [target_ship || "unknown ship"] stuck in state [state], \
+		[tardiness] (shuttle_port=[shuttle_port ? "live" : "gone"], \
+		transit=[transit_reservation ? "live" : "gone"]) - forcing recovery")
 	state = CARGO_SHUTTLE_AWAY
 	target_ship?.ship_notify("Cargo shuttle failed to arrive and has been recalled. Re-order when ready.", \
 		"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
@@ -420,7 +508,7 @@
 	load_retries = 0
 
 	log_shuttle("CARGO SHUTTLE: arrival for [target_ship] at [docked_at] - berth=[cargo_dock_index], \
-		shuttle_port=[shuttle_port || "GONE"], transit=[transit_dock || "GONE"], retries=[load_retries]")
+		shuttle_port=[shuttle_port || "GONE"], reservation=[transit_reservation ? "live" : "GONE"], retries=[load_retries]")
 
 	// Find the player's ship shuttle
 	var/obj/docking_port/mobile/voidcrew/ship_shuttle = target_ship.shuttle
@@ -461,6 +549,19 @@
 		cleanup_shuttle()
 		return FALSE
 
+	// A shuttle "docks" by transplanting the turfs of its areas, so a ferry whose turfs
+	// were deleted out from under it during the warmup still gets DOCKING_SUCCESS - and
+	// then delivers nothing while the console announces an arrival. The reservation fix
+	// in spawn_shuttle() removes the known cause; this guard makes any unknown one cost a
+	// single refused, retryable delivery instead of a silent round-long outage (round 12,
+	// 2026-08-23: forty minutes of phantom "docked" reports before a player report).
+	if(!length(get_cargo_bay_turfs()))
+		log_shuttle("CARGO SHUTTLE: refusing arrival for [target_ship] - shuttle hull has no turfs left (reservation=[transit_reservation ? "live" : "GONE"])")
+		state = CARGO_SHUTTLE_AWAY
+		linked_console?.say("Error: Cargo shuttle was lost in transit. Re-order when ready.")
+		cleanup_shuttle()
+		return FALSE
+
 	// Calculate the correct dir for ship_dock based on ship_shuttle's current geometry
 	// We can't call adjust_dock_to_shuttle because it also moves the dock
 	// This is necessary because construction console port relocation updates port_direction
@@ -489,7 +590,7 @@
 	// move was even attempted. An "attempting dock" with no matching "dock returned" is
 	// that stall; both lines present with a non-success code is an ordinary refusal.
 	log_shuttle("CARGO SHUTTLE: attempting dock for [target_ship] - shuttle=[shuttle_port] at [AREACOORD(shuttle_port)] \
-		currently on [shuttle_port.get_docked() || "NO DOCK"], transit=[transit_dock || "GONE"], \
+		currently on [shuttle_port.get_docked() || "NO DOCK"], reservation=[transit_reservation ? "live" : "GONE"], \
 		target dock [cargo_dock] at [AREACOORD(cargo_dock)] dir=[cargo_dock.dir] berth=[cargo_dock_index]")
 	var/cargo_result = shuttle_port.initiate_docking(cargo_dock, force = TRUE)
 	log_shuttle("CARGO SHUTTLE: dock returned [cargo_result] for [target_ship]")
@@ -597,14 +698,12 @@
  * Completely destroys the shuttle - deletes all turfs and objects
  */
 /datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
-	// Clean up transit dock and its reservation FIRST
-	if(transit_dock && !QDELETED(transit_dock))
-		// Release the turf reservation if it exists
-		if(transit_dock.reserved_area)
-			qdel(transit_dock.reserved_area)
-			transit_dock.reserved_area = null
-		qdel(transit_dock)
-	transit_dock = null
+	// Hand the parking ground back first. The reservation is held bare on this datum
+	// (see spawn_shuttle()) - Release() via qdel is its whole teardown, with none of the
+	// force/QDEL_HINT_LETMELIVE dance the old transit dock needed.
+	if(transit_reservation && !QDELETED(transit_reservation))
+		qdel(transit_reservation)
+	transit_reservation = null
 
 	if(!shuttle_port || QDELETED(shuttle_port))
 		shuttle_port = null
@@ -614,8 +713,6 @@
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
 
-	// Unlink from transit dock
-	shuttle_port.assigned_transit = null
 
 	// Get all turfs in shuttle areas before we delete the port
 	var/list/shuttle_turfs = list()

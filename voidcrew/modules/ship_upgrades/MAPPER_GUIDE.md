@@ -217,6 +217,41 @@ Example (`cargo_basic.dmm`):
 /area/template_noop)
 ```
 
+### 5b. Layout and Content Rules (playtest-derived, 2026-08-11)
+
+These came out of the Delta playtest; every one of them shipped as a live bug.
+Review these rules on every hull and module you touch.
+
+1. **Wallmounts need a full-tile wall face.** Diagonal-capable wall types
+   (plain titanium, plastitanium, anything with `SMOOTH_DIAGONAL_CORNERS`)
+   draw a 45-degree cut when they smooth into a corner, leaving any
+   button/APC/air alarm/light on that face floating in space. Interior
+   partitions use `/nodiagonal` variants (or never-diagonal types like the
+   cult ship walls); plain diagonal-capable walls belong only on exterior
+   corners nothing mounts on. Themes repainting walls must preserve the
+   smoothing class 1:1. Pixel-offset mounts (`/obj/machinery/button`) are
+   invisible to the lint. Keep them on nodiagonal walls by construction.
+2. **No visible pipes under walls.** Only `/hidden` pipe variants may pass
+   under a closed turf. A visible pipe inside a wall renders as plumbing
+   punching through plating, and a 1-tile wall tab that exists only to bury
+   a pipe usually deserves to be deleted instead.
+3. **Dense storage goes side-by-side along a wall, never stacked N/S.** The
+   3/4 perspective draws the rear closet/crate half-hidden behind the front
+   one; a vertical pair reads as one confused pile. Loose item piles (ore
+   stacks etc.) directly above storage read the same way.
+4. **One cryopod per ship.** The hull's reserve pod is the spawn point; join
+   code only needs `spawn_points` to be non-empty. Modules ship zero pods.
+   A second pod is wasted floor.
+5. **Starting armor tops out at the security closet's vest + helmet.** No
+   `armory1/2/3` closets (riot kit, ablative, armory1 even carries the
+   traitor steal-objective ablative hoodie) on any starting module. Fleet
+   precedent: only the phalanx's FULL armory carries riot gear, and that
+   hull costs six deltas.
+6. **Keep documented keep-clear tiles clear.** Every slot header in the
+   ship's module definition file (e.g. `ships/delta.dm`) lists entry lanes,
+   vent/scrubber tiles and reserve-tile approaches. A rack on a lane tile
+   ships as a live obstruction (the Delta clinic did exactly this).
+
 ### 6. Update TOML Config
 
 In `voidcrew/modules/ship_upgrades/ship_upgrades.toml`, add the directory reference:
@@ -680,7 +715,7 @@ and writes PNGs + `manifest.json` to `voidcrew/modules/ship_upgrades/previews/`.
 
 Requires `dmm-tools.exe` (set `$DMM_TOOLS` or place at
 `~/code/tg-tools/bin/dmm-tools.exe`). If the manifest or a PNG is missing, the
-UI silently hides the preview — nothing breaks, players just don't see the map.
+UI silently hides the preview: nothing breaks, players just don't see the map.
 
 ---
 

@@ -83,7 +83,7 @@ const WelcomeTab = () => {
         end badly through no fault of your own.
       </NoticeBox>
       <Box mb={1}>
-        Report anything broken to <b>jackrip</b> on the Discord — what you were
+        Report anything broken to <b>jackrip</b> on the Discord, what you were
         doing and roughly when is usually enough to find it in the logs. The
         wiki covers ships, the overmap, missions and everything else Voidcrew
         adds, in far more detail than this window.

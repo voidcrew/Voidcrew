@@ -544,7 +544,7 @@
 /obj/effect/turf_decal/bot_red,
 /obj/structure/closet/crate/secure/weapon,
 /obj/item/gun/ballistic/automatic/wt550{
-	pin = /obj/item/firing_pin/explorer
+	pin = /obj/item/firing_pin
 	},
 /obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/iron/dark,
@@ -1057,11 +1057,11 @@
 	dir = 4
 	},
 /obj/structure/rack,
-/obj/item/firing_pin/explorer,
-/obj/item/firing_pin/explorer{
+/obj/item/firing_pin,
+/obj/item/firing_pin{
 	pixel_y = 4
 	},
-/obj/item/firing_pin/explorer{
+/obj/item/firing_pin{
 	pixel_y = -4
 	},
 /turf/open/floor/iron/dark,

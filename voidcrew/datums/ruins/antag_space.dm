@@ -2,7 +2,7 @@
  * # Vestige ruin templates
  *
  * Antag-themed patron ruins (voidcrew/modules/antag_ruins/). Never naturally
- * seeded — SSovermap surfaces them one at a time as the round ages
+ * seeded, SSovermap surfaces them one at a time as the round ages
  * (schedule_vestige_ruins in antag_ruin.dm).
  */
 

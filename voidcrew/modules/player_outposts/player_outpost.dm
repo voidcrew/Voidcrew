@@ -7,7 +7,7 @@
  * z-level (same substrate as empty-space docking, so construction is allowed),
  * and the shell is loaded next to two reserve docks.
  *
- * Once founded the outpost is permanent for the round — it never unloads and
+ * Once founded the outpost is permanent for the round, it never unloads and
  * never moves. Zone rules are locked in at founding: green-zone outposts are
  * protected from ship weapons, yellow/red outposts are raidable.
  *
@@ -26,7 +26,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	icon_state = "station"
 	sensor_detectable = TRUE
 	sensor_category = "Outposts"
-	preserve_level = TRUE // never unloads (documentation — /dynamic has no unload path anyway)
+	preserve_level = TRUE // never unloads (documentation, /dynamic has no unload path anyway)
 
 	/// Ckey of the current owner. Ownership survives death/respawn.
 	var/founder_ckey
@@ -76,7 +76,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	COOLDOWN_DECLARE(rename_cooldown)
 	COOLDOWN_DECLARE(advert_cooldown)
 
-/// Somebody's colony, as against a trader's market — both are "Outposts" on the readout.
+/// Somebody's colony, as against a trader's market. Both are "Outposts" on the readout.
 /obj/structure/overmap/dynamic/player_outpost/get_contact_variant()
 	return "colony"
 
@@ -124,9 +124,15 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/proc/remove_mapzone()
 	if(mapzone)
-		mapzone.clear_to_uninitialized_space()
-		mapzone.taken = FALSE
+		// Per-slot teardown - see /datum/map_zone/clear_to_uninitialized_space(). An
+		// outpost owns a whole-level slot today, so this is the last-tenant-out path and
+		// behaves exactly as it did before packing.
+		var/datum/map_zone/departing_zone = mapzone
+		var/datum/map_footprint/departing_footprint = footprint
+		departing_zone.clear_to_uninitialized_space(departing_footprint)
+		departing_zone.release_slot(departing_footprint)
 		mapzone = null
+		footprint = null
 
 /obj/structure/overmap/dynamic/player_outpost/examine(mob/user)
 	. = ..()
@@ -198,7 +204,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		else
 			formatted = span_boldnotice("[name]: [message]")
 	if(mapzone)
-		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs())
+		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs_in(footprint))
 			to_chat(occupant, formatted)
 			if(sound_file && occupant.client)
 				var/sound/S = sound(sound_file)
@@ -248,7 +254,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /**
  * The generator currently holding the shield: the first registered one that is
- * anchored and powered. Only this unit charges and absorbs — extra generators
+ * anchored and powered. Only this unit charges and absorbs, extra generators
  * are cold standbys that take over (empty) if it's destroyed or loses power,
  * so stacking generators never multiplies effective shield charge.
  */
@@ -318,19 +324,28 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		loading = FALSE
 		return FALSE
 
-	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE)
+	// MAP_TENANT_CLASS_OUTPOST, never FLAT: an outpost is a long-lived, preserve_level-shaped
+	// tenant that would pin a lattice slot for the whole round, so it gets its own class and
+	// never shares a level with the flat encounters that recycle every few minutes. The class
+	// deals one whole-level slot today, which is exactly the allocation outposts already had.
+	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE, tenant_class = MAP_TENANT_CLASS_OUTPOST, tenant_owner = src)
 	if(!length(dynamic_encounter_values))
 		loading = FALSE
 		return FALSE
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
+	footprint = LAZYACCESS(dynamic_encounter_values, 4)
 
 	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	// Anchored off the outpost's own footprint - the level rect only happens to agree
+	// while an outpost owns a whole level.
+	var/anchor_low_x = footprint ? footprint.low_x : zlevel.low_x
+	var/anchor_low_y = footprint ? footprint.low_y : zlevel.low_y
 	// Directly north of the docks (which sit at the bottom edge), aligned with the first dock
-	var/shell_min_y = zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
+	var/shell_min_y = anchor_low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
 	var/turf/bottom_left = locate(
-		zlevel.low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
+		anchor_low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
 		shell_min_y,
 		zlevel.z_value
 	)
@@ -354,11 +369,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 	// Buildable region: shell footprint inflated by the build margin, kept off
 	// the z-level border and off the dock rows at the bottom edge
+	var/anchor_high_x = footprint ? footprint.high_x : zlevel.high_x
+	var/anchor_high_y = footprint ? footprint.high_y : zlevel.high_y
 	build_bounds = list(
-		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, zlevel.low_x + 3),
+		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, anchor_low_x + 3),
 		max(bottom_left.y - PLAYER_OUTPOST_BUILD_MARGIN, shell_min_y - 2),
-		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_x - 3),
-		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_y - 3),
+		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_x - 3),
+		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_y - 3),
 	)
 
 	link_interior_machinery()
@@ -409,7 +426,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Adopts a turf into the outpost's area, giving it APC power coverage and
  * gravity. Called by the construction console when the drone builds outside
  * the current area, and by the periodic sweep for hand-built structures.
- * Only ever claims turfs from the encounter's default space area — docked
+ * Only ever claims turfs from the encounter's default space area, docked
  * shuttles, ruins and anything else keep their own areas.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/adopt_turf(turf/target)
@@ -422,7 +439,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /**
  * Safety-net sweep over the build region: anything constructed by hand (no
- * console involved) still joins the outpost area — otherwise those rooms would
+ * console involved) still joins the outpost area. Otherwise those rooms would
  * sit in the space area forever: unpowered, dark and weightless.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/adopt_built_turfs()
@@ -458,7 +475,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		for(var/obj/effect/landmark/player_outpost_arrival/mark in interior_turf)
 			arrival_turf = interior_turf
 			qdel(mark)
-		// block() iterates y-major then x — same order the hangar-side alcove
+		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator's ride maps alcove turf i to alcove turf i
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
 			lobby_alcove_turfs += interior_turf
@@ -474,7 +491,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 				construction_console = builder
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				// Shells ship with a hangar elevator pre-installed. Its backing
-				// wall is shell hull, so lobby_wall_turfs stays empty — relocating
+				// wall is shell hull, so lobby_wall_turfs stays empty, relocating
 				// the elevator later leaves that wall standing instead of
 				// reverting it to plating (which could breach the shell).
 				var/obj/machinery/outpost_elevator/panel = machine
@@ -518,7 +535,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * two-dock allocation. The level is always loaded (founding loads it).
  */
 /obj/structure/overmap/dynamic/player_outpost/get_dock_description()
-	// Access control still runs on the actual dock attempt — this only promises the
+	// Access control still runs on the actual dock attempt, this only promises the
 	// button will ask, not that the outpost will say yes.
 	return "[name] (hangar berth)"
 
@@ -576,6 +593,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 			adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
 			dock_to_use = berth.dock
 		else
+			// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put
+			// the free ones back before choosing one, or the last visitor's offset is carried into
+			// this placement and compounds on every arrival. Only the padded reserve docks need
+			// this; the hangar-elevator branch above hands out mapped per-ship berths instead.
+			reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
 			if(reserve_dock && !first_dock_taken && !reserve_dock.get_docked())
 				dock_to_use = reserve_dock
 				first_dock_taken = TRUE
@@ -658,7 +680,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /**
  * The owner walks away: ownership clears, docking opens up, adverts die.
  * The physical outpost persists (round-permanent by design). The previous
- * owner's ckey stays in the founder registry — no re-founding this round.
+ * owner's ckey stays in the founder registry, no re-founding this round.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user)
 	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")

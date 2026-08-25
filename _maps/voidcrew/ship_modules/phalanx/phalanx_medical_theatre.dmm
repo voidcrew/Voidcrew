@@ -3,16 +3,16 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "d" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 2
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "e" = (
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "f" = (
 /obj/structure/cable,
@@ -21,49 +21,43 @@
 /obj/structure/table/optable{
 	dir = 1
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "i" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/door/window/right/directional/east,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "j" = (
 /obj/structure/table/glass,
 /obj/item/storage/medkit/surgery,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "l" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/door/window/left/directional/west,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "n" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/iv_drip,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "q" = (
 /obj/modular_map_connector,
 /obj/machinery/computer/operating{
 	dir = 4
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "s" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/machinery/stasis{
 	dir = 8
-	},
-/turf/open/floor/iron/white/smooth_large,
-/area/template_noop)
-"t" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 2
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
@@ -73,20 +67,20 @@
 /obj/item/defibrillator/loaded{
 	pixel_y = 4
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 2
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "A" = (
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/computer/operating{
 	dir = 8
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "C" = (
 /obj/structure/cable,
@@ -101,7 +95,7 @@
 /obj/machinery/defibrillator_mount/loaded{
 	pixel_y = 28
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "G" = (
 /obj/machinery/light/directional/west,
@@ -111,9 +105,6 @@
 /obj/structure/sign/poster/official/help_others{
 	pixel_x = -32
 	},
-/turf/open/floor/iron/white/smooth_large,
-/area/template_noop)
-"I" = (
 /turf/open/floor/iron/white,
 /area/template_noop)
 "M" = (
@@ -121,12 +112,12 @@
 /obj/machinery/stasis{
 	dir = 4
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "O" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/machinery/suit_storage_unit/medical,
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "P" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -139,12 +130,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
-/turf/open/floor/iron/white/smooth_large,
-/area/template_noop)
-"R" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "U" = (
@@ -157,7 +142,7 @@
 /obj/item/clothing/mask/breath/muzzle{
 	pixel_y = -2
 	},
-/turf/open/floor/iron/white/smooth_large,
+/turf/open/floor/iron/white,
 /area/template_noop)
 "Y" = (
 /obj/structure/cable,
@@ -191,13 +176,13 @@ s
 "}
 (5,1,1) = {"
 C
-R
+c
 Y
 "}
 (6,1,1) = {"
 P
-I
-t
+c
+d
 "}
 (7,1,1) = {"
 n

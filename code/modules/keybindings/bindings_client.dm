@@ -4,28 +4,40 @@ GAME_VERB_HIDDEN_INSTANT(/client, keyDown, "keyDown", _key as text, mousepos_x a
 
 	client_keysend_amount += 1
 
-	var/cache = client_keysend_amount
+	// VOIDCREW EDIT START - lag-tolerant flood detection.
+	// The original was a one-second world.time window plus a single two-second "tripped"
+	// confirmation, and a server-side lag spike satisfies both on its own: world.time
+	// stretches while the server is behind, and the client's buffered input all flushes
+	// inside the confirmation window. Round 6 (2026-08-15) autokicked ckey viterfly twice
+	// in 40 seconds, at 87% and 105% tick usage - the server was the thing flooding.
+	// Three changes: the window is real time so it measures an actual per-second rate, a
+	// burst delivered while the server is over budget is not held against the client, and
+	// a kick now needs several over-threshold seconds inside a much longer window, with a
+	// warning first. Thresholds are invented, see code/__DEFINES/admin.dm.
+	var/keysend_realtime = REALTIMEOFDAY
 
-	if(keysend_tripped && next_keysend_trip_reset <= world.time)
-		keysend_tripped = FALSE
+	if(keysend_strikes && next_keysend_trip_reset <= keysend_realtime)
+		keysend_strikes = 0
 
-	if(next_keysend_reset <= world.time)
-		client_keysend_amount = 0
-		next_keysend_reset = world.time + (1 SECONDS)
+	if(next_keysend_reset <= keysend_realtime)
+		client_keysend_amount = 1 // this keypress opens the new window
+		next_keysend_reset = keysend_realtime + (1 SECONDS)
 
-	//The "tripped" system is to confirm that flooding is still happening after one spike
-	//not entirely sure how byond commands interact in relation to lag
-	//don't want to kick people if a lag spike results in a huge flood of commands being sent
-	if(cache >= MAX_KEYPRESS_AUTOKICK)
-		if(!keysend_tripped)
-			keysend_tripped = TRUE
-			next_keysend_trip_reset = world.time + (2 SECONDS)
-		else
+	if(client_keysend_amount >= MAX_KEYPRESS_AUTOKICK)
+		// Exactly one strike per window - otherwise a genuine flood would burn through
+		// every strike inside a single second and we would be back to kicking on one burst.
+		if(client_keysend_amount == MAX_KEYPRESS_AUTOKICK && TICK_USAGE < KEYPRESS_FLOOD_LAG_TICK_USAGE)
+			keysend_strikes += 1
+			next_keysend_trip_reset = keysend_realtime + KEYPRESS_FLOOD_STRIKE_MEMORY
+			if(keysend_strikes == KEYPRESS_FLOOD_STRIKES_TO_WARN)
+				to_chat(src, span_userdanger("You are sending keypresses much faster than a person can type. If this keeps up you will be disconnected automatically - check for a plugged-in game controller."))
+		if(keysend_strikes >= KEYPRESS_FLOOD_STRIKES_TO_KICK)
 			to_chat(src, span_userdanger("Flooding keysends! This could have been caused by lag, or due to a plugged-in game controller. You have been disconnected from the server automatically."))
-			log_admin("Client [ckey] was just autokicked for flooding keysends; likely abuse but potentially lagspike.")
-			message_admins("Client [ckey] was just autokicked for flooding keysends; likely abuse but potentially lagspike.")
+			log_admin("Client [ckey] was just autokicked for flooding keysends; [KEYPRESS_FLOOD_STRIKES_TO_KICK] over-threshold seconds within [KEYPRESS_FLOOD_STRIKE_MEMORY / 10] seconds, none of them during server lag.")
+			message_admins("Client [ckey] was just autokicked for flooding keysends; [KEYPRESS_FLOOD_STRIKES_TO_KICK] over-threshold seconds within [KEYPRESS_FLOOD_STRIKE_MEMORY / 10] seconds, none of them during server lag.")
 			qdel(src)
 			return
+	// VOIDCREW EDIT END
 
 	///Check if the key is short enough to even be a real key
 	if(LAZYLEN(_key) > MAX_KEYPRESS_COMMANDLENGTH)

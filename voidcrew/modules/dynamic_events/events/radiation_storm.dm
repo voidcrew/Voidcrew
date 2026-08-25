@@ -4,15 +4,15 @@
  * A ship has no maintenance shelter, so hull-edge compartments are exposed while
  * interior compartments provide protection from the passing radiation front.
  *
- * ADMIN-ONLY. Radiation storms are red-band planet weather now — see
+ * ADMIN-ONLY. Radiation storms are red-band planet weather now, see
  * /datum/weather/rad_storm/planetary in voidcrew/datums/weather.dm.
  *
  * The reason is the shelter rule above. It reads well and it is the best part of the
  * event, but on the hulls this actually targeted it frequently had no answer: a
  * small ship is mostly hull edge, so all_areas_exposed was the common case and the
  * fallback is a flat 65% chance per pulse with nowhere to stand. On a planet the same
- * idea has three real answers instead — go underground, return to the ship, or wear
- * rad-protective clothing — and it arrives on the planet's own weather schedule, so it
+ * idea has three real answers instead. Go underground, return to the ship, or wear
+ * rad-protective clothing, and it arrives on the planet's own weather schedule, so it
  * belongs to a place the crew chose to visit rather than following them around.
  */
 /datum/round_event_control/voidcrew/radiation_storm
@@ -59,7 +59,7 @@
 	if(!length(ship_areas))
 		return
 
-	// A compartment is exposed if any of its OPEN turfs borders space — solid hull
+	// A compartment is exposed if any of its OPEN turfs borders space, solid hull
 	// walls shield the room behind them, but windows/airlocks onto space do not.
 	for(var/area/ship_area as anything in ship_areas)
 		for(var/turf/ship_turf in ship_area)

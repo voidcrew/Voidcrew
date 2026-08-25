@@ -51,7 +51,7 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
  *
  * Only modular hulls are for sale: a hull the player can actually preview and
  * configure in the upgrade selector. Legacy fixed hulls stay registered for
- * roundstart/NPC/admin spawning, they're just not on the shelf — unless they're
+ * roundstart/NPC/admin spawning, they're just not on the shelf, unless they're
  * explicitly curated back in with force_purchasable.
  */
 /proc/is_player_purchasable_ship(datum/map_template/shuttle/voidcrew/template)
@@ -316,7 +316,7 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		if(total_parts == 0)
 			primary_class = "free"
 
-		// Display string only — a ship faction system doesn't exist, so every card reads
+		// Display string only: a ship faction system doesn't exist, so every card reads
 		// Neutral. (The mob-faction FACTION_NEUTRAL define is lowercase "neutral" and
 		// would mismatch the capitalized entries in data["factions"].)
 		var/faction = "Neutral"
@@ -393,7 +393,7 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 
 // The catalog is a read-only browser: purchasing and previews live in the shipyard
 // (ShipUpgradeSelector), and ShipCatalog.tsx sends no act() calls, so there is no
-// ui_act override — filtering and search happen client-side if they happen at all.
+// ui_act override, filtering and search happen client-side if they happen at all.
 
 /**
  * Generate a description for a ship based on its properties.

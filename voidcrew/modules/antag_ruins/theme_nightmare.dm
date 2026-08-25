@@ -1,15 +1,15 @@
 /**
- * # The Gloaming — nightmare vestige
+ * # The Gloaming: nightmare vestige
  *
  * A freighter that went dark mid-burn, in every sense. The map itself is the
  * hazard: bring a light, and know the patron wants it gone. Every trial is a
- * lesson in the dark — snuff the lights, teach the living to fear them, or
+ * lesson in the dark, snuff the lights, teach the living to fear them, or
  * simply sit in the black long enough that it starts sitting back. The boons
  * are the nightmare's own: the shadow it walks, the terror it projects, the
  * lights it puts out, and the wounds the dark closes when no one is looking.
  *
  * Two upgrade chains (the shadow-walk and the terror) plus two standalones
- * (the snuff and the dark-heal), all human-castable ports — the nightmare's
+ * (the snuff and the dark-heal), all human-castable ports, the nightmare's
  * body IS the antag, so nothing here needs a shadow species or a heart of
  * darkness to work.
  */
@@ -116,7 +116,7 @@
 /**
  * Eats every light attached to the target, permanently. Mirrors
  * /datum/element/light_eater's devour rules, but counts morsels for the
- * wielder's trial — the shared element signals on the element instance, which
+ * wielder's trial, the shared element signals on the element instance, which
  * is useless for per-item credit, hence the local copy.
  *
  * Returns the devour points scored (held lights are worth double).
@@ -231,7 +231,7 @@
 		return ITEM_INTERACT_BLOCKING
 	victim.apply_status_effect(/datum/status_effect/terrified)
 	playsound(victim, 'sound/effects/magic/blind.ogg', 30, TRUE)
-	trial.regard(victim) // may complete (and delete) the trial — nothing touches it after this
+	trial.regard(victim) // may complete (and delete) the trial, nothing touches it after this
 	return ITEM_INTERACT_SUCCESS
 
 // ===== TRIAL OF THE LONG NIGHT =====
@@ -373,7 +373,7 @@
 /**
  * Terrorize that spreads. The parent cast lays terror on the aimed target
  * (and keeps the must-be-in-the-dark targeting); this seeps the same dread
- * into every other human standing in darkness nearby — the caster excepted.
+ * into every other human standing in darkness nearby, the caster excepted.
  */
 /datum/action/cooldown/spell/pointed/terrorize/vestige_dread
 	name = "Creeping Dread"
@@ -396,13 +396,13 @@
 
 /datum/vestige_boon/spell/snuff
 	name = "Snuff"
-	desc = "Put out every working light around you at once. Not shorted, not overloaded — just out. They stay out until someone fits new tubes."
+	desc = "Put out every working light around you at once. Not shorted, not overloaded, just out. They stay out until someone fits new tubes."
 	grant_text = "The nearest light dims for a moment, as if it has just remembered it is mortal."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_snuff
 
 /**
  * The Stranger's signature: silently break every working light tube in a
- * radius. No shock, no fanfare — the light is simply gone, permanently, until
+ * radius. No shock, no fanfare. The light is simply gone, permanently, until
  * someone fits a fresh tube. Sets the darkness the other Gloaming boons feed on.
  */
 /datum/action/cooldown/spell/aoe/vestige_snuff

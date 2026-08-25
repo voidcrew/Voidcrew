@@ -10,10 +10,10 @@
  * offers hunts for planet types actually on the overmap this round (the
  * wanted_planet filter on the planet target), and the beast, its entourage,
  * its names and its trophy all come from a per-planet table. Elite tier is
- * the hard ceiling — never megafauna, never the /boss tier.
+ * the hard ceiling, never megafauna, never the /boss tier.
  *
  * Quest-atom chain: the lure kit until it's staked, the beast until it dies,
- * the trophy after that. Losing any of them voids the contract (FAIL policy —
+ * the trophy after that. Losing any of them voids the contract (FAIL policy,
  * with exactly one planet of each type per round, a filtered retarget has
  * nowhere to go, and set_lure's one kit can't re-arm a fresh site anyway).
  */
@@ -93,7 +93,7 @@
 
 	/// /datum/overmap/planet typepath this hunt is themed on
 	var/hunt_planet_type
-	/// The rolled hunt table row (points into the static table — never mutate)
+	/// The rolled hunt table row (points into the static table, never mutate)
 	var/list/hunt_row
 	/// The rolled contract-grudge line (stable across text rebuilds)
 	var/flavor_line
@@ -214,12 +214,12 @@
 	return data
 
 // =========================================================================
-// SET THE LURE — stake the dispensed kit on the hunt planet's surface
+// SET THE LURE, stake the dispensed kit on the hunt planet's surface
 // =========================================================================
 
 /**
  * A lure kit is dispensed at the servant's mission pad on accept (the
- * prospect-stake kit pattern) and tracked as the quest atom — burn the lure,
+ * prospect-stake kit pattern) and tracked as the quest atom, burn the lure,
  * void the hunt. Staking it in open ground on the target planet records the
  * stake position for the kill step and completes; the beast's spawn devours
  * the kit. Assumes the FAIL loss policy: the one kit can't re-arm after a
@@ -274,7 +274,7 @@
 	return "Stake the lure on the surface at ([target.target_x], [target.target_y])"
 
 // =========================================================================
-// THE KILL — the named beast answers the lure
+// THE KILL, the named beast answers the lure
 // =========================================================================
 
 /**
@@ -289,7 +289,7 @@
 	/// The trophy the beast drops ("tendril-crowned skull"), set by the mission
 	var/trophy_part = "trophy"
 	/// Trophy-grade specimen: raise maxHealth/health to this on spawn (0 = leave alone).
-	/// A plain var-level scale-up — no new buff system.
+	/// A plain var-level scale-up, no new buff system.
 	var/health_override = 0
 
 /datum/mission_objective/field/kill_named/big_game/reset()
@@ -348,7 +348,7 @@
 	return "Bring down [mission?.objective_name || "the beast"]"
 
 // =========================================================================
-// TROPHY TURN-IN — the bound carry-home step, hunt-flavored text
+// TROPHY TURN-IN, the bound carry-home step, hunt-flavored text
 // =========================================================================
 
 /datum/mission_objective/deliver/bound/trophy

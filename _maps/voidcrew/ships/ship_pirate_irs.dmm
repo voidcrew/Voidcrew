@@ -1076,7 +1076,7 @@
 "Ae" = (
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
+	dir = 2
 	},
 /obj/effect/turf_decal/bot/right,
 /turf/open/floor/mineral/plastitanium/pod/dark,

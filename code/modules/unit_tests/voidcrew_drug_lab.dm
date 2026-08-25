@@ -3,7 +3,7 @@
  *
  * The catalyst and crystallizer minigames are CLIENT-RUN: the TGUI window
  * plays the chart in real time and reports totals, and the server's only
- * defense is the pure validators in lab_session.dm — so those must reject
+ * defense is the pure validators in lab_session.dm, so those must reject
  * every implausible report shape. Locks down, against a fixed-seed recipe's
  * real charts:
  *

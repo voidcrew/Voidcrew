@@ -1,106 +1,60 @@
 /**
- * # Lich ritual roster conformance
+ * # Babel cure conformance
  *
- * The Verdigris' ritual clock (voidcrew/modules/lich/lich_site.dm) filters
- * SSevents.control down to /datum/round_event_control/voidcrew/lich, applies
- * the potency window inclusively, and fires one every LICH_RITUAL_INTERVAL as
- * potency ramps 0 -> LICH_MAX_POTENCY. Two properties of that roster are
- * argued for at length in lich_events.dm's header and enforced by nothing:
+ * The Verdigris used to port upstream's Tower of Babel as a galaxy-wide rite.
+ * The rite is gone (the lich is a status beacon and an opt-in raid now), but it
+ * exposed two real holes in upstream's cure path
+ * (code/modules/spells/spell_types/tower_of_babel.dm), both of which strand a
+ * player with a permanent language block that only an admin verb can lift.
+ * This pins the fixes for the wizard event and the admin verb, which still use
+ * that path:
  *
- * - **Every band on the ramp must have something in it.** A band with no
- *   eligible event fires nothing. There is no relaxed fallback pass, so a
- *   gap is a beat of silence that nobody sees.
- * - **The top band must keep more than one repeatable option, forever.** The
- *   clock plateaus at max potency and stays there for the rest of the round;
- *   one-shots are spent within minutes and then the lich stops applying
- *   pressure entirely.
- *
- * Also checked: the `wizardevent` flag, which is the only thing keeping these
- * out of the ambient SSdynamic_events roster. Drop it on one event and a lich
- * curse starts landing on crews in rounds with no lich in the galaxy.
+ * - **The cure sweep must walk GLOB.carbon_list, not GLOB.player_list.**
+ *   player_list only holds mobs with a client, and a dead player who ghosted
+ *   leaves their cursed body clientless, so they revive still babbling after
+ *   the controller is destroyed (the original shipped bug).
+ * - **cure_curse_of_babel() must cure a body with no mind.** The babel trait
+ *   lives on the mind but the permanent status effect lives on the body, and
+ *   /datum/mind/transfer_to() nulls the old body's mind pointer. A cure that
+ *   early-outs on !mind permanently strands any body whose mind left mid-curse
+ *   (respawn into a fresh hull, borging, a mind swap): whoever returns to that
+ *   body is babbling with no controller left alive to cure them.
  */
+/datum/unit_test/babel_cure
 
-/datum/unit_test/lich_ritual_roster_coverage
-
-/datum/unit_test/lich_ritual_roster_coverage/Run()
-	// 7 = LICH_MAX_POTENCY (voidcrew/_DEFINES/lich.dm). Unit-test files compile
-	// before voidcrew/_DEFINES, so the fork defines are not available here.
-	var/max_potency = 7
-
-	var/list/roster = list()
-	for(var/datum/round_event_control/voidcrew/lich/control_type as anything in subtypesof(/datum/round_event_control/voidcrew/lich))
-		var/event_type = initial(control_type.typepath)
-		if(!event_type)
-			continue // abstract base; SSevents drops controls with no typepath
-		if(!ispath(event_type, /datum/round_event/voidcrew/lich))
-			TEST_FAIL("[control_type] has typepath [event_type], which is not a /datum/round_event/voidcrew/lich subtype")
-			continue
-		if(!initial(control_type.wizardevent))
-			TEST_FAIL("[control_type] is not flagged wizardevent. That flag is the only thing keeping the ritual roster out of SSdynamic_events' ambient rolls — without it this curse lands on crews in rounds that have no lich.")
-		var/low = initial(control_type.min_wizard_trigger_potency)
-		var/high = initial(control_type.max_wizard_trigger_potency)
-		if(low > high)
-			TEST_FAIL("[control_type] has min_wizard_trigger_potency [low] above max [high], so matches_potency() is false at every potency and it can never fire")
-		if(high > max_potency)
-			TEST_FAIL("[control_type] tops out at potency [high], above the ramp's ceiling of [max_potency] — that slice of its band is unreachable")
-		roster += control_type
-	// A smoke check that the roster registered at all, not a content target. It sat at >= 10
-	// while the roster had exactly 10 concrete controls, which made every deliberate cut a
-	// test failure; the band-coverage and top-band checks below are what actually police the
-	// ramp. Raise this only if the floor is genuinely meaningful.
-	TEST_ASSERT(length(roster) >= 8, "only [length(roster)] lich ritual events registered — the roster is not being built")
-
-	for(var/potency in 1 to max_potency)
-		var/in_band = 0
-		var/repeatable_in_band = 0
-		for(var/datum/round_event_control/voidcrew/lich/control_type as anything in roster)
-			if(initial(control_type.min_wizard_trigger_potency) > potency)
-				continue
-			if(initial(control_type.max_wizard_trigger_potency) < potency)
-				continue
-			in_band++
-			if(initial(control_type.max_occurrences) > 1)
-				repeatable_in_band++
-		if(!in_band)
-			TEST_FAIL("no lich ritual event is eligible at potency [potency] — get_ritual_roster() comes back empty and that beat of the ramp fires nothing at all")
-		if(potency != max_potency)
-			continue
-		if(repeatable_in_band < 2)
-			TEST_FAIL("only [repeatable_in_band] repeatable event(s) sit at potency [max_potency]. The ritual clock plateaus there for the rest of the round, so the top band needs more than one answer that can fire again (see the cap policy in lich_events.dm — the fix is a new repeatable ship-scoped event or a band widened upward, never a raised cap on a one-shot).")
-
-/**
- * # Ilthuun's Babel is lifted by his death, and only his
- *
- * Tongues of the Dead is the one ritual that installs a permanent global
- * controller, so it is the one that can outlive the lich. on_lich_slain() calls
- * end_lich_babel() to undo it (rule 2, lich_events.dm: a rite that is over should
- * be over). Two ways that silently rots:
- *
- * - The cure stops emptying GLOB.tower_of_babel. Nothing throws — the galaxy just
- *   stays mute for the rest of the round and only an admin verb fixes it.
- * - The istype() narrows to the wrong type, or is dropped for a truthiness check.
- *   Then killing the lich also wipes an admin's own Tower of Babel out from under
- *   them, which nobody would connect to the lich dying.
- *
- * Both cases are checked against a datum in the global slot, never against a live
- * lair, so this test spawns nothing and needs no overmap.
- */
-/datum/unit_test/lich_babel_cure
-
-/datum/unit_test/lich_babel_cure/Run()
+/datum/unit_test/babel_cure/Run()
 	var/datum/tower_of_babel/preexisting = GLOB.tower_of_babel
 	GLOB.tower_of_babel = null
 
-	// His: the death path must clear it.
-	GLOB.tower_of_babel = new /datum/tower_of_babel/lich
-	end_lich_babel()
-	TEST_ASSERT(isnull(GLOB.tower_of_babel), "end_lich_babel() left GLOB.tower_of_babel populated — the curse survives the lich, and can_spawn_event() will keep refusing a future instance")
+	// A cursed body with no client: the state a dead-and-ghosted player's corpse
+	// is in when the controller is destroyed.
+	var/mob/living/carbon/human/consistent/clientless = allocate(/mob/living/carbon/human/consistent)
+	clientless.mind_initialize()
+	// A cursed body whose mind will leave mid-curse.
+	var/mob/living/carbon/human/consistent/mindless = allocate(/mob/living/carbon/human/consistent)
+	mindless.mind_initialize()
 
-	// Somebody else's: the death path must not touch it.
-	var/datum/tower_of_babel/admin_cast = new /datum/tower_of_babel
-	GLOB.tower_of_babel = admin_cast
-	end_lich_babel()
-	TEST_ASSERT_EQUAL(GLOB.tower_of_babel, admin_cast, "end_lich_babel() destroyed a non-lich Tower of Babel — the global slot is shared with upstream's wizard event and the admin verb, and killing the lich must not undo either")
+	GLOB.tower_of_babel = new /datum/tower_of_babel
+	curse_of_babel(clientless)
+	curse_of_babel(mindless)
+	TEST_ASSERT(clientless.has_status_effect(/datum/status_effect/tower_of_babel/magical), "curse_of_babel() did not land on the clientless test victim, so the cure half of this test cannot run")
+	TEST_ASSERT(mindless.has_status_effect(/datum/status_effect/tower_of_babel/magical), "curse_of_babel() did not land on the mind-null test victim, so the cure half of this test cannot run")
+
+	// What /datum/mind/transfer_to() does to the body left behind: the mind
+	// datum lives on (in the new body), the old body's pointer is nulled.
+	var/datum/mind/departed_mind = mindless.mind
+	mindless.mind = null
+
+	// Destroying the controller is the only cure path the game ever runs.
 	QDEL_NULL(GLOB.tower_of_babel)
+	TEST_ASSERT(!clientless.has_status_effect(/datum/status_effect/tower_of_babel/magical), "the cure sweep missed a clientless cursed body. It has to walk GLOB.carbon_list, not GLOB.player_list: a dead player who ghosted is not on player_list, and revives still babbling")
+	TEST_ASSERT(!mindless.has_status_effect(/datum/status_effect/tower_of_babel/magical), "cure_curse_of_babel() refused a cursed body with no mind. transfer_to() nulls the old body's mind pointer, so a respawned, borged or mind-swapped player's original body stays cursed forever with no controller left to cure it")
 
+	// A minded body that was never cursed by this source must pass through the
+	// cure untouched (the trait check is what protects it).
+	cure_curse_of_babel(clientless)
+	TEST_ASSERT(!clientless.has_status_effect(/datum/status_effect/tower_of_babel/magical), "a second cure call on an already-cured body did something. The trait early-out is broken")
+
+	// Restore the pointer so allocate()'s teardown sees an ordinary mob.
+	mindless.mind = departed_mind
 	GLOB.tower_of_babel = preexisting

@@ -54,6 +54,17 @@ interface SurveyData {
   stars: Star[];
 }
 
+interface SurveyTarget {
+  ref: string;
+  name: string;
+  status: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
+  atRange: number;
+  dist: number;
+  points: number;
+  cash: number;
+  mappable: number;
+}
+
 interface Data {
   bankedCash: number;
   bankedPoints: number;
@@ -62,7 +73,11 @@ interface Data {
   surveyData: SurveyData;
   mappingEnabled?: number;
   shipMoving: number;
+  surveyAtRange?: number;
+  rangeSurveyDistance?: number;
+  rangeSurveyPercent?: number;
   surveyStatus?: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
+  surveyTargets?: SurveyTarget[];
   surveyValue: { cash: number; points: number };
   surveyDataDisk: number;
   theme?: string;
@@ -377,62 +392,65 @@ const Surveying = (props, context) => {
     bankedCash,
     theme,
     bankedPoints,
-    mappingEnabled,
-    surveyValue,
-    surveyStatus,
     shipMoving,
+    surveyTargets = [],
+    rangeSurveyDistance = 3,
+    rangeSurveyPercent = 60,
   } = data;
 
   interface Option {
-    state: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
     content: string;
     action?: string;
     disabled?: boolean;
     tooltip?: string;
   }
 
-  const options: Option[] = [
-    {
-      content: 'Start survey',
-      state: 'unsurveyed',
-      action: 'survey',
-      tooltip:
-        surveyValue && surveyValue.points && surveyValue.cash
-          ? `Value: ${surveyValue.points} points | ${surveyValue.cash} credits`
-          : undefined,
-    },
-    {
-      content: 'In progress',
-      state: 'in-progress',
-      disabled: true,
-    },
-    {
-      content: 'Open map',
-      state: 'complete',
-      action: 'map',
-      disabled: mappingEnabled ? false : true,
-      tooltip: mappingEnabled ? undefined : 'Mapping is not yet unlocked',
-    },
-    {
-      content: 'Start survey',
-      state: 'no-orbit',
-      disabled: true,
-      tooltip: 'not orbiting any celestials',
-    },
-  ];
+  const [selectedRef, setSelectedRef] = useState<string | null>(null);
+  const selectedTarget =
+    surveyTargets.find((target) => target.ref === selectedRef) ??
+    surveyTargets[0];
 
-  let currentOption = options.find((opt) => opt.state === surveyStatus) as
-    | Option
-    | undefined;
-
-  if (currentOption === undefined) {
-    currentOption = options[3];
-  }
+  const currentOption: Option = !selectedTarget
+    ? {
+        content: 'Start survey',
+        disabled: true,
+        tooltip: 'no celestials in orbit or within scan range',
+      }
+    : selectedTarget.status === 'in-progress'
+      ? {
+          content: 'In progress',
+          disabled: true,
+        }
+      : selectedTarget.status === 'complete'
+        ? {
+            content: 'Open map',
+            action: 'map',
+            disabled: selectedTarget.mappable ? false : true,
+            tooltip: selectedTarget.mappable
+              ? undefined
+              : 'Mapping is not yet unlocked',
+          }
+        : {
+            content: 'Start survey',
+            action: 'survey',
+            tooltip:
+              selectedTarget.points && selectedTarget.cash
+                ? `Value: ${selectedTarget.points} points | ${selectedTarget.cash} credits`
+                : undefined,
+          };
 
   const notices: string[] = [];
 
   if (shipMoving === 0) {
     notices.push('Ship is currently moving, surveying disabled');
+  }
+
+  if (
+    selectedTarget &&
+    selectedTarget.atRange === 1 &&
+    selectedTarget.status === 'unsurveyed'
+  ) {
+    notices.push('Storm targeted at range: reduced survey yield');
   }
 
   if (bankedPoints && bankedPoints !== 0) {
@@ -444,10 +462,9 @@ const Surveying = (props, context) => {
   }
 
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
-  let selectedTheme;
   return (
     <Stack vertical fill textAlign="center">
-      <Stack.Item height="20%" pb={0} mb={0}>
+      <Stack.Item pb={0} mb={0}>
         <Stack>
           <Stack.Item grow>
             <Collapsible
@@ -475,7 +492,43 @@ const Surveying = (props, context) => {
           </Stack.Item>
         </Stack>
       </Stack.Item>
-      <Stack.Item height="60%" grow>
+      <Stack.Item grow>
+        <Section title="Targets" fill scrollable>
+          <Box color="label" mb={1}>
+            Surveying needs the ship stationary on the same overmap tile as the
+            target — no docking or landing required. Electric and EMP storms
+            can also be scanned from up to {rangeSurveyDistance} tiles away at{' '}
+            {rangeSurveyPercent}% yield.
+          </Box>
+          {surveyTargets.length > 0 ? (
+            <Tabs vertical>
+              {surveyTargets.map((target) => {
+                return (
+                  <Tabs.Tab
+                    key={target.ref}
+                    selected={
+                      selectedTarget ? target.ref === selectedTarget.ref : false
+                    }
+                    onClick={() => setSelectedRef(target.ref)}
+                  >
+                    {target.name}
+                    {target.atRange ? ` (${target.dist} tiles out)` : ''}
+                    {target.status === 'complete' ? ' — surveyed' : ''}
+                  </Tabs.Tab>
+                );
+              })}
+            </Tabs>
+          ) : (
+            <NoticeBox
+              backgroundColor={currentThemeColors?.notice}
+              textColor={currentThemeColors?.noticeText}
+            >
+              No celestials in orbit or within scan range
+            </NoticeBox>
+          )}
+        </Section>
+      </Stack.Item>
+      <Stack.Item>
         <Button
           lineHeight={3}
           backgroundColor={currentThemeColors?.button}
@@ -489,7 +542,14 @@ const Surveying = (props, context) => {
             shipMoving === 0 ? true : currentOption.disabled ? true : false
           }
           onClick={() => {
-            currentOption.action ? act(currentOption.action) : undefined;
+            if (!currentOption.action) {
+              return;
+            }
+            if (currentOption.action === 'survey') {
+              act('survey', { target_ref: selectedTarget?.ref });
+            } else {
+              act(currentOption.action);
+            }
           }}
         >
           {currentOption.content}

@@ -1,5 +1,5 @@
 /**
- * # WARDROBE uniques — couturier's trunk
+ * # WARDROBE uniques: couturier's trunk
  *
  * Five unique loot items for the wardrobe (`loot_uniques`) zone-loot
  * tables (voidcrew/modules/loot/themes/wardrobe.dm). Identity loot: nothing
@@ -14,7 +14,7 @@
  * - Winter's loafers and the heirloom coat got custom art: "winters_loafers"
  *   and "heirloom_coat" in uniques.dmi (obj) and uniques_worn.dmi (worn, 4
  *   dirs). Both worn states are drawn on the matching vanilla worn pixel
- *   masks — feet.dmi "laceups" and suits/armor.dmi "hostrench" — so the body
+ *   masks, feet.dmi "laceups" and suits/armor.dmi "hostrench", so the body
  *   zones line up exactly, recoloured (oxblood leather, charcoal-green wool
  *   with brass fittings). Neither donor is GAGS-drawn, so no greyscale vars
  *   are involved.
@@ -29,12 +29,12 @@
 // =========================================================================
 
 /**
- * Winter's loafers — negates worn-gear slowdown, silences footsteps.
+ * Winter's loafers: negates worn-gear slowdown, silences footsteps.
  *
  * Subtypes /obj/item/clothing/shoes/laceup (code/modules/clothing/shoes/laceup.dm)
  * for the shoe class behaviour (laces, fishing penalty, armor_type) but
  * carries its own art. In-hand sprites are left as the stock laceup ones,
- * i.e. none — laceups have no state in shoes_lefthand.dmi upstream either.
+ * i.e. none, laceups have no state in shoes_lefthand.dmi upstream either.
  *
  * Deviation: there's no per-item hook in this codebase that zeroes only
  * *equipment* slowdown while leaving terrain/status slowdown alone (see
@@ -42,11 +42,11 @@
  * code/modules/mob/living/carbon/human/human_movement.dm). The closest real
  * lever is TRAIT_IGNORESLOWDOWN, applied/removed via the existing
  * ignore_slowdown()/unignore_slowdown() pair
- * (code/modules/mob/living/status_procs.dm) — it strips *all* slowdown
+ * (code/modules/mob/living/status_procs.dm), it strips *all* slowdown
  * sources that lack the IGNORE_NOSLOW flag, not just clothing.
  *
  * Footstep silence is full TRAIT_SILENT_FOOTSTEPS while worn
- * (code/__DEFINES/footsteps.dm), not surface-restricted — there's no
+ * (code/__DEFINES/footsteps.dm), not surface-restricted, there's no
  * "silent on this footstep type only" trait to key off.
  */
 /obj/item/clothing/shoes/laceup/winters_loafers
@@ -90,7 +90,7 @@
 // =========================================================================
 
 /**
- * Stage presence — activation taunt: turns heads, pulls hostile aggro, amplifies voice.
+ * Stage presence: activation taunt: turns heads, pulls hostile aggro, amplifies voice.
  *
  * No cavalier/musketeer/plumed hat type exists anywhere in this codebase, so
  * this is a fresh root under /obj/item/clothing/head with custom art:
@@ -112,7 +112,7 @@
 	lefthand_file = 'icons/mob/inhands/clothing/hats_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing/hats_righthand.dmi'
 	custom_price = PAYCHECK_CREW * 6
-	// Worn-slot activation path — attack_self alone is unreachable while the
+	// Worn-slot activation path: attack_self alone is unreachable while the
 	// hat is on your head, so the action button (which routes back into
 	// attack_self via ui_action_click) is the reachable path
 	actions_types = list(/datum/action/item_action/toggle)
@@ -156,7 +156,7 @@
 /// The doff-and-taunt: heads turn, hostiles retarget, voice carries for a few seconds.
 /obj/item/clothing/head/stage_presence/proc/take_the_stage(mob/living/wearer)
 	wearer.visible_message(
-		span_bolddanger("[wearer] sweeps off [src] with a flourish — every eye in the room follows!"),
+		span_bolddanger("[wearer] sweeps off [src] with a flourish, every eye in the room follows!"),
 		span_boldnotice("You take the stage. Your voice carries for the next [DisplayTimeText(amplify_duration)]."),
 	)
 	for(var/mob/onlooker in view(taunt_range, wearer))
@@ -173,7 +173,7 @@
 	RegisterSignal(wearer, COMSIG_MOB_SAY, PROC_REF(amplify_speech), override = TRUE)
 	addtimer(CALLBACK(src, PROC_REF(end_amplify), wearer), amplify_duration)
 
-	// Doff, theatrically — the hat leaves the head into a free hand (or the floor).
+	// Doff, theatrically: the hat leaves the head into a free hand (or the floor).
 	wearer.temporarilyRemoveItemFromInventory(src)
 	if(!wearer.put_in_hands(src))
 		src.forceMove(get_turf(wearer))
@@ -190,7 +190,7 @@
 	to_chat(wearer, span_notice("Your voice settles back to normal."))
 
 /**
- * Third hand sewing kit — permanent appearance transplant between two garments.
+ * Third hand sewing kit: permanent appearance transplant between two garments.
  *
  * No sewing/tailoring item exists anywhere in this codebase. Built as a fresh
  * /obj/item root with the custom "third_hand_kit" state in uniques.dmi, and
@@ -200,7 +200,7 @@
  * Two-click interaction: first click on a donor garment loads it as the
  * pattern, second click on a different, slot-compatible garment copies the
  * donor's visual vars onto it (permanently) and consumes the donor. Stats,
- * armor and name are untouched — only the rendering vars move.
+ * armor and name are untouched, only the rendering vars move.
  *
  * BUG FIX (2026-07-28, "doesnt actually work"): both legs used to live in
  * afterattack(), which never runs when you click another *item*.
@@ -210,7 +210,7 @@
  * afterattack() for non-mob targets (code/_onclick/item_attack.dm). Clicking
  * a garment with the kit therefore did nothing at all, silently, in both
  * legs. Moved to interact_with_atom(), which base_item_interaction() calls on
- * every item-on-atom click before storage insertion or any combat handling —
+ * every item-on-atom click before storage insertion or any combat handling,
  * the same path the other uniques in this module use.
  */
 /obj/item/third_hand_kit
@@ -311,7 +311,7 @@
 	target.lefthand_file = donor.lefthand_file
 	target.righthand_file = donor.righthand_file
 	// GAGS-rendered donors (most basic clothing) draw from their greyscale
-	// config, not raw icon_state — without carrying these over, the copy
+	// config, not raw icon_state, without carrying these over, the copy
 	// renders with the target's old config or not at all. update_appearance()
 	// re-runs update_greyscale() for us.
 	target.greyscale_config = donor.greyscale_config
@@ -329,10 +329,10 @@
 // RED
 // =========================================================================
 
-/// Bare weave — the heirloom coat's day-one condition.
+/// Bare weave: the heirloom coat's day-one condition.
 /datum/armor/heirloom_bare
 
-/// Twenty minutes in — the weave starts setting.
+/// Twenty minutes in: the weave starts setting.
 /datum/armor/heirloom_light
 	melee = 15
 	bullet = 10
@@ -343,7 +343,7 @@
 	acid = 20
 	wound = 5
 
-/// Forty minutes — noticeably heavier, holding its shape.
+/// Forty minutes: noticeably heavier, holding its shape.
 /datum/armor/heirloom_vest
 	melee = 30
 	bullet = 25
@@ -354,7 +354,7 @@
 	acid = 40
 	wound = 10
 
-/// Sixty minutes — as close to plate as cloth gets.
+/// Sixty minutes, as close to plate as cloth gets.
 /datum/armor/heirloom_riot
 	melee = 50
 	bullet = 35
@@ -366,7 +366,7 @@
 	wound = 15
 
 /**
- * The heirloom coat — armor that grows with unbroken wear-time.
+ * The heirloom coat: armor that grows with unbroken wear-time.
  *
  * Subtypes /obj/item/clothing/suit/armor/hos/trenchcoat
  * (code/modules/clothing/suits/armor.dm) for its coverage and cold/heat
@@ -483,7 +483,7 @@
 		to_chat(wearer, span_notice("[src] [wear_stage_messages[wear_stage]]. Examine it to see the new numbers."))
 	schedule_next_stage()
 
-/// Full reset on unequip — the coat forgets the wearer completely.
+/// Full reset on unequip, the coat forgets the wearer completely.
 /obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat/proc/reset_fit()
 	deltimer(wear_timer_id)
 	wear_timer_id = null
@@ -491,7 +491,7 @@
 	set_armor(wear_stage_armors[1])
 	current_wearer = null
 
-/// Riot-grade while spotless — the doc's "clean" armor tier.
+/// Riot-grade while spotless: the doc's "clean" armor tier.
 /datum/armor/occasion_clean
 	melee = 50
 	bullet = 10
@@ -509,12 +509,12 @@
 	acid = 10
 
 /**
- * "The Occasion" — riot-rated formalwear that's only as good as its
+ * "The Occasion", riot-rated formalwear that's only as good as its
  * laundering.
  *
  * Suit-slot type reusing /obj/item/clothing/under/suit/tuxedo's icon vars
  * verbatim (code/modules/clothing/under/suits.dm). Copied across the slot
- * categories deliberately (tuxedo is an /under item, this is a /suit item) —
+ * categories deliberately (tuxedo is an /under item, this is a /suit item),
  * lefthand_file/righthand_file need no override since both
  * /obj/item/clothing/suit and /obj/item/clothing/under already point at the
  * same 'icons/mob/inhands/clothing/suits_lefthand/righthand.dmi' pair.
@@ -526,7 +526,7 @@
  * 1. The dirty check was `get_blood_dna_color()`
  *    (code/modules/forensics/forensics_helpers.dm). That proc memoises its
  *    answer in `atom.cached_blood_color`, and *nothing in the codebase ever
- *    invalidates that cache on cleaning* — wipe_blood_DNA() clears the DNA
+ *    invalidates that cache on cleaning*. Wipe_blood_DNA() clears the DNA
  *    list and leaves the cache alone. So once the suit had ever been bloody,
  *    the check returned a colour forever, the 10-second poll re-ruined the
  *    suit a few seconds after every wash, and no amount of laundering could
@@ -534,7 +534,7 @@
  *    GET_ATOM_BLOOD_DECAL_LENGTH(src), the visible-blood list, which
  *    wipe_blood_DNA() genuinely empties.
  *
- * 2. on_exposed() treated *any* TOUCH/VAPOR reagent exposure as soiling —
+ * 2. on_exposed() treated *any* TOUCH/VAPOR reagent exposure as soiling,
  *    including water from a shower and space cleaner from a cleaner grenade
  *    or foam. Cleaning the suit re-dirtied it in the same instant. Only the
  *    reagents in `dirtying_reagents` count now.
@@ -585,7 +585,7 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 	RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed))
 	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, PROC_REF(on_clean))
-	// The garment bag is a set — the matched top hat arrives with the suit
+	// The garment bag is a set, the matched top hat arrives with the suit
 	new /obj/item/clothing/head/hats/tophat/the_occasion(loc)
 
 /obj/item/clothing/suit/the_occasion/Destroy()
@@ -615,7 +615,7 @@
 	. = ..()
 	if(!(slot & ITEM_SLOT_OCLOTHING))
 		return
-	// Splashes land on the wearer, not the worn item — the same handoff the
+	// Splashes land on the wearer, not the worn item, the same handoff the
 	// vanilla clothing_dirt component does (code/datums/components/clothing_dirt.dm).
 	RegisterSignal(user, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed), override = TRUE)
 	sync_condition(announce = FALSE)
@@ -655,7 +655,7 @@
 /**
  * The one source of truth: is there anything on this suit right now?
  *
- * Visible blood decals only — GET_ATOM_BLOOD_DECAL_LENGTH reads the list that
+ * Visible blood decals only: GET_ATOM_BLOOD_DECAL_LENGTH reads the list that
  * wipe_blood_DNA() actually empties, unlike get_blood_dna_color(), whose
  * cache is never invalidated by cleaning.
  */
@@ -711,7 +711,7 @@
  * The re-read is deferred by one tick on purpose: the forensics datum's own
  * CLEAN_ACT handler (code/modules/forensics/_forensics.dm) is a separate
  * listener on this same signal, so blood may not be wiped yet when we run.
- * Returns NONE — claiming COMPONENT_CLEANED here would make
+ * Returns NONE, claiming COMPONENT_CLEANED here would make
  * /atom/proc/wash() return early and skip the rest of the wash.
  */
 /obj/item/clothing/suit/the_occasion/proc/on_clean(datum/source, clean_types)
@@ -732,7 +732,7 @@
  * The Occasion's matched top hat.
  *
  * Straight subtype of /obj/item/clothing/head/hats/tophat
- * (code/modules/clothing/head/tophat.dm) — full icon/worn_icon/inhand
+ * (code/modules/clothing/head/tophat.dm), full icon/worn_icon/inhand
  * inheritance, no icon vars invented. Purely a cosmetic matched piece; no
  * mechanic of its own.
  */

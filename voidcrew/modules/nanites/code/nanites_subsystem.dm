@@ -18,15 +18,23 @@ PROCESSING_SUBSYSTEM_DEF(nanites)
  * ##get_cloud_backup
  *
  * Goes through all nanite cloud backups and checks:
- * 1- It works properly (or is forced)
- * 2- It is the same ID as the one we are looking for.
+ * 1- It is the same ID as the one we are looking for.
+ * 2- (If a ship is given) it is stored on a cloud controller aboard that ship.
+ *    Nanite clouds are ship-local; the same ID number on another ship's controller
+ *    is a different, unrelated cloud.
+ * 3- It works properly (or is forced).
  * Args:
  * cloud_id - the cloud ID we are looking for
- * forced - Whether we should check for hardware or not.
+ * force - Whether we should skip the hardware check.
+ * ship - the ship whose cloud network we are searching. Null searches every ship
+ *        (used for admin/debug and conservative duplicate checks).
  */
-/datum/controller/subsystem/processing/nanites/proc/get_cloud_backup(cloud_id, force = FALSE)
+/datum/controller/subsystem/processing/nanites/proc/get_cloud_backup(cloud_id, force = FALSE, obj/structure/overmap/ship/ship)
 	for(var/datum/nanite_cloud_backup/backup as anything in cloud_backups)
+		if(backup.cloud_id != cloud_id)
+			continue
+		if(ship && get_ship_from_atom(backup.storage) != ship)
+			continue
 		if(!force && !check_hardware(backup))
-			return
-		if(backup.cloud_id == cloud_id)
-			return backup
+			continue //this cloud's hardware is down; another ship may still serve this ID
+		return backup

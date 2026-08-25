@@ -38,8 +38,8 @@
 	return ..()
 
 /obj/machinery/computer/security/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
-	// VOIDCREW EDIT ADDITION BEGIN - consoles aboard player ships (any subtype) watch their own ship's network only (voidcrew/edits/machinery/camera.dm)
-	if(istype(port, /obj/docking_port/mobile/voidcrew))
+	// VOIDCREW EDIT ADDITION BEGIN - consoles aboard player ships watch their own ship's network only, except screens that aren't camera consoles (voidcrew/edits/machinery/camera.dm)
+	if(ship_scoped_network && istype(port, /obj/docking_port/mobile/voidcrew))
 		network = list(voidcrew_ship_camera_net(port))
 		return
 	// VOIDCREW EDIT ADDITION END
@@ -94,6 +94,12 @@
 /obj/machinery/computer/security/ui_static_data()
 	var/list/data = list()
 	data["network"] = network
+	// VOIDCREW EDIT ADDITION START - human-readable network names for the UI (voidcrew/edits/machinery/camera.dm)
+	var/list/network_names = list()
+	for(var/net in network)
+		network_names += voidcrew_camera_net_display_name(net)
+	data["networkNames"] = network_names
+	// VOIDCREW EDIT ADDITION END
 	data["mapRef"] = cam_screen.assigned_map
 	data["cameras"] = SScameras.get_available_cameras_data(network)
 	return data

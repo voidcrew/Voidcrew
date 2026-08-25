@@ -32,12 +32,25 @@ SUBSYSTEM_DEF(lighting)
 
 /datum/controller/subsystem/lighting/proc/create_all_lighting_objects()
 	for(var/area/area as anything in GLOB.areas)
-		if(!area.static_lighting)
+		// VOIDCREW EDIT: ambient-lit ground (a planet surface, static_lighting FALSE) carries
+		// no lighting objects at all - that is where the memory saving comes from - EXCEPT
+		// turfs that light themselves, like the fallout zone's hazard green. Those need an
+		// object apiece or their own light has nothing to render on, and roundstart planets
+		// never pass through ChangeTurf (their terrain is laid down before SSlighting comes
+		// up), so this sweep is the only place they can get one.
+		// See /turf/proc/skips_lighting_object() in voidcrew/edits/lighting.dm.
+		var/ambient_lit_area = area.ambient_lighting
+		if(!area.static_lighting && !ambient_lit_area)
 			continue
+		// END VOIDCREW EDIT (was: if(!area.static_lighting) continue)
 		for (var/list/zlevel_turfs as anything in area.get_zlevel_turf_lists())
 			for(var/turf/area_turf as anything in zlevel_turfs)
 				if(area_turf.space_lit)
 					continue
+				// VOIDCREW EDIT: see above
+				if(ambient_lit_area && area_turf.skips_lighting_object())
+					continue
+				// END VOIDCREW EDIT
 				new /atom/movable/lighting_object(null, area_turf)
 			CHECK_TICK
 		CHECK_TICK
@@ -148,5 +161,12 @@ SUBSYSTEM_DEF(lighting)
 		if(unlit.space_lit)
 			continue
 		var/area/loc_area = unlit.loc
-		if(loc_area.static_lighting)
-			unlit.lighting_build_overlay()
+		if(!loc_area.static_lighting)
+			// VOIDCREW EDIT: ambient-lit ground (a planet surface) carries no lighting objects
+			// at all, with one exception - a turf that lights itself, e.g. a ruin dropping a
+			// /lit tile straight onto surface ground rather than into its own area. Its light
+			// needs somewhere to render. See /turf/proc/skips_lighting_object().
+			if(!loc_area.ambient_lighting || unlit.skips_lighting_object())
+				continue
+			// END VOIDCREW EDIT (was: continue)
+		unlit.lighting_build_overlay()

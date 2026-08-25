@@ -328,13 +328,22 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if (zlevel_to_clean <= length(turfs_by_zlevel) && zlevel_to_clean <= length(turfs_to_uncontain_by_zlevel))
 		var/list/contained_turfs = turfs_by_zlevel[zlevel_to_clean]
 		var/list/turfs_to_cut = turfs_to_uncontain_by_zlevel[zlevel_to_clean]
-		// list -= list rescans the contained list once per cut turf: O(contained * cut).
-		// A planet-scale area (~65k turfs) with a large cut (ship landing, ruin load)
-		// turns that into tens of millions of comparisons in one unyielding call, so
-		// past a small cut we rebuild in O(contained + cut) instead. Both lists can
-		// hold duplicates (a turf that left and re-entered the area is listed twice),
-		// so occurrences are counted and only that many copies dropped.
-		if (length(turfs_to_cut) > 64 && length(contained_turfs) > 1024)
+		var/cut_count = length(turfs_to_cut)
+		var/contained_count = length(contained_turfs)
+		// `list -= list` rescans the contained list once per cut turf: O(contained * cut).
+		// A planet-scale area (~65k turfs) with a large cut (ship landing, ruin load, a
+		// packed level's teardown) turns that into tens of millions of comparisons, so past
+		// a small cut we rebuild in O(contained + cut) instead. The rebuild pays assoc-list
+		// constants, so it is only taken once the product is clearly larger than the sum -
+		// a one-turf cut out of a 65k list is still cheaper as a single scan.
+		//
+		// Both lists can hold duplicates (a turf that left and re-entered the area is listed
+		// twice), so occurrences are counted and only that many copies dropped.
+		//
+		// SSarea_contents drains through here. Its old per-entry `-=` against /area/space's
+		// list was the O(N*M) that could never finish, which is what let that list - and the
+		// matching cut list - grow by a whole footprint every build/teardown cycle.
+		if (cut_count > 4 && cut_count * contained_count > 4 * (cut_count + contained_count))
 			var/list/cut_counts = list()
 			for (var/turf/gone as anything in turfs_to_cut)
 				cut_counts[gone] += 1
@@ -372,8 +381,66 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/proc/cannonize_contained_turfs()
 	for (var/area_zlevel in 1 to length(turfs_to_uncontain_by_zlevel))
 		cannonize_contained_turfs_by_zlevel(area_zlevel, _autoclean = FALSE)
+	// Every z is now an empty list, but the OUTER list still has its old length - and
+	// get_zlevel_turf_lists() tests exactly that length to decide whether it has to come
+	// back here at all. Without this, every later call re-walks every z of an area with
+	// nothing pending. See trim_trailing_empty_uncontain_lists().
+	trim_trailing_empty_uncontain_lists()
 
-	turfs_to_uncontain_by_zlevel = list()
+/**
+ * Drops the trailing all-empty z entries off turfs_to_uncontain_by_zlevel.
+ *
+ * `length(turfs_to_uncontain_by_zlevel)` is the cheap "is there anything pending" test that
+ * get_zlevel_turf_lists(), get_turfs_by_zlevel() and has_contained_turfs() all branch on, so
+ * an area whose cut lists have all been applied has to shrink back to zero or those hot
+ * readers keep paying to rediscover that there is nothing to do.
+ *
+ * Only trailing empties are dropped - a populated z anywhere in the list stops the walk - so
+ * this can never discard a pending cut. Callers that are mid-iteration over the list must
+ * call it AFTER the loop: it shortens the list, and DM snapshots a `1 to length()` bound.
+ */
+/area/proc/trim_trailing_empty_uncontain_lists()
+	var/current_length = length(turfs_to_uncontain_by_zlevel)
+	var/new_length = current_length
+	// Walk backwards thru the list
+	for (var/i in current_length to 0 step -1)
+		if (i && length(turfs_to_uncontain_by_zlevel[i]))
+			break // Stop the moment we find a useful list
+		new_length = i
+
+	if (new_length < current_length)
+		turfs_to_uncontain_by_zlevel.len = new_length
+
+/**
+ * VOIDCREW ADDITION: TRUE when a turf really does still stand in this area.
+ *
+ * has_contained_turfs() above answers from list LENGTHS - `turfs_by_zlevel` minus the
+ * pending `turfs_to_uncontain_by_zlevel` - and that arithmetic only balances if every entry
+ * added to one list eventually gets its counterpart applied against the other.
+ *
+ * It did not. SSarea_contents used to empty an area's whole cut list in a single assignment
+ * once its drain loop finished, and change_area() appends to that same list during every
+ * MC_TICK_CHECK yield the drain takes. Anything that landed mid-drain was discarded without
+ * ever being applied, leaving one PHANTOM entry in `turfs_by_zlevel` per lost cut - and
+ * nothing that could ever remove it. An area in that state answers "still occupied" forever
+ * even once every real turf has been handed back, which is exactly the state a torn-down
+ * site's area is in, and why reap_emptied_areas() could not collect them.
+ *
+ * That discard is fixed (area_contents.dm drains one z at a time and clears only what it
+ * just applied), so this should now find residue only from paths that hand-roll the
+ * bookkeeping. It stays as the load-bearing safety for reap_emptied_areas(): reparenting
+ * live ground out from under a co-tenant is unrecoverable, and a length comparison is not
+ * worth that risk.
+ *
+ * Cheap in the case it exists for: get_zlevel_turf_lists() cannonizes first, which drops
+ * every properly-returned turf, so what is walked here is just the residue.
+ */
+/area/proc/has_resident_turfs()
+	for (var/list/zlevel_turfs as anything in get_zlevel_turf_lists())
+		for (var/turf/resident as anything in zlevel_turfs)
+			if (resident?.loc == src)
+				return TRUE
+	return FALSE
 
 
 /// Returns TRUE if we have contained turfs, FALSE otherwise
@@ -413,6 +480,31 @@ GLOBAL_LIST_EMPTY(teleportlocs)
  * who am I to argue with old coders
  */
 /area/Destroy()
+	// VOIDCREW EDIT ADDITION START - never leave turfs standing in a destroyed area.
+	// A turf's loc is a hard reference, so an area deleted with turfs still inside it can
+	// never be garbage collected (minutes of REF SEARCH apiece in a test run), and every
+	// one of those turfs goes on pointing at a datum whose bookkeeping lists are nulled
+	// below. SSmapping's reservation queue reads exactly those lists and its fire() then
+	// runtimes on the same turf forever, so the whole reservation system stops draining
+	// for the rest of the round. Callers are meant to reparent an area's turfs before
+	// deleting it (see has_contained_turfs() at every qdel site); this is the net for the
+	// ones that don't. Runs first, while our own lists are still intact for change_area().
+	if(has_contained_turfs())
+		var/area/space_area = GLOB.areas_by_type[world.area]
+		if(space_area && space_area != src)
+			// Only turfs whose loc really is us. The rest are phantom entries the map
+			// loader left behind (see has_resident_turfs()) and are already living in
+			// somebody else's area - change_area()ing one of those would append it to the
+			// space area's lists a second time and log a bogus strand warning.
+			var/list/stranded = list()
+			for(var/turf/candidate as anything in get_turfs_from_all_zlevels())
+				if(candidate?.loc == src)
+					stranded += candidate
+			if(length(stranded))
+				log_mapping("[type] was destroyed while [length(stranded)] turf(s) were still inside it - handing them back to [space_area.type]. An area's turfs must be reparented before it is deleted.")
+				for(var/turf/stranded_turf as anything in stranded)
+					stranded_turf.change_area(src, space_area)
+	// VOIDCREW EDIT ADDITION END
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
 	//this is not initialized until get_sorted_areas() is called so we have to do a null check
@@ -423,6 +515,38 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		GLOB.areas -= src
 	if(!isnull(GLOB.custom_areas))
 		GLOB.custom_areas -= src
+	// VOIDCREW EDIT ADDITION START - drop out of SSmapping.areas_in_z.
+	// reg_in_areas_in_z() is a one-way registration: it appends `src` to a per-z list and
+	// upstream has no unregister anywhere. That is harmless when every area lives for the
+	// round, but map zones are recycled, so a packed level mints a fresh area instance per
+	// tenant per build. Without this, every one of those is pinned by the z list forever -
+	// it can never be collected, and carp_migration and friends keep picking areas whose
+	// turfs are long gone. Every z is swept rather than just `z`: our turfs have usually
+	// already been reparented by the time we get here, so the areasize/z lookup answers 0.
+	if(!isnull(SSmapping?.areas_in_z))
+		var/list/areas_in_z = SSmapping.areas_in_z
+		for(var/z_key in areas_in_z)
+			var/list/z_areas = areas_in_z[z_key]
+			if(!isnull(z_areas))
+				z_areas -= src
+	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT ADDITION START - tear down base lighting.
+	// /area/proc/add_base_lighting() does two things Destroy() has to undo. It builds
+	// lighting_effects (mutable appearances, which do GC with the area), and - when
+	// base_lighting_color is COLOR_STARLIGHT - it RegisterSignal()s
+	// COMSIG_STARLIGHT_COLOR_CHANGED on SSdcs. That registration is a hard reference held by
+	// a subsystem that lives for the round, so a starlit area deleted without unregistering
+	// is a permanent hard-delete blocker. Upstream never hits this because base-lit areas are
+	// roundstart singletons; under map packing an /area/overmap_encounter instance is minted
+	// and reaped once per planet per build cycle, so it would be a blocker per cycle.
+	// No planet surface area uses COLOR_STARLIGHT today (see the note on the surface areas in
+	// dynamic_object_defines.dm) - this is the net that makes that a style rule rather than a
+	// latent OOM. Runs AFTER the strand net above: change_area() -> transfer_area_lighting()
+	// needs our lighting_effects intact to cut the per-turf overlay off a departing turf, and
+	// BEFORE turfs_by_zlevel is nulled, which remove_base_lighting() walks.
+	if(area_has_base_lighting)
+		remove_base_lighting()
+	// VOIDCREW EDIT ADDITION END
 	//machinery cleanup
 	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(alarm_manager)

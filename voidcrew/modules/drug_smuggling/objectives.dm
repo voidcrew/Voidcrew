@@ -8,7 +8,7 @@
  */
 
 // =========================================================================
-// INGREDIENT SITE TARGET — a planet pin that reports to its harvest site
+// INGREDIENT SITE TARGET: a planet pin that reports to its harvest site
 // =========================================================================
 
 /**
@@ -46,7 +46,7 @@
 	owner?.on_site_moved()
 
 // =========================================================================
-// PRESPAWNED RUIN TARGET — aimed at a ruin the mission raised itself
+// PRESPAWNED RUIN TARGET: aimed at a ruin the mission raised itself
 // =========================================================================
 
 /**
@@ -68,7 +68,7 @@
 	return TRUE
 
 // =========================================================================
-// GATHER INGREDIENTS — fill the formula's shopping list
+// GATHER INGREDIENTS: fill the formula's shopping list
 // =========================================================================
 
 /**
@@ -102,14 +102,14 @@
 	return "Gather ingredients ([run.count_collected_sites()]/[length(run.sites)])"
 
 // =========================================================================
-// COOK THE BATCH — wire the lab machines to the mission's session
+// COOK THE BATCH: wire the lab machines to the mission's session
 // =========================================================================
 
 /**
  * The cook step: points every lab machine inside the hidden ruin at the
  * mission's /datum/drug_lab_session whenever the ruin's interior loads.
  *
- * The hook is PERSISTENT — the interior-loaded signal stays registered for
+ * The hook is PERSISTENT, the interior-loaded signal stays registered for
  * this objective's whole active life, so a lab that unloads and reloads gets
  * its freshly-spawned machines re-wired every time (batch state lives on the
  * session, which never unloads). Completion is single-path: the session
@@ -143,27 +143,25 @@
 	wire_lab()
 
 /// The ruin object itself died; the mission target's loss policy handles the
-/// fallout — we just stop holding a ref
+/// fallout, we just stop holding a ref
 /datum/mission_objective/drug_cook/proc/on_lab_deleted(datum/source)
 	SIGNAL_HANDLER
 	hooked_ruin = null
 
 /**
- * Sweeps the lab reservation's turf block for /obj/machinery/drug_lab and
- * points each at the mission's session. Safe to call repeatedly.
+ * Sweeps the lab site's own slot for /obj/machinery/drug_lab and points each at the
+ * mission's session. Safe to call repeatedly.
  */
 /datum/mission_objective/drug_cook/proc/wire_lab()
 	var/datum/mission/drug_run/run = mission
 	if(!istype(run) || !run.session)
 		return
-	var/datum/turf_reservation/reservation = run.lab_ruin?.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
+	// The site's rectangle, not its z-level: a packed level carries up to four sites and
+	// the wide sweep would adopt a neighbouring lab's machines into this session.
+	var/list/turf/lab_block = run.lab_ruin?.footprint?.get_block()
+	if(!length(lab_block))
 		return
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	var/turf/top_right = reservation.top_right_turfs[1]
-	if(!bottom_left || !top_right)
-		return
-	for(var/turf/tile as anything in block(bottom_left, top_right))
+	for(var/turf/tile as anything in lab_block)
 		for(var/obj/machinery/drug_lab/machine in tile)
 			machine.session_ref = WEAKREF(run.session)
 			run.session.register_machine(machine)
@@ -181,13 +179,13 @@
 	return "Cook the batch at the hidden lab (station [station]/3)"
 
 // =========================================================================
-// DELIVER THE PRODUCT — the carry-home leg
+// DELIVER THE PRODUCT: the carry-home leg
 // =========================================================================
 
 /**
  * The bound batch (printed beside the lab's crystallizer, or at the pad when
  * the lab isn't loaded) handed over the counter. The parent's binding
- * checks gate WHAT counts; the mission's can_turn_in_at() gates WHERE —
+ * checks gate WHAT counts; the mission's can_turn_in_at() gates WHERE,
  * outpost traders only.
  */
 /datum/mission_objective/deliver/bound/drug_product

@@ -1,0 +1,206 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/clothing/suit/hooded/cultrobes,
+/obj/item/clothing/head/hooded/cult_hoodie,
+/turf/open/floor/wood,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/template_noop)
+"f" = (
+/turf/closed/wall/mineral/cult/ship,
+/area/template_noop)
+"i" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"k" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/template_noop)
+"l" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/bed,
+/obj/item/bedsheet/cult,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -9;
+	pixel_y = 7
+	},
+/obj/item/paper{
+	name = "cabin rules";
+	default_raw_text = "Your cabin, your mess. Late watch takes the far bunk so nobody gets climbed over at change. Wash your own sheets.";
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"m" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"n" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"q" = (
+/obj/machinery/shower/directional/south,
+/obj/item/soap,
+/obj/structure/curtain,
+/obj/structure/toilet{
+	dir = 1
+	},
+/obj/structure/sink/directional/east,
+/obj/structure/mirror/broken/directional/west,
+/obj/machinery/light/small/built/directional/north,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"v" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/airlock{
+	name = "Restroom"
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"x" = (
+/obj/structure/sign/departments/restroom,
+/turf/closed/wall/mineral/cult/ship,
+/area/template_noop)
+"z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/clothing/suit/hooded/cultrobes,
+/obj/item/clothing/head/hooded/cult_hoodie,
+/turf/open/floor/wood,
+/area/template_noop)
+"F" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/template_noop)
+"I" = (
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"K" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"M" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"N" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/template_noop)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"Q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"Y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/drip,
+/obj/item/clothing/head/soft{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+
+(1,1,1) = {"
+q
+v
+K
+"}
+(2,1,1) = {"
+f
+x
+m
+"}
+(3,1,1) = {"
+l
+d
+Y
+"}
+(4,1,1) = {"
+k
+Z
+m
+"}
+(5,1,1) = {"
+z
+d
+P
+"}
+(6,1,1) = {"
+I
+i
+m
+"}

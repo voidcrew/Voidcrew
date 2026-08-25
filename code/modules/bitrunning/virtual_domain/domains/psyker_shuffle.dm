@@ -1,6 +1,6 @@
 /datum/lazy_template/virtual_domain/psyker_shuffle
 	name = "Crate Chaos"
-	cost = BITRUNNER_COST_MEDIUM // VOIDCREW EDIT: was LOW — a 1-cost/5-reward domain outclassed the whole roster; MEDIUM matches its difficulty
+	cost = BITRUNNER_COST_MEDIUM // VOIDCREW EDIT: was LOW, a 1-cost/5-reward domain outclassed the whole roster; MEDIUM matches its difficulty
 	desc = "Sneak into an abandoned corner of the virtual world, where they store all of the crates. \
 		Warning -- Virtual domain does not support visual display. This mission must be completed using echolocation."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM

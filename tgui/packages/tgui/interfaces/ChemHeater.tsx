@@ -311,7 +311,7 @@ export const ChemHeater = (props) => {
                       format={(value) => `${toFixed(value)} K`}
                     />
                   )) ||
-                    '—'}
+                    '-'}
                 </Box>
               </Table.Cell>
               <Table.Cell collapsing color="label">

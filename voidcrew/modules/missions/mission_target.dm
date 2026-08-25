@@ -109,15 +109,19 @@
 	target_y = object.y - OVERMAP_SOUTH_SIDE_COORD + 1
 
 // =========================================================================
-// SPACE RUIN — the classic recovery-family target
+// SPACE RUIN: the classic recovery-family target
 // =========================================================================
 
 /datum/mission_target/space_ruin
 	/// The ruin signal this mission targets
 	var/obj/structure/overmap/space_ruin/ruin
+	/// Whether WE are the ones holding the ruin's exclusive flag, so unhook only
+	/// clears a lock it actually set
+	var/holds_exclusive = FALSE
 
 /datum/mission_target/space_ruin/resolve()
 	var/obj/structure/overmap/space_ruin/previous = ruin
+	var/exclusive = mission?.exclusive_site
 	unhook()
 	// Three tiers, worst case last. The two preferences are NOT equally weighted,
 	// which an earlier version of this got wrong by folding them into one set:
@@ -136,6 +140,9 @@
 		// A mission owns this ruin's whole lifecycle (the drug run's hidden
 		// lab): never point another contract's objectives into it
 		if(candidate.mission_locked)
+			continue
+		// Somebody else's contract has already called this site theirs alone
+		if(candidate.mission_exclusive)
 			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
@@ -157,11 +164,24 @@
 		pool = cold_unclaimed
 	else if(length(cold))
 		pool = cold
+	// A contract that can't share takes the top tier or nothing. Double-booking is
+	// cosmetic for a salvage run and fatal for a rescue: the other contract spawns
+	// its named target and its paid entourage into the same wreck, and a survivor
+	// with 60 HP and no weapon standing near hired muscle is a survivor the crew
+	// arrives to find face-down. Failing generation here just means the board rolls
+	// a different offer.
+	if(exclusive)
+		if(!length(cold_unclaimed))
+			return FALSE
+		pool = cold_unclaimed
 	// Applied last, to the pool the occupancy tiers already settled on: a cold
 	// unclaimed ruin in the wrong band still beats a hot one in the right band.
 	pool = filter_by_preferred_zone(pool)
 	ruin = pick(pool)
 	ruin.mission_claims++
+	if(exclusive)
+		ruin.mission_exclusive = TRUE
+		holds_exclusive = TRUE
 	cache_coords_from(ruin)
 	RegisterSignal(ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
 	RegisterSignal(ruin, COMSIG_VOIDCREW_RUIN_UNLOADING, PROC_REF(on_ruin_unloading))
@@ -173,8 +193,11 @@
 /datum/mission_target/space_ruin/unhook()
 	if(ruin)
 		ruin.mission_claims = max(ruin.mission_claims - 1, 0)
+		if(holds_exclusive)
+			ruin.mission_exclusive = FALSE
 		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED, COMSIG_VOIDCREW_RUIN_UNLOADING))
 		ruin = null
+	holds_exclusive = FALSE
 
 /datum/mission_target/space_ruin/get_zone_type()
 	if(!ruin)
@@ -202,28 +225,21 @@
 /datum/mission_target/space_ruin/contains_turf(turf/T)
 	if(!ruin || !T)
 		return FALSE
-	var/datum/turf_reservation/reservation = ruin.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
+	var/datum/map_footprint/footprint = ruin.footprint
+	if(!footprint)
 		return FALSE
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(!bottom_left || bottom_left.z != T.z)
-		return FALSE
-	return T.x >= bottom_left.x && T.x < bottom_left.x + reservation.width \
-		&& T.y >= bottom_left.y && T.y < bottom_left.y + reservation.height
+	return footprint.contains_turf(T)
 
 /datum/mission_target/space_ruin/get_interior_bounds()
-	var/datum/turf_reservation/reservation = ruin?.reservation
-	if(!reservation || !length(reservation.bottom_left_turfs))
-		return null
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(!bottom_left)
+	var/datum/map_footprint/footprint = ruin?.footprint
+	if(!footprint || isnull(footprint.low_x) || !footprint.z_value)
 		return null
 	return list(
-		bottom_left.x,
-		bottom_left.y,
-		bottom_left.x + reservation.width - 1,
-		bottom_left.y + reservation.height - 1,
-		bottom_left.z,
+		footprint.low_x,
+		footprint.low_y,
+		footprint.high_x,
+		footprint.high_y,
+		footprint.z_value,
 	)
 
 /**
@@ -242,7 +258,7 @@
 	mission?.on_target_lost()
 
 // =========================================================================
-// PLANET — the same interface pointed at a planet surface
+// PLANET: the same interface pointed at a planet surface
 // =========================================================================
 
 /datum/mission_target/planet
@@ -315,16 +331,16 @@
  * The southern floor is the important one. Both reserve docks sit along the
  * bottom of the footprint, and a shuttle landing GIBS every living thing
  * standing on the turfs it lands on (/turf/proc/toShuttleMove) and deletes
- * anything anchored. Field objectives spawn BEFORE the crew touches down —
+ * anything anchored. Field objectives spawn BEFORE the crew touches down,
  * either at approach on an already-loaded planet, or from the interior-loaded
- * signal that load_level() fires before the dock move — so a specimen placed
+ * signal that load_level() fires before the dock move, so a specimen placed
  * in that strip is destroyed by the very ship that came to collect it. Ruins
  * are already kept out of it (reserve_dock_strip() -> NO_RUINS); objective
  * spawns need the same clearance.
  *
  * Shuttle areas are rejected for the mirror-image reason. A landed ship copies
  * its turfs over the surface, and those tiles are open, undense and perfectly
- * samplable — so with somebody else already parked on the planet the specimen
+ * samplable, so with somebody else already parked on the planet the specimen
  * can materialise inside their hull, and their takeoff carries it off the world
  * (/mob/onShuttleMove). Nothing dies and nothing fails: the beacon simply stops
  * being on the crew's z-level, and the surface has nothing on it. SSplanet_mobs
@@ -336,19 +352,37 @@
 	var/datum/space_level/level = planet.mapzone.z_levels[1]
 	if(!level)
 		return null
+	// Sample THIS site's rectangle, not the level's. A packed z-level's bounds span
+	// every co-tenant, so sampling the level would put roughly half of all field
+	// spawns on a neighbouring world, behind an indestructible cordon the crew has
+	// no way through - the objective would simply be unreachable. A site with no
+	// footprint falls back to the level rect, which for a sole tenant IS its rect.
+	var/datum/map_footprint/footprint = planet.footprint
+	var/has_footprint = footprint && !isnull(footprint.low_x) && footprint.z_value
+	var/site_low_x = has_footprint ? footprint.low_x : level.low_x
+	var/site_low_y = has_footprint ? footprint.low_y : level.low_y
+	var/site_high_x = has_footprint ? footprint.high_x : level.high_x
+	var/site_high_y = has_footprint ? footprint.high_y : level.high_y
+	var/site_z = has_footprint ? footprint.z_value : level.z_value
 	var/margin = 12
-	var/min_x = level.low_x + margin
-	var/max_x = level.high_x - margin
-	var/min_y = level.low_y + margin
-	var/max_y = level.high_y - margin
-	// Clear the berths, but never at the cost of leaving nothing to sample
-	var/above_docks = planet.get_dock_strip_top_y(level) + 1
+	var/min_x = site_low_x + margin
+	var/max_x = site_high_x - margin
+	var/min_y = site_low_y + margin
+	var/max_y = site_high_y - margin
+	// Clear the berths, but never at the cost of leaving nothing to sample.
+	// get_dock_strip_top_y() returns an ABSOLUTE y measured from the SITE's own low edge -
+	// the same corner create_docking_ports() anchors the berths on - so it is used directly.
+	// (It used to be measured from the level's low edge, and this call site re-based it by
+	// subtracting level.low_y; on a packed level that subtraction would have shifted the
+	// floor down by the site's offset and put field spawns back on the berths.)
+	var/dock_strip_top = planet.get_dock_strip_top_y(level)
+	var/above_docks = isnull(dock_strip_top) ? min_y : (dock_strip_top + 1)
 	if(above_docks < max_y)
 		min_y = max(min_y, above_docks)
 	if(min_x > max_x || min_y > max_y)
 		return null
 	for(var/_ in 1 to 40)
-		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), level.z_value)
+		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), site_z)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
 			continue
 		if(istype(get_area(candidate), /area/shuttle))
@@ -358,9 +392,22 @@
 		return candidate
 	return null
 
+/**
+ * "Is the player at the site" - the primitive the pylon scatter and the hunting
+ * lure both gate on.
+ *
+ * Rectangle containment, the same shape the space_ruin sibling above uses. A bare
+ * z match was correct only while a planet owned its whole level: once a level can
+ * hold co-tenants it accepts the neighbour's ground, and a lure staked on the
+ * wrong world - or pylons scattered across the gutter - reads as being on target.
+ * Falls back to the z match when the site has no footprint at all.
+ */
 /datum/mission_target/planet/contains_turf(turf/T)
 	if(!planet?.mapzone || !T)
 		return FALSE
+	var/datum/map_footprint/footprint = planet.footprint
+	if(footprint && !isnull(footprint.low_x) && footprint.z_value)
+		return footprint.contains_turf(T)
 	for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 		if(level.z_value == T.z)
 			return TRUE
@@ -369,6 +416,12 @@
 /datum/mission_target/planet/get_interior_bounds()
 	if(!planet?.mapzone || !length(planet.mapzone.z_levels))
 		return null
+	// The site's rect. Cached into the mission's quest_atom_bounds, which decides
+	// whether a quest atom left behind at a dying site gets destroyed - the level
+	// rect would condemn anything sitting on a co-tenant.
+	var/datum/map_footprint/footprint = planet.footprint
+	if(footprint && !isnull(footprint.low_x) && footprint.z_value)
+		return list(footprint.low_x, footprint.low_y, footprint.high_x, footprint.high_y, footprint.z_value)
 	var/datum/space_level/level = planet.mapzone.z_levels[1]
 	if(!level)
 		return null
@@ -392,7 +445,7 @@
 	mission?.on_target_moved()
 
 // =========================================================================
-// COORDINATES — bare overmap coordinates in a chosen zone band
+// COORDINATES: bare overmap coordinates in a chosen zone band
 // =========================================================================
 
 /**
@@ -445,7 +498,7 @@
 	return zone_type
 
 // =========================================================================
-// TRADER OUTPOST — courier destinations
+// TRADER OUTPOST: courier destinations
 // =========================================================================
 
 /datum/mission_target/outpost

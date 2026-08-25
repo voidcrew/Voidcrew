@@ -3,7 +3,7 @@
  * dust storm, the meteor waves and the stray meteor.
  *
  * Rocks are launched through voidcrew/modules/dynamic_events/ship_debris.dm, which
- * confines each one to a corridor around the target ship — see that file for why
+ * confines each one to a corridor around the target ship (see that file for why)
  * TG's "spawn at the map edge, aim at the station" model can't be used here.
  *
  * All of these require the ship to be flying. A landed ship shares its ground with
@@ -64,7 +64,7 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
  * Shared behaviour for the wave events: every tick divisible by `wave_interval`,
  * throw `rocks_per_wave` rocks from `meteor_table` at the target ship.
  *
- * Abstract — the control datum has no typepath, so SSevents drops it on init.
+ * Abstract: the control datum has no typepath, so SSevents drops it on init.
  */
 /datum/round_event_control/voidcrew/meteor_strike
 	category = EVENT_CATEGORY_SPACE
@@ -94,7 +94,7 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 		return
 	launch_wave()
 
-/// Throws one wave of rock. Safe to call with an empty corridor — launches just fizzle.
+/// Throws one wave of rock. Safe to call with an empty corridor, launches just fizzle.
 /datum/round_event/voidcrew/meteor_strike/proc/launch_wave()
 	if(!length(meteor_table))
 		return
@@ -201,7 +201,7 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 	name = "Meteor Storm"
 	typepath = /datum/round_event/voidcrew/meteor_strike/storm
 	// Admin-only. Twenty-four hull-opening rocks over three minutes, and its own
-	// announcement says we cannot clear the field — the crew is told, correctly, that
+	// announcement says we cannot clear the field. The crew is told, correctly, that
 	// there is nothing to do. Damage control after the fact is not counterplay. The
 	// lighter meteor events survive because their warnings name an action worth taking.
 	weight = 0
@@ -287,13 +287,13 @@ GLOBAL_LIST_INIT(voidcrew_meteors_stray, list(
 /**
  * === Dark Matt-eor (TG: code/modules/events/meteors/dark_matteor_event.dm) ===
  *
- * Admin-only, exactly as upstream (weight 0, max_occurrences 0 — it never enters the
+ * Admin-only, exactly as upstream (weight 0, max_occurrences 0, it never enters the
  * random roster and only ever fires from the Trigger Event panel). This is not caution
  * carried over out of habit: the rock's meteordrop is /obj/singularity/dark_matter. If it
  * runs out of hits over a ship, that crew's round is over and so is the reservation.
  *
  * It also raises the security level to red on spawn and drops it back if it misses, both
- * of which are sector-wide side effects from a single ship's event. Left in — an admin
+ * of which are sector-wide side effects from a single ship's event. Left in, an admin
  * firing this one is not looking for subtlety.
  */
 /datum/round_event_control/voidcrew/stray_meteor/dark_matteor

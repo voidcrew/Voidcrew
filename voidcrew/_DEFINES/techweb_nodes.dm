@@ -12,6 +12,8 @@
 #define TECHWEB_NODE_RADAR_ARRAY "radar_array"
 #define TECHWEB_NODE_RADAR_ARRAY_ADV "radar_array_advanced"
 #define TECHWEB_NODE_RADAR_ARRAY_ELITE "radar_array_elite"
+#define TECHWEB_NODE_RTG "rtg_generation"
+#define TECHWEB_NODE_TEG "teg_generation"
 #define TECHWEB_NODE_NANITE_BASIC "nanite_base"
 #define TECHWEB_NODE_NANITE_SMART "nanite_smart"
 #define TECHWEB_NODE_NANITE_MESH "nanite_mesh"
@@ -39,6 +41,7 @@
 #define TECHWEB_NODE_SHIP_COMBAT_LASERS "ship_combat_lasers"
 #define TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR "ship_combat_interdictor"
 #define TECHWEB_NODE_SHIP_COMBAT_SIPHON "ship_combat_siphon"
+#define TECHWEB_NODE_SHIP_COMBAT_ASSAULT_PODS "ship_combat_assault_pods"
 #define TECHWEB_NODE_SHIP_COMBAT_EW "ship_combat_ew"
 
 // Missions

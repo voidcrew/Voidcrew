@@ -9,7 +9,7 @@
  */
 import type { BooleanLike } from 'tgui-core/react';
 
-/** DRUG_LAB_STAGE_* — batch progression */
+/** DRUG_LAB_STAGE_*: batch progression */
 export enum DrugLabStage {
   Loading = 1,
   Mixer = 2,
@@ -18,7 +18,7 @@ export enum DrugLabStage {
   Done = 5,
 }
 
-/** DRUG_STATION_* — per-station score/attempt indices */
+/** DRUG_STATION_*: per-station score/attempt indices */
 export enum DrugStation {
   Mixer = 1,
   Catalyst = 2,
@@ -35,7 +35,7 @@ export const STAGE_LABELS: Record<number, string> = {
 
 /** Fields every drug lab machine payload carries once a session is wired. */
 export type DrugLabCommonData = {
-  /** True while no cook session is wired to this machine — all other fields absent. */
+  /** True while no cook session is wired to this machine, all other fields absent. */
   dormant: BooleanLike;
   /** DrugStation index of this machine. */
   station: number;
@@ -72,7 +72,7 @@ export type DrugLabMixerData = DrugLabCommonData & {
   rounds_completed: number;
   /** The current round's hopper order; null while no attempt is live. */
   sequence: number[] | null;
-  /** Bumps whenever a fresh sequence is issued — replay the flash phase. */
+  /** Bumps whenever a fresh sequence is issued, replay the flash phase. */
   sequence_id: number;
   /** Presses of the current sequence matched so far (server-side cursor). */
   cursor: number;

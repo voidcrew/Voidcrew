@@ -24,6 +24,12 @@
 	/// Default missile type for this NPC (light, standard, heavy)
 	var/default_missile_type = "standard"
 
+	/// TRUE once this ship has ever scanned in an intact weapon. Disarmament checks
+	/// (pool reconcile) key on this so a hypothetical template mapped with no weapons
+	/// at all reads as "never armed", not "disarmed" - otherwise it would resolve its
+	/// pool slot at birth and churn the spawner in a loop.
+	var/ever_had_weapons = FALSE
+
 /datum/npc_combat_interface/Destroy()
 	owner_ship = null
 	linked_laser_turrets.Cut()
@@ -47,8 +53,10 @@
 	// Search all ship areas for combat equipment
 	for(var/area/ship_area as anything in ship.shuttle.shuttle_areas)
 		for(var/obj/machinery/ship_combat/equipment in ship_area)
+			track_weapon(equipment)
 			if(istype(equipment, /obj/machinery/ship_combat/laser_turret))
 				linked_laser_turrets += equipment
+				max_out_turret(equipment)
 			else if(istype(equipment, /obj/machinery/ship_combat/missile_launcher))
 				linked_missile_launchers += equipment
 			else if(istype(equipment, /obj/machinery/ship_combat/interdictor))
@@ -59,7 +67,27 @@
 	// Pre-load all missile launchers with virtual missiles
 	load_all_launchers()
 
+	if(length(linked_laser_turrets) || length(linked_missile_launchers))
+		ever_had_weapons = TRUE
+
 	return TRUE
+
+/**
+ * Tracks a scanned weapon so the hard ref drops the moment it deletes. The hull's
+ * machines are torn down one by one (intoTheSunset, clear_reservation) while this
+ * datum survives on the overmap token - an unpruned entry hard-deletes the weapon.
+ */
+/datum/npc_combat_interface/proc/track_weapon(obj/machinery/ship_combat/equipment)
+	RegisterSignal(equipment, COMSIG_QDELETING, PROC_REF(on_weapon_deleted), override = TRUE)
+
+/datum/npc_combat_interface/proc/on_weapon_deleted(datum/source)
+	SIGNAL_HANDLER
+	linked_laser_turrets -= source
+	linked_missile_launchers -= source
+	if(linked_interdictor == source)
+		linked_interdictor = null
+	if(linked_cloak_device == source)
+		linked_cloak_device = null
 
 /**
  * Rescans the ship for weapons. Use this after adding equipment post-spawn.
@@ -77,8 +105,10 @@
 	// Re-scan all ship areas
 	for(var/area/ship_area as anything in owner_ship.shuttle.shuttle_areas)
 		for(var/obj/machinery/ship_combat/equipment in ship_area)
+			track_weapon(equipment)
 			if(istype(equipment, /obj/machinery/ship_combat/laser_turret))
 				linked_laser_turrets += equipment
+				max_out_turret(equipment)
 			else if(istype(equipment, /obj/machinery/ship_combat/missile_launcher))
 				linked_missile_launchers += equipment
 			else if(istype(equipment, /obj/machinery/ship_combat/interdictor))
@@ -89,7 +119,47 @@
 	// Re-load all missile launchers
 	load_all_launchers()
 
+	if(length(linked_laser_turrets) || length(linked_missile_launchers))
+		ever_had_weapons = TRUE
+
 	return TRUE
+
+/**
+ * Brings an NPC turret up to maximum specification: tier 4 stock parts and full power
+ * level. Pirate hulls map bare turrets, so every NPC in the galaxy otherwise fires the
+ * same tier-1 50-damage shot regardless of how dangerous its class is meant to be.
+ *
+ * Tier 4 micro-lasers take the turret to 125 damage (the board wants two of them), and
+ * LASER_POWER_MAX doubles that again. Servos only shorten the turret's own cooldown,
+ * which sits well under the AI's laser_cooldown_time gate, so cadence is unchanged.
+ */
+/datum/npc_combat_interface/proc/max_out_turret(obj/machinery/ship_combat/laser_turret/turret)
+	if(QDELETED(turret))
+		return
+
+	// Rebuilt rather than edited in place: the board asks for two micro-lasers and both
+	// entries are the same singleton datum, so removing "the" old part is ambiguous.
+	var/list/upgraded_parts = list()
+	for(var/part in turret.component_parts)
+		if(istype(part, /datum/stock_part/micro_laser))
+			upgraded_parts += GLOB.stock_part_datums[/datum/stock_part/micro_laser/tier4]
+		else if(istype(part, /datum/stock_part/capacitor))
+			upgraded_parts += GLOB.stock_part_datums[/datum/stock_part/capacitor/tier4]
+		else if(istype(part, /datum/stock_part/servo))
+			upgraded_parts += GLOB.stock_part_datums[/datum/stock_part/servo/tier4]
+		else
+			upgraded_parts += part  // the power cell is a physical obj - keep it
+	turret.component_parts = upgraded_parts
+
+	turret.RefreshParts()
+	turret.set_power_level(LASER_POWER_MAX)
+
+	// The cell, not the APC, is what actually paces an NPC: it trickles back at
+	// charge_rate while a maxed shot costs thousands, so a pirate would fire an opening
+	// burst and then go quiet for as long as the refill takes. Same infinite-ammo
+	// treatment the missile launchers already get.
+	turret.infinite_power = TRUE
+	turret.update_appearance()
 
 // ========== VIRTUAL MISSILE SYSTEM ==========
 
@@ -211,6 +281,30 @@
  */
 /datum/npc_combat_interface/proc/has_any_weapons()
 	return get_working_laser_count() > 0 || get_working_launcher_count() > 0
+
+/**
+ * Returns whether the ship still physically HAS weapons - an intact turret or launcher
+ * aboard, regardless of whether it could fire this instant. Deliberately cheaper and
+ * dumber than has_any_weapons(): can_fire() folds in fire cooldowns, power and the
+ * zone's weapons_allowed check, so a fully-armed ship reads as weaponless while its
+ * turrets cycle or whenever it sits in a band that forbids firing. A ship that fled
+ * on destroyed guns must never read as re-armed, and an armed ship idling in a yellow
+ * band must never read as disarmed - both of those bugs loop the AI.
+ */
+/datum/npc_combat_interface/proc/has_intact_weapons()
+	for(var/obj/machinery/ship_combat/laser_turret/turret as anything in linked_laser_turrets)
+		if(QDELETED(turret))
+			continue
+		if(turret.machine_stat & BROKEN)
+			continue
+		return TRUE
+	for(var/obj/machinery/ship_combat/missile_launcher/launcher as anything in linked_missile_launchers)
+		if(QDELETED(launcher))
+			continue
+		if(launcher.machine_stat & BROKEN)
+			continue
+		return TRUE
+	return FALSE
 
 /**
  * Returns whether we have a working cloak device that can activate.

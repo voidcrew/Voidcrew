@@ -6,41 +6,9 @@
 	},
 /turf/open/floor/grass,
 /area/template_noop)
-"b" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 2
-	},
-/obj/structure/sink/directional/east,
-/obj/item/reagent_containers/cup/bucket{
-	pixel_x = 9;
-	pixel_y = -9
-	},
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 1
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"c" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 2
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"d" = (
-/obj/modular_map_connector,
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/west,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "e" = (
 /obj/machinery/hydroponics/constructable,
-/obj/machinery/light{
+/obj/machinery/light/cold{
 	dir = 1
 	},
 /obj/structure/sign/poster/official/cleanliness{
@@ -48,25 +16,21 @@
 	},
 /turf/open/floor/grass,
 /area/template_noop)
-"f" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 2
-	},
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 1
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"g" = (
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 2
-	},
+"i" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
+/turf/open/floor/grass,
 /area/template_noop)
-"h" = (
+"l" = (
+/obj/machinery/hydroponics/constructable,
+/obj/machinery/firealarm/directional/east,
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_y = 32
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"v" = (
 /obj/structure/table/reinforced,
 /obj/item/plant_analyzer{
 	pixel_x = -7;
@@ -85,57 +49,35 @@
 	pixel_y = -3
 	},
 /obj/machinery/airalarm/directional/south,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"i" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/grass,
 /area/template_noop)
-"j" = (
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 1
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"k" = (
+"w" = (
 /obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"l" = (
-/obj/machinery/hydroponics/constructable,
-/obj/machinery/firealarm/directional/east,
-/obj/structure/sign/poster/official/safety_eye_protection{
-	pixel_y = 32
-	},
 /turf/open/floor/grass,
 /area/template_noop)
-"n" = (
-/obj/machinery/vending/hydroseeds,
-/obj/effect/turf_decal/trimline/green/filled/line{
+"y" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 2
 	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"o" = (
-/obj/machinery/biogenerator,
-/obj/machinery/light/small{
-	dir = 4
+/obj/structure/sink/directional/east,
+/obj/item/reagent_containers/cup/bucket{
+	pixel_x = 9;
+	pixel_y = -9
 	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"t" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/stripes{
-	dir = 4
+/turf/open/floor/grass,
+/area/template_noop)
+"G" = (
+/obj/modular_map_connector,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/grass,
+/area/template_noop)
+"I" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 2
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -152,30 +94,98 @@
 /obj/item/food/canned/beans,
 /obj/item/food/energybar,
 /obj/item/reagent_containers/cup/watering_can,
-/turf/open/floor/iron/white,
+/turf/open/floor/grass,
+/area/template_noop)
+"M" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/template_noop)
+"O" = (
+/obj/machinery/vending/hydroseeds,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/grass,
+/area/template_noop)
+"P" = (
+/obj/machinery/biogenerator,
+/obj/machinery/light/small{
+	bulb_colour = "#deefff";
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/grass,
+/area/template_noop)
+"R" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 2
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/template_noop)
+"U" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 2
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
 /area/template_noop)
 
 (1,1,1) = {"
 a
-b
-c
-d
+y
+Z
+G
 "}
 (2,1,1) = {"
 e
-f
-g
-h
+U
+I
+v
 "}
 (3,1,1) = {"
 i
-j
-g
-k
+R
+S
+w
 "}
 (4,1,1) = {"
 l
-t
-n
-o
+M
+O
+P
 "}

@@ -1,5 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/light/directional/north,
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/paper{
+	name = "watch roster";
+	default_raw_text = "Two on watch, two asleep, and whoever is cooking. Wake your relief before you turn in, and put your kit back in the locker you took it from."
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"f" = (
+/obj/structure/noticeboard/directional/west,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "j" = (
 /turf/open/floor/iron/white,
 /area/template_noop)
@@ -10,6 +22,13 @@
 	name = "watch roster";
 	default_raw_text = "Two on watch, two asleep, and whoever is cooking. Wake your relief before you turn in, and put your kit back in the locker you took it from."
 	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"l" = (
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/obj/structure/noticeboard/directional/north,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "p" = (
@@ -34,6 +53,9 @@
 	name = "Restroom"
 	},
 /turf/open/floor/iron/freezer,
+/area/template_noop)
+"x" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
 /area/template_noop)
 "z" = (
 /obj/machinery/cryopod{
@@ -90,11 +112,24 @@
 /obj/structure/mirror/directional/west,
 /turf/open/floor/iron/freezer,
 /area/template_noop)
+"O" = (
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "P" = (
 /obj/effect/turf_decal/tile/dark_blue,
 /obj/effect/turf_decal/siding/red{
 	dir = 2
 	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"R" = (
+/obj/item/flashlight,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "S" = (
@@ -107,12 +142,43 @@
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"U" = (
+/obj/structure/closet/wardrobe/mixed,
+/obj/item/paper{
+	name = "watch roster";
+	default_raw_text = "Two on watch, two asleep, and whoever is cooking. Wake your relief before you turn in, and put your kit back in the locker you took it from."
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"V" = (
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/obj/structure/noticeboard/directional/north,
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/mask/breath,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"X" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/obj/structure/noticeboard/directional/north,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "Y" = (
 /obj/machinery/light/directional/south,
 /obj/effect/turf_decal/tile/dark_blue,
 /obj/effect/turf_decal/siding/red{
 	dir = 2
 	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Z" = (
+/obj/machinery/light/directional/north,
 /turf/open/floor/iron/white,
 /area/template_noop)
 
@@ -122,23 +188,23 @@ w
 S
 "}
 (2,1,1) = {"
-k
+x
 r
 B
 "}
 (3,1,1) = {"
 C
-z
+f
 Y
 "}
 (4,1,1) = {"
-E
+O
 j
 P
 "}
 (5,1,1) = {"
-p
-G
+a
+R
 P
 "}
 (6,1,1) = {"

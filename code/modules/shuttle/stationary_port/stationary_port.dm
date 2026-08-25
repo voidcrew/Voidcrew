@@ -39,7 +39,14 @@
 		return INITIALIZE_HINT_LATELOAD
 
 /obj/docking_port/stationary/LateInitialize()
-	INVOKE_ASYNC(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, setup_shuttles), list(src))
+	// VOIDCREW EDIT: setup_shuttles() -> load_roundstart() -> action_load(), which sleeps
+	// while writing to SSshuttle's preview_shuttle/preview_template/preview_reservation
+	// singletons. Ports LateInitialize independently, and voidcrew loads whole ruins
+	// mid-round - several map more than one templated berth - so the unserialised call
+	// below let four of these interleave inside one set of singletons and strand each
+	// other's shuttles. See setup_shuttle_late().
+	INVOKE_ASYNC(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, setup_shuttle_late), src)
+	// END VOIDCREW EDIT
 
 #ifdef TESTING
 	highlight("#f00")

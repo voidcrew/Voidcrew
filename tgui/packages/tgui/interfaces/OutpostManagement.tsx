@@ -97,7 +97,7 @@ const IdentitySection = () => {
             <TextArea
               fluid
               height="3em"
-              placeholder="Public memo — shown to anyone surveying the outpost and on broadcasts..."
+              placeholder="Public memo, shown to anyone surveying the outpost and on broadcasts..."
               value={newMemo}
               onChange={setNewMemo}
             />
@@ -124,7 +124,7 @@ const BroadcastSection = () => {
     <Section title="Galaxy-Wide Broadcast">
       {advert_remaining > 0 ? (
         <NoticeBox success>
-          Broadcast live — {Math.ceil(advert_remaining / 60)} min remaining.
+          Broadcast live, {Math.ceil(advert_remaining / 60)} min remaining.
           Your outpost is pinned on every ship&apos;s nav chart.
         </NoticeBox>
       ) : (
@@ -330,7 +330,7 @@ const PeopleSection = () => {
         </>
       ) : (
         <Box color="label" mt={1}>
-          Nobody else is on the outpost right now — builders and ownership
+          Nobody else is on the outpost right now, builders and ownership
           transfers require the person to be here in person.
         </Box>
       )}
@@ -347,7 +347,7 @@ export const OutpostManagement = (props) => {
       <Window title="Outpost Management" width={500} height={200}>
         <Window.Content>
           <NoticeBox danger>
-            No outpost registry link — this console isn&apos;t on a registered
+            No outpost registry link: this console isn&apos;t on a registered
             claim.
           </NoticeBox>
         </Window.Content>
@@ -360,7 +360,7 @@ export const OutpostManagement = (props) => {
       <Window.Content scrollable>
         {!has_owner && (
           <NoticeBox warning>
-            This outpost has been abandoned — it has no registered owner.
+            This outpost has been abandoned. It has no registered owner.
           </NoticeBox>
         )}
         {!!has_owner && !is_owner && (

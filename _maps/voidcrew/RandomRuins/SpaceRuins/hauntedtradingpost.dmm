@@ -820,19 +820,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/ruin/space/has_grav/hauntedtradingpost/employees/corridor)
-"hf" = (
-/obj/structure/cable/layer1,
-/obj/structure/sign/poster/contraband/syndicate_pistol/directional/west,
-/mob/living/basic/bot/secbot{
-	faction = list("Syndicate");
-	bot_cover_flags = 4;
-	baton_type = /obj/item/melee/baton/security/cattleprod;
-	name = "\improper Syndicate Securitron";
-	desc = "A little security robot, reprogrammed by the syndicate. He looks downright surly.";
-	security_mode_flags = 11
-	},
-/turf/open/floor/carpet/donk,
-/area/ruin/space/has_grav/hauntedtradingpost/employees/breakroom)
 "hi" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/basic/viscerator,
@@ -881,18 +868,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/employees/corridor)
-"hK" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/structure/safe,
-/obj/item/mail/junkmail,
-/obj/item/market_uplink/blackmarket,
-/obj/item/clothing/suit/armor/bulletproof{
-	desc = "A Type II heavy bulletproof vest that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
-	},
-/obj/item/coin/gold,
-/obj/item/vending_refill/donksnackvendor,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/space/has_grav/hauntedtradingpost/public)
 "hL" = (
 /obj/structure/cable/layer1,
 /obj/structure/sign/poster/official/moth_epi/directional/north,
@@ -1150,6 +1125,16 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/maint/disposals)
+"jA" = (
+/obj/structure/cable/layer1,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/ai_module/law/supplied/protect_station{
+	pixel_x = 2;
+	pixel_y = 5
+	},
+/obj/machinery/light/red/dim/directional/east,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "jF" = (
 /obj/structure/chair/wood{
 	dir = 8
@@ -1187,6 +1172,20 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/office/meetingroom)
+"jU" = (
+/obj/structure/cable/multilayer,
+/obj/structure/cable/layer1,
+/obj/structure/safe/floor,
+/obj/item/sticker/syndicate/apc,
+/obj/item/grenade/empgrenade,
+/obj/item/book/granter/crafting_recipe/donk_secret_recipe,
+/obj/item/ai_module/law/core/full/cybersun,
+/obj/item/reagent_containers/condiment/donksauce,
+/mob/living/basic/cybersun_ai_core{
+	donk_ai_master = 1
+	},
+/turf/open/floor/plating/reinforced,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "jY" = (
 /obj/structure/cable/layer1,
 /obj/structure/noticeboard/directional/north,
@@ -1728,20 +1727,6 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/hauntedtradingpost/employees/workstation)
-"pb" = (
-/obj/structure/cable/multilayer,
-/obj/structure/cable/layer1,
-/obj/structure/safe/floor,
-/obj/item/sticker/syndicate/apc,
-/obj/item/grenade/empgrenade,
-/obj/item/book/granter/crafting_recipe/donk_secret_recipe,
-/obj/item/ai_module/law/core/full/cybersun,
-/obj/item/reagent_containers/condiment/donksauce,
-/mob/living/basic/cybersun_ai_core{
-	donk_ai_master = 1
-	},
-/turf/open/floor/plating/reinforced,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "pc" = (
 /obj/structure/table/wood,
 /obj/item/cardpack/series_one{
@@ -1947,14 +1932,6 @@
 "qR" = (
 /turf/template_noop,
 /area/template_noop)
-"qY" = (
-/obj/item/tank/jetpack/security{
-	name = "red jetpack (oxygen)"
-	},
-/obj/item/tank/internals/oxygen/red,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/hauntedtradingpost/maint)
 "ra" = (
 /obj/machinery/light/warm/directional/south,
 /obj/structure/cable/layer1,
@@ -2103,18 +2080,6 @@
 /obj/machinery/light/red/dim/directional/west,
 /obj/effect/decal/cleanable/cobweb,
 /obj/structure/cable/layer1,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
-"ss" = (
-/obj/structure/cable/layer1,
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/effect/spawner/random/exotic/technology,
-/obj/effect/mapping_helpers/apc/syndicate_access,
-/obj/item/gun/energy/laser/carbine,
-/obj/effect/mapping_helpers/apc/full_charge,
-/obj/machinery/power/apc/auto_name/directional/south{
-	cable_layer = 1
-	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "su" = (
@@ -3091,6 +3056,18 @@
 /obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
+"AJ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/safe,
+/obj/item/mail/junkmail,
+/obj/item/market_uplink/blackmarket,
+/obj/item/clothing/suit/armor/bulletproof{
+	desc = "A Type II heavy bulletproof vest that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
+	},
+/obj/item/coin/gold,
+/obj/item/vending_refill/donksnackvendor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hauntedtradingpost/public)
 "AQ" = (
 /obj/structure/frame/machine/secured,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
@@ -4090,12 +4067,33 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/employees/workstation)
-"Jj" = (
-/obj/structure/showerframe{
-	pixel_y = -2;
-	pixel_x = -8
+"Ja" = (
+/obj/structure/cable/layer1,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/spawner/random/exotic/technology,
+/obj/effect/mapping_helpers/apc/syndicate_access,
+/obj/item/gun/energy/laser/cybersun/unrestricted,
+/obj/effect/mapping_helpers/apc/full_charge,
+/obj/machinery/power/apc/auto_name/directional/south{
+	cable_layer = 1
 	},
-/obj/item/wallframe/sinkframe,
+/obj/structure/cable/layer1,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/spawner/random/exotic/technology,
+/obj/effect/mapping_helpers/apc/syndicate_access,
+/obj/item/gun/energy/laser/carbine/cybersun/unrestricted,
+/obj/effect/mapping_helpers/apc/full_charge,
+/obj/machinery/power/apc/auto_name/directional/south{
+	cable_layer = 1
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
+"Jn" = (
+/obj/item/tank/jetpack/security{
+	name = "red jetpack (oxygen)"
+	},
+/obj/item/tank/internals/oxygen/red,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/maint)
 "Jw" = (
@@ -4163,6 +4161,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/carpet/orange,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
+"Kh" = (
+/obj/structure/showerframe{
+	pixel_y = -2;
+	pixel_x = -8
+	},
+/obj/item/wallframe/sinkframe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hauntedtradingpost/maint)
 "Kl" = (
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/wood,
@@ -4297,16 +4303,6 @@
 /obj/effect/spawner/random/medical/minor_healing,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
-"Lz" = (
-/obj/structure/cable/layer1,
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/ai_module/law/supplied/protect_station{
-	pixel_x = 2;
-	pixel_y = 5
-	},
-/obj/machinery/light/red/dim/directional/east,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "LC" = (
 /obj/structure/cable/layer1,
 /obj/machinery/door/firedoor,
@@ -4347,10 +4343,6 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
-"LI" = (
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/carpet/donk,
-/area/ruin/space/has_grav/hauntedtradingpost/employees)
 "LL" = (
 /obj/structure/chair/comfy/black,
 /turf/open/floor/carpet/orange,
@@ -5052,6 +5044,19 @@
 /obj/item/soap/syndie,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/maint/disposals)
+"RQ" = (
+/obj/structure/cable/layer1,
+/obj/structure/sign/poster/contraband/syndicate_pistol/directional/west,
+/mob/living/basic/bot/secbot{
+	faction = list("Syndicate");
+	bot_cover_flags = 4;
+	baton_type = /obj/item/melee/baton/security/cattleprod;
+	name = "\improper Syndicate Securitron";
+	desc = "A little security robot, reprogrammed by the syndicate. He looks downright surly.";
+	security_mode_flags = 11
+	},
+/turf/open/floor/carpet/donk,
+/area/ruin/space/has_grav/hauntedtradingpost/employees/breakroom)
 "RR" = (
 /obj/structure/cable/layer1,
 /obj/machinery/duct,
@@ -5280,6 +5285,10 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/employees/corridor)
+"TN" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/carpet/donk,
+/area/ruin/space/has_grav/hauntedtradingpost/employees)
 "TP" = (
 /obj/effect/decal/cleanable/dirt,
 /mob/living/basic/bot/cleanbot{
@@ -6543,7 +6552,7 @@ gv
 GS
 yi
 CZ
-Jj
+Kh
 yi
 qR
 "}
@@ -6789,11 +6798,11 @@ iv
 iv
 ot
 XW
-pb
+jU
 MR
 tl
 YR
-LI
+TN
 aD
 Of
 tl
@@ -6834,7 +6843,7 @@ kl
 Gk
 iv
 PX
-ss
+Ja
 MR
 tl
 Xe
@@ -7015,13 +7024,13 @@ je
 Nw
 Db
 ca
-hf
+RQ
 JX
 co
 nZ
 FT
 kI
-hK
+AJ
 vY
 bZ
 iC
@@ -7038,7 +7047,7 @@ hW
 Xh
 yi
 CZ
-qY
+Jn
 yi
 qR
 "}
@@ -7051,7 +7060,7 @@ hV
 vx
 tm
 Gg
-Lz
+jA
 bu
 cv
 gb

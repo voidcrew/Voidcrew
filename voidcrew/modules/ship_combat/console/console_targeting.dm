@@ -5,13 +5,13 @@
  * knows_vessel in ship_sensors.dm), plus the hull we are actively painting.
  *
  * The lock counts on its own because the helm's contact ring is a circle where
- * this scope is a square — a target held at the corner of our range can fall out
+ * this scope is a square, a target held at the corner of our range can fall out
  * of the ship's identified set while we still have a firing solution on it.
  */
 /obj/machinery/computer/camera_advanced/ship_combat/proc/knows_contact(obj/structure/overmap/contact)
 	if(!contact)
 		return FALSE
-	// Anything that isn't a vessel — an outpost, a fixture — was never anonymous.
+	// Anything that isn't a vessel (an outpost, a fixture) was never anonymous.
 	var/obj/structure/overmap/ship/vessel = contact
 	if(!istype(vessel))
 		return TRUE
@@ -210,7 +210,7 @@
 
 	// A completed lock is a look. We have held sensors on that hull for the whole
 	// acquisition and now have a firing solution on it, so it stops being an
-	// anonymous return here AND on the helm chart — this is the second way a crew
+	// anonymous return here AND on the helm chart. This is the second way a crew
 	// can name a vessel, alongside an active scan. The reverse is just as true: a
 	// targeting radar is a beacon, so painting someone tells them who you are.
 	var/obj/structure/overmap/ship/locked_vessel = target_ship

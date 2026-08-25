@@ -1,0 +1,303 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/closet/crate/bin,
+/obj/structure/sign/poster/contraband/mothic_rations/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"af" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ag" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/knife/kitchen{
+	pixel_x = -5
+	},
+/obj/item/plate{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/food/sandwich{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ah" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aj" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/frame/computer{
+	dir = 8
+	},
+/obj/item/shard{
+	pixel_x = -7;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"am" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ao" = (
+/obj/machinery/vending/boozeomat,
+/obj/structure/sign/poster/contraband/robust_softdrinks/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ap" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/machinery/microwave,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -7;
+	pixel_y = 9
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"at" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ay" = (
+/turf/template_noop,
+/area/template_noop)
+"aA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/contraband/eat/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aD" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aE" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aF" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aG" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aH" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"aJ" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/crowbar{
+	pixel_y = 6
+	},
+/obj/item/wrench{
+	pixel_y = 2
+	},
+/obj/item/multitool{
+	pixel_y = -3
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aL" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aT" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 7;
+	pixel_y = 4
+	},
+/obj/item/toy/cards/deck{
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aU" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/clothing/head/hats/centhat{
+	pixel_x = 3;
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aV" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/closet/secure_closet/freezer,
+/obj/item/food/sausage,
+/obj/item/food/sandwich,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 4
+	},
+/obj/structure/sign/poster/contraband/donk_co/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"aY" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"tn" = (
+/obj/effect/turf_decal/box/red/corners{
+	dir = 1
+	},
+/obj/structure/closet/crate/freezer/food,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets/donkpocketteriyaki,
+/obj/item/food/canned/beans,
+/obj/item/food/canned/beans,
+/obj/item/food/sosjerky,
+/obj/item/food/energybar,
+/obj/item/reagent_containers/condiment/milk,
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"Hq" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"Mg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+
+(1,1,1) = {"
+aN
+aM
+aM
+aG
+ap
+"}
+(2,1,1) = {"
+af
+aE
+aD
+am
+ag
+"}
+(3,1,1) = {"
+ao
+aT
+aY
+aJ
+ah
+"}
+(4,1,1) = {"
+ab
+aU
+aM
+aF
+aV
+"}
+(5,1,1) = {"
+Hq
+aA
+aM
+aL
+aO
+"}
+(6,1,1) = {"
+Mg
+aH
+aj
+aH
+at
+"}
+(7,1,1) = {"
+tn
+aH
+ay
+aH
+aK
+"}

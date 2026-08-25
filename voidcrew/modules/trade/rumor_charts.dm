@@ -2,7 +2,7 @@
  * # Rumor Charts
  *
  * Specific-ruin intel sold by outpost traders. Each chart names one rare ruin
- * template — a template that never seeds naturally, only through a chart.
+ * template, a template that never seeds naturally, only through a chart.
  * Buying one uploads a sealed rumor to the buyer's ship; the helm's "reveal"
  * button then spawns the ruin at an uncharted square in the chart's zone band,
  * marks it on the helm readout and paints the overmap signal gold.
@@ -142,9 +142,9 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 	if(.)
 		return
 	if(GLOB.claimed_rumor_charts[ruin_template_path])
-		return "The trail's gone cold — that tip already sold."
+		return "The trail's gone cold. That tip already sold."
 	if(!get_crew_ship(user))
-		return "No crew registration — you need a ship to upload the rumor to."
+		return "No crew registration, you need a ship to upload the rumor to."
 
 /datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0 || GLOB.claimed_rumor_charts[ruin_template_path])

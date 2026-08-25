@@ -2,7 +2,7 @@
  * # Rare space ruins
  *
  * Rumor-chart exclusives. unpickable = TRUE keeps them out of natural seeding
- * and replacement respawns — the only road to one is buying its chart from an
+ * and replacement respawns, the only road to one is buying its chart from an
  * outpost trader (see voidcrew/modules/trade/rumor_charts.dm).
  */
 /datum/map_template/ruin/space/rare

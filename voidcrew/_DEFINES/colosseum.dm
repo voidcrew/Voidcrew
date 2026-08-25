@@ -26,7 +26,7 @@
 /// Pause between tournament rounds (sweep + reset + reseat).
 #define COLOSSEUM_TOURNAMENT_INTERMISSION (45 SECONDS)
 
-// Gate poddoor ids — must match the ids mapped in grand_colosseum_main.dmm
+// Gate poddoor ids, must match the ids mapped in grand_colosseum_main.dmm
 #define COLOSSEUM_GATE_RED "colo_gate_red"
 #define COLOSSEUM_GATE_BLUE "colo_gate_blue"
 #define COLOSSEUM_GATE_SOLO "colo_gate_solo"

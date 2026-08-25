@@ -1,4 +1,4 @@
-// Vestige ruin (antag boon) tuning knobs — see voidcrew/modules/antag_ruins/
+// Vestige ruin (antag boon) tuning knobs (see voidcrew/modules/antag_ruins/)
 
 /// When the first vestige ruin surfaces on the overmap
 #define VESTIGE_FIRST_SPAWN_TIME (20 MINUTES)
@@ -10,7 +10,7 @@
 /// Most boon candidates a fulfilled pact offers at once (fewer if the patron has less left to give)
 #define VESTIGE_REWARD_CHOICES 3
 
-// ===== ASCENSION (endgame capstone boons — see modules/antag_ruins/ascension.dm) =====
+// ===== ASCENSION (endgame capstone boons, see modules/antag_ruins/ascension.dm) =====
 
 /// Round time before a patron will discuss ascension at all.
 #define VESTIGE_ASCENSION_UNLOCK_TIME (90 MINUTES)

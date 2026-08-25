@@ -33,7 +33,7 @@
 "p" = (
 /turf/open/floor/plating{
 	broken = 1;
-	initial_gas_mix = "ws_atmos"
+	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
 	},
 /area/ruin/powered)
 "q" = (

@@ -159,13 +159,13 @@
 
 /**
  * Retires the site: unloads the interior and deletes the signal, but only once
- * nobody is docked or standing on the reservation - otherwise retries later.
+ * nobody is docked or standing on its ground - otherwise retries later.
  * Never spawns a replacement ruin.
  */
 /obj/structure/overmap/space_ruin/contested_cache/proc/try_cleanup()
 	if(QDELETED(src))
 		return
-	if(reservation)
+	if(mapzone)
 		// Refused because someone is aboard or a dock is in flight - both fix
 		// themselves given a little time.
 		if(!release_interior())
@@ -177,7 +177,7 @@
 // Re-link the vault (and re-sync its claimed/sealed state) every time the
 // interior loads - the template reloads fresh if crews leave and come back,
 // and a fresh vault must not pay out a second prize.
-/obj/structure/overmap/space_ruin/contested_cache/load_level()
+/obj/structure/overmap/space_ruin/contested_cache/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
 	..()
 	if(loaded)
 		link_vault()
@@ -206,6 +206,10 @@
 // once the event is over.
 /obj/structure/overmap/space_ruin/contested_cache/check_and_respawn()
 	if(!release_interior())
+		// Same re-arm as the base proc: a refusal is usually the departing hull still
+		// mid-move, or the worldgen queue timing out - retry rather than holding the
+		// slot until try_cleanup happens to come around.
+		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 	if(event_over)
 		qdel(src)

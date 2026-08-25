@@ -2,7 +2,7 @@
  * # Cyberware stealth support
  *
  * The Ghostskin Weave (ware_military.dm) fades its bearer to an alpha shimmer,
- * which fools humans but means nothing to NPC AI — basic mobs target by
+ * which fools humans but means nothing to NPC AI, basic mobs target by
  * reference, not by pixels. This file is the AI half of the camo: a trait the
  * weave holds while active, and a chained override of the basic-mob targeting
  * strategy that refuses camo'd targets beyond point-blank range.
@@ -15,11 +15,11 @@
  *
  * TRAIT_CYBER_CAMO itself lives in voidcrew/_DEFINES/cyberware.dm, because
  * the chrome read (cyberware_scan.dm) is included ahead of this file and also
- * has to know about camo. The range below is deliberately NOT #undef'd —
+ * has to know about camo. The range below is deliberately NOT #undef'd,
  * Ghostskin in ware_military_body.dm is included after this file.
  */
 
-/// Within this range, NPCs spot a camo'd target anyway — walking through a
+/// Within this range, NPCs spot a camo'd target anyway, walking through a
 /// fauna pack point-blank is still a bad idea. The PvP/PvE counterplay floor.
 #define CYBERWARE_CAMO_SPOT_RANGE 2
 

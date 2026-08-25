@@ -7,6 +7,13 @@
 /// Earlier offenses only issue a warning; the final strike marks the aggressor.
 #define OUTPOST_AGGRESSION_STRIKES 3
 
+/// Grace window after an infraction during which further hits don't add strikes.
+/// A single swing reaches register_aggression through more than one route (the
+/// machine's own attacked_by override and the outpost_property relay), and an
+/// autoattack burst would otherwise blow through the whole ladder before the
+/// first warning is read.
+#define OUTPOST_AGGRESSION_GRACE (2 SECONDS)
+
 /// Placement attempts when scattering trader outposts across the zone bands
 #define MAX_OUTPOST_PLACEMENT_ATTEMPTS 300
 
@@ -20,12 +27,12 @@
 /// before self-freeing (dock warmup is 10s, plus shuttle transit and margin)
 #define OUTPOST_BERTH_ARRIVAL_GRACE (45 SECONDS)
 
-// Blueprint tiers — drive the neural imprinter's fee and the schematic's tint
+// Blueprint tiers: drive the neural imprinter's fee and the schematic's tint
 #define BLUEPRINT_TIER_GREEN 1
 #define BLUEPRINT_TIER_YELLOW 2
 #define BLUEPRINT_TIER_RED 3
 
-// Shop shelf kinds — how a SKU entered the shop's live list (drives UI styling,
+// Shop shelf kinds: how a SKU entered the shop's live list (drives UI styling,
 // per-round supply caps and, later, restock behavior)
 /// Always stocked, every round
 #define SHELF_CORE "core"
@@ -70,7 +77,7 @@
 // Outpost contracts settle in goods, not credits, so the bundle a contract pays
 // has to be assembled to hit a credit-equivalent target. These are that target,
 // in shop credits, per difficulty band. Anything below the EASY floor reads as
-// an insult on the board — a 600cr box of shells for a 2000cr haul of cores was
+// an insult on the board, a 600cr box of shells for a 2000cr haul of cores was
 // the bug these bands exist to prevent.
 // Read these against the shelf ladder they buy from: a lethal shell box is
 // 1200cr, an armor vest 1800, a laser gun or engine heater 3000, a plasma
@@ -107,6 +114,11 @@
 /// contracts can refuse the outpost's own plates: they demand the trait from
 /// any source EXCEPT this one (HAS_TRAIT_NOT_FROM).
 #define TRAIT_SOURCE_OUTPOST_KITCHEN "outpost_kitchen"
+
+/// Marks a machine or structure claimed as trader outpost property (see
+/// /datum/element/outpost_property). Doubles as the element's attach guard:
+/// the load-time sweep and a subtype's own Initialize can both add it.
+#define TRAIT_OUTPOST_PROPERTY "outpost_property"
 
 // Trader hologram speech line categories
 #define TRADER_LINE_GREETING "greeting"

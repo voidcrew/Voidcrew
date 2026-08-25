@@ -127,17 +127,62 @@
 		var/min_y = WORLDMAXY_CUTOFF
 		var/max_x = -1
 		var/max_y = -1
-		for(var/area/shuttle_area as anything in shuttle_areas)
-			// Voidcrew: only turfs on our own z. A tile stranded at a previously
-			// visited location otherwise stretches the extents across two map sites
-			// and poisons every dimension derived below, so each later move scans a
-			// garbage rectangle and strands more of the hull.
-			for(var/turf/turf as anything in shuttle_area.get_turfs_by_zlevel(z))
-				min_x = min(turf.x, min_x)
-				max_x = max(turf.x, max_x)
-				min_y = min(turf.y, min_y)
-				max_y = max(turf.y, max_y)
-			CHECK_TICK
+		// Voidcrew: only turfs on our own z, and never a co-tenant's ground. A tile
+		// stranded at a previously visited location otherwise stretches the extents
+		// across two map sites and poisons every dimension derived below, so each later
+		// move scans a garbage rectangle and strands more of the hull.
+		//
+		// The z filter was the whole guard while one encounter owned one z-level. Sites
+		// now share levels, so it stops separating them exactly when it matters: a hull
+		// that stranded a tile at the site in slot 1 and then docks in slot 3 gets a
+		// rectangle spanning both, and every later move runs its destructive callbacks
+		// over the neighbour - cables cut and never reconnected, airlocks force-closed,
+		// mobs gibbed by toShuttleMove(). canDock() never checks containment, so the
+		// overwrite is silent. map_region_for_turf() resolves the piece of ground our
+		// own tile belongs to (a map footprint or a turf reservation, see
+		// voidcrew/mapping/docking_port/_docking_port.dm) and we discard anything that
+		// resolves to a DIFFERENT one.
+		//
+		// Deliberately "somebody else's", not "not mine": a turf belonging to no region
+		// at all - the cordon gutter, a roundstart space level, ground a crew built the
+		// hull out onto - is kept, so this can never shrink a rectangle around real hull.
+		// A hull with no region of its own still discards turfs sitting inside somebody
+		// else's, which is the stranded-at-a-ruin case seen from deep space.
+		var/turf/own_ground = get_turf(src)
+		var/datum/own_region = own_ground ? map_region_for_turf(own_ground) : null
+		var/region_filtered = !isnull(own_ground)
+		for(var/attempt in 1 to 2)
+			for(var/area/shuttle_area as anything in shuttle_areas)
+				// `as anything` skips the istype filter, so a null left in place by a
+				// hard-deleted area reaches get_turfs_by_zlevel() and runtimes out of
+				// this proc entirely - width/height keep their stale values, the areas
+				// after the bad one are never measured, and the voidcrew override's
+				// link_to_z_level() never runs. Dropping the entry is loud and leaves a
+				// usable rectangle; the runtime is neither.
+				if(!istype(shuttle_area))
+					stack_trace("[name]: a non-area entry ([shuttle_area || "null"]) is registered in shuttle_areas")
+					continue
+				for(var/turf/turf as anything in shuttle_area.get_turfs_by_zlevel(z))
+					if(region_filtered)
+						var/datum/turf_region = map_region_for_turf(turf)
+						if(turf_region && turf_region != own_region)
+							continue
+					min_x = min(turf.x, min_x)
+					max_x = max(turf.x, max_x)
+					min_y = min(turf.y, min_y)
+					max_y = max(turf.y, max_y)
+				CHECK_TICK
+			if(max_x != -1 || !region_filtered)
+				break
+			// Containment threw away every turf we have. That means our own tile is not
+			// where the hull is, so the containment answer is worthless - fall back to
+			// the plain z filter rather than CRASHing on an empty rectangle.
+			log_shuttle("[name]: hull-rect containment against [own_region || "no region"] at ([own_ground.x],[own_ground.y],[own_ground.z]) matched no shuttle-area turf - falling back to the z-level filter")
+			region_filtered = FALSE
+			min_x = WORLDMAXX_CUTOFF
+			min_y = WORLDMAXY_CUTOFF
+			max_x = -1
+			max_y = -1
 
 		if(min_x == WORLDMAXX_CUTOFF || max_x == -1)
 			CRASH("Failed to locate shuttle boundaries when iterating through shuttle areas, somehow.")
@@ -383,6 +428,11 @@
 		var/shuttle_tile_depth = oldT.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)
 		if (!isnull(shuttle_tile_depth))
 			oldT.ScrapeAway(shuttle_tile_depth)
+		// VOIDCREW EDIT ADDITION: same cleanup as afterShuttleMove()'s departure path - a
+		// deleted hull's rect on open space otherwise stays initialized and starlit for
+		// the rest of the round. See /turf/proc/return_to_uninitialized_space().
+		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
+			oldT.return_to_uninitialized_space()
 
 	qdel(src, force=TRUE)
 
@@ -696,7 +746,18 @@
 
 	if(!distant_source)
 		return
+	// VOIDCREW EDIT ADDITION: packed-level containment. long_range is range * 2.5 where
+	// range is engine_coeff * max(width, height), so a ~40-wide hull reaches ~100 tiles
+	// against the 6 that separate two tenants of a packed level - a co-tenant crew hears a
+	// full hyperspace departure from a ship they cannot see. Resolved once, outside the
+	// loop; a source with no region of its own leaves the loop exactly as it was.
+	var/datum/source_region = map_region_for_turf(get_turf(distant_source))
+	// VOIDCREW EDIT END
 	for(var/mob/zlevel_mobs as anything in SSmobs.clients_by_zlevel[z])
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(source_region, get_turf(zlevel_mobs)))
+			continue
+		// VOIDCREW EDIT END
 		var/dist_far = get_dist(zlevel_mobs, distant_source)
 		if(dist_far <= long_range && dist_far > range)
 			zlevel_mobs.playsound_local(distant_source, "sound/runtime/hyperspace/[selected_sound]_distance.ogg", 100)

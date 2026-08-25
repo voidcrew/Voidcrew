@@ -13,7 +13,7 @@
  *
  * Scooping is deliberately loud: every harvest tick calls the ship's
  * notify_scoop_activity(), which blocks and breaks nebula concealment
- * (ship.dm) — the fuel stop is also the ambush spot.
+ * (ship.dm), the fuel stop is also the ambush spot.
  */
 
 /// Moles of plasma gas one plasma sheet bakes down into (the open-beaker jank
@@ -37,7 +37,7 @@
 	move_resist = MOVE_RESIST_DEFAULT
 	pipe_flags = PIPING_ONE_PER_TURF | PIPING_DEFAULT_LAYER_ONLY
 
-	/// Whether the intake is open — a closed intake never harvests and never breaks concealment
+	/// Whether the intake is open. A closed intake never harvests and never breaks concealment
 	var/intake_open = TRUE
 	/// Harvest rate multiplier from stock micro-lasers
 	var/efficiency_multiplier = 1

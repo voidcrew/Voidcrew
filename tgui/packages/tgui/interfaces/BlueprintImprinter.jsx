@@ -147,7 +147,7 @@ const InsertedSchematic = (props) => {
         )}
         {!already_known && !can_afford && (
           <LabeledList.Item label="Status" color="bad">
-            Insufficient funds — load cash or top up your ID.
+            Insufficient funds: load cash or top up your ID.
           </LabeledList.Item>
         )}
       </LabeledList>

@@ -21,6 +21,15 @@
  * - CORE SAMPLE: planetside stratigraphy on the pylon-chain pipeline. Three
  *   drill probes, each calibration loud enough to draw a wave, and the last one
  *   prints the sample cask.
+ *
+ * PAY: every contract here takes one of the three MISSION_RESEARCH_PAY_* bands
+ * (voidcrew/_DEFINES/missions.dm) and nothing else - telemetry LOW, core sample
+ * MEDIUM, containment HIGH - with the zone table scaling the two that have an
+ * overmap target. That is the whole ladder: 150 points at the bottom, 900 for a
+ * containment run into Lawless space at the top. Points are the one reward on
+ * this board that is permanent and shared by the entire crew, so the board is
+ * priced to be one faucet among experiments, dissections, the survey console and
+ * the survey scanner rather than the shortcut past all of them.
  */
 
 /**
@@ -51,7 +60,7 @@
 	return "[pick(titles)] [pick(surnames)], [pick(institutes)]"
 
 // =========================================================================
-// TELEMETRY CONTRACT — survey console quota, paid in points
+// TELEMETRY CONTRACT: survey console quota, paid in points
 // =========================================================================
 
 /**
@@ -81,16 +90,21 @@
 	return ..()
 
 /datum/mission/research/telemetry/generate_details()
-	// Types match the keys from survey_research.survey_objects_by_type
+	// Types match the keys from survey_research.survey_objects_by_type.
+	// Every row pays one of the shared MISSION_RESEARCH_PAY_* bands, matched to the
+	// ask's own difficulty. This is the cheapest research contract in the game by
+	// design: the crew is paid twice for one action, because the survey console has
+	// already banked its own points for each of these scans (250 for a nebula, 1000
+	// for a star), and this contract is the bonus on top of that.
 	var/static/list/telemetry_asks = list(
-		list("type" = "nebulas", "name" = "nebulas", "name_singular" = "nebula", "amount" = 2, "research" = 600, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "asteroids", "name" = "asteroid fields", "name_singular" = "asteroid field", "amount" = 2, "research" = 650, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "any", "name" = "celestial objects", "name_singular" = "celestial object", "amount" = 3, "research" = 700, "value_min" = 200, "value_max" = 300, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "planets", "name" = "planets", "name_singular" = "planet", "amount" = 2, "research" = 1200, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "space_ruins", "name" = "space ruins", "name_singular" = "space ruin", "amount" = 2, "research" = 1200, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "electric_storms", "name" = "electrical storms", "name_singular" = "electrical storm", "amount" = 2, "research" = 1150, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "emp_storms", "name" = "EMP storms", "name_singular" = "EMP storm", "amount" = 2, "research" = 1900, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = "stars", "name" = "stars", "name_singular" = "star", "amount" = 1, "research" = 2000, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = "nebulas", "name" = "nebulas", "name_singular" = "nebula", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "asteroids", "name" = "asteroid fields", "name_singular" = "asteroid field", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "any", "name" = "celestial objects", "name_singular" = "celestial object", "amount" = 3, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 200, "value_max" = 300, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "planets", "name" = "planets", "name_singular" = "planet", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "space_ruins", "name" = "space ruins", "name_singular" = "space ruin", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "electric_storms", "name" = "electrical storms", "name_singular" = "electrical storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "emp_storms", "name" = "EMP storms", "name_singular" = "EMP storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = "stars", "name" = "stars", "name_singular" = "star", "amount" = 1, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 
 	var/list/ask = pick(telemetry_asks)
@@ -128,7 +142,7 @@
 	return data
 
 // =========================================================================
-// CONTAINMENT CONTRACT — put an anomaly down, bring back its core
+// CONTAINMENT CONTRACT: put an anomaly down, bring back its core
 // =========================================================================
 
 /datum/mission/research/containment
@@ -141,11 +155,13 @@
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "ANOM"
 	research_origin = "anomalous physics"
-	// Green band; the zone table scales it, then the anomaly's own hazard
-	// multiplier is applied on top in generate_details().
+	// Green band; the zone table scales both, then the anomaly's own hazard
+	// multiplier is applied to the credits on top in generate_details().
 	value_min = 500
 	value_max = 800
-	research_reward = 1600
+	// The most science on the board: the only contract that puts a live anomaly in
+	// front of the crew, and the only one that gives up its core.
+	research_reward = MISSION_RESEARCH_PAY_HIGH
 
 	/// Display name of the rolled anomaly ("flux anomaly")
 	var/anomaly_name = "anomaly"
@@ -168,7 +184,8 @@
 	// Curated set: everything here is already a shipboard random event in this
 	// fork, minus the three that would eat the site itself (dimensional rewrites
 	// turfs, the black hole swallows them, bluespace scatters the crew off the
-	// reservation). hazard is the pay multiplier applied on top of zone scaling.
+	// reservation). hazard is the CREDIT multiplier applied on top of zone scaling;
+	// the point payout is the band alone, see below.
 	var/static/list/containment_targets = list(
 		list(
 			"anomaly" = /obj/effect/anomaly/hallucination,
@@ -230,9 +247,12 @@
 	core_type = rolled["core"]
 	anomaly_name = rolled["name"]
 	hazard_brief = rolled["brief"]
+	// Hazard is danger pay, so it is paid in credits. A bioscrambler is not worth
+	// more science than a flux anomaly, it is just worse to stand next to - and
+	// stacking a third multiplier onto points is what made the deep-band roll of
+	// this contract worth more than the whole ship combat tree.
 	value_min = round(value_min * rolled["hazard"], 10)
 	value_max = round(value_max * rolled["hazard"], 10)
-	research_reward = round(research_reward * rolled["hazard"], 50)
 
 /datum/mission/research/containment/build_objectives()
 	var/datum/mission_objective/field/contain_anomaly/containment = new
@@ -265,7 +285,7 @@
 	return data
 
 // =========================================================================
-// CORE SAMPLE CONTRACT — planetside stratigraphy under fire
+// CORE SAMPLE CONTRACT: planetside stratigraphy under fire
 // =========================================================================
 
 /datum/mission/research/core_sample
@@ -278,7 +298,9 @@
 	research_origin = "planetary geology"
 	value_min = 450
 	value_max = 700
-	research_reward = 1200
+	// Green band; the zone table scales it. Middle of the ladder: a real trip and a
+	// fight for it, but the crew brings back rock rather than live physics.
+	research_reward = MISSION_RESEARCH_PAY_MEDIUM
 
 	/// zone_mobs theme path answering each calibration
 	var/wave_theme

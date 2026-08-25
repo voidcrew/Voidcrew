@@ -54,3 +54,4 @@
 /obj/item/circuitboard/machine/public_nanite_chamber/examine(mob/user)
 	. = ..()
 	. += "Cloud ID is currently set to [cloud_id]."
+	. += "Nanite clouds are ship-local: the chamber links its occupant to that cloud ID on the ship it is built aboard."

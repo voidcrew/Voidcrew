@@ -96,9 +96,11 @@
 /obj/item/mod/module/clamp/on_part_deactivation(deleting = FALSE)
 	if(deleting)
 		return
-	for(var/atom/movable/crate as anything in stored_crates)
+	// VOIDCREW EDIT: removing mid-walk skipped every other crate, leaving them stuck
+	// inside the deactivated module (and pinned by this list if later deleted)
+	for(var/atom/movable/crate in stored_crates)
 		crate.forceMove(drop_location())
-		stored_crates -= crate
+	stored_crates.Cut()
 
 /obj/item/mod/module/clamp/proc/check_crate_pickup(atom/movable/target)
 	if(length(stored_crates) >= max_crates)

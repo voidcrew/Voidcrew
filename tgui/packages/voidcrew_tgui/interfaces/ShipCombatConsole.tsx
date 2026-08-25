@@ -5,7 +5,7 @@
  * left-hand systems stack, a central tactical scope with a contact drawer
  * beside it, and a bottom weapons console. Every panel is positioned from
  * GEOMETRY below, in percentages, so the whole console scales with the window.
- * GEOMETRY is also the source geometry for the faceplate art — the plate PNG
+ * GEOMETRY is also the source geometry for the faceplate art, the plate PNG
  * is composited from this table; keep the two in step.
  *
  * The scope is drawn here rather than piped through a BYOND camera map, which
@@ -48,7 +48,7 @@ const GEOMETRY = {
 /**
  * The faceplate art, served by /datum/asset/simple/combat_faceplate. Its bezels
  * are composited at the exact GEOMETRY coordinates above, so it is stretched to
- * 100% x 100% rather than covered — the panels are positioned in percentages
+ * 100% x 100% rather than covered. The panels are positioned in percentages
  * and the two have to track each other. Set to null to fall back to the CSS
  * plate.
  */
@@ -77,7 +77,7 @@ type NearbyShip = {
   /**
    * Whether we know what this hull IS, on the same gate the helm chart uses: an
    * active scan, a received hail, a lock we are holding, or top-tier radar. When
-   * it is off the server sends no name and no readout — `shields`, `integrity`
+   * it is off the server sends no name and no readout, `shields`, `integrity`
    * and `speed` are all zero and must not be drawn.
    */
   identified: BooleanLike;
@@ -110,6 +110,20 @@ type Launcher = {
   enabled: BooleanLike;
 };
 
+type PodTube = {
+  id: string;
+  name: string;
+  loaded: BooleanLike;
+  pod_name: string | null;
+  /** How many people are strapped into the loaded pod. */
+  occupants: number;
+  /** Hatch state: an open pod can be boarded but never fired. */
+  sealed: BooleanLike;
+  ready: BooleanLike;
+  on_exterior: BooleanLike;
+  enabled: BooleanLike;
+};
+
 type Turret = {
   id: string;
   name: string;
@@ -133,7 +147,7 @@ type ShieldGenerator = {
   id: string;
   name: string;
   active: BooleanLike;
-  /** What this generator adds to the ship's shared pool — the pool itself has
+  /** What this generator adds to the ship's shared pool. The pool itself has
    * no per-generator health; see get_aggregated_shield_status(). */
   max_health_contribution: number;
   regen_contribution: number;
@@ -207,7 +221,7 @@ type Data = {
   ship_mass: number;
   /** OUR hull integrity percent, 0-100. */
   integrity: number;
-  /** Hull below the 50% latch — weapons and drives dark. */
+  /** Hull below the 50% latch: weapons and drives dark. */
   ship_disabled: BooleanLike;
   /** Names of ships holding a completed weapons lock ON US. */
   locked_by: string[];
@@ -230,6 +244,12 @@ type Data = {
   launchers: Launcher[];
   launchers_ready: number;
   launchers_total: number;
+  // Assault pod tube data
+  pod_tubes: PodTube[];
+  pod_tubes_ready: number;
+  pod_tubes_total: number;
+  /** Target is holding a shield up. A pod launched into it kills its crew. */
+  target_shields_up: BooleanLike;
   // Laser turret data
   turrets: Turret[];
   turrets_ready: number;
@@ -281,6 +301,7 @@ type Data = {
   siphon_goal: number;
   siphon_goal_progress: number;
   siphon_target_name: string | null;
+  siphon_target_credits: number;
   // Electronic warfare suite (attacker side)
   ew_linked: BooleanLike;
   ew: EwSuite | null;
@@ -304,7 +325,7 @@ type Data = {
 // Palette twins of the SCSS values, for the SVG work and the inline colour
 // bands. Colour carries meaning on this console: amber is the ship's own
 // state, red is the target and the weapons pointed at it, ice is the world
-// outside — non-target contacts, the scope grid, ranges and bearings.
+// outside, non-target contacts, the scope grid, ranges and bearings.
 const C_AMBER = '#f2a341';
 const C_RED = '#e04836';
 const C_ICE = '#74c8dd';
@@ -316,6 +337,9 @@ const C_WARN = '#d9a230';
 const C_CRIT = '#cf4a38';
 /** The cyan-green the helm uses for overhealth plate; shields borrow it. */
 const C_OVER = '#3ecfa0';
+
+/** Mirrors SIPHON_MINIMUM_TARGET_BALANCE - below this the siphon refuses to spin up. */
+const SIPHON_MIN_TARGET_CREDITS = 50;
 
 // Server-truth totals, for the progress bars that only receive a remainder.
 // All from ship_combat defines; a snapshot plus a total is what makes a
@@ -332,7 +356,7 @@ const clamp = (value: number, low: number, high: number) =>
   Math.max(low, Math.min(high, value));
 
 /**
- * Port of overmap_delta_to_compass() — the 0.4142 is tan(22.5°), which is what
+ * Port of overmap_delta_to_compass(): the 0.4142 is tan(22.5°), which is what
  * splits the compass into eight even sectors. Same arithmetic as the helm's,
  * fed from dx/dy the server already sends.
  */
@@ -366,7 +390,7 @@ const zoneBlockReason = (
   if (ship.zone_type === 0) {
     return `${ship.name} is in ${ship.zone_name} - cannot target`;
   }
-  return `${ship.name} is in ${ship.zone_name} — different warfare zone`;
+  return `${ship.name} is in ${ship.zone_name}, different warfare zone`;
 };
 
 // ---------------------------------------------------------------- shared atoms
@@ -374,7 +398,7 @@ const zoneBlockReason = (
 /**
  * A styled native range that commits on release rather than per pixel. React
  * refires `change` for every pixel of a drag, and one act() per pixel is one
- * BYOND Topic call per pixel — a single adjustment would spend hundreds of
+ * BYOND Topic call per pixel. A single adjustment would spend hundreds of
  * them. The knob tracks local state; the server hears the stepped value once,
  * on pointer-up / key-up.
  */
@@ -392,13 +416,13 @@ const CommitRange = (props: {
   const { min, max, step, value, disabled, label, title, format, onCommit } =
     props;
   const [drag, setDrag] = useState<number | null>(null);
-  // Mirrors `drag` for the commit handlers — a pointer-up can land before the
+  // Mirrors `drag` for the commit handlers. A pointer-up can land before the
   // re-render that would refresh their closure.
   const dragRef = useRef<number | null>(null);
   const shown = drag ?? value;
 
   // Hold the knob at the released value until the backend echoes something
-  // back — clearing on commit snaps it to the stale value for the length of a
+  // back, clearing on commit snaps it to the stale value for the length of a
   // round trip, which reads as the console refusing the input. If the backend
   // never answers, it DID refuse, so stop lying about it.
   useEffect(() => {
@@ -524,7 +548,7 @@ const Faceplate = () => {
         <Drawer />
       </Panel>
 
-      <Panel rect={GEOMETRY.TUBES} label="Missile tubes">
+      <Panel rect={GEOMETRY.TUBES} label="Ordnance tubes">
         <TubesPanel />
       </Panel>
       <Panel rect={GEOMETRY.LASERS} label="Laser battery">
@@ -630,7 +654,7 @@ const ZoneBadge = () => {
 
 /**
  * Only conditions that are true right now, ranked critical first. Anything the
- * crew can't act on stays out — this rail is for things that change what you
+ * crew can't act on stays out. This rail is for things that change what you
  * do in the next few seconds.
  */
 const AlertStrip = () => {
@@ -646,17 +670,17 @@ const AlertStrip = () => {
   if (data.being_interdicted) {
     alerts.push([
       'crit',
-      `Interdicted — engines at ${100 - (data.our_interdiction_strength || 0)}%`,
+      `Interdicted, engines at ${100 - (data.our_interdiction_strength || 0)}%`,
     ]);
   }
   if (payloads > 0) {
     alerts.push([
       'crit',
-      `Hostile intrusion — ${payloads} payload${payloads === 1 ? '' : 's'}`,
+      `Hostile intrusion, ${payloads} payload${payloads === 1 ? '' : 's'}`,
     ]);
   }
   if (data.ew?.traced) {
-    alerts.push(['crit', `Suite traced — ${Math.ceil(data.ew.trace_remaining)}s`]);
+    alerts.push(['crit', `Suite traced, ${Math.ceil(data.ew.trace_remaining)}s`]);
   }
   if (locks > 0) {
     alerts.push([
@@ -667,7 +691,7 @@ const AlertStrip = () => {
   if (data.zone_transitioning) {
     alerts.push([
       'warn',
-      `Entering ${data.zone_transition_target ?? 'new zone'} — ${data.zone_transition_remaining}s`,
+      `Entering ${data.zone_transition_target ?? 'new zone'}, ${data.zone_transition_remaining}s`,
     ]);
   }
   if (data.is_targeting) {
@@ -676,7 +700,7 @@ const AlertStrip = () => {
   if (data.cloak_active) {
     alerts.push([
       'info',
-      `Cloak active — ${Math.ceil(data.cloak_device?.duration_remaining ?? 0)}s`,
+      `Cloak active, ${Math.ceil(data.cloak_device?.duration_remaining ?? 0)}s`,
     ]);
   }
   if (data.siphon_active) {
@@ -786,7 +810,7 @@ const ShieldPanel = () => {
             <i
               key={gen.id}
               className={`Tac__led ${gen.active ? 'Tac--on' : ''}`}
-              title={`${gen.name} — ${gen.active ? 'active' : 'offline'}`}
+              title={`${gen.name}, ${gen.active ? 'active' : 'offline'}`}
             />
           ))}
         </span>
@@ -1051,6 +1075,7 @@ const SiphonPanel = () => {
     siphon_goal,
     siphon_goal_progress,
     siphon_target_name,
+    siphon_target_credits,
   } = data;
 
   if (!siphon_linked) {
@@ -1127,22 +1152,36 @@ const SiphonPanel = () => {
     );
   }
 
+  const targetHasFunds = siphon_target_credits >= SIPHON_MIN_TARGET_CREDITS;
+
   return (
     <div className="Tac__pad">
       {siphon_credits_stored > 0 && (
         <div className="Tac__note" style={{ color: C_GOOD }}>
-          {siphon_credits_stored} cr aboard — collect at device
+          {siphon_credits_stored} cr aboard, collect at device
+        </div>
+      )}
+      {!!target_ref && (
+        <div
+          className="Tac__note"
+          style={{ color: targetHasFunds ? C_GOOD : C_LABEL }}
+        >
+          {targetHasFunds
+            ? `Target holds ${siphon_target_credits} cr`
+            : 'Target accounts empty'}
         </div>
       )}
       <button
         type="button"
         className="Tac__btn Tac__wideBtn"
         style={{ marginTop: 'auto' }}
-        disabled={!target_ref}
+        disabled={!target_ref || !targetHasFunds}
         title={
-          target_ref
-            ? 'Tap the locked target and drain its accounts'
-            : 'Requires a target lock'
+          !target_ref
+            ? 'Requires a target lock'
+            : targetHasFunds
+              ? 'Tap the locked target and drain its accounts'
+              : 'Nothing left in the target to take'
         }
         onClick={() => act('siphon_activate')}
       >
@@ -1172,7 +1211,7 @@ type ScopeMark = { ship: NearbyShip; x: number; y: number };
 
 /**
  * Where each contact is drawn. dx/dy are whole overmap tiles, so contacts
- * sharing a tile land on the same point — and anything on OUR tile lands on
+ * sharing a tile land on the same point, and anything on OUR tile lands on
  * our own token. Both get fanned onto a small deterministic orbit so every
  * mark stays clickable.
  */
@@ -1190,7 +1229,7 @@ const layoutMarks = (ships: NearbyShip[]): ScopeMark[] => {
     members.forEach((ship, index) => {
       let x = SCOPE.cx + ship.dx * TILE;
       let y = SCOPE.cy - ship.dy * TILE;
-      // A lone contact on our own tile still needs the orbit — dead centre it
+      // A lone contact on our own tile still needs the orbit, dead centre it
       // sits under the ship token and can't be told apart or clicked.
       if (members.length > 1 || (!ship.dx && !ship.dy)) {
         const angle = (index * GOLDEN_ANGLE * Math.PI) / 180;
@@ -1216,7 +1255,7 @@ const Scope = () => {
 
   const marks = useMemo(() => layoutMarks(nearby_ships), [nearby_ships]);
   // Docked or concealed, the scope goes dark: grid stays as dressing, marks
-  // and controls go. A disabled-weapons zone is different — you can still
+  // and controls go. A disabled-weapons zone is different, you can still
   // watch, you just can't shoot, so everything stays and a banner says why.
   const dormant = !!ship_docked || !!hidden_in_nebula;
 
@@ -1242,10 +1281,10 @@ const Scope = () => {
       )}
 
       {!!ship_docked && (
-        <div className="Tac__scopeMsg">DOCKED — TACTICAL SYSTEMS SAFED</div>
+        <div className="Tac__scopeMsg">DOCKED, TACTICAL SYSTEMS SAFED</div>
       )}
       {!ship_docked && !!hidden_in_nebula && (
-        <div className="Tac__scopeMsg Tac--ice">CONCEALED — EMISSIONS COLD</div>
+        <div className="Tac__scopeMsg Tac--ice">CONCEALED, EMISSIONS COLD</div>
       )}
       {!dormant && marks.length === 0 && (
         <div className="Tac__scopeMsg Tac--quiet">
@@ -1289,8 +1328,8 @@ const ScopeBackdrop = (props: { dimmed: boolean }) => {
               strokeWidth={1}
             />
             {/*
-              Ring 2 is the one that matters — missile lock and interdiction
-              both reach exactly this far — so it alone gets a second, brighter
+              Ring 2 is the one that matters, missile lock and interdiction
+              both reach exactly this far, so it alone gets a second, brighter
               dashed stroke and a caption. The others are just distance.
             */}
             {!!matters && (
@@ -1336,8 +1375,8 @@ const ScopeBackdrop = (props: { dimmed: boolean }) => {
 };
 
 /**
- * The radar sweep: a wedge turning once every six seconds. Pure dressing — it
- * reports nothing — so it sits behind everything, takes no clicks, and
+ * The radar sweep: a wedge turning once every six seconds. Pure dressing, it
+ * reports nothing, so it sits behind everything, takes no clicks, and
  * reduced-motion removes it entirely (see the SCSS).
  */
 const ScopeSweep = () => {
@@ -1370,7 +1409,7 @@ const ScopeSweep = () => {
 };
 
 /**
- * Our own hull, dead centre. Glyph only — the ident rail carries the name,
+ * Our own hull, dead centre. Glyph only, the ident rail carries the name,
  * and a label here would sit on top of whatever is fanned around the origin.
  */
 const OwnShipToken = () => (
@@ -1408,8 +1447,8 @@ const ScopeContact = (props: { mark: ScopeMark }) => {
 
   // Positions arrive once per server tick as whole-tile jumps; the CSS
   // transition on .Tac__mark glides each jump over ~half a second instead of
-  // teleporting. New contacts must NOT glide — a mark transitioning from the
-  // default identity transform flies in from the scope's corner — so the
+  // teleporting. New contacts must NOT glide, a mark transitioning from the
+  // default identity transform flies in from the scope's corner, so the
   // transition switches on one frame after mount, when the transform is
   // already correct.
   const [settled, setSettled] = useState(false);
@@ -1431,8 +1470,8 @@ const ScopeContact = (props: { mark: ScopeMark }) => {
   const tooltip = !targetable
     ? zoneBlockReason(ship, zone_type, zone_name)
     : isTarget
-      ? `${ship.name} — locked. Click to release.`
-      : `${ship.name} — click to acquire a lock`;
+      ? `${ship.name}, locked. Click to release.`
+      : `${ship.name}, click to acquire a lock`;
 
   return (
     <g
@@ -1449,7 +1488,7 @@ const ScopeContact = (props: { mark: ScopeMark }) => {
       }}
     >
       <title>{tooltip}</title>
-      {/* Invisible hit area — the glyphs are a punishing click target bare. */}
+      {/* Invisible hit area, the glyphs are a punishing click target bare. */}
       <circle r={15} fill="transparent" />
 
       {ship.is_outpost ? (
@@ -1521,7 +1560,7 @@ const ScopeContact = (props: { mark: ScopeMark }) => {
           {/*
             The closing ring: a dashed circle whose gap shrinks with
             targeting_progress. Driven by dashoffset rather than a CSS
-            animation so it tracks the server's own clock — the server is the
+            animation so it tracks the server's own clock. The server is the
             one deciding when the lock lands.
           */}
           <circle
@@ -1946,7 +1985,7 @@ const ExploitsTab = () => {
 
       {chips.length === 0 ? (
         <div className="Tac__empty">
-          No exploit cartridges loaded — insert cartridges into the suite.
+          No exploit cartridges loaded: insert cartridges into the suite.
         </div>
       ) : visible.length === 0 ? (
         <div className="Tac__empty">No exploits match your search or filter.</div>
@@ -1982,7 +2021,7 @@ const EwChipRow = (props: { chip: EwChip }) => {
   const canExecute = !!chip.ready && !executing && !!target_ref;
 
   // The same ladder the old console climbed; the first true reason wins, and
-  // it is surfaced twice — tooltip for the full sentence, status word on the
+  // it is surfaced twice, tooltip for the full sentence, status word on the
   // row so a blocked chip reads as blocked without hovering anything.
   let blockReason: string | undefined;
   let statusWord: string | undefined;
@@ -2151,7 +2190,7 @@ const DefenseTab = () => {
       )}
       {!!ew_intrusion?.hardened && (
         <div className="Tac__defLine" style={{ color: C_GOOD }}>
-          Firewalls hardened — {Math.ceil(ew_intrusion.hardened_remaining || 0)}s
+          Firewalls hardened: {Math.ceil(ew_intrusion.hardened_remaining || 0)}s
         </div>
       )}
     </>
@@ -2162,13 +2201,14 @@ const DefenseTab = () => {
 
 /**
  * The maintenance detail the old console buried in Collapsibles: per-mount
- * status and stock-part tiers. Nothing here is a control — it answers "which
+ * status and stock-part tiers. Nothing here is a control, it answers "which
  * tube is the slow one" and "did the upgrade take", then gets out of the way.
  */
 const SystemsTab = () => {
   const { data } = useBackend<Data>();
   const {
     launchers = [],
+    pod_tubes = [],
     turrets = [],
     shield_generators = [],
     cloak_device,
@@ -2209,14 +2249,62 @@ const SystemsTab = () => {
               </span>
               <span className="Tac__sysState">
                 {dead ? (
-                  '—'
+                  '-'
                 ) : !launcher.loaded ? (
-                  '—'
+                  '-'
                 ) : launcher.ready ? (
                   <span style={{ color: C_GOOD }}>Ready</span>
                 ) : (
-                  // No cooldown exists on tubes — loaded-but-not-ready means
+                  // No cooldown exists on tubes: loaded-but-not-ready means
                   // the zone's weapons rules are refusing the shot.
+                  <span style={{ color: C_WARN }}>Safed</span>
+                )}
+              </span>
+            </div>
+          );
+        })
+      )}
+
+      <div className="Tac__cat">Assault pod tubes</div>
+      {pod_tubes.length === 0 ? (
+        <div className="Tac__empty">No pod tubes linked</div>
+      ) : (
+        pod_tubes.map((tube) => {
+          const dead = !tube.on_exterior || !tube.enabled;
+          return (
+            <div
+              key={tube.id}
+              className={`Tac__sysRow ${dead ? 'Tac--dead' : ''}`}
+            >
+              <span className="Tac__sysId">{tube.id}</span>
+              <span className="Tac__sysBody">
+                {dead ? (
+                  <span style={{ color: C_CRIT }}>
+                    {!tube.on_exterior ? 'Not on exterior' : 'Disabled'}
+                  </span>
+                ) : tube.loaded ? (
+                  <>
+                    {tube.pod_name}
+                    <span className="Tac__sysDim">
+                      {' '}
+                      ·{' '}
+                      {tube.occupants > 0
+                        ? `${tube.occupants} aboard`
+                        : 'unmanned'}
+                    </span>
+                  </>
+                ) : (
+                  <span className="Tac__sysDim">Empty</span>
+                )}
+              </span>
+              <span className="Tac__sysState">
+                {dead || !tube.loaded ? (
+                  '-'
+                ) : tube.ready ? (
+                  <span style={{ color: C_GOOD }}>Ready</span>
+                ) : !tube.sealed ? (
+                  <span style={{ color: C_WARN }}>Hatch open</span>
+                ) : (
                   <span style={{ color: C_WARN }}>Safed</span>
                 )}
               </span>
@@ -2250,7 +2338,7 @@ const SystemsTab = () => {
             </span>
             <span className="Tac__sysState">
               {!turret.on_exterior ? (
-                '—'
+                '-'
               ) : turret.ready ? (
                 <span style={{ color: C_GOOD }}>Ready</span>
               ) : turret.cooldown_remaining > 0 ? (
@@ -2347,7 +2435,7 @@ const SystemsTab = () => {
 /**
  * One slot glyph per launcher: filled = loaded and ready, barred = loaded but
  * safed, hollow = empty, struck = disabled or not on the exterior. The pip
- * strip is the count made legible — 3/4 says how many, the pips say which.
+ * strip is the count made legible, 3/4 says how many, the pips say which.
  *
  * There is no cycling state: tubes have no fire cooldown in DM (can_fire is
  * power + anchor + loaded + exterior + zone), so a loaded tube that isn't
@@ -2364,12 +2452,12 @@ const TubePip = (props: { launcher: Launcher }) => {
         ? 'ready'
         : 'safed';
   const title = dead
-    ? `${launcher.id} — ${!launcher.on_exterior ? 'not on exterior' : 'disabled'}`
+    ? `${launcher.id}, ${!launcher.on_exterior ? 'not on exterior' : 'disabled'}`
     : !launcher.loaded
-      ? `${launcher.id} — empty`
+      ? `${launcher.id}, empty`
       : launcher.ready
-        ? `${launcher.id} — ${launcher.missile_name} ready`
-        : `${launcher.id} — loaded, safed by zone weapons rules`;
+        ? `${launcher.id}, ${launcher.missile_name} ready`
+        : `${launcher.id}, loaded, safed by zone weapons rules`;
 
   return (
     <svg className="Tac__pip" viewBox="0 0 12 16" aria-hidden="false">
@@ -2418,15 +2506,19 @@ const TubesPanel = () => {
     launchers = [],
     launchers_ready,
     launchers_total,
+    pod_tubes = [],
+    pod_tubes_ready,
+    pod_tubes_total,
+    target_shields_up,
     is_in_attack_mode,
     target_in_missile_range,
   } = data;
 
-  if (launchers.length === 0) {
+  if (launchers.length === 0 && pod_tubes.length === 0) {
     return (
       <div className="Tac__pad">
         <div className="Tac__quiet">
-          No tubes linked — multitool a launcher to this console
+          No tubes linked: multitool a launcher to this console
         </div>
       </div>
     );
@@ -2440,6 +2532,14 @@ const TubesPanel = () => {
     : !target_in_missile_range
       ? 'Out of missile range'
       : undefined;
+  const podsArmed = armed && (pod_tubes_ready ?? 0) > 0;
+  const podReason = !armed
+    ? blockReason
+    : (pod_tubes_ready ?? 0) === 0
+      ? 'No pod loaded and ready'
+      : target_shields_up
+        ? 'Target shields are UP, the pod and its crew die on contact'
+        : 'Put a boarding pod through the target hull';
 
   return (
     <div className="Tac__pad">
@@ -2458,7 +2558,7 @@ const TubesPanel = () => {
         <button
           type="button"
           className="Tac__fireKey"
-          disabled={!armed}
+          disabled={!armed || launchers.length === 0}
           title={blockReason ?? 'Fire one tube at the locked target'}
           onClick={() => act('fire_missile')}
         >
@@ -2467,12 +2567,23 @@ const TubesPanel = () => {
         <button
           type="button"
           className="Tac__fireKey"
-          disabled={!armed}
+          disabled={!armed || launchers.length === 0}
           title={blockReason ?? 'Empty every ready tube at once'}
           onClick={() => act('fire_all')}
         >
           Salvo
         </button>
+        {pod_tubes.length > 0 && (
+          <button
+            type="button"
+            className="Tac__fireKey"
+            disabled={!podsArmed}
+            title={podReason}
+            onClick={() => act('launch_pod')}
+          >
+            Board {pod_tubes_ready}/{pod_tubes_total}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -2493,7 +2604,7 @@ const LasersPanel = () => {
     return (
       <div className="Tac__pad">
         <div className="Tac__quiet">
-          No turrets linked — multitool a turret to this console
+          No turrets linked: multitool a turret to this console
         </div>
       </div>
     );
@@ -2504,7 +2615,7 @@ const LasersPanel = () => {
     turret_power_max > 0
       ? clamp(turret_power_available / turret_power_max, 0, 1)
       : 0;
-  // Lasers don't care about missile range — camera mode and a lock are the
+  // Lasers don't care about missile range. Camera mode and a lock are the
   // whole gate.
   const armed = !!is_in_attack_mode && !!target_ref;
   const blockReason = !is_in_attack_mode
@@ -2612,7 +2723,7 @@ const InterdictPanel = () => {
         <div className="Tac__bar" style={{ marginTop: '0.4cqw' }}>
           <i
             style={{
-              // Warmup progress rides 0-1, unlike the sibling 0-100 fields —
+              // Warmup progress rides 0-1, unlike the sibling 0-100 fields,
               // see the old InterdictorPanel, which displayed it *100.
               width: `${clamp((interdiction_warmup_progress || 0) * 100, 0, 100)}%`,
               background: C_WARN,
@@ -2641,7 +2752,7 @@ const InterdictPanel = () => {
           style={{ color: C_RED }}
           title={interdictor_target_name ?? undefined}
         >
-          FIELD ACTIVE — {(interdictor_target_name ?? '').toUpperCase()} @{' '}
+          FIELD ACTIVE: {(interdictor_target_name ?? '').toUpperCase()} @{' '}
           {interdictor_target_speed_cap ?? 0}%
         </div>
         {powerSlider}
@@ -2679,7 +2790,7 @@ const InterdictPanel = () => {
   }
 
   // Ready. The reason line under the key names the first blocker, in the
-  // order a crew can actually fix them: get a lock, close the range — and
+  // order a crew can actually fix them: get a lock, close the range, and
   // "prohibited" last because no flying fixes that one.
   const reason = !target_ref
     ? 'No target'

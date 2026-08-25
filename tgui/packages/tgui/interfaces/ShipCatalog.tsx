@@ -306,7 +306,7 @@ const ShipCard = (props: {
               {ship.total_parts === 0 ? (
                 <Box color="good" fontSize="14px">
                   <Icon name="gift" mr={1} />
-                  Free — fly it whenever you like
+                  Free: fly it whenever you like
                 </Box>
               ) : isUnlocked ? (
                 <Box color="good" fontSize="14px">

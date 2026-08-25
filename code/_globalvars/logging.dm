@@ -32,6 +32,7 @@ GLOBAL_PROTECT(##log_var_name);\
 // These should be used where the log category cannot easily be a json log file.
 DECLARE_LOG(config_error_log, DONT_START_LOG)
 DECLARE_LOG(perf_log, DONT_START_LOG) // Declared here but name is set in time_track subsystem
+DECLARE_LOG(worldgen_log, START_LOG) // Planet/ruin/asteroid/ship generation timing, correlated with time dilation - see code/__HELPERS/logging/worldgen.dm
 
 #ifdef REFERENCE_TRACKING_LOG_APART
 DECLARE_LOG_NAMED(harddel_log, "harddels", START_LOG)

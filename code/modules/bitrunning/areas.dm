@@ -10,6 +10,13 @@
 
 /// VDOM
 
+/**
+ * Every area below sets allow_shuttle_docking explicitly, even where FALSE is already
+ * the /area default. Three of these subtype off space/lavaland/icemoon, all of which
+ * whitelist docking, so they inherited TRUE - a crew could frame up a shuttle inside a
+ * domain and fly their loot home. The redundant lines on the rest are the reminder that
+ * a domain area is a containment boundary, not just a paint colour.
+ */
 /area/virtual_domain
 	name = "Virtual Domain Ruins"
 	icon_state = "bit_ruin"
@@ -18,6 +25,7 @@
 	area_flags_mapping = VIRTUAL_AREA
 	default_gravity = STANDARD_GRAVITY
 	requires_power = FALSE
+	allow_shuttle_docking = FALSE
 
 /area/virtual_domain/fullbright
 	static_lighting = FALSE
@@ -32,6 +40,7 @@
 	icon_state = "bit_safe"
 	requires_power = FALSE
 	sound_environment = SOUND_ENVIRONMENT_ROOM
+	allow_shuttle_docking = FALSE
 
 /// Custom subtypes
 
@@ -68,6 +77,7 @@
 	area_flags = /area/virtual_domain/safehouse::area_flags
 	area_flags_mapping = /area/virtual_domain/safehouse::area_flags_mapping
 	icon_state = "bit_safe"
+	allow_shuttle_docking = FALSE
 
 /area/virtual_domain/protected_space/fullbright
 	static_lighting = FALSE

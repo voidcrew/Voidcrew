@@ -147,8 +147,17 @@ GAME_VERB_DESC(/mob/living/silicon/ai, announcement_help, "Announcement Help", "
 
 	var/list/players = list()
 	var/turf/ai_turf = get_turf(src)
+	// VOIDCREW EDIT ADDITION: is_valid_z_level() is bare z equality, and a packed z-level
+	// carries up to four unrelated crews. A ship AI announcing while docked at an encounter
+	// was heard in full, text and VOX, by every co-tenant. Resolved once, outside the loop.
+	var/datum/ai_region = map_region_for_turf(ai_turf)
+	// VOIDCREW EDIT END
 	for(var/mob/player_mob as anything in GLOB.player_list)
 		var/turf/player_turf = get_turf(player_mob)
+		// VOIDCREW EDIT ADDITION
+		if(map_region_excludes_turf(ai_region, player_turf))
+			continue
+		// VOIDCREW EDIT END
 		if(is_valid_z_level(ai_turf, player_turf))
 			players += player_mob
 	minor_announce(capitalize(message), "[name] announces:", players = players, should_play_sound = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(does_target_have_vox_off)))
@@ -167,6 +176,10 @@ GAME_VERB_DESC(/mob/living/silicon/ai, announcement_help, "Announcement Help", "
 
 	// If there is no single listener, broadcast to everyone in the same z level
 		if(!only_listener)
+			// VOIDCREW EDIT ADDITION: same packed-level containment as the announcement
+			// text above - see /mob/living/silicon/ai/proc/announcement().
+			var/datum/ai_region = map_region_for_turf(ai_turf)
+			// VOIDCREW EDIT END
 			// Play voice for all mobs in the z level
 			for(var/mob/player_mob as anything in GLOB.player_list)
 				var/pref_volume = safe_read_pref(player_mob.client, /datum/preference/numeric/volume/sound_ai_vox)
@@ -176,6 +189,10 @@ GAME_VERB_DESC(/mob/living/silicon/ai, announcement_help, "Announcement Help", "
 				var/turf/player_turf = get_turf(player_mob)
 				if(!is_valid_z_level(ai_turf, player_turf))
 					continue
+				// VOIDCREW EDIT ADDITION
+				if(map_region_excludes_turf(ai_region, player_turf))
+					continue
+				// VOIDCREW EDIT END
 
 				var/sound/voice = sound(sound_file, wait = 1, channel = CHANNEL_VOX, volume = pref_volume)
 				voice.status = SOUND_STREAM

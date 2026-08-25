@@ -26,6 +26,11 @@
 	SSlooting.backlog -= src
 	SSlooting.processing -= src
 	reset_contents()
+	// VOIDCREW EDIT: populate_contents() queues the panel on SSlooting.backlog and
+	// nothing removed it - a client who alt-clicked a cluttered tile and disconnected
+	// before the backlog drained left their panel pinned there
+	SSlooting.backlog -= src
+	SSlooting.processing -= src
 	owner = null
 	source_turf = null
 

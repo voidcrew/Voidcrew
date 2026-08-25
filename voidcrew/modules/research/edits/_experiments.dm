@@ -47,10 +47,43 @@
 #undef RESEARCH_POINTS_PER_EXPERIMENT
 
 
+/**
+ * Ship-scope the server search. Upstream matches servers purely by z-level, but in this fork
+ * docked ships share a z: an encounter berth or an outpost pad puts two crews' R&D servers on
+ * the same level, so every experiment handler listed its neighbour's techweb in the Experiment
+ * Configuration UI, and CONNECT_TO_RND_SERVER_ROUNDSTART could pick the neighbour's server as
+ * "the first one found" - after which every experiment quietly paid its points into the other
+ * crew's balance, and kept doing so after the ships parted. A server standing on a ship now
+ * only serves turfs on that same ship. Servers that aren't aboard any ship (outposts, ruins -
+ * e.g. oldstation's CHARLIE web) keep the plain z match, mirroring
+ * claim_unlinked_experiment_handlers() (voidcrew/modules/research/server.dm).
+ */
+/datum/controller/subsystem/research/find_valid_servers(turf/location, datum/techweb/checking_web)
+	var/list/z_matched_servers = ..()
+	if(!length(z_matched_servers))
+		return z_matched_servers
+	var/obj/structure/overmap/ship/local_ship = get_voidcrew_ship_for_turf(location)
+	var/list/valid_servers = list()
+	for(var/obj/machinery/rnd/server/server as anything in z_matched_servers)
+		var/obj/structure/overmap/ship/server_ship = get_voidcrew_ship_for_turf(get_turf(server))
+		if(server_ship && server_ship != local_ship)
+			continue
+		valid_servers += server
+	return valid_servers
+
+/**
+ * Non-forced links are the ones the Experiment Configuration UI sends. Validate them here
+ * rather than trusting the UI: the web must have a server this handler's location may
+ * legitimately reach (find_valid_servers above is ship-scoped), so the Connect button works
+ * for your own ship's webs while a crafted href still can't tap a docked neighbour's.
+ * Forced links - the multitool route and a ship server claiming its own unlinked handlers -
+ * skip the check on purpose.
+ */
 /datum/component/experiment_handler/link_techweb(datum/techweb/new_web, forced)
 	if(!forced)
-		return
-	..()
+		if(isnull(new_web) || !length(SSresearch.find_valid_servers(get_turf(parent), new_web)))
+			return
+	return ..()
 
 /**
  * Experiment handlers are the only research machinery in this fork that links itself: everything
@@ -98,9 +131,9 @@
  * Returns TRUE if the multitool click was consumed.
  *
  * Shared by every experiment-handler machine, because the linking rules are the handler's, not the
- * machine's: the Experiment Configuration UI's server list can't link (link_techweb() ignores
- * anything that isn't `forced`, so nobody taps a docked neighbour's web out of the list), which
- * leaves the multitool as the one manual route.
+ * machine's. The Experiment Configuration UI can only connect to webs with a server on this ship
+ * (see link_techweb() above); the multitool is the forced route that can bind a handler to any
+ * web, including another crew's, on purpose.
  */
 /proc/voidcrew_multitool_link_experiment_handler(atom/movable/target, mob/living/user, obj/item/multitool/tool)
 	var/datum/component/experiment_handler/handler = target.GetComponent(/datum/component/experiment_handler)

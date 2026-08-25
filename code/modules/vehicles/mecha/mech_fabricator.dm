@@ -137,7 +137,7 @@
 	. = ..()
 	if(in_range(user, src) || isobserver(user))
 		. += span_notice("The status display reads: Storing up to <b>[rmat.local_size]</b> material units.<br>Material consumption at <b>[component_coeff*100]%</b>.<br>Build time reduced by <b>[100-time_coeff*100]%</b>.")
-		. += span_notice("Currently configured to drop printed objects <b>[dir2text(drop_direction)]</b>.")
+		. += span_notice("Currently configured to drop printed objects <b>[drop_direction ? dir2text(drop_direction) : "onto its own tile"]</b>.") // VOIDCREW EDIT - alt-click reset (voidcrew/modules/research/edits/mech_fabricator.dm) can zero drop_direction
 
 /obj/machinery/mecha_part_fabricator/mouse_drop_dragged(atom/over, mob/user, src_location, over_location, params)
 	if(!can_interact(user) || (!HAS_SILICON_ACCESS(user) && !isAdminGhostAI(user)) && !Adjacent(user))
@@ -489,7 +489,7 @@
 			var/datum/material/material = locate(params["ref"])
 			var/amount = text2num(params["amount"])
 			// SAFETY: eject_sheets checks for valid mats
-			rmat.eject_sheets(material, amount, user_data = ID_DATA(usr))
+			rmat.eject_sheets(material, amount, user_data = ID_DATA(ui.user)) // VOIDCREW EDIT - was passing no user data, so silo logs recorded withdrawals from here as nobody
 			return
 
 	return FALSE

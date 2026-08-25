@@ -19,7 +19,7 @@
 
 /datum/reagent/reaction_agent/acidic_buffer
 	name = "Strong Acidic Buffer"
-	description = "This reagent will consume itself and move the pH of a beaker towards acidity when added to another."
+	description = "An industrial acidic buffer, used to lower the pH of a solution."
 	color = "#fbc314"
 	ph = 0
 	inverse_chem = null
@@ -51,7 +51,7 @@
 
 /datum/reagent/reaction_agent/basic_buffer
 	name = "Strong Basic Buffer"
-	description = "This reagent will consume itself and move the pH of a beaker towards alkalinity when added to another."
+	description = "An industrial alkaline buffer, used to raise the pH of a solution."
 	color = "#3853a4"
 	ph = 14
 	inverse_chem = null

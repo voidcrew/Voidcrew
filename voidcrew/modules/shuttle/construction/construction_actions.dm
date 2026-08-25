@@ -107,7 +107,8 @@
 	button_icon = 'voidcrew/icons/obj/tools.dmi'
 	button_icon_state = "rcd_remove"
 
-/// Cost to deconstruct an airlock (same as standard RCD)
+/// Base cost to deconstruct an airlock (standard RCD cost, before the ship
+/// deconstruction discount in deconstruct_cost() is applied)
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_COST 32
 /// Delay to deconstruct an airlock
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY (5 SECONDS)
@@ -132,28 +133,57 @@
 		remote_eye.balloon_alert(owner, "can't deconstruct that!")
 		return
 
+	// Special handling for cameras - cut them off the wall, no material cost
+	var/obj/machinery/camera/target_camera = locate() in target_turf
+	if(target_camera)
+		owner.changeNext_move(CLICK_CD_RANGE)
+		check_rcd()
+
+		// Show deconstruction effect
+		var/obj/effect/constructing_effect/camera_rcd_effect = new(target_turf, SHIP_CAMERA_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
+
+		// Delay for deconstruction
+		if(!base_console.internal_rcd.build_delay(owner, SHIP_CAMERA_DECONSTRUCT_DELAY, target_camera))
+			qdel(camera_rcd_effect)
+			return
+
+		// Remove the camera (cameranet cleanup happens in its Destroy)
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		qdel(target_camera)
+
+		// Clean up any empty shuttle turfs after deconstruction
+		ship_console.cleanup_deconstructed_turfs()
+		return
+
 	// Special handling for airlocks - bypass reinforcement/seal checks for remote construction
 	var/obj/machinery/door/airlock/target_airlock = locate() in target_turf
 	if(target_airlock)
 		owner.changeNext_move(CLICK_CD_RANGE)
 		check_rcd()
 
+		// This branch charges directly rather than going through rcd_create(), so it
+		// never sets RCD_DECONSTRUCT mode - apply the deconstruction discount by hand.
+		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+		var/airlock_cost = ship_rcd.deconstruct_cost(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST)
+
 		// Check resources
-		if(!base_console.internal_rcd.useResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner, dry_run = TRUE))
+		if(!ship_rcd.useResource(airlock_cost, owner, dry_run = TRUE)) // VOIDCREW EDIT: checkResource() folded into useResource()'s dry_run branch upstream
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
+
+		// Say what the tear-out costs before it happens
+		remote_eye.balloon_alert(owner, "cost: [ship_rcd.charge_readout(airlock_cost)]")
 
 		// Show construction effect
 		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
 
 		// Delay for deconstruction
-		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
 		if(!ship_rcd.build_delay(owner, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, target_airlock))
 			qdel(rcd_effect)
 			return
 
 		// Use resources after delay
-		if(!base_console.internal_rcd.useResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+		if(!ship_rcd.useResource(airlock_cost, owner))
 			qdel(rcd_effect)
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
@@ -192,6 +222,12 @@
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
 
+	// Say what the tear-out costs before it happens. useResource() applies the
+	// deconstruction discount itself, so mirror it here for an honest number.
+	var/obj/item/construction/rcd/internal/ship/decon_rcd = base_console.internal_rcd
+	if(istype(decon_rcd))
+		remote_eye.balloon_alert(owner, "cost: [decon_rcd.charge_readout(decon_rcd.deconstruct_cost(cost))]")
+
 	// Perform the RCD deconstruction
 	base_console.internal_rcd.rcd_create(rcd_target, owner)
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
@@ -201,6 +237,46 @@
 
 	// Clean up any empty shuttle turfs after deconstruction
 	ship_console.cleanup_deconstructed_turfs()
+
+/// Ship camera build action - mounts a finished camera on the wall the drone faces
+/datum/action/innate/construction/ship/camera_build
+	name = "Place Camera"
+	button_icon = 'icons/obj/machines/camera.dmi'
+	button_icon_state = "camera"
+
+/datum/action/innate/construction/ship/camera_build/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+
+	// The camera goes on the drone's own turf, hung on the wall the drone is facing,
+	// so it watches the room the drone is in (mirrors handheld wallframe placement).
+	if(!istype(target_turf, /turf/open) || isspaceturf(target_turf))
+		remote_eye.balloon_alert(owner, "need open floor!")
+		return
+
+	var/wall_dir = remote_eye.dir
+	if(ISDIAGONALDIR(wall_dir) || !isclosedturf(get_step(target_turf, wall_dir)))
+		remote_eye.balloon_alert(owner, "face an adjacent wall!")
+		return
+
+	if(locate(/obj/machinery/camera) in target_turf)
+		remote_eye.balloon_alert(owner, "camera already here!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+	check_rcd()
+
+	var/obj/machinery/camera/placed_camera = ship_rcd.build_camera(target_turf, wall_dir, owner)
+	if(!placed_camera)
+		return
+
+	ship_console.setup_placed_camera(placed_camera)
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 
 /// Ship-specific RCD configure action
 /datum/action/innate/construction/ship/configure_mode

@@ -5,7 +5,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	name = "Orbital survey console"
-	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void."
+	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void. Surveys only need the ship parked on the same overmap tile as the target, not docked or landed; storms can also be scanned from a few tiles away at reduced yield."
 	view_range = 10
 	x_offset = 0
 	y_offset = -5
@@ -23,6 +23,15 @@
 	var/obj/structure/overmap/current_survey_target
 	var/datum/survey_research/data
 	var/survey_value
+	/// Payout multiplier when the survey target sits on a nearby tile instead of
+	/// our own (storms only, see get_survey_target). Parking inside stays the
+	/// greedy play; scanning from outside is the safe one.
+	var/range_survey_value_mult = 0.6
+	/// How many overmap tiles out the at-range storm scan reaches. The helm chart
+	/// draws severity-scaled glyphs over overlapping cluster contacts, so players
+	/// cannot reliably park exactly one tile from a storm's anchor turf - this is
+	/// deliberately a short ring, not strict adjacency.
+	var/range_survey_distance = 3
 	var/survey_timer
 	var/banked_points = 0
 	var/banked_cash = 0
@@ -178,7 +187,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	var/list/tgui_data = list()
-	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
+	var/obj/structure/overmap/celestial_object = get_survey_target()
 	survey_research_tiers = get_survey_research_tiers()
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
 	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
@@ -187,9 +196,31 @@
 	tgui_data["bankedPoints"] = banked_points
 	tgui_data["bankedCash"] = banked_cash
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
+	tgui_data["surveyAtRange"] = is_survey_at_range(celestial_object)
+	// So the UI can state the range rule with the real numbers instead of folklore
+	tgui_data["rangeSurveyDistance"] = range_survey_distance
+	tgui_data["rangeSurveyPercent"] = round(range_survey_value_mult * 100)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
+
+	// Everything surveyable from here, for the UI's target picker
+	var/turf/ship_turf = ship_port?.current_ship ? get_turf(ship_port.current_ship) : null
+	var/list/targets = list()
+	for(var/obj/structure/overmap/candidate as anything in get_survey_candidates())
+		var/list/values = get_survey_value(candidate)
+		var/at_range = is_survey_at_range(candidate)
+		targets += list(list(
+			"ref" = ref(candidate),
+			"name" = candidate.name,
+			"status" = get_survey_status(candidate),
+			"atRange" = at_range,
+			"dist" = (at_range && ship_turf) ? get_dist(ship_turf, get_turf(candidate)) : 0,
+			"points" = values ? values["points"] : 0,
+			"cash" = values ? values["cash"] : 0,
+			"mappable" = (istype(candidate, /obj/structure/overmap/planet) || istype(candidate, /obj/structure/overmap/space_ruin) || istype(candidate, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE,
+		))
+	tgui_data["surveyTargets"] = targets
 
 	return tgui_data
 
@@ -203,7 +234,7 @@
 		return
 	switch(action)
 		if("survey")
-			survey_celestial_object(ui.user)
+			survey_celestial_object(ui.user, params["target_ref"])
 		if("map")
 			playsound(src, 'sound/machines/pda_button/pda_button1.ogg', 100)
 			activate_survey_map(ui.user)
@@ -226,12 +257,23 @@
 
 	return TRUE
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
-	var/list/blacklisted_types = list(
+/// Overmap types the console refuses to treat as survey targets
+/// Callers must treat the returned list as READ-ONLY - both are shared statics.
+/// get_current_celestial_object() is now on the per-landing-turf path (see
+/// checkLandingTurf()), which runs for every tile of the projected berth on every eye
+/// step, so this may not allocate a list per call any more.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_blacklisted_overmap_types()
+	var/static/list/debug_blacklist = list(
 		/obj/structure/overmap/ship,
 	)
-	if(!debug_mode)
-		blacklisted_types += /obj/structure/overmap/planet/empty
+	var/static/list/normal_blacklist = list(
+		/obj/structure/overmap/ship,
+		/obj/structure/overmap/planet/empty,
+	)
+	return debug_mode ? debug_blacklist : normal_blacklist
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
+	var/list/blacklisted_types = get_blacklisted_overmap_types()
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
@@ -239,30 +281,119 @@
 					return object
 	return null
 
+/**
+ * Every object a survey could target right now, ordered: objects sharing our
+ * overmap tile first (in close-list order), then storms within
+ * range_survey_distance tiles sorted nearest-first. Storms are the only at-range
+ * targets - the hazard IS the tile, so scanning one without flying into it is
+ * the intended counterplay - while landable content (planets, ruins, meteor
+ * fields) still requires being on the tile.
+ *
+ * Only the survey path uses this. The docking paths (refresh, checkLandingTurf)
+ * must keep using get_current_celestial_object(), or the docking camera could be
+ * aimed into the reservation of a field the ship isn't on.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_candidates()
+	var/list/candidates = list()
+	if(!ship_port?.current_ship)
+		return candidates
+	// Everything sharing our tile - there can be more than one, and the old
+	// single-target flow only ever exposed the first
+	var/list/blacklisted_types = get_blacklisted_overmap_types()
+	for(var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
+		if(!is_type_in_list(object, blacklisted_types))
+			candidates |= object
+	// Storms within the scan ring, nearest first. Same range()-over-turf sweep
+	// the sensor contact push uses (ship_sensors.dm)
+	var/turf/ship_turf = get_turf(ship_port.current_ship)
+	if(!ship_turf)
+		return candidates
+	var/list/storms_by_dist = list()
+	for(var/obj/structure/overmap/event/storm in range(range_survey_distance, ship_turf))
+		if(!istype(storm, /obj/structure/overmap/event/electric) && !istype(storm, /obj/structure/overmap/event/emp))
+			continue
+		storms_by_dist[storm] = get_dist(ship_turf, get_turf(storm))
+	sortTim(storms_by_dist, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	for(var/storm in storms_by_dist)
+		candidates |= storm
+	return candidates
+
+/**
+ * The object an unqualified survey click targets: the first on-tile object,
+ * else the nearest unsurveyed storm in scan range, else the nearest surveyed
+ * one. The UI's target list lets the player override this via target_ref.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_target()
+	var/list/candidates = get_survey_candidates()
+	if(!length(candidates))
+		return null
+	// The candidate list is ordered on-tile first, then storms nearest-first
+	var/obj/structure/overmap/first = candidates[1]
+	if(!is_survey_at_range(first))
+		return first
+	for(var/obj/structure/overmap/candidate as anything in candidates)
+		if(!is_object_surveyed(candidate))
+			return candidate
+	return first
+
+/// TRUE when the survey target sits on a neighbouring tile rather than sharing ours
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/is_survey_at_range(obj/structure/overmap/object)
+	if(!object || !ship_port?.current_ship)
+		return FALSE
+	return get_turf(object) != get_turf(ship_port.current_ship)
+
+/// Whether this object already has an entry in the survey records
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/is_object_surveyed(obj/structure/overmap/object)
+	var/celestial_type = data.get_related_celestial_list(object.type)
+	if(!celestial_type)
+		return FALSE
+	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[celestial_type])
+		if(celestial.ref_id == ref(object))
+			return TRUE
+	return FALSE
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_status(obj/structure/overmap/object)
 	if(!object || isnull(object))
 		return "no-orbit"
 	if (survey_in_progress)
 		return "in-progress"
 
-	var/already_surveyed = FALSE
-	var/current_celestial_type = data.get_related_celestial_list(object.type)
-	if(!current_celestial_type)
+	if(!data.get_related_celestial_list(object.type))
 		log_runtime("Not found [object.type]")
-	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[current_celestial_type])
-		if (celestial.ref_id == ref(object))
-			already_surveyed = TRUE
-	if(already_surveyed)
+	if(is_object_surveyed(object))
 		return "complete"
 	return "unsurveyed"
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user)
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user, target_ref)
 	if(survey_in_progress)
 		return
-	var/obj/structure/overmap/current_object = get_current_celestial_object()
+	var/obj/structure/overmap/current_object
+	if(target_ref)
+		// Resolve the client's pick against the live candidate list, never as a raw ref
+		for(var/obj/structure/overmap/candidate as anything in get_survey_candidates())
+			if(ref(candidate) == target_ref)
+				current_object = candidate
+				break
+	else
+		current_object = get_survey_target()
 	if(!current_object)
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
-		balloon_alert(user, "no surveyable celestial object found")
+		// Say WHY there is nothing to survey - a ship contact sharing the tile is
+		// the usual confusion ("why won't it survey this ship?")
+		var/has_ship_contact = FALSE
+		var/has_empty_space = FALSE
+		for(var/obj/structure/overmap/object in ship_port?.current_ship?.close_overmap_objects)
+			if(istype(object, /obj/structure/overmap/ship))
+				has_ship_contact = TRUE
+			else if(istype(object, /obj/structure/overmap/planet/empty))
+				has_empty_space = TRUE
+		if(has_ship_contact)
+			balloon_alert(user, "can't survey ships")
+			to_chat(user, span_warning("Vessels are not valid survey targets. The console only surveys celestial objects: planets, signals, storms, and stars."))
+		else if(has_empty_space)
+			balloon_alert(user, "empty space, nothing to survey")
+		else
+			balloon_alert(user, "no surveyable celestial object found")
 		return
 
 	soundloop.start()
@@ -336,6 +467,11 @@
 	else if("advanced" in survey_research_tiers)
 		cash *= 1.2
 		points *= 1.2
+
+	// Scanning a storm from a neighbouring tile is safe, so it pays less
+	if(is_survey_at_range(object))
+		cash *= range_survey_value_mult
+		points *= range_survey_value_mult
 
 	point_list["cash"] = cash
 	point_list["points"] = points
@@ -473,10 +609,22 @@
 	if(!T)
 		return SHUTTLE_DOCKER_BLOCKED
 
-	// On reserved z-levels, every turf of the footprint must lie inside the
-	// orbited space ruin's own reservation - never a neighbouring reservation
-	// or unallocated transit space
-	if(SSmapping.level_has_any_trait(T.z, locked_traits) && !turf_in_current_ruin_reservation(T))
+	// Reserved z-levels stay off-limits outright. There used to be an exception for the
+	// orbited space ruin's own reservation; ruins and asteroid fields are map-zone tenants
+	// now and never sit on a ZTRAIT_RESERVED level, so nothing a player can legally land
+	// on is behind this gate any more. Their own co-tenant scoping is the footprint test
+	// in checkLandingSpot().
+	if(SSmapping.level_has_any_trait(T.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+
+	// The gate above evaporated for packed sites - lattice levels carry ZTRAIT_MINING, none
+	// of locked_traits - and checkLandingSpot()'s footprint test only judges the EYE's own
+	// tile, while this proc is called for every tile of the projected berth. Without this
+	// the only thing between a hull and the neighbour's slot is /area/misc/cordon failing
+	// the whitelisted_areas test below, i.e. the cordon's area type. A site with no
+	// footprint is unscoped and behaves exactly as it did before packing.
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint && !site_footprint.contains_turf(T))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	var/allowed_mob = TRUE
@@ -498,25 +646,46 @@
 		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
 
 
-/// Returns TRUE if the given turf lies inside the turf reservation of the space ruin
-/// OR landable asteroid field the ship is currently orbiting. Both live on
-/// ZTRAIT_RESERVED transit z-levels, which are normally forbidden for custom docking -
-/// this is the one exception, scoped to the orbited object's own footprint so
-/// neighbouring reservations and unallocated transit space stay off-limits.
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/turf_in_current_ruin_reservation(turf/tile)
-	if(!tile)
+/**
+ * The slot the orbited site occupies on its z-level, or null when it has none.
+ *
+ * This replaced turf_in_current_ruin_reservation(), which let the custom-docking gate make
+ * an exception for turfs inside the orbited space ruin's turf reservation. Ruins and
+ * asteroid fields are map-zone tenants now, so none of them sits on a ZTRAIT_RESERVED
+ * level and the exception has nothing left to grant - but their level IS shared with up to
+ * three co-tenants, separated by a strip of cordon the camera eye passes straight through,
+ * which is what this scopes. See /datum/map_footprint.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_site_footprint()
+	var/obj/structure/overmap/celestial = get_current_celestial_object()
+	return celestial?.get_interior_footprint()
+
+/**
+ * Keeps the survey eye off a co-tenant's ground.
+ *
+ * checkLandingSpot() refuses to DESIGNATE outside the orbited site, but the eye itself was
+ * never bounded - and with the research-tier mapping upgrades this console grants (mob_sight,
+ * obj_sight, see_hidden) an operator who scrolls across the cordon reads exactly who is
+ * aboard next door. A five-turf gutter of /turf/cordon stops air, sight, bullets and
+ * movement; it does not stop a camera eye.
+ *
+ * The rule is "never somebody else's", not "only mine": inside our own footprint is the fast
+ * path, and anything the site resolver cannot place - the gutter, raw space, a site with
+ * neither footprint nor reservation - stays reachable, so no console can be wedged by a
+ * lookup that comes back empty. Overrides the TRUE-by-default hook on the base console type,
+ * so upstream navigation, syndicate, whiteship and caravan consoles keep their full reach.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/eye_may_enter(turf/destination)
+	if(!destination)
 		return FALSE
 	var/obj/structure/overmap/celestial = get_current_celestial_object()
-	var/datum/turf_reservation/res
-	if(istype(celestial, /obj/structure/overmap/space_ruin))
-		var/obj/structure/overmap/space_ruin/ruin = celestial
-		res = ruin.reservation
-	else if(istype(celestial, /obj/structure/overmap/event/meteor))
-		var/obj/structure/overmap/event/meteor/field = celestial
-		res = field.reservation
-	if(!res)
-		return FALSE
-	return SSmapping.used_turfs[tile] == res
+	if(isnull(celestial))
+		return TRUE
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint?.contains_turf(destination))
+		return TRUE
+	var/obj/structure/overmap/owner = SSovermap_zones?.get_overmap_object_for_turf(destination)
+	return isnull(owner) || owner == celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
@@ -525,7 +694,13 @@
 		return SHUTTLE_DOCKER_BLOCKED
 	if(!eyeturf.z)
 		return SHUTTLE_DOCKER_BLOCKED
-	if(SSmapping.level_has_any_trait(eyeturf.z, locked_traits) && !turf_in_current_ruin_reservation(eyeturf))
+	if(SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+	// The designated landing site has to be on the object we are actually orbiting, not on
+	// whoever is sharing its z-level. A site with no footprint is unscoped and keeps the
+	// behaviour it had before packing.
+	var/datum/map_footprint/site_footprint = get_current_site_footprint()
+	if(site_footprint && !site_footprint.contains_turf(eyeturf))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	. = SHUTTLE_DOCKER_LANDING_CLEAR
@@ -786,7 +961,9 @@
 	remove_old_ports(my_port)
 	if(my_port)
 		my_port.unregister()
-		qdel(my_port)
+		// Forced, or docking_port/Destroy answers with QDEL_HINT_LETMELIVE and the
+		// just-unregistered port lives on as an orphan
+		qdel(my_port, force = TRUE)
 		my_port = null
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	if(the_eye)
@@ -810,13 +987,24 @@
 		if(planet.reserve_dock)
 			docking_location = get_turf(planet.reserve_dock)
 		else
-			var/datum/space_level/lvl = planet.mapzone.z_levels[1]
-			docking_location = locate(1, 1, lvl.z_value)
+			// The middle of the planet's own slot. (1,1) is the cordon band outside every
+			// tenant's footprint, so the camera opened onto ground the console then
+			// refuses to designate - and on a packed level it is not even this planet's.
+			var/turf/planet_center = planet.footprint?.get_center_turf()
+			if(planet_center)
+				docking_location = planet_center
+			else
+				var/datum/space_level/lvl = planet.mapzone.z_levels[1]
+				docking_location = locate(1, 1, lvl.z_value)
 	else if(istype(o, /obj/structure/overmap/space_ruin))
 		var/obj/structure/overmap/space_ruin/ruin = o
-		// Ensure the ruin's reservation and docking ports exist
-		ruin.load_level()
-		if(!ruin.reservation)
+		// Ensure the ruin's map slot and docking ports exist. Same rule as the planet
+		// branch above: ruin loads queue now, and a camera refresh is no reason to hold
+		// this console open behind somebody else's survey - take the queue only if free.
+		ruin.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
+		if(!ruin.mapzone)
+			if(user)
+				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
 			docking_location = null
 			return
@@ -824,12 +1012,14 @@
 		if(ruin.reserve_dock)
 			docking_location = get_turf(ruin.reserve_dock)
 		else
-			docking_location = ruin.reservation.bottom_left_turfs[1]
+			docking_location = ruin.footprint?.get_center_turf()
 	else if(istype(o, /obj/structure/overmap/event/meteor))
 		var/obj/structure/overmap/event/meteor/field = o
-		// Ensure the field's reservation and docking ports exist
-		field.load_level()
-		if(!field.reservation)
+		// Ensure the field's map slot and docking ports exist - same no-wait rule as above
+		field.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
+		if(!field.mapzone)
+			if(user)
+				to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			remove_old_ports()
 			docking_location = null
 			return
@@ -837,7 +1027,7 @@
 		if(field.reserve_dock)
 			docking_location = get_turf(field.reserve_dock)
 		else
-			docking_location = field.reservation.bottom_left_turfs[1]
+			docking_location = field.footprint?.get_center_turf()
 	else
 		// No dockable celestial in orbit - don't reuse a stale location from a previous target
 		docking_location = null

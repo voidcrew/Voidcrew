@@ -143,7 +143,7 @@ const VoidcrewCargoStatus = () => {
   return (
     <Section>
       <Box position="absolute" right={1} bold>
-        {(points && (
+        {(!!points && (
           <>
             <AnimatedNumber
               value={points}
@@ -260,7 +260,8 @@ const VoidcrewCargoCartButtons = () => {
   const { act, data } = useBackend();
   const { cart = [], shuttle_state = CARGO_SHUTTLE_AWAY } = data;
   const total = cart.reduce((total, entry) => total + entry.cost, 0);
-  const shuttleDocked = shuttle_state === CARGO_SHUTTLE_DOCKED;
+  // The cart is the dispatched shipment's manifest once the shuttle is called
+  const cartLocked = shuttle_state !== CARGO_SHUTTLE_AWAY;
   return (
     <>
       <Box inline mx={1}>
@@ -269,7 +270,7 @@ const VoidcrewCargoCartButtons = () => {
         {cart.length >= 2 && cart.length + ' items'}{' '}
         {total > 0 && `(${formatMoney(total)} cr)`}
       </Box>
-      {!shuttleDocked && (
+      {!cartLocked && (
         <Button
           icon="times"
           color="transparent"
@@ -285,6 +286,7 @@ const VoidcrewCargoCart = () => {
   const { act, data } = useBackend();
   const { cart = [], shuttle_state = CARGO_SHUTTLE_AWAY } = data;
   const shuttleDocked = shuttle_state === CARGO_SHUTTLE_DOCKED;
+  const cartLocked = shuttle_state !== CARGO_SHUTTLE_AWAY;
   return (
     <Section fill>
       <Section>
@@ -307,7 +309,7 @@ const VoidcrewCargoCart = () => {
                 #{entry.id}&nbsp;{entry.object}
               </Table.Cell>
               <Table.Cell inline ml="65px" width="40px">
-                {(!shuttleDocked && entry.can_be_cancelled && (
+                {(!cartLocked && !!entry.can_be_cancelled && (
                   <RestrictedInput
                     width="40px"
                     minValue={0}
@@ -323,7 +325,7 @@ const VoidcrewCargoCart = () => {
                 )) || <Input width="40px" value={entry.amount} disabled />}
               </Table.Cell>
               <Table.Cell inline ml="5px" width="10px">
-                {!shuttleDocked && !!entry.can_be_cancelled && (
+                {!cartLocked && !!entry.can_be_cancelled && (
                   <Button
                     icon="plus"
                     onClick={() =>
@@ -333,7 +335,7 @@ const VoidcrewCargoCart = () => {
                 )}
               </Table.Cell>
               <Table.Cell inline ml="15px" width="10px">
-                {!shuttleDocked && !!entry.can_be_cancelled && (
+                {!cartLocked && !!entry.can_be_cancelled && (
                   <Button
                     icon="minus"
                     onClick={() => act('remove', { order_name: entry.object })}
@@ -355,7 +357,14 @@ const VoidcrewCargoCart = () => {
           </Box>
         </Box>
       )}
-      {shuttleDocked && (
+      {cart.length > 0 && shuttle_state === CARGO_SHUTTLE_ARRIVING && (
+        <Box mt={2}>
+          <Box color="yellow">
+            Order dispatched - the cart is locked until the shuttle arrives.
+          </Box>
+        </Box>
+      )}
+      {!!shuttleDocked && (
         <Box mt={2}>
           <Box color="good">
             Cargo shuttle is docked! Board the shuttle to retrieve your items,

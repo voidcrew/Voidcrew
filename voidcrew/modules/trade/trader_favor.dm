@@ -8,13 +8,13 @@
  *
  * "Per crew" means the ship, same as the embargo and the contract board
  * (get_crew_ship). The ledger lives on the ship datum and dies with the hull
- * on purpose — a crew that loses its ship starts over with every trader.
+ * on purpose, a crew that loses its ship starts over with every trader.
  *
  * Favor is keyed by the outpost's MAIN shop type, not the shop instance:
  * a trader is a character (every general outpost is Barnaby's waystation),
  * and the vendor stalls on an outpost honor the host trader's standing rather
- * than running ledgers of their own. Voucher prices are never discounted —
- * contracts pay vouchers, so a voucher discount would double-dip.
+ * than running ledgers of their own. Voucher prices are never discounted.
+ * Contracts pay vouchers, so a voucher discount would double-dip.
  */
 
 /obj/structure/overmap/ship

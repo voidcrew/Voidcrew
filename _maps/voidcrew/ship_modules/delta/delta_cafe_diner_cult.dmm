@@ -1,0 +1,323 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"ae" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/light/small/broken/directional/south,
+/obj/structure/rack,
+/obj/item/crowbar{
+	pixel_y = 6
+	},
+/obj/item/wrench{
+	pixel_y = 2
+	},
+/obj/item/multitool{
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"af" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"ag" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt{
+	pixel_x = 8;
+	 pixel_y = -6
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"ah" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/destructible/cult/item_dispenser/altar,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aj" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"am" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/structure/noticeboard/directional/west,
+/obj/item/paper{
+	default_raw_text = "Cooking rota is on the back of this sheet. Whoever cooks does not wash up. If you swap with someone, write it down so the next shift knows who to ask.";
+	 name = "galley rota"
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"ao" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"ap" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/modular_map_connector,
+/obj/machinery/light/small/red/directional/west,
+/obj/structure/table,
+/obj/machinery/microwave,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -7;
+	 pixel_y = 9
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"at" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	 pixel_y = 8
+	},
+/obj/item/plate{
+	pixel_x = -5;
+	 pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -6;
+	 pixel_y = 6
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"ay" = (
+/turf/template_noop,
+/area/template_noop)
+"aA" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	 pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/food/bread/plain{
+	pixel_x = -5;
+	 pixel_y = 3
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 6;
+	 pixel_y = -5
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	 pixel_y = 6
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/knife/kitchen{
+	pixel_x = -5
+	},
+/obj/item/plate{
+	pixel_x = 6;
+	 pixel_y = 4
+	},
+/obj/item/food/sandwich{
+	pixel_x = 6;
+	 pixel_y = 7
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -7;
+	 pixel_y = 8
+	},
+/obj/item/plate{
+	pixel_x = 5;
+	 pixel_y = 2
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 4;
+	 pixel_y = -5
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/secure_closet/freezer,
+/obj/item/food/sausage,
+/obj/item/food/sandwich,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 4
+	},
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/boozeomat,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -8;
+	 pixel_y = 5
+	},
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/frame/computer{
+	dir = 8
+	},
+/obj/item/shard{
+	pixel_x = -7;
+	 pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/bin,
+/turf/open/floor/engine/cult/ship,
+/area/template_noop)
+"aY" = (
+/turf/closed/wall/mineral/cult/ship,
+/area/template_noop)
+"rb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/item/food/candy{
+	pixel_x = -7;
+	 pixel_y = -5
+	},
+/obj/item/food/cookie{
+	pixel_x = 8;
+	 pixel_y = -7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"zU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate,
+/obj/item/food/chocolatebar,
+/obj/item/food/candy,
+/obj/item/reagent_containers/cup/glass/waterbottle/large,
+/obj/machinery/light/small/red/dim/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+aj
+am
+af
+aG
+ap
+"}
+(2,1,1) = {"
+ah
+aK
+ao
+ao
+aJ
+"}
+(3,1,1) = {"
+aM
+aF
+aj
+aA
+aN
+"}
+(4,1,1) = {"
+aV
+at
+af
+ag
+aL
+"}
+(5,1,1) = {"
+aT
+aO
+aD
+aH
+ab
+"}
+(6,1,1) = {"
+rb
+aY
+aU
+aY
+aE
+"}
+(7,1,1) = {"
+zU
+aY
+ay
+aY
+ae
+"}

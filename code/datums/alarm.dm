@@ -100,6 +100,10 @@
 	var/list/allowed_z_levels
 	///List of allowed areas. if this is null it's ignored
 	var/list/allowed_areas
+	/// VOIDCREW EDIT ADDITION: weakref to the atom whose map region scopes a z-scoped
+	/// listener, or null for "z granularity only" (the upstream behaviour). Set by
+	/// /datum/station_alert/New(); see the comment there.
+	var/datum/weakref/region_anchor_ref
 
 	///List of alarm type -> list of area name -> list(area, ref to area's cameras, list(sources))
 	var/list/alarms = list()
@@ -126,6 +130,16 @@
 
 	if(allowed_z_levels && !(source_z in allowed_z_levels))
 		return
+
+	// VOIDCREW EDIT ADDITION: packed-level containment. Resolved live rather than
+	// snapshotted - a ship-mounted console changes z constantly, and its site with it.
+	var/atom/region_anchor = region_anchor_ref?.resolve()
+	if(region_anchor)
+		var/turf/anchor_turf = get_turf(region_anchor)
+		var/turf/alarm_turf = get_turf(handler?.source_atom)
+		if(anchor_turf && alarm_turf && map_region_excludes_turf(map_region_for_turf(anchor_turf), alarm_turf))
+			return
+	// VOIDCREW EDIT END
 
 	if(allowed_areas && !(source_area.type in allowed_areas))
 		return

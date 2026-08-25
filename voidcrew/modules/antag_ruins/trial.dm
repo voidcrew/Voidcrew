@@ -7,12 +7,12 @@
  * All pact state rides the MIND. Ruin interiors (and their patron mobs)
  * unload whenever everyone leaves, so nothing here may hold a reference to
  * the patron or the map. Trial kit items follow the same rule from the other
- * side: they never store trial references — they resolve the wielder's
+ * side: they never store trial references, they resolve the wielder's
  * mind.active_vestige_trial at interaction time and istype-check it.
  *
  * One active trial per mind, each trial fulfillable once. Completion pays out
- * a CHOICE of boons — up to VESTIGE_REWARD_CHOICES rolled from the patron's
- * pool, carried on a claim button (boon.dm) — wherever the player is; there is
+ * a CHOICE of boons, up to VESTIGE_REWARD_CHOICES rolled from the patron's
+ * pool, carried on a claim button (boon.dm). Wherever the player is; there is
  * no return trip that a despawned ruin could strand.
  */
 
@@ -35,7 +35,7 @@
  * Mind state dies with the mind when a player respawns into a new character;
  * this record does not. Every mutation of vestige mind-state writes through to
  * it, and any patron restores a mind that has fallen behind its record (see
- * restore_lost_legacy in patron.dm) — so death loses your powers only until
+ * restore_lost_legacy in patron.dm), so death loses your powers only until
  * you walk back into a vestige and ask.
  *
  * Doubling as the anti-refarm ledger: completions and assignments restore
@@ -72,11 +72,11 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	var/name = "Trial"
 	/// The patron's pitch, shown before accepting
 	var/desc = "Prove yourself."
-	/// Boon typepaths the patron pays out of, snapshotted at accept — the mob unloads with the ruin
+	/// Boon typepaths the patron pays out of, snapshotted at accept, the mob unloads with the ruin
 	var/list/boon_pool
 	/// The mind undertaking this trial
 	var/datum/mind/owner
-	/// Name of the offering patron, kept as text — the mob unloads with the ruin
+	/// Name of the offering patron, kept as text, the mob unloads with the ruin
 	var/patron_name = "the patron"
 	/// HUD reminder action, granted on accept and cleared with the pact (see below)
 	var/datum/action/vestige_pact/tracker
@@ -127,7 +127,7 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /**
  * Fulfills the pact: bookkeeping, the reward roll, flavor.
  *
- * Deletes the trial datum — callers (kit items, ritual structures) must not
+ * Deletes the trial datum: callers (kit items, ritual structures) must not
  * touch the trial after calling this.
  */
 /datum/vestige_trial/proc/complete()
@@ -152,10 +152,10 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /**
  * Rolls the boon candidates this fulfilled pact pays out and leaves the owner
  * holding the claim button (see boon.dm). The choice is made at the player's
- * leisure — mid-fight completions shouldn't force a menu through the chaos.
+ * leisure, mid-fight completions shouldn't force a menu through the chaos.
  */
 /datum/vestige_trial/proc/offer_reward(mob/living/user)
-	if(owner.vestige_pending_reward) // can't normally happen — patrons refuse pacts while a debt is unclaimed
+	if(owner.vestige_pending_reward) // can't normally happen. Patrons refuse pacts while a debt is unclaimed
 		return
 	var/list/eligible = get_eligible_vestige_boons(owner, boon_pool)
 	if(!length(eligible))
@@ -183,7 +183,7 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /**
  * # Vestige pact tracker
  *
- * A HUD reminder of the pact you're bound to — the action-bar button the
+ * A HUD reminder of the pact you're bound to, the action-bar button the
  * patron leaves you with. Mind-targeted so it follows you across bodies like
  * the boons and learned spells do, and it holds no trial reference: it resolves
  * the mind's active pact whenever it's read, the same rule the kit items obey.
@@ -211,7 +211,7 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	// Keep the tooltip title stable (the button's saved position keys off name);
 	// the live details ride in the description, which the tooltip reads on hover.
 	desc = trial \
-		? "[trial.name] — [trial.patron_name]'s pact.\n[trial.get_progress_text()]\nClick to review the full terms." \
+		? "[trial.name]: [trial.patron_name]'s pact.\n[trial.get_progress_text()]\nClick to review the full terms." \
 		: initial(desc)
 	return ..()
 
@@ -222,6 +222,6 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	var/datum/vestige_trial/trial = get_trial()
 	if(!trial)
 		return
-	to_chat(owner, span_boldnotice("[trial.patron_name]'s pact — [trial.name]"))
+	to_chat(owner, span_boldnotice("[trial.patron_name]'s pact: [trial.name]"))
 	to_chat(owner, span_notice(trial.desc))
 	to_chat(owner, span_boldnotice(trial.get_progress_text()))

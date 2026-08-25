@@ -13,7 +13,7 @@ cd "$(dirname "$0")/.."
 
 PORT="${1:-1342}"
 BOOT_TIMEOUT_MIN="${2:-25}"
-SUITE_TIMEOUT_MIN="${3:-25}"
+SUITE_TIMEOUT_MIN="${3:-75}"
 DD='C:\Program Files (x86)\BYOND\bin\dd.exe'
 CI_LOGS="data/logs/ci"
 JSON="data/unit_tests.json"
@@ -34,11 +34,11 @@ for attempt in 1 2 3 4 5; do
 		break
 	fi
 	echo ">> Compile attempt $attempt failed. If the errors are 'icons/map_icons/... invalid"
-	echo ">> expression', the sprite pipeline is rewriting .dmis (trap #8) — retrying in 75s..."
+	echo ">> expression', something is rewriting .dmis (trap #8), retrying in 75s..."
 	sleep 75
 done
 if [ "$compile_ok" -ne 1 ]; then
-	echo ">> Compile failed after 5 attempts. Wait for the sprite pipeline to finish and retry."
+	echo ">> Compile failed after 5 attempts. Make sure nothing else is rewriting .dmis, then retry."
 	exit 1
 fi
 
@@ -51,7 +51,7 @@ echo ">> Launching DreamDaemon on port $PORT (detached, minimized)."
 echo ">> Do NOT close the DreamDaemon window and do NOT connect a client to it."
 cmd //c start "" //min //low "$DD" tgstation.dmb -port "$PORT" -close -trusted -invisible -params "log-directory=ci"
 
-echo ">> Phase 1: waiting for the world to boot (up to ${BOOT_TIMEOUT_MIN}m; can be slow under load — trap #9)..."
+echo ">> Phase 1: waiting for the world to boot (up to ${BOOT_TIMEOUT_MIN}m; can be slow under load, trap #9)..."
 BOOT_START=$(date +%s)
 while [ ! -f "$CI_LOGS/game.log" ]; do
 	if [ $(($(date +%s) - BOOT_START)) -gt $((BOOT_TIMEOUT_MIN * 60)) ]; then
@@ -62,7 +62,7 @@ while [ ! -f "$CI_LOGS/game.log" ]; do
 	sleep 15
 done
 
-echo ">> World booted. Phase 2: waiting for the suite (up to ${SUITE_TIMEOUT_MIN}m; ~13m idle-machine)..."
+echo ">> World booted. Phase 2: waiting for the suite (up to ${SUITE_TIMEOUT_MIN}m; ~45m idle-machine - create_and_destroy alone runs ~27m)..."
 SUITE_START=$(date +%s)
 while true; do
 	if [ -f "$LOCKFILE" ]; then

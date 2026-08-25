@@ -324,12 +324,11 @@ const RelocationTab = (props: RelocationTabProps) => {
         <Stack.Item>
           <NoticeBox danger>
             {portOverhang} {portOverhang === 1 ? 'metre' : 'metres'} of hull
-            stands out past the docking port. Ship-to-ship docking and cargo
-            deliveries are refused until the port sits on the outermost hull
-            door, because that section would be driven through whatever the ship
-            berths against.
-            {!canFixOverhang &&
-              ' No door on the outermost plating yet — fit an airlock or firelock there.'}
+            stands out past the docking port, and that section would be driven
+            through whatever the ship berths against.
+            {canFixOverhang
+              ? ' The port will be moved out to the outermost hull door automatically on the next undock; relocate it here if you would rather choose the door yourself.'
+              : ' No door on the outermost plating yet, fit an airlock or firelock there. The ship cannot undock until one exists.'}
           </NoticeBox>
         </Stack.Item>
       )}

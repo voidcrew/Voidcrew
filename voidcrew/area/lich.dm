@@ -1,5 +1,5 @@
 /**
- * Areas for The Verdigris — the lich lair raid site.
+ * Areas for The Verdigris: the lich lair raid site.
  *
  * The lair is a runtime-loaded space ruin (lich_lair.dmm), so it inherits the
  * ordinary space-ruin area parent: gravity on, power free, no APCs to shoot out
@@ -26,21 +26,21 @@
 	ambience_index = AMBIENCE_SPOOKY
 	sound_environment = SOUND_AREA_TUNNEL_ENCLOSED
 
-/// Layer 1 — the breach hall the docking tube opens onto. First ward.
+/// Layer 1: the breach hall the docking tube opens onto. First ward.
 /area/ruin/space/has_grav/powered/lich_lair/atrium
 	name = "\improper Verdigris Atrium"
 
-/// Layer 2 — stacked bone galleries. Second ward.
+/// Layer 2: stacked bone galleries. Second ward.
 /area/ruin/space/has_grav/powered/lich_lair/ossuary
 	name = "\improper Verdigris Ossuary"
 	sound_environment = SOUND_AREA_SMALL_ENCLOSED
 
-/// Layer 3 — the tunnels his risen dead are quarried out of. Third ward.
+/// Layer 3: the tunnels his risen dead are quarried out of. Third ward.
 /area/ruin/space/has_grav/powered/lich_lair/warrens
 	name = "\improper Verdigris Warrens"
 	sound_environment = SOUND_AREA_ASTEROID
 
-/// Layer 4 — the ritual chamber. Ilthuun is leashed here and does not leave it.
+/// Layer 4: the ritual chamber. Ilthuun is leashed here and does not leave it.
 /// The fourth ward seals raiders OUT until the warrens are clear, and the boss
 /// fight (and the loot) happen entirely inside.
 /area/ruin/space/has_grav/powered/lich_lair/sanctum

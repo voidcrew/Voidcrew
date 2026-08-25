@@ -35,6 +35,9 @@
 	calculate_z_level_gravity(new_z)
 	adding_new_zlevel = FALSE
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEW_Z, S)
+	// VOIDCREW EDIT: this proc enforces nothing, so a caller that skips the capacity gate
+	// mints permanent memory silently. See report_z_mint() in voidcrew/mapping/_mapping.dm.
+	report_z_mint(name)
 	return S
 
 /// Returns the /datum/space_level associated with the given z level.

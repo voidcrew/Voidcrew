@@ -42,7 +42,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "fr" = (
-/mob/living/basic/demon{
+/mob/living/basic/demon/feral{
 	health = 120;
 	name = "Demonic Foreman";
 	resize = 1.25
@@ -55,7 +55,7 @@
 /area/ruin/unpowered)
 "fL" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "fX" = (
@@ -151,7 +151,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "nR" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -265,7 +265,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "xe" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "xK" = (
@@ -374,7 +374,7 @@
 /area/ruin/powered)
 "Iq" = (
 /obj/structure/chair/comfy/brown,
-/mob/living/basic/demon/slaughter{
+/mob/living/basic/demon/slaughter/feral{
 	health = 250;
 	name = "The Boss";
 	resize = 1.5
@@ -412,7 +412,7 @@
 /obj/structure/chair/office/light{
 	dir = 4
 	},
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Lu" = (
@@ -420,7 +420,7 @@
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "LP" = (
-/mob/living/basic/demon,
+/mob/living/basic/demon/feral,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)

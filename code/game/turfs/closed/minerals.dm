@@ -675,7 +675,7 @@
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
 	canSmoothWith = SMOOTH_GROUP_CLOSED_TURFS
 	defer_change = TRUE
-	// VOIDCREW EDIT: mined walls must yield the FROZEN breathable floor — the upstream icemoon
+	// VOIDCREW EDIT: mined walls must yield the FROZEN breathable floor, the upstream icemoon
 	// turfs are planetary ICEMOON, and every dug tile on a FROZEN planet churns atmos forever
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
@@ -1032,7 +1032,7 @@
 	turf_type = /turf/open/misc/asteroid/snow/ice
 
 /turf/closed/mineral/snowmountain/cavern/icemoon
-	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON — dig into FROZEN breathable instead
+	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON, dig into FROZEN breathable instead
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
@@ -1235,7 +1235,7 @@
 	defer_change = TRUE
 
 /turf/closed/mineral/gibtonite/ice/icemoon
-	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON — dig into FROZEN breathable instead
+	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON, dig into FROZEN breathable instead
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS

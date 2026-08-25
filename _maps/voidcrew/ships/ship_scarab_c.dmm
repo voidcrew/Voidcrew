@@ -145,6 +145,7 @@
 /turf/open/floor/mineral/plastitanium/pod,
 /area/shuttle/voidcrew/scarab/cargo_bay/c)
 "eQ" = (
+/obj/effect/turf_decal/tile/yellow/full,
 /obj/machinery/door/airlock/engineering{
 	name = "Engine Access"
 	},
@@ -156,7 +157,7 @@
 	},
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
-/turf/open/floor/mineral/titanium/yellow,
+/turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/engines/c)
 "fa" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -1448,7 +1449,7 @@
 	dir = 4
 	},
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "Md" = (
 /obj/effect/turf_decal/stripes/red/line{
@@ -1766,7 +1767,7 @@
 /obj/item/radio/intercom/directional/east,
 /obj/machinery/firealarm/directional/north,
 /obj/machinery/light/small/red/directional/east,
-/turf/open/floor/mineral/titanium/tiled/yellow,
+/turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "UN" = (
 /obj/structure/cable,

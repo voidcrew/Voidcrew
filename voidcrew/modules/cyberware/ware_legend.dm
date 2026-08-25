@@ -3,11 +3,11 @@
  *
  * Cascade Lattice, Redline Core, Governor Delete, Meteor Piledriver.
  *
- * The two OS cores share the chest OS slot — installing one evicts the
+ * The two OS cores share the chest OS slot, installing one evicts the
  * other, the CP2077 operating-system choice. Both are windowed powers with
  * a crash on the back end; per the design freeze the crash IS the balance,
- * because ambient EMP threat is thin. Cascade additionally treats any EMP
- * during its window as an instant crash plus a full recooldown — the
+ * because ambient EMP threat is thin. Both additionally treat any EMP during
+ * their window as an instant crash plus a full recooldown, the
  * 1-voucher-grenade counter to an 8-voucher implant.
  */
 
@@ -30,19 +30,19 @@
  *
  * The sandevistan-class flagship. Eight seconds where the world happens at
  * your speed: a full -1 gait (with reagent-modifier immunity for the
- * duration — no meth stacking, no sub-tick movement), melee cooldowns
+ * duration, no meth stacking, no sub-tick movement), melee cooldowns
  * halved, and 40% ranged dodge while moving through the shared arbiter in
  * ware_pro_combat.dm. Everyone nearby sees it: afterimages peel off every
  * step, your victim's screen never had a chance, and the activation is an
  * audible time-tear.
  *
- * Then the heat bill: six seconds of crash — heavy stamina dump, leaden
+ * Then the heat bill: six seconds of crash, heavy stamina dump, leaden
  * slowdown, zero dodge. An EMP during the window skips straight to the
  * crash and re-arms the full sixty-second cooldown.
  */
 /obj/item/organ/cyberimp/cyberware/cascade
 	name = "\improper Cascade lattice"
-	desc = "A full-spine lattice of superconducting myelin — a real sandevistan, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
+	desc = "A full-spine lattice of superconducting myelin, a real sandevistan, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
 	icon_state = "cascade"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS
@@ -56,7 +56,7 @@
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	// Pulling the lattice mid-cycle takes its statuses with it. Removing the
-	// window this way still applies the crash — the heat is already in you.
+	// window this way still applies the crash. The heat is already in you.
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
@@ -74,7 +74,7 @@
 	var/datum/status_effect/cyberware_cascade_window/window = owner.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	if(!window)
 		return
-	to_chat(owner, span_userdanger("The pulse rips through the lattice mid-cascade — everything slams back to real time!"))
+	to_chat(owner, span_userdanger("The pulse rips through the lattice mid-cascade, everything slams back to real time!"))
 	owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window) // on_remove applies the crash
 	for(var/datum/action/cooldown/cyberware/cascade_surge/surge in actions)
 		surge.StartCooldown()
@@ -100,7 +100,7 @@
 
 /**
  * The window. All the speed lives here so one teardown path handles natural
- * expiry, EMP shutdown and chrome removal alike — and every teardown of a
+ * expiry, EMP shutdown and chrome removal alike, and every teardown of a
  * live window on a living bearer rolls straight into the crash.
  */
 /datum/status_effect/cyberware_cascade_window
@@ -117,7 +117,7 @@
 	owner.add_client_colour(/datum/client_colour/cyberware_cascade, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	owner.visible_message(
-		span_boldwarning("[owner] fractures into afterimages — something under [owner.p_their()] skin is running far too fast!"),
+		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
 		span_boldnotice("CASCADE ONLINE. Eight seconds."),
 	)
 	owner.balloon_alert(owner, "cascade online")
@@ -142,7 +142,7 @@
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
 	return CYBERWARE_CASCADE_DODGE_CHANCE
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step — the
+/// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
 /// telegraph everyone in the fight can read.
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
@@ -151,10 +151,10 @@
 
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
-	desc = "The lattice has the world in slow motion. Make it count — six seconds of crash follows either way."
+	desc = "The lattice has the world in slow motion. Make it count. Six seconds of crash follows either way."
 	icon_state = "radiation_shield"
 
-/// The bill. No dodge source, no speed — the opposite of all of it.
+/// The bill. No dodge source, no speed, the opposite of all of it.
 /datum/status_effect/cyberware_cascade_crash
 	id = "cyberware_cascade_crash"
 	duration = CYBERWARE_CASCADE_CRASH
@@ -220,19 +220,20 @@
 /**
  * # Redline Core (T4, chest, OS slot, load 10)
  *
- * The rage OS to Cascade's speed OS — same slot, pick one. Twelve seconds:
+ * The rage OS to Cascade's speed OS. Same slot, pick one. Twelve seconds:
  * stun immunity (anti-stun buff pattern), 40% less brute and burn, +8 on
  * every unarmed strike, and an opening roar that staggers everything
- * hostile nearby — mobs whose AI carries the flee subtree genuinely run;
+ * hostile nearby, mobs whose AI carries the flee subtree genuinely run;
  * everything else just stumbles. Your screen slams red and stays there,
  * and everyone else gets a mob that visibly is not stopping.
  *
  * The +8 is meant to land on EVERY punch, including the ones arm chrome
- * takes over — see [/datum/status_effect/cyberware_redline_window] for how
+ * takes over (see [/datum/status_effect/cyberware_redline_window] for how)
  * the window reaches punches that never touch the standard attack chain.
  *
  * Then the collapse: a hundred stamina, leaden legs, and whatever you
- * didn't finish is now standing over you.
+ * didn't finish is now standing over you. An EMP during the window skips
+ * straight to that collapse and re-arms the full ninety-second cooldown.
  */
 /obj/item/organ/cyberimp/cyberware/redline
 	name = "\improper Redline core"
@@ -252,9 +253,32 @@
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	organ_owner.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
 
+/**
+ * The EMP counter, Cascade parity (BAL-4): a pulse during the window forces
+ * the crash immediately and re-arms the full cooldown, on top of the standard
+ * chrome reboot ..() already started. Before this, Cascade carried the
+ * mid-window EMP collapse and Redline quietly didn't, so the 12 seconds of
+ * stun immunity and 40% resist rode straight through the one thing that is
+ * supposed to answer them. Applying the same rule to both OS cores is the
+ * conservative reading; not separately playtested.
+ */
+/obj/item/organ/cyberimp/cyberware/redline/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(!owner)
+		return
+	var/datum/status_effect/cyberware_redline_window/window = owner.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	if(!window)
+		return
+	to_chat(owner, span_userdanger("The pulse scrambles the core mid-burn and the strength drops out of you all at once!"))
+	owner.remove_status_effect(/datum/status_effect/cyberware_redline_window) // on_remove applies the crash
+	for(var/datum/action/cooldown/cyberware/redline_burn/burn in actions)
+		burn.StartCooldown()
+
 /datum/action/cooldown/cyberware/redline_burn
 	name = "Redline Burn"
-	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse."
+	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse. An EMP mid-window collapses you instantly."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_redline"
 	cooldown_time = 90 SECONDS
@@ -275,7 +299,7 @@
  * The window.
  *
  * The +8 rides the arm bodyparts' unarmed_damage_low/high, which is what the
- * species punch path actually rolls (_species.dm) — so a normal punch gets the
+ * species punch path actually rolls (_species.dm), so a normal punch gets the
  * bonus folded into its own roll, its own miss chance and its own armour
  * check. That is the right home for it and it stays there.
  *
@@ -293,8 +317,19 @@
  * and the window pays the +8 by hand on the next tick. A punch that does reach
  * the late signal stands the top-up down, so it can never pay twice.
  *
- * Deliberately written against the chain, not against Gorilla — any future
+ * Deliberately written against the chain, not against Gorilla, any future
  * ware that swallows the punch chain gets the bonus for free.
+ *
+ * The one hole in "never reached the late signal means never paid" (D5): a
+ * ware can swallow the chain AND still roll the bodypart itself. tg's
+ * Strong-Arm implant and our own Scrapper's Knuckles both do exactly that,
+ * their damage lines read unarmed_damage_low/high, which already carries the
+ * +8, and then cancel the chain, so the top-up used to pay a second time on
+ * top (Strong-Arm doubles its roll, so that hit was landing roughly +24
+ * instead of +8). Those wares call cyberware_unarmed_roll_paid() to stand the
+ * top-up down themselves. Gorilla Arms deliberately does not: its line is
+ * flat and never reads the bodypart, so the top-up is the only way it sees
+ * the bonus at all.
  */
 /datum/status_effect/cyberware_redline_window
 	id = "cyberware_redline_window"
@@ -309,6 +344,10 @@
 	/// Armour penetration of the hand that threw that punch, so the top-up is
 	/// blunted by armour exactly as much as the strike it belongs to.
 	var/bypassed_penetration = 0
+	/// One-shot: a ware has already paid this punch's arm bonus inside its own
+	/// roll, so the next arming is skipped. See suppress_topup() for why this
+	/// can't just clear the armed state.
+	var/topup_suppressed = FALSE
 
 /datum/status_effect/cyberware_redline_window/on_apply()
 	// The anti-stun implant's buff pattern: traits plus damage-slowdown immunity.
@@ -355,7 +394,7 @@
 /**
  * The opening roar: an AOE stagger for everything hostile in reach, plus a
  * genuine rout for any mob whose AI planner carries the flee-target subtree
- * (setting the blackboard key on anything else is a harmless no-op — we
+ * (setting the blackboard key on anything else is a harmless no-op, we
  * promise flight only where the AI can deliver it).
  */
 /datum/status_effect/cyberware_redline_window/proc/roar()
@@ -379,13 +418,20 @@
 
 /**
  * Signal proc for [COMSIG_LIVING_EARLY_UNARMED_ATTACK]. Arms a top-up for this
- * punch and hands the chain straight back — we never cancel anything and never
+ * punch and hands the chain straight back, we never cancel anything and never
  * change what the punch itself does.
  */
 /datum/status_effect/cyberware_redline_window/proc/on_early_unarmed_attack(mob/living/source, atom/target, proximity, list/modifiers)
 	SIGNAL_HANDLER
 	bypassed_victim = null
 	bypassed_penetration = 0
+	// Consumed unconditionally, and this handler runs on every unarmed swing
+	// the window sees, so a suppression raised by a ware whose own guards then
+	// bailed can never outlive one punch.
+	var/suppressed = topup_suppressed
+	topup_suppressed = FALSE
+	if(suppressed)
+		return NONE
 	// Harm punches on a living body only. Help intent, right-click, ranged
 	// clicks and punching the scenery are none of our business.
 	if(!proximity || !source.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
@@ -406,7 +452,7 @@
 		bypassed_penetration = active_hand ? active_hand.unarmed_effectiveness : 0
 	bypassed_victim = WEAKREF(victim)
 	// Nothing runs synchronously after the whole attack chain, so settle up on
-	// the next tick — by then on_unarmed_attack() has either stood us down or
+	// the next tick, by then on_unarmed_attack() has either stood us down or
 	// stayed silent, and silence means something upstream ate the punch.
 	addtimer(CALLBACK(src, PROC_REF(pay_bypassed_bonus)), 0)
 	return NONE
@@ -418,13 +464,47 @@
  */
 /datum/status_effect/cyberware_redline_window/proc/on_unarmed_attack(mob/living/source, atom/target, proximity, list/modifiers)
 	SIGNAL_HANDLER
+	stand_down_topup()
+	return NONE
+
+/// Cancels the top-up armed by this punch's early signal.
+/datum/status_effect/cyberware_redline_window/proc/stand_down_topup()
 	bypassed_victim = null
 	bypassed_penetration = 0
-	return NONE
+
+/**
+ * A ware standing this punch's top-up down because its own roll already paid
+ * the arm bonus (D5).
+ *
+ * Timing is the whole reason this isn't just stand_down_topup(). Handlers fire
+ * in registration order, and a window opened by a button press registers AFTER
+ * chrome that registered at install time, so the ware almost always calls this
+ * BEFORE on_early_unarmed_attack() has armed anything, and there is nothing to
+ * clear yet. Raising a one-shot the arming consumes covers that. Chrome
+ * installed during a live window registers after us and hits the other order,
+ * where clearing the armed state is the correct move; both are handled.
+ */
+/datum/status_effect/cyberware_redline_window/proc/suppress_topup()
+	if(bypassed_victim)
+		stand_down_topup()
+		return
+	topup_suppressed = TRUE
+
+/**
+ * "My damage line already rolled this hand's unarmed_damage_low/high."
+ *
+ * Punch-swallowing chrome calls this once it commits to taking a swing over.
+ * Redline's arm bonus lives inside that roll, so the strike has already been
+ * paid and must not also collect the bypass top-up. Safe to call from anyone,
+ * any time; it is a no-op on a bearer with no Redline window open.
+ */
+/proc/cyberware_unarmed_roll_paid(mob/living/puncher)
+	var/datum/status_effect/cyberware_redline_window/window = puncher?.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	window?.suppress_topup()
 
 /**
  * The top-up, one tick after a punch that never reached the standard attack
- * chain — a Gorilla Arms piston punch, most of the time. CANT_WOUND on purpose:
+ * chain, a Gorilla Arms piston punch, most of the time. CANT_WOUND on purpose:
  * the strike this belongs to already rolled its own wound, and one punch should
  * not get two.
  */
@@ -500,7 +580,7 @@
  *
  * The enabler: a neural governor with its limiter firmware deleted, worth
  * six points of chrome capacity and nothing else. Deliberately built on the
- * generic chrome base rather than tg's brain-implant subtype — the brain
+ * generic chrome base rather than tg's brain-implant subtype, the brain
  * base answers EMP with a 200/severity stun, which on a PvP server would
  * turn a one-voucher grenade into an execution button. Here it browns out
  * and reboots like every other piece of chrome.
@@ -520,9 +600,9 @@
 // METEOR PILEDRIVER (contract-exclusive prototype)
 // =========================================================================
 
-/// Leap reach in tiles ("any visible tile" — a full view ring).
+/// Leap reach in tiles ("any visible tile", a full view ring).
 #define CYBERWARE_PILEDRIVER_RANGE 8
-/// Time between liftoff and impact — the dodge window under the shadow.
+/// Time between liftoff and impact: the dodge window under the shadow.
 #define CYBERWARE_PILEDRIVER_AIRTIME (0.8 SECONDS)
 /// Impact radius around the landing tile.
 #define CYBERWARE_PILEDRIVER_IMPACT_RANGE 2
@@ -534,8 +614,8 @@
 /// deals 75 (/obj/machinery/vending.squish_damage); this sits a notch under it,
 /// because unlike a vending machine this one paints the tile first.
 #define CYBERWARE_PILEDRIVER_CRUSH_DAMAGE 60
-/// Chance the crush spreads across the whole body instead of hammering limbs —
-/// tg's prob(30) in [/atom/movable/proc/fall_and_crush], and the roll that
+/// Chance the crush spreads across the whole body instead of hammering limbs.
+/// Tg's prob(30) in [/atom/movable/proc/fall_and_crush], and the roll that
 /// decides whether your skeleton survives being landed on.
 #define CYBERWARE_PILEDRIVER_CRUSH_SPREAD_CHANCE 30
 /// Wound bonus on each limb hit. tg's crush uses 5, which is what actually
@@ -547,31 +627,39 @@
 #define CYBERWARE_PILEDRIVER_CRUSH_SQUISH (30 SECONDS)
 
 /**
- * # Meteor Piledriver (prototype, legs, load 8 — never sold)
+ * # Meteor Piledriver (prototype, legs, load 8, never sold)
  *
  * Vex's hard-contract exclusive, and the top of the Shock Coils -> Hopper
- * leg ladder. Click any visible open tile — or a person standing on one: you
- * launch, a landing shadow paints the tile for most of a second (the warframe
- * rule — telegraphed, dodgeable), and then you arrive like ordnance.
+ * leg ladder. Click any open tile you can see and reach in a straight line, or
+ * a person standing on one: you launch, a landing shadow paints the tile for
+ * most of a second (the warframe rule, telegraphed, dodgeable), and then you
+ * arrive like ordnance. The arc clears tables, railings and crates; it does
+ * not cross walls, windows, grilles or shut doors, see
+ * [/datum/action/cooldown/cyberware/proc/arc_blocker].
  *
  * Whoever is still standing on the marked tile when the boots arrive gets
  * crushed, on tg's tipped-vending-machine pattern: heavy brute driven into
  * random limbs, which is what snaps bone, plus a paralyze and the flattened
- * sprite. Everything in the two tiles around them only catches the shockwave —
- * 20 brute, knocked flat through stun resistance, hurled clear — and every
+ * sprite. Everything in the two tiles around them only catches the shockwave,
+ * 20 brute, knocked flat through stun resistance, hurled clear, and every
  * screen in view shakes.
  *
  * The tile is locked in at liftoff, not at landing, so the shadow never lies:
  * step off it and the boots come down on empty deck. The shockwave does not
- * discriminate either — crewmates under the shadow have most of a second to be
+ * discriminate either, crewmates under the shadow have most of a second to be
  * somewhere else.
  */
 /obj/item/organ/cyberimp/cyberware/piledriver
 	name = "\improper Meteor Piledriver frame"
-	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. Everyone underneath gets a shadow to look at before you get there."
+	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. It wants an open lane to throw you down, and everyone underneath gets a shadow to look at before you get there."
 	icon_state = "piledriver"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
+	// Either calf is a valid incision site; see the Shock Coils for the why.
+	valid_zones = list(
+		BODY_ZONE_L_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+		BODY_ZONE_R_LEG = ORGAN_SLOT_CYBERWARE_LEGS,
+	)
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 8
 	tier = CYBERWARE_TIER_4
@@ -597,7 +685,7 @@
 
 /datum/action/cooldown/cyberware/piledriver_leap
 	name = "Meteor Leap"
-	desc = "Launch onto any tile you can see, or onto somebody standing on one. A shadow warns everyone underneath first. A direct hit crushes whoever is still there — heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
+	desc = "Launch onto any tile you can see with a clear arc to it, or onto somebody standing on one. Walls, windows and shut doors stop the jump. A shadow warns everyone underneath first. A direct hit crushes whoever is still there: heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_piledriver"
 	cooldown_time = 60 SECONDS
@@ -625,15 +713,18 @@
 	if(destination.is_blocked_turf(exclude_mobs = TRUE) || islava(destination) || ischasm(destination))
 		jumper.balloon_alert(jumper, "no landing surface!")
 		return FALSE
+	if(arc_blocker(here, destination))
+		jumper.balloon_alert(jumper, "no room for the arc!")
+		return FALSE
 	StartCooldown()
-	// Liftoff: locked in for the whole arc — committed, like everything
+	// Liftoff: locked in for the whole arc, committed, like everything
 	// with this much telegraph. The TILE is what gets locked, never the mob,
 	// so the shadow the room is looking at is always where you actually land.
 	jumper.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), REF(src))
 	jumper.face_atom(destination)
 	var/launch_message = "You launch. The landing computer handles the rest."
 	if(isliving(target))
-		launch_message = "You launch. The landing computer locks the tile [target] is standing on — if [target.p_they()] move[target.p_s()], you come down on empty deck."
+		launch_message = "You launch. The landing computer locks the tile [target] is standing on, if [target.p_they()] move[target.p_s()], you come down on empty deck."
 	jumper.visible_message(
 		span_boldwarning("[jumper]'s leg pistons CRACK the deck and [jumper.p_they()] launch[jumper.p_es()] skyward!"),
 		span_warning(launch_message),
@@ -648,7 +739,7 @@
 /**
  * Impact. Two separate things happen here.
  *
- * Anyone still standing on the marked tile is a direct hit and gets crushed —
+ * Anyone still standing on the marked tile is a direct hit and gets crushed,
  * see [proc/crush_victim]. Everyone ELSE within two tiles catches the shockwave
  * on the warframe ground-slam pattern: damage, named-argument knockdown through
  * stun resistance, hurl, and a camera quake for the room. Nobody eats both for
@@ -664,7 +755,7 @@
 		return
 	// The marked tile can stop existing mid-flight (someone blows the floor out
 	// from under the shadow), and a deleted turf has no coordinates left to
-	// search around — bail rather than hunt from a dead reference.
+	// search around, bail rather than hunt from a dead reference.
 	var/turf/final = destination
 	if(QDELETED(final))
 		jumper.balloon_alert(jumper, "landing fouled!")
@@ -706,7 +797,7 @@
 	for(var/mob/living/witness in view(7, final))
 		shake_camera(witness, 6, 2)
 	jumper.visible_message(
-		span_boldwarning("[jumper] lands like a meteor — the deck jumps!"),
+		span_boldwarning("[jumper] lands like a meteor, the deck jumps!"),
 		span_notice("You land. The deck takes most of it."),
 	)
 
@@ -721,7 +812,7 @@
  * body, hurts just as much, and the skeleton comes out intact. Then the
  * paralyze, the flattened sprite and the scream, same as the vendor.
  *
- * Crushed victims are excluded from the shockwave pass in [proc/land] — one
+ * Crushed victims are excluded from the shockwave pass in [proc/land], one
  * landing, one helping.
  */
 /datum/action/cooldown/cyberware/piledriver_leap/proc/crush_victim(mob/living/jumper, mob/living/victim)
@@ -757,7 +848,7 @@
 	playsound(victim, 'sound/effects/blob/blobattack.ogg', 40, TRUE)
 	playsound(victim, 'sound/effects/splat.ogg', 50, TRUE)
 	victim.visible_message(
-		span_boldwarning("[jumper] comes down square on top of [victim] — you hear something inside [victim.p_them()] go!"),
+		span_boldwarning("[jumper] comes down square on top of [victim]. You hear something inside [victim.p_them()] go!"),
 		span_userdanger("[jumper] lands on you with the whole weight of the frame behind [jumper.p_them()]. Things break."),
 	)
 	log_combat(jumper, victim, "crushed with a Meteor Piledriver landing")

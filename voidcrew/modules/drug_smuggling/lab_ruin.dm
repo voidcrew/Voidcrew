@@ -2,8 +2,8 @@
  * # Drug lab ruin template
  *
  * The hidden kitchen for the drug smuggling mission. unpickable keeps it out
- * of natural seeding and replacement respawns (the rare_space.dm pattern) —
- * the only road to one is an active drug run raising it at mission start
+ * of natural seeding and replacement respawns (the rare_space.dm pattern).
+ * The only road to one is an active drug run raising it at mission start
  * (see mission.dm, spawn_lab_ruin()).
  */
 /datum/map_template/ruin/space/drug_lab

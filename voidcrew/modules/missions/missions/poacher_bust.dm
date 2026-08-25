@@ -94,7 +94,7 @@
 
 	/// /datum/overmap/planet typepath this bust is themed on
 	var/bust_planet_type
-	/// The rolled bust table row (points into the static table — never mutate)
+	/// The rolled bust table row (points into the static table, never mutate)
 	var/list/bust_row
 	/// The rolled contract-grudge line (stable across text rebuilds)
 	var/flavor_line
@@ -202,7 +202,7 @@
 
 	wipe = new
 	// The squad scales with the zone: green gets rifles and a knife, deeper
-	// zones add the trailboss's SMG and more guns. Exact subtypes only — the
+	// zones add the trailboss's SMG and more guns. Exact subtypes only, the
 	// /survivor/random variant self-replaces on Initialize and would escape
 	// tracking.
 	var/list/squad_types = list()
@@ -254,7 +254,7 @@
 	return data
 
 // =========================================================================
-// THE CAMP WIPE — field-spawn the outfit, count the squad down
+// THE CAMP WIPE: field-spawn the outfit, count the squad down
 // =========================================================================
 
 /**
@@ -266,7 +266,7 @@
  *
  * Death handling: a poacher's death always counts (attribution only flavors
  * the confirm line), so the wipe can't stall. A live poacher qdeleting
- * WITHOUT dying — site unload, admin cleanup — routes through the mission's
+ * WITHOUT dying (site unload, admin cleanup) routes through the mission's
  * quest-loss policy (FAIL) instead, so despawns can't hand out a free wipe.
  */
 /datum/mission_objective/field/wipe_camp
@@ -436,7 +436,15 @@
 			continue
 		if(victim.lastattackerckey && crew_mob.ckey == victim.lastattackerckey)
 			return TRUE
-		if(crew_mob.z == where.z && get_dist(crew_mob, victim) <= confirm_range)
+		// Proximity, but only within the same SITE. confirm_range is 9 tiles and the gutter
+		// between two slots on a packed level is 5, so a bare z + get_dist test banks the
+		// neighbouring crew's kills through an indestructible wall.
+		var/turf/crew_turf = get_turf(crew_mob)
+		if(!crew_turf || crew_turf.z != where.z)
+			continue
+		if(!turfs_share_map_site(crew_turf, where))
+			continue
+		if(get_dist(crew_mob, victim) <= confirm_range)
 			return TRUE
 	return FALSE
 
@@ -456,7 +464,7 @@
 	return "Camp cleared"
 
 // =========================================================================
-// EVIDENCE TURN-IN — the counted bound hand-over, case-file flavored
+// EVIDENCE TURN-IN, the counted bound hand-over, case-file flavored
 // =========================================================================
 
 /**

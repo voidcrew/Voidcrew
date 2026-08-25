@@ -1,6 +1,6 @@
 /obj/machinery/computer/nanite_cloud_controller
 	name = "nanite cloud controller"
-	desc = "Stores and controls nanite cloud backups."
+	desc = "Stores and controls nanite cloud backups. Cloud networks are local to the ship this console is aboard: nanites can only join one by having their cloud ID set in a nanite chamber on the same ship, and cloud IDs on other ships are separate networks even if the numbers match."
 	icon = 'voidcrew/modules/nanites/icons/research.dmi'
 	icon_state = "nanite_cloud_controller"
 	circuit = /obj/item/circuitboard/computer/nanite_cloud_controller
@@ -69,8 +69,10 @@
 			return backup
 
 /obj/machinery/computer/nanite_cloud_controller/proc/generate_backup(cloud_id, mob/user)
-	if(SSnanites.get_cloud_backup(cloud_id, TRUE))
-		to_chat(user, span_warning("Cloud ID already registered."))
+	//Clouds are ship-local, so only IDs already used aboard this ship collide.
+	//A console that somehow isn't on a ship checks globally, which is just conservative.
+	if(SSnanites.get_cloud_backup(cloud_id, TRUE, get_ship_from_atom(src)))
+		to_chat(user, span_warning("Cloud ID already registered on this ship's network."))
 		return
 
 	var/datum/nanite_cloud_backup/backup = new(src)
@@ -125,6 +127,9 @@
 		data["has_disk"] = FALSE
 
 	data["new_backup_id"] = new_backup_id
+
+	var/obj/structure/overmap/ship/host_ship = get_ship_from_atom(src)
+	data["ship_name"] = host_ship ? host_ship.name : null
 
 	data["current_view"] = current_view
 	if(current_view)

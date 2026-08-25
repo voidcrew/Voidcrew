@@ -36,7 +36,8 @@
 
 /obj/item/storage/briefcase/secure/extraction/examine(mob/user)
 	. = ..()
-	. += span_notice("This case can hold up to 5 ship parts.")
+	. += span_notice("This case can hold up to 5 ship parts. Parts inside it are banked to your account when your ship bluespace jumps or the round ends; loose parts are not.")
+	. += span_notice("Anyone can get one for free with the Request Extraction Case verb in the IC tab, but you can only carry one at a time.")
 	. += span_notice("You can only have one of these on you when you leave.")
 	. += span_notice("Use in-hand to set a PIN code and lock it.")
 

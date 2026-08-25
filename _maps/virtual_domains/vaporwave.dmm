@@ -44,7 +44,7 @@
 /area/ruin/space/virtual_domain)
 "eF" = (
 /turf/closed/indestructible/binary,
-/area/space)
+/area/space/virtual_domain)
 "fx" = (
 /obj/item/statuebust,
 /turf/open/floor/iron/vaporwave,

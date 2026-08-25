@@ -5,14 +5,14 @@
  * elevator used by trader outposts. Three drone actions:
  *
  * - Plan: projects a survey-console-style overlay of the elevator kit under the
- *   drone — a 3x3 alcove, a 3-tile backing wall and a ghost of the wall panel —
- *   tinted green/red per tile as the drone moves.
+ *   drone, a 3x3 alcove, a 3-tile backing wall and a ghost of the wall panel.
+ *   Tinted green/red per tile as the drone moves.
  * - Rotate: turns the kit so the panel wall faces another side.
  * - Confirm: stamps the kit down, overwriting the turfs and clearing anchored
  *   obstructions, then wires the panel and alcove into the outpost.
  *
  * Once installed, visiting ships are allocated per-ship hangar berths (see
- * outpost_hangar.dm) instead of the outpost's two reserve pads — the elevator
+ * outpost_hangar.dm) instead of the outpost's two reserve pads, the elevator
  * connects the concourse to every berth, exactly like the trader outposts.
  */
 

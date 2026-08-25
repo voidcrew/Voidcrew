@@ -139,14 +139,19 @@
 	///Should only be a key-value list of north/south/east/west = atom/movable/screen.
 	var/list/char_render_holders
 
+	// VOIDCREW EDIT START - the keysend flood window is measured in REALTIMEOFDAY rather
+	// than world.time. A lagging server advances world.time slower than the wall clock, so
+	// a world.time "second" stretches to cover several real ones and an ordinary player's
+	// keypresses pile up inside a single counting window. See /client/verb/keyDown.
 	///Amount of keydowns in the last keysend checking interval
 	var/client_keysend_amount = 0
-	///World tick time where client_keysend_amount will reset
+	///REALTIMEOFDAY at which client_keysend_amount will reset
 	var/next_keysend_reset = 0
-	///World tick time where keysend_tripped will reset back to false
+	///REALTIMEOFDAY at which this client's accumulated flood strikes are forgiven
 	var/next_keysend_trip_reset = 0
-	///When set to true, user will be autokicked if they trip the keysends in a second limit again
-	var/keysend_tripped = FALSE
+	///Over-threshold seconds racked up inside the strike window; enough of them autokicks
+	var/keysend_strikes = 0
+	// VOIDCREW EDIT END
 	///custom movement keys for this client
 	var/list/movement_keys = list()
 

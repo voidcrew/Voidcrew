@@ -67,6 +67,30 @@
 /// Power draw when firing
 #define MISSILE_LAUNCHER_POWER_FIRE 500
 
+// ========== ASSAULT POD DEFINES ==========
+// Assault pods are drop pods fired out of a launch tube at another vessel. They
+// are a boarding tool, not ordnance: the shield toll is small, the breach is
+// hand-cut rather than blasted, and the whole point is depositing the occupants
+// on the far side of somebody else's hull.
+
+/// Shield damage a pod deals when a shield stops it. Deliberately low - pods are
+/// for hulls that are already open or already unshielded, not for cracking shields.
+#define ASSAULT_POD_SHIELD_DAMAGE 100
+/// Power draw when launching a pod
+#define ASSAULT_POD_LAUNCH_POWER 1500
+/// Time to load a pod into a launch tube
+#define ASSAULT_POD_LOAD_TIME 6 SECONDS
+/// How many consecutive blocked tiles a pod chews through before it gives up and
+/// stops on the outside face. Two gets you through a double-thickness hull.
+#define ASSAULT_POD_BREACH_DEPTH 2
+/// Light-impact radius of the shock at the breach point (no devastation, no heavy -
+/// the hole is cut explicitly so it stays the size we asked for)
+#define ASSAULT_POD_IMPACT_LIGHT 2
+/// Brute damage the pod deals to dense objects standing in the breach path
+#define ASSAULT_POD_BREACH_DAMAGE 500
+/// Flight speed of an assault pod (delay in deciseconds per tile - heavier than a missile)
+#define ASSAULT_POD_SPEED 1
+
 // ========== COMBAT CONSOLE DEFINES ==========
 
 /// Range at which ships can be detected on sensors (in overmap tiles)
@@ -91,6 +115,15 @@
 
 /// Cooldown between interdiction attempts (5 minutes)
 #define INTERDICTOR_COOLDOWN 5 MINUTES
+
+/// Rearm time after the target shield-bursts out of a completed lock. Deliberately far
+/// shorter than INTERDICTOR_COOLDOWN: the burst drains the target's entire shield pool,
+/// which takes ~47s (30s broken + regen back to the burst cost) before it can burst
+/// again - re-locking inside that window is the counterplay. Charging the full 5-minute
+/// cooldown here made the target's recovery 2-6x faster than the attacker's, so bursting
+/// out was strictly dominant and yellow-zone pirates (boardable only via interdiction)
+/// could never be caught.
+#define INTERDICTOR_BURST_BREAK_COOLDOWN 30 SECONDS
 
 /// Base speed reduction at 100% power (50% speed)
 #define INTERDICTOR_BASE_REDUCTION 0.5
@@ -150,6 +183,24 @@
 #define SHIP_SHIELD_BASE_POWER_COST 1.5 KILO WATTS
 /// Power draw per unit of ship mass (W per mass)
 #define SHIP_SHIELD_POWER_PER_MASS 15
+/// Ceiling on banked overhealth, as a fraction of max shield health. Overhealth is
+/// consumed before the main pool, so without a ceiling a ship idling at 200% power
+/// banks shield_regen_rate HP/sec forever and becomes unbreakable.
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_SHIELD_MAX_OVERHEALTH_MULT 0.5
+/// Maximum shield generators that can join one hull's pool. Max health and regen are
+/// plain sums over the pool, so the generator count is otherwise the one shield stat
+/// with no limit (turrets have LASER_MAX_TURRETS).
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_MAX_SHIELD_GENERATORS 4
+/// Fraction of max shield health the pool starts with the moment shields come online,
+/// on a fresh raise and on post-break reactivation alike. Shields used to establish at
+/// 0 HP, so under sustained fire (round 4 meteor shower) the first hit re-broke the
+/// pool and re-armed the full SHIP_SHIELD_BROKEN_COOLDOWN - shields could never come
+/// online at all once anything was shooting. 0.5 lets a single tier-1 generator's pool
+/// (500) survive one small meteor (200) on the way up.
+/// Balance number chosen without playtest data - tune freely.
+#define SHIP_SHIELD_RAISE_CHARGE_MULT 0.5
 
 // Stock part multipliers (per tier above 1)
 /// Capacitor: +50% max shield health per tier
@@ -269,6 +320,12 @@
 #define SIPHON_BASE_RATE 25
 /// Base warmup time before siphon activates
 #define SIPHON_BASE_WARMUP_TIME 5 SECONDS
+/// Balance below which a target isn't worth the lock - the siphon refuses to spin up
+#define SIPHON_MINIMUM_TARGET_BALANCE 50
+/// How long a siphoned account stays frozen after the last credit is pulled off it.
+/// The freeze lapses on its own instead of being released, so a siphon that dies
+/// without cleaning up can never leave a crew locked out of their money for the round.
+#define SIPHON_ACCOUNT_LOCK_GRACE (10 SECONDS)
 
 // Siphon stock part multipliers (per tier above 1)
 /// Capacitor: +25% siphon rate per tier
@@ -295,7 +352,7 @@
 
 /// Base power draw while warming up or running a payload (2 kW)
 #define EW_BASE_POWER_COST 2 KILO WATTS
-/// Signature ceiling — reaching it triggers a trace
+/// Signature ceiling: reaching it triggers a trace
 #define EW_SIGNATURE_MAX 100
 /// Signature decay per second while idle
 #define EW_SIGNATURE_DECAY 1.5

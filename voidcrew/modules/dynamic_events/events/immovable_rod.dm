@@ -3,7 +3,7 @@
  *
  * TG spawns the rod off the edge of the station z-level and aims it at the far side of
  * the map. Here it enters one wall of the target ship's debris corridor and leaves
- * through the other, and nothing outside that corridor ever sees it — see
+ * through the other, and nothing outside that corridor ever sees it, see
  * voidcrew/modules/dynamic_events/ship_debris.dm.
  *
  * The rod phases through everything, so unlike a meteor it never runs out of hits and

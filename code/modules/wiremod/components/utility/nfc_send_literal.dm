@@ -22,15 +22,15 @@
 	enc_key = add_input_port("Encryption Key", PORT_TYPE_STRING)
 	target = add_input_port("Target", PORT_TYPE_ATOM)
 
-/obj/item/circuit_component/list_literal/nfc_send/should_receive_input(datum/port/input/port)
-	. = ..()
-	if(!.)
-		return FALSE
-	/// If the server is down, don't use power or attempt to send data
-	return find_functional_ntnet_relay()
+// Voidcrew: this used to gate on find_functional_ntnet_relay(). NFC is a direct point to point
+// link that never touched NTNet, and the fork has no relays at all, so the gate did nothing but
+// keep the component permanently dead. The plain component check is the whole requirement.
 
 /obj/item/circuit_component/list_literal/nfc_send/input_received(datum/port/input/port)
 	. = ..()
 	if(isatom(target.value))
 		var/atom/target_enty = target.value
-		SEND_SIGNAL(target_enty, COMSIG_CIRCUIT_NFC_DATA_SENT, list("data" = list_output.value, "enc_key" = enc_key.value, "port" = WEAKREF(list_output)))
+		// Voidcrew: the sending circuit was missing from this signal, so nfc_receive() read the
+		// payload list as its `sender` argument and the real payload as null - the list literal
+		// variant could never deliver anything. nfc_send.dm has always passed it.
+		SEND_SIGNAL(target_enty, COMSIG_CIRCUIT_NFC_DATA_SENT, parent, list("data" = list_output.value, "enc_key" = enc_key.value, "port" = WEAKREF(list_output)))
