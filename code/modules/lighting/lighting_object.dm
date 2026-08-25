@@ -151,3 +151,25 @@
 
 /atom/movable/lighting_object/singularity_act()
 	return
+
+/atom/movable/lighting_object/singularity_pull()
+	return
+
+/atom/movable/lighting_object/blob_act()
+	return
+
+/atom/movable/lighting_object/on_changed_z_level(turf/old_turf, turf/new_turf, same_z_layer, notify_contents = TRUE)
+	SHOULD_CALL_PARENT(FALSE)
+	return
+
+/atom/movable/lighting_object/wash(clean_types)
+	SHOULD_CALL_PARENT(FALSE) // lighting objects are dirty, confirmed
+	return
+
+// Override here to prevent things accidentally moving around overlays.
+/atom/movable/lighting_object/forceMove(atom/destination, no_tp = FALSE, harderforce = FALSE)
+	if(harderforce)
+		return ..()
+
+/atom/movable/lighting_object/ref_search_details()
+	return "[text_ref(src)] (turf: [affected_turf ? "[affected_turf.type] @ [AREACOORD(affected_turf)]" : "null"] needs_update: [needs_update ? "true" : "false"])"

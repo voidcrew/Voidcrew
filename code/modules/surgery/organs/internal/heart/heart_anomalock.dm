@@ -74,7 +74,6 @@
 	// VOIDCREW EDIT END
 	if(!core)
 		return
-	clear_lightning_overlay(organ_owner)
 	UnregisterSignal(organ_owner, COMSIG_MOB_STATCHANGE)
 	UnregisterSignal(organ_owner, list(COMSIG_ATOM_PRE_EMP_ACT, COMSIG_ATOM_EMP_ACT)) // VOIDCREW EDIT - BAL-4: matches the insert-side registrations
 	tesla_zap(source = organ_owner, zap_range = 20, power = 2.5e5, cutoff = 1e3)

@@ -155,6 +155,10 @@
 						{
 							"type": "leaf",
 							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_crew_wipe"
 						}
 					]
 				}
@@ -188,6 +192,10 @@
 						{
 							"type": "leaf",
 							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_crew_wipe"
 						}
 					]
 				}
@@ -231,6 +239,10 @@
 						{
 							"type": "leaf",
 							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_crew_wipe"
 						}
 					]
 				}
