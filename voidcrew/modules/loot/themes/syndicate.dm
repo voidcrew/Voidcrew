@@ -72,7 +72,7 @@
 		/obj/item/melee/energy/sword/saber = 4,
 		// finished blueprint gun, prime only: an operative's issued weapon,
 		// not the schematic the black market fences
-		/obj/item/gun/ballistic/automatic/c20r = 4,
+		/obj/item/gun/ballistic/automatic/c20r/unrestricted = 4,
 		/obj/item/pen/sleepy = 4,
 		/obj/item/grenade/syndieminibomb = 3,
 		/obj/item/card/emag = 2,
@@ -81,7 +81,7 @@
 		/obj/item/blueprint/gun/bulldog = 3,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
-		/obj/item/gun/ballistic/automatic/l6_saw = 3,
+		/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = 3,
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
 		// operative chrome, 2-4 vouchers over the counter: the reflex shunt,
 		// the wire, and the refraction weave that drops the moment you swing

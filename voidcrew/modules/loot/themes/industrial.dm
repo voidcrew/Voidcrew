@@ -40,7 +40,7 @@
 		/obj/item/storage/toolbox/mechanical = 5,
 		/obj/item/weldingtool/largetank = 5,
 		// the line's own prototype SMG, never finished, still fires
-		/obj/item/gun/ballistic/automatic/proto = 5,
+		/obj/item/gun/ballistic/automatic/proto/unrestricted = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 	)

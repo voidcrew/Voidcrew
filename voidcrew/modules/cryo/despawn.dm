@@ -272,8 +272,8 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 /**
  * Takes the character off every crew they were on, not just the one whose pod they climbed
  * into. The body is about to stop existing, and a roster entry whose mind has no mob behind
- * it is a live trap - /datum/team/voidcrew/is_active_team() walks members' bodies without a
- * null check, and the derelict sweep counts a crew that cannot be counted.
+ * it is a live trap: the derelict sweep would otherwise count a crew that cannot be
+ * counted, and has_active_crew() reads this roster once a minute for every hull.
  */
 /obj/machinery/cryopod/proc/detach_from_crews(datum/mind/leaving_mind, despawn_name)
 	if(!leaving_mind)

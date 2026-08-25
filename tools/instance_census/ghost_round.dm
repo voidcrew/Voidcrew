@@ -596,11 +596,13 @@ GLOBAL_VAR_INIT(ghost_round_active, FALSE)
  * GLOB.player_list, isliving(), stat != DEAD, and get_area() is in shuttle.shuttle_areas.
  * Mirrored below with GLOB.player_list swapped for the sim crew and nothing else changed.
  *
- * This is the highest-consequence shim in the file. SSovermap.sweep_derelicts() calls it once
- * a minute and uses length() of the result as its definition of "anybody aboard"; without it
- * every one of the twelve hulls is abandoned after SHIP_CREWLESS_ABANDON_TIME and despawned an
- * hour in, taking its crew, its map zone and its berth with it. It is also what the whole
- * dynamic-events family counts through crewed_ship_count().
+ * This is the highest-consequence shim in the file. SSovermap.sweep_derelicts() reads
+ * occupancy once a minute through has_active_crew(), whose first clause is this proc; without
+ * the shim every one of the twelve hulls is abandoned after SHIP_CREWLESS_ABANDON_TIME and
+ * despawned twenty minutes later, taking its crew, its map zone and its berth with it. The
+ * predicate's second clause (roster alive on the hull's z) never fires for sim crew - they
+ * carry no client - so this shim alone is what keeps the fleet crewed. It is also what the
+ * whole dynamic-events family counts through crewed_ship_count().
  */
 /obj/structure/overmap/ship/get_event_crew()
 	. = ..()
@@ -2480,8 +2482,8 @@ SUBSYSTEM_DEF(ghost_round)
  *
  * death() rather than a qdel: the bodies stay, which is what a real wipe leaves behind, and
  * every mind-holding corpse aboard is exactly what despawn_derelict()'s teardown loop has to
- * deal with. The hull's own on_member_death() hooks fire, its manifest empties itself, and
- * SSovermap's sweep picks it up on its next pass with the clocks rewound underneath it.
+ * deal with. The hull's manifest empties itself, and SSovermap's sweep picks it up on its
+ * next pass with the clocks rewound underneath it.
  */
 /datum/controller/subsystem/ghost_round/proc/wipe_a_crew()
 	var/obj/structure/overmap/ship/victim

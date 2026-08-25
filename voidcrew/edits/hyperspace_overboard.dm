@@ -17,9 +17,10 @@
  * Two changes, both of which this file owns:
  *
  * 1. A grace zone. Within HYPERSPACE_HULL_GRACE_RANGE tiles of a hull, hyperspace does not
- *    take hold of you: no drift, and free movement in the lee of the ship, so stepping out
- *    to look at the engines is not instantly fatal and you can get back to the airlock.
- *    Drift past that and hyperspace has you, exactly as before.
+ *    take hold of you. That is ALL it does: the tiles are still vacuum and you still move
+ *    by pushing off the hull like anywhere else in space. It buys you the chance to get
+ *    back to the airlock instead of being dragged off the instant you step out. Drift past
+ *    it and hyperspace has you, exactly as before.
  *
  * 2. Somewhere real to land. find_overboard_landing() only ever picks a place that is
  *    actually loaded and that somebody could plausibly reach you at: a site with players
@@ -34,14 +35,19 @@
 #define OVERBOARD_SAMPLE_TRIES 256
 /// How far out from a hull we will look for a tile to put a castaway on.
 #define OVERBOARD_HULL_SEARCH_RANGE 3
+/// Pixels above the ground a planetfall's sprite starts its drop from.
+#define OVERBOARD_FALL_HEIGHT 480
+/// How long that drop takes.
+#define OVERBOARD_FALL_TIME (1.2 SECONDS)
 
 /**
  * The ship whose hull `checked` is within `grip_range` tiles of, or null.
  *
- * `require_hyperspace` is what keeps the grace zone honest: for that question only a
- * hyperspace tile counts, because granting free movement beside a DOCKED hull would let
- * anyone walk around in the vacuum of a berth. The origin lookup in find_overboard_landing()
- * wants the geometric answer instead, and passes FALSE.
+ * `require_hyperspace` is what keeps the grace zone honest, and it is load-bearing: only a
+ * hyperspace tile counts, so a rider set down beside the same hull once it has DOCKED reads
+ * as out of its lee and drops the grip, rather than keeping one alive at a berth forever.
+ * The origin lookup in voidcrew_dump_in_space() wants the plain geometric answer and passes
+ * FALSE.
  *
  * Walks the mobile ports rather than the stationary ones because there are a couple of
  * dozen of the former and hundreds of the latter, and the z filter throws out all but the
@@ -67,15 +73,17 @@
 	return null
 
 /**
- * Holds a movable in the lee of a hull it is standing next to in hyperspace.
+ * Marks a movable as standing in the lee of a hull in hyperspace.
  *
  * Granted by /turf/open/space/transit/initialize_drifting() instead of the shuttle_cling
  * that would otherwise drag the holder off, and dropped again the moment they are no
  * longer beside the hull - at which point hyperspace gets them after all.
  *
- * The free-movement grant is the point of the grace zone. Two tiles out there is nothing
- * within reach to push off, so without it the "safe" ring would strand people just as
- * surely as the void did, only in sight of their own airlock.
+ * It grants NOTHING else. The grace zone is vacuum like any other: no gravity, no walking
+ * on it, and getting anywhere still means pushing off the hull or having a jetpack. The
+ * only thing it takes away is the hyperspace pull. Somebody who shoves off carelessly and
+ * ends up drifting in open corridor with nothing in reach is in exactly the spot space has
+ * always put them, and their ship arriving is what gets them out of it - see follow_anchor().
  */
 /datum/component/hyperspace_hull_grip
 	/// The hull we are keeping station with.
@@ -94,7 +102,6 @@
 	qdel(parent.GetComponent(/datum/component/shuttle_cling))
 
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	RegisterSignal(parent, COMSIG_MOVABLE_SPACEMOVE, PROC_REF(on_spacemove))
 	RegisterSignal(anchor, COMSIG_MOVABLE_MOVED, PROC_REF(on_anchor_moved))
 	RegisterSignal(anchor, COMSIG_QDELETING, PROC_REF(on_anchor_deleted))
 
@@ -106,11 +113,6 @@
 		UnregisterSignal(anchor, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 		anchor = null
 	return ..()
-
-/// Free movement while we are holding on.
-/datum/component/hyperspace_hull_grip/proc/on_spacemove(datum/source, movement_dir, continuous_move)
-	SIGNAL_HANDLER
-	return COMSIG_MOVABLE_STOP_SPACEMOVE
 
 /datum/component/hyperspace_hull_grip/proc/on_moved(datum/source)
 	SIGNAL_HANDLER
@@ -350,12 +352,46 @@
 				return landing
 	return null
 
-/// A fall from orbit. You live, and nothing you have is where it should be any more.
+/**
+ * A fall from orbit. You live, and nothing you have is where it should be any more.
+ *
+ * The mob is already standing on the impact tile - what is animated is the sprite, lifted
+ * to OVERBOARD_FALL_HEIGHT and dropped onto it on an accelerating curve, the same trick
+ * supplypod uses for a podfall. That way the landing reads as a landing to everyone
+ * watching (and to the faller, whose eye is on the tile they are coming down onto) instead
+ * of somebody blinking into existence already broken.
+ */
 /proc/overboard_planetfall(mob/living/castaway, turf/impact)
+	castaway.visible_message(
+		span_boldwarning("[castaway] comes down out of the sky!"),
+		span_userdanger("The ground comes up at you."),
+	)
+	// Nothing to do about it on the way down, and nothing that lets them walk out of the
+	// landing they are in the middle of.
+	castaway.Immobilize(OVERBOARD_FALL_TIME, ignore_canstun = TRUE)
+	playsound(impact, 'sound/items/weapons/mortar_whistle.ogg', 60, TRUE)
+
+	// Above the scenery for the descent, so a tall structure on the landing tile does not
+	// swallow the sprite halfway down. Captured rather than assumed: a mob lying down or
+	// riding something is not on its initial() layer.
+	var/old_layer = castaway.layer
+	castaway.layer = FLY_LAYER
+	castaway.pixel_z = OVERBOARD_FALL_HEIGHT
+	animate(castaway, pixel_z = castaway.base_pixel_z, time = OVERBOARD_FALL_TIME, easing = QUAD_EASING|EASE_IN)
+	addtimer(CALLBACK(GLOBAL_PROC_REF(overboard_planetfall_impact), castaway, impact, old_layer), OVERBOARD_FALL_TIME)
+
+/// The landing itself, once the sprite has actually reached the ground.
+/proc/overboard_planetfall_impact(mob/living/castaway, turf/impact, old_layer)
+	if(QDELETED(castaway))
+		return
+	castaway.layer = old_layer
+	castaway.pixel_z = castaway.base_pixel_z
+
 	castaway.visible_message(
 		span_boldwarning("[castaway] hits the ground hard enough to hear."),
 		span_userdanger("You hit the ground. You feel bones break all over your body."),
 	)
+	new /obj/effect/temp_visual/mook_dust(get_turf(castaway))
 	playsound(impact, 'sound/effects/wounds/crack1.ogg', 100, TRUE)
 	if(iscarbon(castaway))
 		var/mob/living/carbon/broken = castaway
@@ -405,3 +441,5 @@
 #undef HYPERSPACE_HULL_GRACE_RANGE
 #undef OVERBOARD_SAMPLE_TRIES
 #undef OVERBOARD_HULL_SEARCH_RANGE
+#undef OVERBOARD_FALL_HEIGHT
+#undef OVERBOARD_FALL_TIME

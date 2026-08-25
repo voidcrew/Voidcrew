@@ -630,9 +630,12 @@
  * # Meteor Piledriver (prototype, legs, load 8, never sold)
  *
  * Vex's hard-contract exclusive, and the top of the Shock Coils -> Hopper
- * leg ladder. Click any visible open tile, or a person standing on one: you
- * launch, a landing shadow paints the tile for most of a second (the warframe
- * rule, telegraphed, dodgeable), and then you arrive like ordnance.
+ * leg ladder. Click any open tile you can see and reach in a straight line, or
+ * a person standing on one: you launch, a landing shadow paints the tile for
+ * most of a second (the warframe rule, telegraphed, dodgeable), and then you
+ * arrive like ordnance. The arc clears tables, railings and crates; it does
+ * not cross walls, windows, grilles or shut doors, see
+ * [/datum/action/cooldown/cyberware/proc/arc_blocker].
  *
  * Whoever is still standing on the marked tile when the boots arrive gets
  * crushed, on tg's tipped-vending-machine pattern: heavy brute driven into
@@ -648,7 +651,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/piledriver
 	name = "\improper Meteor Piledriver frame"
-	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. Everyone underneath gets a shadow to look at before you get there."
+	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. It wants an open lane to throw you down, and everyone underneath gets a shadow to look at before you get there."
 	icon_state = "piledriver"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -682,7 +685,7 @@
 
 /datum/action/cooldown/cyberware/piledriver_leap
 	name = "Meteor Leap"
-	desc = "Launch onto any tile you can see, or onto somebody standing on one. A shadow warns everyone underneath first. A direct hit crushes whoever is still there: heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
+	desc = "Launch onto any tile you can see with a clear arc to it, or onto somebody standing on one. Walls, windows and shut doors stop the jump. A shadow warns everyone underneath first. A direct hit crushes whoever is still there: heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_piledriver"
 	cooldown_time = 60 SECONDS
@@ -709,6 +712,9 @@
 	// is what lets you aim at a person instead of the deck beside them.
 	if(destination.is_blocked_turf(exclude_mobs = TRUE) || islava(destination) || ischasm(destination))
 		jumper.balloon_alert(jumper, "no landing surface!")
+		return FALSE
+	if(arc_blocker(here, destination))
+		jumper.balloon_alert(jumper, "no room for the arc!")
 		return FALSE
 	StartCooldown()
 	// Liftoff: locked in for the whole arc, committed, like everything

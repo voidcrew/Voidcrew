@@ -34,11 +34,11 @@ for attempt in 1 2 3 4 5; do
 		break
 	fi
 	echo ">> Compile attempt $attempt failed. If the errors are 'icons/map_icons/... invalid"
-	echo ">> expression', the sprite pipeline is rewriting .dmis (trap #8), retrying in 75s..."
+	echo ">> expression', something is rewriting .dmis (trap #8), retrying in 75s..."
 	sleep 75
 done
 if [ "$compile_ok" -ne 1 ]; then
-	echo ">> Compile failed after 5 attempts. Wait for the sprite pipeline to finish and retry."
+	echo ">> Compile failed after 5 attempts. Make sure nothing else is rewriting .dmis, then retry."
 	exit 1
 fi
 

@@ -599,14 +599,16 @@
  * # Hopper Pistons (T2, legs, load 3)
  *
  * Coiled myomer pistons in both calves: leap up to four tiles to any open
- * floor you can see, clearing tables, mobs and gaps outright. Rung two of
- * the leg ladder, evicts Shock Coils, gets evicted by the Meteor
- * Piledriver. Mechanism follows tg's dash (decoy + move + miss-whoosh) with
- * a click-targeted destination and a hard density check on the landing tile.
+ * floor you can see with a clear lane to it, clearing tables, mobs and gaps
+ * outright. Walls, windows and shut doors are jumped over by nobody, see
+ * [/datum/action/cooldown/cyberware/proc/arc_blocker]. Rung two of the leg
+ * ladder, evicts Shock Coils, gets evicted by the Meteor Piledriver.
+ * Mechanism follows tg's dash (decoy + move + miss-whoosh) with a
+ * click-targeted destination and a hard density check on the landing tile.
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way."
+	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way. Flat is the operative word: they will not put you over a wall."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -623,7 +625,7 @@
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
-	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see."
+	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
@@ -648,6 +650,9 @@
 		return FALSE
 	if(destination.is_blocked_turf() || islava(destination) || ischasm(destination))
 		jumper.balloon_alert(jumper, "landing blocked!")
+		return FALSE
+	if(arc_blocker(here, destination))
+		jumper.balloon_alert(jumper, "no room for the jump!")
 		return FALSE
 	StartCooldown()
 	playsound(here, 'sound/items/weapons/punchmiss.ogg', 40, TRUE, -1)

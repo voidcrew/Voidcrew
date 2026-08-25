@@ -58,19 +58,19 @@
 GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	// detachable magazines
 	/obj/item/gun/ballistic/automatic/ar = /obj/item/ammo_box/magazine/m223,
-	/obj/item/gun/ballistic/automatic/c20r = /obj/item/ammo_box/magazine/smgm45,
+	/obj/item/gun/ballistic/automatic/c20r/unrestricted = /obj/item/ammo_box/magazine/smgm45,
 	/obj/item/gun/ballistic/automatic/gyropistol = /obj/item/ammo_box/magazine/m75,
-	/obj/item/gun/ballistic/automatic/l6_saw = /obj/item/ammo_box/magazine/m7mm,
+	/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = /obj/item/ammo_box/magazine/m7mm,
 	/obj/item/gun/ballistic/automatic/m90 = /obj/item/ammo_box/magazine/m223,
 	/obj/item/gun/ballistic/automatic/mini_uzi = /obj/item/ammo_box/magazine/uzim9mm,
 	/obj/item/gun/ballistic/automatic/pistol = /obj/item/ammo_box/magazine/m9mm,
 	/obj/item/gun/ballistic/automatic/pistol/deagle = /obj/item/ammo_box/magazine/m50,
 	/obj/item/gun/ballistic/automatic/pistol/m1911 = /obj/item/ammo_box/magazine/m45,
-	/obj/item/gun/ballistic/automatic/proto = /obj/item/ammo_box/magazine/smgm9mm,
+	/obj/item/gun/ballistic/automatic/proto/unrestricted = /obj/item/ammo_box/magazine/smgm9mm,
 	/obj/item/gun/ballistic/automatic/tommygun = /obj/item/ammo_box/magazine/tommygunm45,
 	/obj/item/gun/ballistic/automatic/wt550 = /obj/item/ammo_box/magazine/wt550m9,
 	/obj/item/gun/ballistic/rifle/sniper_rifle = /obj/item/ammo_box/magazine/sniper_rounds,
-	/obj/item/gun/ballistic/shotgun/bulldog = /obj/item/ammo_box/magazine/m12g,
+	/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = /obj/item/ammo_box/magazine/m12g,
 	// internal magazines: loose rounds instead
 	/obj/item/gun/ballistic/revolver = /obj/item/ammo_box/a357,
 	/obj/item/gun/ballistic/revolver/c38/detective = /obj/item/ammo_box/c38,

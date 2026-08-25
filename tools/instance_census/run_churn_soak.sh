@@ -25,7 +25,7 @@
 #                       detached overnight run: if the babysitter is killed, the soak must
 #                       not die with it. The harness qdel(world)s itself at its verdict
 #                       either way, so the kill is only ever a safety net.
-#   DM_DEFINES          extra dm.exe flags, e.g. "-DCBT" if a concurrent sprite pipeline is
+#   DM_DEFINES          extra dm.exe flags, e.g. "-DCBT" if something else is concurrently
 #                       rewriting .dmi files and the compile reports bogus icon errors
 #
 # Exit codes: 0 = PASS, 1 = FAIL (verdict said FAIL, or the compile failed), 2 = the run
@@ -163,7 +163,7 @@ tail -n 20 "$COMPILE_OUT"
 # (cleanup_build above deleted it, but be explicit).
 if [ ! -f "$DMB" ] || ! grep -q -- "- 0 errors" "$COMPILE_OUT"; then
 	echo ">> Compile FAILED. Full output above. (If the errors name icons/map_icons/*, the"
-	echo ">> sprite pipeline is rewriting .dmi files - retry, or set DM_DEFINES=-DCBT.)"
+	echo ">> .dmi files are being rewritten concurrently - retry, or set DM_DEFINES=-DCBT.)"
 	rm -f "$COMPILE_OUT"
 	exit 1
 fi

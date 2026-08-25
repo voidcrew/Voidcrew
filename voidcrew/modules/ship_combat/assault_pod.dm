@@ -9,10 +9,14 @@
 // it - shields are the reason boarding parties wait for the guns to finish.
 //
 // Flow:
-// 1. Crew climbs into a drop pod and seals it (or loads it empty as a supply drop)
-// 2. Drag the sealed pod onto an assault pod tube (must be on the ship's exterior)
+// 1. Drag a drop pod onto an assault pod tube (must be on the ship's exterior)
+// 2. Boarders drag themselves onto the tube to climb in through the open hatch,
+//    then seal it (pod interface, or a crowbar on the tube). Moving climbs back
+//    out while the hatch is open. Sealing a crewed pod first and loading it
+//    whole still works.
 // 3. Tube is multitool-linked to the weapons system, same as a missile launcher
-// 4. Operator enters the targeting camera, aims at the target hull, launches
+// 4. Operator enters the targeting camera, aims at the target hull, launches.
+//    A tube only fires a sealed pod.
 
 // ========== FLYING POD ==========
 
@@ -299,7 +303,7 @@
 
 /obj/machinery/ship_combat/pod_launcher
 	name = "assault pod tube"
-	desc = "A hull-mounted tube for throwing a crewed drop pod at somebody else's ship. Drag a sealed pod onto it to load, then link it to a weapons system with a multitool. Use a wrench to secure or unsecure."
+	desc = "A hull-mounted tube for throwing a crewed drop pod at somebody else's ship. Drag a pod onto it to load, drag yourself onto it to climb in. Link it to a weapons system with a multitool. Use a wrench to secure or unsecure."
 	icon = 'voidcrew/icons/obj/machines/pod_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
@@ -344,14 +348,18 @@
 	. = ..()
 	. += span_notice("Tube ID: [tube_id]")
 	if(loaded_pod)
-		. += span_notice("Loaded: [loaded_pod.name]")
+		. += span_notice("Loaded: [loaded_pod.name] - hatch [loaded_pod.opened ? "open" : "sealed"].")
 		var/rider_count = 0
 		for(var/mob/living/rider in loaded_pod)
 			rider_count++
 		if(rider_count)
 			. += span_warning("Occupancy: [rider_count].")
+		if(loaded_pod.opened)
+			. += span_notice("Drag yourself onto the tube to climb into the pod. Crowbar the tube to seal the hatch. It only fires sealed.")
+		else
+			. += span_notice("Crowbar the tube to open the pod's hatch. Alt-click to access the pod's interface.")
 	else
-		. += span_warning("Empty. Drag a sealed drop pod onto the tube to load it.")
+		. += span_warning("Empty. Drag a drop pod onto the tube to load it.")
 	if(!is_on_exterior())
 		. += span_warning("NOT ON EXTERIOR - must be against the outside of the hull to launch!")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
@@ -362,11 +370,17 @@
 
 /obj/machinery/ship_combat/pod_launcher/update_icon_state()
 	. = ..()
-	icon_state = loaded_pod ? "loaded" : "unloaded"
+	if(!loaded_pod)
+		icon_state = "unloaded"
+	else
+		icon_state = loaded_pod.opened ? "loaded_open" : "loaded"
 
 // ========== LOADING ==========
 
 /obj/machinery/ship_combat/pod_launcher/mouse_drop_receive(atom/dropped, mob/user, params)
+	if(isliving(dropped))
+		try_board(dropped, user)
+		return
 	var/obj/structure/closet/supplypod/drop_pod/pod = dropped
 	if(!istype(pod))
 		return
@@ -382,9 +396,6 @@
 	if(loaded_pod)
 		to_chat(user, span_warning("[src] already has a pod loaded!"))
 		return
-	if(pod.opened)
-		to_chat(user, span_warning("[pod] has to be sealed before it goes in the tube!"))
-		return
 	if(pod.used)
 		to_chat(user, span_warning("[pod] has already been fired - its drive is spent."))
 		return
@@ -399,7 +410,7 @@
 	// Verify everything is still valid
 	if(QDELETED(pod) || !Adjacent(user) || !user.Adjacent(pod))
 		return
-	if(loaded_pod || pod.opened || pod.used)
+	if(loaded_pod || pod.used)
 		return
 
 	pod.set_anchored(FALSE)
@@ -417,6 +428,58 @@
 		to_chat(rider, span_userdanger("The pod slides into a launch tube and locks. You are now ordnance."))
 	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 	update_appearance()
+
+// ========== BOARDING ==========
+
+/**
+ * Drag a mob onto the tube to put them in the loaded pod through its open hatch.
+ *
+ * This is the normal way aboard: rack an open pod, climb in, seal up. It beats
+ * the old dance of sealing people into a pod on the deck and then dragging the
+ * whole thing into the tube with them rattling around inside.
+ */
+/obj/machinery/ship_combat/pod_launcher/proc/try_board(mob/living/target, mob/living/user)
+	if(!istype(user) || !user.can_perform_action(src))
+		return
+	if(machine_stat & BROKEN)
+		to_chat(user, span_warning("[src] is broken!"))
+		return
+	if(!loaded_pod)
+		to_chat(user, span_warning("There's no pod in the tube to climb into!"))
+		return
+	if(!loaded_pod.opened)
+		to_chat(user, span_warning("The pod's hatch is sealed! Crowbar the tube or use the pod's interface to open it."))
+		return
+	var/self_boarding = (target == user)
+	if(!self_boarding && !target.Adjacent(src))
+		to_chat(user, span_warning("[target] needs to be next to the tube!"))
+		return
+	if(!loaded_pod.insertion_allowed(target))
+		to_chat(user, span_warning("[target] won't fit in the pod."))
+		return
+
+	to_chat(user, self_boarding ? span_notice("You start climbing into [loaded_pod]...") : span_notice("You start stuffing [target] into [loaded_pod]..."))
+	if(!do_after(user, loaded_pod.enter_time, src))
+		return
+	// The pod may have been sealed, fired or ejected during the climb
+	if(QDELETED(loaded_pod) || !loaded_pod.opened || !user.Adjacent(src))
+		return
+	if(!self_boarding && !target.Adjacent(src))
+		return
+	if(!loaded_pod.insertion_allowed(target))
+		return
+
+	if(!isnull(target.buckled))
+		target.buckled.unbuckle_mob(target, force = TRUE)
+	target.forceMove(loaded_pod)
+	user.visible_message(
+		span_notice("[user] [self_boarding ? "climbs into" : "stuffs [target] into"] [src]."),
+		span_notice("You [self_boarding ? "climb into" : "stuff [target] into"] [src]."),
+	)
+	if(!self_boarding)
+		log_combat(user, target, "stuffed", addition = "inside of [src]")
+	to_chat(target, span_notice("You're in the pod. Seal the hatch through the pod's interface, or move to climb back out."))
+	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 
 // ========== UNLOADING ==========
 
@@ -474,11 +537,16 @@
 	invalidate_exterior_cache() // Position may have changed
 	return ITEM_INTERACT_SUCCESS
 
-// Alt+click to rotate when unwrenched
+// Alt+click: pod interface when a pod is racked, rotate when unwrenched
 /obj/machinery/ship_combat/pod_launcher/click_alt(mob/user)
 	if(!user.can_perform_action(src, NEED_HANDS))
 		return CLICK_ACTION_BLOCKING
 	if(anchored)
+		if(loaded_pod)
+			// The racked pod can't be clicked directly, so the tube hands its
+			// interface through
+			loaded_pod.ui_interact(user)
+			return CLICK_ACTION_SUCCESS
 		to_chat(user, span_warning("Unwrench [src] first to rotate it!"))
 		return CLICK_ACTION_BLOCKING
 	if(loaded_pod)
@@ -495,6 +563,18 @@
 		tool.buffer = src
 		balloon_alert(user, "tube buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
+		return TRUE
+
+	// Crowbar works the loaded pod's hatch - the pod itself is out of reach
+	// inside the machine, so the tube proxies it. Panel open falls through to
+	// deconstruction as usual (which is blocked while loaded anyway).
+	if(W.tool_behaviour == TOOL_CROWBAR && loaded_pod && !panel_open)
+		if(loaded_pod.opened)
+			loaded_pod.setClosed()
+			balloon_alert(user, "hatch sealed")
+		else
+			loaded_pod.open_pod(loaded_pod)
+			balloon_alert(user, "hatch opened")
 		return TRUE
 
 	// Standard deconstruction - only allow if empty
@@ -675,6 +755,7 @@
 		"loaded" = loaded_pod ? 1 : 0,
 		"pod_name" = loaded_pod ? loaded_pod.name : null,
 		"occupants" = riders,
+		"sealed" = (loaded_pod && !loaded_pod.opened) ? 1 : 0,
 		"ready" = can_fire(locked_target),
 		"on_exterior" = on_ext,
 		"enabled" = on_ext && anchored && !(machine_stat & (BROKEN|NOPOWER)),

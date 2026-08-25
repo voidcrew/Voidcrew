@@ -243,7 +243,7 @@
 /area/ruin/unpowered)
 "KT" = (
 /obj/structure/safe/floor,
-/obj/item/gun/ballistic/automatic/c20r,
+/obj/item/gun/ballistic/automatic/c20r/unrestricted,
 /obj/item/implantcase/weapons_auth,
 /obj/item/implanter,
 /obj/item/ammo_box/magazine/smgm45,

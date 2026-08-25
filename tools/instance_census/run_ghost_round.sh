@@ -224,7 +224,7 @@ COMPILE_OUT="$(mktemp)"
 tail -n 25 "$COMPILE_OUT"
 if [ ! -f "$DMB" ] || ! grep -q -- "- 0 errors" "$COMPILE_OUT"; then
 	echo ">> Compile FAILED. Full output above. (If the errors name icons/map_icons/*, the"
-	echo ">> sprite pipeline is rewriting .dmi files - retry, or set DM_DEFINES=-DCBT.)"
+	echo ">> .dmi files are being rewritten concurrently - retry, or set DM_DEFINES=-DCBT.)"
 	rm -f "$COMPILE_OUT"
 	exit 1
 fi

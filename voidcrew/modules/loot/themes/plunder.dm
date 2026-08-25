@@ -60,7 +60,7 @@
 		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
 		// finished blueprint gun, prime only: boarding hardware nobody
 		// filed a schematic for
-		/obj/item/gun/ballistic/shotgun/bulldog = 4,
+		/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 4,
 		/obj/item/melee/energy/sword/pirate = 4,
 		/obj/item/stack/sheet/mineral/diamond = 4,
 		/obj/item/reagent_containers/cup/glass/bottle/absinthe/premium = 4,

@@ -39,19 +39,26 @@
  *
  * Crew death was never the only way a ship empties: crews log off, cryo out, or walk
  * away, and none of those paths ever flagged the hull. Occupancy is the one honest
- * signal, so the sweep runs on it - deliberately with no carve-outs for crews that
- * are planetside, dead or logged off. A crew that is not aboard for this long IS the
- * abandoned ship. Getting it back afterwards is one claim at the helm.
+ * signal, so the sweep runs on it - but occupancy means the crew is still THERE, not
+ * that they are standing inside the hull. A landing party exploring the planet their
+ * ship is parked on is a crew, and losing the ship they walked out of is not a
+ * lifecycle rule, it is a bug. has_active_crew() is the predicate: anyone aboard, or
+ * any of this hull's own roster alive, connected and on the hull's z-level.
+ *
+ * What is left after that is the case the clocks are actually for - everybody dead,
+ * logged off, cryoed out or genuinely gone elsewhere. That hull IS the abandoned ship.
+ * Getting it back afterwards is one claim at the helm.
  */
-/// No living, connected player physically aboard for this long -> the hull is abandoned
-/// (claimable derelict). Hulls that never had a crew at all skip the derelict window
-/// and despawn outright.
-#define SHIP_CREWLESS_ABANDON_TIME (30 MINUTES)
+/// No living, connected crew aboard or on the hull's z-level for this long -> the hull
+/// is abandoned (claimable derelict). Hulls that never had a crew at all skip the
+/// derelict window and despawn outright.
+#define SHIP_CREWLESS_ABANDON_TIME (20 MINUTES)
 /// An abandoned hull older than this despawns for good, releasing its berth, its map
 /// zone pin and its transit reservation. Claiming stops the clock; merely being aboard
-/// only postpones the teardown.
-#define SHIP_DERELICT_DESPAWN_TIME (1 HOURS)
-/// Cadence of the occupancy sweep. A minute of slack on half-hour clocks is nothing.
+/// only postpones the teardown. Forty minutes, end to end, from the last crewman
+/// leaving to the hull ceasing to exist.
+#define SHIP_DERELICT_DESPAWN_TIME (20 MINUTES)
+/// Cadence of the occupancy sweep. A minute of slack on twenty-minute clocks is nothing.
 #define DERELICT_SWEEP_INTERVAL (1 MINUTES)
 /**
  * A hull docked at a dynamic encounter - a planet, a space ruin, an asteroid field, the
@@ -62,7 +69,7 @@
  * site's contents, and can_release_interior() refuses on either. Nothing else undocks a
  * hull whose crew is dead, so the site's map zone (or turf reservation, and often a whole
  * z-level under it) stayed pinned until the hull itself despawned - the crewless clock
- * plus the claim window, an hour and a half later. Five minutes instead. The derelict
+ * plus the claim window, forty minutes later. Five minutes instead. The derelict
  * clocks above are untouched and keep running; they just run in open space, where they
  * cost a hull rather than a hull and an encounter.
  */

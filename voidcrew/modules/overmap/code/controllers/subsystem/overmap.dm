@@ -127,27 +127,34 @@ SUBSYSTEM_DEF(overmap)
 
 /**
  * Once-a-minute derelict bookkeeping over the whole fleet. Occupancy is the only
- * signal: living, connected players physically aboard (get_event_crew()). Three clocks
- * run off it, the first independent of the other two:
+ * signal, and has_active_crew() is what it means: a living, connected player aboard,
+ * or one of the hull's own roster alive, connected and on the hull's z-level - the
+ * landing party standing on the planet their ship is parked on. Three clocks run off
+ * it, the first independent of the other two:
  *
- * 0. A hull berthed at a dynamic encounter with nobody alive at the site - not aboard,
- *    not anywhere on the site's own z-levels - is force-undocked after
- *    SHIP_SITE_DEAD_UNDOCK_TIME. It holds a berth flag and sits in the site's contents
+ * 0. A hull berthed at a dynamic encounter with nobody alive at the site - no active
+ *    crew, and no living player anywhere in the site's own footprint - is force-undocked
+ *    after SHIP_SITE_DEAD_UNDOCK_TIME. It holds a berth flag and sits in the site's contents
  *    for as long as it stays, and a dead crew never undocks, so an encounter's map zone
  *    (often a whole z-level) used to stay pinned until the hull itself despawned an hour
  *    and a half later. The hull is not otherwise touched; the two clocks below carry on
  *    against it in open space.
  *
- * 1. A hull with nobody aboard for SHIP_CREWLESS_ABANDON_TIME is abandoned - the
+ * 1. A hull with no active crew for SHIP_CREWLESS_ABANDON_TIME is abandoned - the
  *    claimable-derelict state. This is the trigger crew death alone never provided:
- *    a crew that logs off, cryos out or walks away is an abandoned ship too, and
- *    deliberately there are no carve-outs for crews that are planetside, dead or
- *    logged off. Getting the ship back afterwards is one claim at the helm. A hull
- *    that never carried a crew at all (roundstart spares, latejoin free hulls nobody
- *    took) skips the derelict window - there is nothing aboard worth exploring and
- *    no claim to honour.
+ *    a crew that logs off, cryos out or walks away is an abandoned ship too. Being
+ *    outdoors is not walking away, though - an away team on the hull's own z-level
+ *    holds it (has_active_crew()), and the carve-outs that stay refused are the ones
+ *    that matter: dead, ghosted, cryoed and logged-off crew count for nothing.
+ *    Getting the ship back afterwards is one claim at the helm. A hull that never
+ *    carried a crew at all (roundstart spares, latejoin free hulls nobody took) skips
+ *    the derelict window - there is nothing aboard worth exploring and no claim to
+ *    honour.
  * 2. An abandoned hull older than SHIP_DERELICT_DESPAWN_TIME despawns for good via
  *    despawn_derelict(). Anyone physically aboard postpones that; claiming cancels it.
+ *    No z-level credit here, and there is nothing to give it to - abandon_ship() has
+ *    already emptied the roster, so an ex-crew who want their hull back have to walk
+ *    into it and claim it at the helm rather than stand next to it.
  *
  * At most one hull despawns per sweep: teardown is the expensive part (HardDelete
  * has been measured at 600+ ms per call late in a long round), and the sweep comes
@@ -166,7 +173,7 @@ SUBSYSTEM_DEF(overmap)
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships.Copy())
 		if(QDELETED(ship))
 			continue
-		if(length(ship.get_event_crew()))
+		if(ship.has_active_crew())
 			ship.crewless_since = 0
 			ship.site_dead_since = 0
 			ship.site_dead_undock_refused = FALSE

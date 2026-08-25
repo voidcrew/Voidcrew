@@ -229,9 +229,9 @@
 	return TRUE
 
 /**
- * Faceplate art for the helm interface. Composited by tools/helm_plate/make_plate.py
- * from a generated metal texture; re-run that script if the panel GEOMETRY in
- * HelmComputer.tsx changes, or the bezels will no longer line up with the wells.
+ * Faceplate art for the helm interface. Its bezels are drawn at the exact panel
+ * GEOMETRY coordinates in HelmComputer.tsx, so the art has to be redrawn if that
+ * layout moves, or the bezels will no longer line up with the wells.
  */
 /datum/asset/simple/helm_faceplate
 	assets = list(

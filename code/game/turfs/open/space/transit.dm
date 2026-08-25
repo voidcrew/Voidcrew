@@ -37,9 +37,9 @@
 	SIGNAL_HANDLER
 
 	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
-	// does not take hold: no drift, and free movement in its lee, so stepping out of an
-	// airlock in flight is a mistake you can walk back from rather than an instant one-way
-	// trip. See voidcrew/edits/hyperspace_overboard.dm. Deliberately ahead of the
+	// does not take hold. The tiles are still vacuum and you still get around by pushing off
+	// the hull; all the grace buys is not being dragged off the instant you step out of an
+	// airlock in flight. See voidcrew/edits/hyperspace_overboard.dm. Deliberately ahead of the
 	// TRAIT_HYPERSPACED check below, so somebody hyperspace ALREADY has hold of gets caught
 	// when they drift back into a hull's lee. Living mobs only, and never anything holding
 	// a hyperspace exemption - confined ship debris is meant to keep flying (ship_debris.dm).

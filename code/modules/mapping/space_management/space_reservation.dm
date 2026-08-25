@@ -245,6 +245,15 @@
 		BL = i
 		if(!(BL.turf_flags & UNUSED_RESERVATION_TURF))
 			continue
+		// VOIDCREW EDIT: only consider grid-aligned origins. Free-form first-fit fragments
+		// the level into slivers no later block fits (measured 9.4 hulls/level vs an ideal
+		// 12-16), and walks every candidate turf doing it. Alignment makes released holes
+		// reusable by the next same-class hull and rejects ~63/64 candidates in two modulos.
+		// Anchored at band origin + 1: a block's cordon ring needs the turf OUTSIDE it, so
+		// the first origin that can ever pass calculate_cordon_turfs() is one in from the
+		// band edge - anchoring there keeps the outermost usable column/row on the grid.
+		if((BL.x - SHUTTLE_TRANSIT_BORDER - 1) % RESERVATION_ORIGIN_STRIDE || (BL.y - SHUTTLE_TRANSIT_BORDER - 1) % RESERVATION_ORIGIN_STRIDE)
+			continue
 		if(BL.x + width > world.maxx || BL.y + height > world.maxy)
 			continue
 		TR = locate(BL.x + width - 1, BL.y + height - 1, BL.z)

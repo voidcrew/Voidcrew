@@ -62,7 +62,7 @@
 		/obj/item/gun/energy/xray = 4,
 		// finished blueprint gun, prime only: the annex built its own
 		/obj/item/gun/energy/laser/carbine = 4,
-		/obj/item/gun/energy/temperature = 4,
+		/obj/item/gun/energy/temperature/unrestricted = 4,
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
 		/obj/item/assembly/signaler/anomaly/grav = 3,
 		/obj/item/storage/backpack/holding = 2,
@@ -70,7 +70,7 @@
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/research_notes/loot/big = 4,
-		/obj/item/gun/energy/lasercannon = 3,
+		/obj/item/gun/energy/lasercannon/unrestricted = 3,
 		/obj/item/book/granter/action/spell/charge = 2,
 		/obj/item/gun/magic/wand/polymorph = 2,
 		/obj/item/research_notes/loot/genius = 2,

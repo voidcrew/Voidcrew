@@ -1,8 +1,6 @@
 ///Threshold above which it uses the ship sprites instead of the shuttle sprites
 #define SHIP_SIZE_THRESHOLD 150
 
-#define SHIP_RUIN (10 MINUTES)
-#define SHIP_DELETE (10 MINUTES)
 // SHIP_VIEW_RANGE now lives in voidcrew/_DEFINES/overmap.dm, the helm's sensor
 // code needs it too, and a file-local define was going out of scope before it.
 #define SHIP_SPEED_MULTIPLIER_DEFAULT 1
@@ -34,8 +32,6 @@
 	///State of the shuttle: idle, flying, docking, or undocking
 	var/state = OVERMAP_SHIP_FLYING
 	// display_name (name with faction appended) is declared on /obj/structure/overmap
-	///How long until the ship will delete itself.
-	var/deletion_timer
 	/// Whether this ship has been abandoned (no crew, claimable by anyone)
 	var/abandoned = FALSE
 	/// world.time abandon_ship() ran. The derelict-despawn clock: once it is
@@ -985,7 +981,6 @@
 
 /obj/structure/overmap/ship/proc/register_crewmember(mob/living/carbon/human/crewmate)
 	ship_team.add_member(crewmate.mind)
-	RegisterSignal(crewmate, COMSIG_LIVING_DEATH, PROC_REF(on_member_death))
 	// Serving crew never face the join password again, even after dying and respawning
 	if(crewmate.ckey)
 		password_cleared_ckeys[crewmate.ckey] = TRUE
@@ -1056,10 +1051,6 @@
 		former_members = ship_team.members?.Copy()
 		for(var/datum/mind/member in former_members)
 			ship_team.remove_member(member)
-
-	// Stop deletion timer if still running
-	if(deletion_timer)
-		end_deletion_timer()
 
 	// If flying and crash requested, trigger crash landing. Drive the latch along with it, or
 	// the hull reads sound while sitting in a crash site and the next real hit is swallowed by
@@ -1428,9 +1419,11 @@
  * The dynamic encounter this hull should be force-undocked from, or null if it should
  * stay where it is.
  *
- * Only called for hulls SSovermap's sweep has already found crewless, so "nobody aboard"
- * is a given here and is deliberately not re-tested - get_event_crew() walks the player
- * list against the shuttle's areas and the sweep has just paid for it.
+ * Only called for hulls SSovermap's sweep has already found crewless, so "no active crew"
+ * is a given here and is deliberately not re-tested - has_active_crew() walks the player
+ * list and this hull's roster, and the sweep has just paid for it. Note that clears the
+ * away-team case on its own: a hull berthed at a site its crew is exploring shares that
+ * site's z, so the crew hold it and this never runs against them.
  *
  * Restricted to the encounters that mint an interior and cannot give it back while a hull
  * sits in their contents. Trader outposts, player outposts and the colosseum are permanent
@@ -1484,6 +1477,64 @@
 	if(site_has_living_players(site))
 		return null
 	return site
+
+/**
+ * Whether anyone still counts as manning this hull, for the derelict clocks in
+ * SSovermap.sweep_derelicts(). TRUE keeps both clocks rewound.
+ *
+ * Two ways to qualify, and both want a living, client-connected player:
+ *
+ * 1. Physically aboard - get_event_crew(), any player at all, roster or not. Someone
+ *    standing in the engine room is someone the hull is not empty of, and a boarder
+ *    who has taken up residence is a crew as far as the teardown is concerned.
+ * 2. On the hull's own z-level, and on this hull's roster. A landing party is not an
+ *    abandoned crew: they walked out through their own airlock, they are alive, they
+ *    are connected, and their ship is thirty tiles away. Aboard-only read that as
+ *    derelict and handed their hull to whoever found it while they were standing on
+ *    it - so the crewless clock now needs them to be gone, not merely outdoors.
+ *
+ * The roster scoping in 2 is load-bearing, not decoration. Ship z-levels are shared:
+ * a flying hull sits on a transit level with every other hull in flight, and a berthed
+ * one sits on an encounter level packed with up to three neighbouring sites. A bare
+ * "is any player on this z" test reads the crew of the ship parked next door as ours
+ * and no hull in a busy round would ever go derelict. ship_team.members is the only
+ * list that says whose crew this is.
+ *
+ * Deliberately unchanged: crews that are dead, ghosted, cryoed out or logged off do
+ * not count under either clause, which is the whole point of the sweep. Cryo takes the
+ * mind off the roster on despawn (detach_from_crews()), so a pod full of logged-off
+ * crew empties the hull exactly as it should.
+ *
+ * Not folded into get_event_crew(): that answers "who is inside this ship" for dynamic
+ * events, which need mobs they can actually afflict, not a headcount of the away team.
+ */
+/obj/structure/overmap/ship/proc/has_active_crew()
+	if(length(get_event_crew()))
+		return TRUE
+	if(!LAZYLEN(ship_team?.members))
+		return FALSE
+	// The hull's own z, not the overmap token's. get_turf() rather than shuttle.z so a
+	// port mid-transit or with no loc reads as "no answer" instead of z 0, which would
+	// match every mob that is also nowhere.
+	var/turf/hull_turf = get_turf(shuttle)
+	if(!hull_turf)
+		return FALSE
+	for(var/datum/mind/member as anything in ship_team.members)
+		// `as anything` skips the istype filter, and a hard-deleted mind is nulled in
+		// place in this list rather than removed from it.
+		var/mob/living/body = member?.current
+		if(QDELETED(body) || !isliving(body))
+			continue
+		// A ghosted player's mind still points at the body they left, so DEAD covers
+		// the corpse and the client check covers everyone who logged off or aghosted.
+		if(body.stat == DEAD || !body.client)
+			continue
+		// get_turf() again: a player inside a locker, a mech or a bodybag reads z 0 off
+		// the mob itself.
+		var/turf/body_turf = get_turf(body)
+		if(body_turf?.z == hull_turf.z)
+			return TRUE
+	return FALSE
 
 /**
  * Whether any living, connected player is standing anywhere inside `site`'s interior.
@@ -1660,43 +1711,16 @@
 // is gone, so the overlay had no renderer and hails were invisible to everyone.
 // Transmissions are data the helm reads now.
 
-/**
- * Mob death/revive
- *
- * Handles when a mob is killed and revived, to check if a ship should be deleted or not.
- */
-/obj/structure/overmap/ship/proc/on_member_death(mob/living/target, gibbed)
-	SIGNAL_HANDLER
-	RegisterSignal(target, COMSIG_LIVING_REVIVE, PROC_REF(on_member_revive)) //if they come back.
-
-	if(!ship_team.is_active_team(src) && !deletion_timer)
-		start_deletion_timer()
-
-/obj/structure/overmap/ship/proc/on_member_revive(mob/living/target, gibbed)
-	SIGNAL_HANDLER
-
-	if(deletion_timer)
-		end_deletion_timer()
-
-	UnregisterSignal(target, COMSIG_LIVING_REVIVE)
-
-/**
- * Start/end deletion timers
- *
- * Starts and ends the timers to delete the ship
- */
-/obj/structure/overmap/ship/proc/start_deletion_timer()
-	switch(state)
-		if(OVERMAP_SHIP_FLYING, OVERMAP_SHIP_UNDOCKING, OVERMAP_SHIP_ACTING)
-			message_admins("\[SHUTTLE]: [display_name] will be abandoned (with crash) in [SHIP_DELETE / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
-			deletion_timer = addtimer(CALLBACK(src, PROC_REF(abandon_ship), TRUE), SHIP_DELETE, (TIMER_STOPPABLE|TIMER_UNIQUE))
-		if(OVERMAP_SHIP_IDLE, OVERMAP_SHIP_DOCKING)
-			message_admins("\[SHUTTLE]: [display_name] will be abandoned in [SHIP_RUIN / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
-			deletion_timer = addtimer(CALLBACK(src, PROC_REF(abandon_ship), FALSE), SHIP_RUIN, (TIMER_STOPPABLE|TIMER_UNIQUE))
-
-/obj/structure/overmap/ship/proc/end_deletion_timer()
-	deltimer(deletion_timer)
-	deletion_timer = null
+// The death-triggered deletion timer that used to live here is gone, and with it
+// /datum/team/voidcrew/is_active_team(), its only caller. It armed a fire-and-forget
+// ten-minute abandon_ship() the moment a crewman died with nobody left on the hull's
+// z-level, and nothing but that same crewman being revived, or a latejoin, could call
+// it off - a crew that fought its way back aboard in the meantime lost the ship
+// anyway, and a hull could go derelict in ten minutes flat while the crewless clock
+// still read twenty. SSovermap.sweep_derelicts() covers every way a hull empties,
+// death included, re-reads occupancy every minute instead of committing up front, and
+// is the only abandonment path now. register_crewmember() no longer hooks
+// COMSIG_LIVING_DEATH at all.
 
 
 
@@ -4523,8 +4547,6 @@
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT
 #undef SHIP_RENAME_COOLDOWN
 
-#undef SHIP_RUIN
-#undef SHIP_DELETE
 #undef DOCK_MOVE_MAX_ATTEMPTS
 #undef MANOEUVRE_STALL_TIMEOUT
 #undef DOCK_WARMUP_TIME

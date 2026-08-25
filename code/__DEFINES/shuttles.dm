@@ -47,7 +47,27 @@
 #define TRANSIT_REQUEST 1
 #define TRANSIT_READY 2
 
-#define SHUTTLE_TRANSIT_BORDER 16
+// VOIDCREW EDIT: 16 -> 12. Upstream sized this for shuttles that pass through transit; here
+// every flying ship LIVES on its transit block, so the border is most of the fleet's memory
+// bill - a Goon reserved 11.4x its own hull at 16. The geometry that bounds it:
+//   - widescreen view reaches 10 turfs past the hull edge; hull-to-neighbour gap is
+//     2*border + 2 cordons = 26, so even binocular/scope eye-shift (~+7) never shows a
+//     player the neighbouring ship or the cordon.
+//   - the transit pre_cordon_distance of 7 is measured in from the BLOCK edge, so the
+//     overboard trigger now sits border-7 = 5 turfs off the hull (was 9) - a tighter but
+//     still workable EVA leash. Anyone reworking hyperspace overboard: these two numbers
+//     move together.
+// Fleet mean transit cost drops ~26%; the reserved-level dead band (initialize_reserved_level
+// insets by this define) shrinks with it.
+#define SHUTTLE_TRANSIT_BORDER 12
+
+// VOIDCREW EDIT ADDITION: reservation origins snap to this grid (see _reserve_area()).
+// Bottom-left first-fit at 1-turf granularity packs mixed hull sizes into unreusable
+// slivers - measured 9.4 hulls per reserved level against an ideal 12-16. Aligning origins
+// makes freed holes come back in commensurate sizes (a despawned Goon's hole fits the next
+// Goon exactly) and cuts the ~50k-entry candidate scan by ~64x. Costs at most stride-1
+// turfs of padding per axis against blocks 35-90 wide.
+#define RESERVATION_ORIGIN_STRIDE 8
 
 #define PARALLAX_LOOP_TIME 25
 #define HYPERSPACE_END_TIME 5

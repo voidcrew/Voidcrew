@@ -266,11 +266,12 @@ rust_g64.dll
 /bin/dmm-tools.exe
 /bin/dreamchecker.exe
 
+# Local scratch, never committed
 /_bench_previews/
 /vc/
 /unit_test_run.dme
 wiki/deploy.local.ps1
 wiki/dist/
 
-# Local-only agent notes (infrastructure details, never commit)
+# Local-only notes (machine-specific infrastructure, never commit)
 *.local.md

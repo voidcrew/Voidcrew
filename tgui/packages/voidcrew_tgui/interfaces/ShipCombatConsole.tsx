@@ -117,6 +117,8 @@ type PodTube = {
   pod_name: string | null;
   /** How many people are strapped into the loaded pod. */
   occupants: number;
+  /** Hatch state: an open pod can be boarded but never fired. */
+  sealed: BooleanLike;
   ready: BooleanLike;
   on_exterior: BooleanLike;
   enabled: BooleanLike;
@@ -2300,6 +2302,8 @@ const SystemsTab = () => {
                   '-'
                 ) : tube.ready ? (
                   <span style={{ color: C_GOOD }}>Ready</span>
+                ) : !tube.sealed ? (
+                  <span style={{ color: C_WARN }}>Hatch open</span>
                 ) : (
                   <span style={{ color: C_WARN }}>Safed</span>
                 )}

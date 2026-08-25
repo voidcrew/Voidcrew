@@ -1208,7 +1208,7 @@
 	},
 /obj/structure/rack,
 /obj/item/gun/ballistic/automatic/wt550{
-	pin = /obj/item/firing_pin/explorer
+	pin = /obj/item/firing_pin
 	},
 /turf/open/indestructible/dark,
 /area/ruin/space/has_grav/powered/biooutpost)

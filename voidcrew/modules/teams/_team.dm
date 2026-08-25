@@ -50,15 +50,12 @@
 	return ..()
 
 ///Checks the team's members to see if anyone with a client is alive. returns TRUE if active.
-/datum/team/voidcrew/proc/is_active_team(obj/structure/overmap/ship/owner_ship)
-	for(var/datum/mind/team_minds as anything in members)
-		if(owner_ship.shuttle.z != team_minds.current.z) // different z, they don't matter anymore
-			continue
-		if(!team_minds.current.client)
-			continue
-		if(team_minds.current.stat <= HARD_CRIT)
-			return TRUE
-	return FALSE
+// is_active_team() lived here: a same-z liveness check over the roster, called from
+// exactly one place - the death-triggered ten-minute abandonment timer on
+// /obj/structure/overmap/ship, now retired. Its job belongs to
+// /obj/structure/overmap/ship/proc/has_active_crew(), which asks the same question
+// without dereferencing a null mind.current and reads mobs through get_turf() so a
+// crewman in a locker or a mech does not answer z 0.
 
 
 

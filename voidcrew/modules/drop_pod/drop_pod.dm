@@ -157,6 +157,8 @@
 	take_contents(src)
 	update_appearance()
 	after_close(null, FALSE)
+	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
+	tube?.update_appearance()
 
 /obj/structure/closet/supplypod/drop_pod/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
@@ -195,6 +197,33 @@
 /// can't fire its own descent - see ship_combat/assault_pod.dm.
 /obj/structure/closet/supplypod/drop_pod/proc/in_launch_tube()
 	return istype(loc, /obj/machinery/ship_combat/pod_launcher) ? loc : null
+
+/// Moving inside a tube-racked pod climbs back out through the open hatch.
+/// A sealed hatch stays sealed - opening it is a deliberate act, not a fidget,
+/// because an open hatch takes the tube off the weapons console's ready list.
+/obj/structure/closet/supplypod/drop_pod/relaymove(mob/living/user, direction)
+	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
+	if(!tube)
+		return ..()
+	if(user.stat)
+		return
+	if(!opened)
+		if(message_cooldown <= world.time)
+			message_cooldown = world.time + 5 SECONDS
+			to_chat(user, span_warning("The hatch is sealed. Open it through the pod's interface to climb out."))
+		return
+	user.forceMove(tube.drop_location())
+	user.visible_message(
+		span_notice("[user] climbs out of [tube]."),
+		span_notice("You climb out of [tube]."),
+	)
+
+// The tube's sprite tracks the racked pod's hatch, so every path that touches
+// the door has to poke it - UI buttons, crowbars and landings alike.
+/obj/structure/closet/supplypod/drop_pod/setOpened()
+	. = ..()
+	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
+	tube?.update_appearance()
 
 /obj/structure/closet/supplypod/drop_pod/ui_act(action, params, datum/tgui/ui)
 	. = ..()
@@ -291,11 +320,32 @@
 		return FALSE
 	return TRUE
 
+/**
+ * The mobile port this pod is currently inside, resolved on demand.
+ *
+ * Must not be cached from Initialize(). Lathes build designs in nullspace
+ * (`new design.build_path(null)`, _production.dm) and only move them onto a turf
+ * afterwards, so an Initialize()-time lookup runs with no turf at all and
+ * get_containing_shuttle() can never match a port - leaving every lathe-printed pod
+ * with a null ship_port for the rest of the round, reporting "no celestial body
+ * below" over a fully loaded planet. Pods also get dragged between ships, which a
+ * one-shot cache never sees either.
+ */
+/obj/structure/closet/supplypod/drop_pod/proc/get_ship_port()
+	if(ship_port && !QDELETED(ship_port) && ship_port.is_in_shuttle_bounds(src))
+		return ship_port
+	ship_port = SSshuttle.get_containing_shuttle(src)
+	return ship_port
+
 /obj/structure/closet/supplypod/drop_pod/proc/get_current_planet()
-	if(!ship_port)
+	var/obj/docking_port/mobile/voidcrew/port = get_ship_port()
+	if(!port)
+		return
+	var/obj/structure/overmap/ship/our_ship = port.current_ship
+	if(!our_ship)
 		return
 	var/obj/structure/overmap/planet/current_planet
-	var/list/current_overmap_objects = ship_port.current_ship.close_overmap_objects
+	var/list/current_overmap_objects = our_ship.close_overmap_objects
 
 	for(var/obj/structure/overmap/object in current_overmap_objects)
 		if(object.type in typesof(/obj/structure/overmap/planet))
@@ -476,14 +526,12 @@
 		pod_origin.checkLandingSpot(destination)
 
 /obj/structure/closet/supplypod/drop_pod/proc/CreateEye()
-	if(!ship_port)
-		return
-	if(QDELETED(ship_port))
-		ship_port = null
+	var/obj/docking_port/mobile/voidcrew/port = get_ship_port()
+	if(!port)
 		return
 	eyeobj = new /mob/eye/camera/drop_pod(null, src)
 	eyeobj.pod_origin = src
-	var/turf/ship_port_location = locate(ship_port.x, ship_port.y, ship_port.z)
+	var/turf/ship_port_location = locate(port.x, port.y, port.z)
 	var/image/I = image('icons/effects/alphacolors.dmi', ship_port_location, "red")
 	if(!I)
 		return

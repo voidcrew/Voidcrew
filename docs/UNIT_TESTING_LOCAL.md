@@ -65,13 +65,13 @@ Everything below is the "why".**
    `dreamdaemon.exe` lingers afterwards, it's a zombie. Kill it by PID, but check
    `Get-CimInstance Win32_Process -Filter "Name='dreamdaemon.exe'"` creation times first so
    you don't kill someone's live dev server.
-8. **Concurrent sprite regeneration breaks compiles.** If an icon pipeline (e.g. the
-   sprite generator stage) is running, it rewrites `.dmi` files in place and DreamMaker
-   fails with `'icons/map_icons/...': invalid expression` on whichever files are mid-write.
+8. **Concurrent icon edits break compiles.** If anything rewrites `.dmi` files in place
+   while a compile is running, DreamMaker fails with
+   `'icons/map_icons/...': invalid expression` on whichever files are mid-write.
    The files look fine afterwards. The failure is the race, not the files. Wait for the
-   pipeline to finish, then recompile.
+   other writer to finish, then recompile.
 9. **World boot time is wildly variable under load** (observed 1–16 min before the first
-   log line). Heavy local processes, other running worlds, the sprite pipeline, AV scans
+   log line). Heavy local processes, other running worlds, AV scans
    of the freshly compiled `.rsc`. Can make a world sit at ~22 MB for many minutes before
    `world/New()`. It usually recovers on its own; the runner script's phase-1 wait (boot
    detection via `data/logs/ci/game.log` appearing) exists for exactly this. Don't kill a

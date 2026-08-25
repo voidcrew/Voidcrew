@@ -1,10 +1,10 @@
 // ========== TGUI INTERFACE ==========
 
 /**
- * Faceplate art for the tactical interface. Composited by
- * tools/combat_plate/make_plate.py from a generated metal texture; re-run that
- * script if the panel GEOMETRY in ShipCombatConsole.tsx changes, or the bezels
- * will no longer line up with the wells.
+ * Faceplate art for the tactical interface. Its bezels are drawn at the exact
+ * panel GEOMETRY coordinates in ShipCombatConsole.tsx, so the art has to be
+ * redrawn if that layout moves, or the bezels will no longer line up with the
+ * wells.
  */
 /datum/asset/simple/combat_faceplate
 	assets = list(

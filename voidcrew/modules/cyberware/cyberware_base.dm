@@ -465,3 +465,45 @@
 			organ.owner.balloon_alert(organ.owner, "chrome offline!")
 		return FALSE
 	return TRUE
+
+/**
+ * Is there a clear arc from [here] to [destination]? Shared by every leg
+ * ware that throws its owner through the air: Hopper Pistons, Meteor
+ * Piledriver.
+ *
+ * Line of sight is not enough on its own. [/proc/can_see] only asks whether
+ * each turf on the way is opaque, and a window, a grille, a girder or a
+ * plasteel shutter frame is not, so on that test alone a leap draws a straight
+ * line through the glass wall of a sealed room and lands inside it. Legs go up
+ * and over things, not through them, so walk the line and stop on anything
+ * tall enough to be in the way.
+ *
+ * What an arc does clear: anything a thrown object already sails over
+ * (LETPASSTHROW, so tables, railings, crates, waist-high machinery) and
+ * anything you could simply climb. Border objects are skipped for the same
+ * reason tg's jaunt check skips them
+ * ([/turf/proc/is_blocked_turf_ignore_climbable]): they only block one edge of
+ * a tile, and a straight line has no clean way to ask which edge it crossed.
+ * Mobs are never obstructions, clearing people is the point of a jump.
+ *
+ * Returns the first turf that stops the arc, or null if the path is clear.
+ */
+/datum/action/cooldown/cyberware/proc/arc_blocker(turf/here, turf/destination)
+	for(var/turf/crossed as anything in get_line(here, destination))
+		// The tile under our own boots is never what stops us leaving it.
+		if(crossed == here)
+			continue
+		// Walls, and any other closed turf.
+		if(crossed.density)
+			return crossed
+		for(var/atom/movable/obstacle as anything in crossed)
+			if(!obstacle.density || ismob(obstacle))
+				continue
+			if(obstacle.flags_1 & ON_BORDER_1)
+				continue
+			if(obstacle.pass_flags_self & LETPASSTHROW)
+				continue
+			if(HAS_TRAIT(obstacle, TRAIT_CLIMBABLE))
+				continue
+			return crossed
+	return null

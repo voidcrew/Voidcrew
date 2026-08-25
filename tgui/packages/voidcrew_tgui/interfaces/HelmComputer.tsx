@@ -4,8 +4,8 @@
  * A fixed 1200x760 faceplate: top rail, three-column body (instrument stack /
  * navigation chart / contact drawer) and a bottom control console. Every panel
  * is positioned from GEOMETRY below, in percentages, so the whole console scales
- * with the window. GEOMETRY is also the source geometry for the background-plate
- * mask (tools/helm_plate/make_mask.py); keep the two in step.
+ * with the window. GEOMETRY is also the source geometry for the background
+ * plate art; keep the two in step.
  *
  * The chart is drawn here rather than piped through a BYOND camera map, which is
  * what lets it zoom, label contacts, take clicks, and interpolate movement. The

@@ -81,7 +81,7 @@
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
-		/obj/item/gun/energy/lasercannon = 3,
+		/obj/item/gun/energy/lasercannon/unrestricted = 3,
 		// the back room's chrome, all voucher-grade at the parlor: ceramic
 		// plate, the targeting link, and the truss that keeps limbs attached
 		/obj/item/organ/cyberimp/cyberware/slabskin = 3,

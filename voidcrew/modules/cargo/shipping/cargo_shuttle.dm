@@ -251,6 +251,21 @@
 		qdel(template)
 		return FALSE
 
+	// The stock supply shuttle map locks both of its airlocks to ACCESS_CARGO - each one
+	// carries /obj/effect/mapping_helpers/airlock/access/all/supply/general, which is a
+	// station assumption: a quartermaster hands out the card. Here the shuttle docks
+	// against a hull whose crew is issued no cargo access at all, so the delivery arrived
+	// sealed and the order it was carrying could not be unloaded.
+	//
+	// The blanket ship waiver in voidcrew/edits/ship_access.dm does not cover this: it is
+	// scoped to /area/shuttle/voidcrew, and this template loads into /area/shuttle/supply.
+	// Clear the locks on the doors themselves instead. The helpers are `late = TRUE`, so
+	// they have already run by the time template.load() returns and this overwrites them.
+	for(var/turf/shuttle_turf as anything in affected)
+		for(var/obj/machinery/door/shuttle_door in shuttle_turf)
+			shuttle_door.req_access = null
+			shuttle_door.req_one_access = null
+
 	// Don't let this become SSshuttle.supply
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
