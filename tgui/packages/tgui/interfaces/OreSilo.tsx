@@ -278,8 +278,8 @@ const LogsList = (props: LogsListProps) => {
     log,
     searchString: [
       log.action.toLowerCase(),
-      log.user_data.name.toLowerCase(),
-      log.user_data.assignment.toLowerCase(),
+      describeUser(log.user_data).name.toLowerCase(), // VOIDCREW EDIT: machine-driven entries have no user record
+      describeUser(log.user_data).assignment.toLowerCase(),
       log.raw_materials.toLowerCase(),
       log.machine_name.toLowerCase(),
       log.area_name.toLowerCase(),
