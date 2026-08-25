@@ -454,13 +454,9 @@ SUBSYSTEM_DEF(weather)
 	else if (!islist(z_levels))
 		CRASH("run_weather called with invalid z_levels: [z_levels || "null"]")
 
-	var/datum/weather/weather = new weather_datum_type(z_levels, weather_data)
+	var/datum/weather/weather = new weather_datum_type(z_levels, weather_data, site) // VOIDCREW EDIT - pass the scheduling site through
 	weather.telegraph(weather_data)
 	return weather
-
-	var/datum/weather/W = new weather_datum_type(z_levels, weather_data, site) // VOIDCREW EDIT - pass the scheduling site through
-	W.telegraph()
-	return W
 
 // VOIDCREW EDIT ADDITION START - the cooldown callback is per site now.
 /// Cooldown expiry: the site may roll another storm on the next fire.
