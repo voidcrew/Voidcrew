@@ -1,19 +1,27 @@
+import {
+  Button,
+  LabeledList,
+  NoticeBox,
+  ProgressBar,
+  Section,
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
+
 import { useBackend } from '../backend';
-import { Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
 
 type SiphonData = {
-  active: boolean;
-  warming_up: boolean;
+  active: BooleanLike;
+  warming_up: BooleanLike;
   warmup_progress: number;
   credits_stored: number;
-  has_target: boolean;
+  has_target: BooleanLike;
   target_name: string;
   target_credits: number;
   siphon_goal: number;
   goal_progress: number;
   goal_fraction: number;
-  can_activate: boolean;
+  can_activate: BooleanLike;
   no_lock_reason: string;
   siphon_rate: number;
   rate_mult: number;
@@ -78,13 +86,8 @@ export const ShipSiphon = (props) => {
             </ProgressBar>
           )}
 
-          {active && siphon_goal > 0 && (
-            <ProgressBar
-              value={goal_progress}
-              maxValue={100}
-              color="red"
-              mt={1}
-            >
+          {!!active && siphon_goal > 0 && (
+            <ProgressBar value={goal_progress} maxValue={100} color="red" mt={1}>
               Siphon Progress: {Math.round(goal_progress)}% ({credits_stored} /{' '}
               {siphon_goal} cr)
             </ProgressBar>
