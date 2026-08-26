@@ -39,9 +39,15 @@
 	// Not remove_antag_datum(): that resolves BY TYPE via has_antag_datum(), so on a
 	// multi-crew mind it removed whichever ship's crew datum happened to sit first in
 	// antag_datums - stranding this team's datum in the list forever.
+	// on_removal() + qdel() is the pair remove_antag_datum() runs, and both halves matter:
+	// on_removal() alone takes the datum off the mind but leaves it alive, and the FRND
+	// marker only dies in /datum/antagonist/Destroy() (QDEL_NULL(team_hud_ref)). Without
+	// the qdel a kicked crewman stays green to the crew forever and his orphaned HUD sits
+	// in GLOB.has_antagonist_huds getting re-offered to everyone who joins after him.
 	for(var/datum/antagonist/crew/crew_antag in member.antag_datums)
 		if(crew_antag.crew_team == src)
 			crew_antag.on_removal()
+			qdel(crew_antag)
 			break
 
 /datum/team/voidcrew/Destroy(force, ...)
