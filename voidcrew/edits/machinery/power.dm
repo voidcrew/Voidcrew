@@ -131,6 +131,23 @@
 	power_gen = base_power_gen * (scale || 1)
 
 /**
+ * VOIDCREW EDIT (upstream bug, candidate to report): APC pixel offsets are owned by
+ * setDir() - it derives them from the new facing. The base shuttleRotate() then rotates
+ * the offsets AGAIN, and on a 90-degree turn the old facing's offset also survives on
+ * the now-perpendicular axis. Net effect: every APC on a rotated ship probed the wrong
+ * tile for its wall support (180 degrees = the opposite tile, 90 = a diagonal), failing
+ * the atom_mounted attach on load. Clear the old facing's offset up front and strip
+ * ROTATE_OFFSET so setDir()'s answer is final (this also keeps the malf HUD image,
+ * rebuilt inside setDir(), at the right offset).
+ */
+/obj/machinery/power/apc/shuttleRotate(rotation, params)
+	if(dir & (NORTH|SOUTH))
+		pixel_y = 0
+	else
+		pixel_x = 0
+	return ..(rotation, params & ~ROTATE_OFFSET)
+
+/**
  * Tops every cell in this SMES up to capacity. Returns the energy added.
  *
  * Lives here rather than at the call site because both the capacity var and
