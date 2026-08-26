@@ -23,7 +23,7 @@
      12
     ]
    },
-   "src_md5": "8970fa0e6c3d88426a37e15a1652555b"
+   "src_md5": "88fd1ea237d7055ba361caf185a461bb"
   },
   "delta_b": {
    "png": "ship_delta_b.png",
@@ -71,7 +71,7 @@
      12
     ]
    },
-   "src_md5": "ffc519e364a82cf1d2e8e73db52540a5"
+   "src_md5": "05d880ea015998823c29cf1a57c3455b"
   },
   "delta_d": {
    "png": "ship_delta_d.png",
@@ -95,7 +95,7 @@
      12
     ]
    },
-   "src_md5": "1b7f0adfab53cd25ef1afc9d2965150c"
+   "src_md5": "29ac182af1899a5e3b70580b6fc6ffd1"
   },
   "goon_a": {
    "png": "ship_goon_a.png",
@@ -315,7 +315,7 @@
      7
     ]
    },
-   "src_md5": "667b355ceb1ba3c5be2657d1efd8448d"
+   "src_md5": "2a0b20549721ed6223bbd799cb89d465"
   },
   "nano_phalanx_b": {
    "png": "ship_nano_phalanx_b.png",
@@ -343,7 +343,7 @@
      7
     ]
    },
-   "src_md5": "e49b2dd780381929c0f6b438f358450b"
+   "src_md5": "26503f5029971bb3ad4898aee74baf5a"
   },
   "nano_phalanx_c": {
    "png": "ship_nano_phalanx_c.png",
@@ -371,7 +371,7 @@
      7
     ]
    },
-   "src_md5": "5fcc4a1c11fb6513b54118bcffff6b54"
+   "src_md5": "deb3b37e874e2bef8c16e30f38149fd4"
   },
   "nano_phalanx_d": {
    "png": "ship_nano_phalanx_d.png",
@@ -399,7 +399,7 @@
      7
     ]
    },
-   "src_md5": "5bfeb50be4443e914e178275ba9cc627"
+   "src_md5": "7582f3c04285423c3d85b0ad1a1e0c71"
   },
   "pill": {
    "png": "ship_pill.png",
@@ -544,7 +544,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_cult.png",
-     "src_md5": "bdf5d2f688ac785f4e7da0a83f43da94"
+     "src_md5": "003b2cfd205f7ee20c8ba92f5d7529a3"
     },
     "lightship": {
      "width": 7,
@@ -554,7 +554,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_lightship.png",
-     "src_md5": "9d735253ba3b10b2e92d1c927041bbcb"
+     "src_md5": "7db7f9ec63550a62276bc926fe437948"
     },
     "syndicate": {
      "width": 7,
@@ -564,7 +564,7 @@
       1
      ],
      "png": "delta_delta_cargo_salvage_syndicate.png",
-     "src_md5": "ffc029c18248c9d44644565e0879ef45"
+     "src_md5": "3f7010bc4b92ba8bdf55f6a8cd9bb5eb"
     }
    }
   },
@@ -796,7 +796,7 @@
       1
      ],
      "png": "delta_delta_cafe_bitrunning_cult.png",
-     "src_md5": "a603d40992dc1af9c83939efeb7435af"
+     "src_md5": "5ea857ef16281d4bba3f2db3ae615d45"
     },
     "lightship": {
      "width": 7,
@@ -806,7 +806,7 @@
       1
      ],
      "png": "delta_delta_cafe_bitrunning_lightship.png",
-     "src_md5": "ff4d704d4b8be96cc98aac027e00c163"
+     "src_md5": "5c0a87160df86e5b7b74d0b1360426d8"
     },
     "syndicate": {
      "width": 7,
@@ -816,7 +816,7 @@
       1
      ],
      "png": "delta_delta_cafe_bitrunning_syndicate.png",
-     "src_md5": "39ad00aabdf96003cc6d11d099e36889"
+     "src_md5": "c87c50977939ebb9047a0592b3a760e4"
     }
    }
   },
@@ -858,7 +858,7 @@
       1
      ],
      "png": "delta_delta_med_clinic_syndicate.png",
-     "src_md5": "9530bdf0afcec1a69e8cb5a271b6b83f"
+     "src_md5": "39bab3124b3df7d170ff85f91b1e3d20"
     }
    }
   },
@@ -964,7 +964,7 @@
       1
      ],
      "png": "delta_delta_dorms_cabins_cult.png",
-     "src_md5": "c596a482d7731e2219d8768d94582899"
+     "src_md5": "bf316a3120d56d4029e1abe190b5e211"
     },
     "lightship": {
      "width": 6,
@@ -2066,7 +2066,7 @@
       1
      ],
      "png": "phalanx_phalanx_bay_north_mech_verdant.png",
-     "src_md5": "2142c93889488115136c9548bc580c99"
+     "src_md5": "05e1f83080e04a45e98b21d6cc23d75c"
     }
    }
   },
@@ -2192,7 +2192,7 @@
       1
      ],
      "png": "phalanx_phalanx_bay_south_workshop_verdant.png",
-     "src_md5": "c85d8add0ed5a942d17a6881988ef31d"
+     "src_md5": "2d0116b213a417052836266abbe1c928"
     }
    }
   },
@@ -2276,7 +2276,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_nanite_verdant.png",
-     "src_md5": "00c10cdefb808977d30b960009e042a9"
+     "src_md5": "a9b606f7d3a3386ba26490c050c7bc72"
     }
    }
   },
@@ -2318,7 +2318,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_chem_verdant.png",
-     "src_md5": "97d12f3a08c1bfb3bb9ba7960666f065"
+     "src_md5": "f19c30865b32c643cb52a55c670fa71e"
     }
    }
   },
@@ -2360,7 +2360,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_xenobio_verdant.png",
-     "src_md5": "6f1efc1f39186a26b9ba4df82d573a47"
+     "src_md5": "10e38f93659b9788c4954263fc3c2357"
     }
    }
   },
@@ -2402,7 +2402,7 @@
       1
      ],
      "png": "phalanx_phalanx_medical_theatre_verdant.png",
-     "src_md5": "e371b68d69598cb4ca8a0f79271ccccc"
+     "src_md5": "732130ab9a2c745a0867b96e4f02c5bc"
     }
    }
   },
@@ -2444,7 +2444,7 @@
       1
      ],
      "png": "phalanx_phalanx_medical_ward_verdant.png",
-     "src_md5": "12311ab58c2325724f56f2f69eb9469e"
+     "src_md5": "99611bf44f52567648ba549fc17c3083"
     }
    }
   },
@@ -2486,7 +2486,7 @@
       1
      ],
      "png": "phalanx_phalanx_armory_post_verdant.png",
-     "src_md5": "7401c4bf75652a591e0c0afa4a66e2be"
+     "src_md5": "d81c55872aa339b52ff22d656ec63f95"
     }
    }
   },
@@ -2528,7 +2528,7 @@
       1
      ],
      "png": "phalanx_phalanx_armory_full_verdant.png",
-     "src_md5": "b7c3fe51e5976545a1951361c97e6ac1"
+     "src_md5": "c08545e5037c697e27afa04bc6295828"
     }
    }
   },
@@ -2570,7 +2570,7 @@
       1
      ],
      "png": "phalanx_phalanx_armory_brig_verdant.png",
-     "src_md5": "f91eef9f5a4c3d7250940857cf9ae652"
+     "src_md5": "9be92b18687e0747c7b93670b81ef4aa"
     }
    }
   },
