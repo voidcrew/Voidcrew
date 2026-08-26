@@ -261,6 +261,12 @@
 /obj/machinery/atmospherics/components/tank/return_pipenets_for_reconcilation(datum/pipeline/requester)
 	. = ..()
 	var/datum/merger/merge_group = GetMergeGroup(merger_id, merger_typecache)
+	// VOIDCREW EDIT ADDITION: null once GetMergeGroup() can no longer build a group for us,
+	// which is what happens when a pipeline reconciles through a tank the shuttle teardown
+	// has already started deleting - it is out of its turf, so the merger finds no members
+	// and deletes itself. Our own parents are still in the return value from the parent call.
+	if(isnull(merge_group))
+		return
 	for(var/obj/machinery/atmospherics/components/tank/tank as anything in merge_group.members)
 		. += tank.parents
 

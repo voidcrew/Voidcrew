@@ -396,14 +396,18 @@
 		if(!(fauna in peaceful_fauna))
 			grant_peace(fauna)
 
+// add_faction()/remove_faction() rather than |= and -=: faction lists are interned by
+// string_list() at Initialize(), so every mob with the same faction signature shares one list
+// object. Editing it in place writes our wearer's REF into the shared entry and pacifies every
+// mob of that type in the round. The API duplicates and re-interns instead.
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/grant_peace(mob/living/basic/fauna)
-	fauna.faction |= REF(current_wearer)
+	fauna.add_faction(REF(current_wearer))
 	peaceful_fauna += fauna
 	RegisterSignal(fauna, COMSIG_QDELETING, PROC_REF(on_peaceful_fauna_gone))
 
 /obj/item/flashlight/lantern/censer_quiet_parish/proc/revoke_peace(mob/living/basic/fauna)
 	if(!QDELETED(fauna))
-		fauna.faction -= REF(current_wearer)
+		fauna.remove_faction(REF(current_wearer))
 		UnregisterSignal(fauna, COMSIG_QDELETING)
 	peaceful_fauna -= fauna
 

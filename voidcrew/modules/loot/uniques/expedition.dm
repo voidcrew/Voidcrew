@@ -393,20 +393,24 @@
 		if(QDELETED(protected_mob) || !(protected_mob in currently_in_range))
 			release_mob(protected_mob)
 
+// add_faction()/remove_faction() rather than += and -=: faction lists are interned by
+// string_list() at Initialize(), so every mob with the same faction signature shares one list
+// object. Editing it in place writes our claim into the shared entry and protects every mob of
+// that type in the round. The API duplicates and re-interns instead, and add_faction() returns
+// TRUE only when the token was not already there, which is the same test the old code did by
+// hand - so `added` still records exactly what we put on and release_mob() strips no more.
 /obj/item/claim_stake/proc/protect_mob(mob/living/target_mob)
 	var/list/added = list()
 	for(var/faction_string in claimed_factions)
-		if(!(faction_string in target_mob.faction))
-			target_mob.faction += faction_string
+		if(target_mob.add_faction(faction_string))
 			added += faction_string
 	protected_mobs[target_mob] = added
 
 /obj/item/claim_stake/proc/release_mob(mob/living/target_mob)
 	var/list/added = protected_mobs[target_mob]
 	// a deleted mob has nothing left to strip, but its entry still has to go
-	if(added && !QDELETED(target_mob))
-		for(var/faction_string in added)
-			target_mob.faction -= faction_string
+	if(length(added) && !QDELETED(target_mob))
+		target_mob.remove_faction(added)
 	protected_mobs -= target_mob
 
 // =========================================================================

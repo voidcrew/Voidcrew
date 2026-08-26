@@ -201,6 +201,15 @@
 	// is fair game, because that is where a hull's own castaways belong.
 	if(istype(spot, /area/shuttle) && !istype(spot, /area/shuttle/transit))
 		return FALSE
+	// ...and only for a living castaway, who gets the hull grace zone out of
+	// initialize_drifting() and a chance to get back to an airlock. Nothing else does: loose
+	// cargo set down on a hyperspace tile picks up a /datum/component/shuttle_cling on the
+	// next Entered, gets thrown to the edge of the corridor, and the transit turf's Exited()
+	// dumps it again the moment it leaves - so it ping-pongs between hulls for the rest of
+	// the round. Debris falls through to upstream's random CROSSLINKED throw instead, which
+	// is a fine place for an object even though it is a softlock for a person.
+	if(!isliving(castaway) && istype(candidate, /turf/open/space/transit))
+		return FALSE
 	if(candidate.is_blocked_turf(exclude_mobs = TRUE, source_atom = castaway))
 		return FALSE
 	if(need_gravity && !candidate.has_gravity())

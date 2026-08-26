@@ -341,6 +341,12 @@
 	my_area.fault_status = AREA_FAULT_AUTOMATIC
 	my_area.fault_location = name
 	var/datum/merger/merge_group = GetMergeGroup(merger_id, merger_typecache)
+	// VOIDCREW EDIT ADDITION: GetMergeGroup() returns null rather than runtiming when a group
+	// cannot be built for us at all (an alarm raised on a firelock that is already leaving
+	// the world), so fall back to alarming on our own. See atom_merger.dm.
+	if(isnull(merge_group))
+		activate(code)
+		return
 	for(var/obj/machinery/door/firedoor/buddylock as anything in merge_group.members)
 		buddylock.activate(code)
 /**
@@ -355,6 +361,10 @@
 	my_area.fault_status = AREA_FAULT_NONE
 	my_area.fault_location = null
 	var/datum/merger/merge_group = GetMergeGroup(merger_id, merger_typecache)
+	// VOIDCREW EDIT ADDITION: see start_activation_process() above.
+	if(isnull(merge_group))
+		reset()
+		return
 	for(var/obj/machinery/door/firedoor/buddylock as anything in merge_group.members)
 		buddylock.reset()
 

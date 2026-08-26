@@ -88,6 +88,63 @@
 		QDEL_NULL(light)
 
 /**
+ * Takes a turf out of the atmos simulation before a teardown blanks it, and unlinks it from
+ * its neighbours in BOTH directions.
+ *
+ * atmos_adjacent_turfs is a mutual pairing - A lists B and B lists A - and
+ * immediate_calculate_adjacent_turfs() is the only thing that ever writes either half. A
+ * teardown does not run it. It blanks a rectangle turf by turf and yields between turfs, so
+ * SSair keeps firing against a half-torn block: every turf already blanked is still listed
+ * by every neighbour the sweep has not reached yet, while the replacement lists nobody.
+ * Both of the ways that goes wrong were showing up in voidcrew_ruin_area_instancing:
+ *
+ * * A raw swap to /turf/open/space/basic leaves a turf with a NULL air, because basic never
+ *   initializes. process_cell() on any neighbour still holding it runs LINDA_CYCLE_ARCHIVE
+ *   over that entry - "Cannot execute null.archive()", once per live neighbour per tick.
+ * * Even the full ChangeTurf to /turf/open/space that clear_reservation() does leaves the
+ *   pairing ONE-SIDED, and one-sided is its own bug. The neighbour skips group handling for
+ *   a turf that already ran this cycle (process_cell()'s `continue` on current_cycle) but
+ *   still shares 100% with it afterwards through share_end, because space sets run_later.
+ *   That reaches LAST_SHARE_CHECK having formed no excited group, with a full tile of moles
+ *   just moved - "Cannot execute null.reset_cooldowns()".
+ *
+ * Unlinking rather than recalculating is deliberate: this ground is on its way out, so the
+ * correct adjacency for it is none, and a recalc would cost a CANATMOSPASS per direction on
+ * every turf of a ~15k-tile slot. Callers that leave live ground next door rebuild the real
+ * adjacency on the surviving ring once, after the sweep.
+ *
+ * The `excited || excited_group` gate on remove_from_active() is the same test
+ * /turf/open/ChangeTurf() uses: `excited` is exactly active_turfs membership, the removal is
+ * a full list scan, and it is only worth paying for the turfs that were really processing.
+ */
+/turf/proc/detach_from_atmos_for_teardown()
+	if(isopenturf(src))
+		var/turf/open/open_self = src
+		if(open_self.excited || open_self.excited_group)
+			SSair.remove_from_active(src)
+
+	// Our half of every pairing we know about.
+	var/list/our_adjacency = atmos_adjacent_turfs
+	if(our_adjacency)
+		for(var/turf/neighbour as anything in our_adjacency)
+			if(!neighbour.atmos_adjacent_turfs)
+				continue
+			neighbour.atmos_adjacent_turfs -= src
+			UNSETEMPTY(neighbour.atmos_adjacent_turfs)
+		atmos_adjacent_turfs = null
+
+	// And the half we do NOT know about. An earlier turf in this same sweep can already have
+	// left us pointing at nobody while a neighbour still points at us, and that entry is the
+	// one that runtimes. Only the turfs immediate_calculate_adjacent_turfs() pairs with can
+	// be holding us, so this is the complete set.
+	for(var/direction in GLOB.cardinals_multiz)
+		var/turf/side_turf = get_step_multiz(src, direction)
+		if(isnull(side_turf) || !side_turf.atmos_adjacent_turfs)
+			continue
+		side_turf.atmos_adjacent_turfs -= src
+		UNSETEMPTY(side_turf.atmos_adjacent_turfs)
+
+/**
  * Returns a vacated open-space turf to uninitialized /turf/open/space/basic, freeing the
  * lighting it accumulated while it was somebody's neighbour.
  *
@@ -101,9 +158,11 @@
  * soak reproduces it as ~14k retained light sources per seven hull cycles.
  *
  * The four steps are the zone sweep's, in its order (see clear_to_uninitialized_space()):
- * scrub the turf's own lighting and orphaned corner sources, detach from SSair if excited
- * (the replacement has null air), leave GLOB.starlight (Destroy() never runs on a raw
- * swap, and a stale entry both relights and duplicates later), then the raw swap itself.
+ * scrub the turf's own lighting and orphaned corner sources, detach from the atmos
+ * simulation (the replacement has null air, so anything still listing it as an atmos
+ * neighbour archives null every tick - see detach_from_atmos_for_teardown()), leave
+ * GLOB.starlight (Destroy() never runs on a raw swap, and a stale entry both relights and
+ * duplicates later), then the raw swap itself.
  *
  * WHERE this may run is the caller's job: only on space turfs standing OUTSIDE every live
  * map region (map_region_for_turf() null) - a berth inside a site's footprint becomes the
@@ -112,10 +171,7 @@
  */
 /turf/proc/return_to_uninitialized_space()
 	scrub_lighting_for_teardown()
-	if(isopenturf(src))
-		var/turf/open/open_self = src
-		if(open_self.excited)
-			SSair.remove_from_active(src)
+	detach_from_atmos_for_teardown()
 	if(isspaceturf(src) && light_on)
 		GLOB.starlight -= src
 	new /turf/open/space/basic(src)

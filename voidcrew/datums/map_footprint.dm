@@ -163,11 +163,23 @@
 	planetary_faction = "planetary_[next_planetary_faction_id]"
 	return planetary_faction
 
-/// Adds this planet's token without replacing any identity or role factions on the mob.
+/**
+ * Adds this planet's token without replacing any identity or role factions on the mob.
+ *
+ * Must go through add_faction() rather than `faction |= token`. Faction lists are cached
+ * upstream: /atom/movable/Initialize() runs every non-empty faction list through
+ * string_list(), which interns it, so all mobs whose faction list has identical contents -
+ * every pirate trooper, every skeleton - end up sharing ONE list object, and that object is
+ * the value GLOB.string_lists hands out for that signature from then on. Editing it in place
+ * writes this planet's token into the cache entry itself, so the next mob of that type born
+ * anywhere in the round starts life allied to this planet, and the planet after that adds its
+ * own token on top. add_faction() duplicates, ORs and re-interns, which leaves the shared
+ * list untouched.
+ */
 /datum/map_footprint/proc/add_planetary_faction(mob/living/local_mob)
 	if(!planetary_faction || QDELETED(local_mob))
 		return FALSE
-	local_mob.faction |= planetary_faction
+	local_mob.add_faction(planetary_faction)
 	return TRUE
 
 /**

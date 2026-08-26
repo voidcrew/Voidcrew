@@ -395,14 +395,18 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 		return FALSE
 	return TRUE
 
+// add_faction()/remove_faction() rather than |= and -=: faction lists are interned by
+// string_list() at Initialize(), so every mob with the same faction signature shares one list
+// object. Editing it in place writes our wearer's REF into the shared entry and allies every
+// skeleton in the round to them. The API duplicates and re-interns instead.
 /obj/item/clothing/head/wizard/verdigris/proc/claim_dead(mob/living/corpse)
-	corpse.faction |= REF(current_wearer)
+	corpse.add_faction(REF(current_wearer))
 	claimed_dead += corpse
 	RegisterSignal(corpse, COMSIG_QDELETING, PROC_REF(on_claimed_dead_gone))
 
 /obj/item/clothing/head/wizard/verdigris/proc/release_dead(mob/living/corpse)
 	if(!QDELETED(corpse))
-		corpse.faction -= REF(current_wearer)
+		corpse.remove_faction(REF(current_wearer))
 		UnregisterSignal(corpse, COMSIG_QDELETING)
 	claimed_dead -= corpse
 

@@ -750,6 +750,17 @@
 		// earlier raw turf swap (river carving, a ruin's map load) - that one is reachable
 		// only through the corners, and only from here. See scrub_lighting_for_teardown().
 		turf.scrub_lighting_for_teardown()
+		// VOIDCREW EDIT: and unlink it from atmos in the same breath. empty() below passes
+		// CHANGETURF_IGNORE_AIR|CHANGETURF_DEFER_CHANGE, so nothing recalculates adjacency
+		// until the second pass at the bottom of this proc - and this loop yields after every
+		// turf, so SSair fires many times in between. Until the recalc lands, the replacement
+		// holds nobody while every neighbour we have not reached yet still holds it, and
+		// process_cell() turns that one-sided pairing into a runtime the moment it shares with
+		// the blanked tile through share_end (space sets run_later). Unlink instead of
+		// recalculating: this ground is going away, so no adjacency is the right answer, and
+		// clear_to_uninitialized_space() rebuilds the surviving ring afterwards.
+		// See /turf/proc/detach_from_atmos_for_teardown() in voidcrew/edits/turf.dm.
+		turf.detach_from_atmos_for_teardown()
 		// Reset turf
 		turf.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, CHANGETURF_IGNORE_AIR|CHANGETURF_DEFER_CHANGE)
 		// Reset area
@@ -851,20 +862,22 @@
 		// END VOIDCREW EDIT
 		// The same raw swap orphans two more registrations that Destroy() would have cleared.
 		//
-		// SSair.active_turfs: the entry retargets onto the replacement, which is an
-		// UNINITIALIZED /turf/open/space/basic with a null `air` - process_cell() would archive
-		// null on it every tick. `excited` is exactly active_turfs membership (add_to_active and
-		// remove_from_active keep the two in step), so the O(n) list removal only ever runs for
-		// the handful of turfs that were genuinely processing.
+		// SSair: the replacement is an UNINITIALIZED /turf/open/space/basic with a null `air`,
+		// and BOTH kinds of reference to it retarget onto it - the turf's own slot in
+		// active_turfs, and the entry each NEIGHBOUR holds in its atmos_adjacent_turfs. The
+		// second is the one that hurts, because this loop yields after every turf and the
+		// neighbours it has not reached yet keep processing in between: process_cell() archives
+		// everything it finds adjacent, so one blanked tile is "Cannot execute null.archive()"
+		// once per live neighbour per tick. Unlink both halves before the swap rather than
+		// leaving it to the ring repair below, which only runs once the whole sweep is done.
+		// See /turf/proc/detach_from_atmos_for_teardown() in voidcrew/edits/turf.dm.
 		//
 		// GLOB.starlight: /turf/open/space/Destroy() is what takes a lit space turf out, and the
 		// retargeted entry is worse than stale - if this spot lights up again later,
 		// enable_starlight() does `GLOB.starlight += src` on a turf already in the list, so a
 		// churning zone accretes a duplicate per cycle. `light_on` is the membership test the
 		// space turf itself keeps in step.
-		var/turf/open/open_turf = T
-		if(isopenturf(T) && open_turf.excited)
-			SSair.remove_from_active(T)
+		T.detach_from_atmos_for_teardown()
 		if(isspaceturf(T) && T.light_on)
 			GLOB.starlight -= T
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
@@ -873,11 +886,15 @@
 		// behind a queued planet job - see worldgen_yield() in worldgen_queue.dm
 		SSovermap.worldgen_yield(throttled = FALSE)
 
-	// Nothing above recalculated atmos adjacency, so a co-tenant that is still LIVE next door is
-	// holding blanked turfs in its atmos_adjacent_turfs - and process_cell() archives every entry
-	// it finds there, which is "Cannot execute null.archive()" every tick for the rest of the
-	// round. This is packing-specific: before slots, a teardown took the whole z-level at once and
-	// there was never a live neighbour to hold the reference.
+	// The per-turf unlink in the sweep above already stripped every pairing this teardown broke,
+	// so what is left here is the end-state repair: a co-tenant that is still LIVE next door may
+	// have had an adjacency rebuild queued against it (AfterChange() in clear_reservation()
+	// queues one per turf, and SSair drains that queue during our yields), which would have
+	// re-paired the edge after we unlinked it. Rebuilding the ring once at the end settles it.
+	// Without either half, process_cell() archives every entry it finds adjacent and a blanked
+	// turf is "Cannot execute null.archive()" every tick for the rest of the round. This is
+	// packing-specific: before slots, a teardown took the whole z-level at once and there was
+	// never a live neighbour to hold the reference.
 	//
 	// Only the RING outside the rectangle needs repairing - see map_boundary_ring() for why the
 	// interior heals itself. The whole-level case (no footprint) has no ring at all: everything on

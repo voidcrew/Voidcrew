@@ -35,6 +35,20 @@
 
 	src.direction = direction
 
+// VOIDCREW EDIT CHANGE START - everything below used to live at the end of Initialize().
+// It cannot: update_state() deletes the component when the parent turns out not to be on a
+// hyperspace tile, and launch_very_hard() reaches that state on its own. throw_at() runs its
+// first tick synchronously (quickstart, atoms_movable.dm), so the parent leaves the corridor
+// and fires COMSIG_MOVABLE_MOVED back into update_state() before Initialize() has returned.
+// qdel(src) that early lands in _RemoveFromParent() while parent._datum_components is still
+// null, because /datum/component/New() only calls _JoinParent() after Initialize() returns -
+// that is the "bad index" at _component.dm,131, followed by "Cannot read null.loc" from the
+// trailing update_state() reading the parent Destroy() had just nulled, and finally the
+// "created with a deleted parent" CRASH at _component.dm,59.
+// RegisterWithParent() is called from _JoinParent() AFTER the component is in the parent's
+// component list, so the same self-deletion is a clean removal from there. Same work, same
+// call, one step later; nothing observable changes for anything that stays in hyperspace.
+/datum/component/shuttle_cling/RegisterWithParent()
 	ADD_TRAIT(parent, TRAIT_HYPERSPACED, REF(src))
 
 	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_UNBUCKLE, COMSIG_ATOM_NO_LONGER_PULLED), PROC_REF(update_state))
@@ -48,7 +62,22 @@
 	if(!HAS_TRAIT(parent, TRAIT_FREE_HYPERSPACE_MOVEMENT))
 		initialize_loop()
 
+	// initialize_loop() ends in an update_state() of its own, which is allowed to delete us.
+	if(QDELETED(src))
+		return
+
 	update_state(parent) //otherwise we'll get moved 1 tile before we can correct ourselves, which isnt super bad but just looks jank
+
+/datum/component/shuttle_cling/UnregisterFromParent()
+	UnregisterSignal(parent, list(
+		COMSIG_ATOM_NO_LONGER_PULLED,
+		COMSIG_ITEM_PICKUP,
+		COMSIG_MOVABLE_MOVED,
+		COMSIG_MOVABLE_UNBUCKLE,
+		SIGNAL_ADDTRAIT(TRAIT_FREE_HYPERSPACE_MOVEMENT),
+		SIGNAL_REMOVETRAIT(TRAIT_FREE_HYPERSPACE_MOVEMENT),
+	))
+// VOIDCREW EDIT CHANGE END
 
 /datum/component/shuttle_cling/proc/initialize_loop()
 	hyperloop = GLOB.move_manager.move(moving = parent, direction = direction, delay = not_clinging_move_delay, subsystem = SShyperspace_drift, priority = MOVEMENT_ABOVE_SPACE_PRIORITY, flags = MOVEMENT_LOOP_NO_DIR_UPDATE|MOVEMENT_LOOP_OUTSIDE_CONTROL)
