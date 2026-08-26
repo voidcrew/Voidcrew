@@ -8,7 +8,13 @@
 		linked_techweb = null
 
 /mob/living/basic/bot/medbot/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(linked_techweb && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
+	// The parent proc returns ITEM_INTERACT_SUCCESS whether or not it linked anything, so an empty
+	// buffer used to fall straight through to `linked_techweb.connected_machines` below on a null.
+	// Unlinked is the normal state for a ship's medbot, so this is the click people actually make.
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		balloon_alert(user, "no techweb in buffer!")
+		return ITEM_INTERACT_BLOCKING
+	if(linked_techweb) //disconnect old one
 		linked_techweb.connected_machines -= src
 	. = ..()
 	if(.)

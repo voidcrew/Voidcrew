@@ -61,9 +61,14 @@
 		return
 	add_lightning_overlay(30 SECONDS)
 	playsound(organ_owner, 'sound/items/eshield_recharge.ogg', 40)
-	RegisterSignal(organ_owner, COMSIG_ATOM_PRE_EMP_ACT, PROC_REF(absorb_emp)) // VOIDCREW EDIT - BAL-4: one-pulse absorb, was a permanent AddElement(empprotection, SELF|CONTENTS)
+	// VOIDCREW EDIT - BAL-4: one-pulse absorb, was a permanent AddElement(empprotection, SELF|CONTENTS).
+	// COMSIG_ATOM_PRE_EMP_ACT and COMSIG_ATOM_EMP_ACT are the SAME signal string upstream
+	// ("atom_emp_act", code/__DEFINES/dcs/signals/signals_atom/signals_atom_x_act.dm:12,14), sent
+	// twice per pulse from /atom/emp_act with different arity. A datum can hold one handler per
+	// signal string per target, so registering both phases separately made the second silently
+	// replace the first. One handler, phase-split on the protection arg. See absorb_emp().
+	RegisterSignal(organ_owner, COMSIG_ATOM_PRE_EMP_ACT, PROC_REF(absorb_emp))
 	RegisterSignal(organ_owner, COMSIG_MOB_STATCHANGE, PROC_REF(activate_survival_comsig))
-	RegisterSignal(organ_owner, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp_act))
 
 /obj/item/organ/heart/cybernetic/anomalock/on_mob_remove(mob/living/carbon/organ_owner, special, movement_flags)
 	. = ..()
@@ -75,7 +80,7 @@
 	if(!core)
 		return
 	UnregisterSignal(organ_owner, COMSIG_MOB_STATCHANGE)
-	UnregisterSignal(organ_owner, list(COMSIG_ATOM_PRE_EMP_ACT, COMSIG_ATOM_EMP_ACT)) // VOIDCREW EDIT - BAL-4: matches the insert-side registrations
+	UnregisterSignal(organ_owner, COMSIG_ATOM_PRE_EMP_ACT) // VOIDCREW EDIT - BAL-4: matches the single insert-side registration (both EMP defines are one signal string)
 	tesla_zap(source = organ_owner, zap_range = 20, power = 2.5e5, cutoff = 1e3)
 	QDEL_IN(src, 0)
 
@@ -97,13 +102,21 @@
 	return TRUE
 
 // VOIDCREW EDIT START - BAL-4: the one-pulse absorb.
-/// Signal proc for [COMSIG_ATOM_PRE_EMP_ACT] on the bearer: while the flux
-/// capacitors hold charge, eat the whole pulse (self and contents, exactly
-/// what the old permanent element granted) and start the recharge clock.
-/// While drained this returns nothing and the EMP lands normally, which is
-/// what makes EMP a live counter to a chromed-out bearer again.
-/obj/item/organ/heart/cybernetic/anomalock/proc/absorb_emp(datum/source, severity)
+/// Signal proc for the bearer's EMP signal. [COMSIG_ATOM_PRE_EMP_ACT] and
+/// [COMSIG_ATOM_EMP_ACT] are one string upstream, so this handles both phases:
+/// the pre-phase send carries no `protection` arg, the post-phase send does.
+///
+/// Pre-phase: while the flux capacitors hold charge, eat the whole pulse (self
+/// and contents, exactly what the old permanent element granted) and start the
+/// recharge clock. While drained this returns nothing and the EMP lands
+/// normally, which is what makes EMP a live counter to a chromed-out bearer.
+///
+/// Post-phase: draw the arc, absorbed or not.
+/obj/item/organ/heart/cybernetic/anomalock/proc/absorb_emp(datum/source, severity, protection)
 	SIGNAL_HANDLER
+	if(!isnull(protection)) // post-phase: the pulse already resolved, just show it happened
+		add_lightning_overlay(10 SECONDS)
+		return NONE
 	if(!core || !owner)
 		return NONE
 	if(!COOLDOWN_FINISHED(src, emp_absorb_cooldown))
@@ -124,9 +137,8 @@
 	playsound(owner, 'sound/items/eshield_recharge.ogg', 40)
 // VOIDCREW EDIT END
 
-/obj/item/organ/heart/cybernetic/anomalock/proc/on_emp_act(datum/source, severity, protection) // VOIDCREW EDIT - BAL-4: real signal-handler signature (severity used to receive the source atom)
-	SIGNAL_HANDLER
-	add_lightning_overlay(10 SECONDS)
+// VOIDCREW EDIT - BAL-4: on_emp_act() folded into absorb_emp()'s post-phase branch; the two
+// could not coexist as separate registrations, see on_mob_insert().
 
 /obj/item/organ/heart/cybernetic/anomalock/proc/add_lightning_overlay(time_to_last = 10 SECONDS)
 	if(!owner) // VOIDCREW EDIT - BAL-4: nothing to draw the arc on, and arming the timer anyway is what used to runtime later

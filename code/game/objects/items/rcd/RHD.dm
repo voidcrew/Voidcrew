@@ -55,7 +55,12 @@
 		silo_mats = new (src, mapload, FALSE)
 	update_appearance()
 
+// VOIDCREW EDIT - this file used to define /obj/item/construction/Destroy() twice (here and
+// again after examine()). DM chained them, so the later body ran first and set silo_mats = null
+// before this one's QDEL_NULL(silo_mats) could fire - the remote_materials datum was never
+// actually deleted. Merged into this single definition.
 /obj/item/construction/Destroy()
+	QDEL_NULL(spark_system)
 	QDEL_NULL(silo_mats)
 	return ..()
 
@@ -97,11 +102,6 @@
 		var/iron = get_silo_iron()
 		if(iron)
 			. += "Remote connection has iron in equivalent to [iron] RCD unit\s." //1 matter for 1 floor tile, as 4 tiles are produced from 1 iron
-
-/obj/item/construction/Destroy()
-	QDEL_NULL(spark_system)
-	silo_mats = null
-	return ..()
 
 /obj/item/construction/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	SHOULD_CALL_PARENT(TRUE)

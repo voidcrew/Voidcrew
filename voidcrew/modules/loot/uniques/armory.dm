@@ -666,7 +666,7 @@
 /datum/status_effect/garrison_standard_aura
 	id = "garrison_standard_aura"
 	duration = 3 SECONDS
-	tick_interval = 1.5 SECONDS
+	tick_interval = 1.6 SECONDS
 	alert_type = null
 	status_type = STATUS_EFFECT_REFRESH
 

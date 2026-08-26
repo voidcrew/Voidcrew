@@ -216,7 +216,7 @@
 		update_icon()//..since we're updating the icon here, since the scanner can be unpowered when opened/closed
 		return
 
-	if(default_pry_open(I))
+	if(default_pry_open(user, I) & ITEM_INTERACT_SUCCESS)
 		return
 
 	if(default_deconstruction_crowbar(user, I))

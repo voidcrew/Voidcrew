@@ -156,10 +156,16 @@
 	if(!reference)
 		CRASH("nullify_pipenet(null) called by [type] on [COORD(src)]")
 
-	for (var/i in 1 to parents.len)
-		if (parents[i] == reference)
-			reference.other_airs -= airs[i] // Disconnects from the pipeline side
-			parents[i] = null // Disconnects from the machinery side.
+	// VOIDCREW EDIT START: parents/airs are allocated in Initialize() only, and this fork
+	// docks ships before SSatoms runs, so atmos components can be asked to join or leave a
+	// pipenet while still pre-init. Nothing is wired on the machinery side yet, so skip the
+	// disconnect loop but still do the pipeline-side bookkeeping below.
+	if(!isnull(parents))
+		for (var/i in 1 to parents.len)
+			if (parents[i] == reference)
+				reference.other_airs -= airs[i] // Disconnects from the pipeline side
+				parents[i] = null // Disconnects from the machinery side.
+	// VOIDCREW EDIT END
 
 	reference.other_atmos_machines -= src
 	if(custom_reconcilation)
@@ -185,6 +191,9 @@
 /obj/machinery/atmospherics/components/return_pipenet_airs(datum/pipeline/reference)
 	var/list/returned_air = list()
 
+	if(isnull(parents)) // VOIDCREW EDIT - pre-init component, see nullify_pipenet()
+		return returned_air
+
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
 			returned_air += airs[i]
@@ -196,7 +205,15 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
-	parents[nodes.Find(target_component)] = reference
+	// VOIDCREW EDIT START - pre-init component, see nullify_pipenet(). nodes and parents can
+	// both still be null, and a target_component that is not among nodes yields index 0.
+	if(isnull(parents) || isnull(nodes))
+		return
+	var/node_index = nodes.Find(target_component)
+	if(node_index < 1 || node_index > parents.len)
+		return
+	parents[node_index] = reference
+	// VOIDCREW EDIT END
 
 /obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument
 	return parents[nodes.Find(target_component)]

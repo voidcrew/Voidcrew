@@ -113,6 +113,7 @@
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/RefreshParts()
+	. = ..()
 	var/cap = max(total_part_rating(/datum/stock_part/matter_bin), 1)
 	var/eff = max(total_part_rating(/datum/stock_part/micro_laser), 2)
 	gas_capacity = 5000 * ((cap - 1) ** 2) + 1000
@@ -199,7 +200,7 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(tool))
+	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
 		return ITEM_INTERACT_SUCCESS
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS

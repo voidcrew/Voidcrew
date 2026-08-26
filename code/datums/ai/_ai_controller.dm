@@ -258,7 +258,8 @@ multiple modular subtrees with behaviors
 
 /// Builds the per-controller BT node tree from behavior_nodes typepaths or descriptors, then finalizes it.
 /datum/ai_controller/proc/initialize_behavior_tree()
-	if(!isnull(behavior_tree_json) && !LAZYLEN(behavior_nodes))
+	// VOIDCREW EDIT - upstream bug: abstract controllers keep behavior_tree_json = ABSTRACT_AI_CLASS and tried to load build/behavior_trees/Abstract. Candidate to upstream.
+	if(!isnull(behavior_tree_json) && behavior_tree_json != ABSTRACT_AI_CLASS && !LAZYLEN(behavior_nodes))
 		var/compiled_path = BT_COMPILED_PATH(behavior_tree_json) //Find the compiled version of this BT
 		var/datum/bt_node/root = load_tree_from_json(compiled_path)
 		if(isnull(root))

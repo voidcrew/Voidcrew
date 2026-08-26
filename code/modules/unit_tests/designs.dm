@@ -7,7 +7,7 @@
 	for(var/design_id in SSresearch.techweb_designs) //We are checking surgery design separatly later since they work differently
 		var/datum/design/current_design = SSresearch.techweb_designs[design_id]
 		if(istype(current_design, /datum/design/surgery))
-			return
+			continue // VOIDCREW EDIT - upstream bug: was `return`, which aborted the whole loop at the first surgery design. Candidate to upstream.
 		if (isnull(current_design.name) || current_design.name == default_design.name) //Designs with ID must have non default/null Name
 			TEST_FAIL("Design [current_design.type] has default or null name var but has an ID")
 		if ((!isnull(current_design.materials) && LAZYLEN(current_design.materials)) || (!isnull(current_design.reagents_list) && LAZYLEN(current_design.reagents_list))) //Design requires materials

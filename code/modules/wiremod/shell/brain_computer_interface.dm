@@ -357,7 +357,8 @@
 	return isnull(occupant) ? default_deconstruction_screwdriver(user, tool) : NONE
 
 /obj/machinery/bci_implanter/crowbar_act_secondary(mob/living/user, obj/item/tool)
-	return default_pry_open(user, user, tool, close_after_pry = FALSE, open_density = FALSE, closed_density = TRUE, deconstruct_on_fail = TRUE)
+	// VOIDCREW EDIT - upstream bug: user was passed twice, shifting crowbar onto the mob and close_after_pry onto the tool. Candidate to upstream.
+	return default_pry_open(user, tool, close_after_pry = FALSE, open_density = FALSE, closed_density = TRUE, deconstruct_on_fail = TRUE)
 
 /obj/machinery/bci_implanter/proc/start_process()
 	if (machine_stat & (NOPOWER|BROKEN))

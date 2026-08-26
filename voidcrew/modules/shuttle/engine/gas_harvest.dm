@@ -52,6 +52,7 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/RefreshParts()
+	. = ..()
 	// Two T1 lasers = x1, two T4 lasers = x4
 	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser) / 2, 1)
 
@@ -113,7 +114,7 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(tool))
+	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
 		return ITEM_INTERACT_SUCCESS
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
@@ -148,6 +149,7 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/RefreshParts()
+	. = ..()
 	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser), 1)
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/examine(mob/user)
@@ -218,7 +220,7 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(tool))
+	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
 		return ITEM_INTERACT_SUCCESS
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS

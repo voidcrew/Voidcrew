@@ -34,6 +34,14 @@
 		say("Linked to Server!")
 		return TRUE
 
+// NOTE: this stays on attackby rather than item_interaction, and only reaches the click because
+// upstream's /obj/machinery/computer/rdconsole/item_interaction (code/modules/research/
+// rdconsole.dm:74-75) returns NONE for anything that is not an /obj/item/disk, letting
+// code/_onclick/item_attack.dm:32-36 fall through to the attackby leg. If upstream ever makes
+// that item_interaction claim non-disk items, feeding research notes silently stops working -
+// port this to an item_interaction override that returns ..() for non-notes.
+// (Third arg is named `params` for history; /atom/proc/attackby now passes list/modifiers, and
+// nothing here reads it.)
 /obj/machinery/computer/rdconsole/attackby(obj/item/attacking_item, mob/user, params)
 	if(istype(attacking_item, /obj/item/research_notes) && stored_research)
 		var/obj/item/research_notes/research_notes = attacking_item
@@ -43,7 +51,10 @@
 		return
 	return ..()
 
-/obj/machinery/computer/rdconsole/ui_act(action, list/params)
+// Must re-state upstream's full signature (code/modules/research/rdconsole.dm:360 /
+// code/modules/tgui/external.dm:99). This override is the outermost one, so declaring fewer
+// params than the parent drops `ui` and `state` on the way through ..() for every caller.
+/obj/machinery/computer/rdconsole/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if (action == "loadTech")
 		var/mob/living/user = usr
 		var/obj/docking_port/mobile/voidcrew/port = connected_ship_ref?.resolve()

@@ -8,9 +8,25 @@
  * Unlike mob AI controllers, this doesn't need movement handling
  * (ships use overmap movement) or stat/login checks.
  */
+/**
+ * No-op movement singleton for NPC ships.
+ *
+ * Ships move by overmap velocity, never through SSai_movement, so this controller never
+ * starts a move loop. It still needs a real datum here rather than null: the parent
+ * dereferences `ai_movement` unconditionally in Destroy()
+ * (code/datums/ai/_ai_controller.dm:86), UnpossessPawn() (:525) and update_able_to_run()
+ * (:589). With null it runtimed on every controller teardown and on every
+ * AI_UNABLE_TO_RUN transition. Nothing ever registers in moving_controllers, so all three
+ * of those paths find an empty list and correctly do nothing.
+ */
+/datum/ai_movement/npc_ship
+
+/datum/ai_movement/npc_ship/allowed_to_move(datum/move_loop/source)
+	return FALSE
+
 /datum/ai_controller/npc_ship
-	/// Ships don't use normal movement, they use overmap velocity
-	ai_movement = null
+	/// Ships don't use normal movement, they use overmap velocity - see /datum/ai_movement/npc_ship
+	ai_movement = /datum/ai_movement/npc_ship
 
 	/// Combat and movement subtrees, run concurrently every tick
 	behavior_tree_json = "voidcrew/modules/npc_ships/code/npc_ship_controller.bt.json"
@@ -57,9 +73,13 @@
 
 	return ..()
 
-/// Override to avoid ai_movement access (we set ai_movement = null for ships)
-/// Replicates parent logic without the ai_movement.moving_controllers check
+/// Unregisters the ship-specific signals, then replicates the parent teardown.
+/// Deliberate full-body replacement to mirror PossessPawn() above: it drops the ship signals
+/// the parent knows nothing about, and skips the parent's mob-only unregistrations and the
+/// spatial-grid teardown for cells this controller never allocated. (The parent's ai_movement
+/// check is safe now - see /datum/ai_movement/npc_ship - but ..() would still be wrong here.)
 /datum/ai_controller/npc_ship/UnpossessPawn(destroy)
+	SHOULD_CALL_PARENT(FALSE)
 	if(isnull(pawn))
 		return
 
@@ -72,13 +92,13 @@
 		COMSIG_SHIP_WEAPONS_LOCKED,
 	))
 
-	// Replicate parent cleanup (without ai_movement check which would crash)
+	// Replicate parent cleanup
 	SEND_SIGNAL(src, COMSIG_AI_CONTROLLER_UNPOSSESSED_PAWN)
 	reset_bt_tick_states()
 	set_ai_status(AI_STATUS_OFF)
 	UnregisterSignal(pawn, list(COMSIG_MOVABLE_Z_CHANGED, COMSIG_QDELETING))
 	clear_able_to_run()
-	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
+	// No moving_controllers entry to clear: ships never start an AI move loop.
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf)
 		SSai_controllers.ai_controllers_by_zlevel[pawn_turf.z] -= src
@@ -87,7 +107,9 @@
 	if(destroy)
 		qdel(src)
 
-/// Override to avoid ai_movement access in parent Destroy
+/// Ship-side teardown ahead of the parent's. Note this ends in ..(), which re-runs the
+/// parent's own copy of this body - that is harmless (UnpossessPawn early-outs on a null
+/// pawn, the list subtractions are idempotent, behavior_nodes is already emptied).
 /datum/ai_controller/npc_ship/Destroy(force)
 	UnpossessPawn(FALSE)
 	if(ai_status)
@@ -97,7 +119,7 @@
 				controller_subsystem.currentrun -= src
 				break
 	our_cells = null
-	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
+	// No moving_controllers entry to clear: ships never start an AI move loop.
 	QDEL_LIST(behavior_nodes)
 	return ..()
 
@@ -122,9 +144,15 @@
 	return AI_STATUS_ON
 
 /**
- * Override to avoid mob-specific signal registrations.
+ * Deliberate full-body replacement, not an extension: the pawn is an /obj, so the parent's
+ * COMSIG_MOB_STATCHANGE / COMSIG_MOB_LOGIN / COMSIG_EVLOGGING_* registrations are meaningless
+ * on it, and ships skip the spatial-grid cell tracking entirely (they live on the overmap
+ * z-level, which never has a client near them - that is what ALWAYS_HIGH_PRIORITY is for).
+ * COMSIG_QDELETING is registered in TryPossessPawn() instead, pointing at on_ship_destroyed.
+ * Calling ..() here would re-run TryPossessPawn and double-register every ship signal.
  */
 /datum/ai_controller/npc_ship/PossessPawn(atom/new_pawn)
+	SHOULD_CALL_PARENT(FALSE)
 	if(pawn)
 		UnpossessPawn(FALSE)
 
@@ -137,6 +165,9 @@
 
 	pawn = new_pawn
 	pawn.ai_controller = src
+	// Not mob-specific, and was missing: every BT node that looks itself up goes through this
+	// key. No ship tree reads it today, but a null BB_MY_PAWN is a silent trap for the next one.
+	set_blackboard_key(BB_MY_PAWN, pawn, FALSE) //Don't track the datum, qdel of pawn is handled here.
 
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf)

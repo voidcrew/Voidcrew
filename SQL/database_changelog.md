@@ -21,22 +21,38 @@ In any query remember to add a prefix to the table names if you use one.
 Version 5.35, 23 November 2025, by Worker 1 (AI)
 (voidcrew edit - this entry was 5.33 before the 2026-08 upstream merge; renumbered
 to 5.35 because upstream independently shipped its own 5.33 and 5.34.)
-Adds ship economy system tables for own-your-ship feature (Phase 0).
+Adds ship economy system tables for the own-your-ship feature.
 
-Creates 6 new tables:
-- `player_ship_economy`: Account-wide credits storage
-- `player_ship_parts`: Ship parts inventory with rarity system (common, uncommon, rare, epic, legendary)
-- `player_ship_unlocks`: Blueprint unlock tracking
-- `round_ship_spawns`: Per-round ship spawn tracking
-- `pending_extractions`: Queue for failed ship extractions (crash recovery)
-- `ship_economy_admin_log`: Minimal admin action logging
+Apply `SQL/migrations/voidcrew_ship_parts.sql`. It is idempotent (every statement is
+`CREATE TABLE IF NOT EXISTS`), so it is safe to re-run on a partially migrated database.
 
-See `SQL/ship_economy_phase0_migration.sql` for full migration script.
-
-```sql
--- Run the migration script SQL/ship_economy_phase0_migration.sql
--- Or apply tables individually as documented in that file
+```sh
+mysql -u <user> -p <database> < SQL/migrations/voidcrew_ship_parts.sql
 ```
+
+It creates 7 tables:
+- `player_ship_credits`: account-wide credit balance
+- `player_ship_parts`: parts inventory, keyed by part class (combat, science, trade, misc)
+- `player_ship_unlocks`: permanent ship blueprint unlocks
+- `player_upgrade_unlocks`: permanent upgrade-module unlocks, per ship template
+- `player_theme_unlocks`: permanent ship theme unlocks, per ship template
+- `pending_ship_extractions`: retry queue for failed part extractions
+- `ship_extraction_log`: extraction audit trail
+
+Remember the table prefix if you use one; the game applies it through `format_table_name()`.
+
+**Known gap — read before relying on this.** `code/modules/ship_purchase/ship_economy_database.dm`
+queries exactly the table names above. A second, parallel implementation in
+`code/modules/ship_purchase/transaction_helpers.dm` queries a different, older set of names
+that this migration does **not** create, and for which no DDL exists anywhere in `SQL/`:
+`player_credits`, `pending_extractions`, `part_extraction_log` and `credit_transaction_log`.
+Any code path through `transaction_helpers.dm` will therefore fail against a database migrated
+by this script. The two naming schemes need reconciling in DM before that file can be trusted;
+this is a code bug, not a missing migration, so nothing is added here to paper over it.
+
+`SQL/QUICK_REFERENCE_SHIP_ECONOMY.md` predates all of the above and describes a third,
+never-built schema (`player_ship_economy`, `round_ship_spawns`, `ship_economy_admin_log`,
+rarity ENUMs). Treat it as a design sketch, not as documentation of the live schema.
 
 ---
 

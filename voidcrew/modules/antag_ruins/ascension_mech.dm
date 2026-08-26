@@ -140,7 +140,7 @@
 #define WARFRAME_IAI_RECOVERY (1.2 SECONDS)
 
 // The Standing Guard.
-#define WARFRAME_GUARD_DURATION (3.5 SECONDS)
+#define WARFRAME_GUARD_DURATION (3.6 SECONDS)
 #define WARFRAME_RIPOSTE_DAMAGE 22
 /// Shortest gap between two counters, so a fast weapon cannot chain them into a kill.
 #define WARFRAME_RIPOSTE_INTERVAL (0.6 SECONDS)
@@ -1500,7 +1500,10 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	icon = 'icons/obj/weapons/sword.dmi'
 	icon_state = "katana"
 	inhand_icon_state = "katana"
-	worn_icon_state = "katana"
+	// Not "katana": upstream renamed the worn sprite to "katana_sheath-full". Bare "katana"
+	// survives only in belt.dmi/belt_mirror.dmi, not back.dmi, so with ITEM_SLOT_BACK below
+	// the back slot had no state to draw.
+	worn_icon_state = "katana_sheath-full"
 	color = "#9aa4ad"
 	icon_angle = -45
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'

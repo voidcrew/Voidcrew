@@ -244,7 +244,7 @@
 	var/atom/destination = pick(joined_ship.shuttle.spawn_points)
 	if(!destination)
 		CRASH("Failed to find a latejoin spawn point.")
-	var/mob/living/character = create_character(destination)
+	var/mob/living/character = create_character(destination, forced_slot = client.prefs.default_slot)
 	if(!character)
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
@@ -308,6 +308,14 @@
 /mob/dead/new_player/IsJobUnavailable(rank, obj/structure/overmap/ship/joined_ship, latejoin = FALSE)
 	var/datum/job/job = SSjob.get_job(rank)
 	if(!job)
+		return JOB_UNAVAILABLE_GENERIC
+	// This override inserts joined_ship as a second positional arg, but upstream's own
+	// callers do not know about it: AttemptLateSpawn (code/modules/mob/dead/new_player/
+	// new_player.dm:167) passes rank alone, and it is reachable through the ctrl-click
+	// fallback_ui path (code/_onclick/hud/screen_objects/new_player.dm:257). Job slots
+	// belong to a ship in this fork, so with no ship there is no slot to check and no
+	// meaningful place to spawn - refuse, and let the player go back through select_ship().
+	if(isnull(joined_ship))
 		return JOB_UNAVAILABLE_GENERIC
 	if(joined_ship.job_slots[job] <= 0)
 		return JOB_UNAVAILABLE_SLOTFULL

@@ -438,16 +438,21 @@
 
 /**
  * Pike: overalls, rubber boots and a puffer vest. A man who expects to be
- * standing in water at some point today, indoors or not. The hat is the
- * genuine article and he will tell you so; the rod never leaves his hand.
+ * standing in water at some point today, indoors or not. He skinned the hat
+ * himself and he will tell you so; the rod never leaves his hand.
  * Deliberately not in Fern's waders, since they share a corridor.
+ *
+ * The hat is NOT /obj/item/clothing/head/soft/fishing_hat. Upstream gates that
+ * one behind /datum/element/skill_reward, which drops it to the floor on equip
+ * unless the wearer's mind holds legendary fishing skill — so a mindless NPC
+ * can never wear it, and outfit_sanity fails the outfit outright.
  */
 /datum/outfit/bait_shop_pike
 	name = "Resident angler"
 	uniform = /obj/item/clothing/under/misc/overalls
 	suit = /obj/item/clothing/suit/jacket/puffer/vest
 	gloves = /obj/item/clothing/gloves/fishing
-	head = /obj/item/clothing/head/soft/fishing_hat
+	head = /obj/item/clothing/head/fedora/carpskin
 	shoes = /obj/item/clothing/shoes/galoshes
 	r_hand = /obj/item/fishing_rod
 

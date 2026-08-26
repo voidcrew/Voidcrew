@@ -430,7 +430,7 @@ MINUTE_CLICK_LIMIT 400
 ## The "cooldown" time for each occurrence of a unique error
 #ERROR_COOLDOWN 600
 ## How many occurrences before the next will silence them
-#ERROR_LIMIT 90
+ERROR_LIMIT 90
 ## How long a unique error will be silenced for
 #ERROR_SILENCE_TIME 6000
 ##How long to wait between messaging admins about occurrences of a unique error

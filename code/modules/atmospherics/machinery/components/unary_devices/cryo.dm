@@ -290,7 +290,7 @@
 		unsafe_release = TRUE
 
 	var/deconstruct = FALSE
-	if(!(default_pry_open(tool) & ITEM_INTERACT_SUCCESS))
+	if(!(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)) // VOIDCREW EDIT - upstream bug: default_pry_open() takes a leading user arg, so the one-arg call left crowbar null. Candidate to upstream.
 		deconstruct = can_crowbar_deconstruct()
 
 	if(unsafe_release)
