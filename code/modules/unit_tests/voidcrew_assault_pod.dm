@@ -12,8 +12,16 @@
  *
  * The test flies pods EAST from the bottom-left of the test room, which has four
  * open tiles that way before the indestructible border.
+ *
+ * `normal_floor_required` because the test builds hull plating out of the test room's
+ * own floor and then asks a pod to cut through it. The room's floor is
+ * `/turf/open/indestructible`, which is not a `/turf/open/floor` at all and cannot be
+ * torn up; the flag has the harness swap the whole room to real plating for the run and
+ * put it back afterwards. Upstream added both the indestructible floor and this opt-in
+ * in the same pass, so a fork test written against the old iron-floor room needs the flag.
  */
 /datum/unit_test/voidcrew_assault_pod_breach
+	normal_floor_required = TRUE
 	/// Turfs we converted to walls, so they can be put back as we found them
 	var/list/turf/dirtied = list()
 	/// Original type of each dirtied turf, parallel to `dirtied`
@@ -57,7 +65,7 @@
 	var/turf/first = get_step(launch_site, EAST)
 	var/turf/second = get_step(first, EAST)
 	var/turf/third = get_step(second, EAST)
-	TEST_ASSERT(isfloorturf(third), "the test room is too small east of the landmark to run this test")
+	TEST_ASSERT(isfloorturf(third), "[third] is not plating the pod could cut: either the test room has shrunk east of the landmark, or normal_floor_required stopped swapping the room's indestructible floor for real plating")
 
 	// Single hull plate: the hole opens and the pod ends up on the far side of it
 	var/turf/hull = build_wall(first)

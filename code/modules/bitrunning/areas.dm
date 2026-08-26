@@ -49,12 +49,14 @@
 	icon_state = "bit_ruin"
 	area_flags = /area/virtual_domain::area_flags
 	area_flags_mapping = /area/virtual_domain::area_flags_mapping
+	allow_shuttle_docking = FALSE
 
 /area/icemoon/underground/explored/virtual_domain
 	name = "Virtual Domain Ice Ruins"
 	icon_state = "bit_ice"
 	area_flags = /area/virtual_domain::area_flags
 	area_flags_mapping = /area/virtual_domain::area_flags_mapping
+	allow_shuttle_docking = FALSE
 
 /area/ruin/space/virtual_domain
 	name = "Virtual Domain Unexplored Location"
@@ -62,6 +64,7 @@
 	icon_state = "bit_ruin"
 	area_flags = /area/virtual_domain::area_flags
 	area_flags_mapping = /area/virtual_domain::area_flags_mapping
+	allow_shuttle_docking = FALSE
 
 /area/space/virtual_domain
 	name = "Virtual Domain Space"
@@ -69,6 +72,7 @@
 	icon_state = "bit_space"
 	area_flags = /area/virtual_domain::area_flags
 	area_flags_mapping = /area/virtual_domain::area_flags_mapping
+	allow_shuttle_docking = FALSE
 
 ///Areas that virtual entities should not be in
 

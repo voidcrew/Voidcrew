@@ -259,14 +259,27 @@
 #define SHIP_TURRET_AI_SKITTISH (1<<1)
 /// It only fights back once something has started on it.
 #define SHIP_TURRET_AI_PROVOKED (1<<2)
+/// Depth guard on the tree walk: a malformed (or cyclic) tree must not hang the sweep.
+/// Generous, because a subtree that binds subtrees into its slots stacks up quickly - the
+/// carp tree reaches its target-picking leaf around a dozen levels below the controller.
+#define SHIP_TURRET_BT_MAX_DEPTH 32
 
 // The 2026 upstream merge replaced planning_subtrees with compiled behavior trees, so the
 // three buckets below name BT node types and the walker further down reads the live tree
 // instead of a flat subtree list. Same question either way: does this creature's AI go
 // looking for a fight, only answer one, or just run?
+//
+// Naming the reusable /subtree wrappers is not enough on its own. Roughly half the roster -
+// the bear, the goliath, the carp and every trooper among them - has its target acquisition
+// written straight into its own .bt.json as an `acquire_target` leaf rather than pulled in
+// as a shared subtree, so a subtree-only sweep classified all of them as harmless and the
+// turret held fire on the exact creatures it is bolted to the hull for. The leaf behaviours
+// are listed alongside the subtrees for that reason; typecacheof() covers their subtypes
+// (update_combat_targets/nearest, /prioritize_trait, /most_wounded).
 
 /// Behavior-tree nodes that mean "this creature goes looking for something to attack".
 GLOBAL_LIST_INIT(ship_turret_aggressive_nodes, typecacheof(list(
+	/datum/bt_node/ai_behavior/acquire_target/update_combat_targets,
 	/datum/bt_node/subtree/basic_find_target,
 	/datum/bt_node/subtree/simple_hostile_combat,
 	/datum/bt_node/subtree/simple_ranged_combat,
@@ -285,6 +298,7 @@ GLOBAL_LIST_INIT(ship_turret_fleeing_nodes, typecacheof(list(
 
 /// Nodes that only pick a fight once something has already picked one with them.
 GLOBAL_LIST_INIT(ship_turret_retaliating_nodes, typecacheof(list(
+	/datum/bt_node/ai_behavior/acquire_target/target_from_retaliate_list,
 	/datum/bt_node/subtree/pick_retaliate_target,
 	/datum/bt_node/subtree/capricious_pick_target,
 	/datum/bt_node/subtree/forage_and_retaliate,
@@ -299,14 +313,17 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_nodes, typecacheof(list(
  *
  * Composites hold `children`, decorators a single `child`, and a subtree node its own `root`,
  * so a flat scan of `behavior_nodes` would only ever see the top of the tree - the
- * target-picking subtrees this turret cares about usually sit two or three levels down. An
+ * target-picking nodes this turret cares about usually sit several levels down, and on a
+ * subtree that binds its slots at the call site (the carp tree binds four) deeper still.
+ * The descent goes through `get_children()` rather than an istype ladder so it follows
+ * whatever the node kind actually exposes, an installed subtree override included. An
  * unresolved subtree root (nothing has ticked that controller yet) is skipped rather than
  * built: a turret sweep is not the place to compile somebody's AI.
  *
  * Returns a bitfield of SHIP_TURRET_AI_* flags.
  */
 /proc/ship_turret_classify_bt(datum/bt_node/node, depth = 0)
-	if(isnull(node) || depth > 12) // depth guard: a malformed tree must not hang the sweep
+	if(isnull(node) || depth > SHIP_TURRET_BT_MAX_DEPTH)
 		return NONE
 	. = NONE
 	if(GLOB.ship_turret_fleeing_nodes[node.type])
@@ -316,16 +333,8 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_nodes, typecacheof(list(
 	else if(GLOB.ship_turret_retaliating_nodes[node.type])
 		. |= SHIP_TURRET_AI_PROVOKED
 
-	if(istype(node, /datum/bt_node/composite))
-		var/datum/bt_node/composite/comp = node
-		for(var/datum/bt_node/child as anything in comp.children)
-			. |= ship_turret_classify_bt(child, depth + 1)
-	else if(istype(node, /datum/bt_node/decorator))
-		var/datum/bt_node/decorator/dec = node
-		. |= ship_turret_classify_bt(dec.child, depth + 1)
-	else if(istype(node, /datum/bt_node/subtree))
-		var/datum/bt_node/subtree/sub = node
-		. |= ship_turret_classify_bt(sub.root, depth + 1)
+	for(var/datum/bt_node/child as anything in node.get_children())
+		. |= ship_turret_classify_bt(child, depth + 1)
 
 /**
  * Would this creature's own targeting strategy ever pick a person-sized mob?
@@ -528,3 +537,4 @@ GLOBAL_LIST_INIT(ship_turret_retaliating_nodes, typecacheof(list(
 #undef SHIP_TURRET_AI_AGGRESSIVE
 #undef SHIP_TURRET_AI_SKITTISH
 #undef SHIP_TURRET_AI_PROVOKED
+#undef SHIP_TURRET_BT_MAX_DEPTH

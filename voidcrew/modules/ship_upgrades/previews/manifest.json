@@ -858,7 +858,7 @@
       1
      ],
      "png": "delta_delta_med_clinic_syndicate.png",
-     "src_md5": "39bab3124b3df7d170ff85f91b1e3d20"
+     "src_md5": "e6f4740d4a9f9214cf89f237de481c4d"
     }
    }
   },
@@ -912,7 +912,7 @@
     1
    ],
    "png": "delta_delta_med_cryo.png",
-   "src_md5": "7b5d598f70eeabf7b9f7140beb0e75cc",
+   "src_md5": "fd58f7476b5039d8e630f3e3e4e5a85c",
    "themes": {
     "cult": {
      "width": 6,
@@ -922,7 +922,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_cult.png",
-     "src_md5": "0aae2249cb089d0029771343fd1d7f1a"
+     "src_md5": "11aeb99528d3101465ace3d3771c8834"
     },
     "lightship": {
      "width": 6,
@@ -932,7 +932,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_lightship.png",
-     "src_md5": "f3ed6d38b621c1ca644c4841698a1adb"
+     "src_md5": "c9f318187bd661c4f60ad883c0b55349"
     },
     "syndicate": {
      "width": 6,
@@ -942,7 +942,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_syndicate.png",
-     "src_md5": "87fe02e52f752fd51559250469b80aaf"
+     "src_md5": "ac083212e004192a4989c343915c5e1f"
     }
    }
   },
