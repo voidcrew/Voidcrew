@@ -419,6 +419,19 @@
 	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
 	worldgen_end(stage_probe)
 
+	// Ore, and it has to be LAST of the generation stages. Upstream grades a wall by how far
+	// it is from open air (see randomize_site_ore()), so the depth field is only meaningful
+	// once everything that opens the ground up has run - the cave pockets terrain carved, the
+	// ruin interiors seedRuins() stamped, the genturf a ruin's own generator filled in, and
+	// the lava/plasma rivers cut through all of it.
+	//
+	// Without this stage the surface comes up with no ore at all on lava and ice planets:
+	// upstream rolls exposure-based rock in a subsystem pass that ran at roundstart, hours
+	// before this planet existed.
+	stage_probe = worldgen_begin("stage", "ore", build_probe.id)
+	randomize_site_ore(footprint, surface_level)
+	worldgen_end(stage_probe)
+
 	// Mapped ruin mobs normally inherited during Initialize(). This post-load pass also
 	// covers any loader or generator that initialized an occupant before registration.
 	footprint.add_planetary_faction_to_existing_mobs()

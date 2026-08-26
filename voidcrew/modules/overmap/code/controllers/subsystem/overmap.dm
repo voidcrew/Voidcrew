@@ -1315,6 +1315,20 @@ SUBSYSTEM_DEF(overmap)
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()
 
+	// Any wall this encounter just laid down or stamped that is waiting on an ore roll gets
+	// it here, bounded to our own footprint - upstream only ever rolls exposure-based rock in
+	// SSore_generation.Initialize(), which for an encounter built mid-round is long gone. See
+	// randomize_site_ore() in voidcrew/turfs/closed/minerals.dm.
+	//
+	// Nothing in the current encounter set actually lays exposure-based rock - the asteroid
+	// generators use plain /turf/closed/mineral/random, which still rolls at Initialize - so
+	// today this is a no-op costing one list length read, the guard at the top of
+	// randomize_ore_in_rect() returning on an empty queue. It is here so a ruin or biome that
+	// DOES use exposure-based rock cannot land on this path and quietly generate barren.
+	// (The landable meteor field builds its own terrain in events.dm rather than through here,
+	// and seeds its rock explicitly with seed_asteroid_ore_block(), so it needs nothing.)
+	randomize_site_ore(footprint, zlevel, throttled)
+
 	// Anything mapgen/ruins didn't touch is still uninitialized /turf/open/space/basic,
 	// which players can't interact with (no throwing, no construction). Scoped to the
 	// footprint: an unclaimed slot must stay uninitialized until it is dealt, and this

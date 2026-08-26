@@ -599,9 +599,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * ore_weights optionally overrides the default weighted ore table, the meteor
  * severity tiers pass their own so worse storms seed richer rock.
  *
- * Mining itself needs no z-level traits: off mining levels, prox_to_vent() returns 0 and
- * the mineral turf machinery falls back to flat random yields, so this works fine inside
- * a map slot on a shared encounter z-level.
+ * Mining itself needs no z-level traits, and this rock needs no build-time ore roll either:
+ * the field generators lay plain /turf/closed/mineral/random, which is not exposure_based and
+ * therefore still rolls its own ore in Initialize() the moment it is created. (Rock that DOES
+ * defer - the lava and ice biomes' - is rolled by randomize_site_ore(); see
+ * voidcrew/turfs/closed/minerals.dm.) This proc then tops the field up to target_ratio on top
+ * of whatever that rolled, which is why it counts the already-ore-bearing walls first.
  */
 /proc/seed_asteroid_ore_block(turf/bottom_left, turf/top_right, target_ratio, source_desc, list/ore_weights)
 	if(!bottom_left || !top_right)

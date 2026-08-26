@@ -388,6 +388,7 @@
 #include "voidcrew_lich.dm"
 #include "voidcrew_loot.dm"
 #include "voidcrew_map_packing.dm"
+#include "voidcrew_planet_ore.dm"
 #include "voidcrew_planetary_factions.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_ruin_bounds.dm"
