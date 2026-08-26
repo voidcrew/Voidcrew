@@ -842,6 +842,9 @@
 	name = "heavy cartridge"
 	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut. Only \"No Quarter\" takes them."
 	projectile_type = /obj/projectile/bullet/shotgun_slug/no_quarter
+	// It IS a paper cartridge - and the crafted-vs-spawned parity test wants the
+	// blueprint recipe's paper accounted for on the spawned item too.
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2, /datum/material/paper = SMALL_MATERIAL_AMOUNT * 2.5)
 
 /// The bandolier the gun turns up with. Twelve cartridges, then you make
 /// your own off the schematic.
