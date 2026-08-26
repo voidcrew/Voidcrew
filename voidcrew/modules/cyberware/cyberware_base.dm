@@ -82,16 +82,10 @@
 		return FALSE
 	return ..()
 
-/obj/item/organ/cyberimp/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
-	// Capacity refusal happens up front, before the parent gets a say, so the
-	// surgeon hears why the step failed instead of fumbling a full operation.
-	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
-		return FALSE
-	. = ..()
-	if(!.)
-		return
-	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
-	chrome?.grant_install_context(new_owner)
+/obj/item/organ/cyberimp/cyberware/pre_surgical_insertion(mob/living/user, atom/insertion_target, target_zone)
+	// The parent runs FIRST on purpose; see cyberware_open_install_window().
+	..()
+	return cyberware_open_install_window(user, insertion_target)
 
 /obj/item/organ/cyberimp/cyberware/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -160,14 +154,10 @@
 		return FALSE
 	return ..()
 
-/obj/item/organ/eyes/robotic/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
-	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
-		return FALSE
-	. = ..()
-	if(!.)
-		return
-	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
-	chrome?.grant_install_context(new_owner)
+/obj/item/organ/eyes/robotic/cyberware/pre_surgical_insertion(mob/living/user, atom/insertion_target, target_zone)
+	// The parent runs FIRST on purpose; see cyberware_open_install_window().
+	..()
+	return cyberware_open_install_window(user, insertion_target)
 
 /obj/item/organ/eyes/robotic/cyberware/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -231,14 +221,10 @@
 		return FALSE
 	return ..()
 
-/obj/item/organ/cyberimp/arm/toolkit/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
-	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
-		return FALSE
-	. = ..()
-	if(!.)
-		return
-	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
-	chrome?.grant_install_context(new_owner)
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/pre_surgical_insertion(mob/living/user, atom/insertion_target, target_zone)
+	// The parent runs FIRST on purpose; see cyberware_open_install_window().
+	..()
+	return cyberware_open_install_window(user, insertion_target)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/on_mob_insert(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -274,6 +260,73 @@
 		owner.balloon_alert(owner, "[name] glitches out!")
 
 // ---- Shared insert gate ------------------------------------------------
+
+/**
+ * The carbon a [/obj/item/organ/proc/pre_surgical_insertion] call is aimed at.
+ *
+ * Upstream hands that proc two different shapes of second argument, and the
+ * declared type (`mob/living/carbon/new_owner`) is only one of them:
+ *
+ * - organ-manipulation surgery passes the **bodypart** being cut into
+ *   (operation_organ_manip.dm, on_success_insert_organ)
+ * - the hand-organ-insertion element passes the **carbon** doing it to itself
+ *   (hand_organ_insertion.dm, attempt_to_insert_organ)
+ *
+ * The base proc reads nothing but target_zone, so upstream never trips over the
+ * disagreement; any fork override that actually wants the patient has to sort
+ * it out. This is exactly what broke every surgical chrome install in the 2026
+ * merge: the old overrides took the bodypart as a carbon, the capacity check
+ * bounced off iscarbon(), no install window was ever opened, and the operation
+ * announced success while Insert() quietly refused.
+ *
+ * A limb that has been cut off its owner resolves to null, which is the honest
+ * answer: there is nobody to fit chrome to. (Upstream inserts into a detached
+ * limb with bodypart_insert(), which never reaches our Insert() gate at all.)
+ */
+/proc/cyberware_insertion_patient(atom/insertion_target)
+	RETURN_TYPE(/mob/living/carbon)
+	if(isbodypart(insertion_target))
+		var/obj/item/bodypart/limb = insertion_target
+		return limb.owner
+	if(iscarbon(insertion_target))
+		return insertion_target
+	return null
+
+/**
+ * The surgical half of the install-context gate, shared by all three cyberware
+ * bases (they hang off three different upstream parents, so a proc is the only
+ * way to keep one copy of this).
+ *
+ * Call it from pre_surgical_insertion AFTER the parent, not before. The parent
+ * is where upstream's swap_zone() lives, and zone-flexible ware maps its two
+ * valid_zones to two DIFFERENT slots (Gorilla Arms and Scrapper's Knuckles map
+ * left/right arm to LEFT/RIGHT_ARM_AUG). Checking capacity before the swap
+ * nets out the incumbent of the arm the ware was BUILT for instead of the arm
+ * it is going into. The parent's return value is not a go/no-go and must not be
+ * read as one: since the 2026 rework it returns swap_zone()'s value, i.e. null
+ * for the great majority of chrome, which carries no valid_zones at all.
+ *
+ * Returns TRUE when an install window was opened for the patient. Neither
+ * upstream call site reads the return, so the refusal that matters is still
+ * Insert()'s: no window, no install.
+ */
+/obj/item/organ/proc/cyberware_open_install_window(mob/living/user, atom/insertion_target)
+	var/mob/living/carbon/new_owner = cyberware_insertion_patient(insertion_target)
+	// Nobody to install into: never clear a live window (a Cradle's, say) on
+	// the way past.
+	if(isnull(new_owner))
+		return FALSE
+	// Capacity refusal is spoken here rather than at Insert() so the surgeon
+	// hears why, instead of fumbling a whole operation into silence.
+	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
+		return FALSE
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	// No component means this isn't chrome and has no gate to open; that is a
+	// pass, same as cyberware_can_insert() treats it.
+	if(!chrome)
+		return TRUE
+	chrome.grant_install_context(new_owner)
+	return TRUE
 
 /**
  * The organs this insert would replace on the target, the incumbent

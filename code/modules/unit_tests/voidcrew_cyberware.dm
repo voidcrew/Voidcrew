@@ -642,3 +642,101 @@
 	// and teardown removes it.
 	QDEL_NULL(shield.core)
 
+/// (n) The surgical install path, driven through the real operation.
+///
+/// Chrome is meant to go in two ways: a Chrome Cradle, or a surgeon doing organ
+/// manipulation on a table. Surgery reaches the install-context gate through
+/// exactly one call, pre_surgical_insertion(), and the 2026 upstream surgery
+/// rework changed what it is handed: argument two is now the /obj/item/bodypart
+/// being cut into, NOT the patient. The fork's three overrides still read it as
+/// a carbon, so the capacity check bounced off iscarbon(), no window was ever
+/// opened, and Insert() refused - while the operation, which never looks at
+/// Insert()'s return, announced success and left the organ loose in the
+/// surgeon's contents. Chrome became Chrome-Cradle-only overnight and surgery
+/// ate the most expensive item a player owns.
+///
+/// Every other test in this file calls grant_install_context() itself and then
+/// Insert(), which is why the whole suite passed through that break without a
+/// word. This one goes the long way round on purpose: it hands the registered
+/// operation datum a real limb and a real surgeon and calls the same proc a
+/// finished insert step calls, so the argument contract is under test and not
+/// just the gate behind it.
+/datum/unit_test/voidcrew_cyberware_surgical_install
+
+/// Exactly what a completed insert step does (operation_organ_manip.dm,
+/// on_success_insert_organ): organ out of the hand, pre_surgical_insertion()
+/// with the LIMB as argument two, then Insert(). Note the argument order,
+/// limb first and surgeon second.
+/datum/unit_test/voidcrew_cyberware_surgical_install/proc/operate(datum/surgery_operation/limb/organ_manipulation/procedure, mob/living/surgeon, obj/item/bodypart/limb, obj/item/organ/ware)
+	surgeon.put_in_hands(ware)
+	procedure.on_success_insert_organ(limb, surgeon, ware)
+
+/datum/unit_test/voidcrew_cyberware_surgical_install/Run()
+	var/datum/surgery_operation/limb/organ_manipulation/procedure = GLOB.operations.operations_by_typepath[/datum/surgery_operation/limb/organ_manipulation/internal]
+	TEST_ASSERT_NOTNULL(procedure, "no internal organ-manipulation operation is registered, so nothing here proves anything")
+
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/surgeon = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/bodypart/chest = patient.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(chest, "Test fixture: the patient has no chest to operate on")
+
+	// The narrow claim, stated on its own so a failure here names its own cause:
+	// handed the bodypart the way surgery hands it, the override has to resolve
+	// the patient out of it and open the window.
+	var/obj/item/organ/cyberimp/cyberware/test_small/probe = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
+	var/datum/component/cyberware/probe_chrome = probe.GetComponent(/datum/component/cyberware)
+	TEST_ASSERT_NOTNULL(probe_chrome, "Test fixture: the test ware carries no cyberware component")
+	TEST_ASSERT(!probe_chrome.has_install_context(patient), "Test fixture: freshly minted chrome already had an install window open")
+	probe.pre_surgical_insertion(surgeon, chest, chest.body_zone)
+	TEST_ASSERT(probe_chrome.has_install_context(patient), "pre_surgical_insertion() handed a bodypart opened no install window. Surgery cannot install chrome at all")
+
+	// (1) The generic base, end to end through the operation.
+	var/obj/item/organ/cyberimp/cyberware/test_small/plain = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
+	operate(procedure, surgeon, chest, plain)
+	TEST_ASSERT_EQUAL(plain.owner, patient, "Organ-manipulation surgery didn't install generic chrome. The operation reports success either way, so this is silent in play")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(plain.slot), plain, "Surgically installed chrome isn't in its own slot")
+	TEST_ASSERT(!surgeon.is_holding(plain), "Test fixture: the ware never left the surgeon's hand, so nothing was installed")
+
+	// (2) The optics base. Same override, different upstream parent, and the
+	// meat eyes it replaces are evicted to the floor by Insert() itself.
+	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
+	var/obj/item/organ/meat_eyes = patient.get_organ_slot(ORGAN_SLOT_EYES)
+	var/obj/item/bodypart/head_limb = patient.get_bodypart(deprecise_zone(optics.zone))
+	TEST_ASSERT_NOTNULL(head_limb, "Test fixture: the patient has no head to operate on")
+	operate(procedure, surgeon, head_limb, optics)
+	TEST_ASSERT_EQUAL(optics.owner, patient, "Organ-manipulation surgery didn't install chrome optics")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_EYES), optics, "Surgically installed optics aren't in the eye slot")
+	// The evicted pair isn't ours to leave lying in the test room.
+	qdel(meat_eyes)
+
+	// (3) The deployable-arm base, fitted to the arm it was NOT built for. Arm
+	// ware carries valid_zones mapping the two arms to two DIFFERENT hardware
+	// slots, so this only works if upstream's swap_zone() runs (it lives in the
+	// parent call) BEFORE the capacity check nets out that arm's incumbent.
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/fist = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw)
+	TEST_ASSERT_EQUAL(initial(fist.zone), BODY_ZONE_R_ARM, "Test fixture: the Rockjaw stopped being right-arm chrome, so the wrong-arm case below tests nothing")
+	var/obj/item/bodypart/off_arm = patient.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT_NOTNULL(off_arm, "Test fixture: the patient has no left arm to operate on")
+	operate(procedure, surgeon, off_arm, fist)
+	TEST_ASSERT_EQUAL(fist.owner, patient, "Organ-manipulation surgery didn't install arm chrome")
+	TEST_ASSERT_EQUAL(fist.zone, BODY_ZONE_L_ARM, "Arm chrome cut into the left arm kept its right-arm zone. swap_zone() never ran")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_LEFT_ARM_AUG), fist, "Arm chrome cut into the left arm didn't claim the left arm's hardware slot")
+
+	// (4) The refusal still refuses, and still doesn't eat the ware. Upstream
+	// never reads Insert()'s return, so a refused surgical insert leaves the
+	// organ in the surgeon's contents rather than in the patient; what must
+	// never happen is it being deleted or stranded in nullspace.
+	var/mob/living/carbon/human/full_patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/test_full_body/ballast = allocate(/obj/item/organ/cyberimp/cyberware/test_full_body)
+	TEST_ASSERT(ballast.Insert(full_patient, special = TRUE), "Test fixture: the at-capacity staging insert was refused")
+	TEST_ASSERT_EQUAL(get_chrome_load(full_patient), 20, "Test fixture: the second patient isn't loaded to capacity")
+
+	var/obj/item/bodypart/full_chest = full_patient.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(full_chest, "Test fixture: the second patient has no chest to operate on")
+	var/obj/item/organ/cyberimp/cyberware/test_small/refused = allocate(/obj/item/organ/cyberimp/cyberware/test_small)
+	operate(procedure, surgeon, full_chest, refused)
+	TEST_ASSERT_NULL(refused.owner, "Surgery installed chrome into a body with no neural headroom")
+	TEST_ASSERT(!QDELETED(refused), "A refused surgical install deleted the ware")
+	TEST_ASSERT_NOTNULL(refused.loc, "A refused surgical install left the ware in nullspace with no way to get it back")
+	TEST_ASSERT_EQUAL(get_chrome_load(full_patient), 20, "A refused surgical install still changed the body's chrome load")
+
