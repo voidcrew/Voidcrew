@@ -679,15 +679,6 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
-"qO" = (
-/obj/effect/turf_decal/bot/left,
-/obj/structure/reagent_dispensers/fueltank/large,
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/cable,
-/turf/open/floor/mineral/plastitanium/pod/dark,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
 "qU" = (
 /turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_irs{
@@ -1337,6 +1328,16 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
+"Fi" = (
+/obj/effect/turf_decal/bot/left,
+/obj/structure/reagent_dispensers/fueltank/large,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/effect/mapping_helpers/apc/cut_AI_wire,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
 "Fn" = (
 /obj/structure/chair/office{
 	dir = 4
@@ -1655,21 +1656,6 @@
 	},
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
-"KO" = (
-/obj/effect/turf_decal/stripes,
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/obj/item/reagent_containers/cup/bucket,
-/obj/item/mop,
-/obj/effect/mapping_helpers/apc/cut_AI_wire,
-/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
-/obj/machinery/firealarm/directional/west,
-/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -2200,6 +2186,20 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
+"Vy" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/mineral/plastitanium/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
 "VB" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/layer2{
 	dir = 4;
@@ -2458,7 +2458,7 @@ hf
 hK
 hK
 mv
-KO
+Vy
 Yf
 hK
 hK
@@ -2532,7 +2532,7 @@ QV
 bp
 qj
 hK
-qO
+Fi
 vF
 eg
 Yu

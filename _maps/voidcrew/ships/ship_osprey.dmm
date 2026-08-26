@@ -2719,6 +2719,11 @@
 	},
 /turf/open/floor/catwalk_floor/iron_white,
 /area/shuttle/voidcrew/osprey/research/robotics)
+"An" = (
+/obj/structure/dresser,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/iron/grimy,
+/area/shuttle/voidcrew/osprey/service/dormitories)
 "Av" = (
 /obj/structure/table,
 /obj/effect/turf_decal/siding/red,
@@ -4468,11 +4473,6 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/iron/grimy,
 /area/shuttle/voidcrew/osprey/service/dormitories)
-"RZ" = (
-/obj/structure/dresser,
-/obj/machinery/firealarm/directional/south,
-/turf/open/floor/iron/grimy,
-/area/shuttle/voidcrew/osprey/service/dormitories)
 "Sb" = (
 /obj/structure/sign/departments/custodian,
 /turf/closed/wall/mineral/titanium/nodiagonal,
@@ -4558,16 +4558,6 @@
 /obj/machinery/power/smes/engineering{
 	dir = 1
 	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/osprey/maintenance/port)
-"SU" = (
-/obj/machinery/atmospherics/components/binary/pump{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/firealarm/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/port)
 "SV" = (
@@ -4751,6 +4741,16 @@
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/shuttle/voidcrew/osprey/cargo/warehouse)
+"UK" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/osprey/maintenance/port)
 "UQ" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
@@ -5398,7 +5398,7 @@ fi
 uA
 pB
 lW
-SU
+UK
 DI
 eb
 Yx
@@ -6543,7 +6543,7 @@ XU
 XU
 XU
 KL
-RZ
+An
 AH
 ta
 SO

@@ -391,7 +391,7 @@
 /area/ruin/unpowered)
 "Xt" = (
 /obj/structure/table/wood/poker,
-/obj/item/nullrod/claymore/saber/pirate,
+/obj/item/melee/energy/sword/nullrod/pirate,
 /obj/item/melee/energy/sword/pirate,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)

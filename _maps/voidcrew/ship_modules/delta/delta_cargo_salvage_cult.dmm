@@ -62,11 +62,11 @@
 /obj/structure/rack,
 /obj/item/stack/sheet/runed_metal{
 	amount = 10;
-	 pixel_y = 3
+	pixel_y = 3
 	},
 /obj/item/storage/fancy/candle_box{
 	pixel_x = 6;
-	 pixel_y = -4
+	pixel_y = -4
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -87,17 +87,17 @@
 /obj/structure/table/reinforced,
 /obj/item/clipboard{
 	pixel_x = -4;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /obj/item/hand_labeler{
 	pixel_x = 5;
-	 pixel_y = -2
+	pixel_y = -2
 	},
 /obj/item/paper{
 	default_raw_text = "Log every load before it goes in a crate. Weight, which wreck it came off, who carried it. Chalk the crate lid so it matches the book.";
-	 name = "hold log";
-	 pixel_x = 4;
-	 pixel_y = 8
+	name = "hold log";
+	pixel_x = 4;
+	pixel_y = 8
 	},
 /obj/machinery/light/small/red/directional/west,
 /turf/open/floor/iron/dark,
@@ -109,11 +109,11 @@
 	},
 /obj/item/weldingtool/largetank{
 	pixel_x = 6;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /obj/item/crowbar/large{
 	pixel_x = -6;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/iron/dark,
@@ -124,7 +124,7 @@
 	},
 /obj/structure/closet/crate/secure/weapon,
 /obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
+/obj/item/ammo_box/speedloader/strilka310/surplus,
 /obj/item/flashlight/seclite,
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -132,15 +132,15 @@
 /obj/structure/table/reinforced,
 /obj/item/paper_bin{
 	pixel_x = -5;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /obj/item/pen{
 	pixel_x = -5;
-	 pixel_y = 6
+	pixel_y = 6
 	},
 /obj/item/folder{
 	pixel_x = 6;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -177,11 +177,11 @@
 /obj/structure/rack,
 /obj/item/stack/sheet/runed_metal{
 	amount = 20;
-	 pixel_y = 2
+	pixel_y = 2
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 7;
-	 pixel_y = 7
+	pixel_y = 7
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -189,7 +189,7 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -3;
-	 pixel_y = -5
+	pixel_y = -5
 	},
 /obj/effect/turf_decal/siding/red{
 	dir = 2
@@ -243,7 +243,7 @@
 /obj/structure/noticeboard/directional/west,
 /obj/item/paper{
 	default_raw_text = "Hold watch rotates at every undock. Keep the blast-hatch lane swept and the candle by the desk lit. If the hatch cycles while you are on watch, call it before you open it.";
-	 name = "hold watch bill"
+	name = "hold watch bill"
 	},
 /obj/effect/turf_decal/siding/red{
 	dir = 2

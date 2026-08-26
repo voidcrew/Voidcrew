@@ -1151,6 +1151,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"ry" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/machinery/camera{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/a)
 "rG" = (
 /obj/structure/chair/stool/bar/directional/west,
 /turf/open/floor/iron/white,
@@ -1166,6 +1179,12 @@
 "rP" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/security/a)
+"rT" = (
+/obj/machinery/camera{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/a)
 "rV" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
 /turf/open/floor/engine,
@@ -1638,19 +1657,6 @@
 /obj/machinery/light,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
-"zx" = (
-/obj/structure/bodycontainer/morgue{
-	dir = 8
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/phalanx/medbay/morgue/a)
 "zy" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/structure/reagent_dispensers/fueltank,
@@ -1873,6 +1879,19 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/a)
+"Db" = (
+/obj/structure/table/wood,
+/obj/item/pen/fountain,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/camera{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/item/paper_bin,
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "Dj" = (
 /obj/structure/sign/directions/science,
 /turf/closed/wall/mineral/titanium,
@@ -2134,12 +2153,6 @@
 /obj/machinery/door/airlock/public/glass,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
-"Hn" = (
-/obj/machinery/camera{
-	dir = 10
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/phalanx/chapel/a)
 "Ht" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
@@ -3191,19 +3204,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/a)
-"TI" = (
-/obj/structure/table/wood,
-/obj/item/pen/fountain,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/effect/turf_decal/siding/wood,
-/obj/item/paper_bin,
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "TK" = (
 /obj/machinery/mineral/ore_redemption,
 /obj/machinery/door/firedoor/heavy,
@@ -4743,7 +4743,7 @@ na
 CI
 jQ
 ZJ
-TI
+Db
 CO
 oZ
 oZ
@@ -4803,7 +4803,7 @@ PQ
 Ga
 qO
 SC
-zx
+ry
 CO
 OS
 Hu
@@ -4869,7 +4869,7 @@ ew
 BR
 bG
 ew
-Hn
+rT
 Uy
 ew
 qk

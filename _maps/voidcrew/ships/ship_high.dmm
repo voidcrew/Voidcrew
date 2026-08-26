@@ -7,6 +7,17 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/high/cargo_bay)
+"ak" = (
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/high/hallway)
 "ar" = (
 /obj/item/storage/medkit,
 /turf/open/floor/bamboo,
@@ -454,6 +465,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/high/hallway)
+"iv" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/high/hallway/main)
 "iL" = (
 /obj/machinery/light{
 	dir = 4
@@ -1036,12 +1054,6 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/high/bridge/reception)
-"uP" = (
-/obj/machinery/firealarm/directional/east{
-	dir = 8
-	},
-/turf/open/floor/bamboo,
-/area/shuttle/voidcrew/high/dorms)
 "uZ" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -1211,17 +1223,6 @@
 	},
 /turf/open/floor/bamboo,
 /area/shuttle/voidcrew/high/dorms)
-"yS" = (
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/obj/machinery/firealarm/directional/east{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/high/hallway)
 "yT" = (
 /obj/structure/chair/office{
 	dir = 8
@@ -1507,6 +1508,12 @@
 "DP" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/high/bridge/boardroom)
+"Ee" = (
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/turf/open/floor/bamboo,
+/area/shuttle/voidcrew/high/dorms)
 "Eg" = (
 /obj/structure/railing,
 /obj/machinery/power/apc/auto_name/directional/north,
@@ -1892,13 +1899,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/high/bridge)
-"LA" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/extinguisher_cabinet/directional/south,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/high/hallway/main)
 "LG" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/high/engineering)
@@ -3009,7 +3009,7 @@ pI
 kv
 kv
 Bq
-LA
+iv
 kv
 Uk
 kv
@@ -3098,7 +3098,7 @@ Zm
 ay
 tK
 ND
-uP
+Ee
 gt
 GU
 Pm
@@ -3214,7 +3214,7 @@ MG
 MG
 pV
 GO
-yS
+ak
 Kx
 Bf
 il

@@ -245,16 +245,20 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/libertatia/armory)
-"mJ" = (
-/obj/structure/railing,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/structure/extinguisher_cabinet/directional/south,
-/obj/effect/landmark/start/security_officer,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
+"mr" = (
+/obj/machinery/firealarm/directional/south,
+/obj/effect/turf_decal/stripes{
+	dir = 6
 	},
-/turf/open/floor/mineral/plastitanium/pod/light,
+/obj/structure/guncase/shotgun,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	pixel_y = 4
+	},
+/obj/item/gun/ballistic/shotgun/doublebarrel,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	pixel_y = -5
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/libertatia/armory)
 "mU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -459,21 +463,6 @@
 /obj/machinery/vending/security,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/libertatia/armory)
-"sI" = (
-/obj/machinery/firealarm/directional/north,
-/obj/effect/turf_decal/stripes{
-	dir = 6
-	},
-/obj/structure/guncase/shotgun,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	pixel_y = 4
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	pixel_y = -5
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/libertatia/armory)
 "tT" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
@@ -621,6 +610,16 @@
 /obj/effect/landmark/start/assistant,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/grimy,
+/area/shuttle/voidcrew/libertatia/crew_lounge)
+"ys" = (
+/obj/structure/bed,
+/obj/structure/curtain/bounty,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bedsheet/brown,
+/obj/machinery/firealarm/directional/east{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "yU" = (
 /obj/structure/sink/directional/west,
@@ -856,16 +855,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
-"EH" = (
-/obj/structure/bed,
-/obj/structure/curtain/bounty,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/bedsheet/brown,
-/obj/machinery/firealarm/directional/west{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium/pod/light,
-/area/shuttle/voidcrew/libertatia/crew_lounge)
 "FH" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Cargo Bay"
@@ -919,12 +908,6 @@
 /obj/item/radio/intercom{
 	pixel_y = 22
 	},
-/turf/open/floor/mineral/plastitanium/pod/light,
-/area/shuttle/voidcrew/libertatia/cargo_bay)
-"Ie" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/extinguisher_cabinet/directional/south,
-/obj/machinery/airalarm/directional/north,
 /turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "IV" = (
@@ -1034,6 +1017,12 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/libertatia/maintenance/port)
+"Mu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/mineral/plastitanium/pod/light,
+/area/shuttle/voidcrew/libertatia/cargo_bay)
 "MC" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1393,6 +1382,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
+"Xe" = (
+/obj/structure/railing,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/effect/landmark/start/security_officer,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/pod/light,
+/area/shuttle/voidcrew/libertatia/armory)
 "Xx" = (
 /obj/structure/rack,
 /obj/item/storage/bag/ore,
@@ -1646,7 +1646,7 @@ gm
 DP
 gm
 uc
-mJ
+Xe
 pm
 pW
 sc
@@ -1730,7 +1730,7 @@ uc
 nB
 pS
 rF
-sI
+mr
 ci
 wq
 yi
@@ -1763,9 +1763,9 @@ wP
 yU
 Bw
 DG
-EH
+ys
 tT
-Ie
+Mu
 KS
 Og
 SR

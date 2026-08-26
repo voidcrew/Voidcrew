@@ -64,7 +64,7 @@
 	},
 /obj/structure/closet/crate/secure/weapon,
 /obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
+/obj/item/ammo_box/speedloader/strilka310/surplus,
 /obj/item/flashlight/seclite,
 /obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/mineral/plastitanium,

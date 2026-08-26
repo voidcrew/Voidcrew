@@ -662,31 +662,6 @@
 /obj/item/kirbyplants/organic/plant14,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/dorms/c)
-"hl" = (
-/obj/structure/table/wood,
-/obj/item/pen/fountain,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/effect/turf_decal/siding/wood,
-/obj/item/paper_bin,
-/obj/item/plant_analyzer{
-	pixel_x = -7;
-	pixel_y = 6
-	},
-/obj/item/shovel/spade{
-	pixel_x = 7;
-	pixel_y = -2
-	},
-/obj/item/reagent_containers/cup/watering_can/wood{
-	pixel_x = 6;
-	pixel_y = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/chapel/office/c)
 "hq" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/security/armory/c)
@@ -1158,6 +1133,31 @@
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/c)
+"nJ" = (
+/obj/structure/table/wood,
+/obj/item/pen/fountain,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/camera{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/item/paper_bin,
+/obj/item/plant_analyzer{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/shovel/spade{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/obj/item/reagent_containers/cup/watering_can/wood{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
 "nL" = (
 /obj/structure/table/wood,
 /obj/item/food/grown/flower/harebell{
@@ -3276,6 +3276,12 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/c)
+"PE" = (
+/obj/machinery/camera{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
 "PO" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -3653,6 +3659,19 @@
 "TV" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Ud" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/machinery/camera{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
 "Uf" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/mineral/titanium/tiled/purple,
@@ -3926,12 +3945,6 @@
 /obj/machinery/autolathe,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/c)
-"WQ" = (
-/obj/machinery/camera{
-	dir = 10
-	},
-/turf/open/floor/grass,
-/area/shuttle/voidcrew/phalanx/chapel/c)
 "WS" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 2
@@ -4132,19 +4145,6 @@
 	},
 /turf/open/floor/grass,
 /area/shuttle/voidcrew/phalanx/hallway/central/c)
-"Zv" = (
-/obj/structure/bodycontainer/morgue{
-	dir = 8
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
 "ZD" = (
 /obj/structure/chair/sofa/left{
 	dir = 8
@@ -5245,7 +5245,7 @@ Mk
 Zg
 no
 iZ
-hl
+nJ
 Og
 oZ
 oZ
@@ -5305,7 +5305,7 @@ Vi
 Ck
 Hc
 Qn
-Zv
+Ud
 Og
 CZ
 db
@@ -5371,7 +5371,7 @@ cc
 em
 aN
 cc
-WQ
+PE
 NH
 cc
 cp

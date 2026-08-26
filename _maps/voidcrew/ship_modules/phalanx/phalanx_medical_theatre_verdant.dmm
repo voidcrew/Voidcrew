@@ -118,9 +118,7 @@
 /obj/structure/table/optable{
 	dir = 1
 	},
-/obj/structure/sign/poster/official/help_others{
-	pixel_x = -32
-	},
+/obj/structure/sign/poster/official/help_others/directional/west,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "I" = (
@@ -132,7 +130,7 @@
 "J" = (
 /obj/structure/table/glass,
 /obj/item/storage/medkit/surgery,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 7;
 	pixel_y = 3
 	},

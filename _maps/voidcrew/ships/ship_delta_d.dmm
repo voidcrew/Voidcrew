@@ -9,6 +9,22 @@
 	},
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/d)
+"cR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/machinery/computer/cryopod{
+	pixel_y = 8
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/delta/dorms/d)
 "ec" = (
 /obj/structure/closet/crate,
 /obj/item/stack/sheet/iron/twenty,
@@ -512,22 +528,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
-"tF" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/small{
-	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/cryopod{
-	dir = 8
-	},
-/obj/machinery/computer/cryopod{
-	pixel_y = 8
-	},
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/east,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/delta/dorms/d)
 "tQ" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner,
@@ -2010,7 +2010,7 @@ eR
 "}
 (14,1,1) = {"
 WR
-tF
+cR
 kq
 Wr
 ON

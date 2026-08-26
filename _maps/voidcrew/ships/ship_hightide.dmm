@@ -510,6 +510,27 @@
 /obj/structure/closet/athletic_mixed,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance/starboard)
+"uH" = (
+/obj/item/pickaxe/emergency,
+/obj/structure/closet/crate{
+	name = "tide package"
+	},
+/obj/item/storage/bag/ore,
+/obj/item/mining_scanner,
+/obj/item/shovel,
+/obj/machinery/light{
+	
+	dir = 1
+	
+	},
+/obj/item/shovel,
+/obj/item/mining_scanner,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/emergency,
+/obj/effect/spawner/random/maintenance/eight,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hightide/maintenance/cargo)
 "uQ" = (
 /turf/closed/wall/r_wall/rust,
 /area/shuttle/voidcrew/hightide/maintenance/kitchen)
@@ -958,23 +979,6 @@
 "Rn" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/hightide/maintenance/port)
-"Ry" = (
-/obj/item/pickaxe/emergency,
-/obj/structure/closet/crate{
-	name = "tide package"
-	},
-/obj/item/storage/bag/ore,
-/obj/item/mining_scanner,
-/obj/item/shovel,
-/obj/machinery/light,
-/obj/item/shovel,
-/obj/item/mining_scanner,
-/obj/item/storage/bag/ore,
-/obj/item/pickaxe/emergency,
-/obj/effect/spawner/random/maintenance/eight,
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hightide/maintenance/cargo)
 "RI" = (
 /mob/living/basic/trooper/pirate/ranged{
 	desc = "Timmy is a classic pirate cosplayer. He was locked in this room by the previous owner. He's survived by eating the rats, this is why there are ZERO rats in the universe.";
@@ -1545,7 +1549,7 @@ xg
 Uw
 Uw
 Il
-Ry
+uH
 LD
 Jj
 GF

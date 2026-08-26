@@ -308,6 +308,11 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/science/xenobiology)
+"gw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/carpet/purple,
+/area/shuttle/voidcrew/metis/eepsoffice)
 "gE" = (
 /obj/machinery/monkey_recycler,
 /turf/open/floor/mineral/titanium/tiled/purple,
@@ -889,14 +894,6 @@
 "rJ" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/metis/bridge)
-"rT" = (
-/obj/structure/festivus,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/camera/autoname{
-	dir = 10
-	},
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/hallway/fore)
 "rY" = (
 /obj/effect/decal/cleanable/xenoblood/xgibs,
 /turf/open/floor/mineral/titanium/tiled/white,
@@ -1140,6 +1137,13 @@
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/engineering)
+"xr" = (
+/obj/effect/decal/cleanable/blood/gibs/up,
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/science)
 "xs" = (
 /obj/item/shard,
 /obj/structure/disposalpipe/segment{
@@ -1314,13 +1318,6 @@
 /obj/item/robot_suit,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/science/robotics)
-"AG" = (
-/obj/effect/decal/cleanable/blood/gibs/up,
-/obj/machinery/camera/autoname{
-	dir = 10
-	},
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/science)
 "AI" = (
 /obj/structure/closet/cardboard,
 /obj/effect/spawner/random/maintenance/four,
@@ -1482,6 +1479,14 @@
 /obj/item/gun/energy/laser,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/science)
+"DE" = (
+/obj/structure/festivus,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/hallway/fore)
 "DM" = (
 /obj/structure/sink/directional/north,
 /obj/effect/decal/cleanable/dirt,
@@ -2260,11 +2265,6 @@
 /obj/machinery/door/window/brigdoor/left/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/science/xenobiology)
-"Sa" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/firealarm/directional/north,
-/turf/open/floor/carpet/purple,
-/area/shuttle/voidcrew/metis/eepsoffice)
 "Sd" = (
 /obj/structure/table,
 /obj/item/clothing/mask/facehugger/toy,
@@ -3152,7 +3152,7 @@ cC
 EN
 kC
 cC
-rT
+DE
 zY
 Tg
 Xl
@@ -3402,7 +3402,7 @@ zg
 vo
 JR
 eV
-Sa
+gw
 JR
 Yw
 Qu
@@ -3489,7 +3489,7 @@ mL
 fC
 CT
 Ct
-AG
+xr
 Bi
 us
 LK

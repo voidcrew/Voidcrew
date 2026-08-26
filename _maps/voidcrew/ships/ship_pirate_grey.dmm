@@ -349,17 +349,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
-"nY" = (
-/obj/machinery/door/airlock/external/glass/ruin{
-	id_tag = "pirateportexternal"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/structure/fans/tiny,
-/turf/open/floor/mineral/plastitanium/pod/light,
-/area/shuttle/voidcrew/pirate_grey)
 "os" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/maintenance/two,
@@ -467,9 +456,17 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
-"qE" = (
-/obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating,
+"qM" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "piratestarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/docking_port/mobile/voidcrew/pirate_grey{
+	port_direction = 2;
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_grey)
 "qU" = (
 /obj/effect/turf_decal/bot,
@@ -683,22 +680,6 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"xj" = (
-/obj/machinery/light/small/directional/east,
-/obj/structure/toilet{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/spawner/random/trash/mess,
-/obj/machinery/button/door/directional/south{
-	id = "Arrivals_Toilet2";
-	name = "Lock Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4
-	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
 "xl" = (
 /obj/structure/disposalpipe/segment{
 	dir = 6
@@ -865,19 +846,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
-"AR" = (
-/obj/structure/toilet{
-	dir = 8
-	},
-/obj/structure/mirror/directional/north,
-/obj/structure/sink/directional/south,
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 8
-	},
-/obj/machinery/light/small/directional/south,
-/obj/item/reagent_containers/cup/glass/coffee,
-/turf/open/floor/mineral/plastitanium/pod/dark,
-/area/shuttle/voidcrew/pirate_grey)
 "AZ" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/item/clothing/suit/utility/fire/firefighter,
@@ -891,21 +859,6 @@
 "Bk" = (
 /obj/machinery/ship_combat/laser_turret,
 /turf/closed/wall,
-/area/shuttle/voidcrew/pirate_grey)
-"Bl" = (
-/obj/machinery/door/airlock/external/glass/ruin{
-	id_tag = "piratestarboardexternal"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/docking_port/mobile/voidcrew/pirate_grey{
-	port_direction = 2;
-	dir = 4
-	},
-/obj/structure/fans/tiny,
-/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_grey)
 "Bu" = (
 /obj/machinery/power/apc/auto_name/directional/north{
@@ -1364,10 +1317,6 @@
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"RX" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
 "Sb" = (
 /obj/structure/reagent_dispensers/plumbed,
 /turf/open/floor/plating,
@@ -1380,6 +1329,22 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"Ss" = (
+/obj/machinery/light/small/directional/east,
+/obj/structure/toilet{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/mess,
+/obj/machinery/button/door/directional/east{
+	id = "Arrivals_Toilet2";
+	name = "Lock Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "Su" = (
 /obj/effect/spawner/random/maintenance,
@@ -1395,6 +1360,19 @@
 /obj/item/melee/baton/security/cattleprod/teleprod,
 /obj/structure/cable,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"SZ" = (
+/obj/structure/toilet{
+	dir = 8
+	},
+/obj/structure/mirror/directional/north,
+/obj/structure/sink/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/obj/item/reagent_containers/cup/glass/coffee,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "Ta" = (
 /obj/machinery/power/terminal{
@@ -1519,6 +1497,14 @@
 "Wy" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
+"WM" = (
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "pirateportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/plastitanium/pod/light,
+/area/shuttle/voidcrew/pirate_grey)
 "Xw" = (
 /obj/machinery/door/airlock{
 	id_tag = "Arrivals_Toilet2";
@@ -1595,7 +1581,7 @@
 je
 je
 oE
-nY
+WM
 zB
 MG
 Gr
@@ -1605,7 +1591,7 @@ jG
 Gr
 MG
 zB
-Bl
+qM
 oE
 je
 je
@@ -1669,7 +1655,7 @@ TV
 "}
 (5,1,1) = {"
 zB
-qE
+fj
 Su
 Si
 Wy
@@ -1790,7 +1776,7 @@ ZD
 NQ
 wY
 Qe
-xj
+Ss
 gg
 NI
 wX
@@ -1966,7 +1952,7 @@ tU
 yN
 xl
 Sh
-AR
+SZ
 lO
 yN
 je
@@ -2004,7 +1990,7 @@ Hh
 yN
 gz
 yN
-RX
+RU
 yN
 je
 je

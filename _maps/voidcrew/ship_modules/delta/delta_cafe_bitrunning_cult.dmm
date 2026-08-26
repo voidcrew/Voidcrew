@@ -10,7 +10,7 @@
 /obj/effect/decal/cleanable/glass,
 /obj/item/stack/rods{
 	pixel_x = 5;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /obj/item/shard{
 	pixel_x = -6
@@ -22,11 +22,11 @@
 /obj/machinery/light/small/red/directional/south,
 /obj/item/multitool{
 	pixel_x = -6;
-	 pixel_y = -4
+	pixel_y = -4
 	},
 /obj/item/stack/cable_coil/five{
 	pixel_x = 5;
-	 pixel_y = 3
+	pixel_y = 3
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -41,7 +41,7 @@
 	},
 /obj/item/shard{
 	pixel_x = -7;
-	 pixel_y = -4
+	pixel_y = -4
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -68,11 +68,11 @@
 	},
 /obj/item/bitrunning_host_monitor{
 	pixel_x = -7;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /obj/item/reagent_containers/cup/glass/mug{
 	pixel_x = 7;
-	 pixel_y = -5
+	pixel_y = -5
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -96,9 +96,9 @@
 /obj/item/clothing/glasses/sunglasses/oval{
 	pixel_y = -2
 	},
-/obj/item/bitrunning_disk/ability/tier1{
+/obj/item/disk/bitrunning/ability/tier1{
 	pixel_x = 7;
-	 pixel_y = -7
+	pixel_y = -7
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -125,11 +125,11 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/cigbutt{
 	pixel_x = 8;
-	 pixel_y = -6
+	pixel_y = -6
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -7;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -137,7 +137,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 2;
-	 pixel_y = 5
+	pixel_y = 5
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -145,11 +145,11 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/stack/cable_coil{
 	pixel_x = -6;
-	 pixel_y = 5
+	pixel_y = 5
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 7;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -158,7 +158,7 @@
 /obj/structure/noticeboard/directional/west,
 /obj/item/paper{
 	default_raw_text = "Dive rota. Nobody goes under without someone at the console. If a pod alarms, pull the runner out first and ask questions after.";
-	 name = "dive rota"
+	name = "dive rota"
 	},
 /turf/open/floor/engine/cult/ship,
 /area/template_noop)
@@ -176,7 +176,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/shard{
 	pixel_x = 6;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)

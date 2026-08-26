@@ -4,9 +4,7 @@
 /area/template_noop)
 "aj" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 2
-	
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
@@ -32,9 +30,7 @@
 /area/template_noop)
 "ap" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 2
-	
 	},
 /obj/machinery/computer/quantum_console{
 	dir = 1
@@ -43,9 +39,7 @@
 /area/template_noop)
 "ar" = (
 /obj/effect/turf_decal/siding/red{
-	
 	dir = 8
-	
 	},
 /obj/structure/table/reinforced,
 /obj/item/modular_computer/laptop/preset/civilian{
@@ -67,9 +61,7 @@
 /area/template_noop)
 "av" = (
 /obj/effect/turf_decal/siding/red{
-	
 	dir = 8
-	
 	},
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/tile/dark_blue,
@@ -98,17 +90,13 @@
 /area/template_noop)
 "aR" = (
 /obj/effect/turf_decal/siding/red{
-	
 	dir = 8
-	
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "aS" = (
 /obj/effect/turf_decal/siding/red{
-	
 	dir = 8
-	
 	},
 /obj/modular_map_connector,
 /obj/structure/rack,
@@ -118,7 +106,7 @@
 /obj/item/clothing/glasses/sunglasses/oval{
 	pixel_y = -2
 	},
-/obj/item/bitrunning_disk/ability/tier1{
+/obj/item/disk/bitrunning/ability/tier1{
 	pixel_x = 7;
 	pixel_y = -7
 	},
@@ -136,9 +124,7 @@
 /area/template_noop)
 "ff" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 1
-	
 	},
 /obj/structure/closet/crate/engineering,
 /obj/item/stack/cable_coil,
@@ -148,9 +134,7 @@
 /area/template_noop)
 "kQ" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 2
-	
 	},
 /obj/machinery/light/directional/south,
 /obj/structure/rack,
@@ -167,17 +151,13 @@
 /area/template_noop)
 "ru" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 1
-	
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "Dq" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 2
-	
 	},
 /obj/machinery/light/directional/south,
 /obj/item/multitool{
@@ -192,9 +172,7 @@
 /area/template_noop)
 "UW" = (
 /obj/effect/turf_decal/siding/dark_blue{
-	
 	dir = 1
-	
 	},
 /obj/machinery/light/directional/north,
 /turf/open/floor/iron/white,

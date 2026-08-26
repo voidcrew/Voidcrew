@@ -154,7 +154,7 @@
 /obj/item/clothing/glasses/science{
 	pixel_y = 6
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -6;
 	pixel_y = 6
 	},

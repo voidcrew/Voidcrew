@@ -77,7 +77,7 @@
 	},
 /obj/structure/sink/directional/east,
 /obj/structure/mirror/broken/directional/west,
-/obj/machinery/light/small/built/directional/north,
+/obj/machinery/light/small/empty/directional/north,
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/freezer,

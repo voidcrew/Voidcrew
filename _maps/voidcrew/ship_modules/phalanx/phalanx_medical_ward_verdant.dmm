@@ -17,21 +17,6 @@
 	},
 /turf/open/floor/wood,
 /area/template_noop)
-"i" = (
-/obj/structure/table/glass,
-/obj/item/reagent_containers/cup/beaker/cryoxadone{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/cup/beaker/cryoxadone{
-	pixel_x = 4
-	},
-/obj/item/food/grown/poppy/lily{
-	pixel_x = -6;
-	pixel_y = 6
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
 "j" = (
 /obj/structure/table/glass,
 /obj/item/reagent_containers/cup/beaker/cryoxadone{
@@ -41,7 +26,7 @@
 /obj/item/reagent_containers/cup/beaker/cryoxadone{
 	pixel_x = 4
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -6;
 	pixel_y = 6
 	},

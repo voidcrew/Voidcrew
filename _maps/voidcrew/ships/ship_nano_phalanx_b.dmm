@@ -1105,6 +1105,18 @@
 "lx" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
+"lA" = (
+/obj/machinery/camera{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/sign/picture_frame{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/b)
 "lC" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/wood,
@@ -1633,6 +1645,23 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/cafeteria/b)
+"sI" = (
+/obj/structure/table/wood,
+/obj/item/pen/fountain,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/camera{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/item/paper_bin,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/b)
 "sK" = (
 /obj/machinery/door/airlock/highsecurity{
 	name = "Armory"
@@ -2619,18 +2648,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"Fn" = (
-/obj/machinery/camera{
-	dir = 10
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/structure/sign/picture_frame{
-	pixel_x = -32
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/chapel/b)
 "Fs" = (
 /obj/machinery/computer/rdconsole{
 	dir = 8
@@ -2807,6 +2824,19 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
+"Hf" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/machinery/camera{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/b)
 "Hi" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -4265,19 +4295,6 @@
 "Yy" = (
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
-"Yz" = (
-/obj/structure/bodycontainer/morgue{
-	dir = 8
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/phalanx/medbay/morgue/b)
 "YL" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/door/airlock/freezer{
@@ -4428,23 +4445,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/b)
-"ZQ" = (
-/obj/structure/table/wood,
-/obj/item/pen/fountain,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/effect/turf_decal/siding/wood,
-/obj/item/paper_bin,
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = 8;
-	pixel_y = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/chapel/office/b)
 
 (1,1,1) = {"
 oZ
@@ -5494,7 +5494,7 @@ nY
 dD
 wb
 iy
-ZQ
+sI
 Qm
 oZ
 oZ
@@ -5554,7 +5554,7 @@ Hc
 RQ
 TB
 jT
-Yz
+Hf
 Qm
 JH
 vs
@@ -5620,7 +5620,7 @@ ci
 EM
 iY
 MB
-Fn
+lA
 xF
 oW
 RO

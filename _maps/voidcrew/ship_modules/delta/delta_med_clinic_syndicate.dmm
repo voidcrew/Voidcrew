@@ -4,37 +4,10 @@
 /obj/structure/sign/poster/contraband/gorlex_recruitment/directional/east,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"e" = (
-/obj/effect/turf_decal/bot_red,
-/obj/item/storage/box/bodybags{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/stack/medical/gauze{
-	pixel_x = 6;
-	pixel_y = -2
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "f" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"g" = (
-/obj/effect/turf_decal/bot_red,
-/obj/structure/rack,
-/obj/item/storage/box/bodybags{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/stack/medical/gauze{
-	pixel_x = 6;
-	pixel_y = -2
-	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "j" = (
@@ -108,7 +81,7 @@
 	pixel_x = 9;
 	pixel_y = 12
 	},
-/obj/item/stack/medical/gauze{
+/obj/item/stack/medical/wrap/gauze{
 	pixel_x = -7;
 	pixel_y = 9
 	},

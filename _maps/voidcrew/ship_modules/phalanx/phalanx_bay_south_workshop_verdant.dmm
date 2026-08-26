@@ -27,7 +27,7 @@
 	pixel_x = -4;
 	pixel_y = 3
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -6;
 	pixel_y = 5
 	},

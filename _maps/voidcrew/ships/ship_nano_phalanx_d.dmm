@@ -1409,19 +1409,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/phalanx/hallway/aft/d)
-"sE" = (
-/obj/structure/table/wood,
-/obj/item/pen/fountain,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/effect/turf_decal/siding/wood,
-/obj/item/paper_bin,
-/turf/open/floor/bamboo/tatami,
-/area/shuttle/voidcrew/phalanx/chapel/office/d)
 "sR" = (
 /obj/machinery/rnd/production/techfab/department/medical,
 /turf/open/floor/iron/freezer,
@@ -1959,19 +1946,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
-"AT" = (
-/obj/structure/bodycontainer/morgue{
-	dir = 8
-	},
-/obj/machinery/camera{
-	dir = 5
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/phalanx/medbay/morgue/d)
 "AW" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -2368,6 +2342,19 @@
 "EN" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/security/armory/d)
+"EW" = (
+/obj/machinery/camera{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/west,
+/obj/machinery/light_switch{
+	pixel_x = -23
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/chapel/d)
 "Fa" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/cable,
@@ -2723,19 +2710,6 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
-"Jh" = (
-/obj/machinery/camera{
-	dir = 10
-	},
-/obj/machinery/light/small/directional/west,
-/obj/machinery/light_switch{
-	pixel_x = -23
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/chapel/d)
 "Jo" = (
 /obj/structure/table/reinforced,
 /obj/effect/spawner/random/food_or_drink/donkpockets,
@@ -3404,6 +3378,19 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/chapel/d)
+"Sx" = (
+/obj/structure/table/wood,
+/obj/item/pen/fountain,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/camera{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/item/paper_bin,
+/turf/open/floor/bamboo/tatami,
+/area/shuttle/voidcrew/phalanx/chapel/office/d)
 "SD" = (
 /obj/item/clothing/suit/caution{
 	pixel_x = -8
@@ -3814,6 +3801,19 @@
 /obj/structure/mirror/directional/south,
 /turf/open/floor/iron/freezer,
 /area/shuttle/voidcrew/phalanx/medbay/storage/d)
+"Xg" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/machinery/camera{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/d)
 "Xl" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/structure/reagent_dispensers/watertank,
@@ -5147,7 +5147,7 @@ Eo
 II
 Ky
 gL
-sE
+Sx
 tL
 oZ
 oZ
@@ -5207,7 +5207,7 @@ CZ
 hR
 En
 NN
-AT
+Xg
 tL
 aL
 XU
@@ -5273,7 +5273,7 @@ xf
 sX
 Sa
 GX
-Jh
+EW
 SV
 nt
 jR

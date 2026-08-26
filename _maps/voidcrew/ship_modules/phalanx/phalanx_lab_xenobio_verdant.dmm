@@ -53,7 +53,7 @@
 /obj/item/storage/box/monkeycubes{
 	pixel_x = 3
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -6;
 	pixel_y = 6
 	},
@@ -114,9 +114,7 @@
 /turf/open/floor/iron/white,
 /area/template_noop)
 "M" = (
-/obj/machinery/door/window/brigdoor{
-	dir = 1
-	},
+/obj/machinery/door/window/brigdoor/left/directional/north,
 /obj/structure/window/reinforced/spawner/directional/east,
 /turf/open/floor/engine,
 /area/template_noop)
