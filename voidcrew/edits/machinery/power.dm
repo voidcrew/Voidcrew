@@ -115,11 +115,20 @@
 
 /obj/machinery/power/rtg/RefreshParts()
 	. = ..() // Upstream sets power_gen off the flat tier sum; recompute over the weights.
+	// Upstream's escape hatch for RTGs whose stock parts don't affect output (the debug RTG).
+	// ..() has already set power_gen from get_base_power_gen(); there is nothing to weight.
+	if(!affected_by_parts)
+		return
+
 	var/scale = 0
 	for(var/datum/stock_part/stock_part in component_parts)
 		scale += part_output_weight(stock_part.tier)
 
-	power_gen = initial(power_gen) * scale
+	// base_power_gen rather than initial(power_gen) so a mapper's or an admin's edit to
+	// power_gen is the number that gets scaled, and upstream's `|| 1` fallback so the
+	// circuit-less subtypes (lavaland, old_station, and any board-less mapped RTG) hold
+	// their base output instead of dropping to zero for want of a stock part to weigh.
+	power_gen = base_power_gen * (scale || 1)
 
 /**
  * Tops every cell in this SMES up to capacity. Returns the energy added.
