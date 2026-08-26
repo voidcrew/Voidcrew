@@ -725,6 +725,10 @@ GLOBAL_LIST_EMPTY(map_model_default)
 			// No harm in it anyway
 			MAPLOADING_CHECK_TICK
 
+			// VOIDCREW EDIT ADDITION - snapshot for the ispath() failure below; see the comment there.
+			var/attributes_before = length(members_attributes)
+			// END VOIDCREW EDIT
+
 			switch(line[length(line)])
 				if(";") // Var edit, we'll apply it
 					// Var edits look like \tname = value;
@@ -778,6 +782,17 @@ GLOBAL_LIST_EMPTY(map_model_default)
 				if(bad_paths)
 					// Rare case, avoid the var to save time most of the time
 					LAZYOR(bad_paths[copytext(line, 1, -1)], model_key)
+				// VOIDCREW EDIT ADDITION BEGIN - keep members and members_attributes the same length.
+				// Every switch branch that reaches here has already pushed this line's entry onto
+				// members_attributes, but the dead path never makes it into members. Upstream leaves
+				// the orphan entry in place, and build_coordinate() indexes BOTH lists with the same
+				// index - so one dead path in a key slides every later member's var edits onto its
+				// neighbour (the obj above it hands its dir/name/pixel offsets to the turf, and the
+				// obj itself comes up with defaults). 58 fork maps still carry dead paths as of
+				// 2026-08-25, so this is live, silent and untraceable without the fix.
+				// dmm_build_cache() below is already correct - it appends attributes AFTER the check.
+				members_attributes.len = attributes_before
+				// VOIDCREW EDIT ADDITION END
 				continue
 			// Index is already incremented either way, just gotta set the path and all
 			members += atom_def
@@ -956,6 +971,21 @@ GLOBAL_LIST_EMPTY(map_model_default)
 
 	// Index right before /area is /turf
 	index--
+	// VOIDCREW EDIT ADDITION BEGIN - name the map defect instead of runtiming three levels down.
+	// tgm_build_cache() silently drops any member whose text2path() comes back null (a map path
+	// that was deleted or renamed upstream) and keeps going, so a key whose TURF path is dead
+	// arrives here one member short. Two ways that lands:
+	//  - nothing but the area survived: index is 0 and members[index] throws "list index out of
+	//    bounds" with no mention of which map or tile,
+	//  - an /obj survived in the turf slot: ChangeTurf()/load_on_top() new()s the obj, runtimes
+	//    on turf_flags, and hands null back to assemble_baseturfs().
+	// One dead turf path in _maps/voidcrew/ships/ship_boyardee_b.dmm produced ~85 of the first
+	// and one of the second on the 2026-08-25 run, with nothing in the log naming the map.
+	// Upstream's comment just below already states the assertion; this makes breaking it say so.
+	if(index < 1 || !ispath(members[index], /turf))
+		stack_trace("map key at [AREACOORD(crds)] has no turf member - the parser dropped a dead turf path. Surviving members: [jointext(members, ", ")]")
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/atom/instance
 	//then instance the /turf
 	//NOTE: this used to place any turfs before the last "underneath" it using .appearance and underlays

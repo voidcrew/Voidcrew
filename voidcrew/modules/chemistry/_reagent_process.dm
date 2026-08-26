@@ -25,7 +25,15 @@
 	var/processing_reagents = FALSE
 
 /obj/item/reagent_containers/proc/reagent_processing()
-	if(processing_reagents || isnull(reagents))
+	// isnull(reagents.reagent_list) is the teardown case, and it is reachable on every container
+	// that is still mid-reaction when it dies. /datum/reagents/Destroy() nulls reagent_list, and
+	// THEN calls force_stop_reacting() -> finish_reacting() -> update_total(), which ends with
+	// SEND_SIGNAL(src, COMSIG_REAGENTS_HOLDER_UPDATED) - the signal on_reagent_change() (and so
+	// this proc) is hooked to. my_atom.reagents is only cleared further down Destroy(), so the
+	// isnull(reagents) test still passes and the Copy() below ran on a null list. Signal handlers are dispatched
+	// through call()(), which is why it logged as a bare "Cannot execute null.Copy()" with no
+	// call stack at all.
+	if(processing_reagents || isnull(reagents) || isnull(reagents.reagent_list))
 		return
 	processing_reagents = TRUE
 	// Copy first - reagent_fire() is allowed to add and remove reagents, which

@@ -271,6 +271,23 @@
 	if(!(flags & CHANGETURF_DEFER_CHANGE))
 		new_turf.AfterChange(flags, old_type)
 
+	// RE-DERIVED FROM UPSTREAM (code/game/turfs/change_turf.dm, the shuttle-ceiling block just
+	// under AfterChange()). This body is a duplicate definition that never calls ..(), so
+	// anything upstream adds to ITS body is dead here until it is copied across. The flag is
+	// still handed out by /area/shuttle/place_on_top_react() (code/game/area/areas/shuttles.dm),
+	// so without this a hull tile built inside a shuttle area gets no ceiling above it and the
+	// deck above stays open space. Kept byte-for-byte with upstream, at the same point in the
+	// sequence, so the next merge diffs cleanly.
+	if(flags & CHANGETURF_GENERATE_SHUTTLE_CEILING)
+		var/turf/above = get_step_multiz(src, UP)
+		if(above)
+			if(!(istype(above, /turf/open/floor/engine/hull/ceiling) || above.depth_to_find_baseturf(/turf/open/floor/engine/hull/ceiling)))
+				if(istype(above, /turf/open/openspace) || istype(above, /turf/open/space/openspace))
+					above.place_on_top(/turf/open/floor/engine/hull/ceiling)
+				else
+					above.stack_ontop_of_baseturf(/turf/open/openspace, /turf/open/floor/engine/hull/ceiling)
+					above.stack_ontop_of_baseturf(/turf/open/space/openspace, /turf/open/floor/engine/hull/ceiling)
+
 	new_turf.blueprint_data = old_bp
 	new_turf.rcd_memory = old_rcd_memory
 	new_turf.explosion_throw_details = old_explosion_throw_details
@@ -396,5 +413,13 @@
 	if(flags_1 & INITIALIZED_1)
 		QUEUE_SMOOTH_NEIGHBORS(src)
 		QUEUE_SMOOTH(src)
+
+	// RE-DERIVED FROM UPSTREAM (the tail of code/game/turfs/change_turf.dm's ChangeTurf).
+	// A turf gaining or losing gravity has to tell the mobs standing on it, or a crewman keeps
+	// whatever gravity state he had when the floor under him was replaced - which on this fork
+	// happens constantly (hull construction, breaches, planet ground swaps, ScrapeAway on
+	// undock). Same position as upstream: last thing before the return.
+	for(var/mob/living/target in new_turf.contents)
+		target.refresh_gravity()
 
 	return new_turf
