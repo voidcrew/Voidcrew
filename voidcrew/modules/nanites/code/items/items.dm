@@ -18,6 +18,11 @@
 	// reskins that /obj/item/disk overlays onto icons/obj/devices/floppy_disks.dmi. Same opt-out
 	// upstream uses for /obj/item/disk/nuclear and /obj/item/disk/bitrunning.
 	sticker_icon_state = null
+	// Mirrors /datum/design/nanite_disk in nanites/code/designs.dm.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
+	)
 
 	///Typepath of the program on the disk. If set, this will be the path added in initialize.
 	var/datum/nanite_program/program

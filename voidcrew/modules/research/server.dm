@@ -21,7 +21,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	desc = "A computer system that hosts a source R&D server drive, allowing research to be loaded and saved onto a disk, and shared within a vessel."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
 	///Installed source code files that hosts our research.
-	var/obj/item/computer_disk/ship_disk/source_code_hdd
+	var/obj/item/disk/computer/ship_disk/source_code_hdd
 
 /obj/machinery/rnd/server/ship/Initialize(mapload)
 	. = ..()
@@ -43,7 +43,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	return ..()
 
 /obj/machinery/rnd/server/ship/attacked_by(obj/item/attacking_item, mob/living/user)
-	if(istype(attacking_item, /obj/item/computer_disk/ship_disk))
+	if(istype(attacking_item, /obj/item/disk/computer/ship_disk))
 		if(source_code_hdd)
 			balloon_alert(user, "disk already installed!")
 			return
@@ -166,22 +166,25 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  * Hard drive
  * What actually stores all the techweb data.
  */
-/obj/item/computer_disk/ship_disk
+/obj/item/disk/computer/ship_disk
 	name = "R&D server source code"
 	desc = "The source code on this drive stores all the research from a ship, insert it into an R&D console to make use of it."
+	// Matches /datum/design/ship_disk's cost so a hand-spawned disk is worth the same at
+	// the ORM as a printed one (the printed disk already inherits these).
+	custom_materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT * 2)
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research
 	///All machines connected to us and our techweb, to disconnect on destruction
 	var/list/connected_research_machines = list()
 
-/obj/item/computer_disk/ship_disk/Initialize(mapload)
+/obj/item/disk/computer/ship_disk/Initialize(mapload)
 	. = ..()
 	name += " [num2hex(rand(1,65535), -1)]"
 	stored_research = new()
 	stored_research.id = "[name]"
 	stored_research.organization = "Server Disk"
 
-/obj/item/computer_disk/ship_disk/Destroy()
+/obj/item/disk/computer/ship_disk/Destroy(force)
 	. = ..()
 	QDEL_NULL(stored_research)

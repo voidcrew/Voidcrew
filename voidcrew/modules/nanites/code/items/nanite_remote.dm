@@ -12,6 +12,12 @@
 	icon_state = "nanite_remote"
 	item_flags = NOBLUDGEON
 	w_class = WEIGHT_CLASS_SMALL
+	// Mirrors /datum/design/nanite_remote in nanites/code/designs.dm. The comm subtype below has
+	// an identical design, so it inherits this unchanged.
+	custom_materials = list(
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 5,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 5,
+	)
 
 	///Boolean on whether the remote is locked
 	var/locked = FALSE

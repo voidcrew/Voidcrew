@@ -15,7 +15,11 @@
 	w_class = WEIGHT_CLASS_TINY
 	throw_speed = 3
 	throw_range = 7
-	custom_materials = list(/datum/material/iron=200)
+	// Mirrors /datum/design/nanite_scanner in nanites/code/designs.dm.
+	custom_materials = list(
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 5,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 5,
+	)
 
 /obj/item/nanite_scanner/attack(mob/living/target, mob/living/carbon/human/user)
 	user.visible_message(

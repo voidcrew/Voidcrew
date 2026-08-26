@@ -12,5 +12,5 @@
 	new /obj/item/circuitboard/machine/destructive_analyzer(src)
 	new /obj/item/circuitboard/machine/circuit_imprinter(src)
 	new /obj/item/circuitboard/computer/rdconsole(src)
-	new /obj/item/computer_disk/ship_disk(src)
+	new /obj/item/disk/computer/ship_disk(src)
 

@@ -25,6 +25,12 @@
 	name = "laser carbine emitter assembly"
 	desc = "The machined emitter and focusing assembly for a laser carbine. You'll need the matching schematic to build it into a working gun."
 	icon_state = "laser_carbine"
+	// Mirrors /datum/design/gun_part_laser_carbine below.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 8,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 4,
+		/datum/material/gold = SHEET_MATERIAL_AMOUNT * 1,
+	)
 
 /datum/design/gun_part_laser_carbine
 	name = "Laser Carbine Emitter Assembly"

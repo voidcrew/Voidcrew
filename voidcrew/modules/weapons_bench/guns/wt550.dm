@@ -24,6 +24,11 @@
 	name = "WT-550 receiver"
 	desc = "The machined receiver assembly for a WT-550 autorifle. You'll need the matching schematic to build it into a working gun."
 	icon_state = "wt550"
+	// Mirrors /datum/design/gun_part_wt550 below.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 10,
+		/datum/material/plastic = SHEET_MATERIAL_AMOUNT * 4,
+	)
 
 /datum/design/gun_part_wt550
 	name = "WT-550 Receiver"
@@ -54,6 +59,11 @@
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	// This magazine is also built by upstream's own /datum/design/mag_autorifle, at 2 sheets of
+	// iron, and the magazine type carries that same 2 sheets to match it. There is no single
+	// custom_materials list that can satisfy both designs, so ours takes the exemption; a printed
+	// magazine still inherits whichever design actually paid for it.
+	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 /datum/techweb_node/weapon_part_wt550
 	id = TECHWEB_NODE_WEAPON_PART_WT550

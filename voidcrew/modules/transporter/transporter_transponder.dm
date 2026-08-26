@@ -20,7 +20,14 @@
 	slot_flags = ITEM_SLOT_POCKETS | ITEM_SLOT_BELT
 	obj_flags = UNIQUE_RENAME
 	light_color = COLOR_CYAN
-	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 2, /datum/material/glass = SMALL_MATERIAL_AMOUNT, /datum/material/bluespace = SMALL_MATERIAL_AMOUNT * 2)
+	// Mirrors /datum/design/transporter_transponder in transporter_designs.dm. The old list was a
+	// tenth of what the design charges and left out the silver entirely.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT,
+		/datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT,
+		/datum/material/silver = HALF_SHEET_MATERIAL_AMOUNT,
+		/datum/material/bluespace = HALF_SHEET_MATERIAL_AMOUNT,
+	)
 
 	/// The pad this transponder answers to.
 	var/obj/machinery/transporter_pad/paired_pad

@@ -776,3 +776,11 @@
 	name = "Transporter Control Console"
 	greyscale_colors = CIRCUIT_COLOR_SCIENCE
 	build_path = /obj/machinery/computer/transporter
+	// Mirrors /datum/design/board/transporter_console, the way upstream boards mirror theirs
+	// (see /obj/item/circuitboard/computer/robotics). Without this the board keeps the generic
+	// half sheet of glass every circuitboard starts with.
+	custom_materials = list(
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT,
+	)

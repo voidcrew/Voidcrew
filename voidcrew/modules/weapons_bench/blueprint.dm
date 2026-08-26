@@ -121,6 +121,12 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 /// No machinery requirement: craftable anywhere the schematic is available.
 /datum/crafting_recipe/blueprint/gun
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
+	// A crafted gun is a machined receiver plus a firing pin plus sheets, so it is worth what all
+	// of those were worth. A gun pulled off a corpse was never built from anything and carries no
+	// materials at all. Both are correct, and no single custom_materials list on the gun can be
+	// both, so the crafted-vs-spawned parity check is skipped here (the flag is read by
+	// code/modules/unit_tests/crafting.dm and nothing else).
+	crafting_flags = parent_type::crafting_flags | CRAFT_SKIP_MATERIALS_PARITY
 
 /**
  * Blueprint-crafted guns swap any faction-locked default pin (syndicate

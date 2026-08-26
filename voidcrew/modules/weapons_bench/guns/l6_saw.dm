@@ -29,6 +29,12 @@
 	name = "L6 SAW receiver"
 	desc = "The machined receiver assembly for an L6 SAW light machine gun. You'll need the matching schematic to build it into a working gun."
 	icon_state = "l6"
+	// Mirrors /datum/design/gun_part_l6_saw below.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/plastic = SHEET_MATERIAL_AMOUNT * 5,
+		/datum/material/silver = SHEET_MATERIAL_AMOUNT * 2,
+	)
 
 // --- Protolathe part design --------------------------------------------------
 
@@ -64,6 +70,9 @@
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	// Upstream magazine, already worth 15 sheets of iron on its own; see
+	// /datum/design/ammo_m12g in guns/bulldog.dm for why the design takes the exemption.
+	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 // --- Techweb nodes -----------------------------------------------------------
 

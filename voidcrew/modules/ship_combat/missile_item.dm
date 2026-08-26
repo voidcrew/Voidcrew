@@ -14,6 +14,13 @@
 	name = "missile tracking circuit"
 	desc = "A guidance system circuit for ship missiles. Insert into a wired missile frame before adding the warhead."
 	icon_state = "integrated_circuit"
+	// Mirrors /datum/design/ship_missile_tracking (ship_combat/research.dm). /obj/item/electronics
+	// hands down a token half-unit of iron and glass, which is nothing like what this costs.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
 	/// Time to insert this circuit into a frame
 	var/insert_time = 2 SECONDS
 
@@ -29,6 +36,14 @@
 	desc = "A warhead designed for ship-to-ship missiles. Insert into a missile frame with a tracking circuit installed."
 	icon = 'voidcrew/icons/obj/devices/assemblies.dmi'
 	icon_state = "bombcore"
+	// Mirrors /datum/design/ship_missile_warhead (ship_combat/research.dm); the subtypes below
+	// mirror theirs. Without this a warhead carries /obj/item/bombcore's 2 sheets of iron, which
+	// has nothing to do with what any of these actually cost.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 35,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 20,
+		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 5,
+	)
 	/// Short name for use in missile naming and UI
 	var/payload_type = "standard"
 	/// Damage dealt on impact (used by ship combat system)
@@ -55,6 +70,10 @@
 	desc = "A smaller warhead for missiles. Less damage but cheaper to produce."
 	payload_type = "light"
 	icon_state = "bombcore_light"
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 10,
+	)
 	ship_damage = MISSILE_DAMAGE_LIGHT
 	missile_icon_state = "smissile"
 	insert_time = 2 SECONDS
@@ -69,6 +88,12 @@
 	desc = "A massive warhead for missiles. Devastating damage but expensive."
 	w_class = WEIGHT_CLASS_BULKY
 	payload_type = "heavy"
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 50,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 20,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 10,
+		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 15,
+	)
 	ship_damage = MISSILE_DAMAGE_HEAVY
 	insert_time = 5 SECONDS
 	range_heavy = 3
@@ -95,6 +120,13 @@
 	desc = "An unwired missile frame. Use cable coil to wire it up."
 	icon = 'voidcrew/icons/obj/supplypods.dmi'
 	icon_state = "missile_nowire"
+	// Mirrors /datum/design/ship_missile_frame (ship_combat/research.dm). A structure is not
+	// something a material container will take, so this is bookkeeping for the design test rather
+	// than salvage value.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 10,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5,
+	)
 	drag_slowdown = 1.5
 	pixel_x = -16 // 2x1 sprite offset
 	pixel_y = -16 // tically center the tall sprite on its tile

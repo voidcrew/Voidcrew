@@ -9,13 +9,18 @@
 		RND_CATEGORY_CONSTRUCTION + RND_SUBCATEGORY_CONSTRUCTION_MACHINERY,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	// This design prints a filled box, and the five boards plus the disk inside already carry
+	// their own materials. Stamping the kit's full price onto the cardboard box as well would make
+	// an empty, hand-spawned box worth sixty sheets, and there is no split of the price that both
+	// covers the contents and matches a plain box, so the design takes the exemption.
+	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 /datum/design/ship_disk
 	name = "R&D Server Source Code"
 	id = "ship_disk"
 	build_type = AUTOLATHE
 	materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT * 2)
-	build_path = /obj/item/computer_disk/ship_disk
+	build_path = /obj/item/disk/computer/ship_disk
 	category = list(
 		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_MODULAR_COMPUTERS + RND_SUBCATEGORY_MODULAR_COMPUTERS_PARTS,

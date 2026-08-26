@@ -4,6 +4,13 @@
 	stay_after_drop = TRUE
 	specialised = TRUE
 	icon = 'voidcrew/icons/obj/supplypods.dmi'
+	// Mirrors /datum/design/ship_assault_pod (ship_combat/research.dm), replacing the 2 sheets of
+	// iron every closet carries. A structure is not something a material container will take, so
+	// this is bookkeeping for the design test rather than salvage value.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5,
+	)
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF | UNACIDABLE
 	style = /datum/pod_style/drop_pod
 	// Small enough that the arrival doesn't set the compartment on fire. The pod
@@ -41,6 +48,12 @@
 	contents_pressure_protection = 1
 	contents_thermal_insulation = 1
 	max_integrity = 600
+	// Mirrors /datum/design/ship_assault_pod/advanced.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 15,
+		/datum/material/silver = SHEET_MATERIAL_AMOUNT * 5,
+	)
 
 /obj/structure/closet/supplypod/drop_pod/advanced/open_pod(atom/movable/holder, broken = FALSE, forced = FALSE)
 	if(ignore_next_open)

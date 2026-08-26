@@ -134,6 +134,13 @@ GLOBAL_LIST_EMPTY(ew_jammed_comms_nets)
 	payload_type = /datum/ew_payload/lights_out
 	charges = 5
 	max_charges = 5
+	// Mirrors /datum/design/ew_exploit_lights_out (ship_combat/research.dm). Only the tier 1
+	// cartridges have designs, so only they carry materials; the black-market ones stay blank.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
 
 // ========== PHANTOM KLAXONS (phantom_klaxons) ==========
 
@@ -182,6 +189,12 @@ GLOBAL_LIST_EMPTY(ew_jammed_comms_nets)
 	payload_type = /datum/ew_payload/phantom_klaxons
 	charges = 5
 	max_charges = 5
+	// Mirrors /datum/design/ew_exploit_phantom_klaxons (ship_combat/research.dm).
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
 
 // ========== BOLT OVERRIDE (door_seize) ==========
 
@@ -248,6 +261,12 @@ GLOBAL_LIST_EMPTY(ew_jammed_comms_nets)
 	payload_type = /datum/ew_payload/door_seize
 	charges = 5
 	max_charges = 5
+	// Mirrors /datum/design/ew_exploit_door_seize (ship_combat/research.dm).
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 1,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+	)
 
 // =====================================================================
 // ========== TIER 2 ==========

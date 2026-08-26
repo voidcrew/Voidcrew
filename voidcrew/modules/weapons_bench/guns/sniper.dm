@@ -24,6 +24,12 @@
 	name = "anti-materiel rifle receiver"
 	desc = "The machined receiver and bolt assembly for an anti-materiel sniper rifle. You'll need the matching schematic to build it into a working gun."
 	icon_state = "sniper"
+	// Mirrors /datum/design/gun_part_sniper_rifle below.
+	custom_materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 18,
+		/datum/material/plastic = SHEET_MATERIAL_AMOUNT * 4,
+		/datum/material/silver = SHEET_MATERIAL_AMOUNT * 3,
+	)
 
 /datum/design/gun_part_sniper_rifle
 	name = "Anti-Materiel Rifle Receiver"
@@ -55,6 +61,9 @@
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	// Upstream magazine, already worth 15 sheets of iron on its own; see
+	// /datum/design/ammo_m12g in guns/bulldog.dm for why the design takes the exemption.
+	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 /datum/techweb_node/weapon_part_sniper_rifle
 	id = TECHWEB_NODE_WEAPON_PART_SNIPER

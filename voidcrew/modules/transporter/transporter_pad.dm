@@ -402,6 +402,13 @@
 	name = "Transporter Pad"
 	greyscale_colors = CIRCUIT_COLOR_SCIENCE
 	build_path = /obj/machinery/transporter_pad
+	// Mirrors /datum/design/board/transporter_pad; see the console board for the convention.
+	custom_materials = list(
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
+		/datum/material/gold = HALF_SHEET_MATERIAL_AMOUNT,
+		/datum/material/diamond = HALF_SHEET_MATERIAL_AMOUNT,
+		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT * 2,
+	)
 	req_components = list(
 		/obj/item/stack/ore/bluespace_crystal = 6,
 		/datum/stock_part/capacitor = 2,
