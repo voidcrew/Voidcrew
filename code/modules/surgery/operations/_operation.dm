@@ -345,7 +345,7 @@ GLOBAL_DATUM_INIT(operations, /datum/operation_holder, new)
 	return result
 
 /// Check if the passed operation has been replaced by a typepath in the provided operation pool
-/datum/operation_holder/proc/is_replaced(datum/surgery_operation/operation, list/operation_pool)
+/datum/operation_holder/proc/is_replaced(datum/surgery_operation/operation, list/operation_pool, list/seen_types)
 	if(isnull(operation.replaced_by) || !length(operation_pool))
 		return FALSE
 	if(operation.replaced_by == operation.type)
@@ -356,7 +356,25 @@ GLOBAL_DATUM_INIT(operations, /datum/operation_holder, new)
 	var/datum/surgery_operation/next_highest_operation = operations_by_typepath[operation.replaced_by]
 	if(isnull(next_highest_operation))
 		return FALSE
-	return is_replaced(next_highest_operation, operation_pool)
+	// VOIDCREW EDIT ADDITION START - cycle guard.
+	// replaced_by is an inherited var, so a family of SIBLING operations wired head -> tail
+	// closes into a ring the moment the tail forgets to null it out and silently inherits the
+	// head's target instead. The replaced_by == type check above only catches a one-step ring.
+	// Every operation in such a ring being OPERATION_LOCKED also defeats the "is my replacement
+	// in the pool?" early-out, so on the default unlocked pool this recursed forever - and with
+	// world.loop_checks = FALSE (code/world.dm) BYOND neither aborts it nor logs anything, it
+	// just stops the world. This proc sits under get_available_operations(), which runs on every
+	// surgery attempt, every limb examine_more and every operating computer refresh, so that is
+	// a server kill, not a cosmetic bug. Report and bail instead.
+	LAZYINITLIST(seen_types)
+	if(seen_types[operation.type])
+		stack_trace("Cycle in the surgery operation replaced_by graph: [operation.type] was reached \
+			twice while resolving replacements. The lowest-priority operation in the ring needs an \
+			explicit replaced_by = null.")
+		return FALSE
+	seen_types[operation.type] = TRUE
+	// VOIDCREW EDIT ADDITION END
+	return is_replaced(next_highest_operation, operation_pool, seen_types)
 
 /**
  * ## Surgery operation datum

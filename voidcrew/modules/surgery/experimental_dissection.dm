@@ -104,6 +104,18 @@
 	rnd_name = "Elite Experimental Dissection"
 	rnd_desc = "An advanced form of experimental dissection that generates a higher level of research points at R&D consoles."
 	operation_flags = parent_type::operation_flags | OPERATION_LOCKED
+	// MUST be set explicitly. The four tiers are SIBLINGS under /basic/dissection, not a
+	// chain of subtypes, so leaving replaced_by unset here does not mean "nothing replaces
+	// me" - it INHERITS the base tier's value and points straight back at /advanced. That
+	// closes the ladder into a ring (advanced -> superior -> elite -> advanced), and
+	// is_replaced() walks replaced_by recursively with only a self-reference guard, so the
+	// walk never terminates. Every one of those three is OPERATION_LOCKED, so the "is my
+	// replacement in the pool?" early-out never fires either on the default unlocked pool.
+	// Unguarded that wedged the entire world on the first get_available_operations() call
+	// (any surgery, any limb examine_more, any operating computer) with no runtime and no
+	// log line, because world.loop_checks is FALSE. It also meant elite dissection was
+	// filtered out as "replaced by advanced" and could never appear even once researched.
+	replaced_by = null
 	time = 1 SECONDS
 	base_value = 600
 
