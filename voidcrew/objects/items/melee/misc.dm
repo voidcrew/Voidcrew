@@ -4,7 +4,11 @@
 	icon = 'voidcrew/icons/obj/items_and_weapons.dmi'
 	icon_state = "grey_sword"
 	inhand_icon_state = "katana"
-	worn_icon_state = "katana"
+	// Back slot, so this resolves against icons/mob/clothing/back.dmi. Upstream's
+	// katana-sheath PR renamed that sheet's back-slung "katana" to
+	// "katana_sheath-full" (same four sprites, byte for byte) and left the bare
+	// "katana" only in belt.dmi, where it is drawn down at the hip.
+	worn_icon_state = "katana_sheath-full"
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	obj_flags = CONDUCTS_ELECTRICITY

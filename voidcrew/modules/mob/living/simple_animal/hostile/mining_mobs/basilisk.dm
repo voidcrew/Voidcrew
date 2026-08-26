@@ -12,6 +12,10 @@
 	icon_dead = "forgotten_dead"
 	pixel_x = -10
 	base_pixel_x = -10
+	// Our sheet is the ice-wing palette, not the stock watcher's: the parent
+	// default "watcher_glow" only exists in tg's sheet, so the ready-to-fire
+	// eye overlay resolved to nothing once icon moved here.
+	eye_glow = "ice_glow"
 	maxHealth = 250
 	health = 250
 	melee_damage_lower = 25

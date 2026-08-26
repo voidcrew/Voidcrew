@@ -57,22 +57,30 @@
 	icon_living = "disfigured_legion"
 	icon_dead = "disfigured_legion"
 	icon_gib = null
+	// Upstream's legion draws a hand-shaded "[icon_living]_e" body glow over
+	// itself; our sheet carries the crystal sprite alone, with no emissive
+	// mask to go with it. This is the same opt-out the snow legion takes for
+	// the same reason (it also swaps to a sheet without one).
+	has_emissive = FALSE
 	maxHealth = 90
 	health = 90
-	brood_type = /mob/living/basic/legion_brood/crystal
+	brood_type = /mob/living/basic/mining/legion_brood/crystal
 
 /mob/living/basic/mining/legion/crystal/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/basic/legion_brood/crystal
+/mob/living/basic/mining/legion_brood/crystal
 	name = "disfigured legion"
 	desc = "One of none."
 	icon = 'voidcrew/icons/mob/lavaland_monsters.dmi'
 	icon_state = "disfigured_legion_head"
 	icon_living = "disfigured_legion_head"
+	// Same opt-out as the parent legion above: the fork sheet has no
+	// "disfigured_legion_head_e" emissive mask.
+	has_emissive = FALSE
 
 // Crystal broods burst into shards when destroyed.
-/mob/living/basic/legion_brood/crystal/death(gibbed)
+/mob/living/basic/mining/legion_brood/crystal/death(gibbed)
 	var/turf/origin = get_turf(src)
 	for(var/i in 0 to 4)
 		var/obj/projectile/shard = new /obj/projectile/bullet/shrapnel/short_range(origin)

@@ -121,6 +121,12 @@
 	name = "cyberware optics"
 	desc = "Aftermarket eyes. The irises catch the light in a way real ones don't."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// This base has no sprite of its own; every optic below sets its own state
+	// in the sheet above. The inherited "eyes_cyber" has to go with it: that
+	// state lives in tg's organs.dmi, so against our sheet it named nothing.
+	// The /obj/item/organ/cyberimp/cyberware base is already fine this way,
+	// its own parent chain leaves the state unset.
+	icon_state = null
 	actions_types = list(/datum/action/cooldown/cyberware/chrome_read)
 	/// Neural load this ware puts on its bearer.
 	var/chrome_load = 1
@@ -191,6 +197,9 @@
 	name = "arm cyberware"
 	desc = "Aftermarket arm hardware. Folds away until you want it."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// No sprite of its own; see the optics base. Clearing the inherited
+	// "toolkit_generic", which lives in tg's sheet rather than ours.
+	icon_state = null
 	// Worn look (see the cyberware base above): the arm pipeline derives
 	// "[aug_overlay]_left/_right" from the installed zone on its own. No
 	// separate hand states in our sheet, so the hand overlay stays off.
