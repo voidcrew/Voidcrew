@@ -26,6 +26,7 @@
 	family_heirlooms = list(/obj/item/pickaxe/mini, /obj/item/shovel)
 	rpg_title = "Adventurer"
 	job_flags = STATION_JOB_FLAGS
+	tgui_icon = FA_ICON_DIGGING
 
 
 /datum/outfit/job/miner
@@ -56,6 +57,8 @@
 
 	box = /obj/item/storage/box/survival/mining
 	chameleon_extras = /obj/item/gun/energy/recharge/kinetic_accelerator
+
+	wintercoat = /obj/item/clothing/suit/hooded/wintercoat/miner
 
 /datum/outfit/job/miner/equipped
 	name = "Shaft Miner (Equipment)"
