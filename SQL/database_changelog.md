@@ -23,14 +23,15 @@ Version 5.35, 23 November 2025, by Worker 1 (AI)
 to 5.35 because upstream independently shipped its own 5.33 and 5.34.)
 Adds ship economy system tables for the own-your-ship feature.
 
-Apply `SQL/migrations/voidcrew_ship_parts.sql`. It is idempotent (every statement is
-`CREATE TABLE IF NOT EXISTS`), so it is safe to re-run on a partially migrated database.
+Apply both migration files. Each is idempotent (every statement is
+`CREATE TABLE IF NOT EXISTS`), so they are safe to re-run on a partially migrated database.
 
 ```sh
 mysql -u <user> -p <database> < SQL/migrations/voidcrew_ship_parts.sql
+mysql -u <user> -p <database> < SQL/migrations/voidcrew_ship_credit_log.sql
 ```
 
-It creates 7 tables:
+`SQL/migrations/voidcrew_ship_parts.sql` creates 7 tables:
 - `player_ship_credits`: account-wide credit balance
 - `player_ship_parts`: parts inventory, keyed by part class (combat, science, trade, misc)
 - `player_ship_unlocks`: permanent ship blueprint unlocks
@@ -39,16 +40,21 @@ It creates 7 tables:
 - `pending_ship_extractions`: retry queue for failed part extractions
 - `ship_extraction_log`: extraction audit trail
 
+`SQL/migrations/voidcrew_ship_credit_log.sql` creates 1 more:
+- `ship_credit_log`: credit audit trail (spends, refunds, grants), account-wide like
+  `player_ship_credits`
+
 Remember the table prefix if you use one; the game applies it through `format_table_name()`.
 
-**Known gap — read before relying on this.** `code/modules/ship_purchase/ship_economy_database.dm`
-queries exactly the table names above. A second, parallel implementation in
-`code/modules/ship_purchase/transaction_helpers.dm` queries a different, older set of names
-that this migration does **not** create, and for which no DDL exists anywhere in `SQL/`:
-`player_credits`, `pending_extractions`, `part_extraction_log` and `credit_transaction_log`.
-Any code path through `transaction_helpers.dm` will therefore fail against a database migrated
-by this script. The two naming schemes need reconciling in DM before that file can be trusted;
-this is a code bug, not a missing migration, so nothing is added here to paper over it.
+`code/modules/ship_purchase/ship_economy_database.dm` (`/datum/ship_economy_db`) is the live
+access layer and queries exactly the table names above.
+`code/modules/ship_purchase/transaction_helpers.dm` used to query a different, older set of
+names that no migration created (`player_credits`, `pending_extractions`,
+`part_extraction_log`, `credit_transaction_log`); it has since been reconciled onto this
+schema, delegating to `/datum/ship_economy_db` wherever that layer already owns an operation
+and keeping only the race-safe conditional credit deduct, the retry/refund logic and the
+`ship_credit_log` audit writes of its own. Note that nothing calls those helper procs yet -
+they are the transaction-safe entry points a credit-priced purchase UI would adopt.
 
 `SQL/QUICK_REFERENCE_SHIP_ECONOMY.md` predates all of the above and describes a third,
 never-built schema (`player_ship_economy`, `round_ship_spawns`, `ship_economy_admin_log`,

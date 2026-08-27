@@ -1,35 +1,47 @@
 /**
  * Ship Purchase System - Transaction-Safe Helper Procedures
  *
- * This file implements atomic, race-condition-safe database operations for:
- * - Ship blueprint purchases with retry logic
- * - Physical part extraction with pending queue fallback
- * - Part purchases with compensating transactions
+ * NOTHING CALLS THESE YET. Every proc in this file has zero callers in the tree:
+ * hulls are currently bought with parts through attempt_ship_unlock() in
+ * ship_catalog_ui.dm, which spends parts and unlocks in two unguarded steps. This
+ * file is the transaction-safe entry-point layer the purchase UI should adopt when
+ * a credit-priced purchase flow is wired up - it is kept, and kept correct against
+ * the live schema, for that adoption.
  *
- * User Decisions Implemented:
- * - Q3: Retry 3 times, then auto-refund on failure
- * - Q4: Pending extractions queue for critical failures
+ * Everything here runs on the real ship-economy schema in
+ * `SQL/migrations/voidcrew_ship_parts.sql` and delegates to /datum/ship_economy_db
+ * (GLOB.ship_economy_db) wherever that layer already owns an operation. What this
+ * file adds on top of it:
+ * - a race-safe conditional credit deduct (the live layer's add_credits() has no
+ *   `WHERE credits >= :cost` clause, so a negative amount there can overdraw)
+ * - retry x3 then compensating refund on failure
+ * - a credit audit trail in `ship_credit_log`
+ *   (`SQL/migrations/voidcrew_ship_credit_log.sql`)
  *
- * Pattern: Optimistic concurrency control with compensating transactions
+ * Credits are ACCOUNT-WIDE by schema design: keyed on ckey alone, no character slot.
+ *
+ * Pattern: optimistic concurrency control with compensating transactions.
+ * Every path degrades gracefully with no database configured.
  */
 
-// Maximum number of retry attempts for failed transactions (User Q3)
+// Maximum number of retry attempts for failed transactions
 #define TRANSACTION_MAX_RETRIES 3
 
 /**
  * Purchase a ship blueprint unlock with transaction safety.
  *
- * This proc implements a multi-step transaction with retry logic:
  * 1. Pre-flight balance check
- * 2. Deduct credits with WHERE clause (race-condition safe)
- * 3. Insert unlock record
- * 4. Retry up to 3 times if unlock fails (User Q3)
- * 5. Refund credits if all retries fail
+ * 2. Deduct credits with a conditional WHERE clause (race-condition safe)
+ * 3. Insert the unlock record into player_ship_unlocks
+ * 4. Retry up to TRANSACTION_MAX_RETRIES times if the unlock fails
+ * 5. Refund the credits if all retries fail, or if another process won the race
  *
- * @param client The client purchasing the ship
- * @param ship_template The ship template path to unlock (e.g., "/datum/map_template/shuttle/voidcrew/delta")
+ * Tables: player_ship_credits (raw), player_ship_unlocks (raw), ship_credit_log (audit).
+ *
+ * @param C The client purchasing the ship
+ * @param ship_template The ship template path to unlock (e.g. "/datum/map_template/shuttle/voidcrew/delta")
  * @param cost The credit cost for this unlock
- * @return TRUE if purchase successful, FALSE otherwise
+ * @return TRUE if the player ends up owning the ship, FALSE otherwise
  */
 /proc/purchase_ship_unlock(client/C, ship_template, cost)
 	if(!C || !ship_template || cost <= 0)
@@ -39,48 +51,49 @@
 		to_chat(C, span_warning("Database connection unavailable. Please try again later."))
 		return FALSE
 
-	var/ckey = C.ckey
-	var/character_slot = C.prefs?.default_slot || 1
+	var/player_ckey = ckey(C.ckey)
 
 	// Step 1: Pre-flight balance check
-	var/current_balance = get_player_credits(ckey, character_slot)
+	var/current_balance = GLOB.ship_economy_db?.get_credits(player_ckey) || 0
 	if(current_balance < cost)
 		to_chat(C, span_warning("Insufficient credits. You have [current_balance] credits but need [cost]."))
 		return FALSE
 
 	// Step 2: Check if already unlocked (prevent duplicate purchases)
-	if(is_ship_unlocked(ckey, ship_template))
+	if(GLOB.ship_economy_db?.is_ship_unlocked(player_ckey, ship_template))
 		to_chat(C, span_warning("You already own this ship!"))
 		return FALSE
 
 	var/retry_count = 0
 	var/success = FALSE
 	var/credits_deducted = FALSE
+	var/duplicate_unlock = FALSE
 
-	// Retry loop (User Q3: Retry 3 times)
 	while(retry_count <= TRANSACTION_MAX_RETRIES && !success)
 		if(retry_count > 0)
-			sleep(1) // Brief delay between retries to avoid hammering DB
+			sleep(1) // Brief delay between retries to avoid hammering the DB
 
-		// Step 3: Deduct credits with WHERE clause (race-condition safe)
+		// Step 3: Deduct credits with a WHERE clause (race-condition safe).
+		// This is deliberately raw rather than ship_economy_db.add_credits(-cost):
+		// that proc has no balance guard and would happily push a player negative.
 		if(!credits_deducted)
 			var/datum/db_query/deduct_query = SSdbcore.NewQuery(
-				"UPDATE [format_table_name("player_credits")] \
-				SET credits = credits - :cost, last_updated = Now() \
-				WHERE ckey = :ckey AND character_slot = :slot AND credits >= :cost",
+				"UPDATE [format_table_name("player_ship_credits")] \
+				SET credits = credits - :cost \
+				WHERE ckey = :ckey AND credits >= :cost",
 				list(
 					"cost" = cost,
-					"ckey" = ckey,
-					"slot" = character_slot
+					"ckey" = player_ckey
 				)
 			)
 
 			if(!deduct_query.Execute(async = FALSE))
+				var/deduct_error = deduct_query.ErrorMsg()
 				qdel(deduct_query)
-				to_chat(C, span_warning("Transaction failed: [deduct_query.ErrorMsg()]"))
+				to_chat(C, span_warning("Transaction failed: [deduct_error]"))
 				return FALSE
 
-			// Check affected rows - if 0, balance changed since pre-flight check (race condition)
+			// Zero affected rows means the balance changed since the pre-flight check
 			if(deduct_query.affected == 0)
 				qdel(deduct_query)
 				to_chat(C, span_warning("Insufficient credits. Your balance may have changed."))
@@ -89,57 +102,53 @@
 			qdel(deduct_query)
 			credits_deducted = TRUE
 
-			// Log credit transaction
-			log_credit_transaction(ckey, character_slot, -cost, "purchase_ship:[ship_template]", current_balance - cost)
+			// Raw credit write - the live layer's cached balance is now stale
+			GLOB.ship_economy_db?.invalidate_cache(player_ckey, "credits")
 
-		// Step 4: Insert unlock record
+			log_credit_transaction(player_ckey, -cost, "purchase_ship:[ship_template]", current_balance - cost)
+
+		// Step 4: Insert the unlock record.
+		// A plain INSERT rather than ship_economy_db.unlock_ship(), because a
+		// duplicate-key collision here is the race we need to detect and refund.
 		var/datum/db_query/unlock_query = SSdbcore.NewQuery(
 			"INSERT INTO [format_table_name("player_ship_unlocks")] \
-			(ckey, ship_template_type, unlocked_at) \
-			VALUES (:ckey, :template, Now())",
+			(ckey, ship_template_path, unlock_date) \
+			VALUES (:ckey, :template, NOW())",
 			list(
-				"ckey" = ckey,
+				"ckey" = player_ckey,
 				"template" = ship_template
 			)
 		)
 
 		if(unlock_query.Execute(async = FALSE))
-			success = TRUE
 			qdel(unlock_query)
+			success = TRUE
+			GLOB.ship_economy_db?.invalidate_cache(player_ckey, "unlocks")
+			log_game("SHIP_ECONOMY: [player_ckey] purchased ship template [ship_template] for [cost] credits")
 			to_chat(C, span_notice("Ship purchased successfully! You now own [ship_template]."))
 		else
 			var/error_msg = unlock_query.ErrorMsg()
 			qdel(unlock_query)
 
-			// Check if it's a duplicate key error (race condition: someone else bought it for this player)
+			// Duplicate key: another process unlocked this hull for the player mid-flight.
+			// They own it either way, so stop retrying and give the credits back below.
 			if(findtext(error_msg, "UNIQUE") || findtext(error_msg, "duplicate"))
-				// Already unlocked by another process, treat as success but refund
 				success = TRUE
-				to_chat(C, span_notice("Ship already unlocked. Credits refunded."))
-				// Refund will happen in compensating transaction below
+				duplicate_unlock = TRUE
+				GLOB.ship_economy_db?.invalidate_cache(player_ckey, "unlocks")
 			else
 				retry_count++
 				if(retry_count <= TRANSACTION_MAX_RETRIES)
 					to_chat(C, span_warning("Transaction retry [retry_count]/[TRANSACTION_MAX_RETRIES]..."))
 
-	// Step 5: Compensating transaction - Refund if all retries failed
-	if(!success && credits_deducted)
-		var/datum/db_query/refund_query = SSdbcore.NewQuery(
-			"UPDATE [format_table_name("player_credits")] \
-			SET credits = credits + :cost, last_updated = Now() \
-			WHERE ckey = :ckey AND character_slot = :slot",
-			list(
-				"cost" = cost,
-				"ckey" = ckey,
-				"slot" = character_slot
-			)
-		)
+	// Step 5: Compensating transaction - refund if the unlock never landed, or if it
+	// landed via someone else's insert and the player shouldn't pay for it twice.
+	if(credits_deducted && (!success || duplicate_unlock))
+		refund_credits(player_ckey, cost, "refund_ship_purchase[duplicate_unlock ? "_duplicate" : "_failed"]:[ship_template]", current_balance)
 
-		refund_query.Execute(async = FALSE)
-		qdel(refund_query)
-
-		// Log refund
-		log_credit_transaction(ckey, character_slot, cost, "refund_ship_purchase_failed:[ship_template]", current_balance)
+		if(duplicate_unlock)
+			to_chat(C, span_notice("Ship was already unlocked. Credits refunded."))
+			return TRUE
 
 		to_chat(C, span_warning("Purchase failed after [TRANSACTION_MAX_RETRIES] retries. Credits refunded."))
 		return FALSE
@@ -147,17 +156,24 @@
 	return success
 
 /**
- * Extract a physical ship part to player's account.
+ * Extract a physical ship part into the player's account.
  *
- * This proc implements safe extraction with pending queue fallback:
- * 1. Mark part as extracted in database
- * 2. Add to player's inventory
- * 3. If add fails: Queue to pending_extractions (User Q4)
- * 4. Only delete physical item after confirmed success
+ * 1. Add the part through ship_economy_db.add_part()
+ * 2. If that fails, queue it in pending_ship_extractions for retry
+ * 3. Write the audit row to ship_extraction_log
  *
- * @param client The client extracting the part
- * @param obj/item/ship_parts The physical ship part item to extract
- * @return TRUE if extraction successful or queued, FALSE on critical failure
+ * The physical item is destroyed once the part is either credited or queued - a
+ * queue row is a promise the part is owed, so keeping the item as well would let
+ * the player redeem it twice. It is only kept when even queuing failed.
+ *
+ * The pending queue has no quantity column: one row is exactly one part.
+ *
+ * Tables: player_ship_parts, pending_ship_extractions, ship_extraction_log
+ * (all via /datum/ship_economy_db).
+ *
+ * @param C The client extracting the part
+ * @param part The physical ship part item to extract
+ * @return TRUE if extraction succeeded or was queued, FALSE on critical failure
  */
 /proc/extract_part_to_account(client/C, obj/item/ship_parts/part)
 	if(!C || !part)
@@ -167,82 +183,49 @@
 		to_chat(C, span_warning("Database connection unavailable. Cannot extract parts."))
 		return FALSE
 
-	var/ckey = C.ckey
+	var/player_ckey = ckey(C.ckey)
 	var/part_class = part.part_class || PART_CLASS_MISC
-	var/quantity = 1  // Each ship_parts item represents 1 part
+	// Ship parts carry no persistent id of their own; the ref is what the live
+	// extraction path in voidcrew/modules/shuttle/ship_parts/extraction.dm records.
+	var/part_uid = "\ref[part]"
 
-	// Step 1: Attempt to add parts to inventory
-	var/datum/db_query/add_parts_query = SSdbcore.NewQuery(
-		"INSERT INTO [format_table_name("player_ship_parts")] \
-		(ckey, part_class, quantity, last_updated) \
-		VALUES (:ckey, :part_class, :qty, Now()) \
-		ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
-		list(
-			"ckey" = ckey,
-			"part_class" = part_class,
-			"qty" = quantity
-		)
-	)
+	// Step 1: Credit the part to the account
+	if(GLOB.ship_economy_db?.add_part(player_ckey, part_class, 1, "device"))
+		GLOB.ship_economy_db.log_extraction(player_ckey, part_class, "device", part_uid)
+		to_chat(C, span_notice("Extracted 1x [part_class] ship part to your account!"))
+		qdel(part)
+		return TRUE
 
-	if(!add_parts_query.Execute(async = FALSE))
-		var/error_msg = add_parts_query.ErrorMsg()
-		qdel(add_parts_query)
+	// Step 2: Failure - queue it for the retry processor
+	to_chat(C, span_warning("Extraction failed. Adding to pending queue..."))
 
-		// Step 2: CRITICAL FAILURE - Queue to pending_extractions (User Q4)
-		to_chat(C, span_warning("Extraction failed. Adding to pending queue..."))
+	if(GLOB.ship_economy_db?.queue_pending_extraction(player_ckey, part_class, part_uid))
+		GLOB.ship_economy_db.log_extraction(player_ckey, part_class, "pending_queue", part_uid)
+		to_chat(C, span_notice("Extraction queued for retry. Your part will be credited shortly."))
+		qdel(part)
+		return TRUE
 
-		var/datum/db_query/pending_query = SSdbcore.NewQuery(
-			"INSERT INTO [format_table_name("pending_extractions")] \
-			(ckey, part_class, quantity, failure_reason, queued_at) \
-			VALUES (:ckey, :part_class, :qty, :reason, Now())",
-			list(
-				"ckey" = ckey,
-				"part_class" = part_class,
-				"qty" = quantity,
-				"reason" = error_msg
-			)
-		)
-
-		if(pending_query.Execute(async = FALSE))
-			qdel(pending_query)
-			to_chat(C, span_notice("Extraction queued for retry. Your parts will be credited shortly."))
-
-			// Log the pending extraction
-			log_part_extraction(ckey, part_class, quantity, "pending_queue")
-
-			// DO NOT delete the physical item - let player keep it in case queue fails
-			return TRUE
-		else
-			qdel(pending_query)
-			to_chat(C, span_danger("Critical error: Could not queue extraction. Keep this item and contact an admin!"))
-			return FALSE
-
-	qdel(add_parts_query)
-
-	// Step 3: Success! Log the extraction
-	log_part_extraction(ckey, part_class, quantity, "device")
-
-	// Step 4: Only delete physical item after confirmed success
-	to_chat(C, span_notice("Extracted [quantity]x [part_class] ship part(s) to your account!"))
-	qdel(part)
-
-	return TRUE
+	to_chat(C, span_danger("Critical error: Could not queue extraction. Keep this item and contact an admin!"))
+	return FALSE
 
 /**
  * Buy ship parts with credits, with retry and refund logic.
  *
- * This proc implements transaction safety:
- * 1. Pre-flight check
- * 2. Deduct credits with WHERE clause
- * 3. Add parts to inventory
- * 4. Retry pattern (User Q3)
- * 5. Refund on failure
+ * 1. Pre-flight balance check
+ * 2. Deduct credits with a conditional WHERE clause (race-condition safe)
+ * 3. Add the parts through ship_economy_db.add_part()
+ * 4. Retry up to TRANSACTION_MAX_RETRIES times
+ * 5. Refund the credits if all retries fail
  *
- * @param client The client buying parts
+ * Tables: player_ship_credits (raw), player_ship_parts (via ship_economy_db),
+ * ship_credit_log (audit). Nothing is written to ship_extraction_log - buying parts
+ * is not an extraction, and that table has no quantity column to record a bulk buy in.
+ *
+ * @param C The client buying parts
  * @param part_class The part class (combat/science/trade/misc)
  * @param quantity Number of parts to buy
  * @param cost Total credit cost
- * @return TRUE if purchase successful, FALSE otherwise
+ * @return TRUE if the purchase succeeded, FALSE otherwise
  */
 /proc/buy_parts_with_credits(client/C, part_class, quantity, cost)
 	if(!C || quantity <= 0 || cost <= 0)
@@ -256,11 +239,10 @@
 		to_chat(C, span_warning("Database connection unavailable. Please try again later."))
 		return FALSE
 
-	var/ckey = C.ckey
-	var/character_slot = C.prefs?.default_slot || 1
+	var/player_ckey = ckey(C.ckey)
 
 	// Step 1: Pre-flight balance check
-	var/current_balance = get_player_credits(ckey, character_slot)
+	var/current_balance = GLOB.ship_economy_db?.get_credits(player_ckey) || 0
 	if(current_balance < cost)
 		to_chat(C, span_warning("Insufficient credits. You have [current_balance] credits but need [cost]."))
 		return FALSE
@@ -269,30 +251,28 @@
 	var/success = FALSE
 	var/credits_deducted = FALSE
 
-	// Retry loop (User Q3: Retry 3 times)
 	while(retry_count <= TRANSACTION_MAX_RETRIES && !success)
 		if(retry_count > 0)
 			sleep(1) // Brief delay between retries
 
-		// Step 2: Deduct credits with WHERE clause (race-condition safe)
+		// Step 2: Deduct credits with a WHERE clause (race-condition safe)
 		if(!credits_deducted)
 			var/datum/db_query/deduct_query = SSdbcore.NewQuery(
-				"UPDATE [format_table_name("player_credits")] \
-				SET credits = credits - :cost, last_updated = Now() \
-				WHERE ckey = :ckey AND character_slot = :slot AND credits >= :cost",
+				"UPDATE [format_table_name("player_ship_credits")] \
+				SET credits = credits - :cost \
+				WHERE ckey = :ckey AND credits >= :cost",
 				list(
 					"cost" = cost,
-					"ckey" = ckey,
-					"slot" = character_slot
+					"ckey" = player_ckey
 				)
 			)
 
 			if(!deduct_query.Execute(async = FALSE))
+				var/deduct_error = deduct_query.ErrorMsg()
 				qdel(deduct_query)
-				to_chat(C, span_warning("Transaction failed: [deduct_query.ErrorMsg()]"))
+				to_chat(C, span_warning("Transaction failed: [deduct_error]"))
 				return FALSE
 
-			// Check affected rows
 			if(deduct_query.affected == 0)
 				qdel(deduct_query)
 				to_chat(C, span_warning("Insufficient credits. Your balance may have changed."))
@@ -301,55 +281,23 @@
 			qdel(deduct_query)
 			credits_deducted = TRUE
 
-			// Log credit transaction
-			log_credit_transaction(ckey, character_slot, -cost, "buy_parts:[part_class]x[quantity]", current_balance - cost)
+			// Raw credit write - the live layer's cached balance is now stale
+			GLOB.ship_economy_db?.invalidate_cache(player_ckey, "credits")
 
-		// Step 3: Add parts to inventory
-		var/datum/db_query/add_parts_query = SSdbcore.NewQuery(
-			"INSERT INTO [format_table_name("player_ship_parts")] \
-			(ckey, part_class, quantity, last_updated) \
-			VALUES (:ckey, :part_class, :qty, Now()) \
-			ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
-			list(
-				"ckey" = ckey,
-				"part_class" = part_class,
-				"qty" = quantity
-			)
-		)
+			log_credit_transaction(player_ckey, -cost, "buy_parts:[part_class]x[quantity]", current_balance - cost)
 
-		if(add_parts_query.Execute(async = FALSE))
+		// Step 3: Add the parts (add_part handles its own cache invalidation and log_game)
+		if(GLOB.ship_economy_db?.add_part(player_ckey, part_class, quantity, "purchase_with_credits"))
 			success = TRUE
-			qdel(add_parts_query)
-
-			// Log part acquisition
-			log_part_extraction(ckey, part_class, quantity, "purchase_with_credits")
-
 			to_chat(C, span_notice("Purchased [quantity]x [part_class] ship part(s)!"))
 		else
-			qdel(add_parts_query)
 			retry_count++
 			if(retry_count <= TRANSACTION_MAX_RETRIES)
 				to_chat(C, span_warning("Transaction retry [retry_count]/[TRANSACTION_MAX_RETRIES]..."))
 
-	// Step 4: Compensating transaction - Refund if all retries failed
+	// Step 4: Compensating transaction - refund if all retries failed
 	if(!success && credits_deducted)
-		var/datum/db_query/refund_query = SSdbcore.NewQuery(
-			"UPDATE [format_table_name("player_credits")] \
-			SET credits = credits + :cost, last_updated = Now() \
-			WHERE ckey = :ckey AND character_slot = :slot",
-			list(
-				"cost" = cost,
-				"ckey" = ckey,
-				"slot" = character_slot
-			)
-		)
-
-		refund_query.Execute(async = FALSE)
-		qdel(refund_query)
-
-		// Log refund
-		log_credit_transaction(ckey, character_slot, cost, "refund_part_purchase_failed:[part_class]x[quantity]", current_balance)
-
+		refund_credits(player_ckey, cost, "refund_part_purchase_failed:[part_class]x[quantity]", current_balance)
 		to_chat(C, span_warning("Purchase failed after [TRANSACTION_MAX_RETRIES] retries. Credits refunded."))
 		return FALSE
 
@@ -360,85 +308,54 @@
 // ============================================================================
 
 /**
- * Get player's current credit balance.
+ * Give credits back after a failed or duplicated purchase.
  *
- * @param ckey Player's ckey
- * @param character_slot Character slot number
- * @return Credit balance, or 0 if not found
- */
-/proc/get_player_credits(ckey, character_slot)
-	if(!SSdbcore.IsConnected())
-		return 0
-
-	var/datum/db_query/query = SSdbcore.NewQuery(
-		"SELECT credits FROM [format_table_name("player_credits")] \
-		WHERE ckey = :ckey AND character_slot = :slot",
-		list(
-			"ckey" = ckey,
-			"slot" = character_slot
-		)
-	)
-
-	if(!query.Execute(async = FALSE))
-		qdel(query)
-		return 0
-
-	if(query.NextRow())
-		var/balance = text2num(query.item[1])
-		qdel(query)
-		return balance
-
-	qdel(query)
-	return 0
-
-/**
- * Check if a ship is unlocked for a player.
+ * Refunds go through ship_economy_db.add_credits() - a plain addition needs no
+ * balance guard, and that proc already invalidates the credits cache and writes
+ * the log_game line. This wrapper just adds the audit row.
  *
- * @param ckey Player's ckey
- * @param ship_template Ship template path
- * @return TRUE if unlocked, FALSE otherwise
+ * @param player_ckey Player's ckey (already normalized)
+ * @param amount Positive amount to return
+ * @param reason Transaction reason for the audit trail
+ * @param balance_after Expected balance once the refund lands
  */
-/proc/is_ship_unlocked(ckey, ship_template)
-	if(!SSdbcore.IsConnected())
+/proc/refund_credits(player_ckey, amount, reason, balance_after)
+	if(!GLOB.ship_economy_db?.add_credits(player_ckey, amount, reason))
+		// Nothing else can be done from here: the deduct is committed and the refund
+		// is not. Shout about it so an admin can settle it by hand.
+		log_game("SHIP_ECONOMY ERROR: refund of [amount] credits to [player_ckey] FAILED - [reason]")
+		message_admins("SHIP_ECONOMY ERROR: failed to refund [amount] credits to [player_ckey] ([reason]). Manual correction needed.")
 		return FALSE
 
-	var/datum/db_query/query = SSdbcore.NewQuery(
-		"SELECT 1 FROM [format_table_name("player_ship_unlocks")] \
-		WHERE ckey = :ckey AND ship_template_type = :template",
-		list(
-			"ckey" = ckey,
-			"template" = ship_template
-		)
-	)
-
-	if(!query.Execute(async = FALSE))
-		qdel(query)
-		return FALSE
-
-	var/unlocked = query.NextRow()
-	qdel(query)
-	return unlocked
+	log_credit_transaction(player_ckey, amount, reason, balance_after)
+	return TRUE
 
 /**
- * Log a credit transaction to audit trail.
+ * Log a credit transaction to the audit trail (`ship_credit_log`).
  *
- * @param ckey Player's ckey
- * @param character_slot Character slot
- * @param amount Credit amount (negative for spending, positive for earning)
+ * Fire-and-forget: the query is not waited on, and a missing database is not an error.
+ * See SQL/migrations/voidcrew_ship_credit_log.sql.
+ *
+ * @param player_ckey Player's ckey (already normalized)
+ * @param amount Credit delta (negative for spending, positive for earning)
  * @param reason Transaction reason
- * @param balance_after Balance after transaction
+ * @param balance_after Balance after the transaction
  */
-/proc/log_credit_transaction(ckey, character_slot, amount, reason, balance_after)
+/proc/log_credit_transaction(player_ckey, amount, reason, balance_after)
+	if(!player_ckey)
+		return
+
+	log_game("SHIP_ECONOMY: [player_ckey] [amount > 0 ? "+" : ""][amount] credits - [reason] (balance: [balance_after])")
+
 	if(!SSdbcore.IsConnected())
 		return
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
-		"INSERT INTO [format_table_name("credit_transaction_log")] \
-		(ckey, character_slot, amount, reason, balance_after, transaction_at) \
-		VALUES (:ckey, :slot, :amount, :reason, :balance, Now())",
+		"INSERT INTO [format_table_name("ship_credit_log")] \
+		(ckey, amount, reason, balance_after, created_at) \
+		VALUES (:ckey, :amount, :reason, :balance, NOW())",
 		list(
-			"ckey" = ckey,
-			"slot" = character_slot,
+			"ckey" = player_ckey,
 			"amount" = amount,
 			"reason" = reason,
 			"balance" = balance_after
@@ -448,103 +365,7 @@
 	query.Execute() // Fire and forget, don't block on logging
 	qdel(query)
 
-/**
- * Log a part extraction to audit trail.
- *
- * @param ckey Player's ckey
- * @param part_class Part class (combat/science/trade/misc)
- * @param quantity Number of parts
- * @param extraction_method How parts were obtained
- */
-/proc/log_part_extraction(ckey, part_class, quantity, extraction_method)
-	if(!SSdbcore.IsConnected())
-		return
-
-	var/datum/db_query/query = SSdbcore.NewQuery(
-		"INSERT INTO [format_table_name("part_extraction_log")] \
-		(ckey, part_class, quantity, extraction_method, extracted_at) \
-		VALUES (:ckey, :part_class, :qty, :method, Now())",
-		list(
-			"ckey" = ckey,
-			"part_class" = part_class,
-			"qty" = quantity,
-			"method" = extraction_method
-		)
-	)
-
-	query.Execute() // Fire and forget
-	qdel(query)
-
-// ============================================================================
-// PENDING EXTRACTIONS QUEUE PROCESSOR
-// ============================================================================
-
-/**
- * Process pending extractions queue.
- * This should be called periodically (e.g., subsystem fire) to retry failed extractions.
- *
- * @return Number of extractions processed
- */
-/proc/process_pending_extractions()
-	if(!SSdbcore.IsConnected())
-		return 0
-
-	var/processed = 0
-
-	// Get pending extractions
-	var/datum/db_query/get_pending = SSdbcore.NewQuery(
-		"SELECT id, ckey, part_class, quantity FROM [format_table_name("pending_extractions")] \
-		WHERE processed = 0 \
-		ORDER BY queued_at ASC \
-		LIMIT 10",
-		list()
-	)
-
-	if(!get_pending.Execute(async = FALSE))
-		qdel(get_pending)
-		return 0
-
-	while(get_pending.NextRow())
-		var/extraction_id = text2num(get_pending.item[1])
-		var/ckey = get_pending.item[2]
-		var/part_class = get_pending.item[3]
-		var/quantity = text2num(get_pending.item[4])
-
-		// Try to add parts
-		var/datum/db_query/add_parts = SSdbcore.NewQuery(
-			"INSERT INTO [format_table_name("player_ship_parts")] \
-			(ckey, part_class, quantity, last_updated) \
-			VALUES (:ckey, :part_class, :qty, Now()) \
-			ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
-			list(
-				"ckey" = ckey,
-				"part_class" = part_class,
-				"qty" = quantity
-			)
-		)
-
-		if(add_parts.Execute(async = FALSE))
-			// Success! Mark as processed
-			qdel(add_parts)
-
-			var/datum/db_query/mark_processed = SSdbcore.NewQuery(
-				"UPDATE [format_table_name("pending_extractions")] \
-				SET processed = 1, processed_at = Now() \
-				WHERE id = :id",
-				list("id" = extraction_id)
-			)
-			mark_processed.Execute(async = FALSE)
-			qdel(mark_processed)
-
-			// Log the successful extraction
-			log_part_extraction(ckey, part_class, quantity, "pending_queue_retry")
-
-			processed++
-		else
-			qdel(add_parts)
-			// Still failing, leave it for next cycle
-
-	qdel(get_pending)
-	return processed
+// The pending extraction queue is owned by /datum/ship_economy_db/proc/process_pending_extractions()
+// in ship_economy_database.dm - a second processor over the same rows would double-credit parts.
 
 #undef TRANSACTION_MAX_RETRIES
