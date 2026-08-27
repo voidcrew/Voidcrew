@@ -108,6 +108,14 @@ SUBSYSTEM_DEF(minor_mapping)
 
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		for(var/turf/detected_turf as anything in Z_TURFS(z))
+			// VOIDCREW EDIT ADDITION: same guard as find_exposed_wires() above - "station"
+			// means every co-tenant of every occupied encounter level here, so without the
+			// region skip satchels and hull weakpoints seed inside packed sites the crew has
+			// not visited. Upstream's weakpoint budget increase made this bite harder.
+			CHECK_TICK
+			if(map_region_for_turf(detected_turf))
+				continue
+			// VOIDCREW EDIT END
 			if(isfloorturf(detected_turf) && detected_turf.underfloor_accessibility == UNDERFLOOR_HIDDEN)
 				suitable += detected_turf
 

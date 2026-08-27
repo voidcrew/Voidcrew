@@ -102,6 +102,18 @@
 "w" = (
 /turf/closed/wall/r_wall,
 /area/overmap_encounter/planetoid/wasteland)
+"y" = (
+/obj/structure/window/plasma/fulltile{
+	dir = 1
+	},
+/obj/structure/frame/machine,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
+	dir = 9
+	},
+/turf/open/floor/plating{
+	broken = 1
+	},
+/area/overmap_encounter/planetoid/wasteland)
 "z" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -292,7 +304,7 @@ k
 I
 d
 t
-J
+y
 M
 a
 "}

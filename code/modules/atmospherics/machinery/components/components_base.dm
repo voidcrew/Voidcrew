@@ -143,6 +143,19 @@
 	for(var/i in 1 to device_type)
 		if(parents[i])
 			continue
+		// VOIDCREW EDIT: a port about to be replumbed must have a gas mixture to plumb.
+		// nullify_node() destroys airs[i] outright and NOTHING has ever put one back - the
+		// mixtures are minted once, in Initialize(). afterShuttleMove() calls nullify_node()
+		// on every node that stopped being adjacent across the move and then queues a
+		// rebuild, so the very next pass through here hands the new pipeline a null gasmix:
+		// that is datum_pipeline.dm's "addMachineryMember: Nonexistent (empty list) or null
+		// machinery gasmix", and it leaves the device permanently plumbed on a port with
+		// nothing behind it, so every later read of airs[i] is a null dereference. Mint the
+		// replacement on the same terms Initialize() uses.
+		if(isnull(airs[i]))
+			var/datum/gas_mixture/replacement_mixture = new
+			replacement_mixture.volume = 200
+			airs[i] = replacement_mixture
 		parents[i] = new /datum/pipeline()
 		to_return += parents[i]
 	return to_return
@@ -160,12 +173,25 @@
 	// docks ships before SSatoms runs, so atmos components can be asked to join or leave a
 	// pipenet while still pre-init. Nothing is wired on the machinery side yet, so skip the
 	// disconnect loop but still do the pipeline-side bookkeeping below.
+	var/lost_a_pipenet = FALSE
 	if(!isnull(parents))
 		for (var/i in 1 to parents.len)
 			if (parents[i] == reference)
 				reference.other_airs -= airs[i] // Disconnects from the pipeline side
 				parents[i] = null // Disconnects from the machinery side.
+				lost_a_pipenet = TRUE
 	// VOIDCREW EDIT END
+
+	// VOIDCREW EDIT: and ask for the port to be replumbed. /datum/pipeline/Destroy() puts
+	// every surviving member PIPE back on the rebuild queue but has never done the same for
+	// its components, so a component that outlived its pipeline - a neighbouring pipe
+	// deconstructed, a pipeline reaped after expand_pipeline() stole its last member - was
+	// left holding a permanent null in parents[i]. That is a dead port for the rest of the
+	// round, and before atmos_plumbing_ready() it was also "Cannot read null.air" every
+	// tick. add_to_rebuild_queue() is a no-op on a machine that is dying or already queued,
+	// so the mass-deletion path (pipeline Destroy during a hull teardown) costs nothing.
+	if(lost_a_pipenet)
+		SSair.add_to_rebuild_queue(src)
 
 	reference.other_atmos_machines -= src
 	if(custom_reconcilation)
@@ -207,12 +233,30 @@
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
 	// VOIDCREW EDIT START - pre-init component, see nullify_pipenet(). nodes and parents can
 	// both still be null, and a target_component that is not among nodes yields index 0.
+	//
+	// Returning FALSE rather than nothing is the point of the guard now: the three callers
+	// (datum_pipeline.dm's build_pipeline_blocking() and add_member(), SSair.expand_pipeline())
+	// used to call add_machinery_member() straight afterwards no matter what happened here,
+	// which registered a component the pipeline had failed to attach - it lands in
+	// other_atmos_machines with nothing in other_airs, and add_machinery_member() then
+	// stack_traces about the inconsistency it was just handed ("Nonexistent (empty list) or
+	// null machinery gasmix").
+	//
+	// The condition that reaches it is a ONE-WAY node link, and voidcrew hulls make those by
+	// the handful: two pipes stacked on one turf at the same piping_layer (the phalanx atmos
+	// room has green and cyan smart pipes sharing four tiles at layer 3) leave every adjacent
+	// component picking whichever pipe atmos_init() saw first, while BOTH pipes list the
+	// component back. The flood arrives from the pipe that lost, and there is no node slot to
+	// write. Refusing is the correct answer - the component really is not on that pipenet -
+	// and the map fault itself is what maptest_log_mapping's "pipes leading to the same spot
+	// stacking in one turf" already reports.
 	if(isnull(parents) || isnull(nodes))
-		return
+		return FALSE
 	var/node_index = nodes.Find(target_component)
 	if(node_index < 1 || node_index > parents.len)
-		return
+		return FALSE
 	parents[node_index] = reference
+	return TRUE
 	// VOIDCREW EDIT END
 
 /obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument

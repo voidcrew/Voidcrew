@@ -143,8 +143,12 @@
 				continue
 			for(var/obj/machinery/atmospherics/considered_device in result)
 				if(!istype(considered_device, /obj/machinery/atmospherics/pipe))
-					considered_device.set_pipenet(src, borderline)
-					add_machinery_member(considered_device)
+					// VOIDCREW EDIT: only register what actually attached. set_pipenet()
+					// refuses a one-way node link, and registering anyway put a component
+					// in other_atmos_machines with no matching air in other_airs - which
+					// add_machinery_member() below then stack_traces about.
+					if(considered_device.set_pipenet(src, borderline))
+						add_machinery_member(considered_device)
 					continue
 				var/obj/machinery/atmospherics/pipe/item = considered_device
 				if(members.Find(item))
@@ -193,8 +197,9 @@
 
 /datum/pipeline/proc/add_member(obj/machinery/atmospherics/reference_device, obj/machinery/atmospherics/device_to_add)
 	if(!istype(reference_device, /obj/machinery/atmospherics/pipe))
-		reference_device.set_pipenet(src, device_to_add)
-		add_machinery_member(reference_device)
+		// VOIDCREW EDIT: honour a refused attach, same as build_pipeline_blocking() above.
+		if(reference_device.set_pipenet(src, device_to_add))
+			add_machinery_member(reference_device)
 	else
 		var/obj/machinery/atmospherics/pipe/reference_pipe = reference_device
 		if(reference_pipe.parent)
