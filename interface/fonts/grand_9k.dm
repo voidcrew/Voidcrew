@@ -4,7 +4,13 @@
 /// Base font
 /datum/font/grand9k
 	name = "Grand9K Pixel"
-	font_family = 'interface/fonts/Grand9K_Pixel.ttf'
+	// VOIDCREW EDIT CHANGE BEGIN - CYRILLIC - the stock font has no Cyrillic glyphs, so Russian
+	// speech renders as tofu boxes in runechat and balloon alerts. The extended file is a strict
+	// superset built by tools/fonts/add_cyrillic_glyphs.py: identical outlines, advance widths and
+	// vertical metrics, same family name, plus the Russian alphabet.
+	// ORIGINAL: font_family = 'interface/fonts/Grand9K_Pixel.ttf'
+	font_family = 'interface/fonts/Grand9K_Pixel_Cyrillic.ttf'
+	// VOIDCREW EDIT CHANGE END
 
 /// For icon overlays
 /// Grand9K 6pt metrics generated using Lummox's dmifontsplus (https://www.byond.com/developer/LummoxJR/DmiFontsPlus)

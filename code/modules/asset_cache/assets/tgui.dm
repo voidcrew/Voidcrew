@@ -37,7 +37,10 @@
 /datum/asset/simple/namespaced/escape_menu_font
 	assets = list(
 		"Pixellari.ttf" = file("interface/fonts/Pixellari.ttf"),
-		"Grand9K_Pixel.ttf" = file("interface/fonts/Grand9K_Pixel.ttf"),
+		// VOIDCREW EDIT CHANGE BEGIN - CYRILLIC - keep the asset name, serve the Cyrillic superset
+		// ORIGINAL: "Grand9K_Pixel.ttf" = file("interface/fonts/Grand9K_Pixel.ttf"),
+		"Grand9K_Pixel.ttf" = file("interface/fonts/Grand9K_Pixel_Cyrillic.ttf"),
+		// VOIDCREW EDIT CHANGE END
 	)
 	parents = list(
 		"fonts.css" = file("tgui/packages/tgui-escape-menu/styles/fonts.css"),

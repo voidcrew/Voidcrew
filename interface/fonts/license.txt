@@ -1,6 +1,12 @@
 Grand9K Pixel created by Jayvee Enaguas. Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
 (https://creativecommons.org/licenses/by/4.0/) (https://www.dafont.com/grand9k-pixel.font)
 
+Grand9K_Pixel_Cyrillic.ttf is a derivative of the above, made for this fork and used for all maptext
+(runechat, balloon alerts, signboards). It is Grand9K Pixel with the Russian alphabet added; every glyph
+the original had is untouched. The Cyrillic glyphs are taken from Grand9K_Pixel_modif.ttf as distributed
+by ss220-space/tgstation (https://github.com/ss220-space/tgstation/tree/master/interface/fonts), itself a
+CC BY 4.0 adaptation of Jayvee Enaguas' Grand9K Pixel. Rebuild and verify with tools/fonts/.
+
 Pixellari created by Zacchary Dempsey-Plante. Website indicates free for commercial use.
 (https://www.dafont.com/pixellari.font?fpp=200)
 
