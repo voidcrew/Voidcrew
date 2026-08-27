@@ -237,6 +237,34 @@
 "ln" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/d)
+"mi" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset/anchored,
+/obj/machinery/button/door{
+	id = "ntms_exterior";
+	name = "NTMS-037 South External Lock";
+	normaldoorcontrol = 1;
+	pixel_x = -24;
+	pixel_y = -8;
+	specialfunctions = 4
+	},
+/obj/machinery/button/door{
+	id = "ntms_exterior_2";
+	name = "NTMS-037 North External Lock";
+	normaldoorcontrol = 1;
+	pixel_x = -24;
+	pixel_y = 2;
+	specialfunctions = 4
+	},
+/obj/structure/sign/warning/xeno_mining/directional/north,
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
 "mo" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -501,6 +529,19 @@
 /obj/structure/cable,
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/kilo/bridge/d)
+"vs" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	id_tag = "ntms_exterior_2";
+	name = "NTMS-037 Mining Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
 "vw" = (
 /obj/structure/sign/warning/vacuum/external,
 /turf/closed/wall/mineral/titanium/nodiagonal,
@@ -1382,7 +1423,7 @@
 aa
 aA
 AU
-ei
+vs
 ei
 AU
 aA
@@ -1396,7 +1437,7 @@ aa
 (2,1,1) = {"
 aa
 AU
-Yk
+mi
 dP
 YG
 Vd

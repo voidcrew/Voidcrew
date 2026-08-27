@@ -100,9 +100,16 @@ GLOBAL_DATUM_INIT(orientation_briefing, /datum/orientation_briefing, new)
 	)
 
 	// Pulled off the live nodes so a rename in ship_combat/research.dm follows.
+	var/static/list/ship_combat_nodes = list(
+		/datum/techweb_node/ship_combat,
+		/datum/techweb_node/ship_combat_shields,
+		/datum/techweb_node/ship_combat_lasers,
+		/datum/techweb_node/ship_combat_missiles,
+		/datum/techweb_node/ship_combat_interdictor,
+	)
 	var/list/research_path = list()
-	for(var/node_id in list(TECHWEB_NODE_SHIP_COMBAT, TECHWEB_NODE_SHIP_COMBAT_SHIELDS, TECHWEB_NODE_SHIP_COMBAT_LASERS, TECHWEB_NODE_SHIP_COMBAT_MISSILES, TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR))
-		var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
+	for(var/node_path in ship_combat_nodes)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_path]
 		if(!node)
 			continue
 		research_path += list(list(

@@ -202,7 +202,6 @@
 /datum/design/board/outpost_shield_generator
 	name = "Outpost Shield Generator Board"
 	desc = "Allows for the construction of a deflector shield generator for player-founded outposts."
-	id = "outpost_shield_generator"
 	research_icon = 'voidcrew/modules/player_outposts/icons/outpost.dmi'
 	research_icon_state = "shieldgen"
 	build_path = /obj/item/circuitboard/machine/outpost_shield_generator

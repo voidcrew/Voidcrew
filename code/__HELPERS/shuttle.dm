@@ -553,7 +553,19 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 				shuttle.shuttle_areas -= area
 				qdel(area)
 	if(!shuttle.turf_count)
-		qdel(shuttle)
+		// VOIDCREW EDIT: force = TRUE is not optional. /obj/docking_port/Destroy() returns
+		// QDEL_HINT_LETMELIVE unless forced (code/modules/shuttle/shuttle.dm), so the bare
+		// qdel() this was is a NO-OP that still runs /obj/docking_port/mobile/Destroy()
+		// first - and that nulls shuttle_areas. What survived was a live, non-QDELETED
+		// mobile port with a null shuttle_areas standing on the ground the hull used to
+		// occupy, and /turf/proc/empty() never deletes docking ports, so it rides a
+		// reservation release back into the free pool. The next SSshuttle.load_template()
+		// scans its fresh block, finds that leftover port FIRST, hands it back as
+		// preview_shuttle and qdels the real hull's port as a "duplicate" - the failure
+		// voidcrew_hull_mount_integrity names at code/modules/unit_tests/voidcrew_ship_hulls.dm.
+		// The hull is out of turfs here; this is permanent destruction, which is exactly
+		// what force asserts.
+		qdel(shuttle, force = TRUE)
 		return
 	if(docking_port_needs_relocated)
 		shuttle.forceMove(pick(shuttle.underlying_areas_by_turf))

@@ -123,6 +123,10 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"V" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2/module_stub_east,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "W" = (
 /obj/machinery/light/small/directional/south,
 /obj/machinery/atmospherics/pipe/smart,
@@ -137,7 +141,7 @@
 
 (1,1,1) = {"
 I
-w
+V
 d
 "}
 (2,1,1) = {"

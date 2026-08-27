@@ -62,6 +62,10 @@
 /obj/machinery/atmospherics/pipe/smart,
 /turf/open/floor/iron/white,
 /area/template_noop)
+"x" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2/module_stub_east,
+/turf/open/floor/iron/white,
+/area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
@@ -97,7 +101,7 @@
 
 (1,1,1) = {"
 o
-y
+x
 Y
 "}
 (2,1,1) = {"

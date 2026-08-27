@@ -41,7 +41,6 @@
 /datum/design/gun_part_l6_saw
 	name = "L6 SAW Receiver"
 	desc = "A machined receiver assembly for an L6 SAW. Not a working gun on its own."
-	id = "vc_gun_part_l6_saw"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
@@ -59,7 +58,6 @@
 /datum/design/ammo_m7mm
 	name = "Machine Gun Magazine (7mm)"
 	desc = "A box magazine of 7mm rounds for an L6 SAW."
-	id = "vc_ammo_m7mm"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 6,
@@ -77,17 +75,15 @@
 // --- Techweb nodes -----------------------------------------------------------
 
 /datum/techweb_node/weapon_part_l6_saw
-	id = TECHWEB_NODE_WEAPON_PART_L6_SAW
 	display_name = "L6 SAW Schematics"
 	description = "Reverse-engineered receiver schematics for the L6 SAW. Unlocks protolathe production of its receiver assembly, the hard half of the gun."
-	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
-	design_ids = list("vc_gun_part_l6_saw")
+	prerequisite_nodes = list(/datum/techweb_node/exotic_ammo)
+	unlocked_designs = list(/datum/design/gun_part_l6_saw)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/weapon_ammo_l6_saw
-	id = TECHWEB_NODE_WEAPON_AMMO_L6_SAW
 	display_name = "7mm Machine Gun Ammunition"
 	description = "Belt-fed 7mm production for the L6 SAW. Prints magazines at the lathe."
-	prereq_ids = list(TECHWEB_NODE_WEAPON_PART_L6_SAW)
-	design_ids = list("vc_ammo_m7mm")
+	prerequisite_nodes = list(/datum/techweb_node/weapon_part_l6_saw)
+	unlocked_designs = list(/datum/design/ammo_m7mm)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)

@@ -395,9 +395,12 @@
 
 /**
  * Called by build_pipeline() and add_member() in datum_pipeline.dm, set the network the device is connected to, to the datum pipeline it has reference
+ *
+ * VOIDCREW EDIT: returns whether the device actually joined. Callers must not
+ * add_machinery_member() a device that answered FALSE - see the components override.
  */
 /obj/machinery/atmospherics/proc/set_pipenet()
-	return
+	return TRUE
 
 /**
  * Replaces the connection to the old_pipenet with the new_pipenet

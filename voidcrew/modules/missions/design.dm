@@ -5,7 +5,6 @@
 /datum/design/board/mission_board
 	name = "Computer Design (Mission Board)"
 	desc = "The circuit board for a mission board console."
-	id = "mission_board"
 	build_path = /obj/item/circuitboard/computer/mission_board
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_CARGO
@@ -15,7 +14,6 @@
 /datum/design/board/mission_pad
 	name = "Machine Design (Mission Pad)"
 	desc = "The circuit board for a mission pad."
-	id = "mission_pad"
 	build_path = /obj/item/circuitboard/machine/mission_pad
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_CARGO

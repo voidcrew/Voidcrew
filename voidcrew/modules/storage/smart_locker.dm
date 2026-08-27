@@ -60,7 +60,6 @@
 /datum/design/board/smartlocker
 	name = "Smart Locker Board"
 	desc = "The circuit board for a smart locker."
-	id = "smartlocker"
 	build_path = /obj/item/circuitboard/machine/smartfridge/storage
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_CARGO
@@ -69,9 +68,9 @@
 
 // Rides along with the smartfridge board, since it is the same machine wearing a different hat.
 /datum/techweb_node/food_proc/New()
-	. = ..()
-	design_ids += list(
-		"smartlocker",
+	unlocked_designs += list(
+		/datum/design/board/smartlocker,
 	)
+	return ..()
 
 #undef SMART_LOCKER_CAPACITY

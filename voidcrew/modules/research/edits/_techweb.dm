@@ -35,6 +35,28 @@
  * the point and experiment gates in the parent proc.
  */
 /datum/techweb/research_node(datum/techweb_node/node, force = FALSE, auto_adjust_cost = TRUE, get_that_dosh = TRUE, atom/research_source)
+	// Upstream's parent now accepts a raw typepath and resolves it itself (research_node_id()
+	// was folded in), so a queued path with only an istype() guard here would sail past the
+	// survey gate. Resolve first, gate second.
+	if(ispath(node))
+		node = SSresearch.techweb_nodes[node]
 	if(!force && istype(node) && !have_surveys_for_node(node))
 		return FALSE
 	return ..()
+
+/**
+ * Point-item lookup with a subtype fallback. Ported from the fork's edit to the deleted
+ * code/modules/research/techweb/__techweb_helpers.dm: SSresearch.techweb_point_items is keyed
+ * by the BASE path (/obj/item/assembly/signaler/anomaly, which only ever exists as subtypes),
+ * so upstream's exact-type `techweb_point_items[thing.type]` lookups never match a single real
+ * item and the deconstruction payout is unreachable. First matching entry wins.
+ * Callers (each a VOIDCREW EDIT): items.dm examine hint, destructive_analyzer ui_data + payout.
+ */
+/datum/controller/subsystem/research/proc/point_items_for(obj/item/thing)
+	var/list/exact = techweb_point_items[thing.type]
+	if(exact)
+		return exact
+	for(var/point_path in techweb_point_items)
+		if(istype(thing, point_path))
+			return techweb_point_items[point_path]
+	return null

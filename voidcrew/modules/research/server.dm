@@ -156,7 +156,9 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	if(stolen < 1)
 		balloon_alert(thief, "no points to steal!")
 		return
-	victim_web.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = stolen))
+	// Upstream dropped remove_point_list(); adjust_points() floors at 0, so a negative
+	// adjustment is the subtraction. `stolen` is already clamped to the live balance above.
+	victim_web.adjust_multiple_points(list(TECHWEB_POINT_TYPE_GENERIC = -stolen))
 	new /obj/item/research_notes(loc, stolen, "thievery")
 	balloon_alert(thief, "siphoned [stolen] points!")
 

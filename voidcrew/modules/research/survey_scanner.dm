@@ -335,7 +335,6 @@
 /datum/design/board/survey_scanner
 	name = "Survey Scaner Machine Board"
 	desc = "The Machine Circuit board for a Survey scanner which allows research generation through power."
-	id = "surveyscanner"
 	build_path = /obj/item/circuitboard/machine/survey_scanner
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_RESEARCH,

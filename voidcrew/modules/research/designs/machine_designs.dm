@@ -9,7 +9,6 @@
 /datum/design/board/rtg
 	name = "Machine Design (RTG Board)"
 	desc = "The circuit board for a radioisotope thermoelectric generator."
-	id = "rtg"
 	build_path = /obj/item/circuitboard/machine/rtg
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -19,7 +18,6 @@
 /datum/design/board/teg
 	name = "Machine Design (Thermoelectric Generator Board)"
 	desc = "The circuit board for a thermoelectric generator."
-	id = "teg"
 	build_path = /obj/item/circuitboard/machine/thermoelectric_generator
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -29,7 +27,6 @@
 /datum/design/board/teg_circulator
 	name = "Machine Design (Circulator/Heat Exchanger Board)"
 	desc = "The circuit board for a thermoelectric generator's gas circulator."
-	id = "teg_circulator"
 	build_path = /obj/item/circuitboard/machine/circulator
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING

@@ -35,7 +35,6 @@
 /datum/design/gun_part_laser_carbine
 	name = "Laser Carbine Emitter Assembly"
 	desc = "A machined emitter and focusing assembly for a laser carbine. Not a working gun on its own."
-	id = "vc_gun_part_laser_carbine"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 8,
@@ -49,9 +48,8 @@
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
 /datum/techweb_node/weapon_part_laser_carbine
-	id = TECHWEB_NODE_WEAPON_PART_CARBINE
 	display_name = "Laser Carbine Schematics"
 	description = "Emitter schematics for a rapid-cycling laser carbine. Unlocks protolathe production of its emitter assembly. There's no ammunition to research; the cell tops up at any recharger."
-	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)
-	design_ids = list("vc_gun_part_laser_carbine")
+	prerequisite_nodes = list(/datum/techweb_node/riot_supression)
+	unlocked_designs = list(/datum/design/gun_part_laser_carbine)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)

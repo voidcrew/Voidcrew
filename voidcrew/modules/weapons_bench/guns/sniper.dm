@@ -34,7 +34,6 @@
 /datum/design/gun_part_sniper_rifle
 	name = "Anti-Materiel Rifle Receiver"
 	desc = "A machined receiver and bolt assembly for an anti-materiel sniper rifle. Not a working gun on its own."
-	id = "vc_gun_part_sniper_rifle"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 18,
@@ -50,7 +49,6 @@
 /datum/design/ammo_sniper_rounds
 	name = "Sniper Magazine (.50 BMG)"
 	desc = "A magazine of .50 BMG cartridges for an anti-materiel rifle."
-	id = "vc_ammo_sniper_rounds"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 8,
@@ -66,17 +64,15 @@
 	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 /datum/techweb_node/weapon_part_sniper_rifle
-	id = TECHWEB_NODE_WEAPON_PART_SNIPER
 	display_name = "Anti-Materiel Rifle Schematics"
 	description = "Reverse-engineered receiver schematics for an anti-materiel sniper rifle. Unlocks protolathe production of its receiver assembly."
-	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
-	design_ids = list("vc_gun_part_sniper_rifle")
+	prerequisite_nodes = list(/datum/techweb_node/exotic_ammo)
+	unlocked_designs = list(/datum/design/gun_part_sniper_rifle)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/weapon_ammo_sniper_rifle
-	id = TECHWEB_NODE_WEAPON_AMMO_SNIPER
 	display_name = ".50 BMG Ammunition"
 	description = "Bulk .50 BMG production for the anti-materiel rifle. Prints magazines at the lathe."
-	prereq_ids = list(TECHWEB_NODE_WEAPON_PART_SNIPER)
-	design_ids = list("vc_ammo_sniper_rounds")
+	prerequisite_nodes = list(/datum/techweb_node/weapon_part_sniper_rifle)
+	unlocked_designs = list(/datum/design/ammo_sniper_rounds)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)

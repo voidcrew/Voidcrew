@@ -18,7 +18,7 @@
 	. = ..()
 	if(isnull(experiment_handler))
 		return
-	experiment_handler.linked_web?.add_point_list(list(
+	experiment_handler.linked_web?.adjust_multiple_points(list(
 		TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT),
 	)
 
@@ -42,7 +42,7 @@
 		return
 	if(isnull(completed_experiments[experiment_path])) // paper published, but it didn't complete the experiment
 		return
-	add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT))
+	adjust_multiple_points(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT))
 
 #undef RESEARCH_POINTS_PER_EXPERIMENT
 

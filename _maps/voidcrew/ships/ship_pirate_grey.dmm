@@ -783,6 +783,14 @@
 "zB" = (
 /turf/closed/wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
+"zC" = (
+/obj/machinery/computer/atmos_alert,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_grey)
 "zN" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
@@ -1683,7 +1691,7 @@ Wy
 xR
 Ox
 Wy
-Ny
+zC
 KZ
 yv
 ko

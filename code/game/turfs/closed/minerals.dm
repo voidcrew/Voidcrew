@@ -702,7 +702,7 @@
 		/obj/item/stack/ore/titanium = 11,
 		/obj/item/stack/ore/uranium = 5,
 		/turf/closed/mineral/gibtonite/ice/icemoon = 2,
-		/turf/closed/mineral/glacial = 5, // VOIDCREW EDIT: glacial core veins — the ice planets' trade good (see voidcrew/modules/trade/planetary_goods.dm)
+		/turf/closed/mineral/glacial = 3, // VOIDCREW EDIT: glacial core veins — the ice planets' trade good (see voidcrew/modules/trade/planetary_goods.dm). Weight 3 preserves the authored absolute share against upstream's retuned (smaller-sum) table; 5 made cores ~40% more common than designed.
 	)
 
 /// Near exact same subtype as parent, just used in ruins to prevent other ruins/chasms from spawning on top of it.

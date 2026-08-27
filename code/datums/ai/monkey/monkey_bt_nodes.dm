@@ -150,7 +150,7 @@
 	return ..()
 
 /// Prefers any gun once gun neurons are activated, else the strongest candidate that beats our current best held item.
-/datum/bt_node/ai_behavior/acquire_target/update_interaction_target/monkey_find_weapon/pick_final_target(datum/ai_controller/controller, list/filtered_targets)
+/datum/bt_node/ai_behavior/acquire_target/update_interaction_target/monkey_find_weapon/pick_final_target(datum/ai_controller/controller, list/filtered_targets, datum/target_priority_strategy/priority_strategy, atom/current_target)
 	var/mob/living/living_pawn = controller.pawn
 
 	if(controller.blackboard[BB_MONKEY_GUN_NEURONS_ACTIVATED])
@@ -344,7 +344,7 @@
 	for(var/mob/living/carbon/human/human_mob in oview(5, living_pawn))
 		if(istype(human_mob.mind?.assigned_role, /datum/job/bartender))
 			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED // my boss is on duty!
-		if(IS_UNCONSCIOUS_OR_CRIT(human_mob) || ismonkey(human_mob))
+		if(IS_UNCONSCIOUS_OR_CRIT(human_mob) || HAS_TRAIT(human_mob, TRAIT_LESSER_HUMANOID))
 			continue
 		if(!human_mob.get_empty_held_indexes())
 			continue

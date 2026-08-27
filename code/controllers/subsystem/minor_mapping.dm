@@ -24,9 +24,9 @@ SUBSYSTEM_DEF(minor_mapping)
 #else
 	trigger_migration(CONFIG_GET(number/mice_roundstart))
 	place_satchels(satchel_amount = 2)
-	var/weakpoint_spawns = 3
+	var/weakpoint_spawns = 5
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_SPAWN_WEAKPOINTS))
-		weakpoint_spawns = rand(4,8)
+		weakpoint_spawns = rand(6,12)
 
 	weakpoint_spawns += SSmapping.current_map.bonus_weakpoints //This will add 0 by default, or additional on large maps where it's included in the config.
 	place_weakpoints(weakpoint_spawns)
@@ -108,6 +108,14 @@ SUBSYSTEM_DEF(minor_mapping)
 
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		for(var/turf/detected_turf as anything in Z_TURFS(z))
+			// VOIDCREW EDIT ADDITION: same guard as find_exposed_wires() above - "station"
+			// means every co-tenant of every occupied encounter level here, so without the
+			// region skip satchels and hull weakpoints seed inside packed sites the crew has
+			// not visited. Upstream's weakpoint budget increase made this bite harder.
+			CHECK_TICK
+			if(map_region_for_turf(detected_turf))
+				continue
+			// VOIDCREW EDIT END
 			if(isfloorturf(detected_turf) && detected_turf.underfloor_accessibility == UNDERFLOOR_HIDDEN)
 				suitable += detected_turf
 

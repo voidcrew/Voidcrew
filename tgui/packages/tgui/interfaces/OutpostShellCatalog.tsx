@@ -48,7 +48,7 @@ export const OutpostShellCatalog = (props) => {
         {denial ? (
           <NoticeBox danger>{denial}</NoticeBox>
         ) : (
-          <NoticeBox success={!!isProtected} warning={!isProtected}>
+          <NoticeBox {...(isProtected ? { success: true } : { danger: true })}>
             Claim site is in the {zone_name} zone, {' '}
             {isProtected
               ? 'patrolled space. Your outpost will be protected from ship weapons.'

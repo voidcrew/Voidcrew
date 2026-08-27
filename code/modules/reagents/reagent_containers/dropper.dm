@@ -64,7 +64,7 @@
 		trans = round(reagents.trans_to(target, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
 		if(trans)
 			to_chat(user, span_notice("You transfer [trans] unit\s of the solution."))
-			after_pour(trans, target, user) //VOIDCREW EDIT ADDITION: dropper sounds
+			after_pour(trans, target, user) //VOIDCREW EDIT ADDITION: dropper sounds (supersedes upstream's unconditional droplet.ogg playsound here)
 		update_appearance()
 		target.update_appearance()
 		return ITEM_INTERACT_SUCCESS

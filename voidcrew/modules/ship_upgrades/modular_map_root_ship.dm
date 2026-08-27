@@ -108,3 +108,21 @@
 		return "[base_file]_[theme].dmm"
 	var/base_name = copytext(base_file, 1, extension_pos)
 	return "[base_name]_[theme].dmm"
+
+/**
+ * A deliberately single-faced (EAST-only) hidden layer-2 scrubber stub for module maps.
+ *
+ * Smart pipes node on ALL_CARDINALS at runtime, so a module-side waste stub laid one tile
+ * south of a hull scrubber spine fuses with the spine when the module late-loads, forcing a
+ * spine-wide pipenet rebuild that log_mapping reports as "added to a pipenet while still
+ * having one" on every spine manifold (ten per Delta cryo module load). This stub only ever
+ * connects east - toward the module's own layer_manifold bridge - so the module's filter
+ * drain terminates in a sealed holding volume inside the module, matching the "cryotube on
+ * its own sealed loop" design, and the hull spine (which carries its own nets) is never
+ * touched. Classic binary pipes no longer exist upstream, hence the subtype.
+ */
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2/module_stub_east
+	dir = EAST
+
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2/module_stub_east/set_init_directions(init_dir)
+	return ..(EAST)

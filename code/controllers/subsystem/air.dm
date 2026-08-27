@@ -367,11 +367,67 @@ SUBSYSTEM_DEF(air)
 		currentrun.len--
 		if(!M)
 			atmos_machinery -= M
+			// VOIDCREW EDIT: this branch used to fall straight through into
+			// M.process_atmos() on the null it had just pruned.
+			continue
+		// VOIDCREW EDIT: a machine that is not plumbed yet does not run this tick. See
+		// /obj/machinery/proc/atmos_plumbing_ready() below for why the gap exists at all.
+		// The ismachinery() test is not decoration: this list is duck-typed on
+		// process_atmos() and /datum/component/gas_leaker registers ITSELF in it, so the
+		// readiness question can only be put to things that are really machinery.
+		if(ismachinery(M) && !M.atmos_plumbing_ready())
+			continue
 		if(M.process_atmos(wait * 0.1) == PROCESS_KILL)
 			stop_processing_machine(M)
 		if(MC_TICK_CHECK)
 			return
 
+/**
+ * VOIDCREW ADDITION: TRUE once this machine's atmos plumbing exists, so process_atmos() is
+ * safe to run on it.
+ *
+ * An atmos machine joins SSair.atmos_machinery in its own Initialize() - see
+ * /obj/machinery/atmospherics/Initialize()'s start_processing_machine() call - but its
+ * pipenets are built much later, by whichever of setup_pipenets(), setup_template_machinery()
+ * or the rebuild queue owns the thing that made it. At roundstart that ordering is invisible:
+ * SSair.Initialize() runs both passes before fire() ever runs, so nothing processes unplumbed.
+ *
+ * Every LATE load reverses it. /datum/map_template/initTemplateBounds() initializes the atoms
+ * first (SSatoms.InitializeAtoms yields), then builds the pipenets in
+ * SSair.setup_template_machinery() - which CHECK_TICKs between machines - and for a modular
+ * hull /datum/map_template/shuttle/dispatch() sleeps in half-second slices on top of that
+ * while the modules load. SSair fires many times in every one of those gaps, against machines
+ * whose `parents`/`parent` are still null. That is the whole "Cannot read null.air" family:
+ * a mapped `on = 1` gas pump reads parents[2].air (pump.dm), a gas flow meter asks its pipe
+ * for return_air() and the pipe reads parent.air (pipes.dm). It also made the noise that
+ * followed - update_parents() warning "Component is missing a pipenet! Rebuilding..." and
+ * queueing a rebuild that then floods a half-atmos_init()ed node graph.
+ *
+ * Skipping rather than guarding each process_atmos() is deliberate: there is nothing sensible
+ * for an unplumbed machine to do, and the states are transient by construction - the loader
+ * that created the machine finishes wiring it a few ticks later. Losing a pipenet while alive
+ * (a neighbour deconstructed) is handled where it happens, in nullify_pipenet(), which queues
+ * the rebuild.
+ */
+/obj/machinery/proc/atmos_plumbing_ready()
+	return TRUE
+
+/obj/machinery/atmospherics/components/atmos_plumbing_ready()
+	// Both lists are minted once, as new(device_type), so unequal lengths means the component
+	// is still part-built - which is a state to sit out, not to index into.
+	if(isnull(parents) || isnull(airs) || length(parents) != length(airs))
+		return FALSE
+	for(var/i in 1 to length(parents))
+		if(isnull(parents[i]) || isnull(airs[i]))
+			return FALSE
+	return TRUE
+
+/obj/machinery/atmospherics/pipe/atmos_plumbing_ready()
+	return !isnull(parent)
+
+/// The meter reads its pipe's mixture, so it is the pipe's plumbing that has to be up.
+/obj/machinery/meter/atmos_plumbing_ready()
+	return isnull(target) || !isnull(target.parent)
 
 /datum/controller/subsystem/air/proc/process_super_conductivity(resumed = FALSE)
 	if (!resumed)
@@ -560,8 +616,13 @@ SUBSYSTEM_DEF(air)
 			continue
 		for(var/obj/machinery/atmospherics/considered_device in result)
 			if(!istype(considered_device, /obj/machinery/atmospherics/pipe))
-				considered_device.set_pipenet(net, borderline)
-				net.add_machinery_member(considered_device)
+				// VOIDCREW EDIT: only register what actually attached - see
+				// /obj/machinery/atmospherics/components/set_pipenet(). A one-way node link
+				// (two same-layer pipes stacked on one turf) reaches here constantly on this
+				// fork's hulls, and registering a component the pipeline could not attach is
+				// what produced datum_pipeline.dm's "Nonexistent (empty list) ... gasmix".
+				if(considered_device.set_pipenet(net, borderline))
+					net.add_machinery_member(considered_device)
 				continue
 			var/obj/machinery/atmospherics/pipe/item = considered_device
 			if(net.members.Find(item))

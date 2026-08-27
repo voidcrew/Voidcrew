@@ -210,7 +210,7 @@
 		balloon_alert(user, "past all fear")
 		return ITEM_INTERACT_BLOCKING
 	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || victim_turf.get_lumcount() > LIGHTING_TILE_IS_DARK)
+	if(!victim_turf || victim_turf.check_lumcount_above(LIGHTING_TILE_IS_DARK))
 		balloon_alert(user, "too much light on them")
 		return ITEM_INTERACT_BLOCKING
 	if(trial.watched[WEAKREF(victim)])
@@ -304,7 +304,7 @@
 	if(loc != body) // it only drinks for the hand that carries it
 		return
 	var/turf/here = get_turf(body)
-	if(!here || here.get_lumcount() > LIGHTING_TILE_IS_DARK)
+	if(!here || here.check_lumcount_above(LIGHTING_TILE_IS_DARK))
 		return
 	if(SPT_PROB(3, seconds_per_tick))
 		to_chat(body, span_notice("The gloom-glass grows a little heavier in your hand. The dark is settling into it."))
@@ -388,7 +388,7 @@
 		if(bystander == cast_on || bystander == owner)
 			continue
 		var/turf/bystander_turf = get_turf(bystander)
-		if(!bystander_turf || bystander_turf.get_lumcount() > LIGHTING_TILE_IS_DARK)
+		if(!bystander_turf || bystander_turf.check_lumcount_above(LIGHTING_TILE_IS_DARK))
 			continue
 		bystander.apply_status_effect(/datum/status_effect/terrified)
 
@@ -466,7 +466,7 @@
 	if(!.)
 		return FALSE
 	var/turf/cast_turf = get_turf(owner)
-	if(!cast_turf || cast_turf.get_lumcount() > LIGHTING_TILE_IS_DARK)
+	if(!cast_turf || cast_turf.check_lumcount_above(LIGHTING_TILE_IS_DARK))
 		if(feedback)
 			to_chat(owner, span_warning("There's too much light here. It only works in the dark."))
 		return FALSE

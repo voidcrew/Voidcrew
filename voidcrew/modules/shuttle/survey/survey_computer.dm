@@ -102,7 +102,12 @@
 		return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
-	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
+	// VOIDCREW note (tg #97223): researched_nodes is keyed by node TYPEPATH now, so the
+	// old iterate-and-switch over id strings matched nothing. Rewritten as direct lookups.
+	// The old tier list also carried "survey_console_simple", an id no node ever declared,
+	// so the base node has never emitted a "basic" tier outside debug mode; that behavior
+	// is preserved. Checks run in ascending tier order so the highest researched tier's
+	// view settings win, which is also what research order produced (sequential prereqs).
 	var/list/found_tiers = list()
 	if(debug_mode)
 		mob_sight = TRUE
@@ -114,29 +119,21 @@
 	else
 		if(!linked_techweb)
 			return
-		for(var/node_id in linked_techweb.researched_nodes)
-			if(node_id in research_tiers)
-				var/tier_type
-				switch(node_id)
-					if("survey_console_advanced")
-						tier_type = "advanced"
-						mapping_enabled = TRUE
-						view_range = 10
-						icon_scaling_amount = 2
-					if("survey_console_superior")
-						tier_type = "superior"
-						obj_sight = TRUE
-						view_range = 15
-						icon_scaling_amount = 2.5
-					if("survey_console_elite")
-						tier_type = "elite"
-						mob_sight = TRUE
-						view_range = 20
-						icon_scaling_amount = 3
-					else
-						tier_type = "basic"
-
-				found_tiers += tier_type
+		if(linked_techweb.researched_nodes[TECHWEB_NODE_SURVEY_CONSOLE_ADV])
+			found_tiers += "advanced"
+			mapping_enabled = TRUE
+			view_range = 10
+			icon_scaling_amount = 2
+		if(linked_techweb.researched_nodes[TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR])
+			found_tiers += "superior"
+			obj_sight = TRUE
+			view_range = 15
+			icon_scaling_amount = 2.5
+		if(linked_techweb.researched_nodes[TECHWEB_NODE_SURVEY_CONSOLE_ELITE])
+			found_tiers += "elite"
+			mob_sight = TRUE
+			view_range = 20
+			icon_scaling_amount = 3
 	return found_tiers
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()

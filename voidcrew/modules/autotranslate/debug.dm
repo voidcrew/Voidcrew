@@ -10,7 +10,8 @@
  * hand, exactly what the say pipeline would do.
  */
 
-ADMIN_VERB(autotranslate_test, R_DEBUG, "Test Translation Morph", "Fires a fake translated say at yourself, on both chat and runechat.", ADMIN_CATEGORY_DEBUG, message as text)
+ADMIN_VERB(autotranslate_test, R_DEBUG, "Test Translation Morph", "Fires a fake translated say at yourself, on both chat and runechat.", ADMIN_CATEGORY_DEBUG)
+	VERB_ARG(message, VERB_ARG_TYPE_TEXT, VERB_ARG_SOURCE_INPUT)
 	var/mob/speaker = user.mob
 	if(isnull(speaker))
 		to_chat(user, span_warning("You need a mob for this."))
@@ -56,7 +57,8 @@ ADMIN_VERB(autotranslate_test, R_DEBUG, "Test Translation Morph", "Fires a fake 
 	to_chat(user, span_notice("Fed a canned translation in. This tests the display only - use Translation: Diagnose for the backend."))
 	BLACKBOX_LOG_ADMIN_VERB("Test Translation Morph")
 
-ADMIN_VERB(autotranslate_set_debug_provider, R_DEBUG, "Translation: Use Debug Provider", "Installs the fake translation backend.", ADMIN_CATEGORY_DEBUG, latency_ds as num|null)
+ADMIN_VERB(autotranslate_set_debug_provider, R_DEBUG, "Translation: Use Debug Provider", "Installs the fake translation backend.", ADMIN_CATEGORY_DEBUG)
+	VERB_ARG(latency_ds, VERB_ARG_TYPE_NUM, VERB_ARG_SOURCE_INPUT)
 	var/datum/translation_provider/debug/provider = new()
 	if(!isnull(latency_ds))
 		provider.latency = latency_ds
@@ -82,7 +84,8 @@ ADMIN_VERB(autotranslate_clear_cache, R_DEBUG, "Translation: Clear Cache", "Empt
  * answered but a real say still shows the failure marker, the problem is in
  * the panel; if it stalls here, it is server side.
  */
-ADMIN_VERB(autotranslate_diagnose, R_DEBUG, "Translation: Diagnose", "Runs one translation end to end and reports each stage.", ADMIN_CATEGORY_DEBUG, message as text)
+ADMIN_VERB(autotranslate_diagnose, R_DEBUG, "Translation: Diagnose", "Runs one translation end to end and reports each stage.", ADMIN_CATEGORY_DEBUG)
+	VERB_ARG(message, VERB_ARG_TYPE_TEXT, VERB_ARG_SOURCE_INPUT)
 	message = sanitize(copytext_char(message, 1, MAX_MESSAGE_LEN))
 	if(!length(message))
 		message = "test"

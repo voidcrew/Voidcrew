@@ -10,7 +10,6 @@
 /datum/design/board/transporter_pad
 	name = "Machine Design (Transporter Pad)"
 	desc = "The circuit board for a transporter pad."
-	id = "transporter_pad"
 	build_path = /obj/item/circuitboard/machine/transporter_pad
 	materials = list(
 		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
@@ -26,7 +25,6 @@
 /datum/design/board/transporter_console
 	name = "Computer Design (Transporter Control Console)"
 	desc = "The circuit board for a transporter control console."
-	id = "transporter_console"
 	build_path = /obj/item/circuitboard/computer/transporter
 	materials = list(
 		/datum/material/glass = SHEET_MATERIAL_AMOUNT,
@@ -41,7 +39,6 @@
 /datum/design/transporter_transponder
 	name = "Site-to-ship transponder"
 	desc = "A personal beacon that a transporter pad can find and recover."
-	id = "transporter_transponder"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT,
@@ -59,13 +56,11 @@
 /datum/design/transporter_targeting
 	name = "Transporter pattern targeting"
 	desc = "Lets the control console aim a beam at an exact turf instead of dropping people wherever the computer finds room, and hold a lock through a roof."
-	id = "transporter_targeting"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/transporter_biofilter
 	name = "Transporter biofilter matrix"
 	desc = "Cleans up what a transport does to the people it moves, shortens the recharge, and reports when a pad's safety interlocks have been cut."
-	id = "transporter_biofilter"
 	research_icon = 'icons/obj/medical/chemical.dmi'
 	research_icon_state = "pill22"

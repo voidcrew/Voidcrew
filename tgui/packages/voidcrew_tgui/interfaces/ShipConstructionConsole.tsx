@@ -90,7 +90,7 @@ export const ShipConstructionConsole = () => {
           {/* Operation Status Message */}
           {!!lastMessage && (
             <Stack.Item>
-              <NoticeBox success={lastSuccess} danger={!lastSuccess}>
+              <NoticeBox {...(lastSuccess ? { success: true } : { danger: true })}>
                 {lastMessage}
                 <Button
                   icon="times"
@@ -293,7 +293,7 @@ const ConstructionTab = (props: ConstructionTabProps) => {
 
       {!canOperate && (
         <Stack.Item>
-          <NoticeBox warning>
+          <NoticeBox danger>
             Ship must be docked to use construction features.
           </NoticeBox>
         </Stack.Item>
@@ -415,7 +415,7 @@ const RelocationTab = (props: RelocationTabProps) => {
 
       {!canOperate && (
         <Stack.Item>
-          <NoticeBox warning>Ship must be docked.</NoticeBox>
+          <NoticeBox danger>Ship must be docked.</NoticeBox>
         </Stack.Item>
       )}
     </Stack>

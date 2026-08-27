@@ -1529,15 +1529,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
-"tZ" = (
-/obj/machinery/atmospherics/pipe/smart/simple/green/visible,
-/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/d)
 "ue" = (
 /obj/structure/grille,
 /obj/structure/window/reinforced/shuttle,
@@ -4402,7 +4393,7 @@ Zd
 mX
 mX
 xj
-tZ
+mK
 iX
 XN
 OB
@@ -4434,7 +4425,7 @@ Zd
 oE
 tp
 Vs
-tZ
+mK
 rA
 RT
 NU
