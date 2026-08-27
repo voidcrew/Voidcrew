@@ -33,7 +33,6 @@
 /datum/design/gun_part_c20r
 	name = "C-20r Receiver"
 	desc = "A machined receiver assembly for a C-20r SMG. Not a working gun on its own."
-	id = "vc_gun_part_c20r"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 10,
@@ -48,7 +47,6 @@
 /datum/design/ammo_smgm45
 	name = "SMG Magazine (.45)"
 	desc = "A .45 box magazine for a C-20r SMG."
-	id = "vc_ammo_smgm45"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 4,
@@ -64,17 +62,15 @@
 	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
 
 /datum/techweb_node/weapon_part_c20r
-	id = TECHWEB_NODE_WEAPON_PART_C20R
 	display_name = "C-20r Schematics"
 	description = "Reverse-engineered receiver schematics for the C-20r SMG. Unlocks protolathe production of its receiver assembly."
-	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)
-	design_ids = list("vc_gun_part_c20r")
+	prerequisite_nodes = list(/datum/techweb_node/riot_supression)
+	unlocked_designs = list(/datum/design/gun_part_c20r)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/weapon_ammo_c20r
-	id = TECHWEB_NODE_WEAPON_AMMO_C20R
 	display_name = ".45 SMG Ammunition"
 	description = "Bulk .45 production for the C-20r. Prints magazines at the lathe."
-	prereq_ids = list(TECHWEB_NODE_WEAPON_PART_C20R)
-	design_ids = list("vc_ammo_smgm45")
+	prerequisite_nodes = list(/datum/techweb_node/weapon_part_c20r)
+	unlocked_designs = list(/datum/design/ammo_smgm45)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)

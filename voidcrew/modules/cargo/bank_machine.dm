@@ -95,7 +95,6 @@
 /datum/design/board/bankmachine
 	name = "Bank Machine Console Board"
 	desc = "Allows for the construction of a Bank Machine circuit board to interact with your Ship's budget."
-	id = "bankmachine"
 	build_path = /obj/item/circuitboard/computer/bank_machine
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_CARGO

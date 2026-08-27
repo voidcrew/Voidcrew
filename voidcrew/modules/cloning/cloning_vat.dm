@@ -453,7 +453,6 @@
 /datum/design/board/cloning_vat
 	name = "Machine Design (Cloning Vat)"
 	desc = "The circuit board for a cloning vat, which grows a pre-imprinted spare body over time."
-	id = "cloning_vat"
 	build_path = /obj/item/circuitboard/machine/cloning_vat
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_MEDICAL
@@ -461,11 +460,10 @@
 	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
 
 /datum/techweb_node/vat_cloning
-	id = "vat_cloning"
 	display_name = "Vat Cloning"
 	description = "Grows a mindless spare body from a genetic imprint, ready to wake up in when you die. The imprint has to be taken while you're still alive."
-	prereq_ids = list(TECHWEB_NODE_MEDBAY_EQUIP_ADV)
-	design_ids = list("cloning_vat")
+	prerequisite_nodes = list(/datum/techweb_node/medbay_equip_adv)
+	unlocked_designs = list(/datum/design/board/cloning_vat)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 #undef CLONING_VAT_GROWTH_TIME

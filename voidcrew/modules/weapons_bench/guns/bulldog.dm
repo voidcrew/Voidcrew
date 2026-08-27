@@ -35,7 +35,6 @@
 /datum/design/gun_part_bulldog
 	name = "Bulldog Receiver"
 	desc = "A machined receiver and drum-feed assembly for a Bulldog shotgun. Not a working gun on its own."
-	id = "vc_gun_part_bulldog"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 12,
@@ -51,7 +50,6 @@
 /datum/design/ammo_m12g
 	name = "Shotgun Drum Magazine (12g buckshot)"
 	desc = "An 8-round buckshot drum for a Bulldog shotgun."
-	id = "vc_ammo_m12g"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 6,
@@ -71,7 +69,6 @@
 /datum/design/ammo_m12g_slug
 	name = "Shotgun Drum Magazine (12g slug)"
 	desc = "An 8-round slug drum for a Bulldog shotgun."
-	id = "vc_ammo_m12g_slug"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 6,
@@ -85,17 +82,15 @@
 	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL // See /datum/design/ammo_m12g above.
 
 /datum/techweb_node/weapon_part_bulldog
-	id = TECHWEB_NODE_WEAPON_PART_BULLDOG
 	display_name = "Bulldog Schematics"
 	description = "Reverse-engineered receiver schematics for the Bulldog shotgun. Unlocks protolathe production of its receiver assembly."
-	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
-	design_ids = list("vc_gun_part_bulldog")
+	prerequisite_nodes = list(/datum/techweb_node/exotic_ammo)
+	unlocked_designs = list(/datum/design/gun_part_bulldog)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 /datum/techweb_node/weapon_ammo_bulldog
-	id = TECHWEB_NODE_WEAPON_AMMO_BULLDOG
 	display_name = "12g Drum Production"
 	description = "Bulk 12-gauge drum production for the Bulldog. Prints buckshot and slug drums at the lathe."
-	prereq_ids = list(TECHWEB_NODE_WEAPON_PART_BULLDOG)
-	design_ids = list("vc_ammo_m12g", "vc_ammo_m12g_slug")
+	prerequisite_nodes = list(/datum/techweb_node/weapon_part_bulldog)
+	unlocked_designs = list(/datum/design/ammo_m12g, /datum/design/ammo_m12g_slug)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)

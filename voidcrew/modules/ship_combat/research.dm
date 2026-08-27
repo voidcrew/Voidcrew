@@ -5,104 +5,95 @@
 
 // Base warfare node - just the combat console
 /datum/techweb_node/ship_combat
-	id = TECHWEB_NODE_SHIP_COMBAT
 	display_name = "Shuttle Warfare Systems"
 	description = "Basic technology for shuttle-to-shuttle warfare. Unlocks the weapons console for coordinating combat systems."
-	prereq_ids = list(TECHWEB_NODE_BASIC_SHUTTLE)
-	design_ids = list(
-		"ship_combat_console",
+	prerequisite_nodes = list(/datum/techweb_node/basic_shuttle_tech)
+	unlocked_designs = list(
+		/datum/design/board/ship_combat_console,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
 // Missile systems - launcher, frame, tracking, light warhead
 /datum/techweb_node/ship_combat_missiles
-	id = TECHWEB_NODE_SHIP_COMBAT_MISSILES
 	display_name = "Missile Ordnance"
 	description = "Missile launcher systems and light warheads for shuttle warfare. Chemical missiles can be created by inserting grenades into missile frames."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_missile_launcher",
-		"ship_missile_frame",
-		"ship_missile_tracking",
-		"ship_missile_warhead_light",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_missile_launcher,
+		/datum/design/ship_missile_frame,
+		/datum/design/ship_missile_tracking,
+		/datum/design/ship_missile_warhead/light,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 // Standard warhead
 /datum/techweb_node/ship_combat_ordnance_standard
-	id = TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_STANDARD
 	display_name = "Standard Ordnance"
 	description = "Standard missile warheads with moderate explosive yield."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT_MISSILES)
-	design_ids = list(
-		"ship_missile_warhead_standard",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat_missiles)
+	unlocked_designs = list(
+		/datum/design/ship_missile_warhead,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 // Heavy warhead
 /datum/techweb_node/ship_combat_ordnance_heavy
-	id = TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_HEAVY
 	display_name = "Heavy Ordnance"
 	description = "Devastating heavy warheads for maximum destructive capability."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_STANDARD)
-	design_ids = list(
-		"ship_missile_warhead_heavy",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat_ordnance_standard)
+	unlocked_designs = list(
+		/datum/design/ship_missile_warhead/heavy,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 // Cloaking device
 /datum/techweb_node/ship_combat_cloak
-	id = TECHWEB_NODE_SHIP_COMBAT_CLOAK
 	display_name = "Shuttle Cloaking Systems"
 	description = "Cloaking technology that renders shuttles invisible to sensors and visual detection. Power requirements scale with shuttle size."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_cloak_device",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_cloak_device,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 // Shield generator
 /datum/techweb_node/ship_combat_shields
-	id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
 	display_name = "Shuttle Shield Systems"
 	description = "Deflector shield technology that protects shuttles and outpost claims from attackers. Power requirements scale with shuttle size."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_shield_generator",
-		"outpost_shield_generator", // player outposts (see player_outposts/outpost_shield.dm)
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_shield_generator,
+		/datum/design/board/outpost_shield_generator, // player outposts (see player_outposts/outpost_shield.dm)
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 // Laser turret
 /datum/techweb_node/ship_combat_lasers
-	id = TECHWEB_NODE_SHIP_COMBAT_LASERS
 	display_name = "Shuttle Laser Systems"
 	description = "Directed energy weapons that are highly effective against shields. Power level can be adjusted via the weapons system."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_laser_turret",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_laser_turret,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 // Interdictor
 /datum/techweb_node/ship_combat_interdictor
-	id = TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR
 	display_name = "Shuttle Interdiction Systems"
 	description = "Advanced interdiction technology that slows enemy shuttles, enables force docking, and prevents cloaking. Power level determines effectiveness."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_interdictor",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_interdictor,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
 // Data Siphon
 /datum/techweb_node/ship_combat_siphon
-	id = TECHWEB_NODE_SHIP_COMBAT_SIPHON
 	display_name = "Ship Data Siphon"
 	description = "Sophisticated data siphon technology that drains credits from targeted ship accounts. Requires weapons lock to operate."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_data_siphon",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_data_siphon,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
@@ -110,29 +101,27 @@
 // closet gated behind the survey tree; they belong here, with the tube that
 // throws them and the guns that have to bring the shields down first.
 /datum/techweb_node/ship_combat_assault_pods
-	id = TECHWEB_NODE_SHIP_COMBAT_ASSAULT_PODS
 	display_name = "Assault Pods"
 	description = "Hull-mounted tubes that fire a crewed drop pod at another vessel. The pod cuts its own entry hole through the plating - provided the target's shields are already down."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ship_pod_launcher",
-		"ship_assault_pod",
-		"ship_assault_pod_advanced",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ship_pod_launcher,
+		/datum/design/ship_assault_pod,
+		/datum/design/ship_assault_pod/advanced,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 // Electronic warfare: the suite plus the basic exploit software. Stronger
 // exploit tiers are never researchable; the black market is the only source.
 /datum/techweb_node/ship_combat_ew
-	id = TECHWEB_NODE_SHIP_COMBAT_EW
 	display_name = "Electronic Warfare Systems"
 	description = "Intrusion hardware for shuttle warfare. Unlocks the electronic warfare suite and basic exploit software for disrupting a targeted ship's systems. Requires weapons lock to operate."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
-	design_ids = list(
-		"ew_suite",
-		"ew_exploit_lights_out",
-		"ew_exploit_phantom_klaxons",
-		"ew_exploit_door_seize",
+	prerequisite_nodes = list(/datum/techweb_node/ship_combat)
+	unlocked_designs = list(
+		/datum/design/board/ew_suite,
+		/datum/design/ew_exploit_lights_out,
+		/datum/design/ew_exploit_phantom_klaxons,
+		/datum/design/ew_exploit_door_seize,
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
@@ -156,14 +145,13 @@
 	var/datum/techweb/web = get_research_web()
 	if(!web)
 		return FALSE
-	return TECHWEB_NODE_SHIP_COMBAT in web.researched_nodes
+	return !!web.researched_nodes[/datum/techweb_node/ship_combat]
 
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console
 	name = "Weapons System Board"
 	desc = "Allows for the construction of a shuttle weapons system for tactical warfare."
-	id = "ship_combat_console"
 	build_path = /obj/item/circuitboard/computer/ship_combat_console
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
@@ -175,7 +163,6 @@
 /datum/design/board/ship_missile_launcher
 	name = "Missile Launcher Board"
 	desc = "Allows for the construction of a ship-mounted missile launcher."
-	id = "ship_missile_launcher"
 	build_path = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -185,7 +172,6 @@
 /datum/design/board/ship_cloak_device
 	name = "Cloaking Device Board"
 	desc = "Allows for the construction of a shuttle cloaking device."
-	id = "ship_cloak_device"
 	build_path = /obj/item/circuitboard/machine/ship_combat/cloak_device
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -195,7 +181,6 @@
 /datum/design/board/ship_shield_generator
 	name = "Shield Generator Board"
 	desc = "Allows for the construction of a shuttle shield generator."
-	id = "ship_shield_generator"
 	research_icon = 'icons/obj/machines/shield_generator.dmi'
 	research_icon_state = "shield_wall_gen"
 	build_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
@@ -207,7 +192,6 @@
 /datum/design/board/ship_laser_turret
 	name = "Laser Turret Board"
 	desc = "Allows for the construction of a ship-mounted laser turret. Highly effective against shields."
-	id = "ship_laser_turret"
 	build_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -217,7 +201,6 @@
 /datum/design/board/ship_interdictor
 	name = "Interdictor Board"
 	desc = "Allows for the construction of a ship interdiction system. Slows enemy ships and prevents cloaking."
-	id = "ship_interdictor"
 	build_path = /obj/item/circuitboard/machine/ship_combat/interdictor
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -227,7 +210,6 @@
 /datum/design/board/ship_data_siphon
 	name = "Data Siphon Board"
 	desc = "Allows for the construction of a ship data siphon. Drains credits from targeted ship accounts."
-	id = "ship_data_siphon"
 	build_path = /obj/item/circuitboard/machine/ship_combat/data_siphon
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -237,7 +219,6 @@
 /datum/design/board/ship_pod_launcher
 	name = "Assault Pod Tube Board"
 	desc = "Allows for the construction of a hull-mounted assault pod tube."
-	id = "ship_pod_launcher"
 	build_path = /obj/item/circuitboard/machine/ship_combat/pod_launcher
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -247,7 +228,6 @@
 /datum/design/board/ew_suite
 	name = "Electronic Warfare Suite Board"
 	desc = "Allows for the construction of an electronic warfare suite. Executes exploit software against targeted ships."
-	id = "ew_suite"
 	build_path = /obj/item/circuitboard/machine/ship_combat/ew_suite
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
@@ -259,7 +239,6 @@
 /datum/design/ship_missile_frame
 	name = "Missile Frame"
 	desc = "A missile body that requires wiring, a tracking circuit, and a warhead to arm. Too heavy to carry - must be dragged."
-	id = "ship_missile_frame"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/structure/ship_missile
 	materials = list(
@@ -278,7 +257,6 @@
 /datum/design/ship_assault_pod
 	name = "Orbital Drop Pod"
 	desc = "A one-shot pod for riding down to a celestial body, or for being fired through somebody else's hull out of an assault pod tube. Too heavy to carry - must be dragged."
-	id = "ship_assault_pod"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/structure/closet/supplypod/drop_pod
 	materials = list(
@@ -295,7 +273,6 @@
 /datum/design/ship_assault_pod/advanced
 	name = "Advanced Orbital Drop Pod"
 	desc = "An armoured drop pod, insulated against whatever it lands in. It doesn't pop its own hatch on arrival."
-	id = "ship_assault_pod_advanced"
 	build_path = /obj/structure/closet/supplypod/drop_pod/advanced
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
@@ -308,7 +285,6 @@
 /datum/design/ship_missile_tracking
 	name = "Missile Tracking Circuit"
 	desc = "A guidance system circuit for ship missiles. Required component for missile construction."
-	id = "ship_missile_tracking"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/electronics/ship_missile_tracking
 	materials = list(
@@ -326,7 +302,6 @@
 /datum/design/ship_missile_warhead
 	name = "Standard Missile Warhead"
 	desc = "A standard warhead for ship missiles with moderate damage."
-	id = "ship_missile_warhead_standard"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/bombcore/missile
 	materials = list(
@@ -344,7 +319,6 @@
 /datum/design/ship_missile_warhead/light
 	name = "Light Missile Warhead"
 	desc = "A lightweight warhead for ship missiles. Less damage but cheaper."
-	id = "ship_missile_warhead_light"
 	research_icon_state = "bombcore_light"
 	build_path = /obj/item/bombcore/missile/light
 	materials = list(
@@ -355,7 +329,6 @@
 /datum/design/ship_missile_warhead/heavy
 	name = "Heavy Missile Warhead"
 	desc = "A heavy warhead for shuttle missiles with devastating damage."
-	id = "ship_missile_warhead_heavy"
 	research_icon_state = "bombcore_heavy"
 	build_path = /obj/item/bombcore/missile/heavy
 	materials = list(
@@ -376,7 +349,6 @@
 /datum/design/ew_exploit_lights_out
 	name = "Exploit Cartridge (Blackout)"
 	desc = "Exploit software that drops every light on a targeted ship until the payload expires."
-	id = "ew_exploit_lights_out"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/ew_exploit/lights_out
 	materials = list(
@@ -392,7 +364,6 @@
 /datum/design/ew_exploit_phantom_klaxons
 	name = "Exploit Cartridge (Phantom Klaxons)"
 	desc = "Exploit software that sets off a targeted ship's fire alarms and drops its firelocks shipwide."
-	id = "ew_exploit_phantom_klaxons"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/ew_exploit/phantom_klaxons
 	materials = list(
@@ -408,7 +379,6 @@
 /datum/design/ew_exploit_door_seize
 	name = "Exploit Cartridge (Bolt Override)"
 	desc = "Exploit software that takes over a targeted ship's airlock bolts, dropping them all or throwing them all open."
-	id = "ew_exploit_door_seize"
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/ew_exploit/door_seize
 	materials = list(

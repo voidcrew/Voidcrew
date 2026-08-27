@@ -35,6 +35,11 @@
  * the point and experiment gates in the parent proc.
  */
 /datum/techweb/research_node(datum/techweb_node/node, force = FALSE, auto_adjust_cost = TRUE, get_that_dosh = TRUE, atom/research_source)
+	// Upstream's parent now accepts a raw typepath and resolves it itself (research_node_id()
+	// was folded in), so a queued path with only an istype() guard here would sail past the
+	// survey gate. Resolve first, gate second.
+	if(ispath(node))
+		node = SSresearch.techweb_nodes[node]
 	if(!force && istype(node) && !have_surveys_for_node(node))
 		return FALSE
 	return ..()

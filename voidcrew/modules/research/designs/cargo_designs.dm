@@ -4,7 +4,6 @@
 
 	name = "Supply Console Board"
 	desc = "Allows for the construction of circuit boards used to build a Supply Console."
-	id = "cargo"
 	build_type = IMPRINTER
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_CARGO

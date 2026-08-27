@@ -1,6 +1,5 @@
 /datum/design/research
 	name = "Research & Development Kit"
-	id = "rndkit"
 	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 2000, /datum/material/glass = 4000) // The materials for one box + all boards inside exactly.
 	build_path = /obj/item/storage/box/rndboards/all
@@ -17,7 +16,6 @@
 
 /datum/design/ship_disk
 	name = "R&D Server Source Code"
-	id = "ship_disk"
 	build_type = AUTOLATHE
 	materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT * 2)
 	build_path = /obj/item/disk/computer/ship_disk
@@ -40,10 +38,10 @@
 /datum/techweb/autounlocking/autolathe/New()
 	. = ..()
 	var/static/list/voidcrew_extra_designs = list(
-		"c9mm",
-		"c10mm",
-		"c45",
-		"strilka310_surplus",
+		/datum/design/c9mm,
+		/datum/design/c10mm,
+		/datum/design/c45,
+		/datum/design/strilka310_surplus,
 	)
-	for(var/design_id in voidcrew_extra_designs)
-		add_design_by_id(design_id)
+	for(var/design_path in voidcrew_extra_designs)
+		add_design(design_path)
