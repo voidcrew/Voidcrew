@@ -3,15 +3,11 @@ import { Button, NoticeBox, Stack, Table, Tabs } from 'tgui-core/components';
 import { NtosPayContent } from '../../tgui/interfaces/NtosPay';
 import { NtosWindow } from '../../tgui/layouts';
 
-export const NtosPayVoidcrew = (props, context) => {
-  const { data } = useBackend(context);
-  const NTOS_PAY = 1;
-  const ALL_ACCOUNTS = 2;
-  const [screenmode, setScreenmode] = useSharedState(
-    context,
-    'tab_main',
-    NTOS_PAY,
-  );
+const NTOS_PAY = 1;
+const ALL_ACCOUNTS = 2;
+
+export const NtosPayVoidcrew = (props) => {
+  const [screenmode, setScreenmode] = useSharedState('tab_main', NTOS_PAY);
 
   return (
     <NtosWindow>
@@ -20,14 +16,14 @@ export const NtosPayVoidcrew = (props, context) => {
           <Stack.Item>
             <Tabs fluid textAlign="center">
               <Tabs.Tab
-                color="Green"
+                color="green"
                 selected={screenmode === NTOS_PAY}
                 onClick={() => setScreenmode(NTOS_PAY)}
               >
                 Transaction History
               </Tabs.Tab>
               <Tabs.Tab
-                Color="Blue"
+                color="blue"
                 selected={screenmode === ALL_ACCOUNTS}
                 onClick={() => setScreenmode(ALL_ACCOUNTS)}
               >
@@ -51,17 +47,17 @@ type Info = {
 };
 
 type Accounts = {
-  ref: string[];
+  ref: string;
   name: string;
 };
 
 type SwipedID = {
-  ref: string[];
+  ref: string;
   account: string;
 };
 
-const AllAccounts = (props, context) => {
-  const { act, data } = useBackend<Info>(context);
+const AllAccounts = (props) => {
+  const { act, data } = useBackend<Info>();
   const { all_accounts, swiped_id } = data;
 
   if (!all_accounts) {

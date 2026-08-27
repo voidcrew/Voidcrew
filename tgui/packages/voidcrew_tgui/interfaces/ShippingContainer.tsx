@@ -12,8 +12,8 @@ type Crates = {
   ref: string;
 };
 
-export const ShippingContainer = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+export const ShippingContainer = (props) => {
+  const { act, data } = useBackend<Data>();
   const { crates } = data;
 
   return (

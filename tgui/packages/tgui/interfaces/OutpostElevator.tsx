@@ -66,8 +66,7 @@ export const OutpostElevator = (props) => {
                       }
                       onClick={() => act('goto', { id: floor.id })}
                     >
-                      {floor.name}
-                      {!!floor.your_ship && ' (your ship)'}
+                      {`${floor.name}${floor.your_ship ? ' (your ship)' : ''}`}
                     </Button>
                   </Stack.Item>
                 ))}
