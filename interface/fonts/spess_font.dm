@@ -4,7 +4,13 @@
 /// Base font
 /datum/font/spessfont
 	name = "Spess Font"
-	font_family = 'interface/fonts/SpessFont.ttf'
+	// VOIDCREW EDIT CHANGE BEGIN - CYRILLIC - runechat gives emotes the 'italics' class and
+	// non-mob speakers the 'small' class, both of which skin.dmf renders in Spess Font. The stock
+	// file has no Cyrillic at all, so Russian emotes and machine speech drew nothing whatsoever.
+	// Strict superset built by tools/fonts/add_cyrillic_glyphs.py; every existing glyph is untouched.
+	// ORIGINAL: font_family = 'interface/fonts/SpessFont.ttf'
+	font_family = 'interface/fonts/SpessFont_Cyrillic.ttf'
+	// VOIDCREW EDIT CHANGE END
 
 /// For icon overlays
 /// Spess Font 6pt metrics generated using Lummox's dmifontsplus (https://www.byond.com/developer/LummoxJR/DmiFontsPlus)
