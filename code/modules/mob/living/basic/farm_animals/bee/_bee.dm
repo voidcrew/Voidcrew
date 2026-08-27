@@ -96,6 +96,8 @@
 /mob/living/basic/bee/Destroy()
 	if(beehome)
 		beehome.bees -= src
+		if(beehome.queen_bee == src) // VOIDCREW EDIT ADDITION - the box never learns its queen died, and the stale ref hard-deletes her (upstreamable)
+			beehome.queen_bee = null
 		beehome = null
 	beegent = null
 	return ..()
