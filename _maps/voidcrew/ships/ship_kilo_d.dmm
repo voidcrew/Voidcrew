@@ -537,6 +537,18 @@
 	},
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/kilo/bridge/d)
+"xL" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/gun/energy/laser/retro,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_x = 32
+	},
+/obj/item/pai_card,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
 "xW" = (
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /obj/effect/turf_decal/bot,
@@ -1025,18 +1037,6 @@
 	},
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/kilo/bridge/d)
-"Pb" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/laser/retro,
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_x = 32
-	},
-/obj/machinery/status_display/evac{
-	pixel_y = 32
-	},
-/obj/item/pai_card,
-/turf/open/floor/carpet,
-/area/shuttle/voidcrew/kilo/dorms/d)
 "Pk" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_service"
@@ -1657,7 +1657,7 @@ gO
 Qb
 dE
 Qs
-Pb
+xL
 KK
 BI
 aa

@@ -1101,11 +1101,6 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"WQ" = (
-/turf/template_noop,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
 "WR" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/pirate_dutchman{
@@ -1584,11 +1579,11 @@ af
 af
 af
 af
-WQ
-WQ
-WQ
+af
+af
+af
 Qa
-WQ
+af
 co
 dg
 Oe
@@ -1603,7 +1598,7 @@ WR
 Gt
 WR
 WR
-WQ
+af
 "}
 (16,1,1) = {"
 af

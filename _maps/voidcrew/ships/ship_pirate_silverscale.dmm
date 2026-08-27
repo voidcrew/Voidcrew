@@ -898,11 +898,6 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
-"MR" = (
-/turf/template_noop,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
 "Nm" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/light/directional/east,
@@ -1308,7 +1303,7 @@ rB
 Gr
 Gr
 lL
-MR
+je
 jG
 Gr
 Gr

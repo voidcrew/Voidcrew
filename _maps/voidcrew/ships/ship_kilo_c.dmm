@@ -251,6 +251,22 @@
 "ln" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/c)
+"lA" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "captain's wardrobe"
+	},
+/obj/item/gun/energy/laser/retro,
+/obj/item/lipstick/random,
+/obj/item/storage/fancy/heart_box,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_x = 32
+	},
+/obj/item/pai_card,
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
 "lW" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 4
@@ -1056,22 +1072,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
-"Pb" = (
-/obj/structure/closet/secure_closet/personal{
-	name = "captain's wardrobe"
-	},
-/obj/item/gun/energy/laser/retro,
-/obj/item/lipstick/random,
-/obj/item/storage/fancy/heart_box,
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_x = 32
-	},
-/obj/machinery/status_display/evac{
-	pixel_y = 32
-	},
-/obj/item/pai_card,
-/turf/open/floor/carpet/neon/simple/pink/nodots,
-/area/shuttle/voidcrew/kilo/dorms/c)
 "Pk" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_service"
@@ -1679,7 +1679,7 @@ gO
 Qb
 dE
 Qs
-Pb
+lA
 KK
 BI
 aa

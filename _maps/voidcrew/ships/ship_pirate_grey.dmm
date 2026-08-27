@@ -77,14 +77,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"bv" = (
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/structure/sign/warning/electric_shock/directional/north,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
 "bB" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/item/reagent_containers/cup/glass/coffee,
@@ -195,6 +187,12 @@
 "gQ" = (
 /obj/machinery/vending/boozeomat,
 /turf/closed/wall,
+/area/shuttle/voidcrew/pirate_grey)
+"hj" = (
+/obj/machinery/power/smes/magical,
+/obj/structure/cable,
+/obj/structure/sign/warning/electric_shock/directional/east,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "hk" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -356,16 +354,6 @@
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"ox" = (
-/obj/machinery/light/small/directional/west,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/firealarm/directional/south,
-/obj/effect/turf_decal/tile/red/anticorner/contrasted,
-/obj/machinery/computer/camera_advanced/ship_combat{
-	dir = 1
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_grey)
 "oy" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
@@ -441,11 +429,6 @@
 "qn" = (
 /obj/effect/mapping_helpers/broken_floor,
 /obj/item/flashlight/flashdark,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
-"qo" = (
-/obj/machinery/power/smes/magical,
-/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "qs" = (
@@ -737,6 +720,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"yb" = (
+/obj/machinery/light/small/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/firealarm/directional/west,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted,
+/obj/machinery/computer/camera_advanced/ship_combat{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "yf" = (
 /obj/effect/mapping_helpers/burnt_floor,
@@ -1141,16 +1134,6 @@
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/pirate_grey)
-"Lp" = (
-/obj/machinery/computer/atmos_alert,
-/obj/effect/turf_decal/bot,
-/obj/structure/sign/warning/gas_mask/directional/north,
-/obj/machinery/light/small/directional/north,
-/obj/effect/turf_decal/tile/yellow/half/contrasted{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
 "LE" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/item/reagent_containers/cup/glass/coffee,
@@ -1167,6 +1150,12 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"Mt" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/spawner/random/structure/crate,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "Mu" = (
 /obj/machinery/power/shuttle_engine/ship/electric{
@@ -1195,6 +1184,15 @@
 /obj/effect/spawner/random/structure/closet_maintenance,
 /obj/structure/cable,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"Ny" = (
+/obj/machinery/computer/atmos_alert,
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/gas_mask/directional/north,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "NI" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1685,7 +1683,7 @@ Wy
 xR
 Ox
 Wy
-Lp
+Ny
 KZ
 yv
 ko
@@ -1703,7 +1701,7 @@ Yj
 Ox
 Qm
 Wy
-Qm
+Mt
 VI
 xe
 ax
@@ -1925,7 +1923,7 @@ zB
 Oo
 AZ
 RU
-ox
+yb
 sm
 CY
 fj
@@ -1945,7 +1943,7 @@ ia
 NI
 yU
 FI
-bv
+Ta
 aD
 cJ
 tU
@@ -1964,7 +1962,7 @@ yN
 xm
 yU
 OG
-qo
+hj
 pT
 De
 sh
