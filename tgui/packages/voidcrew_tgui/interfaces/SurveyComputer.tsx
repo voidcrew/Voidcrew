@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
 import { useBackend } from '../../tgui/backend';
 import {
@@ -150,7 +150,7 @@ const getThemeColors = (theme: string): ColorScheme | undefined => {
   return colorScheme;
 };
 
-export const SurveyComputer = (props, context) => {
+export const SurveyComputer = (props) => {
   const { act, data } = useBackend<Data>();
   const { theme, currentCelestialRef, currentCelestialType } = data;
   const [tab, setTab] = useState(1);
@@ -386,7 +386,7 @@ export const SurveyComputer = (props, context) => {
   );
 };
 
-const Surveying = (props, context) => {
+const Surveying = (props) => {
   const { act, data } = useBackend<Data>();
   const {
     bankedCash,
@@ -496,7 +496,7 @@ const Surveying = (props, context) => {
         <Section title="Targets" fill scrollable>
           <Box color="label" mb={1}>
             Surveying needs the ship stationary on the same overmap tile as the
-            target — no docking or landing required. Electric and EMP storms
+            target â€” no docking or landing required. Electric and EMP storms
             can also be scanned from up to {rangeSurveyDistance} tiles away at{' '}
             {rangeSurveyPercent}% yield.
           </Box>
@@ -513,7 +513,7 @@ const Surveying = (props, context) => {
                   >
                     {target.name}
                     {target.atRange ? ` (${target.dist} tiles out)` : ''}
-                    {target.status === 'complete' ? ' — surveyed' : ''}
+                    {target.status === 'complete' ? ' â€” surveyed' : ''}
                   </Tabs.Tab>
                 );
               })}
@@ -559,7 +559,7 @@ const Surveying = (props, context) => {
   );
 };
 
-const Planets = (props, context) => {
+const Planets = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -696,7 +696,7 @@ const Planets = (props, context) => {
   );
 };
 
-const Nebulas = (props, context) => {
+const Nebulas = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -811,7 +811,7 @@ const Nebulas = (props, context) => {
   );
 };
 
-const ElectricStorms = (props, context) => {
+const ElectricStorms = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -933,7 +933,7 @@ const ElectricStorms = (props, context) => {
   );
 };
 
-const ElectroMagneticStorms = (props, context) => {
+const ElectroMagneticStorms = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -1051,7 +1051,7 @@ const ElectroMagneticStorms = (props, context) => {
   );
 };
 
-const Asteroids = (props, context) => {
+const Asteroids = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -1166,7 +1166,7 @@ const Asteroids = (props, context) => {
   );
 };
 
-const Stars = (props, context) => {
+const Stars = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
@@ -1281,7 +1281,7 @@ const Stars = (props, context) => {
   );
 };
 
-const Banking = (props, context) => {
+const Banking = (props) => {
   const { act, data } = useBackend<Data>();
   const { bankedCash, theme } = data;
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
@@ -1322,7 +1322,7 @@ const Banking = (props, context) => {
   );
 };
 
-const Research = (props, context) => {
+const Research = (props) => {
   const { act, data } = useBackend<Data>();
   const { bankedPoints, surveyStatus, theme } = data;
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
@@ -1364,7 +1364,7 @@ const Research = (props, context) => {
   );
 };
 
-const Settings = (props, context) => {
+const Settings = (props) => {
   const { act, data } = useBackend<Data>();
   const { surveyDataDisk, bankedPoints, surveyStatus, theme } = data;
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;

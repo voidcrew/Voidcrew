@@ -111,7 +111,7 @@ const IdentitySection = () => {
           </Box>
         </>
       )}
-      {!is_owner && memo && <Box color="label">&quot;{memo}&quot;</Box>}
+      {!is_owner && !!memo && <Box color="label">&quot;{memo}&quot;</Box>}
     </Section>
   );
 };
@@ -359,7 +359,7 @@ export const OutpostManagement = (props) => {
     <Window title="Outpost Management" width={500} height={640}>
       <Window.Content scrollable>
         {!has_owner && (
-          <NoticeBox warning>
+          <NoticeBox danger>
             This outpost has been abandoned. It has no registered owner.
           </NoticeBox>
         )}
