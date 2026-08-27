@@ -208,17 +208,15 @@
 		var/datum/lighting_corner/corner_se
 		var/datum/lighting_corner/corner_sw
 		var/datum/lighting_corner/corner_nw
-		var/old_dynamic_lumcount = 0
 		if(SSlighting.initialized)
 			gen_turf.release_light_for_raw_swap()
 			corner_ne = gen_turf.lighting_corner_NE
 			corner_se = gen_turf.lighting_corner_SE
 			corner_sw = gen_turf.lighting_corner_SW
 			corner_nw = gen_turf.lighting_corner_NW
-			old_dynamic_lumcount = gen_turf.dynamic_lumcount
 		new_turf = new new_turf(gen_turf)
 		if(SSlighting.initialized)
-			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw)
 
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS

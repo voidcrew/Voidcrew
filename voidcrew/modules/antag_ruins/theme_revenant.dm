@@ -600,8 +600,11 @@
 	)
 
 /datum/action/cooldown/spell/aoe/vestige_last_rites/cast_on_thing_in_aoe(turf/victim, mob/living/caster)
-	for(var/obj/effect/blessing/blessing in victim)
-		qdel(blessing)
+	// Upstream #97204 turned blessing from an /obj/effect into a trait + element pair, so the
+	// dispel is a trait check and a RemoveElement instead of a qdel - see the same block in
+	// /datum/action/cooldown/spell/aoe/revenant/defile (revenant_abilities.dm).
+	if(HAS_TRAIT(victim, TRAIT_TURF_BLESSED))
+		victim.RemoveElement(/datum/element/blessed_turf)
 		new /obj/effect/temp_visual/revenant(victim)
 	// Tiles lift loose but survive: dishevelment, not demolition
 	if(!isplatingturf(victim) && !istype(victim, /turf/open/floor/engine/cult) && isfloorturf(victim) && prob(10))

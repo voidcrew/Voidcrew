@@ -352,9 +352,8 @@
 			var/datum/lighting_corner/corner_se = gen_turf.lighting_corner_SE
 			var/datum/lighting_corner/corner_sw = gen_turf.lighting_corner_SW
 			var/datum/lighting_corner/corner_nw = gen_turf.lighting_corner_NW
-			var/old_dynamic_lumcount = gen_turf.dynamic_lumcount
 			var/turf/fast_turf = new turf_type(gen_turf)
-			fast_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+			fast_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw)
 			fast_turf.turf_flags |= carryover_flags
 			fast_turf.assemble_baseturfs(initial(fast_turf.baseturfs) || fast_turf.type)
 			// NOT optional, and the reason the first cut of this shipped razor-hard edges.

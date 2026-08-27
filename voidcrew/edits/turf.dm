@@ -202,19 +202,25 @@
  * other, decided purely by the order the generator happened to lay the two sides down in.
  * Carry the corners and a raw swap is lighting-identical to a ChangeTurf.
  *
- * dynamic_lumcount rides along for the same reason ChangeTurf carries it: it is not
- * derived from the corners and nothing recomputes it after a swap.
+ * Dynamic (overlay-light) lum used to ride along here as a fifth argument, for the same
+ * reason ChangeTurf carried it. It does not any more: upstream #97186 deleted
+ * /turf/var/dynamic_lumcount outright. Overlay lights now register themselves on the
+ * SSspatial_grid cells covering their range, and /turf/proc/get_dynamic_lumcount() derives
+ * the value on demand from the cell covering these COORDINATES
+ * (code/modules/lighting/lighting_turf.dm). Coordinates survive a raw swap for free, so
+ * there is no longer any dynamic-lighting state on the turf instance for a swap to drop -
+ * upstream's own /turf/ChangeTurf dropped its old_dynamic_lumcount save/restore pair in the
+ * same commit. The corners are still hand-carried, because those ARE per-instance refs.
  *
  * Callers gate on `SSlighting.initialized` exactly like release_light_for_raw_swap() -
  * before it comes up there are no corners to carry and the mapload fast path must stay as
  * fast as it was.
  */
-/turf/proc/adopt_lighting_from_raw_swap(datum/lighting_corner/corner_ne, datum/lighting_corner/corner_se, datum/lighting_corner/corner_sw, datum/lighting_corner/corner_nw, old_dynamic_lumcount = 0)
+/turf/proc/adopt_lighting_from_raw_swap(datum/lighting_corner/corner_ne, datum/lighting_corner/corner_se, datum/lighting_corner/corner_sw, datum/lighting_corner/corner_nw)
 	lighting_corner_NE = corner_ne
 	lighting_corner_SE = corner_se
 	lighting_corner_SW = corner_sw
 	lighting_corner_NW = corner_nw
-	dynamic_lumcount = old_dynamic_lumcount
 
 /// Deletes any light source applied to `corner` that its own atom no longer owns - see
 /// scrub_lighting_for_teardown(). Iterates a copy: qdel -> Destroy -> remove_lum() prunes
@@ -276,7 +282,6 @@
 	var/old_lighting_corner_SW = lighting_corner_SW
 	var/old_lighting_corner_NW = lighting_corner_NW
 	var/old_directional_opacity = directional_opacity
-	var/old_dynamic_lumcount = dynamic_lumcount
 	var/old_rcd_memory = rcd_memory
 	var/old_explosion_throw_details = explosion_throw_details
 	var/old_opacity = opacity
@@ -353,8 +358,6 @@
 	lighting_corner_SE = old_lighting_corner_SE
 	lighting_corner_SW = old_lighting_corner_SW
 	lighting_corner_NW = old_lighting_corner_NW
-
-	dynamic_lumcount = old_dynamic_lumcount
 
 	lattice_underneath = old_lattice_underneath
 

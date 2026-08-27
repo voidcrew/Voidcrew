@@ -643,7 +643,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 	. = ..()
 
 	var/default_color = COLOR_AI_HOLOGRAM_BLUE
-	if(masters || replay_mode)
+	if(masters || replay_mode || active_negotiation) // VOIDCREW EDIT CHANGE - pirate negotiation lights the pad (see update_icon_state), so it draws the hololine too
 		var/mutable_appearance/hololine_overlay = mutable_appearance(icon, "holopad1_mask")
 		for(var/mob/living/silicon/ai/AI as anything in masters)
 			if(istype(AI) && AI.ai_holocolor)
