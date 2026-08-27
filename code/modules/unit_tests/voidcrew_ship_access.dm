@@ -52,6 +52,9 @@
 	// (QDEL_HINT_LETMELIVE) after /obj/docking_port/mobile/Destroy() has already nulled
 	// shuttle_areas - leaving a live port with a null shuttle_areas standing on the test
 	// floor forever. See the same note in voidcrew_hull_survey.dm.
+	// Unhook the stub ship first: the port destructor stack_traces (rightly) when a
+	// port dies while still claiming a live overmap ship.
+	port.current_ship = null
 	qdel(port, force = TRUE)
 
 /**
