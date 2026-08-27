@@ -129,12 +129,21 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/Destroy()
-	disconnect_from_area()
+	// VOIDCREW EDIT START: unassign from the area we are actually registered in, not the one
+	// we happen to be standing in. jumpToNullSpace() calls change_area() on every hull turf
+	// and only then empty()s it, and change_area() does not send COMSIG_EXIT_AREA to turf
+	// contents - so by the time a deleted hull's vents get here, get_area(src) is already the
+	// underlying space area and disconnect_from_area()'s `assigned_area != target_area` guard
+	// silently skipped the removal. The shuttle area kept the ref and every vent on a deleted
+	// hull hard-deleted (37 of 64 vent_pumps in the 2026-08-25 run). Upstream only meets this
+	// on the round-end escape shuttle; here it is every ship deletion.
+	disconnect_from_area(assigned_area)
 	QDEL_NULL(sound_loop)
 
 	var/area/vent_area = get_area(src)
 	if(vent_area)
 		vent_area.air_vents -= src
+	// VOIDCREW EDIT END
 
 	return ..()
 

@@ -15,12 +15,23 @@
 	desc = "A survey slate preloaded with the coordinates of one region of the system. Insert it into a ship's helm console to chart those contacts onto the navigation readout."
 	icon = 'voidcrew/modules/overmap/icons/obj/star_chart.dmi'
 	icon_state = "star_chart"
+	// We use our own sprite sheet, which carries none of the "o_*" sticker states
+	// /obj/item/disk overlays onto icons/obj/devices/floppy_disks.dmi, nor the
+	// "datadisk*" reskins. Same opt-out upstream uses for /obj/item/disk/nuclear
+	// and /obj/item/disk/bitrunning. Nulling this also blocks the pen-signing and
+	// sticker radial paths, which both bail when it isn't the starting sticker.
+	sticker_icon_state = null
 	/// Zone band this chart reveals (a ZONE_* constant). Unset on this base
 	/// type, which is only the shared parent - every sold chart is a subtype.
 	var/chart_zone_type = null
 	/// Human-readable region label for the upload notification. Unset here for
 	/// the same reason as chart_zone_type.
 	var/zone_label = null
+
+/// The floppy-disk reskins are all icon states in floppy_disks.dmi; applying one
+/// would blank the chart, so charts aren't reskinnable.
+/obj/item/disk/star_chart/setup_reskins()
+	return
 
 /obj/item/disk/star_chart/attack_self(mob/user)
 	balloon_alert(user, "insert into helm console!")

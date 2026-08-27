@@ -19,12 +19,40 @@
 
 	RegisterSignal(target, COMSIG_ATOM_ENTERING, PROC_REF(on_source_entering))
 	RegisterSignal(target, COMSIG_ATOM_EXITING, PROC_REF(on_source_exiting))
+	// VOIDCREW EDIT ADDITION: COMSIG_ATOM_ENTERING/EXITING are only ever sent from
+	// /atom/Entered() and /atom/Exited() (code/game/atom/_atom.dm:626 and :649), and
+	// /atom/movable/abstract_move() (code/game/atoms_movable.dm:684-689) calls NEITHER - it
+	// writes `loc` and calls Moved() and nothing else. That is exactly how a shuttle carries
+	// its contents: /atom/movable/onShuttleMove() is a bare abstract_move(newT)
+	// (code/modules/shuttle/mobile_port/shuttle_move_callbacks.dm:138). So a table, crate,
+	// canister or bed that rides a ship to a new dock never tells us it left, the turf it
+	// launched from keeps TRAIT_TURF_HAS_ELEVATED_OBJ and both of our registrations, and
+	// pre_change_turf() cannot save us afterwards because it looks for the object in the
+	// turf's contents and the object is already gone. ChangeTurf then carries our
+	// registration onto the replacement turf while dropping its traits, so the entry is
+	// orphaned for the rest of the round - and when that ground is recycled (this fork's
+	// ships live on transit reservations, which are released and re-issued constantly) the
+	// next elevating object to stand there trips the "turf_reset_elevation overridden" /
+	// "turf_change overridden" pair, because RegisterSignal sees a live _signal_procs entry.
+	//
+	// Worse than the warning: RegisterSignal returns early once an entry exists, so the new
+	// object never actually gets registered - `override = TRUE` would silence the warning and
+	// leave elevation permanently dead on that tile. The registration has to be moved, not
+	// overridden.
+	//
+	// COMSIG_MOVABLE_MOVED is sent by Moved() itself (code/game/atoms_movable.dm:917), so it
+	// covers abstract moves as well as ordinary ones. This is what the sibling element that
+	// does the same job for turf traits already uses - see /datum/element/give_turf_traits.
+	// The ENTERING/EXITING pair stays: /turf/Initialize() re-Enters its contents, which is how
+	// this element re-attaches after a ChangeTurf, and Moved() is not fired there.
+	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_source_moved))
+	// END VOIDCREW EDIT
 
 	var/atom/atom_target = target
 	register_turf(atom_target, atom_target.loc)
 
 /datum/element/elevation/Detach(atom/movable/source)
-	UnregisterSignal(source, list(COMSIG_ATOM_ENTERING, COMSIG_ATOM_EXITING))
+	UnregisterSignal(source, list(COMSIG_ATOM_ENTERING, COMSIG_ATOM_EXITING, COMSIG_MOVABLE_MOVED))
 	unregister_turf(source, source.loc)
 	REMOVE_TRAIT(source, TRAIT_ELEVATING_OBJECT, ref(src))
 	return ..()
@@ -52,6 +80,25 @@
 /datum/element/elevation/proc/on_source_exiting(atom/movable/source, atom/exiting)
 	SIGNAL_HANDLER
 	unregister_turf(source, exiting)
+
+/**
+ * VOIDCREW ADDITION: the abstract-move half of on_source_entering()/on_source_exiting().
+ *
+ * See the note in Attach(). Moved() fires for every movement including the bare `loc = x`
+ * of abstract_move(), which is how shuttles carry their contents and the one case the
+ * Entered/Exited pair misses entirely.
+ *
+ * Both halves are idempotent, so it costs nothing to have this run alongside them on an
+ * ordinary move: unregister_turf() only drops OUR trait source and UnregisterSignal()
+ * "doesn't care if a registration exists", and register_turf() is gated on the trait it
+ * adds itself.
+ */
+/datum/element/elevation/proc/on_source_moved(atom/movable/source, atom/old_loc)
+	SIGNAL_HANDLER
+	if(old_loc == source.loc)
+		return
+	unregister_turf(source, old_loc)
+	register_turf(source, source.loc)
 
 /datum/element/elevation/proc/register_turf(atom/movable/source, atom/location)
 	if(!isturf(location))

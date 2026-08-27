@@ -2422,6 +2422,7 @@
 				var/obj/structure/overmap/docking_target = to_dock?.resolve()
 				if(!docking_target) //Panic, somehow the docking target is gone but the shuttle has likely docked somewhere, get it out quickly
 					state = OVERMAP_SHIP_FLYING
+					crash_dock_pending = FALSE // no landing happened; don't fire it at the next berth
 					shuttle.enterTransit()
 					return
 
@@ -2444,6 +2445,11 @@
 				// Start undock cooldown
 				COOLDOWN_START(src, undock_cooldown, UNDOCK_COOLDOWN_TIME)
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+				// A crash landing's effects fire the instant the hull is down. Handled here
+				// rather than off COMSIG_VOIDCREW_SHIP_DOCKED because NPC hulls register
+				// their own handler for that signal on themselves - see crash_dock_pending.
+				if(crash_dock_pending)
+					on_crash_dock_complete()
 				// The counterpart to the "complete_dock UNDOCKING" line further down, whose
 				// absence is why a round-4 strand could not be diagnosed from the logs at all:
 				// 168 undock lines and not one for docking. The attempt count is the useful
@@ -2684,6 +2690,9 @@
 	release_berth_flags(docking_target || docked)
 	docked = null
 	state = OVERMAP_SHIP_FLYING
+	// The hull never landed, so a crash armed by finish_crash_land() must not stay
+	// armed to fire on whatever the ship docks at next.
+	crash_dock_pending = FALSE
 	// Open flight for a voidcrew port is SHUTTLE_CALL with no destination and an infinite
 	// timer (see /obj/docking_port/mobile/voidcrew/postregister) - the hull never left its
 	// transit dock, so that is exactly where it still is.

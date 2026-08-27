@@ -53,6 +53,14 @@
 /datum/team/voidcrew/Destroy(force, ...)
 	for(var/datum/mind/team_minds as anything in members)
 		to_chat(team_minds, span_notice("Your faction has been disbanded! You are now alone!"))
+	// Every membership leaves two back-references to this team behind: the mind's
+	// ship_teams entry and its crew antag datum's crew_team var. /datum/team/Destroy()
+	// only drops `members`, so a disbanded team with anyone still on the roster stayed
+	// pinned by both and hard-deleted (create_and_destroy, 2026-08-25). remove_member()
+	// is the one place that unwinds both, so disbanding runs it over the whole roster.
+	// Copy first - remove_member() mutates `members` through /datum/team/remove_member().
+	for(var/datum/mind/leaving as anything in members?.Copy())
+		remove_member(leaving)
 	return ..()
 
 ///Checks the team's members to see if anyone with a client is alive. returns TRUE if active.

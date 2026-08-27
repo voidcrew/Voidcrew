@@ -308,12 +308,23 @@
 		if(!port)
 			TEST_FAIL("[hull.type] failed to load as a preview template")
 			continue
+		// load_template() hands back the FIRST mobile port it finds standing in the block,
+		// which is not necessarily the one it just loaded. A port left on that ground by a
+		// bare qdel() elsewhere survives - /obj/docking_port/Destroy() returns
+		// QDEL_HINT_LETMELIVE unless forced, and /turf/proc/empty() never deletes docking
+		// ports - and it comes back here with the null shuttle_areas that
+		// /obj/docking_port/mobile/Destroy() left on it. Indexing that null below is a bare
+		// "bad index" runtime that aborts the whole sweep, so name the condition instead.
+		var/list/registered_areas = port.shuttle_areas
+		if(!islist(registered_areas))
+			TEST_FAIL("[hull.type]'s preview came back as [port] ([port.type]) with a null shuttle_areas - load_template() picked up a leftover docking port standing on the reservation instead of this hull's own port")
+			continue
 		var/engines_seen = 0
 		for(var/turf/hull_turf as anything in port.return_ordered_turfs(port.x, port.y, port.z, port.dir))
 			if(!hull_turf)
 				continue
 			var/area/tile_area = hull_turf.loc
-			var/registered = port.shuttle_areas[tile_area]
+			var/registered = registered_areas[tile_area]
 			var/is_hull_tile = isshuttleturf(hull_turf)
 			if(registered && !is_hull_tile && !isspaceturf(hull_turf))
 				TEST_FAIL("[hull.type]: [hull_turf.type] at ([hull_turf.x],[hull_turf.y]) loads in registered [tile_area.type] without the shuttle skipover - a move will leave it behind")

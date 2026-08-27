@@ -11,7 +11,9 @@
 #if PATROL_DEBUG
 #define PATROL_LOG(msg) log_shuttle("PATROL: [msg]")
 #else
-#define PATROL_LOG(msg)
+// pass() rather than nothing: several call sites are an if's entire body, and an
+// empty expansion leaves a bodiless if the compiler warns no_effect on.
+#define PATROL_LOG(msg) pass()
 #endif
 
 // How long to wait before considering a path failed (JPS should repath automatically, but this is a fallback)

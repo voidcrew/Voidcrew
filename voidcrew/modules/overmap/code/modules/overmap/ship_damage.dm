@@ -33,6 +33,14 @@
 	var/has_crash_landed = FALSE
 	/// Integrity (mass) value when the ship crashed (for repair progress calculation)
 	var/crashed_at_integrity = 0
+	/// TRUE between finish_crash_land() and the dock actually completing, so that
+	/// complete_dock() knows to fire the crash effects the instant the hull lands.
+	/// This used to be a COMSIG_VOIDCREW_SHIP_DOCKED registration on src, but NPC
+	/// hulls already register their own handler for that signal on themselves
+	/// (on_ship_docked in npc_ship.dm): the second registration overrode the first
+	/// and the UnregisterSignal in on_crash_dock_complete() then tore it out for
+	/// good, leaving crashed NPC ships permanently deaf to their own dock events.
+	var/crash_dock_pending = FALSE
 	/// Timer ID for critical state alert loop
 	var/critical_alert_timer
 
@@ -366,17 +374,18 @@
 	shuttle.port_destinations = dock_to_use
 	crash_site.adjust_dock_to_shuttle(dock_to_use, shuttle)
 
-	// Register for dock completion signal - effects happen the instant we land
-	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_crash_dock_complete))
+	// Arm the crash effects for the moment the dock finishes. complete_dock() reads
+	// this right where it broadcasts COMSIG_VOIDCREW_SHIP_DOCKED, so the timing is
+	// unchanged from the signal registration this replaced - see crash_dock_pending.
+	crash_dock_pending = TRUE
 
 	dock(crash_site, dock_to_use, instant = TRUE)
 
 /**
- * Signal handler - crash effects the instant docking completes
+ * Crash effects, fired the instant docking completes.
  */
-/obj/structure/overmap/ship/proc/on_crash_dock_complete(datum/source)
-	SIGNAL_HANDLER
-	UnregisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+/obj/structure/overmap/ship/proc/on_crash_dock_complete()
+	crash_dock_pending = FALSE
 
 	// Both crash paths land here, so this is the one place to catch a hull that has
 	// somehow ended up against the reservation cordon.

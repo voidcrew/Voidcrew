@@ -277,7 +277,16 @@
 
 	// Leave nothing behind: these areas and the port outlive the reservation otherwise.
 	reset_block()
-	qdel(port)
+	// force = TRUE is not optional. /obj/docking_port/Destroy() returns QDEL_HINT_LETMELIVE
+	// unless forced (code/modules/shuttle/shuttle.dm:56-63), so a bare qdel() is a NO-OP that
+	// still runs /obj/docking_port/mobile/Destroy() first - which nulls shuttle_areas. What
+	// survives is a live, non-QDELETED mobile port with a null shuttle_areas standing on this
+	// reservation's ground, and /turf/proc/empty() never deletes docking ports, so it rides
+	// the release back into the free pool. The next SSshuttle.load_template() scans its fresh
+	// block, finds that leftover port FIRST, hands it back as SSshuttle.preview_shuttle and
+	// qdels the hull's own port as a "duplicate" - which is how it killed
+	// voidcrew_hull_mount_integrity with a bare "bad index".
+	qdel(port, force = TRUE)
 	// Hand the tiles back to space BEFORE the areas die. reset_block() only swaps turf
 	// types, and ChangeTurf keeps a turf's area, so all nine tiles are still standing in
 	// these two /area/shuttle instances. Areas are meant to live forever; /area/Destroy()

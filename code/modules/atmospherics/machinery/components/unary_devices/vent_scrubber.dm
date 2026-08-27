@@ -47,7 +47,12 @@
 	AddElement(/datum/element/atmos_sensitive, mapload)
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/Destroy()
-	disconnect_from_area()
+	// VOIDCREW EDIT: unassign from the area we are registered in, not the one we are standing
+	// in - see the matching comment in vent_pump.dm's Destroy(). A deleted hull's turfs have
+	// already been change_area()'d to space by jumpToNullSpace() before empty() qdels us, so
+	// the default get_area(src) argument tripped disconnect_from_area()'s identity guard and
+	// left the shuttle area holding the ref (36 of 60 layer2 scrubbers, 2026-08-25 run).
+	disconnect_from_area(assigned_area)
 	adjacent_turfs.Cut()
 	return ..()
 

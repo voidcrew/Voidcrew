@@ -48,6 +48,11 @@
 	door_turf.change_area(ship_area, original_area)
 	ship_area.shuttle_port = null
 	qdel(ship_area)
+	// allocate() cleans up with a bare qdel(), which /obj/docking_port/Destroy() refuses
+	// (QDEL_HINT_LETMELIVE) after /obj/docking_port/mobile/Destroy() has already nulled
+	// shuttle_areas - leaving a live port with a null shuttle_areas standing on the test
+	// floor forever. See the same note in voidcrew_hull_survey.dm.
+	qdel(port, force = TRUE)
 
 /**
  * # Lockers carry no access restriction anywhere

@@ -523,11 +523,19 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	// it can never be collected, and carp_migration and friends keep picking areas whose
 	// turfs are long gone. Every z is swept rather than just `z`: our turfs have usually
 	// already been reparented by the time we get here, so the areasize/z lookup answers 0.
+	// The removal loops because a single `-=` is not enough: reg_in_areas_in_z() appends
+	// without dedup and several paths call it twice on the same area (/area/Initialize plus
+	// SSmapping.reg_in_areas_in_z() after a template load is the common pair), while BYOND's
+	// Remove() only ever drops one occurrence. A twice-registered area survived this sweep
+	// with exactly one ref left and hard-deleted - that was every ruin area in the 2026-08-25
+	// create_and_destroy run.
 	if(!isnull(SSmapping?.areas_in_z))
 		var/list/areas_in_z = SSmapping.areas_in_z
 		for(var/z_key in areas_in_z)
 			var/list/z_areas = areas_in_z[z_key]
-			if(!isnull(z_areas))
+			if(isnull(z_areas))
+				continue
+			while(src in z_areas)
 				z_areas -= src
 	// VOIDCREW EDIT ADDITION END
 	// VOIDCREW EDIT ADDITION START - tear down base lighting.

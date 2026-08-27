@@ -1,9 +1,15 @@
 /turf/closed/mineral/random/asteroid/rockplanet
 	name = "iron rock"
-	icon = 'icons/turf/mining.dmi'
-	icon_state = "redrock"
-	//smooth_icon = 'icons/turf/walls/red_wall.dmi'
-	base_icon_state = "red_wall"
+	// Upstream's Yapmining rework (#95682) renamed the sprite: mining.dmi's
+	// "redrock" is now "red_rock", and the smoothing sheet red_wall.dmi is now
+	// red_rock.dmi. Mirrors /turf/closed/mineral/random/stationside/asteroid.
+	icon = MAP_SWITCH('icons/turf/walls/red_rock.dmi', 'icons/turf/mining.dmi')
+	icon_state = "red_rock"
+	base_icon_state = "red_rock"
+	transform = MAP_SWITCH(TRANSLATE_MATRIX(-8, -8), matrix())
+	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_RED_ROCK_WALLS
+	canSmoothWith = SMOOTH_GROUP_RED_ROCK_WALLS
+	wall_icon_state = "red_rock"
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	baseturfs = /turf/open/misc/asteroid/rockplanet
 	turf_type = /turf/open/misc/asteroid/rockplanet
@@ -14,9 +20,15 @@
 
 /turf/closed/mineral/gibtonite/rockplanet
 	name = "iron rock"
-	icon = 'icons/turf/mining.dmi'
-	icon_state = "redrock"
-	base_icon_state = "red_wall"
+	// See the comment on /turf/closed/mineral/random/asteroid/rockplanet above.
+	// Mirrors /turf/closed/mineral/gibtonite/volcanic/red_rock.
+	icon = MAP_SWITCH('icons/turf/walls/red_rock.dmi', 'icons/turf/mining.dmi')
+	icon_state = "red_rock"
+	base_icon_state = "red_rock"
+	transform = MAP_SWITCH(TRANSLATE_MATRIX(-8, -8), matrix())
+	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_RED_ROCK_WALLS
+	canSmoothWith = SMOOTH_GROUP_RED_ROCK_WALLS
+	wall_icon_state = "red_rock"
 	baseturfs = /turf/open/misc/asteroid/rockplanet
 	turf_type = /turf/open/misc/asteroid/rockplanet
 

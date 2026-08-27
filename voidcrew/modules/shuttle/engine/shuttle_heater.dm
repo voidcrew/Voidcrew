@@ -81,7 +81,21 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/Destroy()
 	update_adjacent_engines() //must run before parent moves us to nullspace, or the engines are never told
+	fuel_tank = null
 	return ..()
+
+/**
+ * fuel_tank is a strong reference to an item sitting in our contents, and only the
+ * attackby() swap ever cleared it. A tank that left any other way - qdel'd with the hull,
+ * blown up, dumped by machinery deconstruction - left the pointer dangling and the tank
+ * could never be collected (create_and_destroy 2026-08-25: /obj/item/tank/internals/plasma/full
+ * hard deleted, held by this var). Exited() is the one hook every exit path runs through,
+ * qdel included: /atom/movable/Destroy() nullspaces the item, which fires this on its loc.
+ */
+/obj/machinery/atmospherics/components/unary/shuttle/heater/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone == fuel_tank)
+		fuel_tank = null
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/on_construction()
 	..(dir, dir)
