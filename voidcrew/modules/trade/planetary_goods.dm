@@ -18,6 +18,9 @@
  * voucher spigot exclusive to the deadliest worlds.
  */
 
+// DELIBERATE: this is a plain /obj/item/stack, NOT /obj/item/stack/ore, so upstream's
+// vein-spread system (minerals.dm change_ore()/spread) never touches it. Telecrystal
+// supply is economy-tuned per-vein; do not "fix" this by reparenting under ore.
 /obj/item/stack/telecrystal_raw
 	name = "raw telecrystal"
 	desc = "A cloudy, unrefined telecrystal shard straight out of planetary crust. Too impure to power anything, but the Undertow pays well for the feedstock. Scanners can't pick the veins out of ordinary rock. Prospectors find these the hard way."
@@ -66,6 +69,8 @@
 
 // ===== GLACIAL CORES (ice planets) =====
 
+// DELIBERATE: plain /obj/item/stack, NOT /obj/item/stack/ore — excluded from upstream's
+// vein-spread on purpose (economy-tuned supply, same as telecrystal_raw above).
 /obj/item/stack/glacial_core
 	name = "glacial core"
 	desc = "A fist-sized crystal of ancient compressed ice, cut whole out of deep permafrost. It never melts and soaks up heat, so the depots pack cold storage and coolant jackets with them. Mining scanners read the lattice as plain ice, so the only way to find one is to swing at the wall and get lucky."

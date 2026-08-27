@@ -1035,6 +1035,18 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
+"kE" = (
+/obj/machinery/light_switch{
+	pixel_x = -23
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/sign/picture_frame{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/b)
 "kK" = (
 /obj/structure/plaque/static_plaque/golden{
 	desc = "A golden plaque made to remember the hardworking engineers that sacrificed their lives to make this ship functional. Never forget.";
@@ -5617,8 +5629,8 @@ yq
 Ot
 We
 ci
-EM
-iY
+kV
+kE
 MB
 lA
 xF

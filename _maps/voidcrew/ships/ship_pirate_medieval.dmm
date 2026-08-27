@@ -105,9 +105,6 @@
 	})
 "al" = (
 /obj/structure/mineral_door/iron,
-/obj/docking_port/mobile/voidcrew/pirate_medieval{
-	preferred_direction = 1
-	},
 /turf/open/floor/stone,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
@@ -150,15 +147,6 @@
 	})
 "ap" = (
 /turf/closed/wall/mineral/wood,
-/area/shuttle/voidcrew/pirate_medieval{
-	requires_power = 0
-	})
-"ar" = (
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
 	})
@@ -517,11 +505,6 @@
 	},
 /turf/open/floor/plating,
 /area/template_noop)
-"HQ" = (
-/turf/open/floor/stone,
-/area/shuttle/voidcrew/pirate_medieval{
-	requires_power = 0
-	})
 "Mn" = (
 /obj/machinery/porta_turret/syndicate/pirate{
 	dir = 6
@@ -577,7 +560,7 @@ aa
 ag
 af
 ao
-ar
+af
 aA
 as
 aa
@@ -644,7 +627,7 @@ aS
 aP
 aT
 aL
-HQ
+aD
 aF
 al
 "}
