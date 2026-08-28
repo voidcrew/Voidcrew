@@ -247,7 +247,7 @@
 /obj/item/crusher_trophy/rime_fang/effect_desc()
 	return "waveform collapse to flash-chill the target, briefly slowing them"
 
-/obj/item/crusher_trophy/rime_fang/on_mark_detonation(mob/living/target, mob/living/user)
+/obj/item/crusher_trophy/rime_fang/on_mark_detonation(mob/living/target, mob/living/user, obj/item/kinetic_crusher/pkc)
 	. = ..()
 	if(!isliving(target) || HAS_TRAIT(target, TRAIT_RESISTCOLD))
 		return

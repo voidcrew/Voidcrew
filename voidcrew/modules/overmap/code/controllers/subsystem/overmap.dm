@@ -987,6 +987,13 @@ SUBSYSTEM_DEF(overmap)
 #ifdef UNIT_TESTS
 	var/list/remaining_templates = subtypesof(/datum/map_template/shuttle/voidcrew)
 	for(var/templates in remaining_templates)
+		// The commissioned stand-in template has no .dmm on disk (its New() deliberately
+		// skips the parent's map measurement; it exists only so player-built hulls can call
+		// setup_from_template()). create_ship() on it stack_traces, and since the test
+		// verdict requires zero runtimes, that single trace kept clean_run.lk from ever
+		// being written on any suite run. Skip mapless stand-ins.
+		if(ispath(templates, /datum/map_template/shuttle/voidcrew/commissioned))
+			continue
 		var/obj/structure/overmap/ship/loaded_ship = SSshuttle.create_ship(templates)
 		if(!initial_ship && loaded_ship)
 			initial_ship = loaded_ship

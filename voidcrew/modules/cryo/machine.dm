@@ -93,8 +93,13 @@
 	return (user.mind in owner.ship_team?.members)
 
 /obj/machinery/cryopod/JoinPlayerHere(mob/joining_mob, buckle)
-	. = ..()
-	close_machine(joining_mob)
+	// JoinPlayerHere is now handed EITHER a mob or a bare TYPE PATH (see
+	// /datum/job/get_spawn_mob, which passes spawn_type); the parent instantiates the
+	// path and returns the real mob. The argument we were handed is therefore not
+	// necessarily a mob at all - only the return value of ..() is.
+	var/mob/spawned_mob = ..()
+	close_machine(spawned_mob)
+	return spawned_mob
 
 /obj/machinery/cryopod/open_machine(drop = TRUE, density_to_set = FALSE)
 	icon_state = initial(icon_state)
@@ -106,9 +111,12 @@
 	waking?.recheck_contained_lights()
 
 /obj/machinery/cryopod/close_machine(mob/living/carbon/user, density_to_set = TRUE)
-	to_chat(user, span_boldnotice("You begin to wake from cryosleep..."))
 	icon_state = close_state
-	user.SetStun(5 SECONDS)
+	// The parent accepts a null target (it then scans our turf for an occupant), so
+	// never assume we were handed a live mob.
+	if(isliving(user))
+		to_chat(user, span_boldnotice("You begin to wake from cryosleep..."))
+		user.SetStun(5 SECONDS)
 	return ..()
 
 /obj/machinery/cryopod/container_resist_act(mob/living/user)

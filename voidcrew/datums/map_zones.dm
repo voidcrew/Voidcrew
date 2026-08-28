@@ -963,7 +963,7 @@
 	for(var/area/vacated as anything in vacated_areas)
 		if(QDELETED(vacated))
 			continue
-		if(vacated.area_flags & UNIQUE_AREA)
+		if(vacated.area_flags_mapping & UNIQUE_AREA)
 			continue
 		if(istype(vacated, /area/shuttle))
 			continue

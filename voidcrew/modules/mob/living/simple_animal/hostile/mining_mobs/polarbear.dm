@@ -45,7 +45,8 @@
 /obj/item/crusher_trophy/war_paw/effect_desc()
 	return "doubled strikes when below 70% health"
 
-/obj/item/crusher_trophy/war_paw/on_mark_detonation(mob/living/target, mob/living/user)
+/obj/item/crusher_trophy/war_paw/on_mark_detonation(mob/living/target, mob/living/user, obj/item/kinetic_crusher/pkc)
+	. = ..()
 	if(user.health / user.maxHealth > 0.7)
 		return
 	var/obj/item/held_item = user.get_active_held_item()

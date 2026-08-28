@@ -204,10 +204,10 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/machinery/shuttle_scrambler/ship_siphon/attackby(obj/item/W, mob/user, list/modifiers)
+/obj/machinery/shuttle_scrambler/ship_siphon/attackby(obj/item/W, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.buffer = src
+		tool.set_buffer(src)
 		balloon_alert(user, "siphon buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE

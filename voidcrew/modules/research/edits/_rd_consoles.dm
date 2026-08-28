@@ -24,7 +24,13 @@
 	connected_ship_ref = WEAKREF(port)
 
 /obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(stored_research && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
+	// The parent proc returns TRUE whether or not it linked anything, so an empty buffer used to
+	// fall straight through to `stored_research.connected_machines` below on a null. Unlinked is
+	// the normal state for a ship's R&D console, so this is the click people actually make first.
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		balloon_alert(user, "no techweb in buffer!")
+		return ITEM_INTERACT_BLOCKING
+	if(stored_research) //disconnect old one
 		stored_research.connected_machines -= src
 		stored_research.consoles_accessing -= src
 	. = ..()
@@ -40,9 +46,9 @@
 // code/_onclick/item_attack.dm:32-36 fall through to the attackby leg. If upstream ever makes
 // that item_interaction claim non-disk items, feeding research notes silently stops working -
 // port this to an item_interaction override that returns ..() for non-notes.
-// (Third arg is named `params` for history; /atom/proc/attackby now passes list/modifiers, and
-// nothing here reads it.)
-/obj/machinery/computer/rdconsole/attackby(obj/item/attacking_item, mob/user, params)
+// Restates upstream's full signature (code/_onclick/item_attack.dm) for the same reason ui_act
+// below does - a shorter override is one merge away from silently dropping a parameter on ..().
+/obj/machinery/computer/rdconsole/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	if(istype(attacking_item, /obj/item/research_notes) && stored_research)
 		var/obj/item/research_notes/research_notes = attacking_item
 		stored_research.adjust_multiple_points(list(TECHWEB_POINT_TYPE_GENERIC = research_notes.value))

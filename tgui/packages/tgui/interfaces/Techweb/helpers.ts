@@ -53,6 +53,8 @@ function selectRemappedStaticData(data: TechWebData) {
       required_experiments: node.required_experiments || [],
       discount_experiments: node.discount_experiments || [],
       discount_boosts: node.discount_boosts || [],
+      // voidcrew edit - survey gating, only sent for nodes that have a requirement
+      required_surveyed_objects: node.required_surveyed_objects || {},
     };
   }
 

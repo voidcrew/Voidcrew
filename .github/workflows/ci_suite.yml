@@ -4,16 +4,27 @@ on:
   pull_request:
     branches:
       - master
+      - "tg-upgrade*"
+  push:
+    branches:
+      - "tg-upgrade*"
+  workflow_dispatch:
+    inputs:
+      map:
+        description: "Map to run the unit test suite on (name of a _maps/<name>.json)"
+        required: false
+        default: "runtimestation"
+        type: string
 
 concurrency:
-  group: ci-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   compile:
     name: Compile
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6
@@ -28,3 +39,110 @@ jobs:
         run: |
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build.sh --ci dm -DCIBUILDING -DCITESTING -DALL_MAPS
+
+  unit_tests:
+    # Runs the full unit test suite on a single map.
+    #
+    # Upstream tg splits the suite across a matrix of maps: `create_and_destroy`
+    # divides its type list by `length(config.maplist)`, and tests flagged
+    # UNIT_TEST_DEBUG_MAP_ONLY are skipped unless the run is on the map whose
+    # json sets `is_unit_test_map`. Both behaviours key off the maps.txt that
+    # run_server.sh writes from `map_config`.
+    #
+    # We deliberately write a maps.txt containing exactly ONE map. That makes
+    # this a "solo runner":
+    #   - code/modules/unit_tests/create_and_destroy.dm: runner_count becomes 1,
+    #     so the full type list is checked in this single job.
+    #   - code/modules/unit_tests/unit_test.dm: no map in the list sets
+    #     is_unit_test_map, so `primary_unit_test_map` stays null and the
+    #     UNIT_TEST_DEBUG_MAP_ONLY skip is bypassed - those tests run here too.
+    # Net effect: one runner executes the whole suite, matching what
+    # tools/run_unit_tests_local.sh achieves locally via -DRUNNING_LOCAL_TESTS.
+    #
+    # DO NOT add a second map to `map_config` without also revisiting
+    # tools/ci/expected_failures.txt - splitting changes which tests run here.
+    name: Unit Tests
+    runs-on: ubuntu-24.04
+    # The suite is long: create_and_destroy alone takes ~27 min on an idle
+    # local machine (see docs/UNIT_TESTING_LOCAL.md) and hosted runners are
+    # slower. This is a ceiling, not an expectation.
+    timeout-minutes: 180
+
+    env:
+      # Override with the workflow_dispatch input when manually triggered.
+      CI_MAP: ${{ inputs.map || 'runtimestation' }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: ./.github/actions/setup_bun
+
+      - name: Restore BYOND from Cache
+        uses: ./.github/actions/restore_or_install_byond
+
+      - name: Install rust-g
+        run: bash tools/ci/install_rust_g.sh
+
+      - name: Install dreamluau
+        run: bash tools/ci/install_dreamluau.sh
+
+      - name: Setup database
+        env:
+          MYSQL_CONFIG_FILE: tools/ci/mysql_config.cnf
+        run: |
+          sudo systemctl start mysql
+          mysql --defaults-extra-file=$MYSQL_CONFIG_FILE -e 'CREATE DATABASE tg_ci;'
+          mysql --defaults-extra-file=$MYSQL_CONFIG_FILE tg_ci < SQL/tgstation_schema.sql
+          mysql --defaults-extra-file=$MYSQL_CONFIG_FILE -e 'CREATE DATABASE tg_ci_prefixed;'
+          mysql --defaults-extra-file=$MYSQL_CONFIG_FILE tg_ci_prefixed < SQL/tgstation_schema_prefixed.sql
+          echo "Successful MySQL database setup"
+
+      - name: Compile with unit tests
+        run: |
+          source $HOME/BYOND/byond/bin/byondsetup
+          tools/build/build.sh --ci dm -DCIBUILDING -DANSICOLORS
+
+      - name: Run tests
+        id: run_tests
+        # Known-failing tests make this step exit non-zero (run_server.sh ends
+        # by cat-ing clean_run.lk, which only exists on a perfectly clean run).
+        # The compare step below is the real gate.
+        continue-on-error: true
+        run: |
+          source $HOME/BYOND/byond/bin/byondsetup
+          printf 'map %s\nendmap\n' "$CI_MAP" > /tmp/ci_maps.txt
+          bash tools/ci/run_server.sh "$CI_MAP" "$(cat /tmp/ci_maps.txt)"
+
+      - name: Recover results if the runner script aborted early
+        if: always()
+        run: |
+          mkdir -p data
+          if [ ! -f data/unit_tests.json ] && [ -f ci_test/data/unit_tests.json ]; then
+            echo "run_server.sh exited before copying results; recovering them."
+            cp ci_test/data/unit_tests.json data/unit_tests.json
+          fi
+          if [ -d ci_test/data/logs ]; then
+            mkdir -p data/logs
+            cp -r ci_test/data/logs/. data/logs/ || true
+          fi
+          ls -la data/ || true
+
+      - name: Compare against expected failures
+        id: compare
+        run: |
+          python3 tools/ci/compare_test_results.py \
+            --results data/unit_tests.json \
+            --expected tools/ci/expected_failures.txt \
+            --github-summary
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results-${{ env.CI_MAP }}
+          path: |
+            data/unit_tests.json
+            data/logs/
+          retention-days: 7
+          if-no-files-found: warn

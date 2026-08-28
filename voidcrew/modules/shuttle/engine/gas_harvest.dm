@@ -98,9 +98,14 @@
 	// Harvesting is loud: this blocks/breaks nebula concealment on the ship
 	ship.notify_scoop_activity()
 
+/// Panel sprite: see the heater's update_icon_nopipes() for why this lives here.
+/obj/machinery/atmospherics/components/unary/shuttle/scoop/update_icon_nopipes()
+	icon_state = panel_open ? "[initial(icon_state)]_open" : initial(icon_state)
+
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/wrench_act(mob/living/user, obj/item/tool)
 	if(!panel_open)
@@ -114,10 +119,11 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
-		return ITEM_INTERACT_SUCCESS
+	// No default_pry_open: not an openable machine, and open_machine() would leave it
+	// permanently non-dense with no way back. See the heater's crowbar_act.
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator
 	name = "plasma sublimation chamber"
@@ -157,29 +163,32 @@
 	. += span_notice("The hopper holds [stored_sheets]/[SUBLIMATOR_MAX_SHEETS] plasma sheets. Feed it sheets by hand, or alt-click to empty it. Each sheet bakes down into [SUBLIMATOR_MOLES_PER_SHEET] moles of plasma gas.")
 	. += span_notice("Output feeds the connected pipe network; run it to an engine heater in pipe mode, or to a connector port to fill tanks and canisters.")
 
-/obj/machinery/atmospherics/components/unary/shuttle/sublimator/attackby(obj/item/attacking_item, mob/living/user, params)
+/obj/machinery/atmospherics/components/unary/shuttle/sublimator/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(istype(attacking_item, /obj/item/stack/sheet/mineral/plasma))
 		var/obj/item/stack/sheet/mineral/plasma/sheets = attacking_item
 		var/space_left = SUBLIMATOR_MAX_SHEETS - stored_sheets
 		if(space_left <= 0)
 			balloon_alert(user, "hopper full!")
-			return
+			return TRUE
 		var/to_load = min(space_left, sheets.amount)
 		if(!sheets.use(to_load))
-			return
+			return TRUE
 		stored_sheets += to_load
 		balloon_alert(user, "loaded [to_load] sheet[to_load > 1 ? "s" : ""]")
-		return
+		return TRUE
 	return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/click_alt(mob/living/user)
-	. = ..()
+	// No ..(): /atom/click_alt is SHOULD_CALL_PARENT(FALSE). The return must be a
+	// CLICK_ACTION_* flag - base_click_alt tests it against CLICK_ACTION_ANY, and a
+	// bare return read as "unhandled" and popped the loot panel over the hopper.
 	if(!stored_sheets)
 		balloon_alert(user, "hopper empty!")
-		return
+		return CLICK_ACTION_BLOCKING
 	new /obj/item/stack/sheet/mineral/plasma(drop_location(), stored_sheets)
 	balloon_alert(user, "hopper emptied")
 	stored_sheets = 0
+	return CLICK_ACTION_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/process_atmos(seconds_per_tick)
 	if(panel_open || !anchored || !is_operational)
@@ -204,9 +213,14 @@
 	air_contents.moles[/datum/gas/plasma] += moles
 	update_parents()
 
+/// Panel sprite: see the heater's update_icon_nopipes() for why this lives here.
+/obj/machinery/atmospherics/components/unary/shuttle/sublimator/update_icon_nopipes()
+	icon_state = panel_open ? "[initial(icon_state)]_open" : initial(icon_state)
+
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/wrench_act(mob/living/user, obj/item/tool)
 	if(!panel_open)
@@ -220,10 +234,11 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
-		return ITEM_INTERACT_SUCCESS
+	// No default_pry_open: open_machine() would dump the loaded plasma sheets and leave
+	// the chamber permanently non-dense. See the heater's crowbar_act.
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 #undef SUBLIMATOR_MOLES_PER_SHEET
 #undef SUBLIMATOR_MAX_SHEETS

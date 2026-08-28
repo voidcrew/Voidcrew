@@ -98,7 +98,7 @@
 		// Planted. No casting, no swinging, no shuffling - that is the whole
 		// bargain that makes standing next to her a safe place to be.
 		return BT_RUNNING
-	if(matriarch.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(matriarch))
 		return BT_FAILURE
 
 	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]

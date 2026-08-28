@@ -22,6 +22,10 @@ export type NodeCache = {
   required_experiments?: string[];
   discount_experiments?: Record<string, number>;
   discount_boosts?: Record<string, number>;
+  // voidcrew edit - survey gating. Sent by
+  // voidcrew/modules/research/edits/_rd_consoles.dm's ui_static_data override,
+  // as celestial object type -> how many of them the ship must have charted.
+  required_surveyed_objects?: Record<string, number>;
 };
 
 // The unmapped nodes from Byond
@@ -64,4 +68,8 @@ export type TechWebData = {
   static_data: StaticData;
   stored_research: BooleanLike;
   t_disk: TechDisk | null;
+  // voidcrew edit - survey gating. This ship's charted-object tally, sent by the
+  // ui_data override in voidcrew/modules/research/edits/_rd_consoles.dm. Absent on
+  // the NTOS Science app, which has no override, so always read it defensively.
+  surveyed_objects?: Record<string, number>;
 };

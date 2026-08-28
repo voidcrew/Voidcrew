@@ -13,11 +13,16 @@
 		stored_research = null
 
 /obj/machinery/rnd/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(stored_research && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
+	// Mirror exactly the condition under which the parent connects a techweb: it also returns
+	// ITEM_INTERACT_SUCCESS for the panel-open wire menu, so a bare `if(.)` said "Linked to
+	// Server!" and dereferenced a null stored_research every time someone pulsed the wires of an
+	// unlinked machine - which, with no_default_techweb_link on, is every freshly built one.
+	var/linking_techweb = !panel_open && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)
+	if(stored_research && linking_techweb) //disconnect old one
 		stored_research.connected_machines -= src
 	. = ..()
-	if(.)
-		stored_research.connected_machines += src //connect new one
+	if(. && linking_techweb && stored_research)
+		stored_research.connected_machines |= src //connect new one
 		say("Linked to Server!")
 		var/obj/machinery/rnd/production/production = src
 		if(istype(production))

@@ -150,7 +150,7 @@
 	var/mob/living/carbon/patient = occupant
 	if(!istype(patient))
 		return FALSE
-	if(patient.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(patient))
 		return FALSE
 	if(HAS_TRAIT(patient, TRAIT_RESTRAINED) || patient.handcuffed)
 		return FALSE

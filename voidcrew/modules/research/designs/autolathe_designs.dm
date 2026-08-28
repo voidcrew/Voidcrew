@@ -8,11 +8,16 @@
 		RND_CATEGORY_CONSTRUCTION + RND_SUBCATEGORY_CONSTRUCTION_MACHINERY,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
-	// This design prints a filled box, and the five boards plus the disk inside already carry
-	// their own materials. Stamping the kit's full price onto the cardboard box as well would make
-	// an empty, hand-spawned box worth sixty sheets, and there is no split of the price that both
-	// covers the contents and matches a plain box, so the design takes the exemption.
-	inherit_materials = DESIGN_INHERIT_MATS_SPECIAL
+	// This design prints a filled box, and the five boards plus the disk inside already carry their
+	// own materials, so the cardboard box must carry none - otherwise a printed kit is worth its
+	// whole price at the ORM *plus* the value of everything inside it.
+	//
+	// It must be DONT, not SPECIAL. SPECIAL only exempts the design from the design_mats unit test
+	// (code/modules/unit_tests/designs.dm:143); the transfer itself is still made, because
+	// autolathe.dm:418 tests `!= DESIGN_DONT_INHERIT_MATS`. With SPECIAL the whole 3200 iron /
+	// 6400 glass landed on the box on top of the contents' own materials, and recycling a printed
+	// kit returned more than it cost.
+	inherit_materials = DESIGN_DONT_INHERIT_MATS
 
 /datum/design/ship_disk
 	name = "R&D Server Source Code"
@@ -45,3 +50,7 @@
 	)
 	for(var/design_path in voidcrew_extra_designs)
 		add_design(design_path)
+		// All four carry RND_CATEGORY_HACKED, so the parent already filed them in hacked_designs.
+		// A hacked lathe concatenates both lists (autolathe.dm:194-199) and would render each of
+		// them twice; they are unconditionally available here, so drop the hacked copy.
+		hacked_designs -= design_path

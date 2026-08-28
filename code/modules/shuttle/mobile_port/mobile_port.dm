@@ -237,6 +237,17 @@
 	if(!name)
 		name = "shuttle"
 
+	// VOIDCREW EDIT ADDITION: assoc_mobile is NOT reference counting and unregister() is
+	// right not to decrement it. It is a high-water mark for name/id suffixes, and the
+	// suffix it hands out has to be unique among the ships that are ALIVE, not among the
+	// ships that exist. Decrementing recycles suffixes: with two Goons up, "ship_goon" and
+	// "ship_goon_2", losing the FIRST one would drop the counter back to 1 and the next hull
+	// to spawn would be minted as "ship_goon_2" again - a live duplicate shuttle_id, which
+	// linkup() resolves by wiring the new hull's machinery to the old hull's port, and which
+	// makes every log line naming that ship ambiguous for the rest of the round. The cost of
+	// leaving it is one integer per template id in a list bounded by the number of ship
+	// templates, which is not a leak. Left alone on purpose - see also the fork's teardown
+	// funnel in /obj/structure/overmap/ship/release_hull().
 	var/counter = SSshuttle.assoc_mobile[shuttle_id]
 	if(!replace || !counter)
 		if(counter)
@@ -509,7 +520,11 @@
 				return
 			var/error = initiate_docking(destination, preferred_direction)
 			if(error && error & (DOCKING_NULL_DESTINATION | DOCKING_NULL_SOURCE))
-				var/msg = "A mobile dock in transit exited initiate_docking() with an error. This is most likely a mapping problem: Error: [error],  ([src]) ([previous][ADMIN_JMP(previous)] -> [destination][ADMIN_JMP(destination)])"
+				// This branch only fires BECAUSE a docking port operand was null, so the
+				// message must not deref them: ADMIN_JMP reads src.x unguarded, while
+				// ADMIN_COORDJMP prints "nonexistent location" instead. A runtime here
+				// skipped `mode = SHUTTLE_IDLE` below and the port re-entered every fire.
+				var/msg = "A mobile dock in transit exited initiate_docking() with an error. This is most likely a mapping problem: Error: [error],  ([src]) ([previous][ADMIN_COORDJMP(previous)] -> [destination][ADMIN_COORDJMP(destination)])"
 				WARNING(msg)
 				message_admins(msg)
 				mode = SHUTTLE_IDLE

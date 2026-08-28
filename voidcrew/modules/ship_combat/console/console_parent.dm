@@ -85,7 +85,8 @@
 	actions += new /datum/action/innate/ship_combat/adjust_laser_power(src)
 	actions += new /datum/action/innate/ship_combat/launch_pod(src)
 
-	reticle = new(null, src)
+	// No second argument: that slot is the screen object's hud_owner, not an owner ref.
+	reticle = new(null)
 
 	// Console ambient sounds
 	console_ambience = new(src, get_console_ambience_sounds())

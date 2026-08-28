@@ -33,6 +33,7 @@ GLOBAL_DATUM(outpost_hangar_template, /datum/map_template/outpost_hangar)
 	requires_power = FALSE
 	default_gravity = STANDARD_GRAVITY
 	area_flags = NOTELEPORT
+	area_flags_mapping = NONE
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
 	// The hangar deck is where a beast that stowed away aboard a docking ship

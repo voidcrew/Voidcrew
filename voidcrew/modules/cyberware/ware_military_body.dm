@@ -581,10 +581,15 @@
 /obj/item/organ/cyberimp/cyberware/rigger/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	RegisterSignal(organ_owner, COMSIG_MOB_STATCHANGE, PROC_REF(on_stat_change))
+	// Going out cold used to be a stat, so statchange alone covered it. Upstream
+	// deleted the UNCONSCIOUS stat and made unconsciousness a trait, and set_stat
+	// no longer fires for it at all - so sleep, sedation and a flashbang need
+	// their own hook or the bearer keeps flying the ship from inside a blackout.
+	RegisterSignal(organ_owner, SIGNAL_ADDTRAIT(TRAIT_KNOCKEDOUT), PROC_REF(on_knocked_out))
 
 /obj/item/organ/cyberimp/cyberware/rigger/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	UnregisterSignal(organ_owner, COMSIG_MOB_STATCHANGE)
+	UnregisterSignal(organ_owner, list(COMSIG_MOB_STATCHANGE, SIGNAL_ADDTRAIT(TRAIT_KNOCKEDOUT)))
 	// owner is already null by the time this runs (see mob_remove), so the
 	// movement tax and the window have to come off the mob we were handed.
 	drop_uplink(organ_owner, silent = TRUE)
@@ -657,9 +662,18 @@
  */
 /obj/item/organ/cyberimp/cyberware/rigger/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
+	// Raw stat value, not a mob, so the IS_UNCONSCIOUS_* helpers don't apply here.
+	// This covers the health half only (crit, death); knocked-out is the trait
+	// handler below, because set_stat no longer fires when you're merely out cold.
 	if(new_stat == STABLE)
 		return
 	drop_uplink(source, reason = "you go under")
+
+/// Signal proc for [TRAIT_KNOCKEDOUT] being applied: the other half of "nobody
+/// flies a ship from inside a blackout", for the states that leave stat STABLE.
+/obj/item/organ/cyberimp/cyberware/rigger/proc/on_knocked_out(datum/source)
+	SIGNAL_HANDLER
+	drop_uplink(owner, reason = "you go under")
 
 /**
  * A helm on the linked hull the uplink can actually drive: alive, wired to
@@ -688,7 +702,7 @@
 /obj/item/organ/cyberimp/cyberware/rigger/proc/uplink_covers(obj/machinery/computer/helm/console, mob/user)
 	if(QDELETED(console) || console != uplink_console)
 		return FALSE
-	if(!owner || user != owner || owner.stat != STABLE)
+	if(!owner || user != owner || IS_UNCONSCIOUS_OR_CRIT(owner))
 		return FALSE
 	if(organ_flags & ORGAN_FAILING)
 		return FALSE

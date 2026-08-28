@@ -51,7 +51,7 @@
 
 /datum/biome/cave/proc/generate_caves(turf/gen_turf, string_gen, area/overmap_encounter/planetoid/cave/new_area)
 	var/area/A = gen_turf.loc
-	if(!(A.area_flags & CAVES_ALLOWED))
+	if(!(A.area_flags_mapping & CAVES_ALLOWED))
 		return
 
 	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
@@ -80,7 +80,7 @@
 	var/area/A = new_turf.loc
 	if(flora_spawn_list && prob(flora_spawn_chance))
 		var/can_spawn = TRUE
-		if(!(A.area_flags & FLORA_ALLOWED))
+		if(!(A.area_flags_mapping & FLORA_ALLOWED))
 			can_spawn = FALSE
 		if(can_spawn)
 			spawned_flora = pickweight(flora_spawn_list)
@@ -92,7 +92,7 @@
 	if(feature_spawn_list && prob(feature_spawn_chance) && !spawned_flora)
 		var/can_spawn = TRUE
 
-		if(!(A.area_flags & FLORA_ALLOWED))
+		if(!(A.area_flags_mapping & FLORA_ALLOWED))
 			can_spawn = FALSE
 
 		var/atom/picked_feature = pickweight(feature_spawn_list)
@@ -109,7 +109,7 @@
 	if(mob_spawn_list && !spawned_flora && !spawned_feature && prob(mob_spawn_chance))
 		var/can_spawn = TRUE
 
-		if(!(A.area_flags & MOB_SPAWN_ALLOWED))
+		if(!(A.area_flags_mapping & MOB_SPAWN_ALLOWED))
 			can_spawn = FALSE
 
 		var/atom/picked_mob = pickweight(mob_spawn_list)

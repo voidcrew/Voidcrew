@@ -86,7 +86,7 @@
 	var/mob/living/user = usr
 	if(!istype(user) || being_searched)
 		return
-	if(user.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(user))
 		return
 	being_searched = TRUE
 	to_chat(user, span_notice("You start prying at the chit's seam..."))
@@ -792,11 +792,16 @@
 		. += span_notice("[marked]'s face is still fresh enough to copy. Use this in your hand to take it.")
 
 /obj/item/knife/understudy/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
-	var/was_downed = istype(target_mob) && target_mob.stat != DEAD && target_mob.stat < HARD_CRIT
+	// This was `stat < UNCONSCIOUS` / `stat >= UNCONSCIOUS`. The post-merge sweep
+	// swapped UNCONSCIOUS for HARD_CRIT, which preserved the enum's NUMBER (both 2)
+	// but not its meaning: upstream deleted the stat and made being out cold a trait,
+	// so the knife stopped marking anyone it merely knocked unconscious and only fired
+	// on a hard-crit transition. IS_UNCONSCIOUS() is upstream's replacement.
+	var/was_downed = istype(target_mob) && target_mob.stat != DEAD && !IS_UNCONSCIOUS(target_mob)
 	. = ..()
 	if(!istype(target_mob) || !ishuman(target_mob))
 		return .
-	if(target_mob.stat == DEAD || (was_downed && target_mob.stat >= HARD_CRIT))
+	if(target_mob.stat == DEAD || (was_downed && IS_UNCONSCIOUS(target_mob)))
 		mark_target(target_mob)
 	return .
 

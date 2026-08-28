@@ -133,7 +133,12 @@
 	icon_state = "mining"
 	default_gravity = STANDARD_GRAVITY
 	flags_1 = NONE
-	area_flags = VALID_TERRITORY | FLORA_ALLOWED
+	// VOIDCREW EDIT: upstream's #94071 area_flags split left FLORA_ALLOWED (a mapping flag,
+	// numerically == NOTELEPORT) in the runtime var, making every lavaland area silently
+	// NOTELEPORT with no flora. 36 fork ruin maps use this area. Pre-split intent:
+	// VALID_TERRITORY | UNIQUE_AREA | FLORA_ALLOWED.
+	area_flags = VALID_TERRITORY
+	area_flags_mapping = UNIQUE_AREA | FLORA_ALLOWED
 	sound_environment = SOUND_AREA_LAVALAND
 	ambient_buzz = 'sound/ambience/lavaland/magma.ogg'
 	allow_shuttle_docking = TRUE
@@ -242,7 +247,10 @@
 	area_flags_mapping = MOB_SPAWN_ALLOWED | FLORA_ALLOWED | CAVES_ALLOWED
 
 /area/icemoon/surface/outdoors/noteleport // for places like the cursed spring water
-	area_flags_mapping = parent_type::area_flags_mapping | NOTELEPORT
+	// VOIDCREW EDIT: upstream's #94071 migration put NOTELEPORT (a runtime flag, numerically
+	// == FLORA_ALLOWED in the mapping namespace) into the mapping var, so the area named
+	// "noteleport" was not NOTELEPORT at all.
+	area_flags = parent_type::area_flags | NOTELEPORT
 
 /area/icemoon/surface/outdoors/noruins // when you want random generation without the chance of getting ruins
 	icon_state = "noruins"

@@ -36,11 +36,11 @@
 		if("add_account")
 			if(!inserted_id || (inserted_id.registered_account == computer_id.registered_account))
 				return
-			if(inserted_id.registered_account)
-				//disconnect from old account
-				inserted_id.registered_account.bank_cards -= src
-			inserted_id.registered_account = computer_id.registered_account
-			inserted_id.registered_account.bank_cards += src
+			// set_account() disconnects the card from its old account and LAZYORs it onto
+			// the new one. The hand-rolled version below it used to be wrong twice over:
+			// it added `src` (this program datum) instead of the card, and bank_cards is
+			// a LAZYLIST now, so a bare += clobbers it with a non-list.
+			inserted_id.set_account(computer_id.registered_account)
 		if("remove_account")
 			var/obj/item/card/id/card = locate(params["removed_account"]) in computer_id.registered_account.bank_cards
 			//don't remove yourself
@@ -49,5 +49,5 @@
 			//only the captain can edit
 			if(computer_id.assignment != computer_id.registered_account.account_job.title)
 				return
-			card.registered_account.bank_cards -= src
+			// clear_account() already LAZYREMOVEs the card from its account's bank_cards.
 			card.clear_account()

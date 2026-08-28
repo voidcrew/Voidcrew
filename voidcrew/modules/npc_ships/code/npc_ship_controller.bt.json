@@ -2,6 +2,7 @@
 	"dm_type": "/datum/ai_controller/npc_ship",
 	"type": "parallel",
 	"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+	"failure_policy": "BT_PARALLEL_FAILURE_ANY",
 	"children": [
 		{
 			"type": "subtree",

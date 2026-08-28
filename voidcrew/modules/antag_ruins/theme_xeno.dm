@@ -1187,7 +1187,7 @@
  * theirs on a target var. (Quarry-ness is checked separately, above.)
  */
 /obj/item/vestige_census_stinger/proc/is_declared_hunter(mob/living/subject, mob/living/hunter)
-	if(subject.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(subject))
 		return FALSE
 	var/atom/mark
 	var/datum/ai_controller/instincts = subject.ai_controller

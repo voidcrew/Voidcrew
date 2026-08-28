@@ -64,25 +64,79 @@
 /obj/structure/closet/supplypod/drop_pod/get_remote_view_fullscreens(mob/user)
 	return
 
-/obj/structure/closet/supplypod/drop_pod/attackby(obj/item/I, mob/user, params)
-	if(I.tool_behaviour == TOOL_CROWBAR)
-		if(opened == FALSE)
-			open_pod(src, FALSE, FALSE)
-			return TRUE
-		else
-			set_closed()
-			return TRUE
-	if(I.tool_behaviour == TOOL_WRENCH)
-		set_anchored(!anchored)
-		return TRUE
-	if(I.tool_behaviour == TOOL_MULTITOOL)
-		var/obj/item/multitool/tool = I
-		if(istype(tool.buffer, /obj/machinery/quantumpad))
-			linked_pad = tool.buffer
-			balloon_alert(user, "quantum pad linked")
-			return TRUE
-		balloon_alert(user, "no quantum pad data found!")
-		return TRUE
+// Was an attackby() override. Upstream migrated the whole closet family off attackby:
+// the tools now land in /obj/structure/closet/{crowbar,screwdriver,welder}_act and in
+// /obj/structure/closet/item_interaction, every one of which base_item_interaction runs
+// BEFORE attackby, and every one of which opens with
+//   if(user in contents) return ITEM_INTERACT_BLOCKING  // "can't even attack it from inside"
+// Two breaks fell out of that:
+//   - an OPEN pod ATE the crowbar/wrench/multitool: the parent's item_interaction drops
+//     any held item into an opened closet (closets.dm, the `if(opened)` ->
+//     transfer_item_to_turf branch) and returns SUCCESS, so attackby never ran. It only
+//     missed in combat mode, where that branch returns ITEM_INTERACT_SKIP_TO_ATTACK.
+//   - a rider sealed inside could no longer crowbar the hatch open, because crowbar_act's
+//     inside-guard blocks first. A one-shot pod you cannot open from inside is a coffin.
+// The pod's three tools therefore have to be answered ahead of every parent guard, which
+// takes both hooks: tool_act (-> crowbar_act/wrench_act/multitool_act) is the path when
+// combat mode is OFF and runs first; item_interaction is the path when combat mode is ON,
+// because base_item_interaction skips tool_act entirely there. Exactly one fires per click.
+
+/// The pod's own crowbar/wrench/multitool handling, hoisted out of the old attackby so it
+/// can run from both hooks. Returns an ITEM_INTERACT_* flag if it took the click, else NONE.
+/// Deliberately has no `user in contents` guard: prying the hatch from inside is the point.
+/obj/structure/closet/supplypod/drop_pod/proc/pod_tool_interaction(mob/living/user, obj/item/tool)
+	switch(tool.tool_behaviour)
+		if(TOOL_CROWBAR)
+			if(opened)
+				set_closed()
+			else
+				open_pod(src, FALSE, FALSE)
+			return ITEM_INTERACT_SUCCESS
+		if(TOOL_WRENCH)
+			set_anchored(!anchored)
+			return ITEM_INTERACT_SUCCESS
+		if(TOOL_MULTITOOL)
+			// tool_behaviour alone does not make it a multitool, and .buffer only exists on
+			// the real thing - anything else falls through to the parent rather than runtiming.
+			var/obj/item/multitool/multitool = tool
+			if(!istype(multitool))
+				return NONE
+			if(istype(multitool.buffer, /obj/machinery/quantumpad))
+				linked_pad = multitool.buffer
+				balloon_alert(user, "quantum pad linked")
+				return ITEM_INTERACT_SUCCESS
+			balloon_alert(user, "no quantum pad data found!")
+			return ITEM_INTERACT_SUCCESS
+	return NONE
+
+// Combat mode OFF: tool_act runs before anything else in base_item_interaction, and these
+// three beat the closet parent's inside-guard and its swallow-the-item branch.
+/obj/structure/closet/supplypod/drop_pod/crowbar_act(mob/living/user, obj/item/tool)
+	. = pod_tool_interaction(user, tool)
+	if(.)
+		return .
+	return ..()
+
+/obj/structure/closet/supplypod/drop_pod/wrench_act(mob/living/user, obj/item/tool)
+	. = pod_tool_interaction(user, tool)
+	if(.)
+		return .
+	return ..()
+
+/obj/structure/closet/supplypod/drop_pod/multitool_act(mob/living/user, obj/item/tool)
+	. = pod_tool_interaction(user, tool)
+	if(.)
+		return .
+	return ..()
+
+// Combat mode ON: tool_act never runs, so the same three tools have to be caught here,
+// still ahead of ..() -> supplypod (bluespace guard) -> closet (inside-guard, swallow).
+// Everything else - welders, cutters, ID cards, cargo being stuffed in - falls through
+// to the parent exactly as it did when this was an attackby chain.
+/obj/structure/closet/supplypod/drop_pod/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	. = pod_tool_interaction(user, tool)
+	if(.)
+		return .
 	return ..()
 
 /obj/structure/closet/supplypod/drop_pod/proc/teleport()

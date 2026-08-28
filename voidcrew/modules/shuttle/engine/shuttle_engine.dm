@@ -202,15 +202,19 @@
 /obj/machinery/power/shuttle_engine/ship/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(default_deconstruction_screwdriver(user, tool))
-		return TRUE
+		return ITEM_INTERACT_SUCCESS
 	update_appearance(UPDATE_ICON)
-	return FALSE
+	// Never FALSE: tool_act reads a falsy return as "unhandled" and lets the swing
+	// through as an attack, so a failed screwdriver would whack the engine.
+	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/power/shuttle_engine/ship/crowbar_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(!panel_open)
-		user.balloon_alert(user, "open panel first!")
-		return FALSE
+		// balloon_alert's src is the atom the balloon appears OVER; calling it on
+		// `user` put the message over the player instead of the engine.
+		balloon_alert(user, "open panel first!")
+		return ITEM_INTERACT_BLOCKING
 	if(default_deconstruction_crowbar(user, tool))
-		return TRUE
-	return FALSE
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING

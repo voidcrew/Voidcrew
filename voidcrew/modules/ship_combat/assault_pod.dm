@@ -560,7 +560,7 @@
 	// Multitool linking - store self in buffer
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.buffer = src
+		tool.set_buffer(src)
 		balloon_alert(user, "tube buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE

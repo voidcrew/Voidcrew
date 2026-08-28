@@ -607,7 +607,7 @@
 	playsound(victim, 'sound/effects/magic/voidblink.ogg', 60, TRUE)
 	new /obj/effect/temp_visual/circle_wave/unsettle(get_turf(victim))
 	owner.Beam(victim, icon_state = "purple_lightning", time = windup)
-	if(victim.stat == STABLE)
+	if(!IS_UNCONSCIOUS_OR_CRIT(victim))
 		to_chat(victim, span_userdanger("The air between you and [owner] pulls thin, like a pane about to give!"))
 	addtimer(CALLBACK(src, PROC_REF(yank), victim), windup)
 

@@ -321,7 +321,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /area/overmap_encounter
 	name = "\improper Overmap Encounter"
 	icon_state = "away"
-	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED
+	area_flags = HIDDEN_AREA
+	// No UNIQUE_AREA - every encounter reservation mints its own instance.
+	area_flags_mapping = CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED
 	flags_1 = CAN_BE_DIRTY_1
 	always_unpowered = TRUE
 	power_environ = FALSE
@@ -368,7 +370,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /area/overmap_encounter/planet_ruin
 	name = "\improper Unknown Planetary Ruin"
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
-	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NOTELEPORT
+	area_flags = HIDDEN_AREA | NOTELEPORT // area_flags_mapping inherited from /area/overmap_encounter
 	default_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = null

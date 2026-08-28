@@ -458,7 +458,7 @@
 		balloon_alert(user, "too simple a costume!")
 		return ITEM_INTERACT_BLOCKING
 	var/mob/living/carbon/human/quarry = target
-	if(quarry.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(quarry))
 		balloon_alert(user, "they need to be awake!")
 		return ITEM_INTERACT_BLOCKING
 	if(!quarry.mind)
@@ -479,7 +479,7 @@
 	tail_trial = user.mind?.active_vestige_trial
 	if(!istype(tail_trial))
 		return ITEM_INTERACT_BLOCKING
-	if(form != SKIN_FORM_NONE || quarry.stat != STABLE)
+	if(form != SKIN_FORM_NONE || IS_UNCONSCIOUS_OR_CRIT(quarry))
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like tallow and sets again as [quarry]'s exact double!"),
@@ -532,7 +532,7 @@
 	var/mob/living/carbon/human/credit_victim
 	var/startled_anyone = FALSE
 	for(var/mob/living/carbon/human/victim in range(1, user))
-		if(victim == user || victim.stat != STABLE || !victim.mind)
+		if(victim == user || IS_UNCONSCIOUS_OR_CRIT(victim) || !victim.mind)
 			continue
 		startled_anyone = TRUE
 		to_chat(victim, span_userdanger("The [shape_name] beside you tears open and something bursts out at you!"))
@@ -592,7 +592,7 @@
 	if(spot_key != quarry_last_spot)
 		quarry_last_spot = spot_key
 		quarry_last_moved = world.time
-	if(wearer.stat != STABLE || quarry.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(wearer) || IS_UNCONSCIOUS_OR_CRIT(quarry))
 		return
 	if(wearer.z != quarry.z || get_dist(wearer, quarry) > VESTIGE_SHADOW_RANGE)
 		if(SPT_PROB(4, seconds_per_tick))
@@ -1120,12 +1120,15 @@
 // Attacking breaks the form and the swing never lands: you burst OUT to
 // fight (Ambush Instinct is one click away), you do not fight as furniture
 /mob/living/basic/vestige_mimic/early_melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
+	// Return polarity here is inverted from what it looks like: BASIC_MOB_CONTINUE_ATTACK_CHAIN
+	// is 0 and melee_attack() reads ANY truthy value as "stop". Returning FALSE would land the
+	// swing, which is the exact opposite of this mob's whole point.
 	. = ..()
-	if(!.)
-		return FALSE
+	if(.) // parent already ended the chain - honour its specific code
+		return .
 	if(target != src)
 		queue_break()
-	return FALSE
+	return BASIC_MOB_END_ATTACK_CHAIN
 
 /// Any damage breaks the form, deferred a tick so the blow finishes resolving first
 /mob/living/basic/vestige_mimic/proc/on_damaged(datum/source)
@@ -1362,7 +1365,7 @@
 
 /// Menu validity for the regurgitation radial
 /datum/action/cooldown/spell/vestige_devour/proc/gullet_menu_check()
-	return !QDELETED(src) && !QDELETED(owner) && owner.stat == STABLE
+	return !QDELETED(src) && !QDELETED(owner) && !IS_UNCONSCIOUS_OR_CRIT(owner)
 
 /datum/action/cooldown/spell/vestige_devour/cast(atom/cast_on)
 	. = ..()

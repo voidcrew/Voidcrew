@@ -325,7 +325,7 @@
 	SIGNAL_HANDLER
 	if(!lifting || QDELETED(target) || !isliving(source))
 		return NONE
-	if(source.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(source))
 		return NONE
 	// Never swallow the HUD, and never swallow the clicks players use to look at things.
 	if(istype(target, /atom/movable/screen))
@@ -581,7 +581,7 @@
 	if(QDELETED(thing))
 		return
 	var/mob/living/source = owner
-	if(!lifting || !isliving(source) || source.stat != STABLE)
+	if(!lifting || !isliving(source) || IS_UNCONSCIOUS_OR_CRIT(source))
 		end_pull_visuals(thing)
 		return
 	if(isturf(thing.loc) && thing.z == source.z && get_dist(source, thing) <= 1 && can_lift(thing) && used_slots() + slot_cost(thing) <= GREATER_TK_MAX_HELD)
@@ -977,7 +977,7 @@
 
 // ===== ANTI-CHEESE =====
 
-/mob/living/basic/vestige_mutant/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/vestige_mutant/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(stat == DEAD)
 		return

@@ -35,11 +35,11 @@
 	can_wallop = FALSE
 
 /**
- * A copy of upstream's attack_secondary (code/game/objects/items/extinguisher.dm)
+ * A copy of upstream's attack_secondary (code/game/objects/items/tools/extinguisher.dm)
  * with the weight-class gate swapped for `can_wallop`. Everything else is
  * verbatim, if upstream retunes the bash, re-sync this body.
  */
-/obj/item/extinguisher/attack_secondary(mob/living/victim, mob/living/user, params)
+/obj/item/extinguisher/attack_secondary(mob/living/victim, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!can_wallop)
 		return SECONDARY_ATTACK_CALL_NORMAL
 

@@ -270,7 +270,7 @@
 	if(!body_turf || body_turf.z != here.z || get_dist(here, body_turf) > 1)
 		return FALSE
 	var/mob/living/keeper_body = keeper?.current
-	if(!istype(keeper_body) || keeper_body.stat != STABLE)
+	if(!istype(keeper_body) || IS_UNCONSCIOUS_OR_CRIT(keeper_body))
 		return FALSE
 	var/turf/keeper_turf = get_turf(keeper_body)
 	if(!keeper_turf || keeper_turf.z != here.z || get_dist(here, keeper_turf) > 1)

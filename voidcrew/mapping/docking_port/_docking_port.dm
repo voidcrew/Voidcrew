@@ -292,9 +292,25 @@ GLOBAL_LIST_EMPTY(ship_site_occupancy)
 	// Keyed by mobile port and never pruned on success - a ship that ever failed a
 	// transit request would otherwise be pinned by this list and hard-delete
 	SSshuttle.transit_request_failures -= src
-	// Debug: log when shuttle is destroyed to help track orphaning issues
+	// A port dying while it still claims a live overmap ship is an ANOMALY, and this is the
+	// alarm for it. Every teardown the fork drives itself breaks the link first, in
+	// /obj/structure/overmap/ship/release_hull(), which is the single funnel for all three:
+	// ship/Destroy() (so every qdel of an overmap ship, NPC hull kills included),
+	// destroy_ship(force = TRUE) (the bluespace jump) and despawn_derelict() (the sweeper).
+	// What is left to catch here is a port deleted out from under a ship that still expects
+	// it: the admin shuttle-manipulator verbs (adminshuttle.dm), and a hull deconstructed to
+	// its last turf (clear_empty_shuttle_turfs() in code/__HELPERS/shuttle.dm), which strands
+	// an overmap ship with no hull and genuinely wants investigating.
+	//
+	// stack_trace() is CRASH() with the proc kept alive, so it increments GLOB.total_runtimes
+	// and world.dm's clean_run.lk is refused for the run. That is exactly what we want from an
+	// alarm and exactly why the legitimate paths must never reach it - one despawned ship used
+	// to fail the whole unit-test suite from here.
+	//
+	// The nulling below stays regardless: it is the safety net for the paths above, without
+	// which the stranded ship keeps a dangling `shuttle` and its Destroy() calls
+	// intoTheSunset() on a deleted port.
 	if(current_ship)
-		// This should only happen through normal cleanup - log a stack trace to find unexpected deletions
 		var/ship_name = current_ship.name
 		var/ship_state = current_ship.state
 		log_shuttle("Shuttle [name] destroyed while overmap ship [ship_name] still exists. Force=[force], state=[ship_state]")
@@ -305,6 +321,35 @@ GLOBAL_LIST_EMPTY(ship_site_occupancy)
 	current_ship = null
 	spawn_points.Cut()
 	unlink_from_z_level()
+	return ..()
+
+/**
+ * Sweeps the landmarks off this hull before the ground goes back to space.
+ *
+ * /turf/proc/empty() (change_turf.dm) typecaches /obj/effect/landmark into `ignored_atoms`
+ * right beside /obj/docking_port and /mob/dead, so the per-turf empty() pass below in the
+ * parent proc deletes everything on a hull turf EXCEPT its landmarks - and jumpToNullSpace()
+ * is the only thing that ever touches these turfs. Every hull carries several: create_ship()
+ * spawns a blobstart and an observer_start aboard, and each hull .dmm maps its own job spawn
+ * points. Nothing else removes them, so before this fix every create/destroy cycle grew
+ * GLOB.landmarks_list (and GLOB.start_landmarks_list, and GLOB.jobspawn_overrides) forever,
+ * with the abandoned markers left standing on ground that is handed to the next tenant.
+ *
+ * Fixed here rather than in empty(): upstream spares landmarks on purpose (a station turf
+ * emptied by a bomb keeps its spawn points) and every other caller depends on that.
+ *
+ * Scoped exactly like the parent's own turf loop - our rect AND one of our areas - so a
+ * planet's or ruin's own landmarks under a docked hull's rectangle are never touched. Only
+ * turfs the parent is about to change_area() and ScrapeAway() are swept.
+ */
+/obj/docking_port/mobile/voidcrew/jumpToNullSpace()
+	for(var/turf/hull_turf as anything in return_ordered_turfs(x, y, z, dir))
+		if(!hull_turf || !istype(hull_turf.loc, area_type))
+			continue
+		for(var/obj/effect/landmark/marker in hull_turf.get_all_contents())
+			if(QDELETED(marker))
+				continue
+			qdel(marker)
 	return ..()
 
 /obj/docking_port/mobile/voidcrew/calculate_docking_port_information(datum/map_template/shuttle/loading_from)

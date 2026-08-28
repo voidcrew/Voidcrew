@@ -360,7 +360,7 @@
 
 /// Backstop for anything that puts him outside without a move we can see, and the only
 /// thing that will un-stick a lich already frozen out there when this fix loads.
-/mob/living/basic/lich/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/lich/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(is_illusion || stat == DEAD)
 		return

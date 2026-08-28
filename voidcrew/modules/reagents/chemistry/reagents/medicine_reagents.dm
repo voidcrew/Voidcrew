@@ -4,15 +4,18 @@
 	color = "#FFFF6B"
 	overdose_threshold = 20
 
-/datum/reagent/medicine/trophazole/on_mob_life(mob/living/carbon/M)
-	M.adjust_brute_loss(-1.5*REM, 0.) // heals 3 brute & 0.5 burn if taken with food. compared to 2.5 brute from bicard + nutriment
-	..()
-	. = 1
+/datum/reagent/medicine/trophazole/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	// heals 3 brute & 0.5 burn if taken with food. compared to 2.5 brute from bicard + nutriment
+	// VOIDCREW EDIT: was a flat -1.5*REM per tick; with the old REM (0.5) that was -0.75 brute / 2s tick.
+	if(affected_mob.adjust_brute_loss(-0.375 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
-/datum/reagent/medicine/trophazole/overdose_process(mob/living/M)
-	M.adjust_brute_loss(3*REM, 0)
-	..()
-	. = 1
+/datum/reagent/medicine/trophazole/overdose_process(mob/living/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was a flat 3*REM per tick; with the old REM (0.5) that was 1.5 brute / 2s tick.
+	. = ..()
+	if(affected_mob.adjust_brute_loss(0.75 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/trophazole/expose_mob(mob/living/exposed_mob, methods = INGEST, reac_volume, show_message = TRUE, touch_protection = 0)
 	. = ..()
@@ -29,11 +32,13 @@
 	overdose_threshold = 25
 	reagent_weight = 0.6
 
-/datum/reagent/medicine/rhigoxane/on_mob_life(mob/living/carbon/M)
-	M.adjust_fire_loss(-2*REM, 0.)
-	M.adjust_bodytemperature(-20 * TEMPERATURE_DAMAGE_COEFFICIENT, BODYTEMP_NORMAL)
-	..()
-	. = 1
+/datum/reagent/medicine/rhigoxane/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was a flat -2*REM burn and -20 * TEMPERATURE_DAMAGE_COEFFICIENT per tick.
+	// Old REM was 0.5, so that was -1 burn and -20*TDC every 2s tick; halved into a per-second rate.
+	. = ..()
+	affected_mob.adjust_bodytemperature(-10 * TEMPERATURE_DAMAGE_COEFFICIENT * metabolization_ratio * seconds_per_tick, BODYTEMP_NORMAL)
+	if(affected_mob.adjust_fire_loss(-0.5 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/rhigoxane/expose_mob(mob/living/carbon/M, method=VAPOR, reac_volume)
 	if(method != VAPOR)
@@ -46,10 +51,11 @@
 
 	..()
 
-/datum/reagent/medicine/rhigoxane/overdose_process(mob/living/carbon/M)
-	M.adjust_fire_loss(3*REM, 0.)
-	M.adjust_bodytemperature(-35 * TEMPERATURE_DAMAGE_COEFFICIENT, 50)
-	..()
+/datum/reagent/medicine/rhigoxane/overdose_process(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	affected_mob.adjust_bodytemperature(-17.5 * TEMPERATURE_DAMAGE_COEFFICIENT * metabolization_ratio * seconds_per_tick, 50)
+	if(affected_mob.adjust_fire_loss(0.75 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 
 /datum/reagent/medicine/thializid
@@ -74,21 +80,21 @@
 	C.reagents.add_reagent(/datum/reagent/medicine/oxalizid, conversion_amount)
 	..()
 */
-/datum/reagent/medicine/thializid/on_mob_life(mob/living/carbon/M)
-	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.8)
-	M.adjust_tox_loss(-1*REM, 0)
-	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
-		M.reagents.remove_reagent(R.type,1)
+/datum/reagent/medicine/thializid/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was flat per tick (0.8 liver, -1*REM tox, 1u toxin purge). metabolization_rate is
+	// 0.75x default, so metabolization_ratio == 0.75 at a normal 2s tick; coefficients divided by 1.5.
+	. = ..()
+	affected_mob.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.53333 * metabolization_ratio * seconds_per_tick)
+	for(var/datum/reagent/toxin/purged_toxin in affected_mob.reagents.reagent_list)
+		affected_mob.reagents.remove_reagent(purged_toxin.type, 0.66667 * metabolization_ratio * seconds_per_tick)
+	if(affected_mob.adjust_tox_loss(-0.33333 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
-	..()
-	. = 1
-
-/datum/reagent/medicine/thializid/overdose_process(mob/living/carbon/M)
-	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 1.5)
-	M.adjust_disgust(3)
-	M.reagents.add_reagent(/datum/reagent/medicine/oxalizid, 0.225 * REM)
-	..()
-	. = 1
+/datum/reagent/medicine/thializid/overdose_process(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	affected_mob.adjust_organ_loss(ORGAN_SLOT_LIVER, 1 * metabolization_ratio * seconds_per_tick)
+	affected_mob.adjust_disgust(2 * metabolization_ratio * seconds_per_tick)
+	affected_mob.reagents.add_reagent(/datum/reagent/medicine/oxalizid, 0.075 * metabolization_ratio * seconds_per_tick)
 
 /datum/reagent/medicine/oxalizid
 	name = "Oxalizid"
@@ -98,13 +104,15 @@
 	overdose_threshold = 25
 	var/datum/brain_trauma/mild/muscle_weakness/U
 
-/datum/reagent/medicine/oxalizid/on_mob_life(mob/living/carbon/M)
-	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.1)
-	M.adjust_tox_loss(-1*REM, 0)
-	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
-		M.reagents.remove_reagent(R.type,1)
-	..()
-	. = 1
+/datum/reagent/medicine/oxalizid/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was flat per tick (0.1 liver, -1*REM tox, 1u toxin purge). metabolization_rate is
+	// 0.25x default, so metabolization_ratio == 0.25 at a normal 2s tick; coefficients divided by 0.5.
+	. = ..()
+	affected_mob.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.2 * metabolization_ratio * seconds_per_tick)
+	for(var/datum/reagent/toxin/purged_toxin in affected_mob.reagents.reagent_list)
+		affected_mob.reagents.remove_reagent(purged_toxin.type, 2 * metabolization_ratio * seconds_per_tick)
+	if(affected_mob.adjust_tox_loss(-1 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/oxalizid/overdose_start(mob/living/carbon/M)
 	U = new()
@@ -116,11 +124,10 @@
 		QDEL_NULL(U)
 	return ..()
 
-/datum/reagent/medicine/oxalizid/overdose_process(mob/living/carbon/M)
-	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 1.5)
-	M.adjust_disgust(3)
-	..()
-	. = 1
+/datum/reagent/medicine/oxalizid/overdose_process(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	affected_mob.adjust_organ_loss(ORGAN_SLOT_LIVER, 3 * metabolization_ratio * seconds_per_tick)
+	affected_mob.adjust_disgust(6 * metabolization_ratio * seconds_per_tick)
 
 /datum/reagent/medicine/soulus
 	name = "Soulus Dust"
@@ -173,14 +180,17 @@
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
 	overdose_threshold = 30
 
-/datum/reagent/medicine/puce_essence/on_mob_life(mob/living/carbon/M)
-	M.adjust_tox_loss(-1*REM, 0)
-	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
-		M.reagents.remove_reagent(R.type, 0.25)
-	if(holder.has_reagent(/datum/reagent/medicine/soulus))				// No, you can't chemstack with soulus dust
-		holder.remove_reagent(/datum/reagent/medicine/soulus, 5)
-	M.add_atom_colour(color, TEMPORARY_COLOUR_PRIORITY)		// Changes color to puce
-	..()
+/datum/reagent/medicine/puce_essence/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was flat per tick (-1*REM tox, 0.25u purge, 5u soulus purge). metabolization_rate
+	// is 2.5x default, so metabolization_ratio == 2.5 at a normal 2s tick; coefficients divided by 5.
+	. = ..()
+	for(var/datum/reagent/toxin/purged_toxin in affected_mob.reagents.reagent_list)
+		affected_mob.reagents.remove_reagent(purged_toxin.type, 0.05 * metabolization_ratio * seconds_per_tick)
+	if(holder.has_reagent(/datum/reagent/medicine/soulus))			// No, you cannot chemstack with soulus dust
+		holder.remove_reagent(/datum/reagent/medicine/soulus, 1 * metabolization_ratio * seconds_per_tick)
+	affected_mob.add_atom_colour(color, TEMPORARY_COLOUR_PRIORITY)		// Changes color to puce
+	if(affected_mob.adjust_tox_loss(-0.1 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/puce_essence/expose_atom(atom/A, volume)
 	if(!iscarbon(A))
@@ -202,13 +212,15 @@
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
 	overdose_threshold = 30
 
-/datum/reagent/medicine/chartreuse/on_mob_life(mob/living/carbon/M)		// Yes, you can chemstack with soulus dust
-	if(prob(80))
-		M.adjust_tox_loss(-2*REM, 0)
-	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
-		M.reagents.remove_reagent(R.type, 1)
-	M.add_atom_colour(color, TEMPORARY_COLOUR_PRIORITY)		// Changes color to chartreuse
-	..()
+/datum/reagent/medicine/chartreuse/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)	// Yes, you can chemstack with soulus dust
+	// VOIDCREW EDIT: was flat per tick (-2*REM tox on an 80% roll, 1u purge). metabolization_rate is
+	// 2.5x default, so metabolization_ratio == 2.5 at a normal 2s tick; coefficients divided by 5.
+	. = ..()
+	for(var/datum/reagent/toxin/purged_toxin in affected_mob.reagents.reagent_list)
+		affected_mob.reagents.remove_reagent(purged_toxin.type, 0.2 * metabolization_ratio * seconds_per_tick)
+	affected_mob.add_atom_colour(color, TEMPORARY_COLOUR_PRIORITY)		// Changes color to chartreuse
+	if(prob(80) && affected_mob.adjust_tox_loss(-0.2 * metabolization_ratio * seconds_per_tick, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/chartreuse/expose_atom(atom/A, volume)
 	if(!iscarbon(A))
@@ -239,14 +251,18 @@
 	REMOVE_TRAIT(M, TRAIT_NOLIMBDISABLE, TRAIT_GENERIC)
 	..()
 
-/datum/reagent/medicine/lavaland_extract/on_mob_life(mob/living/carbon/M)
-	M.adjust_fire_loss(-1*REM, 0)
-	M.adjust_brute_loss(-1*REM, 0)
-	M.adjust_tox_loss(-1*REM, 0)
-	if(M.health <= M.crit_threshold)
-		M.adjust_oxy_loss(-1*REM, 0)
-	..()
-	return TRUE
+/datum/reagent/medicine/lavaland_extract/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was a flat -1*REM of each damage type per tick. metabolization_rate is 0.5x
+	// default, so metabolization_ratio == 0.5 at a normal 2s tick; coefficients divided by 1.
+	. = ..()
+	var/need_mob_update
+	need_mob_update = affected_mob.adjust_fire_loss(-0.5 * metabolization_ratio * seconds_per_tick, updating_health = FALSE)
+	need_mob_update += affected_mob.adjust_brute_loss(-0.5 * metabolization_ratio * seconds_per_tick, updating_health = FALSE)
+	need_mob_update += affected_mob.adjust_tox_loss(-0.5 * metabolization_ratio * seconds_per_tick, updating_health = FALSE)
+	if(affected_mob.health <= affected_mob.crit_threshold)
+		need_mob_update += affected_mob.adjust_oxy_loss(-0.5 * metabolization_ratio * seconds_per_tick, updating_health = FALSE)
+	if(need_mob_update)
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/lavaland_extract/overdose_process(mob/living/M)		// Thanks to actioninja
 	if(prob(2) && iscarbon(M))
@@ -305,13 +321,19 @@
 	metabolization_rate = REAGENTS_METABOLISM
 	taste_description = "boiling sugar"
 
-/datum/reagent/medicine/molten_bubbles/on_mob_life(mob/living/carbon/M)
-	M.heal_bodypart_damage(1,1,0)
-	if(M.bodytemperature > M.get_body_temp_normal(apply_change=FALSE))
-		M.adjust_bodytemperature(-10 * TEMPERATURE_DAMAGE_COEFFICIENT, M.get_body_temp_normal(apply_change=FALSE))
-	else if(M.bodytemperature < (M.get_body_temp_normal(apply_change=FALSE) + 1))
-		M.adjust_bodytemperature(10 * TEMPERATURE_DAMAGE_COEFFICIENT, 0, M.get_body_temp_normal(apply_change=FALSE))
-	..()
+/datum/reagent/medicine/molten_bubbles/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, metabolization_ratio)
+	// VOIDCREW EDIT: was a flat 1 brute + 1 burn and +/-10*TDC per tick. Default metabolization_rate,
+	// so metabolization_ratio == 1 at a normal 2s tick; coefficients halved into a per-second rate.
+	// Net effect is unchanged: a 50u bottle still heals ~125 brute / ~125 burn.
+	. = ..()
+	var/target_temp = affected_mob.get_body_temp_normal(apply_change = FALSE)
+	if(affected_mob.bodytemperature > target_temp)
+		affected_mob.adjust_bodytemperature(-5 * TEMPERATURE_DAMAGE_COEFFICIENT * metabolization_ratio * seconds_per_tick, target_temp)
+	else if(affected_mob.bodytemperature < (target_temp + 1))
+		affected_mob.adjust_bodytemperature(5 * TEMPERATURE_DAMAGE_COEFFICIENT * metabolization_ratio * seconds_per_tick, 0, target_temp)
+	var/heal_amount = 0.5 * metabolization_ratio * seconds_per_tick
+	if(affected_mob.heal_bodypart_damage(heal_amount, heal_amount, updating_health = FALSE))
+		return UPDATE_MOB_HEALTH
 
 /datum/reagent/medicine/molten_bubbles/plasma
 	name = "Plasma Bubbles"

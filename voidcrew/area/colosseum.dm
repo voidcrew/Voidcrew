@@ -9,7 +9,7 @@
 	static_lighting = TRUE
 	requires_power = FALSE
 	default_gravity = STANDARD_GRAVITY
-	area_flags = UNIQUE_AREA | NOTELEPORT
+	area_flags = NOTELEPORT // UNIQUE_AREA is the area_flags_mapping default
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
 

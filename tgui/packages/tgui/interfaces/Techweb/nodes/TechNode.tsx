@@ -1,13 +1,16 @@
+import type { ReactNode } from 'react';
 import {
   Box,
   Button,
   Collapsible,
+  Icon,
   ImageButton,
   ProgressBar,
   Section,
   Stack,
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
+import type { ExperimentData } from '../../ExperimentConfigure';
 import { Experiment } from '../../ExperimentConfigure';
 import { MaterialCostSequence } from '../../Fabrication/MaterialCostSequence';
 import { useRemappedBackend } from '../helpers';
@@ -35,6 +38,7 @@ export function TechNode(props: Props) {
     nodes,
     point_types_abbreviations = [],
     queue_nodes = [],
+    surveyed_objects, // voidcrew edit - survey gating
   } = data;
   const { node, nodetails, nocontrols } = props;
   const {
@@ -55,6 +59,7 @@ export function TechNode(props: Props) {
     required_experiments,
     discount_experiments,
     discount_boosts,
+    required_surveyed_objects = {}, // voidcrew edit - survey gating
   } = node_cache[path];
   const [techwebRoute, setTechwebRoute] = useTechWebRoute();
 
@@ -87,6 +92,35 @@ export function TechNode(props: Props) {
       value={techcompl / prerequisite_nodes.length}
     >
       Tech ({techcompl}/{prerequisite_nodes.length})
+    </ProgressBar>
+  );
+
+  // voidcrew edit - survey gating. A node can also require that the ship has charted
+  // some number of celestial objects of a given kind; the tally arrives on ui_data and
+  // is absent entirely on the NTOS Science app, hence the defensive reads.
+  // node_cache is only loosely typed coming out of the remapper, so name the shape here.
+  const surveyEntries: [string, number][] = Object.entries(
+    (required_surveyed_objects ?? {}) as Record<string, number>,
+  );
+  const surveyedOf = (objectType: string) => surveyed_objects?.[objectType] ?? 0;
+  const surveysRequired = surveyEntries.reduce(
+    (total, [, needed]) => total + needed,
+    0,
+  );
+  const surveysDone = surveyEntries.reduce(
+    (total, [objectType]) => total + surveyedOf(objectType),
+    0,
+  );
+  const surveyProgress = (
+    <ProgressBar
+      ranges={{
+        good: [0.5, Infinity],
+        average: [0.25, 0.5],
+        bad: [-Infinity, 0.25],
+      }}
+      value={surveysRequired === 0 ? 1 : surveysDone / surveysRequired}
+    >
+      Surveys ({surveysDone}/{surveysRequired})
     </ProgressBar>
   );
 
@@ -198,6 +232,12 @@ export function TechNode(props: Props) {
               {experimentProgress}
             </Stack.Item>
           )}
+          {/* voidcrew edit - survey gating */}
+          {surveyEntries.length > 0 && (
+            <Stack.Item grow basis={0}>
+              {surveyProgress}
+            </Stack.Item>
+          )}
         </Stack>
       )}
       <Box className="Techweb__NodeDescription" mb={2}>
@@ -266,8 +306,31 @@ export function TechNode(props: Props) {
             if (thisExp === null || thisExp === undefined) {
               return <LockedExperiment key={index} />;
             }
-            return <Experiment key={thisExp.name} exp={thisExp} />;
+            return <NodeExperiment key={thisExp.name} exp={thisExp} />;
           })}
+        </Collapsible>
+      )}
+      {/* voidcrew edit - survey gating */}
+      {surveyEntries.length > 0 && (
+        <Collapsible textAlign="center" title="Required Surveys">
+          <Stack>
+            {surveyEntries.map(([objectType, needed]) => (
+              <Stack.Item textAlign="center" width="100%" key={objectType}>
+                <ProgressBar
+                  ranges={{
+                    good: [1, Infinity],
+                    average: [0.5, 1],
+                    bad: [-Infinity, 0.5],
+                  }}
+                  value={surveyedOf(objectType) / needed}
+                >
+                  {objectType.charAt(0).toUpperCase() +
+                    objectType.slice(1).replaceAll('_', ' ')}{' '}
+                  ({surveyedOf(objectType)}/{needed})
+                </ProgressBar>
+              </Stack.Item>
+            ))}
+          </Stack>
         </Collapsible>
       )}
       {Object.keys(discount_experiments).length > 0 && (
@@ -281,16 +344,39 @@ export function TechNode(props: Props) {
               return <LockedExperiment key={index} />;
             }
             return (
-              <Experiment key={thisExp.name} exp={thisExp}>
+              <NodeExperiment key={thisExp.name} exp={thisExp}>
                 <Box className="Techweb__ExperimentDiscount">
                   Provides a discount of {discount_experiments[k]} points to all
                   required point pools.
                 </Box>
-              </Experiment>
+              </NodeExperiment>
             );
           })}
         </Collapsible>
       )}
     </Section>
+  );
+}
+
+/**
+ * voidcrew edit - the node view lists experiments whether or not they are done, and the
+ * card itself only shows a raw progress tally, which for shared-tally experiments (fish)
+ * can even read as "8/7". Say outright when one is already in the bag.
+ */
+function NodeExperiment(props: {
+  exp: ExperimentData;
+  children?: ReactNode;
+}) {
+  const { exp, children } = props;
+  return (
+    <Experiment exp={exp}>
+      {!!exp.completed && (
+        <Box color="good" bold mb={1}>
+          <Icon name="check" mr={1} />
+          Experiment completed.
+        </Box>
+      )}
+      {children}
+    </Experiment>
   );
 }

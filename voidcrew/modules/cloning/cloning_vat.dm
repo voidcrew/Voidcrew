@@ -282,7 +282,7 @@
 	if(!ishuman(user))
 		balloon_alert(user, "incompatible lifeform!")
 		return
-	if(user.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(user))
 		return
 	if(isnull(user.mind) || isnull(user.client))
 		balloon_alert(user, "no neural signature!")
@@ -306,7 +306,7 @@
 	if(tgui_alert(user, prompt, name, list("Imprint", "Cancel")) != "Imprint")
 		return
 	// Revalidate after the blocking prompt.
-	if(QDELETED(src) || QDELETED(user) || user.stat != STABLE || isnull(user.mind) || !user.can_perform_action(src))
+	if(QDELETED(src) || QDELETED(user) || IS_UNCONSCIOUS_OR_CRIT(user) || isnull(user.mind) || !user.can_perform_action(src))
 		return
 	do_imprint(user)
 

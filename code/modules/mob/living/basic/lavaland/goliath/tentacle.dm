@@ -145,7 +145,12 @@
 		tentacle = null
 	if (leash)
 		UnregisterSignal(leash, COMSIG_QDELETING)
-		QDEL_NULL(leash)
+		// We may have been qdeleted BY the leash's own teardown (release() fires on the
+		// leash's COMSIG_QDELETING), in which case it is mid-Destroy and re-qdeling it
+		// trips the "destroy proc called multiple times" CRASH. Just drop the ref.
+		if (!QDELETED(leash))
+			qdel(leash)
+		leash = null
 	QDEL_NULL(beam_effect)
 
 /obj/item/restraints/legcuffs/goliath_tentacle/equipped(mob/living/user, slot, initial)

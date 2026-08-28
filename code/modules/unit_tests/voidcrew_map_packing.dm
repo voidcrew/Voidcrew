@@ -624,7 +624,7 @@
 	// An instanced area must not have replaced the type's singleton: the next loader to ask
 	// for it (a station ruin, a planet, another encounter) would be handed this one's copy.
 	for(var/area/ruin/instanced as anything in (first_areas + second_areas))
-		if(!(instanced.area_flags & UNIQUE_AREA))
+		if(!(instanced.area_flags_mapping & UNIQUE_AREA))
 			continue
 		if(GLOB.areas_by_type[instanced.type] == instanced)
 			continue

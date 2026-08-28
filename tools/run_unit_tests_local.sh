@@ -26,6 +26,46 @@ kill_world() {
 	done
 }
 
+# --- Pre-flight: parent/override signature-drift lint (WARN-ONLY) -------------------
+# Deliberately placed BEFORE the compile rather than at the end of this file: every exit
+# path of the suite wait-loop below returns from inside that loop, so a stanza appended
+# to the end of this script would be unreachable. Running it here also fails fast, before
+# a 45-90 minute suite.
+#
+# What it catches: upstream changes a proc's parameter list, a fork override still
+# declares the OLD list, DM binds positionally, and the override silently reads the wrong
+# values. That shipped: pirate AI went inert this upgrade on exactly this. DM
+# cannot express the check itself (no reflection over parameter lists; #pragma
+# InvalidOverride only fires when the parent proc is absent entirely), so it is a static
+# script.
+#
+# This NEVER fails the test run - it only prints. Standalone invocation:
+#   python tools/ci/check_override_signatures.py            # fork-vs-upstream
+#   python tools/ci/check_override_signatures.py --all      # whole tree
+#   python tools/ci/check_override_signatures.py --selftest # parser unit tests
+SIG_LINT="tools/ci/check_override_signatures.py"
+PYTHON_BIN=""
+for candidate in python python3 py; do
+	if command -v "$candidate" >/dev/null 2>&1; then
+		PYTHON_BIN="$candidate"
+		break
+	fi
+done
+if [ -z "$PYTHON_BIN" ]; then
+	echo ">> [signature lint] SKIPPED: no python on PATH (this does not affect the suite)."
+elif [ ! -f "$SIG_LINT" ]; then
+	echo ">> [signature lint] SKIPPED: $SIG_LINT not found."
+else
+	echo ">> [signature lint] Checking fork overrides against upstream proc signatures..."
+	if "$PYTHON_BIN" "$SIG_LINT"; then
+		echo ">> [signature lint] clean (no non-baselined errors)."
+	else
+		echo ">> [signature lint] ^^ NON-BASELINED FINDINGS ABOVE - warn-only, the suite continues."
+		echo ">> [signature lint] Each is a silent positional-rebind risk. Fix the override, or"
+		echo ">> [signature lint] add it to tools/ci/override_signatures_baseline.json if intended."
+	fi
+fi
+
 echo ">> Compiling: build.bat dm -DCIBUILDING -DRUNNING_LOCAL_TESTS"
 compile_ok=0
 for attempt in 1 2 3 4 5; do

@@ -620,7 +620,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
  */
 /area/ruin/space/has_grav/vestige/arena
 	name = "vestige arena"
-	area_flags = HIDDEN_AREA | UNIQUE_AREA | NOTELEPORT
+	area_flags = HIDDEN_AREA | NOTELEPORT // UNIQUE_AREA is the area_flags_mapping default
 	ambience_index = AMBIENCE_SPOOKY
 	// Arenas carry no APC and nobody is coming to fix one. Without this, every
 	// mapped light is dead on arrival and the whole fight happens in the dark.

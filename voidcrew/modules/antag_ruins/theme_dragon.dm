@@ -881,7 +881,7 @@
 /obj/item/vestige_gust_charm/proc/is_lunging_menace(mob/living/menace, mob/living/keeper)
 	if(!vestige_is_wild_quarry(menace, keeper))
 		return FALSE
-	if(menace.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(menace))
 		return FALSE
 	var/atom/quarry
 	var/datum/ai_controller/instincts = menace.ai_controller

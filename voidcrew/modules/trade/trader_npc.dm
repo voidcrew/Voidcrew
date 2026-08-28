@@ -215,7 +215,7 @@
 	say(line)
 
 // Idle chatter on the mob's life tick, roughly once every few minutes
-/mob/living/basic/outpost_trader/Life(seconds_per_tick, times_fired)
+/mob/living/basic/outpost_trader/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(!shop || !COOLDOWN_FINISHED(src, idle_line_cooldown))
 		return

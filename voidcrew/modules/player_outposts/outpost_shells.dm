@@ -33,6 +33,7 @@
 	// No UNIQUE_AREA: every shell load must instantiate its own area so
 	// multiple player outposts don't share one area datum
 	area_flags = NOTELEPORT
+	area_flags_mapping = NONE
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
 	repels_megafauna = TRUE // voidcrew/area/megafauna_ban.dm

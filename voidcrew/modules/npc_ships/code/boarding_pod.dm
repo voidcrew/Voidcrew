@@ -237,10 +237,14 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	// Swap to boss patrolling controller
 	if(new_controller_type)
 		log_shuttle("PATROL: Creating new boss controller of type [new_controller_type]")
-		boarder.ai_controller.set_ai_status(AI_STATUS_OFF)
-		qdel(boarder.ai_controller)
-		boarder.ai_controller = new new_controller_type(boarder)
-		boarder.ai_controller.set_ai_status(AI_STATUS_ON)
+		// PossessPawn() already qdels the old controller, assigns itself to the pawn and calls
+		// reset_ai_status(), so constructing it is the whole swap. reset, not a forced
+		// set_ai_status(AI_STATUS_ON), matching the non-boss path above: forcing ON skips
+		// get_expected_ai_status(), which can park the controller in the ON bucket with
+		// able_to_run still FALSE - and /datum/ai_movement qdels every moveloop started in
+		// that state, so the boss would hold position forever.
+		new new_controller_type(boarder)
+		boarder.ai_controller?.reset_ai_status()
 
 	// Assign patrol path
 	var/result = assign_mob_to_patrol(boarder, target_ship)

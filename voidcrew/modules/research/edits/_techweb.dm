@@ -4,8 +4,27 @@
 	/// Research data collected from a survey console. Used to restrict tech behind surveys
 	var/datum/survey_research/survey_data
 
+/**
+ * Upstream's Destroy nulls the node/design lists but never clears the three membership lists, so
+ * a dead techweb leaves every machine that was multitooled to it still holding it - a gutted
+ * datum whose researched_designs and available_nodes are null. The console keeps reporting
+ * itself linked and its catalogue stays empty for the rest of the round.
+ *
+ * That never mattered for the station's permanent web. Here a techweb dies whenever its ship
+ * disk does, so cut the machines loose while there is still something to cut them loose from.
+ */
 /datum/techweb/Destroy()
 	survey_data = null
+	// The union is already a fresh list, which it needs to be: unsync_research_servers() removes
+	// entries from connected_machines and consoles_accessing as it goes.
+	for(var/atom/linked in (connected_machines | consoles_accessing))
+		linked.unsync_research_servers()
+	// Servers live in their own list and aren't reached by the above.
+	for(var/obj/machinery/rnd/server/server in techweb_servers)
+		server.stored_research = null
+	connected_machines?.Cut()
+	consoles_accessing?.Cut()
+	techweb_servers?.Cut()
 	return ..()
 
 /datum/techweb/proc/have_surveys_for_node(datum/techweb_node/node)

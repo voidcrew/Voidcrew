@@ -207,7 +207,7 @@
 
 		if(caves)
 			var/area/A = gen_turf.loc
-			if(!(A.area_flags & CAVES_ALLOWED))
+			if(!(A.area_flags_mapping & CAVES_ALLOWED))
 				continue
 
 		switch(humidity)

@@ -69,7 +69,7 @@
 	SIGNAL_HANDLER
 	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
 		return NONE
-	if(source.stat != STABLE || source.body_position == LYING_DOWN || source.buckled)
+	if(IS_UNCONSCIOUS_OR_CRIT(source) || source.body_position == LYING_DOWN || source.buckled)
 		return NONE
 	if(!istype(hitting_projectile) || !hitting_projectile.is_hostile_projectile())
 		return NONE

@@ -145,7 +145,10 @@
 	if(num_reactions)
 		SEND_SIGNAL(src, COMSIG_REAGENTS_REACTION_STEP, num_reactions, seconds_per_tick)
 
-	if(length(mix_message) && !HAS_TRAIT(my_atom, TRAIT_SILENT_REACTIONS)) //This is only at the end
+	// A reaction can destroy its own container mid-loop (meth explosions, food recipes that
+	// qdel the beaker), which nulls my_atom out from under us. HAS_TRAIT is null-safe so it
+	// does not catch that on its own - end_reaction() already carries the same isnull guard.
+	if(length(mix_message) && !isnull(my_atom) && !HAS_TRAIT(my_atom, TRAIT_SILENT_REACTIONS)) //This is only at the end
 		my_atom.audible_message(span_notice("[icon2html(my_atom, viewers(DEFAULT_MESSAGE_RANGE, src))] [mix_message.Join()]"))
 
 	if(!LAZYLEN(reaction_list))

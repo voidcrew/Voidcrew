@@ -1,1 +1,1 @@
-{"type":"/datum/bt_node/composite/parallel","children":[{"type":"/datum/bt_node/subtree/npc_ship_combat"},{"type":"/datum/bt_node/subtree/npc_ship_movement"}],"success_policy":1}
+{"type":"/datum/bt_node/composite/parallel","children":[{"type":"/datum/bt_node/subtree/npc_ship_combat"},{"type":"/datum/bt_node/subtree/npc_ship_movement"}],"success_policy":1,"failure_policy":1}

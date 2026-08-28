@@ -238,7 +238,7 @@
  * question, the same way the drake's swoop chains into cone and meteors.
  */
 /mob/living/basic/hoarfrost_matriarch/proc/on_avalanche_landed()
-	if(!calved || inert || stat != STABLE)
+	if(!calved || inert || IS_UNCONSCIOUS_OR_CRIT(src))
 		return
 	if(!killing_cold?.IsAvailable())
 		return
@@ -269,7 +269,8 @@
 
 /mob/living/basic/hoarfrost_matriarch/early_melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
 	if(inert)
-		return FALSE
+		// BASIC_MOB_CONTINUE_ATTACK_CHAIN is 0, so a bare FALSE here means "swing anyway".
+		return BASIC_MOB_END_ATTACK_CHAIN
 	return ..()
 
 // =========================================================================
@@ -319,7 +320,7 @@
 // ANTI-CHEESE
 // =========================================================================
 
-/mob/living/basic/hoarfrost_matriarch/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/hoarfrost_matriarch/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(stat == DEAD)
 		return

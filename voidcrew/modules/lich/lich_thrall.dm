@@ -97,7 +97,7 @@
 /proc/can_be_lich_thralled(mob/living/target)
 	if(!isliving(target) || QDELETED(target))
 		return FALSE
-	if(target.stat != STABLE) // never a corpse, never a crit victim
+	if(IS_UNCONSCIOUS_OR_CRIT(target)) // never a corpse, never a crit victim, never someone out cold
 		return FALSE
 	if(HAS_TRAIT(target, TRAIT_LICH_THRALL_SPENT))
 		return FALSE
@@ -225,7 +225,7 @@
 		qdel(src)
 		return
 	// And it never rides a body that has stopped being a person.
-	if(owner.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(owner))
 		qdel(src)
 		return
 
@@ -417,7 +417,7 @@
 	var/mob/living/living_pawn = pawn
 	if(!isliving(living_pawn))
 		return AI_UNABLE_TO_RUN
-	if(living_pawn.stat > STABLE || INCAPACITATED_IGNORING(living_pawn, INCAPABLE_GRAB))
+	if(IS_UNCONSCIOUS_OR_CRIT(living_pawn) || INCAPACITATED_IGNORING(living_pawn, INCAPABLE_GRAB))
 		return AI_UNABLE_TO_RUN
 	return ..()
 

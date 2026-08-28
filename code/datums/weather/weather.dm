@@ -268,6 +268,8 @@
 
 	// add in dead mobs so we can get observers covered too
 	for(var/mob/living/affected as anything in GLOB.mob_living_list | GLOB.dead_mob_list)
+		if(!can_hear_weather(affected)) // VOIDCREW EDIT ADDITION - see can_hear_weather()
+			continue
 		if(isnull(affected.client))
 			// this registers 400+ odd signals... maybe we should reconsider
 			RegisterSignal(affected, COMSIG_MOB_LOGIN, PROC_REF(handle_mob_log_in))
@@ -276,6 +278,27 @@
 		manually_setup_sound_manager_on_mob(affected, playlist, filtered_zs)
 
 	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_CREATED, PROC_REF(handle_new_mob_sound_manager))
+
+// VOIDCREW EDIT ADDITION BEGIN
+/**
+ * Whether this storm's ambience is this mob's to hear.
+ *
+ * Upstream hands a sound manager to every mob in the round, on the assumption that a storm
+ * running on a z-level that lacks its climate trait is a rare forced event. On a packed
+ * level it is the ordinary case: only the FIRST tenant publishes its climate to the level
+ * (see apply_planet_level_traits()), so three planets in four take that path for every storm
+ * they run, and every crew in the round - on the other planets, on their ships - collected a
+ * manager for weather they are nowhere near. /datum/component/area_sound_manager is
+ * COMPONENT_DUPE_ALLOWED, so those stack one loop per concurrent storm.
+ *
+ * A storm with no site - admin weather, station traits, the wizard's rain - keeps upstream's
+ * answer, so nothing off the overmap changes.
+ */
+/datum/weather/proc/can_hear_weather(mob/listener)
+	if(isnull(weather_site))
+		return TRUE
+	return weather_site.contains_turf(get_turf(listener))
+// VOIDCREW EDIT ADDITION END
 
 /// Returns a reference to the "sound playlist" for this weather type
 /datum/weather/proc/get_playlist_ref()
@@ -292,6 +315,9 @@
 /datum/weather/proc/handle_new_mob_sound_manager(datum/source, mob/the_mob)
 	SIGNAL_HANDLER
 
+	if(!can_hear_weather(the_mob)) // VOIDCREW EDIT ADDITION - see can_hear_weather()
+		return
+
 	if(isnull(the_mob.client))
 		RegisterSignal(the_mob, COMSIG_MOB_LOGIN, PROC_REF(handle_mob_log_in))
 		return
@@ -304,6 +330,9 @@
 	if(stage >= END_STAGE)
 		stack_trace("Attempted to add a sound manager to a mob after weather ended")
 		UnregisterSignal(source, COMSIG_MOB_LOGIN)
+		return
+
+	if(!can_hear_weather(source)) // VOIDCREW EDIT ADDITION - see can_hear_weather()
 		return
 
 	manually_setup_sound_manager_on_mob(source)

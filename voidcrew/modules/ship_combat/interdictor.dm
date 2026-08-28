@@ -789,7 +789,7 @@
 /obj/machinery/ship_combat/interdictor/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.buffer = src
+		tool.set_buffer(src)
 		balloon_alert(user, "interdictor buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE

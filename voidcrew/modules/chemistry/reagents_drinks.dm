@@ -11,8 +11,12 @@
 	taste_description = "the wild west"
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
-/datum/reagent/consumable/sunset_sarsaparilla/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, times_fired)
-	var/heal_amt = 1.5 * REM * seconds_per_tick
+/datum/reagent/consumable/sunset_sarsaparilla/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
+	// REM RESTORATION: was 1.5 * REM(0.5) * spt == 1.5 brute AND 1.5 burn healed per 2s tick (0.75/s each).
+	// REM is now 2.5, which made it 5x. /datum/reagent/consumable keeps the default metabolization_rate
+	// (0.2) and sets REAGENT_UNAFFECTED_BY_METABOLISM, so metabolization_ratio == 1.0 at a normal 2s tick
+	// regardless of the drinker's metabolism_efficiency; the coefficient halves: 0.75 * 1.0 * 2 == 1.5.
+	var/heal_amt = 0.75 * metabolization_ratio * seconds_per_tick
 	drinker.heal_bodypart_damage(brute = heal_amt, burn = heal_amt, updating_health = FALSE)
 	drinker.updatehealth()
 	return ..()
@@ -38,9 +42,15 @@
 	taste_description = "sweet brass"
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
-/datum/reagent/consumable/ethanol/ratvander/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, times_fired)
-	drinker.adjust_timed_status_effect(6 SECONDS * REM * seconds_per_tick, /datum/status_effect/speech/slurring/cult, max_duration = 6 SECONDS)
-	drinker.adjust_stutter_up_to(6 SECONDS * REM * seconds_per_tick, 6 SECONDS)
+/datum/reagent/consumable/ethanol/ratvander/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
+	// REM RESTORATION: both were 6 SECONDS * REM(0.5) * spt == 6 SECONDS of duration added per 2s tick
+	// (3 SECONDS/s), which saturates the 6 SECONDS cap in a single tick. REM is now 2.5, which made it
+	// 30 SECONDS per tick - hidden by the cap, but wrong, so it is restored anyway. Ethanol's
+	// metabolization_rate is 0.5x default, so metabolization_ratio == 0.5 at a normal 2s tick and
+	// 6 SECONDS / (2 * 0.5) == 6 SECONDS: the coefficient is unchanged and only the idiom moves.
+	// 6 SECONDS * 0.5 * 2 == 6 SECONDS added per tick, as shipped.
+	drinker.adjust_timed_status_effect(6 SECONDS * metabolization_ratio * seconds_per_tick, /datum/status_effect/speech/slurring/cult, max_duration = 6 SECONDS)
+	drinker.adjust_stutter_up_to(6 SECONDS * metabolization_ratio * seconds_per_tick, 6 SECONDS)
 	return ..()
 
 /datum/glass_style/drinking_glass/ratvander

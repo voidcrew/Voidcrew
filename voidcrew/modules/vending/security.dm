@@ -61,10 +61,28 @@
 		"Cryo Pistol" = /obj/item/gun/energy/laser/thermal/cryo
 		)
 
-/obj/machinery/vending/security/marine/attackby(obj/item/item, mob/user, params)
-	if(istype(item, /obj/item/gun_voucher))
-		RedeemVoucher(item, user)
-		return
+// Was an attackby() override. Upstream moved the vendor's insert/restock handling out of
+// /obj/machinery/vending/attackby and into /obj/machinery/vending/item_interaction
+// (code/modules/vending/vendor/interaction.dm), which base_item_interaction runs BEFORE
+// attackby. That proc's last branch fires for anyone who passes compartmentLoadAccessCheck()
+// with combat mode off - which is exactly the marine who is holding the voucher - and
+// returns loadingAttempt() ? SUCCESS : FAILURE. A voucher is in no product list, so
+// canLoadItem() refuses it with "[src] does not accept [voucher]!" and returns FAILURE,
+// which is ITEM_INTERACT_BLOCKING: the chain stops there and attackby never runs, so the
+// redemption menu never opens. Latent today - nothing in the tree spawns /obj/item/gun_voucher
+// (the vendors are mapped, the vouchers are not), so this has never been seen in a round -
+// but it is the same break, and it fixes itself the same way: catch the voucher in the same
+// hook, ahead of the parent.
+//
+// Click trace, clicking the vendor with a voucher: base_item_interaction -> (voucher has no
+// tool_behaviour, tool_act no-ops) -> item_interaction -> HERE -> radial menu -> gun spawned,
+// voucher consumed, ITEM_INTERACT_SUCCESS, no bash. Right-click lands here too
+// (item_interaction_secondary defaults to item_interaction). Every other item falls to ..()
+// and restocks/loads exactly as upstream intends.
+/obj/machinery/vending/security/marine/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(istype(tool, /obj/item/gun_voucher))
+		RedeemVoucher(tool, user)
+		return ITEM_INTERACT_SUCCESS
 	return ..()
 
 /obj/machinery/vending/security/marine/proc/RedeemVoucher(obj/item/gun_voucher/voucher, mob/redeemer)

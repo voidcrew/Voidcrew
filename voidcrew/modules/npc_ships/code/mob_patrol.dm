@@ -1868,8 +1868,13 @@
  * leaf, which is a LOWER priority branch, so this needs BT_ABORT_LOWER_PRIORITY to take
  * over the tick that the flag goes up rather than waiting for patrol to release.
  */
+// BOTH, not LOWER_PRIORITY alone: explore_travel legitimately sits on BT_RUNNING for many
+// ticks, and while a decorator's child is running tick() skips check_condition() entirely.
+// Without the SELF bit the two conditions below can never fire once we are inside the branch,
+// so a mob that acquired a target mid-room kept walking to its waypoint instead of turning to
+// fight. The ship subtrees already gate their hold branches this way.
 /datum/bt_node/decorator/exploring_room
-	observer_abort = BT_ABORT_LOWER_PRIORITY
+	observer_abort = BT_ABORT_BOTH
 
 /datum/bt_node/decorator/exploring_room/check_condition(datum/ai_controller/controller)
 	if(!controller.blackboard[BB_EXPLORING_ROOM])
@@ -1977,11 +1982,21 @@
  * VOIDCREW: holds the tick while exploration bookkeeping advances the index.
  * The old subtree returned SUBTREE_RETURN_FINISH_PLANNING on those ticks, which stopped
  * patrol from taking over mid-room; a failing branch here would hand the tick to patrol.
+ *
+ * SUCCEEDED, not a bare AI_BEHAVIOR_INSTANT. INSTANT is NONE, so a lone `return
+ * AI_BEHAVIOR_INSTANT` sets neither result bit and /datum/bt_node/ai_behavior/tick() falls
+ * through to BT_RUNNING - forever, since nothing here ever completes. That latched the whole
+ * exploration branch: the parallel never finishes, and /datum/bt_node/decorator's child_active
+ * then makes exploring_room skip its own check_condition() and delegate straight back into the
+ * held branch, so the mob never reached the patrol step again and simply stopped moving.
+ * Succeeding consumes the tick exactly like FINISH_PLANNING did - patrol still does not get
+ * this tick, because the enclosing selector stops at a successful child - and the tree
+ * re-plans cleanly next tick.
  */
 /datum/bt_node/ai_behavior/exploration_hold
 
 /datum/bt_node/ai_behavior/exploration_hold/perform(seconds_per_tick, datum/ai_controller/controller)
-	return AI_BEHAVIOR_INSTANT
+	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
 /**
  * Behavior that opens a closet during exploration.
@@ -2081,7 +2096,16 @@
 	target_source = /datum/target_source/range_living
 	vision_range = 9
 
-/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/should_keep_target(datum/ai_controller/controller, datum/targeting_strategy/strategy, atom/current_target)
+// Signature tracks the parent's; upstream #97208 inserted priority_strategy ahead of
+// current_target and appended the resolved range. DM binds positionally, so an override
+// still on the old three-arg list silently reads priority_strategy as the target.
+/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/should_keep_target(
+	datum/ai_controller/controller,
+	datum/targeting_strategy/strategy,
+	datum/target_priority_strategy/priority_strategy,
+	atom/current_target,
+	resolved_vision_range,
+)
 	if(QDELETED(current_target))
 		return FALSE
 
@@ -2100,7 +2124,7 @@
 	// Non-mob target, keep it
 	return TRUE
 
-/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/pick_final_target(datum/ai_controller/controller, list/filtered_targets)
+/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/pick_final_target(datum/ai_controller/controller, list/filtered_targets, datum/target_priority_strategy/priority_strategy, atom/current_target)
 	// Pick closest target
 	var/atom/best_target
 	var/best_dist = INFINITY

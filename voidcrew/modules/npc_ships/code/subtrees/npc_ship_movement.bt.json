@@ -22,6 +22,7 @@
 						"child": {
 							"type": "parallel",
 							"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+							"failure_policy": "BT_PARALLEL_FAILURE_ANY",
 							"children": [
 								{
 									"type": "leaf",
@@ -40,6 +41,7 @@
 						"child": {
 							"type": "parallel",
 							"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+							"failure_policy": "BT_PARALLEL_FAILURE_ANY",
 							"children": [
 								{
 									"type": "leaf",
@@ -55,6 +57,7 @@
 					{
 						"type": "parallel",
 						"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+						"failure_policy": "BT_PARALLEL_FAILURE_ANY",
 						"children": [
 							{
 								"type": "leaf",
@@ -101,6 +104,7 @@
 										"child": {
 											"type": "parallel",
 											"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+											"failure_policy": "BT_PARALLEL_FAILURE_ANY",
 											"children": [
 												{
 													"type": "leaf",

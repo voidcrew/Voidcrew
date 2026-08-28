@@ -126,12 +126,14 @@
 	if(!SSmapping.initialized)
 		return
 
-	var/list/stack_levels = SSmapping.get_connected_levels(get_turf(mymob.client?.eye || mymob))
+	var/turf/eye_turf = get_turf(mymob.client?.eye || mymob) // VOIDCREW EDIT - kept, shows_on_turf() needs the turf and not just its z-stack
+	var/list/stack_levels = SSmapping.get_connected_levels(eye_turf)
 	// And add all ongoing weather to ourselves
 	for (var/holder_offset, holder_list in SSweather.particle_holders)
 		for (var/obj/effect/abstract/weather_holder/holder as anything in holder_list)
-			// Only display particles from the same Z-stack as our mob's
-			if (holder.plane == plane && length(holder_list[holder] & stack_levels))
+			// Only display particles from the same Z-stack as our mob's, and - VOIDCREW EDIT - only
+			// from the storm belonging to the place our mob is actually standing in
+			if (holder.plane == plane && holder.shows_on_turf(holder_list[holder], stack_levels, eye_turf))
 				vis_contents += holder
 
 /atom/movable/screen/plane_master/rendering_plate/particle_weather/proc/z_changed(datum/source, new_z)
@@ -144,12 +146,15 @@
 		return
 
 	var/list/stack_levels = SSmapping.get_connected_levels(new_z)
+	// VOIDCREW EDIT ADDITION - which of the places sharing this level our mob landed in, for shows_on_turf()
+	var/mob/viewer = home?.our_hud?.mymob
+	var/turf/eye_turf = get_turf(viewer?.client?.eye || viewer)
 	for (var/holder_offset, holder_list in SSweather.particle_holders)
 		for (var/obj/effect/abstract/weather_holder/holder as anything in holder_list)
 			if (holder.plane != plane)
 				continue
 
-			if (length(holder_list[holder] & stack_levels))
+			if (holder.shows_on_turf(holder_list[holder], stack_levels, eye_turf)) // VOIDCREW EDIT - was a bare z-stack intersection
 				vis_contents |= holder
 			else
 				vis_contents -= holder

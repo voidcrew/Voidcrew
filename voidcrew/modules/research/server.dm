@@ -29,25 +29,51 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	GLOB.ship_research_servers += src
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND_SECONDARY, PROC_REF(on_attack_hand_secondary))
 
+/**
+ * Correct the inherited hint. /obj/machinery/rnd/examine offers "a multitool with techweb designs
+ * can be uploaded here", which is true of every other R&D machine and false of this one: the
+ * multitool_act override below only ever reads the techweb OUT. The disk is the way in, and this
+ * is the exact step crews get stuck on.
+ */
+/obj/machinery/rnd/server/ship/examine(mob/user)
+	. = ..()
+	if(!in_range(user, src) && !isobserver(user))
+		return
+	if(isnull(source_code_hdd))
+		. += span_warning("It holds no source code drive, so there is no research on it yet. Slot an R&D server source code disk into it.")
+		return
+	. += span_notice("Copy its techweb out with a [EXAMINE_HINT("multitool")], then use that multitool on a console, fabricator or scanner to link it.")
+
 /obj/machinery/rnd/server/ship/Destroy()
 	GLOB.ship_research_servers -= src
 	UnregisterSignal(src, COMSIG_ATOM_ATTACK_HAND_SECONDARY)
 	if(stored_research)
 		stored_research.techweb_servers -= src
 	if(source_code_hdd)
-		for(var/atom/everything_connected as anything in source_code_hdd.stored_research.connected_machines)
+		// Guarded: a disk whose techweb has already been destroyed (it was incinerated in here,
+		// say) has a null stored_research, and this used to runtime on the way out.
+		var/datum/techweb/disk_web = source_code_hdd.stored_research
+		for(var/atom/everything_connected in disk_web?.connected_machines)
 			everything_connected.unsync_research_servers()
 		source_code_hdd.forceMove(loc)
 		source_code_hdd = null
 	stored_research = null
 	return ..()
 
-/obj/machinery/rnd/server/ship/attacked_by(obj/item/attacking_item, mob/living/user)
+// Full parent signature (code/_onclick/item_attack.dm) - declaring fewer params here would drop
+// modifiers/attack_modifiers on the way through ..() for every melee hit on the server.
+/obj/machinery/rnd/server/ship/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(istype(attacking_item, /obj/item/disk/computer/ship_disk))
 		if(source_code_hdd)
 			balloon_alert(user, "disk already installed!")
 			return
-		if(!attacking_item.forceMove(src))
+		// forceMove's return value cannot be trusted for a held item: upstream's
+		// /obj/item/doMove (code/game/objects/items.dm, tg #93967) reroutes anything with
+		// IN_INVENTORY through owner.transferItemToLoc() and returns null even when the
+		// move succeeds. Checking `!forceMove(src)` here ate the disk - it landed in the
+		// server's contents but was never registered as the HDD. Verify the loc instead.
+		attacking_item.forceMove(src)
+		if(attacking_item.loc != src)
 			balloon_alert(user, "won't fit!")
 			return
 		source_code_hdd = attacking_item
@@ -99,7 +125,11 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	if(!source_code_hdd)
 		balloon_alert(user, "no disk!")
 		return
-	multi.buffer = source_code_hdd.stored_research
+	// set_buffer(), not a raw assignment: it registers COMSIG_QDELETING on the techweb so the
+	// multitool drops the reference when the disk dies, and unregisters whatever was in the
+	// buffer before. Assigning through left the old buffer's registration live, so the next
+	// legitimate set_buffer() of that same datum tripped a duplicate-registration stack trace.
+	multi.set_buffer(source_code_hdd.stored_research)
 	to_chat(user, span_notice("Stored [src]'s techweb information in [multi]."))
 	return TRUE
 
@@ -170,7 +200,10 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  */
 /obj/item/disk/computer/ship_disk
 	name = "R&D server source code"
-	desc = "The source code on this drive stores all the research from a ship, insert it into an R&D console to make use of it."
+	// It goes in the SERVER, not the console - the console is then multitooled to the server.
+	// The old wording sent people to the R&D console, which since upstream gave /obj/item/disk an
+	// item_interaction answers "Machine cannot accept disks in that format" and reads as broken.
+	desc = "The source code on this drive stores all the research from a ship. Slot it into an R&D server, then link consoles and fabricators to that server with a multitool."
 	// Matches /datum/design/ship_disk's cost so a hand-spawned disk is worth the same at
 	// the ORM as a printed one (the printed disk already inherits these).
 	custom_materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT * 2)

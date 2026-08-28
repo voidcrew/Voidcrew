@@ -233,7 +233,7 @@
 	// Committed to a move: no walking, no swinging, nothing queued on top.
 	if(is_locked(controller))
 		return BT_RUNNING
-	if(pawn.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(pawn))
 		return BT_FAILURE
 
 	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]

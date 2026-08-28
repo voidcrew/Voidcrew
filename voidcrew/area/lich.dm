@@ -22,7 +22,7 @@
 	name = "\improper The Verdigris"
 	icon_state = "away"
 	static_lighting = TRUE
-	area_flags = UNIQUE_AREA | NOTELEPORT
+	area_flags = NOTELEPORT // UNIQUE_AREA is the area_flags_mapping default
 	ambience_index = AMBIENCE_SPOOKY
 	sound_environment = SOUND_AREA_TUNNEL_ENCLOSED
 

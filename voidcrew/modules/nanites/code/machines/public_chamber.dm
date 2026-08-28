@@ -150,7 +150,7 @@
 		span_hear("You hear a metallic creaking from [src]."),
 	)
 	if(do_after(user,(breakout_time), target = src))
-		if(!user || user.stat != STABLE || user.loc != src || state_open || !locked || busy)
+		if(!user || IS_UNCONSCIOUS_OR_CRIT(user) || user.loc != src || state_open || !locked || busy)
 			return
 		locked = FALSE
 		user.visible_message(

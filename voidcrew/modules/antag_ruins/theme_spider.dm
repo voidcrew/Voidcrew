@@ -113,7 +113,7 @@
  * of one) counts, the Snare pays for interrupted hunts, not for wanderers.
  */
 /proc/vestige_loom_hunted_prey(mob/living/menace)
-	if(menace.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(menace))
 		return null
 	var/atom/quarry
 	var/datum/ai_controller/instincts = menace.ai_controller
@@ -138,7 +138,7 @@
  * wrap channel: the moment the beast shakes loose, the wrap tears.
  */
 /proc/vestige_loom_is_held_fast(mob/living/beast)
-	if(beast.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(beast))
 		return TRUE
 	if(beast.IsStun() || beast.IsParalyzed() || beast.IsKnockdown() || beast.IsImmobilized())
 		return TRUE

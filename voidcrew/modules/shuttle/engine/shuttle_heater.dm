@@ -190,9 +190,25 @@
 		air_contents.garbage_collect() //VOIDCREW: the flat moles list requires a collect after subtracting
 		return min(starting_amt, amount)
 
+/**
+ * Drives the maintenance-panel sprite.
+ *
+ * Upstream #95408 took the icon swap out of default_deconstruction_screwdriver (it used
+ * to be handed the open/closed states as arguments) and moved it into the appearance
+ * pass, so the panel state has to be painted from here or the sprite never changes.
+ * Atmos components route their icon through update_icon_nopipes(), which update_icon()
+ * always calls - an update_icon_state() override would be skipped on the underfloor branch.
+ *
+ * icon_state_open/_closed track the fuel source, and toggle_fuel_source() repoints them,
+ * so reading the vars keeps pipe mode and tank mode both correct.
+ */
+/obj/machinery/atmospherics/components/unary/shuttle/heater/update_icon_nopipes()
+	icon_state = panel_open ? icon_state_open : icon_state_closed
+
 /obj/machinery/atmospherics/components/unary/shuttle/heater/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/wrench_act(mob/living/user, obj/item/tool)
 	if(!panel_open)
@@ -214,20 +230,24 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/crowbar_act(mob/living/user, obj/item/tool)
-	if(default_pry_open(user, tool) & ITEM_INTERACT_SUCCESS)
-		return ITEM_INTERACT_SUCCESS
+	// No default_pry_open here. This is not an openable machine - it has no state_open
+	// sprite and no way back to closed - and open_machine() would dump the fuel tank on
+	// the floor and leave the heater permanently non-dense. The call used to be present
+	// but inert (it runtimed on the old arity); fixing the arity made it live, so a
+	// crowbar on an unpowered heater bricked the ship's thrust.
 	if(default_deconstruction_crowbar(user, tool))
 		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
-/obj/machinery/atmospherics/components/unary/shuttle/heater/attackby(obj/item/I, mob/living/user, params)
+/obj/machinery/atmospherics/components/unary/shuttle/heater/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	update_adjacent_engines()
-	if(istype(I, /obj/item/tank/internals))
+	if(istype(attacking_item, /obj/item/tank/internals))
 		if (fuel_tank)
 			try_put_in_hand(fuel_tank, user)
 			fuel_tank = null
-		user.transferItemToLoc(I, src)
-		fuel_tank = I
-		return
+		user.transferItemToLoc(attacking_item, src)
+		fuel_tank = attacking_item
+		return TRUE // handled; a falsy return lets the chain carry on past the insert
 	return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/attack_hand(mob/living/user, list/modifiers)

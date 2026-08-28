@@ -39,12 +39,14 @@
 			var/obj/effect/abstract/weather_holder/holder = new()
 			SET_PLANE_W_SCALAR(holder, RENDER_PLANE_PARTICLE_WEATHER, offset)
 			holder.particles = new particle_type()
+			holder.storm = src // VOIDCREW EDIT ADDITION - see /obj/effect/abstract/weather_holder/shows_on_turf()
 			object_list[holder] = impacted_z_levels
 
 		if (emissive_type)
 			var/obj/effect/abstract/weather_holder/holder = new()
 			holder.particles = new emissive_type()
 			SET_PLANE_W_SCALAR(holder, RENDER_PLANE_EMISSIVE_PARTICLE_WEATHER, offset)
+			holder.storm = src // VOIDCREW EDIT ADDITION - see /obj/effect/abstract/weather_holder/shows_on_turf()
 			object_list[holder] = impacted_z_levels
 
 		weather_objects += list(object_list)
@@ -120,6 +122,34 @@
 	appearance_flags = TILE_BOUND | PIXEL_SCALE
 	blocks_emissive = EMISSIVE_BLOCK_NONE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	/// VOIDCREW EDIT ADDITION - the storm these particles belong to. See shows_on_turf().
+	var/datum/weather/storm
+
+// VOIDCREW EDIT ADDITION BEGIN
+/**
+ * Whether these particles should be drawn for a viewer standing on `viewer_turf`.
+ *
+ * The z-stack test is upstream's, and it is the whole test upstream needs: one z-level is
+ * one place, so a storm impacting it is the only storm anybody standing there can be in.
+ *
+ * A packed z-level carries up to four planets, each with its own /datum/weather_site and its
+ * own climate, and they storm independently. Particle holders are indexed by z-level and
+ * nothing else, and the plane they hang on is alpha-masked by the UNION of every particle
+ * storm's area overlays - so a crew on the lava planet stood in their own ash storm's mask
+ * and had the jungle planet's rain drawn through it as well. Area scoping never caught this
+ * because it holds on overlays, alerts and mob effects, none of which particles go through.
+ *
+ * Storms with no site - admin weather, station traits, the wizard's rain - keep the plain
+ * z-stack answer.
+ */
+/obj/effect/abstract/weather_holder/proc/shows_on_turf(list/holder_zs, list/stack_levels, turf/viewer_turf)
+	if(!length(holder_zs & stack_levels))
+		return FALSE
+	var/datum/weather_site/site = storm?.weather_site
+	if(isnull(site))
+		return TRUE
+	return site.contains_turf(viewer_turf)
+// VOIDCREW EDIT ADDITION END
 
 /particles/weather
 	spawning = 0

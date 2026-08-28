@@ -299,7 +299,7 @@
 		STOP_PROCESSING(SSobj, src)
 		return
 	var/mob/living/body = keeper.current
-	if(!isliving(body) || body.stat != STABLE)
+	if(!isliving(body) || IS_UNCONSCIOUS_OR_CRIT(body))
 		return
 	if(loc != body) // it only drinks for the hand that carries it
 		return

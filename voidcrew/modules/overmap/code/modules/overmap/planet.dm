@@ -751,7 +751,7 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
 	var/area/created = new area_type(null)
 	if(!created)
 		return null
-	created.area_flags &= ~UNIQUE_AREA
+	created.area_flags_mapping &= ~UNIQUE_AREA
 	if(GLOB.areas_by_type[area_type] == created)
 		GLOB.areas_by_type[area_type] = previous_singleton
 	return created

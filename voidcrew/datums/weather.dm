@@ -86,8 +86,9 @@
  */
 /datum/weather/rad_storm/planetary/end()
 	if(stage == END_STAGE)
-		return
+		return FALSE
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_END(type), src)
+	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_CREATED)
 	stage = END_STAGE
 	SSweather.processing -= src
 	update_areas()
@@ -100,3 +101,8 @@
 		weather_site.active_weather = null
 	weather_site = null
 	QDEL_IN(src, 0)
+
+	if(target_trait)
+		for(var/mob/living/affected as anything in GLOB.mob_living_list | GLOB.dead_mob_list)
+			UnregisterSignal(affected, COMSIG_MOB_LOGIN)
+	return TRUE

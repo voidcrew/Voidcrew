@@ -86,6 +86,16 @@
 	src.downtime_multiplier = downtime_multiplier
 
 /datum/weather_site/Destroy(force)
+	// Deregister before anything else. SSweather holds a site in three places - weather_sites,
+	// weather_sites_by_zlevel["[z_value]"] and eligible_sites - and a site that is qdel'd
+	// without being unregistered stays in all three: fire() keeps rolling storms out of
+	// eligible_sites onto a deleted datum, and get_weather_sites_on_z() keeps handing it to
+	// callers. The production path (SSweather.unregister_weather_site() followed by a qdel)
+	// still works unchanged - unregister_weather_site() is a list subtraction and is
+	// idempotent, so running it twice costs nothing and running it never is now impossible.
+	SSweather?.unregister_weather_site(src)
+	// Belt and braces for a site deleted before SSweather exists (shuttle init, unit test
+	// fixtures): unregister_weather_site() does both of these itself, and both are idempotent.
 	clear_next_hit()
 	// Not a bare `active_weather = null`: a site deleted out from under a running storm used
 	// to orphan it, leaving the storm processing and its overlays painted on areas that are

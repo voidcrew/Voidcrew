@@ -174,7 +174,7 @@
 	var/mob/living/carbon/human/victim = target
 	// The mark wants a person: awake, upright, and someone home behind the eyes
 	// (mind check — mindless monkeys and empty bodies teach nothing)
-	if(victim.stat != STABLE || victim.body_position != STANDING_UP || !victim.mind)
+	if(IS_UNCONSCIOUS_OR_CRIT(victim) || victim.body_position != STANDING_UP || !victim.mind)
 		balloon_alert(user, "the seal wants someone awake and upright!")
 		return
 	if(is_source_facing_target(victim, user))
@@ -190,7 +190,7 @@
 	trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
 		return
-	if(victim.stat != STABLE || victim.body_position != STANDING_UP)
+	if(IS_UNCONSCIOUS_OR_CRIT(victim) || victim.body_position != STANDING_UP)
 		balloon_alert(user, "the moment passed!")
 		return
 	// They turned in time: the mark refused, the student caught red-handed
@@ -290,7 +290,7 @@
 		return
 	// The vigil holds only kneeling, conscious, incense in hand...
 	var/kneeling = holder.is_holding(src) \
-		&& holder.stat == STABLE \
+		&& !IS_UNCONSCIOUS_OR_CRIT(holder) \
 		&& holder.resting \
 		&& holder.body_position == LYING_DOWN
 	if(!kneeling)
@@ -308,7 +308,7 @@
 	// Witnesses sharpen the lesson: any other conscious creature in sight doubles the credit
 	var/credit = seconds_per_tick
 	for(var/mob/living/watcher in oview(7, holder))
-		if(watcher.stat != STABLE)
+		if(IS_UNCONSCIOUS_OR_CRIT(watcher))
 			continue
 		credit *= VESTIGE_STILLNESS_WITNESS_MULTIPLIER
 		break

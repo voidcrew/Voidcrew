@@ -221,10 +221,10 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/machinery/ship_combat/ew_suite/attackby(obj/item/W, mob/user, list/modifiers)
+/obj/machinery/ship_combat/ew_suite/attackby(obj/item/W, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.buffer = src
+		tool.set_buffer(src)
 		balloon_alert(user, "suite buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use it on a weapons system to link."))
 		return TRUE

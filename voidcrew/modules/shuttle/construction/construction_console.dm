@@ -432,8 +432,22 @@
 		qdel(rcd_effect)
 		return null
 
-	// Mount the camera like a handheld wallframe would: on the open turf, facing its wall
-	var/obj/machinery/camera/new_camera = new(target, wall_dir, TRUE)
+	// Mount the camera like a handheld wallframe would: spawn it on the open turf, aim it at
+	// the wall, THEN mount it. This used to be `new(target, wall_dir, TRUE)`, matching the old
+	// /obj/machinery/camera/Initialize(mapload, ndir, building) signature, where `building`
+	// made it setDir(ndir) and every camera hung itself on a wall from Initialize. Upstream
+	// cut that down to Initialize(mapload) and moved both jobs to the caller (see
+	// /obj/item/wallframe/interact_with_atom in code/game/objects/items/wall_mounted.dm, which
+	// does new -> setDir -> find_and_mount_on_atom in exactly this order). With the old call
+	// the extra args did not vanish quietly: wall_dir bound to `mapload`, so every RCD-built
+	// camera believed it was map-loaded - taking the mapload-only late-init mount path and,
+	// at 3% odds on a station-level z (every ship z is one), toggling itself OFF on spawn -
+	// while its dir was never set, so it faced its default and mounted on the wrong wall or
+	// no wall at all. Order matters here: camera/get_turfs_to_mount_on() reads get_step(src, dir),
+	// so the dir has to be right before the mount is attempted.
+	var/obj/machinery/camera/new_camera = new(target)
+	new_camera.setDir(wall_dir)
+	new_camera.find_and_mount_on_atom()
 	rcd_effect.end_animation()
 	return new_camera
 

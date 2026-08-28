@@ -339,7 +339,8 @@
 
 /mob/living/basic/vestige_oracle/early_melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
 	if(inert)
-		return FALSE
+		// BASIC_MOB_CONTINUE_ATTACK_CHAIN is 0, so a bare FALSE here means "swing anyway".
+		return BASIC_MOB_END_ATTACK_CHAIN
 	return ..()
 
 // ===== LET GO =====
@@ -386,7 +387,7 @@
 
 // ===== ANTI-CHEESE =====
 
-/mob/living/basic/vestige_oracle/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/vestige_oracle/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(stat == DEAD)
 		return
@@ -928,7 +929,7 @@
 	if(get_dist(owner, summoner) > call_range || !can_see(owner, summoner, call_range))
 		qdel(src)
 		return
-	if(owner.stat != STABLE || owner.buckled || HAS_TRAIT(owner, TRAIT_IMMOBILIZED))
+	if(IS_UNCONSCIOUS_OR_CRIT(owner) || owner.buckled || HAS_TRAIT(owner, TRAIT_IMMOBILIZED))
 		return
 	step_towards(owner, summoner)
 
@@ -1135,7 +1136,7 @@
 		// People get to keep their own legs. See the item's header.
 		if(listener.client || listener.mind)
 			continue
-		if(listener.stat != STABLE)
+		if(IS_UNCONSCIOUS_OR_CRIT(listener))
 			continue
 		listener.apply_status_effect(/datum/status_effect/oracle_called, src, pull_duration)
 

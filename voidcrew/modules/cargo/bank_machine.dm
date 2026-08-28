@@ -23,7 +23,7 @@
 
 /obj/machinery/computer/bank_machine/multitool_act(mob/living/user, obj/item/multitool/tool)
 	user.balloon_alert(user, "buffer saved in storage")
-	tool.buffer = src
+	tool.set_buffer(src)
 	return TRUE
 
 /obj/machinery/computer/bank_machine/ui_data(mob/user)
@@ -34,15 +34,35 @@
 
 	return data
 
-/obj/machinery/computer/bank_machine/attackby(obj/item/weapon, mob/user, params)
-	if(isidcard(weapon))
-		var/obj/item/card/id/id_weapon = weapon
-		synced_bank_account = id_weapon.registered_account
+// Was an attackby() override. Upstream moved the money-insert branch out of attackby
+// and into /obj/machinery/computer/bank_machine/item_interaction (code/game/machinery/
+// bank_machine.dm), which base_item_interaction runs BEFORE attackby - and that branch
+// qdel()s the inserted stack whether or not an account is linked. An attackby guard is
+// unreachable now, so the refusal has to sit in the same hook, ahead of upstream's body.
+//
+// Duplicate override on the same type: this file is included after the upstream one
+// (tgstation.dme lines 2418 then 7401), so this body is the outermost and ..() runs
+// upstream's. Same trick as process() and ui_act() below.
+//
+// Click trace (left or right click - item_interaction_secondary defaults to this proc,
+// and item_interaction runs in BOTH combat modes, so every path lands here):
+//   ID card                -> account bound, SUCCESS, no bash
+//   cash/holochip, no acct -> refusal, BLOCKING, cash survives (upstream never sees it)
+//   cash/holochip, acct    -> ..() deposits and consumes it, as upstream
+//   coin/poker chip        -> ..() (unguarded pre-upgrade too, matrix left as it was)
+//   anything else          -> ..() -> NONE -> normal attack chain
+/obj/machinery/computer/bank_machine/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(isidcard(tool))
+		var/obj/item/card/id/id_card = tool
+		synced_bank_account = id_card.registered_account
 		playsound(user, 'sound/machines/ding.ogg', 50, TRUE)
 		balloon_alert_to_viewers(user, "account updated")
+		return ITEM_INTERACT_SUCCESS
 
-	if(!synced_bank_account && (istype(weapon, /obj/item/stack/spacecash) || istype(weapon, /obj/item/holochip)))
-		return //don't let them continue the attack chain because they'll waste money on a machine with no account
+	if(!synced_bank_account && (istype(tool, /obj/item/stack/spacecash) || istype(tool, /obj/item/holochip)))
+		//don't let them continue the interaction chain because they'll waste money on a machine with no account
+		balloon_alert(user, "no account linked!")
+		return ITEM_INTERACT_BLOCKING
 
 	return ..()
 

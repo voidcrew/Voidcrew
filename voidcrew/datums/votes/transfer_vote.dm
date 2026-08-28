@@ -9,30 +9,29 @@
 	)
 	default_message = "Vote for crew transfer."
 
-/datum/vote/transfer_vote/toggle_votable(mob/toggler)
-	if(!toggler)
-		CRASH("[type] wasn't passed a \"toggler\" mob to toggle_votable.")
-
-	if(!check_rights_for(toggler.client, R_ADMIN))
-		return FALSE
-
+// Upstream's toggle_votable() takes no arguments and SSvote already gates the "toggleVote"
+// ui_act on check_rights_for(R_ADMIN), so the old (mob/toggler) override received null and
+// CRASHed on every admin toggle. Siblings (map_vote) just flip the config.
+/datum/vote/transfer_vote/toggle_votable()
 	CONFIG_SET(flag/allow_vote_transfer, !CONFIG_GET(flag/allow_vote_transfer))
-	return TRUE
 
 /datum/vote/transfer_vote/is_config_enabled()
 	return CONFIG_GET(flag/allow_vote_transfer)
 
-/datum/vote/transfer_vote/can_be_initiated(mob/by_who, forced)
-	. = ..()
-	if(!.)
-		return FALSE
-
+/**
+ * Upstream's can_be_initiated takes only (forced) and returns VOTE_AVAILABLE or a *string*
+ * explaining the refusal - SSvote shows that string in the vote panel. The old override took
+ * a leading (mob/by_who), so `forced` was always null and it returned TRUE/FALSE, neither of
+ * which is VOTE_AVAILABLE: the transfer vote could never be initiated at all.
+ *
+ * The parent already refuses on !is_config_enabled() with a generic message. This checks the
+ * same condition first only to name the config, then defers everything else to the parent.
+ */
+/datum/vote/transfer_vote/can_be_initiated(forced)
 	if(!forced && !CONFIG_GET(flag/allow_vote_transfer))
-		default_message = "Transfer voting is disabled by server configuration settings."
-		return FALSE
+		return "Transfer voting is disabled by server configuration settings."
 
-	default_message = initial(default_message)
-	return TRUE
+	return ..()
 
 /datum/vote/transfer_vote/get_vote_result(list/non_voters)
 	if(!CONFIG_GET(flag/default_no_vote))

@@ -7,7 +7,8 @@
 	// shell when the field is torn down; UNIQUE_AREA instances are skipped there because
 	// deleting one would null out every future GLOB.areas_by_type lookup of the type.
 	// The same invariant /area/overmap_encounter rests on.
-	area_flags = CAVES_ALLOWED | MOB_SPAWN_ALLOWED
+	area_flags = NONE
+	area_flags_mapping = CAVES_ALLOWED | MOB_SPAWN_ALLOWED // no UNIQUE_AREA: see above
 	// Nothing here is dark or uses placed lights, so the dynamic-lighting engine (corners,
 	// light tracking) is pure overhead - but skipping it means these turfs get NO lighting
 	// overlay at all, and the lighting plane renders anything it doesn't light as black.

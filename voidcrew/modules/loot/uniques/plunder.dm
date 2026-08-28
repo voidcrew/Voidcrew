@@ -67,7 +67,7 @@
 	// VOIDCREW EDIT: setupExports() is gone - GLOB.exports_list is a GLOBAL_LIST_INIT built by
 	// init_Exports() (code/_globalvars/lists/cargo.dm), so it is always populated on first read.
 	for(var/datum/export/export as anything in GLOB.exports_list)
-		if(!export.applies_to(checked_item, FALSE, EXPORT_MARKET_STATION))
+		if(!export.applies_to(checked_item, FALSE, list(EXPORT_MARKET_STATION)))
 			continue
 		return export.get_cost(checked_item, FALSE)
 	return 0
@@ -224,10 +224,30 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration/attack(mob/living/target_mob, mob/living/user, obj/target)
+// Was an attack() override, which chained onto /obj/item/reagent_containers/cup/attack -
+// the proc that used to do the drinking. Upstream deleted cup/attack and moved the swig
+// into cup/try_drink(), called from cup/interact_with_atom(), which base_item_interaction
+// runs BEFORE the attack chain: interact_with_atom returns ITEM_INTERACT_SUCCESS, so
+// melee_attack_chain never reaches attackby and attack() is dead code on a drink. The
+// bottle stopped topping itself up (and stopped granting courage) the moment that landed.
+// try_drink() is the direct replacement hook: one call per gulp, self-drink and
+// force-feeding alike, and it reports whether the gulp actually went down.
+//
+// Click trace, clicking a carbon with this bottle in hand:
+//   melee_attack_chain -> target.base_item_interaction -> (combat mode gates tool_act
+//   only, and rum has no tool_behaviour) -> /mob/living/item_interaction (NONE) ->
+//   tool.interact_with_atom -> cup/interact_with_atom -> isliving -> try_drink -> HERE.
+//   Self-drink and feeding both land here; right-click routes through
+//   interact_with_atom_secondary -> try_splash, which the bottle refuses (glassbottle.dm),
+//   so a right-click still bottles them over the head instead of drinking.
+/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration/try_drink(mob/living/target_mob, mob/living/user)
 	var/had_reagents = reagents && reagents.total_volume > 0
 	var/gulp_amount = min(gulp_size, reagents?.total_volume || 0)
 	. = ..()
+	// A blocked swig (mouth covered, interrupted feed, empty bottle) transferred nothing,
+	// so there is nothing to top back up - refilling there would overfill the bottle.
+	if(!(. & ITEM_INTERACT_SUCCESS))
+		return
 	if(!had_reagents || !istype(target_mob) || !gulp_amount)
 		return
 	// Never runs empty, top it right back up to what it had before the swig.

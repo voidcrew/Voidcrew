@@ -202,12 +202,13 @@ SUBSYSTEM_DEF(weather)
 			if (!owner) // Vibecheck
 				continue
 			// Could be caching these per-mob but its basically just a list lookup wrapper
-			var/list/stack_levels = SSmapping.get_connected_levels(get_turf(owner.client?.eye || owner))
+			var/turf/eye_turf = get_turf(owner.client?.eye || owner) // VOIDCREW EDIT - kept, shows_on_turf() needs the turf and not just its z-stack
+			var/list/stack_levels = SSmapping.get_connected_levels(eye_turf)
 			for (var/obj/effect/abstract/weather_holder/holder as anything in holder_list)
 				if (holder.plane != plane_master.plane)
 					continue
 
-				if (!length(holder_list[holder] & stack_levels))
+				if (!holder.shows_on_turf(holder_list[holder], stack_levels, eye_turf)) // VOIDCREW EDIT - was a bare z-stack intersection
 					continue
 
 				plane_master.vis_contents |= holder

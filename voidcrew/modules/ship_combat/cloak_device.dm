@@ -452,11 +452,11 @@
 
 // ========== TOOL INTERACTIONS ==========
 
-/obj/machinery/ship_combat/cloak_device/attackby(obj/item/W, mob/user, params)
+/obj/machinery/ship_combat/cloak_device/attackby(obj/item/W, mob/living/user, list/modifiers, list/attack_modifiers)
 	// Multitool linking
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.buffer = src
+		tool.set_buffer(src)
 		balloon_alert(user, "cloaking device buffered")
 		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE

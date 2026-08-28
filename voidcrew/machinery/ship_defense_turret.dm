@@ -152,12 +152,28 @@
  * would have printed "Controls are now locked." and changed nothing at all - the worst kind
  * of feedback, since a crew would think they had secured the gun. Every other branch of the
  * parent (crowbar salvage, wrench bolts) is left alone.
+ *
+ * This was an attackby() override, which used to beat the parent's own attackby ID branch
+ * to the click. Upstream split that branch out into /obj/machinery/porta_turret/item_interaction
+ * (portable_turret.dm), and base_item_interaction runs item_interaction BEFORE attackby, so
+ * the refusal became unreachable - the parent claimed the swipe first, flipped `locked` and
+ * printed exactly the "Controls are now locked." lie described above. The check moves into
+ * the same hook, ahead of the parent's body.
+ *
+ * Click trace, swiping any ID-bearing item (left or right click, combat
+ * mode on or off - item_interaction is gated on neither, and an ID card has no tool_behaviour
+ * so tool_act is a no-op): base_item_interaction -> item_interaction -> HERE -> refusal and
+ * ITEM_INTERACT_BLOCKING -> melee_attack_chain returns before pre_attack, so the turret is
+ * neither locked nor bashed. A BROKEN turret refuses the swipe too - the parent's lock-flip
+ * is just as much of a lie on a wrecked gun. Crowbar salvage (crowbar_act) and wrench bolts
+ * (wrench_act) sit in tool_act, which runs ahead of this proc, and are untouched; neither
+ * tool answers GetID(), so the refusal above never sees them.
  */
-/obj/machinery/porta_turret/ship_defense/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	if(!(machine_stat & BROKEN) && attacking_item.GetID())
+/obj/machinery/porta_turret/ship_defense/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.GetID())
 		balloon_alert(user, "no card reader")
 		to_chat(user, span_notice("[src] has no card reader. Its controls answer to the crew of the ship it is bolted to."))
-		return TRUE
+		return ITEM_INTERACT_BLOCKING
 	return ..()
 
 /// Alt-click toggles wildlife targeting, leaving the turret watching for boarders only.

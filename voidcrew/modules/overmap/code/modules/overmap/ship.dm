@@ -754,8 +754,11 @@
 
 /obj/structure/overmap/ship/Destroy()
 	source_template = null
-	shuttle?.intoTheSunset()
-	shuttle = null
+	// Everything that deletes an overmap ship without going through despawn_derelict() or
+	// destroy_ship() - an NPC hull killed in combat, an admin delete, a failed spawn - lands
+	// here, so this is the third and last mouth of the same funnel. Safe to call twice: the
+	// paths above have already nulled `shuttle` by the time they qdel(src).
+	release_hull()
 	SSovermap.simulated_ships -= src
 	QDEL_NULL(ship_account)
 	manifest?.Cut()
@@ -990,10 +993,15 @@
 	if(!istype(card))
 		return
 	var/datum/bank_account/account = SSeconomy.bank_accounts_by_id["[crewmate.account_id]"]
-	if(account)
+	if(account && ship_account)
+		// bank_cards is a LAZYLIST now (null until the first card), so the old
+		// `bank_cards += card` turned it into a bare card object on the first crewmate
+		// and type-mismatched on every one after - which also silently killed every
+		// bank_card_talk() notification for the whole ship. set_account() is the
+		// supported API: it unhooks the card from its personal account and LAZYORs it
+		// onto ours.
+		card.set_account(ship_account)
 		qdel(account) //delete the individual account.
-		card.registered_account = ship_account
-		ship_account.bank_cards += card
 
 	crewmate.mind.wipe_memory() //clears ALL memories, but currently all they have is their old bank account.
 	crewmate.mind.assigned_role.paycheck_department = ship_team.name
@@ -1323,12 +1331,73 @@
 			return FALSE
 		message_admins("\[SHUTTLE]: [shuttle?.name] has been FORCE deleted!")
 		log_shuttle("[shuttle?.name] has been force deleted!")
-		shuttle?.jumpToNullSpace()
+		// release_hull() rather than a bare jumpToNullSpace(): this is the path WITH players
+		// aboard (ignore_crew is only ever passed by the bluespace jump), and jumpToNullSpace()
+		// hands the crew straight to /turf/proc/empty(), which qdels them where they stand.
+		// /mob/Destroy() stack_trace()s on any mob that still holds a client, or merely a ckey
+		// after its player logged off, so a jump used to emit one runtime per crewman. The
+		// ghostize() inside release_hull() moves the key out to an observer first, which is
+		// what despawn_derelict() has always done and what this path was missing.
+		release_hull()
 		qdel(src)
 		return TRUE
 
 	// Normal case: abandon instead of delete
 	abandon_ship()
+	return TRUE
+
+/**
+ * Tears this ship's hull down and breaks the ship <-> port link, in the one order that
+ * leaves nothing behind. The single funnel for every teardown the fork drives itself:
+ * despawn_derelict(), destroy_ship(force = TRUE) and /obj/structure/overmap/ship/Destroy().
+ *
+ * 1. **The mobs aboard.** intoTheSunset() only ghostizes them and moves them to NULLSPACE -
+ *    correct for the round-end escape shuttle it was written for, where those mobs are
+ *    still players being scored, and a straight leak here: every mob aboard would survive
+ *    in GLOB.mob_list/mob_living_list for the rest of the round (3-6 pirates or a whole
+ *    dead crew per hull). Delete them instead, ghostize()d first - a body that still holds
+ *    a client, or merely a ckey after its player logged off, makes /mob/Destroy()
+ *    stack_trace(), and ghostize() moves the key out to an observer before that can happen.
+ *    A ship reaching here with connected players aboard is the bluespace jump, which is
+ *    meant to take them out of the round.
+ * 2. **Break the link, both ways.** `current_ship` so the port destructor's anomaly alarm
+ *    does not fire on a teardown we asked for (it CRASH()es, which costs a runtime and, in
+ *    the test suite, the clean-run verdict for the whole run), and `shuttle` so a later
+ *    Destroy() cannot call intoTheSunset() a second time on a deleted port. Nulling
+ *    current_ship early is safe for the port's own deregistration: unlink_from_z_level(),
+ *    release_station_level_link() and set_site_occupancy() read shuttle_areas,
+ *    linked_z_levels and occupied_site_key, never current_ship.
+ * 3. **The port, which takes the ground with it.** intoTheSunset() -> jumpToNullSpace()
+ *    sweeps the hull's landmarks (see the jumpToNullSpace override in
+ *    voidcrew/mapping/docking_port/_docking_port.dm), returns every hull turf to
+ *    uninitialised space, and ends in qdel(port, force = TRUE) - forced because
+ *    /obj/docking_port/Destroy() answers a bare qdel() with QDEL_HINT_LETMELIVE after
+ *    /obj/docking_port/mobile/Destroy() has already nulled shuttle_areas, leaving a live
+ *    port with no areas standing on ground that is about to be handed to the next tenant.
+ *    The port destructor also force-qdels assigned_transit, which is what frees the transit
+ *    reservation: ports before ground, always.
+ *
+ * The caller still owns the overmap datum - this deletes the hull, not the ship.
+ * Returns TRUE if there was a hull to tear down.
+ */
+/obj/structure/overmap/ship/proc/release_hull()
+	var/obj/docking_port/mobile/voidcrew/departing = shuttle
+	if(isnull(departing))
+		return FALSE
+	if(!QDELETED(departing))
+		for(var/turf/hull_turf as anything in departing.return_turfs())
+			if(!hull_turf)
+				continue
+			for(var/mob/living/aboard in hull_turf.get_all_contents())
+				if(QDELETED(aboard))
+					continue
+				aboard.ghostize(FALSE) // a disconnected player's body still holds their key
+				qdel(aboard)
+	shuttle = null
+	departing.current_ship = null
+	if(QDELETED(departing))
+		return TRUE
+	departing.intoTheSunset()
 	return TRUE
 
 /**
@@ -1389,29 +1458,12 @@
 		if(other.pending_dock_target == src)
 			other.pending_dock_target = null
 
-	// intoTheSunset() rather than a bare jumpToNullSpace(): it ghostizes every mob aboard
-	// first, corpses included. A mind-holding corpse left on the site's turfs would fail
-	// get_mind_mobs() and pin the map zone anyway. It ends in jumpToNullSpace(), which
-	// frees the transit reservation and the port.
-	//
-	// But it moves those mobs to NULLSPACE rather than deleting them, and it does so
-	// BEFORE jumpToNullSpace()'s per-turf empty() pass - so every mob aboard survives the
-	// teardown in GLOB.mob_list/mob_living_list for the rest of the round. That is correct
-	// for the round-end escape shuttle it was written for (those mobs are still players
-	// being scored) and a straight leak here: 3-6 pirates or a dead crew per despawned
-	// hull. Clear them out ourselves first. Nothing with a connected player behind it can
-	// be here - the guard at the top of this proc already refused - so this is NPCs,
-	// corpses, and the bodies of crew who logged off, which ARE the abandoned ship.
-	if(shuttle)
-		for(var/turf/hull_turf as anything in shuttle.return_turfs())
-			if(!hull_turf)
-				continue
-			for(var/mob/living/aboard in hull_turf.get_all_contents())
-				if(QDELETED(aboard))
-					continue
-				aboard.ghostize(FALSE) // a disconnected player's body still holds their key
-				qdel(aboard)
-		shuttle.intoTheSunset()
+	// The hull itself: mobs deleted, ship<->port link broken, ground back to space, port
+	// and transit reservation freed. Nothing with a connected player behind it can be
+	// aboard - the guard at the top of this proc already refused - so what release_hull()
+	// sweeps here is NPCs, corpses, and the bodies of crew who logged off, which ARE the
+	// abandoned ship.
+	release_hull()
 	qdel(src)
 	return TRUE
 

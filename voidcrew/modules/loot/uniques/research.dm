@@ -754,7 +754,7 @@
 		return FALSE
 	if(isliving(target))
 		var/mob/living/living_target = target
-		if(living_target.stat == STABLE)
+		if(!IS_UNCONSCIOUS_OR_CRIT(living_target))
 			to_chat(user, span_warning("[living_target] isn't going to just climb in there."))
 			return FALSE
 	return TRUE

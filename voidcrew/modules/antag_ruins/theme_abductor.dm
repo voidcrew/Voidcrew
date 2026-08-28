@@ -175,7 +175,7 @@
 	var/mob/living/carbon/human/subject = target
 	// The protocol wants a person: awake, and someone home behind the eyes
 	// (mind check — mindless monkeys and empty bodies produce no data)
-	if(subject.stat != STABLE || !subject.mind)
+	if(IS_UNCONSCIOUS_OR_CRIT(subject) || !subject.mind)
 		balloon_alert(user, "the protocol wants a conscious subject!")
 		return
 	if(trial.tagged_ref?.resolve() == subject)
@@ -195,7 +195,7 @@
 	trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
 		return
-	if(subject.stat != STABLE)
+	if(IS_UNCONSCIOUS_OR_CRIT(subject))
 		balloon_alert(user, "the moment passed!")
 		return
 	trial.tag_subject(subject)
@@ -642,7 +642,7 @@
 	var/mob/living/carbon/human/subject = target
 	// Telemetry under load only: awake, on their feet, hands free, someone home
 	// (mind check — cuffed captives, sleepers and monkey farms measure nothing)
-	if(subject.stat != STABLE || subject.body_position != STANDING_UP)
+	if(IS_UNCONSCIOUS_OR_CRIT(subject) || subject.body_position != STANDING_UP)
 		balloon_alert(user, "the protocol wants them upright!")
 		return
 	if(HAS_TRAIT(subject, TRAIT_RESTRAINED))

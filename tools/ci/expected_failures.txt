@@ -1,0 +1,69 @@
+# Expected unit test failures
+# ============================
+#
+# Consumed by tools/ci/compare_test_results.py, which runs after the CI unit
+# test suite. Semantics:
+#
+#   * a test that FAILS and is listed here  -> tolerated, CI stays green
+#   * a test that FAILS and is NOT listed   -> CI goes RED (new breakage)
+#   * a test that PASSES and IS listed      -> CI goes RED (stale entry, remove it)
+#   * a test that is SKIPPED and is listed  -> warning only
+#
+# That third rule is the important one: this file cannot rot silently. If you
+# fix a listed test, CI tells you to delete the line.
+#
+# FORMAT
+# ------
+# One test per line. Either form works:
+#
+#   /datum/unit_test/maptest_area_contents
+#   maptest_area_contents
+#
+# Everything after a '#' is a comment. ALWAYS add a comment saying WHY the
+# failure is accepted - an unexplained entry is indistinguishable from a bug
+# somebody gave up on.
+#
+# To regenerate: run the suite, then read the "NEW FAILURES" block that
+# compare_test_results.py prints. Paste the names here with a reason.
+#
+#
+# CURRENT STATE: intentionally empty
+# ----------------------------------
+# The list is empty on purpose, not by omission. Reasoning:
+#
+# The failures documented in docs/UNIT_TESTING_LOCAL.md were observed with
+# tools/run_unit_tests_local.sh, which does NOT write data/next_map.json. That
+# makes SSmapping fall through to the hardcoded fallback in
+# code/datums/map_config.dm (defaulted = TRUE, map_name "MetaStation"), so the
+# local suite boots MetaStation WITHOUT MetaStation's json config - meaning no
+# job_changes, no map-specific shuttles, and no "ignored_unit_tests" list.
+# A large share of the local map-test failures are artifacts of that degenerate
+# config rather than real fork bugs.
+#
+# CI does not reproduce that. tools/ci/run_server.sh copies the real
+# _maps/<map>.json into next_map.json, and the workflow runs "runtimestation"
+# (99.8 KB, upstream's purpose-built CI map) instead of MetaStation (2.29 MB).
+# _maps/runtimestation.json already declares ignored_unit_tests for four of the
+# usual suspects, so the engine skips them properly.
+#
+# Seeding this file from the local MetaStation numbers would therefore have
+# marked tests as "expected to fail" that actually pass in CI - and the
+# stale-entry rule above would turn CI red on the very first run for no reason.
+# Starting empty means: if the CI run is clean, CI is green immediately; if it
+# is not, the script prints exactly what to paste here.
+#
+#
+# CANDIDATES (verified type paths, uncomment ONLY if CI actually reports them)
+# ---------------------------------------------------------------------------
+# These are the map tests docs/UNIT_TESTING_LOCAL.md calls out as failing
+# locally. The paths below were read from the source, not from the doc - note
+# that six of the seven carry a "maptest_" prefix that the informal names omit.
+# Do not uncomment on faith; only add a line once a real CI run fails on it.
+#
+# /datum/unit_test/maptest_mapping_nearstation_test   # code/modules/unit_tests/mapping_nearstation_test.dm
+# /datum/unit_test/maptest_area_contents              # code/modules/unit_tests/area_contents.dm
+# /datum/unit_test/maptest_required_map_items         # already in runtimestation.json ignored_unit_tests
+# /datum/unit_test/maptest_mapload_space_verification # code/modules/unit_tests/mapload_space_verification.dm
+# /datum/unit_test/maptest_job_roundstart_spawnpoints # already in runtimestation.json ignored_unit_tests
+# /datum/unit_test/cargo_dep_order_locations          # already in runtimestation.json ignored_unit_tests
+# /datum/unit_test/maptest_log_mapping                # code/modules/unit_tests/mapping.dm

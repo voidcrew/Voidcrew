@@ -281,6 +281,15 @@ GLOBAL_LIST_EMPTY(weather_towers)
 			affected_areas += station_area
 		// keep the summoner safe as well
 		affected_areas -= get_area(src)
+	// VOIDCREW EDIT ADDITION BEGIN - off the station this tower is standing on somebody's planet,
+	// and a packed z-level carries up to four of them. Left unscoped, the summon falls through to
+	// the z-wide get_areas(area_type) sweep in setup_weather_areas() - every planet storm shares
+	// area_type = /area/overmap_encounter/planetoid - so the crew that paid the charge gets the
+	// weather they asked for and three neighbouring crews get weather nobody asked for.
+	else
+		var/datum/weather_site/local_site = SSweather.get_weather_site_for_turf(get_turf(src))
+		affected_areas = local_site?.get_weather_areas()
+	// VOIDCREW EDIT ADDITION END
 
 	var/datum/weather/weather = SSweather.run_weather(
 		weather_datum_type = weather_type,
