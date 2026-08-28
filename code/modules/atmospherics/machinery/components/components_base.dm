@@ -255,6 +255,39 @@
 	var/node_index = nodes.Find(target_component)
 	if(node_index < 1 || node_index > parents.len)
 		return FALSE
+
+	// Deregister from the pipeline this port is LEAVING before overwriting the slot.
+	// This is the component-side twin of the fix already living in pipes.dm's
+	// replace_pipenet(): a pipeline's other_atmos_machines was append-only, so every
+	// re-parent left the displaced pipeline holding this component forever.
+	//
+	// It is a HARD DELETE, not just a stale entry. Destroy() -> nullify_node(i) ->
+	// nullify_pipenet(parents[i]) can only ever reach the pipelines named in our OWN
+	// parents list, and a unary device has exactly one slot. Once two live pipelines
+	// list the same vent, the one that is no longer in parents[] is unreachable from
+	// the dying component and pins it past qdel - create_and_destroy caught exactly
+	// that, a vent_pump held in two /datum/pipeline other_atmos_machines lists.
+	//
+	// Deliberately NOT qdel'ing a pipeline left empty by this: set_pipenet() runs in the
+	// middle of build_pipeline_blocking()/expand_pipeline(), and air.dm's build_pipeline
+	// steal makes the same point - deleting a pipeline whose gas has not been handed over
+	// yet drops that gas. SSair's husk reaper already collects the empties.
+	var/datum/pipeline/leaving = parents[node_index]
+	if(leaving && leaving != reference)
+		if(!isnull(airs) && node_index <= airs.len)
+			leaving.other_airs -= airs[node_index]
+		// A multi-port device can have the same pipeline on another slot; only hand back
+		// the machine registration once nothing of ours points at it any more.
+		var/still_attached = FALSE
+		for(var/i in 1 to parents.len)
+			if(i != node_index && parents[i] == leaving)
+				still_attached = TRUE
+				break
+		if(!still_attached)
+			leaving.other_atmos_machines -= src
+			if(custom_reconcilation)
+				leaving.require_custom_reconcilation -= src
+
 	parents[node_index] = reference
 	return TRUE
 	// VOIDCREW EDIT END

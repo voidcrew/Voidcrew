@@ -255,7 +255,12 @@
  *
  *     ship.shuttle                 -> /obj/docking_port/mobile/voidcrew
  *     ship.shuttle.shuttle_areas   -> assoc area -> TRUE, every compartment
- *     ship.shuttle.return_turfs()  -> every hull tile
+ *     ship.shuttle.return_turfs()  -> every tile of the BOUNDING RECTANGLE, NOT the hull.
+ *         On a modular hull a third of those can be /turf/template_noop passthrough that
+ *         is bare space at runtime (33 of the Goon's 209). To walk the actual ship, walk
+ *         ship.shuttle.shuttle_areas and iterate each area's turfs - membership in
+ *         shuttle_areas[get_area(A)] is also exactly what get_ship_from_atom() resolves
+ *         through, so anything you place on those turfs can find its ship.
  *     ship.source_template         -> the template it was built from
  *     ship.job_slots / ship.manifest / ship.ship_account
  *

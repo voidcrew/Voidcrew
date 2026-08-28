@@ -24,6 +24,21 @@ SUBSYSTEM_DEF(icon_smooth)
 	if (SSatoms.initializing_something())
 		return
 
+	// Nor can it see a map *parse*. map_loader_begin() registers as INITIALIZATION_INSSATOMS,
+	// while initializing_something() and add_to_queue() both key off INITIALIZATION_INNEW_MAPLOAD
+	// - the InitializeAtoms() phase - so during the parse itself nothing is deferred and nothing
+	// reads as busy. Whatever backlog is already sitting in smooth_queue (a previous hull's
+	// teardown, a docking move: per-tile ChangeTurf -> AfterChange -> QUEUE_SMOOTH_NEIGHBORS,
+	// none of which defers) then drains across the parse's MAPLOADING_CHECK_TICK yields and
+	// smooths against tiles the loader has only half laid down.
+	//
+	// Master.map_loading is the one flag that stays true for the whole parse: the reader pops its
+	// SSatoms source before every stoplag(), but never this. Loads already serialize on it
+	// (Master.StartLoadingMap waits on it), so consulting it here adds no state and no new way to
+	// wedge - if it ever stuck true, map loading itself would already be dead.
+	if (Master.map_loading)
+		return
+
 	// initializing_something() cannot see a load that is *between* ticks: both
 	// MAPLOADING_CHECK_TICK (code/modules/mapping/reader.dm) and CreateAtoms() pop their
 	// SSatoms source immediately before they stoplag() and push it back afterwards, so at the

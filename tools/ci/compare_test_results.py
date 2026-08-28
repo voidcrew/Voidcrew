@@ -46,24 +46,38 @@ def normalize(name):
 
 
 def load_expected(path):
-    """Read the manifest: one test name per line, hash starts a comment."""
+    """Read the manifest: one test name per line, hash starts a comment.
+
+    A leading '~' marks a FLAKY entry: the test is accepted whether it passes
+    or fails, and it is exempt from the stale-entry rule. Reserve '~' for tests
+    proven non-deterministic (document why in the line's comment) - a flaky
+    entry can never turn the gate red, so it is a weaker promise than a plain
+    expected-failure line.
+    """
     expected = set()
+    flaky = set()
     original = {}
     if not os.path.exists(path):
         print("::warning::expected-failure manifest not found at %s; "
               "every failure will be treated as new" % path)
-        return expected, original
+        return expected, flaky, original
     with open(path, "r", encoding="utf-8") as handle:
         for raw in handle:
             line = raw.split("#", 1)[0].strip()
             if not line:
                 continue
+            is_flaky = line.startswith("~")
+            if is_flaky:
+                line = line[1:].strip()
             key = normalize(line)
             if not key:
                 continue
-            expected.add(key)
+            if is_flaky:
+                flaky.add(key)
+            else:
+                expected.add(key)
             original[key] = line
-    return expected, original
+    return expected, flaky, original
 
 
 def load_results(path):
@@ -143,15 +157,20 @@ def main(argv=None):
                         help="also append a markdown report to $GITHUB_STEP_SUMMARY")
     args = parser.parse_args(argv)
 
-    expected, expected_original = load_expected(args.expected)
+    expected, flaky, expected_original = load_expected(args.expected)
     results = load_results(args.results)
 
     passed = set(k for k, v in results.items() if v.get("status") == STATUS_PASSED)
     failed = set(k for k, v in results.items() if v.get("status") == STATUS_FAILED)
     skipped = set(k for k, v in results.items() if v.get("status") == STATUS_SKIPPED)
 
-    new_failures = sorted(failed - expected)
+    new_failures = sorted(failed - expected - flaky)
     stale_now_passing = sorted(expected & passed)
+    flaky_failed = sorted(flaky & failed)
+    if flaky_failed:
+        print("flaky entries failing this run (tolerated): %d" % len(flaky_failed))
+        for name in flaky_failed:
+            print("  ~ %s" % name)
     expected_hit = sorted(expected & failed)
     expected_skipped = sorted(expected & skipped)
     expected_absent = sorted(expected - set(results))

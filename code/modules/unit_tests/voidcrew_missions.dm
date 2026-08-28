@@ -130,8 +130,30 @@
 		if(!istype(get_turf(ruin), /turf/open/overmap))
 			continue
 		live_ruins += ruin
+
+	// REPAIRED: this used to be `if(length(live_ruins) < 2) return`, and a bare
+	// return out of Run() is a PASS. On any world whose pool came up short this
+	// test asserted NOTHING and reported green - worse than not existing, because
+	// the coverage matrix counted it.
+	//
+	// The premise was wrong as well as the shape. A CI world DOES have an
+	// overmap: SSovermap.Initialize() paints the overmap block onto the centcom z
+	// and runs setup_space_ruins() whatever station map booted, seeding
+	// MIN..MAX_OVERMAP_SPACE_RUINS signals (23 of them in the 2026-08-27 CI run's
+	// data/logs/ci/debug.log). Where the pool still comes up short it is topped
+	// up from vc_mint_test_ruin_signals() (voidcrew_mission_flows.dm) - the picker
+	// asks a candidate for nothing but "alive, unlocked, unclaimed, on an overmap
+	// tile", so a signal with no interior is a complete target to it. If even that
+	// cannot deliver, the test says so and fails.
+	var/list/obj/structure/overmap/space_ruin/minted = list()
 	if(length(live_ruins) < 2)
-		return // no overmap worth testing against in this world
+		minted = vc_mint_test_ruin_signals(2 - length(live_ruins))
+		live_ruins += minted
+	if(length(live_ruins) < 2)
+		TEST_FAIL("only [length(live_ruins)] ruin signal\s are visible to the target picker and no more could be minted onto the overmap, \
+			so none of the three tiers below is exercised. This is the precondition failing loudly; it used to return quietly and report PASS.")
+		vc_release_test_ruin_signals(minted)
+		return
 
 	// Remember what we are about to lie about, so the round gets it back
 	var/list/saved_loaded = list()
@@ -175,12 +197,18 @@
 	// than fail generation and drop the contract off the board entirely.
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = TRUE
-	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back. Recovery contracts stop generating entirely")
+	// Recorded rather than asserted with TEST_ASSERT: the macro returns out of
+	// Run(), which would now leave the round's ruins lying about their loaded
+	// state and leak any minted signal onto the overmap for the rest of the run.
+	// Same condition, same message, no early exit.
+	if(!target.resolve())
+		TEST_FAIL("with every ruin loaded, the picker refused to pick any of them instead of falling back. Recovery contracts stop generating entirely")
 
 	qdel(target)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]
+	vc_release_test_ruin_signals(minted)
 
 /**
  * A contract that marks itself exclusive_site must get a wreck to itself.
@@ -206,8 +234,21 @@
 		if(!istype(get_turf(ruin), /turf/open/overmap))
 			continue
 		live_ruins += ruin
+
+	// REPAIRED: this used to be `if(length(live_ruins) < 3) return`, the same
+	// silent PASS as its sibling above - see the note there for why the "no
+	// overmap worth testing against" premise was false as well. Three is the real
+	// number here: the exclusive claim takes one, the sharing contract needs
+	// somewhere else to land, and the starvation tier needs a third to claim.
+	var/list/obj/structure/overmap/space_ruin/minted = list()
 	if(length(live_ruins) < 3)
-		return // no overmap worth testing against in this world
+		minted = vc_mint_test_ruin_signals(3 - length(live_ruins))
+		live_ruins += minted
+	if(length(live_ruins) < 3)
+		TEST_FAIL("only [length(live_ruins)] ruin signal\s are visible to the target picker and no more could be minted onto the overmap, \
+			so the exclusive claim, the lockout and the refuse-rather-than-share tier are all unexercised. This used to return quietly and report PASS.")
+		vc_release_test_ruin_signals(minted)
+		return
 
 	var/list/saved_loaded = list()
 	var/list/saved_claims = list()
@@ -228,7 +269,13 @@
 		TEST_FAIL("an exclusive contract found no site with [length(live_ruins)] cold, unclaimed ruins on the overmap")
 	else
 		var/obj/structure/overmap/space_ruin/taken = exclusive_target.ruin
-		TEST_ASSERT(taken.mission_exclusive, "an exclusive contract claimed a ruin without flagging it exclusive, so the next contract can still aim into it")
+		// Recorded rather than asserted with TEST_ASSERT throughout this branch:
+		// the macro returns out of Run(), which would now strand the round's ruins
+		// with edited claims, leave an exclusive flag set on a live site for the
+		// rest of the round, and leak any minted signal onto the overmap. Same
+		// conditions, same messages, no early exit.
+		if(!taken.mission_exclusive)
+			TEST_FAIL("an exclusive contract claimed a ruin without flagging it exclusive, so the next contract can still aim into it")
 
 		// Nobody else may land on it, however many rolls they get. Released between
 		// rolls so the "never re-pick the previous site" rule doesn't starve the
@@ -248,13 +295,16 @@
 			if(ruin != taken)
 				ruin.mission_claims = 1
 		var/datum/mission_target/space_ruin/starved_target = new(exclusive_mission)
-		TEST_ASSERT(!starved_target.resolve(), "an exclusive contract double-booked a site once every other ruin was claimed; it should fail generation and let the board roll something else")
+		if(starved_target.resolve())
+			TEST_FAIL("an exclusive contract double-booked a site once every other ruin was claimed; it should fail generation and let the board roll something else")
 		qdel(starved_target)
 
 		// ...and the flag comes back off when the contract lets go
 		qdel(exclusive_target)
 		exclusive_target = null
-		TEST_ASSERT(!taken.mission_exclusive, "a released exclusive claim left the ruin flagged, so no contract can ever target that site again this round")
+		if(taken.mission_exclusive)
+			TEST_FAIL("a released exclusive claim left the ruin flagged, so no contract can ever target that site again this round")
+			taken.mission_exclusive = FALSE // do not hand the round a permanently locked site on the way out
 
 	if(exclusive_target)
 		qdel(exclusive_target)
@@ -264,3 +314,4 @@
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]
+	vc_release_test_ruin_signals(minted)
