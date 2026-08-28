@@ -134,7 +134,14 @@
 		return
 	var/mats_list = list()
 	for(var/custom_material in custom_materials)
+		// VOIDCREW EDIT ADDITION: a key that does not resolve to a material (a bespoke material whose
+		// Initialize() failed leaves a null in the list) is not something to describe.
+		if(isnull(custom_material))
+			continue
 		var/datum/material/current_material = SSmaterials.get_material(custom_material)
+		if(isnull(current_material))
+			continue
+		// VOIDCREW EDIT ADDITION END
 		mats_list += span_tooltip("It is made out of [current_material.name].", current_material.name)
 	. += "made of [english_list(mats_list)]"
 

@@ -227,7 +227,16 @@
 
 /obj/machinery/atmospherics/components/pipeline_expansion(datum/pipeline/reference)
 	if(reference)
-		return list(nodes[parents.Find(reference)])
+		// VOIDCREW EDIT: last of the unguarded parents.Find() indexes - see return_pipenet()
+		// below. A pipeline that is not one of ours answers 0 and `nodes[0]` is "list index out
+		// of bounds". It matters more now that add_member() refuses instead of CRASHing: the
+		// stack that used to unwind at the refusal carries on into here.
+		if(isnull(parents) || isnull(nodes))
+			return list()
+		var/parent_index = parents.Find(reference)
+		if(parent_index < 1 || parent_index > nodes.len)
+			return list()
+		return list(nodes[parent_index])
 	return ..()
 
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
@@ -292,8 +301,26 @@
 	return TRUE
 	// VOIDCREW EDIT END
 
-/obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument
-	return parents[nodes.Find(target_component)]
+/obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = LAZYACCESS(nodes, 1)) //returns parents[1] if called without argument
+	// VOIDCREW EDIT START - the same three failure modes set_pipenet() above already refuses,
+	// reached from the read side. `nodes` and `parents` are both minted in Initialize(), and
+	// this fork asks components to join pipenets while still pre-init (see nullify_pipenet());
+	// a target_component that is not one of our nodes - the one-way node link two pipes stacked
+	// on one turf produce - answers Find() = 0, and `parents[0]` is a hard "list index out of
+	// bounds" that unwinds the entire caller. Round 19 logged 18 of those, every one inside a
+	// hull's lateShuttleMove() -> add_member() chain, aborting the move's pipe rebuild midway.
+	// The default argument gets the same treatment: `nodes[1]` on a null/empty list is the very
+	// same runtime, before the body is even entered.
+	//
+	// Answering null is correct - we genuinely are not plumbed on a port facing that device -
+	// and every caller either null-checks or is fixed to (see add_member() in datum_pipeline.dm).
+	if(isnull(nodes) || isnull(parents))
+		return null
+	var/node_index = nodes.Find(target_component)
+	if(node_index < 1 || node_index > parents.len)
+		return null
+	return parents[node_index]
+	// VOIDCREW EDIT END
 
 /obj/machinery/atmospherics/components/replace_pipenet(datum/pipeline/Old, datum/pipeline/New)
 	// VOIDCREW EDIT START - same one-way node link as set_pipenet() above, reached from

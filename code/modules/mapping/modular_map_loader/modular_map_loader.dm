@@ -62,6 +62,19 @@ INITIALIZE_IMMEDIATE(/obj/modular_map_root)
 
 	var/list/offset = discover_offset(/obj/modular_map_connector)
 
+	// VOIDCREW EDIT ADDITION: discover_offset() hands back null when the parsed map has no
+	// /obj/modular_map_connector to anchor on - a module map missing its connector, or a parse
+	// that came back without its grid models. Indexing that null was a "cannot read from list"
+	// runtime here, which aborted preload_size() and left both offsets at 0 anyway, so the module
+	// still loaded, silently shifted by the connector offset. Name the map instead of runtiming,
+	// and keep the same (0,0) fallback.
+	if(!offset)
+		stack_trace("map module [path] has no /obj/modular_map_connector to align on; loading it at the marker tile instead")
+		if(!cache)
+			cached_map = null
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	x_offset = offset[1] - 1
 	y_offset = offset[2] - 1
 

@@ -113,13 +113,18 @@
 	for(var/datum/reagent/existing_reagent as anything in reagents.reagent_list)
 		var/evolution_path = path_requirements[existing_reagent.type]
 
-		switch(existing_reagent.volume)
-			if(UPPER_BOUND_VOLUME to INFINITY)
-				set_plant_growth(evolution_path, 3)
-			if(LOWER_BOUND_VOLUME to UPPER_BOUND_VOLUME)
-				set_plant_growth(evolution_path, 2)
-			if(1 to LOWER_BOUND_VOLUME)
-				set_plant_growth(evolution_path, 1)
+		// VOIDCREW EDIT ADDITION: a turtle drinks whatever it is fed and only three reagents map to an
+		// evolution path. Everything else came back null, was counted into path_growth_progress[null],
+		// and once that bucket crossed the threshold it reached evolve_turtle(null) - "bad index" off
+		// evolution_gains[null]["tree_appearance"], on every process tick from then on.
+		if(!isnull(evolution_path))
+			switch(existing_reagent.volume)
+				if(UPPER_BOUND_VOLUME to INFINITY)
+					set_plant_growth(evolution_path, 3)
+				if(LOWER_BOUND_VOLUME to UPPER_BOUND_VOLUME)
+					set_plant_growth(evolution_path, 2)
+				if(1 to LOWER_BOUND_VOLUME)
+					set_plant_growth(evolution_path, 1)
 
 		reagents.remove_reagent(existing_reagent.type, 0.5)
 

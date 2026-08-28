@@ -64,8 +64,12 @@
 		var/obj/item/organ/old_organ = old_part
 		old_part = human_holder.get_organ_slot(ORGAN_SLOT_TONGUE)
 		old_organ.Insert(quirk_holder, special = TRUE)
-		old_part.moveToNullspace()
-		STOP_PROCESSING(SSobj, old_part)
+		// VOIDCREW EDIT ADDITION: the holder can be mid-qdel and have nothing in the slot. gib() sends
+		// COMSIG_QDELETING before gc_destroyed is set, so the QDELETED(quirk_holder) guard further up
+		// does not catch that case.
+		if(old_part)
+			old_part.moveToNullspace()
+			STOP_PROCESSING(SSobj, old_part)
 		old_organ = null
 		old_part = null
 

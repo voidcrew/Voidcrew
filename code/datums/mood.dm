@@ -36,6 +36,15 @@
 	var/sanity_level = SANITY_LEVEL_NEUTRAL
 	/// Is the owner being punished for low mood? if so, how much?
 	var/insanity_effect = 0
+	// VOIDCREW EDIT ADDITION: the area whose COMSIG_AREA_BEAUTY_UPDATED we currently hold.
+	// A shuttle landing swaps the area out from under whatever is standing on the landing
+	// site with change_area(), which does NOT send COMSIG_EXIT_AREA/COMSIG_ENTER_AREA to the
+	// atoms on the turf, so our registration stays pointed at the area we were in. When
+	// evict_landing_stowaways() then moves the mob back off the deck, the real
+	// COMSIG_ENTER_AREA for that same area arrives and check_area_mood() re-registered it
+	// ("area_beauty_updated overridden"). Tracking it keeps one registration and keeps it
+	// pointed somewhere real.
+	var/area/beauty_watched_area
 
 	/// List of mood events currently active on this datum
 	var/list/mood_events = list()
@@ -73,9 +82,11 @@
 	unmodify_hud()
 	mob_parent.lose_area_sensitivity(MOOD_DATUM_TRAIT)
 	UnregisterSignal(mob_parent, list(COMSIG_MOB_HUD_CREATED, COMSIG_ENTER_AREA, COMSIG_EXIT_AREA, COMSIG_LIVING_REVIVE, COMSIG_MOB_STATCHANGE, COMSIG_QDELETING))
-	var/area/our_area = get_area(mob_parent)
-	if(our_area)
-		UnregisterSignal(our_area, COMSIG_AREA_BEAUTY_UPDATED)
+	// VOIDCREW EDIT: was get_area(mob_parent), which is not necessarily the area we hold a
+	// registration on - see beauty_watched_area.
+	if(!isnull(beauty_watched_area))
+		UnregisterSignal(beauty_watched_area, COMSIG_AREA_BEAUTY_UPDATED)
+		beauty_watched_area = null
 
 	mob_parent = null
 
@@ -507,7 +518,13 @@
 /datum/mood/proc/check_area_mood(datum/source, area/new_area)
 	SIGNAL_HANDLER
 
-	RegisterSignal(new_area, COMSIG_AREA_BEAUTY_UPDATED, PROC_REF(update_beauty))
+	// VOIDCREW EDIT ADDITION: guard re-entry - see beauty_watched_area.
+	if(beauty_watched_area != new_area)
+		if(!isnull(beauty_watched_area))
+			UnregisterSignal(beauty_watched_area, COMSIG_AREA_BEAUTY_UPDATED)
+		beauty_watched_area = new_area
+		RegisterSignal(new_area, COMSIG_AREA_BEAUTY_UPDATED, PROC_REF(update_beauty))
+	// VOIDCREW EDIT ADDITION END
 
 	update_beauty(new_area)
 	if (new_area.mood_bonus && (!new_area.mood_trait || HAS_TRAIT(source, new_area.mood_trait)))
@@ -563,7 +580,12 @@
 
 /datum/mood/proc/exit_area(datum/source, area/old_area)
 	SIGNAL_HANDLER
-	UnregisterSignal(old_area, COMSIG_AREA_BEAUTY_UPDATED)
+	// VOIDCREW EDIT: drop the registration we are actually holding, which is not always the
+	// area named here - see beauty_watched_area.
+	if(isnull(beauty_watched_area))
+		return
+	UnregisterSignal(beauty_watched_area, COMSIG_AREA_BEAUTY_UPDATED)
+	beauty_watched_area = null
 
 /// Called when parent is ahealed.
 /datum/mood/proc/on_revive(datum/source, full_heal)

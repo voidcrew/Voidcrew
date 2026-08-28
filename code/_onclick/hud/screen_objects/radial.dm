@@ -51,6 +51,10 @@ GLOBAL_LIST_EMPTY(radial_menus)
 		closeToolTip(usr)
 
 /atom/movable/screen/radial/slice/Click(location, control, params)
+	// VOIDCREW EDIT ADDITION: handle_parent_del() nulls parent when the menu is qdeleted, and the
+	// screen object outlives it long enough to still catch a click.
+	if(isnull(parent))
+		return
 	if(usr.client == parent.current_user)
 		if(next_page)
 			parent.next_page()
@@ -70,6 +74,9 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	icon_state = "radial_center"
 
 /atom/movable/screen/radial/center/Click(location, control, params)
+	// VOIDCREW EDIT ADDITION: as above - the close button can be clicked after the menu is gone.
+	if(isnull(parent))
+		return
 	if(usr.client == parent.current_user)
 		parent.finished = TRUE
 

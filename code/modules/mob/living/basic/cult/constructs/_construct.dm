@@ -47,6 +47,12 @@
 	var/theme = THEME_CULT
 	/// Can this construct destroy walls?
 	var/smashes_walls = FALSE
+	// VOIDCREW EDIT ADDITION: mapper-settable extra death drops. Upstream dropped the old
+	// `loot` var when constructs became basic mobs; fork ruins (wasteland_crash_cult) hand
+	// out unique rewards through map-placed constructs, so they need a hook again.
+	/// Extra items dropped on death on top of the theme's ectoplasm; set from maps.
+	var/list/map_loot
+	// VOIDCREW EDIT ADDITION END
 	/// The different flavors of goop constructs can drop, depending on theme.
 	var/static/list/remains_by_theme = list(
 		THEME_CULT = /obj/item/ectoplasm/construct,
@@ -62,6 +68,10 @@
 	var/remains = remains_by_theme[theme]
 	if(remains)
 		AddElement(/datum/element/death_drops, remains)
+	// VOIDCREW EDIT ADDITION: see map_loot
+	if(LAZYLEN(map_loot))
+		AddElement(/datum/element/death_drops, string_list(map_loot))
+	// VOIDCREW EDIT ADDITION END
 	if(smashes_walls)
 		AddElement(/datum/element/wall_tearer, allow_reinforced = FALSE)
 	if(can_repair)

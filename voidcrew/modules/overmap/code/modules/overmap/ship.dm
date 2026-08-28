@@ -1002,6 +1002,13 @@
 		// onto ours.
 		card.set_account(ship_account)
 		qdel(account) //delete the individual account.
+		// /datum/bank_account/Destroy() drops itself out of SSeconomy.bank_accounts_by_id,
+		// so leaving the id on the mob leaves a pointer to an account that no longer
+		// exists. Everything that resolves it does the same lookup this proc just did -
+		// the Indebted quirk (which runs a few lines after us in AttemptSpawnOnShip and
+		// runtimed on it, x7 in round 19), the ID forging auto-assign, spy bounties - and
+		// only some of them null-check. Their account is genuinely gone, so say so.
+		crewmate.account_id = null
 
 	crewmate.mind.wipe_memory() //clears ALL memories, but currently all they have is their old bank account.
 	crewmate.mind.assigned_role.paycheck_department = ship_team.name
@@ -2961,7 +2968,15 @@
 		var/magnitude = MAGNITUDE(speed[1], speed[2])
 		if(magnitude > 0)
 			var/previous_time = 1 / magnitude
-			offset = timeleft(movement_callback_id) / previous_time
+			// offset is the fraction of the current tile still ahead of us, carried
+			// over so a throttle change doesn't restart the crossing. timeleft()
+			// returns null once the timedevent is spent or gone, and goes NEGATIVE
+			// whenever SStimer runs the movement tick late - which it routinely does
+			// on a slow hull, where one tile is minutes long. Both meant "no tile
+			// left", but the raw value went straight into the wait below and asked
+			// addtimer() for a negative delay (round 19: -0.49 ds, x12).
+			var/remaining = timeleft(movement_callback_id)
+			offset = (isnum(remaining) && remaining > 0) ? (remaining / previous_time) : 0
 		deltimer(movement_callback_id)
 		movement_callback_id = null //just in case
 
@@ -2990,7 +3005,11 @@
 		push_helm_frame()
 		return
 
-	var/timer = 1 / MAGNITUDE(speed[1], speed[2]) * offset
+	// offset is clamped non-negative above; the floor here is belt and braces so a
+	// future edit can't reintroduce a negative wait. 0 is legal - addtimer() rounds
+	// it up to world.tick_lag, i.e. "move on the next tick", which is what an
+	// already-overdue crossing should do.
+	var/timer = max(1 / MAGNITUDE(speed[1], speed[2]) * offset, 0)
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
 	// The chart glides over exactly get_move_interval(), which this call has just
 	// rewritten. Push it now rather than letting the console wait for the next tile

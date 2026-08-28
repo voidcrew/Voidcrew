@@ -380,9 +380,16 @@
 // The strike-watching signals ride Grant/Remove, so the action's own
 // body-transfer machinery keeps them on whatever body the mind wears
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/Grant(mob/grant_to)
+	// Grant() is a no-op when grant_to already owns us (COMSIG_MIND_TRANSFERRED fires on a
+	// transfer back into the body the mind is already in), so re-registering here without a
+	// guard would double-hook the strike signals. Registering on owner rather than grant_to
+	// also keeps this paired with Remove() when the mind-bound check refuses the grant.
+	var/mob/previous_owner = owner
 	. = ..()
-	RegisterSignal(grant_to, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_armed_strike))
-	RegisterSignal(grant_to, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_strike))
+	if(!owner || owner == previous_owner)
+		return
+	RegisterSignal(owner, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_armed_strike))
+	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_strike))
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/Remove(mob/living/remove_from)
 	UnregisterSignal(remove_from, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))

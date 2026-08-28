@@ -269,7 +269,12 @@
 
 		for (var/obj/item/food/meat/meat in results)
 			meat.name = "[target.owner.real_name]'s [meat.name]"
-			meat.set_custom_materials(list(SSmaterials.get_material(/datum/material/meat/mob_meat, target.owner) = 4 * SHEET_MATERIAL_AMOUNT))
+			// VOIDCREW EDIT ADDITION: resolve the bespoke material first. If its Initialize() failed
+			// SSmaterials answers null, and list(null = amount) poisons every material proc the meat
+			// later touches; the meat keeps whatever generic material it was built with instead.
+			var/datum/material/subject_meat = SSmaterials.get_material(/datum/material/meat/mob_meat, target.owner)
+			if(!isnull(subject_meat))
+				meat.set_custom_materials(list(subject_meat = 4 * SHEET_MATERIAL_AMOUNT))
 			meat.subjectname = target.owner.real_name
 			meat.subjectjob = target.owner.job
 
@@ -454,7 +459,13 @@
 		var/list/meat_mats = carrion.has_material_type(/datum/material/meat)
 		if (!length(meat_mats))
 			continue
-		carrion.set_custom_materials((carrion.custom_materials - meat_mats) + list(SSmaterials.get_material(/datum/material/meat/mob_meat, target) = counterlist_sum(meat_mats)))
+		// VOIDCREW EDIT ADDITION: same as the limb-butchering path above - a null from SSmaterials
+		// must not become a key in the carrion's material list. Butchering a mob whose bespoke meat
+		// material failed to build is how the goliath meat ended up applying a null material.
+		var/datum/material/subject_meat = SSmaterials.get_material(/datum/material/meat/mob_meat, target)
+		if(isnull(subject_meat))
+			continue
+		carrion.set_custom_materials((carrion.custom_materials - meat_mats) + list(subject_meat = counterlist_sum(meat_mats)))
 
 	// Transfer delicious reagents to meat
 	if (target.reagents)

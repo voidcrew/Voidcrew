@@ -44,6 +44,11 @@
 	update_appearance()
 
 /obj/structure/headpike/update_name()
+	// VOIDCREW EDIT ADDITION: update_overlays() already guards on victim and this did not, so any
+	// update_appearance() that lands before Initialize()/on_craft_completion() has filled these in
+	// read real_name off null. Lava burning a mapload headpike is one way in.
+	if(isnull(victim) || isnull(spear))
+		return ..()
 	name = "[victim.get_face_name()] on a [spear.name]"
 	return ..()
 

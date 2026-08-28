@@ -307,7 +307,12 @@ Turf and target are separate in case you want to teleport some distance from a t
 /proc/get_loc_from_mousepos(mousepos_x, mousepos_y, sizex, sizey, client/viewing_client)
 	if(sizex == 0 || sizey == 0) //contexts where this information is not availible should return 0 in size, aka tgui passthrough
 		return list(null, 0, 0)
-	var/turf/baseloc = get_turf(viewing_client.eye)
+	var/turf/baseloc = viewing_client ? get_turf(viewing_client.eye) : null
+	// VOIDCREW EDIT ADDITION: an eye in nullspace has no turf, and reading baseloc.x below aborted
+	// the proc - which handed the caller null instead of a list, so /client/verb/keyDown then failed
+	// again on "cannot read from list". Same shape of answer as the no-screen-size case above.
+	if(isnull(baseloc))
+		return list(null, 0, 0)
 	var/list/actual_view = getviewsize(viewing_client ? viewing_client.view : world.view)
 
 	var/screen_width = actual_view[1] * ICON_SIZE_X

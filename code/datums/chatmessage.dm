@@ -75,7 +75,11 @@
 	INVOKE_ASYNC(src, PROC_REF(generate_image), text, target, owner, language, extra_classes, lifespan, message_mods)
 
 /datum/chatmessage/Destroy()
-	if (!QDELING(owned_by))
+	// VOIDCREW EDIT - was QDELING(owned_by), VOIDCREW EDIT END. A /client is hard-deleted on
+	// logout, which nulls every reference to it, owned_by included, so a message that outlives
+	// its viewer reaches here with owned_by already null and QDELING()'s bare deref runtimes.
+	// QDELETED() is the same test with the null case folded in.
+	if (!QDELETED(owned_by))
 		if(REALTIMEOFDAY < animate_start + animate_lifespan)
 			stack_trace("Del'd before we finished fading, with [(animate_start + animate_lifespan) - REALTIMEOFDAY] time left")
 
@@ -219,6 +223,16 @@
 ///necessary because after that call the proc can resume at the end of the tick and cause overtime.
 /datum/chatmessage/proc/finish_image_generation(mheight, atom/target, mob/owner, complete_text, lifespan)
 	finish_callback = null
+	// VOIDCREW EDIT ADDITION BEGIN - SSrunechat invokes this a tick or more after
+	// generate_image() measured the text, and the owning client can be gone by then: a
+	// /client is hard-deleted on logout, which nulls owned_by on every reference at once
+	// (round 19: 25 of these in the same instant for one player). There is nobody left to
+	// show the bubble to, and building it anyway leaves a datum that animates to nothing
+	// and then trips over the null client again in Destroy(). Bin it instead.
+	if(QDELETED(owned_by))
+		qdel(src)
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/rough_time = REALTIMEOFDAY
 	approx_lines = max(1, mheight / CHAT_MESSAGE_APPROX_LHEIGHT)
 	var/starting_height = target.maptext_height

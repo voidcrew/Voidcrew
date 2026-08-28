@@ -215,7 +215,7 @@
 /area/ruin/powered)
 "qd" = (
 /obj/item/paper/fluff{
-	info = "Hey, the dance floor is broken. I'm not being paid enough to fix it, so go fix it yourself with my multitool.";
+	default_raw_text = "Hey, the dance floor is broken. I'm not being paid enough to fix it, so go fix it yourself with my multitool.";
 	name = "Mechanic's Note"
 	},
 /turf/open/floor/light{

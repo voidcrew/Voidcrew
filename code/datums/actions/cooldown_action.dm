@@ -112,13 +112,21 @@
 	return ..()
 
 /datum/action/cooldown/Grant(mob/granted_to)
+	// VOIDCREW EDIT ADDITION: see /datum/action/cooldown/spell/Grant(). /datum/action/Grant()
+	// no-ops when granted_to already owns us, so the registration below has to be told that
+	// nothing changed or a re-grant on the same mob double-registers it.
+	var/mob/previous_owner = owner
+	// VOIDCREW EDIT ADDITION END
 	. = ..()
 	if(!owner)
 		return
 	build_all_button_icons()
 	if(next_use_time > world.time)
 		START_PROCESSING(SSfastprocess, src)
-	RegisterSignal(granted_to, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, PROC_REF(handle_melee_attack))
+	// VOIDCREW EDIT: only register when the owner actually changed.
+	if(owner != previous_owner)
+		RegisterSignal(granted_to, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, PROC_REF(handle_melee_attack))
+	// VOIDCREW EDIT END
 	for(var/datum/action/cooldown/ability as anything in initialized_actions)
 		ability.Grant(granted_to)
 

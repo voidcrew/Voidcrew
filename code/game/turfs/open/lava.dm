@@ -87,6 +87,18 @@
 	if(!immerse_added && !is_type_in_typecache(arrived, GLOB.immerse_ignored_movable))
 		AddElement(/datum/element/immerse, "immerse", 215)
 		immerse_added = TRUE
+	// VOIDCREW EDIT ADDITION START - do not burn a movable that has not run Initialize() yet.
+	// /turf/Initialize() fires Entered() for everything already standing on the tile, and while a
+	// ruin is being maploaded those movables are still raw: atom_integrity is null, so take_damage()
+	// CRASHes on "taking damage while having <= 0 integrity" - every lava tick, forever, and the
+	// thing never actually burns away. The same pre-init burn also reached /obj/structure/headpike
+	// (update_name() on a null victim), /obj/structure/bonfire (null burning_loop) and any structure
+	// whose Initialize() builds the state its fire_act() touches. on_atom_inited() - our
+	// COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON handler - covers exactly these arrivals a moment
+	// later, with the movable fully built, so nothing stops burning; it just starts on time.
+	if(!(arrived.flags_1 & INITIALIZED_1))
+		return
+	// VOIDCREW EDIT ADDITION END
 	if(burn_stuff(arrived))
 		START_PROCESSING(SSobj, src)
 

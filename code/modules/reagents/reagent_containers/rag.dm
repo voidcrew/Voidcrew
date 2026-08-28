@@ -130,8 +130,17 @@
 		if(isturf(clean_target) && !HAS_TRAIT(cleaned, TRAIT_MOPABLE))
 			continue
 		// collect dna FIRST
-		if (!isnull(all_cleaned[cleaned])) // Check if there was any blood on it, we don't want nulls in our list
-			all_blood_dna |= all_cleaned[cleaned]
+		// VOIDCREW EDIT CHANGE: was `all_blood_dna |= all_cleaned[cleaned]`. A list union is the wrong
+		// tool for an assoc list of DNA -> blood type, and a cleanable can carry an entry whose key or
+		// value is empty; either way the rag ended up handing add_blood_DNA() a pair it CRASHes on
+		// ("has been passed bad blood_DNA_to_add"). Copy the pairs across explicitly, dropping broken
+		// ones rather than propagating them onto the next thing this rag touches.
+		var/list/found_blood_dna = all_cleaned[cleaned]
+		if (islist(found_blood_dna))
+			for (var/blood_dna_key in found_blood_dna)
+				if (isnull(blood_dna_key) || isnull(found_blood_dna[blood_dna_key]))
+					continue
+				all_blood_dna[blood_dna_key] = found_blood_dna[blood_dna_key]
 		// THEN pass on dna (though in some cases the cleaned item is being deleted)
 		if(blood_level > 0 && !QDELING(cleaned))
 			cleaned.add_blood_DNA(GET_ATOM_BLOOD_DNA(src))

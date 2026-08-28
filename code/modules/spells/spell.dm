@@ -93,9 +93,25 @@
 		if(mind_target.current != grant_to)
 			return
 
+	// VOIDCREW EDIT ADDITION: /datum/action/Grant() is a no-op when grant_to is already the
+	// owner, but this override only tested `owner` afterwards and so re-ran every
+	// RegisterSignal below on a re-grant to the same mob. COMSIG_MIND_TRANSFERRED fires even
+	// when a mind is transferred back into the body it is already in (the bitrunning avatar
+	// disconnect does exactly that), and /datum/action/on_target_mind_swapped() answers it
+	// with Grant(source.current) - one such transfer produced five "... overridden" runtimes
+	// for every spell the mob held.
+	var/mob/previous_owner = owner
+	// VOIDCREW EDIT ADDITION END
+
 	. = ..()
 	if(!owner)
 		return
+
+	// VOIDCREW EDIT ADDITION: nothing changed hands, our signals are already in place.
+	if(owner == previous_owner)
+		owner.client?.stat_panel.send_message("check_spells")
+		return
+	// VOIDCREW EDIT ADDITION END
 
 	// Register some signals so our button's icon stays up to date
 	if(spell_requirements & SPELL_REQUIRES_STATION)

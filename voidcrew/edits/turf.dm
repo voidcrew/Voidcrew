@@ -123,6 +123,15 @@
 		if(open_self.excited || open_self.excited_group)
 			SSair.remove_from_active(src)
 
+	// VOIDCREW EDIT: and off the SUPERCONDUCTION list, which is a separate list that
+	// remove_from_active() has never touched. It holds closed turfs (walls conducting through
+	// themselves) as well as open ones, so this sits outside the branch above. The raw swap
+	// this proc precedes retargets the entry onto an uninitialized /turf/open/space/basic with
+	// a null `air`, and process_super_conductivity() then calls super_conduct() on it every
+	// tick forever - archive(), neighbor_conduct_with_src() and finish_superconduction() all
+	// dereference the missing mixture. Round 19 logged ~190 of those from one torn-down slot.
+	SSair.active_super_conductivity -= src
+
 	// Our half of every pairing we know about.
 	var/list/our_adjacency = atmos_adjacent_turfs
 	if(our_adjacency)
@@ -312,6 +321,47 @@
 	var/carryover_turf_flags = (RESERVATION_TURF | UNUSED_RESERVATION_TURF) & turf_flags
 	var/turf/new_turf = new path(src)
 	new_turf.turf_flags |= carryover_turf_flags
+
+	// VOIDCREW EDIT ADDITION START - a turf's registrations on ITSELF must not survive a type
+	// change. The carryover below exists so components watching the TILE keep working across a
+	// replacement; a self-registration is a different animal, because the proc name it stored
+	// belongs to the OLD type. /turf/closed/wall registers COMSIG_ATOM_REQUESTING_CONTEXT_FROM_ITEM
+	// -> "add_context" on itself, and a shuttle takeoff turns that wall into
+	// /turf/open/space/transit, which has no such proc.
+	//
+	// It gets worse than a wrong proc name, because LAZYOR (|=) only fills in MISSING keys. The
+	// fresh transit turf's own Initialize() has already built _signal_procs[new_turf], so the wall's
+	// whole per-target proc list is thrown away on the key collision - while _listen_lookup keeps
+	// the signal NAME (a key the new turf did not have). What is left is a listener with no proc
+	// name, and _SendSignal() calls it as call(turf, null): "undefined proc or verb
+	// /turf/open/space/transit/east/()", once per mouse-over, for the life of the tile.
+	//
+	// Both types register whatever they actually want from their own Initialize(), which has
+	// already run on new_turf by this point, so dropping the old self-entries loses nothing.
+	if(old_signal_procs)
+		old_signal_procs -= new_turf
+		if(!length(old_signal_procs))
+			old_signal_procs = null
+	if(old_listen_lookup)
+		for(var/signal_name in old_listen_lookup.Copy())
+			var/list/listeners = old_listen_lookup[signal_name]
+			if(!islist(listeners))
+				if(listeners == new_turf)
+					old_listen_lookup -= signal_name
+				continue
+			if(!(new_turf in listeners))
+				continue
+			listeners -= new_turf
+			switch(length(listeners))
+				if(0)
+					old_listen_lookup -= signal_name
+				if(1)
+					// A lone listener is stored bare, never as a one-element list - UnregisterSignal()
+					// stack_traces on that shape ("somehow has single length list inside _listen_lookup").
+					old_listen_lookup[signal_name] = listeners[1]
+		if(!length(old_listen_lookup))
+			old_listen_lookup = null
+	// VOIDCREW EDIT ADDITION END
 
 	// WARNING WARNING
 	// Turfs DO NOT lose their signals when they get replaced, REMEMBER THIS

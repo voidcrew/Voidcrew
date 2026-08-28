@@ -276,6 +276,17 @@
 		return
 	update_current_power_usage()
 	power_change()
+	// VOIDCREW EDIT ADDITION: drop any registration we already hold on this area first.
+	// The enter/exit pair only balances while every area change a machine sees is a MOVE.
+	// /turf/proc/change_area() is the other kind, and it sends neither COMSIG_EXIT_AREA nor
+	// COMSIG_ENTER_AREA to the turf's contents (vent_pump.dm's on_enter_area() notes the same
+	// hole from the other side), so a machine standing on ground a landing hull adopts keeps
+	// its registration on the area it thinks it is still in. The next real move then registers
+	// again - and when the machine is being shoved back out to the same /area/space it started
+	// in, that is a duplicate on one area: "area_power_change overridden", 12 of them in round
+	// 19, all from evict_landing_stowaways() clearing a berth. Unregistering first is exactly
+	// idempotent, since the only handler we can be dropping is this same power_change().
+	UnregisterSignal(area_to_register, COMSIG_AREA_POWER_CHANGE)
 	RegisterSignal(area_to_register, COMSIG_AREA_POWER_CHANGE, PROC_REF(power_change))
 
 /obj/machinery/proc/on_exit_area(datum/source, area/area_to_unregister)

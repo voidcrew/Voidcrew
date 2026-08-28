@@ -157,7 +157,7 @@
 	dir = 1
 	},
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/cult,
 /area/ruin/unpowered)
@@ -306,7 +306,7 @@
 "lF" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -393,7 +393,7 @@
 /area/ruin/unpowered)
 "ou" = (
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -418,7 +418,7 @@
 /area/ruin/unpowered)
 "qg" = (
 /mob/living/basic/construct/artificer/hostile{
-	loot = list(/obj/item/ectoplasm, /obj/item/necromantic_stone)
+	map_loot = list(/obj/item/necromantic_stone)
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -427,13 +427,13 @@
 	dir = 4
 	},
 /mob/living/basic/construct/wraith/hostile{
-	loot = list(/obj/item/ectoplasm, /obj/item/rod_of_asclepius)
+	map_loot = list(/obj/item/rod_of_asclepius)
 	},
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -676,7 +676,7 @@
 	dir = 4
 	},
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -689,7 +689,7 @@
 	dir = 1
 	},
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -761,7 +761,7 @@
 	dir = 4
 	},
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/cult,
 /area/ruin/unpowered)
@@ -939,14 +939,14 @@
 /area/overmap_encounter/planetoid/wasteland)
 "FI" = (
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Gz" = (
 /obj/effect/rune/narsie,
 /mob/living/basic/construct/juggernaut/hostile{
-	loot = list(/obj/item/ectoplasm, /obj/item/nullrod/armblade/tentacle)
+	map_loot = list(/obj/item/nullrod/armblade/tentacle)
 	},
 /obj/structure/sacrificealtar,
 /obj/effect/decal/cleanable/blood{
@@ -1044,7 +1044,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/brown/anticorner,
 /obj/item/flashlight/glowstick/red{
-	on = 1
+	start_on = 1
 	},
 /turf/open/floor/cult,
 /area/ruin/unpowered)

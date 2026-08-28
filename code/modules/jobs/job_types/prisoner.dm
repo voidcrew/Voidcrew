@@ -34,6 +34,16 @@
 	if(rank != title)
 		return //not a prisoner
 
+	// VOIDCREW EDIT ADDITION BEGIN - ships build a fresh job datum per crew slot per hull
+	// (assemble_job_slots_from_list), and every one of them runs this New() and registers
+	// on SSdcs. Matching on the title alone therefore matched every Pill-class in the
+	// fleet, so a single prisoner joining ran this handler once per hull. Upstream has one
+	// prisoner datum and set_assigned_role() stores that exact datum, so this reads the
+	// same there.
+	if(crewmember.mind?.assigned_role != src)
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	var/crime_name = crewmember.client?.prefs?.read_preference(/datum/preference/choiced/prisoner_crime)
 	if(!crime_name)
 		stack_trace("[crewmember] joined as a Prisoner without having a prisoner crime set.")
@@ -41,9 +51,18 @@
 	else if(crime_name == "Random")
 		crime_name = pick(assoc_to_keys(GLOB.prisoner_crimes))
 
+	var/datum/record/crew/target_record = find_record(crewmember.real_name)
+	// VOIDCREW EDIT ADDITION BEGIN - COMSIG_GLOB_CREWMEMBER_JOINED fires twice on a ship
+	// join: once from transfer_character(), which runs before equip_rank() and before
+	// GLOB.manifest.inject() have made a crew record, and again from AttemptSpawnOnShip()
+	// once the record exists. The early pass had nothing to write the crime onto. Let it
+	// go; the later pass does the work (and does the to_chat below exactly once).
+	if(isnull(target_record))
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	var/datum/prisoner_crime/crime = GLOB.prisoner_crimes[crime_name]
 	var/datum/crime/past_crime = new(crime.name, crime.desc, "Central Command", "Indefinite.")
-	var/datum/record/crew/target_record = find_record(crewmember.real_name)
 	target_record.crimes += past_crime
 	target_record.recreate_manifest_photos(add_height_chart = TRUE)
 	to_chat(crewmember, span_warning("You are imprisoned for \"[crime_name]\"."))

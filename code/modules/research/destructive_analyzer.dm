@@ -85,7 +85,10 @@
 		data["item_icon"] = icon2base64(getFlatIcon(image(icon = loaded_item.icon, icon_state = loaded_item.icon_state), no_anim = TRUE))
 		data["indestructible"] = !(loaded_item.resistance_flags & INDESTRUCTIBLE)
 		data["loaded_item"] = loaded_item
-		data["already_deconstructed"] = !!stored_research.deconstructed_items[loaded_item.type]
+		// VOIDCREW EDIT - was stored_research.deconstructed_items[...]; no_default_techweb_link is on
+		// fork-wide, so an unlinked analyzer is the normal starting state and this ran on a null web
+		data["already_deconstructed"] = !!stored_research?.deconstructed_items?[loaded_item.type]
+		// VOIDCREW EDIT END
 		var/list/points = SSresearch.point_items_for(loaded_item) // VOIDCREW EDIT - was techweb_point_items[loaded_item.type]; base-path entries (anomaly cores) need the subtype fallback
 		data["recoverable_points"] = techweb_point_display_generic(points)
 
@@ -95,7 +98,7 @@
 			data["node_data"] += list(list(
 				"node_name" = unlockable_node.display_name,
 				"node_path" = node_path,
-				"node_hidden" = !!stored_research.hidden_nodes[node_path],
+				"node_hidden" = !!stored_research?.hidden_nodes?[node_path], // VOIDCREW EDIT - null web, see above
 			))
 	else
 		data["loaded_item"] = null

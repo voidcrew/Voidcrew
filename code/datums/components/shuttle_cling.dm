@@ -158,6 +158,12 @@
 
 ///Are we on a hyperspace tile? There's some special bullshit with lattices so we just wrap this check
 /datum/component/shuttle_cling/proc/is_on_hyperspace(atom/movable/clinger)
+	// VOIDCREW EDIT ADDITION: every caller reads `parent`, which a hard delete can null out from
+	// under a signal handler. "Not on hyperspace" is the right answer for a thing that no longer
+	// exists - update_state() then qdels us, which is what we want anyway.
+	if(isnull(clinger))
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
 	if(istype(clinger.loc, hyperspace_type) && !HAS_TRAIT(clinger.loc, TRAIT_HYPERSPACE_STOPPED))
 		return TRUE
 	return FALSE

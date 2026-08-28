@@ -80,7 +80,13 @@
 	if(finished || timer_id)
 		return
 	start_time = world.time
-	timer_id = addtimer(CALLBACK(src, PROC_REF(advance)), TRANSLATION_MORPH_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
+	// TIMER_DELETE_ME is load-bearing: complete() runs from inside this timer's own
+	// callback, and while a callback is running SStimer has already marked the timer
+	// spent. Both deltimer() and /datum/Destroy()'s _active_timers sweep refuse to
+	// delete a spent timer unless it carries TIMER_DELETE_ME, so without the flag
+	// every morph left a looping timer behind that outlived (and hard-deleted) this
+	// datum and then threw "Cannot read null.type" from bucketJoin() every tick.
+	timer_id = addtimer(CALLBACK(src, PROC_REF(advance)), TRANSLATION_MORPH_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 	advance()
 
 /// Stops early and jumps straight to the destination text.

@@ -366,6 +366,10 @@
 					continue
 				if(istype(O, /obj/structure/railing))
 					continue
+				// VOIDCREW EDIT ADDITION: as in impact_ship() - not everything on a tile uses
+				// atom integrity, and take_damage() CRASHes on the ones that do not.
+				if(!O.uses_integrity)
+					continue
 				O.take_damage(damage, BURN, LASER)
 
 /// Deals damage to the ship at the impact location
@@ -382,6 +386,10 @@
 			to_chat(victim, span_userdanger("You're hit by a ship laser!"))
 		else if(isobj(AM))
 			var/obj/O = AM
+			// VOIDCREW EDIT ADDITION: /obj/effect and friends leave uses_integrity FALSE, and
+			// take_damage() CRASHes rather than no-ops on those.
+			if(!O.uses_integrity)
+				continue
 			O.take_damage(damage, BURN, LASER)
 
 	// Damage walls/turfs based on power level
@@ -400,7 +408,7 @@
 			wall_damage = damage * 0.1
 
 		if(wall_damage > 0)
-			impact_loc.take_damage(wall_damage, BURN, LASER)
+			damage_impact_turf(impact_loc, wall_damage)
 
 	// Small fire effect
 	new /obj/effect/hotspot(impact_loc)
@@ -414,6 +422,36 @@
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
 		// Being shot ends any plotted course (see ship_autopilot.dm)
 		target_ship.interrupt_autopilot("hull damage taken")
+
+/**
+ * Applies the beam's wall damage to the turf it stopped against.
+ *
+ * VOIDCREW EDIT ADDITION. Turfs are not atom-integrity atoms in this codebase: /turf/closed/wall
+ * leaves uses_integrity FALSE and answers damage all-or-nothing through dismantle_wall(), so
+ * take_damage() on one never scratched the paint - it threw "had /atom/proc/take_damage() called
+ * on it without it being a type that has uses_integrity = TRUE!" and the hull took nothing.
+ *
+ * The damage numbers above are kept exactly as they were and read as a breach chance instead. A
+ * wall's `hardness` IS its break probability (higher = softer - see /turf/closed/wall and
+ * attack_hulk), and we scale it by how many base laser shots' worth of wall damage this beam is
+ * carrying: LASER_DAMAGE_BASE is one shot. So a low-power beam (10% of one shot) mostly leaves
+ * dents, while an upgraded turret at 200% (3x damage, several shots' worth) goes straight
+ * through. Only a full shot or better devastates; anything less leaves the girder behind.
+ */
+/obj/effect/ship_laser_beam/proc/damage_impact_turf(turf/impact_loc, wall_damage)
+	if(wall_damage <= 0 || (impact_loc.resistance_flags & INDESTRUCTIBLE))
+		return
+	if(impact_loc.uses_integrity)
+		impact_loc.take_damage(wall_damage, BURN, LASER)
+		return
+	if(!iswallturf(impact_loc))
+		return
+	var/turf/closed/wall/hit_wall = impact_loc
+	if(!prob(min(100, hit_wall.hardness * (wall_damage / LASER_DAMAGE_BASE))))
+		hit_wall.add_dent(WALL_DENT_HIT)
+		return
+	hit_wall.dismantle_wall(devastated = (wall_damage >= LASER_DAMAGE_BASE), explode = TRUE)
+
 
 // ========== BEAM SEGMENT EFFECT ==========
 

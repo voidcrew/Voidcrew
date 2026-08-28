@@ -193,6 +193,11 @@
 	if (!length(returned_airs) || (null in returned_airs))
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [considered_component] \
 		which is of type [considered_component.type]. Nearby: ([considered_component.x], [considered_component.y], [considered_component.z])")
+		// VOIDCREW EDIT: and then DROP the nulls instead of carrying them in. Upstream warned
+		// and merged anyway, which parks a null in other_airs permanently - reconcile_air()
+		// walks that list every time the pipenet processes and reads gas_mixture.pipeline_cycle
+		// off it, so one bad attach is a runtime per pipeline per tick for the rest of the round.
+		list_clear_nulls(returned_airs)
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/add_member(obj/machinery/atmospherics/reference_device, obj/machinery/atmospherics/device_to_add)
@@ -260,8 +265,18 @@
 
 /obj/machinery/atmospherics/components/add_member(obj/machinery/atmospherics/considered_device)
 	var/datum/pipeline/device_pipeline = return_pipenet(considered_device)
+	// VOIDCREW EDIT: refuse rather than CRASH. return_pipenet() answers null when we hold no
+	// port facing considered_device - the one-way node link two pipes stacked on one turf
+	// produce, and the pre-init window this fork opens by docking ships before SSatoms runs.
+	// A CRASH() here is a runtime like any other: it unwinds the whole stack, which in every
+	// logged case was a hull's lateShuttleMove() rebuilding its pipes, so one badly stacked
+	// pipe took the rest of that ship's pipe graph down with it. Every caller of add_member()
+	// (on_construction(), connect_nodes(), the shuttle-move reconnect in components_base.dm)
+	// queues a rebuild straight afterwards; queue one here too, so the paths that do not still
+	// get a second chance once the node graph is finished.
 	if(!device_pipeline)
-		CRASH("null.add_member() called by [type] on [COORD(src)]")
+		SSair.add_to_rebuild_queue(src)
+		return
 	device_pipeline.add_member(considered_device, src)
 
 
@@ -320,6 +335,14 @@
 	var/total_heat_capacity = 0
 
 	var/volume_sum = 0
+
+	// VOIDCREW EDIT ADDITION: a null in here is fatal to the loop below ("Cannot read
+	// null.pipeline_cycle"), and three of the four sources can supply one: other_airs on any
+	// pipeline in the chain, a pipeline whose own air has not been minted yet, and whatever a
+	// custom-reconcilation machine hands back. return_air() already sanitises the same pair
+	// for its own callers; do it once here for the whole gathered set instead of null-checking
+	// inside the hot loop.
+	list_clear_nulls(gas_mixture_list)
 
 	var/static/process_id = 0
 	process_id = WRAP_UID(process_id + 1)

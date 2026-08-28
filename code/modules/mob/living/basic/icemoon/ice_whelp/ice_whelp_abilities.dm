@@ -34,6 +34,9 @@
 	forecast_overlay.setDir(get_dir(owner, target_turf))
 	owner.add_overlay(forecast_overlay)
 	var/succeeded = do_after(owner, delay = forecast_delay, target = owner, cog_icon = null)
+	// VOIDCREW EDIT ADDITION: the whelp can die during the forecast wait, and Remove() nulls owner.
+	if(isnull(owner))
+		return
 	owner.cut_overlay(forecast_overlay)
 	if (succeeded)
 		playsound(owner.loc, fire_sound, 200, TRUE)

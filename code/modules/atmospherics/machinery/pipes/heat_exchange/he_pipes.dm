@@ -21,6 +21,14 @@
 	. = ..()
 
 /obj/machinery/atmospherics/pipe/heat_exchanging/process_atmos()
+	// VOIDCREW EDIT ADDITION: the same guard process() below has already carried for years.
+	// return_air() is `return parent.air` (pipes.dm) - with no pipeline it runtimes, hands back
+	// null, and every read after this line is a second runtime on that null. SSair's
+	// atmos_plumbing_ready() gate normally keeps an unplumbed pipe out of process_atmos
+	// entirely; this is the local half of that contract, for the window where a mapped HE loop
+	// (an icemoon ruin's freezer coil) is processing before anything built it a pipenet.
+	if(isnull(parent))
+		return
 	var/environment_temperature = 0
 	var/datum/gas_mixture/pipe_air = return_air()
 

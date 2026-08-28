@@ -36,6 +36,15 @@
 /turf/open/space/transit/proc/initialize_drifting(atom/entered, atom/movable/enterer)
 	SIGNAL_HANDLER
 
+	// VOIDCREW EDIT ADDITION: initialize_drifting_but_from_initialize() reaches us through an
+	// INVOKE_ASYNC, and the movable that entered can be gone by the time we run - the usual case is
+	// debris made by an explosion that keeps deleting things after the pipe fitting is spawned.
+	// AddComponent() on a qdeleting parent CRASHes in /datum/component/New() with "was created with
+	// a deleted parent", so check here rather than there.
+	if(QDELETED(enterer))
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
 	// does not take hold. The tiles are still vacuum and you still get around by pushing off
 	// the hull; all the grace buys is not being dragged off the instant you step out of an
@@ -57,6 +66,11 @@
 /turf/open/space/transit/proc/initialize_drifting_but_from_initialize(atom/movable/location, atom/movable/enterer, mapload)
 	SIGNAL_HANDLER
 
+	// VOIDCREW EDIT ADDITION: QDELETED() rather than a bare deref - this fires from InitAtom(), and
+	// an atom can be created and qdel'd inside its own Initialize().
+	if(QDELETED(enterer))
+		return
+	// VOIDCREW EDIT ADDITION END
 	if(!mapload && !enterer.anchored)
 		INVOKE_ASYNC(src, PROC_REF(initialize_drifting), src, enterer)
 

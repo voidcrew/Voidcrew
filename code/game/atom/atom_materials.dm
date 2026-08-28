@@ -75,14 +75,27 @@
 	SHOULD_NOT_OVERRIDE(TRUE)
 	PRIVATE_PROC(TRUE)
 	var/list/material_effects = list()
-	var/index = 1
+	var/index = 0
 	for(var/current_material in materials)
+		index++
+		// VOIDCREW EDIT ADDITION START - never build an effects entry for a key that is not a
+		// material. A bespoke material whose Initialize() returns FALSE comes back from SSmaterials
+		// as null, the caller stores list(null = amount), and the null then rides all the way down
+		// into finalize_material_effects() and apply_single_mat_effect() as null.integrity_modifier,
+		// null.strength_modifier, null.added_slowdown and null.on_applied() - four runtimes per
+		// affected atom, per application. get_material() CRASHes on a null key of its own accord, so
+		// the key is checked before it is handed over. `index` still counts every entry, because it
+		// is the material's rank in the caller's list and get_material_multiplier() reads it as such.
+		if(isnull(current_material))
+			continue
 		var/datum/material/material = SSmaterials.get_material(current_material)
+		if(isnull(material))
+			continue
+		// VOIDCREW EDIT ADDITION END
 		material_effects[material] = list(
 			MATERIAL_LIST_OPTIMAL_AMOUNT = OPTIMAL_COST(materials[current_material] * material_modifier),
 			MATERIAL_LIST_MULTIPLIER = get_material_multiplier(material, materials, index),
 		)
-		index++
 
 	if(material_slots)
 		configure_material_slots(material_effects)

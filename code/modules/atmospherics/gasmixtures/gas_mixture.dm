@@ -276,15 +276,32 @@ GLOBAL_LIST_INIT(meta_gas_info, meta_gas_list()) //see ATMOSPHERICS/gas_types.dm
 /datum/gas_mixture/proc/equalize(datum/gas_mixture/other)
 	. = FALSE
 	if(abs(return_temperature() - other.return_temperature()) > MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
-		. = TRUE
 		var/self_heat_cap = heat_capacity()
 		var/other_heat_cap = other.heat_capacity()
-		var/new_temp = (temperature * self_heat_cap + other.temperature * other_heat_cap) / (self_heat_cap + other_heat_cap)
-		temperature = new_temp
-		other.temperature = new_temp
+		// VOIDCREW EDIT ADDITION: two mixes that both hold nothing each answer 0 here, and
+		// 0 / 0 is a hard "Division by zero" that unwinds the whole caller. It is reachable in
+		// ordinary play: passive_vent's process_atmos() equalizes an empty pipe against a
+		// vacuum turf (a breached hull, a ship sitting in space), and a closet/morgue tray does
+		// the same against the tile it stands on. The temperature test above still passes
+		// because each mix keeps whatever temperature it last held. With no heat on either
+		// side there is nothing to average, so leave both temperatures where they are.
+		if(self_heat_cap + other_heat_cap)
+			. = TRUE
+			var/new_temp = (temperature * self_heat_cap + other.temperature * other_heat_cap) / (self_heat_cap + other_heat_cap)
+			temperature = new_temp
+			other.temperature = new_temp
+		// VOIDCREW EDIT ADDITION END
 
 	var/min_p_delta = 0.1
 	var/total_volume = volume + other.volume
+	// VOIDCREW EDIT ADDITION: the gas loop below divides by all three of these - by each
+	// volume for the partial-pressure comparison, by the temperature for the threshold it is
+	// compared against, and by total_volume when it splits the moles. A zero-volume mix is
+	// what an unconfigured/part-built device hands us, and a mix emptied down to absolute
+	// zero is what a vented pipe looks like. Nothing can move in any of those states.
+	if(!volume || !other.volume || !temperature)
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/list/cached_moles = moles
 	var/list/cached_other_moles = other.moles
 	var/list/gas_list = cached_moles | cached_other_moles

@@ -99,7 +99,15 @@
 	// These two timers are not the same
 	// One manages the relation to the atom that spawned us, the other to the client we're displaying to
 	// We could lose our loc, and still need to talk to our client, so they are done seperately
-	addtimer(CALLBACK(balloon_alert.loc, PROC_REF(forget_balloon_alert), balloon_alert), BALLOON_TEXT_TOTAL_LIFETIME(length_mult))
+	// VOIDCREW EDIT ADDITION: the anchor can already be mid-qdel (machines balloon_alert()
+	// through their own deconstruction), and scheduling forget_balloon_alert() on a qdeleting
+	// atom only earns an "addtimer called with a callback assigned to a qdeleted object"
+	// trace - the update_on_z entry dies with the atom either way. The client-side timer
+	// below is a global callback and still has to run.
+	var/atom/balloon_anchor = balloon_alert.loc
+	if(!QDELETED(balloon_anchor))
+		addtimer(CALLBACK(balloon_anchor, PROC_REF(forget_balloon_alert), balloon_alert), BALLOON_TEXT_TOTAL_LIFETIME(length_mult))
+	// VOIDCREW EDIT ADDITION END
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), balloon_alert, viewer_client), BALLOON_TEXT_TOTAL_LIFETIME(length_mult))
 
 /atom/proc/forget_balloon_alert(image/balloon_alert)

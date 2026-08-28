@@ -355,8 +355,11 @@
 	if (survey_in_progress)
 		return "in-progress"
 
-	if(!data.get_related_celestial_list(object.type))
-		log_runtime("Not found [object.type]")
+	// VOIDCREW EDIT: this used to log_runtime("Not found [object.type]") whenever the object had no
+	// celestial family. It is not an error - trader outposts, derelicts and anything else that
+	// shares your tile without being a celestial body land here legitimately - and ui_data() asks
+	// twice per refresh (once for the default target, once per candidate), so one outpost parked in
+	// scan range wrote two lines a second into runtime.log for as long as the console stayed open.
 	if(is_object_surveyed(object))
 		return "complete"
 	return "unsurveyed"

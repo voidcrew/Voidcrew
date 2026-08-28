@@ -287,6 +287,10 @@
 	var/datum/gas_mixture/our_air = air
 
 	var/list/share_end
+	// VOIDCREW EDIT ADDITION: neighbours found in atmos_adjacent_turfs that must not be there
+	// at all - see the guard inside the loop. Collected rather than removed in place because
+	// BYOND walks `for(x as anything in list)` by index and every removal would skip an entry.
+	var/list/stale_pairings
 
 	#ifdef TRACK_MAX_SHARE
 	max_share = 0 //Gotta reset our tracker
@@ -298,6 +302,25 @@
 			stack_trace("closed turf inside of adjacent turfs")
 			continue
 		#endif
+
+		// VOIDCREW EDIT ADDITION: this list can hold a turf that is not shareable at all, and
+		// upstream only checks for it under UNIT_TESTS. `new path(old_turf)` - a ruin/domain
+		// template laid over reserved space, a cave generator pass, a packed-level teardown -
+		// replaces the turf under every existing ref without touching the NEIGHBOUR that still
+		// lists it, so the entry silently becomes whatever was laid down: a /turf/closed (which
+		// has no run_later and no air at all - "undefined variable .../var/run_later"), or an
+		// uninitialized /turf/open/space/basic, whose New() returns before Initialize ever
+		// assigns space_gas ("Cannot execute null.archive()"). Either one is a runtime on every
+		// live neighbour on every tick for the rest of the round.
+		//
+		// blocks_air is read first and is declared on /turf, so the .air read is only ever
+		// reached on a genuinely open turf. Both answers mean the same thing - the pairing is
+		// stale by definition, immediate_calculate_adjacent_turfs() would never have made it -
+		// so drop it from both sides after the loop rather than skipping it every tick.
+		if(enemy_tile.blocks_air || isnull(enemy_tile.air))
+			LAZYADD(stale_pairings, enemy_tile)
+			continue
+		// VOIDCREW EDIT ADDITION END
 
 		// This var is only rarely set, exists so turfs can request to share at the end of our sharing
 		// We need this so we can assume share is communative, which we need to do to avoid a hellish amount of garbage_collect()s
@@ -349,6 +372,20 @@
 
 
 	/******************* GROUP HANDLING FINISH *********************************************************************/
+
+	// VOIDCREW EDIT ADDITION: unlink whatever the loop above refused, on both sides, so this
+	// costs one pass instead of one runtime per tick forever. adjacent_turfs is the same list
+	// object as atmos_adjacent_turfs; write it back anyway so the result is right whether
+	// BYOND's `-=` mutates in place or rebinds.
+	if(stale_pairings)
+		for(var/turf/stale_turf as anything in stale_pairings)
+			adjacent_turfs -= stale_turf
+			if(stale_turf.atmos_adjacent_turfs)
+				stale_turf.atmos_adjacent_turfs -= src
+				UNSETEMPTY(stale_turf.atmos_adjacent_turfs)
+		atmos_adjacent_turfs = adjacent_turfs
+		UNSETEMPTY(atmos_adjacent_turfs)
+	// VOIDCREW EDIT ADDITION END
 
 	if (planetary_atmos) //share our air with the "atmosphere" "above" the turf
 		var/datum/gas_mixture/planetary_mix = SSair.planetary[initial_gas_mix]

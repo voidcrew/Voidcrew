@@ -12,6 +12,13 @@
 	if(!human_holder.account_id)
 		return
 	var/datum/bank_account/account = SSeconomy.bank_accounts_by_id["[human_holder.account_id]"]
+	// VOIDCREW EDIT ADDITION - an account_id can outlive its account here: ships fold a new
+	// crewman's personal account into the ship account and delete it (register_crewmember),
+	// and admin retcon deletes accounts outright. Upstream guards this same lookup when
+	// forging an ID (cards_ids.dm); this one didn't, and ran a debt onto null.
+	if(isnull(account))
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/debt = PAYCHECK_CREW * rand(275, 325)
 	account.account_debt += debt
 	RegisterSignal(account, COMSIG_BANK_ACCOUNT_DEBT_PAID, PROC_REF(on_debt_paid))

@@ -15,6 +15,14 @@
 
 /// When passed a mob, returns a list of languages that mob could theoretically speak IF a blank slate.
 /datum/hallucination/chat/proc/get_hallucinating_spoken_languages(atom/movable/who)
+	// VOIDCREW EDIT ADDITION - the radio branch of start() walks get_crewmember_minds(), and a
+	// mind on the manifest can have lost its body (gibbed, ghosted onto another ship), leaving
+	// mind.current null. That reached here as a null `who` and runtimed on every hallucination
+	// tick (round 19, x21). No body means no languages: return the empty list and the caller
+	// moves on to the next mind.
+	if(isnull(who))
+		return list()
+	// VOIDCREW EDIT ADDITION END
 	var/override_typepath
 	if(iscarbon(who))
 		var/mob/living/carbon/human_who = who

@@ -376,6 +376,7 @@
 #include "voidcrew_area_flags.dm"
 #include "voidcrew_assault_pod.dm"
 #include "voidcrew_autopilot_course.dm"
+#include "voidcrew_autotranslate_morph.dm"
 #include "voidcrew_bitrunning.dm"
 #include "voidcrew_colosseum.dm"
 #include "voidcrew_cordon_teleport.dm"

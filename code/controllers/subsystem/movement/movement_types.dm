@@ -428,6 +428,12 @@
 /datum/move_loop/has_target/jps/proc/recalculate_path()
 	if(!COOLDOWN_FINISHED(src, repath_cooldown))
 		return
+	// VOIDCREW EDIT ADDITION: every entry point here is an INVOKE_ASYNC, so the mover or its target
+	// can be gone by the time we run (a hard delete nulls the moveloop's refs in place). pathfind()
+	// answers that with a "Invalid pathfinding start" stack trace on every tick of a loop that can
+	// never succeed again.
+	if(QDELETED(moving) || QDELETED(target))
+		return
 	COOLDOWN_START(src, repath_cooldown, repath_delay)
 	if(SSpathfinder.pathfind(moving, target, max_path_length, minimum_distance, access, simulated_only, avoid, skip_first, diagonal_handling, on_finish = on_finish_callbacks))
 		is_pathing = TRUE

@@ -87,6 +87,53 @@ GLOBAL_LIST_EMPTY(starlight)
 	//This is used to optimize the map loader
 	return
 
+// VOIDCREW EDIT ADDITION BEGIN - superconduction on an UNINITIALIZED basic space turf.
+//
+// New() above returns before Initialize() ever runs, and Initialize() is where `air` is
+// assigned (space_EXPENSIVE.dm). So a basic space turf that nobody initialized holds a NULL
+// gas mixture while still answering isopenturf() and carrying a real thermal_conductivity.
+// That state is normal here: encounter z-levels are painted wall-to-wall with these, and
+// clear_to_uninitialized_space() puts a whole rectangle of them back with a raw
+// `new /turf/open/space/basic(T)` when a site tears down - which retargets every existing
+// ref to that coordinate onto the blank replacement, SSair.active_super_conductivity
+// included. The conduction path then reads air.temperature / calls air.archive() on null
+// once per tick for the rest of the round (round 19: ~190 traces across four procs, all
+// from three tiles at 24,152-154,12).
+//
+// Guarding here rather than in LINDA_turf_tile.dm keeps the cost off every other turf in
+// the game: an INITIALIZED basic space turf pays one null check and falls straight through.
+// The two entry points that can put us back on the conducting list also take us off it, so
+// a tile that goes blank mid-round drops out instead of accumulating.
+
+/turf/open/space/basic/super_conduct()
+	if(isnull(air))
+		SSair.active_super_conductivity -= src
+		return
+	return ..()
+
+/turf/open/space/basic/finish_superconduction()
+	if(isnull(air))
+		SSair.active_super_conductivity -= src
+		return FALSE
+	return ..()
+
+/// Reached as somebody else's neighbour: super_conduct() archives every tile it conducts with.
+/turf/open/space/basic/archive()
+	if(isnull(air))
+		return
+	return ..()
+
+/turf/open/space/basic/neighbor_conduct_with_src(turf/other)
+	if(isnull(air))
+		return
+	return ..()
+
+/turf/open/space/basic/consider_superconductivity(starting)
+	if(isnull(air))
+		return FALSE
+	return ..()
+// VOIDCREW EDIT ADDITION END
+
 /turf/open/space/Destroy()
 	GLOB.starlight -= src
 	return ..()

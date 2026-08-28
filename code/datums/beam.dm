@@ -313,7 +313,15 @@
 		if(abs(Pixel_y)>32)
 			final_y += Pixel_y > 0 ? round(Pixel_y/32) : ceil(Pixel_y/32)
 			Pixel_y %= 32
-		segment.forceMove(locate(final_x, final_y, segment.z))
+		// VOIDCREW EDIT ADDITION: the pixel-overflow carry above can push a segment's tile coordinate
+		// past the edge of the map, where locate() answers null and forceMove() throws "No valid
+		// destination passed into forceMove". Draw that segment from where it already is instead.
+		var/turf/segment_turf = locate(final_x, final_y, segment.z)
+		if(isnull(segment_turf))
+			final_x = segment.x
+			final_y = segment.y
+		else
+			segment.forceMove(segment_turf)
 		var/new_pixel_x = origin_px + Pixel_x
 		var/new_pixel_y = origin_py + Pixel_y
 		if(animate_time)
