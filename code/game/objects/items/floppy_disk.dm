@@ -221,7 +221,15 @@
 	RegisterSignal(src, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(on_throw_land))
 
 /obj/item/disk_stack/Destroy()
-	QDEL_LIST(stacked_disks)
+	// Every disk leaving fires our own Exited(), which removes it from stacked_disks. Iterating the
+	// live list therefore skips entries (the index-based iterator walks off the end of a shrinking
+	// list), and whatever it skipped is disposed of by ..() a moment later - which fires Exited()
+	// again, on an empty stack, and that used to qdel(src) from inside this very proc:
+	// "destroy proc was called multiple times, likely due to a qdel loop in the Destroy logic".
+	// Take a copy to delete from, and empty the real list up front so Exited() has nothing to do.
+	var/list/doomed_disks = stacked_disks.Copy()
+	stacked_disks.Cut()
+	QDEL_LIST(doomed_disks)
 	return ..()
 
 /obj/item/disk_stack/examine(mob/user)
@@ -259,17 +267,29 @@
 		iteration_count++
 
 /obj/item/disk_stack/proc/pop_top_disk(mob/living/user)
-	if(!length(stacked_disks))
+	// put_in_hands() below moves the disk out of us, which fires Exited() and drops it from
+	// stacked_disks - so the list is one shorter after that call, and on a one-disk stack it is
+	// empty and Exited() has already deleted us. Everything below works off the count taken here
+	// rather than re-reading or re-indexing the list, which used to throw a bad index and then
+	// qdel() an already-deleted stack.
+	var/disk_count = length(stacked_disks)
+	if(!disk_count)
 		return FALSE
 
-	var/obj/item/disk/top = stacked_disks[length(stacked_disks)]
+	var/obj/item/disk/top = stacked_disks[disk_count]
 	user.put_in_hands(top)
 
-	if(length(stacked_disks) > 1)
+	if(disk_count == 1)
+		// The stack emptied and Exited() disposed of it; only the disk is left to talk about.
+		top.balloon_alert(user, "removed top disk")
+		return TRUE
+
+	if(disk_count > 2)
 		update_appearance(UPDATE_OVERLAYS)
 		balloon_alert(user, "removed top disk")
 		return TRUE
 
+	// Exactly two disks: taking one leaves a stack of one, so dissolve into the survivor.
 	var/obj/item/disk/last_disk = stacked_disks[1]
 	var/was_in_hand = user.is_holding(src)
 	if(was_in_hand)
@@ -289,7 +309,10 @@
 	var/amount_counter = 0
 	var/list/moved_disks = list()
 
-	for(var/obj/item/disk/each_disk as anything in diskstack.stacked_disks)
+	// Copy: forceMove() fires the source stack's Exited(), which removes the disk from its
+	// stacked_disks under us and deletes the source outright the moment it empties. Iterating the
+	// live list would skip every other disk and then dereference a deleted stack.
+	for(var/obj/item/disk/each_disk as anything in diskstack.stacked_disks.Copy())
 		if(length(stacked_disks) >= MAX_DISK_STACK_SIZE)
 			break
 
@@ -298,9 +321,6 @@
 		moved_disks += each_disk
 		amount_counter += 1
 
-	diskstack.stacked_disks -= moved_disks
-	diskstack.update_appearance(UPDATE_OVERLAYS)
-
 	if(!amount_counter)
 		balloon_alert(user, "no space!")
 		return ITEM_INTERACT_BLOCKING
@@ -308,6 +328,13 @@
 	update_appearance(UPDATE_OVERLAYS)
 	to_chat(user, span_notice("You merge two stacks of disks together."))
 
+	// A fully drained source stack is already gone - Exited() deleted it when its last disk left.
+	// Only a partial merge leaves one standing, and that one still has disks in it.
+	if(QDELETED(diskstack))
+		return ITEM_INTERACT_SUCCESS
+
+	diskstack.stacked_disks -= moved_disks
+	diskstack.update_appearance(UPDATE_OVERLAYS)
 	if(!length(diskstack.stacked_disks))
 		qdel(diskstack)
 	return ITEM_INTERACT_SUCCESS
@@ -321,12 +348,22 @@
 		return
 
 	var/turf/landing = get_turf(src)
-	for(var/obj/item/disk/each_disk as anything in stacked_disks)
-		each_disk.forceMove(landing)
-		each_disk.throw_at(get_step(src, pick(NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST)), 1, 0.8)
+	if(isnull(landing))
+		return
 
+	// Announce while we are still on the turf to be seen from.
 	visible_message(span_warning("The stack falls apart!"))
-	qdel(src)
+
+	// Copy, and scatter off `landing` rather than off src: forceMove() fires Exited(), which shrinks
+	// stacked_disks under the loop and deletes us the moment the last disk leaves, so by the final
+	// iteration src is in nullspace and get_step(src, ...) would return null.
+	for(var/obj/item/disk/each_disk as anything in stacked_disks.Copy())
+		each_disk.forceMove(landing)
+		each_disk.throw_at(get_step(landing, pick(NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST)), 1, 0.8)
+
+	// Usually already deleted by the Exited() above; only an empty-but-for-non-disks stack gets here.
+	if(!QDELETED(src))
+		qdel(src)
 
 /obj/item/disk_stack/attack_hand_secondary(mob/user, list/modifiers)
 	if(pop_top_disk(user))
@@ -339,6 +376,11 @@
 	if(!istype(gone, /obj/item/disk))
 		return
 	stacked_disks -= gone
+	// Once we are being deleted the stack is emptying *because* of that deletion, so there is
+	// nothing left to redraw and self-qdel()ing here would re-enter our own Destroy(). This is the
+	// single guard that makes every other disk-shedding path below safe to write straightforwardly.
+	if(QDELETED(src))
+		return
 	update_appearance(UPDATE_OVERLAYS)
 	if(!length(stacked_disks))
 		qdel(src)

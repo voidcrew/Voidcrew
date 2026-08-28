@@ -400,11 +400,17 @@ ADMIN_VERB(log_viewer_new, R_ADMIN, "View Round Logs", "View the rounds logs.", 
 
 			data = recursive_jsonify(serialization_data, semvers)
 
-		if(islist(data) && !length(data))
-			stack_trace("recursive_jsonify got an empty list after serialization")
-			continue
-
+		// VOIDCREW EDIT START - an empty list is a legitimate VALUE, not a failed
+		// serialization. /datum/mind/serialize_list() emits .["memories"] verbatim and
+		// /datum/mind/var/list/memories is `list()` until the player is handed their first
+		// memory, so EVERY log_manifest() at roundstart - one per crewmate, every round -
+		// tripped this stack_trace and then silently DROPPED the key from the record.
+		//
+		// The case this check was really aiming at, a datum whose serialize_list() is not
+		// implemented, is already caught above by the !length(serialization_data) branch,
+		// which still traces. Keep the key and let it encode as an empty collection.
 		jsonified_list[key] = data
+		// VOIDCREW EDIT END
 
 	return jsonified_list
 

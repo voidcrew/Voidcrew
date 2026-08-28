@@ -24,6 +24,37 @@
 /obj/modular_map_root/ship_upgrade/Initialize(mapload)
 	// Capture the ship reference NOW, before parent's INVOKE_ASYNC schedules load_map
 	cached_ship = SSshuttle.loading_ship
+
+	// Silence icon smoothing for the whole assembly. A hull carries up to five of these markers;
+	// they are INITIALIZE_IMMEDIATE, so all five holds are taken while the HULL is still being
+	// parsed, and the last one is not released until the last module has finished loading.
+	//
+	// Without that, the five module maps race each other through SSicon_smooth. Each module's
+	// InitializeAtoms() ends in free_deferred(), which tips that module's turfs into
+	// smooth_queue; the next module then starts parsing into the tiles right next door, and
+	// SSicon_smooth gets a slot to run in because the map reader pops its SSatoms source before
+	// every stoplag() (MAPLOADING_CHECK_TICK) - so initializing_something() reads zero depth
+	// mid-parse. The freed turfs then smooth against the incoming module's brand new turfs and
+	// tables, whose smoothing_groups have not been through SETUP_SMOOTHING() yet and are still
+	// the raw comma-string. Indexing that string with a parsed bucket key is the "bad index"
+	// runtime at code/__HELPERS/icon_smoothing.dm's cardinal scans, and because smooth_icon()
+	// clears SMOOTH_QUEUED before it calls bitmask_smooth(), the aborted tile is never requeued
+	// and keeps its unsmoothed "-0" state for the rest of the round.
+	//
+	// Tradeoff: this is a fork-side guard for an upstream race (the per-source deferral in
+	// SSicon_smooth assumes one map load per tile block, which is not true here) rather than a
+	// fix in the smoothing code itself. Guarding inside SMOOTH_AGAINST would mean a bitflag test
+	// per neighbour in one of the hottest macros in the game, and would only downgrade the
+	// runtime to a silently wrong junction, since nothing requeues the tile when its neighbour
+	// finally initializes. Held here, the smoothing simply happens once the hull is whole.
+	SSicon_smooth.hold_smoothing(src)
+
+	return ..()
+
+/obj/modular_map_root/ship_upgrade/Destroy(force)
+	// Every exit from load_map() ends in qdel(src), so this is the one release point that covers
+	// all of them - including the early bail-outs for a missing config, key, or module map.
+	SSicon_smooth.release_smoothing(src)
 	return ..()
 
 /**

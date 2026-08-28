@@ -47,6 +47,12 @@
 	name = "shuttle thruster"
 	desc = "A thruster for shuttles."
 	icon = 'voidcrew/modules/shuttle/icons/shuttle.dmi'
+	// Compile-time state matching icon_state_off below. Without it initial(icon_state) is
+	// empty, and the design-asset generator runtimes ("missing state ''") for any engine
+	// whose design is researchable — first seen when the oil thruster design was added.
+	// update_icon_state() takes over at runtime, so this only feeds asset generation and
+	// the pre-init look.
+	icon_state = "burst_plasma_off"
 	circuit = /obj/item/circuitboard/machine/engine
 	can_atmos_pass = ATMOS_PASS_NO //so people can actually tend to their engines
 

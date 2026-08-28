@@ -98,6 +98,21 @@
 	previous = null
 	for(var/obj/machinery/power/shuttle_engine/engine as anything in engine_list)
 		engine.unsync_ship()
+	// VOIDCREW EDIT: drop the underlying-area map BEFORE the assigned_transit cascade below.
+	// onShuttleMove() records `underlying_areas_by_turf[newT] = old_dest_area` for every tile a
+	// hull lands on, so a ship parked in hyperspace holds a hard ref to its own
+	// /area/shuttle/transit - one per hull turf. Two lines down, qdel(assigned_transit, force)
+	// reaches /obj/docking_port/stationary/transit/Destroy(), which qdels that very area (the
+	// "free the area too" edit in port_types.dm). The area is therefore queued in SSgarbage
+	// from INSIDE this proc, ahead of the port that still names it, so its GC deadline expires
+	// first and the ref search finds the port's own list still holding it: a hard delete of
+	// /area/shuttle/transit on every teardown where anything else outlives this port by a tick.
+	// Observed as create_and_destroy's "/area/shuttle/transit hard deleted 2 times out of a
+	// total del count of 8", ref-tracked to
+	// "pill_black -> underlying_areas_by_turf (list)[space]" x3, ref count 5.
+	// Cut() rather than null: clear_empty_shuttle_turfs() does `-= turf` on this list and a
+	// null there is a runtime, and the list is only reachable through this port anyway.
+	underlying_areas_by_turf?.Cut()
 	if(!QDELETED(assigned_transit))
 		qdel(assigned_transit, force = TRUE)
 		assigned_transit = null

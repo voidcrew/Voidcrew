@@ -444,14 +444,21 @@
  *    `/obj/effect/landmark` into `ignored_atoms` beside `/obj/docking_port`, so
  *    the per-turf sweep in `jumpToNullSpace()` - the only thing that ever
  *    touches a dying hull's turfs - deletes everything except the landmarks.
- *    `create_ship()` spawns a `blobstart` and an `observer_start` aboard every
- *    hull and each hull `.dmm` maps its own job spawns, so every
- *    create-and-destroy cycle used to grow `GLOB.landmarks_list` (and
+ *    `create_ship()` leaves an `observer_start` aboard every hull it builds,
+ *    and each hull `.dmm` may map job spawns of its own on top of that, so
+ *    every create-and-destroy cycle used to grow `GLOB.landmarks_list` (and
  *    `start_landmarks_list`, and `jobspawn_overrides`) permanently, leaving
  *    abandoned markers standing on ground handed to the next tenant. Checked by
  *    identity - the exact markers that were aboard - rather than by global list
  *    length, so an unrelated map load elsewhere in the world cannot mask it and
  *    cannot fake it.
+ *
+ *    Note "an observer_start", not "two landmarks": `create_ship()` does spawn
+ *    a `blobstart` beside it, but that subtype records `GLOB.blobstart += loc`
+ *    and returns `INITIALIZE_HINT_QDEL` from its own `Initialize()`, so it is
+ *    gone before anything can observe it. The hull used here maps no job spawns
+ *    at all, which makes the `observer_start` the entire census - and the thing
+ *    the vacuity guard names.
  * 3. **A crewman taken out with the hull is ghostized first.** The bluespace
  *    jump is the one teardown path with players aboard, and it used to hand the
  *    crew straight to `/turf/proc/empty()`, which qdels them where they stand.
@@ -524,8 +531,24 @@
 	// ---- spec 1 + 2: the derelict sweeper's path -----------------------------
 	var/obj/docking_port/mobile/voidcrew/alpha_port = alpha.shuttle
 	var/list/alpha_markers = vc_lifecycle_landmarks_aboard(alpha_port)
-	if(length(alpha_markers) < 2)
-		TEST_FAIL("only [length(alpha_markers)] landmark(s) were found aboard a freshly built hull. create_ship() spawns a blobstart and an observer_start aboard every one, so the landmark-leak assertions below would be vacuous")
+	// Vacuity guard for all three teardowns below - they use the same hull, so
+	// this census is theirs too. It names the type rather than counting, because
+	// the count is a trap: create_ship() spawns TWO landmarks on every hull, but
+	// only ONE of them is still alive a tick later.
+	// /obj/effect/landmark/blobstart/Initialize() (landmarks.dm:376) records
+	// GLOB.blobstart += loc and then returns INITIALIZE_HINT_QDEL, deleting
+	// itself - it is a coordinate donor, not a marker that persists. The
+	// observer_start beside it is the one that stays, and on a hull whose .dmm
+	// maps no job spawns of its own (both pill hulls map none at all) it is the
+	// only landmark aboard. Asserting the type is strictly stronger than
+	// asserting a count: it pins the exact instance the sweep has to remove.
+	var/found_observer_start = FALSE
+	for(var/obj/effect/landmark/marker as anything in alpha_markers)
+		if(istype(marker, /obj/effect/landmark/observer_start))
+			found_observer_start = TRUE
+			break
+	if(!found_observer_start)
+		TEST_FAIL("no /obj/effect/landmark/observer_start was found in the [length(alpha_markers)] landmark(s) aboard a freshly built hull. create_ship() spawns one aboard every hull it builds, so without it the landmark-leak assertions below have nothing to prove and would pass vacuously")
 
 	var/snapshot = vc_runtime_snapshot()
 	var/despawned = alpha.despawn_derelict()

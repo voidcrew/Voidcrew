@@ -12,6 +12,9 @@ SUBSYSTEM_DEF(icon_smooth)
 	var/list/smooth_queue = list()
 	var/list/deferred = list()
 	var/list/deferred_by_source = list()
+	/// Atoms that have asked us to stay quiet while they load a run of overlapping maps.
+	/// See hold_smoothing(); anything in here blocks fire() outright.
+	var/list/smoothing_holds = list()
 
 /datum/controller/subsystem/icon_smooth/fire()
 	// We do not want to smooth icons of atoms whose neighbors are not initialized yet,
@@ -20,6 +23,23 @@ SUBSYSTEM_DEF(icon_smooth)
 	// This kind of map loading shouldn't take too long, so the delay is not a problem.
 	if (SSatoms.initializing_something())
 		return
+
+	// initializing_something() cannot see a load that is *between* ticks: both
+	// MAPLOADING_CHECK_TICK (code/modules/mapping/reader.dm) and CreateAtoms() pop their
+	// SSatoms source immediately before they stoplag() and push it back afterwards, so at the
+	// exact moment the MC gets to run us the depth reads as zero. That is harmless for a single
+	// map, because everything it queues is parked in deferred_by_source until it finishes - but
+	// not for a run of maps loaded back-to-back into the same tiles, where map N's turfs have
+	// already been released into smooth_queue while map N+1 is still laying down its own
+	// half-built, unparsed neighbours. Loaders in that position take a hold instead.
+	if (length(smoothing_holds))
+		// Self-healing: a holder that got deleted without releasing (a runtime out of its load
+		// proc) must not silence smoothing for the rest of the round.
+		for (var/datum/holder as anything in smoothing_holds)
+			if (QDELETED(holder))
+				smoothing_holds -= holder
+		if (length(smoothing_holds))
+			return
 
 	var/list/smooth_queue_cache = smooth_queue
 	while(length(smooth_queue_cache))
@@ -63,6 +83,28 @@ SUBSYSTEM_DEF(icon_smooth)
 		item_loc.add_blueprints(movable_item)
 
 	return SS_INIT_SUCCESS
+
+/**
+ * Stop smoothing anything at all until every holder has released.
+ *
+ * For loaders that lay down several maps back-to-back into the same tiles. The per-source
+ * deferral above only protects one map at a time: the moment map N's InitializeAtoms() finishes,
+ * free_deferred() releases its turfs into smooth_queue, and if map N+1 is already being parsed
+ * those turfs will smooth against its half-built neighbours - whose smoothing_groups are still
+ * the raw comma-string SETUP_SMOOTHING() has not parsed yet, which is a "bad index" runtime in
+ * SMOOTH_AGAINST() and leaves the tile stuck on its "-0" icon state for the rest of the round.
+ *
+ * `holder` is only ever compared by identity, and fire() drops holders that get deleted without
+ * releasing, so a runtime out of a load proc costs a late smooth rather than a dead subsystem.
+ */
+/datum/controller/subsystem/icon_smooth/proc/hold_smoothing(datum/holder)
+	smoothing_holds |= holder
+
+/// Releases a hold taken by hold_smoothing(). Safe to call when no hold is held.
+/datum/controller/subsystem/icon_smooth/proc/release_smoothing(datum/holder)
+	smoothing_holds -= holder
+	if(!can_fire && length(smooth_queue))
+		can_fire = TRUE
 
 /// Releases a pool of delayed smooth attempts from a particular source
 /datum/controller/subsystem/icon_smooth/proc/free_deferred(source_to_free)

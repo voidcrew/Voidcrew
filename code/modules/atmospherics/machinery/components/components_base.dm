@@ -263,7 +263,28 @@
 	return parents[nodes.Find(target_component)]
 
 /obj/machinery/atmospherics/components/replace_pipenet(datum/pipeline/Old, datum/pipeline/New)
-	parents[parents.Find(Old)] = New
+	// VOIDCREW EDIT START - same one-way node link as set_pipenet() above, reached from
+	// the other side. A component sits in a pipeline's other_atmos_machines while its own
+	// parents list never got a slot pointing back at that pipeline, so parents.Find(Old)
+	// answers 0 and `parents[0] = New` is a hard "list index out of bounds".
+	//
+	// That runtime is not cosmetic: a DM runtime unwinds the WHOLE call stack, so the
+	// merge(), add_member() and lateShuttleMove() that led here were all aborted midway.
+	// It fired 25 times in one boot, every one of them inside a shuttle move's
+	// cleanup_runway() while spawning the roundstart hulls.
+	//
+	// Refusing is the correct answer - the component genuinely is not on Old's pipenet -
+	// and merge() now drops the stale registration instead of carrying it into the
+	// survivor, where add_machinery_member()'s "Nonexistent (empty list) or null
+	// machinery gasmix" stack_trace would eventually be handed the same inconsistency.
+	if(isnull(parents))
+		return FALSE
+	var/parent_index = parents.Find(Old)
+	if(parent_index < 1)
+		return FALSE
+	parents[parent_index] = New
+	return TRUE
+	// VOIDCREW EDIT END
 
 // Helpers
 

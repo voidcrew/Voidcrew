@@ -230,11 +230,22 @@
 	for(var/obj/machinery/atmospherics/pipe/reference_pipe in merged_members)
 		reference_pipe.replace_pipenet(reference_pipe.parent, src)
 	air.merge(parent_pipeline.air)
-	for(var/obj/machinery/atmospherics/components/reference_component in parent_pipeline.other_atmos_machines)
-		reference_component.replace_pipenet(parent_pipeline, src)
-		if(reference_component.custom_reconcilation)
-			require_custom_reconcilation |= reference_component
-	other_atmos_machines |= parent_pipeline.other_atmos_machines
+	// VOIDCREW EDIT: honour a refused re-parent, same contract as set_pipenet()/add_member()
+	// above. A component that was never actually on parent_pipeline must not be carried
+	// into our other_atmos_machines - it would sit there registered with no matching
+	// gasmix in other_airs, which is exactly the inconsistency add_machinery_member()
+	// stack_traces about. A component that is ALREADY ours is unaffected: |= never removes.
+	// Iterate `as anything` and type-check inside, so non-component members - gas miners
+	// are /obj/machinery/atmospherics direct subtypes, not /components - are still carried
+	// across untouched, exactly as the old blanket |= did.
+	for(var/obj/machinery/atmospherics/machine as anything in parent_pipeline.other_atmos_machines)
+		var/obj/machinery/atmospherics/components/reference_component = machine
+		if(istype(reference_component))
+			if(!reference_component.replace_pipenet(parent_pipeline, src))
+				continue
+			if(reference_component.custom_reconcilation)
+				require_custom_reconcilation |= reference_component
+		other_atmos_machines |= machine
 	other_airs |= parent_pipeline.other_airs
 	parent_pipeline.other_atmos_machines.Cut()
 	parent_pipeline.require_custom_reconcilation.Cut()

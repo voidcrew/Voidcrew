@@ -105,6 +105,25 @@ SUBSYSTEM_DEF(atoms)
 					stoplag()
 					if(mapload_source)
 						set_tracked_initalized(INITIALIZATION_INNEW_MAPLOAD, mapload_source)
+					// VOIDCREW EDIT: the INITIALIZED_1 test above was read BEFORE that stoplag(),
+					// and this is the one game in the fork where two InitializeAtoms() chains can
+					// cover the same tiles at once: a modular hull's /obj/modular_map_root fires
+					// INVOKE_ASYNC(load_map), and each module template's own initTemplateBounds
+					// walks a footprint that sits INSIDE the block the hull load is still walking.
+					// The clear/set_tracked_initalized pair either side of the yield exists to hand
+					// the floor to exactly that other loader, so the interleave is invited.
+					//
+					// Acting on the stale read re-runs the whole Initialize() body: /atom/Initialize
+					// only stack_traces "initialized multiple times" and then carries on, so the
+					// side effects fire twice (a smart pipe's setup_hiding() re-registered obj_hide
+					// and undertile_updated, giving three runtimes off one pipe). Only the atom on
+					// the loop cursor at the instant of an unlucky yield can slip through, which is
+					// why this shows up as one lone atom per hull rather than a whole region.
+					//
+					// isnull() as well as the flag: a hard delete during the yield nulls references
+					// in place, our local A included.
+					if(isnull(A) || (A.flags_1 & INITIALIZED_1))
+						continue
 				PROFILE_INIT_ATOM_BEGIN()
 				InitAtom(A, TRUE, mapload_arg)
 				PROFILE_INIT_ATOM_END(A)

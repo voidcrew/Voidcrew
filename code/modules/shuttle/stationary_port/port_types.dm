@@ -52,7 +52,8 @@
 
 /obj/docking_port/stationary/transit/Destroy(force=FALSE)
 	if(force)
-		if(get_docked())
+		var/obj/docking_port/mobile/still_docked = get_docked()
+		if(still_docked)
 			log_world("A transit dock was destroyed while something was docked to it.")
 		SSshuttle.transit_docking_ports -= src
 		if(owner)
@@ -73,6 +74,23 @@
 		// area that still nominally holds turfs - which is safe, because
 		// SSmapping.fire()'s reservation drain already guards a dead area explicitly
 		// (the isnull(old_area.turfs_to_uncontain_by_zlevel) branch).
+		//
+		// VOIDCREW EDIT: whatever is still standing here has to stop naming the area first.
+		// A hull parked in hyperspace keeps `underlying_areas_by_turf[turf] = assigned_area`
+		// for every tile it occupies (set by /area/onShuttleMove), and that is a hard ref: qdel
+		// the area under a port that survives us - the ownerless-transit reaper, the admin
+		// shuttle verbs - and the area cannot be collected, which is a hard delete of
+		// /area/shuttle/transit and a dangling area on the hull's own tiles. The usual caller,
+		// /obj/docking_port/mobile/Destroy(), now clears that map before it cascades into us, so
+		// this loop is a no-op on the common path and only earns its keep on the ones where the
+		// ship outlives its transit dock. A missing entry is already handled downstream
+		// (`underlying_area || fallback_area`), so dropping these keys is the same outcome the
+		// hull would get from a tile it never recorded.
+		// Copy() because the subtraction below mutates the list being walked.
+		if(assigned_area && still_docked)
+			for(var/turf/tile as anything in still_docked.underlying_areas_by_turf.Copy())
+				if(still_docked.underlying_areas_by_turf[tile] == assigned_area)
+					still_docked.underlying_areas_by_turf -= tile
 		if(!QDELETED(assigned_area))
 			qdel(assigned_area)
 		assigned_area = null

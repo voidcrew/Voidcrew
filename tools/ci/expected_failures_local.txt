@@ -1,0 +1,30 @@
+# Expected unit test failures — LOCAL RUNNER configuration
+# =========================================================
+#
+# Companion to expected_failures.txt (which is keyed to the CI configuration:
+# runtimestation + real map json). This file is keyed to what
+# tools/run_unit_tests_local.sh actually boots today: MetaStation via the
+# hardcoded map_config fallback, with NO map json (no job_changes, no map
+# shuttles, no ignored_unit_tests). Several failures below are artifacts of
+# that degenerate config, not fork bugs — that is WHY they are split from the
+# CI manifest.
+#
+# Verdict command for a local run:
+#   python tools/ci/compare_test_results.py data/unit_tests.json tools/ci/expected_failures_local.txt
+#
+# Same anti-rot semantics as the CI manifest: a listed test that PASSES turns
+# the verdict red — delete its line.
+#
+# Baseline established 2026-08-27 from the first full run on the merged tree
+# (post WIP commit 6641abd10f4; 602 tests, 587 passed). Failures under active
+# fix are deliberately NOT listed.
+
+/datum/unit_test/maptest_mapping_nearstation_test  # MetaStation-without-json config artifact; overmap fork has no "near station" geometry
+/datum/unit_test/maptest_required_map_items        # map json absent locally; runtimestation CI skips it via ignored_unit_tests
+/datum/unit_test/maptest_job_roundstart_spawnpoints # no job_changes without map json; CI skips via ignored_unit_tests
+/datum/unit_test/maptest_log_mapping               # mapping log expectations assume a configured station map
+/datum/unit_test/cargo_dep_order_locations         # department order locations assume station map; CI skips via ignored_unit_tests
+/datum/unit_test/subsystem_init                    # TTS subsystem: no local TTS service configured (prod runs one on :5002)
+/datum/unit_test/shadow_jaunt                      # "Unit test room is not suitable to test Shadow Walk" — room geometry constraint on this map
+/datum/unit_test/space_dragon_expiration           # summon_carp objective derefs a station area the fork overmap doesn't have
+/datum/unit_test/fish_portal_gen_linking           # upstream test moves the portal to pick(GLOB.newplayer_start); SSovermap.relocate_lobby() parks the fork's lobby on a bare /area/space turf (239,239,1), so the machine goes NOPOWER on arrival and activate() bails at its power guard before any z logic

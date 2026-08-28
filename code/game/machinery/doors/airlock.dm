@@ -212,7 +212,10 @@
 
 /obj/machinery/door/airlock/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
 	if(id_tag)
-		id_tag = "[port.shuttle_id]_[id_tag]"
+		// Via set_id_tag(), not a bare assignment: linkup() runs well after Initialize() has
+		// already filed us in GLOB.objects_by_id_tag under the mapped tag, and renaming the var
+		// behind the registry's back leaves that entry holding us forever.
+		set_id_tag("[port.shuttle_id]_[id_tag]")
 
 /obj/machinery/door/airlock/proc/update_other_id()
 	for(var/obj/machinery/door/airlock/Airlock as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock))

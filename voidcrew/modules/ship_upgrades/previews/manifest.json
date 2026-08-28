@@ -227,7 +227,7 @@
      7
     ]
    },
-   "src_md5": "fe0b8452910076a3d159d84511f376ea"
+   "src_md5": "22e36e9d79f90445f98282168c15cef7"
   },
   "kilo_b": {
    "png": "ship_kilo_b.png",
@@ -247,7 +247,7 @@
      7
     ]
    },
-   "src_md5": "a1895f714d332d5e11d8ed0fd8e9052a"
+   "src_md5": "ed37102a11b39fb4e93db5034585a793"
   },
   "kilo_c": {
    "png": "ship_kilo_c.png",
@@ -267,7 +267,7 @@
      7
     ]
    },
-   "src_md5": "b5a4b08de5bc7e55a79174e4abad3ff7"
+   "src_md5": "5e3df89ac9bab2ff987712465cbf8215"
   },
   "kilo_d": {
    "png": "ship_kilo_d.png",
@@ -287,7 +287,7 @@
      7
     ]
    },
-   "src_md5": "cc3dd1168fd98278d52992da901be1a0"
+   "src_md5": "0d27fe95aa8e2b1a0fb5d7575faefbbd"
   },
   "nano_phalanx_a": {
    "png": "ship_nano_phalanx_a.png",
@@ -315,7 +315,7 @@
      7
     ]
    },
-   "src_md5": "2a0b20549721ed6223bbd799cb89d465"
+   "src_md5": "c89710654e54d6881d3b6fc171bbc806"
   },
   "nano_phalanx_b": {
    "png": "ship_nano_phalanx_b.png",
@@ -343,7 +343,7 @@
      7
     ]
    },
-   "src_md5": "26503f5029971bb3ad4898aee74baf5a"
+   "src_md5": "eb7a297f65cbd0ce528cbba20d381169"
   },
   "nano_phalanx_c": {
    "png": "ship_nano_phalanx_c.png",
@@ -371,7 +371,7 @@
      7
     ]
    },
-   "src_md5": "deb3b37e874e2bef8c16e30f38149fd4"
+   "src_md5": "35ca66691d4aeb3052532ff6656dd3fd"
   },
   "nano_phalanx_d": {
    "png": "ship_nano_phalanx_d.png",
@@ -399,7 +399,7 @@
      7
     ]
    },
-   "src_md5": "7582f3c04285423c3d85b0ad1a1e0c71"
+   "src_md5": "6041dc4f7488123dabce058762320ecc"
   },
   "pill": {
    "png": "ship_pill.png",
@@ -912,7 +912,7 @@
     1
    ],
    "png": "delta_delta_med_cryo.png",
-   "src_md5": "fd58f7476b5039d8e630f3e3e4e5a85c",
+   "src_md5": "128b6f92b3c3eb231da9995cae500b74",
    "themes": {
     "cult": {
      "width": 6,
@@ -922,7 +922,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_cult.png",
-     "src_md5": "11aeb99528d3101465ace3d3771c8834"
+     "src_md5": "47dc12f8f0eafe05fb1021c7ee64da7d"
     },
     "lightship": {
      "width": 6,
@@ -932,7 +932,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_lightship.png",
-     "src_md5": "c9f318187bd661c4f60ad883c0b55349"
+     "src_md5": "045af136a50ff7ffbbe3f7af84a666c8"
     },
     "syndicate": {
      "width": 6,
@@ -942,7 +942,7 @@
       1
      ],
      "png": "delta_delta_med_cryo_syndicate.png",
-     "src_md5": "ac083212e004192a4989c343915c5e1f"
+     "src_md5": "ce1a7855967c9e44648abb2491945711"
     }
    }
   },

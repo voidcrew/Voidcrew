@@ -121,6 +121,8 @@
 	if(parent && has_gas_visuals) // null is a valid argument here
 		vis_contents += parent.GetGasVisual('icons/obj/pipes_n_cables/!pipe_gas_overlays.dmi')
 
+	return TRUE // VOIDCREW EDIT - see the base proc's contract
+
 /obj/machinery/atmospherics/pipe/return_pipenets()
 	. = list(parent)
 

@@ -75,8 +75,27 @@ GLOBAL_LIST_EMPTY(objects_by_id_tag)
 	if(opacity)
 		SScameras.update_visibility(src)
 	SStgui.close_uis(src)
-	GLOB.objects_by_id_tag -= id_tag
+	// Only evict the entry if it is still ours. Duplicate tags overwrite each other in
+	// Initialize(), so an unconditional -= lets a dying obj unregister a live sibling.
+	if(id_tag && GLOB.objects_by_id_tag[id_tag] == src)
+		GLOB.objects_by_id_tag -= id_tag
 	. = ..()
+
+/**
+ * Sets id_tag, keeping GLOB.objects_by_id_tag in step with it.
+ *
+ * Use this for any change after Initialize(). Assigning id_tag directly strands the *old* key
+ * pointing at us, because /obj/Destroy only ever unregisters the tag we are carrying at the time
+ * - so the stale entry outlives the obj and turns every qdel into a hard delete.
+ */
+/obj/proc/set_id_tag(new_tag)
+	if(id_tag == new_tag)
+		return
+	if(id_tag && GLOB.objects_by_id_tag[id_tag] == src)
+		GLOB.objects_by_id_tag -= id_tag
+	id_tag = new_tag
+	if(id_tag)
+		GLOB.objects_by_id_tag[id_tag] = src
 
 /obj/attacked_by(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!attacking_item.force)

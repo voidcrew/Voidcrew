@@ -49,16 +49,64 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	UnregisterSignal(src, COMSIG_ATOM_ATTACK_HAND_SECONDARY)
 	if(stored_research)
 		stored_research.techweb_servers -= src
-	if(source_code_hdd)
-		// Guarded: a disk whose techweb has already been destroyed (it was incinerated in here,
-		// say) has a null stored_research, and this used to runtime on the way out.
-		var/datum/techweb/disk_web = source_code_hdd.stored_research
-		for(var/atom/everything_connected in disk_web?.connected_machines)
-			everything_connected.unsync_research_servers()
-		source_code_hdd.forceMove(loc)
-		source_code_hdd = null
+	// Local, because ejecting the disk fires our own Exited(), which clears source_code_hdd
+	// under us.
+	var/obj/item/disk/computer/ship_disk/ejecting = source_code_hdd
+	if(ejecting)
+		// Only a LIVE disk gets handed back to the world. forceMove()ing a destroyed one plants a
+		// zombie on the floor that nothing can ever clear - qdel() early-returns on anything whose
+		// gc_destroyed is already set - and the next thing to sweep that turf files it away
+		// permanently (/obj/structure/safe swallows loose items in its Initialize), which is a
+		// hard delete plus a "taking damage after deletion" runtime for every hit the tile takes.
+		if(!QDELETED(ejecting))
+			// Guarded: a disk whose techweb has already been destroyed (it was incinerated in here,
+			// say) has a null stored_research, and this used to runtime on the way out.
+			var/datum/techweb/disk_web = ejecting.stored_research
+			for(var/atom/everything_connected in disk_web?.connected_machines)
+				everything_connected.unsync_research_servers()
+			ejecting.forceMove(loc)
+		set_source_code_hdd(null)
 	stored_research = null
 	return ..()
+
+/**
+ * Adopts `new_disk` as our source code drive, releasing whatever we held before.
+ *
+ * Always go through this rather than assigning source_code_hdd. It is a plain typed var, so a disk
+ * destroyed while slotted stays pinned soft-deleted until the GC gives up and hard-deletes it -
+ * and on the way out our Destroy() would hand that corpse back to the world.
+ */
+/obj/machinery/rnd/server/ship/proc/set_source_code_hdd(obj/item/disk/computer/ship_disk/new_disk)
+	if(source_code_hdd == new_disk)
+		return
+	if(source_code_hdd)
+		UnregisterSignal(source_code_hdd, COMSIG_QDELETING)
+	source_code_hdd = new_disk
+	if(source_code_hdd)
+		RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_code_hdd_deleted))
+
+/// The drive was destroyed while slotted - let go of it, and of the techweb that lived on it.
+/obj/machinery/rnd/server/ship/proc/on_source_code_hdd_deleted(datum/source)
+	SIGNAL_HANDLER
+	release_stored_research()
+	set_source_code_hdd(null)
+
+/// The drive left by some route other than attacked_by - deconstruction's dump_contents(),
+/// atom_break, an admin move. Keeping the pointer would leave us claiming a techweb we no longer
+/// hold, and would pin the disk if it were destroyed somewhere else later.
+/obj/machinery/rnd/server/ship/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone != source_code_hdd)
+		return
+	release_stored_research()
+	set_source_code_hdd(null)
+
+/// Drops our claim on the disk's techweb, unregistering us as one of its servers.
+/obj/machinery/rnd/server/ship/proc/release_stored_research()
+	if(!stored_research)
+		return
+	stored_research.techweb_servers -= src
+	stored_research = null
 
 // Full parent signature (code/_onclick/item_attack.dm) - declaring fewer params here would drop
 // modifiers/attack_modifiers on the way through ..() for every melee hit on the server.
@@ -76,7 +124,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		if(attacking_item.loc != src)
 			balloon_alert(user, "won't fit!")
 			return
-		source_code_hdd = attacking_item
+		set_source_code_hdd(attacking_item)
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
@@ -210,8 +258,6 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research
-	///All machines connected to us and our techweb, to disconnect on destruction
-	var/list/connected_research_machines = list()
 
 /obj/item/disk/computer/ship_disk/Initialize(mapload)
 	. = ..()
@@ -221,5 +267,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	stored_research.organization = "Server Disk"
 
 /obj/item/disk/computer/ship_disk/Destroy(force)
-	. = ..()
+	// Refs go before ..(), the tg convention: the parent nullspaces us and disposes of our
+	// contents, so anything released afterwards is released against a half-torn-down atom.
 	QDEL_NULL(stored_research)
+	return ..()

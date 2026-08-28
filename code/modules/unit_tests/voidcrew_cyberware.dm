@@ -669,7 +669,12 @@
 /// limb first and surgeon second.
 /datum/unit_test/voidcrew_cyberware_surgical_install/proc/operate(datum/surgery_operation/limb/organ_manipulation/procedure, mob/living/surgeon, obj/item/bodypart/limb, obj/item/organ/ware)
 	surgeon.put_in_hands(ware)
-	procedure.on_success_insert_organ(limb, surgeon, ware)
+	// Upstream #97439 (e1a6f4abec0) inserted operated_zone as argument 3 and moved the
+	// organ to argument 4 (retyped as a generic tool, so food items can stand in for
+	// organs). The old 3-arg call here put the ware in operated_zone and a null in tool,
+	// which CRASHed in the food-organ branch — the exact suite failure of 2026-08-27.
+	// operated_zone is only read on the non-organ branch; limb.body_zone is correct.
+	procedure.on_success_insert_organ(limb, surgeon, limb.body_zone, ware)
 
 /datum/unit_test/voidcrew_cyberware_surgical_install/Run()
 	var/datum/surgery_operation/limb/organ_manipulation/procedure = GLOB.operations.operations_by_typepath[/datum/surgery_operation/limb/organ_manipulation/internal]

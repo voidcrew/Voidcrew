@@ -406,7 +406,9 @@
  * Replaces the connection to the old_pipenet with the new_pipenet
  */
 /obj/machinery/atmospherics/proc/replace_pipenet(datum/pipeline/old_pipenet, datum/pipeline/new_pipenet)
-	return
+	// VOIDCREW EDIT: TRUE means "the re-parent happened", the same contract set_pipenet()
+	// uses. The components override answers FALSE when it has no slot for old_pipenet.
+	return TRUE
 
 /**
  * Disconnects the nodes

@@ -128,7 +128,6 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/hallway/fore)
 "dD" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/warning/electric_shock,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/metis/science/xenobiology)

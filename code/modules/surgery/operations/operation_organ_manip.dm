@@ -254,10 +254,33 @@
 	if(organ.loc == surgeon)
 		surgeon.temporarilyRemoveItemFromInventory(organ, TRUE)
 	organ.pre_surgical_insertion(surgeon, limb, limb.body_zone)
+	// VOIDCREW EDIT: read the insert's return instead of discarding it. Insert()
+	// has a refusal path - this fork's cyberware capacity gate is the common one,
+	// but an occupied slot or a species check refuses too - and the operation used
+	// to announce success either way. The organ was left unequipped inside the
+	// surgeon (a real organ, already pulled from the hand above) or in nullspace
+	// (an arbitrary item's freshly built dummy organ), with no way for the player
+	// to get it back. Original: bare organ.Insert() / organ.bodypart_insert().
+	var/inserted
 	if (limb.owner)
-		organ.Insert(limb.owner)
+		inserted = organ.Insert(limb.owner)
 	else
-		organ.bodypart_insert(limb)
+		inserted = organ.bodypart_insert(limb)
+	if(!inserted)
+		// put_in_hands() covers both shapes and always lands the item in a hand or
+		// on the floor. Handing back the TOOL is what unwinds an arbitrary item:
+		// moving it out of the dummy organ's contents makes
+		// /datum/component/arbitrary_item_organ delete the dummy for us.
+		surgeon.put_in_hands(tool)
+		display_results(
+			surgeon,
+			limb.owner,
+			span_warning("[tool] won't fit into [FORMAT_LIMB_OWNER(limb)]!"),
+			span_warning("[surgeon] fails to fit [tool] into [FORMAT_LIMB_OWNER(limb)]."),
+			span_warning("[surgeon] fails to fit something into [FORMAT_LIMB_OWNER(limb)]."),
+		)
+		return FALSE
+	// VOIDCREW EDIT END
 	organ.on_surgical_insertion(surgeon, limb, organ)
 	display_results(
 		surgeon,
