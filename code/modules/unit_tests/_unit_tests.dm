@@ -402,6 +402,7 @@
 #include "voidcrew_planet_ore.dm"
 #include "voidcrew_planetary_factions.dm"
 #include "voidcrew_missions.dm"
+#include "voidcrew_phalanx_atmos.dm"
 #include "voidcrew_rem_restoration.dm"
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_reservation.dm"
