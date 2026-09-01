@@ -456,6 +456,56 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 	popup.open()
 	BLACKBOX_LOG_ADMIN_VERB("Preview Zone Loot Tables")
 
+/// The abandoned crate gets its own verb rather than a row in the one above:
+/// that display is built entirely around the three overmap bands, and this
+/// crate deliberately has none. Its whole balance surface is one flat profile
+/// (voidcrew/_DEFINES/loot.dm) over three tiers, with no UNIQUE shelf.
+ADMIN_VERB(preview_abandoned_crate_tables, R_ADMIN|R_DEBUG, "Loot: Preview Abandoned Crate", "Show the flat, zone-independent loot tables of the deca-code abandoned crate.", ADMIN_CATEGORY_DEBUG)
+	var/list/sections = list(
+		"Common" = GLOB.abandoned_crate_common,
+		"Uncommon" = GLOB.abandoned_crate_uncommon,
+		"Prime" = GLOB.abandoned_crate_prime,
+	)
+	var/list/odds = ABANDONED_CRATE_ODDS
+	var/odds_total = 0
+	for(var/tier in odds)
+		odds_total += odds[tier]
+	var/list/html = list(
+		"<h2>abandoned crate</h2>",
+		"<p>Freight, not zone content: ONE profile everywhere, no band lookup. Loot spawns only when 		somebody cracks the deca-code, so a crate that is blown, cut or emagged pays nothing. Draws are 		without replacement and an exhausted tier walks down.</p>",
+		"<table border='1' cellpadding='4'><tr><th>Draws</th><th>Common</th><th>Uncommon</th><th>Prime</th></tr>",
+		"<tr><td>[ABANDONED_CRATE_DRAWS_MIN]-[ABANDONED_CRATE_DRAWS_MAX]</td>",
+	)
+	for(var/tier in list(LOOT_TIER_COMMON, LOOT_TIER_UNCOMMON, LOOT_TIER_PRIME))
+		html += "<td>[round(odds[tier] / odds_total * 100, 0.1)]%</td>"
+	html += "</tr></table>"
+	// expected items per tier per crate, the number that actually decides whether
+	// the crate feels rich: a 20% prime shelf over 6 draws is 1.2 prime items,
+	// not "one crate in five"
+	var/avg_draws = (ABANDONED_CRATE_DRAWS_MIN + ABANDONED_CRATE_DRAWS_MAX) / 2
+	html += "<p>At [avg_draws] draws on average, one crate pays about "
+	var/list/expected = list()
+	for(var/tier in list(LOOT_TIER_COMMON, LOOT_TIER_UNCOMMON, LOOT_TIER_PRIME))
+		expected += "[round(odds[tier] / odds_total * avg_draws, 0.01)] [tier == LOOT_TIER_COMMON ? "common" : (tier == LOOT_TIER_UNCOMMON ? "uncommon" : "prime")]"
+	html += "[english_list(expected)].</p>"
+	for(var/section in sections)
+		var/list/table = sections[section]
+		if(!length(table))
+			continue
+		var/total = 0
+		for(var/entry in table)
+			total += table[entry]
+		html += "<h3>[section] (total weight [total])</h3><ul>"
+		for(var/entry in table)
+			var/weight = table[entry]
+			html += "<li>[entry]: [weight] ([round(weight / total * 100, 0.1)]%)</li>"
+		html += "</ul>"
+
+	var/datum/browser/popup = new(user.mob, "abandonedcratetables", "Abandoned Crate Loot", 620, 700)
+	popup.set_content(html.Join(""))
+	popup.open()
+	BLACKBOX_LOG_ADMIN_VERB("Preview Abandoned Crate Tables")
+
 ADMIN_VERB(spawn_all_uniques, R_ADMIN|R_DEBUG, "Loot: Spawn All Uniques", "Spawn every loot unique in rows south of you, one row per cache theme.", ADMIN_CATEGORY_DEBUG)
 	var/turf/origin = get_turf(user.mob)
 	if(!origin)

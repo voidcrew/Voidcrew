@@ -6994,6 +6994,7 @@
 #include "voidcrew\modules\lich\lich_spells.dm"
 #include "voidcrew\modules\lich\lich_thrall.dm"
 #include "voidcrew\modules\lich\lich_wards.dm"
+#include "voidcrew\modules\loot\abandoned_crate.dm"
 #include "voidcrew\modules\loot\loot_guns.dm"
 #include "voidcrew\modules\loot\zone_loot.dm"
 #include "voidcrew\modules\loot\zone_mobs.dm"

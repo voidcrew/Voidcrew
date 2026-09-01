@@ -154,27 +154,42 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 			draws_max = ZONE_LOOT_DRAWS_MAX_YELLOW
 			tier_odds = ZONE_LOOT_ODDS_YELLOW
 
-	for(var/_ in 1 to rand(draws_min, draws_max) + bonus_draws)
-		var/loot_path = draw_from_tier(pools, pick_weight(tier_odds))
+	roll_loot_draws(src, pools, rand(draws_min, draws_max) + bonus_draws, tier_odds)
+
+/**
+ * Rolls `draws` prizes out of `pools` and spawns them inside `destination`.
+ *
+ * Shared by the zone caches above and by the abandoned crate
+ * (voidcrew/modules/loot/abandoned_crate.dm), which rolls the same way off a
+ * flat profile instead of a band's. `pools` is a WORKING COPY keyed by tier
+ * ("1".."4"); this proc consumes it, so callers Copy() their tables in.
+ *
+ * Stops early once every tier is empty: a table shorter than the draw count
+ * pays what it has rather than looping for nothing.
+ */
+/proc/roll_loot_draws(atom/destination, list/pools, draws, list/tier_odds)
+	for(var/_ in 1 to draws)
+		var/loot_path = draw_loot_from_tier(pools, pick_weight(tier_odds))
 		if(!loot_path)
-			break
-		new loot_path(src)
+			return
+		new loot_path(destination)
 		// a looted ballistic brings one spare reload with it; energy guns
 		// aren't in the map and need nothing
 		var/spare_ammo = GLOB.loot_gun_spare_ammo[loot_path]
 		if(spare_ammo)
-			new spare_ammo(src)
+			new spare_ammo(destination)
 
 /**
  * Pulls one entry out of `pools` at the requested tier, removing it so the
  * cache can't roll it again.
  *
- * A tier that has been drawn dry (or that a theme never authored) walks DOWN
- * to the next tier rather than wasting the draw. A cache always pays what it
- * promised, and the failure direction is toward the commoner item, never a
+ * A tier that has been drawn dry (or that a theme never authored, including
+ * the whole UNIQUE shelf the abandoned crate deliberately has none of) walks
+ * DOWN to the next tier rather than wasting the draw. A cache always pays what
+ * it promised, and the failure direction is toward the commoner item, never a
  * free upgrade. Returns null only when every tier is empty.
  */
-/obj/structure/closet/crate/zone_loot/proc/draw_from_tier(list/pools, tier)
+/proc/draw_loot_from_tier(list/pools, tier)
 	if(isnull(tier))
 		tier = LOOT_TIER_COMMON
 	for(var/attempt in text2num(tier) to 1 step -1)
