@@ -210,7 +210,11 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 			render_target = copytext_char(render_target, 2)
 		if(!(critical & PLANE_CRITICAL_NO_RELAY))
 			return
-		var/client/our_client = relevant.client
+		// Callers are allowed to hand us a null mob (see hide_plane()'s callsites, which
+		// all pass `our_hud?.mymob`). hide_from() below tolerates that, so this must too -
+		// a runtime here aborts whatever loop is walking the plane masters and leaves the
+		// client with planes nothing is managing.
+		var/client/our_client = relevant?.client
 		if(our_client)
 			for(var/atom/movable/render_plane_relay/relay as anything in relays)
 				our_client.screen -= relay
@@ -227,7 +231,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 
 		if(!(critical & PLANE_CRITICAL_NO_RELAY))
 			return
-		var/client/our_client = relevant.client
+		var/client/our_client = relevant?.client
 		if(our_client)
 			for(var/atom/movable/render_plane_relay/relay as anything in relays)
 				our_client.screen += relay

@@ -201,6 +201,12 @@
 	. = ..()
 	if(!.)
 		return
+	// The parent deliberately succeeds for a mob with no client, and every hide_plane()/
+	// unhide_plane() callsite passes `our_hud?.mymob`, so null gets here for real. Runtiming
+	// would abort whichever loop is walking the plane masters (show_hud(), build_planes_offset(),
+	// the COMSIG_PLANE_OFFSET_INCREASE fanout) and leave planes with no master managing them.
+	if(!istype(mymob))
+		return
 	// This applies a backdrop to our lighting plane
 	// Why do plane masters need a backdrop sometimes? Read https://secure.byond.com/forum/?post=2141928
 	// Basically, we need something to brighten
@@ -224,8 +230,9 @@
 
 /atom/movable/screen/plane_master/rendering_plate/lighting/hide_from(mob/oldmob)
 	. = ..()
-	oldmob.clear_fullscreen("lighting_backdrop_lit_[home.key]#[offset]")
-	oldmob.clear_fullscreen("lighting_backdrop_unlit_[home.key]#[offset]")
+	if(istype(oldmob))
+		oldmob.clear_fullscreen("lighting_backdrop_lit_[home.key]#[offset]")
+		oldmob.clear_fullscreen("lighting_backdrop_unlit_[home.key]#[offset]")
 	var/datum/hud/hud = home.our_hud
 	if(hud)
 		UnregisterSignal(hud, COMSIG_HUD_OFFSET_CHANGED, PROC_REF(on_offset_change))
@@ -280,6 +287,9 @@
 	. = ..()
 	if(!.)
 		return
+	// See the lighting plate above - a null/clientless mob is a supported caller here.
+	if(!istype(mymob))
+		return
 
 	RegisterSignal(mymob, COMSIG_MOB_SIGHT_CHANGE, PROC_REF(handle_sight), override = TRUE)
 	handle_sight(mymob, mymob.sight, NONE)
@@ -289,7 +299,8 @@
 	var/atom/movable/screen/plane_master/emissive = home.get_plane(GET_NEW_PLANE(RENDER_PLANE_EMISSIVE, offset))
 	emissive.remove_filter("lighting_mask")
 	remove_relay_from(GET_NEW_PLANE(RENDER_PLANE_GAME, offset))
-	UnregisterSignal(oldmob, COMSIG_MOB_SIGHT_CHANGE)
+	if(istype(oldmob))
+		UnregisterSignal(oldmob, COMSIG_MOB_SIGHT_CHANGE)
 
 /atom/movable/screen/plane_master/rendering_plate/light_mask/proc/handle_sight(datum/source, new_sight, old_sight)
 	// If we can see something that shows "through" blackness, and we can't see turfs, disable our draw to the game plane

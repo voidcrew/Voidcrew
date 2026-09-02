@@ -188,7 +188,10 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		group.build_planes_offset(src, current_plane_offset)
 
 /datum/hud/proc/should_use_scale()
-	return should_sight_scale(mymob.sight)
+	// A hud can outlive its mob (and plane groups can be rebuilt while detached), and this
+	// runs at the very top of build_planes_offset() - runtiming here skips the whole
+	// offset rebuild, which is how clients end up rendering to planes that have no master.
+	return should_sight_scale(mymob?.sight)
 
 /datum/hud/proc/should_sight_scale(sight_flags)
 	return (sight_flags & (SEE_TURFS | SEE_OBJS)) != SEE_TURFS
