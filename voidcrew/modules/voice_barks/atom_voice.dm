@@ -55,6 +55,11 @@
 	for(var/mob/hearer in hearers)
 		if(!hearer.client)
 			continue
+		// Listener-side mute. short_bark() scales by the same preference through
+		// playsound_local, so this is only an early out - but it matters, because a
+		// long bark queues up to 24 addtimer callbacks per hearer per line of speech.
+		if(!hearer.client.prefs.read_preference(/datum/preference/numeric/volume/sound_barks_volume))
+			continue
 		if(cant_long_bark || hearer.client.prefs.read_preference(/datum/preference/toggle/barks_short))
 			LAZYADD(short_hearers, hearer)
 		else
@@ -116,10 +121,16 @@
 				sound_to_use = voicepack.sounds[sound_idx]
 			if(!hearer.client.prefs.read_preference(/datum/preference/toggle/barks_limited_pitch))
 				pitch_to_use = vocal_pitch
+		// volume_preference is the hook every other sound family in the codebase uses to
+		// honour the listener's volume slider (ambience, jukebox, instruments, VOX...).
+		// Barks were the one omission, which is why turning any sound preference down
+		// did nothing to them. playsound_local drops the sound entirely once the scaled
+		// volume falls under SOUND_AUDIBLE_VOLUME_MIN, so 0 on the slider is a real mute.
 		hearer.playsound_local(turf, vol = volume_to_use, vary = TRUE,
 			max_distance = distance, falloff_distance = 0, use_reverb = FALSE,
 			falloff_exponent = falloff_exponent,
 			distance_multiplier = 1, channel = CHANNEL_VOICES,
 			sound_to_use = sound_to_use,
 			frequency = pitch_to_use,
+			volume_preference = /datum/preference/numeric/volume/sound_barks_volume,
 			)
