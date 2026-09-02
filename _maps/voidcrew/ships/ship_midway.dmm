@@ -89,6 +89,11 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/atmospherics)
+"ci" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/midway/atmospherics)
 "cl" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/power/apc/auto_name/directional/south,
@@ -438,19 +443,6 @@
 /obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
 	dir = 9
 	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/midway/atmospherics)
-"pj" = (
-/obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/pipe/bridge_pipe/scrubbers,
-/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
-	dir = 8
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/midway/atmospherics)
-"pl" = (
-/obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/pipe/bridge_pipe/scrubbers,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/atmospherics)
 "pm" = (
@@ -1072,6 +1064,14 @@
 /area/shuttle/voidcrew/midway/engineering/storage)
 "KS" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/visible,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/midway/atmospherics)
+"KX" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/pipe/bridge_pipe/scrubbers,
+/obj/machinery/atmospherics/pipe/bridge_pipe/cyan/visible{
+	dir = 4
+	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/atmospherics)
 "Lg" = (
@@ -1964,7 +1964,7 @@ zv
 mJ
 Er
 JI
-pj
+KX
 gb
 ML
 Ik
@@ -2024,7 +2024,7 @@ zv
 qr
 aF
 lT
-pl
+ci
 IC
 OF
 qd

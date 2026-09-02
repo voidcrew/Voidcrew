@@ -5,10 +5,13 @@
  * person crew holds one department's ID between them and stock /tg/ department
  * locks just wall the medic off from a toolbox.
  *
- * The carve-out is the part that regresses quietly: an AI-run hull keeps its
+ * Two carve-outs are the part that regresses quietly. An AI-run hull keeps its
  * locks, so a pirate frigate's doors are still shut until the crew claims the
- * ship with a ship key. Claiming clears the ship's ai_controller, and that is
+ * ship with a ship key; claiming clears the ship's ai_controller, and that is
  * the only thing standing between a boarding party and a free run of the hull.
+ * And "anyone aboard" means the crew: a clientless mob gets no waiver, because
+ * an access-locked door is the only thing holding wildlife - a slime in its
+ * xenobiology pen, a boarder, a carp - where it belongs.
  */
 /datum/unit_test/voidcrew_ship_access
 
@@ -36,6 +39,17 @@
 	port.current_ship = ship
 	TEST_ASSERT(door.check_access_list(list()), "a locked airlock aboard a crewed hull stayed locked")
 	TEST_ASSERT(door.allowed(null), "allowed() did not follow check_access_list() aboard a crewed hull")
+
+	// The waiver is for the crew, and a crewmember has a client. Anything else that
+	// bumps the door - a boarder, a carp in through a breach, a slime out of its
+	// xenobiology pen - has to show real access the way it would upstream. An
+	// access-locked windoor is the only thing containing a slime, so this assertion
+	// is what keeps the Phalanx pens shut.
+	var/mob/living/basic/critter = allocate(/mob/living/basic)
+	TEST_ASSERT(!door.allowed(critter), "the crewed-hull waiver held an access-locked door open for a clientless mob")
+	door.req_access = list()
+	TEST_ASSERT(door.allowed(critter), "a door mapped with no access at all turned an ID-less mob away")
+	door.req_access = list(ACCESS_ENGINEERING)
 
 	// An AI-run hull is somebody else's ship. Its locks hold.
 	ship.ai_controller = new /datum/ai_controller()

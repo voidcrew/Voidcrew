@@ -44,12 +44,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
-"aB" = (
-/obj/machinery/atmospherics/components/binary/pump{
-	on = 1
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "aC" = (
 /obj/machinery/light/warm{
 	dir = 1
@@ -139,6 +133,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
+"bo" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "bC" = (
 /obj/structure/table/wood,
 /obj/item/plate{
@@ -502,13 +504,6 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"eH" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/trinary/filter/atmos/o2{
-	dir = 8
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "eN" = (
 /obj/machinery/button/door{
 	id = "phalanx_bridge_blast";
@@ -1649,6 +1644,14 @@
 /obj/effect/mapping_helpers/airlock/access/any/engineering/general,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
+"sQ" = (
+/obj/machinery/atmospherics/components/trinary/mixer/airmix/flipped/inverse{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "sR" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -1754,6 +1757,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/b)
+"ub" = (
+/obj/machinery/atmospherics/pipe/bridge_pipe/cyan/visible{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "ud" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
@@ -2030,16 +2042,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/b)
-"xS" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/atmospherics/pipe/smart/simple/green/visible{
-	dir = 5
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "xU" = (
 /obj/machinery/power/smes/engineering,
 /obj/structure/cable,
@@ -2120,15 +2122,6 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
-"yz" = (
-/obj/machinery/atmospherics/components/binary/pump{
-	on = 1
-	},
-/obj/machinery/atmospherics/pipe/bridge_pipe/green/visible{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "za" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -2333,6 +2326,14 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
+"BW" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/o2{
+	dir = 8
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "BY" = (
 /obj/machinery/portable_atmospherics/canister/nitrogen,
 /turf/open/floor/engine/n2,
@@ -2774,15 +2775,6 @@
 /obj/effect/turf_decal/siding/thinplating,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/b)
-"GN" = (
-/obj/structure/sign/poster/contraband/atmosia_independence{
-	pixel_y = 32
-	},
-/obj/machinery/atmospherics/pipe/bridge_pipe/green/visible{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "GU" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/south,
 /obj/structure/window/reinforced/plasma/spawner/directional/south,
@@ -3566,14 +3558,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
-"Pu" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/trinary/filter/atmos/n2{
-	dir = 8
-	},
-/obj/machinery/light/directional/south,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "PC" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
@@ -3701,13 +3685,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"Rn" = (
-/obj/machinery/atmospherics/pipe/smart/simple/green/visible,
-/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
-	dir = 8
+"Rp" = (
+/obj/structure/sign/poster/contraband/atmosia_independence{
+	pixel_y = 32
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "Rq" = (
@@ -3856,14 +3837,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
-"SL" = (
-/obj/machinery/atmospherics/components/trinary/mixer/airmix/flipped{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "SO" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/turf_decal/siding/wood{
@@ -3929,6 +3902,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
+"TY" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "Ua" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -4329,6 +4306,13 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/kitchen/b)
+"YU" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/n2{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "YY" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
@@ -4652,7 +4636,7 @@ oZ
 jN
 WG
 GU
-xS
+bo
 vd
 pZ
 zi
@@ -4684,7 +4668,7 @@ oZ
 jN
 cc
 bN
-yz
+TY
 Zk
 tM
 zi
@@ -4716,7 +4700,7 @@ oZ
 jN
 Cu
 Cu
-GN
+Rp
 dy
 dL
 Wg
@@ -4749,8 +4733,8 @@ jN
 Cu
 Cu
 UH
-Rn
-eH
+ub
+YU
 sM
 Nj
 Ob
@@ -4781,8 +4765,8 @@ jN
 FU
 Xd
 rg
-Rn
-Pu
+dy
+BW
 zi
 ln
 PI
@@ -4812,8 +4796,8 @@ oZ
 jN
 BY
 sZ
-aB
-SL
+rg
+sQ
 aT
 zi
 yj

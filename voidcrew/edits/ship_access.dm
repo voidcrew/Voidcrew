@@ -41,25 +41,35 @@
 	return ..()
 
 /**
- * Hostile NPC boarders never benefit from the crewed-ship access waiver.
+ * NPCs never benefit from the crewed-ship access waiver.
  *
  * The waiver above exists so a five-person crew is not locked out of its own
- * toolbox; it was never meant to hold the door for pirates. Without this check a
- * boarding party bumping any access-locked door on a crewed hull sails straight
- * through it - check_access_list() has no idea who is asking, so the waiver
- * answered yes for everyone, and playtest crews watched boarders "walk thru"
- * doors they had deliberately locked. Their AI already knows how to bash a door
- * that refuses them (mob_patrol.dm pre-marks access-locked doors for attack), so
- * denying here restores break-in behavior instead of a free stroll.
+ * toolbox; it was never meant to hold the door for anything that is not crew.
+ * Without this check a boarding party bumping any access-locked door on a crewed
+ * hull sails straight through it - check_access_list() has no idea who is asking,
+ * so the waiver answered yes for everyone, and playtest crews watched boarders
+ * "walk thru" doors they had deliberately locked. Their AI already knows how to
+ * bash a door that refuses them (mob_patrol.dm pre-marks access-locked doors for
+ * attack), so denying here restores break-in behavior instead of a free stroll.
  *
- * Scoped tightly: only clientless pirate-faction mobs, only doors that actually
- * carry an access requirement, and only where the waiver itself would have
- * applied. Doors mapped with no access at all still open for anyone, pirates
- * included, exactly as they would upstream for any ID-less mob.
+ * This started as a pirate-only rule, and pirates were never the only NPC that
+ * walked through the waiver. Slimes did too: an access-locked windoor is the ONLY
+ * thing holding a slime in a xenobiology pen (windowdoor.dm Bumped() opens for any
+ * mob that is not hands-blocked, and allowed() said yes to all of them), so the
+ * Phalanx pens leaked slimes into the lab every round. Any clientless critter that
+ * wanders a hull - a carp that got in through a breach, an escaped monkey - has the
+ * same free run. The rule is therefore "not crew", not "pirate".
+ *
+ * Still scoped tightly: only clientless mobs, only doors that actually carry an
+ * access requirement, and only where the waiver itself would have applied. Bots
+ * and silicons are left on the upstream path so their own credentials still get
+ * read (a bot carries an access_card, a borg has TRAIT_SILICON_ACCESS), and doors
+ * mapped with no access at all still open for anyone, exactly as they would
+ * upstream for any ID-less mob.
  */
 /obj/machinery/door/allowed(mob/M)
-	if(isliving(M) && !M.client && (FACTION_PIRATE in M.faction) \
-		&& (length(req_access) || length(req_one_access)) && in_unrestricted_ship())
+	if(isliving(M) && !M.client && (length(req_access) || length(req_one_access)) \
+		&& !isbot(M) && !HAS_SILICON_ACCESS(M) && in_unrestricted_ship())
 		return FALSE
 	return ..()
 
