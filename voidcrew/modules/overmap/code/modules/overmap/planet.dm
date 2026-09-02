@@ -864,7 +864,8 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
 				continue
 			ruin_area_turfs[tile_area] = list()
 		ruin_area_turfs[tile_area] += tile
-		CHECK_TICK
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 	for(var/area/ruin_area as anything in ruin_area_turfs)
 		generate_one_ruin_area(ruin_area, ruin_area_turfs[ruin_area])
 		CHECK_TICK
@@ -892,13 +893,14 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
 		return 0
 	var/filled = 0
 	for(var/turf/tile as anything in block_turfs)
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 		// Turf refs are locational, so entries the generators above replaced read as
 		// whatever now stands at those coordinates rather than as the old datum.
 		if(!istype(tile, /turf/open/genturf))
 			continue
 		tile.ChangeTurf(ground_type, ground_type)
 		filled++
-		CHECK_TICK
 	if(filled)
 		log_mapping("SSovermap: planet '[display_name || name]' paved [filled] orphaned genturf tile(s) with [ground_type]")
 	return filled
