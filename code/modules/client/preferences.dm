@@ -141,11 +141,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		character_preview_view = create_character_preview_view(user)
+		// If the preview could not survive being built, the menu was closed again while
+		// we were building it. Opening on a dead preview produces a permanently blank
+		// window (see create_character_preview_view); doing nothing costs one click.
+		if(isnull(create_character_preview_view(user)))
+			return
 		ui = new(user, src, "PreferencesMenu")
 		ui.set_autoupdate(FALSE)
 		ui.open()
-		character_preview_view.display_to(user, ui.window)
+		// open() sends the preference spritesheets, which sleeps too, so the same race
+		// can still land here.
+		character_preview_view?.display_to(user, ui.window)
 
 /datum/preferences/ui_state(mob/user)
 	return GLOB.always_state
@@ -176,7 +182,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	data["character_profiles"] = create_character_profiles()
 
-	data["character_preview_view"] = character_preview_view.assigned_map
+	// Rebuild rather than deref: a runtime here silently drops the entire static half of
+	// the payload, and data["window"] two lines down is what PreferencesMenu routes on -
+	// without it the interface throws and the player is left with a blank dark window.
+	data["character_preview_view"] = get_character_preview_view(user)?.assigned_map
 	data["overflow_role"] = SSjob.get_job_type(SSjob.overflow_role).title
 	data["window"] = current_window
 
@@ -290,10 +299,46 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return TRUE
 
 /datum/preferences/proc/create_character_preview_view(mob/user)
-	character_preview_view = new(null, src)
-	character_preview_view.generate_view("character_preview_[REF(character_preview_view)]")
-	character_preview_view.update_body()
+	var/atom/movable/screen/map_view/char_preview/preview = new(null, src)
+	character_preview_view = preview
+	preview.generate_view("character_preview_[REF(preview)]")
+	preview.update_body()
 
+	// update_body() sleeps. Anything that runs ui_close() while it does - closing an
+	// already open preferences window is enough - hits QDEL_NULL(character_preview_view)
+	// and destroys the view we are still building, and char_preview/Destroy() nulls the
+	// var behind us. This proc used to `return character_preview_view`, so it handed its
+	// caller that null; ui_interact() then opened the menu anyway and both ui_data() and
+	// ui_static_data() runtimed on it. A runtime only unwinds the proc it happened in,
+	// so get_payload() carried on and simply left `static_data` out of the payload - and
+	// PreferencesMenu routes on data.window, which lives in static data, so it fell
+	// through to exhaustiveCheck() and threw "Unhandled case: undefined". That is the
+	// blank dark window players see when the lobby's Character Setup button misfires.
+	//
+	// Report the loss honestly instead, so the caller can back out rather than open a
+	// menu that can never render.
+	if(QDELETED(preview))
+		return null
+
+	if(!isnull(character_preview_view) && character_preview_view != preview)
+		// A second open finished building its own preview while we slept. That one is
+		// what the menu is wired to, so drop ours rather than orphaning it.
+		qdel(preview)
+		return character_preview_view
+
+	character_preview_view = preview
+	return preview
+
+/**
+ * Returns the character preview, rebuilding it if it went missing.
+ *
+ * Callers reach this from inside get_payload(), where a runtime costs the whole half of
+ * the payload it is building. See create_character_preview_view() for how the view gets
+ * destroyed mid-flight.
+ */
+/datum/preferences/proc/get_character_preview_view(mob/user)
+	if(isnull(character_preview_view))
+		create_character_preview_view(user)
 	return character_preview_view
 
 /datum/preferences/proc/compile_character_preferences(mob/user)
