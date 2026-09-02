@@ -276,6 +276,51 @@
 	return best
 
 /**
+ * Plain-language instructions for the door a reseat is waiting on.
+ *
+ * The refusal used to say "fit an airlock or a firelock on that face", and "that face" is
+ * the one thing a player standing inside a half-built room cannot work out: the ship already
+ * has an outer airlock, it is just no longer the outermost thing on that side, so the advice
+ * reads as a lie (issue #130). Name the compass face, give the exact plane the door has to
+ * stand on, and hand over one set of coordinates that is definitely on it.
+ *
+ * `worst` is the tile from hull_port_overhang() that stands furthest out - by definition it
+ * is on the plane the door has to be on, which is why it is the tile we quote.
+ */
+/proc/hull_port_door_instruction(obj/docking_port/mobile/port, turf/worst)
+	var/facing = dir2text(REVERSE_DIR(port.dir))
+	if(isnull(worst))
+		return "Build an airlock or a firelock into the outermost [facing] wall."
+	var/axis = EWCOMPONENT(REVERSE_DIR(port.dir)) ? "x = [worst.x]" : "y = [worst.y]"
+	return "Build an airlock or a firelock on the [facing] face at ([worst.x], [worst.y]). \
+		Any tile on the [axis] line will do - that is the outermost plating, and the port has \
+		to end up standing on it."
+
+/**
+ * A bearing the player can actually walk, plus the coordinates to sanity-check it against.
+ *
+ * get_dist() is a Chebyshev distance and get_dir() is one of eight compass points, so a tile
+ * six north and three east came out as "6 metres northeast" - the number was the larger leg
+ * and the direction quietly dropped the smaller one. Report both legs instead. (issue #130)
+ */
+/proc/hull_survey_bearing(turf/standing_on, turf/problem)
+	if(isnull(standing_on) || isnull(problem))
+		return ""
+	if(standing_on.z != problem.z)
+		return " The problem is at ([problem.x], [problem.y]), on another level."
+	var/north_south = problem.y - standing_on.y
+	var/east_west = problem.x - standing_on.x
+	if(!north_south && !east_west)
+		return " The problem is the tile you are standing on, ([problem.x], [problem.y])."
+
+	var/list/legs = list()
+	if(north_south)
+		legs += "[abs(north_south)] metre\s [north_south > 0 ? "north" : "south"]"
+	if(east_west)
+		legs += "[abs(east_west)] metre\s [east_west > 0 ? "east" : "west"]"
+	return " The problem is [english_list(legs)] of you, at ([problem.x], [problem.y])."
+
+/**
  * Where a brand-new hull's docking port should be seated, before any port exists.
  *
  * Returns list(turf/seat, outward_dir), or null if the enclosure has no door that can carry
@@ -686,10 +731,13 @@
 		var/list/overhang = hull_port_overhang(port, claim.turfs)
 		if(overhang[1] > 0 && !hull_port_reseat_target(port, claim.turfs))
 			claim.refusal_turf = overhang[2]
-			return "Survey rejects the enclosure: it stands [overhang[1]] metre\s out past the \
-				docking port, and the new outer hull face has no door for the port to move to. \
-				Fit an airlock or a firelock on that face first. Until the port sits on the \
-				outermost plating, anything the ship berths against gets driven through."
+			var/facing = dir2text(REVERSE_DIR(port.dir))
+			return "Survey rejects the enclosure: the finished hull would stand [overhang[1]] \
+				metre\s out past the docking port on its [facing] side, and there is no door \
+				standing on that outermost line for the port to move to. \
+				[hull_port_door_instruction(port, overhang[2])] A door set back behind the \
+				plating is no good - whatever the ship berths against gets driven through \
+				everything in front of the port."
 	else
 		// Commissioning. The port is seated when the hull is created and never afterwards, so
 		// a hull with nowhere to put it would be launched permanently unable to berth against
@@ -1071,11 +1119,8 @@
 /mob/living/proc/report_survey_refusal(datum/hull_claim/claim, refusal)
 	var/turf/spot = claim?.refusal_turf
 	var/turf/here = get_turf(src)
-	if(spot && here && spot.z == here.z && spot != here)
-		var/distance = get_dist(here, spot)
-		refusal += distance <= 1 \
-			? " The problem is right beside you." \
-			: " The problem is [distance] metres [dir2text(get_dir(here, spot))] of you."
+	if(spot && here)
+		refusal += hull_survey_bearing(here, spot)
 	to_chat(src, span_warning(refusal))
 
 /**
