@@ -727,12 +727,40 @@
 				continue // Don't delete mobs
 			qdel(AM)
 
-	// Convert all shuttle turfs to space and move them out of shuttle area
+	// Take the ferry's deck back off the berth and move what is left out of the shuttle area.
+	//
+	// This has to POP the hull off the baseturf stack, not stamp space over the top of it.
+	// The ferry never flies away - it is destroyed where it sits - so the ScrapeAway() that
+	// /turf/afterShuttleMove() performs on a departing shuttle's old tiles never runs for it,
+	// and /turf/ChangeTurf() called with no explicit baseturfs list keeps the existing one
+	// ("Just to be safe", change_turf.dm). So the old line left every berth tile carrying the
+	// whole stack the landing pushed on: the tile's own former type, the ferry's deck, and a
+	// /turf/baseturf_skipover/shuttle marker - permanently, because the berth outlives the
+	// delivery whenever the crew stays docked in the same empty space.
+	//
+	// Each further delivery to that berth ran CopyOnTop() over the fattened stack and added
+	// three more entries (1 > 4 > 7 > 10 > 13). At >10 baseturfs_string_list() gives up and
+	// ChangeTurfs the tile to /turf/closed/indestructible/baseturfs_ded - the magenta "Report
+	// this" wall - so the fifth cargo run in one berth replaced the entire landing zone with
+	// indestructible flashing walls (round 14, 2026-08-24: 51 tiles of the Solo Surfer's berth
+	// at (160-168, 36-42) went at once, all reporting 13).
+	//
+	// Scraping to the skipover restores exactly the tile that was there before the ferry
+	// landed, which is what a real departure would have left behind, so nothing accumulates.
+	// Tiles with no skipover were never decked - they were only adopted into the ferry's area
+	// because they sit inside its bounding box - and keep the old blanket space conversion.
 	var/area/space/space_area = locate(/area/space) in GLOB.areas
 	if(!space_area)
 		space_area = new /area/space
 	for(var/turf/T as anything in shuttle_turfs)
-		T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
+		var/shuttle_depth = T.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)
+		// A skipover sitting on the bottom of the stack is unscrapeable (ScrapeAway() CRASHes
+		// on it rather than removing the only baseturf a tile has); fall back to the old
+		// behaviour rather than take a runtime in the middle of a teardown.
+		if(shuttle_depth && shuttle_depth < T.count_baseturfs())
+			T.ScrapeAway(shuttle_depth, flags = CHANGETURF_DEFER_CHANGE)
+		else
+			T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
 		space_area.contents += T
 
 	// Delete the shuttle port (force = TRUE to actually delete it)

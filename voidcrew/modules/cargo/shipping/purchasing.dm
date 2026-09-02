@@ -30,6 +30,26 @@
 
 	// Iterate a copy: paid orders leave checkout_list inside the loop.
 	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
+		// Galactic Materials Market orders draw on a live market. adjust_market() takes the
+		// sheets out of SSstock_market, moves the price the scarcity deserves, and trims - or
+		// cancels - the order when the market ran dry while the ferry was in flight. Upstream's
+		// supply shuttle does this in the same place, right before it bills; skip it and the
+		// market never depletes, its prices never react to buying, and the crate ships sheets
+		// that were never actually on sale.
+		var/datum/supply_pack/custom/minerals/market_sheets = astype(spawning_order.pack)
+		if(market_sheets)
+			var/list/orders_adjusted = market_sheets.adjust_market()
+			if(length(orders_adjusted))
+				var/obj/structure/overmap/ship/notified_ship = get_ship_from_atom(src)
+				if(!length(market_sheets.contains)) // nothing left on the market at all
+					notified_ship?.ship_notify("Order #[spawning_order.id] ([spawning_order.pack.name]) was cancelled - the market has no stock left.", \
+						"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+					checkout_list -= spawning_order
+					qdel(spawning_order)
+					continue
+				notified_ship?.ship_notify("Order #[spawning_order.id] ([spawning_order.pack.name]) was adjusted:\n[orders_adjusted.Join("\n")]", \
+					"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+
 		var/price = spawning_order.pack.get_cost()
 		if(spawning_order.applied_coupon)
 			price *= (1 - spawning_order.applied_coupon.discount_pct_off)
