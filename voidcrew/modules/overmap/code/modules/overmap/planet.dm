@@ -807,33 +807,83 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
  * there as bare genturf for the rest of the round.
  *
  * The planet's own areas are skipped, they generated at build time, and a second
- * pass would rewrite the surface out from under everything standing on it. So is any
- * area whose generator has already run: map_generator stops being a typepath the
- * moment RunTerrainGeneration() instantiates it.
+ * pass would rewrite the surface out from under everything standing on it.
  *
- * Walks OUR footprint, not the level. On a packed level the level block is every co-tenant,
- * so this would run a neighbour's ruin generators - and, because RunTerrainGeneration()
- * iterates the whole area instance rather than the block that found it, would rewrite ruin
- * floors a crew may be standing on. The "generator already ran" test is also why ruin areas
- * are instanced per load during planet seeding (see planet_ruin_area_instancing_begin):
- * with one shared instance only the first planet to roll a template ever generates it.
+ * Walks OUR footprint, not the level, and generates only the turfs that walk found. On a
+ * packed level the level block is every co-tenant, so a level-wide walk would run a
+ * neighbour's ruin generators - and, because /area/RunTerrainGeneration() iterates the
+ * whole area instance rather than the block that found it, would rewrite ruin floors a
+ * crew may be standing on. That is why nothing here calls RunTerrainGeneration() any more:
+ * the generator is driven directly over the turf list this walk collected.
+ *
+ * An already-instantiated generator is REUSED rather than skipped. `map_generator` stops
+ * being a typepath the moment anything instantiates it, and the genturf-bearing ruins do
+ * not map their genturf into /area/ruin subtypes at all - icemoon_surface_asteroid (the
+ * clockwork one) puts it in /area/lavaland/surface/outdoors/unexplored/frozen_planet, the
+ * abandoned homestead and the plasma facility in /area/icemoon/underground/unexplored/rivers.
+ * Those are UNIQUE_AREA mining areas, so the per-load instancing in the map loader - which
+ * only covers /area/ruin, see planet_ruin_area_instancing_begin - does not reach them and
+ * every planet in the round shares one instance apiece. The first planet to roll such a
+ * ruin instantiates the generator; behind an `ispath()` gate every later planet's copy was
+ * skipped and its genturf stayed on the ground for the rest of the round as bright green
+ * "green ungenerated turf" tiles ringing the ruin.
  */
 /obj/structure/overmap/planet/proc/generate_ruin_terrain(datum/space_level/level)
 	var/list/block_turfs = footprint?.get_block() || level?.get_block()
 	if(!block_turfs)
 		return
-	var/list/generated_areas = list()
+	/// area instance -> the turfs of it that lie inside OUR footprint
+	var/list/ruin_area_turfs = list()
+	/// areas already ruled out, so the type tests run once per area rather than per turf
+	var/list/rejected_areas = list()
 	for(var/turf/tile as anything in block_turfs)
 		var/area/tile_area = tile.loc
-		if(isnull(tile_area) || generated_areas[tile_area])
+		if(isnull(tile_area) || rejected_areas[tile_area])
 			continue
-		generated_areas[tile_area] = TRUE
-		if(istype(tile_area, /area/overmap_encounter/planetoid))
-			continue
-		if(!ispath(tile_area.map_generator))
-			continue
-		generate_one_ruin_area(tile_area)
+		if(!ruin_area_turfs[tile_area])
+			if(istype(tile_area, /area/overmap_encounter/planetoid) || !tile_area.map_generator)
+				rejected_areas[tile_area] = TRUE
+				continue
+			ruin_area_turfs[tile_area] = list()
+		ruin_area_turfs[tile_area] += tile
 		CHECK_TICK
+	for(var/area/ruin_area as anything in ruin_area_turfs)
+		generate_one_ruin_area(ruin_area, ruin_area_turfs[ruin_area])
+		CHECK_TICK
+	fill_orphaned_genturf(block_turfs)
+
+/**
+ * Paves any /turf/open/genturf still standing inside this planet's footprint with the
+ * planet's own ground.
+ *
+ * A backstop, not the mechanism: everything that ships genturf is supposed to be filled by
+ * generate_ruin_terrain() above. This catches what that cannot reach by construction - a
+ * template that maps genturf into an area with no map_generator at all, a generator that
+ * refuses the area (the cave generators return early without CAVES_ALLOWED), or a ruin
+ * whose genturf tiles were pushed outside their own area by a later load. Nothing else in
+ * the round ever comes back for those tiles, and they render as bright green
+ * "green ungenerated turf" a crew can stand on, so the planet's ground is a strictly
+ * better answer than leaving them.
+ *
+ * `footprint.baseturf` is the ground the planet datum published, i.e. exactly what a hole
+ * dug anywhere in this rectangle already bottoms out into.
+ */
+/obj/structure/overmap/planet/proc/fill_orphaned_genturf(list/block_turfs)
+	var/turf/ground_type = footprint?.baseturf
+	if(!ground_type || !length(block_turfs))
+		return 0
+	var/filled = 0
+	for(var/turf/tile as anything in block_turfs)
+		// Turf refs are locational, so entries the generators above replaced read as
+		// whatever now stands at those coordinates rather than as the old datum.
+		if(!istype(tile, /turf/open/genturf))
+			continue
+		tile.ChangeTurf(ground_type, ground_type)
+		filled++
+		CHECK_TICK
+	if(filled)
+		log_mapping("SSovermap: planet '[display_name || name]' paved [filled] orphaned genturf tile(s) with [ground_type]")
+	return filled
 
 /**
  * Runs one ruin area's own terrain generator, with the lighting objects on the tiles it
@@ -860,17 +910,28 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
  * mid-round ruin generation. What the port changed is that a tile orphaned this way can no
  * longer be re-lit by anything, because the ground around it no longer emits.
  */
-/obj/structure/overmap/planet/proc/generate_one_ruin_area(area/ruin_area)
-	// Every z-level the instance holds, not just ours. Ruin areas are instanced per load
-	// during planet seeding here (see planet_ruin_area_instancing_begin), so in practice
-	// this is our own tiles - but RunTerrainGeneration() sweeps the whole of `contents`
-	// regardless of which block found it, so the sweep has to match its reach.
-	var/list/generated_turfs = ruin_area.get_turfs_from_all_zlevels()
+/obj/structure/overmap/planet/proc/generate_one_ruin_area(area/ruin_area, list/generated_turfs)
+	// Our footprint's tiles of this area, handed down by the caller's walk. The area
+	// INSTANCE is frequently shared - the mining areas the genturf ruins use keep
+	// UNIQUE_AREA and the loader's per-load instancing only covers /area/ruin - so
+	// sweeping the whole of `contents` (which is what /area/RunTerrainGeneration() does)
+	// would regenerate the co-tenant's, or a previous planet's, ground out from under it.
+	if(isnull(generated_turfs))
+		generated_turfs = ruin_area.get_turfs_from_all_zlevels()
+	if(!length(generated_turfs))
+		return
 	for(var/turf/tile as anything in generated_turfs)
 		tile.lighting_clear_overlay()
 		CHECK_TICK
 
-	ruin_area.RunTerrainGeneration()
+	// The instantiation /area/RunTerrainGeneration() would have done, except that a
+	// generator somebody else already instantiated is reused instead of being skipped.
+	var/datum/map_generator/ruin_generator = ruin_area.map_generator
+	if(ispath(ruin_generator))
+		ruin_generator = new ruin_generator()
+		ruin_area.map_generator = ruin_generator
+	if(ruin_generator)
+		ruin_generator.generate_terrain(generated_turfs, ruin_area)
 
 	if(!ruin_area.static_lighting)
 		return
