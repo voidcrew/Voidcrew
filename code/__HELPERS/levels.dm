@@ -24,7 +24,9 @@
  * A planet is defined as anything with planetary atmos that has gravity, with some hardcoded exceptions.
  *
  * * Nullspace counts as "not a planet", so you may want to check that separately.
- * * The mining z-level (Lavaland) is always considered a planet.
+ * * VOIDCREW EDIT: a mining z-level counts as a planet only if it has ground of its own
+ *   (a footprint baseturf, or ZTRAIT_BASETURF on the level). Every dynamic encounter here
+ *   carries ZTRAIT_MINING, planet or not - see the comment on the check itself.
  * * The station z-level is considered a planet if the map config says so.
  * * Central Command is always not a planet.
  * * Syndicate recon outpost is always on a planet.
@@ -41,8 +43,23 @@
 		return FALSE
 
 	if(is_mining_level(what_turf.z))
-		// Always assume Lavaland / mining level is a planet. (Asteroid mining crying right now)
-		return TRUE
+		// VOIDCREW EDIT START: out here a mining level is not a planet.
+		// SSovermap.spawn_dynamic_encounter() stamps ZTRAIT_MINING = TRUE on EVERY encounter
+		// z-level it mints - empty space, weak signals, crashed ships, asteroid fields,
+		// player outposts, the bare berth two hulls rendezvous in - and build_planet() does
+		// the same for real planets. So "mining level" means "somewhere off the ship" here,
+		// not "planetside", and the upstream shortcut answered TRUE for a spacer standing on
+		// his own bridge the moment his hull berthed at an unknown signal.
+		//
+		// What separates the two is GROUND. Only a site with a surface publishes a baseturf
+		// for what a dug-up or blown-out turf falls back to: per-rectangle on the tenant's
+		// map footprint (a packed level carries up to four of them), and on the level itself
+		// for a whole-level tenant and the roundstart planet z-pairs. Anything without one
+		// bottoms out in space, because it is space.
+		if(!isnull(SSmapping.level_trait(what_turf.z, ZTRAIT_BASETURF)))
+			return TRUE
+		return !isnull(footprint_baseturf_for_turf(what_turf))
+		// VOIDCREW EDIT END
 
 	if(is_station_level(what_turf.z))
 		// Station levels rely on the map config, I.E. Icebox is planetary but Meta is not

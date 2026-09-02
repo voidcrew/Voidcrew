@@ -164,6 +164,28 @@
 /// Extra vacuum kept around each maximum-size ship berth, beyond the normal berth padding.
 /// The slot build region applies this through PLANET_DOCK_RUIN_CLEARANCE, which matches it.
 #define EVENT_FIELD_DOCK_CLEARANCE 3
+
+/**
+ * Turfs of clearance kept between a planet's reserve berths and anything that can shoot at,
+ * or spawn something that shoots at, the crew stepping off their ship.
+ *
+ * Measured from the TOP of the whole 40-row berth band, not from a particular hull: the band
+ * is sized for the largest ship that can ever park in it, and a berthed hull is anchored at
+ * the band's bottom-left corner (dwidth/dheight 0, dir NORTH - see create_docking_ports()),
+ * so this is the worst case for a maximum-size hull and generous for everything smaller.
+ *
+ * Ten rather than the three PLANET_DOCK_RUIN_CLEARANCE gives ruins: a ruin turret's scan
+ * range and a nest's aggro radius both reach further than a wall does, and three rows put a
+ * ruin's gun emplacements inside firing range of a big hull's airlock. Measured on the live
+ * planet ruin pool (LavaRuins + IceRuins + AnywhereRuins, tallest template 55 rows) this
+ * still leaves 67 rows of placement region, so no planet ruin becomes unplaceable.
+ *
+ * Deliberately NOT applied to MAP_SLOT_RUIN_MIN_Y_OFFSET, which is the lattice packing gate
+ * for space-ruin encounters: raising that shrinks MAP_SLOT_RUIN_REGION_HEIGHT and pushes
+ * templates over the new height onto whole z-levels of their own, which costs ~49 MB apiece.
+ */
+#define PLANET_DOCK_HOSTILE_CLEARANCE 10
+
 /// Moderate-field rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field
 /// in AsteroidCaves.dm). Minor/majour subtypes override these along with the radius bounds.
 #define EVENT_FIELD_MIN_BLOBS 34
