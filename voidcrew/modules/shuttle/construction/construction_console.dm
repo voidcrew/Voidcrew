@@ -546,6 +546,27 @@
 	silo_mats.use_materials(materials, action = "build", name = "ship piping", user_data = user_data)
 	return TRUE
 
+/**
+ * A pressure blast is a location effect, so it can only hit somebody standing at the pipe.
+ *
+ * wrench_act() hands this proc whoever swung the tool, and everywhere else that is the same
+ * person as "whoever is next to the pipe". It is not for the construction console: the drone
+ * does the unwrenching several rooms away while the operator is sat at a keyboard, and the
+ * stock proc threw the operator across the bridge every time a pressurised pipe came loose
+ * (issue #224). There is nothing sensible to throw at the pipe's end - the drone is an eye,
+ * not a body - so the gust just vents where it happens and everyone hears about it.
+ *
+ * Deliberately written as a general range test rather than a construction-console special
+ * case: any remote unwrench has the same geometry, and a person who really is standing next
+ * to the pipe still gets launched exactly as before.
+ */
+/obj/machinery/atmospherics/unsafe_pressure_release(mob/user, pressures = null)
+	if(user && !in_range(user, src))
+		visible_message(span_danger("[src] vents a hard gust of pressure as it comes loose!"))
+		to_chat(user, span_warning("[src] vents its pressure the moment it comes free. Nothing over there is bolted down any more."))
+		return
+	return ..()
+
 // ============================================
 // Ship Internal RLD - bypasses proximity checks
 // ============================================
@@ -763,7 +784,10 @@
 
 	switch(tray_mode)
 		if(SHIP_TRAY_MODE_TRAY)
-			t_ray_scan(current_user, 8, 3)
+			// The operator is the one who has to SEE it; the drone is where it happens.
+			// Passing the operator as both swept the tiles around the console instead of
+			// the tiles around the camera the operator is looking through (issue #224).
+			t_ray_scan(current_user, 8, 3, eyeobj)
 		if(SHIP_TRAY_MODE_PIPE)
 			show_pipe_connections()
 		if(SHIP_TRAY_MODE_THERMAL)
@@ -805,8 +829,9 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_thermal_overlay()
 	if(!current_user?.client || !eyeobj)
 		return
-	// Use the global atmos_thermal proc which handles everything
-	atmos_thermal(current_user, 5, 10)
+	// Use the global atmos_thermal proc which handles everything. Same split as the T-ray
+	// sweep above: shown to the operator, centred on the drone.
+	atmos_thermal(current_user, 5, 10, eyeobj)
 
 /// Close all configuration UIs when exiting camera mode
 /obj/machinery/computer/camera_advanced/base_construction/ship/remove_eye_control(mob/living/user)

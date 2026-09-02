@@ -175,10 +175,19 @@
 
 
 
-/proc/atmos_thermal(mob/viewer, range = 5, duration = 10)
+/**
+ * Paints a temperature overlay for `viewer`.
+ *
+ * `centre` is where the overlay is drawn; it defaults to the viewer, which is the goggles
+ * case. A remote operator - the ship construction console's drone pilot - has to pass the
+ * camera, or the readout appears around them at the console rather than around the drone.
+ */
+/proc/atmos_thermal(mob/viewer, range = 5, duration = 10, atom/centre)
 	if(!ismob(viewer) || !viewer.client)
 		return
-	for(var/turf/open in view(range, viewer))
+	if(isnull(centre))
+		centre = viewer
+	for(var/turf/open in view(range, centre))
 		if(open.blocks_air)
 			continue
 		var/datum/gas_mixture/environment = open.return_air()
