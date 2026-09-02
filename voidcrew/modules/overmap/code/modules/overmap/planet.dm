@@ -130,13 +130,31 @@
 	// a dockable planet, so complete the state and say so - request_site_load() may have
 	// a ship registered for the signal, and returning silently would strand it while
 	// every later Dock press reads "survey already underway" off its own registration.
+	//
+	// COMSIG_VOIDCREW_PLANET_LOADED goes out on these branches too, but only on the
+	// FALSE -> TRUE transition. That signal means "this planet's interior just became
+	// available", and it is the one-shot every waiting-for-the-site listener hangs off:
+	// mission field objectives (/datum/mission_target/planet/notify_when_loaded), the
+	// survey computer, the drug-run lab hook. Planets are pre-built during the lobby, so
+	// `mapzone` is already standing on almost every planet in the round and the first ship
+	// to dock one comes through here rather than through the build below - which used to
+	// send SITE_LOAD_FINISHED and nothing else. A mission whose field step had already
+	// armed and was waiting on the load callback therefore never spawned its objective:
+	// no creature on the surface, no quest atom, and a GPS tapped on the mission board
+	// reading "linked - no objective marked yet" for the rest of the round.
 	if(mapzone && !reserve_dock)
+		var/became_loaded = !loaded
 		create_docking_ports()
 		loaded = TRUE
+		if(became_loaded)
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 	if(mapzone)
+		var/became_loaded = !loaded
 		loaded = TRUE
+		if(became_loaded)
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, TRUE)
 		return
 
