@@ -91,6 +91,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/b)
+"en" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/engineering/b)
 "eF" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 8
@@ -163,13 +168,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/b)
-"hM" = (
-/obj/machinery/door/airlock/external,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "hV" = (
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -317,6 +315,15 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/b)
+"og" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/docking_port/mobile/voidcrew/delta/b{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/airlock/port/b)
 "oi" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -443,15 +450,6 @@
 "sw" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/b)
-"tm" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/light/directional/east,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/engineering/b)
 "ts" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/engineering/b)
@@ -506,6 +504,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/engineering/b)
+"ws" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/light/directional/east,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/engineering/b)
 "wI" = (
@@ -801,14 +807,6 @@
 /obj/machinery/light/small/red/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/airlock/port/b)
-"EP" = (
-/obj/machinery/door/airlock/external,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/docking_port/mobile/voidcrew/delta/b{
-	dir = 2
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/airlock/port/b)
 "Fu" = (
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/effect/turf_decal/trimline/red/warning,
@@ -824,6 +822,13 @@
 /obj/structure/sign/departments/cargo,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/delta/cargo/b)
+"FZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/engineering/b)
 "GI" = (
 /obj/machinery/turretid{
 	icon_state = "control_kill";
@@ -857,14 +862,6 @@
 /obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/bridge/b)
-"GV" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/closet/emcloset/anchored,
-/obj/item/circuitboard/machine/circuit_imprinter,
-/obj/machinery/light/red/dim/directional/east,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/hallway/central/b)
 "HI" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/delta/hallway/central/b)
@@ -887,6 +884,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/bridge/b)
+"Jh" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "Jm" = (
 /obj/machinery/vending/coffee,
 /turf/open/floor/mineral/plastitanium,
@@ -1040,14 +1045,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/b)
-"MJ" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/engineering/b)
 "MW" = (
 /obj/effect/turf_decal/tile/red,
 /obj/machinery/mission_pad,
@@ -1163,6 +1160,13 @@
 "PA" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/delta/medbay/b)
+"Qv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset/anchored,
+/obj/machinery/light/red/dim/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/hallway/central/b)
 "QJ" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "delta_cafe"
@@ -1322,12 +1326,6 @@
 "Uv" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/dorms/b)
-"UF" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/engineering/b)
 "Vc" = (
 /obj/structure/table,
 /obj/item/radio/off{
@@ -1618,9 +1616,9 @@ YT
 Py
 or
 Ak
-tm
-MJ
-UF
+ws
+FZ
+en
 lt
 NZ
 Yw
@@ -1790,7 +1788,7 @@ wK
 HI
 wK
 HI
-GV
+Qv
 hV
 vm
 Pw
@@ -1836,7 +1834,7 @@ wI
 cW
 "}
 (17,1,1) = {"
-EP
+og
 xv
 Ef
 fM
@@ -1852,7 +1850,7 @@ WU
 YI
 xy
 OG
-hM
+Jh
 "}
 (18,1,1) = {"
 Bt

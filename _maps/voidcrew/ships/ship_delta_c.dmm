@@ -12,7 +12,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -11;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/hallway/central/c)
@@ -56,6 +56,15 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/c)
+"bM" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/docking_port/mobile/voidcrew/delta/c{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/airlock/port/c)
 "bO" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -63,6 +72,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/c)
+"co" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset/anchored,
+/turf/open/floor/engine/cult/ship,
+/area/shuttle/voidcrew/delta/hallway/central/c)
 "cu" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -73,11 +88,11 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -9;
-	 pixel_y = 6
+	pixel_y = 6
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 8;
-	 pixel_y = 5
+	pixel_y = 5
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/hallway/central/c)
@@ -110,15 +125,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/hallway/central/c)
-"dA" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/c)
 "dE" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -149,7 +155,7 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 9;
-	 pixel_y = -7
+	pixel_y = -7
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/hallway/central/c)
@@ -175,7 +181,7 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -10;
-	 pixel_y = -6
+	pixel_y = -6
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/engine/cult/ship,
@@ -224,14 +230,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
-"hC" = (
-/obj/machinery/door/airlock/external,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/docking_port/mobile/voidcrew/delta/c{
-	dir = 2
-	},
+"hU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/airlock/port/c)
+/area/shuttle/voidcrew/delta/engineering/c)
 "hX" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -324,11 +328,11 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -10;
-	 pixel_y = 5
+	pixel_y = 5
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 9;
-	 pixel_y = 4
+	pixel_y = 4
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/cafe/c)
@@ -440,11 +444,11 @@
 /obj/item/multitool,
 /obj/item/stack/sheet/runed_metal/ten{
 	pixel_x = -6;
-	 pixel_y = 7
+	pixel_y = 7
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 9;
-	 pixel_y = 3
+	pixel_y = 3
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
@@ -544,7 +548,7 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -7;
-	 pixel_y = 7
+	pixel_y = 7
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
@@ -606,7 +610,7 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 10;
-	 pixel_y = 11
+	pixel_y = 11
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
@@ -620,17 +624,10 @@
 /obj/machinery/firealarm/directional/north,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 7;
-	 pixel_y = -9
+	pixel_y = -9
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/cafe/c)
-"uC" = (
-/obj/machinery/door/airlock/external,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/airlock/starboard/c)
 "uQ" = (
 /turf/closed/wall/mineral/cult/ship,
 /area/shuttle/voidcrew/delta/airlock/port/c)
@@ -684,7 +681,7 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 7;
-	 pixel_y = 8
+	pixel_y = 8
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
@@ -877,6 +874,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
+"Co" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/airlock/starboard/c)
 "Cp" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/vending/medical{
@@ -894,7 +899,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -11;
-	 pixel_y = -3
+	pixel_y = -3
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/hallway/central/c)
@@ -1002,7 +1007,7 @@
 /obj/machinery/airalarm/directional/west,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -6;
-	 pixel_y = 9
+	pixel_y = 9
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
@@ -1025,11 +1030,11 @@
 /obj/effect/decal/cleanable/blood/drip,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -10;
-	 pixel_y = -8
+	pixel_y = -8
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 10;
-	 pixel_y = -9
+	pixel_y = -9
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
@@ -1120,7 +1125,7 @@
 /obj/machinery/firealarm/directional/east,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 6;
-	 pixel_y = -9
+	pixel_y = -9
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/dorms/c)
@@ -1147,6 +1152,14 @@
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
+"IS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/c)
 "IU" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -1159,13 +1172,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall/mineral/cult/ship,
 /area/shuttle/voidcrew/delta/engineering/c)
-"IZ" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/closet/emcloset/anchored,
-/obj/item/circuitboard/machine/circuit_imprinter,
-/turf/open/floor/engine/cult/ship,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "Ji" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/suit_storage_unit/standard_unit,
@@ -1244,13 +1250,13 @@
 /obj/machinery/light/red/directional/west,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 8;
-	 pixel_y = 10
+	pixel_y = 10
 	},
 /obj/item/paper{
 	name = "watch list";
-	 default_raw_text = "<b>DELTA - STANDING NOTICES</b><br><br>Rites at 1800. Second watch keeps the helm. We are not leaving the console empty again.<br><br>Candles come out of stores. Take what you need and put the holders back on the rack when you are done.<br><br>Nobody welds on the spine deck. Re-cutting the engraving takes Vasquez two days and she has real work.<br><br>The patch in the cafe wing is holding. Leave the window alone.";
-	 pixel_x = -5;
-	 pixel_y = -4
+	default_raw_text = "<b>DELTA - STANDING NOTICES</b><br><br>Rites at 1800. Second watch keeps the helm. We are not leaving the console empty again.<br><br>Candles come out of stores. Take what you need and put the holders back on the rack when you are done.<br><br>Nobody welds on the spine deck. Re-cutting the engraving takes Vasquez two days and she has real work.<br><br>The patch in the cafe wing is holding. Leave the window alone.";
+	pixel_x = -5;
+	pixel_y = -4
 	},
 /turf/open/floor/engine/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
@@ -1323,7 +1329,7 @@
 	},
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 10;
-	 pixel_y = 11
+	pixel_y = 11
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/port/c)
@@ -1343,6 +1349,13 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/mineral/cult/ship,
 /area/shuttle/voidcrew/delta/bridge/c)
+"OU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/c)
 "Pf" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/door/airlock/public/glass{
@@ -1734,9 +1747,9 @@ YJ
 Ho
 HN
 DI
-Ho
-dA
-IU
+OU
+IS
+hU
 FK
 DX
 Qa
@@ -1906,7 +1919,7 @@ sa
 Gw
 sa
 Gw
-IZ
+co
 Bc
 gg
 UM
@@ -1952,7 +1965,7 @@ sL
 Ah
 "}
 (17,1,1) = {"
-hC
+bM
 TA
 Wa
 Et
@@ -1968,7 +1981,7 @@ Wu
 Sk
 Qb
 JX
-uC
+Co
 "}
 (18,1,1) = {"
 rc
