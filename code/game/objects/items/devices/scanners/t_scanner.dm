@@ -43,11 +43,21 @@
 /obj/item/t_scanner/proc/scan()
 	t_ray_scan(loc)
 
-/proc/t_ray_scan(mob/viewer, flick_time = 8, distance = 3)
+/**
+ * Flashes hidden objects (pipes, cables) to `viewer`.
+ *
+ * `centre` is where the scan happens; it defaults to the viewer, which is the handheld case.
+ * Remote scanners - the ship construction console driving its drone - have to pass the thing
+ * doing the looking, or the sweep lands around the operator sat at the console instead of
+ * around the camera they are actually watching.
+ */
+/proc/t_ray_scan(mob/viewer, flick_time = 8, distance = 3, atom/centre)
 	if(!ismob(viewer) || !viewer.client)
 		return
+	if(isnull(centre))
+		centre = viewer
 	var/list/t_ray_images = list()
-	for(var/obj/O in orange(distance, viewer) )
+	for(var/obj/O in orange(distance, centre) )
 		if(HAS_TRAIT(O, TRAIT_T_RAY_VISIBLE))
 			var/image/I = new(loc = get_turf(O))
 			var/mutable_appearance/MA = new(O)

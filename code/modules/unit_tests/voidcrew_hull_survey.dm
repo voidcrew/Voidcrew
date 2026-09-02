@@ -73,6 +73,8 @@
 	test_commission_needs_an_outer_door()
 	test_port_seat_rejects_an_interior_door()
 	test_new_hull_area_belongs_to_the_ship()
+	test_expansion_past_the_port_needs_a_door_on_the_new_face()
+	test_survey_bearing_reports_both_legs()
 
 /**
  * A 3x3 of plating whose only skin is thin directional windows on its outward edges.
@@ -253,6 +255,10 @@
 	var/area/shuttle/voidcrew/default_area = new()
 	default_area.setup("Test Hull")
 	var/obj/docking_port/mobile/voidcrew/port = new(spot(3, 3))
+	// A port built by hand is never registered - SSshuttle does that for mapped ones -
+	// and Destroy() unregisters unconditionally, so without this the teardown logs a
+	// "docking_port unregistered multiple times" WARNING and the run is not clean.
+	port.register()
 	// Subscript assignment, not list(default_area = TRUE): a bare identifier on the left of
 	// `=` inside a list() literal is not reliably read as the variable's value.
 	port.shuttle_areas = list()
@@ -276,8 +282,13 @@
 	TEST_ASSERT(port.shuttle_areas[default_area], "the hull's default compartment was dropped from shuttle_areas")
 
 	// Leave nothing behind: these areas and the port outlive the reservation otherwise.
+	// The port goes first, and forced: docking ports answer a plain qdel with
+	// QDEL_HINT_LETMELIVE, so an unforced one leaves the port standing in the block, and
+	// every later reset_block() qdels it again - each of those runs
+	// /obj/docking_port/mobile/Destroy() -> unregister() -> a WARNING, which is on its own
+	// enough to stop a CI run being reported clean.
+	qdel(port, force = TRUE)
 	reset_block()
-	qdel(port)
 	// Hand the tiles back to space BEFORE the areas die. reset_block() only swaps turf
 	// types, and ChangeTurf keeps a turf's area, so all nine tiles are still standing in
 	// these two /area/shuttle instances. Areas are meant to live forever; /area/Destroy()
@@ -292,6 +303,117 @@
 	evacuate_area(default_area)
 	qdel(fresh)
 	qdel(default_area)
+
+/**
+ * A room built out past the docking port is legal only if it hands the port a new seat.
+ *
+ * This is the shape of the "survey rejects my expansion" report: the ship already has an
+ * external airlock in its bow, the crew bolt one more row of hull in front of it, and the
+ * airlock stops being the outermost thing on that side. The port cannot move to it any more,
+ * because a partner ship berthing on it would be planted straight through the new row.
+ *
+ * Both halves matter. The refusal has to be a refusal - anything else commissions a battering
+ * ram - and it has to say where the door goes, in coordinates, because from inside the room
+ * the old airlock looks like a perfectly good door and the advice otherwise reads as a lie.
+ */
+/datum/unit_test/voidcrew_hull_survey/proc/test_expansion_past_the_port_needs_a_door_on_the_new_face()
+	reset_block()
+
+	// Hull: 5 wide, 3 deep, at (3,3)-(7,5). The port stands on its north face at (5,5) and
+	// faces SOUTH, into the ship - so the side that meets a berth is the north one.
+	var/list/hull = list()
+	for(var/offset_x in 3 to 7)
+		for(var/offset_y in 3 to 5)
+			var/turf/scratch = spot(offset_x, offset_y)
+			scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+			hull += scratch
+
+	var/area/shuttle/voidcrew/hull_area = new()
+	hull_area.setup("Test Hull")
+	var/obj/docking_port/mobile/voidcrew/port = new(spot(5, 5))
+	// See test_new_hull_area_belongs_to_the_ship(): a hand-built port is unregistered,
+	// and Destroy() unregisters regardless, which WARNINGs and dirties the run.
+	port.register()
+	// Direct assignment, as hull_reseat_port() does: a docking port's dir is bookkeeping
+	// paired with port_direction, not something with a visual to update.
+	port.dir = SOUTH
+	port.shuttle_areas = list()
+	port.shuttle_areas[hull_area] = TRUE
+	set_turfs_to_area(hull, hull_area)
+
+	// Nothing stands out past the port yet.
+	var/list/flush = hull_port_overhang(port, null)
+	TEST_ASSERT_EQUAL(flush[1], 0, "a hull whose port sits on its own outer face reported an overhang of [flush[1]]")
+
+	// The new room: two more rows on the bow, (3,6)-(7,7). Not hull yet - this is a claim.
+	var/datum/hull_claim/claim = new
+	for(var/offset_y in 6 to 7)
+		for(var/offset_x in 3 to 7)
+			var/turf/scratch = spot(offset_x, offset_y)
+			scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+			claim.turfs[scratch] = TRUE
+	claim.touched_ports[port] = TRUE
+	settle()
+
+	var/turf/outer_line = spot(5, 7)
+	var/list/overhang = hull_port_overhang(port, claim.turfs)
+	TEST_ASSERT_EQUAL(overhang[1], 2, "two rows built past the port should read as a 2 metre overhang, not [overhang[1]]")
+
+	TEST_ASSERT_NULL(hull_port_reseat_target(port, claim.turfs), "the port was offered a seat on a face with no door on it")
+	var/refusal = validate_hull_claim(claim, port)
+	TEST_ASSERT_NOTNULL(refusal, "a room built two rows past the docking port, with no door on its new outer face, was accepted")
+	// The advice has to name the face and hand over coordinates on the outermost line, or
+	// the player rebuilds the door they already have and gets refused again.
+	TEST_ASSERT(findtext(refusal, "north"), "the refusal never says which face needs the door: [refusal]")
+	TEST_ASSERT(findtext(refusal, ", [outer_line.y])"), "the refusal never gives coordinates on the outermost line (y = [outer_line.y]): [refusal]")
+
+	// Cut an airlock into the new bow. Now the port has somewhere to go and the claim is legal.
+	var/obj/machinery/door/airlock/bow_door = new(outer_line)
+	settle()
+
+	TEST_ASSERT_EQUAL(hull_port_reseat_target(port, claim.turfs), outer_line, "the port was not offered the airlock standing on the new outermost plating")
+	var/accepted = validate_hull_claim(claim, port)
+	TEST_ASSERT_NULL(accepted, "an expansion that hands the port a door on its new outer face was still refused: [accepted]")
+
+	// A door one row short of the outermost plating is not a seat: everything in front of it
+	// is still driven through whatever the ship berths against.
+	qdel(bow_door)
+	new /obj/machinery/door/airlock(spot(5, 6))
+	settle()
+	TEST_ASSERT_NULL(hull_port_reseat_target(port, claim.turfs), "a door set back behind the outermost plating was accepted as a port seat")
+
+	// force, and before the block is wiped. Docking ports answer a plain qdel with
+	// QDEL_HINT_LETMELIVE, so the port would survive, reset_block() would qdel it a second
+	// time, and /obj/docking_port/mobile/Destroy()'s unregister() would log a WARNING - which
+	// is enough on its own to stop a CI run being called clean.
+	qdel(port, force = TRUE)
+	reset_block()
+	evacuate_area(hull_area)
+	qdel(hull_area)
+
+/**
+ * The bearing on a refusal has to be two legs, not a Chebyshev distance and one compass point.
+ *
+ * get_dist() reports the larger leg and get_dir() throws the smaller one away, so a tile four
+ * north and two east used to come back as "4 metres northeast" - a bearing that walks you into
+ * the wrong tile and reads as a bug in the survey rather than in the sentence.
+ */
+/datum/unit_test/voidcrew_hull_survey/proc/test_survey_bearing_reports_both_legs()
+	var/turf/here = spot(3, 3)
+	var/turf/there = spot(5, 7)
+
+	var/bearing = hull_survey_bearing(here, there)
+	TEST_ASSERT(findtext(bearing, "4 metres north"), "the bearing lost the north-south leg: [bearing]")
+	TEST_ASSERT(findtext(bearing, "2 metres east"), "the bearing lost the east-west leg: [bearing]")
+	TEST_ASSERT(findtext(bearing, "([there.x], [there.y])"), "the bearing gave no coordinates to check it against: [bearing]")
+
+	var/straight = hull_survey_bearing(here, spot(3, 6))
+	TEST_ASSERT(findtext(straight, "3 metres south") == 0, "a tile due north was reported as south: [straight]")
+	TEST_ASSERT(findtext(straight, "3 metres north"), "a tile three due north was not reported as three north: [straight]")
+	TEST_ASSERT(findtext(straight, "east") == 0 && findtext(straight, "west") == 0, "a tile due north invented a sideways leg: [straight]")
+
+	var/underfoot = hull_survey_bearing(here, here)
+	TEST_ASSERT(findtext(underfoot, "standing on"), "a problem on the player's own tile was not reported as such: [underfoot]")
 
 /// Moves every turf still inside `leaving` back into the reserved block's own space area,
 /// so the area can be deleted without stranding turfs in a destroyed datum. See the call site.

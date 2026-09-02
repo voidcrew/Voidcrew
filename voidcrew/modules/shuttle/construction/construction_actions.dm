@@ -56,8 +56,15 @@
 	// Check if we should use custom wall/floor building based on current RCD mode
 	var/rcd_mode = ship_rcd.construction_mode
 
+	// RCD_TURF is not one design, it is two: the plating blueprint the console's own
+	// material picker covers, and the catwalk. The shortcuts below exist only to honour that
+	// picker (iron/titanium/plastitanium), so they have to be gated on the plating design as
+	// well as the mode - a catwalk selection falling into them silently laid a floor, or a
+	// wall over the floor already there, and never a catwalk (issue #251).
+	var/building_plating = (ship_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
+
 	// Build floor: RCD is in turf mode and target is space (need to create floor first)
-	if(rcd_mode == RCD_TURF && isspaceturf(target_turf))
+	if(rcd_mode == RCD_TURF && building_plating && isspaceturf(target_turf))
 		if(!ship_rcd.build_floor(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
@@ -67,7 +74,7 @@
 		return
 
 	// Build wall: RCD is in turf mode and target is any open floor (including plating)
-	if(rcd_mode == RCD_TURF && istype(target_turf, /turf/open/floor))
+	if(rcd_mode == RCD_TURF && building_plating && istype(target_turf, /turf/open/floor))
 		if(!ship_rcd.build_wall(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
@@ -76,7 +83,7 @@
 			ship_console.expand_shuttle_to_turf(target_turf, owner)
 		return
 
-	// For other build types (airlocks, windows, etc.), use standard RCD system
+	// For other build types (catwalks, airlocks, windows, etc.), use standard RCD system
 	var/atom/rcd_target = target_turf
 
 	// Find airlocks and other structures that can be RCD'd
@@ -87,6 +94,10 @@
 	// Check if we have enough resources before attempting to build
 	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
 	if(!rcd_results)
+		// Silence here reads as a dead button. A catwalk over an existing floor is the case
+		// that gets clicked - /turf/open/floor/rcd_vals() refuses every RCD_TURF design but
+		// plating - and the player has no other way to learn the blueprint does not apply.
+		remote_eye.balloon_alert(owner, "can't build that here!")
 		return
 	var/cost = rcd_results["cost"]
 	if(!base_console.internal_rcd.checkResource(cost, owner))
@@ -97,9 +108,13 @@
 	base_console.internal_rcd.rcd_create(rcd_target, owner)
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 
-	// Expand shuttle if building outside
-	if(!was_in_shuttle)
-		ship_console.expand_shuttle_to_turf(target_turf, owner)
+	// Expand shuttle if building outside. Re-read the tile: rcd_create() may have replaced
+	// the turf datum under us, and a catwalk leaves it space. A space turf pulled into a
+	// shuttle area never gets the /turf/baseturf_skipover/shuttle stamp (dispatch() skips
+	// space), so it would be silently left behind on the ship's next move.
+	var/turf/built_turf = locate(target_turf.x, target_turf.y, target_turf.z)
+	if(!was_in_shuttle && built_turf && !isspaceturf(built_turf))
+		ship_console.expand_shuttle_to_turf(built_turf, owner)
 
 /// Ship-specific RCD deconstruct action
 /datum/action/innate/construction/ship/deconstruct
