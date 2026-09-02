@@ -73,6 +73,12 @@
 	// move_resist only stops pulling; drag-drops (buckling to beds, stuffing
 	// into crates/disposals) never check it, so cancel them at the source.
 	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
+	// ...and a closet does not use the drag path at all: close() sweeps whatever is
+	// standing on its tile into itself, which is how an entire outpost's traders left
+	// in a bluespace body bag (#131). See voidcrew/edits/objects/structures/
+	// closet_containment.dm.
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
 	shop_ui = new /datum/outpost_trader_ui/shop(src)
 	contracts_ui = new /datum/outpost_trader_ui/contracts(src)
 	setup_from_shop()
