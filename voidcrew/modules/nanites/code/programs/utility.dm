@@ -293,7 +293,7 @@
 
 /datum/action/innate/nanite_button
 	name = "Button"
-	button_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon = 'voidcrew/modules/nanites/icons/nanite_actions.dmi'
 	button_icon_state = "power_green"
 	check_flags = AB_CHECK_HANDS_BLOCKED|AB_CHECK_IMMOBILE|AB_CHECK_CONSCIOUS
 	///The nanite program the button will trigger.
