@@ -73,8 +73,9 @@
 		return
 	pod = carried_pod
 	pod.forceMove(src)
-	// Riders watch the approach instead of the inside of a closet
-	for(var/mob/living/rider in pod)
+	// Riders watch the approach instead of the inside of a closet. get_riders()
+	// rather than a contents loop so a mech pilot is a rider too - see drop_pod.dm.
+	for(var/mob/living/rider in pod.get_riders())
 		rider.reset_perspective(src)
 
 /obj/effect/ship_missile/assault_pod/Destroy()
@@ -84,9 +85,10 @@
 	if(!QDELETED(pod))
 		var/turf/here = get_turf(src)
 		if(here)
+			var/list/riders = pod.get_riders()
 			pod.forceMove(here)
 			pod.set_anchored(TRUE)
-			for(var/mob/living/rider in pod)
+			for(var/mob/living/rider in riders)
 				rider.reset_perspective(null)
 		else
 			QDEL_NULL(pod)
@@ -244,13 +246,19 @@
 /obj/effect/ship_missile/assault_pod/proc/land_pod(turf/landing_turf)
 	if(QDELETED(pod))
 		return
+	// Deleting the pod strands its riders in the contents of a deleted object, which
+	// is nullspace with extra steps. Anywhere real beats that, so fall back to the
+	// tile we are standing on before giving up.
 	if(!landing_turf)
-		QDEL_NULL(pod)
+		landing_turf = get_turf(src)
+	if(!landing_turf)
+		stack_trace("assault pod tried to land with no turf anywhere; riders left aboard")
 		return
 
+	var/list/riders = pod.get_riders()
 	pod.forceMove(landing_turf)
 	pod.set_anchored(TRUE)
-	for(var/mob/living/rider in pod)
+	for(var/mob/living/rider in riders)
 		rider.reset_perspective(null)
 
 	// The armoured pod's whole selling point is that it doesn't pop its own hatch
@@ -273,7 +281,9 @@
 	playsound_ship(impact_loc, impact_sound, 80, TRUE, 12, target_ship)
 
 	if(!QDELETED(pod))
-		for(var/mob/living/rider in pod)
+		// Everyone aboard, mech pilots and locker stowaways included - a shield does
+		// not care which box inside the pod you were sitting in.
+		for(var/mob/living/rider in pod.get_riders())
 			rider.reset_perspective(null)
 			rider.investigate_log("was killed by an assault pod striking [target_ship?.name || "a"] shield.", INVESTIGATE_DEATHS)
 			if(impact_loc)
@@ -321,6 +331,9 @@
 	var/datum/weakref/linked_console_ref
 	/// Our unique ID for console linking
 	var/tube_id
+	/// Trigger pulled, pod not yet handed to the flight object. The pod is still
+	/// racked for this window; the tube just can't be fired again during it.
+	var/launching = FALSE
 
 /obj/machinery/ship_combat/pod_launcher/Initialize(mapload)
 	. = ..()
@@ -349,9 +362,7 @@
 	. += span_notice("Tube ID: [tube_id]")
 	if(loaded_pod)
 		. += span_notice("Loaded: [loaded_pod.name] - hatch [loaded_pod.opened ? "open" : "sealed"].")
-		var/rider_count = 0
-		for(var/mob/living/rider in loaded_pod)
-			rider_count++
+		var/rider_count = length(loaded_pod.get_riders())
 		if(rider_count)
 			. += span_warning("Occupancy: [rider_count].")
 		if(loaded_pod.opened)
@@ -542,6 +553,9 @@
 	if(!user.can_perform_action(src, NEED_HANDS))
 		return CLICK_ACTION_BLOCKING
 	if(anchored)
+		if(launching)
+			balloon_alert(user, "launch in progress")
+			return CLICK_ACTION_BLOCKING
 		if(loaded_pod)
 			// The racked pod can't be clicked directly, so the tube hands its
 			// interface through
@@ -569,6 +583,9 @@
 	// inside the machine, so the tube proxies it. Panel open falls through to
 	// deconstruction as usual (which is blocked while loaded anyway).
 	if(W.tool_behaviour == TOOL_CROWBAR && loaded_pod && !panel_open)
+		if(launching)
+			balloon_alert(user, "launch in progress")
+			return TRUE
 		if(loaded_pod.opened)
 			loaded_pod.setClosed()
 			balloon_alert(user, "hatch sealed")
@@ -656,10 +673,17 @@
 		return FALSE
 	if(!anchored)
 		return FALSE
+	// Already firing: the pod is still racked for the launch delay, and firing the
+	// same tube twice in that window would put two flight objects on one pod.
+	if(launching)
+		return FALSE
 	if(QDELETED(loaded_pod))
 		return FALSE
 	// A pod that got opened in the tube isn't going anywhere sealed
 	if(loaded_pod.opened)
+		return FALSE
+	// One-shot drives. A spent pod is cargo, not ordnance.
+	if(loaded_pod.used)
 		return FALSE
 	if(!is_on_exterior())
 		return FALSE
@@ -701,13 +725,22 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
+	// Where the pod enters the target's reservation from. A missile that can't work
+	// this out falls back to spawning on top of the target turf; a crewed pod must
+	// not, because that pod never flies - it sits inside the enemy hull for its whole
+	// 30-second lifetime with the boarding party locked in it. Refuse instead.
 	var/turf/spawn_turf = get_missile_spawn_turf(target, target_ship, approach_dir)
-	if(!spawn_turf)
-		spawn_turf = target
+	if(!spawn_turf || spawn_turf == target)
+		if(user)
+			to_chat(user, span_warning("No approach lane onto [target_ship ? target_ship.name : "the target"] - the pod has nowhere to launch from. Pick another approach direction or another aim point."))
+		return FALSE
 
-	var/obj/structure/closet/supplypod/drop_pod/launched = release_pod()
-	launched.used = TRUE
-	launched.moveToNullspace()
+	// The pod stays racked, on a real turf, until complete_launch() hands it to the
+	// flight object. It used to spend this window in nullspace, and /mob/living/Life()
+	// teleports any client mob it finds without a turf into the CentCom error room -
+	// which is where boarding parties were arriving instead of on the target hull.
+	var/obj/structure/closet/supplypod/drop_pod/launching_pod = loaded_pod
+	launching = TRUE
 
 	use_energy(ASSAULT_POD_LAUNCH_POWER)
 
@@ -731,24 +764,51 @@
 			offset_y = -16
 	new /obj/effect/temp_visual/missile_launch_visual(get_turf(src), dir, offset_x, offset_y)
 
-	visible_message(span_danger("[src] launches [launched]!"))
-	for(var/mob/living/rider in launched)
+	visible_message(span_danger("[src] launches [launching_pod]!"))
+	for(var/mob/living/rider in launching_pod.get_riders())
 		to_chat(rider, span_userdanger("The tube fires. The hull drops away behind you."))
 	if(user)
 		to_chat(user, span_notice("Pod away! Target: [target_ship ? target_ship.name : "unknown"]"))
 
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_assault_pod), spawn_turf, target, target_ship, source_ship, launched), 1.5 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_launch), spawn_turf, target, target_ship, source_ship), ASSAULT_POD_LAUNCH_DELAY)
 
 	update_appearance()
 	return TRUE
 
+/**
+ * Second half of a launch: the pod leaves the tube and goes into flight here.
+ *
+ * Split from fire() so that the pod - and everyone strapped into it - keeps a turf
+ * for the whole launch animation. Anything living that spends a mob tick with no
+ * turf is picked up by /mob/living/Life() and teleported to the CentCom error room,
+ * so nullspace transit is never an option for a crewed object.
+ */
+/obj/machinery/ship_combat/pod_launcher/proc/complete_launch(turf/spawn_turf, turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship)
+	launching = FALSE
+	if(QDELETED(loaded_pod))
+		update_appearance()
+		return
+
+	var/obj/structure/closet/supplypod/drop_pod/launched = release_pod()
+	launched.used = TRUE
+	create_assault_pod(spawn_turf, target, target_ship, source_ship, launched)
+
+	// The flight object pulls the pod into its own contents on creation. If it never
+	// got made - target gone, spawn turf gone - the pod is still sitting in the tube,
+	// and a sealed pod inside a machine that now reports itself empty is a coffin.
+	if(!QDELETED(launched) && launched.loc == src)
+		launched.used = FALSE
+		launched.forceMove(drop_location())
+		visible_message(span_warning("[src] loses the firing solution and cycles [launched] back out."))
+		for(var/mob/living/rider in launched.get_riders())
+			to_chat(rider, span_warning("The launch aborts. The tube spits the pod back onto the deck."))
+
+	update_appearance()
+
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/pod_launcher/proc/get_status(obj/structure/overmap/locked_target = null)
 	var/on_ext = is_on_exterior()
-	var/riders = 0
-	if(loaded_pod)
-		for(var/mob/living/rider in loaded_pod)
-			riders++
+	var/riders = loaded_pod ? length(loaded_pod.get_riders()) : 0
 	return list(
 		"id" = tube_id,
 		"name" = name,
