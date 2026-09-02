@@ -16,6 +16,15 @@
 		TRAIT_NO_UNDERWEAR,
 		TRAIT_PIERCEIMMUNE,
 		TRAIT_RADIMMUNE,
+		// VOIDCREW EDIT ADDITION: upstream hangs the mineral-buff trait solely on
+		// /obj/item/organ/brain/golem, so a golem body carrying anyone else's brain eats
+		// minerals (TRAIT_ROCK_EATER, from the golem stomach) and gets nothing back. This
+		// fork ships self-surgery, so brain-swapping into a golem shell is routine, and the
+		// species already advertises "Metamorphic Rock" as a species perk. Grant it to the
+		// body too - purely additive, the brain organ and the Rock Absorber mutation still
+		// grant it on their own.
+		TRAIT_ROCK_METAMORPHIC,
+		// VOIDCREW EDIT END
 		TRAIT_SNOWSTORM_IMMUNE, // Shared with plasma river... but I guess if you can survive a plasma river a blizzard isn't a big deal
 		TRAIT_UNHUSKABLE,
 	)
