@@ -609,10 +609,16 @@ GLOBAL_LIST_EMPTY(roundstart_station_closets)
 		new material_drop(loc, material_drop_amount)
 	if (secure)
 		var/obj/item/electronics/airlock/electronics = new(drop_location())
+		// length() on both sides. A plain /obj/structure/closet/crate/secure or
+		// /obj/structure/closet/secure_closet is `secure` with neither access list set,
+		// and the bare `= req_access` this used to do copied that null onto the
+		// electronics. AirlockElectronics.tsx destructures `accesses = []`, which is a
+		// default for undefined and not for null, so opening those electronics ran
+		// `selectedList.includes()` against null and blue-screened the player's tgui.
 		if(length(req_one_access))
 			electronics.one_access = TRUE
 			electronics.accesses = req_one_access
-		else
+		else if(length(req_access))
 			electronics.accesses = req_access
 	if(card_reader_installed)
 		new /obj/item/stock_parts/card_reader(drop_location())
@@ -766,10 +772,12 @@ GLOBAL_LIST_EMPTY(roundstart_station_closets)
 			return
 
 		var/obj/item/electronics/airlock/airlock_electronics = new(drop_location())
+		// See the matching comment in the deconstruction path above: a null req_access
+		// copied onto the electronics blue-screens tgui when they are opened.
 		if(length(req_one_access))
 			airlock_electronics.one_access = TRUE
 			airlock_electronics.accesses = req_one_access
-		else
+		else if(length(req_access))
 			airlock_electronics.accesses = req_access
 
 		req_access = list()
