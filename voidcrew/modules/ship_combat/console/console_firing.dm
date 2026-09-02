@@ -208,9 +208,17 @@
 /// Whether the locked target is currently holding a shield up
 /obj/machinery/computer/camera_advanced/ship_combat/proc/target_shields_up()
 	var/obj/structure/overmap/ship/target_vessel = target_ship
-	if(!istype(target_vessel))
-		return FALSE
-	return target_vessel.shield_health > 0
+	if(istype(target_vessel))
+		return target_vessel.shield_health > 0
+	// A raidable player outpost holds a shield envelope of its own, and it kills a
+	// boarding party the same way a ship shield does - try_outpost_shield_intercept()
+	// routes straight into shield_impact(), which gibs everyone aboard. This check
+	// only knew about ships, so a pod launched at a shielded outpost got no warning.
+	var/obj/structure/overmap/dynamic/player_outpost/outpost = target_ship
+	if(istype(outpost))
+		var/obj/machinery/outpost_shield_generator/generator = outpost.get_shield_generator()
+		return generator && generator.charge > 0
+	return FALSE
 
 /// Fire one ready laser turret at the current target location
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_laser_one(mob/user)
