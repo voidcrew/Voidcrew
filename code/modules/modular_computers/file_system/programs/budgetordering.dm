@@ -58,9 +58,34 @@
 
 	return FALSE
 
+/**
+ * This app is a remote control for the station's supply shuttle and the department
+ * budget that pays for it. Neither exists here: every hull runs its own cargo shuttle
+ * through /obj/machinery/computer/voidcrew_cargo, and SSshuttle.supply is deliberately
+ * left null (see voidcrew/modules/cargo/shipping/cargo_shuttle.dm). The app is still
+ * preinstalled on the head and cargo PDA presets, and running it walked ui_data()
+ * straight into `null.getStatusText()`. A runtime only unwinds the proc it happened in,
+ * so the computer's own ui_data() carried on and returned nothing but header data -
+ * which NtosCargo.tsx cannot render. The player got a tgui blue screen and the PDA was
+ * left on a dead window until they relogged and cleared their cache.
+ *
+ * Refuse to start instead. The check is deliberately in front of the parent call: the
+ * parent returns TRUE early for silicons, admin ghosts and emagged computers, and none
+ * of those can conjure a supply shuttle either.
+ */
+/datum/computer_file/program/budgetorders/can_run(mob/user, loud = FALSE, access_to_check, downloading = FALSE, list/access)
+	if(isnull(SSshuttle.supply))
+		if(loud && user)
+			to_chat(user, span_warning("\The [computer] flashes an \"NTNet Error - requisition network unreachable\" warning."))
+		return FALSE
+	return ..()
+
 /datum/computer_file/program/budgetorders/ui_data(mob/user)
 	var/list/data = list()
-	data["location"] = SSshuttle.supply.getStatusText()
+	// can_run() should stop us ever opening without a supply shuttle, but a half filled
+	// in app is still a far better failure than the blue screen a runtime here causes.
+	var/obj/docking_port/mobile/supply/supply_shuttle = SSshuttle.supply
+	data["location"] = supply_shuttle ? supply_shuttle.getStatusText() : "OFFLINE"
 	data["department"] = "Cargo"
 	var/datum/bank_account/buyer = SSeconomy.get_dep_account(cargo_account)
 	var/obj/item/card/id/id_card = computer.computer_id_slot?.GetID()
@@ -110,9 +135,9 @@
 
 	//Data regarding the User's capability to buy things.
 	data["has_id"] = id_card
-	data["away"] = SSshuttle.supply.getDockedId() == docking_away
+	data["away"] = supply_shuttle ? (supply_shuttle.getDockedId() == docking_away) : FALSE
 	data["self_paid"] = self_paid
-	data["docked"] = SSshuttle.supply.mode == SHUTTLE_IDLE
+	data["docked"] = supply_shuttle ? (supply_shuttle.mode == SHUTTLE_IDLE) : FALSE
 	data["loan"] = !!SSshuttle.shuttle_loan
 	data["loan_dispatched"] = SSshuttle.shuttle_loan && SSshuttle.shuttle_loan.dispatched
 	data["can_send"] = FALSE //There is no situation where I want the app to be able to send the shuttle AWAY from the station, but conversely is fine.
@@ -174,6 +199,10 @@
 
 /datum/computer_file/program/budgetorders/ui_act(action, params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
+	// Same reasoning as ui_data(): every branch below assumes a station supply shuttle,
+	// and there isn't one here. Nothing this app does is meaningful without it.
+	if(isnull(SSshuttle.supply))
+		return
 	switch(action)
 		if("send")
 			if(!SSshuttle.supply.canMove())

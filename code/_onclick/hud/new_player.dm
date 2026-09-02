@@ -218,7 +218,15 @@
 	if(!.)
 		return
 
-	var/datum/preferences/preferences = hud.mymob.canon_client.prefs
+	// Take the prefs off the clicking mob's own client, exactly as the "Open Character
+	// Preferences" OOC verb does. canon_client is nulled in Logout(), and Click() is
+	// queued through SSverb_manager, so a click that lands during a logout or a mob
+	// transfer ran straight into "Cannot read null.prefs" here. The prefs datum is also
+	// per-client, and /datum/preferences/ui_status() closes the menu unless
+	// user.client == parent, so reading it off any other client's mob is wrong anyway.
+	var/datum/preferences/preferences = usr.client?.prefs
+	if(!preferences)
+		return
 	preferences.current_window = PREFERENCE_TAB_CHARACTER_PREFERENCES
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)
@@ -410,7 +418,10 @@
 	if(!.)
 		return
 
-	var/datum/preferences/preferences = hud.mymob.canon_client.prefs
+	// Same as the Character Setup button above: the clicking client's own prefs.
+	var/datum/preferences/preferences = usr.client?.prefs
+	if(!preferences)
+		return
 	preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)

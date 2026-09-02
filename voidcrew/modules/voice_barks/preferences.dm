@@ -165,3 +165,20 @@
 	savefile_key = "voice_sounds_only_goon"
 	savefile_identifier = PREFERENCE_PLAYER
 	default_value = FALSE
+
+/**
+ * How loud barks are for this player. 0 turns them off entirely.
+ *
+ * The three toggles above only reshape a bark - fewer blips, flat pitch, simpler sample -
+ * and every one of them leaves it fully audible. There was no listener-side volume or
+ * mute at all, so players trying to stop hearing barks reached for "Enable TTS" and
+ * "TTS Volume" instead, which belong to the unrelated SStts subsystem and gate nothing
+ * here. The only off switch was the admin-global GLOB.voices_enabled.
+ *
+ * Inherits minimum 0 / maximum 100 from /datum/preference/numeric/volume and defaults to
+ * the maximum, so nobody's audio changes until they move the slider.
+ */
+/datum/preference/numeric/volume/sound_barks_volume
+	category = PREFERENCE_CATEGORY_GAME_PREFERENCES
+	savefile_key = "sound_barks_volume"
+	savefile_identifier = PREFERENCE_PLAYER

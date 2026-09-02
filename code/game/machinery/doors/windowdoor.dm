@@ -438,10 +438,14 @@
 	var/obj/item/electronics/airlock/dropped_electronics
 	if(!electronics)
 		dropped_electronics = new/obj/item/electronics/airlock(drop_location())
-		if(req_one_access)
+		// length() rather than truthiness, and no unguarded else: a windoor mapped with
+		// no access at all has both lists null, and copying that null onto the
+		// electronics blue-screens tgui when they are opened (AirlockElectronics.tsx
+		// defaults `accesses` for undefined, not for null).
+		if(length(req_one_access))
 			dropped_electronics.one_access = 1
 			dropped_electronics.accesses = req_one_access
-		else
+		else if(length(req_access))
 			dropped_electronics.accesses = req_access
 	else
 		dropped_electronics = electronics

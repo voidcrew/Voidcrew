@@ -63,6 +63,17 @@
 
 /obj/item/electronics/airlock/ui_data()
 	var/list/data = list()
+	// Never hand tgui a null here. AccessConfig destructures `selectedList = []`, which
+	// is a default for undefined and not for null, so a null lands directly in
+	// `selectedList.includes(...)` inside an Array.map and throws - and a thrown render
+	// in tgui is the full-screen blue screen, after which helpers.js replaces
+	// window.update with a no-op and that window is dead until it is reloaded.
+	// The assigners that used to produce a null are fixed (closets.dm, windowdoor.dm);
+	// this keeps any future one from costing a player their tgui window. Repairing the
+	// var rather than just the payload also keeps do_action()'s `accesses += access`
+	// from turning a null into a bare number.
+	if(isnull(accesses))
+		accesses = list()
 	data["accesses"] = accesses
 	data["oneAccess"] = one_access
 	data["unres_direction"] = unres_sides
