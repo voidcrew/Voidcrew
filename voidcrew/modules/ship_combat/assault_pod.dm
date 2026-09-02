@@ -246,8 +246,13 @@
 /obj/effect/ship_missile/assault_pod/proc/land_pod(turf/landing_turf)
 	if(QDELETED(pod))
 		return
+	// Deleting the pod strands its riders in the contents of a deleted object, which
+	// is nullspace with extra steps. Anywhere real beats that, so fall back to the
+	// tile we are standing on before giving up.
 	if(!landing_turf)
-		QDEL_NULL(pod)
+		landing_turf = get_turf(src)
+	if(!landing_turf)
+		stack_trace("assault pod tried to land with no turf anywhere; riders left aboard")
 		return
 
 	var/list/riders = pod.get_riders()
@@ -677,6 +682,9 @@
 	// A pod that got opened in the tube isn't going anywhere sealed
 	if(loaded_pod.opened)
 		return FALSE
+	// One-shot drives. A spent pod is cargo, not ordnance.
+	if(loaded_pod.used)
+		return FALSE
 	if(!is_on_exterior())
 		return FALSE
 	if(!SSovermap_zones.weapons_allowed_at(src) && !is_siege_shot_allowed(locked_target))
@@ -717,9 +725,15 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
+	// Where the pod enters the target's reservation from. A missile that can't work
+	// this out falls back to spawning on top of the target turf; a crewed pod must
+	// not, because that pod never flies - it sits inside the enemy hull for its whole
+	// 30-second lifetime with the boarding party locked in it. Refuse instead.
 	var/turf/spawn_turf = get_missile_spawn_turf(target, target_ship, approach_dir)
-	if(!spawn_turf)
-		spawn_turf = target
+	if(!spawn_turf || spawn_turf == target)
+		if(user)
+			to_chat(user, span_warning("No approach lane onto [target_ship ? target_ship.name : "the target"] - the pod has nowhere to launch from. Pick another approach direction or another aim point."))
+		return FALSE
 
 	// The pod stays racked, on a real turf, until complete_launch() hands it to the
 	// flight object. It used to spend this window in nullspace, and /mob/living/Life()
