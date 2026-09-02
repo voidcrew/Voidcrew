@@ -200,6 +200,31 @@
 	desc = "A cleaver of demon-dark iron, balanced well enough that it does most of the work for you. The groove down the blade is stained a deep brown that no amount of scrubbing touches."
 	icon = 'icons/obj/weapons/khopesh.dmi'
 	icon_state = "render"
+	// The "ordinary cleaver stats" the docstring promises, spelled out. This hangs off
+	// bare /obj/item (it keeps its own sprite and wants none of /obj/item/knife's tool
+	// behaviour), and /obj/item defaults to force = 0 and sharpness = NONE - so the
+	// loaned knife could wound nothing and kill nothing, and the Red Road, whose only
+	// credit is a killing blow from THIS knife, could never advance past zero. Numbers
+	// are /obj/item/knife/butcher's, verbatim.
+	inhand_icon_state = "butch"
+	lefthand_file = 'icons/mob/inhands/equipment/kitchen_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/kitchen_righthand.dmi'
+	worn_icon_state = "butch"
+	icon_angle = -45
+	obj_flags = CONDUCTS_ELECTRICITY
+	force = 15
+	throwforce = 10
+	throw_speed = 3
+	throw_range = 6
+	demolition_mod = 0.75
+	w_class = WEIGHT_CLASS_NORMAL
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
+	attack_verb_continuous = list("slices", "dices", "chops", "flenses", "unseams")
+	attack_verb_simple = list("slice", "dice", "chop", "flense", "unseam")
+	sharpness = SHARP_EDGED
+	wound_bonus = 15
+	exposed_wound_bonus = 15
+	armor_type = /datum/armor/item_knife
 	/// Mind of the supplicant this knife was loaned to, Destroy-time bookkeeping only; credit resolves the WIELDER at swing time
 	var/datum/mind/bound_mind
 

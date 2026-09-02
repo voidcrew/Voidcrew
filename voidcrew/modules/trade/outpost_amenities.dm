@@ -201,6 +201,10 @@
 	// move_resist only stops pulling; drag-drops (buckling to beds, stuffing
 	// into crates/disposals) never check it, so cancel them at the source.
 	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
+	// A closet skips the drag path entirely - close() sweeps its own tile - so the
+	// containment ban needs its own trait too (#131).
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
 
 /// Cancels any attempt to drag-drop the loiterer onto something (beds, crates,
 /// disposals, ...): they live here now, apparently, and they're staying.

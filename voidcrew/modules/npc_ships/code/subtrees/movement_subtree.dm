@@ -36,6 +36,15 @@
 		return
 	controller.note_ai_recovered()
 
+	// Thruster bank shot out: the hull is dead in the water exactly like a player ship
+	// with no working engines, so queue no movement behavior at all. Doing it here rather
+	// than inside each behavior means a crippled pirate stops re-planning a chase it
+	// cannot take every couple of seconds; the combat subtree is separate, so it keeps
+	// fighting from where it sits. update_boarding_state() has already flagged it
+	// boardable, which is how a bounty hull becomes catchable once de-thrustered.
+	if(!ship.can_move_under_own_power())
+		return
+
 	var/movement_mode = controller.blackboard[BB_NPC_MOVEMENT_MODE] || NPC_MOVEMENT_PATROL
 	var/obj/structure/overmap/ship/target = controller.get_target()
 

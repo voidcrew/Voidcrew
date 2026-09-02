@@ -78,10 +78,21 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_GODMODE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOMOBSWAP, INNATE_TRAIT)
+	// A patron belongs to its shrine. move_resist only stops pulling, so block the two
+	// paths that ignore it: drag-drops onto beds/crates/disposals, and closets, which
+	// sweep their own tile on close() rather than dragging anything (#131).
+	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
 	if(outfit_path)
 		apply_dynamic_human_appearance(src, outfit_path = outfit_path)
 	if(appearance_tint)
 		color = appearance_tint
+
+/// Cancels any attempt to drag-drop the patron onto something (beds, crates, disposals).
+/mob/living/basic/vestige_patron/proc/block_being_dragged(atom/over, mob/user)
+	SIGNAL_HANDLER
+	return COMPONENT_CANCEL_MOUSEDROP_ONTO
 
 /mob/living/basic/vestige_patron/examine(mob/user)
 	. = ..()

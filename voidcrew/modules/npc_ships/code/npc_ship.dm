@@ -158,6 +158,29 @@
 	/// Cooldown to prevent mass recalc spam when taking multiple hits
 	COOLDOWN_DECLARE(mass_recalc_cooldown)
 
+	// ========== THRUST STATE ==========
+	// NPC hulls move discretely (one tile per behavior tick) instead of integrating
+	// momentum, so nothing about that movement ever consulted the thrusters beyond a
+	// binary can_thrust(). Shooting six of a pirate's seven thrusters off therefore cost
+	// it nothing at all - it kept its full patrol/chase cadence - which is what #239
+	// reports. These vars turn surviving thruster power into a step budget.
+
+	/// Sum of engine_power over thrusters that can actually burn right now.
+	var/cached_live_thrust = 0
+	/// Cached can_thrust(), refreshed alongside cached_live_thrust. The AI plans every
+	/// 0.5s and the engine sweep is not free, so the planner reads this instead.
+	var/cached_can_thrust = FALSE
+	/// Highest total thruster power this hull has ever registered - its pristine rating.
+	/// Tracked as a running max because engines only ever leave an NPC hull, and because
+	/// the AI can come online before the hull's powernet does.
+	var/baseline_thrust = 0
+	/// Fractional step budget. Each denied step banks the surviving thrust fraction until
+	/// it adds up to a whole tile, so a half-wrecked engine bank moves at half speed
+	/// rather than stuttering at random.
+	var/movement_credit = 0
+	/// Rate limit on the engine sweep behind the two vars above.
+	COOLDOWN_DECLARE(thrust_recalc_cooldown)
+
 /obj/structure/overmap/ship/npc/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	// Apply faction color tint
@@ -623,6 +646,99 @@
 		var/scale = speed_limit / current_magnitude
 		speed[1] *= scale
 		speed[2] *= scale
+
+// ========== THRUST BUDGET (issue #239) ==========
+
+/**
+ * Re-reads the hull's thruster bank.
+ *
+ * Uses exactly the liveness test can_thrust() uses (registered to this hull, enabled,
+ * thruster_active, and either fuelled or fuel-less), but sums engine_power instead of
+ * stopping at the first hit, so partial destruction is visible as a number rather than
+ * a boolean. refresh_engines() is what prunes destroyed engines out of engine_list and
+ * refreshes thruster_active, so it has to run first; the cooldown keeps that sweep to
+ * once every NPC_THRUST_RECALC_INTERVAL per hull no matter how many behaviors ask.
+ */
+/obj/structure/overmap/ship/npc/proc/refresh_thrust_state(force = FALSE)
+	if(!force && !COOLDOWN_FINISHED(src, thrust_recalc_cooldown))
+		return
+	COOLDOWN_START(src, thrust_recalc_cooldown, NPC_THRUST_RECALC_INTERVAL)
+
+	cached_live_thrust = 0
+	// can_thrust() is the pre-existing gate (hull present, not hidden in a nebula, no
+	// electronic-warfare drive lockout, at least one fuelled thruster) and it is what
+	// runs refresh_engines() - which prunes destroyed engines out of engine_list and
+	// refreshes thruster_active. Everything below reads the state it just rebuilt.
+	cached_can_thrust = can_thrust()
+	if(!cached_can_thrust || !shuttle)
+		return
+
+	var/structural_thrust = 0
+	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)
+		if(QDELETED(engine))
+			continue
+		structural_thrust += engine.engine_power
+		if(!engine.enabled || !engine.thruster_active)
+			continue
+		var/fuel = engine.return_fuel()
+		var/fuel_cap = engine.return_fuel_cap()
+		// A thruster that reports no capacity at all (void drives) never runs dry
+		if(fuel_cap && fuel <= 0)
+			continue
+		cached_live_thrust += engine.engine_power
+
+	// Engines are only ever removed from an NPC hull, so the largest bank we have ever
+	// seen is the pristine one. Taking a running max also survives the AI initialising
+	// before the hull's cables have propagated a powernet.
+	baseline_thrust = max(baseline_thrust, structural_thrust)
+
+/// Fraction of this hull's original thruster power that still burns, 0 to 1.
+/obj/structure/overmap/ship/npc/proc/thrust_fraction()
+	if(player_controlled)
+		return 1
+	refresh_thrust_state()
+	if(!cached_can_thrust)
+		return 0
+	// No baseline means we have never measured a working bank on this hull (an abstract
+	// or engine-less template). Don't invent a penalty for it - can_thrust() is then the
+	// only rule that applies, exactly as before.
+	if(baseline_thrust <= 0)
+		return 1
+	return clamp(cached_live_thrust / baseline_thrust, 0, 1)
+
+/**
+ * Whether the hull can still propel itself at all.
+ *
+ * The movement subtree asks this once instead of letting every movement behavior
+ * rediscover it: a pirate with its thruster bank shot out should stop trying to fly and
+ * fight from where it sits, not re-plan a chase every two seconds.
+ */
+/obj/structure/overmap/ship/npc/proc/can_move_under_own_power()
+	if(player_controlled)
+		return TRUE
+	return thrust_fraction() > 0
+
+/**
+ * Spends one tile of the hull's step budget, or refuses.
+ *
+ * Called immediately before each discrete forceMove so a step is only charged when one
+ * actually happens. At full thrust this is always TRUE and the ship keeps its old
+ * cadence; at 3 of 7 thrusters it returns TRUE roughly three ticks in seven, which is
+ * the discrete-movement equivalent of a player ship's reduced acceleration.
+ */
+/obj/structure/overmap/ship/npc/proc/consume_thrust_step()
+	if(player_controlled)
+		return TRUE
+	var/fraction = thrust_fraction()
+	if(fraction <= 0)
+		return FALSE
+	if(fraction >= 1)
+		return TRUE
+	movement_credit += fraction
+	if(movement_credit < 1)
+		return FALSE
+	movement_credit -= 1
+	return TRUE
 
 // ========== MASS CALCULATION OVERRIDE ==========
 

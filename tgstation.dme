@@ -6788,6 +6788,7 @@
 #include "voidcrew\edits\mobs\ruin_icons.dm"
 #include "voidcrew\edits\mobs\ship_join_menu.dm"
 #include "voidcrew\edits\objects\items\extinguisher.dm"
+#include "voidcrew\edits\objects\structures\closet_containment.dm"
 #include "voidcrew\edits\objects\structures\lavaland\necropolis_tendril.dm"
 #include "voidcrew\edits\subsystem\dynamic.dm"
 #include "voidcrew\edits\subsystem\economy.dm"
