@@ -169,6 +169,18 @@
 	if(!ckey || !part_class)
 		return FALSE
 
+	// Parts balances are keyed by ckey and survive death, ghosting and the round itself,
+	// so without this a ghost could stand anywhere and drop parts on the deck out of an
+	// account it banked in an earlier round - which is what "MR BEAAST giving out free
+	// combat parts" was. Both callers need it: the verb is a /client/verb, so BYOND hangs
+	// it on the IC tab for every mob state including observer and lobby, and the N
+	// keybinding wrapper's own isliving() check does not cover the verb.
+	// The loc half matters too: from the lobby mob.loc is null, so the part spawned into
+	// nullspace after spend_parts() had already debited the account.
+	if(!isliving(mob) || isnull(mob.loc))
+		to_chat(src, span_warning("You need to be alive and somewhere physical to withdraw a part!"))
+		return FALSE
+
 	if(!(part_class in GLOB.ship_part_classes))
 		to_chat(src, span_warning("Invalid part class!"))
 		return FALSE
@@ -213,6 +225,12 @@
 
 	if(!ckey)
 		to_chat(src, span_warning("Unable to identify your account!"))
+		return
+
+	// Mirrors request_extraction_case() below. withdraw_ship_part() refuses as well, but
+	// fail here so a ghost is told why instead of being walked through the part picker.
+	if(!isliving(mob))
+		to_chat(src, span_warning("You need to be alive to withdraw a part!"))
 		return
 
 	var/list/parts = GLOB.ship_economy_db?.get_parts(ckey)
