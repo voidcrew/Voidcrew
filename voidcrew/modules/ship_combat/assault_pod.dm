@@ -73,8 +73,9 @@
 		return
 	pod = carried_pod
 	pod.forceMove(src)
-	// Riders watch the approach instead of the inside of a closet
-	for(var/mob/living/rider in pod)
+	// Riders watch the approach instead of the inside of a closet. get_riders()
+	// rather than a contents loop so a mech pilot is a rider too - see drop_pod.dm.
+	for(var/mob/living/rider in pod.get_riders())
 		rider.reset_perspective(src)
 
 /obj/effect/ship_missile/assault_pod/Destroy()
@@ -84,9 +85,10 @@
 	if(!QDELETED(pod))
 		var/turf/here = get_turf(src)
 		if(here)
+			var/list/riders = pod.get_riders()
 			pod.forceMove(here)
 			pod.set_anchored(TRUE)
-			for(var/mob/living/rider in pod)
+			for(var/mob/living/rider in riders)
 				rider.reset_perspective(null)
 		else
 			QDEL_NULL(pod)
@@ -248,9 +250,10 @@
 		QDEL_NULL(pod)
 		return
 
+	var/list/riders = pod.get_riders()
 	pod.forceMove(landing_turf)
 	pod.set_anchored(TRUE)
-	for(var/mob/living/rider in pod)
+	for(var/mob/living/rider in riders)
 		rider.reset_perspective(null)
 
 	// The armoured pod's whole selling point is that it doesn't pop its own hatch
@@ -273,7 +276,9 @@
 	playsound_ship(impact_loc, impact_sound, 80, TRUE, 12, target_ship)
 
 	if(!QDELETED(pod))
-		for(var/mob/living/rider in pod)
+		// Everyone aboard, mech pilots and locker stowaways included - a shield does
+		// not care which box inside the pod you were sitting in.
+		for(var/mob/living/rider in pod.get_riders())
 			rider.reset_perspective(null)
 			rider.investigate_log("was killed by an assault pod striking [target_ship?.name || "a"] shield.", INVESTIGATE_DEATHS)
 			if(impact_loc)
@@ -352,9 +357,7 @@
 	. += span_notice("Tube ID: [tube_id]")
 	if(loaded_pod)
 		. += span_notice("Loaded: [loaded_pod.name] - hatch [loaded_pod.opened ? "open" : "sealed"].")
-		var/rider_count = 0
-		for(var/mob/living/rider in loaded_pod)
-			rider_count++
+		var/rider_count = length(loaded_pod.get_riders())
 		if(rider_count)
 			. += span_warning("Occupancy: [rider_count].")
 		if(loaded_pod.opened)
@@ -748,7 +751,7 @@
 	new /obj/effect/temp_visual/missile_launch_visual(get_turf(src), dir, offset_x, offset_y)
 
 	visible_message(span_danger("[src] launches [launching_pod]!"))
-	for(var/mob/living/rider in launching_pod)
+	for(var/mob/living/rider in launching_pod.get_riders())
 		to_chat(rider, span_userdanger("The tube fires. The hull drops away behind you."))
 	if(user)
 		to_chat(user, span_notice("Pod away! Target: [target_ship ? target_ship.name : "unknown"]"))
@@ -783,7 +786,7 @@
 		launched.used = FALSE
 		launched.forceMove(drop_location())
 		visible_message(span_warning("[src] loses the firing solution and cycles [launched] back out."))
-		for(var/mob/living/rider in launched)
+		for(var/mob/living/rider in launched.get_riders())
 			to_chat(rider, span_warning("The launch aborts. The tube spits the pod back onto the deck."))
 
 	update_appearance()
@@ -791,10 +794,7 @@
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/pod_launcher/proc/get_status(obj/structure/overmap/locked_target = null)
 	var/on_ext = is_on_exterior()
-	var/riders = 0
-	if(loaded_pod)
-		for(var/mob/living/rider in loaded_pod)
-			riders++
+	var/riders = loaded_pod ? length(loaded_pod.get_riders()) : 0
 	return list(
 		"id" = tube_id,
 		"name" = name,

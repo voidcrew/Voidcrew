@@ -198,6 +198,20 @@
 /obj/structure/closet/supplypod/drop_pod/proc/in_launch_tube()
 	return istype(loc, /obj/machinery/ship_combat/pod_launcher) ? loc : null
 
+/**
+ * Everyone riding this pod, however deeply they are packed into it.
+ *
+ * `for(var/mob/living/rider in pod)` walks the pod's DIRECT contents only, so a
+ * pilot sealed inside a mech - or anyone hiding in a locker or a crate that got
+ * loaded aboard - is invisible to it. That leaves them uncounted on the weapons
+ * console, unwarned on launch, alive when a shield kills the rest of the boarding
+ * party, and with a stale camera perspective after the pod lands.
+ */
+/obj/structure/closet/supplypod/drop_pod/proc/get_riders()
+	. = list()
+	for(var/mob/living/rider in get_all_contents())
+		. += rider
+
 /// Moving inside a tube-racked pod climbs back out through the open hatch.
 /// A sealed hatch stays sealed - opening it is a deliberate act, not a fidget,
 /// because an open hatch takes the tube off the weapons console's ready list.
