@@ -90,6 +90,10 @@
 #define ASSAULT_POD_BREACH_DAMAGE 500
 /// Flight speed of an assault pod (delay in deciseconds per tile - heavier than a missile)
 #define ASSAULT_POD_SPEED 1
+/// How long the tube holds onto the pod after the trigger is pulled, so the launch
+/// visual clears the screen before the real pod shows up on the target's side. The
+/// pod stays racked - and on a turf - for this whole window; see complete_launch().
+#define ASSAULT_POD_LAUNCH_DELAY 1.5 SECONDS
 
 // ========== COMBAT CONSOLE DEFINES ==========
 

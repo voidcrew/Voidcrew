@@ -321,6 +321,9 @@
 	var/datum/weakref/linked_console_ref
 	/// Our unique ID for console linking
 	var/tube_id
+	/// Trigger pulled, pod not yet handed to the flight object. The pod is still
+	/// racked for this window; the tube just can't be fired again during it.
+	var/launching = FALSE
 
 /obj/machinery/ship_combat/pod_launcher/Initialize(mapload)
 	. = ..()
@@ -542,6 +545,9 @@
 	if(!user.can_perform_action(src, NEED_HANDS))
 		return CLICK_ACTION_BLOCKING
 	if(anchored)
+		if(launching)
+			balloon_alert(user, "launch in progress")
+			return CLICK_ACTION_BLOCKING
 		if(loaded_pod)
 			// The racked pod can't be clicked directly, so the tube hands its
 			// interface through
@@ -569,6 +575,9 @@
 	// inside the machine, so the tube proxies it. Panel open falls through to
 	// deconstruction as usual (which is blocked while loaded anyway).
 	if(W.tool_behaviour == TOOL_CROWBAR && loaded_pod && !panel_open)
+		if(launching)
+			balloon_alert(user, "launch in progress")
+			return TRUE
 		if(loaded_pod.opened)
 			loaded_pod.setClosed()
 			balloon_alert(user, "hatch sealed")
@@ -656,6 +665,10 @@
 		return FALSE
 	if(!anchored)
 		return FALSE
+	// Already firing: the pod is still racked for the launch delay, and firing the
+	// same tube twice in that window would put two flight objects on one pod.
+	if(launching)
+		return FALSE
 	if(QDELETED(loaded_pod))
 		return FALSE
 	// A pod that got opened in the tube isn't going anywhere sealed
@@ -705,9 +718,12 @@
 	if(!spawn_turf)
 		spawn_turf = target
 
-	var/obj/structure/closet/supplypod/drop_pod/launched = release_pod()
-	launched.used = TRUE
-	launched.moveToNullspace()
+	// The pod stays racked, on a real turf, until complete_launch() hands it to the
+	// flight object. It used to spend this window in nullspace, and /mob/living/Life()
+	// teleports any client mob it finds without a turf into the CentCom error room -
+	// which is where boarding parties were arriving instead of on the target hull.
+	var/obj/structure/closet/supplypod/drop_pod/launching_pod = loaded_pod
+	launching = TRUE
 
 	use_energy(ASSAULT_POD_LAUNCH_POWER)
 
@@ -731,16 +747,46 @@
 			offset_y = -16
 	new /obj/effect/temp_visual/missile_launch_visual(get_turf(src), dir, offset_x, offset_y)
 
-	visible_message(span_danger("[src] launches [launched]!"))
-	for(var/mob/living/rider in launched)
+	visible_message(span_danger("[src] launches [launching_pod]!"))
+	for(var/mob/living/rider in launching_pod)
 		to_chat(rider, span_userdanger("The tube fires. The hull drops away behind you."))
 	if(user)
 		to_chat(user, span_notice("Pod away! Target: [target_ship ? target_ship.name : "unknown"]"))
 
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_assault_pod), spawn_turf, target, target_ship, source_ship, launched), 1.5 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_launch), spawn_turf, target, target_ship, source_ship), ASSAULT_POD_LAUNCH_DELAY)
 
 	update_appearance()
 	return TRUE
+
+/**
+ * Second half of a launch: the pod leaves the tube and goes into flight here.
+ *
+ * Split from fire() so that the pod - and everyone strapped into it - keeps a turf
+ * for the whole launch animation. Anything living that spends a mob tick with no
+ * turf is picked up by /mob/living/Life() and teleported to the CentCom error room,
+ * so nullspace transit is never an option for a crewed object.
+ */
+/obj/machinery/ship_combat/pod_launcher/proc/complete_launch(turf/spawn_turf, turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship)
+	launching = FALSE
+	if(QDELETED(loaded_pod))
+		update_appearance()
+		return
+
+	var/obj/structure/closet/supplypod/drop_pod/launched = release_pod()
+	launched.used = TRUE
+	create_assault_pod(spawn_turf, target, target_ship, source_ship, launched)
+
+	// The flight object pulls the pod into its own contents on creation. If it never
+	// got made - target gone, spawn turf gone - the pod is still sitting in the tube,
+	// and a sealed pod inside a machine that now reports itself empty is a coffin.
+	if(!QDELETED(launched) && launched.loc == src)
+		launched.used = FALSE
+		launched.forceMove(drop_location())
+		visible_message(span_warning("[src] loses the firing solution and cycles [launched] back out."))
+		for(var/mob/living/rider in launched)
+			to_chat(rider, span_warning("The launch aborts. The tube spits the pod back onto the deck."))
+
+	update_appearance()
 
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/pod_launcher/proc/get_status(obj/structure/overmap/locked_target = null)
