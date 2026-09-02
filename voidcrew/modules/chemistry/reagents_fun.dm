@@ -25,17 +25,41 @@
 	animate(affected_mob, transform = flipped, time = 3)
 
 /datum/reagent/australium/reagent_fire(obj/item/reagent_containers/host)
-	for(var/datum/reagent/listed_reagent as anything in host.reagents.reagent_list.Copy())
+	var/datum/reagents/holder = host.reagents
+	if(isnull(holder))
+		return
+	var/list/protected_reagents = reactants_of_running_australium_reactions(holder)
+	for(var/datum/reagent/listed_reagent as anything in holder.reagent_list.Copy())
 		if(isnull(listed_reagent))
 			continue
 		// /datum/reagent/inverse is the generic fallback every reagent carries by
 		// default - only convert chems that name a real inverse of their own.
 		if(isnull(listed_reagent.inverse_chem) || listed_reagent.inverse_chem == /datum/reagent/inverse)
 			continue
+		// A reaction that is busy making Australium keeps its own reactants. Australium's
+		// recipe needs Happiness, which inverts into Sadness, so without this the first
+		// unit produced ate the ingredient list and the reaction starved partway through.
+		if(protected_reagents[listed_reagent.type])
+			continue
 		var/listed_volume = listed_reagent.volume
 		var/inverse_type = listed_reagent.inverse_chem
-		host.reagents.remove_reagent(listed_reagent.type, listed_volume)
-		host.reagents.add_reagent(inverse_type, listed_volume)
+		holder.remove_reagent(listed_reagent.type, listed_volume)
+		holder.add_reagent(inverse_type, listed_volume)
+
+/**
+ * Every reagent path that an in-progress reaction in holder needs in order to keep producing
+ * us, as an assoc set. Only reactions currently running (holder.reaction_list) count - once
+ * the batch is done the leftovers are fair game for inversion like anything else.
+ */
+/datum/reagent/australium/proc/reactants_of_running_australium_reactions(datum/reagents/holder)
+	var/list/protected_reagents = list()
+	for(var/datum/equilibrium/equilibrium as anything in holder.reaction_list)
+		var/datum/chemical_reaction/reaction = equilibrium?.reaction
+		if(isnull(reaction) || !(type in reaction.results))
+			continue
+		for(var/reagent_path in reaction.required_reagents)
+			protected_reagents[reagent_path] = TRUE
+	return protected_reagents
 
 /// Shakes the drinker harder and harder. Overdosing eventually rattles them apart.
 /datum/reagent/shakeium
