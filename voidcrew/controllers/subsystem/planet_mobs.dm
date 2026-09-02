@@ -257,6 +257,50 @@ SUBSYSTEM_DEF(planet_mobs)
 	tracker.spawned_count += spawn_for_tracker(tracker)
 	tracker.populated = TRUE
 
+/**
+ * The rectangles fauna may not spawn in on this planet: every ship hull standing on the
+ * tracker's ground right now, grown by PLANET_DOCK_HOSTILE_CLEARANCE on all four sides.
+ *
+ * Returned as flat list(low_x, low_y, high_x, high_y) quads so the spawn loop pays four
+ * integer comparisons per candidate instead of a range() scan. A planet carries at most two
+ * berths, so this is one pass over SSshuttle.mobile_docking_ports and at most two quads.
+ *
+ * The MOBILE port, not the stationary berth: the berth is a 56x40 rectangle sized for the
+ * largest hull in the game and a real ship occupies a fraction of it, anchored in the
+ * corner. Reserving the berth would leave a third of the planet permanently fauna-free.
+ */
+/datum/controller/subsystem/planet_mobs/proc/docked_hull_keepout_rects(datum/planet_mob_tracker/tracker)
+	var/list/rects = list()
+	if(!tracker || tracker.surface_z <= 0)
+		return rects
+	for(var/obj/docking_port/mobile/hull as anything in SSshuttle.mobile_docking_ports)
+		if(QDELETED(hull) || hull.z != tracker.surface_z)
+			continue
+		var/turf/hull_turf = get_turf(hull)
+		if(!tracker.contains_turf(hull_turf))
+			continue
+		// list(x0, y0, x1, y1), corners in either order depending on the port's facing.
+		var/list/coords = hull.return_coords()
+		if(length(coords) < 4)
+			continue
+		rects += min(coords[1], coords[3]) - PLANET_DOCK_HOSTILE_CLEARANCE
+		rects += min(coords[2], coords[4]) - PLANET_DOCK_HOSTILE_CLEARANCE
+		rects += max(coords[1], coords[3]) + PLANET_DOCK_HOSTILE_CLEARANCE
+		rects += max(coords[2], coords[4]) + PLANET_DOCK_HOSTILE_CLEARANCE
+	return rects
+
+/// Whether `candidate` falls inside any of the flat (low_x, low_y, high_x, high_y) quads.
+/datum/controller/subsystem/planet_mobs/proc/turf_in_keepout_rects(turf/candidate, list/rects)
+	var/candidate_x = candidate.x
+	var/candidate_y = candidate.y
+	for(var/index in 1 to length(rects) - 3 step 4)
+		if(candidate_x < rects[index] || candidate_x > rects[index + 2])
+			continue
+		if(candidate_y < rects[index + 1] || candidate_y > rects[index + 3])
+			continue
+		return TRUE
+	return FALSE
+
 /// Spawns up to this planet's own zone-scaled cap from its candidate turfs.
 /// Returns how many mobs it actually spawned.
 /datum/controller/subsystem/planet_mobs/proc/spawn_for_tracker(datum/planet_mob_tracker/tracker)
@@ -271,6 +315,13 @@ SUBSYSTEM_DEF(planet_mobs)
 
 	var/spawned = 0
 	var/list/available_turfs = spawn_turfs.Copy()
+	// Where the crew's ships are parked, plus PLANET_DOCK_HOSTILE_CLEARANCE. Fauna spawns the
+	// moment somebody lands, from candidates scattered over the whole planet - including the
+	// turf directly outside the airlock, which is how a crew gets jumped stepping off their
+	// own ramp. Measured off the hulls that are actually here rather than off the berth
+	// rectangle: a berth is sized for the largest ship in the game and reserving all of it
+	// would sterilise the bottom third of every planet.
+	var/list/keepout = docked_hull_keepout_rects(tracker)
 
 	while(spawned < planet_cap && total_managed_mobs < global_mob_cap && length(available_turfs))
 		var/turf/candidate = pick_n_take(available_turfs)
@@ -282,6 +333,9 @@ SUBSYSTEM_DEF(planet_mobs)
 		// turfs away and the candidate becomes a valid surface turf again. Density
 		// covers walls raised over a candidate by ruins or construction.
 		if(candidate.density || istype(get_area(candidate), /area/shuttle))
+			continue
+
+		if(length(keepout) && turf_in_keepout_rects(candidate, keepout))
 			continue
 
 		// The mob the terrain pass rolled for this turf, zone upgrade and all. Only

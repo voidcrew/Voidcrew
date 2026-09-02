@@ -461,6 +461,14 @@
 			continue
 
 		var/datum/biome/selected_biome = target_turf.generating_biome
+		// Reserved ground: the planet's landing strip (reserve_dock_strip() flags the berth
+		// band plus PLANET_DOCK_HOSTILE_CLEARANCE) and any turf a ruin has claimed. Nothing
+		// permanent and hostile may be banked here - a hivebot portal or an ash drake next to
+		// a berth camps every crew that lands for the rest of the round, and neither is
+		// managed by SSplanet_mobs, so neither ever despawns. Flora, ground features and
+		// ordinary fauna are untouched; the fauna a crew meets on landing is kept off their
+		// airlock by SSplanet_mobs instead, which knows where the hull actually is.
+		var/hostile_spawns_reserved = (target_turf.turf_flags & NO_RUINS) ? TRUE : FALSE
 		var/flora_allowed = selected_biome.flora_spawn_chance > 0 && length(selected_biome.flora_spawn_list) > 0 ? TRUE : FALSE
 		var/fauna_allowed = selected_biome.mob_spawn_chance > 0 && length(selected_biome.mob_spawn_list) > 0 ? TRUE : FALSE
 		var/feature_allowed = selected_biome.feature_spawn_chance > 0 && length(selected_biome.feature_spawn_list) > 0 ? TRUE : FALSE
@@ -501,6 +509,8 @@
 				// (snow's demonic portals, wasteland's hivebot portals). They are the same
 				// permanent, uncapped fauna source, so they share the same budget.
 				if(can_spawn && ispath(picked_feature, /obj/structure/spawner))
+					if(hostile_spawns_reserved)
+						continue // not in the landing strip - see hostile_spawns_reserved
 					spawner_candidates[target_turf] = picked_feature
 					continue
 
@@ -517,7 +527,7 @@
 			if(picked_mob == SPAWN_MEGAFAUNA)
 				// Banked as a candidate rather than placed - see megafauna_candidates.
 				// Green zones bank nothing, so the roll falls through to ordinary fauna.
-				if(megafauna_allowed && length(selected_biome.megafauna_spawn_list))
+				if(megafauna_allowed && !hostile_spawns_reserved && length(selected_biome.megafauna_spawn_list))
 					megafauna_candidates[target_turf] = pickweight(selected_biome.megafauna_spawn_list)
 					continue
 				// Re-roll off the sentinel. Bounded: a table that is nothing but
@@ -542,6 +552,8 @@
 			// (This used to be istype(), which is always FALSE on a type path - so the
 			// spawner branch never ran and tendrils placed themselves unbudgeted.)
 			if(ispath(picked_mob, /obj/structure/spawner))
+				if(hostile_spawns_reserved)
+					continue // not in the landing strip - see hostile_spawns_reserved
 				spawner_candidates[target_turf] = picked_mob
 				continue
 

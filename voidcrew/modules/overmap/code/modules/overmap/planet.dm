@@ -383,6 +383,13 @@
 	surface_area?.RunTerrainGeneration()
 	worldgen_end(stage_probe)
 
+	// Reserve the landing strip before ANYTHING is placed on the ground. Both readers of the
+	// flag come after this point: populate_terrain() refuses to seed a nest or a megafauna on
+	// a NO_RUINS turf, and seedRuins() refuses to place a template that touches one. Terrain
+	// generation is already done, so nothing below ChangeTurfs these tiles out from under the
+	// flag. See reserve_dock_strip().
+	reserve_dock_strip(surface_level)
+
 	// Register before populating - population hands its mob spawn turfs to SSplanet_mobs.
 	// The footprint has already been narrowed to planet_size by set_bounds() above, so the
 	// tracker gets the planet's real rectangle; the band is carried across rather than
@@ -404,10 +411,6 @@
 		for(var/area/owned_area as anything in owned_planet_areas)
 			storm_areas += owned_area
 		weather_site.set_owned_areas(storm_areas)
-
-	// Before ruins, not after: seedRuins() reads NO_RUINS while it picks placements, and a
-	// flag set afterwards would be too late to move anything.
-	reserve_dock_strip(surface_level)
 
 	stage_probe = worldgen_begin("stage", "ruins", build_probe.id)
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type, owned_planet_areas)
@@ -597,16 +600,28 @@
 	var/anchor_low_y = isnull(footprint?.low_y) ? zlevel?.low_y : footprint.low_y
 	if(isnull(anchor_low_y))
 		return null
-	return anchor_low_y + RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_RUIN_CLEARANCE
+	// PLANET_DOCK_HOSTILE_CLEARANCE, not the three turfs PLANET_DOCK_RUIN_CLEARANCE keeps for
+	// the lattice packing gate: three rows is enough that a ruin cannot be BUILT on a berth,
+	// and nowhere near enough that its turrets cannot SHOOT into one. Live round 2026-08-30
+	// had a ruin's turret pair one row above this line putting laser burns on a crewman
+	// standing in his own berth.
+	return anchor_low_y + RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_HOSTILE_CLEARANCE
 
 /**
- * Flags the docking strip along the bottom of the planet NO_RUINS, so ruins only seed
- * above where ships park.
+ * Flags the docking strip along the bottom of the planet NO_RUINS, so ruins and hostile
+ * spawns only seed above where ships park.
  *
  * try_to_place() rejects any placement whose footprint touches a NO_RUINS turf - the same
  * mechanism ruins use to keep off each other. Without it a ruin can land squarely on a
  * berth, and since an arriving shuttle overwrites the turfs it lands on, the ruin is
  * destroyed by the first ship to visit, taking its loot and mobs with it.
+ *
+ * The flag does double duty: /datum/map_generator/planet_generator/populate_terrain() also
+ * refuses to bank a structure spawner (hivebot portals, demonic portals, tendrils) or a
+ * megafauna on a NO_RUINS turf, so nothing permanent and hostile is seeded in the landing
+ * strip either. Both budgets are re-spent on the rest of the planet rather than lost, so
+ * this moves nests off the dock instead of removing any. That is why this now runs BEFORE
+ * populate_planet_level() - the flag has to exist while the population pass reads it.
  *
  * The full width of the strip is taken rather than the two dock rectangles alone. They run
  * from low_x + 4 to low_x + 118 of a footprint that is at least PLANET_MIN_SIZE across, and
