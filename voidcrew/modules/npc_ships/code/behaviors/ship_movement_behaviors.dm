@@ -162,6 +162,10 @@
 				return AI_BEHAVIOR_DELAY
 			next_tile = path[path_index]
 
+		// A half-wrecked thruster bank buys fewer tiles (see consume_thrust_step)
+		if(!ship.consume_thrust_step())
+			return AI_BEHAVIOR_DELAY
+
 		// Move directly to next tile (no momentum)
 		var/move_dir = get_dir(ship, next_tile)
 		if(move_dir)
@@ -201,7 +205,7 @@
 	var/roaming_dir = pick_random_safe_direction(our_loc, spawn_zone)
 	if(roaming_dir)
 		var/turf/next_tile = get_step(our_loc, roaming_dir)
-		if(next_tile)
+		if(next_tile && ship.consume_thrust_step())
 			ship.dir = roaming_dir
 			ship.forceMove(next_tile)
 
@@ -301,6 +305,9 @@
 				return AI_BEHAVIOR_DELAY
 			next_tile = path[path_index]
 
+		if(!ship.consume_thrust_step())
+			return AI_BEHAVIOR_DELAY
+
 		var/move_dir = get_dir(ship, next_tile)
 		if(move_dir)
 			ship.dir = move_dir
@@ -364,7 +371,7 @@
 			return AI_BEHAVIOR_DELAY
 
 		var/turf/next_tile = get_step(our_loc, direction)
-		if(next_tile)
+		if(next_tile && ship.consume_thrust_step())
 			ship.dir = direction
 			ship.forceMove(next_tile)
 
@@ -433,7 +440,7 @@
 		var/direction = get_dir(ship, target)
 		if(direction)
 			var/turf/next_tile = get_step(our_loc, direction)
-			if(next_tile)
+			if(next_tile && ship.consume_thrust_step())
 				ship.dir = direction
 				ship.forceMove(next_tile)
 
@@ -510,7 +517,7 @@
 		return AI_BEHAVIOR_DELAY
 
 	var/turf/next_tile = get_step(our_loc, safe_dir)
-	if(next_tile)
+	if(next_tile && ship.consume_thrust_step())
 		ship.dir = safe_dir
 		ship.forceMove(next_tile)
 

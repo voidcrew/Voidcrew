@@ -219,6 +219,10 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_SHIP_OBSTACLE_SCAN_RANGE 1    // How far ahead to scan for obstacles
 #define NPC_SHIP_CIRCUIT_WAYPOINTS 12     // Number of waypoints in patrol circuit
 #define NPC_SHIP_ORBIT_VARIANCE 0.15      // Radius variance for patrol circuits (15%)
+/// How often a hull re-reads its thruster bank for the step budget (see
+/// /obj/structure/overmap/ship/npc/refresh_thrust_state). Movement behaviors tick every
+/// 2-8 seconds, so this costs at most one engine sweep per hull per interval.
+#define NPC_THRUST_RECALC_INTERVAL (2 SECONDS)
 
 // NOTE: Per-ship vars (territory_range, lock_time, cooldowns, speed, acceleration, crew)
 // are now defined on /obj/structure/overmap/ship/npc and its subtypes.
