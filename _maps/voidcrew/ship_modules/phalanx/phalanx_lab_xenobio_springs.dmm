@@ -20,13 +20,6 @@
 /obj/structure/closet/crate/science,
 /turf/open/floor/bamboo/tatami,
 /area/template_noop)
-"i" = (
-/obj/machinery/door/window/brigdoor{
-	dir = 2
-	},
-/obj/structure/window/reinforced/spawner/directional/east,
-/turf/open/floor/engine,
-/area/template_noop)
 "j" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -43,6 +36,15 @@
 	dir = 1
 	},
 /turf/open/floor/wood,
+/area/template_noop)
+"q" = (
+/obj/machinery/door/window/brigdoor{
+	dir = 2;
+	name = "Containment Pen #1";
+	req_access = list("xenobiology")
+	},
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/engine,
 /area/template_noop)
 "s" = (
 /obj/structure/table/glass,
@@ -113,9 +115,11 @@
 /obj/machinery/processor/slime,
 /turf/open/floor/iron/white,
 /area/template_noop)
-"M" = (
+"O" = (
 /obj/machinery/door/window/brigdoor{
-	dir = 1
+	dir = 1;
+	name = "Containment Pen #2";
+	req_access = list("xenobiology")
 	},
 /obj/structure/window/reinforced/spawner/directional/east,
 /turf/open/floor/engine,
@@ -160,9 +164,9 @@ T
 u
 "}
 (2,1,1) = {"
-i
+q
 Z
-M
+O
 "}
 (3,1,1) = {"
 g
