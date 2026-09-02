@@ -55,6 +55,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
 		claim_unlinked_experiment_handlers()
+		claim_unlinked_survey_console()
 		return
 	return ..()
 
@@ -94,6 +95,29 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		else if(!is_valid_z_level(holder_turf, our_turf))
 			continue
 		handler.link_techweb(stored_research, TRUE)
+
+/**
+ * Points this ship's orbital survey console at our techweb if it has no link of its own.
+ *
+ * Same problem as the experiment handlers above, from the other end: the survey console
+ * self-links to the ship's server at Initialize (see try_link_ship_techweb() in
+ * voidcrew/modules/shuttle/survey/survey_computer.dm), so a console that already existed when
+ * this disk went in - a salvaged hull, a replaced disk - would have found nothing and stayed
+ * unlinked, and an unlinked console means every survey-gated research node stays locked.
+ *
+ * Only a null link is claimed; a console someone multitooled to another web is left alone.
+ */
+/obj/machinery/rnd/server/ship/proc/claim_unlinked_survey_console()
+	if(!stored_research)
+		return
+	var/obj/structure/overmap/ship/our_ship = get_voidcrew_ship_for_turf(get_turf(src))
+	if(isnull(our_ship))
+		return
+	var/datum/weakref/console_ref = our_ship.survey_console
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey/console = console_ref?.resolve()
+	if(!istype(console) || console.linked_techweb || isnull(console.data))
+		return
+	console.link_to_techweb(stored_research)
 
 /obj/machinery/rnd/server/ship/multitool_act(mob/living/user, obj/item/multitool/multi)
 	if(!source_code_hdd)

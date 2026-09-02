@@ -58,22 +58,98 @@
 
 	set_init_ports()
 
-	ship_port = SSshuttle.get_containing_shuttle(src)
-
-	if (ship_port?.current_ship)
-
-		data = ship_port.current_ship.survey_data
-
-		if(!ship_port.current_ship.survey_console)
-			ship_port.current_ship.survey_console = WEAKREF(src)
-			attached_to_ship = TRUE
-			shuttleId = ship_port.shuttle_id
-			shuttlePortId = "[ship_port.shuttle_id]_custom"
-			// Registered once here (not per-survey) - cancels in-progress surveys and
-			// clears stale custom ports whenever the ship moves
-			RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(cancel_survey))
+	bind_to_ship()
 
 	soundloop = new(src)
+
+/**
+ * Binds this console to the hull it is standing in: survey data store, ship-side console
+ * reference, docking ids, and the ship's R&D techweb.
+ *
+ * Split out of Initialize() because a console that loads with its ship (rather than being
+ * built mid-round) initialises before SSshuttle assigns port.current_ship, so all of this
+ * has to be able to run again from the COMSIG_VOIDCREW_SHIP_LOADED handler below.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/bind_to_ship()
+	if(isnull(ship_port))
+		var/obj/docking_port/mobile/containing_port = SSshuttle.get_containing_shuttle(src)
+		if(istype(containing_port, /obj/docking_port/mobile/voidcrew))
+			ship_port = containing_port
+
+	var/obj/structure/overmap/ship/our_ship = ship_port?.current_ship
+	if(isnull(our_ship))
+		return FALSE
+
+	data = our_ship.survey_data
+
+	if(!our_ship.survey_console)
+		our_ship.survey_console = WEAKREF(src)
+		attached_to_ship = TRUE
+		shuttleId = ship_port.shuttle_id
+		shuttlePortId = "[ship_port.shuttle_id]_custom"
+		// Registered once here (not per-survey) - cancels in-progress surveys and
+		// clears stale custom ports whenever the ship moves
+		RegisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(cancel_survey), override = TRUE)
+
+	try_link_ship_techweb()
+	return TRUE
+
+/**
+ * A console that ships with a hull initialises inside action_load(), before the subsystem
+ * assigns port.current_ship, so bind_to_ship() above finds nothing. Finish the binding when
+ * the ship load completes; built-in-round consoles are already bound by Initialize().
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
+	. = ..()
+	var/obj/docking_port/mobile/voidcrew/ship_dock = port
+	if(!istype(ship_dock))
+		return
+	ship_port = ship_dock
+	// Binding itself is deliberately left to Initialize()/the signal below, so the console
+	// still sets shuttleId in the same order it always did.
+	if(!ship_dock.current_ship)
+		RegisterSignal(ship_dock, COMSIG_VOIDCREW_SHIP_LOADED, PROC_REF(on_ship_loaded), override = TRUE)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/on_ship_loaded(obj/docking_port/mobile/voidcrew/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_LOADED)
+	bind_to_ship()
+
+/**
+ * Points this console at the techweb hosted by an R&D server aboard the same ship.
+ *
+ * The console is the only thing that ever hands survey data to a techweb (see
+ * /datum/techweb/have_surveys_for_node in voidcrew/modules/research/edits/_techweb.dm), so
+ * until it is linked, every survey-gated research node stays locked no matter how much the
+ * crew surveys - and nothing in game says why. Bind ourselves the way the rest of the ship's
+ * machinery does instead of requiring the multitool ritual. A link made by hand always wins:
+ * multitool_act() relinks unconditionally, and we never touch an existing link.
+ */
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/try_link_ship_techweb()
+	if(linked_techweb || isnull(data))
+		return FALSE
+	var/obj/structure/overmap/ship/our_ship = ship_port?.current_ship
+	if(isnull(our_ship))
+		return FALSE
+	var/datum/techweb/ship_web = our_ship.find_research_web()
+	if(isnull(ship_web))
+		return FALSE
+	link_to_techweb(ship_web)
+	return TRUE
+
+/// Shared body of the auto-link and multitool paths.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/link_to_techweb(datum/techweb/new_web)
+	linked_techweb = new_web
+	new_web.survey_data = data
+	new_web.connected_machines |= src
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/examine(mob/user)
+	. = ..()
+	if(linked_techweb)
+		. += span_notice("It is feeding survey data to the R&D server network of [linked_techweb.organization].")
+		return
+	. += span_warning("It is not linked to an R&D server, so surveys will not unlock survey-gated research.")
+	. += span_notice("Build an R&D server on this ship, or copy a techweb from one with a [EXAMINE_HINT("multitool")] and use it on this.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
 	var/obj/structure/overmap/object = get_current_celestial_object()
@@ -95,9 +171,7 @@
 				return
 			unsync_research_servers()
 
-		linked_techweb = tool.buffer
-		linked_techweb.survey_data = data
-		linked_techweb.connected_machines += src //connect new one
+		link_to_techweb(tool.buffer)
 		say("Linked to Server!")
 		return TRUE
 
