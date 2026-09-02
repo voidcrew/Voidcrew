@@ -404,6 +404,17 @@
 	if(apply_cooldown && !COOLDOWN_FINISHED(src, manual_vent_cooldown))
 		return
 
+	// VOIDCREW EDIT ADDITION - never hand out a boulder made of nothing. pick_weight() on an
+	// empty breakdown returns null and the boulder is set_custom_materials(list(null = n)),
+	// i.e. a rock that yields no sheets however it is processed. A vent can still reach here
+	// empty if SSore_generation's roundstart round-robin ran out of pool before it got to
+	// this one (it breaks on stallbreaker), so roll a breakdown rather than produce a dud.
+	if(!length(mineral_breakdown) && !unique_vent)
+		generate_mineral_breakdown()
+		generate_description()
+	if(!length(mineral_breakdown))
+		return
+
 	//produce the boulder
 	var/obj/item/boulder/new_rock
 	if(prob(artifact_chance))
@@ -471,9 +482,25 @@
 
 /obj/structure/ore_vent/random/Initialize(mapload)
 	. = ..()
-	if(!unique_vent && !mapload)
-		generate_mineral_breakdown(map_loading = mapload) //Default to random mineral breakdowns, unless this is a unique vent or we're still setting up default vent distribution.
+	// VOIDCREW EDIT START - a vent that maploads AFTER SSore_generation is up rolls its own
+	// breakdown. Upstream, a mapload vent deliberately leaves mineral_breakdown empty and is
+	// filled in by SSore_generation's round-robin over possible_vents. That pass runs exactly
+	// once, in the subsystem's own Initialize. Here every ore vent on a planet arrives inside
+	// a ruin template (no biome or cave generator on a planet spawns one), and planets are
+	// minted MID-ROUND, so the round-robin has been and gone by the time the vent exists and
+	// nothing ever comes back for it: examine reads "produces medium boulders containing
+	// nothing", scanning shows no ores, and produce_boulder() pick_weight()s an empty list.
+	// Roundstart ruin loading still takes the upstream path, so the budgeted global ore
+	// distribution is unchanged.
+	// Original: if(!unique_vent && !mapload)
+	if(!unique_vent && (!mapload || SSore_generation.initialized))
+		// map_loading stays FALSE even for a mapload vent here: TRUE draws from (and consumes)
+		// SSore_generation.ore_vent_minerals and CRASHes when that pool is empty, which is a
+		// roundstart-budget mechanism. Mid-round vents roll from GLOB.ore_vent_minerals_lavaland
+		// exactly like every other non-mapload vent already does.
+		generate_mineral_breakdown() //Default to random mineral breakdowns, unless this is a unique vent or we're still setting up default vent distribution.
 		generate_description()
+	// VOIDCREW EDIT END
 	artifact_chance = rand(0, MAX_ARTIFACT_ROLL_CHANCE)
 	var/string_boulder_size = pick_weight(ore_vent_options)
 	name = "[string_boulder_size] ore vent"

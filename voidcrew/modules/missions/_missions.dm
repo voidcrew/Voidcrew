@@ -847,11 +847,24 @@
  * Uploads this mission's objective beacon to a specific handheld GPS unit
  * (player tapped the unit on the mission board console).
  * Returns TRUE if this mission had a beacon to upload.
+ *
+ * A field step that is standing at a loaded site with nothing placed is re-armed first.
+ * The step's own arm() is one-shot off the site's interior-loaded callback, and a missed
+ * callback (see the load_level() early returns in planet.dm) left it waiting forever with
+ * no creature on the surface and this proc reporting "linked - no objective marked yet"
+ * for the rest of the round. arm() is idempotent - it returns immediately once `spawned`
+ * is set, and does nothing at all while the site is still unloaded - so this only ever
+ * fires in the state that was previously unrecoverable, and tapping the GPS is the
+ * gesture a crew already makes when the beacon is missing.
  */
 /datum/mission/proc/link_gps_unit(datum/component/gps/item/gps_unit)
 	if(failed || completed || !gps_tag || !gps_unit)
 		return FALSE
 	linked_gps_units |= WEAKREF(gps_unit)
+	if(!quest_atom || QDELETED(quest_atom))
+		var/datum/mission_objective/field/field_step = current_objective()
+		if(istype(field_step))
+			field_step.arm()
 	if(quest_atom && !QDELETED(quest_atom))
 		gps_unit.add_mission_signal(gps_tag, quest_atom)
 	for(var/beacon_tag in aux_gps_beacons)
