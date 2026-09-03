@@ -739,6 +739,10 @@
 	/// Rate limit on the "new sections have no air" warning - a room is many tiles,
 	/// and the builder only needs telling once per build session, not per tile
 	COOLDOWN_DECLARE(airless_warning_cooldown)
+	/// Rate limit on the "the hull now buries the docking port" warning. Same reason: every
+	/// tile of a new bow overhangs, and one line per tile buries the instruction it carries.
+	/// The reseat *notice* is not rate limited - that one reports a real state change.
+	COOLDOWN_DECLARE(port_overhang_warning_cooldown)
 
 // ============================================
 // Initialization
@@ -1353,7 +1357,52 @@
 		COOLDOWN_START(src, airless_warning_cooldown, 1 MINUTES)
 		to_chat(user, span_warning("Note: newly built sections have no air. Extend atmospherics piping and a vent into the new room, or open it to the rest of the ship, before anyone works there unprotected."))
 
+	// A tile built past the port's outer face buries the port. The survey path handles that
+	// itself (validate_hull_claim() -> integrate_into_hull()); the drone did not, so a crew
+	// building out with the console got no warning and no reseat, and found out when cargo
+	// refused to deliver. See hull_reseat_after_growth(). (issue #130)
+	check_port_after_build(T, user)
+
 	return TRUE
+
+/**
+ * Reseats the docking port onto the new outer face, or tells the operator why it could not.
+ *
+ * `built` is the tile the drone just touched. The offset test is O(1) and skips the real scan
+ * - which walks every turf of every hull area - for every build that is not out past the
+ * port's plane, which is nearly all of them. Nothing behind that plane can raise the overhang
+ * or become a reseat target, since every candidate seat sits on the outermost line.
+ *
+ * Never blocks anything: the caller has already built. Growing out is legal, leaving with the
+ * port still buried is not, and that reckoning stays on undock (can_undock()).
+ *
+ * Gated on can_operate() like every other hull mutation the console performs. Entering
+ * construction mode already required it, but a crew can undock with the drone still out, and
+ * a reseat in transit would forceMove the transit berth onto a hull turf and then release the
+ * assigned transit out from under a ship that is riding it.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_port_after_build(turf/built, mob/user)
+	if(!can_operate())
+		return
+	var/obj/docking_port/mobile/port = get_docking_port()
+	var/turf/port_turf = get_turf(port)
+	if(!port_turf || !built || built.z != port_turf.z)
+		return
+	if(hull_port_offset(built, port_turf, REVERSE_DIR(port.dir)) <= 0)
+		return
+
+	var/list/result = hull_reseat_after_growth(port)
+	if(!result || !user)
+		return
+
+	if(result[1])
+		// A real state change, and a rare one - always report it.
+		to_chat(user, span_notice(result[2]))
+		return
+	if(!COOLDOWN_FINISHED(src, port_overhang_warning_cooldown))
+		return
+	COOLDOWN_START(src, port_overhang_warning_cooldown, 1 MINUTES)
+	to_chat(user, span_warning(result[2]))
 
 /**
  * Checks if adding a turf would exceed shuttle dimension limits

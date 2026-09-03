@@ -115,6 +115,14 @@
 	var/turf/built_turf = locate(target_turf.x, target_turf.y, target_turf.z)
 	if(!was_in_shuttle && built_turf && !isspaceturf(built_turf))
 		ship_console.expand_shuttle_to_turf(built_turf, owner)
+	else if(was_in_shuttle && built_turf && rcd_mode == RCD_AIRLOCK)
+		// The overhang warning tells the operator to fit an airlock on the new outermost
+		// plating - and that tile is already hull, so it never reaches
+		// expand_shuttle_to_turf() and nothing would have noticed them doing it. Recheck on
+		// an airlock build so following the instruction actually reseats the port, rather
+		// than leaving them to work out the console's port relocator. Only on RCD_AIRLOCK:
+		// no other design can produce a door for the port to sit on. (issue #130)
+		ship_console.check_port_after_build(built_turf, owner)
 
 /// Ship-specific RCD deconstruct action
 /datum/action/innate/construction/ship/deconstruct
