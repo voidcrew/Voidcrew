@@ -547,25 +547,57 @@
 	return TRUE
 
 /**
- * A pressure blast is a location effect, so it can only hit somebody standing at the pipe.
+ * A pressure blast is a location effect, so it hits whoever is standing at the pipe - not
+ * whoever pressed the button.
  *
  * wrench_act() hands this proc whoever swung the tool, and everywhere else that is the same
  * person as "whoever is next to the pipe". It is not for the construction console: the drone
  * does the unwrenching several rooms away while the operator is sat at a keyboard, and the
  * stock proc threw the operator across the bridge every time a pressurised pipe came loose
- * (issue #224). There is nothing sensible to throw at the pipe's end - the drone is an eye,
- * not a body - so the gust just vents where it happens and everyone hears about it.
+ * (issue #224).
+ *
+ * So a remote unwrench keeps the blast, and moves it to where the blast actually is: every
+ * living mob standing on the pipe's own tile gets the stock throw, at the stock range and
+ * speed. An engineer holding a wrench over that pipe and an engineer who walked over it while
+ * the drone worked are in the same place and take the same hit; the only thing that changed
+ * is that the person at the console is no longer the one flying.
  *
  * Deliberately written as a general range test rather than a construction-console special
  * case: any remote unwrench has the same geometry, and a person who really is standing next
- * to the pipe still gets launched exactly as before.
+ * to the pipe still gets launched by the stock proc, exactly as before.
  */
 /obj/machinery/atmospherics/unsafe_pressure_release(mob/user, pressures = null)
-	if(user && !in_range(user, src))
-		visible_message(span_danger("[src] vents a hard gust of pressure as it comes loose!"))
+	if(!user || in_range(user, src))
+		return ..()
+
+	// Same fallback the stock proc uses when wrench_act() did not pass a figure. wrench_act()
+	// always does, so this only matters to a caller that does not.
+	if(!pressures)
+		var/datum/gas_mixture/int_air = return_air()
+		var/datum/gas_mixture/env_air = loc?.return_air()
+		pressures = (int_air ? int_air.return_pressure() : 0) - (env_air ? env_air.return_pressure() : 0)
+
+	visible_message(span_danger("[src] vents a hard gust of pressure as it comes loose!"))
+
+	var/list/thrown = list()
+	// A negative figure means the environment was the higher pressure, and there is nothing to
+	// throw anyone with. wrench_act() only reaches here on unsafe_wrenching, so this is a
+	// guard on the fallback above rather than a case play produces.
+	if(pressures > 0)
+		for(var/mob/living/victim in get_turf(src))
+			thrown += victim
+			victim.visible_message(span_danger("[victim] is sent flying by pressure!"), span_userdanger("The pressure sends you flying!"))
+			// Stock range (pressures / 250) and speed (pressures / 1250). A mob on the pipe's
+			// own tile has no direction from it, which is the case get_edge_target_turf()'s
+			// random cardinal fallback exists for - the same one the stock proc hits when the
+			// wrencher is standing on top of the pipe.
+			victim.throw_at(get_edge_target_turf(victim, get_dir(src, victim) || pick(GLOB.cardinals)), pressures / 250, pressures / 1250)
+
+	if(!length(thrown))
 		to_chat(user, span_warning("[src] vents its pressure the moment it comes free. Nothing over there is bolted down any more."))
 		return
-	return ..()
+
+	to_chat(user, span_warning("[src] vents its pressure the moment it comes free, and sends [english_list(thrown)] flying."))
 
 // ============================================
 // Ship Internal RLD - bypasses proximity checks
