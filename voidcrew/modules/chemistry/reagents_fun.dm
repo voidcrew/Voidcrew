@@ -36,9 +36,10 @@
 		// default - only convert chems that name a real inverse of their own.
 		if(isnull(listed_reagent.inverse_chem) || listed_reagent.inverse_chem == /datum/reagent/inverse)
 			continue
-		// A reaction that is busy making Australium keeps its own reactants. Australium's
-		// recipe needs Happiness, which inverts into Sadness, so without this the first
-		// unit produced ate the ingredient list and the reaction starved partway through.
+		// A reaction that is busy making Australium keeps its own reactants and catalysts.
+		// Australium's recipe needs Happiness, which inverts into Sadness, so without this
+		// the first unit produced ate the ingredient list and the reaction starved partway
+		// through.
 		if(protected_reagents[listed_reagent.type])
 			continue
 		var/listed_volume = listed_reagent.volume
@@ -50,6 +51,11 @@
  * Every reagent path that an in-progress reaction in holder needs in order to keep producing
  * us, as an assoc set. Only reactions currently running (holder.reaction_list) count - once
  * the batch is done the leftovers are fair game for inversion like anything else.
+ *
+ * Catalysts count as much as reactants do. They are never consumed, but check_reagents()
+ * re-verifies every one of them each step (code/modules/reagents/chemistry/equilibrium.dm:143)
+ * and ends the equilibrium the moment one is missing, so inverting a catalyst stalls the
+ * reaction exactly the way inverting a reactant did.
  */
 /datum/reagent/australium/proc/reactants_of_running_australium_reactions(datum/reagents/holder)
 	var/list/protected_reagents = list()
@@ -58,6 +64,8 @@
 		if(isnull(reaction) || !(type in reaction.results))
 			continue
 		for(var/reagent_path in reaction.required_reagents)
+			protected_reagents[reagent_path] = TRUE
+		for(var/reagent_path in reaction.required_catalysts)
 			protected_reagents[reagent_path] = TRUE
 	return protected_reagents
 
