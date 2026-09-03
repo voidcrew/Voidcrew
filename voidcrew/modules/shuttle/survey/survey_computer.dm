@@ -58,7 +58,9 @@
 
 	set_init_ports()
 
-	bind_to_ship()
+	// A console that loads with its hull is bound before anyone is aboard, so it has nobody
+	// to tell. One built mid-round announces the link the same way the multitool path does.
+	bind_to_ship(announce_link = !mapload)
 
 	soundloop = new(src)
 
@@ -69,8 +71,11 @@
  * Split out of Initialize() because a console that loads with its ship (rather than being
  * built mid-round) initialises before SSshuttle assigns port.current_ship, so all of this
  * has to be able to run again from the COMSIG_VOIDCREW_SHIP_LOADED handler below.
+ *
+ * `announce_link` is passed down to try_link_ship_techweb(); it is FALSE on both of the
+ * paths that run before the crew exists (mapload, and the ship-load signal).
  */
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/bind_to_ship()
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/bind_to_ship(announce_link = TRUE)
 	if(isnull(ship_port))
 		var/obj/docking_port/mobile/containing_port = SSshuttle.get_containing_shuttle(src)
 		if(istype(containing_port, /obj/docking_port/mobile/voidcrew))
@@ -91,7 +96,7 @@
 		// clears stale custom ports whenever the ship moves
 		RegisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(cancel_survey), override = TRUE)
 
-	try_link_ship_techweb()
+	try_link_ship_techweb(announce_link)
 	return TRUE
 
 /**
@@ -113,7 +118,8 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/on_ship_loaded(obj/docking_port/mobile/voidcrew/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_LOADED)
-	bind_to_ship()
+	// Roundstart / ship-purchase load: the hull is still empty, nobody would hear it.
+	bind_to_ship(announce_link = FALSE)
 
 /**
  * Points this console at the techweb hosted by an R&D server aboard the same ship.
@@ -125,7 +131,7 @@
  * machinery does instead of requiring the multitool ritual. A link made by hand always wins:
  * multitool_act() relinks unconditionally, and we never touch an existing link.
  */
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/try_link_ship_techweb()
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/try_link_ship_techweb(announce_link = TRUE)
 	if(linked_techweb || isnull(data))
 		return FALSE
 	var/obj/structure/overmap/ship/our_ship = ship_port?.current_ship
@@ -135,6 +141,10 @@
 	if(isnull(ship_web))
 		return FALSE
 	link_to_techweb(ship_web)
+	if(announce_link)
+		// Same line the multitool path speaks, so a self-link is not a silent one - otherwise
+		// the only way to know the console found a server is to examine it.
+		say("Linked to Server!")
 	return TRUE
 
 /// Shared body of the auto-link and multitool paths.

@@ -118,6 +118,10 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	if(!istype(console) || console.linked_techweb || isnull(console.data))
 		return
 	console.link_to_techweb(stored_research)
+	// Spoken by the console, not the server: the crew member who just slotted the disk is
+	// standing at the server, and the console may be two rooms away. Same line the multitool
+	// and the console's own self-link use.
+	console.say("Linked to Server!")
 
 /obj/machinery/rnd/server/ship/multitool_act(mob/living/user, obj/item/multitool/multi)
 	if(!source_code_hdd)
