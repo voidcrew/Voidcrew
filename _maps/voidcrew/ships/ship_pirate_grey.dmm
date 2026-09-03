@@ -1,4 +1,44 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 10
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"ab" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/warning,
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"ac" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"ad" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_grey)
+"ae" = (
+/obj/structure/cable,
+/turf/closed/wall/r_wall/rust,
+/area/shuttle/voidcrew/pirate_grey)
 "ag" = (
 /obj/structure/table/wood,
 /obj/effect/decal/cleanable/dirt,
@@ -340,15 +380,6 @@
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
-"nK" = (
-/obj/machinery/power/shuttle_engine/heater{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/yellow/warning{
-	dir = 1
-	},
-/turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/pirate_grey)
 "nY" = (
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "pirateportexternal"
@@ -602,15 +633,6 @@
 /obj/effect/spawner/random/structure/tank_holder,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"vw" = (
-/obj/machinery/power/shuttle_engine/propulsion{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/yellow/warning{
-	dir = 10
-	},
-/turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/pirate_grey)
 "vz" = (
 /obj/structure/closet/crate/hydroponics,
 /obj/effect/spawner/random/maintenance,
@@ -839,14 +861,6 @@
 /area/shuttle/voidcrew/pirate_grey)
 "Am" = (
 /turf/open/floor/plating/rust,
-/area/shuttle/voidcrew/pirate_grey)
-"AE" = (
-/obj/machinery/power/shuttle_engine/heater{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/yellow/warning,
-/obj/effect/spawner/structure/window,
-/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
 "AJ" = (
 /obj/effect/turf_decal/delivery,
@@ -1422,12 +1436,6 @@
 /obj/item/stock_parts/matter_bin,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"TT" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 4
-	},
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_grey)
 "TV" = (
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 10
@@ -1618,10 +1626,10 @@ je
 "}
 (2,1,1) = {"
 je
-vw
-pk
-TT
-zB
+aa
+ae
+ad
+am
 Mu
 Mu
 Mu
@@ -1629,15 +1637,15 @@ UJ
 Mu
 Mu
 Mu
-zB
-TT
-zB
-vw
+am
+ad
+am
+aa
 je
 "}
 (3,1,1) = {"
 je
-nK
+ac
 pk
 jQ
 zB
@@ -1651,7 +1659,7 @@ Ww
 zB
 zN
 zB
-AE
+ab
 je
 "}
 (4,1,1) = {"

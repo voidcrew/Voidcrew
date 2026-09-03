@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/barricade/wooden/crude,
+/obj/effect/spawner/structure/window/hollow/survival_pod,
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "at" = (
 /obj/structure/barricade/wooden,
 /turf/open/misc/dirt/station,
@@ -1157,21 +1169,6 @@
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
-"Uf" = (
-/obj/machinery/power/shuttle_engine/heater{
-	dir = 8
-	},
-/obj/effect/turf_decal/lunar_sand/plating,
-/obj/structure/barricade/wooden/crude,
-/obj/effect/spawner/structure/window/hollow/survival_pod,
-/obj/structure/cable,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode{
-	requires_power = 0
-	})
 "Un" = (
 /obj/item/stock_parts/capacitor/adv,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -1319,15 +1316,15 @@ lt
 jx
 jx
 Od
-Uf
-Uf
+aa
+aa
 Od
-Uf
-Uf
-Uf
+aa
+aa
+aa
 Od
-Uf
-Uf
+aa
+aa
 Od
 jx
 jx
