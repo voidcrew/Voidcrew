@@ -55,6 +55,38 @@
 	return planet ? initial(planet.chart_variant) : null
 
 /**
+ * Which zone band this contact counts as, for anything that has to answer before
+ * build_planet() has run.
+ *
+ * `zone_band` is stamped at spawn and kept across relocations, so it is the authority
+ * wherever it is set. A marker placed by hand or by an admin has none until its first
+ * build and falls back to where it is sitting, which is the same call build_planet() makes.
+ */
+/obj/structure/overmap/planet/proc/get_effective_zone_band()
+	if(!isnull(zone_band))
+		return zone_band
+	return SSovermap.get_zone_band_for_turf(get_turf(src))
+
+/**
+ * Red-band planets carry radiation storms on top of their own climate: every planet in the
+ * red ring gets ZTRAIT_RADSTORM and /datum/weather/rad_storm/planetary alongside its
+ * climate's own storm (see apply_planet_level_traits() below), whatever its biome. Nothing
+ * on the chart said so, so a crew's first warning was the storm itself - which is how #196
+ * came in as "irradiated weather on a jungle planet".
+ *
+ * Read off the band the trait is read off rather than a list of planet names, so a planet
+ * that relocates into or out of the red ring tells the truth about where it is now. Flat
+ * encounters - empty space, crashed ships, weak signals - never reach
+ * apply_planet_level_traits() and so never carry the trait either.
+ */
+/obj/structure/overmap/planet/get_hazard_note()
+	if(!is_terrain_planet())
+		return null
+	if(get_effective_zone_band() != ZONE_RED)
+		return null
+	return PLANET_HAZARD_NOTE_RADSTORM
+
+/**
  * Copies the planet datum's identity - name, description, appearance, weather, parallax -
  * onto the overmap contact.
  *
@@ -70,6 +102,13 @@
 	var/datum/overmap/planet/planet_info = new planet
 	name = designation ? "[planet_info.name] [designation]" : planet_info.name
 	desc = planet_info.desc
+	// Band hazards live on the contact, not on the planet datum: the same lava planet is a
+	// different proposition in the red ring than in the green one. Appended after the copy
+	// above rather than edited in place, so the second call from spawn_dynamic_planet()
+	// (which is the first one that has zone_band) rewrites rather than doubles the line.
+	var/hazard_note = get_hazard_note()
+	if(hazard_note)
+		desc = "[desc] [hazard_note]"
 	icon_state = planet_info.icon_state
 	color = planet_info.color
 	weather_type = planet_info.weather_controller_type

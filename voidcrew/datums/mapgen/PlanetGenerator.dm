@@ -640,6 +640,12 @@
  * The draw is attempt-bounded rather than exhaustive. A planet whose open ground is
  * nearly all spoken for seeds fewer anomalies than its budget, which is the right way to
  * fail: this is optional scenery, not something worth stalling a build over.
+ *
+ * The landing strip is off limits, the same as it is to spawners and megafauna. A rejected
+ * draw costs one of PLANET_ANOMALY_PLACEMENT_ATTEMPTS attempts and the budget is re-spent
+ * on the next roll, so this moves anomalies off the berths rather than losing any. The
+ * strip is the bottom 54 rows of a 123-row planet, so a bit under half the draws land in it
+ * - against 400 attempts for a budget of at most three, which is not close to tight.
  */
 /datum/map_generator/planet_generator/proc/place_budgeted_anomalies(list/turfs, budget)
 	if(!length(turfs) || budget <= 0)
@@ -654,6 +660,14 @@
 
 		var/turf/candidate = pick(turfs)
 		if(!isturf(candidate) || candidate.density)
+			continue
+
+		// Reserved ground: the planet's landing strip (reserve_dock_strip() flags the berth
+		// band plus PLANET_DOCK_HOSTILE_CLEARANCE) and any turf a ruin has claimed. An
+		// anomaly is permanent, hostile and unmanaged by SSplanet_mobs, so one sitting on a
+		// berth greets every crew that lands for the rest of the round - the same reason
+		// populate_terrain() refuses to bank a spawner or a megafauna here.
+		if(candidate.turf_flags & NO_RUINS)
 			continue
 
 		// The same rule the terrain pass uses for flora, features and fauna: only ground

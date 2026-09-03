@@ -290,6 +290,9 @@
 		var/list/other_data = list(
 			name = object.name,
 			integrity = other_integrity,
+			// What going down there costs, on the card the crew reads with a finger on the
+			// Dock button. Null for everything with nothing to warn about.
+			hazard = object.get_hazard_note(),
 			ref = REF(object)
 		)
 		data["otherInfo"] += list(other_data)

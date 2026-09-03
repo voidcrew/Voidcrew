@@ -111,6 +111,12 @@ type Contact = {
   variant?: string | null;
   /** Storms only, 1-3. Sizes the glyph; 0 elsewhere. */
   severity?: number;
+  /**
+   * One plain sentence about what going there costs - a red-band planet's
+   * radiation fronts, say. Null for the great majority of contacts, which have
+   * nothing to warn about. See get_hazard_note() in ship_sensors.dm.
+   */
+  hazard?: string | null;
   ref: string | null;
   /** Seen right now, versus merely charted, drawn solid rather than faded. */
   live?: BooleanLike;
@@ -156,6 +162,8 @@ type ChartedContact = {
   kind: ContactKind;
   variant?: string | null;
   severity?: number;
+  /** See Contact.hazard - a remembered planet keeps its warning. */
+  hazard?: string | null;
   target: string;
 };
 
@@ -261,7 +269,12 @@ type Data = {
   /** Static: everything ever seen. Merged with `waypoints` by useContacts(). */
   chartedContacts: ChartedContact[];
   transmissions: Transmission[];
-  otherInfo: { name: string; integrity: number; ref: string }[];
+  otherInfo: {
+    name: string;
+    integrity: number;
+    hazard?: string | null;
+    ref: string;
+  }[];
   pendingRumors: { name: string; desc: string; ref: string }[];
 
   zone_name: string;
@@ -3668,7 +3681,9 @@ const ContactList = () => {
                   title={
                     contact.kind === 'ship' && !contact.identified
                       ? 'Unidentified vessel, right-click for actions, or run a Ships scan to resolve it'
-                      : 'Bring it up on the chart · right-click to set course'
+                      : contact.hazard
+                        ? `${contact.hazard} · right-click to set course`
+                        : 'Bring it up on the chart · right-click to set course'
                   }
                   /*
                    * Highlight it and take the chart to it. A charted contact can
@@ -3799,6 +3814,9 @@ const AtLocation = () => {
           <div className="Helm__cardMeta">
             {object.integrity ? `Integrity ${object.integrity}%` : 'Sharing tile'}
           </div>
+          {!!object.hazard && (
+            <div className="Helm__cardDesc">{object.hazard}</div>
+          )}
           <button
             type="button"
             className="Helm__btn"

@@ -117,7 +117,32 @@
 /// Turfs left between a stamped ruin and its slot's edge.
 #define MAP_SLOT_RUIN_MARGIN 2
 /// First row (offset from a slot's low_y) above the berth band a ruin may occupy.
+///
+/// This is the PACKING GATE, not the placement default: ruin_fits_in_slot() measures against
+/// it, so raising it moves templates onto whole z-levels of their own. WHERE a template is
+/// actually stamped is decided by slot_build_region(), which prefers
+/// MAP_SLOT_RUIN_PREFERRED_Y_OFFSET and only drops back to here for a template too tall to
+/// fit above that.
 #define MAP_SLOT_RUIN_MIN_Y_OFFSET (RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_RUIN_CLEARANCE + 1)
+/**
+ * Preferred first row (offset from a slot's low_y) for a stamped ruin: the berth band plus
+ * the full PLANET_DOCK_HOSTILE_CLEARANCE collar planets keep, rather than the three turfs
+ * MAP_SLOT_RUIN_MIN_Y_OFFSET allows.
+ *
+ * Three rows stop a ruin being BUILT on a berth; they do not stop its turrets shooting into
+ * one, which is what #227 reported on planets. Space-ruin encounters have the same geometry
+ * and the same problem, but the fix planets got - widening the reserved strip - cannot be
+ * applied here, because here the strip IS the packing gate: widening it pushes every
+ * template over the new height onto a whole z-level of its own (~49 MB apiece;
+ * spacehotel.dmm at 67x71 is the one that would move). So the gate stays where it is and
+ * the PLACEMENT prefers the wider collar instead, falling back only for the handful of
+ * templates too tall to take it.
+ *
+ * In a 123-tall lattice slot this leaves 67 rows above the preferred floor against the
+ * gate's 74, so templates of 68..74 rows are the ones that fall back. A whole-level (SOLO)
+ * footprint has 200 rows and never falls back.
+ */
+#define MAP_SLOT_RUIN_PREFERRED_Y_OFFSET (RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_HOSTILE_CLEARANCE + 1)
 /// Widest ruin template a slot can hold.
 #define MAP_SLOT_RUIN_REGION_WIDTH (MAP_SLOT_SIDE - (MAP_SLOT_RUIN_MARGIN * 2))
 /// Tallest ruin template a slot can hold, once the berths have taken the bottom rows.

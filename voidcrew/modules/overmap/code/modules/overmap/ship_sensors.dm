@@ -441,6 +441,18 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	return 0
 
 /**
+ * One plain line about what this contact will do to a crew that goes there, or
+ * null when there is nothing to warn about - which is most contacts.
+ *
+ * Sensor-grade information, not a mood piece: it rides the contact payload the
+ * chart already sends and shows up in the contact row's tooltip, on the card for
+ * anything sharing the ship's tile, and in the survey readout. Keep it to a
+ * sentence, in the same voice as the planet descriptions.
+ */
+/obj/structure/overmap/proc/get_hazard_note()
+	return null
+
+/**
  * Whether a contact at `coords` is close enough to be seen rather than merely
  * known, the helm draws the difference as solid versus faded. Both arguments
  * are relative overmap coordinates; a null origin reads as "not in sight".
@@ -508,6 +520,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 				"kind" = contact_kind_for_category(nearby.sensor_category),
 				"variant" = nearby.get_contact_variant(),
 				"severity" = nearby.get_contact_severity(),
+				"hazard" = nearby.get_hazard_note(),
 				"live" = TRUE,
 				// No ref: sight owns this entry, so there is nothing to clear.
 				"ref" = null,
@@ -622,6 +635,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			"kind" = contact_kind_for_category(waypoint.category),
 			"variant" = charted_from?.get_contact_variant(),
 			"severity" = charted_from?.get_contact_severity() || 0,
+			"hazard" = charted_from?.get_hazard_note(),
 			"live" = in_view_ring(own_position, waypoint_coords),
 			"ref" = REF(waypoint),
 			// The object this was charted from, so the client can drop the
@@ -708,6 +722,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			"kind" = contact_kind_for_category(object.sensor_category),
 			"variant" = object.get_contact_variant(),
 			"severity" = object.get_contact_severity(),
+			"hazard" = object.get_hazard_note(),
 			"target" = contact_ref,
 		))
 	if(forgotten)
