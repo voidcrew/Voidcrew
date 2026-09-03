@@ -32,8 +32,16 @@
 
 	var/static/list/connections = list(COMSIG_TURF_ADDED_TO_SHUTTLE = PROC_REF(on_turf_added_to_shuttle))
 
+// VOIDCREW EDIT: melee was 100 (total immunity), which made a boarding party unable to
+// cripple a hull from the inside - only ship weapons and guns could touch a thruster.
+// 30 is the value every other ship-critical machine in voidcrew/modules/ship_combat/ uses
+// (laser turret, interdictor, EW suite). Engines keep their 500 max_integrity and no
+// integrity_failure, so at 2-2.5x the health of those machines they stay the toughest
+// thing on the hull: a wielded fire axe (24 force x 1.25 demolition_mod = 30 raw, less
+// 30% armour = 21) needs ~24 swings per engine, where the same axe disables a laser
+// turret in 5. Bullet/laser stay at 10 so ship guns remain the fast way to kill engines.
 /datum/armor/power_shuttle_engine
-	melee = 100
+	melee = 30
 	bullet = 10
 	laser = 10
 	fire = 50
