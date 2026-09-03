@@ -21,7 +21,8 @@
  * terms as everything else in that cart: paid by the ship's account when the ferry docks,
  * crate open to the whole crew.
  *
- * A market that is not aboard a ship (an admin spawn, a ruin) keeps the stock behaviour.
+ * A market that is not aboard a ship at all (an admin spawn, a ruin) refuses outright
+ * rather than quietly filing into SSshuttle.shopping_list and never delivering.
  */
 
 /// How long a resolved cargo console is trusted before we go looking again. ui_data() asks
@@ -69,15 +70,22 @@
 	cached_console_time = world.time
 	return found
 
-/obj/machinery/materials_market/get_order_list(announce_refusal = FALSE)
+/**
+ * Why this market cannot file an order right now, as a line to say to the buyer, or null
+ * when it can.
+ *
+ * get_order_list() speaks it at whoever actually clicks buy; ui_data() hands the same string
+ * to the interface so the refusal is on screen before they spend the click.
+ */
+/obj/machinery/materials_market/proc/order_refusal_reason()
 	var/obj/machinery/computer/voidcrew_cargo/console = find_ship_cargo_console()
 	if(!console)
-		if(!isnull(get_ship_from_atom(src)))
-			// Aboard a hull that has no cargo console: the stock list would eat the order.
-			if(announce_refusal)
-				say("Error: no cargo console aboard to file this order with.")
-			return null
-		return ..()
+		// Stock falls back to SSshuttle.shopping_list here. Nothing in this fork ever reads
+		// that list, so the order would be taken, confirmed, charged nothing and then lost -
+		// the original #255 symptom. There is no cargo network off a hull, so say so.
+		if(isnull(get_ship_from_atom(src)))
+			return "Error: no cargo network here. This market only works aboard a ship."
+		return "Error: no cargo console aboard to file this order with."
 
 	// The cart is the manifest of an in-flight delivery once the ferry has been called -
 	// buy() does not charge until it docks, so appending here would grow a shipment that was
@@ -85,11 +93,25 @@
 	// edits for the same reason; match it.
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = console.get_cargo_shuttle()
 	if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
+		return "Error: the cargo shuttle is already out. Wait for it to return."
+
+	return null
+
+/obj/machinery/materials_market/get_order_list(announce_refusal = FALSE)
+	var/refusal = order_refusal_reason()
+	if(refusal)
 		if(announce_refusal)
-			say("Error: the cargo shuttle is already out. Wait for it to return.")
+			say(refusal)
 		return null
 
-	return console.checkout_list
+	// No refusal means find_ship_cargo_console() resolved a console, and it caches for
+	// MARKET_CONSOLE_CACHE_TIME, so this is the same one order_refusal_reason() just checked.
+	return find_ship_cargo_console().checkout_list
+
+/// Puts the refusal on screen, so a market that cannot order says so before the click.
+/obj/machinery/materials_market/ui_data(mob/user)
+	. = ..()
+	.["orderRefusal"] = order_refusal_reason()
 
 /obj/machinery/materials_market/can_order_on_budget(obj/item/card/id/id_card)
 	if(find_ship_cargo_console())

@@ -35,6 +35,7 @@ type Data = {
   catastrophe: BooleanLike;
   CARGO_CRATE_VALUE: number;
   updateTime: number;
+  orderRefusal: string | null; // VOIDCREW EDIT ADDITION - why this market cannot order
 };
 
 export const MatMarket = (props) => {
@@ -77,6 +78,8 @@ export const MatMarket = (props) => {
             )
           }
         >
+          {/* VOIDCREW EDIT ADDITION - a market with nowhere to file an order says so */}
+          {!!data.orderRefusal && <NoticeBox>{data.orderRefusal}</NoticeBox>}
           <NoticeBox info>
             <Collapsible title="Instructions" color="blue">
               Buy orders for material sheets placed here will be ordered on the
