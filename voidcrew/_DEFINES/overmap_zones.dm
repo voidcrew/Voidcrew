@@ -19,6 +19,12 @@
 #define ZONE_DESC_YELLOW "Caution - ship weapons are disabled, but interdiction and boarding are permitted."
 #define ZONE_DESC_RED "Dangerous space - all combat is permitted. Enter at your own risk."
 
+/// What the chart says about a red-band planet, on top of its terrain description.
+/// Every planet in the red ring carries /datum/weather/rad_storm/planetary alongside its
+/// own climate - see apply_planet_level_traits() - and this is the only thing that says so
+/// before a crew is standing in one.
+#define PLANET_HAZARD_NOTE_RADSTORM "Radiation fronts sweep this world."
+
 // Zone colors for UI/display
 #define ZONE_COLOR_GREEN "#00ff00"
 #define ZONE_COLOR_YELLOW "#ffff00"

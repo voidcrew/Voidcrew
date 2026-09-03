@@ -39,6 +39,13 @@ interface Planet extends BaseSurveyData {
   visited: number;
   weather_type: string;
   living_player_count: number;
+  /**
+   * One plain sentence about what the planet's zone band does to a landing
+   * party - red-band worlds carry radiation storms whatever their climate.
+   * Null where there is nothing to warn about. See get_hazard_note() in
+   * voidcrew/modules/overmap/code/modules/overmap/ship_sensors.dm.
+   */
+  hazard_note?: string | null;
 }
 
 interface Star extends BaseSurveyData {
@@ -581,6 +588,11 @@ const Planets = (props, context) => {
             ? 'Previous shuttle activity detected'
             : 'No previous shuttle activity detected',
         }
+      : undefined),
+    // Band hazards, not climate: a red-ring world carries radiation storms on
+    // top of whatever weather its terrain gives it.
+    ...(selectedPlanetData?.hazard_note
+      ? { Hazards: selectedPlanetData.hazard_note }
       : undefined),
   };
 

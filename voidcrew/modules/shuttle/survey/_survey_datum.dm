@@ -39,6 +39,10 @@
 	var/visited = FALSE
 	var/datum/weather/weather_type
 	var/living_player_count
+	/// One plain line about what the planet's zone band does to a landing party, or null.
+	/// Read off the overmap contact (see /obj/structure/overmap/planet/get_hazard_note()),
+	/// so the survey readout and the helm chart never disagree.
+	var/hazard_note
 	// var/list/datum/material/mineral_types
 	// var/list/obj/possible_loot
 	// var/list/datum/map_template/ruin/ruin_type
@@ -71,6 +75,7 @@
 	new_object.visited = visited
 	new_object.weather_type = weather_type
 	new_object.living_player_count = living_player_count
+	new_object.hazard_note = hazard_note
 
 /datum/surveyed_celestial_object/star/copy(var/datum/surveyed_celestial_object/star/new_object)
 	. = ..()
@@ -107,6 +112,7 @@
 	. = ..()
 	visited = object.visited
 	weather_type = object.weather_type
+	hazard_note = object.get_hazard_note()
 	// Set the number of players found on the planet (unloaded planets have no mapzone yet)
 	if(!object.mapzone || !length(object.mapzone.z_levels))
 		return
@@ -309,6 +315,7 @@
 			visited = object.visited,
 			weather_type = object.weather_type,
 			living_player_count = object.living_player_count,
+			hazard_note = object.hazard_note,
 		)
 		var/object_name = get_unique_name(data["planets"], tgui["object_name"])
 		data["planets"][object_name] = tgui
