@@ -163,17 +163,20 @@
 	// momentum, so nothing about that movement ever consulted the thrusters beyond a
 	// binary can_thrust(). Shooting six of a pirate's seven thrusters off therefore cost
 	// it nothing at all - it kept its full patrol/chase cadence - which is what #239
-	// reports. These vars turn surviving thruster power into a step budget.
+	// reports. These vars turn the surviving engine bank into a step budget.
+	//
+	// The bank is counted in PARTS, not in engine_power, and every engine-looking machine
+	// on the hull is a part - see refresh_thrust_state() for why.
 
-	/// Sum of engine_power over thrusters that can actually burn right now.
-	var/cached_live_thrust = 0
-	/// Cached can_thrust(), refreshed alongside cached_live_thrust. The AI plans every
+	/// How many engine parts on this hull are still intact and able to contribute.
+	var/live_engine_parts = 0
+	/// Cached can_thrust(), refreshed alongside live_engine_parts. The AI plans every
 	/// 0.5s and the engine sweep is not free, so the planner reads this instead.
 	var/cached_can_thrust = FALSE
-	/// Highest total thruster power this hull has ever registered - its pristine rating.
+	/// The most engine parts this hull has ever carried - its pristine bank size.
 	/// Tracked as a running max because engines only ever leave an NPC hull, and because
 	/// the AI can come online before the hull's powernet does.
-	var/baseline_thrust = 0
+	var/baseline_engine_parts = 0
 	/// Fractional step budget. Each denied step banks the surviving thrust fraction until
 	/// it adds up to a whole tile, so a half-wrecked engine bank moves at half speed
 	/// rather than stuttering at random.
@@ -650,67 +653,119 @@
 // ========== THRUST BUDGET (issue #239) ==========
 
 /**
- * Re-reads the hull's thruster bank.
+ * Re-reads the hull's engine bank.
  *
- * Uses exactly the liveness test can_thrust() uses (registered to this hull, enabled,
- * thruster_active, and either fuelled or fuel-less), but sums engine_power instead of
- * stopping at the first hit, so partial destruction is visible as a number rather than
- * a boolean. refresh_engines() is what prunes destroyed engines out of engine_list and
- * refreshes thruster_active, so it has to run first; the cooldown keeps that sweep to
- * once every NPC_THRUST_RECALC_INTERVAL per hull no matter how many behaviors ask.
+ * On an NPC hull every engine-looking machine counts, and each one counts as one part.
+ *
+ * Four of the pirate hulls (grey, silverscale, medieval, geode) wear their obvious
+ * nozzle bank as tg's decorative engine sprites - /obj/machinery/power/shuttle_engine
+ * /propulsion and /heater - while the real /ship/electric thrusters sit somewhere else
+ * on the hull entirely. Every other consumer of the engine roster (refresh_engines(),
+ * can_thrust(), the helm) is typed to the /ship subtype, so a player who shot the
+ * nozzles they could see destroyed nothing that moved the ship. Counting the whole
+ * roster is what makes "I shot its engines off" and "it slowed down" the same event.
+ *
+ * Weighting is per PART, not per engine_power, for three reasons:
+ *  - /heater has engine_power = 0, and heaters are the entire visible bank on the geode.
+ *    Any power-weighted formula counts them as nothing no matter what else it does.
+ *  - Every hull that carries decoys carries a uniform /ship/electric bank behind them,
+ *    so "one unit each" and "decoys weighted like a real thruster" give the same answer
+ *    on all four - 7 of 11 parts on the grey, 7 of 15 on the silverscale.
+ *  - It is the rule a player can read off the hull: shoot a third of the engine-looking
+ *    machines, lose about a third of the speed.
+ *  The cost is that on the two mixed-power Syndicate hulls (blackbeard, hyena, which
+ *  carry no decoys) a plasma thruster now counts the same as an ion one.
+ *
+ * Liveness: a real thruster has to pass exactly the test can_thrust() uses (enabled,
+ * thruster_active, and either fuelled or fuel-less). A decoy has no fuel, no on/off and
+ * no thruster_active - the only state it has is intact or wrecked, so an intact one
+ * counts. Destroyed engines of either kind leave shuttle.engine_list on their own:
+ * machinery has integrity_failure = 0, so it goes straight from intact to
+ * atom_destruction() -> deconstruct() -> qdel(), and shuttle_engine/Destroy() calls
+ * unsync_ship(), which cuts it out of engine_list. Nothing here has to prune them.
+ *
+ * refresh_engines() is what refreshes thruster_active (and prunes /ship engines that
+ * left the hull), so it has to run first - can_thrust() calls it. The cooldown keeps the
+ * whole sweep to once every NPC_THRUST_RECALC_INTERVAL per hull no matter how many
+ * behaviors ask.
  */
 /obj/structure/overmap/ship/npc/proc/refresh_thrust_state(force = FALSE)
 	if(!force && !COOLDOWN_FINISHED(src, thrust_recalc_cooldown))
 		return
 	COOLDOWN_START(src, thrust_recalc_cooldown, NPC_THRUST_RECALC_INTERVAL)
 
-	cached_live_thrust = 0
+	live_engine_parts = 0
 	// can_thrust() is the pre-existing gate (hull present, not hidden in a nebula, no
 	// electronic-warfare drive lockout, at least one fuelled thruster) and it is what
 	// runs refresh_engines() - which prunes destroyed engines out of engine_list and
 	// refreshes thruster_active. Everything below reads the state it just rebuilt.
 	cached_can_thrust = can_thrust()
-	if(!cached_can_thrust || !shuttle)
+	if(!shuttle)
 		return
 
-	var/structural_thrust = 0
-	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)
+	var/structural_parts = 0
+	// Untyped on purpose: this is the one sweep that has to see the decoys too.
+	for(var/obj/machinery/power/shuttle_engine/engine in shuttle.engine_list)
 		if(QDELETED(engine))
 			continue
-		structural_thrust += engine.engine_power
-		if(!engine.enabled || !engine.thruster_active)
+		// An unbolted engine is cargo, not propulsion. It has normally already cut itself
+		// out of engine_list via unsync_ship(); this is belt and braces.
+		if(!engine.anchored)
 			continue
-		var/fuel = engine.return_fuel()
-		var/fuel_cap = engine.return_fuel_cap()
+		// Counted even while the hull cannot thrust at all, so an NPC that initialises
+		// before its powernet propagates still measures its pristine bank size.
+		structural_parts++
+		if(!cached_can_thrust)
+			continue
+		var/obj/machinery/power/shuttle_engine/ship/thruster = engine
+		if(!istype(thruster, /obj/machinery/power/shuttle_engine/ship))
+			// Decoy nozzle or heater: intact, therefore contributing.
+			live_engine_parts++
+			continue
+		if(!thruster.enabled || !thruster.thruster_active)
+			continue
+		var/fuel = thruster.return_fuel()
+		var/fuel_cap = thruster.return_fuel_cap()
 		// A thruster that reports no capacity at all (void drives) never runs dry
 		if(fuel_cap && fuel <= 0)
 			continue
-		cached_live_thrust += engine.engine_power
+		live_engine_parts++
 
 	// Engines are only ever removed from an NPC hull, so the largest bank we have ever
 	// seen is the pristine one. Taking a running max also survives the AI initialising
 	// before the hull's cables have propagated a powernet.
-	baseline_thrust = max(baseline_thrust, structural_thrust)
+	baseline_engine_parts = max(baseline_engine_parts, structural_parts)
 
-/// Fraction of this hull's original thruster power that still burns, 0 to 1.
+/// Fraction of this hull's original engine bank that still contributes, 0 to 1.
 /obj/structure/overmap/ship/npc/proc/thrust_fraction()
 	if(player_controlled)
 		return 1
 	refresh_thrust_state()
 	if(!cached_can_thrust)
 		return 0
-	// No baseline means we have never measured a working bank on this hull (an abstract
-	// or engine-less template). Don't invent a penalty for it - can_thrust() is then the
+	// No baseline means we have never measured a bank on this hull (an abstract or
+	// engine-less template). Don't invent a penalty for it - can_thrust() is then the
 	// only rule that applies, exactly as before.
-	if(baseline_thrust <= 0)
+	if(baseline_engine_parts <= 0)
 		return 1
-	return clamp(cached_live_thrust / baseline_thrust, 0, 1)
+	return clamp(live_engine_parts / baseline_engine_parts, 0, 1)
 
 /**
  * Whether the hull can still propel itself at all.
  *
+ * The rule is: at least one REAL thruster has to still burn. Decoy nozzles scale the
+ * speed but they cannot be the last thing holding a ship up, because they produce no
+ * thrust anywhere else in the codebase either - a /heater's engine_power is 0, neither
+ * type has a burn_engine(), and can_thrust() (which burn_engines(), the helm and
+ * update_boarding_state() all already consult) does not see them. Letting a hull crawl
+ * on scenery alone would mean an overmap ship the AI thinks is under way while
+ * update_boarding_state() has already declared it dead in the water.
+ *
+ * So: every engine part gone -> FALSE. Any real thruster alive, decoys or not -> TRUE.
+ * Only decoys left -> FALSE, and the hull is boardable, which is the point.
+ *
  * The movement subtree asks this once instead of letting every movement behavior
- * rediscover it: a pirate with its thruster bank shot out should stop trying to fly and
+ * rediscover it: a pirate with its engine bank shot out should stop trying to fly and
  * fight from where it sits, not re-plan a chase every two seconds.
  */
 /obj/structure/overmap/ship/npc/proc/can_move_under_own_power()
@@ -722,9 +777,10 @@
  * Spends one tile of the hull's step budget, or refuses.
  *
  * Called immediately before each discrete forceMove so a step is only charged when one
- * actually happens. At full thrust this is always TRUE and the ship keeps its old
- * cadence; at 3 of 7 thrusters it returns TRUE roughly three ticks in seven, which is
- * the discrete-movement equivalent of a player ship's reduced acceleration.
+ * actually happens. At a full bank this is always TRUE and the ship keeps its old
+ * cadence; with 7 of a grey pirate's 11 engine parts left it returns TRUE seven ticks in
+ * eleven, which is the discrete-movement equivalent of a player ship's reduced
+ * acceleration.
  */
 /obj/structure/overmap/ship/npc/proc/consume_thrust_step()
 	if(player_controlled)
