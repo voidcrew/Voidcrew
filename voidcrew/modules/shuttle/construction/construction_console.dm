@@ -1370,8 +1370,14 @@
  *
  * `built` is the tile the drone just touched. The offset test is O(1) and skips the real scan
  * - which walks every turf of every hull area - for every build that is not out past the
- * port's plane, which is nearly all of them. Nothing behind that plane can raise the overhang
- * or become a reseat target, since every candidate seat sits on the outermost line.
+ * port's plane, which is nearly all of them. Nothing behind that plane can raise the overhang,
+ * and no plating or wall build can produce a door.
+ *
+ * `door_built` is the exception, and it is why the gate is not unconditional. Now that the
+ * port may turn onto another face (hull_port_reseat_plan()), an airlock fitted anywhere on the
+ * hull's skin can be the seat an existing overhang has been waiting for - including one
+ * amidships on a beam, which is nowhere near the port's own plane. A door build is rare enough
+ * to pay for the full scan. (issue #130)
  *
  * Never blocks anything: the caller has already built. Growing out is legal, leaving with the
  * port still buried is not, and that reckoning stays on undock (can_undock()).
@@ -1381,14 +1387,14 @@
  * a reseat in transit would forceMove the transit berth onto a hull turf and then release the
  * assigned transit out from under a ship that is riding it.
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_port_after_build(turf/built, mob/user)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_port_after_build(turf/built, mob/user, door_built = FALSE)
 	if(!can_operate())
 		return
 	var/obj/docking_port/mobile/port = get_docking_port()
 	var/turf/port_turf = get_turf(port)
 	if(!port_turf || !built || built.z != port_turf.z)
 		return
-	if(hull_port_offset(built, port_turf, REVERSE_DIR(port.dir)) <= 0)
+	if(!door_built && hull_port_offset(built, port_turf, REVERSE_DIR(port.dir)) <= 0)
 		return
 
 	var/list/result = hull_reseat_after_growth(port)
@@ -1634,23 +1640,14 @@
 		last_operation_success = FALSE
 		return FALSE
 
-	// Calculate new dir (points INTO the ship, away from docking entrance)
-	var/new_dir = REVERSE_DIR(outside_dir)
-
-	// Calculate new port_direction (ship-relative direction)
-	// The ship is docked and may be rotated away from preferred_direction, so we can't
-	// derive the ship-relative direction from world dirs alone. Instead, rotate the
-	// current port_direction by how far the port itself turned in the world frame -
-	// that delta is the same in both frames. (Assuming the ship faced
-	// preferred_direction here baked the dock rotation into port_direction, which made
-	// the regenerated transit dock match the docked orientation, so the ship never
-	// rotated back to its original heading on undock.)
-	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(new_dir) - dir2angle(port.dir) + dir2angle(port.port_direction))
-	var/new_port_direction = angle2dir(angle_diff)
+	// The new dir (points INTO the ship, away from the docking entrance) and the ship-relative
+	// port_direction that has to keep step with it. Shared with the survey and drone reseats
+	// so there is exactly one copy of the rotation arithmetic - see hull_port_facing().
+	var/list/new_facing = hull_port_facing(port, outside_dir)
 
 	// Moves the port, drags the stationary dock we are sitting on with it, recalculates
 	// dimensions and drops the stale transit berth. Shared with the survey's reseat.
-	hull_reseat_port(port, door_turf, new_dir, new_port_direction)
+	hull_reseat_port(port, door_turf, new_facing[1], new_facing[2])
 
 	var/overhang = get_port_overhang()
 	if(overhang > 0)

@@ -121,8 +121,10 @@
 		// expand_shuttle_to_turf() and nothing would have noticed them doing it. Recheck on
 		// an airlock build so following the instruction actually reseats the port, rather
 		// than leaving them to work out the console's port relocator. Only on RCD_AIRLOCK:
-		// no other design can produce a door for the port to sit on. (issue #130)
-		ship_console.check_port_after_build(built_turf, owner)
+		// no other design can produce a door for the port to sit on. door_built skips the
+		// "is this tile past the port's plane" gate, because a seat on another face - which
+		// the port may now turn onto - is by definition not on that plane. (issue #130)
+		ship_console.check_port_after_build(built_turf, owner, door_built = TRUE)
 
 /// Ship-specific RCD deconstruct action
 /datum/action/innate/construction/ship/deconstruct
