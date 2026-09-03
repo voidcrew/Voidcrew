@@ -229,6 +229,23 @@
 	return ..()
 
 /**
+ * Which way a directional build placed by this RCD should face.
+ *
+ * Directional windows, windoors, chairs, tables, racks and beds all take their facing from
+ * whoever is building them, and for a handheld RCD that is simply the user's own dir. It is
+ * not for an RCD driven remotely: the voidcrew ship construction console's drone is several
+ * rooms away from the body holding the "user" role, so every directional structure it built
+ * came out facing wherever the operator's body happened to be pointing at the console
+ * (issue #224). Overriding this lets such an RCD name the thing that is actually doing the
+ * building, without every rcd_act() implementation needing to know it exists.
+ *
+ * Arguments
+ * * [mob][user]- the mob credited with the build
+ */
+/obj/item/construction/rcd/proc/rcd_build_dir(mob/user)
+	return user?.dir
+
+/**
  * actual proc to create the structure
  *
  * Arguments

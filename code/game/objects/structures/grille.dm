@@ -111,12 +111,15 @@
 				CRASH("Invalid window path type in RCD: [window_path]")
 
 			//checks if its a valid build direction
+			//not user.dir: a remotely driven RCD builds where its drone is looking, not where
+			//the body credited with the build happens to be pointing (see rcd_build_dir())
+			var/build_dir = the_rcd.rcd_build_dir(user)
 			if(!initial(window_path.fulltile))
-				if(!valid_build_direction(loc, user.dir, is_fulltile = FALSE))
+				if(!valid_build_direction(loc, build_dir, is_fulltile = FALSE))
 					balloon_alert(user, "window already here!")
 					return FALSE
 
-			var/obj/structure/window/WD = new window_path(T, user.dir)
+			var/obj/structure/window/WD = new window_path(T, build_dir)
 			WD.set_anchored(TRUE)
 			return TRUE
 	return FALSE

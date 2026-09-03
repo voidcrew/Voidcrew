@@ -79,6 +79,25 @@
 	ship_console = null
 	return ..()
 
+/**
+ * Directional builds face the way the DRONE faces, not the operator's body.
+ *
+ * The operator is sat at a console with their remote_control set, so every direction key they
+ * press is relayed straight to the eye (/client/Move -> remote_control.relaymove) and their
+ * body never turns - it keeps whatever facing it had when they sat down. The drone does turn:
+ * /mob/eye/camera/remote/base_construction/relaymove() assigns `dir = direction` on every
+ * step, precisely because it is a visible drone.
+ *
+ * So the operator's dir is not merely the wrong one, it is a frozen one. Every directional
+ * window, windoor, chair, table, rack and bed the drone built came out facing wherever they
+ * happened to be pointing when they took the console, with no way to aim it short of standing
+ * up and turning round (issue #224). The RLD's wall lights already read the drone's dir; this
+ * is the RCD half of the same rule.
+ */
+/obj/item/construction/rcd/internal/ship/rcd_build_dir(mob/user)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	return drone ? drone.dir : ..()
+
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
 	if(delay <= 0)
@@ -547,25 +566,57 @@
 	return TRUE
 
 /**
- * A pressure blast is a location effect, so it can only hit somebody standing at the pipe.
+ * A pressure blast is a location effect, so it hits whoever is standing at the pipe - not
+ * whoever pressed the button.
  *
  * wrench_act() hands this proc whoever swung the tool, and everywhere else that is the same
  * person as "whoever is next to the pipe". It is not for the construction console: the drone
  * does the unwrenching several rooms away while the operator is sat at a keyboard, and the
  * stock proc threw the operator across the bridge every time a pressurised pipe came loose
- * (issue #224). There is nothing sensible to throw at the pipe's end - the drone is an eye,
- * not a body - so the gust just vents where it happens and everyone hears about it.
+ * (issue #224).
+ *
+ * So a remote unwrench keeps the blast, and moves it to where the blast actually is: every
+ * living mob standing on the pipe's own tile gets the stock throw, at the stock range and
+ * speed. An engineer holding a wrench over that pipe and an engineer who walked over it while
+ * the drone worked are in the same place and take the same hit; the only thing that changed
+ * is that the person at the console is no longer the one flying.
  *
  * Deliberately written as a general range test rather than a construction-console special
  * case: any remote unwrench has the same geometry, and a person who really is standing next
- * to the pipe still gets launched exactly as before.
+ * to the pipe still gets launched by the stock proc, exactly as before.
  */
 /obj/machinery/atmospherics/unsafe_pressure_release(mob/user, pressures = null)
-	if(user && !in_range(user, src))
-		visible_message(span_danger("[src] vents a hard gust of pressure as it comes loose!"))
+	if(!user || in_range(user, src))
+		return ..()
+
+	// Same fallback the stock proc uses when wrench_act() did not pass a figure. wrench_act()
+	// always does, so this only matters to a caller that does not.
+	if(!pressures)
+		var/datum/gas_mixture/int_air = return_air()
+		var/datum/gas_mixture/env_air = loc?.return_air()
+		pressures = (int_air ? int_air.return_pressure() : 0) - (env_air ? env_air.return_pressure() : 0)
+
+	visible_message(span_danger("[src] vents a hard gust of pressure as it comes loose!"))
+
+	var/list/thrown = list()
+	// A negative figure means the environment was the higher pressure, and there is nothing to
+	// throw anyone with. wrench_act() only reaches here on unsafe_wrenching, so this is a
+	// guard on the fallback above rather than a case play produces.
+	if(pressures > 0)
+		for(var/mob/living/victim in get_turf(src))
+			thrown += victim
+			victim.visible_message(span_danger("[victim] is sent flying by pressure!"), span_userdanger("The pressure sends you flying!"))
+			// Stock range (pressures / 250) and speed (pressures / 1250). A mob on the pipe's
+			// own tile has no direction from it, which is the case get_edge_target_turf()'s
+			// random cardinal fallback exists for - the same one the stock proc hits when the
+			// wrencher is standing on top of the pipe.
+			victim.throw_at(get_edge_target_turf(victim, get_dir(src, victim) || pick(GLOB.cardinals)), pressures / 250, pressures / 1250)
+
+	if(!length(thrown))
 		to_chat(user, span_warning("[src] vents its pressure the moment it comes free. Nothing over there is bolted down any more."))
 		return
-	return ..()
+
+	to_chat(user, span_warning("[src] vents its pressure the moment it comes free, and sends [english_list(thrown)] flying."))
 
 // ============================================
 // Ship Internal RLD - bypasses proximity checks
@@ -1370,8 +1421,14 @@
  *
  * `built` is the tile the drone just touched. The offset test is O(1) and skips the real scan
  * - which walks every turf of every hull area - for every build that is not out past the
- * port's plane, which is nearly all of them. Nothing behind that plane can raise the overhang
- * or become a reseat target, since every candidate seat sits on the outermost line.
+ * port's plane, which is nearly all of them. Nothing behind that plane can raise the overhang,
+ * and no plating or wall build can produce a door.
+ *
+ * `door_built` is the exception, and it is why the gate is not unconditional. Now that the
+ * port may turn onto another face (hull_port_reseat_plan()), an airlock fitted anywhere on the
+ * hull's skin can be the seat an existing overhang has been waiting for - including one
+ * amidships on a beam, which is nowhere near the port's own plane. A door build is rare enough
+ * to pay for the full scan. (issue #130)
  *
  * Never blocks anything: the caller has already built. Growing out is legal, leaving with the
  * port still buried is not, and that reckoning stays on undock (can_undock()).
@@ -1381,14 +1438,14 @@
  * a reseat in transit would forceMove the transit berth onto a hull turf and then release the
  * assigned transit out from under a ship that is riding it.
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_port_after_build(turf/built, mob/user)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_port_after_build(turf/built, mob/user, door_built = FALSE)
 	if(!can_operate())
 		return
 	var/obj/docking_port/mobile/port = get_docking_port()
 	var/turf/port_turf = get_turf(port)
 	if(!port_turf || !built || built.z != port_turf.z)
 		return
-	if(hull_port_offset(built, port_turf, REVERSE_DIR(port.dir)) <= 0)
+	if(!door_built && hull_port_offset(built, port_turf, REVERSE_DIR(port.dir)) <= 0)
 		return
 
 	var/list/result = hull_reseat_after_growth(port)
@@ -1634,23 +1691,14 @@
 		last_operation_success = FALSE
 		return FALSE
 
-	// Calculate new dir (points INTO the ship, away from docking entrance)
-	var/new_dir = REVERSE_DIR(outside_dir)
-
-	// Calculate new port_direction (ship-relative direction)
-	// The ship is docked and may be rotated away from preferred_direction, so we can't
-	// derive the ship-relative direction from world dirs alone. Instead, rotate the
-	// current port_direction by how far the port itself turned in the world frame -
-	// that delta is the same in both frames. (Assuming the ship faced
-	// preferred_direction here baked the dock rotation into port_direction, which made
-	// the regenerated transit dock match the docked orientation, so the ship never
-	// rotated back to its original heading on undock.)
-	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(new_dir) - dir2angle(port.dir) + dir2angle(port.port_direction))
-	var/new_port_direction = angle2dir(angle_diff)
+	// The new dir (points INTO the ship, away from the docking entrance) and the ship-relative
+	// port_direction that has to keep step with it. Shared with the survey and drone reseats
+	// so there is exactly one copy of the rotation arithmetic - see hull_port_facing().
+	var/list/new_facing = hull_port_facing(port, outside_dir)
 
 	// Moves the port, drags the stationary dock we are sitting on with it, recalculates
 	// dimensions and drops the stale transit berth. Shared with the survey's reseat.
-	hull_reseat_port(port, door_turf, new_dir, new_port_direction)
+	hull_reseat_port(port, door_turf, new_facing[1], new_facing[2])
 
 	var/overhang = get_port_overhang()
 	if(overhang > 0)

@@ -75,6 +75,7 @@
 	test_new_hull_area_belongs_to_the_ship()
 	test_expansion_past_the_port_needs_a_door_on_the_new_face()
 	test_drone_growth_reseats_or_warns()
+	test_reseat_can_turn_onto_another_face()
 	test_survey_bearing_reports_both_legs()
 
 /**
@@ -485,6 +486,134 @@
 
 	qdel(bow_door)
 	// force, and before the block is wiped - see the note in the test above.
+	qdel(port, force = TRUE)
+	reset_block()
+	evacuate_area(hull_area)
+	qdel(hull_area)
+
+/**
+ * The port does not have to keep berthing through the same face.
+ *
+ * The rule the survey enforces is only ever "nothing of the hull stands in front of the
+ * port". Which compass point the port faces is free, and the console's manual relocator has
+ * always been allowed to turn it. The automatic reseat was not, so a crew that grew a hull
+ * out past its bow while leaving a perfectly good airlock amidships on the beam was refused
+ * outright, with a message telling them to build the door they were standing next to
+ * (issue #130).
+ *
+ * The turn is the risky half. dir and the ship-relative port_direction have to move together
+ * or the ship swings 90 degrees on every dock and undock for the rest of the round - which is
+ * what voidcrew_hull_dock_rotation polices on mapped hulls, and what this asserts on a hull
+ * the survey turned by hand.
+ */
+/datum/unit_test/voidcrew_hull_survey/proc/test_reseat_can_turn_onto_another_face()
+	reset_block()
+
+	// Hull: 5 wide, 3 deep at (3,3)-(7,5). The port stands on its north face at (5,5) facing
+	// SOUTH into the ship, so it berths through the north side. The ship's other door is
+	// amidships on the WEST beam at (3,4) - nowhere near the face anything is built on.
+	var/list/hull = list()
+	for(var/offset_x in 3 to 7)
+		for(var/offset_y in 3 to 5)
+			var/turf/scratch = spot(offset_x, offset_y)
+			scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+			hull += scratch
+
+	var/area/shuttle/voidcrew/hull_area = new()
+	hull_area.setup("Test Turning Hull")
+	var/obj/docking_port/mobile/voidcrew/port = new(spot(5, 5))
+	port.register()
+	port.dir = SOUTH
+	port.port_direction = NORTH
+	port.shuttle_areas = list()
+	port.shuttle_areas[hull_area] = TRUE
+	set_turfs_to_area(hull, hull_area)
+
+	var/turf/beam_seat = spot(3, 4)
+	var/obj/machinery/door/airlock/beam_door = new(beam_seat)
+	settle()
+
+	// One more row across the bow, (3,6)-(7,6). Not hull yet - this is a claim.
+	var/datum/hull_claim/claim = new
+	for(var/offset_x in 3 to 7)
+		var/turf/scratch = spot(offset_x, 6)
+		scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+		claim.turfs[scratch] = TRUE
+	claim.touched_ports[port] = TRUE
+	settle()
+
+	// The north face has nothing on its outermost line, so the same-face-only helper - the
+	// one the undock guard uses, which moves the port without turning it - still says no.
+	TEST_ASSERT_NULL(hull_port_reseat_target(port, claim.turfs), "the same-face-only reseat offered a seat on a face the port does not use")
+
+	// The plan may turn the port. Nothing of the hull stands west of x = [beam_seat.x], so
+	// berthing through the beam airlock is clean and the claim is legal.
+	var/list/plan = hull_port_reseat_plan(port, claim.turfs)
+	TEST_ASSERT_NOTNULL(plan, "a clear door on the port's beam was not offered as a seat")
+	TEST_ASSERT_EQUAL(plan[1], beam_seat, "the plan did not pick the beam airlock")
+	TEST_ASSERT_EQUAL(plan[2], WEST, "the plan seated the port on the west beam without facing it west")
+	var/accepted = validate_hull_claim(claim, port)
+	TEST_ASSERT_NULL(accepted, "an expansion with a clear beam door for the port to turn onto was refused: [accepted]")
+
+	// Now build past the beam door as well: a column at x = 2. Every face of the finished
+	// hull has its outermost line bare, so there is nowhere for the port to go and the
+	// survey has to refuse - naming the face it currently berths through.
+	var/list/west_column = list()
+	for(var/offset_y in 3 to 6)
+		var/turf/scratch = spot(2, offset_y)
+		scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+		west_column += scratch
+		claim.turfs[scratch] = TRUE
+	settle()
+
+	TEST_ASSERT_NULL(hull_port_reseat_plan(port, claim.turfs), "a beam door with hull built past it was accepted as a port seat")
+	var/refusal = validate_hull_claim(claim, port)
+	TEST_ASSERT_NOTNULL(refusal, "an expansion that buried every door on the hull was accepted")
+	TEST_ASSERT(findtext(refusal, "north"), "the refusal never names the face the port berths through: [refusal]")
+
+	// Take the column back off and commit the bow into the hull's area, which is the state a
+	// drone build leaves behind, then let the drone-side reseat make the turn for real.
+	for(var/turf/scratch as anything in west_column)
+		for(var/obj/leftover in scratch)
+			qdel(leftover)
+		scratch.ChangeTurf(/turf/open/space, /turf/open/space)
+	var/list/new_row = list()
+	for(var/offset_x in 3 to 7)
+		new_row += spot(offset_x, 6)
+	set_turfs_to_area(new_row, hull_area)
+	settle()
+
+	// Measured on the grown hull, before the turn. The reseat must not move it: a berth
+	// orientation that disagrees with preferred_direction is a ship that swings 90 degrees on
+	// every dock and undock for the rest of the round (voidcrew_hull_dock_rotation).
+	port.calculate_docking_port_information()
+	var/aspect_before = hull_aspect_guess(port)
+
+	var/list/turned = hull_reseat_after_growth(port)
+	TEST_ASSERT_NOTNULL(turned, "a hull grown past its port with a clear beam door said nothing")
+	TEST_ASSERT_EQUAL(turned[1], beam_seat, "the drone reseat did not move the port onto the beam airlock")
+	TEST_ASSERT_EQUAL(get_turf(port), beam_seat, "the reseat reported a move it did not make")
+	// A mobile port faces INTO its ship, so a door opening west leaves the port facing east.
+	TEST_ASSERT_EQUAL(port.dir, EAST, "the port moved onto the west beam without turning to face east")
+	// port_direction is ship-relative and is rotated by the same delta the port just turned
+	// through - the arithmetic hull_port_facing() shares with the console's manual relocate.
+	// SOUTH to EAST is 90 degrees anticlockwise, so NORTH becomes WEST.
+	TEST_ASSERT_EQUAL(port.port_direction, WEST, "port_direction was not rotated by the turn the port made")
+	TEST_ASSERT(findtext(turned[2], "west"), "the reseat notice never says the ship berths through a different face now: [turned[2]]")
+
+	// The point of the whole exercise: the hull is flush against the face it now berths
+	// through, so it cannot drive itself into whatever it docks with.
+	var/list/flush = hull_port_overhang(port, null)
+	TEST_ASSERT_EQUAL(flush[1], 0, "the hull still overhangs its port after the port turned onto the west beam")
+
+	// dir and port_direction turned together, so the berth orientation the reserve dock
+	// guesses is the one it guessed before the turn. Both halves flip axis at once - the
+	// width/height swap in calculate_docking_port_information() and the port_direction
+	// rotation - and they cancel, which is what makes turning the port safe at all.
+	TEST_ASSERT_EQUAL(hull_aspect_guess(port), aspect_before, "turning the port changed the berth orientation adjust_reserve_dock_to_shuttle() guesses for this hull - it will now swing 90 degrees on every dock")
+
+	qdel(beam_door)
+	// force, and before the block is wiped - see the note in the tests above.
 	qdel(port, force = TRUE)
 	reset_block()
 	evacuate_area(hull_area)

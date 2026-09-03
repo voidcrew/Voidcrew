@@ -227,53 +227,174 @@
 	return null
 
 /**
- * Picks the tile the docking port should move to so the hull stops overhanging it.
+ * Every turf of `port`'s own hull on the port's z, flattened into one list.
  *
- * The new tile has to sit on the outermost plane of the finished hull - moving the port only
- * part of the way leaves everything beyond it still sticking out - and it has to carry a door,
- * because that tile is where the two ships' interiors meet once they are berthed.
- *
- * Ties are broken by lateral distance from the port's current position, so a hull with doors
- * at both ends of a new bow keeps the port roughly where the crew expect it.
- *
- * Returns null when the hull does not overhang (nothing to do) or when no door is available
- * on the new outer face (caller must refuse).
+ * The face search below measures four faces; without this it would walk the hull's areas
+ * four times over. `extra_turfs` are tiles not yet in the hull's areas - a survey claim being
+ * checked before it commits - and guest areas are skipped for the same reason
+ * hull_port_overhang() skips them: another ship parked inside our area list is not our hull.
  */
-/proc/hull_port_reseat_target(obj/docking_port/mobile/port, list/extra_turfs)
-	var/turf/port_turf = get_turf(port)
-	if(!port_turf)
-		return null
-
-	var/list/overhang = hull_port_overhang(port, extra_turfs)
-	var/worst = overhang[1]
-	if(worst <= 0)
-		return null
-
-	var/outward_dir = REVERSE_DIR(port.dir)
-	var/list/candidates = list()
+/proc/hull_port_turfs(obj/docking_port/mobile/port, list/extra_turfs, hull_z)
+	var/list/hull_turfs = list()
 	for(var/area/shuttle_area as anything in port.shuttle_areas)
 		if(hull_area_is_guest(shuttle_area, port))
 			continue
-		for(var/turf/hull_turf as anything in shuttle_area.get_turfs_by_zlevel(port_turf.z))
-			if(hull_port_offset(hull_turf, port_turf, outward_dir) == worst)
-				candidates += hull_turf
+		hull_turfs += shuttle_area.get_turfs_by_zlevel(hull_z)
 	for(var/turf/claimed as anything in extra_turfs)
-		if(claimed.z == port_turf.z && hull_port_offset(claimed, port_turf, outward_dir) == worst)
-			candidates += claimed
+		if(claimed.z == hull_z)
+			hull_turfs += claimed
+	return hull_turfs
+
+/**
+ * The door standing on the outermost line of one face of the hull, or null.
+ *
+ * "Outermost" is the whole rule. Seating the port on a tile that still has hull in front of
+ * it leaves that hull to be driven through whatever the ship berths against - see
+ * hull_port_overhang() - so a candidate has to hold the extreme coordinate for `outward_dir`
+ * across the entire hull, and carry a door a crew can actually walk through.
+ *
+ * Ties within a face go to the door closest to the port's current lateral position, so a bow
+ * with doors at both ends keeps the port roughly where the crew expect it.
+ */
+/proc/hull_face_port_seat(list/hull_turfs, outward_dir, turf/port_turf)
+	if(!length(hull_turfs) || !port_turf)
+		return null
+
+	// TRUE when the face is an east or west one, so the coordinate that decides "outermost"
+	// is x and the lateral axis the ties are measured along is y.
+	var/across = EWCOMPONENT(outward_dir)
+	var/extreme
+	for(var/turf/hull_turf as anything in hull_turfs)
+		var/coordinate = across ? hull_turf.x : hull_turf.y
+		if(isnull(extreme))
+			extreme = coordinate
+		else if(outward_dir & (NORTH|EAST))
+			extreme = max(extreme, coordinate)
+		else
+			extreme = min(extreme, coordinate)
 
 	var/turf/best
 	var/best_distance = INFINITY
-	for(var/turf/candidate as anything in candidates)
+	for(var/turf/candidate as anything in hull_turfs)
+		if((across ? candidate.x : candidate.y) != extreme)
+			continue
 		if(!hull_port_door(candidate))
 			continue
 		// Lateral only - every candidate is on the same plane, so the outward component
 		// is identical and get_dist() would just add the same constant to all of them.
-		var/distance = EWCOMPONENT(outward_dir) ? abs(candidate.y - port_turf.y) : abs(candidate.x - port_turf.x)
+		var/distance = across ? abs(candidate.y - port_turf.y) : abs(candidate.x - port_turf.x)
 		if(distance < best_distance)
 			best_distance = distance
 			best = candidate
 
 	return best
+
+/**
+ * Where the docking port should move to, and which way it should then face, so that the hull
+ * stops standing proud of it.
+ *
+ * Returns list(turf/seat, outward_dir), or null. `outward_dir` is the direction the seat's
+ * door opens onto; the port's own dir is the reverse of it, because a mobile port faces INTO
+ * its ship.
+ *
+ * The face the port already uses is tried first and wins outright when it has a door on its
+ * outermost line: a hull that can keep berthing through its bow should keep berthing through
+ * its bow. Only when that face offers nothing does the search widen, and a door on another
+ * face then qualifies on exactly the same terms - it has to stand on the true outermost line
+ * of ITS face, so nothing of the hull is left in front of the port once it has turned.
+ * Between faces the smaller turn wins (a beam before the stern); between two equal turns, the
+ * nearer door.
+ *
+ * Widening it is what issue #130 actually needed. A crew that grew a hull out past its bow
+ * while leaving a perfectly good airlock amidships on the port beam was refused outright,
+ * even though berthing through that beam door is clean - the geometry only cares that nothing
+ * of the hull stands in front of the port, not which compass point the port happens to face.
+ *
+ * `allow_face_change = FALSE` restores the old same-face-only answer, which is what
+ * hull_port_reseat_target() hands its callers.
+ */
+/proc/hull_port_reseat_plan(obj/docking_port/mobile/port, list/extra_turfs, allow_face_change = TRUE)
+	var/turf/port_turf = get_turf(port)
+	if(!port_turf)
+		return null
+
+	var/list/overhang = hull_port_overhang(port, extra_turfs)
+	if(overhang[1] <= 0)
+		return null
+
+	var/list/hull_turfs = hull_port_turfs(port, extra_turfs, port_turf.z)
+	var/current_outward = REVERSE_DIR(port.dir)
+
+	var/turf/same_face = hull_face_port_seat(hull_turfs, current_outward, port_turf)
+	if(same_face)
+		return list(same_face, current_outward)
+	if(!allow_face_change)
+		return null
+
+	var/turf/best
+	var/best_outward
+	var/best_turn = INFINITY
+	var/best_distance = INFINITY
+	for(var/outward_dir in GLOB.cardinals)
+		if(outward_dir == current_outward)
+			continue
+		var/turf/candidate = hull_face_port_seat(hull_turfs, outward_dir, port_turf)
+		if(!candidate)
+			continue
+		// 90 for either beam, 180 for the stern. Signed difference folded onto [-180, 180]
+		// and then taken absolute, so a turn left and a turn right cost the same.
+		var/turn_cost = abs(SIMPLIFY_DEGREES(dir2angle(outward_dir) - dir2angle(current_outward) + 180) - 180)
+		// Manhattan rather than get_dist(): the seat is on a different face, so both legs are
+		// real distance and a Chebyshev measure would silently drop the smaller one.
+		var/distance = abs(candidate.x - port_turf.x) + abs(candidate.y - port_turf.y)
+		if(turn_cost > best_turn || (turn_cost == best_turn && distance >= best_distance))
+			continue
+		best_turn = turn_cost
+		best_distance = distance
+		best_outward = outward_dir
+		best = candidate
+
+	return best ? list(best, best_outward) : null
+
+/**
+ * The dir and port_direction a port needs once its door opens onto `outward_dir`.
+ *
+ * Returns list(new_dir, new_port_direction). One copy of the arithmetic, shared by the
+ * construction console's manual relocation and by the survey and drone reseats, because
+ * getting it wrong makes a ship turn 90 degrees on every dock and undock for the rest of the
+ * round - the failure voidcrew_hull_dock_rotation exists to police on mapped hulls.
+ *
+ * dir is simply the reverse of the way out. port_direction is ship-relative and cannot be
+ * read off world dirs, because a docked ship may be sitting rotated away from its
+ * preferred_direction. What IS the same in both frames is how far the port just turned, so
+ * rotate the existing port_direction by that delta. (Assuming the ship faced
+ * preferred_direction here baked the dock rotation into port_direction, which made the
+ * regenerated transit berth match the docked orientation, so the ship never turned back to
+ * its original heading on undock.)
+ *
+ * A seat on the face the port already uses comes back as a no-op: the delta is zero, so both
+ * values are returned unchanged.
+ */
+/proc/hull_port_facing(obj/docking_port/mobile/port, outward_dir)
+	var/new_dir = REVERSE_DIR(outward_dir)
+	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(new_dir) - dir2angle(port.dir) + dir2angle(port.port_direction))
+	return list(new_dir, angle2dir(angle_diff))
+
+/**
+ * The tile the docking port should move to WITHOUT turning it.
+ *
+ * The same-face half of hull_port_reseat_plan(), kept as its own proc for the callers that
+ * only ever slide the port along its own face: /obj/structure/overmap/ship/can_undock() calls
+ * hull_reseat_port() with no new facing, so handing it a seat on another face would leave the
+ * port pointing the wrong way with the hull still standing in front of it. Callers that can
+ * turn the port ask for the plan instead.
+ *
+ * Returns null when the hull does not overhang (nothing to do) or when no door stands on the
+ * port's own outermost line.
+ */
+/proc/hull_port_reseat_target(obj/docking_port/mobile/port, list/extra_turfs)
+	var/list/plan = hull_port_reseat_plan(port, extra_turfs, allow_face_change = FALSE)
+	return plan ? plan[1] : null
 
 /**
  * Plain-language instructions for the door a reseat is waiting on.
@@ -313,8 +434,10 @@
  * with the console - the one tool that can cure it - was left with a ship cargo refused to
  * deliver to and no hint as to why (issue #130).
  *
- * Same-face only, exactly as the survey's reseat is: hull_port_reseat_target() looks along
- * the port's existing outward direction and nothing here turns the port.
+ * The port's own face is preferred, but it is not the only one on offer: when nothing stands
+ * on the outermost line of the face the port already uses, hull_port_reseat_plan() will take
+ * a door on another face provided nothing of the hull stands past it there, and the port is
+ * turned to match through the same arithmetic the console's manual relocation uses.
  *
  * Not cheap - hull_port_overhang() walks every turf of every hull area. Callers gate it on
  * the O(1) hull_port_offset() test for the tile they just touched.
@@ -327,22 +450,35 @@
 	if(overhang[1] <= 0)
 		return null
 
-	var/facing = dir2text(REVERSE_DIR(port.dir))
-	var/turf/reseat_to = hull_port_reseat_target(port, null)
-	if(!reseat_to)
+	var/old_outward = REVERSE_DIR(port.dir)
+	var/facing = dir2text(old_outward)
+	var/list/plan = hull_port_reseat_plan(port, null)
+	if(!plan)
 		return list(null, "Hull warning: the ship now stands [overhang[1]] metre\s out past its \
 			docking port on the [facing] side, and there is no door on that outermost plating for \
-			the port to move to. [hull_port_door_instruction(port, overhang[2])] Until the port is \
-			out there the ship cannot undock and cargo will refuse to deliver, because the \
-			overhanging section would be driven through whatever it berths against.")
+			the port to move to - nor one standing clear on the outermost line of any other face. \
+			[hull_port_door_instruction(port, overhang[2])] Until the port is out there the ship \
+			cannot undock and cargo will refuse to deliver, because the overhanging section would \
+			be driven through whatever it berths against.")
 
-	hull_reseat_port(port, reseat_to)
+	var/turf/reseat_to = plan[1]
+	var/new_outward = plan[2]
+	var/list/new_facing = hull_port_facing(port, new_outward)
+	hull_reseat_port(port, reseat_to, new_facing[1], new_facing[2])
 	var/obj/machinery/door/reseated_door = hull_port_door(reseat_to)
-	log_shuttle("[port] reseated its docking port to ([reseat_to.x], [reseat_to.y]) after a construction expansion, clearing a [overhang[1]] tile overhang.")
+	log_shuttle("[port] reseated its docking port to ([reseat_to.x], [reseat_to.y]) facing [dir2text(new_outward)] after a construction expansion, clearing a [overhang[1]] tile overhang.")
+	var/berth_line = "that door on the [facing] face is now where other ships and the cargo shuttle berth."
+	if(new_outward != old_outward)
+		// The crew asked for a room, not a new berthing side, so say where to undo it. The
+		// port only turns when the face it was on has no clear door left; once it is out here
+		// the hull is flush again and nothing will move it back on its own.
+		berth_line = "the ship now berths through its [dir2text(new_outward)] face instead of its \
+			[facing] one - that is where other ships and the cargo shuttle will come alongside. \
+			Fit a door on the outermost [facing] plating and use this console's docking port \
+			panel if you want it back on the [facing] face."
 	return list(reseat_to, "The hull now stands out past the old docking port. Port reseated to \
 		[reseated_door ? "the [reseated_door.name]" : "the outer hull"] at ([reseat_to.x], \
-		[reseat_to.y]) - that door on the [facing] face is now where other ships and the cargo \
-		shuttle berth.")
+		[reseat_to.y]) - [berth_line]")
 
 /**
  * A bearing the player can actually walk, plus the coordinates to sanity-check it against.
@@ -777,15 +913,16 @@
 	// and expand_shuttle() cannot be rolled back once it starts.
 	if(port)
 		var/list/overhang = hull_port_overhang(port, claim.turfs)
-		if(overhang[1] > 0 && !hull_port_reseat_target(port, claim.turfs))
+		if(overhang[1] > 0 && !hull_port_reseat_plan(port, claim.turfs))
 			claim.refusal_turf = overhang[2]
 			var/facing = dir2text(REVERSE_DIR(port.dir))
 			return "Survey rejects the enclosure: the finished hull would stand [overhang[1]] \
 				metre\s out past the docking port on its [facing] side, and there is no door \
 				standing on that outermost line for the port to move to. \
-				[hull_port_door_instruction(port, overhang[2])] A door set back behind the \
-				plating is no good - whatever the ship berths against gets driven through \
-				everything in front of the port."
+				[hull_port_door_instruction(port, overhang[2])] A door standing clear on the \
+				outermost line of any other face would do just as well - the port can turn - \
+				but a door set back behind the plating is no good on any face, because whatever \
+				the ship berths against gets driven through everything in front of the port."
 	else
 		// Commissioning. The port is seated when the hull is created and never afterwards, so
 		// a hull with nowhere to put it would be launched permanently unable to berth against
@@ -1116,8 +1253,8 @@
 	recount_hull_after_expansion(port)
 
 	// Measured after the commit, so it reads the finished hull rather than a prediction.
-	var/turf/reseat_to = hull_port_reseat_target(port, null)
-	if(!reseat_to)
+	var/list/plan = hull_port_reseat_plan(port, null)
+	if(!plan)
 		var/list/overhang = hull_port_overhang(port, null)
 		if(overhang[1] > 0)
 			// Only reachable if the door validate_hull_claim() found was destroyed inside the
@@ -1126,7 +1263,11 @@
 			stack_trace("[port] overhangs its docking port by [overhang[1]] after expansion with no door to reseat onto")
 		return null
 
-	hull_reseat_port(port, reseat_to)
+	var/turf/reseat_to = plan[1]
+	// A seat on the face the port already uses returns its current dir and port_direction
+	// unchanged, so this one call covers both the slide and the turn.
+	var/list/new_facing = hull_port_facing(port, plan[2])
+	hull_reseat_port(port, reseat_to, new_facing[1], new_facing[2])
 	return reseat_to
 
 // ============================================
@@ -1265,6 +1406,9 @@
 	if(fresh_area)
 		destination = create_hull_area(port, new_area_name)
 
+	// Read before the commit: integrate_into_hull() may turn the port onto another face, and
+	// the crew need telling when their ship changes the side it berths through.
+	var/old_outward = REVERSE_DIR(port.dir)
 	var/turf/reseated_to = integrate_into_hull(src, port, fresh.turfs, destination, fresh_area)
 	to_chat(src, span_notice("Survey complete. [length(fresh.turfs)] tiles integrated into \
 		[vessel.name], as part of [destination.name]."))
@@ -1273,9 +1417,14 @@
 			own. Build an APC in it to light it and run its machines."))
 	if(reseated_to)
 		var/obj/machinery/door/new_port_door = hull_port_door(reseated_to)
+		var/new_outward = REVERSE_DIR(port.dir)
+		var/turned = ""
+		if(new_outward != old_outward)
+			turned = " The ship now berths through its [dir2text(new_outward)] face instead of \
+				its [dir2text(old_outward)] one."
 		to_chat(src, span_notice("The enclosure now stands proud of the old docking port, so the \
 			port has been moved out to [new_port_door ? "the [new_port_door.name]" : "the new outer hull"] \
-			at ([reseated_to.x], [reseated_to.y]). That door is where other ships will berth."))
+			at ([reseated_to.x], [reseated_to.y]). That door is where other ships will berth.[turned]"))
 
 /// Commissioning branch: needs a helm console in the enclosure and a name.
 /mob/living/proc/survey_commission(turf/origin, datum/hull_claim/claim)
