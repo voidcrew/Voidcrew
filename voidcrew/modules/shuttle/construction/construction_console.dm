@@ -79,6 +79,25 @@
 	ship_console = null
 	return ..()
 
+/**
+ * Directional builds face the way the DRONE faces, not the operator's body.
+ *
+ * The operator is sat at a console with their remote_control set, so every direction key they
+ * press is relayed straight to the eye (/client/Move -> remote_control.relaymove) and their
+ * body never turns - it keeps whatever facing it had when they sat down. The drone does turn:
+ * /mob/eye/camera/remote/base_construction/relaymove() assigns `dir = direction` on every
+ * step, precisely because it is a visible drone.
+ *
+ * So the operator's dir is not merely the wrong one, it is a frozen one. Every directional
+ * window, windoor, chair, table, rack and bed the drone built came out facing wherever they
+ * happened to be pointing when they took the console, with no way to aim it short of standing
+ * up and turning round (issue #224). The RLD's wall lights already read the drone's dir; this
+ * is the RCD half of the same rule.
+ */
+/obj/item/construction/rcd/internal/ship/rcd_build_dir(mob/user)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	return drone ? drone.dir : ..()
+
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
 	if(delay <= 0)

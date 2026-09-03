@@ -289,10 +289,13 @@
 
 			//allow directional windows to be built without grills
 			if(!initial(window_path.fulltile))
-				if(!valid_build_direction(src, user.dir, is_fulltile = FALSE))
+				//not user.dir: a remotely driven RCD builds where its drone is looking, not
+				//where the body credited with the build happens to be pointing
+				var/build_dir = the_rcd.rcd_build_dir(user)
+				if(!valid_build_direction(src, build_dir, is_fulltile = FALSE))
 					balloon_alert(user, "window already here!")
 					return FALSE
-				var/obj/structure/window/WD = new window_path(src, user.dir)
+				var/obj/structure/window/WD = new window_path(src, build_dir)
 				WD.set_anchored(TRUE)
 				return TRUE
 
@@ -306,7 +309,9 @@
 			var/obj/machinery/door/airlock_type = rcd_data["[RCD_DESIGN_PATH]"]
 
 			if(ispath(airlock_type, /obj/machinery/door/window))
-				if(!valid_build_direction(src, user.dir, is_fulltile = FALSE))
+				//see the window branch above - the drone's facing, not the operator's
+				var/build_dir = the_rcd.rcd_build_dir(user)
+				if(!valid_build_direction(src, build_dir, is_fulltile = FALSE))
 					balloon_alert(user, "there's already a windoor!")
 					return FALSE
 				for(var/obj/machinery/door/door in src)
@@ -315,7 +320,7 @@
 					balloon_alert(user, "there's already a door!")
 					return FALSE
 				//create the assembly and let it finish itself
-				var/obj/structure/windoor_assembly/assembly = new (src, user.dir)
+				var/obj/structure/windoor_assembly/assembly = new (src, build_dir)
 				assembly.secure = ispath(airlock_type, /obj/machinery/door/window/brigdoor)
 				assembly.electronics = the_rcd.airlock_electronics.create_copy(assembly)
 				assembly.finish_door()
@@ -358,7 +363,8 @@
 				/obj/structure/bed,
 			)
 			if(is_path_in_list(locate_type, dir_types))
-				design.setDir(user.dir)
+				//see the window branch above - the drone's facing, not the operator's
+				design.setDir(the_rcd.rcd_build_dir(user))
 			return TRUE
 		if(RCD_DECONSTRUCT)
 			if(rcd_proof)
