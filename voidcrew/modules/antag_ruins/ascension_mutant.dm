@@ -894,6 +894,10 @@
 	AddElement(/datum/element/relay_attackers)
 	AddElement(/datum/element/ai_retaliate)
 
+	// A bluespace body bag takes MOB_SIZE_LARGE, so without this the specimen can be
+	// zipped up and carried out of its own cell (#131).
+	ban_from_containment()
+
 	sweep = new(src)
 	pin = new(src)
 	repulse = new(src)

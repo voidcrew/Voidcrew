@@ -333,6 +333,10 @@
 	AddElement(/datum/element/relay_attackers)
 	AddElement(/datum/element/ai_retaliate)
 
+	// A bluespace body bag takes MOB_SIZE_LARGE, so without this the trial's boss can be
+	// zipped up and carried out of its own arena (#131).
+	ban_from_containment()
+
 	iai = new(src)
 	guard = new(src)
 	sweep = new(src)
