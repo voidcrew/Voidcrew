@@ -218,6 +218,18 @@
 /// Charge multiplier for minor electrical storms (moderate uses intensity 1, majour intensity 2)
 #define ELECTRICAL_STORM_SMES_CHARGE_MULT_MINOR 0.5
 
+// Electrical storm grounding rods
+/// How far a bolt will reach sideways to find a grounding rod to hit instead of the deck.
+/// 7 is the middle of tesla's own arc-range band - a supermatter zap hops 5 tiles, a tesla
+/// coil 10, the pyroclastic tesla reaction 7 - so a rod covers about an engine room, and a
+/// hull that wants full coverage has to spend on more than one rod.
+#define ELECTRICAL_STORM_ROD_RANGE 7
+/// Energy a grounding rod banks when it soaks a storm bolt, passed straight to its zap_act().
+/// About a third of a supermatter zap (3.2 MJ). Grounding rods have wants_powernet = FALSE and
+/// override release_energy() to bleed their charge without feeding the grid, so this is what the
+/// rod's examine reads back as "recently grounded" while it decays - not free ship power.
+#define ELECTRICAL_STORM_ROD_BOLT_ENERGY (1 MEGA JOULES)
+
 // Worldgen queue (voidcrew/modules/overmap/code/controllers/subsystem/worldgen_queue.dm)
 /// Pass as a load_level() queue timeout to mean "build it only if the queue is free
 /// right now, otherwise give up". For UI paths that must answer immediately rather
