@@ -611,11 +611,77 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 	// Note: Mass updates are handled by delta tracking when turfs change
 
 /**
+ * Finds the grounding rod that should take a storm bolt aimed at target, or null if none does.
+ *
+ * A rod only counts if it is on THIS hull (its area is one of ours), on the same z, within
+ * ELECTRICAL_STORM_ROD_RANGE of the strike, anchored, and buttoned up - the same two-state test
+ * tesla_zap and supermatter_zap use before they hand an arc to a rod
+ * (code/modules/power/tesla/coil.dm - grounding_rod/zap_act). An unwrenched rod or one with its
+ * maintenance panel open does nothing, exactly as it does nothing against a tesla arc.
+ * Nearest qualifying rod wins.
+ */
+/obj/structure/overmap/ship/proc/find_storm_grounding_rod(turf/target)
+	if(!target)
+		return null
+	var/list/hull_areas = shuttle?.shuttle_areas
+	if(!length(hull_areas))
+		return null
+
+	var/obj/machinery/power/energy_accumulator/grounding_rod/closest_rod
+	var/closest_dist = ELECTRICAL_STORM_ROD_RANGE + 1
+	for(var/obj/machinery/power/energy_accumulator/grounding_rod/rod in range(ELECTRICAL_STORM_ROD_RANGE, target))
+		if(QDELETED(rod) || !rod.anchored || rod.panel_open)
+			continue
+		var/turf/rod_turf = get_turf(rod)
+		if(!rod_turf || rod_turf.z != target.z)
+			continue
+		// range() does not care whose hull it crosses; this is what keeps a docked neighbour's
+		// rod from covering us.
+		if(!hull_areas[get_area(rod_turf)])
+			continue
+		var/rod_dist = get_dist(target, rod_turf)
+		if(rod_dist >= closest_dist)
+			continue
+		closest_rod = rod
+		closest_dist = rod_dist
+	return closest_rod
+
+/**
+ * A grounding rod eats the bolt instead of the deck.
+ *
+ * Same thunderbolt visual and sound the unshielded strike uses, moved onto the rod, plus the
+ * rod's own hit animation and energy bank via zap_act() - i.e. the bolt is absorbed exactly the
+ * way a tesla arc landing on the rod would be. Nothing on the original turf is electrocuted,
+ * damaged or exploded.
+ */
+/obj/structure/overmap/ship/proc/ground_lightning_strike(obj/machinery/power/energy_accumulator/grounding_rod/rod)
+	var/turf/rod_turf = get_turf(rod)
+	if(!rod_turf)
+		return
+
+	var/obj/effect/temp_visual/thunderbolt/thunder = new(rod_turf)
+	thunder.flash_lighting_fx(6, 2, duration = thunder.duration)
+
+	// grounding_rod/zap_act() flicks "grounding_rodhit", shocks anyone buckled to it and banks
+	// the energy. It ignores zap_flags on the anchored/closed path, but pass the honest set.
+	rod.zap_act(ELECTRICAL_STORM_ROD_BOLT_ENERGY, ZAP_DEFAULT_FLAGS)
+
+	playsound(rod_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
+	rod_turf.visible_message(span_danger("A thunderbolt lances down and earths itself in [rod]!"))
+
+/**
  * Spawns a real lightning bolt strike at the target turf
  * Same effect as rain storm thunder - visual, damage, explosion
  */
 /obj/structure/overmap/ship/proc/lightning_strike(turf/target)
 	if(!target)
+		return
+
+	// A grounding rod on this hull, within arc range of where the bolt was going, takes it
+	// instead. Everything below - crew shock, object damage, explosion - is skipped for this bolt.
+	var/obj/machinery/power/energy_accumulator/grounding_rod/rod = find_storm_grounding_rod(target)
+	if(rod)
+		ground_lightning_strike(rod)
 		return
 
 	// Create the thunderbolt visual effect

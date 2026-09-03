@@ -38,3 +38,29 @@
 		to_chat(user, span_warning("[bystander] steps out of [src] before you can shut it. \
 			[bystander.p_They()] [bystander.p_are()] not going anywhere with you."))
 		break
+
+/**
+ * One call that makes a mob un-baggable, for the types that should never end up in
+ * someone's backpack.
+ *
+ * Three separate paths can put a mob in a container and they do not share a gate:
+ * - a closet/body bag sweeping its own tile on close()  -> TRAIT_NO_CONTAINMENT, above
+ * - a storage datum (backpacks, satchels, the folded    -> TRAIT_NO_STORAGE_INSERT,
+ *   bluespace bag's own contents)                          code/datums/storage/storage.dm
+ * - a drag-drop onto a crate, bed or disposal unit      -> COMSIG_MOUSEDROP_ONTO
+ *
+ * The outpost traders, loiterers and vestige patrons wire all three up by hand in their
+ * own Initialize; this is the same three lines for callers that only need the ban and
+ * nothing else around it. override = TRUE so a subtype that re-runs it is not a runtime.
+ */
+/mob/living/proc/ban_from_containment()
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_containment_mousedrop), override = TRUE)
+
+/// Cancels any attempt to drag-drop this mob onto something (beds, crates, disposals, ...).
+/// Deliberately not named block_being_dragged: three subtypes already declare a proc by that
+/// name, and re-declaring it on /mob/living would be a duplicate definition.
+/mob/living/proc/block_containment_mousedrop(atom/over, mob/user)
+	SIGNAL_HANDLER
+	return COMPONENT_CANCEL_MOUSEDROP_ONTO

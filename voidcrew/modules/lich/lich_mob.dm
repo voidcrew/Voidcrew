@@ -185,6 +185,12 @@
 /mob/living/basic/lich/Initialize(mapload)
 	. = ..()
 
+	// Deliberately ABOVE the is_illusion gate, so the mirror images get it too. A boss is
+	// not loot: a bluespace body bag has max_mob_size = MOB_SIZE_LARGE and would otherwise
+	// take him off the board whole (#131). Covering the illusions as well keeps "try to bag
+	// it" from being a free tell for which Ilthuun is the real one.
+	ban_from_containment()
+
 	// Everything below belongs to the real Ilthuun only. The illusion subtype must not
 	// inherit any of it. In particular it registers its own COMSIG_ATOM_WAS_ATTACKED
 	// handler, and RegisterSignal stack_traces when the same signal is claimed twice on
