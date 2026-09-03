@@ -16,7 +16,10 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
-		H.physiology.stun_mod *= 2
+		//A deleted host nulls its physiology before its nanites tear down, and runtiming here
+		//would abandon the rest of /datum/component/nanites/Destroy()
+		if(H.physiology)
+			H.physiology.stun_mod *= 2
 
 /datum/nanite_program/adrenaline
 	name = "Adrenaline Burst"
@@ -52,7 +55,9 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
-		user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(MELEE = -NANITE_ARMOR_BOOST_ADDED, BULLET = -NANITE_ARMOR_BOOST_ADDED))
+		//See /datum/nanite_program/nervous/disable_passive_effect
+		if(user.physiology)
+			user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(MELEE = -NANITE_ARMOR_BOOST_ADDED, BULLET = -NANITE_ARMOR_BOOST_ADDED))
 
 /datum/nanite_program/refractive
 	name = "Dermal Refractive Surface"
@@ -70,7 +75,9 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
-		user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(LASER = -NANITE_ARMOR_BOOST_ADDED, ENERGY = -NANITE_ARMOR_BOOST_ADDED))
+		//See /datum/nanite_program/nervous/disable_passive_effect
+		if(user.physiology)
+			user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(LASER = -NANITE_ARMOR_BOOST_ADDED, ENERGY = -NANITE_ARMOR_BOOST_ADDED))
 
 #undef NANITE_ARMOR_BOOST_ADDED
 
@@ -90,7 +97,9 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
-		H.physiology.bleed_mod *= 10
+		//See /datum/nanite_program/nervous/disable_passive_effect
+		if(H.physiology)
+			H.physiology.bleed_mod *= 10
 
 /datum/nanite_program/conductive
 	name = "Electric Conduction"

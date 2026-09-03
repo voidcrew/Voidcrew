@@ -68,6 +68,28 @@
 		if(backup.cloud_id == cloud_id)
 			return backup
 
+/**
+ * Resolves a program index the UI sent us against the backup's live program list.
+ *
+ * The open UI can be seconds out of date - another console deleted the program, or a program was
+ * qdel'd out from under it - and indexing a list past its end is a runtime, so refuse the action
+ * and tell the user instead of throwing.
+ */
+/obj/machinery/computer/nanite_cloud_controller/proc/get_ui_program(datum/component/nanites/nanites, program_id, mob/user)
+	var/index = text2num(program_id)
+	if(isnull(index) || index != round(index) || index < 1 || index > length(nanites?.programs))
+		to_chat(user, span_warning("[src] buzzes: that program is no longer in cloud backup #[current_view]."))
+		return null
+	return nanites.programs[index]
+
+///As get_ui_program, for a rule index inside one program's rule list.
+/obj/machinery/computer/nanite_cloud_controller/proc/get_ui_rule(datum/nanite_program/program, rule_id, mob/user)
+	var/index = text2num(rule_id)
+	if(isnull(index) || index != round(index) || index < 1 || index > length(program?.rules))
+		to_chat(user, span_warning("[src] buzzes: that rule is no longer set on [program ? program.name : "that program"]."))
+		return null
+	return program.rules[index]
+
 /obj/machinery/computer/nanite_cloud_controller/proc/generate_backup(cloud_id, mob/user)
 	//Clouds are ship-local, so only IDs already used aboard this ship collide.
 	//A console that somehow isn't on a ship checks globally, which is just conservative.
@@ -234,7 +256,9 @@
 			if(backup)
 				playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, FALSE)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+				var/datum/nanite_program/P = get_ui_program(nanites, params["program_id"], usr)
+				if(!P)
+					return TRUE
 				log_game("[key_name(usr)] deleted program [P.name] from cloud #[current_view]")
 				qdel(P)
 			. = TRUE
@@ -247,7 +271,9 @@
 				if(backup)
 					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, 0)
 					var/datum/component/nanites/nanites = backup.nanites
-					var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+					var/datum/nanite_program/P = get_ui_program(nanites, params["program_id"], usr)
+					if(!P)
+						return TRUE
 					var/datum/nanite_rule/rule = rule_template.make_rule(P)
 
 					log_game("[key_name(usr)] added rule [rule.display()] to program [P.name] in cloud #[current_view]")
@@ -257,8 +283,12 @@
 			if(backup)
 				playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, 0)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
-				var/datum/nanite_rule/rule = P.rules[text2num(params["rule_id"])]
+				var/datum/nanite_program/P = get_ui_program(nanites, params["program_id"], usr)
+				if(!P)
+					return TRUE
+				var/datum/nanite_rule/rule = get_ui_rule(P, params["rule_id"], usr)
+				if(!rule)
+					return TRUE
 				rule.remove()
 
 				log_game("[key_name(usr)] removed rule [rule.display()] from program [P.name] in cloud #[current_view]")
@@ -268,7 +298,9 @@
 			if(backup)
 				playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, FALSE)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+				var/datum/nanite_program/P = get_ui_program(nanites, params["program_id"], usr)
+				if(!P)
+					return TRUE
 				P.all_rules_required = !P.all_rules_required
 				log_game("[key_name(usr)] edited rule logic for program [P.name] into [P.all_rules_required ? "All" : "Any"] in cloud #[current_view]")
 				. = TRUE
