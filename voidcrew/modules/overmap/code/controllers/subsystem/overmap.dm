@@ -1265,7 +1265,12 @@ SUBSYSTEM_DEF(overmap)
 		// And the region is the slot MINUS its two reserve berths - measuring the ruin down
 		// from footprint.high_y stamps any template 73 rows or taller straight over both of
 		// them, which is a ship materialising inside ruin walls. See slot_build_region().
-		var/list/region = slot_build_region(footprint)
+		//
+		// The height is passed so the region starts at the PREFERRED floor - ten rows above
+		// the berth band instead of three, the same collar planets keep - for every template
+		// short enough to fit above it. Only the tallest few (68..74 rows in a lattice slot)
+		// drop back to the old floor.
+		var/list/region = slot_build_region(footprint, ruin_type.height)
 		var/ruin_min_x = region[1]
 		var/ruin_min_y = region[2]
 		var/ruin_max_x = region[3] - ruin_type.width + 1
@@ -1381,12 +1386,27 @@ SUBSYSTEM_DEF(overmap)
  * A whole-level footprint (SOLO, outposts) has no lattice geometry to respect but DOES
  * still carry the same two berths at its own origin, so the same offsets apply - it just
  * has far more room above them.
+ *
+ * `template_height`, when given, asks for the PREFERRED floor instead: the berth band plus
+ * the full PLANET_DOCK_HOSTILE_CLEARANCE collar planets keep, so a ruin's turrets and its
+ * nests start ten rows off the top of the berth band rather than three. A template too tall
+ * to fit above that floor falls back to MAP_SLOT_RUIN_MIN_Y_OFFSET, because the alternative
+ * is refusing to place it at all. Callers that fill the whole region rather than stamping a
+ * template (asteroid fields) pass nothing and keep the old floor - and the packing gate,
+ * ruin_fits_in_slot(), still measures against MAP_SLOT_RUIN_MIN_Y_OFFSET, so no template
+ * changes tenant class because of this.
  */
-/datum/controller/subsystem/overmap/proc/slot_build_region(datum/map_footprint/footprint)
+/datum/controller/subsystem/overmap/proc/slot_build_region(datum/map_footprint/footprint, template_height = 0)
 	var/min_x = footprint.low_x + MAP_SLOT_RUIN_MARGIN
 	var/min_y = footprint.low_y + MAP_SLOT_RUIN_MIN_Y_OFFSET
 	var/max_x = footprint.high_x - MAP_SLOT_RUIN_MARGIN
 	var/max_y = footprint.high_y - MAP_SLOT_RUIN_MARGIN
+	if(template_height > 0)
+		var/preferred_min_y = footprint.low_y + MAP_SLOT_RUIN_PREFERRED_Y_OFFSET
+		// Only if the whole template still fits between the preferred floor and the top of
+		// the region. Never clamps a template out of placeability.
+		if(preferred_min_y + template_height - 1 <= max_y)
+			min_y = preferred_min_y
 	return list(min_x, min_y, max_x, max_y)
 
 /**

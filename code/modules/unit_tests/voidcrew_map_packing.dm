@@ -546,6 +546,39 @@
 			TEST_FAIL("The largest template the slot gate accepts ([widest]x[tallest]) placed at ([region_min_x],[region_min_y]) covers the \
 				reserve berth at ([berth_low_x],[berth_low_y])-([berth_high_x],[berth_high_y])")
 
+	// ---- The preferred floor: clearance, not just non-overlap (#227 follow-up) ----
+	// Not being BUILT on a berth does not stop a ruin's turrets shooting into one. Handed a
+	// template height, slot_build_region() starts the region ten turfs above the top of the
+	// berth band - the same collar planets keep - and only falls back to the three-turf
+	// packing floor for a template too tall to fit above it. The GATE above is deliberately
+	// still measured against the three-turf floor, so no template changes tenant class.
+	var/hostile_clearance = 10 // PLANET_DOCK_HOSTILE_CLEARANCE
+	var/berth_top_y = 0
+	for(var/obj/docking_port/stationary/berth as anything in list(primary_dock, secondary_dock))
+		var/list/berth_rect = berth.return_coords()
+		berth_top_y = max(berth_top_y, max(berth_rect[2], berth_rect[4]))
+
+	var/list/preferred_region = SSovermap.slot_build_region(footprint, 1)
+	if(length(preferred_region) != 4)
+		TEST_FAIL("slot_build_region(footprint, 1) returned [length(preferred_region)] values, expected list(min_x, min_y, max_x, max_y)")
+		return
+	var/preferred_clearance = preferred_region[2] - berth_top_y - 1
+	if(preferred_clearance < hostile_clearance)
+		TEST_FAIL("A ruin template short enough to sit high in the slot is still stamped [preferred_clearance] turfs above the berth band \
+			(its top row is y [berth_top_y]), not the [hostile_clearance] a crew stepping off a docked hull needs. Ruin turrets and nests \
+			reach further than a wall does - see PLANET_DOCK_HOSTILE_CLEARANCE and MAP_SLOT_RUIN_PREFERRED_Y_OFFSET.")
+
+	// The fallback must fall BACK, never refuse: the tallest template the gate accepts still
+	// has to fit the region slot_build_region() hands it, and still has to clear the berths.
+	if(tallest)
+		var/list/tallest_region = SSovermap.slot_build_region(footprint, tallest)
+		if(tallest_region[2] + tallest - 1 > tallest_region[4])
+			TEST_FAIL("The tallest slot-legal template ([tallest] rows) does not fit the y [tallest_region[2]]..[tallest_region[4]] region \
+				slot_build_region() hands it. The preferred floor must fall back for a template too tall for it, not make it unplaceable.")
+		if(tallest_region[2] <= berth_top_y)
+			TEST_FAIL("The floor slot_build_region() gives a [tallest]-row template is y [tallest_region[2]], at or below the top of the \
+				berth band (y [berth_top_y]) - the fallback has dropped into the berths themselves")
+
 /**
  * # Packed ruin areas must be per-load instances
  *
