@@ -313,7 +313,7 @@
 
 /obj/machinery/ship_combat/pod_launcher
 	name = "assault pod tube"
-	desc = "A hull-mounted tube for throwing a crewed drop pod at somebody else's ship. Drag a pod onto it to load, drag yourself onto it to climb in. Link it to a weapons system with a multitool. Use a wrench to secure or unsecure."
+	desc = "A hull-mounted tube for throwing a crewed drop pod at somebody else's ship. Drag a pod onto it to load, drag yourself onto it to climb in. Link it to a weapons system with a multitool. Use a wrench to secure or unsecure, or unwrench it and drag it onto a hull wall to sink it into the plating."
 	icon = 'voidcrew/icons/obj/machines/pod_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
@@ -325,6 +325,12 @@
 	circuit = /obj/item/circuitboard/machine/ship_combat/pod_launcher
 	pixel_x = -16
 	pixel_y = -16
+	// A tube has to sit against the outside of the hull, and on most ships the only
+	// tile that qualifies is one you'd have to breach your own compartment to make.
+	// The other two mounts solve that by going into the plating; so does this one.
+	// Everything that hands something back out of the tube goes through
+	// get_disembark_turf() so it lands on a deck tile rather than inside the wall.
+	wall_mountable = TRUE
 	/// The pod currently in the tube
 	var/obj/structure/closet/supplypod/drop_pod/loaded_pod
 	/// Reference to our linked combat console
@@ -344,9 +350,9 @@
 
 /obj/machinery/ship_combat/pod_launcher/Destroy()
 	// A tube being taken apart with somebody inside spits the pod out rather
-	// than deleting them with it
-	if(!QDELETED(loaded_pod))
-		release_pod().forceMove(drop_location())
+	// than deleting them with it. Forced: there is no "leave it racked" option left
+	// once the machine is going away.
+	eject_pod(force = TRUE)
 	loaded_pod = null
 	unlink_console()
 	return ..()
@@ -509,21 +515,36 @@
 	if(!loaded_pod)
 		return
 
-	eject_pod()
+	if(!eject_pod())
+		to_chat(user, span_warning("There's no clear tile beside [src] to set the pod down on."))
+		return
 	user.visible_message(
 		span_notice("[user] unloads a pod from [src]."),
 		span_notice("You unload the pod from [src]."),
 	)
 
-/// Drops the loaded pod back onto the deck
-/obj/machinery/ship_combat/pod_launcher/proc/eject_pod()
+/**
+ * Drops the loaded pod back out of the tube. Returns TRUE if the rack is now empty.
+ *
+ * A tube sunk into hull plating sits on a closed turf, so the pod cannot simply go
+ * to drop_location() - that would shove it, and anyone aboard, into the wall.
+ * `force` is for the paths that have no way to back out (deconstruction, Destroy):
+ * they fall back to the tube's own tile, which is at least a real turf.
+ */
+/obj/machinery/ship_combat/pod_launcher/proc/eject_pod(force = FALSE)
 	if(QDELETED(loaded_pod))
 		loaded_pod = null
 		update_appearance()
-		return
-	release_pod().forceMove(drop_location())
+		return TRUE
+	var/turf/rack_exit = get_disembark_turf(loaded_pod)
+	if(!rack_exit && force)
+		rack_exit = get_turf(src)
+	if(!rack_exit)
+		return FALSE
+	release_pod().forceMove(rack_exit)
 	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 	update_appearance()
+	return TRUE
 
 /// Hands the loaded pod back to the caller and empties the rack
 /obj/machinery/ship_combat/pod_launcher/proc/release_pod()
@@ -546,7 +567,11 @@
 		return
 	default_unfasten_wrench(user, tool)
 	invalidate_exterior_cache() // Position may have changed
+	eject_from_wall(user) // Loose inside hull plating is a dead end - pop it onto the deck
 	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/pod_launcher/after_wall_mount(mob/user)
+	attempt_auto_link()
 
 // Alt+click: pod interface when a pod is racked, rotate when unwrenched
 /obj/machinery/ship_combat/pod_launcher/click_alt(mob/user)
@@ -603,7 +628,9 @@
 	return ..()
 
 /obj/machinery/ship_combat/pod_launcher/on_deconstruction(disassembled)
-	eject_pod()
+	// The machine is going away either way, so take the tube's own tile over leaving
+	// the pod inside a frame that is about to be dumped.
+	eject_pod(force = TRUE)
 
 // ========== CONSOLE LINKING ==========
 
@@ -798,7 +825,9 @@
 	// and a sealed pod inside a machine that now reports itself empty is a coffin.
 	if(!QDELETED(launched) && launched.loc == src)
 		launched.used = FALSE
-		launched.forceMove(drop_location())
+		// get_turf(src) as the last resort: a wall-sunk tube with nothing open around
+		// it is still better than nullspace, which is what sent riders to the error room.
+		launched.forceMove(get_disembark_turf(launched) || get_turf(src))
 		visible_message(span_warning("[src] loses the firing solution and cycles [launched] back out."))
 		for(var/mob/living/rider in launched.get_riders())
 			to_chat(rider, span_warning("The launch aborts. The tube spits the pod back onto the deck."))

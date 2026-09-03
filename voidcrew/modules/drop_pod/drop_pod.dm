@@ -226,7 +226,15 @@
 			message_cooldown = world.time + 5 SECONDS
 			to_chat(user, span_warning("The hatch is sealed. Open it through the pod's interface to climb out."))
 		return
-	user.forceMove(tube.drop_location())
+	// Not drop_location(): a tube bolted into the hull plating sits ON the wall, and
+	// that would put the climber inside it.
+	var/turf/climb_out = tube.get_disembark_turf(user)
+	if(!climb_out)
+		if(message_cooldown <= world.time)
+			message_cooldown = world.time + 5 SECONDS
+			to_chat(user, span_warning("[tube] is buried in the hull - there's nowhere to climb out to."))
+		return
+	user.forceMove(climb_out)
 	user.visible_message(
 		span_notice("[user] climbs out of [tube]."),
 		span_notice("You climb out of [tube]."),
@@ -238,6 +246,34 @@
 	. = ..()
 	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
 	tube?.update_appearance()
+
+/**
+ * Opening the hatch while racked in a tube that is sunk into hull plating.
+ *
+ * open_pod() empties the pod onto get_turf(holder). For a tube bolted into the hull
+ * that turf IS the wall, so crowbarring the hatch would forceMove the whole boarding
+ * party into solid plating. Let the normal open run, then sweep whoever it put in the
+ * wall onto the tile the tube hands pods back to.
+ *
+ * A deck-mounted tube lands on its own tile as before - get_disembark_turf() only
+ * diverts on a closed turf.
+ */
+/obj/structure/closet/supplypod/drop_pod/open_pod(atom/movable/holder, broken = FALSE, forced = FALSE)
+	var/obj/machinery/ship_combat/pod_launcher/tube = in_launch_tube()
+	var/turf/tube_turf = tube ? get_turf(tube) : null
+	var/list/aboard
+	if(tube_turf && isclosedturf(tube_turf) && holder)
+		aboard = holder.contents.Copy()
+	. = ..()
+	if(!length(aboard))
+		return
+	var/turf/set_down = tube.get_disembark_turf()
+	if(!set_down || set_down == tube_turf)
+		return
+	for(var/atom/movable/dumped as anything in aboard)
+		if(QDELETED(dumped) || dumped.loc != tube_turf)
+			continue
+		dumped.forceMove(set_down)
 
 /obj/structure/closet/supplypod/drop_pod/ui_act(action, params, datum/tgui/ui)
 	. = ..()

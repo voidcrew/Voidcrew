@@ -125,6 +125,37 @@
 	return
 
 /**
+ * The tile something leaving this mount should be set down on.
+ *
+ * A mount bolted to the deck hands things to its own tile, like any other machine.
+ * One sunk into hull plating cannot: its tile IS the wall, so a pod - or a rider
+ * climbing out of one - would be forceMoved into solid plating. Step out from the
+ * inboard side and take the first tile that is actually standable.
+ *
+ * Returns null when the mount is walled in on every side, so callers can refuse the
+ * move rather than bury whatever was leaving. Never returns nullspace: a crewed
+ * object with no turf is what put boarding parties in the CentCom error room.
+ *
+ * Arguments:
+ * * leaving - the atom being set down, so its own density doesn't block its exit.
+ */
+/obj/machinery/ship_combat/proc/get_disembark_turf(atom/movable/leaving)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return null
+	if(!isclosedturf(our_turf))
+		return our_turf
+
+	// Behind us first - that is the inboard side, the one the crew is standing on -
+	// then any open side, so nothing stays wedged in solid rock.
+	for(var/exit_dir in (list(REVERSE_DIR(dir)) + GLOB.cardinals))
+		var/turf/exit = get_step(our_turf, exit_dir)
+		if(!exit || exit.is_blocked_turf(exclude_mobs = TRUE, source_atom = leaving || src))
+			continue
+		return exit
+	return null
+
+/**
  * Shove a freshly unbolted mount out of the wall it was sitting in.
  *
  * A loose mount inside a wall cannot be wrenched down again - default_unfasten_wrench
@@ -139,18 +170,14 @@
 	if(!isclosedturf(our_turf))
 		return FALSE
 
-	// Behind us first - that is the inboard side, the one the player is standing on -
-	// then any open side, so it never stays wedged in solid rock.
-	for(var/exit_dir in (list(REVERSE_DIR(dir)) + GLOB.cardinals))
-		var/turf/exit = get_step(our_turf, exit_dir)
-		if(!exit || exit.is_blocked_turf(exclude_mobs = TRUE, source_atom = src))
-			continue
-		forceMove(exit)
-		invalidate_exterior_cache()
-		if(user)
-			balloon_alert(user, "pried out of the wall")
-		return TRUE
-	return FALSE
+	var/turf/exit = get_disembark_turf()
+	if(!exit || exit == our_turf)
+		return FALSE
+	forceMove(exit)
+	invalidate_exterior_cache()
+	if(user)
+		balloon_alert(user, "pried out of the wall")
+	return TRUE
 
 /obj/machinery/ship_combat/examine(mob/user)
 	. = ..()

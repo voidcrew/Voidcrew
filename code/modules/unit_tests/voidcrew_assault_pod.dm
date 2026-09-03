@@ -98,3 +98,78 @@
 	TEST_ASSERT_EQUAL(landing, launch_site, "a pod stopped by armour came to rest on [landing] instead of backing off to open space")
 	qdel(flier)
 	restore_walls()
+
+/**
+ * # A tube sunk into the hull never sets anyone down inside the wall
+ *
+ * The launch tube is wall-mountable, like the missile launcher and the laser turret,
+ * because the alternative is a crew breaching their own compartment to find a legal
+ * tile for it. That puts the machine ON a closed turf, so every path that hands
+ * something back out of the tube - a rider climbing out, a rider dumped by the hatch
+ * opening, the pod itself being unloaded - has to aim at an open tile instead of
+ * drop_location(), which is the plating.
+ *
+ * All of them route through get_disembark_turf(). This pins that down end to end,
+ * including the deck case, which must keep handing things to the tube's own tile.
+ */
+/datum/unit_test/voidcrew_assault_pod_tube_wall_mount
+
+/datum/unit_test/voidcrew_assault_pod_tube_wall_mount/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/turf/hull = get_step(deck, EAST)
+	TEST_ASSERT(isopenturf(hull), "the tile east of the landmark is not open ([hull.type])")
+
+	var/obj/machinery/ship_combat/pod_launcher/tube = allocate(/obj/machinery/ship_combat/pod_launcher, deck)
+	TEST_ASSERT_EQUAL(tube.get_disembark_turf(), deck, "a deck-mounted tube set its cargo down on [tube.get_disembark_turf()] instead of its own tile")
+
+	var/obj/structure/closet/supplypod/drop_pod/pod = allocate(/obj/structure/closet/supplypod/drop_pod, deck)
+	var/mob/living/carbon/human/consistent/rider = allocate(/mob/living/carbon/human/consistent, deck)
+
+	// Sink the tube into hull plating facing outboard, the way mouse_drop_dragged does
+	var/original_type = hull.type
+	var/original_baseturfs = hull.baseturfs
+	hull.ChangeTurf(/turf/closed/wall)
+	tube.forceMove(hull)
+	tube.setDir(EAST)
+	tube.set_anchored(TRUE)
+	tube.invalidate_exterior_cache()
+
+	// Rack a pod with somebody aboard
+	pod.set_anchored(FALSE)
+	rider.forceMove(pod)
+	pod.forceMove(tube)
+	tube.loaded_pod = pod
+
+	var/turf/disembark = tube.get_disembark_turf()
+
+	// Crowbarring the hatch empties the pod onto the tube's own turf, which is the wall
+	pod.open_pod(pod)
+	var/turf/opened_onto = get_turf(rider)
+
+	// Climbing back out through the open hatch
+	rider.forceMove(pod)
+	pod.relaymove(rider, WEST)
+	var/turf/climbed_onto = get_turf(rider)
+
+	// Unloading the pod itself
+	var/ejected = tube.eject_pod()
+	var/turf/pod_landed_on = get_turf(pod)
+
+	// Wrenching the tube loose has to pop it back onto the deck. Park the pod out of
+	// the way first - it is dense, and it is standing on the tile we expect back.
+	pod.forceMove(run_loc_floor_top_right)
+	tube.set_anchored(FALSE)
+	var/popped_out = tube.eject_from_wall(null)
+	var/turf/tube_landed_on = get_turf(tube)
+
+	// Put the hull back before asserting, so a failure here doesn't leave a wall
+	// standing in the test room for whatever runs next.
+	hull.ChangeTurf(original_type, original_baseturfs)
+
+	TEST_ASSERT_EQUAL(disembark, deck, "a wall-sunk tube would have set its cargo down on [disembark] instead of the open deck tile behind it")
+	TEST_ASSERT_EQUAL(opened_onto, deck, "opening the hatch of a wall-sunk tube left the rider on [opened_onto] instead of the deck")
+	TEST_ASSERT_EQUAL(climbed_onto, deck, "climbing out of a wall-sunk tube left the rider on [climbed_onto] instead of the deck")
+	TEST_ASSERT(ejected, "a wall-sunk tube refused to unload its pod onto the open deck beside it")
+	TEST_ASSERT_EQUAL(pod_landed_on, deck, "an unloaded pod came to rest on [pod_landed_on] instead of the deck")
+	TEST_ASSERT(popped_out, "an unbolted tube stayed wedged in the hull plating")
+	TEST_ASSERT_EQUAL(tube_landed_on, deck, "an unbolted tube popped out onto [tube_landed_on] instead of the deck")
