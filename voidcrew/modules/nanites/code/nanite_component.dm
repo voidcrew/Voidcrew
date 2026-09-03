@@ -30,6 +30,10 @@
 	var/cloud_active = TRUE
 	///How long until the next sync to cloud
 	var/next_sync = 0
+	///World time before which the "can't reach the cloud" warning stays quiet, so an unreachable cloud tells the host at most once every NANITE_CLOUD_WARNING_DELAY
+	var/next_cloud_warning = 0
+	///TRUE while the host still has to be told that the cloud took their programming over. Set whenever a cloud ID is assigned, cleared by the first sync that changes anything.
+	var/announce_cloud_takeover = FALSE
 	///All nanite programs in the user
 	var/list/datum/nanite_program/programs = list()
 	///How many programs this user can have at once
@@ -72,6 +76,7 @@
 		if(cloud_id)
 			//Pair to the ship the host is aboard right now (e.g. the public chamber that injected them)
 			cloud_ship_ref = WEAKREF(get_ship_from_atom(host_mob))
+			announce_cloud_takeover = TRUE
 			if(cloud_active)
 				cloud_sync()
 
@@ -165,6 +170,20 @@
 /datum/component/nanites/proc/sync(datum/signal_source, datum/component/nanites/source, full_overwrite = TRUE, copy_activation = FALSE)
 	SIGNAL_HANDLER
 
+	sync_programming(source, full_overwrite, copy_activation)
+
+/**
+ * Copies [source]'s programming onto ours: programs it has and we lack are installed, programs we
+ * share have their settings overwritten with its, and (with full_overwrite) programs it doesn't
+ * have are deleted.
+ *
+ * Returns a bitfield describing what actually changed, so callers can tell a sync that rewrote the
+ * host's programming from the 30-second one that found everything already identical:
+ * * NANITE_SYNC_ADDED - programs were installed
+ * * NANITE_SYNC_REPLACED - programming the host already had was deleted or overwritten with different settings
+ */
+/datum/component/nanites/proc/sync_programming(datum/component/nanites/source, full_overwrite = TRUE, copy_activation = FALSE)
+	. = NONE
 	var/list/programs_to_remove = programs.Copy()
 	var/list/programs_to_add = source.programs.Copy()
 	for(var/datum/nanite_program/NP as anything in programs)
@@ -172,13 +191,27 @@
 			if(NP.type == SNP.type)
 				programs_to_remove -= NP
 				programs_to_add -= SNP
+				if(SNP.programming_differs(NP, copy_activation))
+					. |= NANITE_SYNC_REPLACED
 				SNP.copy_programming(NP, copy_activation)
 				break
 	if(full_overwrite)
 		for(var/X in programs_to_remove)
+			. |= NANITE_SYNC_REPLACED
 			qdel(X)
 	for(var/datum/nanite_program/SNP as anything in programs_to_add)
+		. |= NANITE_SYNC_ADDED
 		add_program(null, SNP.copy())
+
+/**
+ * Tells the host one line about what their nanites are doing. Dropped entirely when there is no
+ * host (cloud backups run a hostless copy of this component) or when the host is in no state to
+ * read it - nothing is queued for later, the message is simply skipped.
+ */
+/datum/component/nanites/proc/notify_host(message, warning = FALSE)
+	if(!host_mob || host_mob.stat >= UNCONSCIOUS)
+		return
+	to_chat(host_mob, warning ? span_warning(message) : span_notice(message))
 
 /datum/component/nanites/proc/cloud_sync()
 	if(cloud_id)
@@ -189,8 +222,22 @@
 			if(backup)
 				var/datum/component/nanites/cloud_copy = backup.nanites
 				if(cloud_copy)
-					sync(null, cloud_copy)
+					var/sync_changes = sync_programming(cloud_copy)
+					next_cloud_warning = 0 //the cloud is back, so a future outage warns immediately
+					//The cloud copy is authoritative, so the first sync after joining a cloud wipes
+					//whatever the host programmed locally. Say so once instead of letting it look
+					//like the programming vanished on its own.
+					if(announce_cloud_takeover && sync_changes)
+						announce_cloud_takeover = FALSE
+						if(sync_changes & NANITE_SYNC_REPLACED)
+							notify_host("Nanite programming synced from cloud backup #[cloud_id] (local changes replaced).")
+						else
+							notify_host("Nanite programming synced from cloud backup #[cloud_id].")
 					return
+		//An unreachable cloud is what rolls the software errors below, so the host gets told about it
+		if(world.time >= next_cloud_warning)
+			next_cloud_warning = world.time + NANITE_CLOUD_WARNING_DELAY
+			notify_host("Your nanites cannot reach cloud backup #[cloud_id].", warning = TRUE)
 	//Without cloud syncing nanites can accumulate errors and/or defects
 	if(prob(NANITE_FAILURE_CHANCE) && programs.len)
 		var/datum/nanite_program/NP = pick(programs)
@@ -338,7 +385,12 @@
 /datum/component/nanites/proc/set_cloud(datum/source, amount)
 	SIGNAL_HANDLER
 
+	var/old_cloud_id = cloud_id
 	cloud_id = clamp(amount, 0, 100)
+	if(cloud_id != old_cloud_id)
+		//A new cloud owes the host one takeover notice, and starts with a clean warning cooldown
+		announce_cloud_takeover = !!cloud_id
+		next_cloud_warning = 0
 	//Re-pair to the ship the host is standing on when the ID is assigned. Chambers can only
 	//set this on their occupant, so joining a ship's cloud requires being physically aboard it.
 	cloud_ship_ref = (cloud_id && host_mob) ? WEAKREF(get_ship_from_atom(host_mob)) : null

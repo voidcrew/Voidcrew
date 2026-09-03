@@ -108,6 +108,42 @@
 	if(istype(target, src))
 		copy_extra_settings_to(target)
 
+/**
+ * TRUE if copy_programming(target) would actually change [target]'s settings.
+ *
+ * Cloud sync overwrites the host's programming every 30 seconds whether or not the cloud copy says
+ * anything different, so this is what separates "the cloud just replaced what you set up" from
+ * "the cloud handed you the settings you already had".
+ */
+/datum/nanite_program/proc/programming_differs(datum/nanite_program/target, compare_activation = TRUE)
+	if(compare_activation && target.activated != activated)
+		return TRUE
+	if(target.timer_restart != timer_restart || target.timer_shutdown != timer_shutdown)
+		return TRUE
+	if(target.timer_trigger != timer_trigger || target.timer_trigger_delay != timer_trigger_delay)
+		return TRUE
+	if(target.activation_code != activation_code || target.deactivation_code != deactivation_code)
+		return TRUE
+	if(target.kill_code != kill_code || target.trigger_code != trigger_code)
+		return TRUE
+	if(target.all_rules_required != all_rules_required || length(target.rules) != length(rules))
+		return TRUE
+	//copy_programming rebuilds the rule list in our order, so index-by-index is the right comparison
+	for(var/i in 1 to length(rules))
+		var/datum/nanite_rule/our_rule = rules[i]
+		var/datum/nanite_rule/their_rule = target.rules[i]
+		if(our_rule.type != their_rule.type || our_rule.display() != their_rule.display())
+			return TRUE
+	if(!istype(target, src)) //extra settings are only copied between matching types
+		return FALSE
+	var/list/target_settings = target.extra_settings
+	for(var/setting_name in extra_settings)
+		var/datum/nanite_extra_setting/our_setting = extra_settings[setting_name]
+		var/datum/nanite_extra_setting/their_setting = target_settings?[setting_name]
+		if(isnull(their_setting) || our_setting.get_value() != their_setting.get_value())
+			return TRUE
+	return FALSE
+
 ///Register extra settings by overriding this.
 ///extra_settings[name] = new typepath() for each extra setting
 /datum/nanite_program/proc/register_extra_settings()
@@ -276,6 +312,7 @@
 		type = rand(1,5)
 	switch(type)
 		if(1)
+			nanites?.notify_host("Your [name] nanite program hits a software error and deletes itself.", warning = TRUE)
 			qdel(src) //kill switch
 			return
 		if(2) //deprogram codes
@@ -283,14 +320,18 @@
 			deactivation_code = 0
 			kill_code = 0
 			trigger_code = 0
+			nanites?.notify_host("Your [name] nanite program hits a software error and loses its signal codes.", warning = TRUE)
 		if(3)
 			toggle() //enable/disable
+			nanites?.notify_host("Your [name] nanite program hits a software error and switches [activated ? "on" : "off"].", warning = TRUE)
 		if(4)
 			if(can_trigger)
 				trigger()
+				nanites?.notify_host("Your [name] nanite program hits a software error and fires its trigger.", warning = TRUE)
 		if(5) //Program is scrambled and does something different
 			var/rogue_type = pick(rogue_types)
 			var/datum/nanite_program/rogue = new rogue_type
+			nanites?.notify_host("Your [name] nanite program is scrambled and rewritten into [rogue.name].", warning = TRUE)
 			nanites.add_program(null, rogue, src)
 			qdel(src)
 

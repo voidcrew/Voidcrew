@@ -6,6 +6,14 @@
 
 ///The chance at a Nanite program randomly failing when it cannot sync
 #define NANITE_FAILURE_CHANCE 8
+///How long the host is left alone between repeats of the "cannot reach the cloud" warning
+#define NANITE_CLOUD_WARNING_DELAY (2 MINUTES)
+
+///Sync result flags, returned by /datum/component/nanites/proc/sync_programming
+///Programs the cloud had and the host didn't were installed
+#define NANITE_SYNC_ADDED (1<<0)
+///Programming the host already had was deleted or overwritten with different settings
+#define NANITE_SYNC_REPLACED (1<<1)
 
 #define NANITE_SHOCK_IMMUNE (1<<0)
 #define NANITE_EMP_IMMUNE (1<<1)
