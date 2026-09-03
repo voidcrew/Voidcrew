@@ -297,6 +297,54 @@
 		to end up standing on it."
 
 /**
+ * Stops a hull that has just grown from silently burying its own docking port.
+ *
+ * Returns null when there is nothing to say. Otherwise list(turf/reseated_to, text): a null
+ * `reseated_to` means the port could not move and the caller should warn rather than report.
+ *
+ * Growing out past the port cannot be refused at build time. The first tile of a new bow
+ * already overhangs, so a build-time refusal would make the outer door that legalises the
+ * expansion impossible to build - which is why the hard stop lives on undock instead (see
+ * /obj/structure/overmap/ship/can_undock()). What a build *can* do is the bookkeeping the
+ * crew would otherwise have to know to do by hand on the construction console's port
+ * relocator: if the hull now stands proud of the port and a door is standing on the new
+ * outermost plating, move the port onto it. Otherwise say so, in the same words the survey
+ * uses, and let the build stand. Before this the drone did neither, so a crew that built out
+ * with the console - the one tool that can cure it - was left with a ship cargo refused to
+ * deliver to and no hint as to why (issue #130).
+ *
+ * Same-face only, exactly as the survey's reseat is: hull_port_reseat_target() looks along
+ * the port's existing outward direction and nothing here turns the port.
+ *
+ * Not cheap - hull_port_overhang() walks every turf of every hull area. Callers gate it on
+ * the O(1) hull_port_offset() test for the tile they just touched.
+ */
+/proc/hull_reseat_after_growth(obj/docking_port/mobile/port)
+	if(!port)
+		return null
+
+	var/list/overhang = hull_port_overhang(port, null)
+	if(overhang[1] <= 0)
+		return null
+
+	var/facing = dir2text(REVERSE_DIR(port.dir))
+	var/turf/reseat_to = hull_port_reseat_target(port, null)
+	if(!reseat_to)
+		return list(null, "Hull warning: the ship now stands [overhang[1]] metre\s out past its \
+			docking port on the [facing] side, and there is no door on that outermost plating for \
+			the port to move to. [hull_port_door_instruction(port, overhang[2])] Until the port is \
+			out there the ship cannot undock and cargo will refuse to deliver, because the \
+			overhanging section would be driven through whatever it berths against.")
+
+	hull_reseat_port(port, reseat_to)
+	var/obj/machinery/door/reseated_door = hull_port_door(reseat_to)
+	log_shuttle("[port] reseated its docking port to ([reseat_to.x], [reseat_to.y]) after a construction expansion, clearing a [overhang[1]] tile overhang.")
+	return list(reseat_to, "The hull now stands out past the old docking port. Port reseated to \
+		[reseated_door ? "the [reseated_door.name]" : "the outer hull"] at ([reseat_to.x], \
+		[reseat_to.y]) - that door on the [facing] face is now where other ships and the cargo \
+		shuttle berth.")
+
+/**
  * A bearing the player can actually walk, plus the coordinates to sanity-check it against.
  *
  * get_dist() is a Chebyshev distance and get_dir() is one of eight compass points, so a tile

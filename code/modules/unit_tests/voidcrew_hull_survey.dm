@@ -74,6 +74,7 @@
 	test_port_seat_rejects_an_interior_door()
 	test_new_hull_area_belongs_to_the_ship()
 	test_expansion_past_the_port_needs_a_door_on_the_new_face()
+	test_drone_growth_reseats_or_warns()
 	test_survey_bearing_reports_both_legs()
 
 /**
@@ -386,6 +387,104 @@
 	// QDEL_HINT_LETMELIVE, so the port would survive, reset_block() would qdel it a second
 	// time, and /obj/docking_port/mobile/Destroy()'s unregister() would log a WARNING - which
 	// is enough on its own to stop a CI run being called clean.
+	qdel(port, force = TRUE)
+	reset_block()
+	evacuate_area(hull_area)
+	qdel(hull_area)
+
+/**
+ * The drone's half of the same rule: never refuse, but never bury the port in silence either.
+ *
+ * The survey can refuse a claim before it commits. A drone build cannot - the first tile of a
+ * new bow already overhangs the port, so a build-time refusal would make the outer door that
+ * legalises the expansion unbuildable. The console did neither: it grew the hull and said
+ * nothing, so the crew found out when cargo answered "Obstruction" and the helm refused to
+ * launch, with no hint that the docking port was the thing in the way (issue #130).
+ *
+ * Both outcomes are asserted here because they are the two halves of one promise: with a door
+ * on the new outermost plating the port moves itself, and without one the operator is told
+ * which face needs the door and where.
+ */
+/datum/unit_test/voidcrew_hull_survey/proc/test_drone_growth_reseats_or_warns()
+	reset_block()
+
+	// Same stub as test_expansion_past_the_port_needs_a_door_on_the_new_face(): 5 wide, 3 deep
+	// at (3,3)-(7,5), port on the north face at (5,5) facing SOUTH into the ship.
+	var/list/hull = list()
+	for(var/offset_x in 3 to 7)
+		for(var/offset_y in 3 to 5)
+			var/turf/scratch = spot(offset_x, offset_y)
+			scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+			hull += scratch
+
+	var/area/shuttle/voidcrew/hull_area = new()
+	hull_area.setup("Test Drone Hull")
+	var/obj/docking_port/mobile/voidcrew/port = new(spot(5, 5))
+	port.register()
+	port.dir = SOUTH
+	port.shuttle_areas = list()
+	port.shuttle_areas[hull_area] = TRUE
+	set_turfs_to_area(hull, hull_area)
+	settle()
+
+	// Nothing has grown yet: the check has to be silent, or every build in the round prints.
+	TEST_ASSERT_NULL(hull_reseat_after_growth(port), "a hull flush with its own docking port was told it overhangs")
+
+	// The drone build. Unlike the survey's claim these tiles are committed straight into the
+	// hull's area, which is the state expand_shuttle_to_turf() leaves behind.
+	var/list/new_row = list()
+	for(var/offset_x in 3 to 7)
+		var/turf/scratch = spot(offset_x, 6)
+		scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+		new_row += scratch
+	set_turfs_to_area(new_row, hull_area)
+	settle()
+
+	var/turf/outer_line = spot(5, 6)
+
+	// No door out there yet. The build stands, the port does not move, and the operator is
+	// told which face and which line to put the door on.
+	var/list/warned = hull_reseat_after_growth(port)
+	TEST_ASSERT_NOTNULL(warned, "a drone build past the docking port said nothing at all")
+	TEST_ASSERT_NULL(warned[1], "the port was reseated onto a face with no door on it")
+	TEST_ASSERT_EQUAL(get_turf(port), spot(5, 5), "the port moved even though there was no door to move it to")
+	var/warning = warned[2]
+	TEST_ASSERT(findtext(warning, "north"), "the warning never says which face needs the door: [warning]")
+	TEST_ASSERT(findtext(warning, ", [outer_line.y])"), "the warning never gives coordinates on the outermost line (y = [outer_line.y]): [warning]")
+
+	// Now the crew do what the warning asked. The door is built on a tile that is already
+	// hull, so nothing expands - this is the case the console has to catch on the airlock
+	// build itself, or following the instruction appears to do nothing.
+	var/obj/machinery/door/airlock/bow_door = new(outer_line)
+	settle()
+
+	var/list/reseated = hull_reseat_after_growth(port)
+	TEST_ASSERT_NOTNULL(reseated, "a door on the new outermost plating did not move the port")
+	TEST_ASSERT_EQUAL(reseated[1], outer_line, "the port was not reseated onto the airlock standing on the new outermost plating")
+	TEST_ASSERT_EQUAL(get_turf(port), outer_line, "the reseat reported a move it did not make")
+	TEST_ASSERT(findtext(reseated[2], "([outer_line.x], [outer_line.y])"), "the reseat notice never says where the port went: [reseated[2]]")
+
+	// And the hull is legal again, so nothing further is said on the next build.
+	TEST_ASSERT_NULL(hull_reseat_after_growth(port), "the hull still reported an overhang after the port was reseated onto its outermost door")
+
+	// A door BEHIND the outermost plating is not a seat. Grow one more row past the reseated
+	// port and leave the airlock where it is: the port must stay put and warn again.
+	var/list/further = list()
+	for(var/offset_x in 3 to 7)
+		var/turf/scratch = spot(offset_x, 7)
+		scratch.ChangeTurf(/turf/open/floor/plating, /turf/open/space)
+		further += scratch
+	set_turfs_to_area(further, hull_area)
+	settle()
+
+	var/list/warned_again = hull_reseat_after_growth(port)
+	TEST_ASSERT_NOTNULL(warned_again, "a second drone build past the reseated port said nothing")
+	TEST_ASSERT_NULL(warned_again[1], "a door one row behind the outermost plating was accepted as a port seat")
+	TEST_ASSERT_EQUAL(get_turf(port), outer_line, "the port moved onto a door that no longer stands on the outermost plating")
+	TEST_ASSERT(findtext(warned_again[2], ", [spot(5, 7).y])"), "the second warning still quotes the old outermost line: [warned_again[2]]")
+
+	qdel(bow_door)
+	// force, and before the block is wiped - see the note in the test above.
 	qdel(port, force = TRUE)
 	reset_block()
 	evacuate_area(hull_area)
