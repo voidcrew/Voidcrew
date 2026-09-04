@@ -74,6 +74,71 @@
 	return ..()
 
 /**
+ * Crew-only airlocks.
+ *
+ * A captain can key their hull's airlocks to the crew roster from Ship Management.
+ * Only player-created hulls qualify - the roundstart fleet stays public, the same rule
+ * the join password follows. While the lock is on, every airlock and windoor inside
+ * that ship refuses any player who is not crew: not on the ship team, and not cleared
+ * past its join password. Boarders and tourists get the normal deny animation and a
+ * line of chat; the crew never notice it is there.
+ *
+ * Only those two door types are gated. A firedoor is safety equipment and stays
+ * openable by anyone, which is the whole point of a firedoor.
+ *
+ * Nothing else about a door changes. An unpowered one is still crowbarred open, an
+ * emagged one is still emagged and a cut ID-scan wire still bypasses the reader -
+ * airlock requiresID() answers FALSE for both, and bumpopen() never asks allowed() in
+ * that case. Bolts are still bolts. Hanging the refusal on the two subtypes rather
+ * than on the /obj/machinery/door override above is deliberate: it runs ahead of
+ * `emergency` and `unres_sides`, neither of which should punch a hole in a lock the
+ * captain deliberately set.
+ */
+GLOBAL_LIST_EMPTY(crew_locked_ships)
+
+/**
+ * Whether this door has to refuse `user` because its ship is crew-locked. Also prints
+ * the refusal, at most once every few seconds per player: walking into a door repeats
+ * this call several times a second.
+ *
+ * The empty-global test comes first and is the entire reason that global exists. In a
+ * round where nobody has turned the lock on this is one list read on a path that runs
+ * for every airlock bump and inside bot pathfinding, and the area lookup below never
+ * happens at all.
+ */
+/obj/machinery/door/proc/refused_by_ship_crew_lock(mob/user)
+	if(!length(GLOB.crew_locked_ships))
+		return FALSE
+	// Players only. Clientless mobs are covered by the NPC rule above, and bots and
+	// silicons stay on the upstream path so their own credentials are still read.
+	if(!user?.client)
+		return FALSE
+	if(isbot(user) || HAS_SILICON_ACCESS(user))
+		return FALSE
+	var/area/shuttle/voidcrew/ship_area = get_area(src)
+	if(!istype(ship_area))
+		return FALSE
+	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
+	if(isnull(ship) || !ship.crew_only_airlocks)
+		return FALSE
+	if(ship.is_ship_crew(user))
+		return FALSE
+	if(TIMER_COOLDOWN_FINISHED(user, "ship_crew_lock_refusal"))
+		TIMER_COOLDOWN_START(user, "ship_crew_lock_refusal", 5 SECONDS)
+		to_chat(user, span_warning("This airlock is keyed to the [ship.name]'s crew."))
+	return TRUE
+
+/obj/machinery/door/airlock/allowed(mob/user)
+	if(refused_by_ship_crew_lock(user))
+		return FALSE
+	return ..()
+
+/obj/machinery/door/window/allowed(mob/user)
+	if(refused_by_ship_crew_lock(user))
+		return FALSE
+	return ..()
+
+/**
  * Lockers never check access at all, anywhere.
  *
  * /tg/ maps department access onto most of its secure furniture, which on a hull

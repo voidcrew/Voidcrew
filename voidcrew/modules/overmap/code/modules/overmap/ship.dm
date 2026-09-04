@@ -73,6 +73,11 @@
 	///anyone who has entered it correctly, and invited crew. Keyed by ckey rather than
 	///mind so dying and respawning through the lobby doesn't re-lock your own ship.
 	var/list/password_cleared_ckeys = list()
+	///Whether this ship's airlocks refuse anyone who is not crew. Off by default, and
+	///only settable on hulls that may carry a join password - the roundstart fleet stays
+	///public either way (see can_have_join_password()). Maintained together with
+	///GLOB.crew_locked_ships by set_crew_only_airlocks(); never write it directly.
+	var/crew_only_airlocks = FALSE
 	///Name of the ship.
 	var/map_name
 	///Short memo of the ship, set by the crew, and shown to latejoiners.
@@ -753,6 +758,7 @@
 			door.req_one_access = null
 
 /obj/structure/overmap/ship/Destroy()
+	GLOB.crew_locked_ships -= src
 	source_template = null
 	shuttle?.intoTheSunset()
 	shuttle = null
@@ -1042,6 +1048,11 @@
 	// A derelict is public salvage - the old crew's lock dies with their tenure
 	join_password = null
 	password_cleared_ckeys = list()
+	// ...and so does the crew-only airlock lock. Set directly rather than through
+	// set_crew_only_airlocks(): the roster is about to be emptied, so its crew
+	// announcement would reach nobody anyway.
+	crew_only_airlocks = FALSE
+	GLOB.crew_locked_ships -= src
 
 	// Clear all crew members properly (removes antag datums). Snapshot the roster
 	// first: the announcement at the bottom has to reach these players, and by the
@@ -1256,6 +1267,60 @@
 	if(user)
 		to_chat(user, span_notice("Join password set. Players joining [name] from the lobby must enter it; crew you invite never need it."))
 	log_game("[key_name(user)] set a join password on ship [name]")
+	return TRUE
+
+// ===== CREW-ONLY AIRLOCKS =====
+
+/**
+ * Whether a mob counts as this ship's crew.
+ *
+ * Two things make you crew and either one is enough: your mind is on the ship's team
+ * (you serve aboard right now), or your ckey is cleared past the join password - you
+ * bought the hull, you were invited, you typed the password, or you served aboard
+ * earlier this round. The ckey clause is what keeps a crewman who died and came back
+ * through the lobby from being locked out of their own airlocks while the new body's
+ * mind is still being put on the roster.
+ *
+ * Deliberately takes a plain /mob: ghosts and non-human crew ask this too.
+ */
+/obj/structure/overmap/ship/proc/is_ship_crew(mob/checking)
+	if(!checking)
+		return FALSE
+	if(checking.mind && (checking.mind in ship_team?.members))
+		return TRUE
+	var/checking_ckey = checking.ckey
+	if(!checking_ckey)
+		return FALSE
+	return (checking_ckey in password_cleared_ckeys)
+
+/**
+ * Turns the crew-only airlock lock on or off. Returns TRUE if the state changed.
+ *
+ * Same hull rule as the join password: the roundstart fleet is the public fleet and
+ * cannot be locked, so a crew cannot privatize a hull the round spawned for everyone.
+ * Authorization (captain, alive, aboard) is the caller's job; this only enforces which
+ * hulls may carry the lock at all, and keeps GLOB.crew_locked_ships in step so the
+ * door hot path can skip the whole feature while no ship is using it.
+ */
+/obj/structure/overmap/ship/proc/set_crew_only_airlocks(new_state, mob/user)
+	new_state = !!new_state
+	if(new_state && !can_have_join_password())
+		if(user)
+			to_chat(user, span_warning("[name] is a fleet-issued vessel - its airlocks stay open to everyone."))
+		return FALSE
+	if(crew_only_airlocks == new_state)
+		return FALSE
+	crew_only_airlocks = new_state
+	if(new_state)
+		GLOB.crew_locked_ships |= src
+	else
+		GLOB.crew_locked_ships -= src
+	if(user)
+		log_game("[key_name(user)] turned crew-only airlocks [new_state ? "on" : "off"] aboard ship [name]")
+	var/lock_message = new_state \
+		? "Airlock control is now keyed to the crew roster. Anyone not on it will be refused at the doors." \
+		: "Airlock control is no longer keyed to the crew roster. The doors open for anyone again."
+	ship_notify(lock_message, "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	return TRUE
 
 /**

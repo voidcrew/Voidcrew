@@ -129,6 +129,7 @@
 	data["joining_allowed"] = ship.joining_allowed
 	data["join_password"] = ship.join_password || ""
 	data["can_set_password"] = ship.can_have_join_password()
+	data["crew_only_airlocks"] = ship.crew_only_airlocks
 
 	// Check if user is still captain
 	data["is_captain"] = ship.is_ship_captain(captain)
@@ -250,6 +251,11 @@
 		if("set_password")
 			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
 			ship.set_join_password(params["password"], captain)
+			return TRUE
+
+		if("toggle_crew_lock")
+			// set_crew_only_airlocks handles the fleet-hull refusal, the crew announcement and logging
+			ship.set_crew_only_airlocks(!ship.crew_only_airlocks, captain)
 			return TRUE
 
 // ===== INVITE SYSTEM =====

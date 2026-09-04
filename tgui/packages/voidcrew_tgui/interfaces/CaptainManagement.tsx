@@ -42,6 +42,7 @@ type Data = {
   joining_allowed: BooleanLike;
   join_password: string;
   can_set_password: BooleanLike;
+  crew_only_airlocks: BooleanLike;
   is_captain: BooleanLike;
   crew: CrewMember[];
   available_players: AvailablePlayer[];
@@ -254,6 +255,7 @@ const SettingsTab = () => {
     joining_allowed,
     join_password,
     can_set_password,
+    crew_only_airlocks,
     can_rename,
   } = data;
   const [newName, setNewName] = useState(ship_name ?? '');
@@ -349,6 +351,36 @@ const SettingsTab = () => {
             <Box color="label">
               Fleet-issued vessels stay open to everyone and cannot be
               password-locked.
+            </Box>
+          )}
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Crew-Only Airlocks">
+          {can_set_password ? (
+            <Stack align="center">
+              <Stack.Item grow>
+                <Box color="label" fontSize="11px">
+                  While this is on, the airlocks and windoors aboard this ship
+                  only open for your crew. Anyone else is refused at the door.
+                  Crowbars, emags and cut wires still work as they always did.
+                </Box>
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon={crew_only_airlocks ? 'lock' : 'lock-open'}
+                  color={crew_only_airlocks ? 'good' : 'bad'}
+                  onClick={() => act('toggle_crew_lock')}
+                >
+                  {crew_only_airlocks ? 'Crew Only' : 'Open To All'}
+                </Button>
+              </Stack.Item>
+            </Stack>
+          ) : (
+            <Box color="label">
+              Fleet-issued vessels stay open to everyone and cannot key their
+              airlocks to the crew.
             </Box>
           )}
         </Section>

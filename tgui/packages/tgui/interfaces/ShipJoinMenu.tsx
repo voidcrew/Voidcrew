@@ -16,6 +16,7 @@ type ActiveShip = {
   memo: string | null;
   locked: BooleanLike;
   password_cleared: BooleanLike;
+  crew_locked: BooleanLike;
 };
 
 type ShipJoinMenuData = {
@@ -252,6 +253,17 @@ const ShipCard = (props: { ship: ActiveShip }) => {
                         mr={0.5}
                       />
                       {ship.password_cleared ? 'Cleared' : 'Password'}
+                    </Box>
+                  </Stack.Item>
+                )}
+                {!!ship.crew_locked && (
+                  <Stack.Item ml={1.5}>
+                    <Box
+                      fontSize="12px"
+                      color="yellow"
+                    >
+                      <Icon name="door-closed" mr={0.5} />
+                      Crew-only doors
                     </Box>
                   </Stack.Item>
                 )}

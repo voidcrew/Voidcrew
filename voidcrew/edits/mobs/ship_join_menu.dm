@@ -114,7 +114,8 @@
 			"jobs" = jobs,
 			"memo" = active_ship.memo,
 			"locked" = !!active_ship.join_password,
-			"password_cleared" = active_ship.is_password_cleared(user.ckey)
+			"password_cleared" = active_ship.is_password_cleared(user.ckey),
+			"crew_locked" = !!active_ship.crew_only_airlocks
 		))
 
 	data["ships"] = ships
