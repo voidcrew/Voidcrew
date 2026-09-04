@@ -55,6 +55,26 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
+/datum/techweb_node/ship_fabrication
+	id = TECHWEB_NODE_SHIP_FABRICATION
+	display_name = "Shuttle Construction Servos"
+	description = "Faster actuators for the ship construction drone, shaving a quarter off every build."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list(
+		"ship_construction_upgrade_servo",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_fabrication_advanced
+	id = TECHWEB_NODE_SHIP_FABRICATION_ADV
+	display_name = "Advanced Shuttle Construction Servos"
+	description = "A second-generation servo package for the ship construction drone, halving its build times."
+	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION)
+	design_ids = list(
+		"ship_construction_upgrade_servo_mk2",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
 /datum/techweb_node/exp_shuttle_tech
 	id = TECHWEB_NODE_EXPERIMENTAL_SHUTTLE
 	display_name = "Experimental Shuttle Research"
