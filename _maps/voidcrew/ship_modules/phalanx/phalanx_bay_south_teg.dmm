@@ -1,0 +1,256 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"e" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"f" = (
+/obj/machinery/atmospherics/components/tank/plasma/less{
+	dir = 1;
+	open_ports = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"j" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/template_noop)
+"k" = (
+/obj/machinery/atmospherics/pipe/smart/simple/orange/visible{
+	dir = 5
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"o" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 2;
+	name = "cold loop circulation pump"
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"p" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
+	dir = 1
+	},
+/obj/machinery/meter,
+/turf/open/floor/plating,
+/area/template_noop)
+"q" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"r" = (
+/obj/machinery/atmospherics/components/binary/circulator{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"s" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/template_noop)
+"v" = (
+/obj/structure/rack,
+/obj/item/wrench,
+/obj/item/analyzer,
+/obj/item/multitool,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+"y" = (
+/obj/machinery/atmospherics/components/binary/circulator/cold{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"z" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 1;
+	name = "hot loop circulation pump"
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"A" = (
+/turf/open/floor/plating,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"E" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/orange/visible{
+	dir = 2
+	},
+/obj/machinery/meter,
+/turf/open/floor/plating,
+/area/template_noop)
+"F" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 9
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"G" = (
+/obj/machinery/atmospherics/components/unary/thermomachine{
+	dir = 8;
+	target_temperature = 573
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"H" = (
+/obj/machinery/computer/monitor{
+	dir = 2;
+	name = "powerplant monitoring console"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"I" = (
+/obj/machinery/atmospherics/components/unary/thermomachine{
+	dir = 4;
+	target_temperature = 73
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"J" = (
+/obj/machinery/power/thermoelectric_generator{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"K" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
+	dir = 2
+	},
+/obj/machinery/meter,
+/turf/open/floor/plating,
+/area/template_noop)
+"L" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"O" = (
+/obj/machinery/portable_atmospherics/canister/plasma,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+"R" = (
+/obj/machinery/atmospherics/components/tank/plasma/less{
+	dir = 1;
+	open_ports = 4
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"S" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/orange/visible{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/meter,
+/turf/open/floor/plating,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"X" = (
+/obj/machinery/atmospherics/pipe/smart/simple/orange/visible{
+	dir = 6
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+
+(1,1,1) = {"
+B
+L
+c
+"}
+(2,1,1) = {"
+j
+A
+j
+"}
+(3,1,1) = {"
+R
+d
+I
+"}
+(4,1,1) = {"
+p
+o
+K
+"}
+(5,1,1) = {"
+e
+y
+F
+"}
+(6,1,1) = {"
+s
+J
+q
+"}
+(7,1,1) = {"
+X
+r
+k
+"}
+(8,1,1) = {"
+S
+z
+E
+"}
+(9,1,1) = {"
+G
+T
+f
+"}
+(10,1,1) = {"
+v
+A
+O
+"}
+(11,1,1) = {"
+H
+L
+U
+"}
