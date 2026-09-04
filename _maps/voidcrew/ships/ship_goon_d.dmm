@@ -192,6 +192,17 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
+"kd" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/engineering/d)
 "mv" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -502,6 +513,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/medbay/d)
+"zK" = (
+/obj/machinery/computer/security/telescreen/normal/directional/east,
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
 "Bn" = (
 /obj/structure/cable,
 /turf/open/floor/plating,
@@ -655,6 +670,17 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
+"Os" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/medbay/d)
 "OT" = (
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/mineral/titanium/dollhouse{
@@ -851,6 +877,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/engineering/d)
+"Zd" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/bridge/d)
 "Zg" = (
 /obj/machinery/cryopod,
 /obj/machinery/computer/cryopod{
@@ -973,11 +1009,11 @@ IZ
 OT
 GR
 GR
-zA
+Os
 GR
 mL
 mL
-Yy
+kd
 mL
 mL
 Sz
@@ -997,7 +1033,7 @@ Mx
 "}
 (10,1,1) = {"
 vc
-Un
+zK
 ZV
 hZ
 aI
@@ -1066,7 +1102,7 @@ bl
 EB
 fe
 EB
-RR
+Zd
 EB
 fe
 EB

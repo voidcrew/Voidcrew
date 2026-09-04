@@ -330,6 +330,16 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/c)
+"xx" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Cockpit"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/bridge/c)
 "yC" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
 /turf/open/floor/plating,
@@ -401,6 +411,17 @@
 	},
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"Hc" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Port Compartment"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/medbay/c)
 "HT" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 4
@@ -463,6 +484,10 @@
 /obj/machinery/computer/voidcrew_cargo{
 	dir = 4
 	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/goon/commons/c)
+"My" = (
+/obj/machinery/computer/security/telescreen/normal/directional/east,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
 "MU" = (
@@ -642,6 +667,17 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"Ye" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Engine Room"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/engineering/c)
 "YR" = (
 /obj/machinery/door/airlock/titanium{
 	name = "Boarding Airlock"
@@ -748,11 +784,11 @@ IZ
 wp
 mV
 mV
-Lt
+Hc
 mV
 Pm
 Pm
-om
+Ye
 Pm
 Pm
 wp
@@ -772,7 +808,7 @@ MU
 "}
 (10,1,1) = {"
 YR
-qO
+My
 bf
 iR
 VU
@@ -841,7 +877,7 @@ Rg
 Vs
 vK
 Vs
-Xi
+xx
 Vs
 vK
 Vs
