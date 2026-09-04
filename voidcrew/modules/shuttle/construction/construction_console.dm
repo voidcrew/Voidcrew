@@ -98,6 +98,11 @@
 	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
 	return drone ? drone.dir : ..()
 
+/// Multiplier applied to our own build delays, from the console's fabrication servo upgrades.
+/// Returns 1 when the console has no speed upgrade installed (or we've been unlinked).
+/obj/item/construction/rcd/internal/ship/proc/get_build_speed_mod()
+	return ship_console?.get_build_speed_mod() || 1
+
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
 	if(delay <= 0)
@@ -357,11 +362,13 @@
 	if(!check_wall_materials(user))
 		return FALSE
 
+	var/build_time = SHIP_RCD_WALL_BUILD_DELAY * get_build_speed_mod()
+
 	// Show construction effect
-	var/obj/effect/constructing_effect/rcd_effect = new(target, 2 SECONDS, RCD_TURF)
+	var/obj/effect/constructing_effect/rcd_effect = new(target, build_time, RCD_TURF)
 
 	// Delay for building
-	if(!build_delay(user, 2 SECONDS, target))
+	if(!build_delay(user, build_time, target))
 		qdel(rcd_effect)
 		return FALSE
 
@@ -391,11 +398,13 @@
 	if(!check_floor_materials(user))
 		return FALSE
 
+	var/build_time = SHIP_RCD_FLOOR_BUILD_DELAY * get_build_speed_mod()
+
 	// Show construction effect
-	var/obj/effect/constructing_effect/rcd_effect = new(target, 1 SECONDS, RCD_TURF)
+	var/obj/effect/constructing_effect/rcd_effect = new(target, build_time, RCD_TURF)
 
 	// Delay for building
-	if(!build_delay(user, 1 SECONDS, target))
+	if(!build_delay(user, build_time, target))
 		qdel(rcd_effect)
 		return FALSE
 
@@ -439,11 +448,13 @@
 	if(!check_materials(camera_materials, user))
 		return null
 
+	var/build_time = SHIP_CAMERA_BUILD_DELAY * get_build_speed_mod()
+
 	// Show construction effect
-	var/obj/effect/constructing_effect/rcd_effect = new(target, SHIP_CAMERA_BUILD_DELAY, RCD_STRUCTURE)
+	var/obj/effect/constructing_effect/rcd_effect = new(target, build_time, RCD_STRUCTURE)
 
 	// Delay for building
-	if(!build_delay(user, SHIP_CAMERA_BUILD_DELAY, target))
+	if(!build_delay(user, build_time, target))
 		qdel(rcd_effect)
 		return null
 
@@ -809,6 +820,7 @@
 	// Add the remote materials component to the RCD so it can link to a silo
 	// The silo_mats needs to be added after setting the upgrade flag
 	internal_rcd.silo_mats = internal_rcd.AddComponent(/datum/component/remote_materials, mapload, FALSE)
+	update_build_speed()
 	. = ..()
 	// Console ambient sounds
 	console_ambience = new(src, get_console_ambience_sounds())
@@ -824,6 +836,33 @@
 	QDEL_NULL(internal_rld)
 	tray_connection_images.Cut()
 	return ..()
+
+// ============================================
+// Build Speed Upgrades
+// ============================================
+
+/**
+ * Multiplier applied to every construction delay the drone incurs.
+ * 1 with no upgrade, 0.75 with fabrication servos, 0.5 with the mk2 package.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_build_speed_mod()
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2)
+		return SHIP_CONSTRUCTION_SERVO_MK2_SPEED_MOD
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO)
+		return SHIP_CONSTRUCTION_SERVO_SPEED_MOD
+	return 1
+
+/**
+ * Pushes the current speed multiplier onto the internal RCD's delay_mod.
+ * That covers everything routed through rcd_create() (windows, girders, generic
+ * deconstruction); the paths that charge and time themselves by hand instead -
+ * build_wall(), build_floor(), build_camera(), and the airlock/camera deconstruct
+ * actions - read get_build_speed_mod() directly. Applied once per path, never twice.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/update_build_speed()
+	if(!internal_rcd)
+		return
+	internal_rcd.delay_mod = initial(internal_rcd.delay_mod) * get_build_speed_mod()
 
 /// Process T-ray scanner modes while viewing
 /obj/machinery/computer/camera_advanced/base_construction/ship/process()
@@ -932,8 +971,16 @@
 		console_upgrade_list += "rapid piping"
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RLD)
 		console_upgrade_list += "rapid lighting"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2)
+		console_upgrade_list += "fabrication servos mk2"
+	else if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO)
+		console_upgrade_list += "fabrication servos"
 	if(length(console_upgrade_list))
 		. += span_notice("Installed console upgrades: [english_list(console_upgrade_list)].")
+
+	var/speed_mod = get_build_speed_mod()
+	if(speed_mod < 1)
+		. += span_notice("Drone construction time is reduced by [round((1 - speed_mod) * 100)]%.")
 
 	. += span_notice("You can insert RCD upgrade disks or ship construction upgrade disks to add more capabilities.")
 
@@ -979,8 +1026,16 @@
 			balloon_alert(user, "already installed!")
 			return ITEM_INTERACT_FAILURE
 
+		// Tiered upgrades refuse to install until their prerequisite disk is in
+		if((console_upgrades & upgrade_disk.required_upgrades) != upgrade_disk.required_upgrades)
+			balloon_alert(user, "needs earlier upgrade!")
+			return ITEM_INTERACT_FAILURE
+
 		// Install the upgrade
 		console_upgrades |= upgrade_disk.upgrade_flags
+
+		// Push any fabrication servo upgrade onto the internal RCD's delay_mod
+		update_build_speed()
 
 		// Inherit whatever silo the console is already linked to - the multitool linkup usually
 		// happened rounds' worth of construction ago and nothing else will relink these devices.

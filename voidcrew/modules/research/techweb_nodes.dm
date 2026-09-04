@@ -55,6 +55,26 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
+/datum/techweb_node/ship_fabrication
+	id = TECHWEB_NODE_SHIP_FABRICATION
+	display_name = "Shuttle Construction Servos"
+	description = "Faster actuators for the ship construction drone, shaving a quarter off every build."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list(
+		"ship_construction_upgrade_servo",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_fabrication_advanced
+	id = TECHWEB_NODE_SHIP_FABRICATION_ADV
+	display_name = "Advanced Shuttle Construction Servos"
+	description = "A second-generation servo package for the ship construction drone, halving its build times."
+	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION)
+	design_ids = list(
+		"ship_construction_upgrade_servo_mk2",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
 /datum/techweb_node/exp_shuttle_tech
 	id = TECHWEB_NODE_EXPERIMENTAL_SHUTTLE
 	display_name = "Experimental Shuttle Research"
@@ -346,6 +366,43 @@
 	design_ids += list(
 		"surgery_oldstation_dissection_elite",
 	)
+
+/**
+ * Generic ammunition manufacturing.
+ *
+ * The weapons bench covers each blueprint gun's own ammo (voidcrew/modules/weapons_bench/).
+ * These two nodes cover everything else: the plain calibers upstream leaves with no lathe
+ * design at all, or only an autolathe-only one that a ship techweb can never reach. A crew
+ * that ran dry previously had no option but a ruin printer.
+ */
+/datum/techweb_node/ballistic_ammunition
+	id = TECHWEB_NODE_BALLISTIC_AMMO
+	display_name = "Ballistic Ammunition"
+	description = "Case, primer and projectile tooling for the calibers every hauler ends up carrying."
+	prereq_ids = list(TECHWEB_NODE_BASIC_ARMS)
+	design_ids = list(
+		"vc_shotgun_slug",
+		"vc_shotgun_buckshot",
+		"vc_a357_lathe",
+		"vc_strilka310_clip",
+		"vc_n762",
+		"vc_mag_m9mm",
+		"vc_mag_m10mm",
+		"vc_mag_m45",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/automatic_ammunition
+	id = TECHWEB_NODE_AUTOMATIC_AMMO
+	display_name = "Automatic Ammunition"
+	description = "High-capacity feed devices and specialist shells. Keeping an automatic fed costs a lot more metal than keeping a pistol fed."
+	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
+	design_ids = list(
+		"vc_mag_m9mm_aps",
+		"vc_mag_smgm9mm",
+		"vc_shotgun_dragonsbreath",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/mission_logistics
 	id = TECHWEB_NODE_MISSION_LOGISTICS
