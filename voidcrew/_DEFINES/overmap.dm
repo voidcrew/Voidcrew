@@ -27,6 +27,11 @@
 /// Longest join password a captain may set on a player-created hull
 #define SHIP_JOIN_PASSWORD_MAX_LEN 24
 
+/// Longest distress-beacon message the helm will accept and repeat on Wideband.
+/// Lives here rather than beside the beacon because the console's text prompt caps
+/// the input and the ship caps the stored text (see ship_distress.dm).
+#define DISTRESS_MESSAGE_MAX_LEN 140
+
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
 #define OVERMAP_SHIP_FLYING "flying"

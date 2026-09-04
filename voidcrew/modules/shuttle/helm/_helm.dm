@@ -339,6 +339,15 @@
 			"own" = sender == current_ship,
 		))
 
+	// Our own distress beacon. The state of everyone else's rides the contact
+	// snapshot above; this is the switch on this console (see ship_distress.dm).
+	data["distress"] = list(
+		"active" = current_ship.distress_active,
+		"message" = current_ship.distress_message,
+		"cooldown" = !COOLDOWN_FINISHED(current_ship, distress_toggle_cooldown),
+		"cooldownRemaining" = COOLDOWN_TIMELEFT(current_ship, distress_toggle_cooldown),
+	)
+
 	// Sealed rumors bought from traders, waiting on the reveal button
 	data["pendingRumors"] = list()
 	for(var/datum/rumor_chart/chart as anything in current_ship.pending_rumors)
@@ -625,6 +634,56 @@
 	if(current_ship.abandoned)
 		return TRUE // Abandoned ships allow anyone to access for claiming
 	return (living_user.mind in current_ship.ship_team.members)
+
+/**
+ * The distress-beacon switch.
+ *
+ * Lighting one opens a text prompt prefilled with a plain mayday, which the crew
+ * can rewrite to say anything at all before it goes out - nothing verifies it,
+ * and that is the whole design (see ship_distress.dm). Shutting one down takes no
+ * prompt at all: getting off the air has to be one press.
+ *
+ * No rank check anywhere. Anyone who can work this console can raise or drop the
+ * beacon, because the situations it exists for are the ones where the officers
+ * are already dead.
+ */
+/obj/machinery/computer/helm/proc/toggle_distress_beacon(mob/user)
+	if(!current_ship)
+		return
+	if(!COOLDOWN_FINISHED(current_ship, distress_toggle_cooldown))
+		// Balloon rather than say(): the refusal belongs to whoever pressed the
+		// button, not to the whole bridge.
+		balloon_alert(user, "beacon interlock cycling")
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+		return
+	if(current_ship.distress_active)
+		current_ship.deactivate_distress_beacon(user)
+		playsound(src, 'sound/machines/terminal/terminal_off.ogg', 40)
+		current_ship.push_helm_frame()
+		return
+
+	var/message = tgui_input_text(
+		user,
+		"This repeats on Wideband and puts your position on every helm in the galaxy until you switch it off. Nothing checks what it says.",
+		"Distress Beacon",
+		current_ship.default_distress_message(),
+		DISTRESS_MESSAGE_MAX_LEN,
+	)
+	if(isnull(message))
+		return
+	// The prompt sleeps, so nothing that was true when it opened is still
+	// guaranteed: the console can be gone, the ship can be gone, the roster can
+	// have changed, and somebody at another helm can have lit the beacon first.
+	if(QDELETED(src) || !current_ship || !is_crew_member(user))
+		return
+	if(current_ship.distress_active || !COOLDOWN_FINISHED(current_ship, distress_toggle_cooldown))
+		return
+	if(!current_ship.activate_distress_beacon(message, user))
+		say("ERROR: Distress beacon refused the transmission.")
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+		return
+	playsound(src, 'sound/machines/terminal/terminal_alert.ogg', 50)
+	current_ship.push_helm_frame()
 
 /obj/machinery/computer/helm/LateInitialize()
 	. = ..()
@@ -915,6 +974,12 @@
 			COOLDOWN_START(src, hail_send_cooldown, HAIL_SEND_COOLDOWN)
 			log_game("[key_name(usr)] hailed from [current_ship.name] at [AREACOORD(src)]: \"[message]\"")
 			current_ship.ship_broadcast_runechat(message)
+			return
+		if("distress")
+			// Deliberately a universal topic: the hull-critical lockout below turns
+			// off every other control on this console, and a hull that far gone is
+			// precisely the one that needs to call for help.
+			toggle_distress_beacon(usr)
 			return
 		if("claim_abandoned")
 			if(!current_ship?.abandoned)

@@ -7183,6 +7183,7 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\ship.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_autopilot.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_damage.dm"
+#include "voidcrew\modules\overmap\code\modules\overmap\ship_distress.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_orbit_poi.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_sensors.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_transmissions.dm"

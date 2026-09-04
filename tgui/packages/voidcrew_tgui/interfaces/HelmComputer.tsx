@@ -83,6 +83,7 @@ const SVG_ORIGIN = { transformOrigin: '0 0' } as const;
 
 type ContactKind =
   | 'ship'
+  | 'distress'
   | 'planet'
   | 'ruin'
   | 'outpost'
@@ -126,6 +127,15 @@ type Contact = {
   target?: string | null;
   hostile?: BooleanLike;
   integrity?: number;
+  /**
+   * The hull behind this contact is running a distress beacon. Set on the
+   * contact whether it came from the vessel pass (a beacon inside the rings) or
+   * from the unlimited-range distress pass (one anywhere else in the galaxy).
+   * See ship_distress.dm.
+   */
+  sos?: BooleanLike;
+  /** Whatever the crew over there typed. Nothing verified it. */
+  sosMessage?: string | null;
 };
 
 /** A hail heard by this ship. See ship_transmissions.dm. */
@@ -311,6 +321,14 @@ type Data = {
   canLand: BooleanLike;
   dockOptions: DockOption[];
   autopilot: Autopilot;
+  /** This ship's own distress beacon. Everyone else's rides the contact set. */
+  distress: {
+    active: BooleanLike;
+    /** What the beacon is repeating, or null while it is dark. */
+    message: string | null;
+    cooldown: BooleanLike;
+    cooldownRemaining: number;
+  };
 };
 
 // BYOND direction bits, as change_heading expects them.
@@ -379,6 +397,9 @@ const KIND_COLOR: Record<ContactKind, string> = {
   ruin: '#9d8fd0',
   outpost: '#59b871',
   ship: '#d6e2e4',
+  // A rose nothing else on the chart wears, and the only mark that pulses. A
+  // beacon has to be findable on a chart the crew is already busy reading.
+  distress: '#ff4d6d',
   nebula: '#c479c0',
   hazard: '#cf4a38',
   bounty: '#e2564a',
@@ -438,6 +459,9 @@ const VARIANT_COLOR: Partial<Record<ContactKind, Record<string, string>>> = {
 const contactColour = (contact: Contact) => {
   if (contact.kind === 'ship' && !contact.identified) return '#8c9ea2';
   if (contact.hostile) return '#cf4a38';
+  // Under hostility, over everything else: a hull that has been scanned and read
+  // as hostile stays red however loudly it is calling for help.
+  if (contact.sos) return KIND_COLOR.distress;
   const variants = VARIANT_COLOR[contact.kind];
   const refined = contact.variant ? variants?.[contact.variant] : undefined;
   return refined ?? KIND_COLOR[contact.kind] ?? KIND_COLOR.marker;
@@ -1211,11 +1235,39 @@ const ZoneBadge = () => {
  */
 const AlertStrip = () => {
   const { data } = useBackend<Data>();
-  const drift = useDrift(useContacts());
-  const alerts: [string, string][] = [];
+  const contacts = useContacts();
+  const drift = useDrift(contacts);
+  // [severity, label, full text for the hover tooltip]. Most alerts say all they
+  // have to say on the rail; a distress message does not fit and gets a title.
+  const alerts: [string, string, string?][] = [];
 
   if (data.isNotCrew && !data.isAbandoned) {
     alerts.push(['crit', 'Crew authorization required']);
+  }
+  // Top of the rail, above the hull. A beacon is being read by every other crew
+  // in the galaxy, so nobody at this console should be able to forget it is lit.
+  if (data.distress?.active) {
+    const text = data.distress.message ?? '';
+    alerts.push([
+      'crit',
+      `Distress beacon active${
+        text ? `, ${text.length > 44 ? `${text.slice(0, 43)}…` : text}` : ''
+      }`,
+      text,
+    ]);
+  }
+  // Somebody else's beacon. It can be anywhere in the galaxy, so it usually sits
+  // well outside the chart's visible span - without a line here the only place a
+  // mayday shows up is the contact drawer, which nobody is looking at.
+  const incoming = contacts
+    .filter((contact) => !!contact.sos)
+    .sort((a, b) => a.dist - b.dist)[0];
+  if (incoming) {
+    alerts.push([
+      'warn',
+      `Distress call, ${incoming.name} ${incoming.dist} ${incoming.bearing}`.trim(),
+      incoming.sosMessage ?? undefined,
+    ]);
   }
   if (data.shipDisabled) {
     alerts.push(['crit', 'Hull critical, systems offline']);
@@ -1281,8 +1333,12 @@ const AlertStrip = () => {
   return (
     <div className="Helm__alerts">
       {alerts.length ? (
-        alerts.map(([severity, text]) => (
-          <span key={text} className={`Helm__alert Helm--${severity}`}>
+        alerts.map(([severity, text, detail]) => (
+          <span
+            key={text}
+            className={`Helm__alert Helm--${severity}`}
+            title={detail || undefined}
+          >
             {text}
           </span>
         ))
@@ -2999,6 +3055,37 @@ const ContactMark = (props: {
     >
       <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
         {/*
+          A beacon is the one mark on the chart that moves on its own. Two rings
+          out of phase, the same idiom a hail pulse uses, drawn under the hit area
+          so it never eats a click. The tooltip carries whatever the crew over
+          there typed, which is not necessarily true - see ship_distress.dm.
+        */}
+        {!!contact.sos && (
+          <>
+            <title>
+              {contact.sosMessage
+                ? `Distress beacon: "${contact.sosMessage}"`
+                : 'Distress beacon'}
+            </title>
+            <circle
+              className="Helm__pulse"
+              r={10}
+              fill="none"
+              stroke={colour}
+              strokeWidth={1.6}
+              pointerEvents="none"
+            />
+            <circle
+              className="Helm__pulse Helm__pulse--trail"
+              r={10}
+              fill="none"
+              stroke={colour}
+              strokeWidth={1.2}
+              pointerEvents="none"
+            />
+          </>
+        )}
+        {/*
           Invisible hit area. The glyphs are 5-6 units across at chart scale,
           which is a punishing target with a mouse, this gives every contact a
           consistent grab radius without changing how it looks.
@@ -3118,6 +3205,16 @@ const ContactReadout = (props: { contact: Contact }) => {
         {contact.integrity != null && ` · hull ${contact.integrity}%`}
         {!!contact.hostile && ' · HOSTILE'}
       </div>
+      {/*
+        Verbatim, and flagged as their words rather than the console's. The helm
+        knows a beacon is lit and knows nothing at all about whether it is honest.
+      */}
+      {!!contact.sos && (
+        <div className="Helm__readoutSos">
+          Distress beacon
+          {contact.sosMessage ? `: "${contact.sosMessage}"` : ''}
+        </div>
+      )}
       <div className="Helm__readoutHint">
         {unknown ? 'Right-click to identify' : 'Right-click to set course'}
       </div>
@@ -3455,6 +3552,26 @@ const ContactGlyph = (props: {
         <path d="M0,-5.5 L4,4.5 L0,2 L-4,4.5 Z" fill={colour} fillOpacity={0.9} />
       );
 
+    case 'distress':
+      // A transmitter throwing arcs out both sides: something broadcasting in
+      // every direction at once. The planet 'signal' variant throws them one way
+      // only and is drawn in dead grey, so the two never read as each other.
+      return (
+        <>
+          <circle r={1.7} fill={colour} />
+          <path
+            d="M-2.5,-2.5 A3.6 3.6 0 0 0 -2.5,2.5 M2.5,-2.5 A3.6 3.6 0 0 1 2.5,2.5"
+            {...line}
+            strokeWidth={1.4}
+          />
+          <path
+            d="M-4.4,-4.4 A6.3 6.3 0 0 0 -4.4,4.4 M4.4,-4.4 A6.3 6.3 0 0 1 4.4,4.4"
+            {...line}
+            strokeWidth={1.3}
+          />
+        </>
+      );
+
     case 'nebula':
       return (
         <>
@@ -3677,13 +3794,17 @@ const ContactList = () => {
                     contact.kind === 'ship' && !contact.identified
                       ? 'Helm--unknown'
                       : ''
-                  } ${selected === key ? 'Helm--selected' : ''}`}
+                  } ${contact.sos ? 'Helm--sos' : ''} ${
+                    selected === key ? 'Helm--selected' : ''
+                  }`}
                   title={
-                    contact.kind === 'ship' && !contact.identified
-                      ? 'Unidentified vessel, right-click for actions, or run a Ships scan to resolve it'
-                      : contact.hazard
-                        ? `${contact.hazard} · right-click to set course`
-                        : 'Bring it up on the chart · right-click to set course'
+                    contact.sos
+                      ? `Distress beacon: "${contact.sosMessage ?? 'no message'}" · nothing verifies this · right-click to set course`
+                      : contact.kind === 'ship' && !contact.identified
+                        ? 'Unidentified vessel, right-click for actions, or run a Ships scan to resolve it'
+                        : contact.hazard
+                          ? `${contact.hazard} · right-click to set course`
+                          : 'Bring it up on the chart · right-click to set course'
                   }
                   /*
                    * Highlight it and take the chart to it. A charted contact can
@@ -3839,7 +3960,7 @@ const AtLocation = () => {
 
 const Comms = () => {
   const { act, data } = useBackend<Data>();
-  const { transmissions = [] } = data;
+  const { transmissions = [], distress } = data;
   const locked = useLocked();
   const [message, setMessage] = useState('');
   // The keystroke sound is cosmetic, so it doesn't get a round trip per keypress.
@@ -3858,6 +3979,34 @@ const Comms = () => {
 
   return (
     <div className="Helm__comms">
+      {/*
+        The beacon in full, above the hail field, because this is where a crew
+        goes looking for anything the ship is transmitting. The rail up top
+        carries the same state truncated; this is the copy with the whole message
+        on it and the switch next to it.
+      */}
+      {!!distress?.active && (
+        <div className="Helm__sosPanel">
+          <div className="Helm__sosHead">Distress beacon transmitting</div>
+          <div className="Helm__sosBody">{distress.message}</div>
+          <button
+            type="button"
+            className="Helm__btn"
+            style={{ width: '100%' }}
+            disabled={locked || !!distress.cooldown}
+            title={
+              distress.cooldown
+                ? 'The beacon interlock is still cycling'
+                : 'Stop transmitting and drop off every other helm chart'
+            }
+            onClick={() => act('distress')}
+          >
+            {distress.cooldown
+              ? `Deactivate (${deciToSeconds(distress.cooldownRemaining)}s)`
+              : 'Deactivate'}
+          </button>
+        </div>
+      )}
       <Input
         fluid
         placeholder="Hail vessels in sight…"
@@ -4241,7 +4390,7 @@ const OpsButton = (props: {
   sub: string;
   path: string;
   disabled?: boolean;
-  state?: 'armed' | 'active';
+  state?: 'armed' | 'active' | 'distress';
   title: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }) => (
@@ -4292,6 +4441,7 @@ const OpsRow = () => {
     dockOptions,
     speed,
     dockAssistMaxSpeed,
+    distress,
   } = data;
   const locked = useLocked();
   const openDockPicker = useContext(DockMenuControl);
@@ -4465,6 +4615,30 @@ const OpsRow = () => {
         onClick={() =>
           act(hiddenInNebula ? 'unhide_from_nebula' : 'hide_in_nebula')
         }
+      />
+      {/*
+        Deliberately not gated on `flyable`. Every other control here dies with
+        the hull, and a dead hull is the one that most needs to call for help -
+        the server bypasses its own integrity lockout for this action too.
+      */}
+      <OpsButton
+        label="Distress"
+        sub={
+          distress?.active
+            ? 'transmitting'
+            : distress?.cooldown
+              ? `hold ${deciToSeconds(distress.cooldownRemaining)}s`
+              : 'beacon'
+        }
+        path="M12 3v7m0 0a4 4 0 100 8 4 4 0 000-8zM6.3 5.3a8 8 0 000 13.4M17.7 5.3a8 8 0 010 13.4"
+        disabled={locked || !!distress?.cooldown}
+        state={distress?.active ? 'distress' : undefined}
+        title={
+          distress?.active
+            ? `Shut the beacon down. Currently transmitting: "${distress.message ?? ''}"`
+            : 'Broadcast a distress call on Wideband and put this ship on every helm chart in the galaxy'
+        }
+        onClick={() => act('distress')}
       />
       <OpsButton
         label="Bluespace"
