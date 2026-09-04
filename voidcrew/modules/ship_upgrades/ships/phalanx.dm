@@ -100,6 +100,31 @@
 	map_file = "phalanx/phalanx_bay_south_workshop.dmm"
 	part_cost = list(PART_CLASS_TRADE = 8)
 
+// The hull has no engineering slot: its power plant (seven SMES, five PACMANs
+// and the atmospherics room) is permanent hull, and carving a slot out of that
+// would have put the ship's air supply behind a purchase. The south hangar is
+// the only pocket left that a plumbed hot-and-cold loop fits in, so the TEG
+// lives here and the price of it is the freight deck.
+//
+// Unlike the Goon's rig this one ships plumbed. The generator faces NORTH, so
+// find_circulators() takes the WEST circulator (cold, facing EAST) and the EAST
+// one (hot, facing WEST); circulator/set_init_directions() then puts their pipe
+// ports NORTH/SOUTH, which is exactly what a three-row pocket can serve. Each
+// loop is circulator -> pipenet -> volume pump -> pipenet -> circulator, with the
+// thermomachine on the circulator's INPUT net and a pressure tank on its OUTPUT
+// net - the same topology as scarab_engineering_teg. The crew still has to start
+// the pumps and the thermomachines; that is operating a TEG, not building one.
+/datum/ship_upgrade_module/phalanx/bay_south_teg
+	id = "phalanx_bay_south_teg"
+	name = "Powerplant Deck"
+	desc = "The freight racks come out and a thermoelectric plant goes in: \
+		generator, hot and cold circulators, both loops plumbed and charged, a \
+		heater and a freezer at either end, and a monitoring console. The output \
+		is cabled into the bay's power run. Someone still has to start it."
+	slot = "phalanx_bay_south"
+	map_file = "phalanx/phalanx_bay_south_teg.dmm"
+	part_cost = list(PART_CLASS_TRADE = 14)
+
 /datum/ship_upgrade_module/phalanx/bay_south_gym
 	id = "phalanx_bay_south_gym"
 	name = "Deck Gym"

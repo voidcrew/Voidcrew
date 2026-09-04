@@ -146,3 +146,31 @@
 		if(ship_port)
 			network = list(voidcrew_ship_camera_net(ship_port))
 	return ..()
+
+/**
+ * The slime management console reads a camera network, and aboard a ship there
+ * is exactly one: the per-ship key every camera on the hull is bound to above.
+ *
+ * Upstream leaves this console on the galaxy-wide "ss13" network and its
+ * camera_advanced/connect_to_shuttle() only prefixes that with the shuttle id,
+ * so on a voidcrew hull the console watched a network no camera was ever on.
+ * attack_hand() then found neither a camera-visible turf nor a camera on its
+ * network, fell through to unset_machine(), and the console did nothing at all
+ * when a player clicked it - the Phalanx's xenobiology fitout reported as
+ * "doesn't have cameras for xeno console".
+ *
+ * Bound on use rather than once at init on purpose: the lab is a slot module,
+ * and a module's map loads after the hull it attaches to, so neither the
+ * console nor its cameras can rely on a single load-time linkup having run in
+ * the right order. Re-resolving costs one list lookup per click.
+ *
+ * Scoped to the xenobiology console deliberately. The other camera_advanced
+ * subtypes aboard ships - ship_combat, base_construction/ship, the survey
+ * shuttle_docker - build their own eye and never look a camera up, so binding
+ * them would be churn with no effect.
+ */
+/obj/machinery/computer/camera_advanced/xenobio/attack_hand(mob/user, list/modifiers)
+	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
+	if(ship_port)
+		networks = list(voidcrew_ship_camera_net(ship_port))
+	return ..()

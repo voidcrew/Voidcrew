@@ -154,6 +154,20 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/showroomfloor,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"fU" = (
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/cryopod,
+/obj/machinery/camera{
+	c_tag = "Dormitories";
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/a)
 "hb" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/tank/air{
@@ -569,6 +583,21 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/a)
+"sV" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/cable,
+/obj/machinery/camera{
+	c_tag = "Bridge";
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "tE" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -1086,6 +1115,19 @@
 /obj/structure/sign/warning/vacuum/external,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
+"LC" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/camera{
+	c_tag = "Cargo Hold";
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "LP" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -1173,6 +1215,20 @@
 	},
 /obj/effect/turf_decal/trimline/neutral/warning,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/a)
+"ON" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Engineering";
+	dir = 8
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "Pi" = (
@@ -1339,6 +1395,20 @@
 /obj/item/bedsheet/captain,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"TV" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/camera{
+	c_tag = "Mining Dock";
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
 "UC" = (
 /obj/effect/turf_decal/trimline/neutral/warning,
 /obj/machinery/door/airlock/shuttle{
@@ -1605,10 +1675,10 @@ aa
 UN
 Wd
 AL
-GI
+TV
 aI
 QI
-tE
+sV
 Wx
 DP
 Fj
@@ -1710,7 +1780,7 @@ BS
 MH
 Tr
 li
-sU
+LC
 MB
 PL
 UC
@@ -1791,7 +1861,7 @@ Wm
 hg
 kO
 dQ
-kt
+fU
 DA
 aa
 "}
@@ -1846,7 +1916,7 @@ aa
 Wm
 Wm
 bC
-FR
+ON
 vM
 Wm
 bc

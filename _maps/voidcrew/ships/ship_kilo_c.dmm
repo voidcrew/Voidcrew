@@ -125,6 +125,20 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/dorms/c)
+"fN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/camera{
+	c_tag = "Mining Dock";
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
 "gO" = (
 /obj/machinery/power/terminal{
 	dir = 1
@@ -146,6 +160,18 @@
 	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/kilo/engineering/c)
+"hv" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/camera{
+	c_tag = "Cargo Hold";
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
 "hy" = (
 /obj/structure/plasticflaps,
 /obj/machinery/conveyor{
@@ -865,6 +891,20 @@
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/iron/dollhouse,
 /area/shuttle/voidcrew/kilo/cargo/c)
+"DQ" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/camera{
+	c_tag = "Bridge";
+	dir = 2
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "Fs" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -1194,6 +1234,34 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Tr" = (
+/obj/effect/turf_decal/trimline/white/filled/line{
+	color = "#ff9ecd";
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/cryopod,
+/obj/machinery/camera{
+	c_tag = "Dormitories";
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Ty" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Engineering";
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
 "TA" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/engineering/c)
@@ -1450,10 +1518,10 @@ aa
 AU
 VL
 zY
-zq
+fN
 VG
 mU
-vB
+DQ
 HM
 Yb
 Ls
@@ -1555,7 +1623,7 @@ cT
 Dp
 yQ
 di
-RK
+hv
 yM
 LN
 Xa
@@ -1636,7 +1704,7 @@ AJ
 Xy
 fa
 tx
-uc
+Tr
 BI
 aa
 "}
@@ -1691,7 +1759,7 @@ aa
 AJ
 AJ
 ss
-Jw
+Ty
 wl
 AJ
 VE

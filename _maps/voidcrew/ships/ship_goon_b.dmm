@@ -165,6 +165,17 @@
 	color = "#6E63A8"
 	},
 /area/shuttle/voidcrew/goon/medbay/b)
+"hh" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
 "hF" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/machinery/light/cold/directional/east,
@@ -187,6 +198,17 @@
 "jW" = (
 /obj/structure/cable,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"lM" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/b)
 "nC" = (
 /obj/structure/closet/crate/engineering/electrical,
@@ -312,6 +334,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"Ac" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/machinery/computer/security/telescreen/normal/directional/east,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
 /area/shuttle/voidcrew/goon/commons/b)
 "AC" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
@@ -491,6 +522,18 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/b)
+"Ov" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
 "OT" = (
 /obj/machinery/camera/autoname/directional/north,
 /obj/structure/table,
@@ -787,11 +830,11 @@ IZ
 BZ
 cm
 cm
-fh
+lM
 cm
 aX
 aX
-ac
+hh
 aX
 aX
 BZ
@@ -811,7 +854,7 @@ Dq
 "}
 (10,1,1) = {"
 eT
-Rg
+Ac
 sg
 wg
 rZ
@@ -880,7 +923,7 @@ Io
 Tk
 KM
 Tk
-bX
+Ov
 Tk
 KM
 Tk

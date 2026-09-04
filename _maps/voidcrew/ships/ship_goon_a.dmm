@@ -258,6 +258,10 @@
 /obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/bridge/a)
+"xy" = (
+/obj/machinery/computer/security/telescreen/normal/directional/east,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
 "zq" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/structure/window/reinforced/spawner/directional/west{
@@ -423,6 +427,16 @@
 "Lc" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/goon/commons/a)
+"Lg" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
 "Lx" = (
 /obj/structure/closet/secure_closet/engineering_electrical,
 /turf/open/floor/mineral/titanium/yellow,
@@ -466,6 +480,17 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
+"SB" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
 "Tm" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/plating,
@@ -492,6 +517,17 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
+"Ww" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/a)
 "WO" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -515,9 +551,6 @@
 /obj/machinery/computer/voidcrew_cargo{
 	dir = 4
 	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
-"Yp" = (
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
 "Yx" = (
@@ -632,11 +665,11 @@ IZ
 Rx
 FT
 FT
-vU
+Ww
 FT
 PO
 PO
-pO
+SB
 PO
 PO
 Rx
@@ -656,7 +689,7 @@ Ph
 "}
 (10,1,1) = {"
 aw
-Yp
+xy
 IK
 He
 Pv
@@ -725,7 +758,7 @@ uq
 gb
 bj
 gb
-tX
+Lg
 gb
 bj
 gb
