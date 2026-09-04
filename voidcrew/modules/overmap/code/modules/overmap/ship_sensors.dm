@@ -36,6 +36,12 @@
  * so keeping a position would be a lie. They are live contacts or nothing, and an
  * unscanned one is an anonymous blip rather than a named ship.
  *
+ * The one thing that ignores both rings is a **distress beacon**: a hull with its
+ * beacon lit draws on every other ship's chart at any distance, whatever their
+ * radar tier (see ship_distress.dm). That is deliberate and it is the only
+ * exception - it is a broadcast the hull is making about itself, not something
+ * anybody's sensors found.
+ *
  * Hazards are still unreachable by a SCAN (`sensor_detectable = FALSE`), our own
  * sensors cannot pin a storm, so one has to be flown past to enter the log. What
  * they can be reached by is a star chart, which is bought survey data rather than
@@ -405,6 +411,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			return "outpost"
 		if("Ships")
 			return "ship"
+		if("Distress")
+			return "distress"
 		if("Bounties")
 			return "bounty"
 		if("Planets")
@@ -575,6 +583,9 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	// Rebuilt rather than pruned: a vessel that drifts out of contact drops its
 	// identification, so it comes back as an unknown rather than a remembered name.
 	var/list/still_identified = list()
+	// REF()s the vessel pass has already drawn, so the distress pass below can
+	// flag those entries in place instead of stacking a second mark on the tile.
+	var/list/vessel_refs = list()
 	if(own_position)
 		for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
 			if(other == src || other.hidden_in_nebula)
@@ -590,13 +601,14 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			var/scanned = !!identified_ships[ship_ref]
 			if(scanned)
 				still_identified[ship_ref] = TRUE
+			vessel_refs[ship_ref] = TRUE
 			var/list/entry = list(
 				"x" = other_coords[1],
 				"y" = other_coords[2],
 				"category" = "Ships",
 				"kind" = "ship",
 				"live" = TRUE,
-				"identified" = scanned || tracking,
+				"identified" = scanned || tracking || other.distress_active,
 				"ref" = null,
 				"target" = ship_ref,
 			)
@@ -609,12 +621,48 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 				entry["name"] = other.name
 				entry["hostile"] = is_hostile
 				entry["integrity"] = other.get_integrity_percent()
+			else if(other.distress_active)
+				// A lit beacon names its own hull - it is shouting into the galaxy -
+				// but it says nothing about intent, so the hostile flag stays behind
+				// the same scan every other vessel needs. That gap is the lure.
+				entry["name"] = other.display_name || other.name
 			else
 				// A hull on the scope and nothing else. Withholding the hostile flag
 				// is the point: you cannot tell a trader from a pirate until you look.
 				entry["name"] = "unknown contact"
+			if(other.distress_active)
+				entry["sos"] = TRUE
+				entry["sosMessage"] = other.distress_message
 			contacts += list(entry)
 	identified_ships = still_identified
+
+	// Distress beacons, at any range at all. This is the one contact source that
+	// ignores both rings and every radar tier: a lit beacon is meant to reach the
+	// whole galaxy, which is exactly what makes answering one a decision rather
+	// than a formality. Concealment does not stop it either - the beacon repeats
+	// the hull's own coordinates on Wideband, so hiding while broadcasting them
+	// would be the console arguing with the radio. See ship_distress.dm.
+	for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
+		if(other == src || !other.distress_active)
+			continue
+		if(vessel_refs[REF(other)])
+			continue
+		var/list/distress_coords = other.get_relative_overmap_coords()
+		if(!distress_coords)
+			continue
+		contacts += list(list(
+			"name" = other.display_name || other.name,
+			"x" = distress_coords[1],
+			"y" = distress_coords[2],
+			"category" = "Distress",
+			"kind" = "distress",
+			"live" = in_view_ring(own_position, distress_coords),
+			"identified" = TRUE,
+			"sos" = TRUE,
+			"sosMessage" = other.distress_message,
+			"ref" = null,
+			"target" = REF(other),
+		))
 
 	// Charted waypoints: scan contacts, missions, bounties, revealed rumours.
 	// Scan-charted entries key on REF(object), so anything the bubble already

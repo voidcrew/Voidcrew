@@ -769,6 +769,9 @@
 	identified_ships = null
 	surveyed_tiles = null
 	QDEL_NULL(combat_alarm)
+	// A destroyed or despawned hull stops calling for help: drops the repeat
+	// timer, the Wideband transmitter and the sprite filter (ship_distress.dm).
+	clear_distress_beacon()
 	// Clean up processing (thrust and/or shields)
 	burn_direction = BURN_NONE
 	commanded_course = BURN_NONE
