@@ -26,6 +26,17 @@
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"k" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/machinery/camera{
+	c_tag = "Xenobiology Pen 1";
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
 "l" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /mob/living/basic/slime,
@@ -90,6 +101,19 @@
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
+"B" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = 7;
+	pixel_y = 3
+	},
+/obj/machinery/reagentgrinder{
+	pixel_x = -5;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
 "F" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes{
@@ -113,6 +137,24 @@
 /area/template_noop)
 "J" = (
 /obj/machinery/processor/slime,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"K" = (
+/obj/machinery/light/directional/south,
+/obj/machinery/camera{
+	c_tag = "Xenobiology Pen 2";
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"N" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/obj/machinery/camera{
+	c_tag = "Xenobiology Lab";
+	dir = 4
+	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "O" = (
@@ -174,9 +216,9 @@ Z
 j
 "}
 (4,1,1) = {"
-c
+k
 Z
-x
+K
 "}
 (5,1,1) = {"
 F
@@ -199,12 +241,12 @@ Z
 A
 "}
 (9,1,1) = {"
-H
+N
 Z
 h
 "}
 (10,1,1) = {"
-v
+B
 y
 V
 "}
