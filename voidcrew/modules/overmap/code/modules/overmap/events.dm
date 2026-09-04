@@ -6,10 +6,12 @@
 	// buy the region's star chart, which records them the same as anything else.
 	sensor_category = "Hazards"
 
-	/// Chance to spread to nearby tiles if spawned
+	/// Chance, per neighbouring tile, that a cluster of this event grows onto it.
+	/// Decays with every step out from the seed - see SSovermap.grow_event_cluster()
 	var/spread_chance = 0
-	/// How many additional tiles to spawn at once in the selected orbit
-	var/chain_rate = 0
+	/// Most tiles one cluster of this event may cover, the seed tile included. Storms are
+	/// kept small enough to fly around; a nebula is the one thing allowed to be a bank.
+	var/max_cluster_size = 1
 	/// Which storm the helm chart draws for this event. Each family gets its own
 	/// silhouette, a rock field and an ion front are steered around differently,
 	/// so they must not share a glyph.
@@ -31,7 +33,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	name = "asteroid storm (moderate)"
 	icon_state = "meteor1"
 	spread_chance = 50
-	chain_rate = 4
+	max_cluster_size = 5
 	chart_variant = "rock"
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
 	survey_value = 100
@@ -116,7 +118,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 /obj/structure/overmap/event/meteor/minor
 	name = "asteroid storm (minor)"
-	chain_rate = 3
+	max_cluster_size = 4
 	chart_severity = 1
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/minor
 	mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium)
@@ -135,7 +137,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /obj/structure/overmap/event/meteor/majour
 	name = "asteroid storm (majour)"
 	spread_chance = 25
-	chain_rate = 6
+	max_cluster_size = 7
 	chart_severity = 3
 	mineral_types = list(/datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace)
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/majour
@@ -652,7 +654,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	name = "ion storm (moderate)"
 	icon_state = "ion1"
 	spread_chance = 20
-	chain_rate = 2
+	max_cluster_size = 4
 	chart_variant = "ion"
 	survey_value = 400
 	var/intensity = 1
@@ -663,13 +665,13 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 /obj/structure/overmap/event/emp/minor
 	name = "ion storm (minor)"
-	chain_rate = 1
+	max_cluster_size = 3
 	intensity = 1
 	chart_severity = 1
 
 /obj/structure/overmap/event/emp/majour
 	name = "ion storm (majour)"
-	chain_rate = 4
+	max_cluster_size = 6
 	intensity = 2
 	chart_severity = 3
 
@@ -677,7 +679,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	name = "electrical storm (moderate)"
 	icon_state = "electrical1"
 	spread_chance = 30
-	chain_rate = 3
+	max_cluster_size = 4
 	chart_variant = "electrical"
 	survey_value = 250
 	var/intensity = 1
@@ -689,14 +691,14 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /obj/structure/overmap/event/electric/minor
 	name = "electrical storm (minor)"
 	spread_chance = 40
-	chain_rate = 2
+	max_cluster_size = 3
 	intensity = 1
 	chart_severity = 1
 
 /obj/structure/overmap/event/electric/majour
 	name = "electrical storm (majour)"
 	spread_chance = 15
-	chain_rate = 6
+	max_cluster_size = 6
 	intensity = 2
 	chart_severity = 3
 
@@ -758,7 +760,10 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	// Own group on the helm: nebulas are cover and fuel, not just something to
 	// steer around, and the concealment control keys off standing in one.
 	sensor_category = "Nebulae"
-	chain_rate = 8
+	// Nebula banks are the biggest hazard on the chart and the reason space read as walled
+	// off. 12 tiles is what its spread rate is worth next to the other events; it is dealt 9,
+	// a quarter under that, alongside the matching cut to its weight in overmap_event_pick_list
+	max_cluster_size = 9
 	spread_chance = 75
 	opacity = TRUE
 	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below
@@ -869,7 +874,10 @@ GLOBAL_LIST_INIT(overmap_event_guaranteed_list, list(
 
 /// Weighted list for random event selection after guaranteed spawns
 GLOBAL_LIST_INIT(overmap_event_pick_list, list(
-	/obj/structure/overmap/event/nebula = 60,
+	// 60 before: a nebula came up more often than anything else AND covered more ground
+	// than anything else. Its bank size came down a quarter (max_cluster_size above) and
+	// so does this, which puts a nebula on a par with a moderate storm instead of above one.
+	/obj/structure/overmap/event/nebula = 45,
 	/obj/structure/overmap/event/electric/minor = 45,
 	/obj/structure/overmap/event/electric = 40,
 	/obj/structure/overmap/event/electric/majour = 35,
