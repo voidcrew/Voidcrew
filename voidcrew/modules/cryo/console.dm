@@ -124,6 +124,11 @@
 		data["awakening"] = FALSE
 		data["cooldown"] = 0
 		data["memo"] = ""
+		data["election_running"] = FALSE
+		data["election_cooldown"] = 0
+		data["has_captain"] = FALSE
+		data["is_crew"] = FALSE
+		data["can_call_election"] = FALSE
 		return data
 
 	data["awakening"] = ship.joining_allowed
@@ -133,7 +138,6 @@
 	// Command elections. The console is where a crew without a captain comes to fix
 	// that: it is already linked to the ship, already open to every crewmember, and
 	// mapped onto every playable hull. See voidcrew/modules/captain_management.
-	var/obj/structure/overmap/ship/ship = linked_port.current_ship
 	data["election_running"] = ship.election_in_progress
 	data["election_cooldown"] = round(COOLDOWN_TIMELEFT(ship, election_cooldown) / 10)
 	data["has_captain"] = ship.has_available_captain()
@@ -182,7 +186,7 @@
 
 		if("callElection")
 			// call_election re-checks everything and says why it refused
-			linked_port.current_ship.call_election(usr)
+			ship.call_election(usr)
 
 		if("setMemo")
 			if(!("newName" in params) || params["newName"] == ship.memo)
