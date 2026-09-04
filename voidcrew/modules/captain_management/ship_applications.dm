@@ -211,7 +211,7 @@
 	// encode = FALSE for the same reason the join password takes raw input: the reason
 	// is shown in a TGUI panel that escapes for itself, and html_encode()d at the one
 	// place it reaches chat. Double-encoding here would print entities at the applicant.
-	var/reason = tgui_input_text(reviewer, "Optional reason to send back with the denial.", "Deny [application.applicant_name]", max_length = SHIP_APPLICATION_MESSAGE_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
+	var/reason = tgui_input_text(reviewer, "Optional reason to send back with the denial. Cancelling denies it without one.", "Deny [application.applicant_name]", max_length = SHIP_APPLICATION_MESSAGE_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
 	if(QDELETED(application) || QDELETED(src))
 		return
 	if(!is_ship_captain(reviewer))
