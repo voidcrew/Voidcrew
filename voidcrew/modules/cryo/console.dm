@@ -17,6 +17,10 @@
 	icon_screen = null
 	density = FALSE
 	resistance_flags = INDESTRUCTIBLE|LAVA_PROOF|FIRE_PROOF|UNACIDABLE|ACID_PROOF
+	// The console had no board at all, so a screwdriver had nothing to take apart and
+	// nothing could ever put one back. It builds and deconstructs like any other
+	// computer now; the ship's last one is held back by screwdriver_act() below.
+	circuit = /obj/item/circuitboard/computer/cryopod
 
 	/// The ship object representing the ship that this console is on.
 	var/obj/docking_port/mobile/voidcrew/linked_port
@@ -28,10 +32,78 @@
 		ui = new(user, src, "CryoStorageConsole", name)
 		ui.open()
 
+/obj/machinery/computer/cryopod/examine(mob/user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+	else
+		. += span_notice("It is <i>unbolted</i> from the floor and can be dragged elsewhere.")
+	if(count_ship_consoles() == 1)
+		. += span_warning("It is the ship's only cryogenic oversight console, so it cannot be taken apart.")
+	else
+		. += span_notice("It can be taken apart with a <b>screwdriver</b>.")
+
 /obj/machinery/computer/cryopod/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	. = ..()
+	link_to_port(port)
+
+/// Adopts a mobile port as this console's ship, keeping the port's back-reference in step.
+/obj/machinery/computer/cryopod/proc/link_to_port(obj/docking_port/mobile/voidcrew/port)
+	if(!istype(port))
+		return FALSE
 	linked_port = port
 	port.cryo_console = src
+	return TRUE
+
+/**
+ * Resolves the ship this console manages.
+ *
+ * connect_to_shuttle() is the only thing that sets linked_port, and it only fires for
+ * consoles that were on the hull's map when it loaded. A console built in-round - now
+ * possible, the board exists - has to re-derive its port from where it is standing.
+ * Unwrenching and re-wrenching an existing console keeps the ref it already has.
+ */
+/obj/machinery/computer/cryopod/proc/get_linked_ship()
+	if(linked_port?.current_ship)
+		return linked_port.current_ship
+	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
+	if(!istype(port) || !port.current_ship)
+		return null
+	link_to_port(port)
+	return port.current_ship
+
+/**
+ * Counts every cryogenic oversight console aboard the same ship as this one.
+ * Returns 0 when this console is not aboard a ship at all, which is the only case
+ * where there is no ship join point to protect.
+ */
+/obj/machinery/computer/cryopod/proc/count_ship_consoles()
+	var/obj/docking_port/mobile/port = linked_port || SSshuttle.get_containing_shuttle(src)
+	if(!port)
+		return 0
+	var/count = 0
+	for(var/area/shuttle_area as anything in port.shuttle_areas)
+		for(var/obj/machinery/computer/cryopod/console in shuttle_area)
+			count++
+	return count
+
+/obj/machinery/computer/cryopod/wrench_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(.)
+		return .
+	if(default_unfasten_wrench(user, tool, time = 4 SECONDS) == SUCCESSFUL_UNFASTEN)
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
+
+/obj/machinery/computer/cryopod/screwdriver_act(mob/living/user, obj/item/tool)
+	// The console is where a ship opens and closes joining and sets its job slots, and
+	// it is the only place that can. A crew that took the last one apart would have no
+	// way back in, so the last one moves but does not come apart.
+	if(count_ship_consoles() == 1)
+		balloon_alert(user, "ship's only console!")
+		to_chat(user, span_warning("This is the ship's only cryogenic oversight console."))
+		return ITEM_INTERACT_BLOCKING
+	return ..()
 
 /obj/machinery/computer/cryopod/Destroy()
 	// The mobile port outlives its console and its cryo_console back-ref is otherwise
@@ -44,9 +116,19 @@
 /obj/machinery/computer/cryopod/ui_data(mob/user)
 	var/list/data = ..()
 
-	data["awakening"] = linked_port.current_ship.joining_allowed
-	data["cooldown"] = (COOLDOWN_TIMELEFT(linked_port.current_ship, job_slot_adjustment_cooldown) / 10)
-	data["memo"] = linked_port.current_ship.memo
+	// A console standing somewhere that is not a ship (built on a derelict, say) has no
+	// ship to report on. Send the keys anyway so the interface renders its off state
+	// rather than reading undefined.
+	var/obj/structure/overmap/ship/ship = get_linked_ship()
+	if(!ship)
+		data["awakening"] = FALSE
+		data["cooldown"] = 0
+		data["memo"] = ""
+		return data
+
+	data["awakening"] = ship.joining_allowed
+	data["cooldown"] = (COOLDOWN_TIMELEFT(ship, job_slot_adjustment_cooldown) / 10)
+	data["memo"] = ship.memo
 
 	return data
 
@@ -54,17 +136,21 @@
 	var/list/data = ..()
 	data["jobs"] = list()
 
-	for(var/datum/job/ship_jobs as anything in linked_port.current_ship.job_slots)
+	var/obj/structure/overmap/ship/ship = get_linked_ship()
+	if(!ship)
+		return data
+
+	for(var/datum/job/ship_jobs as anything in ship.job_slots)
 		if(ship_jobs.officer)
 			continue
 
 		// Calculate max slots: initial slots * 2, but cap at 6 (matching backend limit)
-		var/initial_slots = linked_port.current_ship.initial_job_slots?[ship_jobs] || 1
+		var/initial_slots = ship.initial_job_slots?[ship_jobs] || 1
 		var/max_slots = min(initial_slots * 2, 6)
 
 		data["jobs"] += list(list(
 			"name" = ship_jobs.title,
-			"slots" = linked_port.current_ship.job_slots[ship_jobs],
+			"slots" = ship.job_slots[ship_jobs],
 			"ref" = REF(ship_jobs),
 			"max" = max_slots
 		))
@@ -76,25 +162,37 @@
 	if(.)
 		return TRUE
 
+	var/obj/structure/overmap/ship/ship = get_linked_ship()
+	if(!ship)
+		return
+
 	switch(action)
 		if("toggleAwakening")
-			linked_port.current_ship.joining_allowed = !linked_port.current_ship.joining_allowed
+			ship.joining_allowed = !ship.joining_allowed
 
 		if("setMemo")
-			if(!("newName" in params) || params["newName"] == linked_port.current_ship.memo)
+			if(!("newName" in params) || params["newName"] == ship.memo)
 				return
-			linked_port.current_ship.memo = params["newName"]
+			ship.memo = params["newName"]
 
 		if("adjustJobSlot")
-			if(!("toAdjust" in params) || !("delta" in params) || !COOLDOWN_FINISHED(linked_port.current_ship, job_slot_adjustment_cooldown))
+			if(!("toAdjust" in params) || !("delta" in params) || !COOLDOWN_FINISHED(ship, job_slot_adjustment_cooldown))
 				return
 			var/datum/job/target_job = locate(params["toAdjust"])
 			if(!target_job)
 				return
-			if(linked_port.current_ship.job_slots[target_job] + params["delta"] < 0 || linked_port.current_ship.job_slots[target_job] + params["delta"] > 6)
+			if(ship.job_slots[target_job] + params["delta"] < 0 || ship.job_slots[target_job] + params["delta"] > 6)
 				return
-			linked_port.current_ship.job_slots[target_job] += params["delta"]
-			COOLDOWN_START(linked_port.current_ship, job_slot_adjustment_cooldown, DEFAULT_JOB_SLOT_ADJUSTMENT_COOLDOWN)
+			ship.job_slots[target_job] += params["delta"]
+			COOLDOWN_START(ship, job_slot_adjustment_cooldown, DEFAULT_JOB_SLOT_ADJUSTMENT_COOLDOWN)
 			update_static_data(usr)
+
+/**
+ * Circuit board
+ */
+/obj/item/circuitboard/computer/cryopod
+	name = "Cryogenic Oversight Console"
+	greyscale_colors = CIRCUIT_COLOR_COMMAND
+	build_path = /obj/machinery/computer/cryopod
 
 #undef DEFAULT_JOB_SLOT_ADJUSTMENT_COOLDOWN

@@ -100,6 +100,26 @@
 		return null
 	return ship.get_cargo_shuttle()
 
+/obj/machinery/computer/voidcrew_cargo/examine(mob/user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+	else
+		. += span_notice("It is <i>unbolted</i> from the floor and can be dragged elsewhere.")
+
+// Computers are anchored with no tool that can undo it, so a crew that wanted its cargo
+// console on the other side of the bay had to screwdriver it into a frame and rebuild it
+// there. It unbolts and moves now; the screwdriver still takes it apart into its board.
+// The bank machine it orders through is a stored ref, so a moved console keeps its
+// account, and a rebuilt one re-finds the ship's bank in LateInitialize().
+/obj/machinery/computer/voidcrew_cargo/wrench_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(.)
+		return .
+	if(default_unfasten_wrench(user, tool, time = 4 SECONDS) == SUCCESSFUL_UNFASTEN)
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
+
 /obj/machinery/computer/voidcrew_cargo/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /obj/machinery/computer/bank_machine))
 		return
