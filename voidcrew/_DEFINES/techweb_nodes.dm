@@ -51,3 +51,7 @@
 #define TECHWEB_NODE_TRANSPORTER "transporter"
 #define TECHWEB_NODE_TRANSPORTER_TARGETING "transporter_targeting"
 #define TECHWEB_NODE_TRANSPORTER_BIOFILTER "transporter_biofilter"
+
+// Generic ammunition (the per-gun blueprint ammo nodes live in _DEFINES above)
+#define TECHWEB_NODE_BALLISTIC_AMMO "ballistic_ammo"
+#define TECHWEB_NODE_AUTOMATIC_AMMO "automatic_ammo"
