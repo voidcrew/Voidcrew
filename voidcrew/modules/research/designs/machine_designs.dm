@@ -35,3 +35,16 @@
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
+// The cryogenic oversight console shipped with no circuit board of any kind, so once a
+// crew could take one apart there was nothing that could print a replacement. Sits on
+// Basic Shuttle Research with the rest of the hull fittings.
+/datum/design/board/cryopod_console
+	name = "Computer Design (Cryogenic Oversight Console)"
+	desc = "Allows for the construction of circuit boards used to build a cryogenic oversight console."
+	id = "cryopod_console"
+	build_path = /obj/item/circuitboard/computer/cryopod
+	category = list(
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_COMMAND
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_COMMAND

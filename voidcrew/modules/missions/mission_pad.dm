@@ -199,11 +199,54 @@
 
 /obj/machinery/mission_pad/examine(mob/user)
 	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+	else
+		. += span_notice("It is <i>unbolted</i> from the floor and can be dragged elsewhere.")
 	if(tribute_negotiation)
 		. += span_warning("This pad is linked to an active pirate negotiation!")
 		var/remaining = tribute_negotiation.get_remaining_items()
 		if(remaining > 0)
 			. += span_notice("Place [remaining] more [tribute_negotiation.demanded_item_name] here to pay tribute.")
+
+/*
+ * The pad had a circuit board and a research design from the start but never wired up
+ * any of the machine tool acts, so nothing could open its panel and nothing could pry
+ * the board back out - it was welded to the tile it spawned on. Standard machine flow
+ * now: wrench to unbolt and move it, screwdriver to open the panel, crowbar to take it
+ * apart into its frame and board.
+ *
+ * A pad that moves keeps working: it finds its ship by asking which ship's shuttle areas
+ * contain the area it is standing in (find_and_link_ship), and any pad built or rebuilt
+ * in-round runs that same lookup a second after it initializes, so mission delivery code
+ * walking ship.linked_mission_pads still finds it wherever it ends up.
+ */
+/obj/machinery/mission_pad/wrench_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(.)
+		return .
+	if(default_unfasten_wrench(user, tool, time = 2 SECONDS) != SUCCESSFUL_UNFASTEN)
+		return ITEM_INTERACT_BLOCKING
+	if(anchored)
+		// A pad bolted down somewhere new may be sitting beside a console it never met,
+		// and one carried aboard after being built elsewhere has no ship yet.
+		if(!linked_ship)
+			find_and_link_ship()
+		if(!linked_console)
+			find_linked_console()
+	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/mission_pad/screwdriver_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(.)
+		return .
+	return default_deconstruction_screwdriver(user, "lpad-idle-open", "lpad-idle", tool)
+
+/obj/machinery/mission_pad/crowbar_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(.)
+		return .
+	return default_deconstruction_crowbar(tool)
 
 /**
  * Circuit board for the mission pad.

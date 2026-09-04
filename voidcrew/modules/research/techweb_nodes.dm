@@ -4,6 +4,7 @@
 	description = "Research the technology required to create and pilot basic shuttles."
 	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	design_ids = list(
+		"cryopod_console", // had no board at all until the console became deconstructable
 		"engine_plasma",
 		"engine_ion",
 		"engine_oil", // had no design at all before rounds 14/15 - the depot was its only source
