@@ -32,6 +32,19 @@
 	if(ship?.acting_captain == member)
 		ship.acting_captain = null
 
+	// So does held command. is_ship_captain() treats a set claimed_captain as
+	// exclusive, so a captain who is kicked or cryos out has to release it or the
+	// hull is left with a captain nobody can reach and nobody able to replace them.
+	if(ship?.claimed_captain == member)
+		ship.claimed_captain = null
+
+	// Whoever holds command now, holds the button. Unconditional rather than folded
+	// into the branch above because the cryopod clears claimed_captain itself before
+	// calling this, and because releasing an exclusive claim promotes the hull's
+	// officer back into command - they need their Ship Management button back, and
+	// nothing else would ever give it to them.
+	ship?.refresh_command_buttons()
+
 	// Remove this team from the member's list
 	LAZYREMOVE(member.ship_teams, src)
 

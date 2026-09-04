@@ -32,6 +32,21 @@
 /// the input and the ship caps the stored text (see ship_distress.dm).
 #define DISTRESS_MESSAGE_MAX_LEN 140
 
+/// Longest message on a crew application, and on the reason sent back with a denial
+#define SHIP_APPLICATION_MESSAGE_MAX_LEN 200
+/// How long a crew application waits for an answer before it lapses
+#define SHIP_APPLICATION_EXPIRY (10 MINUTES)
+
+/// How long a captain's offer of command waits for an answer
+#define SHIP_COMMAND_OFFER_TIME (30 SECONDS)
+/// How long a disconnected captain still counts as running the ship. Past this the
+/// crew may elect a replacement.
+#define SHIP_CAPTAIN_ABSENCE_GRACE (5 MINUTES)
+/// How long the crew get to vote in a command election
+#define SHIP_ELECTION_VOTE_TIME (45 SECONDS)
+/// How long after a failed election before another can be called
+#define SHIP_ELECTION_FAILURE_COOLDOWN (3 MINUTES)
+
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
 #define OVERMAP_SHIP_FLYING "flying"

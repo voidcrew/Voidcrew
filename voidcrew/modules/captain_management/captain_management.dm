@@ -129,6 +129,7 @@
 	data["joining_allowed"] = ship.joining_allowed
 	data["join_password"] = ship.join_password || ""
 	data["can_set_password"] = ship.can_have_join_password()
+	data["crew_only_airlocks"] = ship.crew_only_airlocks
 
 	// Check if user is still captain
 	data["is_captain"] = ship.is_ship_captain(captain)
@@ -145,7 +146,8 @@
 				"job" = member.assigned_role?.title || "Unknown",
 				"ref" = REF(member),
 				"is_captain" = is_captain,
-				"is_online" = !!member.current.client
+				"is_online" = !!member.current.client,
+				"can_take_command" = !is_captain && !!member.current.client && member.current.stat != DEAD
 			))
 
 	// Available players to invite (living players in captain's view, not on this ship)
@@ -177,7 +179,20 @@
 			"time" = ship.pending_invites[ckey]
 		))
 
+	// Crew applications from the lobby
+	data["applications"] = list()
+	ship.prune_crew_applications()
+	for(var/datum/ship_application/application as anything in ship.crew_applications)
+		data["applications"] += list(list(
+			"ref" = REF(application),
+			"name" = application.applicant_name,
+			"ckey" = application.ckey,
+			"message" = application.message,
+			"waiting" = round(application.waiting_time() / 10)
+		))
+
 	data["can_invite"] = COOLDOWN_FINISHED(ship, invite_cooldown)
+	data["command_offer_pending"] = ship.command_offer_pending
 	data["can_rename"] = COOLDOWN_FINISHED(ship, rename_cooldown)
 
 	return data
@@ -250,6 +265,37 @@
 		if("set_password")
 			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
 			ship.set_join_password(params["password"], captain)
+			return TRUE
+
+		if("toggle_crew_lock")
+			// set_crew_only_airlocks handles the fleet-hull refusal, the crew announcement and logging
+			ship.set_crew_only_airlocks(!ship.crew_only_airlocks, captain)
+			return TRUE
+
+		if("transfer_command")
+			var/datum/mind/successor = locate(params["ref"])
+			if(!successor || !(successor in ship.ship_team?.members))
+				to_chat(captain, span_warning("Crew member not found."))
+				return TRUE
+			// offer_command handles the pending-offer guard, the prompt and the handover
+			ship.offer_command(successor.current, captain)
+			return TRUE
+
+		if("approve_application")
+			var/datum/ship_application/approving = locate(params["ref"]) in ship.crew_applications
+			if(!approving)
+				to_chat(captain, span_warning("That application is no longer open."))
+				return TRUE
+			ship.resolve_crew_application(approving, TRUE, captain)
+			return TRUE
+
+		if("deny_application")
+			var/datum/ship_application/denying = locate(params["ref"]) in ship.crew_applications
+			if(!denying)
+				to_chat(captain, span_warning("That application is no longer open."))
+				return TRUE
+			// The optional-reason prompt sleeps; do not hold the TGUI call open for it
+			INVOKE_ASYNC(ship, TYPE_PROC_REF(/obj/structure/overmap/ship, prompt_deny_crew_application), denying, captain)
 			return TRUE
 
 // ===== INVITE SYSTEM =====

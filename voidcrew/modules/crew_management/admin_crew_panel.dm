@@ -56,8 +56,15 @@ ADMIN_VERB(manage_ship_crews, R_ADMIN, "Manage Ship Crews", "View and manage eve
 
 	var/datum/job/captain_job = selected_ship.get_captain_job()
 	for(var/datum/mind/member in selected_ship.ship_team?.members)
-		// is_ship_captain() takes the mob and fails offline members, so test the mind
-		var/is_captain = (selected_ship.claimed_captain == member) || (captain_job && member.assigned_role?.type == captain_job.type)
+		// is_ship_captain() takes the mob and fails offline members, so test the mind.
+		// Held command is exclusive there (a transfer or an election sets claimed_captain
+		// and the officer job stops conferring it), so mirror that or this readout shows
+		// two captains on a hull that has one.
+		var/is_captain
+		if(selected_ship.claimed_captain)
+			is_captain = (selected_ship.claimed_captain == member)
+		else
+			is_captain = (captain_job && member.assigned_role?.type == captain_job.type)
 		data["crew"] += list(list(
 			"name" = member.current?.real_name || member.name || "Unknown",
 			"job" = member.assigned_role?.title || "Unknown",

@@ -114,12 +114,40 @@
 			"jobs" = jobs,
 			"memo" = active_ship.memo,
 			"locked" = !!active_ship.join_password,
-			"password_cleared" = active_ship.is_password_cleared(user.ckey)
+			"password_cleared" = active_ship.is_password_cleared(user.ckey),
+			"crew_locked" = !!active_ship.crew_only_airlocks,
+			"applied" = !isnull(active_ship.find_crew_application(user.ckey))
 		))
 
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)
 	return data
+
+/**
+ * Asks the player for their one line to the captain and files the application.
+ *
+ * Every gate is re-checked after the prompt returns: a captain can clear the password,
+ * approve them, or lose the hull entirely while the box is open.
+ */
+/datum/ship_join_menu/proc/prompt_crew_application(obj/structure/overmap/ship/ship)
+	if(QDELETED(ship) || !user)
+		return
+	if(!ship.join_password)
+		to_chat(user, span_warning("[ship.name] is not locked - you can just join it."))
+		return
+	if(ship.is_password_cleared(user.ckey))
+		to_chat(user, span_notice("You are already cleared to join [ship.name]."))
+		return
+	if(ship.find_crew_application(user.ckey))
+		to_chat(user, span_warning("You already have an application waiting on [ship.name]."))
+		return
+	// encode = FALSE: this text is rendered by TGUI, which escapes for itself, and is
+	// html_encode()d at the one place it reaches chat. Encoding here would print
+	// entities at the captain instead of an apostrophe.
+	var/pitch = tgui_input_text(user, "One line to the captain of [ship.name]: who you are and what you want to do aboard.", "Apply to [ship.name]", max_length = SHIP_APPLICATION_MESSAGE_MAX_LEN, encode = FALSE, timeout = 2 MINUTES)
+	if(isnull(pitch) || QDELETED(ship) || !user)
+		return
+	ship.file_crew_application(user, pitch)
 
 /datum/ship_join_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
@@ -188,3 +216,16 @@
 			// Close menu and proceed to job selection
 			ui.close()
 			user.select_job_on_ship(ship)
+
+		if("apply_to_ship")
+			var/apply_ref = params["ship_ref"]
+			if(!apply_ref)
+				return FALSE
+			var/obj/structure/overmap/ship/target = locate(apply_ref)
+			if(!istype(target))
+				to_chat(user, span_warning("That ship is no longer available."))
+				return FALSE
+			// The message prompt sleeps. The menu stays open behind it, so the wait
+			// cannot sit on the TGUI call or every other button in the menu queues
+			// behind it for as long as the player is typing.
+			INVOKE_ASYNC(src, PROC_REF(prompt_crew_application), target)
