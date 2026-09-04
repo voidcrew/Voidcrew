@@ -123,7 +123,7 @@
      5
     ]
    },
-   "src_md5": "822138ee70207aefd2c228b5775229ed"
+   "src_md5": "8593c96591a932af4f72c0833541e51e"
   },
   "goon_b": {
    "png": "ship_goon_b.png",
@@ -151,7 +151,7 @@
      5
     ]
    },
-   "src_md5": "002ce753dcd6cdf8c0be2f9424a2d22e"
+   "src_md5": "a56193cb054474fc6d7d887d8963fc9c"
   },
   "goon_c": {
    "png": "ship_goon_c.png",
@@ -179,7 +179,7 @@
      5
     ]
    },
-   "src_md5": "9b8d4d8a211f571ce7e776782d59ed42"
+   "src_md5": "5eb44ef7053b1b8cb6e2823bcb8d3a4f"
   },
   "goon_d": {
    "png": "ship_goon_d.png",
@@ -207,7 +207,7 @@
      5
     ]
    },
-   "src_md5": "9fd5c90ea5a03c14e61596d3698affbe"
+   "src_md5": "a839f5155f270b9e3834c068605c8f34"
   },
   "kilo_a": {
    "png": "ship_kilo_a.png",
@@ -227,7 +227,7 @@
      7
     ]
    },
-   "src_md5": "c4bcba5638801f9eeb077104b800e506"
+   "src_md5": "2af4b68ab397631f8c74480d2fa612ee"
   },
   "kilo_b": {
    "png": "ship_kilo_b.png",
@@ -247,7 +247,7 @@
      7
     ]
    },
-   "src_md5": "aad1801213a044d8f0e512f5fca44579"
+   "src_md5": "a1c85c7047c3fca6c21cc45f431b04f0"
   },
   "kilo_c": {
    "png": "ship_kilo_c.png",
@@ -267,7 +267,7 @@
      7
     ]
    },
-   "src_md5": "33e735236e728c9163d9250fb09d99cb"
+   "src_md5": "eb53bd833146914a6282b06611d60ca8"
   },
   "kilo_d": {
    "png": "ship_kilo_d.png",
@@ -287,7 +287,7 @@
      7
     ]
    },
-   "src_md5": "225bb6e4fc2fbdace0d3fdab61441a7e"
+   "src_md5": "c94b1963573afb99a371e0406dd2ba84"
   },
   "nano_phalanx_a": {
    "png": "ship_nano_phalanx_a.png",
@@ -2196,6 +2196,16 @@
     }
    }
   },
+  "phalanx/phalanx_bay_south_teg.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_south_teg.png",
+   "src_md5": "9e5553804b3aee1ffd2a4b5853f548be"
+  },
   "phalanx/phalanx_bay_south_gym.dmm": {
    "width": 11,
    "height": 3,
@@ -2330,7 +2340,7 @@
     1
    ],
    "png": "phalanx_phalanx_lab_xenobio.png",
-   "src_md5": "d42ceeb64ff9bba513bf804b12219f2e",
+   "src_md5": "aaf473857d0e3d441192ffad55a5f2fd",
    "themes": {
     "hearth": {
      "width": 10,
@@ -2340,7 +2350,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_xenobio_hearth.png",
-     "src_md5": "defe89925bd32db0f1de85fb1ac88389"
+     "src_md5": "00e2b217aca4ec60f8f2478bae682d61"
     },
     "springs": {
      "width": 10,
@@ -2350,7 +2360,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_xenobio_springs.png",
-     "src_md5": "d9cb66fb2ff8c05f5c3736f0930a9449"
+     "src_md5": "5363b3cec9612aac47af8ac188100ecd"
     },
     "verdant": {
      "width": 10,
@@ -2360,7 +2370,7 @@
       1
      ],
      "png": "phalanx_phalanx_lab_xenobio_verdant.png",
-     "src_md5": "5cb3dc5ddc6243a4bc2a85ed573ae7fb"
+     "src_md5": "fb9c61ea41dce0b7ac8922dbf5436f0d"
     }
    }
   },
