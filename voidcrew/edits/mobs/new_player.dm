@@ -287,9 +287,15 @@
 
 	// Grant captain management action if spawning as captain (officer job)
 	if(job.officer && humanc)
-		grant_captain_management(humanc, joined_ship)
-		// A real captain's arrival ends any acting command over the ship
-		joined_ship.clear_acting_captain(humanc)
+		if(joined_ship.claimed_captain && joined_ship.claimed_captain != humanc.mind)
+			// Somebody already holds command by claim, transfer or election, and that is
+			// exclusive - handing out a second Ship Management button here would give
+			// this officer a panel that refuses every action they press.
+			to_chat(humanc, span_warning("[joined_ship.name] already has a commanding officer. You serve under them unless they hand command over."))
+		else
+			grant_captain_management(humanc, joined_ship)
+			// A real captain's arrival ends any acting command over the ship
+			joined_ship.clear_acting_captain(humanc)
 	else if(humanc)
 		// No captain aboard: the joiner holds acting command until one arrives
 		joined_ship.make_acting_captain(humanc)

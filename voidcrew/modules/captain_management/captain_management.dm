@@ -146,7 +146,8 @@
 				"job" = member.assigned_role?.title || "Unknown",
 				"ref" = REF(member),
 				"is_captain" = is_captain,
-				"is_online" = !!member.current.client
+				"is_online" = !!member.current.client,
+				"can_take_command" = !is_captain && !!member.current.client && member.current.stat != DEAD
 			))
 
 	// Available players to invite (living players in captain's view, not on this ship)
@@ -191,6 +192,7 @@
 		))
 
 	data["can_invite"] = COOLDOWN_FINISHED(ship, invite_cooldown)
+	data["command_offer_pending"] = ship.command_offer_pending
 	data["can_rename"] = COOLDOWN_FINISHED(ship, rename_cooldown)
 
 	return data
@@ -268,6 +270,15 @@
 		if("toggle_crew_lock")
 			// set_crew_only_airlocks handles the fleet-hull refusal, the crew announcement and logging
 			ship.set_crew_only_airlocks(!ship.crew_only_airlocks, captain)
+			return TRUE
+
+		if("transfer_command")
+			var/datum/mind/successor = locate(params["ref"])
+			if(!successor || !(successor in ship.ship_team?.members))
+				to_chat(captain, span_warning("Crew member not found."))
+				return TRUE
+			// offer_command handles the pending-offer guard, the prompt and the handover
+			ship.offer_command(successor.current, captain)
 			return TRUE
 
 		if("approve_application")

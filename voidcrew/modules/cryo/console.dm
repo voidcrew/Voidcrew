@@ -48,6 +48,16 @@
 	data["cooldown"] = (COOLDOWN_TIMELEFT(linked_port.current_ship, job_slot_adjustment_cooldown) / 10)
 	data["memo"] = linked_port.current_ship.memo
 
+	// Command elections. The console is where a crew without a captain comes to fix
+	// that: it is already linked to the ship, already open to every crewmember, and
+	// mapped onto every playable hull. See voidcrew/modules/captain_management.
+	var/obj/structure/overmap/ship/ship = linked_port.current_ship
+	data["election_running"] = ship.election_in_progress
+	data["election_cooldown"] = round(COOLDOWN_TIMELEFT(ship, election_cooldown) / 10)
+	data["has_captain"] = ship.has_available_captain()
+	data["is_crew"] = !!(user?.mind && (user.mind in ship.ship_team?.members))
+	data["can_call_election"] = ship.can_call_election(user)
+
 	return data
 
 /obj/machinery/computer/cryopod/ui_static_data(mob/user)
@@ -79,6 +89,10 @@
 	switch(action)
 		if("toggleAwakening")
 			linked_port.current_ship.joining_allowed = !linked_port.current_ship.joining_allowed
+
+		if("callElection")
+			// call_election re-checks everything and says why it refused
+			linked_port.current_ship.call_election(usr)
 
 		if("setMemo")
 			if(!("newName" in params) || params["newName"] == linked_port.current_ship.memo)

@@ -22,6 +22,7 @@ type CrewMember = {
   ref: string;
   is_captain: BooleanLike;
   is_online: BooleanLike;
+  can_take_command: BooleanLike;
 };
 
 type AvailablePlayer = {
@@ -59,6 +60,7 @@ type Data = {
   applications: CrewApplication[];
   can_invite: BooleanLike;
   can_rename: BooleanLike;
+  command_offer_pending: BooleanLike;
 };
 
 export const CaptainManagement = () => {
@@ -139,7 +141,7 @@ export const CaptainManagement = () => {
 
 const CrewTab = () => {
   const { act, data } = useBackend<Data>();
-  const { crew } = data;
+  const { crew, command_offer_pending } = data;
 
   return (
     <Section title="Crew Roster">
@@ -170,15 +172,37 @@ const CrewTab = () => {
               </Table.Cell>
               <Table.Cell>
                 {!member.is_captain && (
-                  <Button
-                    icon="user-minus"
-                    color="bad"
-                    compact
-                    onClick={() => act('kick_crew', { ref: member.ref })}
-                    tooltip="Remove from crew"
-                  >
-                    Kick
-                  </Button>
+                  <>
+                    <Button
+                      icon="user-minus"
+                      color="bad"
+                      compact
+                      onClick={() => act('kick_crew', { ref: member.ref })}
+                      tooltip="Remove from crew"
+                    >
+                      Kick
+                    </Button>
+                    <Button
+                      icon="crown"
+                      color="caution"
+                      compact
+                      disabled={
+                        !member.can_take_command || !!command_offer_pending
+                      }
+                      onClick={() =>
+                        act('transfer_command', { ref: member.ref })
+                      }
+                      tooltip={
+                        command_offer_pending
+                          ? 'An offer of command is already waiting on an answer'
+                          : member.can_take_command
+                            ? 'Offer them command of the ship. They get 30 seconds to accept, and you stop being captain if they do.'
+                            : 'They must be alive and online to take command'
+                      }
+                    >
+                      Transfer
+                    </Button>
+                  </>
                 )}
               </Table.Cell>
             </Table.Row>

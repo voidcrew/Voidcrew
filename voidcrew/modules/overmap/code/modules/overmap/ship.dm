@@ -100,6 +100,12 @@
 	/// Mind of the crew member holding acting command: the first joiner on a ship with
 	/// no captain. Revoked the moment a real captain (officer job spawn or claim) arrives.
 	var/datum/mind/acting_captain
+	/// TRUE while an offer of command is waiting on an answer. One at a time per ship.
+	var/command_offer_pending = FALSE
+	/// TRUE while a command election is running. One at a time per ship.
+	var/election_in_progress = FALSE
+	///Cooldown after a failed command election, before another may be called
+	COOLDOWN_DECLARE(election_cooldown)
 
 	///Timer between job managing delays
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
@@ -1103,9 +1109,15 @@
 	if(!(check_mob.mind in ship_team?.members))
 		return FALSE
 
-	// Check if this is the claimed captain (for NPC ships without job slots)
-	if(claimed_captain && check_mob.mind == claimed_captain)
-		return TRUE
+	// An explicit claim is authoritative AND exclusive. Claiming a derelict lands
+	// here, and so does every command transfer and election, so on a ship where
+	// command has been handed over exactly one person answers TRUE - the officer job
+	// stops conferring it, and a revived former captain does not get it back unless
+	// command is transferred to them again. A claimed captain who leaves the roster
+	// clears the var (see /datum/team/voidcrew/remove_member), so this can never lock
+	// a crew out of their own bridge.
+	if(claimed_captain)
+		return check_mob.mind == claimed_captain
 
 	// Acting captain: first joiner on a captainless ship. Holds command only while
 	// no real captain exists - their authority ends the moment one arrives.

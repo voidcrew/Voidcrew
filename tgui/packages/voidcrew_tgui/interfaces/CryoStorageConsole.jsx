@@ -20,7 +20,17 @@ export const CryoStorageConsole = (props, context) => {
 
 export const CryoStorageConsoleContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { jobs = [], memo, awakening, cooldown = 1 } = data;
+  const {
+    jobs = [],
+    memo,
+    awakening,
+    cooldown = 1,
+    is_crew,
+    has_captain,
+    election_running,
+    election_cooldown = 0,
+    can_call_election,
+  } = data;
 
   return (
     <Section title={'Cryo Management'}>
@@ -43,6 +53,29 @@ export const CryoStorageConsoleContent = (props, context) => {
           />
         </LabeledList.Item>
       </LabeledList>
+      <Divider />
+      {!!is_crew && (
+        <Section title="Ship Command">
+          <Button
+            content={election_running ? 'Election Running' : 'Call an Election'}
+            icon="crown"
+            color={can_call_election ? 'good' : undefined}
+            disabled={!can_call_election}
+            onClick={() => act('callElection')}
+          />
+          <div style={{ marginTop: '4px', opacity: 0.7 }}>
+            {election_running
+              ? 'A vote is under way. Answer the prompt to cast your vote.'
+              : has_captain
+                ? 'This ship has a captain. An election can only be called when there is nobody left able to run it.'
+                : election_cooldown > 0
+                  ? 'The last election failed. Another can be called in ' +
+                    election_cooldown +
+                    's.'
+                  : 'No captain is able to run this ship. Calling an election nominates you; the rest of the crew get 45 seconds to vote.'}
+          </div>
+        </Section>
+      )}
       <Divider />
       {cooldown > 0 && (
         <div className="NoticeBox">{'On Cooldown: ' + cooldown / 10 + 's'}</div>
