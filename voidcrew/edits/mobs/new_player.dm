@@ -274,6 +274,8 @@
 			give_madness(humanc, GLOB.curse_of_madness_triggered)
 
 	GLOB.joined_player_list += character.ckey
+	// They have a berth now, so whatever they were waiting on elsewhere lapses
+	clear_crew_applications_for_ckey(character.ckey)
 
 	if((job.job_flags & JOB_ASSIGN_QUIRKS) && humanc && CONFIG_GET(flag/roundstart_traits))
 		SSquirks.AssignQuirks(humanc, humanc.client)

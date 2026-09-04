@@ -17,6 +17,7 @@ type ActiveShip = {
   locked: BooleanLike;
   password_cleared: BooleanLike;
   crew_locked: BooleanLike;
+  applied: BooleanLike;
 };
 
 type ShipJoinMenuData = {
@@ -296,21 +297,44 @@ const ShipCard = (props: { ship: ActiveShip }) => {
 
         {/* Join Button */}
         <Stack.Item>
-          <Button
-            icon="sign-in-alt"
-            color="blue"
-            disabled={totalSlots === 0}
-            tooltip={
-              totalSlots === 0
-                ? 'No positions available'
-                : ship.locked && !ship.password_cleared
-                  ? "Requires the crew's join password"
-                  : 'Join crew'
-            }
-            onClick={() => act('select_ship', { ship_ref: ship.ref })}
-          >
-            Join
-          </Button>
+          <Stack vertical>
+            <Stack.Item>
+              <Button
+                fluid
+                icon="sign-in-alt"
+                color="blue"
+                disabled={totalSlots === 0}
+                tooltip={
+                  totalSlots === 0
+                    ? 'No positions available'
+                    : ship.locked && !ship.password_cleared
+                      ? "Requires the crew's join password"
+                      : 'Join crew'
+                }
+                onClick={() => act('select_ship', { ship_ref: ship.ref })}
+              >
+                Join
+              </Button>
+            </Stack.Item>
+            {!!ship.locked && !ship.password_cleared && (
+              <Stack.Item>
+                <Button
+                  fluid
+                  icon="envelope"
+                  color={ship.applied ? undefined : 'good'}
+                  disabled={!!ship.applied}
+                  tooltip={
+                    ship.applied
+                      ? 'Your application is waiting on this crew'
+                      : "Ask this crew to let you in without the password"
+                  }
+                  onClick={() => act('apply_to_ship', { ship_ref: ship.ref })}
+                >
+                  {ship.applied ? 'Applied' : 'Apply'}
+                </Button>
+              </Stack.Item>
+            )}
+          </Stack>
         </Stack.Item>
       </Stack>
     </Box>

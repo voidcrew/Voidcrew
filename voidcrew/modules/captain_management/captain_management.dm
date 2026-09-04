@@ -178,6 +178,18 @@
 			"time" = ship.pending_invites[ckey]
 		))
 
+	// Crew applications from the lobby
+	data["applications"] = list()
+	ship.prune_crew_applications()
+	for(var/datum/ship_application/application as anything in ship.crew_applications)
+		data["applications"] += list(list(
+			"ref" = REF(application),
+			"name" = application.applicant_name,
+			"ckey" = application.ckey,
+			"message" = application.message,
+			"waiting" = round(application.waiting_time() / 10)
+		))
+
 	data["can_invite"] = COOLDOWN_FINISHED(ship, invite_cooldown)
 	data["can_rename"] = COOLDOWN_FINISHED(ship, rename_cooldown)
 
@@ -256,6 +268,23 @@
 		if("toggle_crew_lock")
 			// set_crew_only_airlocks handles the fleet-hull refusal, the crew announcement and logging
 			ship.set_crew_only_airlocks(!ship.crew_only_airlocks, captain)
+			return TRUE
+
+		if("approve_application")
+			var/datum/ship_application/approving = locate(params["ref"]) in ship.crew_applications
+			if(!approving)
+				to_chat(captain, span_warning("That application is no longer open."))
+				return TRUE
+			ship.resolve_crew_application(approving, TRUE, captain)
+			return TRUE
+
+		if("deny_application")
+			var/datum/ship_application/denying = locate(params["ref"]) in ship.crew_applications
+			if(!denying)
+				to_chat(captain, span_warning("That application is no longer open."))
+				return TRUE
+			// The optional-reason prompt sleeps; do not hold the TGUI call open for it
+			INVOKE_ASYNC(ship, TYPE_PROC_REF(/obj/structure/overmap/ship, prompt_deny_crew_application), denying, captain)
 			return TRUE
 
 // ===== INVITE SYSTEM =====

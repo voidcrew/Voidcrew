@@ -92,6 +92,9 @@
 	COOLDOWN_DECLARE(invite_cooldown)
 	///List of pending crew invites: ckey -> invite_time
 	var/list/pending_invites = list()
+	///Open /datum/ship_application requests to join this ship from the lobby. Only a
+	///password-locked hull ever collects any - see voidcrew/modules/captain_management.
+	var/list/crew_applications = list()
 	/// Mind of whoever claimed this ship (for NPC ships without job_slots)
 	var/datum/mind/claimed_captain
 	/// Mind of the crew member holding acting command: the first joiner on a ship with
@@ -759,6 +762,7 @@
 
 /obj/structure/overmap/ship/Destroy()
 	GLOB.crew_locked_ships -= src
+	QDEL_LIST(crew_applications)
 	source_template = null
 	shuttle?.intoTheSunset()
 	shuttle = null

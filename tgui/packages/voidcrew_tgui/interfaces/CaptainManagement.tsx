@@ -35,6 +35,15 @@ type PendingInvite = {
   time: number;
 };
 
+type CrewApplication = {
+  ref: string;
+  name: string;
+  ckey: string;
+  message: string;
+  /// Seconds this application has been waiting
+  waiting: number;
+};
+
 type Data = {
   ship_destroyed: BooleanLike;
   ship_name: string;
@@ -47,6 +56,7 @@ type Data = {
   crew: CrewMember[];
   available_players: AvailablePlayer[];
   pending_invites: PendingInvite[];
+  applications: CrewApplication[];
   can_invite: BooleanLike;
   can_rename: BooleanLike;
 };
@@ -54,9 +64,9 @@ type Data = {
 export const CaptainManagement = () => {
   const { data } = useBackend<Data>();
   const { ship_destroyed, ship_name, is_captain } = data;
-  const [currentTab, setCurrentTab] = useState<'crew' | 'invites' | 'settings'>(
-    'crew',
-  );
+  const [currentTab, setCurrentTab] = useState<
+    'crew' | 'invites' | 'applications' | 'settings'
+  >('crew');
 
   if (ship_destroyed) {
     return (
@@ -99,6 +109,13 @@ export const CaptainManagement = () => {
                 Invites ({data.pending_invites.length})
               </Tabs.Tab>
               <Tabs.Tab
+                selected={currentTab === 'applications'}
+                onClick={() => setCurrentTab('applications')}
+                icon="clipboard-list"
+              >
+                Applications ({data.applications.length})
+              </Tabs.Tab>
+              <Tabs.Tab
                 selected={currentTab === 'settings'}
                 onClick={() => setCurrentTab('settings')}
                 icon="cog"
@@ -111,6 +128,7 @@ export const CaptainManagement = () => {
           <Stack.Item grow>
             {currentTab === 'crew' && <CrewTab />}
             {currentTab === 'invites' && <InvitesTab />}
+            {currentTab === 'applications' && <ApplicationsTab />}
             {currentTab === 'settings' && <SettingsTab />}
           </Stack.Item>
         </Stack>
@@ -244,6 +262,75 @@ const InvitesTab = () => {
         </Section>
       </Stack.Item>
     </Stack>
+  );
+};
+
+const ApplicationsTab = () => {
+  const { act, data } = useBackend<Data>();
+  const { applications } = data;
+
+  return (
+    <Section
+      title="Applications to Join"
+      fill
+      scrollable
+      buttons={
+        <Box color="label" fontSize="11px">
+          Sent from the lobby by players your join password is keeping out
+        </Box>
+      }
+    >
+      {applications.length === 0 ? (
+        <NoticeBox info>
+          Nobody has applied. Players see an Apply button on your ship in the
+          lobby whenever it is password-locked; approving one lets that player
+          in without the password. Applications lapse after ten minutes.
+        </NoticeBox>
+      ) : (
+        <Stack vertical>
+          {applications.map((application) => (
+            <Stack.Item key={application.ref}>
+              <Section>
+                <Stack align="center">
+                  <Stack.Item grow>
+                    <Box bold>{application.name}</Box>
+                    <Box color="label" fontSize="11px">
+                      ckey: {application.ckey} - waiting {application.waiting}s
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="check"
+                      color="good"
+                      onClick={() =>
+                        act('approve_application', { ref: application.ref })
+                      }
+                    >
+                      Approve
+                    </Button>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="times"
+                      color="bad"
+                      tooltip="Asks you for an optional reason to send back"
+                      onClick={() =>
+                        act('deny_application', { ref: application.ref })
+                      }
+                    >
+                      Deny
+                    </Button>
+                  </Stack.Item>
+                </Stack>
+                <Box mt={1} italic>
+                  &quot;{application.message}&quot;
+                </Box>
+              </Section>
+            </Stack.Item>
+          ))}
+        </Stack>
+      )}
+    </Section>
   );
 };
 

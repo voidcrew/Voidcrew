@@ -6890,6 +6890,7 @@
 #include "voidcrew\modules\autotranslate\translated_speech.dm"
 #include "voidcrew\modules\autotranslate\debug.dm"
 #include "voidcrew\modules\captain_management\captain_management.dm"
+#include "voidcrew\modules\captain_management\ship_applications.dm"
 #include "voidcrew\modules\cargo\bank_account.dm"
 #include "voidcrew\modules\cargo\bank_machine.dm"
 #include "voidcrew\modules\cargo\exports.dm"

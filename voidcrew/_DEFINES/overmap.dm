@@ -27,6 +27,11 @@
 /// Longest join password a captain may set on a player-created hull
 #define SHIP_JOIN_PASSWORD_MAX_LEN 24
 
+/// Longest message on a crew application, and on the reason sent back with a denial
+#define SHIP_APPLICATION_MESSAGE_MAX_LEN 200
+/// How long a crew application waits for an answer before it lapses
+#define SHIP_APPLICATION_EXPIRY (10 MINUTES)
+
 //Possible ship states
 #define OVERMAP_SHIP_IDLE "idle"
 #define OVERMAP_SHIP_FLYING "flying"
