@@ -100,6 +100,11 @@
 	// Harvesting is loud: this blocks/breaks nebula concealment on the ship
 	ship.notify_scoop_activity()
 
+	// Pulling a radioactive gas in through the hull doses the crew, unless the ship is
+	// running a radioactive nebula shielder. Self-throttling, so calling it every tick is
+	// fine - see apply_nebula_radiation() in ship_damage.dm.
+	ship.apply_nebula_radiation(cloud)
+
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, "scoop_open", "scoop", tool))
 		return ITEM_INTERACT_SUCCESS

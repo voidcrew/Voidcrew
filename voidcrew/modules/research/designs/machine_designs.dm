@@ -16,6 +16,20 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
 
+// Upstream's radioactive nebula shielder has a board and a sprite but no design and no node
+// - its only source is a cargo pack that a dead station trait was supposed to unlock, so
+// nothing in this fork could ever build one. Hung off Radioisotope Generators, the node
+// already dealing in sealed radioactive blocks. See voidcrew/edits/machinery/nebula_shielding.dm
+/datum/design/board/nebula_shielding
+	name = "Machine Design (Radioactive Nebula Shielder Board)"
+	desc = "The circuit board for a radioactive nebula shielder, which keeps a tritium nebula's radiation off the crew."
+	id = "radioactive_nebula_shielding"
+	build_path = /obj/item/circuitboard/machine/radioactive_nebula_shielding
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
 /datum/design/board/teg
 	name = "Machine Design (Thermoelectric Generator Board)"
 	desc = "The circuit board for a thermoelectric generator."

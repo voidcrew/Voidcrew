@@ -6780,6 +6780,7 @@
 #include "voidcrew\edits\machinery\camera.dm"
 #include "voidcrew\edits\machinery\crew_monitor.dm"
 #include "voidcrew\edits\machinery\materials_market.dm"
+#include "voidcrew\edits\machinery\nebula_shielding.dm"
 #include "voidcrew\edits\machinery\power.dm"
 #include "voidcrew\edits\machinery\pressure_tank.dm"
 #include "voidcrew\edits\machinery\silicon_ship_systems.dm"

@@ -7,14 +7,39 @@
  * overlays out there too, on tiles that aren't part of the planet at all.
  */
 
+/**
+ * === Storm length ===
+ *
+ * A storm's active phase is what a crew has to sit out; the telegraph is warning time and
+ * is deliberately left alone. Zone bands then stretch the active phase (zone_weather.dm):
+ * x1.25 in yellow, x1.5 in red, which makes yellow, not red, the binding constraint on any
+ * upper bound. A ceiling of 2 minutes base lands on 2:30 in yellow and 3:00 in red.
+ *
+ * Ash and sand already sat at 1-2 minutes and are untouched. The three below did not:
+ * rain ran 3-5 minutes base, so 4:30 to 7:30 in the red band before its 30-second telegraph
+ * and 30-second tail - long enough that waiting one out was most of the time spent on the
+ * planet. Snow and the radiation front both topped out at 2.5 minutes, which overshoots
+ * yellow's 3-minute mark by a few seconds.
+ *
+ * Only the storm itself is shortened. The gap between storms is untouched, so this cuts
+ * how much of an hour on the surface is spent under weather rather than just reshuffling it.
+ */
+
 /datum/weather/ash_storm
 	area_type = /area/overmap_encounter/planetoid
 
 /datum/weather/snow_storm
 	area_type = /area/overmap_encounter/planetoid
+	// 2.5 minutes upstream: 3:07 in yellow, over the mark
+	weather_duration_upper = 2 MINUTES
 
 /datum/weather/rain_storm
 	area_type = /area/overmap_encounter/planetoid
+	// 3 to 5 minutes upstream, three times the length of any other planet storm while being
+	// the only one that does no direct damage - rain is what "stuck in the ship for ten
+	// minutes" was actually describing
+	weather_duration_lower = 1 MINUTES
+	weather_duration_upper = 2 MINUTES
 
 /datum/weather/sand_storm
 	area_type = /area/overmap_encounter/planetoid
@@ -45,6 +70,10 @@
 	/// Weighed against the planet's climate storm, which sits at 90. Roughly one storm in
 	/// six on a red-band planet is this one; the rest are its ordinary weather.
 	probability = 20
+
+	/// 2.5 minutes upstream, and this one only ever runs in the red band, where the x1.5
+	/// duration multiplier took it to 3:45. Two minutes caps it at 3:00 there.
+	weather_duration_upper = 2 MINUTES
 
 	/**
 	 * Surface only, unlike the station version.

@@ -16,9 +16,15 @@
  * This is ~750x more efficient than the old polling approach.
  */
 
+/// How often a ship sitting in a radioactive nebula takes a dose. Also throttles the
+/// shielder poll that goes with it, since polling one costs it power and a puff of tritium.
+#define NEBULA_RADIATION_INTERVAL (20 SECONDS)
+
 /obj/structure/overmap/ship
 	/// Cooldown for hazard damage ticks
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
+	/// Cooldown between radiation doses from a tritium nebula. See apply_nebula_radiation().
+	COOLDOWN_DECLARE(nebula_radiation_cooldown)
 	/// Cooldown preventing undocking after a hull failure. See enter_integrity_failure().
 	COOLDOWN_DECLARE(integrity_undock_lockout)
 	/// Whether ship integrity has been initialized from mass
@@ -796,18 +802,72 @@ GLOBAL_VAR_INIT(ion_storm_pulse_active, FALSE)
 
 /**
  * Nebula Effect
- * Reduces sensor effectiveness, minor atmos contamination
+ *
+ * A little of the cloud seeps into the hull, and a tritium cloud doses the crew on the way
+ * past. Nebulas still deal no hull damage - they are cover and fuel, not a storm.
  */
 /obj/structure/overmap/ship/proc/apply_nebula_effect(obj/structure/overmap/event/nebula/cloud)
-	// Nebulas don't deal damage but can contaminate atmosphere
-	// For now just a visual/atmospheric effect
+	// Seep a little of the cloud's own gas into the ship. This used to spawn plasma whatever
+	// the nebula was made of, so flying through a tritium bank vented plasma into your air.
 	var/turf/target = get_random_ship_turf()
-	if(target && prob(30))
-		// Add some plasma to the air if the nebula is plasma-based
+	if(target && cloud?.gas_type && prob(30))
 		var/datum/gas_mixture/air = target.return_air()
 		if(air)
-			air.assert_gas(/datum/gas/plasma)
-			air.gases[/datum/gas/plasma][MOLES] += 0.5
+			air.assert_gas(cloud.gas_type)
+			air.gases[cloud.gas_type][MOLES] += 0.5
+
+	apply_nebula_radiation(cloud)
+
+/**
+ * Doses the crew for standing in a radioactive cloud.
+ *
+ * Only tritium clouds carry anything (GLOB.nebula_gas_radioactivity), and a radioactive
+ * nebula shielder aboard cancels it - the machine's strength is subtracted from the cloud's,
+ * so one working unit is enough for any of them. What goes out is an ordinary radiation
+ * pulse, so rad-protective clothing and putting walls between yourself and the hull work the
+ * way they always do. Self-throttling on NEBULA_RADIATION_INTERVAL, since this is called
+ * both on flying into a cloud and on every tick a ram scoop is running inside one.
+ *
+ * Returns TRUE if a dose actually went out.
+ */
+/obj/structure/overmap/ship/proc/apply_nebula_radiation(obj/structure/overmap/event/nebula/cloud)
+	var/intensity = GLOB.nebula_gas_radioactivity[cloud?.gas_type]
+	if(!intensity)
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, nebula_radiation_cooldown))
+		return FALSE
+
+	intensity -= get_nebula_shielding_level()
+	if(intensity <= 0)
+		// Spend the cooldown anyway: the shielders were polled, charged and paid out for it
+		COOLDOWN_START(src, nebula_radiation_cooldown, NEBULA_RADIATION_INTERVAL)
+		return FALSE
+
+	var/turf/target = get_random_ship_turf()
+	if(!target)
+		return FALSE
+	COOLDOWN_START(src, nebula_radiation_cooldown, NEBULA_RADIATION_INTERVAL)
+
+	// Same dose profile a uranium airlock puts out: light, blocked by walls, beaten by
+	// rad-protective clothing. It is a reason to fix the shielder, not an execution.
+	radiation_pulse(target, max_range = 2 + intensity, threshold = RAD_LIGHT_INSULATION)
+	ship_notify("Radiation alarm. The [cloud.get_gas_name()] cloud outside is dosing the hull.", "HAZARD", SHIP_NOTIFY_WARNING)
+	return TRUE
+
+/**
+ * How much nebula shielding this hull is running.
+ *
+ * Walks the ship's own areas rather than its z-level, because every ship z is a station
+ * level here and a z check would let a docked neighbour's shielder cover us. Polling a
+ * shielder is also what makes it draw power and vent its tritium, so this is called on a
+ * cadence (see apply_nebula_radiation) rather than every tick.
+ */
+/obj/structure/overmap/ship/proc/get_nebula_shielding_level()
+	var/shielding = 0
+	for(var/obj/machinery/nebula_shielding/shielder as anything in get_ship_machines(/obj/machinery/nebula_shielding))
+		// A shielder that is unpowered, broken or open returns null rather than 0
+		shielding += (shielder.get_nebula_shielding() || 0)
+	return shielding
 
 /**
  * Gets a random turf inside the ship for targeting effects

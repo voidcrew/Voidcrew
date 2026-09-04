@@ -11,6 +11,35 @@ Performance Note:
 #define MAX_OVERMAP_EVENTS 200
 #define MAX_OVERMAP_PLACEMENT_ATTEMPTS 40
 
+/*
+ * Hazard clusters (setup_dangers)
+ *
+ * Hazards used to be seeded by orbit: pick a ring, then roll spread_chance against every
+ * single tile of that ring's full circumference. On a ring 20 tiles out that is 160 tiles
+ * rolled at 75% for a nebula, so one seed drew a closed band right around the map, and a
+ * handful of seeds ate the whole event budget before most event types had spawned at all.
+ * That is where the "walls of hazards" came from, and why some rounds only ever showed two
+ * or three kinds of storm.
+ *
+ * A cluster now grows outward from its own seed tile instead, a few tiles across, with the
+ * three bounds below keeping it something a pilot flies around. The zone rings themselves
+ * are untouched - green/yellow/red are still static concentric bands.
+ */
+
+/// Multiplier applied to a cluster's spread chance for every step away from its seed tile
+#define OVERMAP_CLUSTER_SPREAD_DECAY 0.6
+/// Furthest, in tiles, a cluster may reach from its seed
+#define OVERMAP_CLUSTER_MAX_RADIUS 3
+/// Widest arc, in degrees around the sun, a single cluster may cover. Half of this either
+/// side of the seed's bearing, so no cluster can ever curl far enough to fence off an orbit.
+#define OVERMAP_CLUSTER_MAX_ARC 90
+/// No orbit may end up with more than this share of its tiles carrying an event. This is the
+/// anti-wall rule proper: below ~35% there is always a way through any given ring.
+#define OVERMAP_RING_MAX_EVENT_FRACTION 0.35
+/// Weight bonus in phase 2 for an event type a zone band has not been dealt yet, so the
+/// three bands end up with comparable variety and not just comparable counts.
+#define OVERMAP_UNSEEN_TYPE_WEIGHT_BONUS 2
+
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
 	wait = 10 // Fires every 1 second (10 deciseconds)
@@ -606,67 +635,92 @@ SUBSYSTEM_DEF(overmap)
 	return turf_to_return
 
 
+/**
+ * Seeds the round's overmap hazards.
+ *
+ * Same two phases as before - every type in overmap_event_guaranteed_list is dealt a
+ * cluster so the chart always carries the full roster, then the rest of the budget comes
+ * off the weighted pick list. What changed is the shape and the sharing:
+ *
+ * - a cluster grows outward from one seed tile (grow_event_cluster) instead of being
+ *   smeared along a whole orbit, so hazards are blobs with clear space around them
+ * - clusters are dealt to the three zone bands in turn, so green, yellow and red finish
+ *   within one cluster of each other however the dice fall
+ * - no orbit may pass OVERMAP_RING_MAX_EVENT_FRACTION, which is what actually guarantees
+ *   a way through rather than merely making one likely
+ *
+ * MAX_OVERMAP_EVENT_CLUSTERS, MAX_OVERMAP_EVENTS and the MIN_OVERMAP_ASTEROID_FIELDS
+ * top-up all keep their old meaning. The zone rings themselves are untouched: green,
+ * yellow and red are still the same static concentric bands.
+ */
 /datum/controller/subsystem/overmap/proc/setup_dangers()
-	var/list/orbits = list()
-	for (var/i in 2 to LAZYLEN(radius_tiles))
-		orbits += "[i]"
+	var/list/zone_bands = list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)
+	var/list/band_names = list(
+		"[ZONE_GREEN]" = ZONE_NAME_GREEN,
+		"[ZONE_YELLOW]" = ZONE_NAME_YELLOW,
+		"[ZONE_RED]" = ZONE_NAME_RED,
+	)
 
-	// Tracks landable meteor storm / asteroid field events spawned below (main +
-	// spread copies), so we can top up to MIN_OVERMAP_ASTEROID_FIELDS afterward.
+	// Seed pools, one per band. Built off radius_tiles, so the sun's own tile and the map
+	// edge are already excluded and orbit 1 - the tiles hugging the star - stays clear
+	// exactly as it did before.
+	var/list/band_seed_pools = list()
+	// Per-band bookkeeping and the per-orbit density budget, all keyed by number as text
+	var/list/ring_event_counts = list()
+	var/list/band_cluster_counts = list()
+	var/list/band_tile_counts = list()
+	var/list/band_type_tallies = list()
+	for(var/band in zone_bands)
+		band_seed_pools["[band]"] = list()
+		band_cluster_counts["[band]"] = 0
+		band_tile_counts["[band]"] = 0
+		band_type_tallies["[band]"] = list()
+	for(var/ring in 2 to LAZYLEN(radius_tiles))
+		for(var/turf/ring_turf as anything in radius_tiles[ring])
+			band_seed_pools["[get_zone_band_for_turf(ring_turf)]"] += ring_turf
+
+	// Tracks landable meteor storm / asteroid field events spawned below (seed tiles and
+	// cluster tiles alike), so we can top up to MIN_OVERMAP_ASTEROID_FIELDS afterward.
 	// This is the mining-content guarantee that used to target space ruin asteroid
 	// signals (MIN_OVERMAP_ASTEROID_SIGNALS) before that category was retired.
 	var/meteor_count = 0
+	// Counted here rather than off the `events` list, which nothing has ever filled -
+	// MAX_OVERMAP_EVENTS was silently inert, and ring-wide spread ran uncapped because of it
+	var/total_event_tiles = 0
+	var/clusters_spawned = 0
 
-	// Phase 1: Spawn guaranteed event types first to ensure map diversity
-	var/list/guaranteed_events = GLOB.overmap_event_guaranteed_list.Copy()
-	for (var/event_type in guaranteed_events)
-		if (MAX_OVERMAP_EVENTS <= LAZYLEN(events))
+	// Phase 1: one cluster of every guaranteed event type, dealt round-robin over the three
+	// bands so the roster spreads out instead of piling into whichever orbit rolled first
+	var/list/band_rotation = shuffle(zone_bands.Copy())
+	var/rotation_index = 0
+	for(var/event_type in shuffle(GLOB.overmap_event_guaranteed_list.Copy()))
+		if(clusters_spawned >= MAX_OVERMAP_EVENT_CLUSTERS || total_event_tiles >= MAX_OVERMAP_EVENTS)
 			break
-		if (LAZYLEN(orbits) == 0 || !orbits)
-			break
-		var/selected_orbit = text2num(pick(orbits))
-
-		var/turf/turf_for_event = get_unused_overmap_square_in_radius(selected_orbit)
-		if (!turf_for_event || !istype(turf_for_event))
-			orbits -= "[selected_orbit]"
+		rotation_index++
+		// Its own band first, then the others: a guaranteed type still has to land somewhere
+		// even when its turn comes up on a band with no room left
+		var/list/band_order = list(band_rotation[((rotation_index - 1) % length(band_rotation)) + 1])
+		band_order |= band_rotation
+		var/list/placed = place_event_cluster(event_type, band_order, band_seed_pools, ring_event_counts)
+		if(!length(placed))
 			continue
-		var/obj/structure/overmap/event/event_to_spawn = new event_type(turf_for_event)
-		if (istype(event_to_spawn, /obj/structure/overmap/event/meteor))
-			meteor_count++
-		for (var/turf/turf_to_spawn as anything in radius_tiles[selected_orbit])
-			if (locate(/obj/structure/overmap) in turf_to_spawn)
-				continue
-			if (!prob(event_to_spawn.spread_chance))
-				continue
-			var/obj/structure/overmap/event/spread_event = new event_type(turf_to_spawn)
-			if (istype(spread_event, /obj/structure/overmap/event/meteor))
-				meteor_count++
+		clusters_spawned++
+		total_event_tiles += length(placed)
+		meteor_count += tally_event_cluster(placed, band_cluster_counts, band_tile_counts, band_type_tallies)
 
-	// Phase 2: Fill remaining clusters with weighted random picks
-	var/clusters_spawned = length(GLOB.overmap_event_guaranteed_list)
-	for (var/_ in clusters_spawned to MAX_OVERMAP_EVENT_CLUSTERS)
-		if (MAX_OVERMAP_EVENTS <= LAZYLEN(events))
-			return
-		if (LAZYLEN(orbits) == 0 || !orbits)
-			break // can't fit anymore in
-		var/selected_orbit = text2num(pick(orbits))
-
-		var/turf/turf_for_event = get_unused_overmap_square_in_radius(selected_orbit)
-		if (!turf_for_event || !istype(turf_for_event))
-			orbits -= "[selected_orbit]" // this one is full
+	// Phase 2: spend the rest of the budget on weighted picks, always topping up whichever
+	// band is currently emptiest so the three never drift more than one cluster apart
+	var/list/open_bands = zone_bands.Copy()
+	while(clusters_spawned < MAX_OVERMAP_EVENT_CLUSTERS && total_event_tiles < MAX_OVERMAP_EVENTS && length(open_bands))
+		var/band = least_stocked_band(open_bands, band_cluster_counts)
+		var/event_type = pick_weight(weighted_types_for_band(band_type_tallies["[band]"]))
+		var/list/placed = place_event_cluster(event_type, list(band), band_seed_pools, ring_event_counts)
+		if(!length(placed))
+			open_bands -= band // nothing left in this band a cluster is allowed to occupy
 			continue
-		var/event_type = pick_weight(GLOB.overmap_event_pick_list)
-		var/obj/structure/overmap/event/event_to_spawn = new event_type(turf_for_event)
-		if (istype(event_to_spawn, /obj/structure/overmap/event/meteor))
-			meteor_count++
-		for (var/turf/turf_to_spawn as anything in radius_tiles[selected_orbit])
-			if (locate(/obj/structure/overmap) in turf_to_spawn)
-				continue
-			if (!prob(event_to_spawn.spread_chance))
-				continue
-			var/obj/structure/overmap/event/spread_event = new event_type(turf_to_spawn)
-			if (istype(spread_event, /obj/structure/overmap/event/meteor))
-				meteor_count++
+		clusters_spawned++
+		total_event_tiles += length(placed)
+		meteor_count += tally_event_cluster(placed, band_cluster_counts, band_tile_counts, band_type_tallies)
 
 	// Guarantee a minimum number of landable asteroid field events per round, so space
 	// mining is a dependable resource loop rather than a lucky roll of the weighted picker
@@ -676,7 +730,204 @@ SUBSYSTEM_DEF(overmap)
 			break
 		new /obj/structure/overmap/event/meteor(turf_for_field)
 		meteor_count++
+		total_event_tiles++
 		log_mapping("SSovermap: Spawned guaranteed asteroid field event")
+
+	// One line per band, so a live boot's hazard spread can be read straight out of dd.log
+	for(var/band in zone_bands)
+		var/list/tally = band_type_tallies["[band]"]
+		var/list/parts = list()
+		for(var/event_path in tally)
+			var/obj/structure/overmap/event/event_prototype = event_path
+			parts += "[initial(event_prototype.name)] x[tally[event_path]]"
+		log_mapping("SSovermap: hazards in the [band_names["[band]"]] - [band_cluster_counts["[band]"]] clusters, [band_tile_counts["[band]"]] tiles ([length(parts) ? jointext(parts, ", ") : "none"])")
+	log_mapping("SSovermap: hazard seeding done - [clusters_spawned]/[MAX_OVERMAP_EVENT_CLUSTERS] clusters, [total_event_tiles]/[MAX_OVERMAP_EVENTS] tiles, [meteor_count] landable asteroid fields")
+
+/**
+ * Seeds one cluster, trying each band in band_order until one has room for it.
+ *
+ * Returns everything the cluster placed, seed first, or an empty list if no band could
+ * take it. band_order lets a guaranteed type fall back to another band rather than being
+ * dropped from the round entirely.
+ */
+/datum/controller/subsystem/overmap/proc/place_event_cluster(event_type, list/band_order, list/band_seed_pools, list/ring_event_counts)
+	for(var/band in band_order)
+		var/turf/seed_turf = pick_cluster_seed(band_seed_pools["[band]"], ring_event_counts)
+		if(!seed_turf)
+			continue
+		var/list/placed = grow_event_cluster(seed_turf, event_type, ring_event_counts)
+		if(length(placed))
+			return placed
+	return list()
+
+/**
+ * Grows one hazard cluster outward from a seed tile. Returns everything placed, seed first;
+ * an empty list means the seed tile itself could not be claimed.
+ *
+ * The walk is breadth-first over the eight neighbours of every tile already in the cluster,
+ * and the chance to take a neighbour is the event's spread_chance decayed once per step out
+ * from the seed. Growth stops at the type's max_cluster_size, at OVERMAP_CLUSTER_MAX_RADIUS,
+ * at OVERMAP_CLUSTER_MAX_ARC around the sun from the seed's bearing, or when the orbit a
+ * tile sits on has already been filled to OVERMAP_RING_MAX_EVENT_FRACTION - first to bite.
+ */
+/datum/controller/subsystem/overmap/proc/grow_event_cluster(turf/seed_turf, event_type, list/ring_event_counts)
+	var/list/placed = list()
+	if(!ispath(event_type, /obj/structure/overmap/event))
+		return placed
+	if(!claim_event_tile(seed_turf, ring_event_counts))
+		return placed
+
+	var/obj/structure/overmap/event/seed_event = new event_type(seed_turf)
+	placed += seed_event
+
+	var/max_tiles = max(1, seed_event.max_cluster_size)
+	var/base_chance = seed_event.spread_chance
+	if(length(placed) >= max_tiles || base_chance <= 0)
+		return placed
+
+	var/seed_bearing = get_bearing_for_turf(seed_turf)
+	var/list/frontier = list(seed_turf)
+	var/list/frontier_depth = list(0)
+	// Every tile the walk has already ruled on, so a neighbour it turned down is not
+	// rolled again from the next tile over
+	var/list/considered = list(seed_turf)
+
+	while(length(frontier) && length(placed) < max_tiles)
+		var/frontier_index = rand(1, length(frontier))
+		var/turf/current = frontier[frontier_index]
+		var/depth = frontier_depth[frontier_index]
+		frontier.Cut(frontier_index, frontier_index + 1)
+		frontier_depth.Cut(frontier_index, frontier_index + 1)
+		if(depth >= OVERMAP_CLUSTER_MAX_RADIUS)
+			continue
+
+		var/step_chance = base_chance
+		for(var/_ in 1 to depth)
+			step_chance *= OVERMAP_CLUSTER_SPREAD_DECAY
+
+		for(var/direction in GLOB.alldirs)
+			if(length(placed) >= max_tiles)
+				break
+			var/turf/candidate = get_step(current, direction)
+			if(!candidate || (candidate in considered))
+				continue
+			considered += candidate
+			if(!prob(step_chance))
+				continue
+			if(!within_cluster_arc(candidate, seed_bearing))
+				continue
+			if(!claim_event_tile(candidate, ring_event_counts))
+				continue
+			placed += new event_type(candidate)
+			frontier += candidate
+			frontier_depth += (depth + 1)
+
+	return placed
+
+/// A free tile in this band's pool whose orbit still has room under the density cap.
+/datum/controller/subsystem/overmap/proc/pick_cluster_seed(list/pool, list/ring_event_counts)
+	if(!length(pool))
+		return null
+	for(var/_ in 1 to MAX_OVERMAP_PLACEMENT_ATTEMPTS)
+		var/turf/candidate = pick(pool)
+		if(can_place_event_on(candidate, ring_event_counts))
+			return candidate
+	return null
+
+/// TRUE when a hazard may go here: the tile is empty, it belongs to a real orbit, and that
+/// orbit is not already as full as OVERMAP_RING_MAX_EVENT_FRACTION lets it get.
+/datum/controller/subsystem/overmap/proc/can_place_event_on(turf/candidate, list/ring_event_counts)
+	if(!istype(candidate, /turf/open/overmap))
+		return FALSE
+	if(locate(/obj/structure/overmap) in candidate)
+		return FALSE
+	var/ring = get_ring_for_turf(candidate)
+	if(ring < 2 || ring > LAZYLEN(radius_tiles))
+		return FALSE
+	var/ring_size = LAZYLEN(radius_tiles[ring])
+	if(!ring_size)
+		return FALSE
+	return ring_event_counts["[ring]"] < max(1, round(ring_size * OVERMAP_RING_MAX_EVENT_FRACTION))
+
+/// can_place_event_on(), plus booking the tile against its orbit's budget.
+/datum/controller/subsystem/overmap/proc/claim_event_tile(turf/candidate, list/ring_event_counts)
+	if(!can_place_event_on(candidate, ring_event_counts))
+		return FALSE
+	ring_event_counts["[get_ring_for_turf(candidate)]"] += 1
+	return TRUE
+
+/// FALSE once a candidate sits more than half of OVERMAP_CLUSTER_MAX_ARC around the sun
+/// from where its cluster started, which is what stops a cluster curling into a ring.
+/datum/controller/subsystem/overmap/proc/within_cluster_arc(turf/candidate, seed_bearing)
+	var/bearing_delta = abs(get_bearing_for_turf(candidate) - seed_bearing)
+	if(bearing_delta > 180)
+		bearing_delta = 360 - bearing_delta
+	return bearing_delta <= (OVERMAP_CLUSTER_MAX_ARC * 0.5)
+
+/**
+ * The orbit (Chebyshev ring) a turf sits on, counted out from the sun.
+ *
+ * Deliberately the same arithmetic setup_sun() uses to build radius_tiles, one-tile offset
+ * included, so the ring budgets and radius_tiles agree on which tiles belong to which orbit.
+ */
+/datum/controller/subsystem/overmap/proc/get_ring_for_turf(turf/checked_turf)
+	if(!checked_turf || !overmap_centre)
+		return 0
+	return max(abs(checked_turf.x - (overmap_centre.x + 1)), abs(checked_turf.y - (overmap_centre.y + 1)))
+
+/// Bearing of a turf from the sun in degrees, 0-360. Used to hold a cluster inside one arc.
+/datum/controller/subsystem/overmap/proc/get_bearing_for_turf(turf/checked_turf)
+	if(!checked_turf || !overmap_centre)
+		return 0
+	return SIMPLIFY_DEGREES(ATAN2(checked_turf.x - overmap_centre.x, checked_turf.y - overmap_centre.y))
+
+/// The band carrying the fewest clusters so far, ties broken at random. Dealing every
+/// phase 2 cluster to this is what holds the three bands within one of each other.
+/datum/controller/subsystem/overmap/proc/least_stocked_band(list/candidate_bands, list/band_cluster_counts)
+	var/list/leaders = list()
+	var/lowest = null
+	for(var/band in candidate_bands)
+		var/count = band_cluster_counts["[band]"]
+		if(isnull(lowest) || count < lowest)
+			lowest = count
+			leaders = list(band)
+		else if(count == lowest)
+			leaders += band
+	return length(leaders) ? pick(leaders) : null
+
+/// The phase 2 pick list for one band: the stock weights, with a bonus on any event type
+/// the band has not been dealt yet, so variety evens out alongside cluster count.
+/datum/controller/subsystem/overmap/proc/weighted_types_for_band(list/band_tally)
+	var/list/weights = list()
+	for(var/event_type in GLOB.overmap_event_pick_list)
+		var/weight = GLOB.overmap_event_pick_list[event_type]
+		if(!band_tally[event_type])
+			weight *= OVERMAP_UNSEEN_TYPE_WEIGHT_BONUS
+		weights[event_type] = weight
+	return weights
+
+/**
+ * Books a finished cluster into the per-band tallies the boot log prints, and returns how
+ * many landable asteroid fields it contained.
+ *
+ * The cluster counts against the band its seed landed in, since that is what the parity
+ * check balances, but individual tiles are booked where they actually sit - a cluster near
+ * a band boundary is allowed to straddle it.
+ */
+/datum/controller/subsystem/overmap/proc/tally_event_cluster(list/placed, list/band_cluster_counts, list/band_tile_counts, list/band_type_tallies)
+	if(!length(placed))
+		return 0
+	var/meteors = 0
+	var/obj/structure/overmap/event/seed_event = placed[1]
+	band_cluster_counts["[get_zone_band_for_turf(get_turf(seed_event))]"] += 1
+	for(var/obj/structure/overmap/event/placed_event as anything in placed)
+		var/tile_band_key = "[get_zone_band_for_turf(get_turf(placed_event))]"
+		band_tile_counts[tile_band_key] += 1
+		var/list/tally = band_type_tallies[tile_band_key]
+		tally[placed_event.type] += 1
+		if(istype(placed_event, /obj/structure/overmap/event/meteor))
+			meteors++
+	return meteors
 
 /**
  * Places the round's planets on the overmap.
