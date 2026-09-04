@@ -751,6 +751,18 @@ GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 	/datum/gas/nitrium = 3,
 ))
 
+/**
+ * Nebula gases that dose the crew of a ship sitting in the cloud, and how hard.
+ *
+ * Tritium is the only one of the eight that is actually radioactive, so it is the only
+ * entry - a plasma or nitrogen bank is unpleasant to breathe and nothing more. The number
+ * is what a radioactive nebula shielder aboard subtracts from (shielding_strength 4, so one
+ * working unit covers any of these); see apply_nebula_radiation() in ship_damage.dm.
+ */
+GLOBAL_LIST_INIT(nebula_gas_radioactivity, list(
+	/datum/gas/tritium = 2,
+))
+
 /// All live nebula event tiles (gas-harvest missions poll this for what's scoopable)
 GLOBAL_LIST_EMPTY(nebula_events)
 

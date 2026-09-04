@@ -76,10 +76,15 @@
 /datum/techweb_node/rtg
 	id = TECHWEB_NODE_RTG
 	display_name = "Radioisotope Generators"
-	description = "A sealed block of uranium wrapped in thermocouples. Slow, steady power with no fuel line and no moving parts."
+	description = "A sealed block of uranium wrapped in thermocouples. Slow, steady power with no fuel line and no moving parts, and the shielding work that goes with handling it."
 	prereq_ids = list(TECHWEB_NODE_ENERGY_MANIPULATION)
 	design_ids = list(
 		"rtg",
+		// Shares the node because it is the same problem read backwards - the RTG holds
+		// radiation in, the shielder keeps a tritium nebula's out. It is also what makes
+		// harvesting tritium with a ram scoop survivable, so it wants to be reachable
+		// around the time a crew starts working the deeper bands.
+		"radioactive_nebula_shielding",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
