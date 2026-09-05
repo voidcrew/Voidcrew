@@ -1,49 +1,4 @@
-/**
- * # The Menagerie: abductor vestige
- *
- * A two-abductor survey vessel gone quiet mid-study. The scientist is still
- * at its bench, keeping the log; the agent is unaccounted for, and so is the
- * occupant of the specimen cell that stands torn open, from the inside.
- * Trials are the survey's field protocols, run on the crew's own terms: a
- * catalogue reading (keep a tagged subject in a lens's focus), a benign graft
- * (gift a stranger a healing gland), and baseline telemetry (probe readings
- * off people still on their feet). Every protocol wants a live, minded
- * subject and releases them no worse than it found them. The Curator is a
- * cataloguer, not a butcher, and the ethics of HOW the subject is kept still
- * are left, pointedly, to the supplicant. The Curator's boons (the baton,
- * the anchor tag, the silence field, the gland graft) are defined with the
- * theme's boon datums; this file carries the patron and its protocols only.
- */
-
-// How long the specimen tag takes to press home (the subject's window to object)
-#define VESTIGE_TAG_APPLY_TIME (2.5 SECONDS)
-// One unbroken reading, subject in focus throughout. Keep the trial desc's
-// "thirty" in sync, initial() values must be compile-time constant, so no
-// interpolation there.
-#define VESTIGE_READING_DURATION (30 SECONDS)
-// How far from the lens the subject may drift mid-reading. Keep the trial
-// desc's "three tiles" in sync.
-#define VESTIGE_READING_RADIUS 3
-// The deployed lens is counterplay: breaking it aborts the reading
-#define VESTIGE_LENS_INTEGRITY 80
-// How long a bystander takes to wrench a mid-reading lens out of alignment
-#define VESTIGE_LENS_DISRUPT_TIME (1 SECONDS)
-// How long folding the lens back into its carried form takes
-#define VESTIGE_LENS_FOLD_TIME (1.5 SECONDS)
-// Bedside steps in the graft protocol. Keep the trial desc's "four" (and the
-// step lists on the kit and trial) in sync.
-#define VESTIGE_GRAFT_STEPS 4
-// How long each graft step's channel runs
-#define VESTIGE_GRAFT_STEP_TIME (5 SECONDS)
-// Probe readings the Field Study demands. Keep the trial desc's "six" in sync.
-#define VESTIGE_PROBE_READINGS_NEEDED 6
-// Most readings any single subject can credit. Keep the trial desc's "two" in sync.
-#define VESTIGE_PROBE_READINGS_PER_SUBJECT 2
-// Stamina sting per credited probe reading, enough to make the reading
-// honest, nowhere near enough to fold anyone
-#define VESTIGE_PROBE_STING 15
-// The probe recalibrates between readings; no machine-gunning a sparring partner
-#define VESTIGE_PROBE_RECALIBRATE_TIME (3 SECONDS)
+/** Survey protocols: live containment, standard surgery, and measured tissue physiology. */
 
 // ===== PATRON =====
 
@@ -83,598 +38,561 @@
 	exhausted_line = "Inventory is exhausted. The subject has been (the log searches for the clinical term) thorough."
 	remember_line = "Subject expired; subject resumed. Noted without comment. The file was never closed. We do not close files over technicalities."
 
+// These protocols use supplied, attempt-bound subjects; helpers remain optional.
+#define VESTIGE_FILTER_SLOT "vestige_filter"
+
 // ===== PROTOCOL: ACQUISITION =====
 
 /datum/vestige_trial/acquisition
 	name = "Protocol: Acquisition"
-	// Keep the numbers in sync with VESTIGE_READING_DURATION / VESTIGE_READING_RADIUS
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the tag and the lens. Pick a live, conscious humanoid (the protocol needs someone actually home behind the eyes) and affix the tag. Deploy the lens, start the reading, and keep the subject within three tiles of it for thirty unbroken seconds, alive and out of crit. How you manage that is up to you: barricades, bargains, a firm grip or plain consent all produce the same data. A finished reading releases the subject unharmed."
-	/// The currently tagged subject (weakref; retagging moves the tag and restarts any reading)
-	var/datum/weakref/tagged_ref
-	/// Deciseconds of the current reading, zeroed whenever it aborts
-	var/reading_progress = 0
-	/// Whether a lens is mid-reading right now (set by the lens, read by progress text)
-	var/reading_underway = FALSE
+	desc = "Unfold the observation lens in an open area to release a nervous survey specimen. It flees your approach and shakes off pulling. Herd it at least four tiles from its release point into a small enclosure, close every exit, then scan it from outside with the lens. Four folding barriers are supplied; existing walls can help. The specimen must remain alive, conscious, and on the floor. No timed reading is required."
+	var/mob/living/basic/vestige_survey_specimen/specimen
+	var/turf/release_turf
 
 /datum/vestige_trial/acquisition/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_specimen_tag(get_turf(user)))
-	hand_over(user, new /obj/item/vestige_observation_lens(get_turf(user)))
-	to_chat(user, span_notice("The applicator and the folded lens settle into your hands, humming at two slightly different pitches."))
+	var/obj/item/vestige_observation_lens/lens = new(get_turf(user))
+	lens.trial_ref = WEAKREF(src)
+	hand_over(user, lens)
+	for(var/index in 1 to 4)
+		var/obj/item/vestige_field_panel/panel = new(get_turf(user))
+		panel.trial_ref = WEAKREF(src)
+		hand_over(user, panel)
 
 /datum/vestige_trial/acquisition/get_progress_text()
-	var/mob/living/subject = tagged_ref?.resolve()
-	if(!subject)
-		return "No subject is tagged. Press the applicator to a live, conscious humanoid."
-	if(reading_underway)
-		return "The reading of [subject] stands at [round(reading_progress / 10)] of [VESTIGE_READING_DURATION / 10] seconds. Keep [subject.p_them()] within [VESTIGE_READING_RADIUS] tiles of the lens, alive and out of collapse."
-	return "[subject] is tagged. Deploy the lens, begin the reading, and keep [subject.p_them()] in focus, however you can."
+	if(QDELETED(specimen))
+		return "Use the lens in an open area to release the specimen. Build a small enclosure, herd it away from its release point, and scan from outside."
+	return "The specimen is [get_dist(specimen, release_turf)] tiles from release. Scan from two to four tiles away once every exit from its enclosure is closed."
 
-/// Tags a new subject. Restarts any reading in progress. A new specimen is a new file.
-/datum/vestige_trial/acquisition/proc/tag_subject(mob/living/subject)
-	tagged_ref = WEAKREF(subject)
-	reading_progress = 0
-	refresh_tracker()
-
-/**
- * Accrues reading time from the lens. On a finished reading the subject is
- * released (politely, intact) and the trial completes (and deletes itself).
- * Returns TRUE when it did; the caller must not touch the trial after that.
- */
-/datum/vestige_trial/acquisition/proc/advance_reading(deciseconds)
-	reading_progress += deciseconds
-	refresh_tracker()
-	if(reading_progress < VESTIGE_READING_DURATION)
+/datum/vestige_trial/acquisition/proc/release(mob/living/user)
+	if(owner?.current != user || owner.active_vestige_trial != src || !QDELETED(specimen))
 		return FALSE
-	var/mob/living/subject = tagged_ref?.resolve()
-	if(istype(subject))
-		to_chat(subject, span_boldnotice("A polite chime, from everywhere at once: \"Specimen catalogued. Release authorized.\" The point of light under your skin winks out, leaving nothing behind."))
-		playsound(subject, 'sound/machines/chime.ogg', 40, TRUE)
-	tagged_ref = null
-	complete()
+	// Release only into connected, open floor. An already closed cage cannot be a starting point.
+	var/list/frontier = list(get_turf(user))
+	var/list/visited = frontier.Copy()
+	for(var/index = 1; index <= length(frontier); index++)
+		var/turf/current = frontier[index]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(current, direction)
+			if(next in visited)
+				continue
+			visited += next
+			if(!isfloorturf(next) || next.is_blocked_turf(exclude_mobs = TRUE) || get_dist(user, next) > 5)
+				continue
+			frontier += next
+	var/list/candidates = list()
+	for(var/turf/candidate as anything in frontier)
+		if(get_dist(user, candidate) < 4)
+			continue
+		var/exits = 0
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbor = get_step(candidate, direction)
+			if(isfloorturf(neighbor) && !neighbor.is_blocked_turf(exclude_mobs = TRUE))
+				exits++
+		if(exits >= 3)
+			candidates += candidate
+	if(!length(candidates))
+		to_chat(user, span_warning("The release needs connected open floor at least four tiles from you, with three clear exits."))
+		return FALSE
+	release_turf = pick(candidates)
+	specimen = new(release_turf)
+	specimen.trial_ref = WEAKREF(src)
+	register_loan(specimen)
+	to_chat(user, span_notice("The lens releases a survey specimen. It flees nearby movement. Position yourself behind it to drive it toward your enclosure."))
 	return TRUE
 
-/// Zeroes the current reading. The attempt fails; the tag (and the trial) hold.
-/datum/vestige_trial/acquisition/proc/abort_reading()
-	reading_underway = FALSE
-	var/lost = reading_progress
-	reading_progress = 0
-	refresh_tracker()
-	if(lost < 50) // sub-five-second fumbles are beneath the log's notice
-		return
-	var/mob/living/user = owner?.current
-	if(isliving(user))
-		to_chat(user, span_warning("The reading collapses. [round(lost / 10)] seconds of telemetry, discarded. The tag holds. Begin again."))
+/// BYOND diagonal movement is two cardinal steps. Flooding legal cardinal transitions
+/// therefore includes every diagonal escape, including directional window borders.
+/// Loose objects and people do not count as reliable containment walls.
+/datum/vestige_trial/acquisition/proc/connected_step(turf/from, turf/destination)
+	// Open asteroid, space and other passable terrain are exits, not cage walls.
+	if(!destination || !destination.CanPass(specimen, get_dir(destination, from)))
+		return FALSE
+	var/direction = get_dir(from, destination)
+	for(var/obj/blocker in from)
+		if(blocker.anchored && (blocker.flags_1 & ON_BORDER_1) && !blocker.CanPass(specimen, direction))
+			return FALSE
+	for(var/obj/blocker in destination)
+		if(blocker.anchored && !blocker.CanPass(specimen, REVERSE_DIR(direction)))
+			return FALSE
+	return TRUE
 
-/obj/item/vestige_specimen_tag
-	name = "specimen tag applicator"
-	desc = "A silver abductor instrument ending in a ring of fine needles. It leaves nothing a scalpel could find later, just a point of violet light under the skin that something else can read from across a room."
-	icon = 'icons/obj/antags/abductor.dmi'
-	icon_state = "gizmo_mark"
-	inhand_icon_state = "silencer"
-	lefthand_file = 'icons/mob/inhands/antag/abductor_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/abductor_righthand.dmi'
-	w_class = WEIGHT_CLASS_SMALL
-
-/obj/item/vestige_specimen_tag/examine(mob/user)
-	. = ..()
-	var/datum/vestige_trial/acquisition/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	var/mob/living/subject = trial.tagged_ref?.resolve()
-	if(subject)
-		. += span_notice("Its display reads, in tidy alien script: SUBJECT: [subject].")
-
-/obj/item/vestige_specimen_tag/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(!ishuman(target) || target == user)
-		return ..()
-	var/datum/vestige_trial/acquisition/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the applicator is dark!")
-		return
-	var/mob/living/carbon/human/subject = target
-	// The protocol wants a person: awake, and someone home behind the eyes
-	// (mind check, mindless monkeys and empty bodies produce no data)
-	if(subject.stat != CONSCIOUS || !subject.mind)
-		balloon_alert(user, "the protocol wants a conscious subject!")
-		return
-	if(trial.tagged_ref?.resolve() == subject)
-		balloon_alert(user, "already tagged!")
-		return
-	// A short channel, in the open. The tag is not a secret; it is a selection.
-	// The subject gets their whole window to object, flee, or shake hands.
-	subject.visible_message(
-		span_warning("[user] presses a small silver instrument against [subject]'s shoulder!"),
-		span_userdanger("[user] presses something cold and precise against your shoulder!"),
-	)
-	if(!do_after(user, VESTIGE_TAG_APPLY_TIME, target = subject))
-		return
-	if(!user.is_holding(src))
-		return
-	// Re-resolve; the pact may have been renounced mid-press
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	if(subject.stat != CONSCIOUS)
-		balloon_alert(user, "the moment passed!")
-		return
-	trial.tag_subject(subject)
-	playsound(subject, 'sound/machines/ping.ogg', 30, TRUE)
-	balloon_alert(user, "subject tagged")
-	to_chat(user, span_notice("The applicator clicks once, satisfied. [subject] is on file. Now keep [subject.p_them()] where the lens can look."))
-	to_chat(subject, span_warning("Something clicks shut against your shoulder, and a point of violet light settles under your skin. It doesn't hurt at all."))
+/datum/vestige_trial/acquisition/proc/is_contained(mob/living/user)
+	if(QDELETED(specimen) || specimen.stat != CONSCIOUS || specimen.health < specimen.maxHealth / 2 || specimen.buckled || !isturf(specimen.loc))
+		return FALSE
+	if(!release_turf || get_dist(specimen, release_turf) < 4 || get_dist(user, specimen) < 2 || get_dist(user, specimen) > 4 || !(specimen in view(4, user)))
+		return FALSE
+	var/list/reached = list(get_turf(specimen))
+	for(var/index = 1; index <= length(reached); index++)
+		if(length(reached) > 9)
+			return FALSE
+		var/turf/current = reached[index]
+		if(current == get_turf(user))
+			return FALSE
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(current, direction)
+			if(!(next in reached) && connected_step(current, next))
+				reached += next
+	return TRUE
 
 /obj/item/vestige_observation_lens
-	name = "folded observation lens"
-	desc = "An abductor field instrument folded down into its carrying shape. It is warm on one side."
-	icon = 'icons/obj/antags/abductor.dmi'
-	icon_state = "beacon"
+	name = "folding observation lens"
+	desc = "Use in hand to release the loan specimen. Use on it from two to four tiles away to certify a closed enclosure of at most nine floor tiles. Relocate it at least four tiles from release first. Alt-click a deployed barrier to fold it."
+	icon = 'icons/obj/devices/scanner.dmi'
+	icon_state = "health"
 	w_class = WEIGHT_CLASS_SMALL
+	var/datum/weakref/trial_ref
 
-/obj/item/vestige_observation_lens/examine(mob/user)
-	. = ..()
-	. += span_notice("Use it in hand to unfold it on open flooring. It reads tagged specimens, and only tagged specimens.")
+/obj/item/vestige_observation_lens/attack_self(mob/living/user)
+	var/datum/vestige_trial/acquisition/trial = trial_ref?.resolve()
+	if(trial && user.mind?.active_vestige_trial == trial)
+		trial.release(user)
 
-/obj/item/vestige_observation_lens/attack_self(mob/user)
-	var/datum/vestige_trial/acquisition/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the lens is dark!")
-		return
-	var/turf/here = get_turf(user)
-	if(!isfloorturf(here))
-		balloon_alert(user, "needs solid footing!")
-		return
-	for(var/obj/thing in here)
-		if(thing.density || ismachinery(thing) || isstructure(thing))
-			balloon_alert(user, "no room to unfold!")
-			return
-	var/obj/structure/vestige_observation_lens/lens = new(here)
-	lens.keeper = user.mind
-	playsound(here, 'sound/effects/phasein.ogg', 40, TRUE)
-	user.visible_message(
-		span_warning("[user] sets something small on the deck, and it unfolds itself into a tall alien lens assembly."),
-		span_notice("You set the lens down. It unfolds to working height, sweeps the room once, and settles."),
-	)
-	qdel(src)
+/obj/item/vestige_observation_lens/ranged_interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/acquisition/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || target != trial.specimen)
+		return NONE
+	if(!trial.is_contained(user))
+		to_chat(user, span_warning("Containment rejected. Relocate the healthy, conscious specimen, close every exit, and stand outside its small enclosure within clear sight."))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("The lens certifies live containment and recalls the specimen."))
+	trial.complete()
+	return ITEM_INTERACT_SUCCESS
 
-/**
- * The unfolded lens. Holds the keeper's MIND, never the trial (the wake-candle
- * exception), the reading resolves the keeper's active pact every tick, so a
- * renounced pact powers it down and a completed one folds it away. Breaking it
- * or wrenching it off-target costs the attempt, never the trial: the folded
- * core always survives to be redeployed.
- */
-/obj/structure/vestige_observation_lens
-	name = "observation lens"
-	desc = "An alien lens assembly unfolded to tripod height. Whatever it is pointed at, it is watching very closely."
-	icon = 'icons/obj/antags/abductor.dmi'
-	icon_state = "camera"
+/obj/item/vestige_field_panel
+	name = "folding survey barrier"
+	desc = "Use on an adjacent empty floor to erect a barrier. Alt-click the barrier to fold it. Air passes freely; the survey specimen does not."
+	icon = 'icons/obj/structures.dmi'
+	icon_state = "rack_parts"
+	w_class = WEIGHT_CLASS_SMALL
+	var/datum/weakref/trial_ref
+
+/obj/item/vestige_field_panel/interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/acquisition/trial = trial_ref?.resolve()
+	var/turf/floor = target
+	if(!trial || user.mind?.active_vestige_trial != trial || !isfloorturf(floor) || floor.is_blocked_turf() || floor == get_turf(user))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/structure/vestige_field_barrier/barrier = new(target)
+	barrier.trial_ref = trial_ref
+	barrier.folded_panel = src
+	user.temporarilyRemoveItemFromInventory(src, force = TRUE)
+	forceMove(barrier)
+	trial.register_loan(barrier)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/structure/vestige_field_barrier
+	name = "survey barrier"
+	desc = "An anchored field frame. Alt-click to fold it."
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "shield2"
+	color = "#8FCAC4"
+	density = TRUE
 	anchored = TRUE
-	density = FALSE
-	max_integrity = VESTIGE_LENS_INTEGRITY
-	/// Mind of the deploying supplicant (the wake-candle keeper exception; never a trial ref)
-	var/datum/mind/keeper
-	/// Whether a reading is underway
-	var/scanning = FALSE
+	max_integrity = 100
+	var/datum/weakref/trial_ref
+	var/obj/item/vestige_field_panel/folded_panel
 
-/obj/structure/vestige_observation_lens/Destroy()
-	stop_reading(silent = TRUE)
-	STOP_PROCESSING(SSobj, src)
-	keeper = null
-	return ..()
-
-/obj/structure/vestige_observation_lens/examine(mob/user)
-	. = ..()
-	. += span_notice("A tap starts a reading, or disrupts one already running. Alt-click folds it back into its carried form.")
-	if(scanning)
-		. += span_warning("It is mid-reading, tracking something with total attention.")
-
-/// Resolves the keeper's live acquisition pact, or null if it has ended
-/obj/structure/vestige_observation_lens/proc/get_trial()
-	var/datum/vestige_trial/acquisition/trial = keeper?.active_vestige_trial
-	return istype(trial) ? trial : null
-
-/// TRUE while the subject can be read: alive, out of collapse, and within the lens's reach
-/obj/structure/vestige_observation_lens/proc/focus_holds(mob/living/subject)
-	if(QDELETED(subject) || subject.stat == DEAD || HAS_TRAIT(subject, TRAIT_CRITICAL_CONDITION))
-		return FALSE
-	var/turf/here = get_turf(src)
-	var/turf/there = get_turf(subject)
-	if(!here || !there || here.z != there.z || get_dist(here, there) > VESTIGE_READING_RADIUS)
-		return FALSE
-	return TRUE
-
-/obj/structure/vestige_observation_lens/attack_hand(mob/living/user, list/modifiers)
-	if(user.combat_mode)
-		return ..()
-	if(scanning)
-		// Disruption sleeps for bystanders; don't hold up the click chain
-		INVOKE_ASYNC(src, PROC_REF(try_disrupt), user)
-		return TRUE
-	if(user.mind && user.mind == keeper)
-		begin_reading(user)
-		return TRUE
-	to_chat(user, span_notice("The lens ignores you completely."))
-	return TRUE
-
-/// Starts a reading on the keeper's tagged subject, with a word about anything missing
-/obj/structure/vestige_observation_lens/proc/begin_reading(mob/living/user)
-	var/datum/vestige_trial/acquisition/trial = get_trial()
-	if(!trial)
-		balloon_alert(user, "the lens is dark!")
-		return
-	var/mob/living/subject = trial.tagged_ref?.resolve()
-	if(!istype(subject))
-		balloon_alert(user, "no tagged subject!")
-		return
-	if(subject.stat == DEAD || HAS_TRAIT(subject, TRAIT_CRITICAL_CONDITION))
-		balloon_alert(user, "the subject must be alive and stable!")
-		return
-	if(!focus_holds(subject))
-		balloon_alert(user, "subject out of focus!")
-		return
-	scanning = TRUE
-	trial.reading_underway = TRUE
-	trial.refresh_tracker()
-	set_light(2, 0.8, "#b46fd6", l_on = TRUE)
-	START_PROCESSING(SSobj, src)
-	playsound(src, 'sound/machines/terminal/terminal_processing.ogg', 40, TRUE)
-	visible_message(
-		span_warning("[src] swivels, finds its mark, and floods with violet light!"),
-		)
-	to_chat(subject, span_userdanger("The lens turns, finds you, and settles. You are being read, and something would very much prefer you stayed put."))
-
-/// A bystander (or the keeper) breaking off a reading in progress. Sleeps; call async.
-/obj/structure/vestige_observation_lens/proc/try_disrupt(mob/living/user)
-	// The keeper calls off their own reading instantly
-	if(user.mind && user.mind == keeper)
-		stop_reading()
-		visible_message(span_notice("[src] powers down mid-reading and swings back to its rest position."))
-		return
-	// Anyone else needs a moment hands-on, the keeper's window to stop them
-	balloon_alert(user, "wrenching the lens aside...")
-	if(!do_after(user, VESTIGE_LENS_DISRUPT_TIME, target = src))
-		return
-	if(QDELETED(src) || !scanning)
-		return
-	stop_reading()
-	user.visible_message(
-		span_warning("[user] wrenches [src] out of alignment!"),
-		span_notice("You wrench the lens out of alignment. The violet light dies."),
-	)
-
-/// Ends a reading in progress, zeroing the trial's count. Safe to call when idle.
-/obj/structure/vestige_observation_lens/proc/stop_reading(silent = FALSE)
-	if(!scanning)
-		return
-	scanning = FALSE
-	STOP_PROCESSING(SSobj, src)
-	set_light(l_on = FALSE)
-	var/datum/vestige_trial/acquisition/trial = get_trial()
-	trial?.abort_reading()
-	if(!silent)
-		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
-
-/// Collapses the lens back into its carried form on the spot
-/obj/structure/vestige_observation_lens/proc/fold_up()
-	new /obj/item/vestige_observation_lens(drop_location())
-	playsound(src, 'sound/effects/phasein.ogg', 30, TRUE)
-	qdel(src)
-
-/obj/structure/vestige_observation_lens/click_alt(mob/user)
-	if(!isliving(user))
+/obj/structure/vestige_field_barrier/click_alt(mob/living/user)
+	var/datum/vestige_trial/acquisition/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || !user.can_perform_action(src, NEED_DEXTERITY) || !folded_panel)
 		return CLICK_ACTION_BLOCKING
-	// Folding sleeps; don't hold up the click chain
-	INVOKE_ASYNC(src, PROC_REF(try_fold), user)
+	folded_panel.forceMove(get_turf(src))
+	user.put_in_hands(folded_panel)
+	folded_panel = null
+	qdel(src)
 	return CLICK_ACTION_SUCCESS
 
-/// Folds the lens back down: the keeper packing up, or anyone else confiscating it
-/obj/structure/vestige_observation_lens/proc/try_fold(mob/living/user)
-	balloon_alert(user, "folding the lens...")
-	if(!do_after(user, VESTIGE_LENS_FOLD_TIME, target = src))
-		return
-	if(QDELETED(src))
-		return
-	stop_reading()
-	user.visible_message(
-		span_warning("[user] folds [src] back down into its carrying shape."),
-		span_notice("You fold the lens back down. It goes reluctantly."),
-	)
-	fold_up()
+/mob/living/basic/vestige_survey_specimen
+	name = "nervous survey specimen"
+	desc = "A tagged, unfamiliar fish. It flees nearby researchers and slips out of their grasp. Observe it without injuring it."
+	icon = 'icons/mob/simple/carp.dmi'
+	icon_state = "base"
+	icon_living = "base"
+	icon_dead = "base_dead"
+	health = 60
+	maxHealth = 60
+	mob_biotypes = MOB_ORGANIC | MOB_BEAST
+	ai_controller = null
+	habitable_atmos = null
+	minimum_survivable_temperature = 0
+	maximum_survivable_temperature = 1500
+	melee_damage_lower = 0
+	melee_damage_upper = 0
+	obj_damage = 0
+	var/datum/weakref/trial_ref
+	var/next_move_at = 0
 
-// Breaking the housing costs the attempt, never the trial: the folded core
-// survives the wreck to be redeployed
-/obj/structure/vestige_observation_lens/handle_deconstruct(disassembled)
-	if(!disassembled)
-		visible_message(span_warning("[src] collapses in a spray of sparks, folding defensively back into its core!"))
-	new /obj/item/vestige_observation_lens(drop_location())
+/mob/living/basic/vestige_survey_specimen/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSfastprocess, src)
 
-/obj/structure/vestige_observation_lens/process(seconds_per_tick)
-	var/datum/vestige_trial/acquisition/trial = get_trial()
-	if(!trial) // the pact ended out from under the reading; pack up quietly
-		stop_reading(silent = TRUE)
-		fold_up()
+/mob/living/basic/vestige_survey_specimen/Destroy()
+	STOP_PROCESSING(SSfastprocess, src)
+	return ..()
+
+/mob/living/basic/vestige_survey_specimen/process(seconds_per_tick)
+	var/datum/vestige_trial/acquisition/trial = trial_ref?.resolve()
+	var/mob/living/researcher = trial?.owner?.current
+	if(!trial || trial.owner.active_vestige_trial != trial || !researcher || stat != CONSCIOUS || !isturf(loc) || buckled || world.time < next_move_at)
 		return
-	var/mob/living/subject = trial.tagged_ref?.resolve()
-	if(!istype(subject) || !focus_holds(subject))
-		visible_message(span_warning("[src] chirps sourly and swings back to its rest position. The reading has lost its subject."))
-		stop_reading()
-		return
-	// The tether advertises the reading to the whole room; keeping the subject
-	// inside it (by rhetoric, barricade, or bear hug) is the supplicant's job
-	if(SPT_PROB(60, seconds_per_tick))
-		Beam(subject, icon_state = "purple_lightning", time = 1 SECONDS)
-	if(SPT_PROB(8, seconds_per_tick))
-		to_chat(subject, span_warning("You can feel the lens watching you, steady and unblinking."))
-	if(trial.advance_reading(seconds_per_tick * (1 SECONDS))) // may complete the pact, deleting the trial, touch it no further
-		scanning = FALSE
-		STOP_PROCESSING(SSobj, src)
-		set_light(l_on = FALSE)
-		playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
-		visible_message(span_boldnotice("[src] chimes once and begins folding itself flat. The reading is done."))
-		fold_up()
+	next_move_at = world.time + 0.7 SECONDS
+	pulledby?.stop_pulling()
+	if(get_dist(src, researcher) <= 4 && (researcher in view(4, src)))
+		var/list/options = shuffle(GLOB.cardinals)
+		var/turf/best
+		var/best_distance = get_dist(src, researcher)
+		for(var/direction in options)
+			var/turf/candidate = get_step(src, direction)
+			if(trial.connected_step(get_turf(src), candidate) && get_dist(candidate, researcher) >= best_distance)
+				best = candidate
+				best_distance = get_dist(candidate, researcher)
+		if(best)
+			step_towards(src, best)
+	else if(prob(30))
+		var/direction = pick(GLOB.cardinals)
+		if(trial.connected_step(get_turf(src), get_step(src, direction)))
+			step(src, direction)
 
 // ===== PROTOCOL: GRAFT =====
 
 /datum/vestige_trial/vivisection
 	name = "Protocol: Graft"
-	// Keep the count in sync with VESTIGE_GRAFT_STEPS (initial values must be
-	// constant, so no define interpolation here)
-	desc = "Take the kit. Pick a live humanoid subject (conscious, or sedated by arrangement) and lay them on a table or bed. The graft runs in four bedside steps: incise, calibrate, implant, seal. An interrupted step costs only that step. The implant is a replicator gland, and it is a gift: it will spend the rest of the subject's life quietly repairing them. We have taken a great deal over the years. Giving something back is new, and the early data is promising."
-	/// The subject mid-procedure (weakref; switching subjects restarts the graft)
-	var/datum/weakref/patient_ref
-	/// Steps completed on the current subject, of VESTIGE_GRAFT_STEPS
-	var/steps_done = 0
-	/// Step names, in procedure order (shared with the kit's flavor lists, keep aligned)
-	var/static/list/step_names = list("incision", "calibration", "implantation", "seal")
+	desc = "Deploy the supplied human specimen and operating table with the graft dossier. Diagnose its failed waste filter before choosing a replacement. Perform ordinary chest Organ Manipulation with the supplied drapes and complete surgical tools: remove the failed filter, transplant the compatible gland, and close with cautery. A correct filter clears the patient's real toxin burden. Certify the living, recovered patient with the dossier. The dossier does not perform surgery for you."
+	var/mob/living/carbon/human/vestige_graft_patient/patient
+	var/obj/structure/table/optable/vestige_graft_table/operating_table
+	var/surgical_closure = FALSE
 
 /datum/vestige_trial/vivisection/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_graft_kit(get_turf(user)))
-	to_chat(user, span_notice("The kit is heavier than it looks. Something inside it is keeping itself warm."))
+	var/obj/item/vestige_graft_kit/dossier = new(get_turf(user))
+	dossier.trial_ref = WEAKREF(src)
+	hand_over(user, dossier)
+	var/obj/item/storage/box/surgical_tools = new(get_turf(user))
+	surgical_tools.name = "survey surgery case"
+	for(var/tool_path in list(/obj/item/surgical_drapes, /obj/item/scalpel, /obj/item/retractor, /obj/item/circular_saw, /obj/item/hemostat, /obj/item/cautery, /obj/item/healthanalyzer))
+		new tool_path(surgical_tools)
+	hand_over(user, surgical_tools)
+	for(var/filter_kind in list("chloride", "sulfide", "ammonium"))
+		var/obj/item/organ/vestige_filter/filter = new(get_turf(user))
+		filter.configure(filter_kind, src)
+		hand_over(user, filter)
 
 /datum/vestige_trial/vivisection/get_progress_text()
-	var/mob/living/patient = patient_ref?.resolve()
-	if(!patient || !steps_done)
-		return "No graft is underway. Lay a live subject on a table or bed and begin: incise, calibrate, implant, seal."
-	return "The graft on [patient] stands at [steps_done] of [VESTIGE_GRAFT_STEPS] steps. Next: [step_names[steps_done + 1]]."
+	if(QDELETED(patient))
+		return "Use the dossier in hand on clear pressurized floor to deploy the surgical specimen and table."
+	return "Patient waste: [patient.waste_class]. Toxin burden: [round(patient.getToxLoss(), 0.1)]. [surgical_closure ? "Chest closed." : "An ordinary Organ Manipulation operation must be finished."]"
 
-/**
- * Credits one completed graft step on the given subject; a different subject
- * restarts the protocol from the top. May complete (and delete) the trial.
- * Callers must not touch it after this.
- */
-/datum/vestige_trial/vivisection/proc/advance_step(mob/living/patient)
-	if(patient_ref?.resolve() != patient)
-		patient_ref = WEAKREF(patient)
-		steps_done = 0
-	steps_done++
-	refresh_tracker()
-	if(steps_done >= VESTIGE_GRAFT_STEPS)
-		complete()
+/datum/vestige_trial/vivisection/proc/deploy(mob/living/user)
+	if(owner?.current != user || owner.active_vestige_trial != src || !QDELETED(patient))
+		return FALSE
+	var/turf/location = get_step(user, user.dir)
+	if(!isfloorturf(location) || location.is_blocked_turf() || location.return_air()?.return_pressure() < 80)
+		to_chat(user, span_warning("Face a clear, pressurized floor tile for the operating table."))
+		return FALSE
+	operating_table = new(location)
+	register_loan(operating_table)
+	patient = new(location)
+	patient.trial_ref = WEAKREF(src)
+	patient.waste_class = pick("chloride", "sulfide", "ammonium")
+	var/obj/item/organ/vestige_filter/failed = new
+	failed.configure(patient.waste_class, src)
+	failed.functional = FALSE
+	failed.name = "failed survey filter"
+	failed.Insert(patient)
+	register_loan(patient)
+	operating_table.buckle_mob(patient, force = TRUE, check_loc = FALSE)
+	patient.SetSleeping(1 HOURS)
+	patient.setToxLoss(25)
+	RegisterSignal(patient, COMSIG_MOB_SURGERY_STARTED, PROC_REF(on_surgery_started))
+	to_chat(user, span_notice("The sedated specimen is ready. Examine it or use the dossier to diagnose the waste burden before opening its chest."))
+	return TRUE
+
+/datum/vestige_trial/vivisection/proc/on_surgery_started(mob/living/source, datum/surgery/operation, location, obj/item/bodypart/bodypart)
+	SIGNAL_HANDLER
+	if(istype(operation, /datum/surgery/organ_manipulation) && location == BODY_ZONE_CHEST)
+		surgical_closure = FALSE
+		RegisterSignal(operation, COMSIG_QDELETING, PROC_REF(on_surgery_deleted))
+
+/datum/vestige_trial/vivisection/proc/on_surgery_deleted(datum/surgery/operation)
+	SIGNAL_HANDLER
+	// Surgery Destroy also fires on cancellation. Only advancing beyond final
+	// cautery proves the ordinary operation actually completed.
+	if(operation.target == patient && operation.status > length(operation.steps))
+		surgical_closure = TRUE
+
+/datum/vestige_trial/vivisection/proc/can_discharge()
+	if(QDELETED(patient) || patient.stat == DEAD || patient.getToxLoss() > 5 || patient.health < 75 || length(patient.surgeries) || !surgical_closure)
+		return FALSE
+	var/obj/item/organ/vestige_filter/filter = patient.get_organ_slot(VESTIGE_FILTER_SLOT)
+	return istype(filter) && filter.compatible_with(patient) && filter.surgically_installed
+
+/obj/structure/table/optable/vestige_graft_table
+	name = "survey operating table"
+	desc = "An ordinary operating surface supplied for a survey procedure."
+	deconstruction_ready = FALSE
+	buildstack = null
+	custom_materials = null
+
+/obj/structure/table/optable/vestige_graft_table/atom_deconstruct(disassembled)
+	// Loan furniture cannot be converted into permanent frames or sheets.
+	return
+
+/obj/structure/table/optable/vestige_graft_table/Destroy()
+	// The upstream table deletes its attached tank even after shared loan cleanup
+	// moves it out. These are player additions, never part of this supplied table.
+	if(air_tank)
+		air_tank.forceMove(get_turf(src))
+		air_tank = null
+	if(breath_mask)
+		UnregisterSignal(breath_mask, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED))
+		if(breath_mask.loc == src)
+			breath_mask.forceMove(get_turf(src))
+		else if(breath_mask.loc)
+			UnregisterSignal(breath_mask.loc, COMSIG_MOVABLE_MOVED)
+		breath_mask = null
+	return ..()
 
 /obj/item/vestige_graft_kit
-	name = "xenograft kit"
-	desc = "A hinged alien case with its instruments socketed in living velvet. Inside: one replicator gland, packed in something that is breathing slowly. There is no anesthetic. The kit's notes describe anesthetic as optional."
-	icon = 'icons/obj/antags/abductor.dmi'
-	icon_state = "belt"
-	w_class = WEIGHT_CLASS_NORMAL
-	/// Channel sounds, one per step: order matches /datum/vestige_trial/vivisection/step_names
-	var/static/list/step_sounds = list(
-		'sound/items/handling/surgery/scalpel1.ogg',
-		'sound/machines/terminal/terminal_processing.ogg',
-		'sound/items/handling/surgery/organ2.ogg',
-		'sound/items/handling/surgery/cautery1.ogg',
-	)
-	/// What the room sees as each step begins, order matches step_names
-	var/static/list/step_start_messages = list(
-		"draws a glowing line down %PATIENT%'s sternum with an instrument from the kit",
-		"holds a chattering instrument over the incision while it reads %PATIENT%'s biology",
-		"lifts a fist-sized gland from the kit and seats it, unhurried, in %PATIENT%'s chest",
-		"draws a sealing wand along the incision, and it closes over",
-	)
-	/// What the subject feels as each step begins, order matches step_names
-	var/static/list/step_feel_messages = list(
-		"A line of painless cold draws itself down your chest. It doesn't even bleed.",
-		"Something reads you, organ by organ, and takes notes.",
-		"Something warm settles in behind your ribs and starts working.",
-		"The cold line on your chest zips itself shut. As far as you can tell, you are exactly as you were.",
-	)
+	name = "graft dossier"
+	desc = "Use in hand to deploy the patient on the tile you face. Examine the patient for its waste class. Select chest, turn combat mode off, apply drapes and choose Organ Manipulation. Use scalpel, retractor, saw, hemostat, scalpel; then hemostat to extract the FAILED SURVEY FILTER, insert the matching replacement, and use cautery to close. Use this dossier on the patient to certify recovery. A wrong filter can be removed and replaced during the same operation."
+	icon = 'icons/obj/service/library.dmi'
+	icon_state = "book"
+	var/datum/weakref/trial_ref
 
-/obj/item/vestige_graft_kit/examine(mob/user)
-	. = ..()
-	. += span_notice("Use it on a live humanoid lying on a table or bed to perform the graft in [VESTIGE_GRAFT_STEPS] steps: incise, calibrate, implant, seal. The recipient keeps the gland afterwards.")
+/obj/item/vestige_graft_kit/attack_self(mob/living/user)
+	var/datum/vestige_trial/vivisection/trial = trial_ref?.resolve()
+	if(trial && user.mind?.active_vestige_trial == trial)
+		trial.deploy(user)
 
-/obj/item/vestige_graft_kit/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!ishuman(interacting_with))
+/obj/item/vestige_graft_kit/interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/vivisection/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || target != trial.patient)
 		return NONE
-	var/mob/living/carbon/human/patient = interacting_with
-	var/datum/vestige_trial/vivisection/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the kit refuses to open!")
+	to_chat(user, span_notice(trial.patient.diagnosis()))
+	if(!trial.can_discharge())
+		to_chat(user, span_warning("Certification needs a surgically installed compatible filter, a completed chest closure, and a living patient with toxin burden at most five and health at least seventy-five."))
 		return ITEM_INTERACT_BLOCKING
-	if(patient == user)
-		balloon_alert(user, "you can't graft yourself!")
-		return ITEM_INTERACT_BLOCKING
-	if(!check_patient(patient, user))
-		return ITEM_INTERACT_BLOCKING
-	// A new subject starts from the incision, whatever an old file says
-	var/step = (trial.patient_ref?.resolve() == patient) ? trial.steps_done + 1 : 1
-	var/step_name = trial.step_names[step]
-	playsound(patient, step_sounds[step], 40, TRUE)
-	patient.visible_message(
-		span_warning("[user] [replacetext(step_start_messages[step], "%PATIENT%", "[patient]")]."),
-		span_userdanger(step_feel_messages[step]),
-	)
-	if(!do_after(user, VESTIGE_GRAFT_STEP_TIME, target = patient))
-		balloon_alert(user, "the [step_name] was interrupted!")
-		return ITEM_INTERACT_BLOCKING
-	if(!user.is_holding(src))
-		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-step
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return ITEM_INTERACT_BLOCKING
-	if(!check_patient(patient, user))
-		balloon_alert(user, "the [step_name] was lost!")
-		return ITEM_INTERACT_BLOCKING
-	if(step < VESTIGE_GRAFT_STEPS)
-		trial.advance_step(patient)
-		balloon_alert(user, "[step_name] complete")
-		return ITEM_INTERACT_SUCCESS
-	// The seal: the gland goes in for real, and the protocol closes
-	if(!implant_gland(patient, user))
-		return ITEM_INTERACT_BLOCKING
-	trial.advance_step(patient) // completes (and deletes) the trial, nothing touches it after this
+	to_chat(user, span_notice("The transplanted filter has restored waste clearance. The Curator recalls the recovered specimen."))
+	trial.complete()
 	return ITEM_INTERACT_SUCCESS
 
-/// The graft's standing terms, checked before and after every step, with a word about whatever is missing
-/obj/item/vestige_graft_kit/proc/check_patient(mob/living/carbon/human/patient, mob/living/user)
-	if(patient.stat == DEAD)
-		balloon_alert(user, "the protocol wants a living subject!")
-		return FALSE
-	if(HAS_TRAIT(patient, TRAIT_CRITICAL_CONDITION))
-		balloon_alert(user, "stabilize the subject first!")
-		return FALSE
-	// Someone must be home to receive the gift (mind check, no monkey wards)
-	if(!patient.mind)
-		balloon_alert(user, "nobody home to graft for!")
-		return FALSE
-	if(patient.body_position != LYING_DOWN)
-		balloon_alert(user, "lay the subject down!")
-		return FALSE
-	var/turf/patient_turf = get_turf(patient)
-	if(!(locate(/obj/structure/table) in patient_turf) && !(locate(/obj/structure/bed) in patient_turf))
-		balloon_alert(user, "the subject needs a table or bed!")
-		return FALSE
-	if(locate(/obj/item/organ/heart/gland) in patient.organs)
-		balloon_alert(user, "already grafted!")
-		return FALSE
-	return TRUE
+/mob/living/carbon/human/vestige_graft_patient
+	name = "survey graft specimen"
+	real_name = "survey graft specimen"
+	var/datum/weakref/trial_ref
+	var/waste_class = "chloride"
 
-/**
- * Seats the replicator gland: the upstream abductor heal gland, which rides
- * the heart slot and self-starts on insert (uses = -1, on_mob_insert). The
- * subject's own heart comes back out of the graft intact and is handed to the
- * surgeon, neatly sleeved: no lasting harm means nothing of theirs is lost,
- * only upgraded. The compliance hardware ships decommissioned, this is a
- * gift, not a leash.
- */
-/obj/item/vestige_graft_kit/proc/implant_gland(mob/living/carbon/human/patient, mob/living/user)
-	var/obj/item/organ/old_heart = patient.get_organ_slot(ORGAN_SLOT_HEART)
-	var/obj/item/organ/heart/gland/heal/gland = new()
-	gland.mind_control_uses = 0
-	if(!gland.Insert(patient))
-		qdel(gland)
-		balloon_alert(user, "the graft will not take!")
-		return FALSE
-	// Insert leaves the replaced heart at the subject's feet; hand it back sleeved
-	if(old_heart && !QDELETED(old_heart))
-		user.put_in_hands(old_heart)
-		to_chat(user, span_notice("The kit sleeves [patient]'s original [old_heart.name] in preservative film and hands it back to you."))
-	playsound(patient, 'sound/machines/chime.ogg', 40, TRUE)
-	patient.visible_message(
-		span_notice("[patient]'s color improves at once, as if [patient.p_their()] body has just come under new management."),
-		span_boldnotice("Something in your chest settles into a rhythm that isn't quite yours, and quietly starts looking after you."),
-	)
-	patient.add_mood_event("vestige_grafted", /datum/mood_event/vestige_grafted)
-	return TRUE
+/mob/living/carbon/human/vestige_graft_patient/proc/diagnosis()
+	return "Survey chemistry: accumulating [waste_class] waste; toxin burden [round(getToxLoss(), 0.1)]. Replace the failed supplemental filter with a gland that binds [waste_class]. The heart, lungs and liver are healthy organs and should remain in place."
 
-/datum/mood_event/vestige_grafted
-	description = "Something patient and foreign is keeping my body in working order."
-	mood_change = 4
-	timeout = 10 MINUTES
+/mob/living/carbon/human/vestige_graft_patient/examine(mob/user)
+	. = ..()
+	. += span_notice(diagnosis())
+
+/mob/living/carbon/human/vestige_graft_patient/Life(seconds_per_tick, times_fired)
+	. = ..()
+	var/datum/vestige_trial/vivisection/trial = trial_ref?.resolve()
+	if(!trial || trial.patient != src || trial.owner?.active_vestige_trial != trial || stat == DEAD)
+		return
+	var/obj/item/organ/vestige_filter/filter = get_organ_slot(VESTIGE_FILTER_SLOT)
+	if(istype(filter) && filter.compatible_with(src))
+		adjustToxLoss(-2 * seconds_per_tick)
+	else if(getToxLoss() < 35)
+		adjustToxLoss(seconds_per_tick)
+
+/obj/item/organ/vestige_filter
+	name = "survey filter"
+	desc = "A benign supplemental waste filter. It can only be transplanted into its assigned survey specimen."
+	icon_state = "liver"
+	slot = VESTIGE_FILTER_SLOT
+	zone = BODY_ZONE_CHEST
+	organ_flags = ORGAN_ORGANIC
+	var/waste_class
+	var/functional = TRUE
+	var/surgically_installed = FALSE
+	var/datum/weakref/trial_ref
+
+/obj/item/organ/vestige_filter/proc/configure(filter_kind, datum/vestige_trial/vivisection/trial)
+	waste_class = filter_kind
+	name = "[filter_kind]-binding survey filter"
+	desc = "A benign supplemental gland that binds [filter_kind] waste. Other waste classes pass straight through. Only its assigned specimen accepts the graft."
+	trial_ref = WEAKREF(trial)
+
+/obj/item/organ/vestige_filter/proc/compatible_with(mob/living/carbon/human/vestige_graft_patient/patient)
+	var/datum/vestige_trial/vivisection/trial = trial_ref?.resolve()
+	return functional && trial && trial.owner?.active_vestige_trial == trial && trial.patient == patient && waste_class == patient.waste_class
+
+/obj/item/organ/vestige_filter/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
+	. = ..()
+	var/datum/vestige_trial/vivisection/trial = trial_ref?.resolve()
+	if(!. || !trial || trial.owner?.active_vestige_trial != trial || trial.patient != new_owner)
+		to_chat(user, span_warning("This filter only fits its assigned survey specimen."))
+		return FALSE
+
+/obj/item/organ/vestige_filter/on_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone, obj/item/tool)
+	. = ..()
+	surgically_installed = TRUE
+	if(istype(new_owner, /mob/living/carbon/human/vestige_graft_patient) && compatible_with(new_owner))
+		new_owner.setToxLoss(0)
+		new_owner.visible_message(span_notice("[src] clears the specimen's accumulated waste; its grey pallor lifts."))
+	else
+		new_owner.visible_message(span_warning("The graft takes, but the specimen's waste burden does not improve."))
+
+/obj/item/organ/vestige_filter/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	. = ..()
+	surgically_installed = FALSE
 
 // ===== PROTOCOL: FIELD STUDY =====
 
 /datum/vestige_trial/field_study
 	name = "Protocol: Field Study"
-	// Keep the counts in sync with VESTIGE_PROBE_READINGS_NEEDED /
-	// VESTIGE_PROBE_READINGS_PER_SUBJECT (initial values must be constant, so
-	// no define interpolation here)
-	desc = "Take the probe. The catalogue needs baseline telemetry from humanoids under load: conscious, upright and unrestrained. Six readings, and no more than two from any one subject. The probe announces itself on contact, which is deliberate. A subject who knows they are being measured pushes back, and the pushing back is the data."
-	/// Readings credited so far
-	var/readings_taken = 0
-	/// Readings credited per subject (weakref -> count), capping farm-a-friend
-	var/list/readings_per_subject = list()
+	desc = "Deploy a living tissue culture with the probe. Use the supplied precision syringes to measure its response to nutrient and buffer doses, then prepare a viable sample within the culture's energy and membrane-stress windows. Each probe assay spends tissue viability; large overdoses damage it further. Ten units of water flush all media and recover the same culture immediately. Harvest a correctly balanced live culture with a right-click of the probe."
+	var/obj/structure/vestige_tissue_culture/culture
 
 /datum/vestige_trial/field_study/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_probe_baton(get_turf(user)))
-	to_chat(user, span_notice("The probe clicks once, runs a self-test, and pronounces itself satisfied with you. Probably it does this to everyone."))
+	var/obj/item/vestige_probe_baton/probe = new(get_turf(user))
+	probe.trial_ref = WEAKREF(src)
+	hand_over(user, probe)
+	var/obj/item/storage/box/supplies = new(get_turf(user))
+	supplies.name = "culture titration case"
+	for(var/reagent_path in list(/datum/reagent/vestige_culture_nutrient, /datum/reagent/vestige_culture_buffer, /datum/reagent/water))
+		var/obj/item/reagent_containers/cup/bottle/bottle = new(supplies)
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_path]
+		bottle.name = "[initial(reagent.name)] culture bottle"
+		bottle.reagents.add_reagent(reagent_path, 50)
+		new /obj/item/reagent_containers/syringe/vestige_precision(supplies)
+	hand_over(user, supplies)
 
 /datum/vestige_trial/field_study/get_progress_text()
-	return "[readings_taken] of [VESTIGE_PROBE_READINGS_NEEDED] readings are on file."
+	if(QDELETED(culture))
+		return "Use the probe in hand to deploy the tissue culture. Examine the probe for syringe controls and the assay method."
+	return "Culture viability [culture.viability]%. Target energy [culture.target_energy - 1] to [culture.target_energy + 1], stress -1 to +1. Right-click the culture with the probe to harvest."
 
-/// Credits a probe reading. May complete (and delete) the trial. Returns FALSE if this subject's file is full.
-/datum/vestige_trial/field_study/proc/record_reading(mob/living/subject)
-	var/datum/weakref/key = WEAKREF(subject)
-	var/prior = readings_per_subject[key] || 0
-	if(prior >= VESTIGE_PROBE_READINGS_PER_SUBJECT)
+/obj/item/reagent_containers/syringe/vestige_precision
+	name = "survey precision syringe"
+	desc = "A standard syringe with fine volume settings. Use in hand to cycle its transfer amount; right-click a bottle to draw that amount, then left-click the tissue culture to inject. Right-click the culture with an empty syringe to withdraw excess medium. Keep nutrient, buffer and water in separate syringes."
+	amount_per_transfer_from_this = 1
+	possible_transfer_amounts = list(0.5, 1, 2, 5, 10, 15)
+
+/datum/reagent/vestige_culture_nutrient
+	name = "survey nutrient"
+	description = "A synthetic substrate metabolized only by survey tissue cultures. Inert in other organisms."
+	color = "#D8AE53"
+	taste_description = "chalk"
+
+/datum/reagent/vestige_culture_buffer
+	name = "survey buffer"
+	description = "An inert culture medium that supports survey tissue membranes. It has no medicinal effect."
+	color = "#74B5D1"
+	taste_description = "chalk"
+
+/obj/structure/vestige_tissue_culture
+	name = "living survey tissue culture"
+	desc = "A sealed, transparent culture reservoir. Inject measured nutrient and buffer using a syringe; an empty syringe can withdraw excess medium. Ten units of water flush the media and restore the same tissue. Use the probe for an assay; right-click with it to harvest."
+	icon = 'icons/obj/medical/organs/organs.dmi'
+	icon_state = "liver"
+	color = "#A8D5C2"
+	density = FALSE
+	anchored = TRUE
+	var/datum/weakref/trial_ref
+	var/uptake_coefficient
+	var/buffer_coefficient
+	var/target_energy
+	var/viability = 100
+	var/assayed = FALSE
+	var/washing = FALSE
+	var/harvested = FALSE
+
+/obj/structure/vestige_tissue_culture/Initialize(mapload)
+	. = ..()
+	create_reagents(80, INJECTABLE | DRAWABLE | TRANSPARENT)
+	uptake_coefficient = pick(1, 1.5, 2)
+	buffer_coefficient = pick(1, 1.5, 2)
+	target_energy = pick(12, 15, 18)
+	RegisterSignal(reagents, COMSIG_REAGENTS_HOLDER_UPDATED, PROC_REF(on_media_changed))
+
+/obj/structure/vestige_tissue_culture/examine(mob/user)
+	. = ..()
+	. += span_notice("Target energy: [target_energy - 1] to [target_energy + 1]. Target membrane stress: -1 to +1. Viability: [viability]%; harvest needs at least 60%.")
+	. += span_notice("Nutrient increases energy and stress proportionally. Buffer lowers stress without changing energy. Their uptake rates vary between cultures. A one-unit dose and an assay reveal a rate. Each assay spends 10% viability; energy above [target_energy + 4] or stress outside -8 to +8 spends another 25%. Flush with 10 units of water to recover without changing the rates.")
+
+/obj/structure/vestige_tissue_culture/proc/energy()
+	return reagents.get_reagent_amount(/datum/reagent/vestige_culture_nutrient) * uptake_coefficient
+
+/obj/structure/vestige_tissue_culture/proc/stress()
+	return energy() - reagents.get_reagent_amount(/datum/reagent/vestige_culture_buffer) * buffer_coefficient
+
+/obj/structure/vestige_tissue_culture/proc/on_media_changed(datum/reagents/source)
+	SIGNAL_HANDLER
+	if(washing || harvested)
+		return
+	if(reagents.get_reagent_amount(/datum/reagent/water) >= 10)
+		washing = TRUE
+		reagents.clear_reagents()
+		viability = 100
+		assayed = FALSE
+		washing = FALSE
+		visible_message(span_notice("The water flushes all media from [src]. Its membrane repairs; the same culture is ready for another preparation."))
+
+/obj/structure/vestige_tissue_culture/proc/assay()
+	if(harvested)
+		return
+	assayed = TRUE
+	viability = max(0, viability - 10)
+	if(energy() > target_energy + 4 || abs(stress()) > 8)
+		viability = max(0, viability - 25)
+		visible_message(span_warning("[src] blisters under the assay pulse: the preparation is rupturing its membrane!"))
+	return "Assay: energy [round(energy(), 0.1)], membrane stress [round(stress(), 0.1)], viability [viability]%. Target energy [target_energy - 1]..[target_energy + 1], stress -1..+1, viability at least 60%."
+
+/obj/structure/vestige_tissue_culture/proc/viable()
+	return !harvested && assayed && viability >= 60 && abs(energy() - target_energy) <= 1 && abs(stress()) <= 1
+
+/// Consumes the measured preparation before the caller pays the single reward.
+/obj/structure/vestige_tissue_culture/proc/harvest()
+	if(!viable())
 		return FALSE
-	readings_per_subject[key] = prior + 1
-	readings_taken++
-	refresh_tracker()
-	if(readings_taken >= VESTIGE_PROBE_READINGS_NEEDED)
-		complete()
+	harvested = TRUE
+	reagents.clear_reagents()
+	viability = 0
 	return TRUE
 
 /obj/item/vestige_probe_baton
-	name = "telemetric probe"
-	desc = "An abductor probe-wand tuned all the way down. It can't stun and it can't cuff. The tip takes a reading on contact, and stings just enough to make that reading honest."
-	icon = 'icons/obj/antags/abductor.dmi'
-	icon_state = "wonderprodProbe"
-	inhand_icon_state = "wonderprodProbe"
-	lefthand_file = 'icons/mob/inhands/antag/abductor_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/abductor_righthand.dmi'
-	w_class = WEIGHT_CLASS_SMALL
-	force = 0
-	COOLDOWN_DECLARE(recalibration)
+	name = "culture assay probe"
+	desc = "Use in hand on clear floor to deploy a living culture. Syringes: use in hand to set volume, right-click bottles to draw, left-click culture to inject. Keep media separate. Start with small doses: nutrient increases energy and stress, buffer decreases stress. Probe left-click measures both and spends viability. Infer dose response, titrate into the displayed windows, then right-click with the probe to harvest. Ten units of water flush a failed preparation immediately."
+	icon = 'icons/obj/devices/scanner.dmi'
+	icon_state = "health"
+	var/datum/weakref/trial_ref
 
-/obj/item/vestige_probe_baton/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(!ishuman(target) || target == user)
-		return ..()
-	var/datum/vestige_trial/field_study/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the probe is dark!")
+/obj/item/vestige_probe_baton/attack_self(mob/living/user)
+	var/datum/vestige_trial/field_study/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || !QDELETED(trial.culture))
 		return
-	if(!COOLDOWN_FINISHED(src, recalibration))
-		balloon_alert(user, "still recalibrating!")
+	var/turf/location = get_turf(user)
+	if(!isfloorturf(location))
 		return
-	var/mob/living/carbon/human/subject = target
-	// Telemetry under load only: awake, on their feet, hands free, someone home
-	// (mind check, cuffed captives, sleepers and monkey farms measure nothing)
-	if(subject.stat != CONSCIOUS || subject.body_position != STANDING_UP)
-		balloon_alert(user, "the protocol wants them upright!")
-		return
-	if(HAS_TRAIT(subject, TRAIT_RESTRAINED))
-		balloon_alert(user, "restrained subjects measure nothing!")
-		return
-	if(!subject.mind)
-		balloon_alert(user, "nobody home to measure!")
-		return
-	if(!trial.record_reading(subject)) // may complete (and delete) the trial, resolve it no further
-		balloon_alert(user, "this subject's file is complete!")
-		return
-	COOLDOWN_START(src, recalibration, VESTIGE_PROBE_RECALIBRATE_TIME)
-	subject.apply_damage(VESTIGE_PROBE_STING, STAMINA)
-	playsound(subject, 'sound/items/pshoom/pshoom.ogg', 40, TRUE)
-	subject.visible_message(
-		span_danger("[user] presses a humming probe against [subject]!"),
-		span_userdanger("You feel a cold instrument take a reading!"),
-	)
-	to_chat(user, span_notice("The probe takes its reading and files it."))
+	trial.culture = new(location)
+	trial.culture.trial_ref = trial_ref
+	trial.register_loan(trial.culture)
+	to_chat(user, span_notice("The living culture unfolds. Examine it for its target window and safe assay limits."))
 
-#undef VESTIGE_TAG_APPLY_TIME
-#undef VESTIGE_READING_DURATION
-#undef VESTIGE_READING_RADIUS
-#undef VESTIGE_LENS_INTEGRITY
-#undef VESTIGE_LENS_DISRUPT_TIME
-#undef VESTIGE_LENS_FOLD_TIME
-#undef VESTIGE_GRAFT_STEPS
-#undef VESTIGE_GRAFT_STEP_TIME
-#undef VESTIGE_PROBE_READINGS_NEEDED
-#undef VESTIGE_PROBE_READINGS_PER_SUBJECT
-#undef VESTIGE_PROBE_STING
-#undef VESTIGE_PROBE_RECALIBRATE_TIME
+/obj/item/vestige_probe_baton/interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/field_study/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || target != trial.culture)
+		return NONE
+	to_chat(user, span_notice(trial.culture.assay()))
+	trial.refresh_tracker()
+	return ITEM_INTERACT_SUCCESS
+
+/obj/item/vestige_probe_baton/interact_with_atom_secondary(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/field_study/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || target != trial.culture)
+		return NONE
+	if(!trial.culture.harvest())
+		to_chat(user, span_warning("Harvest rejected: assay the live tissue, retain at least 60% viability, and bring actual energy and stress inside both target windows."))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("The probe extracts the viable preparation. The culture chamber is empty."))
+	trial.complete()
+	return ITEM_INTERACT_SUCCESS
+
+#undef VESTIGE_FILTER_SLOT
 
 /**
  * # The Menagerie: abductor vestige BOONS (patron: the Curator)
