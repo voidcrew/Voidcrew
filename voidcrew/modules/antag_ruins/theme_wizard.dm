@@ -321,15 +321,25 @@
 
 /datum/vestige_trial/swallowed_word/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_syllable(get_turf(user)))
-	listener = user
-	RegisterSignal(user, COMSIG_MOB_SAY, PROC_REF(on_spoken))
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
+	bind_listener(user)
 
 /datum/vestige_trial/swallowed_word/Destroy()
-	if(listener)
-		UnregisterSignal(listener, COMSIG_MOB_SAY)
-	listener = null
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	bind_listener(null)
 	QDEL_LIST(syllables)
 	return ..()
+
+/datum/vestige_trial/swallowed_word/proc/bind_listener(mob/living/user)
+	if(listener)
+		UnregisterSignal(listener, COMSIG_MOB_SAY)
+	listener = user
+	if(listener)
+		RegisterSignal(listener, COMSIG_MOB_SAY, PROC_REF(on_spoken))
+
+/datum/vestige_trial/swallowed_word/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	bind_listener(owner?.current)
 
 /datum/vestige_trial/swallowed_word/get_progress_text()
 	return length(syllables) ? "Slide syllables into the gap: north row 1 2 3, middle 4 5 6, south 7 8 gap. [moves] moves made. Speaking reshuffles." : "Use the phial in hand on clear three-by-three floor."
@@ -382,7 +392,7 @@
 
 /datum/vestige_trial/swallowed_word/proc/on_spoken(mob/living/source, list/say_args)
 	SIGNAL_HANDLER
-	if(!length(syllables))
+	if(source != owner?.current || !length(syllables))
 		return
 	scramble()
 	to_chat(source, span_warning("Your spoken word tangles the inscription. A new pattern lights up."))

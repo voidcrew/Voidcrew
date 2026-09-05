@@ -140,6 +140,21 @@
 	TEST_ASSERT(trial.crossed, "Moving through the breach to the far side was not recorded")
 	trial.process(1)
 	TEST_ASSERT(!QDELETED(trial), "An unsealed breach completed the extraction")
+	var/turf/passage = trial.passage
+	var/original_type = passage.type
+	passage = passage.ChangeTurf(/turf/closed/wall)
+	trial.passage = passage
+	var/datum/gas_mixture/air = trial.destination.return_air()
+	var/datum/gas_mixture/saved_air = new
+	saved_air.copy_from(air)
+	var/datum/gas_mixture/removed_air = air.remove_ratio(1)
+	qdel(removed_air)
+	trial.process(1)
+	var/completed = QDELETED(trial)
+	air.copy_from(saved_air)
+	qdel(saved_air)
+	passage.ChangeTurf(original_type)
+	TEST_ASSERT(completed, "A crossed and rebuilt breach was stranded by an unrelated pressure requirement")
 	var/obj/item/vestige_quill/quill = allocate(/obj/item/vestige_quill)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock)
 	door.req_access = list()

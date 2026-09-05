@@ -93,9 +93,6 @@
 /datum/vestige_trial/rite_of_rust/process(seconds_per_tick)
 	if(!opened || !crossed || !weight || get_turf(weight) != destination || !isturf(weight.loc) || !istype(passage, /turf/closed/wall))
 		return
-	var/turf/open/floor = destination
-	if(floor.return_air()?.return_pressure() < 80)
-		return
 	complete()
 
 /datum/vestige_trial/rite_of_rust/proc/release_guardian()
@@ -190,17 +187,29 @@
 	hand_over(user, new /obj/item/vestige_quill(get_turf(user)))
 	hand_over(user, new /obj/item/storage/toolbox/mechanical(get_turf(user)))
 	hand_over(user, new /obj/item/multitool(get_turf(user)))
-	walker = user
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_walked))
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
+	bind_walker(user)
 	to_chat(user, span_notice("The quill settles between your fingers, nib first."))
 
 /datum/vestige_trial/rite_of_transcription/Destroy()
-	if(walker)
-		UnregisterSignal(walker, COMSIG_MOVABLE_MOVED)
-	walker = null
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	bind_walker(null)
 	if(threshold)
 		UnregisterSignal(threshold, list(COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR), COMSIG_AIRLOCK_OPEN))
 	return ..()
+
+/datum/vestige_trial/rite_of_transcription/proc/bind_walker(mob/living/user)
+	if(walker)
+		UnregisterSignal(walker, COMSIG_MOVABLE_MOVED)
+	walker = user
+	if(walker)
+		RegisterSignal(walker, COMSIG_MOVABLE_MOVED, PROC_REF(on_walked))
+
+/datum/vestige_trial/rite_of_transcription/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	bind_walker(owner?.current)
+	pry_until = 0
+	prying_tool = null
 
 /// Listen to the successful result of an actual pry attempt, not to panel toggles or failed tool clicks.
 /datum/vestige_trial/rite_of_transcription/proc/on_prying(atom/source, mob/living/user, obj/item/tool, list/recipes)
@@ -224,7 +233,7 @@
 
 /datum/vestige_trial/rite_of_transcription/proc/on_walked(mob/living/source)
 	SIGNAL_HANDLER
-	if(threshold && breached && !threshold.density && get_turf(source) == get_turf(threshold))
+	if(source == owner?.current && threshold && breached && !threshold.density && get_turf(source) == get_turf(threshold))
 		crossed = TRUE
 		refresh_tracker()
 

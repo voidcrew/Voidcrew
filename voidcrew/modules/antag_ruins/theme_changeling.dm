@@ -197,6 +197,7 @@
 
 /mob/living/basic/headslug/vestige_child/Initialize(mapload)
 	. = ..()
+	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
 	REMOVE_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)
 	UnregisterSignal(src, COMSIG_HOSTILE_POST_ATTACKINGTARGET)
 

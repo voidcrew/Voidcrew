@@ -412,7 +412,7 @@
 /datum/vestige_trial/stillness
 	parent_type = /datum/vestige_trial/field_encounter
 	name = "Lesson of Stillness"
-	desc = "Deploy the instructor on a clear five-by-five patch of ground. Kneel at least two tiles from it and activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
+	desc = "Deploy the instructor on a clear five-by-five patch of ground. Use Rest at least two tiles from it, then activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: toggle Rest again to rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
 	var/counters = 0
 	var/phase = 0
 	var/deadline = 0
@@ -502,7 +502,7 @@
 
 /obj/item/vestige_incense
 	name = "temple incense"
-	desc = "Activate while kneeling two tiles from your instructor to bait an exchange. After evading its committed sweep, touch it with this to counter."
+	desc = "Use Rest two tiles from your instructor, then activate this to bait an exchange. Toggle Rest again to rise and evade its committed sweep, then touch it with this to counter."
 	icon = 'icons/obj/cigarettes.dmi'
 	icon_state = "cigon"
 	w_class = WEIGHT_CLASS_TINY

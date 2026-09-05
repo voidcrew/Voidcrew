@@ -104,9 +104,13 @@ GLOBAL_LIST_EMPTY(vestige_records)
 		if(!loan)
 			continue
 		var/turf/drop_turf = get_turf(loan) || get_turf(owner?.current)
+		if(istype(loan, /obj/item/bodypart/chest))
+			var/obj/item/bodypart/chest/chest = loan
+			if(chest.cavity_item && !(WEAKREF(chest.cavity_item) in loan_refs))
+				chest.cavity_item = null // Chest destruction also deletes this cached reference.
 		for(var/atom/movable/content as anything in loan.contents.Copy())
 			if(!(WEAKREF(content) in loan_refs) && drop_turf)
-				content.forceMove(drop_turf)
+				return_player_property(content, drop_turf)
 	for(var/datum/weakref/loan_ref as anything in loan_refs)
 		var/atom/movable/loan = loan_ref.resolve()
 		if(loan)
@@ -114,6 +118,25 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	loan_refs = null
 	owner = null
 	return ..()
+
+/// Anatomy must detach before movement, or its callbacks can strand it in nullspace.
+/datum/vestige_trial/proc/return_player_property(atom/movable/property, turf/drop_turf)
+	if(isorgan(property))
+		var/obj/item/organ/organ = property
+		if(organ.owner)
+			organ.Remove(organ.owner, special = TRUE)
+		else if(organ.bodypart_owner)
+			organ.bodypart_remove(organ.bodypart_owner)
+	else if(istype(property, /obj/item/bodypart))
+		var/obj/item/bodypart/limb = property
+		// Special limb removal moves organs out but leaves them on the mob's
+		// registry. Return player transplants before that registry is destroyed.
+		for(var/obj/item/organ/organ in limb.contents.Copy())
+			if(!(WEAKREF(organ) in loan_refs))
+				return_player_property(organ, drop_turf)
+		if(limb.owner)
+			limb.drop_limb(special = TRUE, dismembered = FALSE, move_to_floor = FALSE)
+	property.forceMove(drop_turf)
 
 /**
  * Called once when the pact is struck. Stands up the HUD reminder, then runs
@@ -180,20 +203,25 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /datum/vestige_trial/proc/complete()
 	if(!owner || QDELETED(src) || fulfilled || owner.active_vestige_trial != src || (type in owner.completed_vestige_trials))
 		return
+	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
+	// A deferred old-body attempt can finish after this soul has respawned
+	// and begun the same assignment again. The round ledger decides once.
+	if(type in record?.completed_trials)
+		LAZYOR(owner.completed_vestige_trials, type)
+		qdel(src)
+		return
 	fulfilled = TRUE
 	LAZYADD(owner.completed_vestige_trials, type)
 	if(owner.active_vestige_trial == src)
 		owner.active_vestige_trial = null
-	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
 	record?.completed_trials |= type
 
 	var/mob/living/user = owner.current
 	if(isliving(user))
 		to_chat(user, span_bolddanger("You hear [patron_name] in the back of your head: \"The pact is done.\""))
 		playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
-	// Runs body or no body. Deferred completions (the egg's hatch beat, the Red
-	// Road's concluding beat) can land after the keeper has been gibbed, and the
-	// pact is spent either way, so the debt has to be booked regardless.
+	// Runs body or no body. Deferred combat callbacks can land after the keeper
+	// has been gibbed; the spent pact must still book its reward debt.
 	offer_reward(user)
 	qdel(src)
 

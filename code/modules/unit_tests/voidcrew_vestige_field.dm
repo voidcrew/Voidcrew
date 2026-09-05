@@ -109,7 +109,7 @@
 	TEST_ASSERT(!card.void_side(null), "Missing turfs must not masquerade as a valid vacuum-side contact.")
 
 /datum/unit_test/vestige_field_tether_dispatch/Run()
-	var/turf/center = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z)
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, get_step(center, WEST))
 	user.mind_initialize()
 	var/datum/vestige_trial/little_moon/trial = allocate(/datum/vestige_trial/little_moon, user.mind)
@@ -118,12 +118,22 @@
 	trial.cargo = allocate(/obj/structure/vestige_tumbling_keepsake, get_step(center, EAST))
 	trial.cargo.drift_x = 2
 	trial.cargo.drift_y = 2
+	var/turf/cargo_turf = get_turf(trial.cargo)
+	var/turf/user_turf = get_turf(user)
+	TEST_ASSERT(!cargo_turf.density && !user_turf.density, "The tether fixture must keep both endpoints out of the room's walls.")
 	var/original_type = center.type
 	center = center.ChangeTurf(/turf/open/space)
+	var/obj/structure/vestige_field_node/blocker = allocate(/obj/structure/vestige_field_node, center)
+	blocker.density = TRUE
+	var/blocked_result = trial.cargo.base_ranged_item_interaction(user, trial.tether, list())
+	var/blocked_drift = trial.cargo.drift_x
+	qdel(blocker)
 	var/result = trial.cargo.base_ranged_item_interaction(user, trial.tether, list())
 	var/drift_after = trial.cargo.drift_x
 	var/moved = get_turf(trial.cargo) == center
 	center.ChangeTurf(original_type)
+	TEST_ASSERT(blocked_result & ITEM_INTERACT_BLOCKING, "A cable through a dense obstruction must be rejected.")
+	TEST_ASSERT_EQUAL(blocked_drift, 2, "A blocked pull cannot stabilize cargo or spend its impulse.")
 	TEST_ASSERT(result & ITEM_INTERACT_SUCCESS, "A real remote click must dispatch to the recovery tether.")
 	TEST_ASSERT(moved, "A credited tether impulse must physically move the cargo.")
 	TEST_ASSERT_EQUAL(drift_after, 1, "A pull from the west must counter eastward drift.")
