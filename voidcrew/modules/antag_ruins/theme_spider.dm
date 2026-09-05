@@ -31,7 +31,7 @@
 // numbers literally, keep them in sync.
 
 /// Hunters the Snare must catch mid-chase
-#define VESTIGE_SNARE_CATCHES_NEEDED 5
+#define VESTIGE_SNARE_CATCHES_NEEDED 3
 /// Most catches any single beast can credit, the same prey twice teaches nothing new
 #define VESTIGE_SNARE_CATCHES_PER_BEAST 2
 /// Snare-webs the spinneret will keep standing at once
@@ -57,7 +57,7 @@
 #define VESTIGE_PANTRY_BREAKOUT (30 SECONDS)
 
 /// Tremors the Tremor Line must see answered in person
-#define VESTIGE_TREMOR_ANSWERS_NEEDED 6
+#define VESTIGE_TREMOR_ANSWERS_NEEDED 4
 /// Most tremor-lines the spool holds taut at once
 #define VESTIGE_TREMOR_MAX_LINES 4
 /// Lines that must stand before (and while) the trial sends thieves
@@ -133,8 +133,8 @@
 
 /**
  * TRUE when a beast is held still enough to wrap: downed by any stun-family
- * effect, out cold, or standing in webbing (any webbing, the sibling boon's
- * silk counts, which is the intended synergy). Re-checked every tick of the
+ * effect, out cold, or held by the loaned capture web. Ordinary webbing
+ * beneath the animal is not sustained restraint. Re-checked every tick of the
  * wrap channel: the moment the beast shakes loose, the wrap tears.
  */
 /proc/vestige_loom_is_held_fast(mob/living/beast)
@@ -142,7 +142,7 @@
 		return TRUE
 	if(beast.IsStun() || beast.IsParalyzed() || beast.IsKnockdown() || beast.IsImmobilized())
 		return TRUE
-	if(locate(/obj/structure/spider/stickyweb) in beast.loc)
+	if(beast.has_status_effect(/datum/status_effect/incapacitating/paralyzed/vestige_pantry))
 		return TRUE
 	return FALSE
 
@@ -198,14 +198,14 @@
  * is the loop; a web that catches a wanderer holds nothing and pays nothing
  * (it behaves like ordinary silk for everyone who isn't honest prey). Sprung
  * snares are spent, so every catch is also a re-lay under pressure. Deduped
- * per beast so five catches means five real hunts, not one carp on a treadmill.
+ * per beast so three catches means three real hunts, not one carp on a treadmill.
  */
 /datum/vestige_trial/loom_snare
 	name = "The Snare"
 	// Keep the counts in sync with VESTIGE_SNARE_CATCHES_NEEDED /
 	// VESTIGE_SNARE_CATCHES_PER_BEAST / VESTIGE_SNARE_MAX_WEBS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Silk does not chase. Take my spinneret, lay your snares, then go find something to chase you across them. Four snares stand at a time, and only prey that sticks mid-hunt counts. It has to be actively after you or someone else alive. Five catches, and no beast counts more than twice."
+	desc = "Silk does not chase. Take my spinneret, lay your snares, then go find something to chase you across them. Four snares stand at a time, and only prey that sticks mid-hunt counts. It has to be actively after you or someone else alive. Three catches, and no beast counts more than twice."
 	/// The loaned spinneret. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_snare_spinneret/spinneret
 	/// Standing snare-webs (culled by their own Destroy)
@@ -231,7 +231,7 @@
 /datum/vestige_trial/loom_snare/get_progress_text()
 	if(!spinneret || QDELETED(spinneret))
 		if(catches < VESTIGE_SNARE_CATCHES_NEEDED && !length(webs))
-			return "The spinneret is lost and the silk with it. Renounce the pact and [patron_name] will spin you another."
+			return "The spinneret is lost and the silk with it. Restart the trial from your pact tracker for fresh equipment."
 	var/standing = length(webs)
 	return "Caught [catches] of [VESTIGE_SNARE_CATCHES_NEEDED] hunters mid-chase, [standing] snare[standing == 1 ? "" : "s"] of [VESTIGE_SNARE_MAX_WEBS] standing."
 
@@ -282,6 +282,10 @@
 
 /obj/item/vestige_snare_spinneret/examine(mob/user)
 	. = ..()
+	if(isliving(user))
+		for(var/mob/living/beast in view(7, user))
+			if(vestige_loom_is_wild_quarry(beast, user))
+				. += span_notice("[beast]: [HAS_TRAIT(beast, TRAIT_WEB_SURFER) ? "walks over silk" : (vestige_loom_hunted_prey(beast) ? "hunting; can spring a snare" : "idle; lure it into a hunt first")].")
 	. += span_notice("Use in hand to spin a snare-web on the floor under you, [VESTIGE_SNARE_MAX_WEBS] standing at most. Only a wild animal that hits the silk mid-hunt (actively chasing you or someone else alive) gets held and counted, and no beast counts more than [VESTIGE_SNARE_CATCHES_PER_BEAST] times. A sprung snare is used up. Anything that can walk on webs steps right over it.")
 
 /obj/item/vestige_snare_spinneret/attack_self(mob/user, modifiers)
@@ -310,6 +314,7 @@
 	var/obj/structure/spider/stickyweb/vestige_snare/web = new(ground)
 	web.bound_mind = weaver.mind
 	trial.webs += web
+	trial.register_loan(web)
 	trial.refresh_tracker()
 	weaver.visible_message(
 		span_warning("[weaver] draws pale silk from [src] and works it across the floor."),
@@ -432,7 +437,7 @@
 	// Keep the counts in sync with VESTIGE_PANTRY_STOCK_NEEDED /
 	// VESTIGE_PANTRY_FRESHNESS (initial values must be constant, so no
 	// define interpolation here)
-	desc = "A larder outlives a harvest, and mine is empty. Take the spool and the rack bundle. Bring down some wild thing without killing it. Webbed, stunned, knocked flat, whatever works, as long as it cannot move. Wrap it while it is still fighting the silk, then haul the cocoon back to your rack. You get ninety seconds from wrap to rack before the meal spoils, and I want three of them, alive and fresh. Bring me no people. I have been called a horror enough times already."
+	desc = "A larder outlives a harvest, and mine is empty. Take the spool and the rack bundle. Use the spool in hand to lay one capture web. Lure a small or medium wild beast across it; it holds for eight seconds, enough to begin the four-second wrap with a free hand. Webbed, stunned, knocked flat, whatever works, as long as it cannot move. Wrap it while it is still fighting the silk, then haul the cocoon back to your rack. You get ninety seconds from wrap to rack before the meal spoils, and I want three of them, alive and fresh. Bring me no people. I have been called a horror enough times already."
 	/// The loaned wrapping spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_wrap_spool/spool
 	/// The larder rack, bundled. Reclaimed the moment the pact ends.
@@ -441,6 +446,8 @@
 	var/obj/structure/vestige_larder_rack/rack
 	/// Live trial cocoons out in the world (culled by their own Destroy)
 	var/list/cocoons = list()
+	/// One loaned capture trap; breaking it frees its captive.
+	var/obj/structure/spider/stickyweb/vestige_capture/capture_web
 	/// Meals racked fresh so far
 	var/stocked = 0
 
@@ -454,6 +461,7 @@
 	to_chat(user, span_notice("The spool is heavier than thread has any right to be. Plant the rack somewhere near good hunting. The clock runs from wrap to rack."))
 
 /datum/vestige_trial/loom_pantry/Destroy()
+	QDEL_NULL(capture_web)
 	QDEL_NULL(spool)
 	QDEL_NULL(bundle)
 	QDEL_NULL(rack)
@@ -469,7 +477,7 @@
 	else if(bundle && !QDELETED(bundle))
 		rack_state = "The rack is still bundled. Plant it near your hunting ground."
 	else
-		rack_state = "The rack is gone. Renounce the pact and [patron_name] will bundle you another."
+		rack_state = "The rack is gone. Replace the kit from your pact tracker to try again."
 	var/fresh = 0
 	for(var/obj/structure/vestige_silk_cocoon/parcel as anything in cocoons)
 		if(!QDELETED(parcel))
@@ -517,7 +525,91 @@
 
 /obj/item/vestige_wrap_spool/examine(mob/user)
 	. = ..()
-	. += span_notice("Use on a living wild animal that is held fast (stunned, floored, or stuck in webbing) to wrap it into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The animal fights the silk the whole time, and if it shakes loose the wrap tears. A cocoon stays fresh for [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It will not work on people.")
+	. += span_notice("Use in hand to lay one capture web at your feet. It holds small or medium NPC fauna for eight seconds. Then use on a living wild animal that is held fast (stunned, floored, or stuck in webbing) to wrap it into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The animal fights the silk the whole time, and if it shakes loose the wrap tears. A cocoon stays fresh for [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It will not work on people.")
+
+/obj/item/vestige_wrap_spool/attack_self(mob/user, modifiers)
+	. = ..()
+	if(.)
+		return
+	var/datum/vestige_trial/loom_pantry/trial = user.mind?.active_vestige_trial
+	if(!isliving(user) || !istype(trial) || trial.spool != src)
+		return TRUE
+	var/turf/open/ground = get_turf(user)
+	if(!istype(ground) || ground.is_blocked_turf(exclude_mobs = TRUE) || istype(get_area(ground), /area/ruin/space/has_grav/vestige))
+		balloon_alert(user, "find clear ground outside the Loom!")
+		return TRUE
+	if(trial.capture_web)
+		balloon_alert(user, "one capture web at a time; dismantle the old one!")
+		return TRUE
+	balloon_alert(user, "laying capture web...")
+	if(!do_after(user, 2 SECONDS, target = ground))
+		return TRUE
+	if(QDELETED(src) || !user.is_holding(src) || get_turf(user) != ground || trial != user.mind?.active_vestige_trial || trial.capture_web)
+		return TRUE
+	var/obj/structure/spider/stickyweb/vestige_capture/web = new(ground)
+	web.bound_mind = user.mind
+	trial.capture_web = web
+	trial.register_loan(web)
+	balloon_alert(user, "capture web ready; lure a beast across it")
+	return TRUE
+
+/// A single-use capture trap. Ordinary passers-by and player-controlled fauna pass freely.
+/obj/structure/spider/stickyweb/vestige_capture
+	name = "capture web"
+	desc = "A low loop of grey silk, rigged to cinch around one small or medium wild beast."
+	stuck_chance = 0
+	projectile_stuck_chance = 0
+	max_integrity = 25
+	var/datum/mind/bound_mind
+	var/datum/weakref/captive
+	var/hold_ends = 0
+
+/obj/structure/spider/stickyweb/vestige_capture/CanAllowThrough(atom/movable/mover, border_dir)
+	if(!isliving(mover) || captive)
+		return TRUE
+	return !try_capture(mover)
+
+/obj/structure/spider/stickyweb/vestige_capture/proc/try_capture(mob/living/beast)
+	if(captive)
+		return FALSE
+	var/datum/vestige_trial/loom_pantry/trial = bound_mind?.active_vestige_trial
+	var/mob/living/keeper = bound_mind?.current
+	if(!istype(trial) || trial.capture_web != src || !vestige_loom_is_wild_quarry(beast, keeper))
+		return FALSE
+	if(beast.stat == DEAD || beast.mob_size >= MOB_SIZE_LARGE || HAS_TRAIT(beast, TRAIT_WEB_SURFER) || beast.has_status_effect(/datum/status_effect/incapacitating/paralyzed/vestige_pantry))
+		return FALSE
+	captive = WEAKREF(beast)
+	hold_ends = world.time + 8 SECONDS
+	beast.apply_status_effect(/datum/status_effect/incapacitating/paralyzed/vestige_pantry, 8 SECONDS)
+	visible_message(span_boldwarning("[src] cinches [beast] still for eight seconds! Wrap it now!"))
+	QDEL_IN(src, 8 SECONDS)
+	return TRUE
+
+/obj/structure/spider/stickyweb/vestige_capture/examine(mob/user)
+	. = ..()
+	if(captive)
+		. += span_notice("[DisplayTimeText(max(0, hold_ends - world.time))] of hold remains. Begin the four-second wrap before that runs out.")
+	else
+		. += span_notice("Ready to catch one small or medium wild NPC. Web-walkers are immune. Its owner can dismantle it with an empty hand.")
+
+/obj/structure/spider/stickyweb/vestige_capture/attack_hand(mob/living/user, list/modifiers)
+	if(user.mind != bound_mind || user.combat_mode)
+		return ..()
+	qdel(src)
+	return TRUE
+
+/obj/structure/spider/stickyweb/vestige_capture/Destroy()
+	var/mob/living/beast = captive?.resolve()
+	beast?.remove_status_effect(/datum/status_effect/incapacitating/paralyzed/vestige_pantry)
+	var/datum/vestige_trial/loom_pantry/trial = bound_mind?.active_vestige_trial
+	if(istype(trial) && trial.capture_web == src)
+		trial.capture_web = null
+	bound_mind = null
+	captive = null
+	return ..()
+
+/datum/status_effect/incapacitating/paralyzed/vestige_pantry
+	id = "vestige_pantry_capture"
 
 /obj/item/vestige_wrap_spool/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!isliving(target) || target == user)
@@ -556,11 +648,12 @@
 	trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
 		return
-	if(target.stat == DEAD || !vestige_loom_is_held_fast(target))
+	if(target.stat == DEAD || !vestige_loom_is_held_fast(target) || !vestige_loom_is_wild_quarry(target, user) || target.mob_size >= MOB_SIZE_LARGE)
 		return
 	var/obj/structure/vestige_silk_cocoon/parcel = new(get_turf(target))
 	parcel.swaddle(target, user.mind)
 	trial.cocoons += parcel
+	trial.register_loan(parcel)
 	trial.refresh_tracker()
 	user.visible_message(
 		span_warning("[user] cinches the last loop, and [target] disappears into a taut grey cocoon."),
@@ -735,6 +828,7 @@
 	stand.displayed_stock = trial.stocked
 	stand.update_appearance()
 	trial.rack = stand
+	trial.register_loan(stand)
 	trial.refresh_tracker()
 	user.visible_message(
 		span_warning("[user] unfolds a rack of silk-lashed struts and stands it up against the deck."),
@@ -829,7 +923,7 @@
 	if(!hoisted)
 		return
 	// Re-verify the whole world; the channel slept. A spoiled parcel qdel'd itself already.
-	if(QDELETED(src) || QDELETED(parcel) || !user.Adjacent(src))
+	if(QDELETED(src) || QDELETED(parcel) || parcel.racked || !user.Adjacent(src) || user.mind != bound_mind)
 		return
 	if(get_dist(parcel, src) > 1 || parcel.z != z)
 		return
@@ -853,7 +947,7 @@
 /// The nearest fresh trial cocoon of ours within arm's reach of the rack, or null
 /obj/structure/vestige_larder_rack/proc/find_fresh_parcel()
 	for(var/obj/structure/vestige_silk_cocoon/parcel in range(1, src))
-		if(QDELETED(parcel) || parcel.bound_mind != bound_mind)
+		if(QDELETED(parcel) || parcel.racked || parcel.bound_mind != bound_mind || world.time >= parcel.wrapped_at + VESTIGE_PANTRY_FRESHNESS)
 			continue
 		return parcel
 	return null
@@ -871,6 +965,7 @@
 	var/obj/item/vestige_larder_bundle/parcel = new(get_turf(src))
 	parcel.bound_mind = bound_mind
 	trial.bundle = parcel
+	trial.register_loan(parcel)
 	user.put_in_hands(parcel)
 	user.visible_message(
 		span_warning("[user] folds [src] back down into a silk-lashed parcel."),
@@ -901,7 +996,7 @@
 	// VESTIGE_TREMOR_MAX_LINES / VESTIGE_TREMOR_MIN_LINES /
 	// VESTIGE_TREMOR_SPREAD / VESTIGE_TREMOR_ANSWER_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come, little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer six tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
+	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come, little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer four tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
 	/// The loaned tremor spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_tremor_spool/spool
 	/// Standing tremor-lines (culled by their own Destroy)
@@ -939,7 +1034,7 @@
 /datum/vestige_trial/loom_tremor/get_progress_text()
 	if(!spool || QDELETED(spool))
 		if(!length(lines))
-			return "The spool is lost and the net with it. Renounce the pact and [patron_name] will wind you another."
+			return "The spool is lost and the net with it. Restart the trial from your pact tracker for fresh equipment."
 	var/standing = length(lines)
 	if(!night_begun)
 		return "String [VESTIGE_TREMOR_MIN_LINES] tremor-lines, spread wide ([standing] of [VESTIGE_TREMOR_MAX_LINES] standing), and the thieves will come."
@@ -1008,18 +1103,15 @@
 
 /// Sends one thief against one line: spawn, roster, signals, its own despawn clock, and a soft cue to the keeper
 /datum/vestige_trial/loom_tremor/proc/send_thief(obj/structure/vestige_tremor_line/line, mob/living/keeper)
-	var/list/perches = list()
-	for(var/turf/perch as anything in RANGE_TURFS(VESTIGE_TREMOR_SPAWN_RANGE, line))
-		if(get_dist(perch, line) < 3)
-			continue
-		if(perch.is_blocked_turf(exclude_mobs = TRUE))
-			continue
-		perches += perch
+	var/list/perches = vestige_hunt_approaches(line, VESTIGE_TREMOR_SPAWN_RANGE)
 	if(!length(perches))
-		return // cramped ground; the next beat tries again
+		to_chat(keeper, span_warning("No clear approach reaches that line. Clear a route at least three tiles long, or unstring and move it."))
+		next_send_at = world.time + VESTIGE_TREMOR_RESPITE
+		return
 	next_send_at = world.time + VESTIGE_TREMOR_RESPITE // floor, so an instant kill can't machine-gun the night
 	var/mob/living/basic/vestige_silk_thief/filcher = new(pick(perches))
 	thieves[filcher] = line
+	register_loan(filcher)
 	RegisterSignal(filcher, COMSIG_LIVING_DEATH, PROC_REF(on_thief_died))
 	RegisterSignal(filcher, COMSIG_QDELETING, PROC_REF(on_thief_gone))
 	// The lifespan rides the THIEF, not the trial. Orphans always clean themselves up
@@ -1122,6 +1214,11 @@
 
 /obj/item/vestige_tremor_spool/examine(mob/user)
 	. = ..()
+	var/datum/vestige_trial/loom_tremor/trial = user.mind?.active_vestige_trial
+	if(istype(trial))
+		for(var/obj/structure/vestige_tremor_line/line as anything in trial.lines)
+			if(line.z == user.z)
+				. += span_notice("Line to the [dir2text(get_dir(user, line)) || "same spot"]: [get_dist(user, line)] tiles away; new lines need five tiles of separation.")
 	. += span_notice("Use in hand to string a tremor-line across the floor under you, [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
 
 /obj/item/vestige_tremor_spool/attack_self(mob/user, modifiers)
@@ -1150,6 +1247,7 @@
 	var/obj/structure/vestige_tremor_line/line = new(ground)
 	line.bound_mind = keeper.mind
 	trial.lines += line
+	trial.register_loan(line)
 	keeper.visible_message(
 		span_warning("[keeper] draws a nearly invisible thread across the floor and knots it down at both ends."),
 		span_notice("You string the line and thumb it once. It answers with a note you feel more than hear."),

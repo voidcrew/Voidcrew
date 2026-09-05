@@ -17,7 +17,7 @@
  * play at every moment: the Red Road (positioning, fell wild things with the
  * loaned knife while YOUR boots stand in wet blood), the Trapdoor Feast
  * (stalking and timing, a lesser, lurk-capped blood crawl, credit only for a
- * strike within two seconds of rising onto a beast mid-stride), and Set the
+ * strike within three seconds of rising onto a beast mid-stride), and Set the
  * Table (logistics under pressure: every kill onto the loaned gambrel's
  * hooks before it cools, while the hunt continues). The boons, the crawl,
  * the claws, the mirth, the scent. Live in the sibling boons file
@@ -31,13 +31,13 @@
 // Trial tuning (file-local, #undef at bottom). Trial descs quote these
 // numbers literally, keep them in sync.
 /// Wild things the Red Road demands felled with wet blood underfoot
-#define VESTIGE_ROAD_KILLS_NEEDED 5
+#define VESTIGE_ROAD_KILLS_NEEDED 3
 /// Pounces the Trapdoor Feast demands landed out of the blood
-#define VESTIGE_TRAPDOOR_AMBUSHES_NEEDED 6
+#define VESTIGE_TRAPDOOR_AMBUSHES_NEEDED 3
 /// Most pounces any single beast can credit, after that it has learned the floor
 #define VESTIGE_TRAPDOOR_STRIKES_PER_PREY 2
 /// How long after rising a strike still counts as a pounce
-#define VESTIGE_TRAPDOOR_STRIKE_WINDOW (2 SECONDS)
+#define VESTIGE_TRAPDOOR_STRIKE_WINDOW (3 SECONDS)
 /// How long the blood tolerates a lurker before spitting them back out
 #define VESTIGE_TRAPDOOR_LURK_MAX (10 SECONDS)
 /// The trapdoor crawl's cooldown: paid on the dive and again on the rise
@@ -47,7 +47,7 @@
 /// How far around the surfacing lurker we memorize positions, to judge "mid-stride" honestly
 #define VESTIGE_TRAPDOOR_SNAPSHOT_RANGE 9
 /// Fresh carcasses Set the Table demands hung on the gambrel
-#define VESTIGE_TABLE_SETTINGS 5
+#define VESTIGE_TABLE_SETTINGS 3
 /// How long after death a carcass still counts as fresh enough to seat
 #define VESTIGE_TABLE_FRESHNESS (45 SECONDS)
 /// How long hooking a carcass up takes
@@ -71,13 +71,13 @@
 /proc/vestige_is_shambles_quarry(mob/living/beast, mob/living/butcher)
 	if(!isliving(beast) || beast == butcher || ishuman(beast))
 		return FALSE
-	if(!isanimal_or_basicmob(beast))
+	if(!isanimal_or_basicmob(beast) || beast.mind || beast.client)
 		return FALSE
 	if(beast.mob_size < MOB_SIZE_SMALL) // no mice, no morsels. The Stain wants carcasses worth hanging
 		return FALSE
 	if(HAS_TRAIT(beast, TRAIT_PACIFISM) || HAS_TRAIT(beast, TRAIT_GODMODE))
 		return FALSE
-	if(beast.faction_check_atom(butcher)) // your own pack is not stock
+	if(butcher && beast.faction_check_atom(butcher)) // your own pack is not stock
 		return FALSE
 	return TRUE
 
@@ -143,7 +143,7 @@
 	name = "The Red Road"
 	// Keep the count in sync with VESTIGE_ROAD_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "First lesson is the floor. Take the knife. I dressed the edge myself, it spills generously. Cut your beast open so the floor gets wet, then stand in the wet and land the killing blow from there. Wet blood under your boots, or it doesn't count. Five wild things brought down that way, and no beast counts twice however many times somebody props it back up. Ha!"
+	desc = "First lesson is the floor. Take the knife. I dressed the edge myself, it spills generously. Cut your beast open so the floor gets wet, then stand in the wet and land the killing blow from there. Wet blood under your boots, or it doesn't count. Three wild things brought down that way, and no beast counts twice however many times somebody props it back up. Ha!"
 	/// The loaned knife, while it survives. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_flensing_knife/knife
 	/// Beasts already walked down the road (weakref -> TRUE). A revived and re-felled beast is still one meal
@@ -163,7 +163,7 @@
 
 /datum/vestige_trial/red_road/get_progress_text()
 	if(!knife || QDELETED(knife))
-		return "The knife is lost. Renounce the pact and [patron_name] will dress you another."
+		return "The knife is lost. Restart the trial from your pact tracker for a fresh knife."
 	return "You have felled [length(felled)] of [VESTIGE_ROAD_KILLS_NEEDED] wild things with wet blood underfoot."
 
 /// Credits a kill made standing in the red. Returns FALSE if this beast already walked the road.
@@ -238,7 +238,18 @@
 
 /obj/item/vestige_flensing_knife/examine(mob/user)
 	. = ..()
-	. += span_notice("Every cut into a wild thing wets the floor beneath it. Only a killing blow from this knife counts for the Red Road, and only if your own boots are standing in wet blood when it lands. [VESTIGE_ROAD_KILLS_NEEDED] wild things, no beast twice.")
+	. += span_notice("Use in hand to check your footing. Every cut into a wild thing wets the floor beneath it. Only a killing blow from this knife counts for the Red Road, and only if your own boots are standing in wet blood when it lands. [VESTIGE_ROAD_KILLS_NEEDED] wild things, no beast twice.")
+
+/obj/item/vestige_flensing_knife/attack_self(mob/user, modifiers)
+	. = ..()
+	if(.)
+		return
+	var/wet = FALSE
+	for(var/obj/effect/decal/cleanable/blood/pool in get_turf(user))
+		if(!pool.dried)
+			wet = TRUE
+	balloon_alert(user, wet ? "wet blood underfoot: killing blow ready" : "dry footing: step into wet blood first")
+	return TRUE
 
 /obj/item/vestige_flensing_knife/attack(mob/living/prey, mob/living/butcher, list/modifiers, list/attack_modifiers)
 	var/was_alive = isliving(prey) && prey.stat != DEAD
@@ -293,12 +304,11 @@
 
 /**
  * The stalking trial: the pact loans a lesser, trial-only blood crawl and
- * pays only for AMBUSHES, the first strike landed within two seconds of
+ * pays only for AMBUSHES, the first strike landed within three seconds of
  * rising, on a wild beast that was moving when the strike came. "Moving" is
- * judged honestly: the crawl memorizes where every nearby living thing stood
- * at the instant of surfacing, and a beast still on that same tile when the
- * blow lands was flat-footed prey, not a pounce. One credit per rise, capped
- * per beast, so six credits means six separate dives, stalks and reads of a
+ * judged from positions at the dive and at surfacing. Movement during the
+ * dive or before the strike counts; standing still throughout does not. One credit per rise, capped
+ * per beast, so three credits means three separate dives, stalks and reads of a
  * moving target.
  *
  * The loaned crawl is the apprentice's cut of the boon, restricted three
@@ -318,7 +328,7 @@
 	// Keep the counts in sync with VESTIGE_TRAPDOOR_AMBUSHES_NEEDED /
 	// _STRIKES_PER_PREY / _STRIKE_WINDOW / _LURK_MAX / _TOLL
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Second lesson is the pounce. I'll lend you the crawl, the apprentice's version of it. Sink into wet blood and the floor is yours for ten seconds before it spits you back out. No pool in reach and the door comes out of your own palm, five brute, shop price. Come up under something that is MOVING and land your first strike within two seconds of surfacing. Something standing still doesn't count. Six pounces, and no beast counts more than twice. After that it knows where the floor keeps its doors. Ha!"
+	desc = "Second lesson is the pounce. I'll lend you the crawl, the apprentice's version of it. Sink into wet blood and the floor is yours for ten seconds before it spits you back out. No pool in reach and the door comes out of your own palm, five brute, shop price. Come up under something that is MOVING and land your first strike within three seconds of surfacing. Lure it into a chase before diving; its movement during your dive is remembered, even if it stops beside the exit. Three pounces, and no beast counts more than twice. After that it knows where the floor keeps its doors. Ha!"
 	/// The loaned crawl. Mind-targeted like the boon spells; reclaimed (and any lurker ejected) the moment the pact ends.
 	var/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/crawl
 	/// Pounces landed so far
@@ -391,6 +401,8 @@
 	var/credited_this_rise = FALSE
 	/// Where every living thing nearby stood at the instant of surfacing (weakref -> turf), the "mid-stride" evidence
 	var/list/positions_at_rise
+	/// Locations seen at the dive, so a quarry that reaches the exit and stops can still be ambushed.
+	var/list/positions_at_dive
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/Destroy()
 	deltimer(lurk_timer)
@@ -482,6 +494,10 @@
 	. = ..()
 	if(!.)
 		return
+	positions_at_dive = list()
+	for(var/mob/living/quarry in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, jaunter))
+		if(vestige_is_shambles_quarry(quarry, jaunter) && vestige_loom_hunted_prey(quarry))
+			positions_at_dive[WEAKREF(quarry)] = get_turf(quarry)
 	deltimer(lurk_timer)
 	// The clock rides the timer subsystem, not the holder, a renounced pact's
 	// Destroy deltimers it, and the jaunt machinery ejects the lurker itself
@@ -503,6 +519,9 @@
 	positions_at_rise = list()
 	for(var/mob/living/bystander in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, unjaunter))
 		positions_at_rise[WEAKREF(bystander)] = get_turf(bystander)
+	if(istype(unjaunter.mind?.active_vestige_trial, /datum/vestige_trial/trapdoor_feast))
+		to_chat(unjaunter, span_boldnotice("AMBUSH ARMED: strike a moving quarry within three seconds. Your held weapon stays in hand."))
+		unjaunter.balloon_alert(unjaunter, "ambush armed: three seconds!")
 
 /// The blood's patience runs out: eject the lurker wherever they are, and charge the cooldown for the ride
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/spit_out(mob/living/lurker)
@@ -557,9 +576,8 @@
 /**
  * The pounce, judged: inside the window, first credit of this rise, honest
  * quarry, still alive, and MOVING, meaning it is not standing on the same
- * tile it stood on when the lurker surfaced. A beast absent from the
- * surfacing snapshot closed the distance from beyond it, which is the most
- * moving a beast can be. Credit resolves the wielder's live trial at strike
+ * tile it stood on at the dive or when the lurker surfaced. A beast absent
+ * from the surfacing snapshot is not enough evidence for a pounce. Credit resolves the wielder's live trial at strike
  * time; completion may delete the trial (deferred), so nothing here touches
  * it after pounce() returns.
  */
@@ -575,8 +593,12 @@
 	if(!istype(trial))
 		return
 	var/turf/seen_at = LAZYACCESS(positions_at_rise, WEAKREF(quarry))
-	if(seen_at && seen_at == get_turf(quarry))
-		to_chat(butcher, span_warning("[quarry] was standing still when you came up. A pounce only counts on something that was moving."))
+	var/turf/dive_at = LAZYACCESS(positions_at_dive, WEAKREF(quarry))
+	if(!seen_at)
+		return
+	var/moved_during_dive = dive_at && dive_at != seen_at
+	if(!moved_during_dive && seen_at == get_turf(quarry))
+		to_chat(butcher, span_warning("[quarry] has not moved during your dive or since you rose. A pounce only counts on something that was moving."))
 		return
 	if(!trial.pounce(quarry))
 		to_chat(butcher, span_warning("[quarry] has been surprised enough times. It knows where the floor keeps its doors now. Go find something else."))
@@ -594,8 +616,8 @@
  * needs no global scanning and no kill-watching: a carcass presented to the
  * hooks either made the window or it didn't. The gambrel refuses cold meat
  * outright (refusal teaches the timer better than silent no-credit would),
- * refuses anyone but its own butcher, and dedups by carcass, so five settings
- * means five full kill-haul-hang cycles run while the hunting ground stays
+ * refuses anyone but its own butcher, and dedups by carcass, so three settings
+ * means three full kill-haul-hang cycles run while the hunting ground stays
  * hostile around you. Verified against the kitchenspike: fauna corpses
  * buckle fine, but its 10-second hook time and torture-rack unbuckling are
  * wrong for a timed trial, so the gambrel is its own structure with a
@@ -606,7 +628,7 @@
 	name = "Set the Table"
 	// Keep the counts in sync with VESTIGE_TABLE_SETTINGS / _FRESHNESS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Last lesson is the table, and it's the one every butcher skips. Take the gambrel and plant it somewhere the hunting is good. Everything you bring down goes on the hooks while it's still warm: forty-five seconds from last breath to hook, no more, I don't seat cold meat. Five carcasses hung fresh while the hunt goes on around you: kill, haul, hang, repeat. A butcher who can't set a table is just a murderer with a very good knife. Ha!"
+	desc = "Last lesson is the table, and it's the one every butcher skips. Take the gambrel and plant it somewhere the hunting is good. Everything you bring down goes on the hooks while it's still warm: forty-five seconds from last breath to hook, no more, I don't seat cold meat. Three carcasses hung fresh while the hunt goes on around you: kill, haul, hang, repeat. A butcher who can't set a table is just a murderer with a very good knife. Ha!"
 	/// The loaned gambrel, folded, while it rides in hand. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_gambrel/gambrel_item
 	/// The gambrel, planted. Reclaimed the moment the pact ends (hung meat drops free).
@@ -636,7 +658,7 @@
 	else if(gambrel_item && !QDELETED(gambrel_item))
 		status = "The gambrel is folded up in your hands. Plant it somewhere the hunting is good"
 	else
-		status = "The gambrel is gone. Renounce the pact and [patron_name] will fold you another"
+		status = "The gambrel is gone. Replace the kit from your pact tracker to try again"
 	return "[status]. [settings] of [VESTIGE_TABLE_SETTINGS] settings hung fresh."
 
 /// Credits a fresh carcass onto the table. May schedule completion. Returns FALSE if this beast was already seated.
@@ -714,6 +736,7 @@
 	var/obj/structure/vestige_gambrel/rack = new(ground)
 	rack.bound_mind = user.mind
 	trial.gambrel_structure = rack
+	trial.register_loan(rack)
 	user.visible_message(
 		span_warning("[user] stands [src] up, and its hooks unfold with a sound like knuckles cracking."),
 		span_notice("You stand the gambrel up. The hooks spread themselves out, unhurried."),
@@ -768,6 +791,10 @@
 
 /obj/structure/vestige_gambrel/examine(mob/user)
 	. = ..()
+	for(var/mob/living/meat in view(7, src))
+		if(meat.stat == DEAD && vestige_is_shambles_quarry(meat, user))
+			var/remaining = max(0, meat.timeofdeath + VESTIGE_TABLE_FRESHNESS - world.time)
+			. += span_notice("[meat]: [remaining ? "[DisplayTimeText(remaining)] to hang" : "gone cold"].")
 	. += span_notice("Drag a fresh wild carcass onto it to hang it, within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill, and only by whoever made the pact. [VESTIGE_TABLE_SETTINGS] settings finish the table.")
 	var/datum/vestige_trial/set_the_table/trial = get_bound_trial()
 	if(istype(trial) && user.mind == bound_mind)
@@ -799,6 +826,7 @@
 	var/obj/item/vestige_gambrel/folded = new(get_turf(src))
 	folded.bound_mind = bound_mind
 	trial.gambrel_item = folded
+	trial.register_loan(folded)
 	user.put_in_hands(folded)
 	user.visible_message(
 		span_warning("[user] folds [src] down, hooks tucking themselves away."),
