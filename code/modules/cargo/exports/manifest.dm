@@ -1,13 +1,17 @@
 #define MAX_MANIFEST_PENALTY CARGO_CRATE_VALUE * 2.5
 
 // Approved manifest.
-// +80 credits flat.
+// At most20 credits or10% of payment: cheap goodies and flash coupons cannot subsidize themselves.
 /datum/export/manifest_correct
-	cost = CARGO_CRATE_VALUE * 0.4
+	cost = CARGO_CRATE_VALUE * 0.1
 	k_elasticity = 0
 	unit_name = "approved manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 	scannable = FALSE
+
+/datum/export/manifest_correct/get_cost(obj/O, apply_elastic = TRUE)
+	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest = O
+	return max(0, min(..(), FLOOR(manifest.order_cost * 0.1, 1)))
 
 /datum/export/manifest_correct/applies_to(obj/O)
 	if(!..())
@@ -19,7 +23,7 @@
 	return FALSE
 
 // Correctly denied manifest.
-// Refunds package cost minus the value of the crate.
+// Refunds the recorded payment minus the original 200-credit handling allowance.
 /datum/export/manifest_error_denied
 	cost = -CARGO_CRATE_VALUE
 	k_elasticity = 0

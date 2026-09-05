@@ -213,15 +213,30 @@
 /**
  * Returns a list of supply packs for a certain group
  */
+/obj/machinery/computer/voidcrew_cargo/proc/can_order_pack(datum/supply_pack/pack)
+	if(!pack)
+		return FALSE
+	if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
+		return FALSE
+	return !pack.contraband || contraband
+
+/// Both direct and name-based cart actions enforce the same per-pack UI limit.
+/obj/machinery/computer/voidcrew_cargo/proc/can_add_pack(datum/supply_pack/pack, amount)
+	if(!can_order_pack(pack) || !valid_cargo_order_quantity(amount, CARGO_MAX_ORDER))
+		return FALSE
+	var/already_ordered = 0
+	for(var/datum/supply_order/order as anything in checkout_list)
+		if(order.pack == pack)
+			already_ordered++
+	return already_ordered + amount <= CARGO_MAX_ORDER
+
 /obj/machinery/computer/voidcrew_cargo/proc/get_packs_data(group)
 	var/list/packs = list()
 	for(var/pack_id in SSshuttle.supply_packs)
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
 		if(pack.group != group)
 			continue
-		if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
-			continue
-		if(pack.contraband && !contraband)
+		if(!can_order_pack(pack))
 			continue
 		var/obj/item/first_item = length(pack.contains) > 0 ? pack.contains[1] : null
 		packs += list(list(
@@ -405,18 +420,20 @@
 			return TRUE
 		if("modify")
 			var/order_name = params["order_name"]
+			var/amount = isnum(params["amount"]) ? params["amount"] : text2num(params["amount"])
+			var/supply_pack_id = name_to_id(order_name)
+			var/datum/supply_pack/pack = SSshuttle.supply_packs[supply_pack_id]
+			// Validate before removing existing entries, including their coupons.
+			if(!can_order_pack(pack) || isnull(amount) || (amount != 0 && !valid_cargo_order_quantity(amount, CARGO_MAX_ORDER)))
+				return FALSE
 			//clear out all orders with the above mentioned order_name name to make space for the new amount
 			for(var/datum/supply_order/order as anything in checkout_list) //find corresponding order id for the order name
 				if(order.pack.name == order_name)
 					remove_item(list("id" = "[order.id]"))
 
 			//now add the new amount stuff
-			var/amount = text2num(params["amount"])
 			if(!amount)
 				return TRUE
-			var/supply_pack_id = name_to_id(order_name) //map order name to supply pack id for adding
-			if(!supply_pack_id)
-				return FALSE
 			return add_item(list("id" = supply_pack_id, "amount" = amount))
 		if("clear")
 			//create copy of list else we will get runtimes when iterating & removing items on the same list checkout_list
@@ -554,27 +571,30 @@
 /**
  * Adds an item to the grocery list
  */
-/obj/machinery/computer/voidcrew_cargo/proc/add_item(params)
+/obj/machinery/computer/voidcrew_cargo/proc/add_item(params, mob/user = usr)
 	var/id = params["id"]
 	id = text2path(id) || id
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[id]
-	if(!istype(pack))
-		CRASH("Unknown supply pack id given by order console ui. ID: [params["id"]]")
+	// Catalog buttons omit amount; explicit invalid values must not become one.
+	var/amount = 1
+	if("amount" in params)
+		amount = isnum(params["amount"]) ? params["amount"] : text2num(params["amount"])
+	if(!can_add_pack(pack, amount) || !user)
+		return FALSE
 
 	var/name = "*None Provided*"
 	var/rank = "*None Provided*"
-	if(ishuman(usr))
-		var/mob/living/carbon/human/human = usr
+	if(ishuman(user))
+		var/mob/living/carbon/human/human = user
 		name = human.get_authentification_name()
 		rank = human.get_assignment(hand_first = TRUE)
-	else if(issilicon(usr))
-		name = usr.real_name
+	else if(issilicon(user))
+		name = user.real_name
 		rank = "Silicon"
 	else
-		name = usr.real_name
+		name = user.real_name
 		rank = "Unknown"
 
-	var/amount = text2num(params["amount"]) || 1
 	for(var/count in 1 to amount)
 		// Check for matching coupon
 		var/obj/item/coupon/applied_coupon
@@ -596,7 +616,7 @@
 			pack = pack,
 			orderer = name,
 			orderer_rank = rank,
-			orderer_ckey = usr.ckey,
+			orderer_ckey = user.ckey,
 			coupon = applied_coupon,
 		)
 		checkout_list += new_order
