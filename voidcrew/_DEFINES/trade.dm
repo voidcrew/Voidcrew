@@ -51,9 +51,9 @@
 // hull by design (losing the ship costs the crew its reputation too).
 
 // Tier thresholds, in favor points
-#define FAVOR_TIER_REGULAR 3
-#define FAVOR_TIER_PARTNER 7
-#define FAVOR_TIER_TRUSTED 12
+#define FAVOR_TIER_REGULAR 2
+#define FAVOR_TIER_PARTNER 4
+#define FAVOR_TIER_TRUSTED 6
 
 // Credit-price discount per tier, in percent. Voucher prices are never
 // discounted: favor is earned from contracts that PAY vouchers, so a voucher
@@ -73,16 +73,17 @@
 /// How often a trader outpost's supply convoy tops the shelves back up
 #define OUTPOST_RESTOCK_INTERVAL (22 MINUTES)
 
+/// Convoys publish every ordinary catalog line after early-round stock variety.
+#define OUTPOST_FULL_CATALOG_TIME (180 MINUTES)
+
 // ===== CONTRACT PAY BANDS =====
 // Outpost contracts settle in goods, not credits, so the bundle a contract pays
 // has to be assembled to hit a credit-equivalent target. These are that target,
 // in shop credits, per difficulty band. Anything below the EASY floor reads as
 // an insult on the board, a 600cr box of shells for a 2000cr haul of cores was
 // the bug these bands exist to prevent.
-// Read these against the shelf ladder they buy from: a lethal shell box is
-// 1200cr, an armor vest 1800, a laser gun or engine heater 3000, a plasma
-// engine board 4800. An easy contract should settle for a real piece of kit, a
-// medium one for a gun or a drive component, a hard one for the back room.
+// These bands include travel and delivery work. Routine supplies can form a
+// bundle, medium contracts fund a ship component, and hard ones add an exclusive.
 #define CONTRACT_PAY_EASY_MIN 1400
 #define CONTRACT_PAY_EASY_MAX 2000
 #define CONTRACT_PAY_MEDIUM_MIN 2600

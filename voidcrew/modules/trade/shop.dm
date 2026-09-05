@@ -68,6 +68,8 @@
 	var/list/chart_pool = list()
 	/// How many chart picks land on the shelf per round
 	var/chart_picks = 3
+	/// Later convoys carry the complete ordinary manifest for dependable access.
+	var/full_catalog_available = FALSE
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
 	/// Buyback typepaths: what this trader buys from players (see shop_buyback.dm)
@@ -110,6 +112,8 @@
 	roll_special()
 	for(var/buyback_type in buyback_types)
 		buybacks += new buyback_type
+	if(full_catalog_due())
+		open_full_catalog()
 
 /datum/outpost_shop/Destroy()
 	QDEL_LIST(skus)
@@ -206,6 +210,8 @@
  * buyback demand caps. Driven by the outpost's restock timer.
  */
 /datum/outpost_shop/proc/convoy_restock()
+	if(!full_catalog_available && full_catalog_due())
+		open_full_catalog()
 	// Core shelves creep back toward full
 	for(var/datum/shop_sku/sku as anything in skus)
 		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max)
@@ -240,6 +246,25 @@
 	for(var/datum/shop_buyback/buyback as anything in buybacks)
 		if(buyback.demand < buyback.demand_max)
 			buyback.demand = min(buyback.demand_max, buyback.demand + max(1, round(buyback.demand_max / 2)))
+
+/// Use elapsed round time, including for an outpost created after the deadline.
+/datum/outpost_shop/proc/full_catalog_due()
+	return SSticker.HasRoundStarted() && world.time - SSticker.round_start_time >= OUTPOST_FULL_CATALOG_TIME
+
+/// Preserve the favor shelf's per-crew gate, but remove ordinary random exclusion.
+/datum/outpost_shop/proc/open_full_catalog()
+	if(full_catalog_available)
+		return
+	full_catalog_available = TRUE
+	var/list/missing = rotating_pool | rare_pool | chart_pool
+	for(var/datum/shop_sku/sku as anything in skus)
+		missing -= sku.type
+		if(sku.shelf == SHELF_FAVOR)
+			continue
+		sku.shelf = SHELF_CORE
+		sku.stock = sku.stock_max
+	for(var/sku_type in missing)
+		add_sku(sku_type, SHELF_CORE)
 
 /**
  * Credit-equivalent worth of a SKU, folding its voucher price in. A lot of the
@@ -354,7 +379,7 @@
 	mission.rare_reward_types = rare_rewards
 	// Settle the gap in scrip rather than posting a contract that misses its band
 	if(remaining > CONTRACT_SHORTFALL_TOLERANCE)
-		mission.voucher_count += max(1, round(remaining / VOUCHER_CREDIT_VALUE))
+		mission.voucher_count += CEILING((remaining - CONTRACT_SHORTFALL_TOLERANCE) / VOUCHER_CREDIT_VALUE, 1)
 	return TRUE
 
 /**

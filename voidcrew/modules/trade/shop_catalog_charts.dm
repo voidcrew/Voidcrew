@@ -16,8 +16,8 @@
  * the band of whatever it rolled at purchase.
  *
  * Ruin charts are dealt globally without repeats (GLOB.dealt_rumor_charts) so
- * two outposts never stock a tip to the same named ruin. Star charts and the
- * generic rumor are ordinary restockable goods.
+ * early outposts stock different tips. The full manifest opens after three hours;
+ * later buyers locate the same revealed encounter rather than spawning another.
  */
 
 /**
@@ -149,8 +149,9 @@
  * # Ruin charts
  *
  * Each names one rare ruin that exists nowhere until somebody buys the tip and
- * reveals it from their helm. One buyer per ruin, ever: once sold, the trail is
- * cold at every outpost. Prices encode danger, not distance, because spawn_zone
+ * reveals it from their helm. A sealed chart reserves the site until reveal or
+ * hull loss. Later purchases locate that existing, possibly visited encounter.
+ * Prices encode danger, not distance, because spawn_zone
  * decides where the ruin actually lands.
  */
 
