@@ -161,10 +161,19 @@
 
 /datum/unit_test/voidcrew_launch_bepis
 	var/list/saved_deck
+	var/obj/machinery/quantum_server/server
+	var/datum/lazy_template/virtual_domain/borrowed_domain
+	var/saved_disk_reward_spawned
 
 /datum/unit_test/voidcrew_launch_bepis/Destroy()
 	if(saved_deck)
 		SSresearch.techweb_nodes_experimental = saved_deck
+	// Domains are subsystem-owned singletons. Detach before machine cleanup,
+	// which otherwise tries to delete its generated_domain, and restore our flag.
+	if(!QDELETED(server))
+		server.generated_domain = null
+	if(!QDELETED(borrowed_domain))
+		borrowed_domain.disk_reward_spawned = saved_disk_reward_spawned
 	return ..()
 
 /datum/unit_test/voidcrew_launch_bepis/Run()
@@ -173,8 +182,15 @@
 	refill_experimental_technology_deck()
 	var/deck_size = length(SSresearch.techweb_nodes_experimental)
 	TEST_ASSERT(deck_size > 1, "Experimental deck has no usable full cycle")
-	var/obj/machinery/quantum_server/server = allocate(/obj/machinery/quantum_server)
-	server.generated_domain = allocate(/datum/lazy_template/virtual_domain/ash_drake)
+	server = allocate(/obj/machinery/quantum_server)
+	for(var/datum/lazy_template/virtual_domain/ash_drake/domain in SSbitrunning.all_domains)
+		if(!SSbitrunning.get_domain_holder(domain.key))
+			borrowed_domain = domain
+			break
+	TEST_ASSERT_NOTNULL(borrowed_domain, "BEPIS fixture requires an available canonical medium domain")
+	saved_disk_reward_spawned = borrowed_domain.disk_reward_spawned
+	borrowed_domain.disk_reward_spawned = FALSE
+	server.generated_domain = borrowed_domain
 	var/datum/techweb/late_crew = allocate(/datum/techweb)
 	for(var/cycle in 1 to 2)
 		var/list/seen = list()
