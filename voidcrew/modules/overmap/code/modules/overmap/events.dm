@@ -811,6 +811,11 @@ GLOBAL_LIST_EMPTY(nebula_events)
 /obj/structure/overmap/event/nebula/get_contact_severity()
 	return 0
 
+/obj/structure/overmap/event/nebula/get_hazard_note()
+	if((GLOB.nebula_gas_radioactivity[gas_type] || 0) > 0)
+		return "Radioactive nebula: irradiates the crew unless protected by an active nebula shielder."
+	return null
+
 /// Display name of the carried gas, for survey readouts and examine
 /obj/structure/overmap/event/nebula/proc/get_gas_name()
 	if(!gas_type)

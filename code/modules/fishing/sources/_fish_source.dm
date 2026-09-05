@@ -524,18 +524,32 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 	SIGNAL_HANDLER
 	if(fish_source_flags & FISH_SOURCE_FLAG_EXPLOSIVE_NONE)
 		return
+	// VOIDCREW EDIT: water gets one low-chance roll per tile, independent of other blasts.
+	var/is_water = iswaterturf(location)
+	var/reward_attempts = severity + 2
+	var/reward_chance = 100 + 100 * severity
 	var/multiplier = 1
-	if(fish_source_flags & FISH_SOURCE_FLAG_EXPLOSIVE_MALUS)
+	if(is_water)
+		reward_attempts = 1
+		reward_chance = 2 * severity // 2% light, 4% heavy, 6% devastation.
+	else if(fish_source_flags & FISH_SOURCE_FLAG_EXPLOSIVE_MALUS)
 		if(explosive_fishing_score <= 0)
 			explosive_fishing_score = 1
 			START_PROCESSING(SSprocessing, src)
 		else
 			explosive_fishing_score++
 			multiplier = explosive_fishing_score**-EXPLOSIVE_FISHING_MALUS_EXPONENT
-	for(var/i in 1 to (severity + 2))
-		if(!prob((100 + 100 * severity)/i * multiplier))
+	for(var/i in 1 to reward_attempts)
+		if(!prob(reward_chance / i * multiplier))
 			continue
-		var/reward_loot = pick_weight(get_fish_table(location, from_explosion = TRUE))
+		var/list/reward_table = get_fish_table(location, from_explosion = TRUE)
+		// VOIDCREW ADDITION START: water blasts must not deplete shared rare catches for other players.
+		if(is_water)
+			reward_table -= fish_counts
+		if(!length(reward_table))
+			return
+		// VOIDCREW ADDITION END
+		var/reward_loot = pick_weight(reward_table)
 		var/atom/spawn_location = isturf(location) ? location : location.drop_location()
 		var/atom/movable/reward = simple_dispense_reward(reward_loot, spawn_location, location)
 		if(isnull(reward))

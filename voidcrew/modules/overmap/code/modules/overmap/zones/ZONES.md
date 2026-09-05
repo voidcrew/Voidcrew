@@ -155,6 +155,34 @@ Zone transition time in `overmap_zones.dm`:
 #define ZONE_TRANSITION_TIME (10 SECONDS)  // Time to cross zone boundaries
 ```
 
+## Boarding and combat timeline
+
+`attack.log` contains the full timeline for zone-related PvP review:
+
+- `[SHIP]` records when a player boards or leaves a physical hull, including the
+  zone and the original boarding time. Boarding and departure also appear in
+  `game.log` and the player's individual logs.
+- `[ZONE]` records an actual zone change with the ship identity and players
+  physically aboard. Each occupant also gets an individual attack-log entry
+  saying they remained aboard, with their original boarding context. Visitors,
+  disconnected bodies, players inside containers, and docked ships are included.
+- Player attack/victim entries include their current ship and zone. `log_combat`
+  also includes the target's ship and zone, which can differ for ranged attacks.
+
+Compare the first hostile action against the crossings. For example,
+`boarded RED -> crossed YELLOW -> crossed GREEN -> attacked GREEN` differs from
+`boarded RED -> attacked RED -> crossed YELLOW -> crossed GREEN -> attacked GREEN`.
+Returning to a ship creates a new boarding record. Moving between its rooms or
+reconnecting preserves the existing visit. A character first controlled while
+already aboard is labelled `first observed aboard`, rather than claiming to know
+when they entered.
+
+The transition countdown still belongs to the departure zone; cancelling it does
+not log a completed crossing. Unresolvable locations are labelled `UNKNOWN`.
+These records provide evidence, not an automatic PvP ruling: attack logs also
+include harmless interactions, and only actions already logged by the game can
+be reconstructed. The new context applies to rounds run with this code.
+
 ## Troubleshooting
 
 **Zones not appearing:**

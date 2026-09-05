@@ -78,9 +78,13 @@
 // denser and meaner. Zones scale AMOUNTS, never kinds, deeper bands mine
 // more of the same ores, but no zone-gated ore types or loot tables.
 
-/// Multiplier on the downtime between scheduled storms (SSweather's 5-10 minute gap) per zone
-#define ZONE_WEATHER_DOWNTIME_MULT_YELLOW 0.75
-#define ZONE_WEATHER_DOWNTIME_MULT_RED 0.5
+/// Downtime from a storm fully ending to the next warning, per zone
+#define ZONE_WEATHER_DOWNTIME_MIN_GREEN (20 MINUTES)
+#define ZONE_WEATHER_DOWNTIME_MAX_GREEN (30 MINUTES)
+#define ZONE_WEATHER_DOWNTIME_MIN_YELLOW (15 MINUTES)
+#define ZONE_WEATHER_DOWNTIME_MAX_YELLOW (20 MINUTES)
+#define ZONE_WEATHER_DOWNTIME_MIN_RED (10 MINUTES)
+#define ZONE_WEATHER_DOWNTIME_MAX_RED (15 MINUTES)
 
 /// Multiplier on the storm warning time (telegraph) per zone
 #define ZONE_WEATHER_TELEGRAPH_MULT_YELLOW 0.75

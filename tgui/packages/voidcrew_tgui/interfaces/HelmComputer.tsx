@@ -175,7 +175,7 @@ type ChartedContact = {
   kind: ContactKind;
   variant?: string | null;
   severity?: number;
-  /** See Contact.hazard - a remembered planet keeps its warning. */
+  /** See Contact.hazard - remembered contacts keep their warnings. */
   hazard?: string | null;
   target: string;
 };
@@ -442,16 +442,23 @@ const HAZARD_COLOR: Record<string, string> = {
   electrical: '#e6c53f',
 };
 
-/**
- * Per-family colour tables, consulted before the family colour above.
- *
- * Nebulas deliberately have no entry here: every gas variant reads as the
- * same mark on the chart (KIND_COLOR.nebula) since which gas a cloud carries
- * isn't something the crew can tell without flying into it anyway.
- */
+/** Gas IDs from events.dm, with distinct tints readable against the dark chart. */
+const NEBULA_COLOR: Record<string, string> = {
+  plasma: '#e695c4',
+  n2: '#e6cc66',
+  water_vapor: '#c5dce8',
+  miasma: '#a6ad63',
+  tritium: '#67df73',
+  hypernoblium: '#4bc9c5',
+  pluoxium: '#9d8aeb',
+  nitrium: '#df8855',
+};
+
+/** Per-family colour tables, consulted before the family colour above. */
 const VARIANT_COLOR: Partial<Record<ContactKind, Record<string, string>>> = {
   planet: PLANET_COLOR,
   hazard: HAZARD_COLOR,
+  nebula: NEBULA_COLOR,
   // A rumour-chart ruin advertises itself as worth the trip even unsurveyed.
   ruin: { encrypted: '#ffc94d' },
 };
@@ -3210,6 +3217,9 @@ const ContactReadout = (props: { contact: Contact }) => {
         {contact.integrity != null && ` · hull ${contact.integrity}%`}
         {!!contact.hostile && ' · HOSTILE'}
       </div>
+      {!!contact.hazard && (
+        <div className="Helm__readoutHazard">{contact.hazard}</div>
+      )}
       {/*
         Verbatim, and flagged as their words rather than the console's. The helm
         knows a beacon is lit and knows nothing at all about whether it is honest.

@@ -275,7 +275,16 @@ GLOBAL_LIST_EMPTY(pillars_by_z)
 			warning("Z-level [our_turf.z] has invalid baseturf '[footprint_ground || SSmapping.level_trait(our_turf.z, ZTRAIT_BASETURF)]'")
 			path = /turf/open/space
 	// END VOIDCREW EDIT
-	var/mutable_appearance/underlay_appearance = mutable_appearance(initial(path.icon), initial(path.icon_state), layer = SPACE_LAYER + 0.1, offset_spokesman = our_turf, plane = PLANE_SPACE)
+	// VOIDCREW EDIT: PLANE_SPACE is multiplied by parallax. Planetary ground must
+	// render with the floors, below glass and plating, or the sky shows through it.
+	var/is_space = ispath(path, /turf/open/space)
+	var/mutable_appearance/underlay_appearance = mutable_appearance(
+		initial(path.icon),
+		initial(path.icon_state),
+		layer = is_space ? SPACE_LAYER + 0.1 : LOWER_FLOOR_LAYER,
+		offset_spokesman = our_turf,
+		plane = is_space ? PLANE_SPACE : FLOOR_PLANE,
+	)
 	underlay_appearance.appearance_flags = RESET_ALPHA | RESET_COLOR
 	return underlay_appearance
 

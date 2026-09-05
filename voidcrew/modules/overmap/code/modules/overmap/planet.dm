@@ -582,7 +582,7 @@
 	weather_site = SSweather.register_weather_site_for_level(
 		level,
 		weather_traits,
-		SSovermap_zones.weather_downtime_multiplier_for_zone(zone_band),
+		zone_band,
 		"planet-[REF(src)]",
 	)
 

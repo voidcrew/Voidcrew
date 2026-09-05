@@ -84,36 +84,34 @@
 	return SSmapping.get_planet_zone_band_for_z(z)
 
 /**
- * Multiplier on the downtime between scheduled storms for a z-level.
+ * Rolls the downtime between scheduled storms for a z-level.
  * Called from SSweather's scheduler (marked VOIDCREW EDIT); the ZONE_* defines
  * aren't visible that early in the include order, so the logic lives here.
  *
- * Sites that know their own band pass it in at registration instead (planets do - see
- * apply_planet_level_traits()), so this only serves level-wide sites registered by the
- * upstream paths. weather_downtime_multiplier_for_site() is the packed-level version if a
- * footprinted site ever needs to work it out for itself.
+ * Prefer weather_downtime_for_site() for sites on packed levels. Planets store their own
+ * band at registration and call weather_downtime_for_zone() directly.
  */
-/datum/controller/subsystem/overmap_zones/proc/weather_downtime_multiplier_for_z(z)
-	return weather_downtime_multiplier_for_zone(zone_type_for_z_level(z))
+/datum/controller/subsystem/overmap_zones/proc/weather_downtime_for_z(z)
+	return weather_downtime_for_zone(zone_type_for_z_level(z))
 
-/// Same multiplier, resolved from the site's own rectangle rather than from its z-level.
-/datum/controller/subsystem/overmap_zones/proc/weather_downtime_multiplier_for_site(datum/weather_site/site)
-	return weather_downtime_multiplier_for_zone(zone_type_for_weather_site(site))
+/// Rolls downtime using the zone of the site's own rectangle.
+/datum/controller/subsystem/overmap_zones/proc/weather_downtime_for_site(datum/weather_site/site)
+	return weather_downtime_for_zone(zone_type_for_weather_site(site))
 
 /**
- * Same multiplier, from a zone type that the caller already knows.
+ * Rolls downtime from an explicit range for the zone type.
  *
- * Weather sites store their multiplier at registration (see /datum/weather_site), and a
- * planet knows its own band without anything having to probe locate(1, 1, z) - which is
- * the lookup that stops meaning anything once a level holds more than one place.
+ * Each scheduled storm gets a new roll. Non-overmap weather keeps the stock 5-10 minutes.
  */
-/datum/controller/subsystem/overmap_zones/proc/weather_downtime_multiplier_for_zone(zone_type)
+/datum/controller/subsystem/overmap_zones/proc/weather_downtime_for_zone(zone_type)
 	switch(zone_type)
+		if(ZONE_GREEN)
+			return rand(ZONE_WEATHER_DOWNTIME_MIN_GREEN, ZONE_WEATHER_DOWNTIME_MAX_GREEN)
 		if(ZONE_YELLOW)
-			return ZONE_WEATHER_DOWNTIME_MULT_YELLOW
+			return rand(ZONE_WEATHER_DOWNTIME_MIN_YELLOW, ZONE_WEATHER_DOWNTIME_MAX_YELLOW)
 		if(ZONE_RED)
-			return ZONE_WEATHER_DOWNTIME_MULT_RED
-	return 1
+			return rand(ZONE_WEATHER_DOWNTIME_MIN_RED, ZONE_WEATHER_DOWNTIME_MAX_RED)
+	return rand(5 MINUTES, 10 MINUTES)
 
 /**
  * Telegraph hook: scales a starting storm's warning time and duration by the

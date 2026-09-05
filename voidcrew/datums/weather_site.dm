@@ -70,20 +70,19 @@
 	/// The randomly-scheduled storm this site currently owns, including its wind-down.
 	var/datum/weather/active_weather
 	/**
-	 * Multiplier on the downtime between this site's storms.
+	 * Overmap zone band used to choose the downtime between this site's storms.
 	 *
 	 * Null means "ask the overmap zone layer", which is what the z-keyed scheduler did
-	 * inline. Registration paths that already know the answer (planets know their own
-	 * zone band) pass it in so nothing has to probe locate(1, 1, z).
+	 * inline. Planets pass their own band in so packed neighbours keep independent timing.
 	 */
-	var/downtime_multiplier = null
+	var/zone_band = null
 
-/datum/weather_site/New(id, z_value, list/weather_types, downtime_multiplier)
+/datum/weather_site/New(id, z_value, list/weather_types, zone_band)
 	. = ..()
 	src.id = id
 	src.z_value = z_value
 	src.weather_types = weather_types ? weather_types.Copy() : list()
-	src.downtime_multiplier = downtime_multiplier
+	src.zone_band = zone_band
 
 /datum/weather_site/Destroy(force)
 	clear_next_hit()
@@ -215,13 +214,12 @@
 	qdel(ending)
 
 /**
- * The downtime multiplier to apply between this site's storms.
+ * Rolls a fresh downtime between this site's storms.
  *
- * An explicit value set at registration wins. Otherwise this falls through to the overmap
- * zone lookup, which is what the z-keyed scheduler called inline - so level-wide sites
- * registered by upstream paths behave exactly as they did.
+ * A zone band set at registration wins. Otherwise use the existing level lookup.
+ * Sites outside the overmap keep the stock weather downtime.
  */
-/datum/weather_site/proc/get_downtime_multiplier()
-	if(!isnull(downtime_multiplier))
-		return downtime_multiplier
-	return SSovermap_zones.weather_downtime_multiplier_for_z(z_value)
+/datum/weather_site/proc/roll_downtime()
+	if(!isnull(zone_band))
+		return SSovermap_zones.weather_downtime_for_zone(zone_band)
+	return SSovermap_zones.weather_downtime_for_z(z_value)

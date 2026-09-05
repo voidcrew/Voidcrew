@@ -5,6 +5,8 @@
 
 	//Mind updates
 	sync_mind()
+	// VOIDCREW: retain physical boarding history across reconnects.
+	LoadComponent(/datum/component/ship_zone_logging)
 
 	update_damage_hud()
 	update_health_hud()

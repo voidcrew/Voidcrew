@@ -3213,9 +3213,11 @@
 		return object
 	return null
 
-/// Overmap token moved (tile crossing, dock/undock forceMove) - re-theme the crew
+/// Overmap token moved: record zone crossings and refresh the crew's parallax.
 /obj/structure/overmap/ship/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	var/old_zone_type = SSovermap_zones?.get_zone_type(get_turf(old_loc))
 	. = ..()
+	log_zone_crossing(old_zone_type, SSovermap_zones?.get_zone_type(get_turf(src)))
 	update_crew_parallax_context()
 
 /**

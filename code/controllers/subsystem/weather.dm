@@ -127,7 +127,7 @@ SUBSYSTEM_DEF(weather)
 			// apply_planet_level_traits() by the whole of fill_in(), which is minutes. Rolling now
 			// would hand the storm the z-wide get_areas(area_type) sweep in setup_weather_areas()
 			// and paint every co-tenant packed onto the level. Stay eligible so the site storms as
-			// soon as its ground exists, rather than burning this roll and a 5-10 minute cooldown
+			// soon as its ground exists, rather than burning this roll and a cooldown
 			// on a storm that can only land in the wrong place.
 			eligible_sites |= site
 			continue
@@ -140,9 +140,8 @@ SUBSYSTEM_DEF(weather)
 		site.active_weather = weather_event
 		if(weather_event.weather_flags & WEATHER_ENDLESS)
 			continue
-		var/randTime = rand(5 MINUTES, 10 MINUTES)
-		randTime *= site.get_downtime_multiplier() // Storms come more often on planets in dangerous overmap zones
-		var/time_until_next_storm = weather_event.telegraph_duration + weather_event.weather_duration + weather_event.end_duration + randTime
+		var/downtime = site.roll_downtime()
+		var/time_until_next_storm = weather_event.telegraph_duration + weather_event.weather_duration + weather_event.end_duration + downtime
 		site.clear_next_hit()
 		site.next_hit_time = world.time + time_until_next_storm
 		site.next_hit_timer = addtimer(CALLBACK(src, PROC_REF(make_site_eligible), site), time_until_next_storm, TIMER_STOPPABLE)
@@ -301,18 +300,18 @@ SUBSYSTEM_DEF(weather)
  * Refreshing keeps a running storm and its cooldown intact and only swaps the weight
  * table, which is what update_z_level() has always done.
  */
-/datum/controller/subsystem/weather/proc/register_level_weather_site(z, list/possible_weather, downtime_multiplier, site_id)
+/datum/controller/subsystem/weather/proc/register_level_weather_site(z, list/possible_weather, zone_band, site_id)
 	var/datum/weather_site/site = get_level_weather_site(z)
 	if(site)
 		site.set_weather_types(possible_weather)
-		// Only an explicit value overwrites; a bare refresh must not throw away a multiplier
+		// Only an explicit value overwrites; a bare refresh must not throw away the zone band
 		// the site was registered with.
-		if(!isnull(downtime_multiplier))
-			site.downtime_multiplier = downtime_multiplier
+		if(!isnull(zone_band))
+			site.zone_band = zone_band
 		if(!(site in eligible_sites) && !site.next_hit_timer && !site.has_active_weather() && length(possible_weather))
 			eligible_sites |= site
 		return site
-	site = new /datum/weather_site(site_id || "level-[z]", z, possible_weather, downtime_multiplier)
+	site = new /datum/weather_site(site_id || "level-[z]", z, possible_weather, zone_band)
 	return register_weather_site(site)
 
 /**
@@ -322,13 +321,13 @@ SUBSYSTEM_DEF(weather)
  * Planets use this: their weather has to be describable without the level's trait dict
  * being the single source of truth, since a level may eventually hold more than one of them.
  */
-/datum/controller/subsystem/weather/proc/register_weather_site_for_level(datum/space_level/level, list/weather_traits, downtime_multiplier, site_id)
+/datum/controller/subsystem/weather/proc/register_weather_site_for_level(datum/space_level/level, list/weather_traits, zone_band, site_id)
 	if(isnull(level))
 		return null
 	var/list/possible_weather = weather_weights_for_traits(weather_traits)
 	if(!length(possible_weather))
 		return null
-	return register_level_weather_site(level.z_value, possible_weather, downtime_multiplier, site_id)
+	return register_level_weather_site(level.z_value, possible_weather, zone_band, site_id)
 // VOIDCREW EDIT ADDITION END
 
 /datum/controller/subsystem/weather/proc/update_z_level(datum/space_level/level)

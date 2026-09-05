@@ -16,6 +16,10 @@
 		stack_trace("Empty message")
 		return
 
+	// VOIDCREW: keep the actual ship/zone visible in both individual and disk logs.
+	if(message_type == LOG_ATTACK || message_type == LOG_VICTIM)
+		message += " \[Location: [overmap_zone_log_context(src)]\]"
+
 	// Cannot use the list as a map if the key is a number, so we stringify it (thank you BYOND)
 	var/smessage_type = num2text(message_type, MAX_BITFLAG_DIGITS)
 
