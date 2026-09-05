@@ -126,6 +126,9 @@ other types of metals and chemistry for reagents).
 
 /obj/item/disk/design_disk/bepis/Initialize(mapload)
 	. = ..()
+	refill_experimental_technology_deck()
+	if(!length(SSresearch.techweb_nodes_experimental))
+		return INITIALIZE_HINT_QDEL
 	var/bepis_id = pick(SSresearch.techweb_nodes_experimental)
 	bepis_node = (SSresearch.techweb_node_by_id(bepis_id))
 
@@ -140,7 +143,8 @@ other types of metals and chemistry for reagents).
 
 /**
  * Subtype of Bepis tech disk
- * Removes the tech disk that's held on it from the experimental node list, making them not show up in future disks.
+ * Draws without replacement until every experimental node has been awarded,
+ * then starts a fresh deck so later crews can still earn experimental science.
  */
 /obj/item/disk/design_disk/bepis/remove_tech
 	name = "Reformatted technology disk"
@@ -148,6 +152,19 @@ other types of metals and chemistry for reagents).
 
 /obj/item/disk/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
+	if(. == INITIALIZE_HINT_QDEL)
+		return
 	SSresearch.techweb_nodes_experimental -= bepis_node.id
-	log_research("[bepis_node.display_name] has been removed from experimental nodes through the BEPIS techweb's \"remove tech\" feature.")
+	log_research("[bepis_node.display_name] drawn from the experimental technology deck.")
+	// Bitrunning checks this pool BEFORE making a disk. Refill at exhaustion,
+	// rather than waiting for an Initialize() that the caller would never reach.
+	refill_experimental_technology_deck()
 
+/// Rebuild the finite experimental deck only when its current cycle is exhausted.
+/proc/refill_experimental_technology_deck()
+	if(length(SSresearch.techweb_nodes_experimental))
+		return
+	for(var/node_id in SSresearch.techweb_nodes)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
+		if(node.experimental)
+			SSresearch.techweb_nodes_experimental[node_id] = TRUE

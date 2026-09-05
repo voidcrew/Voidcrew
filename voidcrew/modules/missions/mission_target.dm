@@ -458,6 +458,8 @@
 	var/list/zone_weights = list()
 	/// The zone type that was picked
 	var/zone_type = ZONE_GREEN
+	/// The actual tile picked, retained so a blocked or deleted destination is invalid.
+	var/turf/resolved_turf
 
 /datum/mission_target/coords/resolve()
 	if(!SSovermap_zones)
@@ -468,18 +470,35 @@
 		return FALSE
 	for(var/_ in 1 to 30)
 		var/turf/candidate = pick(zone.turfs)
-		var/rel_x = candidate.x
-		var/rel_y = candidate.y - OVERMAP_SOUTH_SIDE_COORD + 1
-		if(rel_x < MISSION_OVERMAP_MIN_COORD || rel_x > MISSION_OVERMAP_MAX_COORD)
-			continue
-		if(rel_y < MISSION_OVERMAP_MIN_COORD || rel_y > MISSION_OVERMAP_MAX_COORD)
-			continue
-		if(GLOB.overmap_blocked_turfs[candidate])
-			continue
-		target_x = rel_x
-		target_y = rel_y
-		return TRUE
+		if(try_coordinates(candidate))
+			return TRUE
+	// A reserved safe offer must not disappear merely because thirty samples
+	// missed the remaining legal tile. Keep normal offers' bounded random roll.
+	if(!isnull(preferred_zone))
+		for(var/turf/candidate as anything in zone.turfs)
+			if(try_coordinates(candidate))
+				return TRUE
 	return FALSE
+
+/// Shared validation for the random samples, exhaustive fallback and stale offers.
+/datum/mission_target/coords/proc/valid_coordinates(turf/candidate)
+	if(QDELETED(candidate) || !istype(candidate, /turf/open/overmap))
+		return FALSE
+	var/rel_y = candidate.y - OVERMAP_SOUTH_SIDE_COORD + 1
+	return candidate.x >= MISSION_OVERMAP_MIN_COORD && candidate.x <= MISSION_OVERMAP_MAX_COORD \
+		&& rel_y >= MISSION_OVERMAP_MIN_COORD && rel_y <= MISSION_OVERMAP_MAX_COORD \
+		&& !GLOB.overmap_blocked_turfs[candidate]
+
+/datum/mission_target/coords/proc/try_coordinates(turf/candidate)
+	if(!valid_coordinates(candidate))
+		return FALSE
+	resolved_turf = candidate
+	target_x = candidate.x
+	target_y = candidate.y - OVERMAP_SOUTH_SIDE_COORD + 1
+	return TRUE
+
+/datum/mission_target/coords/is_valid()
+	return valid_coordinates(resolved_turf)
 
 /**
  * The band this contract points at. A coordinate target has no object to filter,
