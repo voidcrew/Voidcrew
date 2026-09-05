@@ -258,7 +258,7 @@
 	desc = "A light powered suit fitted with storage, a welder and a light. It is not spaceworthy. The civilian frame trades the seal for speed and takes fewer modules than the industrial ones."
 	item_path = /obj/item/mod/control/pre_equipped/civilian
 	icon_state_override = "civilian-control"
-	price_credits = 7200
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
@@ -268,8 +268,7 @@
 	desc = "The standard industrial suit: sealed, insulated against high voltage, and fitted with magboots, a tether, a welder and radiation shielding out of the crate."
 	item_path = /obj/item/mod/control/pre_equipped/engineering
 	icon_state_override = "engineering-control"
-	price_vouchers = 1
-	price_credits = 7200
+	price_credits = 3000
 	stock_min = 1
 	stock_max = 2
 
@@ -291,29 +290,29 @@
 	category = "MOD Chassis"
 	desc = "The empty frame a suit gets built inside. Core first, then helmet, chestplate, gauntlets, boots, then plating, with a screwdriver and a wrench along the way."
 	item_path = /obj/item/mod/construction/shell
-	price_credits = 1600
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/frame_helmet
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/helmet
-	price_credits = 750
+	price_credits = 100
 
 /datum/shop_sku/fitter/frame_chestplate
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/chestplate
-	price_credits = 900
+	price_credits = 100
 
 /datum/shop_sku/fitter/frame_gauntlets
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/gauntlets
-	price_credits = 650
+	price_credits = 100
 
 /datum/shop_sku/fitter/frame_boots
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/boots
-	price_credits = 600
+	price_credits = 100
 
 /datum/shop_sku/fitter/plating_civilian
 	category = "MOD Chassis"
@@ -321,7 +320,7 @@
 	desc = "The last piece of a build. Finishes a shell into a civilian suit: light, quick, and no protection from vacuum."
 	item_path = /obj/item/mod/construction/plating/civilian
 	icon_state_override = "civilian-plating"
-	price_credits = 1800
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -334,7 +333,7 @@
 	name = "MOD standard core"
 	desc = "The baseline power core. It ships empty, so drop a cell in it or the suit won't run. Boffin stocks the higher grades."
 	item_path = /obj/item/mod/core/standard
-	price_credits = 700
+	price_credits = 300
 	stock_min = 2
 	stock_max = 3
 
@@ -352,7 +351,7 @@
 	category = "Cores & Power"
 	desc = "A basic cell to seat in a standard core. Fine for a shift; the Skunkworks sells the ones that last."
 	item_path = /obj/item/stock_parts/power_store/cell
-	price_credits = 200
+	price_credits = 100
 	stock_min = 3
 	stock_max = 6
 
@@ -361,22 +360,21 @@
 /datum/shop_sku/fitter/mod_tether
 	category = "Mobility"
 	item_path = /obj/item/mod/module/tether
-	price_credits = 1500
+	price_credits = 300
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/mod_magboot
 	category = "Mobility"
 	item_path = /obj/item/mod/module/magboot
-	price_credits = 1800
+	price_credits = 450
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/mod_jetpack
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jetpack
-	price_vouchers = 1
-	price_credits = 1800
+	price_credits = 750
 	stock_min = 1
 	stock_max = 2
 
@@ -390,12 +388,12 @@
 /datum/shop_sku/fitter/mod_storage
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage
-	price_credits = 900
+	price_credits = 200
 
 /datum/shop_sku/fitter/mod_flashlight
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/flashlight
-	price_credits = 750
+	price_credits = 100
 
 /datum/shop_sku/fitter/mod_mouthhole
 	category = "Utility Modules"
@@ -417,7 +415,7 @@
 /datum/shop_sku/fitter/mod_welding
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/welding
-	price_credits = 900
+	price_credits = 150
 
 /datum/shop_sku/fitter/mod_gps
 	category = "Industrial Modules"
@@ -550,8 +548,7 @@
 	desc = "Sealed against heat and bad air, with an extinguisher mister, a t-ray scanner and magboots fitted. What atmospherics wears into a burning compartment."
 	item_path = /obj/item/mod/control/pre_equipped/atmospheric
 	icon_state_override = "atmospheric-control"
-	price_vouchers = 1
-	price_credits = 8400
+	price_credits = 3600
 
 /datum/shop_sku/fitter/rotating/suit_mining
 	category = "MOD Chassis"
@@ -559,8 +556,7 @@
 	desc = "Runs on a plasma core, so it refuels off plasma sheets instead of a charger. Ships with a drill, an ore bag, a cargo clamp and a GPS."
 	item_path = /obj/item/mod/control/pre_equipped/mining
 	icon_state_override = "mining-control"
-	price_vouchers = 1
-	price_credits = 8400
+	price_credits = 3600
 
 /datum/shop_sku/fitter/rotating/suit_medical
 	category = "MOD Chassis"
@@ -568,8 +564,7 @@
 	desc = "A sealed medical suit with a health analyzer and a quick-carry rig fitted. Light plate, good sensors."
 	item_path = /obj/item/mod/control/pre_equipped/medical
 	icon_state_override = "medical-control"
-	price_vouchers = 1
-	price_credits = 7200
+	price_credits = 3000
 
 /datum/shop_sku/fitter/rotating/suit_rescue
 	category = "MOD Chassis"
@@ -577,8 +572,7 @@
 	desc = "Runs on a super cell and comes with an analyzer, a chemical injector and expanded storage. Built for pulling people out of wrecks."
 	item_path = /obj/item/mod/control/pre_equipped/rescue
 	icon_state_override = "rescue-control"
-	price_vouchers = 1
-	price_credits = 9000
+	price_credits = 4200
 
 /datum/shop_sku/fitter/rotating/suit_research
 	category = "MOD Chassis"
@@ -586,8 +580,7 @@
 	desc = "Sealed lab suit on a super cell, with a circuit manipulator, a t-ray scanner and a welder fitted."
 	item_path = /obj/item/mod/control/pre_equipped/research
 	icon_state_override = "research-control"
-	price_vouchers = 1
-	price_credits = 8400
+	price_credits = 3600
 
 /datum/shop_sku/fitter/rotating/suit_security
 	category = "MOD Chassis"
@@ -595,8 +588,8 @@
 	desc = "Sealed and properly armored, with a jetpack, a weapon harness and pepper shoulders fitted. Wick sells it to anyone; the depot's only rule is that you pay."
 	item_path = /obj/item/mod/control/pre_equipped/security
 	icon_state_override = "security-control"
-	price_vouchers = 2
-	price_credits = 7200
+	price_vouchers = 1
+	price_credits = 3600
 
 /datum/shop_sku/fitter/rotating/suit_loader
 	category = "MOD Chassis"
@@ -604,8 +597,7 @@
 	desc = "A cargo frame with a hydraulic clamp and an ore magnet built into the chassis. Slow, strong, and it never gets tired."
 	item_path = /obj/item/mod/control/pre_equipped/loader
 	icon_state_override = "loader-control"
-	price_vouchers = 1
-	price_credits = 7800
+	price_credits = 3000
 
 // ----- plating of the week -----
 
@@ -615,8 +607,7 @@
 	desc = "Finishes a shell into an engineering suit: sealed, heat-resistant, and insulated against high voltage."
 	item_path = /obj/item/mod/construction/plating/engineering
 	icon_state_override = "engineering-plating"
-	price_vouchers = 1
-	price_credits = 1800
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/plating_atmospheric
 	category = "MOD Chassis"
@@ -624,8 +615,7 @@
 	desc = "Finishes a shell into an atmospheric suit, rated for fire and unbreathable air."
 	item_path = /obj/item/mod/construction/plating/atmospheric
 	icon_state_override = "atmospheric-plating"
-	price_vouchers = 1
-	price_credits = 3000
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/plating_medical
 	category = "MOD Chassis"
@@ -633,8 +623,7 @@
 	desc = "Finishes a shell into a medical suit. Light, sealed, and it doesn't slow you down over a patient."
 	item_path = /obj/item/mod/construction/plating/medical
 	icon_state_override = "medical-plating"
-	price_vouchers = 1
-	price_credits = 1800
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/plating_security
 	category = "MOD Chassis"
@@ -642,8 +631,8 @@
 	desc = "Finishes a shell into a security suit. This is the armored plate, and it costs like it."
 	item_path = /obj/item/mod/construction/plating/security
 	icon_state_override = "security-plating"
-	price_vouchers = 2
-	price_credits = 1800
+	price_vouchers = 1
+	price_credits = 600
 
 // ----- rotating modules -----
 
@@ -861,8 +850,8 @@
 	desc = "Nakamura's flagship: fireproof, acid-resistant, insulated to zero, with advanced magboots built into the chassis. Ships with a jetpack, a tether and expanded storage."
 	item_path = /obj/item/mod/control/pre_equipped/advanced
 	icon_state_override = "advanced-control"
-	price_vouchers = 3
-	price_credits = 9000
+	price_vouchers = 2
+	price_credits = 6000
 
 /datum/shop_sku/fitter/rare/mod_jetpack_advanced
 	category = "Mobility"
@@ -964,7 +953,7 @@
 	desc = "Any sealed suit with wear on it. Wick repatches the seals himself and sells them on to crews who can't afford a powered rig."
 	category = "Suit Salvage"
 	item_path = /obj/item/clothing/suit/space
-	pay_credits = 150
+	pay_credits = 30
 	demand_min = 3
 	demand_max = 5
 
@@ -973,6 +962,6 @@
 	desc = "Helmets to match. Wick re-seals the visors and sells them on to crews who lost one out an airlock."
 	category = "Suit Salvage"
 	item_path = /obj/item/clothing/head/helmet/space
-	pay_credits = 100
+	pay_credits = 20
 	demand_min = 3
 	demand_max = 5

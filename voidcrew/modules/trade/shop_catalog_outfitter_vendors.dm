@@ -10,9 +10,9 @@
  * - No overlap with Sarge's counter: she owns arms, armor, hull stock and the
  *   ship-systems boards; Boffin owns gadgets, machine retrofit parts and power
  *   cells. MOD suits and modules belong to the suit fitter's stall.
- * - Boffin's tier-2 stock parts are the point of this stall. Only 9 of 48 ships
- *   can research parts, and a laser turret takes a swappable cell, so the cell
- *   ladder here is a real ship upgrade path. Don't thin it out.
+ * - Boffin's tier-2 parts and cells offer immediate upgrades while a crew is
+ *   still assembling or researching its fabrication equipment. Cargo remains
+ *   cheaper in bulk, and a working laboratory rewards making parts aboard ship.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
  *   slime extracts, and raw exotics out of the ground. No circuit boards.
  *   Anything a lathe spits out is a money loop waiting to happen.
@@ -57,6 +57,7 @@
 		/datum/shop_sku/skunk/signaler,
 		/datum/shop_sku/skunk/adv_analyzer,
 		/datum/shop_sku/skunk/science_gps,
+		/datum/shop_sku/skunk/alien_sample,
 		// Ship Retrofit: tier-2 parts to tune up a ship's machines
 		/datum/shop_sku/skunk/capacitor,
 		/datum/shop_sku/skunk/servo,
@@ -106,7 +107,7 @@
 			"Bring me anomaly cores. Intact, please. INTACT. We've had incidents.",
 			"The imprinter is perfectly safe. The screaming is a licensing formality.",
 			"Slime extracts, glands, crystals: if a planet made it and it shouldn't exist, I'm buying.",
-			"A tier-two servo doubles your lathe speed. That's not a sales pitch, that's just the spec sheet.",
+			"A better servo saves material and print time. Check which part your machine actually needs.",
 			"The convoy escort calls this annex 'the spooky room'. The convoy escort is correct.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -143,39 +144,48 @@
 	stock_min = 1
 	stock_max = 3
 
+/datum/shop_sku/skunk/alien_sample
+	category = "Gadgetry"
+	name = "alien crowbar sample"
+	desc = "An alien tool for destructive research. Each sample is consumed to reveal one alien research field. Bring three to investigate all three fields."
+	item_path = /obj/item/crowbar/abductor
+	price_credits = 1500
+	stock_min = 3
+	stock_max = 3
+
 // ===== SHIP RETROFIT =====
 
 /datum/shop_sku/skunk/capacitor
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/capacitor/adv
-	price_credits = 1200
+	price_credits = 150
 
 /datum/shop_sku/skunk/servo
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/servo/nano
-	price_credits = 1200
+	price_credits = 150
 
 /datum/shop_sku/skunk/micro_laser
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/micro_laser/high
-	price_credits = 1200
+	price_credits = 150
 
 /datum/shop_sku/skunk/scanning_module
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/scanning_module/adv
-	price_credits = 1200
+	price_credits = 150
 
 /datum/shop_sku/skunk/matter_bin
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/matter_bin/adv
-	price_credits = 1200
+	price_credits = 150
 
 /datum/shop_sku/skunk/rped
 	category = "Ship Retrofit"
 	name = "rapid part exchange device"
 	desc = "Point at machine, click, parts swap themselves. Sold empty; the parts are the shelf above."
 	item_path = /obj/item/storage/part_replacer
-	price_credits = 2400
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
 
@@ -184,7 +194,7 @@
 /datum/shop_sku/skunk/high_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/high
-	price_credits = 1800
+	price_credits = 300
 
 /datum/shop_sku/skunk/science_glasses
 	category = "Power & Optics"
@@ -219,7 +229,7 @@
 /datum/shop_sku/skunk/rotating/super_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/super
-	price_credits = 4800
+	price_credits = 600
 
 /datum/shop_sku/skunk/rotating/foam_grenade
 	category = "Gadgetry"
@@ -241,14 +251,13 @@
 	name = "deluxe stock part crate"
 	desc = "A boxed set of top-shelf components, straight off a convoy that Boffin refuses to name."
 	item_path = /obj/item/storage/box/stockparts/deluxe
-	price_vouchers = 2
-	price_credits = 9000
+	price_vouchers = 1
+	price_credits = 3000
 
 /datum/shop_sku/skunk/rare/hyper_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/hyper
-	price_vouchers = 1
-	price_credits = 7200
+	price_credits = 1200
 
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.

@@ -432,14 +432,14 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	id = "cell_high"
 	name = "High-capacity cell"
 	desc = "Swaps the core's cell for a high-capacity one. Ten times a standard cell's charge. The old cell comes back to you."
-	price_credits = 400
+	price_credits = 300
 	cell_path = /obj/item/stock_parts/power_store/cell/high
 
 /datum/mod_upgrade/cell/super
 	id = "cell_super"
 	name = "Super-capacity cell"
 	desc = "Twenty times a standard cell's charge, and it recharges faster than the high-capacity."
-	price_credits = 900
+	price_credits = 600
 	cell_path = /obj/item/stock_parts/power_store/cell/super
 
 /datum/mod_upgrade/cell/hyper
@@ -447,15 +447,13 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	name = "Hyper-capacity cell"
 	desc = "Thirty times a standard cell's charge. About as much as anyone sells over a counter."
 	price_credits = 1200
-	price_vouchers = 1
 	cell_path = /obj/item/stock_parts/power_store/cell/hyper
 
 /datum/mod_upgrade/cell/bluespace
 	id = "cell_bluespace"
 	name = "Bluespace cell"
 	desc = "Forty times a standard cell's charge, on the fastest recharge curve made. Priced accordingly."
-	price_credits = 1500
-	price_vouchers = 3
+	price_credits = 1800
 	cell_path = /obj/item/stock_parts/power_store/cell/bluespace
 
 // --- The bench ----------------------------------------------------------
