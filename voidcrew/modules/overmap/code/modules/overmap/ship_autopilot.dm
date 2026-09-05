@@ -219,9 +219,8 @@
 	 */
 	var/autopilot_dest_consented = FALSE
 
-	// Flight policy, set from the helm (see set_autopilot_pref). Defaults are
-	// exactly the behaviour the autopilot shipped with: avoid all weather,
-	// stand off known hostiles, and never end a course on a hazard tile.
+	// Flight policy, set from the helm (see set_autopilot_pref). Defaults avoid
+	// all weather and hazard destinations; known-hostile avoidance is opt-in.
 	/// Tolerate asteroid fields rather than routing around them.
 	var/autopilot_cross_meteor = FALSE
 	/// Tolerate ion storms rather than routing around them.
@@ -229,7 +228,7 @@
 	/// Tolerate EMP clouds rather than routing around them.
 	var/autopilot_cross_emp = FALSE
 	/// Stamp known hostile vessels into the danger map.
-	var/autopilot_avoid_hostiles = TRUE
+	var/autopilot_avoid_hostiles = FALSE
 	/// Surcharge tiles in zone bands hotter than the trip itself needs.
 	var/autopilot_zone_caution = TRUE
 	/// Allow plotted coordinates that sit on a hazard tile (destination consent).

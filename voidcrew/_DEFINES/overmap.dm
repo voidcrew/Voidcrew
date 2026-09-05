@@ -157,9 +157,9 @@
 
 // Space ruin spawning configuration
 /// Maximum number of space ruins to spawn on the overmap
-#define MAX_OVERMAP_SPACE_RUINS 24
+#define MAX_OVERMAP_SPACE_RUINS 72
 /// Minimum number of space ruins to spawn
-#define MIN_OVERMAP_SPACE_RUINS 12
+#define MIN_OVERMAP_SPACE_RUINS 48
 
 // Asteroid mining now lives entirely on landable meteor storm / asteroid field hazard
 // events (see events.dm) - a proper /datum/map_generator, same architecture as planets,
@@ -170,7 +170,7 @@
 /// Minimum number of landable asteroid field events guaranteed on the overmap at roundstart,
 /// so crews always have somewhere to mine in space (was MIN_OVERMAP_ASTEROID_SIGNALS, pointed
 /// at ruin signals, before mining moved to field events)
-#define MIN_OVERMAP_ASTEROID_FIELDS 3
+#define MIN_OVERMAP_ASTEROID_FIELDS 18
 /// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
 #define ASTEROID_ORE_AMOUNT_MIN 2
 #define ASTEROID_ORE_AMOUNT_MAX 5

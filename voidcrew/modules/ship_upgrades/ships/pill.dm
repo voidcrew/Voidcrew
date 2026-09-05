@@ -50,3 +50,14 @@
 	slot = "pill_extra"
 	map_file = "pill/pill_extra_engineering.dmm"
 	part_cost = list(PART_CLASS_TRADE = 4)
+
+/datum/ship_upgrade_module/pill/builder
+	id = "pill_extra_builder"
+	name = "Builder Bay"
+	desc = "Ship construction console and ore silo boards, a loaded RCD with two \
+		large matter cartridges, a rapid pipe dispenser, a stocked toolbelt and insulated gloves. \
+		Two hundred iron sheets, one hundred glass sheets and three cable coils \
+		give the crew a head start on turning the Pill into a proper ship."
+	slot = "pill_extra"
+	map_file = "pill/pill_extra_builder.dmm"
+	part_cost = list(PART_CLASS_TRADE = 8)
