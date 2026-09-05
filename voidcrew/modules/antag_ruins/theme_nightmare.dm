@@ -66,7 +66,7 @@
 /datum/vestige_trial/snuffed_flame
 	parent_type = /datum/vestige_trial/field_encounter
 	name = "Trial of the Snuffed Flame"
-	desc = "Deploy the censer's nine linked lamps on a clear five-by-five floor. Touch a lamp with the censer to reverse it and its orthogonal neighbors two tiles away: light becomes dark, dark rekindles. Make all nine dark together. The initial pattern is always solvable; inspect the connections and plan which lights must return before they can all go out. Ordinary room lights are outside this circuit."
+	desc = "Deploy the censer's nine linked lamps on a clear five-by-five patch of ground. Touch a lamp with the censer to reverse it and its orthogonal neighbors two tiles away: light becomes dark, dark rekindles. Make all nine dark together. The initial pattern is always solvable; inspect the connections and plan which lights must return before they can all go out. Ordinary room lights are outside this circuit."
 	var/obj/item/vestige_censer/censer
 
 /datum/vestige_trial/snuffed_flame/on_accepted(mob/living/user)

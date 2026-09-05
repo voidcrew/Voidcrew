@@ -103,8 +103,8 @@
 	for(var/offset_x in -2 to 2)
 		for(var/offset_y in -2 to 2)
 			var/turf/spot = locate(center.x + offset_x, center.y + offset_y, center.z)
-			if(!isfloorturf(spot) || spot.is_blocked_turf(exclude_mobs = TRUE))
-				to_chat(user, span_warning("The projection needs a clear five-by-five floor, centered on you. Remove dense furniture or choose another site."))
+			if(!isopenturf(spot) || isspaceturf(spot) || islava(spot) || ischasm(spot) || spot.is_blocked_turf(exclude_mobs = TRUE))
+				to_chat(user, span_warning("The projection needs a clear five-by-five patch of ground, centered on you. Remove dense objects or choose another site."))
 				return FALSE
 	field_center = WEAKREF(center)
 	patrol_corner = 2
@@ -172,7 +172,7 @@
 
 /obj/item/vestige_field_manual
 	name = "folding lesson manual"
-	desc = "Activate on a clear five-by-five floor to project your lesson. Activating again folds the field away and resets its progress. Projections disappear when the pact ends."
+	desc = "Activate on a clear five-by-five patch of ground to project your lesson. Activating again folds the field away and resets its progress. Projections disappear when the pact ends."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "paper_talisman"
 	w_class = WEIGHT_CLASS_SMALL
@@ -245,7 +245,7 @@
 /datum/vestige_trial/thrown_star
 	parent_type = /datum/vestige_trial/field_encounter
 	name = "Trial of the Thrown Star"
-	desc = "Deploy the lesson on a clear five-by-five floor. Strike the patrolling shield target from at least three tiles away, behind its facing. Land one throw from each of three different sides of the field: north, south, east or west. It must travel two tiles between hits. Click the central focus empty-handed to recall a grounded star. The target pauses at corners; aim where it will be."
+	desc = "Deploy the lesson on a clear five-by-five patch of ground. Strike the patrolling shield target from at least three tiles away, behind its facing. Land one throw from each of three different sides of the field: north, south, east or west. It must travel two tiles between hits. Click the central focus empty-handed to recall a grounded star. The target pauses at corners; aim where it will be."
 	var/list/firing_sides = list()
 	var/obj/item/throwing_star/vestige_training/star
 	var/last_strike_step = 0
@@ -412,7 +412,7 @@
 /datum/vestige_trial/stillness
 	parent_type = /datum/vestige_trial/field_encounter
 	name = "Lesson of Stillness"
-	desc = "Deploy the instructor on a clear five-by-five floor. Kneel at least two tiles from it and activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
+	desc = "Deploy the instructor on a clear five-by-five patch of ground. Kneel at least two tiles from it and activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
 	var/counters = 0
 	var/phase = 0
 	var/deadline = 0
