@@ -1,67 +1,134 @@
-/**
- * # The Facsimile: morph vestige
- *
- * The parlor deck of a luxury liner, preserved mid-soiree. A morph fed here
- * for months and did it thoroughly: ate everything, became everything, twice
- * over, the second time is the important one, the first is only tracing,
- * and practiced being the passengers until the practicing wore through. What
- * remains is the Understudy, a patron that can no longer hold any shape at
- * all and is desperately fond of anyone who can.
- *
- * Trials are performances, and every one of them keeps the supplicant moving:
- * the Perfect Copy (wear a shape, creep close, burst out, fresh shape, fresh
- * face, every time), the Snatched Meal (feed the maw things still warm from
- * someone else's hands), and the Understudy (wear a person and tail them
- * while they live their life; a parked quarry pays nothing). The disguises
- * are appearance-deep and kit-driven, no antag datum, no species swap; the
- * second skin stamps a borrowed appearance over a plain human and takes it
- * back off again.
- *
- * The boon datums this patron pays out of (the mimic-form chain, the devour
- * chain, ambush instinct, rubber bones) are defined in the theme's boon file;
- * only their typepaths are listed here.
- */
-
-// ===== The Perfect Copy =====
-// Distinct startled victims the Perfect Copy demands. Keep the trial desc's
-// "three" in sync.
-#define VESTIGE_STARTLES_NEEDED 3
-// How long any one borrowed object shape holds before it sloughs off. Keep
-// the trial desc's "three-quarters of a minute" in sync.
+// Scoped solo performances. Appearance copying does not change generic AI or faction.
 #define VESTIGE_SKIN_FORM_TIME (45 SECONDS)
-// Jitter left on a startled victim, flavor and shakes, never a stun
-#define VESTIGE_STARTLE_JITTER (10 SECONDS)
-// Movespeed slowdown while creeping around inside an object shape
 #define VESTIGE_SKIN_CREEP_SLOWDOWN 4
-
-// ===== The Snatched Meal =====
-// Devoured morsels the Snatched Meal demands, each from a different owner.
-// Keep the trial desc's "three" in sync.
-#define VESTIGE_MEALS_NEEDED 3
-// How far the maw watches for items riding living hands
-#define VESTIGE_MAW_SENSE_RANGE 7
-// How long after the maw last saw an item in a living grip it stays warm
-// enough to count. Keep the trial desc's "ten heartbeats" in sync.
-#define VESTIGE_MAW_MEMORY_WINDOW (10 SECONDS)
-// The gulp channel
-#define VESTIGE_MAW_GULP_TIME (1.5 SECONDS)
-
-// ===== The Understudy =====
-// Cumulative seconds of shadowing the Understudy demands. Keep the trial
-// desc's "a full minute" in sync.
-#define VESTIGE_SHADOW_SECONDS_NEEDED 60
-// The study channel. Keep the trial desc's "five seconds" in sync.
-#define VESTIGE_STUDY_TIME (5 SECONDS)
-// How close the tail must stay to its quarry for the clock to run
-#define VESTIGE_SHADOW_RANGE 7
-// How recently the quarry must have moved for the clock to run, a seated or
-// AFK quarry pauses the tail without punishing it
-#define VESTIGE_QUARRY_IDLE_GRACE (10 SECONDS)
-
-// ===== Second skin form states =====
 #define SKIN_FORM_NONE 0
 #define SKIN_FORM_OBJECT 1
 #define SKIN_FORM_PERSON 2
+
+/datum/vestige_trial/morph_scenario
+	var/obj/item/vestige_morph_invitation/invitation
+	var/mob/living/basic/vestige_morph_actor/actor
+	var/datum/weakref/home_ref
+	var/next_action = 0
+
+/datum/vestige_trial/morph_scenario/on_accepted(mob/living/user)
+	invitation = hand_over(user, new /obj/item/vestige_morph_invitation(get_turf(user)))
+	invitation.trial_ref = WEAKREF(src)
+
+/datum/vestige_trial/morph_scenario/proc/ground(turf/spot)
+	return isopenturf(spot) && !isspaceturf(spot) && !islava(spot) && !ischasm(spot) && !spot.is_blocked_turf(exclude_mobs = TRUE)
+
+/// Check a real approach; no fixed arena footprint or assumed path through furniture.
+/datum/vestige_trial/morph_scenario/proc/approach_site(turf/start, distance = 4)
+	for(var/direction in shuffle(GLOB.cardinals.Copy()))
+		var/turf/spot = start
+		var/clear = TRUE
+		for(var/index in 1 to distance)
+			spot = get_step(spot, direction)
+			if(!ground(spot))
+				clear = FALSE
+				break
+		if(clear)
+			return spot
+	return null
+
+/datum/vestige_trial/morph_scenario/proc/spawn_actor(turf/spot, actor_name)
+	actor = new(spot)
+	actor.name = actor_name
+	actor.real_name = actor_name
+	actor.trial_ref = WEAKREF(src)
+	register_loan(actor)
+	return actor
+
+/datum/vestige_trial/morph_scenario/proc/deploy(mob/living/user)
+	return FALSE
+
+/datum/vestige_trial/morph_scenario/proc/run_scene(mob/living/user, seconds_per_tick)
+	return
+
+/obj/item/vestige_morph_invitation
+	name = "parlor invitation"
+	desc = "Activate on clear ground to bring out this pact's actors and equipment. Use the pact tracker to restart a failed or blocked performance."
+	icon = 'icons/obj/service/bureaucracy.dmi'
+	icon_state = "paper_talisman"
+	w_class = WEIGHT_CLASS_TINY
+	var/datum/weakref/trial_ref
+
+/obj/item/vestige_morph_invitation/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSfastprocess, src)
+
+/obj/item/vestige_morph_invitation/Destroy()
+	STOP_PROCESSING(SSfastprocess, src)
+	return ..()
+
+/obj/item/vestige_morph_invitation/attack_self(mob/living/user, list/modifiers)
+	var/datum/vestige_trial/morph_scenario/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || trial.owner?.current != user || user.stat != CONSCIOUS || !isturf(user.loc))
+		return
+	if(trial.actor)
+		to_chat(user, span_notice(trial.get_progress_text()))
+		return
+	trial.deploy(user)
+
+/obj/item/vestige_morph_invitation/process(seconds_per_tick)
+	var/datum/vestige_trial/morph_scenario/trial = trial_ref?.resolve()
+	var/mob/living/user = trial?.owner?.current
+	if(!trial || QDELETED(trial.actor) || !isliving(user) || user.mind?.active_vestige_trial != trial || user.stat != CONSCIOUS || !isturf(user.loc) || user.z != trial.actor.z)
+		return
+	trial.run_scene(user, seconds_per_tick)
+
+/mob/living/basic/vestige_morph_actor
+	name = "parlor attendant"
+	desc = "An attendant woven from the Understudy's memories. Its reactions belong to this performance."
+	icon = 'icons/mob/simple/animal.dmi'
+	icon_state = "morph"
+	icon_living = "morph"
+	held_items = list(null, null)
+	maxHealth = 100
+	health = 100
+	move_resist = INFINITY
+	damage_coeff = list(BRUTE = 0, BURN = 0, TOX = 0, STAMINA = 0, OXY = 0)
+	unsuitable_atmos_damage = 0
+	unsuitable_cold_damage = 0
+	unsuitable_heat_damage = 0
+	ai_controller = null
+	mob_biotypes = MOB_SPIRIT
+	var/list/held_appearances = list()
+	var/datum/weakref/trial_ref
+
+/mob/living/basic/vestige_morph_actor/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+	INVOKE_ASYNC(src, PROC_REF(dress))
+
+/mob/living/basic/vestige_morph_actor/proc/dress()
+	var/mutable_appearance/look = get_dynamic_human_appearance(outfit_path = /datum/outfit/job/assistant)
+	if(QDELETED(src))
+		return
+	icon = 'icons/mob/human/human.dmi'
+	icon_state = ""
+	appearance_flags |= KEEP_TOGETHER
+	copy_overlays(look, cut_old = TRUE)
+	color = "#c7d9ab"
+	update_held_items()
+
+/// Basic mobs have inventory slots but no carbon hand overlays by default.
+/mob/living/basic/vestige_morph_actor/update_held_items()
+	. = ..()
+	cut_overlay(held_appearances)
+	held_appearances = list()
+	for(var/obj/item/item in held_items)
+		var/hand_file = IS_RIGHT_INDEX(get_held_index_of_item(item)) ? item.righthand_file : item.lefthand_file
+		held_appearances += item.build_worn_icon(default_layer = HANDS_LAYER, default_icon_file = hand_file, isinhands = TRUE)
+	add_overlay(held_appearances)
+
+/mob/living/basic/vestige_morph_actor/examine(mob/user)
+	. = ..()
+	var/datum/vestige_trial/understudy/trial = trial_ref?.resolve()
+	if(istype(trial) && trial.ready && user == trial.owner?.current)
+		. += span_notice("You remember the practice shipment: amber held [2 * trial.amber_share] units and violet held [2 * trial.violet_share]. New shipments use that same proportion.")
 
 // ===== PATRON =====
 
@@ -107,258 +174,600 @@
 // ===== THE PERFECT COPY =====
 
 /datum/vestige_trial/perfect_copy
+	parent_type = /datum/vestige_trial/morph_scenario
 	name = "The Perfect Copy"
-	// Keep the numbers in sync with VESTIGE_STARTLES_NEEDED / VESTIGE_SKIN_FORM_TIME
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the skin and press it against something ordinary (a crate, a mop bucket, whatever is handy) and you will be that thing. You can creep around in it, slowly. When somebody wanders within a step of you, burst out at them. Three different people, and a different shape for each one; a shape you have already used goes baggy and won't play twice. The skin only holds any shape for three-quarters of a minute, so keep moving."
-	/// Victims already startled (weakref -> TRUE); each face jumps for you exactly once
-	var/list/startled = list()
-	/// Object typepaths already worn for a credited reveal; a worn shape never plays twice
-	var/list/spent_shapes = list()
-	/// The loaned skin, reclaimed (deleted, breaking any held form) the moment the pact ends
+	desc = "Summon the scavenger near a clear four-tile approach. It announces whether it wants a working hand tool or food. Copy an ordinary matching item with the skin, hide the original in a bag or closed locker, and let it approach from at least three tiles away. It notices visible movement and duplicate originals. Once it announces its adjacent inspection, activate the skin to burst out. Fool it once in each role. A practice wrench and snack are supplied; ordinary matching objects work too."
 	var/obj/item/vestige_second_skin/skin
+	var/list/roles = list("tool", "food")
+	var/role_index = 1
+	var/approaching = FALSE
+	var/approach_steps = 0
+	var/inspection_until = 0
+	var/datum/weakref/watched_spot
+	var/rejected_until = 0
 
 /datum/vestige_trial/perfect_copy/on_accepted(mob/living/user)
+	..()
+	roles = shuffle(roles)
 	skin = hand_over(user, new /obj/item/vestige_second_skin(get_turf(user)))
-	to_chat(user, span_notice("The second skin drapes itself over your arm and holds on."))
+	skin.trial_ref = WEAKREF(src)
+	hand_over(user, new /obj/item/wrench(get_turf(user)))
+	hand_over(user, new /obj/item/food/burger/plain(get_turf(user)))
 
 /datum/vestige_trial/perfect_copy/Destroy()
-	QDEL_NULL(skin)
+	skin?.shed_form(feedback = FALSE)
 	return ..()
 
-/datum/vestige_trial/perfect_copy/get_progress_text()
-	return "You have burst out at [length(startled)] of [VESTIGE_STARTLES_NEEDED] unsuspecting people. A shape you have used won't work twice."
-
-/**
- * Credits a burst-out reveal. May complete (and delete) the trial, and the
- * loaned skin with it, so the skin must call this last and touch nothing after.
- * Returns FALSE if this victim has already jumped or this shape already played.
- */
-/datum/vestige_trial/perfect_copy/proc/startle(mob/living/victim, shape_type)
-	var/datum/weakref/key = WEAKREF(victim)
-	if(startled[key] || (shape_type in spent_shapes))
+/datum/vestige_trial/perfect_copy/deploy(mob/living/user)
+	var/turf/site = approach_site(get_turf(user))
+	if(!site)
+		to_chat(user, span_warning("The scavenger needs a clear four-tile approach from this spot."))
 		return FALSE
-	startled[key] = TRUE
-	spent_shapes += shape_type
+	home_ref = WEAKREF(site)
+	spawn_actor(site, "parlor scavenger")
+	to_chat(user, span_notice("The scavenger calls: 'Bring me [roles[role_index]]. I dislike seeing double.'"))
+	return TRUE
+
+/datum/vestige_trial/perfect_copy/get_progress_text()
+	return "Roles performed: [role_index - 1]/2. Wanted: [roles[min(role_index, 2)]]. [inspection_until > world.time ? "INSPECTING: burst now!" : "Hide the original; offer a still shape at least three tiles away."]"
+
+/datum/vestige_trial/perfect_copy/proc/matches_role(obj/shape)
+	if(!isitem(shape))
+		return FALSE
+	var/obj/item/item = shape
+	if(roles[role_index] == "food")
+		return istype(item, /obj/item/food)
+	return !!item.tool_behaviour
+
+/// Explicit storage visibility: a bag/closed locker hides its contents; direct mob slots do not.
+/datum/vestige_trial/perfect_copy/proc/source_visible(obj/source)
+	if(!source || !actor)
+		return FALSE
+	if(isturf(source.loc) || ismob(source.loc))
+		return can_see(actor, source, 7)
+	if(istype(source.loc, /obj/structure/closet))
+		var/obj/structure/closet/locker = source.loc
+		return locker.opened && can_see(actor, locker, 7)
+	if(isobj(source.loc))
+		var/obj/container = source.loc
+		if(container.atom_storage)
+			return FALSE
+	return can_see(actor, source, 7)
+
+/datum/vestige_trial/perfect_copy/proc/reject_shape(mob/living/user, reason)
+	approaching = FALSE
+	approach_steps = 0
+	inspection_until = 0
+	watched_spot = null
+	rejected_until = world.time + 2 SECONDS
+	actor.balloon_alert(user, reason)
+	skin.shed_form(user)
 	refresh_tracker()
-	if(length(startled) >= VESTIGE_STARTLES_NEEDED)
+
+/datum/vestige_trial/perfect_copy/run_scene(mob/living/user, seconds_per_tick)
+	if(world.time < next_action)
+		return
+	next_action = world.time + 0.6 SECONDS
+	var/obj/source = skin.form_source_ref?.resolve()
+	var/visible = get_dist(actor, user) <= 7 && can_see(actor, user, 7)
+	if(approaching && (!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || !visible))
+		approaching = FALSE
+		inspection_until = 0
+		watched_spot = null
+	if(!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || world.time < rejected_until)
+		var/turf/home = home_ref?.resolve()
+		if(home && get_turf(actor) != home)
+			step_towards(actor, home)
+		return
+	if(!visible)
+		watched_spot = null
+		return
+	if(watched_spot && watched_spot.resolve() != get_turf(user))
+		reject_shape(user, "objects don't walk!")
+		return
+	watched_spot = WEAKREF(get_turf(user))
+	if(!matches_role(source))
+		actor.balloon_alert(user, "wrong kind of object")
+		return
+	if(source_visible(source))
+		reject_shape(user, "I can see the original!")
+		return
+	if(!approaching)
+		if(get_dist(actor, user) < 3)
+			actor.balloon_alert(user, "too close to fool me!")
+		else
+			approaching = TRUE
+			approach_steps = 0
+			actor.balloon_alert(user, "that looks promising...")
+		return
+	if(get_dist(actor, user) > 1)
+		if(step_towards(actor, user))
+			approach_steps++
+		return
+	if(approach_steps < 2)
+		reject_shape(user, "I didn't approach that!")
+		return
+	if(!inspection_until)
+		inspection_until = world.time + 3 SECONDS
+		actor.balloon_alert(user, "inspecting: burst now!")
+		refresh_tracker()
+	else if(world.time > inspection_until)
+		reject_shape(user, "this one feels wrong!")
+
+/datum/vestige_trial/perfect_copy/proc/reveal(mob/living/user)
+	if(!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || !approaching || approach_steps < 2 || !inspection_until || world.time > inspection_until || get_dist(actor, user) > 1 || !matches_role(skin.form_source_ref?.resolve()) || source_visible(skin.form_source_ref?.resolve()))
+		return FALSE
+	skin.shed_form(user, feedback = FALSE)
+	actor.balloon_alert(user, "that was alive!")
+	role_index++
+	approaching = FALSE
+	inspection_until = 0
+	watched_spot = null
+	refresh_tracker()
+	if(role_index > 2)
 		complete()
+	else
+		to_chat(user, span_notice("The scavenger recoils. 'Try [roles[role_index]] next.'"))
 	return TRUE
 
 // ===== THE SNATCHED MEAL =====
 
 /datum/vestige_trial/snatched_meal
+	parent_type = /datum/vestige_trial/morph_scenario
 	name = "The Snatched Meal"
-	// Keep the numbers in sync with VESTIGE_MEALS_NEEDED / VESTIGE_MAW_MEMORY_WINDOW
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the maw. It was one of my mouths, once. It only wants things that are still warm: something a living person was holding ten seconds ago and isn't holding now. Disarm somebody, wrestle it off them, or get a friend to hand one over, then feed it to the maw before it cools. Three items, from three different owners."
-	/// Owners the maw has already tasted a morsel from (weakref -> TRUE); one dish per table
-	var/list/fed_from = list()
+	desc = "Summon a guarded pantry on clear ground. With the maw, spit its one scent bolus onto ground two to five tiles away and at least three tiles from the pantry. The porter investigates for six seconds. Use the maw on the pantry while the porter is at least three tiles away to swallow its real meal. The full maw slows you; the porter reclaims it if it catches you. Escape at least six tiles from the pantry and out of the porter's sight, then activate the maw to digest for three seconds. Dropping the maw returns the meal. After a failed attempt, activate an empty maw beside the pantry to regrow its spent bolus."
+	var/obj/item/vestige_hungry_maw/maw
+	var/obj/structure/vestige_morph_station/pantry
+	var/obj/item/food/burger/plain/course
+	var/obj/structure/vestige_morph_scent/decoy
+	var/decoy_ready = TRUE
+	var/investigate_until = 0
+	var/datum/weakref/last_seen
 
 /datum/vestige_trial/snatched_meal/on_accepted(mob/living/user)
-	// Not reclaimed on pact end: without a pact the maw is toothless (see below),
-	// same deal as the Stranger's censer and the clan seal
-	hand_over(user, new /obj/item/vestige_gnash_maw(get_turf(user)))
-	to_chat(user, span_notice("The gnash-maw works its jaw once, tasting your fingers."))
+	..()
+	maw = hand_over(user, new /obj/item/vestige_hungry_maw(get_turf(user)))
+	maw.trial_ref = WEAKREF(src)
 
-/datum/vestige_trial/snatched_meal/get_progress_text()
-	return "The maw has swallowed [length(fed_from)] of [VESTIGE_MEALS_NEEDED] still-warm items."
+/datum/vestige_trial/snatched_meal/Destroy()
+	maw?.set_fullness(FALSE)
+	return ..()
 
-/**
- * Credits a devoured morsel against its last holder. May complete (and delete)
- * the trial. Returns FALSE if the maw has already tasted this person.
- */
-/datum/vestige_trial/snatched_meal/proc/devour(mob/living/last_holder)
-	var/datum/weakref/key = WEAKREF(last_holder)
-	if(fed_from[key])
+/datum/vestige_trial/snatched_meal/deploy(mob/living/user)
+	var/turf/site = approach_site(get_turf(user))
+	if(!site)
+		to_chat(user, span_warning("The pantry needs a clear four-tile approach. Leave room beyond it for your escape."))
 		return FALSE
-	fed_from[key] = TRUE
-	refresh_tracker()
-	if(length(fed_from) >= VESTIGE_MEALS_NEEDED)
-		complete()
+	home_ref = WEAKREF(get_turf(user))
+	pantry = new(get_turf(user))
+	pantry.name = "guarded pantry"
+	pantry.desc = "The porter's reserved meal is inside. A maw can take it only while the porter is at least three tiles away."
+	pantry.trial_ref = WEAKREF(src)
+	register_loan(pantry)
+	course = new(pantry)
+	course.name = "porter's reserved meal"
+	register_loan(course)
+	spawn_actor(get_step_towards(user, site), "pantry porter")
+	to_chat(user, span_notice("The porter takes its place beside the pantry. Aim the maw's scent away from it, then plan where to break sight during your escape."))
 	return TRUE
 
-/obj/item/vestige_gnash_maw
-	name = "gnash-maw"
-	desc = "A ring of someone else's teeth wrapped around a very small stomach. It only eats things that were in another person's hand a moment ago. Everything else it turns down."
+/datum/vestige_trial/snatched_meal/get_progress_text()
+	if(maw?.stored_course)
+		return "Meal swallowed. Escape six tiles from the pantry and break the porter's sight; activate the maw to digest."
+	return "Meal guarded. Scent bolus: [decoy_ready ? "ready" : "spent; regrow beside the pantry when the scent fades"]."
+
+/datum/vestige_trial/snatched_meal/proc/spit_decoy(mob/living/user, turf/spot)
+	if(owner?.current != user || user.mind?.active_vestige_trial != src || !user.is_holding(maw) || !pantry || !decoy_ready || maw.stored_course)
+		return FALSE
+	if(!ground(spot) || user.z != spot.z || get_dist(user, spot) < 2 || get_dist(user, spot) > 5 || get_dist(pantry, spot) < 3 || !can_see(user, spot, 5))
+		maw.balloon_alert(user, "aim away from the pantry")
+		return FALSE
+	decoy = new(spot)
+	register_loan(decoy)
+	decoy_ready = FALSE
+	investigate_until = 0
+	refresh_tracker()
+	return TRUE
+
+/datum/vestige_trial/snatched_meal/run_scene(mob/living/user, seconds_per_tick)
+	if(world.time < next_action)
+		return
+	next_action = world.time + 0.4 SECONDS
+	if(!QDELETED(decoy))
+		if(!actor.Adjacent(decoy))
+			step_towards(actor, decoy)
+			return
+		if(!investigate_until)
+			investigate_until = world.time + 6 SECONDS
+			actor.balloon_alert(user, "investigating this scent...")
+		if(world.time < investigate_until)
+			return
+		QDEL_NULL(decoy)
+	if(maw.stored_course)
+		if(actor.Adjacent(user))
+			maw.release_course(pantry)
+			last_seen = null
+			actor.balloon_alert(user, "put that back!")
+			refresh_tracker()
+			return
+		if(porter_sees(user))
+			last_seen = WEAKREF(get_turf(user))
+		var/turf/pursuit = last_seen?.resolve()
+		if(pursuit && get_turf(actor) != pursuit)
+			step_towards(actor, pursuit)
+		return
+	if(!actor.Adjacent(pantry))
+		step_towards(actor, pantry)
+
+/datum/vestige_trial/snatched_meal/proc/can_take(mob/living/user)
+	return !QDELETED(pantry) && !QDELETED(actor) && !QDELETED(course) && owner?.current == user && user.mind?.active_vestige_trial == src && user.stat == CONSCIOUS && user.is_holding(maw) && !maw.stored_course && course.loc == pantry && user.Adjacent(pantry) && actor.z == pantry.z && get_dist(actor, pantry) >= 3
+
+/datum/vestige_trial/snatched_meal/proc/can_digest(mob/living/user)
+	return !QDELETED(pantry) && !QDELETED(actor) && !QDELETED(course) && owner?.current == user && user.mind?.active_vestige_trial == src && user.stat == CONSCIOUS && isturf(user.loc) && user.is_holding(maw) && maw.stored_course == course && course.loc == maw && user.z == pantry.z && get_dist(user, pantry) >= 6 && !porter_sees(user)
+
+/datum/vestige_trial/snatched_meal/proc/porter_sees(mob/living/user)
+	return !QDELETED(actor) && user && actor.z == user.z && can_see(actor, user, 9)
+
+/obj/item/vestige_hungry_maw
+	name = "borrowed hungry maw"
+	desc = "A mouth reserved for this pact's guarded meal. Click distant ground to spit a scent lure; use it on the pantry to steal. Activate when full and out of sight to digest, or empty beside the pantry to regrow a spent lure."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "gnash_maw"
 	w_class = WEIGHT_CLASS_SMALL
-	force = 5
-	attack_verb_continuous = list("gnashes", "gums", "chews on")
-	attack_verb_simple = list("gnash", "gum", "chew on")
-	/// What the maw has lately seen riding living, minded hands:
-	/// item weakref -> list(holder weakref, world.time last seen held)
-	var/list/seen_warm = list()
+	var/datum/weakref/trial_ref
+	var/obj/item/food/stored_course
+	var/datum/weakref/slowed_wearer
 
-/obj/item/vestige_gnash_maw/Initialize(mapload)
+/obj/item/vestige_hungry_maw/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	set_fullness(FALSE)
+	return ..()
+
+/obj/item/vestige_hungry_maw/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
 
-/obj/item/vestige_gnash_maw/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	return ..()
-
-/obj/item/vestige_gnash_maw/examine(mob/user)
-	. = ..()
-	. += span_notice("Use it on an item that left a living person's hand moments ago (knocked loose, taken, or handed over) and it swallows the item whole. It won't take two items from the same person, and it ignores anything it didn't just watch being held.")
-
-// The maw watches the room from its carrier's person, noting every item in a
-// living hand it can see. This memory, not any global last-owner var, which
-// this fork does not keep. Is what "still warm" means at devour time.
-/obj/item/vestige_gnash_maw/process(seconds_per_tick)
-	var/mob/living/carrier = loc
-	if(!istype(carrier))
+/obj/item/vestige_hungry_maw/process(seconds_per_tick)
+	if(!stored_course)
 		return
-	// Forget what has gone cold
-	var/list/stale = list()
-	for(var/datum/weakref/key as anything in seen_warm)
-		var/list/memory = seen_warm[key]
-		if(!memory || world.time - memory[2] > VESTIGE_MAW_MEMORY_WINDOW)
-			stale += key
-	seen_warm -= stale
-	// Note every item riding a living, minded hand in sight. The mind check is
-	// the usual anti-farm clause: a rack of mindless monkeys owns nothing.
-	for(var/mob/living/holder in view(VESTIGE_MAW_SENSE_RANGE, carrier))
-		if(holder == carrier || holder.stat == DEAD || !holder.mind)
-			continue
-		for(var/obj/item/held in holder.held_items)
-			if(held.item_flags & (ABSTRACT|HAND_ITEM))
-				continue
-			seen_warm[WEAKREF(held)] = list(WEAKREF(holder), world.time)
+	var/datum/vestige_trial/snatched_meal/trial = trial_ref?.resolve()
+	var/mob/living/user = slowed_wearer?.resolve()
+	if(!trial || !user || trial.owner?.current != user || user.mind?.active_vestige_trial != trial || user.stat != CONSCIOUS || !isturf(user.loc) || !user.is_holding(src))
+		release_course(QDELETED(trial?.pantry) ? get_turf(src) : trial.pantry)
 
-/obj/item/vestige_gnash_maw/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!isitem(interacting_with))
-		return NONE
-	var/obj/item/morsel = interacting_with
-	if(morsel == src || (morsel.item_flags & (ABSTRACT|HAND_ITEM)))
-		return NONE
-	var/datum/vestige_trial/snatched_meal/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the maw just yawns")
+/obj/item/vestige_hungry_maw/proc/set_fullness(full, mob/living/user)
+	var/mob/living/previous = slowed_wearer?.resolve()
+	previous?.remove_movespeed_modifier(/datum/movespeed_modifier/vestige_full_maw)
+	slowed_wearer = null
+	if(full && user)
+		user.add_movespeed_modifier(/datum/movespeed_modifier/vestige_full_maw)
+		slowed_wearer = WEAKREF(user)
+
+/obj/item/vestige_hungry_maw/proc/release_course(atom/destination)
+	if(!QDELETED(stored_course))
+		stored_course.forceMove(destination || get_turf(src))
+	stored_course = null
+	set_fullness(FALSE)
+
+/obj/item/vestige_hungry_maw/dropped(mob/user)
+	. = ..()
+	var/datum/vestige_trial/snatched_meal/trial = trial_ref?.resolve()
+	release_course(QDELETED(trial?.pantry) ? get_turf(src) : trial.pantry)
+
+/obj/item/vestige_hungry_maw/interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/snatched_meal/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || trial.owner?.current != user || !user.is_holding(src) || user.stat != CONSCIOUS)
 		return ITEM_INTERACT_BLOCKING
-	if(morsel.resistance_flags & INDESTRUCTIBLE)
-		balloon_alert(user, "it would chip a tooth!")
+	if(isturf(target))
+		trial.spit_decoy(user, target)
+		return ITEM_INTERACT_SUCCESS
+	if(target != trial.pantry || !trial.can_take(user))
+		balloon_alert(user, "lure the porter farther away")
 		return ITEM_INTERACT_BLOCKING
-	// It must have LEFT their possession. A held thing is a meal not yet snatched
-	if(ismob(morsel.loc) && morsel.loc != user)
-		balloon_alert(user, "still in their grip, take it first!")
+	if(!do_after(user, 1.5 SECONDS, target = target, extra_checks = CALLBACK(trial, TYPE_PROC_REF(/datum/vestige_trial/snatched_meal, can_take), user)))
 		return ITEM_INTERACT_BLOCKING
-	if(!isturf(morsel.loc) && morsel.loc != user)
-		balloon_alert(user, "drag it into the open first!")
+	if(QDELETED(trial) || !trial.can_take(user))
 		return ITEM_INTERACT_BLOCKING
-	var/list/memory = seen_warm[WEAKREF(morsel)]
-	if(!memory || world.time - memory[2] > VESTIGE_MAW_MEMORY_WINDOW)
-		balloon_alert(user, "gone cold!")
-		to_chat(user, span_warning("The maw only wants what it just watched leave somebody's hand. This has been lying around too long."))
-		return ITEM_INTERACT_BLOCKING
-	var/datum/weakref/holder_ref = memory[1]
-	var/mob/living/last_holder = holder_ref?.resolve()
-	if(!last_holder || last_holder == user)
-		balloon_alert(user, "nobody else's warmth on it!")
-		return ITEM_INTERACT_BLOCKING
-	if(trial.fed_from[WEAKREF(last_holder)])
-		balloon_alert(user, "already tasted them!")
-		to_chat(user, span_warning("The maw remembers the taste of [last_holder] and won't take seconds. Go find someone else's."))
-		return ITEM_INTERACT_BLOCKING
-	balloon_alert(user, "gulping...")
-	if(!do_after(user, VESTIGE_MAW_GULP_TIME, target = morsel))
-		return ITEM_INTERACT_BLOCKING
-	if(!user.is_holding(src) || QDELETED(morsel))
-		return ITEM_INTERACT_BLOCKING
-	// They snatched it back mid-gulp: it is in someone's possession again
-	if(ismob(morsel.loc) && morsel.loc != user)
-		balloon_alert(user, "wrestled away!")
-		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-gulp
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return ITEM_INTERACT_BLOCKING
-	user.visible_message(
-		span_warning("[src] unhinges far wider than it has any right to and swallows [morsel] whole!"),
-		span_notice("The maw gulps [morsel] down in one go, still warm from [last_holder]'s hands."),
-	)
-	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
-	seen_warm -= WEAKREF(morsel)
-	qdel(morsel)
-	trial.devour(last_holder) // may complete (and delete) the trial, nothing touches it after this
+	stored_course = trial.course
+	stored_course.forceMove(src)
+	set_fullness(TRUE, user)
+	trial.last_seen = WEAKREF(get_turf(user))
+	balloon_alert(user, "full: flee and digest!")
+	trial.refresh_tracker()
 	return ITEM_INTERACT_SUCCESS
+
+/obj/item/vestige_hungry_maw/ranged_interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	return interact_with_atom(target, user, modifiers)
+
+/obj/item/vestige_hungry_maw/attack_self(mob/living/user, list/modifiers)
+	var/datum/vestige_trial/snatched_meal/trial = trial_ref?.resolve()
+	if(!trial || user.mind?.active_vestige_trial != trial || trial.owner?.current != user || !user.is_holding(src) || user.stat != CONSCIOUS)
+		return
+	if(!stored_course)
+		if(user.Adjacent(trial.pantry) && QDELETED(trial.decoy))
+			trial.decoy_ready = TRUE
+			balloon_alert(user, "scent regrown")
+			trial.refresh_tracker()
+		return
+	if(!trial.can_digest(user))
+		balloon_alert(user, "escape farther, out of sight")
+		return
+	if(!do_after(user, 3 SECONDS, target = src, extra_checks = CALLBACK(trial, TYPE_PROC_REF(/datum/vestige_trial/snatched_meal, can_digest), user)))
+		return
+	if(QDELETED(trial) || !trial.can_digest(user))
+		return
+	stored_course = null
+	set_fullness(FALSE)
+	QDEL_NULL(trial.course)
+	trial.complete()
+
+/datum/movespeed_modifier/vestige_full_maw
+	multiplicative_slowdown = 3
+
+/obj/structure/vestige_morph_scent
+	name = "warm scent bolus"
+	desc = "An appetizing distraction for the parlor's porter. It dissipates after inspection."
+	icon = 'icons/mob/simple/animal.dmi'
+	icon_state = "morph"
+	color = "#d2b079"
+	anchored = TRUE
+	density = FALSE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 
 // ===== THE UNDERSTUDY =====
 
 /datum/vestige_trial/understudy
+	parent_type = /datum/vestige_trial/morph_scenario
 	name = "The Understudy"
-	// Keep the numbers in sync with VESTIGE_SHADOW_SECONDS_NEEDED / VESTIGE_STUDY_TIME
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Now a person. Stand next to one and study them for five seconds (they will notice, everyone notices) then put their face on and follow them. Stay close while they are up and moving: a full minute of tailing them, all told. If they stop moving the clock stops too, and losing them or taking the face off doesn't cost you anything you have already banked."
-	/// Cumulative deciseconds spent actively shadowing the quarry
-	var/shadow_time = 0
-	/// The loaned skin, reclaimed (deleted, breaking any worn face) the moment the pact ends
+	desc = "Summon a balance-dock custodian on seven clear tiles in a straight line. Use the skin on it to start a demonstration, then watch its three parcel deliveries while holding the skin within six tiles. Learn the proportion it leaves between the amber and violet receiving trays. Study it again to borrow its identity and take over a different shipment. Carry the new marked parcels to the trays in that same proportion; only the custodian's face opens them. Each tray holds eight units, and an overload spills its parcels for correction. Empty-hand a tray to retrieve a parcel. Examine the custodian to recall the demonstration. When the whole shipment matches its rule, use the skin on the central release."
 	var/obj/item/vestige_second_skin/skin
+	var/obj/structure/vestige_morph_station/input
+	var/obj/structure/vestige_morph_station/left_dock
+	var/obj/structure/vestige_morph_station/right_dock
+	var/list/parcels = list()
+	var/list/practice_weights = list(2, 1, 1)
+	var/list/practice_route = list(1, 2, 2)
+	var/demo_index = 1
+	var/observed_deliveries = 0
+	var/demonstrating = FALSE
+	var/ready = FALSE
+	var/production = FALSE
+	var/obj/item/vestige_morph_parcel/carried
+	var/capacity = 8
+	var/amber_share = 1
+	var/violet_share = 1
 
 /datum/vestige_trial/understudy/on_accepted(mob/living/user)
+	..()
+	var/routing_rule = rand(1, 3)
+	if(routing_rule != 1)
+		practice_weights = list(2, 2, 2)
+		if(routing_rule == 2)
+			amber_share = 2
+			practice_route = list(1, 2, 1)
+		else
+			violet_share = 2
+			practice_route = list(2, 1, 2)
 	skin = hand_over(user, new /obj/item/vestige_second_skin(get_turf(user)))
-	to_chat(user, span_notice("The second skin settles across your shoulders and waits to be introduced to someone."))
+	skin.trial_ref = WEAKREF(src)
 
 /datum/vestige_trial/understudy/Destroy()
-	QDEL_NULL(skin)
+	skin?.shed_form(feedback = FALSE)
 	return ..()
 
-/datum/vestige_trial/understudy/get_progress_text()
-	return "You have shadowed your quarry for [DisplayTimeText(shadow_time)] of [DisplayTimeText(VESTIGE_SHADOW_SECONDS_NEEDED SECONDS)]."
+/datum/vestige_trial/understudy/deploy(mob/living/user)
+	var/turf/center = get_turf(user)
+	var/turf/first
+	var/turf/last
+	for(var/direction in list(EAST, NORTH))
+		var/clear = ground(center)
+		var/turf/a = center
+		var/turf/b = center
+		for(var/index in 1 to 3)
+			a = get_step(a, direction)
+			b = get_step(b, turn(direction, 180))
+			if(!ground(a) || !ground(b))
+				clear = FALSE
+		if(clear)
+			first = a
+			last = b
+			break
+	if(!first)
+		to_chat(user, span_warning("The balance dock needs seven clear ground tiles in a straight line, centered here."))
+		return FALSE
+	home_ref = WEAKREF(center)
+	input = new(center)
+	input.name = "balance dock release"
+	left_dock = new(first)
+	left_dock.name = "amber receiving tray"
+	left_dock.color = "#edb968"
+	right_dock = new(last)
+	right_dock.name = "violet receiving tray"
+	right_dock.color = "#bd92d9"
+	for(var/obj/structure/vestige_morph_station/station in list(input, left_dock, right_dock))
+		station.trial_ref = WEAKREF(src)
+		register_loan(station)
+	spawn_actor(get_step_towards(center, first), "balance-dock custodian")
+	to_chat(user, span_notice("Use the skin on the custodian to watch its routine. Stay nearby with the skin in hand; its final loads explain the release rule."))
+	return TRUE
 
-/// Accrues tailing time. May complete (and delete) the trial, and the loaned
-/// skin with it, so the skin must call this last and touch nothing after.
-/datum/vestige_trial/understudy/proc/shadow(deciseconds)
-	shadow_time += deciseconds
-	refresh_tracker()
-	if(shadow_time < VESTIGE_SHADOW_SECONDS_NEEDED SECONDS)
+/datum/vestige_trial/understudy/get_progress_text()
+	if(!production)
+		return "Demonstration witnessed: [observed_deliveries]/3. [ready ? "Study the custodian again to take over." : "Use the skin on the custodian to begin or replay its work."]"
+	return "Amber [dock_load(left_dock)]/[capacity]; violet [dock_load(right_dock)]/[capacity]. Apply the demonstrated proportion to the whole shipment, then use the skin on the release."
+
+/datum/vestige_trial/understudy/proc/make_parcel(load)
+	var/obj/item/vestige_morph_parcel/parcel = new(get_turf(input))
+	parcel.cargo_load = load
+	parcel.name = "marked parcel ([load] units)"
+	parcel.trial_ref = WEAKREF(src)
+	parcels += parcel
+	register_loan(parcel)
+	return parcel
+
+/datum/vestige_trial/understudy/proc/start_demo(mob/living/user)
+	if(demonstrating || production)
 		return
+	for(var/obj/item/vestige_morph_parcel/parcel as anything in parcels)
+		qdel(parcel)
+	parcels.Cut()
+	demo_index = 1
+	observed_deliveries = 0
+	ready = FALSE
+	demonstrating = TRUE
+	actor.balloon_alert(user, "watch the loads I leave")
+	refresh_tracker()
+
+/datum/vestige_trial/understudy/run_scene(mob/living/user, seconds_per_tick)
+	if(!demonstrating || world.time < next_action)
+		return
+	next_action = world.time + 0.6 SECONDS
+	if(!carried)
+		if(!actor.Adjacent(input))
+			step_towards(actor, input)
+			return
+		carried = make_parcel(practice_weights[demo_index])
+		actor.put_in_hands(carried)
+		actor.balloon_alert(user, "taking [carried.cargo_load] units")
+		return
+	var/obj/structure/vestige_morph_station/destination = practice_route[demo_index] == 1 ? left_dock : right_dock
+	if(!actor.Adjacent(destination))
+		step_towards(actor, destination)
+		return
+	actor.temporarilyRemoveItemFromInventory(carried, force = TRUE)
+	carried.forceMove(destination)
+	actor.update_held_items()
+	if(user.is_holding(skin) && get_dist(user, actor) <= 6 && can_see(user, actor, 6))
+		observed_deliveries++
+		to_chat(user, span_notice("The custodian delivers [carried.cargo_load] units. Amber now holds [dock_load(left_dock)]; violet holds [dock_load(right_dock)]."))
+	carried = null
+	demo_index++
+	if(demo_index > length(practice_weights))
+		demonstrating = FALSE
+		ready = observed_deliveries == length(practice_weights)
+		actor.balloon_alert(user, ready ? "same proportions: your turn" : "missed it? study me again")
+	refresh_tracker()
+
+/datum/vestige_trial/understudy/proc/start_shipment()
+	for(var/obj/item/vestige_morph_parcel/parcel as anything in parcels)
+		qdel(parcel)
+	parcels.Cut()
+	var/list/weights = pick(list(list(4, 4, 2, 2), list(4, 3, 3, 2), list(5, 4, 2, 1)))
+	for(var/weight in shuffle(weights))
+		make_parcel(weight)
+	production = TRUE
+	refresh_tracker()
+
+/datum/vestige_trial/understudy/proc/has_identity(mob/living/user)
+	return user && !QDELETED(actor) && owner?.current == user && user.mind?.active_vestige_trial == src && skin.valid_wearer(user) && skin.form == SKIN_FORM_PERSON && skin.quarry_ref?.resolve() == actor
+
+/datum/vestige_trial/understudy/proc/dock_load(obj/structure/vestige_morph_station/dock)
+	var/load = 0
+	for(var/obj/item/vestige_morph_parcel/parcel as anything in parcels)
+		if(!QDELETED(parcel) && parcel.loc == dock)
+			load += parcel.cargo_load
+	return load
+
+/datum/vestige_trial/understudy/proc/deliver(mob/living/user, obj/item/vestige_morph_parcel/parcel, obj/structure/vestige_morph_station/dock)
+	if(!production || !has_identity(user) || !(dock in list(left_dock, right_dock)) || !(parcel in parcels) || parcel.trial_ref?.resolve() != src || !user.is_holding(parcel) || !user.Adjacent(dock))
+		return FALSE
+	if(!user.temporarilyRemoveItemFromInventory(parcel))
+		return FALSE
+	parcel.forceMove(dock)
+	if(dock_load(dock) > capacity)
+		for(var/obj/item/vestige_morph_parcel/spilled as anything in parcels)
+			if(spilled.loc == dock)
+				spilled.forceMove(get_turf(dock))
+		dock.balloon_alert(user, "overloaded: parcels returned")
+	else
+		dock.balloon_alert(user, "load [dock_load(dock)]/[capacity]")
+	refresh_tracker()
+	return TRUE
+
+/datum/vestige_trial/understudy/proc/release(mob/living/user)
+	if(!production || !has_identity(user) || !user.Adjacent(input))
+		return FALSE
+	for(var/obj/item/vestige_morph_parcel/parcel as anything in parcels)
+		if(QDELETED(parcel) || !(parcel.loc in list(left_dock, right_dock)))
+			input.balloon_alert(user, "shipment incomplete")
+			return FALSE
+	if(dock_load(left_dock) * violet_share != dock_load(right_dock) * amber_share)
+		input.balloon_alert(user, "wrong proportion: recall the demo")
+		return FALSE
 	complete()
+	return TRUE
+
+/obj/structure/vestige_morph_station
+	name = "parlor receiving tray"
+	desc = "A temporary workstation. The balance-dock trays recognize their custodian's borrowed face; empty-hand a tray to retrieve its contents."
+	icon = 'icons/obj/structures.dmi'
+	icon_state = "rack"
+	anchored = TRUE
+	density = FALSE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	var/datum/weakref/trial_ref
+
+/obj/structure/vestige_morph_station/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/datum/vestige_trial/understudy/trial = trial_ref?.resolve()
+	if(!istype(trial))
+		return NONE
+	if(!trial.has_identity(user))
+		balloon_alert(user, "custodian's face required")
+		return ITEM_INTERACT_BLOCKING
+	if(tool == trial.skin && src == trial.input)
+		trial.release(user)
+	else if(istype(tool, /obj/item/vestige_morph_parcel))
+		trial.deliver(user, tool, src)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/structure/vestige_morph_station/attack_hand(mob/living/user, list/modifiers)
+	. = ..()
+	if(.)
+		return
+	var/datum/vestige_trial/understudy/trial = trial_ref?.resolve()
+	if(!istype(trial) || !trial.production || !trial.has_identity(user) || !user.Adjacent(src))
+		return
+	for(var/obj/item/vestige_morph_parcel/parcel in contents)
+		if(parcel.trial_ref?.resolve() == trial)
+			user.put_in_hands(parcel)
+			trial.refresh_tracker()
+			return
+
+/obj/structure/vestige_morph_station/examine(mob/user)
+	. = ..()
+	var/datum/vestige_trial/understudy/trial = trial_ref?.resolve()
+	if(istype(trial) && src != trial.input)
+		. += span_notice("It carries [trial.dock_load(src)] units[trial.production ? " of its [trial.capacity]-unit capacity" : ""]. Empty-hand it while wearing the custodian's face to retrieve a parcel.")
+
+/obj/item/vestige_morph_parcel
+	name = "marked parcel"
+	desc = "A sealed shipment whose printed weight matters to the balance-dock's receiving trays."
+	icon = 'icons/obj/storage/wrapping.dmi'
+	icon_state = "giftdeliverypackage3"
+	inhand_icon_state = "gift"
+	w_class = WEIGHT_CLASS_BULKY
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	var/cargo_load = 1
+	var/datum/weakref/trial_ref
 
 // ===== THE SECOND SKIN =====
 
-/**
- * The Facsimile's shared kit: a wearable appearance, morph-style, stamped onto
- * a plain human. Both disguise trials speak through it, pressed to an object
- * it serves the Perfect Copy, held to a studied person it serves the
- * Understudy, and each mode wakes only for its own pact, resolved off the
- * wielder's mind at interaction time (the kit rule: no trial refs, ever).
- *
- * A worn form is appearance-deep and honest about it: examine at close range
- * gives the morph's classic tell, taking any damage or throwing any violence
- * breaks it, and letting go of the skin lets go of the shape. Humans love to
- * rebuild their own icon out from under a disguise, so the finished look is
- * snapshotted and re-stamped every tick while worn; shedding restores the
- * pre-form snapshot and then lets regenerate_icons() heal any drift.
- */
 /obj/item/vestige_second_skin
-	name = "second skin"
-	desc = "A shawl of pale morph hide that never quite finished deciding what it was. Press it against something, or someone, and it remembers how to be them and brings you along."
+	name = "borrowed second skin"
+	desc = "Use on an ordinary tool or food to copy its appearance for the scavenger, or on your balance-dock custodian to watch and then borrow its identity. Hold the skin throughout. Activate to reveal or shed. Damage, violence, dropping it, or ending this exact pact sheds the disguise."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-hide"
-	color = "#b8d49c"
 	w_class = WEIGHT_CLASS_SMALL
-	/// SKIN_FORM_*: the disguise currently worn
+	var/datum/weakref/trial_ref
 	var/form = SKIN_FORM_NONE
-	/// The mob wearing the form (weakref; the skin rides their person, but never trust a loc)
 	var/datum/weakref/wearer_ref
-	/// The wearer's appearance from before the form went on, restored on shed
 	var/saved_appearance
-	/// The wearer's real_name from before a person form went on (null outside person forms)
 	var/saved_real_name
-	/// The finished disguise, re-stamped every tick, human icon rebuilds love to undo it
 	var/form_appearance
-	/// Typepath of the object the current form copies (the Perfect Copy's dedup key)
 	var/form_source_type
-	/// When the current object form sloughs off on its own (0 outside object forms)
+	var/datum/weakref/form_source_ref
 	var/form_expires = 0
-	/// The person the current form copies (the Understudy's quarry)
 	var/datum/weakref/quarry_ref
-	/// "x:y:z" of the quarry last tick; a change marks them as moving
-	var/quarry_last_spot
-	/// When the quarry was last seen to move (0 = not yet since forming)
-	var/quarry_last_moved = 0
 
 /obj/item/vestige_second_skin/Initialize(mapload)
 	. = ..()
@@ -366,147 +775,78 @@
 
 /obj/item/vestige_second_skin/Destroy()
 	STOP_PROCESSING(SSobj, src)
-	shed_form(feedback = FALSE) // reclaimed mid-form by a dying pact: put the wearer back first
+	shed_form(feedback = FALSE)
 	return ..()
 
-/obj/item/vestige_second_skin/examine(mob/user)
-	. = ..()
-	. += span_notice("Use it on an object to wear that object's shape, creep close to somebody, then use it in hand to burst out. Use it on a person to study them for five seconds and wear them instead, then follow them around. Taking damage, attacking anyone, or letting go of the skin breaks the disguise.")
+/obj/item/vestige_second_skin/proc/valid_wearer(mob/living/user)
+	var/datum/vestige_trial/trial = trial_ref?.resolve()
+	return user && trial && trial.owner?.current == user && user.mind?.active_vestige_trial == trial && user.stat == CONSCIOUS && isturf(user.loc) && user.is_holding(src) && wearer_ref?.resolve() == user
 
-// The disguise is the skin; letting go of one is letting go of the other
-/obj/item/vestige_second_skin/dropped(mob/user, silent = FALSE)
+/obj/item/vestige_second_skin/dropped(mob/user)
 	. = ..()
-	if(isliving(user))
-		shed_form(user)
+	shed_form(feedback = FALSE)
 
-/obj/item/vestige_second_skin/attack_self(mob/user)
-	. = ..()
-	if(.)
+/obj/item/vestige_second_skin/attack_self(mob/living/user, list/modifiers)
+	if(!valid_wearer(user))
 		return
-	if(!isliving(user))
+	var/datum/vestige_trial/perfect_copy/trial = trial_ref?.resolve()
+	if(form == SKIN_FORM_OBJECT && istype(trial) && trial.reveal(user))
 		return
-	switch(form)
-		if(SKIN_FORM_OBJECT)
-			burst(user)
-		if(SKIN_FORM_PERSON)
-			shed_form(user)
-		else
-			balloon_alert(user, "press it against a shape first!")
+	shed_form()
 
-/obj/item/vestige_second_skin/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(isliving(interacting_with))
-		return study_person(interacting_with, user)
-	if(isobj(interacting_with))
-		return wear_object(interacting_with, user)
-	return NONE
+/obj/item/vestige_second_skin/interact_with_atom(atom/target, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/trial = trial_ref?.resolve()
+	if(!trial || trial.owner?.current != user || user.mind?.active_vestige_trial != trial || user.stat != CONSCIOUS || !user.is_holding(src) || !user.Adjacent(target))
+		return ITEM_INTERACT_BLOCKING
+	if(isliving(target))
+		return study_person(user, target)
+	if(isitem(target))
+		return wear_object(user, target)
+	return ITEM_INTERACT_BLOCKING
 
-/**
- * The Perfect Copy's mode: wear an honest object where it stands. Refuses
- * shapes the pact has already been paid for, a spent shape at forming time
- * would only waste the wearer's forty-five seconds.
- */
-/obj/item/vestige_second_skin/proc/wear_object(obj/shape, mob/living/user)
-	if(istype(shape, /obj/effect))
-		return NONE
-	if(isitem(shape))
-		var/obj/item/item_shape = shape
-		if(item_shape.item_flags & (ABSTRACT|HAND_ITEM))
-			return NONE
-		if(!isturf(item_shape.loc))
-			balloon_alert(user, "set it down first!")
-			return ITEM_INTERACT_BLOCKING
-	var/datum/vestige_trial/perfect_copy/copy_trial = user.mind?.active_vestige_trial
-	if(!istype(copy_trial))
-		balloon_alert(user, "the skin won't copy objects for you!")
+/obj/item/vestige_second_skin/proc/wear_object(mob/living/user, obj/item/shape)
+	var/datum/vestige_trial/perfect_copy/trial = trial_ref?.resolve()
+	if(!istype(trial) || trial.owner?.current != user || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || form != SKIN_FORM_NONE || shape == src || !trial.matches_role(shape))
+		balloon_alert(user, "copy the requested kind of item")
 		return ITEM_INTERACT_BLOCKING
-	if(form != SKIN_FORM_NONE)
-		balloon_alert(user, "already wearing a shape!")
+	if(!isturf(shape.loc) && shape.loc != user)
 		return ITEM_INTERACT_BLOCKING
-	if(shape.type in copy_trial.spent_shapes)
-		balloon_alert(user, "that shape is spent!")
-		to_chat(user, span_warning("The skin sags off [shape] and won't take. You have already used that shape once. Find a new one."))
-		return ITEM_INTERACT_BLOCKING
-	user.visible_message(
-		span_warning("[user]'s outline runs like wax, pooling into the shape of [shape]!"),
-		span_notice("You pull the skin over yourself and become [shape]. Creep close, wait for someone to wander past, then burst out."),
-	)
-	playsound(user, 'sound/effects/blob/attackblob.ogg', 30, TRUE)
 	apply_form(user, shape)
 	form = SKIN_FORM_OBJECT
 	form_source_type = shape.type
+	form_source_ref = WEAKREF(shape)
 	form_expires = world.time + VESTIGE_SKIN_FORM_TIME
 	user.add_movespeed_modifier(/datum/movespeed_modifier/vestige_skin_creep)
+	to_chat(user, span_notice("You take [shape]'s outline. Hide the original before the scavenger sees you; then hold still for its approach. Activate the skin during its inspection."))
 	return ITEM_INTERACT_SUCCESS
 
-/**
- * The Understudy's mode: study an adjacent person. Loudly, they are told.
- * Then wear them and go follow. The mind check is the usual anti-farm clause;
- * the skin has no interest in bodies nobody is living in.
- */
-/obj/item/vestige_second_skin/proc/study_person(mob/living/target, mob/living/user)
-	var/datum/vestige_trial/understudy/tail_trial = user.mind?.active_vestige_trial
-	if(!istype(tail_trial))
-		balloon_alert(user, "the skin won't copy people for you!")
+/obj/item/vestige_second_skin/proc/study_person(mob/living/user, mob/living/quarry)
+	var/datum/vestige_trial/understudy/trial = trial_ref?.resolve()
+	if(!istype(trial) || trial.owner?.current != user || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || quarry != trial.actor || form != SKIN_FORM_NONE)
 		return ITEM_INTERACT_BLOCKING
-	if(form != SKIN_FORM_NONE)
-		balloon_alert(user, "already wearing a shape!")
+	if(!trial.ready)
+		trial.start_demo(user)
+		return ITEM_INTERACT_SUCCESS
+	if(!do_after(user, 2 SECONDS, target = quarry))
 		return ITEM_INTERACT_BLOCKING
-	if(target == user)
-		balloon_alert(user, "you know this one already")
+	if(QDELETED(trial) || QDELETED(quarry) || user.mind?.active_vestige_trial != trial || trial.owner?.current != user || !user.is_holding(src) || form != SKIN_FORM_NONE)
 		return ITEM_INTERACT_BLOCKING
-	if(!ishuman(target))
-		balloon_alert(user, "too simple a costume!")
-		return ITEM_INTERACT_BLOCKING
-	var/mob/living/carbon/human/quarry = target
-	if(quarry.stat != CONSCIOUS)
-		balloon_alert(user, "they need to be awake!")
-		return ITEM_INTERACT_BLOCKING
-	if(!quarry.mind)
-		balloon_alert(user, "nobody home to study!")
-		return ITEM_INTERACT_BLOCKING
-	// The study is loud on purpose: the subject is told, and the room can see the stare
-	user.visible_message(
-		span_warning("[user] holds [src] up and stares at [quarry], hard."),
-		span_notice("You start committing [quarry] to the skin. Five seconds of staring."),
-	)
-	to_chat(quarry, span_userdanger("You feel eyes crawling over you, taking measurements. Someone is studying you."))
-	if(!do_after(user, VESTIGE_STUDY_TIME, target = quarry))
-		balloon_alert(user, "the study broke!")
-		return ITEM_INTERACT_BLOCKING
-	if(!user.is_holding(src))
-		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-study
-	tail_trial = user.mind?.active_vestige_trial
-	if(!istype(tail_trial))
-		return ITEM_INTERACT_BLOCKING
-	if(form != SKIN_FORM_NONE || quarry.stat != CONSCIOUS)
-		return ITEM_INTERACT_BLOCKING
-	user.visible_message(
-		span_warning("[user]'s outline runs like tallow and sets again as [quarry]'s exact double!"),
-		span_notice("You pull [quarry] on. Now follow them. The clock only runs while they are up and moving."),
-	)
-	playsound(user, 'sound/effects/blob/attackblob.ogg', 30, TRUE)
 	apply_form(user, quarry)
 	form = SKIN_FORM_PERSON
 	saved_real_name = user.real_name
 	user.real_name = quarry.real_name
 	quarry_ref = WEAKREF(quarry)
-	var/turf/spot = get_turf(quarry)
-	quarry_last_spot = spot ? "[spot.x]:[spot.y]:[spot.z]" : null
-	quarry_last_moved = 0 // the clock starts when THEY start moving
-	to_chat(quarry, span_userdanger("Your own face looks back at you, worn by someone else."))
+	if(!trial.production)
+		trial.start_shipment()
+	to_chat(user, span_notice("The receiving trays recognize your borrowed face. Divide this shipment in the demonstrated proportion, then use the skin on the central release. Examine the custodian to recall its final loads. Keep the skin in hand."))
 	return ITEM_INTERACT_SUCCESS
 
-/**
- * Stamps the model's appearance over the wearer and arms the form-breakers.
- * The appearance-copy recipe mirrors the morph's own assume_form action
- * (assume_form.dm), snapshot included; callers set the mode-specific state.
- */
+/// Same appearance recipe as the morph form; this does not change generic NPC perception.
 /obj/item/vestige_second_skin/proc/apply_form(mob/living/user, atom/movable/model)
 	saved_appearance = user.appearance
 	user.appearance = model.appearance
 	user.copy_overlays(model)
-	user.alpha = max(model.alpha, 150) // fucking chameleons
+	user.alpha = max(model.alpha, 150)
 	user.transform = initial(model.transform)
 	user.pixel_x = model.base_pixel_x
 	user.pixel_y = model.base_pixel_y
@@ -517,99 +857,15 @@
 	RegisterSignal(user, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_wearer_unarmed_attack))
 	RegisterSignal(user, COMSIG_ATOM_EXAMINE, PROC_REF(on_wearer_examined))
 
-/**
- * The Perfect Copy's payoff: tear out of the worn shape at whoever stands
- * within a step. Everyone adjacent gets the scream; at most one fresh face,
- * conscious, minded, never startled before, and only from a never-credited
- * shape, pays the pact. The burst always spends the form, hit or miss.
- */
-/obj/item/vestige_second_skin/proc/burst(mob/living/user)
-	if(form != SKIN_FORM_OBJECT || wearer_ref?.resolve() != user)
-		return
-	var/shape_name = user.name // the object's name, while we still wear it
-	var/shape_type = form_source_type
-	var/datum/vestige_trial/perfect_copy/copy_trial = user.mind?.active_vestige_trial
-	var/mob/living/carbon/human/credit_victim
-	var/startled_anyone = FALSE
-	for(var/mob/living/carbon/human/victim in range(1, user))
-		if(victim == user || victim.stat != CONSCIOUS || !victim.mind)
-			continue
-		startled_anyone = TRUE
-		to_chat(victim, span_userdanger("The [shape_name] beside you tears open and something bursts out at you!"))
-		victim.emote("scream")
-		victim.set_jitter_if_lower(VESTIGE_STARTLE_JITTER)
-		if(istype(copy_trial) && !credit_victim && !copy_trial.startled[WEAKREF(victim)] && !(shape_type in copy_trial.spent_shapes))
-			credit_victim = victim
-	playsound(user, 'sound/effects/blob/blobattack.ogg', 50, TRUE)
-	shed_form(user, feedback = FALSE)
-	user.visible_message(
-		span_danger("[shape_name] splits down the middle and [user] surges out of it!"),
-		span_notice("You burst out of the [shape_name]!"),
-	)
-	if(!startled_anyone)
-		to_chat(user, span_warning("...at an empty room. Nobody saw it."))
-		return
-	if(!istype(copy_trial) || !credit_victim)
-		to_chat(user, span_warning("Plenty of gasps, but no new ones. It only counts with a new shape and someone who hasn't jumped for you before."))
-		return
-	to_chat(user, span_notice("The jump! The little scream! Somewhere, something applauds."))
-	copy_trial.startle(credit_victim, shape_type) // may complete (and delete) the trial, and us with it; nothing after this
-
 /obj/item/vestige_second_skin/process(seconds_per_tick)
 	if(form == SKIN_FORM_NONE)
 		return
 	var/mob/living/wearer = wearer_ref?.resolve()
-	if(!wearer || loc != wearer || wearer.stat == DEAD)
-		shed_form(wearer)
-		return
-	if(form == SKIN_FORM_OBJECT)
-		// The pact went out from under the shape (renounced mid-form)
-		var/datum/vestige_trial/perfect_copy/copy_trial = wearer.mind?.active_vestige_trial
-		if(!istype(copy_trial))
-			shed_form(wearer)
-			return
-		if(form_expires && world.time >= form_expires)
-			to_chat(wearer, span_warning("The shape goes baggy and sloughs off. The skin can only hold one for so long. Pick another."))
-			shed_form(wearer)
-			return
-		stamp_form(wearer)
-		return
-	// Person form: the tail. Credit flows only while both parties are conscious,
-	// the wearer is close behind, and the quarry has moved recently, a parked
-	// quarry pauses the clock without ever refunding it.
-	var/datum/vestige_trial/understudy/tail_trial = wearer.mind?.active_vestige_trial
-	if(!istype(tail_trial))
-		shed_form(wearer)
+	if(!valid_wearer(wearer) || (form_expires && world.time >= form_expires))
+		shed_form()
 		return
 	stamp_form(wearer)
-	var/mob/living/carbon/human/quarry = quarry_ref?.resolve()
-	if(!quarry)
-		if(SPT_PROB(3, seconds_per_tick))
-			to_chat(wearer, span_warning("The face you wear no longer has an owner to follow."))
-		return
-	var/turf/spot = get_turf(quarry)
-	var/spot_key = spot ? "[spot.x]:[spot.y]:[spot.z]" : null
-	if(spot_key != quarry_last_spot)
-		quarry_last_spot = spot_key
-		quarry_last_moved = world.time
-	if(wearer.stat != CONSCIOUS || quarry.stat != CONSCIOUS)
-		return
-	if(wearer.z != quarry.z || get_dist(wearer, quarry) > VESTIGE_SHADOW_RANGE)
-		if(SPT_PROB(4, seconds_per_tick))
-			to_chat(wearer, span_warning("You have lost them. The clock doesn't run while you can't see who you are copying."))
-		return
-	if(!quarry_last_moved || world.time - quarry_last_moved > VESTIGE_QUARRY_IDLE_GRACE)
-		if(SPT_PROB(4, seconds_per_tick))
-			to_chat(wearer, span_notice("They have stopped moving, so the clock has stopped too. Wait for them to get going again."))
-		return
-	if(SPT_PROB(3, seconds_per_tick))
-		to_chat(wearer, span_notice("You fall into step behind them. The skin approves."))
-	tail_trial.shadow(seconds_per_tick * (1 SECONDS)) // may complete (and delete) the trial, and us with it; nothing after this
 
-/// Re-applies the disguise snapshot. Humans rebuild their icon on all sorts of
-/// triggers (equip changes, regenerate calls), the stamp quietly wins the
-/// argument once a tick. Facing is preserved; a chair that whips south every
-/// two seconds is a poor chair.
 /obj/item/vestige_second_skin/proc/stamp_form(mob/living/wearer)
 	if(!form_appearance)
 		return
@@ -617,16 +873,12 @@
 	wearer.appearance = form_appearance
 	wearer.setDir(facing)
 
-/**
- * Takes the shape off, restores the wearer, and clears every scrap of form
- * state. Safe to call with no form up, with a known wearer, or with none,
- * it re-resolves from the weakref and touches only what still exists.
- */
+/// Restore only the recorded wearer, even if a different holder invokes cleanup.
 /obj/item/vestige_second_skin/proc/shed_form(mob/living/known_wearer, feedback = TRUE)
 	if(form == SKIN_FORM_NONE)
 		return
 	form = SKIN_FORM_NONE
-	var/mob/living/wearer = known_wearer || wearer_ref?.resolve()
+	var/mob/living/wearer = wearer_ref?.resolve()
 	if(wearer && !QDELETED(wearer))
 		UnregisterSignal(wearer, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_ATOM_EXAMINE))
 		wearer.remove_movespeed_modifier(/datum/movespeed_modifier/vestige_skin_creep)
@@ -634,73 +886,45 @@
 			wearer.appearance = saved_appearance
 		if(saved_real_name)
 			wearer.real_name = saved_real_name
-		wearer.regenerate_icons() // heal any drift the snapshot missed
+		wearer.regenerate_icons()
 		if(feedback)
-			wearer.visible_message(
-				span_warning("The borrowed shape sloughs off [wearer] in ropes of pale flesh."),
-				span_notice("The skin lets the shape go."),
-			)
+			to_chat(wearer, span_notice("The skin lets the borrowed shape go."))
 	wearer_ref = null
 	saved_appearance = null
 	saved_real_name = null
 	form_appearance = null
 	form_source_type = null
+	form_source_ref = null
 	form_expires = 0
 	quarry_ref = null
-	quarry_last_spot = null
-	quarry_last_moved = 0
 
-/// Any real hurt shakes the shape apart. A disguise you can tank in would be a bunker
 /obj/item/vestige_second_skin/proc/on_wearer_hurt(mob/living/source, damage, damagetype)
 	SIGNAL_HANDLER
-	if(damage <= 0)
-		return
-	to_chat(source, span_warning("The hit jolts through the borrowed shape and it can't hold!"))
-	shed_form(source)
+	if(damage > 0)
+		shed_form()
 
-/// Swinging a weapon while worn ends the act, violence and the shape cannot share one body
 /obj/item/vestige_second_skin/proc/on_wearer_armed_attack(mob/living/source, mob/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
-	to_chat(source, span_warning("The shape convulses off you. It doesn't do violence."))
-	shed_form(source)
+	shed_form()
 
-/// Likewise bare-handed violence. Non-combat fumbling (doors, buttons) is
-/// permitted; things are allowed to be clumsy, they are not allowed to punch.
 /obj/item/vestige_second_skin/proc/on_wearer_unarmed_attack(mob/living/source, atom/attack_target, proximity_flag, list/modifiers)
 	SIGNAL_HANDLER
-	if(!source.combat_mode)
-		return
-	to_chat(source, span_warning("The shape convulses off you. It doesn't do violence."))
-	shed_form(source)
+	if(source.combat_mode)
+		shed_form()
 
-/// The morph's classic tell, ported to the worn disguise: up close, it is never quite right
 /obj/item/vestige_second_skin/proc/on_wearer_examined(mob/living/source, mob/examiner, list/examine_list)
 	SIGNAL_HANDLER
 	if(get_dist(examiner, source) <= 3)
 		examine_list += span_warning("It doesn't look quite right...")
 
-// A worn thing creeps: slow enough to be committal, fast enough to re-ambush.
-// The morph's own disguise modifier is a speed-up on an already-slow mob, so
-// this is local tuning rather than a reuse.
 /datum/movespeed_modifier/vestige_skin_creep
 	multiplicative_slowdown = VESTIGE_SKIN_CREEP_SLOWDOWN
 
-#undef VESTIGE_STARTLES_NEEDED
 #undef VESTIGE_SKIN_FORM_TIME
-#undef VESTIGE_STARTLE_JITTER
 #undef VESTIGE_SKIN_CREEP_SLOWDOWN
-#undef VESTIGE_MEALS_NEEDED
-#undef VESTIGE_MAW_SENSE_RANGE
-#undef VESTIGE_MAW_MEMORY_WINDOW
-#undef VESTIGE_MAW_GULP_TIME
-#undef VESTIGE_SHADOW_SECONDS_NEEDED
-#undef VESTIGE_STUDY_TIME
-#undef VESTIGE_SHADOW_RANGE
-#undef VESTIGE_QUARRY_IDLE_GRACE
 #undef SKIN_FORM_NONE
 #undef SKIN_FORM_OBJECT
 #undef SKIN_FORM_PERSON
-
 /**
  * # The Facsimile: morph boons
  *
