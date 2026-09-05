@@ -57,7 +57,15 @@
 	if(isnull(listener))
 		return null
 
-	var/target_language = autotranslate_pref_to_code(listener.prefs?.read_preference(/datum/preference/choiced/autotranslate_target))
+	return listener.try_begin_chat_translation(raw_message)
+
+/**
+ * Shared preference and backend gates for speech and OOC. Call only after
+ * checking that the recipient may receive the message and is not its author.
+ * The caller must queue the wrapped chat line before calling begin().
+ */
+/client/proc/try_begin_chat_translation(raw_message, source_language = null)
+	var/target_language = autotranslate_pref_to_code(prefs?.read_preference(/datum/preference/choiced/autotranslate_target))
 	if(isnull(target_language))
 		return null
 
@@ -67,11 +75,12 @@
 	// Script detection. Free, and it filters out the large majority of lines
 	// before anything is dispatched - an English reader on an English server
 	// only ever pays for the occasional Russian line.
-	var/source_language = autotranslate_detect_language(raw_message)
+	if(isnull(source_language))
+		source_language = autotranslate_detect_language(raw_message)
 	if(source_language == target_language)
 		return null
 
 	if(!SSautotranslate.can_translate(source_language, target_language))
 		return null
 
-	return new /datum/translated_speech(listener, raw_message, source_language, target_language)
+	return new /datum/translated_speech(src, raw_message, source_language, target_language)

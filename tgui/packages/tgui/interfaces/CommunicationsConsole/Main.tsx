@@ -16,7 +16,6 @@ export function PageMain(props) {
     canMakeAnnouncement,
     canMessageAssociates,
     canRecallShuttles,
-    canRequestNuke,
     canSendToSectors,
     canSetAlertLevel,
     canToggleEmergencyAccess,
@@ -35,7 +34,6 @@ export function PageMain(props) {
   const [callingShuttle, setCallingShuttle] = useState(false);
   const [messagingAssociates, setMessagingAssociates] = useState(false);
   const [messagingSector, setMessagingSector] = useState('');
-  const [requestingNukeCodes, setRequestingNukeCodes] = useState(false);
 
   const [newAlertLevel, setNewAlertLevel] = useState('');
   const showAlertLevelConfirm = newAlertLevel && newAlertLevel !== alertLevel;
@@ -178,16 +176,6 @@ export function PageMain(props) {
             </Button>
           )}
 
-          {!!canRequestNuke && (
-            <Button
-              icon="radiation"
-              disabled={!importantActionReady}
-              onClick={() => setRequestingNukeCodes(true)}
-            >
-              Request Nuclear Authentication Codes
-            </Button>
-          )}
-
           {!!emagged && !syndicate && (
             <Button icon="undo" onClick={() => act('restoreBackupRoutingData')}>
               Restore Backup Routing Data
@@ -196,7 +184,7 @@ export function PageMain(props) {
         </Flex>
       </Section>
 
-      {!!canMessageAssociates && messagingAssociates && (
+      {!!canMessageAssociates && !!messagingAssociates && (
         <MessageModal
           label={`Message to transmit to ${
             emagged ? '[ABNORMAL ROUTING COORDINATES]' : 'CentCom'
@@ -209,22 +197,6 @@ export function PageMain(props) {
             setMessagingAssociates(false);
             act('messageAssociates', {
               message,
-            });
-          }}
-        />
-      )}
-
-      {!!canRequestNuke && requestingNukeCodes && (
-        <MessageModal
-          label="Reason for requesting nuclear self-destruct codes"
-          notice="Misuse of the nuclear request system will not be tolerated under any circumstances. Transmission does not guarantee a response."
-          icon="bomb"
-          buttonText="Request Codes"
-          onBack={() => setRequestingNukeCodes(false)}
-          onSubmit={(reason) => {
-            setRequestingNukeCodes(false);
-            act('requestNukeCodes', {
-              reason,
             });
           }}
         />
@@ -246,7 +218,7 @@ export function PageMain(props) {
         />
       )}
 
-      {!!canSetAlertLevel && showAlertLevelConfirm && (
+      {!!canSetAlertLevel && !!showAlertLevelConfirm && (
         <Modal>
           <Flex direction="column" textAlign="center" width="300px">
             <Flex.Item fontSize="16px" mb={2}>
@@ -309,7 +281,7 @@ export function PageMain(props) {
         </Section>
       )}
 
-      {!!canSendToSectors && sectors.length > 0 && messagingSector && (
+      {!!canSendToSectors && sectors.length > 0 && !!messagingSector && (
         <MessageModal
           label="Message to send to allied station"
           notice="Please be aware that this process is very expensive, and abuse will lead to...termination."

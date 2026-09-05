@@ -165,7 +165,7 @@
 		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/fish, "name" = "fresh planet-caught fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/fish, "name" = "fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/sea_crystal, "name" = "sea crystal", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),

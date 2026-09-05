@@ -26,6 +26,16 @@
 /datum/mission_objective/deliver/proc/describe_ask()
 	return required_amount > 1 ? "[required_amount] [required_name]" : required_name
 
+/// Shared contract text for the item forms and stack sizes accepted at turn-in.
+/datum/mission_objective/deliver/proc/get_delivery_instructions()
+	. = ""
+	if(ispath(required_type, /obj/item/stack) && required_amount > 1)
+		. += " Bring the full quantity in one stack; only the requested amount will be taken."
+	if(ispath(required_type, /obj/item/stack/ore/bluespace_crystal))
+		. += " Natural, refined, or artificial individual bluespace crystals are accepted. Split bluespace polycrystals into individual crystals before delivery."
+	else if(ispath(required_type, /obj/item/stack/ore))
+		. += " Keep the material unrefined; smelted sheets do not count."
+
 /datum/mission_objective/deliver/get_progress_string()
 	if(required_amount > 1 && delivered_count > 0)
 		return "Deliver [describe_ask()] ([delivered_count]/[required_amount])"
@@ -114,6 +124,17 @@
 		return "That item's contract binding lapsed when the target relocated."
 	return ..()
 
+/// The named target's tag is the delivery item, rather than the target themselves.
+/datum/mission_objective/deliver/bound/proof/describe_ask()
+	return "[mission?.objective_name || "the target"]'s identification tag"
+
+/datum/mission_objective/deliver/bound/proof/get_progress_string()
+	return "Return [describe_ask()] to the pad"
+
+/// Both pylon contracts print a core named after the survey subject.
+/datum/mission_objective/deliver/bound/survey_core/describe_ask()
+	return "[mission?.objective_name || "survey"] core"
+
 // =========================================================================
 // GAS TANK: a tank carrying enough of a specific gas
 // =========================================================================
@@ -165,7 +186,7 @@
  */
 /datum/mission_objective/deliver/fish
 	required_type = /obj/item/fish
-	required_name = "fresh fish"
+	required_name = "fish"
 	/// Minimum weight in grams (0 = any fish)
 	var/min_weight = 0
 

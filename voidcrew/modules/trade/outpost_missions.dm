@@ -76,8 +76,9 @@
 
 /datum/mission/outpost_supply/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
+	var/datum/mission_objective/deliver/ask = objectives[1]
 	name = "Supply Request: [item_text]"
-	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader. \
+	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader.[ask.get_delivery_instructions()] \
 		Pays [get_contract_pay_summary()], straight off the shelf."
 
 /**
@@ -99,11 +100,11 @@
 
 /datum/mission/outpost_supply/angler/pick_request()
 	var/static/list/fish_asks = list(
-		list("name" = "fresh fish", "amount" = 2, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("name" = "fresh fish", "amount" = 3, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("name" = "a keeper over 1.5 kg", "amount" = 1, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("name" = "keepers over 1.5 kg", "amount" = 2, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("name" = "a trophy catch over 2.5 kg", "amount" = 1, "min_weight" = 2500, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("name" = "fish", "amount" = 2, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "fish", "amount" = 3, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "a keeper of at least 1.5 kg", "amount" = 1, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "keepers of at least 1.5 kg each", "amount" = 2, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "a trophy catch of at least 2.5 kg", "amount" = 1, "min_weight" = 2500, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 	var/list/ask = pick(fish_asks)
 	required_type = /obj/item/fish
@@ -122,8 +123,8 @@
 /datum/mission/outpost_supply/angler/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Angler's Request: [item_text]"
-	desc = "[author] wants [item_text], line-caught and fresh. Bring a rod. \
-		Hand the catch to any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
+	desc = "[author] wants [item_text]. Any species is accepted, alive or dead. \
+		Hand in each fish separately at any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
 
 /**
  * # Kitchen Order
@@ -176,10 +177,17 @@
 
 /datum/mission/outpost_supply/cook/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
+	var/obj/item/food/example_dish = /obj/item/food/pizza/mushroom
+	switch(min_complexity)
+		if(FOOD_COMPLEXITY_3)
+			example_dish = /obj/item/food/pizza/donkpocket
+		if(FOOD_COMPLEXITY_4)
+			example_dish = /obj/item/food/pizza/pineapple
 	name = "Kitchen Order: [item_text]"
-	desc = "[author] at the diner is buying [item_text], cooked by an actual person, \
-		[min_complexity >= FOOD_COMPLEXITY_4 ? "and it had better be worth the window" : "no factory food"]. \
-		Hand the plates to any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
+	desc = "[author] at the diner is buying [item_text], cooked or crafted by a player. \
+		Each dish needs recipe complexity [min_complexity] or higher; a player-made [initial(example_dish.name)] qualifies. \
+		Factory food and meals bought from the outpost diner do not qualify. \
+		Hand in each dish separately at any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
 
 // ===== OFFER MANAGEMENT (lives on the outpost) =====
 

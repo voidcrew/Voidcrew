@@ -199,7 +199,7 @@
 	name = "Big Game Hunt: [objective_name]"
 	desc = "[flavor_line] \
 		[objective_name] holds the [hunt_row["ground"]] of the [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		A hunting lure has been delivered to your mission pad. Fly out, stake it in open ground on the surface, and kill whatever comes for it. \
+		A hunting lure lands on your mission pad when you accept. Fly out, use the lure in hand to stake it in open ground on the surface, and kill [objective_name] when it arrives. \
 		The guild pays on the [trophy_part] - bring it back to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to follow the hunt's beacon ([gps_tag])."

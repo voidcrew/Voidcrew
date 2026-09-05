@@ -94,6 +94,7 @@
 
 /obj/docking_port/mobile/Destroy(force)
 	unregister()
+	QDEL_NULL(announcement_controller)
 	destination = null
 	previous = null
 	if(!QDELETED(assigned_transit))

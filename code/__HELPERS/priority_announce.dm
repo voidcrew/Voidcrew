@@ -63,7 +63,8 @@
 				header += SUBHEADER_ANNOUNCEMENT_TITLE(title)
 		if(ANNOUNCEMENT_TYPE_CAPTAIN)
 			header = MAJOR_ANNOUNCEMENT_TITLE("Captain's Announcement")
-			GLOB.news_network.submit_article(text, "Captain's Announcement", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
+			if(players == GLOB.player_list)
+				GLOB.news_network.submit_article(text, "Captain's Announcement", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
 		if(ANNOUNCEMENT_TYPE_SYNDICATE)
 			header = MAJOR_ANNOUNCEMENT_TITLE("Syndicate Captain's Announcement")
 		else
@@ -146,7 +147,7 @@
 	dispatch_announcement_to_players(finalized_announcement, players, custom_sound, should_play_sound)
 
 /// Sends an announcement about the level changing to players. Uses the passed in datum and the subsystem's previous security level to generate the message.
-/proc/level_announce(datum/security_level/selected_level, previous_level_number)
+/proc/level_announce(datum/security_level/selected_level, previous_level_number, list/players = GLOB.player_list)
 	var/current_level_number = selected_level.number_level
 	var/current_level_name = selected_level.name
 	var/current_level_color = selected_level.announcement_color
@@ -168,7 +169,7 @@
 
 	var/finalized_announcement = CHAT_ALERT_COLORED_SPAN(current_level_color, jointext(level_announcement_strings, ""))
 
-	dispatch_announcement_to_players(finalized_announcement, GLOB.player_list, current_level_sound)
+	dispatch_announcement_to_players(finalized_announcement, players, current_level_sound)
 
 /// Proc that just generates a custom header based on variables fed into `priority_announce()`
 /// Will return a string.

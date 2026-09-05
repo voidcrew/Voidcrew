@@ -78,7 +78,7 @@ export const CryoStorageConsoleContent = (props, context) => {
       )}
       <Divider />
       {cooldown > 0 && (
-        <div className="NoticeBox">{'On Cooldown: ' + cooldown / 10 + 's'}</div>
+        <div className="NoticeBox">{'On Cooldown: ' + Math.ceil(cooldown) + 's'}</div>
       )}
       <Table>
         <Table.Row header>

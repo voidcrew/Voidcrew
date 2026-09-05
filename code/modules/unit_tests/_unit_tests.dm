@@ -347,6 +347,7 @@
 #include "voidcrew_ship_abandonment.dm"
 #include "voidcrew_ship_access.dm"
 #include "voidcrew_ship_assembly.dm"
+#include "voidcrew_ship_communications.dm"
 #include "voidcrew_ship_hulls.dm"
 #include "voidcrew_ship_integrity.dm"
 #include "voidcrew_ship_modules.dm"

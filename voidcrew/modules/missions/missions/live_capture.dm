@@ -170,8 +170,8 @@
 	name = "Live Capture: [capture_row["title"]]"
 	desc = "[flavor_line] \
 		The guild survey has tagged [objective_name] in the [capture_row["ground"]] of [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		A capture crate has been delivered to your mission pad. Fly out, wear the marked specimen down without killing it, then use the crate on it - it only takes the tagged animal, and only once it's badly hurt. \
-		Bring the sealed crate back breathing; a dead specimen voids the contract. \
+		A capture crate lands on your mission pad when you accept. Find the marked specimen and reduce it to [CAPTURE_HEALTH_FRACTION * 100]% health or less, or incapacitate it, while keeping it alive. \
+		With combat mode off, use the crate on the tagged animal while it is on the ground. Bring the sealed crate to the mission pad with the specimen alive; its death voids the contract. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to follow the specimen's survey tag ([gps_tag])."
 

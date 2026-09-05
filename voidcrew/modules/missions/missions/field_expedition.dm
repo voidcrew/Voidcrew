@@ -70,9 +70,9 @@
 /datum/mission/field_expedition/update_text()
 	name = "Field Expedition: [objective_name]"
 	desc = "Our [objective_name] is down on the planet at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Land, find the wreck, pull the core and bring it to the mission pad - and mind the local wildlife; crash sites draw scavengers. \
+		Land, locate the beacon-marked salvage and bring it to the mission pad. Picking it up may draw an ambush. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the core's beacon ([gps_tag])."
+		Tap a GPS unit on the mission board to receive the salvage's beacon ([gps_tag])."
 
 /datum/mission/field_expedition/waypoint_label()
 	return "Expedition: [objective_name]"

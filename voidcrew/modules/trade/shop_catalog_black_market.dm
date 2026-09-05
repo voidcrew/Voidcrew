@@ -177,7 +177,7 @@
 	// Vex's supply requests want the rare stuff. The free item makes it worth it
 	mission_requests = list(
 		list("type" = /obj/item/stack/ore/uranium, "name" = "uranium ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/ore/diamond, "name" = "diamonds", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = /obj/item/stack/ore/diamond, "name" = "diamond ore", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 2, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/sheet/mineral/plasma, "name" = "plasma sheets", "amount" = 20, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/telecrystal_raw, "name" = "raw telecrystal", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_HARD),

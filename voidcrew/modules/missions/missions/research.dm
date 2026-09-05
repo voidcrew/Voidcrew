@@ -128,7 +128,7 @@
 /datum/mission/research/telemetry/update_text()
 	var/display_name = required_amount == 1 ? target_name_singular : target_name
 	name = "Telemetry Contract: [display_name]"
-	desc = "Run [required_amount] [display_name] through the orbital survey console and forward us the raw telemetry. \
+	desc = "Use your ship's orbital survey console to scan [required_amount] [display_name] after accepting this contract. \
 		Nothing to bring back - the contract settles at the mission board. \
 		Pays [research_reward] research points as a data dossier, plus [value] credits in expenses. \
 		Slot the dossier into an R&D console to bank the points."
@@ -338,15 +338,15 @@
 	chain = new
 	chain.wave_theme = wave_theme
 	add_objective(chain)
-	add_objective(new /datum/mission_objective/deliver/bound)
+	add_objective(new /datum/mission_objective/deliver/bound/survey_core)
 
 /datum/mission/research/core_sample/update_text()
 	name = "Core Sample Contract: [objective_name]"
 	desc = "We need a [objective_name] off the planet at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Our drop seeded [chain ? chain.points_total : 3] drill probes across one stretch of the surface. They are all down already and you can take them in any order. \
-		The drill run is loud enough to draw whatever lives nearby, so go armed. The last probe you finish casks the sample; bring the cask to the mission pad. \
-		Pays [research_reward] research points as a data dossier plus [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive a beacon for every probe still standing ([gps_tag])."
+		Our drop seeded [chain ? chain.points_total : 3] survey pylons across one stretch of the surface. Calibrate each with an empty hand, in any order. \
+		Each calibration draws a wave of hostiles, so go armed. The last pylon prints the [objective_name] core; bring that core to the mission pad. \
+		Pays [research_reward] research points as a data dossier plus [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. Slot the dossier into an R&D console to bank the points. \
+		Tap a GPS unit on the mission board to receive a beacon for every pylon still standing ([gps_tag])."
 
 /datum/mission/research/core_sample/waypoint_label()
 	return "Core Sample: [objective_name]"

@@ -45,7 +45,6 @@ export type CommsConsoleData = {
   canMakeAnnouncement: BooleanLike;
   canMessageAssociates: BooleanLike;
   canRecallShuttles: BooleanLike;
-  canRequestNuke: BooleanLike;
   canRequestSafeCode: BooleanLike;
   canSendToSectors: BooleanLike;
   canSetAlertLevel: string;

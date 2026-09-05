@@ -84,6 +84,10 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	if(prefs.hearted)
 		var/datum/asset/spritesheet_batched/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 		keyname = "[sheet.icon_tag("emoji-heart")][keyname]"
+	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+	// Detect once for the broadcast; translate raw text before emoji HTML.
+	var/translation_source_language = autotranslate_detect_language(raw_msg)
+	// VOIDCREW EDIT ADDITION END
 	//The linkify span classes and linkify=TRUE below make ooc text get clickable chat href links if you pass in something resembling a url
 	for(var/client/receiver as anything in GLOB.clients)
 		if(!receiver.prefs) // Client being created or deleted. Despite all, this can be null.
@@ -92,25 +96,37 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 			continue
 		if(holder?.fakekey in receiver.prefs.ignoring)
 			continue
+		// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+		if(!holder && (key in receiver.prefs.ignoring))
+			continue
+		var/datum/translated_speech/translation
+		if(receiver != src)
+			translation = receiver.try_begin_chat_translation(raw_msg, translation_source_language)
+		var/receiver_msg = translation ? wrap_translatable(msg, translation.id) : msg
+		// VOIDCREW EDIT ADDITION END
 		var/avoid_highlight = receiver == src
 		if(holder)
 			if(!holder.fakekey || receiver.holder)
 				if(check_rights_for(src, R_ADMIN))
 					var/ooc_color = prefs.read_preference(/datum/preference/color/ooc_color)
-					to_chat(receiver, span_adminooc("[CONFIG_GET(flag/allow_admin_ooccolor) && ooc_color ? "<font color=[ooc_color]>" :"" ][span_prefix("OOC:")] <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span>"), avoid_highlighting = avoid_highlight)
+					to_chat(receiver, span_adminooc("[CONFIG_GET(flag/allow_admin_ooccolor) && ooc_color ? "<font color=[ooc_color]>" :"" ][span_prefix("OOC:")] <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[receiver_msg]</span>"), avoid_highlighting = avoid_highlight)
 				else
-					to_chat(receiver, span_adminobserverooc(span_prefix("OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]")), avoid_highlighting = avoid_highlight)
+					to_chat(receiver, span_adminobserverooc(span_prefix("OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[receiver_msg]")), avoid_highlighting = avoid_highlight)
 			else
 				if(GLOB.OOC_COLOR)
-					to_chat(receiver, "<span class='oocplain'><font color='[GLOB.OOC_COLOR]'><b>[span_prefix("OOC:")] <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></b></font></span>", avoid_highlighting = avoid_highlight)
+					to_chat(receiver, "<span class='oocplain'><font color='[GLOB.OOC_COLOR]'><b>[span_prefix("OOC:")] <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[receiver_msg]</span></b></font></span>", avoid_highlighting = avoid_highlight)
 				else
-					to_chat(receiver, span_ooc(span_prefix("OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]")), avoid_highlighting = avoid_highlight)
+					to_chat(receiver, span_ooc(span_prefix("OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[receiver_msg]")), avoid_highlighting = avoid_highlight)
 
-		else if(!(key in receiver.prefs.ignoring))
+		else
 			if(GLOB.OOC_COLOR)
-				to_chat(receiver, "<span class='oocplain'><font color='[GLOB.OOC_COLOR]'><b>[span_prefix("OOC:")] <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></b></font></span>", avoid_highlighting = avoid_highlight)
+				to_chat(receiver, "<span class='oocplain'><font color='[GLOB.OOC_COLOR]'><b>[span_prefix("OOC:")] <EM>[keyname]:</EM> <span class='message linkify'>[receiver_msg]</span></b></font></span>", avoid_highlighting = avoid_highlight)
 			else
-				to_chat(receiver, span_ooc(span_prefix("OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]")), avoid_highlighting = avoid_highlight)
+				to_chat(receiver, span_ooc(span_prefix("OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[receiver_msg]")), avoid_highlighting = avoid_highlight)
+		// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
+		// Cache hits can finish immediately, so queue the original line first.
+		translation?.begin()
+		// VOIDCREW EDIT ADDITION END
 
 
 /proc/toggle_ooc(toggle = null)

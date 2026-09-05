@@ -19,9 +19,8 @@
  * If begin() returns FALSE nothing was dispatched, the handle has already
  * cleaned itself up, and the message displays untranslated as normal.
  *
- * Scope note: this is wired for mob say only. Radio, emotes, LOOC and the
- * rest are intentionally out of scope - radio does not even use the same chat
- * span, and emotes are excluded from IC language handling upstream.
+ * Used for player say, radio and OOC. OOC only uses the chat panel; attaching
+ * a runechat bubble is optional. Emotes and LOOC are not translated.
  */
 /datum/translated_speech
 	/// Shared between DM and the chat panel so both agree which line this is.
@@ -207,7 +206,8 @@
 		"id" = id,
 		"status" = state,
 		"original" = original_text,
-		"text" = translated_text,
+		// The panel renders this with textContent, not HTML.
+		"text" = isnull(translated_text) ? null : html_decode(translated_text),
 		// Milliseconds, so the panel can match the runechat timing.
 		"duration" = TRANSLATION_MORPH_DURATION * 100,
 		"scramble" = TRANSLATION_MORPH_SCRAMBLE,

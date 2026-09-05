@@ -131,6 +131,7 @@
 	var/obj/structure/overmap/trader_outpost/destination = get_destination()
 	name = "Courier Run: [destination?.name || "lost destination"]"
 	desc = "[author] needs a sealed freight pod hauled to [destination?.name || "its destination"] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
+		Collect the pod beside [author] when you accept. \
 		The pod's seals only release at the destination's trader, and every pirate on the lane knows what a courier pod looks like. \
 		Pays in kit on delivery: [reward_name]."
 

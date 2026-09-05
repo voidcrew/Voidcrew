@@ -21,7 +21,7 @@
 
 	/// Cooldown for important actions, such as messaging CentCom or other sectors
 	COOLDOWN_DECLARE(static/important_action_cooldown)
-	COOLDOWN_DECLARE(static/emergency_access_cooldown)
+	COOLDOWN_DECLARE(emergency_access_cooldown)
 
 	/// Whether syndicate mode is enabled or not.
 	var/syndicate = FALSE
@@ -49,7 +49,7 @@
 	var/send_cross_comms_message_timer
 
 	/// The last lines used for changing the status display
-	var/static/last_status_display
+	var/last_status_display
 
 	///how many uses the console has done of toggling the emergency access
 	var/toggle_uses = 0
@@ -77,13 +77,6 @@
 
 /obj/machinery/computer/communications/syndicate/authenticated_as_silicon_or_captain(mob/user)
 	return FALSE
-
-/obj/machinery/computer/communications/syndicate/get_communication_players()
-	var/list/targets = list()
-	for(var/mob/target in GLOB.player_list)
-		if(target.stat == DEAD || target.z == z || target.mind?.has_antag_datum(/datum/antagonist/battlecruiser))
-			targets += target
-	return targets
 
 /obj/machinery/computer/communications/Initialize(mapload)
 	. = ..()
@@ -206,10 +199,10 @@
 			if (SSsecurity_level.get_current_level_as_number() >= SEC_LEVEL_DELTA)
 				to_chat(user, span_warning("Central Command has placed a lock on the alert level due to a doomsday!"))
 				return
-			if (SSsecurity_level.get_current_level_as_number() == new_sec_level)
+			if (get_communications_security_level().number_level == new_sec_level)
 				return
 
-			SSsecurity_level.set_level(new_sec_level)
+			set_communications_security_level(new_sec_level)
 
 			to_chat(user, span_notice("Authorization confirmed. Modifying security level."))
 			playsound(src, 'sound/machines/terminal/terminal_prompt_confirm.ogg', 50, FALSE)
@@ -282,7 +275,7 @@
 			bank_account.adjust_money(-shuttle.credit_cost)
 
 			var/purchaser_name = (obj_flags & EMAGGED) ? scramble_message_replace_chars("AUTHENTICATION FAILURE: CVE-2018-17107", 60) : user.real_name
-			minor_announce("[purchaser_name] has purchased [shuttle.name] for [shuttle.credit_cost] credits.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
+			minor_announce("[purchaser_name] has purchased [shuttle.name] for [shuttle.credit_cost] credits.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase", players = get_communication_players())
 
 			message_admins("[ADMIN_LOOKUPFLW(user)] purchased [shuttle.name].")
 			log_shuttle("[key_name(user)] has purchased [shuttle.name].")
@@ -293,18 +286,6 @@
 			if (!authenticated(user) || HAS_SILICON_ACCESS(user) || syndicate)
 				return
 			SSshuttle.cancelEvac(user)
-		if ("requestNukeCodes")
-			if (!authenticated_as_non_silicon_captain(user))
-				return
-			if (!COOLDOWN_FINISHED(src, important_action_cooldown))
-				return
-			var/reason = trim(html_encode(params["reason"]), MAX_MESSAGE_LEN)
-			nuke_request(reason, user)
-			to_chat(user, span_notice("Request sent."))
-			user.log_message("has requested the nuclear codes from CentCom with reason \"[reason]\"", LOG_SAY)
-			priority_announce("The codes for the on-station nuclear self-destruct have been requested by [user]. Confirmation or denial of this request will be sent shortly.", "Nuclear Self-Destruct Codes Requested", SSstation.announcer.get_rand_report_sound())
-			playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, FALSE)
-			COOLDOWN_START(src, important_action_cooldown, IMPORTANT_ACTION_COOLDOWN)
 		if ("restoreBackupRoutingData")
 			if (!authenticated_as_non_silicon_captain(user))
 				return
@@ -374,7 +355,6 @@
 			var/line_one = reject_bad_text(params["upperText"] || "", MAX_STATUS_LINE_LENGTH)
 			var/line_two = reject_bad_text(params["lowerText"] || "", MAX_STATUS_LINE_LENGTH)
 			post_status("message", line_one, line_two)
-			last_status_display = list(line_one, line_two)
 		if ("setStatusPicture")
 			if (!authenticated(user))
 				return
@@ -385,7 +365,7 @@
 				post_status(picture)
 			else
 				if(picture == "currentalert") // You cannot set Code Blue display during Code Red and similiar
-					post_status("alert", SSsecurity_level?.current_security_level?.status_display_icon_state || "greenalert")
+					post_status("alert", get_communications_security_level().status_display_icon_state)
 				else
 					post_status("alert", picture)
 
@@ -421,13 +401,13 @@
 				return
 			if (!authenticated_as_silicon_or_captain(user))
 				return
-			if (GLOB.emergency_access)
-				revoke_maint_all_access()
+			if (get_communications_emergency_access())
+				revoke_maint_all_access(src)
 				user.log_message("disabled emergency maintenance access.", LOG_GAME)
 				message_admins("[ADMIN_LOOKUPFLW(user)] disabled emergency maintenance access.")
 				deadchat_broadcast(" disabled emergency maintenance access at [span_name("[get_area_name(user, TRUE)]")].", span_name("[user.real_name]"), user, message_type = DEADCHAT_ANNOUNCEMENT)
 			else
-				make_maint_all_access()
+				make_maint_all_access(src)
 				user.log_message("enabled emergency maintenance access.", LOG_GAME)
 				message_admins("[ADMIN_LOOKUPFLW(user)] enabled emergency maintenance access.")
 				deadchat_broadcast(" enabled emergency maintenance access at [span_name("[get_area_name(user, TRUE)]")].", span_name("[user.real_name]"), user, message_type = DEADCHAT_ANNOUNCEMENT)
@@ -454,7 +434,7 @@
 			SSjob.safe_code_request_loc = pod_location
 			SSjob.safe_code_requested = TRUE
 			SSjob.safe_code_timer_id = addtimer(CALLBACK(SSjob, TYPE_PROC_REF(/datum/controller/subsystem/job, send_spare_id_safe_code), pod_location), 120 SECONDS, TIMER_UNIQUE | TIMER_STOPPABLE)
-			minor_announce("Due to staff shortages, your station has been approved for delivery of access codes to secure the Captain's Spare ID. Delivery via drop pod at [get_area(pod_location)]. ETA 120 seconds.")
+			minor_announce("Due to staff shortages, your crew has been approved for delivery of access codes to secure the Captain's Spare ID. Delivery via drop pod at [get_area(pod_location)]. ETA 120 seconds.", players = get_communication_players())
 
 /obj/machinery/computer/communications/proc/emergency_access_cooldown(mob/user)
 	if(toggle_uses == toggle_max_uses) //you have used up free uses already, do it one more time and start a cooldown
@@ -487,7 +467,7 @@
 		payload["is_filtered"] = TRUE
 
 	send2otherserver(html_decode(station_name()), message, "Comms_Console", destination == "all" ? null : list(destination), additional_data = payload)
-	minor_announce(message, title = "Outgoing message to allied station")
+	minor_announce(message, title = "Outgoing message to allied station", players = get_communication_players())
 	user.log_talk(message, LOG_SAY, tag = "message to the other server")
 	message_admins("[ADMIN_LOOKUPFLW(user)] has sent a message to the other server\[s].")
 	deadchat_broadcast(" has sent an outgoing message to the other station(s).</span>", "<span class='bold'>[user.real_name]", user, message_type = DEADCHAT_ANNOUNCEMENT)
@@ -531,7 +511,6 @@
 				data["canMakeAnnouncement"] = FALSE
 				data["canMessageAssociates"] = FALSE
 				data["canRecallShuttles"] = !HAS_SILICON_ACCESS(user)
-				data["canRequestNuke"] = FALSE
 				data["canSendToSectors"] = FALSE
 				data["canSetAlertLevel"] = FALSE
 				data["canToggleEmergencyAccess"] = FALSE
@@ -539,7 +518,7 @@
 				data["shuttleCalled"] = FALSE
 				data["shuttleLastCalled"] = FALSE
 				data["aprilFools"] = check_holidays(APRIL_FOOLS)
-				data["alertLevel"] = SSsecurity_level.get_current_level_as_text()
+				data["alertLevel"] = get_communications_security_level().name
 				data["authorizeName"] = authorize_name
 				data["canLogOut"] = !HAS_SILICON_ACCESS(user)
 				data["shuttleCanEvacOrFailReason"] = SSshuttle.canEvac()
@@ -548,7 +527,6 @@
 
 				if (authenticated_as_non_silicon_captain(user))
 					data["canMessageAssociates"] = TRUE
-					data["canRequestNuke"] = TRUE
 
 				if (can_send_messages_to_other_sectors(user))
 					data["canSendToSectors"] = TRUE
@@ -565,7 +543,7 @@
 
 				if (authenticated_as_silicon_or_captain(user))
 					data["canToggleEmergencyAccess"] = TRUE
-					data["emergencyAccess"] = GLOB.emergency_access
+					data["emergencyAccess"] = get_communications_emergency_access()
 
 					data["alertLevelTick"] = alert_level_tick
 					data["canMakeAnnouncement"] = TRUE
@@ -620,8 +598,9 @@
 				data["budget"] = bank_account.account_balance
 				data["shuttles"] = shuttles
 			if (STATE_CHANGING_STATUS)
-				data["upperText"] = last_status_display ? last_status_display[1] : ""
-				data["lowerText"] = last_status_display ? last_status_display[2] : ""
+				var/list/status_message = get_status_display_message()
+				data["upperText"] = status_message ? status_message[1] : ""
+				data["lowerText"] = status_message ? status_message[2] : ""
 
 	return data
 
@@ -663,8 +642,10 @@
 
 /// Returns whether or not the communications console can communicate with the station
 /obj/machinery/computer/communications/proc/has_communication()
+	if(voidcrew_communications_ship(src))
+		return TRUE
 	var/turf/current_turf = get_turf(src)
-	var/z_level = current_turf.z
+	var/z_level = current_turf?.z
 	if(syndicate)
 		return TRUE
 	return is_station_level(z_level) || is_centcom_level(z_level)
@@ -724,10 +705,11 @@
 
 /obj/machinery/computer/communications/proc/make_announcement(mob/living/user)
 	var/is_ai = HAS_SILICON_ACCESS(user)
-	if(!GLOB.communications_controller.can_announce(user, is_ai))
+	var/datum/communciations_controller/controller = get_announcement_controller()
+	if(!controller.can_announce(user, is_ai))
 		to_chat(user, span_alert("Intercomms recharging. Please stand by."))
 		return
-	var/input = tgui_input_text(user, "Message to announce to the station crew", "Announcement", max_length = MAX_MESSAGE_LEN)
+	var/input = tgui_input_text(user, "Message to announce to the local crew", "Announcement", max_length = MAX_MESSAGE_LEN)
 	if(!input || !user.can_perform_action(src, ALLOW_SILICON_REACH))
 		return
 	if(user.try_speak(input))
@@ -745,11 +727,13 @@
 		)
 
 	var/list/players = get_communication_players()
-	GLOB.communications_controller.make_announcement(user, is_ai, input, syndicate || (obj_flags & EMAGGED), players)
+	// Resolve again after the input prompt in case the console moved to another ship.
+	controller = get_announcement_controller()
+	controller.make_announcement(user, is_ai, input, syndicate || (obj_flags & EMAGGED), players)
 	deadchat_broadcast(" made a priority announcement from [span_name("[get_area_name(user, TRUE)]")].", span_name("[user.real_name]"), user, message_type=DEADCHAT_ANNOUNCEMENT)
 
 /obj/machinery/computer/communications/proc/get_communication_players()
-	return GLOB.player_list
+	return voidcrew_announcement_players(src)
 
 /obj/machinery/computer/communications/proc/post_status(command, data1, data2)
 
@@ -758,9 +742,16 @@
 	if(!frequency)
 		return
 
-	var/datum/signal/status_signal = new(list("command" = command))
+	var/datum/signal/status_signal = new(list("command" = command, "voidcrew_net" = voidcrew_local_comms_net(src)))
+	if(!status_signal.data["voidcrew_net"])
+		return
 	switch(command)
 		if("message")
+			var/obj/docking_port/mobile/ship = voidcrew_communications_ship(src)
+			if(ship)
+				ship.last_comms_status_display = list(data1, data2)
+			else
+				last_status_display = list(data1, data2)
 			status_signal.data["top_text"] = data1
 			status_signal.data["bottom_text"] = data2
 			log_game("[key_name(usr)] has changed the station status display message to \"[data1] [data2]\" [loc_name(usr)]")
@@ -862,6 +853,7 @@
 			priority_announce(
 				"Attention crew: sector monitoring reports a jump-trace from an unidentified vessel destined for your system. Prepare for probable contact.",
 				"[command_name()] High-Priority Update",
+				players = get_communication_players(),
 			)
 			SSdynamic.force_run_midround(/datum/dynamic_ruleset/midround/from_ghosts/fugitives)
 
@@ -869,6 +861,7 @@
 			priority_announce(
 				"Attention crew, it appears that someone on your station has hijacked your telecommunications and broadcasted an unknown signal.",
 				"[command_name()] High-Priority Update",
+				players = get_communication_players(),
 			)
 			var/max_number_of_sleepers = clamp(round(length(GLOB.alive_player_list) / 40), 1, 3)
 			if(!SSdynamic.force_run_midround(/datum/dynamic_ruleset/midround/from_living/traitor, forced_max_cap = max_number_of_sleepers))

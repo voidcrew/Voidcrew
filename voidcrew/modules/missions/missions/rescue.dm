@@ -46,11 +46,13 @@
 	add_objective(new /datum/mission_objective/field/escort)
 
 /datum/mission/rescue/update_text()
+	var/datum/mission_objective/field/escort/escort = objectives[1]
 	name = "Rescue Contract: [objective_name]"
 	desc = "A [objective_name]'s survival beacon is still pinging inside the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Get them out and bring them to your mission pad breathing - the fee doubles if they can still walk. \
+		Bring them back alive, on or beside your ship's mission pad, then turn in at the mission board. \
+		The credit fee doubles if they arrive with at least [escort.unharmed_threshold * 100]% health and have not needed revival. \
 		They'll follow whoever offers a hand, or ride a fireman carry. \
-		If their vitals stop, the beacon holds their tag for a few minutes: get them breathing again inside that window and the contract still pays, minus the bonus. \
+		If their vitals stop, revive them within [DisplayTimeText(escort.revival_grace)] to save the contract, minus the bonus. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to receive the survivor's beacon ([gps_tag])."
 

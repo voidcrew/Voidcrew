@@ -17,7 +17,7 @@
 
 import { createLogger } from 'tgui/logging';
 import { chatRenderer } from './renderer';
-import { highlightNode } from './replaceInTextNode';
+import { highlightNode, linkifyNode } from './replaceInTextNode';
 
 const logger = createLogger('translation');
 
@@ -436,11 +436,22 @@ function reapplyHighlights(node: HTMLElement): void {
       (text: string) => {
         const span = document.createElement('span');
         span.className = 'Chat__highlight';
-        span.setAttribute('style', `--highlight-color:${parser.highlightColor}`);
+        span.setAttribute(
+          'style',
+          `--highlight-color:${parser.highlightColor}`,
+        );
         span.textContent = text;
         return span;
       },
     );
+  }
+}
+
+/** Restore clickable OOC URLs after the morph replaces the original nodes. */
+function reapplyFormatting(node: HTMLElement): void {
+  reapplyHighlights(node);
+  if (node.closest('.linkify')) {
+    linkifyNode(node);
   }
 }
 
@@ -470,7 +481,7 @@ function morph(node: HTMLElement, payload: TranslationPayload): void {
   // Nothing to animate between - just settle.
   if (!from.length || duration <= 0) {
     node.textContent = to.join('');
-    reapplyHighlights(node);
+    reapplyFormatting(node);
     return;
   }
 
@@ -499,7 +510,7 @@ function morph(node: HTMLElement, payload: TranslationPayload): void {
       node.removeAttribute('title');
       node.classList.add('tsl-no-tooltip');
     }
-    reapplyHighlights(node);
+    reapplyFormatting(node);
   };
 
   requestAnimationFrame(step);

@@ -240,7 +240,7 @@
 	name = "Poacher Bust: [objective_name]"
 	desc = "[flavor_line] \
 		Warden's warrant: [objective_name] are running an illegal [protected_species] harvest from a camp in the [bust_row["ground"]] of [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Put the whole squad down - the warrant reads dead, not detained - and recover all [evidence_count] pieces of tagged evidence from their trophy cache for prosecution. \
+		Kill the whole squad to unlock their trophy cache, then return all [evidence_count] pieces of tagged evidence to the mission pad, one at a time. Destroying any evidence voids the contract. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to follow the case beacon ([gps_tag])."
 

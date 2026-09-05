@@ -29,7 +29,7 @@
 		// Hard - rare ores, higher amounts
 		list("type" = /obj/item/stack/ore/gold, "name" = "gold ore", "amount" = 8, "value_min" = 1200, "value_max" = 1800, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/ore/uranium, "name" = "uranium ore", "amount" = 6, "value_min" = 1400, "value_max" = 2000, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/ore/diamond, "name" = "diamonds", "amount" = 4, "value_min" = 2000, "value_max" = 3000, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = /obj/item/stack/ore/diamond, "name" = "diamond ore", "amount" = 4, "value_min" = 2000, "value_max" = 3000, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 2, "value_min" = 2500, "value_max" = 3500, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 
@@ -50,8 +50,9 @@
 
 /datum/mission/delivery/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
+	var/datum/mission_objective/deliver/ask = objectives[1]
 	name = "Delivery Contract: [item_text]"
-	desc = "Deliver [item_text] to the mission pad to complete this contract."
+	desc = "Deliver [item_text] to the mission pad to complete this contract.[ask.get_delivery_instructions()]"
 
 /datum/mission/delivery/get_ui_data()
 	var/list/data = ..()

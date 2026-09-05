@@ -57,12 +57,12 @@
 	chain = new
 	chain.wave_theme = wave_theme
 	add_objective(chain)
-	add_objective(new /datum/mission_objective/deliver/bound)
+	add_objective(new /datum/mission_objective/deliver/bound/survey_core)
 
 /datum/mission/recovery/survey/update_text()
 	name = "Survey Contract: [objective_name]"
 	desc = "Our probes seeded [chain ? chain.points_total : 3] survey pylons through the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		They all go down together, spread across the site, and you can take them in any order. Calibration is loud and something always turns up, so go armed. \
+		Calibrate each with an empty hand, in any order. Each completed calibration draws a wave of hostiles, so go armed. \
 		The last pylon you finish prints the survey core; bring that back to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to receive a beacon for every pylon still standing ([gps_tag])."

@@ -22,7 +22,7 @@
  */
 
 /// Where bug reports go during the testing phase.
-#define VOIDCREW_DISCORD_URL "https://discord.gg/Wnh4xGPBb"
+#define VOIDCREW_DISCORD_URL "https://discord.gg/6z9wQTYJmK"
 
 /// The player wiki. Kept in step with WIKIURL in config/voidcrew/voidcrew_config.txt,
 /// which is what the standard tg wiki verb reads.

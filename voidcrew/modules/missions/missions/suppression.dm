@@ -54,6 +54,6 @@
 
 /datum/mission/suppression/update_text()
 	name = "Suppression Sweep: [target_zone_name]"
-	desc = "Confirm [required_kills] pirate kills in the [target_zone_name][minimum_zone == ZONE_YELLOW ? " or deeper" : ""]. \
-		Any pirate crew counts - ruins, boarding parties, wherever you find them - but the transponder only reads if your crew made (or witnessed) the kill. \
-		Payment per confirmed transponder, settled at the mission board. Includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]."
+	desc = "Confirm [required_kills] pirate faction NPC kills in the [target_zone_name][minimum_zone == ZONE_YELLOW ? " or deeper" : ""] after accepting this contract. \
+		Your crew must make the kill or have a living member nearby to confirm it. Player pirates and destroyed ships do not count. \
+		Complete the full quota, then collect the contract payment at the mission board. Includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]."

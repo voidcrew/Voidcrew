@@ -167,7 +167,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/keycard_auth/wall_mounted, 26)
 	find_and_hang_on_wall()
 
 GLOBAL_VAR_INIT(emergency_access, FALSE)
-/proc/make_maint_all_access()
+/proc/make_maint_all_access(atom/source)
+	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(source)
+	if(ship)
+		ship.set_communications_emergency_access(TRUE)
+		return
 	for(var/area/station/maintenance/area in GLOB.areas)
 		for (var/list/zlevel_turfs as anything in area.get_zlevel_turf_lists())
 			for(var/turf/area_turf as anything in zlevel_turfs)
@@ -179,7 +183,11 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 	GLOB.emergency_access = TRUE
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "enabled"))
 
-/proc/revoke_maint_all_access()
+/proc/revoke_maint_all_access(atom/source)
+	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(source)
+	if(ship)
+		ship.set_communications_emergency_access(FALSE)
+		return
 	for(var/area/station/maintenance/area in GLOB.areas)
 		for (var/list/zlevel_turfs as anything in area.get_zlevel_turf_lists())
 			for(var/turf/area_turf as anything in zlevel_turfs)

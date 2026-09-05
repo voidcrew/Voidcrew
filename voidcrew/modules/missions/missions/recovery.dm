@@ -121,7 +121,7 @@
 			hunt.target_mob_type = pick(hard_targets)
 			hunt.guard_types = list(pick(hard_guards), pick(hard_guards))
 	add_objective(hunt)
-	add_objective(new /datum/mission_objective/deliver/bound)
+	add_objective(new /datum/mission_objective/deliver/bound/proof)
 
 /datum/mission/recovery/kill/update_text()
 	name = "Kill Contract: [objective_name]"
