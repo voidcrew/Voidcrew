@@ -357,6 +357,7 @@
 #include "voidcrew_silicon_ship_systems.dm"
 #include "voidcrew_simple_mob_ai.dm"
 #include "voidcrew_vestige.dm"
+#include "voidcrew_vestige_lifecycle.dm"
 #include "voidcrew_wall_break_atmos.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_zone_logging.dm"

@@ -136,6 +136,8 @@
 	var/patron_name = "the patron"
 	/// Guards against stacked radial menus
 	var/choosing = FALSE
+	/// Also guards callbacks from menus already open when another claim settles the debt.
+	var/paid = FALSE
 
 /datum/action/vestige_reward/New(Target, list/boon_candidates, offering_patron_name)
 	. = ..()
@@ -213,14 +215,23 @@
 
 /// Pays out the chosen boon and settles the debt
 /datum/action/vestige_reward/proc/claim(mob/living/user, datum/mind/mind, datum/vestige_boon/choice_type)
-	if(choice_type in mind.vestige_boons)
+	if(QDELETED(src) || paid || mind != target || user != owner || !menu_check(user))
 		return
+	var/datum/vestige_record/record = get_vestige_record(mind)
+	if(record && !(choice_type in record.pending_candidates))
+		return
+	if(!(choice_type in get_eligible_vestige_boons(mind, candidates)))
+		return
+	paid = TRUE
+	// Settle before granting: grants can invoke callbacks, and an old body's
+	// open menu must never turn one completed trial into two different boons.
+	clear_recorded_pending(mind)
 	var/datum/vestige_boon/boon = new choice_type()
 	boon.grant(user, mind)
 	LAZYADD(mind.vestige_boons, choice_type)
 	qdel(boon)
 	// Write the grant through to the soul's ledger and mark the debt settled
-	var/datum/vestige_record/record = get_vestige_record(mind, create = TRUE)
+	record = get_vestige_record(mind, create = TRUE)
 	if(record)
 		record.boons |= choice_type
 	clear_recorded_pending(mind)
