@@ -88,6 +88,22 @@
 	TEST_ASSERT_EQUAL(stinger.observed_behavior(beast), "commitment", "Close commitment must be distinct from distant pursuit.")
 	TEST_ASSERT(trial.tally(beast, "commitment"), "A different behavior from the same quarry should count.")
 	TEST_ASSERT_EQUAL(trial.entries, 2, "One beast must contribute exactly two distinct behaviors.")
+	TEST_ASSERT_EQUAL(trial.complete_profiles, 1, "Both behaviors form exactly one profile.")
+	qdel(trial)
+	var/datum/vestige_trial/comb_census/new_trial = allocate(/datum/vestige_trial/comb_census, keeper.mind, "test patron", list(/datum/vestige_boon/spell/armblade))
+	keeper.mind.active_vestige_trial = new_trial
+	var/list/single_sightings = list()
+	for(var/i in 1 to 4)
+		var/mob/living/basic/carp/sighting = allocate(/mob/living/basic/carp)
+		single_sightings += sighting
+		TEST_ASSERT(new_trial.tally(sighting, "pursuit"), "A new specimen may start a partial profile.")
+	TEST_ASSERT_EQUAL(keeper.mind.active_vestige_trial, new_trial, "Four distant pursuits must not finish the Census.")
+	TEST_ASSERT_EQUAL(new_trial.complete_profiles, 0, "Single-behavior sightings are incomplete regardless of their count.")
+	qdel(single_sightings[1])
+	TEST_ASSERT(new_trial.tally(single_sightings[2], "commitment"), "An abandoned dead specimen must not block finishing another profile.")
+	TEST_ASSERT_EQUAL(new_trial.complete_profiles, 1, "One completed profile is still insufficient.")
+	TEST_ASSERT(new_trial.tally(single_sightings[3], "commitment"), "A second complete profile must finish the Census.")
+	TEST_ASSERT(/datum/vestige_trial/comb_census in keeper.mind.completed_vestige_trials, "Two distinct complete profiles must satisfy the actual trial.")
 
 /datum/unit_test/vestige_hunt_helper_marks/Run()
 	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)

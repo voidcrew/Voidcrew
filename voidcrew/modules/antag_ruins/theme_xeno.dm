@@ -1083,6 +1083,8 @@
 	desc = "A queen should know what hunts along her borders. Take the stinger and count them for me: sting wild things in the act of hunting, mid-charge, already committed to something alive. Four entries: record a distant pursuit (at least four tiles from its prey) and a close commitment (within two tiles) from each of two beasts. No beast can contribute the same behavior twice. An idle animal does not count. Anything the sting counts also seizes up for a moment, which you may find useful."
 	/// Entries in the rolls so far
 	var/entries = 0
+	/// Subjects with both pursuit and commitment recorded; incomplete profiles never block new ones.
+	var/complete_profiles = 0
 	/// Recorded behaviors per subject (weakref -> list of behavior names)
 	var/list/entries_per_subject = list()
 	/// The loaned stinger. Reclaimed the moment the pact ends.
@@ -1099,7 +1101,7 @@
 	return ..()
 
 /datum/vestige_trial/comb_census/get_progress_text()
-	return "The rolls hold [entries] of [VESTIGE_CENSUS_MARKS_NEEDED] entries."
+	return "[complete_profiles]/2 complete profiles: each beast needs both a distant pursuit and a close commitment. [entries] observations total; you may abandon an incomplete profile and observe another beast."
 
 /// Enters a mid-hunt subject in the rolls. May complete (and delete) the trial. Returns FALSE if this subject is counted out.
 /datum/vestige_trial/comb_census/proc/tally(mob/living/subject, behavior)
@@ -1114,8 +1116,10 @@
 		return FALSE
 	prior += behavior
 	entries++
+	if(length(prior) == 2)
+		complete_profiles++
 	refresh_tracker()
-	if(entries >= VESTIGE_CENSUS_MARKS_NEEDED)
+	if(complete_profiles >= 2)
 		complete()
 	return TRUE
 
