@@ -3,8 +3,8 @@
  *
  * A freighter that went dark mid-burn, in every sense. The map itself is the
  * hazard: bring a light, and know the patron wants it gone. Every trial is a
- * lesson in the dark, snuff the lights, teach the living to fear them, or
- * simply sit in the black long enough that it starts sitting back. The boons
+ * lesson in the dark: unravel a lamp circuit, haunt its watchman, or carry
+ * a fragile night through searching beams. The boons
  * are the nightmare's own: the shadow it walks, the terror it projects, the
  * lights it puts out, and the wounds the dark closes when no one is looking.
  *
@@ -13,14 +13,6 @@
  * body IS the antag, so nothing here needs a shadow species or a heart of
  * darkness to work.
  */
-
-// Tuning constants for the Stranger's new trials (file-local, #undef at bottom)
-/// Distinct living people the Stranger's regard must be fixed upon, in the dark
-#define VESTIGE_WATCHED_NEEDED 4
-/// How long the regard must hold on a victim before it takes
-#define VESTIGE_WATCHED_DO_AFTER (3 SECONDS)
-/// Cumulative seconds spent conscious in darkness the Long Night demands
-#define VESTIGE_LONG_NIGHT_SECONDS 180
 
 // Tuning constants for the Stranger's ports (file-local, #undef at bottom)
 /// Brute+burn per SSobj tick the Umbral Passage's deeper dark knits (base jaunt is 1.5)
@@ -72,243 +64,305 @@
 // ===== TRIAL OF THE SNUFFED FLAME =====
 
 /datum/vestige_trial/snuffed_flame
+	parent_type = /datum/vestige_trial/field_encounter
 	name = "Trial of the Snuffed Flame"
-	// Keep the count in sync with VESTIGE_FLAME_LIGHTS_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the censer and feed it twenty-five burning lights. Fixtures, lanterns, flares, it isn't picky. Lights taken out of someone's hands count double."
-	/// Devour points so far (a light in someone else's grip counts double)
-	var/lights_eaten = 0
+	desc = "Deploy the censer's nine linked lamps on a clear five-by-five floor. Touch a lamp with the censer to reverse it and its orthogonal neighbors two tiles away: light becomes dark, dark rekindles. Make all nine dark together. The initial pattern is always solvable; inspect the connections and plan which lights must return before they can all go out. Ordinary room lights are outside this circuit."
+	var/obj/item/vestige_censer/censer
 
 /datum/vestige_trial/snuffed_flame/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_censer(get_turf(user)))
+	..()
+	censer = hand_over(user, new /obj/item/vestige_censer(get_turf(user)))
+
+/datum/vestige_trial/snuffed_flame/Destroy()
+	QDEL_NULL(censer)
+	return ..()
+
+/datum/vestige_trial/snuffed_flame/setup_field(turf/center, mob/living/user)
+	for(var/offset_x in list(-2, 0, 2))
+		for(var/offset_y in list(-2, 0, 2))
+			add_node(locate(center.x + offset_x, center.y + offset_y, center.z), "linked darklight lamp")
+	// Scrambling the solved state by legal moves guarantees a solution.
+	var/list/scramble = shuffle(field_nodes.Copy())
+	for(var/index in 1 to 5)
+		reverse_lamps(scramble[index])
+	if(!burning_lamps())
+		reverse_lamps(field_nodes[1])
+
+/datum/vestige_trial/snuffed_flame/proc/burning_lamps()
+	var/burning = 0
+	for(var/obj/structure/vestige_field_node/node as anything in field_nodes)
+		burning += node.lit
+	return burning
 
 /datum/vestige_trial/snuffed_flame/get_progress_text()
-	return "The censer has eaten [lights_eaten] of [VESTIGE_FLAME_LIGHTS_NEEDED] lights."
+	return "Linked lamps still burning: [burning_lamps()]/9. The censer reverses a lamp and its orthogonal neighbors."
 
-/// May complete (and delete) the trial
-/datum/vestige_trial/snuffed_flame/proc/feed(points)
-	lights_eaten += points
+/datum/vestige_trial/snuffed_flame/proc/reverse_lamps(obj/structure/vestige_field_node/pressed)
+	for(var/obj/structure/vestige_field_node/node as anything in field_nodes)
+		if(node == pressed || (get_dist(node, pressed) == 2 && (node.x == pressed.x || node.y == pressed.y)))
+			node.light_state(!node.lit)
 	refresh_tracker()
-	if(lights_eaten >= VESTIGE_FLAME_LIGHTS_NEEDED)
-		complete()
 
 /obj/item/vestige_censer
 	name = "darklight censer"
-	desc = "A lantern that burns backwards. Whatever light it touches goes out and stays out."
+	desc = "A lantern that burns backwards. It reverses your trial's linked lamps and has no appetite beyond that loaned circuit."
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "syndilantern"
-	color = "#6a6a8a" // darkened, light-eating tint until it gets its own sprite
+	color = "#6a6a8a"
 	w_class = WEIGHT_CLASS_SMALL
-	force = 5
 
 /obj/item/vestige_censer/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!devour_lights(interacting_with, user))
+	var/datum/vestige_trial/snuffed_flame/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.censer != src || !(interacting_with in trial.field_nodes) || !user.Adjacent(interacting_with))
 		return NONE
-	user.do_attack_animation(interacting_with)
-	user.changeNext_move(CLICK_CD_MELEE)
+	trial.reverse_lamps(interacting_with)
+	playsound(src, 'sound/effects/magic/blind.ogg', 30, TRUE)
+	if(!trial.burning_lamps())
+		trial.complete()
 	return ITEM_INTERACT_SUCCESS
-
-// Combat-mode swings still feed the censer (plus the bonk)
-/obj/item/vestige_censer/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	. = ..()
-	devour_lights(target, user)
-
-/**
- * Eats every light attached to the target, permanently. Mirrors
- * /datum/element/light_eater's devour rules, but counts morsels for the
- * wielder's trial, the shared element signals on the element instance, which
- * is useless for per-item credit, hence the local copy.
- *
- * Returns the devour points scored (held lights are worth double).
- */
-/obj/item/vestige_censer/proc/devour_lights(atom/food, mob/living/user)
-	var/list/buffet = list()
-	SEND_SIGNAL(food, COMSIG_LIGHT_EATER_QUEUE, buffet, src)
-	for(var/datum/light_source/morsel_source as anything in food.light_sources)
-		buffet[morsel_source.source_atom] = TRUE
-	if(!length(buffet))
-		return 0
-
-	var/points = 0
-	for(var/atom/morsel as anything in buffet)
-		if(morsel == src)
-			continue
-		if(istype(morsel, /turf/open/space) || istype(morsel, /turf/open/lava))
-			continue
-		if(istransparentturf(morsel))
-			continue
-		if(morsel.light_power <= 0 || morsel.light_range <= 0 || !morsel.light_on)
-			continue
-		if(SEND_SIGNAL(morsel, COMSIG_LIGHT_EATER_ACT, src) & COMPONENT_BLOCK_LIGHT_EATER)
-			continue
-		morsel.AddElement(/datum/element/light_eaten)
-		points += (ismob(morsel.loc) && morsel.loc != user) ? 2 : 1
-
-	if(!points)
-		return 0
-	food.visible_message(
-		span_danger("The dark inside [src] lashes out at [food], and the light goes with it!"),
-		span_userdanger("Something hungry snuffs your light out from inside [src]!"),
-	)
-	playsound(src, 'sound/effects/magic/blind.ogg', 40, TRUE)
-	var/datum/vestige_trial/snuffed_flame/trial = user?.mind?.active_vestige_trial
-	if(istype(trial))
-		trial.feed(points)
-	return points
 
 // ===== TRIAL OF THE WATCHED =====
 
 /datum/vestige_trial/the_watched
+	parent_type = /datum/vestige_trial/field_encounter
 	name = "Trial of the Watched"
-	// Keep the count in sync with VESTIGE_WATCHED_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the eye. It's mine, and I have others. Find people standing in the dark and hold it on them until they feel it looking back. Four different people, and nobody counts twice."
-	/// Victims already regarded (weakref -> TRUE), so no one is counted twice
-	var/list/watched = list()
+	desc = "Deploy the watchman's five-by-five lamp circuit. Snuff a corner lamp with the eye to draw the watchman over to relight it. While it works, hold the eye on its back from two to four tiles away. Haunt it at two different corners, escape its search each time, then return the eye to the central focus. Its projected forward beam, not the room's normal lighting, reveals you. One second in that beam erases your progress."
+	var/obj/item/vestige_regard/eye
+	var/list/haunted_corners = list()
+	var/obj/structure/vestige_field_node/repair_target
+	var/repair_until = 0
+	var/search_until = 0
+	var/datum/weakref/search_spot
 
 /datum/vestige_trial/the_watched/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_regard(get_turf(user)))
+	..()
+	eye = hand_over(user, new /obj/item/vestige_regard(get_turf(user)))
+
+/datum/vestige_trial/the_watched/Destroy()
+	QDEL_NULL(eye)
+	return ..()
+
+/datum/vestige_trial/the_watched/setup_field(turf/center, mob/living/user)
+	haunted_corners.Cut()
+	repair_target = null
+	repair_until = 0
+	search_until = 0
+	actor = add_node(center, "searching watchman")
+	actor.show_facing = TRUE
+	actor.icon = 'icons/mob/silicon/aibots.dmi'
+	actor.icon_state = "cleanbot0"
+	actor.setDir(SOUTH)
+	for(var/index in 1 to 4)
+		var/obj/structure/vestige_field_node/lamp = add_node(corner_turf(index), "watchman's lamp [index]", index)
+		lamp.light_state(TRUE)
+	add_node(center, "haunting's end", 5)
 
 /datum/vestige_trial/the_watched/get_progress_text()
-	return "People made to feel it: [length(watched)] of [VESTIGE_WATCHED_NEEDED]."
+	return "Corners haunted: [length(haunted_corners)]/2. [world.time < search_until ? "The watchman searches where you stood: withdraw!" : "Snuff a lamp, then haunt its repairer from behind."]"
 
-/// May complete (and delete) the trial. Returns FALSE if this victim was already regarded.
-/datum/vestige_trial/the_watched/proc/regard(mob/living/victim)
-	var/datum/weakref/key = WEAKREF(victim)
-	if(watched[key])
-		return FALSE
-	watched[key] = TRUE
-	refresh_tracker()
-	if(length(watched) >= VESTIGE_WATCHED_NEEDED)
-		complete()
-	return TRUE
+/datum/vestige_trial/the_watched/field_tick(mob/living/user, seconds_per_tick)
+	if(in_sight(user))
+		if(!suspicion)
+			actor.balloon_alert(user, "beam found you! move!")
+			actor.color = "#ff3333"
+		suspicion += seconds_per_tick
+		if(suspicion >= 1)
+			haunted_corners.Cut()
+			suspicion = 0
+			search_spot = WEAKREF(get_turf(user))
+			search_until = world.time + 5 SECONDS
+			refresh_tracker()
+	else
+		suspicion = 0
+		actor.color = "#ad8de0"
+	if(world.time < next_step)
+		return
+	next_step = world.time + 1 SECONDS
+	if(world.time < search_until)
+		var/turf/searched = search_spot?.resolve()
+		if(searched && get_turf(actor) != searched)
+			step_towards(actor, searched)
+		else
+			actor.setDir(turn(actor.dir, 90))
+		return
+	if(QDELETED(repair_target) || repair_target.lit)
+		repair_target = null
+		for(var/obj/structure/vestige_field_node/lamp as anything in field_nodes)
+			if((lamp.field_tag in 1 to 4) && !lamp.lit)
+				if(!repair_target || get_dist(actor, lamp) < get_dist(actor, repair_target))
+					repair_target = lamp
+		repair_until = 0
+	if(!repair_target)
+		// No extinguished lamp: visibly scan; do not assume generic NPC searching.
+		actor.setDir(turn(actor.dir, 90))
+		return
+	if(get_turf(actor) != get_turf(repair_target))
+		step_towards(actor, repair_target)
+		return
+	if(!repair_until)
+		repair_until = world.time + 5 SECONDS
+		actor.balloon_alert(user, "relighting this lamp...")
+	else if(world.time >= repair_until)
+		repair_target.light_state(TRUE)
+		repair_target = null
+		repair_until = 0
+
+/datum/vestige_trial/the_watched/proc/can_haunt(mob/living/user)
+	return repair_target && repair_until > world.time && !(repair_target.field_tag in haunted_corners) && get_dist(actor, user) >= 2 && get_dist(actor, user) <= 4 && !in_sight(user) && can_see(actor, user, 4) && world.time >= search_until
 
 /obj/item/vestige_regard
 	name = "the Stranger's regard"
-	desc = "A single eye, still wet, still open, and definitely not yours. Hold it up in the dark and it looks wherever you look."
+	desc = "An eye for the loaned watchman: snuff its lamps, haunt it from behind during repairs, and evade its searching beam."
 	icon = 'icons/obj/medical/organs/organs.dmi'
 	icon_state = "eyes"
 	w_class = WEIGHT_CLASS_TINY
-	color = "#8a8a8a"
-
-/obj/item/vestige_regard/examine(mob/user)
-	. = ..()
-	. += span_notice("Hold it on someone living who is standing in the dark and it terrifies them. It only works once per person.")
 
 /obj/item/vestige_regard/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!isliving(interacting_with))
-		return NONE
-	var/mob/living/victim = interacting_with
 	var/datum/vestige_trial/the_watched/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "just a dead man's eye")
+	if(!istype(trial) || trial.eye != src || !(interacting_with in trial.field_nodes))
+		return NONE
+	var/obj/structure/vestige_field_node/node = interacting_with
+	if(node.field_tag in 1 to 4)
+		if(user.Adjacent(node) && node.lit)
+			node.light_state(FALSE)
+			return ITEM_INTERACT_SUCCESS
 		return ITEM_INTERACT_BLOCKING
-	if(victim == user)
-		balloon_alert(user, "it won't look at you")
+	if(node.field_tag == 5)
+		if(user.Adjacent(node) && length(trial.haunted_corners) >= 2 && world.time >= trial.search_until && !trial.in_sight(user))
+			trial.complete()
+		return ITEM_INTERACT_SUCCESS
+	if(node != trial.actor || !trial.can_haunt(user))
+		balloon_alert(user, "haunt repairs from behind!")
 		return ITEM_INTERACT_BLOCKING
-	if(victim.stat == DEAD)
-		balloon_alert(user, "past all fear")
+	var/obj/structure/vestige_field_node/lamp = trial.repair_target
+	if(!do_after(user, 1.5 SECONDS, target = node))
 		return ITEM_INTERACT_BLOCKING
-	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || victim_turf.get_lumcount() > LIGHTING_TILE_IS_DARK)
-		balloon_alert(user, "too much light on them")
+	if(QDELETED(trial) || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || trial.repair_target != lamp || !trial.can_haunt(user))
 		return ITEM_INTERACT_BLOCKING
-	if(trial.watched[WEAKREF(victim)])
-		balloon_alert(user, "already done this one")
-		return ITEM_INTERACT_BLOCKING
-	victim.visible_message(
-		span_warning("[user] holds something small and wet up toward [victim], and it turns to look at [victim.p_them()]."),
-		span_userdanger("Something in [user]'s hand fixes on you, and the dark leans in with it."),
-	)
-	if(!do_after(user, VESTIGE_WATCHED_DO_AFTER, target = victim))
-		balloon_alert(user, "you lost your grip")
-		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-regard
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return ITEM_INTERACT_BLOCKING
-	if(victim.stat == DEAD || trial.watched[WEAKREF(victim)])
-		return ITEM_INTERACT_BLOCKING
-	victim.apply_status_effect(/datum/status_effect/terrified)
-	playsound(victim, 'sound/effects/magic/blind.ogg', 30, TRUE)
-	trial.regard(victim) // may complete (and delete) the trial, nothing touches it after this
+	trial.haunted_corners += lamp.field_tag
+	lamp.light_state(TRUE)
+	trial.repair_target = null
+	trial.repair_until = 0
+	trial.search_spot = WEAKREF(get_turf(user))
+	trial.search_until = world.time + 5 SECONDS
+	node.balloon_alert(user, "something behind me?!")
+	trial.refresh_tracker()
 	return ITEM_INTERACT_SUCCESS
+
+/obj/item/vestige_regard/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return interact_with_atom(interacting_with, user, modifiers)
 
 // ===== TRIAL OF THE LONG NIGHT =====
 
 /datum/vestige_trial/long_night
+	parent_type = /datum/vestige_trial/field_encounter
 	name = "Trial of the Long Night"
-	// Keep the duration in sync with VESTIGE_LONG_NIGHT_SECONDS
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the glass, carry it into the dark, and stay there, awake, for three minutes all told. Stepping into the light only pauses the clock - you never lose what you've already put in."
-	/// Cumulative deciseconds spent conscious in darkness
-	var/dark_time = 0
-	/// The loaned kit item, reclaimed (deleted) the moment the pact ends
+	desc = "Deploy the five-by-five sweeping-light field. Stand on refuge 1 and touch it with the gloom-glass to charge it, then carry the glass in hand to refuges 3, 2 and 4 in that order. Gold tiles are the moving beams; red tiles show where they move next, two seconds ahead. Touching a beam empties the fragile charge. Refuges shelter and recharge you only when touched; leaving the field or stowing the glass empties it. If empty, return to the last refuge. The field works even in a dark room."
 	var/obj/item/vestige_gloom_glass/glass
+	var/route_index = 0
+	var/list/refuge_route = list(1, 3, 2, 4)
+	var/charge = 0
+	var/beam_step = 0
+	var/next_beam = 0
+	var/list/refuges = list()
 
 /datum/vestige_trial/long_night/on_accepted(mob/living/user)
+	..()
 	glass = hand_over(user, new /obj/item/vestige_gloom_glass(get_turf(user)))
-	glass.commune_with(user.mind)
-	to_chat(user, span_notice("The glass is cold, and heavier than it looks."))
 
 /datum/vestige_trial/long_night/Destroy()
 	QDEL_NULL(glass)
 	return ..()
 
-/datum/vestige_trial/long_night/get_progress_text()
-	return "Time spent in the dark: [DisplayTimeText(dark_time)] of [DisplayTimeText(VESTIGE_LONG_NIGHT_SECONDS SECONDS)]."
+/datum/vestige_trial/long_night/setup_field(turf/center, mob/living/user)
+	route_index = 0
+	charge = 0
+	beam_step = 0
+	next_beam = world.time
+	refuges.Cut()
+	for(var/index in 1 to 4)
+		var/obj/structure/vestige_field_node/refuge = add_node(corner_turf(index), "dark refuge [index]", index)
+		refuges += refuge
+	for(var/turf/spot in range(2, center))
+		if(abs(spot.x - center.x) == 2 && abs(spot.y - center.y) == 2)
+			continue
+		add_node(spot, "sweeping sunbeam")
 
-/// Accrues communion time. May complete (and delete) the trial.
-/datum/vestige_trial/long_night/proc/commune(deciseconds)
-	dark_time += deciseconds
-	refresh_tracker()
-	if(dark_time < VESTIGE_LONG_NIGHT_SECONDS SECONDS)
+/datum/vestige_trial/long_night/get_progress_text()
+	var/next_refuge = refuge_route[min(route_index + 1, 4)]
+	return "Transfers: [max(0, route_index - 1)]/3. Glass: [charge ? "charged" : "empty"]. Next: refuge [next_refuge].[route_index ? " Recharge at refuge [refuge_route[route_index]] if empty." : ""]"
+
+/datum/vestige_trial/long_night/proc/beam_hits(turf/spot, step_number)
+	var/turf/center = field_center?.resolve()
+	if(!center || !spot || spot.z != center.z)
+		return FALSE
+	var/row = (step_number % 5) - 2
+	var/column = 2 - ((step_number + 2) % 5)
+	return spot.y - center.y == row || spot.x - center.x == column
+
+/datum/vestige_trial/long_night/field_tick(mob/living/user, seconds_per_tick)
+	var/turf/center = field_center?.resolve()
+	if(world.time >= next_beam)
+		beam_step++
+		next_beam = world.time + 2 SECONDS
+		for(var/obj/structure/vestige_field_node/node as anything in field_nodes)
+			if(node.field_tag)
+				continue
+			var/is_lit = beam_hits(get_turf(node), beam_step)
+			node.light_state(is_lit)
+			node.color = is_lit ? "#ffe6a0" : beam_hits(get_turf(node), beam_step + 1) ? "#ff5555" : "#352849"
+	if(charge <= 0)
 		return
-	if(glass)
-		glass.visible_message(span_boldnotice("[glass] finally goes completely dark, and stops being cold."))
-		playsound(glass, 'sound/effects/magic/curse.ogg', 40, TRUE)
-	complete()
+	if(!user.is_holding(glass) || get_dist(user, center) > 2)
+		charge = 0
+		refresh_tracker()
+		return
+	for(var/obj/structure/vestige_field_node/refuge as anything in refuges)
+		if(get_turf(refuge) == get_turf(user))
+			return
+	if(!beam_hits(get_turf(user), beam_step))
+		return
+	charge = 0
+	glass.balloon_alert(user, "empty; return to refuge!")
+	refresh_tracker()
 
 /obj/item/vestige_gloom_glass
 	name = "gloom-glass"
-	desc = "A shard of black glass, always a little colder than the room. Held in the dark it gets heavier. In the light it just sits there."
+	desc = "Carry it through your sweeping-light field in hand. Stand directly on a refuge and touch it with the glass to transfer its charge."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "large"
 	color = "#101015"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Mind of the one keeping the long night (resolved fresh each tick so it rides body swaps)
-	var/datum/mind/keeper
 
-/obj/item/vestige_gloom_glass/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	keeper = null
-	return ..()
+/obj/item/vestige_gloom_glass/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/long_night/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.glass != src || !(interacting_with in trial.refuges) || get_turf(user) != get_turf(interacting_with))
+		return NONE
+	var/obj/structure/vestige_field_node/refuge = interacting_with
+	if(trial.route_index && refuge.field_tag == trial.refuge_route[trial.route_index])
+		trial.charge = 1
+		balloon_alert(user, "recharged")
+		trial.refresh_tracker()
+		return ITEM_INTERACT_SUCCESS
+	if(refuge.field_tag != trial.refuge_route[min(trial.route_index + 1, 4)] || (trial.route_index && !trial.charge))
+		balloon_alert(user, "wrong refuge or empty glass!")
+		return ITEM_INTERACT_BLOCKING
+	trial.route_index++
+	trial.charge = 1
+	trial.refresh_tracker()
+	if(trial.route_index >= 4)
+		trial.complete()
+	return ITEM_INTERACT_SUCCESS
 
-/obj/item/vestige_gloom_glass/examine(mob/user)
+/datum/vestige_trial/long_night/field_abandoned()
+	charge = 0
+	refresh_tracker()
+
+/obj/item/vestige_gloom_glass/dropped(mob/user, silent = FALSE)
 	. = ..()
-	. += span_notice("Carry it in your own hands, awake, in near-total darkness and it soaks up the night. Light pauses the count, but it never gives back what it has already taken in.")
-
-/// Binds the glass to the trial-keeper's mind and starts the communion clock
-/obj/item/vestige_gloom_glass/proc/commune_with(datum/mind/mind)
-	keeper = mind
-	START_PROCESSING(SSobj, src)
-
-/obj/item/vestige_gloom_glass/process(seconds_per_tick)
-	var/datum/vestige_trial/long_night/trial = keeper?.active_vestige_trial
-	if(!istype(trial)) // pact ended out from under us; the trial reclaims the glass on its way out
-		STOP_PROCESSING(SSobj, src)
-		return
-	var/mob/living/body = keeper.current
-	if(!isliving(body) || body.stat != CONSCIOUS)
-		return
-	if(loc != body) // it only drinks for the hand that carries it
-		return
-	var/turf/here = get_turf(body)
-	if(!here || here.get_lumcount() > LIGHTING_TILE_IS_DARK)
-		return
-	if(SPT_PROB(3, seconds_per_tick))
-		to_chat(body, span_notice("The gloom-glass grows a little heavier in your hand. The dark is settling into it."))
-	trial.commune(seconds_per_tick * (1 SECONDS)) // may complete (and delete) the trial and us with it
+	var/datum/vestige_trial/long_night/trial = user.mind?.active_vestige_trial
+	if(istype(trial) && trial.glass == src)
+		trial.field_abandoned()
 
 // ===== BOONS =====
 
@@ -480,9 +534,6 @@
 		span_boldnotice("The dark pours into you and closes what was torn open."),
 	)
 
-#undef VESTIGE_WATCHED_NEEDED
-#undef VESTIGE_WATCHED_DO_AFTER
-#undef VESTIGE_LONG_NIGHT_SECONDS
 #undef VESTIGE_UMBRAL_HEAL_RATE
 #undef VESTIGE_DREAD_RADIUS
 #undef VESTIGE_SNUFF_RADIUS
