@@ -23,16 +23,6 @@
 #define VESTIGE_RITES_WINDOW_DAMAGE_MIN 10
 #define VESTIGE_RITES_WINDOW_DAMAGE_MAX 25
 
-// Tuning constants for the Mourner's trials (file-local, #undef at bottom)
-/// How long the True Vigil must stand unbroken (keeper, candle and body all at arm's reach)
-#define VESTIGE_TRUE_VIGIL_DURATION (4 MINUTES)
-/// Distinct badly hurt people the Sitter's Rounds demands
-#define VESTIGE_TENDED_NEEDED 3
-/// Total damage, of every kind at once, before someone counts as needing a sitter
-#define VESTIGE_TENDED_MIN_DAMAGE 40
-/// Stamina damage a sitting soothes away from the patient
-#define VESTIGE_TENDED_STAMINA_HEAL 60
-
 // ===== PATRON =====
 
 /mob/living/basic/vestige_patron/mourner
@@ -73,9 +63,7 @@
 
 /datum/vestige_trial/last_breath
 	name = "Vigil of the Last Breath"
-	// Keep the count in sync with VESTIGE_LANTERN_CORPSES_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the lantern. The dead keep one last breath back, and the lantern is thirsty for it. Hold it to the lips of five different corpses. They won't miss it."
+	desc = "Take the lantern and gather the last breaths of three substantial dead organic creatures. Carp and larger fauna count, as do human remains; small vermin and machines do not. Hold the lantern to each body until its breath passes. Existing remains are welcome, but each body gives only one breath."
 	/// Corpses already drained (weakref -> TRUE), so no body is drunk twice
 	var/list/drained = list()
 
@@ -83,16 +71,21 @@
 	hand_over(user, new /obj/item/vestige_lantern(get_turf(user)))
 
 /datum/vestige_trial/last_breath/get_progress_text()
-	return "The lantern holds [length(drained)] of [VESTIGE_LANTERN_CORPSES_NEEDED] last breaths."
+	return "The lantern holds [length(drained)] of three last breaths. Substantial dead organic fauna count."
+
+/datum/vestige_trial/last_breath/proc/eligible_body(mob/living/corpse)
+	return !QDELETED(corpse) && corpse.stat == DEAD && (corpse.mob_biotypes & MOB_ORGANIC) && corpse.maxHealth >= 25
 
 /// May complete (and delete) the trial. Returns FALSE if this corpse was already drained.
 /datum/vestige_trial/last_breath/proc/drain(mob/living/corpse)
+	if(!eligible_body(corpse))
+		return FALSE
 	var/datum/weakref/key = WEAKREF(corpse)
 	if(drained[key])
 		return FALSE
 	drained[key] = TRUE
 	refresh_tracker()
-	if(length(drained) >= VESTIGE_LANTERN_CORPSES_NEEDED)
+	if(length(drained) >= 3)
 		complete()
 	return TRUE
 
@@ -105,9 +98,9 @@
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/vestige_lantern/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!ishuman(interacting_with))
+	if(!isliving(interacting_with))
 		return NONE
-	var/mob/living/carbon/human/corpse = interacting_with
+	var/mob/living/corpse = interacting_with
 	if(corpse.stat != DEAD)
 		balloon_alert(user, "still breathing!")
 		return ITEM_INTERACT_BLOCKING
@@ -115,11 +108,16 @@
 	if(!istype(trial))
 		balloon_alert(user, "the lantern stays dark")
 		return ITEM_INTERACT_BLOCKING
+	if(!trial.eligible_body(corpse))
+		balloon_alert(user, "needs substantial organic remains!")
+		return ITEM_INTERACT_BLOCKING
 	if(trial.drained[WEAKREF(corpse)])
 		balloon_alert(user, "already drunk dry!")
 		return ITEM_INTERACT_BLOCKING
 	corpse.visible_message(span_warning("[user] holds [src] to [corpse]'s lips."))
 	if(!do_after(user, 3 SECONDS, corpse))
+		return ITEM_INTERACT_BLOCKING
+	if(user.mind?.active_vestige_trial != trial || !user.is_holding(src) || !trial.eligible_body(corpse))
 		return ITEM_INTERACT_BLOCKING
 	if(!trial.drain(corpse))
 		return ITEM_INTERACT_BLOCKING
@@ -133,258 +131,248 @@
 
 /datum/vestige_trial/true_vigil
 	name = "The True Vigil"
-	// Keep the duration in sync with VESTIGE_TRUE_VIGIL_DURATION
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the candle. Find a body, anyone's, light the candle beside it, and then stay put. Four unbroken minutes within arm's reach, with the candle standing on the floor the whole time. If the flame goes out the clock starts over."
-	/// Unbroken vigil time so far (deciseconds), zeroed whenever the flame goes out
-	var/kept_time = 0
-	/// The loaned kit item, reclaimed (deleted) the moment the pact ends
+	desc = "Touch the candle to substantial organic remains on open floor. Three mourning rifts will try to drag the body away. Pull the body clear, carry the candle to each rift, and extinguish it while the body is at least three paces from that rift. Each extinguishing takes three seconds; the other rifts keep pulling. Let the body reach a rift and the attempt fails, leaving the remains intact for a retry. Carp and larger fauna are suitable."
 	var/obj/item/vestige_candle/candle
+	var/mob/living/watched
+	var/list/rifts = list()
+	var/closed_rifts = 0
 
 /datum/vestige_trial/true_vigil/on_accepted(mob/living/user)
 	candle = hand_over(user, new /obj/item/vestige_candle(get_turf(user)))
-	to_chat(user, span_notice("The candle is cold, slightly damp, and heavier than it looks."))
 
 /datum/vestige_trial/true_vigil/Destroy()
-	QDEL_NULL(candle)
+	end_vigil()
 	return ..()
 
+/datum/vestige_trial/true_vigil/proc/end_vigil()
+	STOP_PROCESSING(SSobj, src)
+	QDEL_LIST(rifts)
+	rifts = list()
+	watched = null
+	closed_rifts = 0
+
 /datum/vestige_trial/true_vigil/get_progress_text()
-	return kept_time ? "You have kept the vigil [DisplayTimeText(kept_time)] of [DisplayTimeText(VESTIGE_TRUE_VIGIL_DURATION)], unbroken." : "The candle still needs lighting beside a body."
+	return watched ? "[closed_rifts] of three mourning rifts closed. Keep the body three paces clear of the rift you are extinguishing." : "Touch the candle to substantial organic remains in an open room."
 
-/// Accrues unbroken vigil time. May complete (and delete) the trial.
-/datum/vestige_trial/true_vigil/proc/keep(deciseconds)
-	kept_time += deciseconds
+/datum/vestige_trial/true_vigil/proc/start_vigil(mob/living/body, mob/living/user)
+	if(watched || body.stat != DEAD || !(body.mob_biotypes & MOB_ORGANIC) || body.maxHealth < 25 || !isturf(body.loc))
+		return FALSE
+	var/list/places = list()
+	for(var/turf/open/place in view(3, body))
+		if(get_dist(place, body) == 3 && !isspaceturf(place) && !place.is_blocked_turf(exclude_mobs = FALSE))
+			places += place
+	if(length(places) < 3)
+		to_chat(user, span_warning("The body needs open floor with at least three clear tiles three paces away."))
+		return FALSE
+	watched = body
+	for(var/index in 1 to 3)
+		var/obj/structure/vestige_mourning_rift/rift = new(pick_n_take(places))
+		rifts += rift
+	START_PROCESSING(SSobj, src)
 	refresh_tracker()
-	if(kept_time < VESTIGE_TRUE_VIGIL_DURATION)
-		return
-	candle.visible_message(span_boldnotice("[candle]'s flame goes perfectly still for a moment, then puts itself out. The vigil is kept."))
-	playsound(candle, 'sound/effects/ghost2.ogg', 40, TRUE)
-	complete()
+	return TRUE
 
-/// Zeroes the unbroken time when the flame goes out
-/datum/vestige_trial/true_vigil/proc/break_vigil()
-	if(!kept_time)
+/datum/vestige_trial/true_vigil/process(seconds_per_tick)
+	if(!watched || watched.stat != DEAD || !isturf(watched.loc) || !length(rifts))
+		end_vigil()
+		refresh_tracker()
 		return
-	kept_time = 0
-	refresh_tracker()
+	var/obj/structure/vestige_mourning_rift/nearest
+	for(var/obj/structure/vestige_mourning_rift/rift as anything in rifts)
+		if(!nearest || get_dist(watched, rift) < get_dist(watched, nearest))
+			nearest = rift
+	if(get_dist(watched, nearest) == 0)
+		to_chat(owner.current, span_warning("A rift caught the body. The candle closes the torn vigil before it can take the remains. Reposition them and retry."))
+		end_vigil()
+		refresh_tracker()
+		return
+	if(world.time < nearest.next_pull)
+		return
+	for(var/obj/structure/vestige_mourning_rift/rift as anything in rifts)
+		rift.next_pull = world.time + 3 SECONDS
+	var/turf/destination = get_step_towards(watched, nearest)
+	if(isopenturf(destination) && !isspaceturf(destination) && !destination.is_blocked_turf(exclude_mobs = TRUE))
+		watched.forceMove(destination)
+		to_chat(owner.current, span_warning("The mourning rifts tug [watched] toward [nearest]!"))
 
 /obj/item/vestige_candle
 	name = "wake-candle"
-	desc = "A stub of grey tallow candle. The wick won't catch at all unless you're lighting it beside a body."
+	desc = "Touch substantial organic remains to begin. Pull the body away from the rifts, then use this candle on each rift from arm's reach while the body is at least three paces away."
 	icon = 'icons/obj/candle.dmi'
-	icon_state = "candle1"
-	inhand_icon_state = "candle"
-	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	icon_state = "candle1_lit"
 	w_class = WEIGHT_CLASS_TINY
 	color = "#b8cdd8"
-	/// Mind of the vigil-keeper (the same exception vestige_egg carves out for its sower)
-	var/datum/mind/keeper
-	/// The body being sat with
-	var/mob/living/carbon/human/watched
-	/// Whether the flame guttered last tick, one warning tick of grace before it goes out
-	var/guttering = FALSE
-
-/obj/item/vestige_candle/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	keeper = null
-	watched = null
-	return ..()
-
-/obj/item/vestige_candle/examine(mob/user)
-	. = ..()
-	. += span_notice("Light it beside a dead humanoid to start a vigil: [DisplayTimeText(VESTIGE_TRUE_VIGIL_DURATION)] unbroken, with you, the candle and the body all within arm's reach. It only burns while standing on the floor.")
+	var/working = FALSE
 
 /obj/item/vestige_candle/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!ishuman(interacting_with))
-		return NONE
-	var/mob/living/carbon/human/body = interacting_with
-	if(body.stat != DEAD)
-		balloon_alert(user, "they can still see it!")
-		return ITEM_INTERACT_BLOCKING
 	var/datum/vestige_trial/true_vigil/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the wick refuses to catch!")
+	if(!istype(trial) || trial.candle != src || working || !user.is_holding(src))
+		return NONE
+	if(isliving(interacting_with))
+		if(!trial.start_vigil(interacting_with, user))
+			balloon_alert(user, "needs substantial remains and open floor!")
 		return ITEM_INTERACT_BLOCKING
-	if(keeper)
-		balloon_alert(user, "already keeping a vigil!")
+	if(!(interacting_with in trial.rifts))
+		return NONE
+	if(get_dist(trial.watched, interacting_with) < 3)
+		balloon_alert(user, "pull the body three paces clear first!")
 		return ITEM_INTERACT_BLOCKING
-	balloon_alert(user, "cupping the flame...")
-	if(!do_after(user, 3 SECONDS, body))
+	working = TRUE
+	var/finished = do_after(user, 3 SECONDS, target = interacting_with)
+	working = FALSE
+	if(!finished || user.mind?.active_vestige_trial != trial || !(interacting_with in trial.rifts) || !user.is_holding(src))
 		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-lighting
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial) || body.stat != DEAD)
+	if(!trial.watched || get_dist(trial.watched, interacting_with) < 3)
+		balloon_alert(user, "the body is too close!")
 		return ITEM_INTERACT_BLOCKING
-	plant(user, body)
+	trial.rifts -= interacting_with
+	qdel(interacting_with)
+	trial.closed_rifts++
+	trial.refresh_tracker()
+	if(trial.closed_rifts == 3)
+		trial.complete()
 	return ITEM_INTERACT_SUCCESS
 
-/// Sets the candle down at the body and starts the vigil clock
-/obj/item/vestige_candle/proc/plant(mob/living/user, mob/living/carbon/human/body)
-	keeper = user.mind
-	watched = body
-	guttering = FALSE
-	forceMove(get_turf(body))
-	icon_state = "candle1_lit"
-	set_light(2, 0.8, "#b8cdd8", l_on = TRUE)
-	playsound(src, 'sound/items/match_strike.ogg', 20, TRUE)
-	user.visible_message(
-		span_warning("[user] lights a pale candle beside [body] and settles in to keep a vigil."),
-		span_notice("The wick catches with a pale flame. Stay within arm's reach of [body]. If you wander off, it goes out."),
-	)
-	START_PROCESSING(SSobj, src)
-
-// A stolen candle is a broken vigil, immediately and audibly
-/obj/item/vestige_candle/pickup(mob/user)
-	. = ..()
-	snuff()
-
-/obj/item/vestige_candle/process(seconds_per_tick)
-	var/datum/vestige_trial/true_vigil/trial = keeper?.active_vestige_trial
-	if(!istype(trial)) // pact ended out from under us; the trial reclaims the candle on its way out
-		snuff()
-		return
-	if(vigil_holds())
-		guttering = FALSE
-		if(SPT_PROB(2, seconds_per_tick))
-			visible_message(span_notice("[src]'s flame leans over toward [watched]."))
-		trial.keep(seconds_per_tick * (1 SECONDS)) // may complete the pact, deleting the trial and us with it
-		return
-	if(!guttering)
-		guttering = TRUE
-		visible_message(span_warning("[src]'s flame gutters wildly!"))
-		if(keeper?.current)
-			to_chat(keeper.current, span_warning("The vigil is faltering! Get back within arm's reach of the body."))
-		return
-	snuff()
-
-/// TRUE while every term of the vigil holds: candle standing on the floor, body dead and present, keeper conscious at arm's reach
-/obj/item/vestige_candle/proc/vigil_holds()
-	if(!isturf(loc))
-		return FALSE
-	if(QDELETED(watched) || watched.stat != DEAD)
-		return FALSE
-	var/turf/here = loc
-	var/turf/body_turf = get_turf(watched)
-	if(!body_turf || body_turf.z != here.z || get_dist(here, body_turf) > 1)
-		return FALSE
-	var/mob/living/keeper_body = keeper?.current
-	if(!istype(keeper_body) || keeper_body.stat != CONSCIOUS)
-		return FALSE
-	var/turf/keeper_turf = get_turf(keeper_body)
-	if(!keeper_turf || keeper_turf.z != here.z || get_dist(here, keeper_turf) > 1)
-		return FALSE
-	return TRUE
-
-/// Puts the flame out and zeroes the vigil. Safe to call when already out.
-/obj/item/vestige_candle/proc/snuff()
-	if(!keeper)
-		return
-	STOP_PROCESSING(SSobj, src)
-	if(!QDELETED(watched) && watched.stat != DEAD)
-		visible_message(span_notice("[src] goes out on its own, gently. No sense keeping a vigil for someone who got back up."))
-	else
-		visible_message(span_warning("[src] goes out."))
-		playsound(src, 'sound/effects/extinguish.ogg', 20, TRUE)
-	var/datum/vestige_trial/true_vigil/trial = keeper.active_vestige_trial
-	if(istype(trial))
-		trial.break_vigil()
-	keeper = null
-	watched = null
-	guttering = FALSE
-	icon_state = "candle1"
-	set_light(l_on = FALSE)
+/obj/structure/vestige_mourning_rift
+	name = "mourning rift"
+	desc = "A grief that wants the body back. Pull the remains at least three tiles away, then extinguish this with the wake-candle."
+	icon = 'icons/obj/antags/cult/rune.dmi'
+	icon_state = "1"
+	color = "#b8cdd8"
+	density = FALSE
+	anchored = TRUE
+	resistance_flags = INDESTRUCTIBLE
+	var/next_pull = 0
 
 // ===== THE SITTER'S ROUNDS =====
 
 /datum/vestige_trial/sitters_rounds
 	name = "The Sitter's Rounds"
-	// Keep the numbers in sync with VESTIGE_TENDED_NEEDED / VESTIGE_TENDED_MIN_DAMAGE
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the cloth. Find people who are badly hurt, the shaking kind, and do what I did forty times over: kneel down, take their hand, and stay until the shaking stops. Three of them, three different people. Don't promise them anything."
-	/// Patients already sat with (weakref -> TRUE), so the same brow never counts twice
-	var/list/tended = list()
+	desc = "Use the cloth in hand to call a stranded patient and unfold a cot on safe floor. Examine and scan them: their injuries vary. Buckle them to the cot, settle their shaking with the cloth, and use the supplied dressings on their actual injuries. The cloth comforts; it does not heal wounds. When they are resting, warm, and have at most ten total injury, use the cloth once more to discharge them. Helpers can treat them; the supplied medicine only works on this patient."
+	var/mob/living/carbon/human/vestige_patient/patient
+	var/obj/structure/bed/cot
 
 /datum/vestige_trial/sitters_rounds/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_cloth(get_turf(user)))
+	hand_over(user, new /obj/item/stack/medical/bruise_pack/vestige_sitter(get_turf(user), 10))
+	hand_over(user, new /obj/item/stack/medical/ointment/vestige_sitter(get_turf(user), 10))
+	hand_over(user, new /obj/item/healthanalyzer(get_turf(user)))
+
+/datum/vestige_trial/sitters_rounds/Destroy()
+	patient = null
+	cot = null
+	return ..()
 
 /datum/vestige_trial/sitters_rounds/get_progress_text()
-	return "You have sat with [length(tended)] of [VESTIGE_TENDED_NEEDED] of the badly hurt."
+	if(!patient)
+		return "Use the cloth in hand on safe floor to call the patient and cot."
+	return "Patient injury: [round(patient.getBruteLoss())] brute, [round(patient.getFireLoss())] burn. Resting: [patient.buckled == cot ? "yes" : "no"]. Settle their shaking, treat the injuries, then use the cloth to discharge."
 
-/// May complete (and delete) the trial. Returns FALSE if this patient was already tended.
-/datum/vestige_trial/sitters_rounds/proc/tend(mob/living/patient)
-	var/datum/weakref/key = WEAKREF(patient)
-	if(tended[key])
-		return FALSE
-	tended[key] = TRUE
+/datum/vestige_trial/sitters_rounds/proc/call_patient(mob/living/user)
+	if(patient)
+		to_chat(user, span_notice("Your patient is already here. The pact tracker can restart the case if they were lost."))
+		return
+	var/turf/open/here = get_turf(user)
+	if(!isopenturf(here) || isspaceturf(here) || here.return_air()?.return_pressure() < 80)
+		to_chat(user, span_warning("The patient needs a pressurized room."))
+		return
+	cot = register_loan(new /obj/structure/bed/vestige_patient_cot(here))
+	patient = register_loan(new /mob/living/carbon/human/vestige_patient(here))
+	patient.caregiver = owner
+	var/bruised_zone = pick(BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	var/burnt_zone = pick(BODY_ZONE_HEAD, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+	patient.apply_damage(rand(25, 35), BRUTE, bruised_zone, wound_bonus = CANT_WOUND)
+	patient.apply_damage(rand(25, 35), BURN, burnt_zone, wound_bonus = CANT_WOUND)
+	patient.adjustStaminaLoss(60)
+	patient.adjust_jitter(1 MINUTES)
+	patient.set_resting(TRUE)
+	to_chat(user, span_notice("The Wake's patient folds out of the cloth beside a cot. Scan their injuries, buckle them in, and settle their shaking."))
 	refresh_tracker()
-	if(length(tended) >= VESTIGE_TENDED_NEEDED)
-		complete()
-	return TRUE
+
+/datum/vestige_trial/sitters_rounds/proc/ready_for_discharge()
+	if(!patient || patient.stat == DEAD || patient.buckled != cot || !patient.comforted)
+		return FALSE
+	return patient.getBruteLoss() + patient.getFireLoss() + patient.getToxLoss() + patient.getOxyLoss() <= 10 && patient.bodytemperature >= BODYTEMP_COLD_DAMAGE_LIMIT && patient.bodytemperature <= BODYTEMP_HEAT_DAMAGE_LIMIT
+
+/mob/living/carbon/human/vestige_patient
+	name = "stranded patient"
+	real_name = "stranded patient"
+	var/datum/mind/caregiver
+	var/comforted = FALSE
+
+/mob/living/carbon/human/vestige_patient/examine(mob/user)
+	. = ..()
+	. += span_notice("A Wake patient awaiting care. A health analyzer identifies the injuries; a cot and the sitter's cloth help them rest. Dressings treat their actual body parts.")
+
+/obj/structure/bed/vestige_patient_cot
+	name = "Wake cot"
+	can_deconstruct = FALSE
+	build_stack_amount = 0
+
+/obj/item/stack/medical/bruise_pack/vestige_sitter
+	name = "Wake bruise dressings"
+	desc = "Dressings bound to the Wake's stranded patient. Their medicine evaporates on anyone else."
+
+/obj/item/stack/medical/bruise_pack/vestige_sitter/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	if(!istype(patient, /mob/living/carbon/human/vestige_patient))
+		return FALSE
+	var/mob/living/carbon/human/vestige_patient/subject = patient
+	var/datum/vestige_trial/sitters_rounds/trial = subject.caregiver?.active_vestige_trial
+	if(!istype(trial) || trial.patient != patient)
+		return FALSE
+	return ..()
+
+/obj/item/stack/medical/ointment/vestige_sitter
+	name = "Wake burn dressings"
+	desc = "Dressings bound to the Wake's stranded patient. Their medicine evaporates on anyone else."
+
+/obj/item/stack/medical/ointment/vestige_sitter/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	if(!istype(patient, /mob/living/carbon/human/vestige_patient))
+		return FALSE
+	var/mob/living/carbon/human/vestige_patient/subject = patient
+	var/datum/vestige_trial/sitters_rounds/trial = subject.caregiver?.active_vestige_trial
+	if(!istype(trial) || trial.patient != patient)
+		return FALSE
+	return ..()
 
 /obj/item/vestige_cloth
 	name = "sitter's cloth"
-	desc = "A square of linen, always cool and slightly damp. It has wiped a great many brows."
+	desc = "Use in hand to call the Wake's patient and cot. Use on the patient to comfort them, then again after treatment to discharge them."
 	icon = 'icons/obj/toys/toy.dmi'
 	icon_state = "rag"
 	w_class = WEIGHT_CLASS_TINY
 	color = "#b8cdd8"
+	var/working = FALSE
 
-/obj/item/vestige_cloth/examine(mob/user)
-	. = ..()
-	. += span_notice("Press it to someone badly hurt but still alive to sit with them until the shaking stops. The same person never counts twice.")
+/obj/item/vestige_cloth/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/sitters_rounds/trial = user.mind?.active_vestige_trial
+	if(istype(trial))
+		trial.call_patient(user)
+	return TRUE
 
 /obj/item/vestige_cloth/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!ishuman(interacting_with))
-		return NONE
-	var/mob/living/carbon/human/patient = interacting_with
 	var/datum/vestige_trial/sitters_rounds/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "just a damp cloth!")
+	if(!istype(trial) || interacting_with != trial.patient || !trial.patient || working)
+		return NONE
+	var/mob/living/carbon/human/vestige_patient/patient = trial.patient
+	if(patient.stat == DEAD || patient.buckled != trial.cot)
+		balloon_alert(user, "they need to rest alive on the cot!")
 		return ITEM_INTERACT_BLOCKING
-	if(patient == user)
-		balloon_alert(user, "someone else must sit with you!")
+	working = TRUE
+	var/finished = do_after(user, 3 SECONDS, target = patient)
+	working = FALSE
+	if(!finished || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || patient.stat == DEAD || patient.buckled != trial.cot)
 		return ITEM_INTERACT_BLOCKING
-	if(patient.stat == DEAD)
-		balloon_alert(user, "past comforting!")
-		return ITEM_INTERACT_BLOCKING
-	if(get_suffering(patient) < VESTIGE_TENDED_MIN_DAMAGE)
-		balloon_alert(user, "not hurt badly enough!")
-		return ITEM_INTERACT_BLOCKING
-	if(trial.tended[WEAKREF(patient)])
-		balloon_alert(user, "already sat with!")
-		return ITEM_INTERACT_BLOCKING
-	user.visible_message(
-		span_warning("[user] kneels beside [patient], presses a cool cloth to [patient.p_their()] brow, and takes [patient.p_their()] hand."),
-		span_notice("You kneel, press the cloth to [patient]'s brow, and take [patient.p_their()] hand. Now stay put."),
-	)
-	to_chat(patient, span_notice("Someone kneels down and takes your hand. They don't say anything. They just stay."))
-	if(!do_after(user, 8 SECONDS, target = patient))
-		balloon_alert(user, "the sitting was cut short!")
-		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-sitting
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return ITEM_INTERACT_BLOCKING
-	if(patient.stat == DEAD) // they slipped away mid-sitting; that grief belongs to the lantern now
-		balloon_alert(user, "they slipped away...")
-		return ITEM_INTERACT_BLOCKING
-	patient.adjustStaminaLoss(-VESTIGE_TENDED_STAMINA_HEAL)
+	patient.comforted = TRUE
+	patient.adjustStaminaLoss(-60)
 	patient.adjust_jitter(-1 MINUTES)
-	patient.adjust_dizzy(-1 MINUTES)
-	patient.add_mood_event("vestige_tended", /datum/mood_event/vestige_tended)
-	patient.visible_message(
-		span_notice("[patient]'s shaking slows, and stops."),
-		span_boldnotice("The shaking stops. Someone stayed with you, and it helped."),
-	)
-	playsound(patient, 'sound/effects/ghost2.ogg', 20, TRUE)
-	trial.tend(patient) // may complete (and delete) the trial, nothing touches it after this
+	if(trial.ready_for_discharge())
+		patient.visible_message(span_notice("[patient] relaxes. The Wake has a bed ready for them now."))
+		trial.complete()
+	else
+		to_chat(user, span_notice("Their shaking settles. The cloth cannot close their injuries: examine or scan them and apply the appropriate dressings."))
+		trial.refresh_tracker()
 	return ITEM_INTERACT_SUCCESS
-
-/// Everything that hurts, totaled: the cloth answers to pain of every kind
-/obj/item/vestige_cloth/proc/get_suffering(mob/living/patient)
-	return patient.getBruteLoss() + patient.getFireLoss() + patient.getToxLoss() + patient.getOxyLoss() + patient.getStaminaLoss()
 
 /datum/mood_event/vestige_tended
 	description = "Someone stayed until the shaking stopped."
@@ -708,7 +696,3 @@
 #undef VESTIGE_MOURNING_STAMINA
 #undef VESTIGE_RITES_WINDOW_DAMAGE_MIN
 #undef VESTIGE_RITES_WINDOW_DAMAGE_MAX
-#undef VESTIGE_TRUE_VIGIL_DURATION
-#undef VESTIGE_TENDED_NEEDED
-#undef VESTIGE_TENDED_MIN_DAMAGE
-#undef VESTIGE_TENDED_STAMINA_HEAL

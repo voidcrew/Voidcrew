@@ -2,8 +2,8 @@
  * # The Scarlet Sepulcher: cult vestige
  *
  * A votive barge whose congregation bled out waiting for an ending. Trials
- * are rites: a remote ritual sacrifice, and a long tithe of the supplicant's
- * own blood. Boons are blood magic reimplemented without IS_CULTIST checks.
+ * are rites: an assembled remote offering and a blood-funded bounded fight.
+ * Boons are blood magic reimplemented without IS_CULTIST checks.
  */
 
 // ===== PATRON =====
@@ -44,7 +44,7 @@
 	name = "Rite of Offering"
 	// Keep the count in sync with VESTIGE_OFFERING_CANDLES
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the satchel - chalk, candles, a knife. Somewhere away from here, draw the rune, ring it with three lit candles, and lay a dead body on it that once had a soul. It won't work inside these walls."
+	desc = "Take the satchel - chalk, candles, a knife. Somewhere away from here, draw the rune, ring it with three lit candles, and lay a substantial dead organic creature on it. A carp or larger animal is enough; small vermin and machines are not. It won't work inside these walls."
 	/// Whether the rune has been scribed somewhere
 	var/rune_scribed = FALSE
 
@@ -52,7 +52,7 @@
 	hand_over(user, new /obj/item/storage/box/vestige_ritual(get_turf(user)))
 
 /datum/vestige_trial/offering/get_progress_text()
-	return rune_scribed ? "The rune is drawn. It needs lit candles and a body that once had a soul." : "Draw the rune somewhere well away from the Sepulcher."
+	return rune_scribed ? "The rune is drawn. It needs three lit candles and a substantial dead organic creature." : "Draw the rune somewhere well away from the Sepulcher."
 
 /obj/item/storage/box/vestige_ritual
 	name = "ritual satchel"
@@ -89,11 +89,9 @@
 	balloon_alert(user, "scribing...")
 	if(!do_after(user, 8 SECONDS, target = target_turf))
 		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-scribe
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(user.mind?.active_vestige_trial != trial || QDELETED(src))
 		return ITEM_INTERACT_BLOCKING
-	new /obj/structure/vestige_rune(target_turf)
+	trial.register_loan(new /obj/structure/vestige_rune(target_turf))
 	trial.rune_scribed = TRUE
 	trial.refresh_tracker()
 	user.visible_message(
@@ -116,7 +114,10 @@
 
 /obj/structure/vestige_rune/examine(mob/user)
 	. = ..()
-	. += span_notice("It needs [VESTIGE_OFFERING_CANDLES] lit candles around it, a dead humanoid that once had a soul laid on top of it, and someone willing to use the knife.")
+	. += span_notice("It needs [VESTIGE_OFFERING_CANDLES] lit candles around it, a substantial dead organic creature laid on top of it, and someone willing to use the knife. Ordinary carp and larger fauna count; small vermin and machines do not.")
+
+/obj/structure/vestige_rune/proc/eligible_offering(mob/living/body)
+	return body.stat == DEAD && (body.mob_biotypes & MOB_ORGANIC) && body.maxHealth >= 25
 
 /obj/structure/vestige_rune/attackby(obj/item/attacking_item, mob/user, params)
 	if(!istype(attacking_item, /obj/item/knife/ritual/vestige))
@@ -131,18 +132,18 @@
 		return
 	var/lit_candles = 0
 	for(var/obj/item/flashlight/flare/candle/candle in range(2, src))
-		if(candle.light_on)
+		if(candle.light_on && isturf(candle.loc))
 			lit_candles++
 	if(lit_candles < VESTIGE_OFFERING_CANDLES)
 		balloon_alert(user, "needs [VESTIGE_OFFERING_CANDLES] lit candles!")
 		return
-	var/mob/living/carbon/human/offering
-	for(var/mob/living/carbon/human/body in get_turf(src))
-		if(body.stat == DEAD && body.mind)
+	var/mob/living/offering
+	for(var/mob/living/body in get_turf(src))
+		if(eligible_offering(body))
 			offering = body
 			break
 	if(!offering)
-		balloon_alert(user, "needs a corpse with a soul on it!")
+		balloon_alert(user, "needs substantial organic remains!")
 		return
 	user.visible_message(
 		span_bolddanger("[user] raises the knife over [offering] and begins a rite!"),
@@ -151,12 +152,18 @@
 	playsound(src, 'sound/effects/magic/enter_blood.ogg', 50, TRUE)
 	if(!do_after(user, 8 SECONDS, target = src))
 		return
-	// Everything must still hold at the end of the channel
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	// A replacement pact cannot inherit a channel started under the old pact.
+	if(user.mind?.active_vestige_trial != trial || QDELETED(src))
 		return
-	if(QDELETED(offering) || get_turf(offering) != get_turf(src) || offering.stat != DEAD || !offering.mind)
+	if(QDELETED(offering) || get_turf(offering) != get_turf(src) || !eligible_offering(offering))
 		balloon_alert(user, "the offering left the rune!")
+		return
+	lit_candles = 0
+	for(var/obj/item/flashlight/flare/candle/candle in range(2, src))
+		if(candle.light_on && isturf(candle.loc))
+			lit_candles++
+	if(lit_candles < VESTIGE_OFFERING_CANDLES || !user.is_holding_item_of_type(/obj/item/knife/ritual/vestige))
+		balloon_alert(user, "the rite was disturbed!")
 		return
 	offering.visible_message(span_bolddanger("[offering] collapses into a column of ash above the rune!"))
 	playsound(src, 'sound/effects/magic/demon_consume.ogg', 60, TRUE)
@@ -172,21 +179,107 @@
 
 /datum/vestige_trial/vigil
 	name = "Vigil of Blood"
-	// Keep the amount in sync with VESTIGE_VIGIL_BLOOD_TOTAL
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Feed the altar 400 units of your own blood, over as many visits as it takes. It only takes it fresh, out of a living body, and it won't take anyone else's."
-	/// Blood donated so far
-	var/blood_given = 0
+	desc = "Take the votive and knife. Unfold the votive in an open room: it takes thirty units of blood, or a little strength from a bloodless body, and calls three hungry clots. They are real attackers. Kill them with the knife or your own weapons while keeping the fight within six paces of the votive. Each death outside that circle breaks the rite. The votive can be packed up to retry; it never charges blood twice."
+	var/list/clots = list()
+	var/obj/item/vestige_blood_votive/votive
+	var/paid = FALSE
+	var/slain = 0
+	var/running = FALSE
+
+/datum/vestige_trial/vigil/on_accepted(mob/living/user)
+	votive = hand_over(user, new /obj/item/vestige_blood_votive(get_turf(user)))
+	hand_over(user, new /obj/item/knife/ritual/vestige(get_turf(user)))
+
+/datum/vestige_trial/vigil/Destroy()
+	reset_rite()
+	return ..()
+
+/datum/vestige_trial/vigil/proc/reset_rite()
+	running = FALSE
+	QDEL_LIST(clots)
+	clots = list()
+	slain = 0
+	if(votive)
+		votive.anchored = FALSE
+	refresh_tracker()
 
 /datum/vestige_trial/vigil/get_progress_text()
-	return "The altar has drunk [blood_given] of [VESTIGE_VIGIL_BLOOD_TOTAL] units."
+	return running ? "[slain] of three hungry clots slain inside the votive's six-pace circle." : "Use the votive in hand in a clear room. Bring a weapon."
 
-/// May complete (and delete) the trial
-/datum/vestige_trial/vigil/proc/donate(amount)
-	blood_given += amount
+/datum/vestige_trial/vigil/proc/unfold(mob/living/user)
+	if(running || length(clots))
+		reset_rite()
+		to_chat(user, span_warning("You fold the broken rite away. The blood already paid will fund another attempt."))
+		return
+	var/list/places = list()
+	for(var/turf/open/place in view(3, user))
+		if(get_dist(place, user) >= 2 && !isspaceturf(place) && !place.is_blocked_turf(exclude_mobs = FALSE))
+			places += place
+	if(length(places) < 3)
+		to_chat(user, span_warning("The votive needs three clear floor tiles two or three paces away."))
+		return
+	if(!paid)
+		if(!HAS_TRAIT(user, TRAIT_NOBLOOD) && user.blood_volume)
+			if(user.blood_volume < BLOOD_VOLUME_SAFE)
+				to_chat(user, span_warning("Recover your blood first. The votive refuses an unsafe payment."))
+				return
+			user.blood_volume -= 30
+		else
+			user.adjustStaminaLoss(20)
+		paid = TRUE
+	votive.forceMove(get_turf(user))
+	votive.anchored = TRUE
+	running = TRUE
+	for(var/index in 1 to 3)
+		var/mob/living/basic/carp/vestige_clot/clot = new(pick_n_take(places))
+		clots += clot
+		RegisterSignal(clot, COMSIG_LIVING_DEATH, PROC_REF(clot_died))
 	refresh_tracker()
-	if(blood_given >= VESTIGE_VIGIL_BLOOD_TOTAL)
+
+/datum/vestige_trial/vigil/proc/clot_died(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	if(!running || !(source in clots))
+		return
+	if(!votive || source.z != votive.z || get_dist(source, votive) > 6)
+		running = FALSE
+		to_chat(owner.current, span_warning("A clot died beyond the blood circle. Use the votive to pack up, then retry."))
+		return
+	slain++
+	refresh_tracker()
+	if(slain == 3)
 		complete()
+
+/obj/item/vestige_blood_votive
+	name = "blood votive"
+	desc = "Use in hand to call three hungry clots. Keep every kill within six paces. Once planted, click it with an empty hand to pack up and retry."
+	icon = 'icons/obj/antags/cult/structures.dmi'
+	icon_state = "talismanaltar"
+	w_class = WEIGHT_CLASS_SMALL
+	resistance_flags = INDESTRUCTIBLE
+
+/obj/item/vestige_blood_votive/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/vigil/trial = user.mind?.active_vestige_trial
+	if(istype(trial) && trial.votive == src)
+		trial.unfold(user)
+	return TRUE
+
+/obj/item/vestige_blood_votive/attack_hand(mob/living/user, list/modifiers)
+	var/datum/vestige_trial/vigil/trial = user.mind?.active_vestige_trial
+	if(istype(trial) && trial.votive == src && anchored)
+		trial.reset_rite()
+	return ..()
+
+/mob/living/basic/carp/vestige_clot
+	name = "hungry clot"
+	desc = "A knot of blood with more teeth than it needs. Keep it inside the votive's circle."
+	color = "#a02030"
+	health = 30
+	maxHealth = 30
+	melee_damage_lower = 8
+	melee_damage_upper = 8
+	melee_attack_cooldown = 2 SECONDS
+	obj_damage = 0
+	butcher_results = null
 
 /obj/structure/vestige_altar
 	name = "sepulcher altar"
@@ -205,31 +298,7 @@
 	return TRUE
 
 /obj/structure/vestige_altar/proc/attempt_donation(mob/living/carbon/human/user)
-	if(!ishuman(user))
-		return
-	var/datum/vestige_trial/vigil/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		to_chat(user, span_warning("You press a palm to the stone. Nothing happens."))
-		return
-	if(HAS_TRAIT(user, TRAIT_NOBLOOD) || !user.blood_volume)
-		to_chat(user, span_warning("The altar finds nothing in you worth drinking."))
-		return
-	if(user.blood_volume < BLOOD_VOLUME_SAFE)
-		to_chat(user, span_warning("You've lost too much blood already. Come back when you've recovered."))
-		return
-	user.visible_message(
-		span_warning("[user] presses [user.p_their()] palm into the altar's groove..."),
-		span_danger("The altar bites."),
-	)
-	if(!do_after(user, 4 SECONDS, target = src))
-		return
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial) || user.blood_volume < BLOOD_VOLUME_SAFE)
-		return
-	user.blood_volume -= VESTIGE_VIGIL_BLOOD_PER_DONATION
-	playsound(src, 'sound/effects/magic/enter_blood.ogg', 50, TRUE)
-	to_chat(user, span_notice("Your blood runs down the groove and disappears."))
-	trial.donate(VESTIGE_VIGIL_BLOOD_PER_DONATION)
+	to_chat(user, span_notice("The altar has no use for idle tithes. Havel's votive carries the blood rite into the field."))
 
 // ===== BOONS =====
 

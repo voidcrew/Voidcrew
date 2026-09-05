@@ -360,6 +360,7 @@
 #include "voidcrew_vestige_field.dm"
 #include "voidcrew_vestige_hunts.dm"
 #include "voidcrew_vestige_lifecycle.dm"
+#include "voidcrew_vestige_rites.dm"
 #include "voidcrew_wall_break_atmos.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_zone_logging.dm"
