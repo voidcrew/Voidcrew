@@ -119,10 +119,11 @@
 	dry_prey.death()
 	TEST_ASSERT_EQUAL(length(acid_trial.dissolved), 1, "A death after the acid dries must not count.")
 	var/mob/living/basic/carp/impact_prey = allocate(/mob/living/basic/carp, run_loc_floor_top_right)
-	impact_prey.health = 4
+	impact_prey.adjustBruteLoss(impact_prey.maxHealth - 4)
 	var/obj/projectile/vestige_kiss_glob/glob = allocate(/obj/projectile/vestige_kiss_glob)
 	glob.aim_projectile(impact_prey, keeper, list())
 	glob.firer = keeper
 	glob.fired_from = maw
 	impact_prey.bullet_act(glob, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(impact_prey.stat, DEAD, "The first impact must actually be lethal for this fixture.")
 	TEST_ASSERT_EQUAL(length(acid_trial.dissolved), 2, "A lethal first acid impact must preserve the mark-before-damage ordering.")
