@@ -429,7 +429,7 @@
 /// The parent's finder, kept honest: a real, crawlable pool within reach, or null
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/find_wet_door(turf/origin)
 	for(var/obj/effect/decal/cleanable/pool in range(blood_radius, origin))
-		if(pool.can_bloodcrawl_in())
+		if(is_valid_blood_destination(origin, pool))
 			return pool
 	return null
 

@@ -68,7 +68,7 @@
  * upstream for any ID-less mob.
  */
 /obj/machinery/door/allowed(mob/M)
-	if(isliving(M) && !M.client && (length(req_access) || length(req_one_access)) \
+	if(isliving(M) && !GET_CLIENT(M) && (length(req_access) || length(req_one_access)) \
 		&& !isbot(M) && !HAS_SILICON_ACCESS(M) && in_unrestricted_ship())
 		return FALSE
 	return ..()
@@ -87,9 +87,8 @@
  * openable by anyone, which is the whole point of a firedoor.
  *
  * Nothing else about a door changes. An unpowered one is still crowbarred open, an
- * emagged one is still emagged and a cut ID-scan wire still bypasses the reader -
- * airlock requiresID() answers FALSE for both, and bumpopen() never asks allowed() in
- * that case. Bolts are still bolts. Hanging the refusal on the two subtypes rather
+ * emagged one is still emagged and a disabled ID scanner still disables the reader.
+ * Bolts are still bolts. Hanging the refusal on the two subtypes rather
  * than on the /obj/machinery/door override above is deliberate: it runs ahead of
  * `emergency` and `unres_sides`, neither of which should punch a hole in a lock the
  * captain deliberately set.
@@ -111,7 +110,7 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 		return FALSE
 	// Players only. Clientless mobs are covered by the NPC rule above, and bots and
 	// silicons stay on the upstream path so their own credentials are still read.
-	if(!user?.client)
+	if(!user || !GET_CLIENT(user))
 		return FALSE
 	if(isbot(user) || HAS_SILICON_ACCESS(user))
 		return FALSE
@@ -131,6 +130,13 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 /obj/machinery/door/airlock/allowed(mob/user)
 	if(refused_by_ship_crew_lock(user))
 		return FALSE
+	return ..()
+
+// Exterior airlocks skip allowed() when docked or facing safe air. Their safety
+// override may bypass department access, but must still respect the crew lock.
+/obj/machinery/door/airlock/try_to_activate_door(mob/living/user, access_bypass = FALSE)
+	if(access_bypass && requiresID() && refused_by_ship_crew_lock(user))
+		access_bypass = FALSE
 	return ..()
 
 /obj/machinery/door/window/allowed(mob/user)

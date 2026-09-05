@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { type BooleanLike } from 'tgui-core/react';
 import {
   Box,
   Button,
@@ -12,6 +11,7 @@ import {
   Tabs,
   TextArea,
 } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -237,7 +237,9 @@ const InvitesTab = () => {
                       icon="times"
                       color="bad"
                       compact
-                      onClick={() => act('cancel_invite', { ckey: invite.ckey })}
+                      onClick={() =>
+                        act('cancel_invite', { ckey: invite.ckey })
+                      }
                     >
                       Cancel
                     </Button>
@@ -269,7 +271,9 @@ const InvitesTab = () => {
                       color="good"
                       compact
                       disabled={!can_invite}
-                      onClick={() => act('invite_player', { ckey: player.ckey })}
+                      onClick={() =>
+                        act('invite_player', { ckey: player.ckey })
+                      }
                       tooltip={
                         can_invite
                           ? 'Send crew invitation'
@@ -294,16 +298,7 @@ const ApplicationsTab = () => {
   const { applications } = data;
 
   return (
-    <Section
-      title="Applications to Join"
-      fill
-      scrollable
-      buttons={
-        <Box color="label" fontSize="11px">
-          Sent from the lobby by players your join password is keeping out
-        </Box>
-      }
-    >
+    <Section title="Applications to Join" fill scrollable>
       {applications.length === 0 ? (
         <NoticeBox info>
           Nobody has applied. Players see an Apply button on your ship in the
@@ -400,7 +395,8 @@ const SettingsTab = () => {
             </Stack.Item>
           </Stack>
           <Box mt={1} fontSize="11px" color="label">
-            Ship names must be 2-42 characters. Renaming has a 5-minute cooldown.
+            Ship names must be 2-42 characters. Renaming has a 5-minute
+            cooldown.
           </Box>
         </Section>
       </Stack.Item>
@@ -431,9 +427,9 @@ const SettingsTab = () => {
           {can_set_password ? (
             <>
               <Box mb={1} color="label" fontSize="11px">
-                Players joining from the lobby must enter this password. Crew
-                you invite, and anyone who has already served aboard, never
-                need it. Leave blank and save to remove the lock.
+                Players joining from the lobby must enter this password or be
+                approved or invited. Changing it clears all saved join access
+                and approvals. Leave blank and save to remove the lock.
               </Box>
               <Stack>
                 <Stack.Item grow>
@@ -457,6 +453,17 @@ const SettingsTab = () => {
                   </Button>
                 </Stack.Item>
               </Stack>
+              <Box mt={1}>
+                <Button
+                  icon="user-lock"
+                  color="caution"
+                  disabled={!join_password}
+                  onClick={() => act('reset_join_access')}
+                  tooltip="Clear all saved join access and approvals without changing the password. Players must enter it or be approved or invited again to rejoin. Crew already aboard stay on the roster."
+                >
+                  Reset Join Access
+                </Button>
+              </Box>
             </>
           ) : (
             <Box color="label">
@@ -500,8 +507,8 @@ const SettingsTab = () => {
       <Stack.Item grow>
         <Section title="Ship Memo" fill>
           <Box mb={1} color="label" fontSize="11px">
-            This memo is shown to players when they select your ship in the lobby
-            and after they spawn.
+            This memo is shown to players when they select your ship in the
+            lobby and after they spawn.
           </Box>
           <TextArea
             fluid

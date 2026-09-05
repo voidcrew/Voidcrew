@@ -303,12 +303,8 @@
 	data["state"] = current_ship.state
 	data["docked"] = isturf(current_ship.loc) ? FALSE : TRUE
 
-	// Unified navigation readout: live distance/bearing from current position,
-	// grouped by category on the helm. Trader outposts are permanent fixtures,
-	// always listed (no per-ship state, no clear button). Most other entries are
-	// charted waypoints, missions, bounties, active-scan contacts. Ship
-	// contacts are appended live (not charted) when the top radar tier is
-	// researched: they vanish the moment either ship leaves the bubble.
+	// Navigation contacts carry live distance/bearing. The crew's dismissals
+	// filter the list in TGUI; every contact still feeds the chart.
 	data["sensorRange"] = current_ship.get_sensor_range()
 	data["scanCooldown"] = !COOLDOWN_FINISHED(current_ship, sensor_scan_cooldown)
 	data["scanCooldownRemaining"] = COOLDOWN_TIMELEFT(current_ship, sensor_scan_cooldown)
@@ -324,6 +320,7 @@
 		entry["dist"] = round(sqrt(dx * dx + dy * dy))
 		entry["bearing"] = overmap_delta_to_compass(dx, dy)
 		data["waypoints"] += list(entry)
+	data["dismissedContacts"] = current_ship.get_dismissed_contacts()
 	// Hails heard by this ship. Newest last, as the log stores them; `live` marks
 	// the ones still young enough to pulse on the chart (see ship_transmissions.dm).
 	data["transmissions"] = list()
@@ -904,6 +901,16 @@
 			update_static_data(usr, ui)
 			return
 			*/
+		if("dismiss_contacts")
+			if(current_ship.dismiss_contacts(params["contacts"]))
+				for(var/obj/machinery/computer/helm/console as anything in current_ship.helm_consoles)
+					SStgui.update_uis(console)
+			return TRUE
+		if("restore_contacts")
+			current_ship.restore_contacts(params["contacts"])
+			for(var/obj/machinery/computer/helm/console as anything in current_ship.helm_consoles)
+				SStgui.update_uis(console)
+			return TRUE
 		if("remove_waypoint")
 			var/datum/ship_waypoint/waypoint = locate(params["waypoint"]) in current_ship.waypoints
 			if(waypoint)

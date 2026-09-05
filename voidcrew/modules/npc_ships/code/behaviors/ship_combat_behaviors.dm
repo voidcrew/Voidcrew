@@ -935,18 +935,12 @@
 	controller.clear_target()
 	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
 
-	// Disarmed ships are out of the fight for good: scan_threats refuses to acquire
-	// for a hull with no intact weapons, so free its pool slot for a replacement
-	// instead of leaving a toothless hulk holding a spawn budget forever. Keyed on
-	// physical disarmament rather than the retreat reason - guns blown off mid-siphon
-	// end the career just the same. The hull itself stays in the world: crew aboard,
-	// hold full, boardable.
+	// A disarmed hull gets a replacement and a limited salvage window, shared with
+	// the reconcile path that catches weapons destroyed outside an engagement.
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
-	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
-	if(!ship || !combat || combat.has_intact_weapons())
+	if(!ship?.resolve_disarmed())
 		return
 
-	ship.notify_spawner_resolved("disarmed")
 	last_target?.ship_notify("[ship.name] is disarmed and has broken off for good.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 25)
 
 // ========== ACTIVATE SIPHON ==========

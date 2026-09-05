@@ -88,3 +88,159 @@
 	TEST_ASSERT(locker.locked, "the test locker did not start locked")
 	locker.togglelock(crewmember, silent = TRUE)
 	TEST_ASSERT(!locker.locked, "a crewmember carrying no ID could not unlock a secure locker")
+
+/// Password rotation must invalidate both remembered passwords and captain approvals.
+/datum/unit_test/voidcrew_ship_join_password_reset
+
+/datum/unit_test/voidcrew_ship_join_password_reset/Run()
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	TEST_ASSERT(ship.set_join_password("old password"), "could not set the initial join password")
+	ship.password_cleared_ckeys["passworduser"] = TRUE
+	ship.password_cleared_ckeys["inviteduser"] = TRUE
+
+	var/datum/ship_application/application = allocate(/datum/ship_application, ship, "approveduser", "Applicant", "Let me join")
+	ship.crew_applications += application
+	TEST_ASSERT(ship.resolve_crew_application(application, TRUE), "could not approve the application")
+	TEST_ASSERT(ship.is_password_cleared("approveduser"), "approval did not grant join access")
+
+	// Case and surrounding whitespace do not change the effective password.
+	ship.set_join_password(" OLD PASSWORD ")
+	TEST_ASSERT(ship.is_password_cleared("passworduser"), "saving an equivalent password unexpectedly reset join access")
+
+	ship.set_join_password("new password")
+	TEST_ASSERT(!ship.check_join_password("old password"), "the old password still works after rotation")
+	TEST_ASSERT(ship.check_join_password(" NEW PASSWORD "), "the new password is not accepted with normal trimming and case folding")
+	TEST_ASSERT(!ship.is_password_cleared("passworduser"), "a remembered password bypassed the new password")
+	TEST_ASSERT(!ship.is_password_cleared("inviteduser"), "an old invitation bypassed the new password")
+	TEST_ASSERT(!ship.is_password_cleared("approveduser"), "an old application approval bypassed the new password")
+
+	// Removing and later restoring a password must not resurrect old approvals.
+	ship.password_cleared_ckeys["approveduser"] = TRUE
+	ship.set_join_password(null)
+	TEST_ASSERT(ship.is_password_cleared("newuser"), "clearing the password did not open joining to everyone")
+	TEST_ASSERT_EQUAL(length(ship.password_cleared_ckeys), 0, "clearing the password retained old join access")
+	ship.password_cleared_ckeys["publicjoiner"] = TRUE
+	ship.set_join_password("new password")
+	TEST_ASSERT(!ship.is_password_cleared("approveduser"), "restoring a password resurrected an old approval")
+	TEST_ASSERT(!ship.is_password_cleared("publicjoiner"), "someone who joined while public bypassed the new lock")
+
+/// A manual reset revokes future joins while preserving the password and serving crew.
+/datum/unit_test/voidcrew_ship_join_access_reset
+
+/datum/unit_test/voidcrew_ship_join_access_reset/Run()
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	var/obj/structure/overmap/ship/other_ship = allocate(/obj/structure/overmap/ship)
+	ship.set_join_password("password")
+	other_ship.set_join_password("other password")
+	ship.password_cleared_ckeys["returninguser"] = TRUE
+	other_ship.password_cleared_ckeys["returninguser"] = TRUE
+
+	var/mob/living/carbon/human/consistent/crewmember = allocate(/mob/living/carbon/human/consistent)
+	crewmember.mind_initialize()
+	ship.ship_team = new /datum/team/voidcrew()
+	ship.ship_team.ship = ship
+	ship.enlist_crewmember(crewmember)
+	ship.claimed_captain = crewmember.mind
+
+	ship.reset_join_access()
+	TEST_ASSERT_EQUAL(ship.join_password, "password", "resetting join access changed the password")
+	TEST_ASSERT(!ship.is_password_cleared("returninguser"), "resetting join access did not revoke remembered access")
+	TEST_ASSERT(other_ship.is_password_cleared("returninguser"), "resetting one ship revoked access to another ship")
+	TEST_ASSERT(ship.is_ship_crew(crewmember), "resetting join access removed a serving crewmember's airlock access")
+	TEST_ASSERT(ship.is_ship_captain(crewmember), "resetting join access removed the captain's authority")
+	TEST_ASSERT(crewmember.real_name in ship.manifest, "resetting join access removed a serving crewmember from the manifest")
+
+	var/datum/ship_application/application = allocate(/datum/ship_application, ship, "returninguser", "Applicant", "Let me rejoin")
+	ship.crew_applications += application
+	TEST_ASSERT(ship.resolve_crew_application(application, TRUE), "could not approve an application after resetting access")
+	TEST_ASSERT(ship.is_password_cleared("returninguser"), "a fresh approval did not restore join access")
+	ship.reset_join_access()
+	TEST_ASSERT(!ship.is_password_cleared("returninguser"), "a manual reset did not revoke an application approval")
+
+	ship.ship_team.remove_member(crewmember.mind)
+
+/// Docking and safe air must not let visitors bypass crew-only exterior airlocks.
+/datum/unit_test/voidcrew_ship_crew_airlocks
+	var/turf/door_turf
+	var/area/original_area
+	var/area/shuttle/voidcrew/ship_area
+	var/obj/structure/overmap/ship/ship
+
+/datum/unit_test/voidcrew_ship_crew_airlocks/Destroy()
+	if(ship_area)
+		door_turf.change_area(ship_area, original_area)
+		ship_area.shuttle_port = null
+		QDEL_NULL(ship_area)
+	if(ship)
+		ship.set_crew_only_airlocks(FALSE)
+	return ..()
+
+/datum/unit_test/voidcrew_ship_crew_airlocks/Run()
+	var/obj/machinery/door/airlock/external/door = allocate(/obj/machinery/door/airlock/external)
+	door.autoclose = FALSE
+	door.space_dir = EAST
+	door.shuttledocked = TRUE
+	door_turf = get_turf(door)
+	original_area = door_turf.loc
+	ship_area = new
+	door_turf.change_area(original_area, ship_area)
+	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew)
+	ship = allocate(/obj/structure/overmap/ship)
+	ship_area.shuttle_port = port
+	port.current_ship = ship
+	ship.ship_team = new /datum/team/voidcrew()
+	ship.ship_team.ship = ship
+
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(door, EAST))
+	visitor.mock_client = allocate(/datum/client_interface)
+	visitor.mind_initialize()
+	TEST_ASSERT(door.hasPower(), "the exterior airlock needs power to exercise the safety access bypass")
+	TEST_ASSERT(door.try_safety_unlock(visitor), "an unlocked, docked ship refused a visitor")
+	TEST_ASSERT(!door.density, "the unlocked exterior airlock did not actually open")
+	door.close()
+
+	TEST_ASSERT(ship.set_crew_only_airlocks(TRUE), "could not enable crew-only airlocks")
+	TEST_ASSERT(!door.allowed(visitor), "an unrelated visitor passed the normal crew check")
+	TEST_ASSERT(!door.try_safety_unlock(visitor), "docking bypassed the crew lock")
+	TEST_ASSERT(door.density, "a visitor opened the docked exterior airlock")
+
+	// Exercise the actual bump and empty-hand entry points as well as the safety helper.
+	visitor.last_bumped = 0
+	door.Bumped(visitor)
+	TEST_ASSERT(door.density && !door.operating, "bumping a docked exterior airlock bypassed the crew lock")
+	door.attack_hand(visitor)
+	TEST_ASSERT(door.density && !door.operating, "clicking a docked exterior airlock bypassed the crew lock")
+
+	door.shuttledocked = FALSE
+	var/obj/machinery/door/airlock/external/linked_door = allocate(/obj/machinery/door/airlock/external, run_loc_floor_top_right)
+	linked_door.shuttledocked = TRUE
+	door.cyclelinkedairlock = linked_door
+	TEST_ASSERT(!door.try_safety_unlock(visitor), "a docked cycle partner bypassed the crew lock")
+	door.cyclelinkedairlock = null
+	// is_safe_turf() also rejects occupied tiles, so approach from the other side.
+	visitor.forceMove(get_step(door, NORTH))
+	TEST_ASSERT(is_safe_turf(get_step(door, EAST), TRUE, FALSE), "the test needs safe air outside the door")
+	TEST_ASSERT(!door.try_safety_unlock(visitor), "safe air outside bypassed the crew lock")
+
+	// Emergency access and unrestricted sides cannot override the captain's lock either.
+	door.emergency = TRUE
+	door.unres_sides = NORTH
+	TEST_ASSERT(!door.try_safety_unlock(visitor), "emergency access or an unrestricted side bypassed the crew lock")
+	door.emergency = FALSE
+	door.unres_sides = NONE
+
+	ship.ship_team.add_member(visitor.mind)
+	TEST_ASSERT(door.try_safety_unlock(visitor), "the crew lock refused a rostered crewmember")
+	TEST_ASSERT(!door.density, "the crew member could not open the exterior airlock")
+	door.close()
+	ship.ship_team.remove_member(visitor.mind)
+
+	// A disabled reader retains the existing safety bypass, as advertised in the UI.
+	door.wires.cut(WIRE_IDSCAN)
+	TEST_ASSERT(door.try_safety_unlock(visitor), "the crew lock disabled the cut-reader safety bypass")
+	door.close()
+	door.wires.cut(WIRE_IDSCAN)
+
+	TEST_ASSERT(ship.set_crew_only_airlocks(FALSE), "could not disable crew-only airlocks")
+	TEST_ASSERT(door.try_safety_unlock(visitor), "disabling the crew lock did not restore visitor entry")
+	TEST_ASSERT(!door.density, "the exterior airlock stayed shut after the crew lock was disabled")

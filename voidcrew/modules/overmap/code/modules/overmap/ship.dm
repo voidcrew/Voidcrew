@@ -69,9 +69,9 @@
 	///Only player-created hulls (purchased, requisitioned, commissioned) may carry one;
 	///the roundstart fleet stays public - see can_have_join_password().
 	var/join_password
-	///Assoc list of ckeys (ckey = TRUE) that never face the password prompt: the buyer,
-	///anyone who has entered it correctly, and invited crew. Keyed by ckey rather than
-	///mind so dying and respawning through the lobby doesn't re-lock your own ship.
+	///Assoc list of ckeys (ckey = TRUE) cleared to join: the buyer, past crew, invitees,
+	///approved applicants, and anyone who entered the password. Survives respawning,
+	///but is cleared when the password changes or the captain resets join access.
 	var/list/password_cleared_ckeys = list()
 	///Whether this ship's airlocks refuse anyone who is not crew. Off by default, and
 	///only settable on hulls that may carry a join password - the roundstart fleet stays
@@ -782,6 +782,7 @@
 	LAZYNULL(helm_consoles)
 	contact_snapshot = null
 	discovered_contacts = null
+	dismissed_contacts = null
 	identified_ships = null
 	surveyed_tiles = null
 	QDEL_NULL(combat_alarm)
@@ -1000,7 +1001,7 @@
 
 /obj/structure/overmap/ship/proc/register_crewmember(mob/living/carbon/human/crewmate)
 	ship_team.add_member(crewmate.mind)
-	// Serving crew never face the join password again, even after dying and respawning
+	// Remember crew across respawns until the password changes or join access is reset.
 	if(crewmate.ckey)
 		password_cleared_ckeys[crewmate.ckey] = TRUE
 
@@ -1019,7 +1020,7 @@
 
 /**
  * Puts an already-spawned player on this ship's crew roster, the same way accepting a
- * captain's invite does: team membership, manifest entry, and a permanent password
+ * captain's invite does: team membership, manifest entry, and a saved password
  * clearance for their ckey (every crew-adding path must grant that - see the join
  * password rules above).
  *
@@ -1085,19 +1086,25 @@
 	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! It will despawn in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes if unclaimed. [ADMIN_COORDJMP(shuttle?.loc)]")
 	log_shuttle("[name] has been abandoned and is claimable; despawn due in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes.")
 
-	// Announce to the crew that was. ship_notify() cannot do this - it walks
-	// ship_team.members, cleared above, so the old call here reached nobody (round 4:
-	// the whole crew was dead and ghosting, their ship silently left the join menu,
-	// and none of them were told). Reach each former member through their player mob
-	// by ckey - their mind still points at the corpse, not the ghost they are riding.
+	// Use the saved roster because ship_notify() would see the now-empty team.
+	for(var/mob/player_mob as anything in get_abandonment_recipients(former_members))
+		to_chat(player_mob, span_boldwarning("Your ship, [name], has been abandoned: it went too long with no living crew aboard. It no longer appears in the ship join list, but it is still out there - anyone who reaches it can claim it from its helm console."))
+		SEND_SOUND(player_mob, sound('voidcrew/sound/warn.ogg', volume = 25))
+
+/// Find the players still playing (or ghosting) the characters on the former roster.
+/obj/structure/overmap/ship/proc/get_abandonment_recipients(list/former_members)
+	var/list/recipients = list()
 	for(var/datum/mind/member as anything in former_members)
 		if(!member?.key)
 			continue
 		var/mob/player_mob = get_mob_by_ckey(ckey(member.key))
-		if(!player_mob)
+		// Old minds keep their key after respawning. An account match alone can
+		// notify a different crew's character, once per old life on this roster.
+		// Ghosts retain the body's mind, so this still reaches dead crewmembers.
+		if(!player_mob || player_mob.mind != member)
 			continue
-		to_chat(player_mob, span_boldwarning("Your ship, [name], has been abandoned: it went too long with no living crew aboard. It no longer appears in the ship join list, but it is still out there - anyone who reaches it can claim it from its helm console."))
-		SEND_SOUND(player_mob, sound('voidcrew/sound/warn.ogg', volume = 25))
+		recipients |= player_mob
+	return recipients
 
 // ===== CAPTAIN MANAGEMENT =====
 
@@ -1264,7 +1271,8 @@
 	return lowertext(trim("[attempt || ""]")) == lowertext(join_password)
 
 /**
- * Sets (or clears, on null/empty) the join password. Returns TRUE on success.
+ * Sets (or clears, on null/empty) the join password. Changing it also revokes saved
+ * join access, including approved applications. Returns TRUE on success.
  * The caller is responsible for authorization; this only enforces which hulls
  * may carry a password at all.
  */
@@ -1278,14 +1286,29 @@
 		if(!join_password)
 			return TRUE
 		join_password = null
+		reset_join_access()
 		if(user)
 			to_chat(user, span_notice("Join password cleared - anyone may join [name] again."))
 		log_game("[key_name(user)] cleared the join password of ship [name]")
 		return TRUE
+	if(join_password && check_join_password(new_password))
+		return TRUE
 	join_password = new_password
+	reset_join_access()
 	if(user)
-		to_chat(user, span_notice("Join password set. Players joining [name] from the lobby must enter it; crew you invite never need it."))
+		to_chat(user, span_notice("Join password set and saved join access cleared. Players joining [name] from the lobby must enter the new password or receive a new approval or invitation."))
 	log_game("[key_name(user)] set a join password on ship [name]")
+	return TRUE
+
+/**
+ * Revokes remembered passwords, invitations, and application approvals without
+ * removing anyone from the crew roster. Authorization is the caller's responsibility.
+ */
+/obj/structure/overmap/ship/proc/reset_join_access(mob/user)
+	password_cleared_ckeys.Cut()
+	if(user)
+		to_chat(user, span_notice("Saved join access and application approvals for [name] have been cleared. Players must enter the current password or receive a new approval or invitation to rejoin. Crew already aboard remain on the roster."))
+		log_game("[key_name(user)] reset saved join access and application approvals for ship [name]")
 	return TRUE
 
 // ===== CREW-ONLY AIRLOCKS =====
@@ -1296,7 +1319,8 @@
  * Two things make you crew and either one is enough: your mind is on the ship's team
  * (you serve aboard right now), or your ckey is cleared past the join password - you
  * bought the hull, you were invited, you typed the password, or you served aboard
- * earlier this round. The ckey clause is what keeps a crewman who died and came back
+ * earlier this round, since the last password change or join access reset. The ckey
+ * clause is what keeps a crewman who died and came back
  * through the lobby from being locked out of their own airlocks while the new body's
  * mind is still being put on the roster.
  *

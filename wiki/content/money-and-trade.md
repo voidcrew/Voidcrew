@@ -67,6 +67,20 @@ Some weapons cannot be researched, bought assembled, or printed. They exist only
 
 While you are carrying a schematic anywhere on your person, its recipe appears in your ordinary crafting menu. No workbench is involved; you can build it wherever you are standing. Gun recipes still consume a machined weapon component (printed at a protolathe behind its research node) plus a firing pin, so the schematic is the permission, not the whole cost.
 
+**Crafted ballistic weapons arrive unloaded**, with no detachable magazine or chambered round. Manufacture or find ammunition separately.
+
+The **L6 SAW** is a major manufacturing investment. Material quantities below are in sheets, before lathe discounts:
+
+| Step | Materials |
+|---|---|
+| Print the receiver | 100 iron, 30 titanium, 20 plastic, 10 silver, 10 diamond |
+| Assemble the gun (45 seconds) | Receiver, 20 plasteel, one firing pin |
+| Print a 50-round 7mm magazine | 50 iron, 10 titanium, 10 plasma, 5 plastic |
+
+Receiver research costs **160 points** after Exotic Ammunition. Ammunition research costs **80 points** after Exotic Ammunition and Automatic Ammunition, independently of receiver research, so it can supply a salvaged L6.
+
+The receiver exceeds a basic protolathe's local storage, so upgrade its matter bins or supply it through a material silo. Fully upgraded lathes reduce printed material costs to 40%; the assembly's plasteel requirement stays at 20 sheets.
+
 Firing pins come from the Quartermain Depot's shelf at 900 credits apiece — that is also the fix for ruin-salvage guns that arrive pinless. You cannot harvest a pin from another gun: prying one out destroys it.
 
 Six schematics exist:

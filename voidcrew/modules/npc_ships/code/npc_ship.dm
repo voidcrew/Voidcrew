@@ -134,6 +134,9 @@
 	/// Whether the spawner has already been notified to spawn a replacement
 	var/spawner_resolved = FALSE
 
+	/// Cleanup deadline after disarmament; null until disarmed. Claimed hulls are exempt.
+	var/disarmed_despawn_at
+
 	/// The zone band this hull was spawned into by the pirate pool. Resolves report this
 	/// rather than the live turf: a crash-landed hull has been forceMove()d into a planet
 	/// by the time a late resolve runs, and the pool's red/yellow split only holds if a
@@ -497,6 +500,36 @@
 	log_shuttle("NPC_SHIP: [name] resolved from the pirate pool ([reason]), zone [resolved_zone_type || "unknown"]")
 	SSnpc_ships.on_pirate_resolved(type, resolved_zone_type)
 	return TRUE
+
+/**
+ * Retires a physically disarmed pirate and gives players a bounded salvage window.
+ * Surviving NPC crew otherwise exempt the hull from the crewless abandonment clock,
+ * so freeing only its pool slot leaves a permanent ship behind every replacement.
+ */
+/obj/structure/overmap/ship/npc/proc/resolve_disarmed(reason = "disarmed")
+	if(QDELETED(src) || player_controlled || abandoned || spawner_resolved)
+		return FALSE
+	if(!retreat_without_weapons || !combat_interface?.ever_had_weapons || combat_interface.has_intact_weapons())
+		return FALSE
+
+	disarmed_despawn_at = world.time + NPC_DISARMED_DESPAWN_TIME
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	controller?.clear_target()
+	notify_spawner_resolved(reason)
+	log_shuttle("NPC_SHIP: [name] disarmed; unclaimed hull cleanup due in [NPC_DISARMED_DESPAWN_TIME / 600] minutes")
+	return TRUE
+
+/// Called by the derelict sweep, which limits expensive hull teardown to one per pass.
+/obj/structure/overmap/ship/npc/proc/despawn_disarmed()
+	if(player_controlled || isnull(disarmed_despawn_at) || world.time < disarmed_despawn_at)
+		return FALSE
+	// A moving shuttle's footprint is transient, so occupancy checks must wait until
+	// docking/undocking has finished before deciding whether its interior is empty.
+	if(shuttle?.move_in_flight())
+		return FALSE
+	// Reuse the teardown that protects players aboard and docked guest ships, and
+	// releases the interior, crew and berth. A refused cleanup is retried next sweep.
+	return despawn_derelict()
 
 /**
  * How many of this hull's own tracked crew are alive and actually aboard.
@@ -970,4 +1003,3 @@
 			"Enough games. Prepare to meet your end.",
 		),
 	)
-

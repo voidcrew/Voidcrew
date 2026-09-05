@@ -12,6 +12,8 @@
  * notify_spawner_resolved). Every resolve spawns a replacement in the same band. Hull
  * destruction does NOT resolve a pirate - a wreck with live crew aboard holds its slot
  * until someone boards the crash site and finishes the job.
+ * Disarming also frees the slot, but starts a 10-minute salvage window for that hull.
+ * The derelict sweep then removes it unless claimed or still being boarded.
  *
  * fire() is a low-frequency reconcile that re-derives the population from live state.
  * It exists because the event paths alone provably wedge: in the round-4 audit the
@@ -265,13 +267,9 @@ SUBSYSTEM_DEF(npc_ships)
 		if(ship.count_live_crew_aboard() <= 0)
 			ship.notify_spawner_resolved("crew wiped (reconcile)")
 			continue
-		// A ship that lost every weapon outside of an engagement (sniped from beyond
-		// territory range, shot up mid-boarding) never enters RETREATING, so the
-		// retreat path never frees its slot - catch it here. ever_had_weapons guards
-		// against a hypothetical weaponless template churning the pool at birth.
-		var/datum/npc_combat_interface/combat = ship.combat_interface
-		if(ship.retreat_without_weapons && combat?.ever_had_weapons && !combat.has_intact_weapons())
-			ship.notify_spawner_resolved("disarmed (reconcile)")
+		// Also catch disarmament outside an engagement. Retire the hull with the same
+		// salvage deadline as the retreat path, even while NPC crew survive aboard.
+		ship.resolve_disarmed("disarmed (reconcile)")
 
 	// Top up each band to its share of the target
 	var/list/deficit_by_zone = list()

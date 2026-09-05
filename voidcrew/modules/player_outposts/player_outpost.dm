@@ -312,7 +312,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /**
  * Allocates the outpost's z-level (empty-space pattern: construction allowed,
- * two reserve docks included) and loads the shell template north of the docks.
+ * two reserve docks included) and centers the shell template on the level.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/load_level()
 	if(mapzone || loading)
@@ -342,11 +342,12 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// while an outpost owns a whole level.
 	var/anchor_low_x = footprint ? footprint.low_x : zlevel.low_x
 	var/anchor_low_y = footprint ? footprint.low_y : zlevel.low_y
-	// Directly north of the docks (which sit at the bottom edge), aligned with the first dock
-	var/shell_min_y = anchor_low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
+	var/anchor_high_x = footprint ? footprint.high_x : zlevel.high_x
+	var/anchor_high_y = footprint ? footprint.high_y : zlevel.high_y
+	// Center the entire shell within the owned footprint, leaving room to expand on every side.
 	var/turf/bottom_left = locate(
-		anchor_low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
-		shell_min_y,
+		anchor_low_x + round((anchor_high_x - anchor_low_x + 1 - shell_template.width) / 2),
+		anchor_low_y + round((anchor_high_y - anchor_low_y + 1 - shell_template.height) / 2),
 		zlevel.z_value
 	)
 	if(!bottom_left)
@@ -367,16 +368,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 	template_bottom_left = bottom_left
 
-	// Buildable region: shell footprint inflated by the build margin, kept off
-	// the z-level border and off the dock rows at the bottom edge
-	var/anchor_high_x = footprint ? footprint.high_x : zlevel.high_x
-	var/anchor_high_y = footprint ? footprint.high_y : zlevel.high_y
-	build_bounds = list(
-		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, anchor_low_x + 3),
-		max(bottom_left.y - PLAYER_OUTPOST_BUILD_MARGIN, shell_min_y - 2),
-		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_x - 3),
-		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, anchor_high_y - 3),
-	)
+	// The claim owns the entire level; every shell gets the same room to build.
+	build_bounds = list(anchor_low_x, anchor_low_y, anchor_high_x, anchor_high_y)
 
 	link_interior_machinery()
 
@@ -453,10 +446,10 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	if(!sweep_bottom_left || !sweep_top_right)
 		return
 	for(var/turf/target as anything in block(sweep_bottom_left, sweep_top_right))
+		CHECK_TICK
 		if(isspaceturf(target))
 			continue
 		adopt_turf(target)
-		CHECK_TICK
 
 /**
  * Finds the machinery the shell spawned and links it to this outpost.

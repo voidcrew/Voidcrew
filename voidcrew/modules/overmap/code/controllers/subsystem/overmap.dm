@@ -207,6 +207,15 @@ SUBSYSTEM_DEF(overmap)
 			ship.site_dead_since = 0
 			ship.site_dead_undock_refused = FALSE
 			continue
+		var/obj/structure/overmap/ship/npc/npc_ship
+		if(istype(ship, /obj/structure/overmap/ship/npc))
+			npc_ship = ship
+		// Disarmed pirates have already freed their pool slot. Their living NPC crew
+		// must not exempt the retired hull from cleanup for the rest of the round.
+		if(npc_ship && !npc_ship.player_controlled && !isnull(npc_ship.disarmed_despawn_at))
+			if(!despawned_one)
+				despawned_one = npc_ship.despawn_disarmed()
+			continue
 		// Clock 0, and the only one that runs on a hull nobody has given up on yet: a
 		// crewless hull berthed at a dynamic encounter with nothing alive on the site
 		// either is force-undocked back into open space, so the encounter can tear its
@@ -225,9 +234,6 @@ SUBSYSTEM_DEF(overmap)
 				continue
 			despawned_one = ship.despawn_derelict()
 			continue
-		var/obj/structure/overmap/ship/npc/npc_ship
-		if(istype(ship, /obj/structure/overmap/ship/npc))
-			npc_ship = ship
 		// A live NPC hull is exempt from the crewless clock: its crew are NPCs, so player
 		// occupancy says nothing about it, and its own crew-death tracking drives
 		// abandonment. A DESTROYED one is not. Losing its hull docks a pirate into a

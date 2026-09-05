@@ -119,6 +119,8 @@ type Contact = {
    */
   hazard?: string | null;
   ref: string | null;
+  /** Stable identity shared by live, charted and distress versions of a contact. */
+  contactRef: string;
   /** Seen right now, versus merely charted, drawn solid rather than faded. */
   live?: BooleanLike;
   /** Vessels only: FALSE until a scan or the top radar tier names them. */
@@ -165,6 +167,7 @@ type Engine = {
  * bearing or live flag. Those are derived per-frame by useContacts().
  */
 type ChartedContact = {
+  contactRef: string;
   name: string;
   x: number;
   y: number;
@@ -278,6 +281,8 @@ type Data = {
   waypoints: Contact[];
   /** Static: everything ever seen. Merged with `waypoints` by useContacts(). */
   chartedContacts: ChartedContact[];
+  /** Ship-wide list preferences. Removed contacts still appear on the chart. */
+  dismissedContacts: string[];
   transmissions: Transmission[];
   otherInfo: {
     name: string;
@@ -490,9 +495,9 @@ const clockOf = (ms: number) => {
 /** Deciseconds as m:ss. The hull-failure lockout runs minutes, where a bare second count reads badly. */
 const deciToClock = (ds: number) => clockOf(deciToSeconds(ds) * 1000);
 
-/** Contacts are keyed by ref where they have one; live ship tracks don't. */
-const contactKey = (contact: Pick<Contact, 'ref' | 'name' | 'x' | 'y'>) =>
-  contact.ref ?? `${contact.name}-${contact.x}-${contact.y}`;
+/** Keep contact selection stable when a vessel moves or reveals its name. */
+const contactKey = (contact: Pick<Contact, 'ref' | 'contactRef'>) =>
+  contact.ref ?? contact.contactRef;
 
 /**
  * Whether "Travel & dock" can be offered on a contact: only the kinds a ship
@@ -3326,6 +3331,19 @@ const ContactMenu = (props: {
     });
   }
 
+  if (contact) {
+    const dismissed = data.dismissedContacts?.includes(contact.contactRef);
+    items.push({
+      label: dismissed ? 'Restore to contacts' : 'Remove from contacts',
+      hint: 'Shared by the crew; stays on the chart',
+      disabled: locked,
+      onClick: () =>
+        act(dismissed ? 'restore_contacts' : 'dismiss_contacts', {
+          contacts: [contact.contactRef],
+        }),
+    });
+  }
+
   return (
     <div
       className="Helm__menu"
@@ -3735,35 +3753,50 @@ const Drawer = () => {
 };
 
 const ContactList = () => {
-  const { act } = useBackend<Data>();
-  const waypoints = useContacts();
+  const { act, data } = useBackend<Data>();
+  const { dismissedContacts = [] } = data;
+  const dismissed = new Set(dismissedContacts);
+  const waypoints = useContacts().filter(
+    (contact) => !dismissed.has(contact.contactRef),
+  );
   const travelClock = useTravelClock();
   const locked = useLocked();
   const { selected, select } = useContext(Selection);
   const { focusOn } = useContext(ChartFocus);
   const openActionMenu = useContext(MenuControl);
 
-  if (!waypoints.length) {
-    return <div className="Helm__empty">No contacts in range</div>;
-  }
-
   const groups: Record<string, Contact[]> = {};
   for (const contact of waypoints) {
     const category = contact.category || 'Waypoints';
-    (groups[category] ||= []).push(contact);
+    groups[category] ||= [];
+    groups[category].push(contact);
   }
 
   // A nebula bank or asteroid storm is dozens of identically-named tiles. The
   // register lists the nearest one and counts the rest, so a single field reads
   // as a single entry. The chart is where its actual shape lives.
   const collapse = (contacts: Contact[]) => {
-    const nearest = new Map<string, { contact: Contact; count: number }>();
+    const nearest = new Map<
+      string,
+      { contact: Contact; count: number; refs: string[] }
+    >();
     for (const contact of contacts) {
-      const existing = nearest.get(contact.name);
+      // Only terrain forms a field. Same-named vessels must be removable one
+      // at a time, especially while they all read as "unknown contact".
+      const groupKey =
+        contact.kind === 'nebula' || contact.kind === 'hazard'
+          ? contact.name
+          : contactKey(contact);
+      const existing = nearest.get(groupKey);
       if (!existing) {
-        nearest.set(contact.name, { contact, count: 1 });
+        nearest.set(groupKey, {
+          contact,
+          count: 1,
+          refs: [contact.contactRef],
+        });
       } else {
         existing.count++;
+        existing.refs.push(contact.contactRef);
         if (contact.dist < existing.contact.dist) existing.contact = contact;
       }
     }
@@ -3772,6 +3805,23 @@ const ContactList = () => {
 
   return (
     <>
+      {dismissedContacts.length > 0 && (
+        <div className="Helm__contactRestore">
+          <span>{dismissedContacts.length} removed</span>
+          <button
+            type="button"
+            className="Helm__btn Helm__rowClear"
+            disabled={locked}
+            title="Restore all contacts removed by this crew"
+            onClick={() => act('restore_contacts')}
+          >
+            Restore all
+          </button>
+        </div>
+      )}
+      {waypoints.length === 0 && (
+        <div className="Helm__empty">No contacts to show</div>
+      )}
       {Object.keys(groups)
         .sort()
         .map((category) => (
@@ -3779,7 +3829,7 @@ const ContactList = () => {
             <div className="Helm__cat">
               {category} · {groups[category].length}
             </div>
-            {collapse(groups[category]).map(({ contact, count }) => {
+            {collapse(groups[category]).map(({ contact, count, refs }) => {
               const key = contactKey(contact);
               // Time to reach it at the speed the ship already has. Sits on the
               // meta line rather than beside the bearing: the drawer is under
@@ -3848,17 +3898,17 @@ const ContactList = () => {
                     {count > 1 && ' · nearest'}
                     {contact.integrity != null &&
                       ` · hull ${contact.integrity}%`}
-                    {!!contact.ref && !locked && (
+                    {!locked && (
                       <button
                         type="button"
                         className="Helm__btn Helm__rowClear"
-                        title="Clear this waypoint"
+                        title="Remove from the crew's contacts list; stays on the chart"
                         onClick={(event) => {
                           event.stopPropagation();
-                          act('remove_waypoint', { waypoint: contact.ref });
+                          act('dismiss_contacts', { contacts: refs });
                         }}
                       >
-                        Clear
+                        Remove
                       </button>
                     )}
                   </span>

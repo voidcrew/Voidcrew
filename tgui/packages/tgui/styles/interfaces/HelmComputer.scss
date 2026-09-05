@@ -1283,6 +1283,16 @@ $caption: 1.6cqw;
   }
 }
 
+.Helm__contactRestore {
+  display: flex;
+  align-items: center;
+  gap: 0.4cqw;
+  margin-bottom: 0.6cqw;
+  color: $steel-500;
+  font-family: $mono;
+  font-size: 0.82cqw;
+}
+
 .Helm__cat {
   margin: 0.6cqw 0 0.3cqw;
   color: $ice-dim;

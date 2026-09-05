@@ -71,7 +71,7 @@
 		if(memo_accept != "OK")
 			return select_ship() // Send them back to ship selection
 
-	// Password gate. Cleared ckeys (the buyer, past crew, invitees) are never asked.
+	// Password gate. Saved clearance lasts until a password change or join access reset.
 	// encode = FALSE: captains set the password through raw TGUI params, so the attempt
 	// must stay raw too or any password with an HTML-special character never matches.
 	if(!ship.is_password_cleared(ckey))

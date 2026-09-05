@@ -244,7 +244,8 @@
 			spawn_x = min_x - spawn_dist
 			spawn_y = target.y
 
-	return locate(spawn_x, spawn_y, target.z)
+	// A player outpost can occupy the whole z-level, so shots enter at the map edge.
+	return locate(clamp(spawn_x, 1, world.maxx), clamp(spawn_y, 1, world.maxy), target.z)
 
 /// Finds the best approach direction for a missile to reach a target
 /// Prioritizes clear paths (through hull breaches), then picks the shortest among them
@@ -258,27 +259,23 @@
 	for(var/check_dir in list(NORTH, SOUTH, EAST, WEST))
 		var/spawn_x = target.x
 		var/spawn_y = target.y
-		var/distance
 
 		switch(check_dir)
 			if(NORTH)
 				spawn_y = max_y + spawn_dist
-				distance = spawn_y - target.y
 			if(SOUTH)
 				spawn_y = min_y - spawn_dist
-				distance = target.y - spawn_y
 			if(EAST)
 				spawn_x = max_x + spawn_dist
-				distance = spawn_x - target.x
 			if(WEST)
 				spawn_x = min_x - spawn_dist
-				distance = target.x - spawn_x
 
-		var/turf/spawn_turf = locate(spawn_x, spawn_y, target.z)
+		// Use the same map-edge clamp as the final spawn calculation.
+		var/turf/spawn_turf = locate(clamp(spawn_x, 1, world.maxx), clamp(spawn_y, 1, world.maxy), target.z)
 		if(!spawn_turf)
 			continue
 
-		direction_distances["[check_dir]"] = distance
+		direction_distances["[check_dir]"] = get_dist(spawn_turf, target)
 
 		// Check if path from spawn to target is clear (no dense walls blocking)
 		if(check_path_clear(spawn_turf, target))

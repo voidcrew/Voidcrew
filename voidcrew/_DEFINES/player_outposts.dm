@@ -5,8 +5,6 @@
 /// Trade voucher cost of a first-time outpost deed
 #define OUTPOST_DEED_COST_VOUCHERS 3
 
-/// How far beyond the shell footprint the buildable region extends, in turfs
-#define PLAYER_OUTPOST_BUILD_MARGIN 15
 /// Hard cap on shell template dimensions
 #define PLAYER_OUTPOST_MAX_SHELL_SIZE 40
 /// How often the outpost sweeps its build region to adopt hand-built

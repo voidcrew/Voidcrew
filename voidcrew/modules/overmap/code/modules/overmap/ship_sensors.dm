@@ -119,6 +119,9 @@
 	/// because BYOND recycles refs, and a recycled one would resolve to whatever
 	/// took its place. Vessels are deliberately absent, see the file header.
 	var/list/discovered_contacts = list()
+	/// Contacts removed from the crew's list, as REF -> weakref. Chart visibility
+	/// and sensor knowledge are unaffected; weakrefs prevent recycled REF reuse.
+	var/list/dismissed_contacts = list()
 	/// TRUE while a static-data refresh is already queued for this ship's helms.
 	var/charted_push_queued = FALSE
 	/// Which overmap tiles this ship's view ring has ever swept, as a flat grid
@@ -530,15 +533,16 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 				"severity" = nearby.get_contact_severity(),
 				"hazard" = nearby.get_hazard_note(),
 				"live" = TRUE,
-				// No ref: sight owns this entry, so there is nothing to clear.
+				// No waypoint ref: removing the list entry does not erase sight.
 				"ref" = null,
+				"contactRef" = nearby_ref,
 				// The object itself, for the chart's context menu. Acting on it is
 				// gated server-side on sharing our tile, see act_overmap in _helm.dm.
 				"target" = REF(nearby),
 			))
 
-	// Trader outposts are permanent fixtures, always listed on every ship, with
-	// no per-ship state and no clear button.
+	// Trader outposts are permanent chart fixtures. Crews can dismiss their list
+	// entries, but the chart always retains these broadcast coordinates.
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(live_refs[REF(outpost)])
 			continue
@@ -555,6 +559,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			"live" = in_view_ring(own_position, coords),
 			"ref" = null,
 			"target" = REF(outpost),
+			"contactRef" = REF(outpost),
 		))
 
 	// Advertising player outposts buy their way onto every helm chart for the
@@ -569,6 +574,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			// Adverts are a broadcast, not a sighting: the object itself may be
 			// nowhere near us, so the colony glyph is taken on the advert's word.
 			"variant" = "colony",
+			"contactRef" = REF(advert),
 			"live" = in_view_ring(own_position, list(advert.coord_x, advert.coord_y)),
 			"ref" = null,
 		))
@@ -611,6 +617,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 				"identified" = scanned || tracking || other.distress_active,
 				"ref" = null,
 				"target" = ship_ref,
+				"contactRef" = ship_ref,
 			)
 			if(scanned || tracking)
 				// hostile only exists on NPC vessels; player ships read as neutral.
@@ -662,6 +669,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			"sosMessage" = other.distress_message,
 			"ref" = null,
 			"target" = REF(other),
+			"contactRef" = REF(other),
 		))
 
 	// Charted waypoints: scan contacts, missions, bounties, revealed rumours.
@@ -689,6 +697,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			// The object this was charted from, so the client can drop the
 			// static memory entry for the same thing.
 			"target" = waypoint.source_key,
+			"contactRef" = charted_from ? REF(charted_from) : REF(waypoint),
 		))
 
 	contact_snapshot = contacts
@@ -772,10 +781,50 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			"severity" = object.get_contact_severity(),
 			"hazard" = object.get_hazard_note(),
 			"target" = contact_ref,
+			"contactRef" = contact_ref,
 		))
 	if(forgotten)
 		discovered_contacts -= forgotten
 	return charted
+
+/**
+ * Removes contacts from the shared crew list without forgetting sensor data or
+ * hiding chart markers. Only contacts this ship actually knows can be removed.
+ * Accepts a batch because the list groups multi-tile hazards into a single row.
+ */
+/obj/structure/overmap/ship/proc/dismiss_contacts(list/contact_refs)
+	if(!islist(contact_refs) || !length(contact_refs))
+		return FALSE
+	var/changed = FALSE
+	var/list/known_contacts = get_contact_snapshot() + get_charted_contacts()
+	for(var/list/contact as anything in known_contacts)
+		var/contact_ref = contact["contactRef"]
+		if(!(contact_ref in contact_refs))
+			continue
+		var/datum/contact_source = locate(contact_ref)
+		if(QDELETED(contact_source))
+			continue
+		dismissed_contacts[contact_ref] = WEAKREF(contact_source)
+		changed = TRUE
+	return changed
+
+/// Live identities only, so a deleted contact cannot hide an unrelated new one.
+/obj/structure/overmap/ship/proc/get_dismissed_contacts()
+	var/list/contact_refs = list()
+	for(var/contact_ref in dismissed_contacts.Copy())
+		var/datum/weakref/contact_source = dismissed_contacts[contact_ref]
+		if(!contact_source.resolve())
+			dismissed_contacts -= contact_ref
+			continue
+		contact_refs += contact_ref
+	return contact_refs
+
+/// Restore selected contacts, or the whole list when no selection was supplied.
+/obj/structure/overmap/ship/proc/restore_contacts(list/contact_refs)
+	if(isnull(contact_refs))
+		dismissed_contacts.Cut()
+	else if(islist(contact_refs))
+		dismissed_contacts -= contact_refs
 
 /**
  * Queues a static-data refresh for every helm on this ship, coalescing a burst of

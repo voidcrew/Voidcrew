@@ -267,6 +267,11 @@
 			ship.set_join_password(params["password"], captain)
 			return TRUE
 
+		if("reset_join_access")
+			if(ship.can_have_join_password() && ship.join_password)
+				ship.reset_join_access(captain)
+			return TRUE
+
 		if("toggle_crew_lock")
 			// set_crew_only_airlocks handles the fleet-hull refusal, the crew announcement and logging
 			ship.set_crew_only_airlocks(!ship.crew_only_airlocks, captain)
@@ -359,8 +364,8 @@
 		ship.ship_team.add_member(player.mind)
 		ship.manifest += player.real_name
 
-	// An invite is the captain vouching for them - they never face the join
-	// password, including if they later die and respawn through the lobby
+	// Remember the captain's invitation across respawns until the password changes
+	// or the captain resets join access.
 	if(ckey)
 		ship.password_cleared_ckeys[ckey] = TRUE
 

@@ -53,6 +53,7 @@
 
 	// Iterate through all turfs in the target
 	for(var/turf/target_turf as anything in camera_turfs)
+		CHECK_TICK
 		// Check if this turf is on the exterior (adjacent to space)
 		if(is_exterior_turf(target_turf))
 			continue // Skip exterior turfs - they should be visible
@@ -61,7 +62,6 @@
 		var/image/static_image = new /image(base_static)
 		static_image.loc = target_turf
 		interior_static_images += static_image
-		CHECK_TICK
 
 /// Checks if a turf is visible (within COMBAT_CAMERA_VISIBILITY_RANGE tiles of space)
 /// When range is 0, only turfs directly adjacent to space are visible

@@ -20,6 +20,9 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 /// single return_to_patrol all round), which emptied the yellow band of working pirates.
 #define NPC_RETREAT_TIME_LIMIT (2 MINUTES)
 
+/// Time to board and claim a disarmed pirate before its unclaimed hull is cleaned up.
+#define NPC_DISARMED_DESPAWN_TIME (10 MINUTES)
+
 // Movement blackboard keys
 #define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // patrol/chase/return_to_route/roaming
 #define BB_NPC_PATROL_CIRCUIT "npc_patrol_circuit"    // List of circuit waypoints (circular patrol)
@@ -273,4 +276,3 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 // Room exploration constants
 #define EXPLORATION_MAX_LOCKERS 3                                 // Cap locker targets per room
 #define EXPLORATION_MIN_ROOM_SIZE 4                               // Skip exploration for rooms smaller than this
-

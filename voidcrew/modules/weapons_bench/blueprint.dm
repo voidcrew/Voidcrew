@@ -20,7 +20,8 @@
  * Crafted guns get a clean standard pin installed in place of any
  * faction-locked default (see on_craft_completion below). No bench or other
  * machinery is required; the recipe and its reqs are the whole gate, so
- * crafting can happen anywhere.
+ * crafting can happen anywhere. Ballistic guns arrive unloaded; ammunition
+ * must be manufactured or acquired separately.
  */
 
 /// ckey -> list of /datum/crafting_recipe/blueprint types imprinted this round
@@ -99,6 +100,8 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 			req_names += "[req_amount > 1 ? "[req_amount]x " : ""][initial(req_cast.name)]"
 		if(length(req_names))
 			. += span_notice("Requires: [req_names.Join(", ")].")
+		if(ispath(recipe.result, /obj/item/gun/ballistic))
+			. += span_notice("Builds an unloaded weapon. Ammunition and detachable magazines must be acquired separately.")
 		if(length(recipe.machinery))
 			var/list/machine_names = list()
 			for(var/machine_path in recipe.machinery)
@@ -136,6 +139,24 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 		QDEL_NULL(pin)
 	if(!pin)
 		pin = new /obj/item/firing_pin(src)
+
+/// Schematics manufacture the gun, not its default magazine or ammunition.
+/obj/item/gun/ballistic/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
+	. = ..()
+	if(!istype(current_recipe, /datum/crafting_recipe/blueprint/gun))
+		return
+	QDEL_NULL(chambered)
+	if(internal_magazine && magazine)
+		// Keep integral feed mechanisms, including the empty slots in revolver
+		// cylinders. ammo_list() also resolves ammunition that is still lazy-loaded.
+		for(var/obj/item/ammo_casing/casing in magazine.ammo_list())
+			qdel(casing)
+		magazine.update_appearance()
+	else
+		QDEL_NULL(magazine)
+	if(bolt_type == BOLT_TYPE_OPEN || bolt_type == BOLT_TYPE_LOCKING)
+		bolt_locked = TRUE
+	update_appearance()
 
 /**
  * # Machined gun part

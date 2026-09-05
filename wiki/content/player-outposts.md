@@ -46,7 +46,7 @@ The **management console** is the owner's control panel. Ownership is tied to yo
 
 The **construction console** puts you behind a remote drone with a built-in RCD, RTD, RPD and RLD, fed from the outpost's ore silo. It is the same tool ships use to expand their hulls, pointed at your claim instead. Anything the drone builds is automatically pulled into the outpost's powered area so it gets light, gravity and APC coverage; anything you build by hand gets swept in the same way within half a minute.
 
-You can build anywhere inside the claim's **survey bounds**, the shell's footprint plus fifteen tiles in every direction. Outside that, nothing.
+The claim's **survey bounds** cover its entire z-level: **255 by 255 tiles**, with the starting shell centered on it. Every shell gets the same build area. If you use the ordinary landing pads, keep them clear for arriving ships.
 
 ## The hangar
 
