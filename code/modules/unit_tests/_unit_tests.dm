@@ -357,6 +357,7 @@
 #include "voidcrew_silicon_ship_systems.dm"
 #include "voidcrew_simple_mob_ai.dm"
 #include "voidcrew_vestige.dm"
+#include "voidcrew_vestige_changeling.dm"
 #include "voidcrew_vestige_field.dm"
 #include "voidcrew_vestige_hunts.dm"
 #include "voidcrew_vestige_lifecycle.dm"
