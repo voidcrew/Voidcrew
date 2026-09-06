@@ -167,6 +167,7 @@
 #include "font_awesome_icons.dm"
 #include "food_edibility_check.dm"
 #include "full_heal.dm"
+#include "gas_connector_lifecycle.dm"
 #include "gas_transfer.dm"
 #include "pipeline_reconciliation.dm"
 #include "get_turf_pixel.dm"
