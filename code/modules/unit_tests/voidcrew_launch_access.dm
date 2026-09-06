@@ -249,37 +249,92 @@
 	SSdynamic_events.enabled = FALSE
 	TEST_ASSERT_NULL(SSdynamic_events.get_due_colosseum(1), "Deadline bypassed the subsystem's disabled switch")
 
-/// The real departure cleanup must keep a named site's state, then a second
-/// crew's chart must return the same signal instead of replacing its loot.
-/datum/unit_test/voidcrew_launch_persistent_chart
-	var/list/saved_revealed
-	var/obj/structure/overmap/space_ruin/site
+/// Exercise actual reveal and map-slot teardown without loading a ruin template interior.
+/datum/unit_test/voidcrew_launch_fresh_charts
+	var/list/spawned_sites = list()
 
-/datum/unit_test/voidcrew_launch_persistent_chart/Destroy()
-	GLOB.revealed_rumor_charts = saved_revealed
-	if(!QDELETED(site))
-		site.loaded = FALSE // This fixture never allocated a real map interior.
+/datum/unit_test/voidcrew_launch_fresh_charts/Destroy()
+	for(var/obj/structure/overmap/space_ruin/site as anything in spawned_sites)
+		if(!QDELETED(site))
+			// On assertion failure, release only this fixture's ports/slot.
+			// Space-ruin Destroy releases any footprint still owned by the signal.
+			site.remove_docks()
+			qdel(site)
 	return ..()
 
-/datum/unit_test/voidcrew_launch_persistent_chart/Run()
-	saved_revealed = GLOB.revealed_rumor_charts
-	GLOB.revealed_rumor_charts = list()
-	site = allocate(/obj/structure/overmap/space_ruin)
-	site.rare = TRUE
-	site.persistent_chart_site = TRUE
-	site.loaded = TRUE
-	site.visited = TRUE
-	site.true_name = "Previously visited named site"
-	var/original_signal_count = length(GLOB.space_ruin_signals)
-	site.check_and_respawn()
-	TEST_ASSERT(!QDELETED(site), "First crew's departure deleted the named encounter")
-	TEST_ASSERT(site.loaded && site.visited, "Named site lost its visited interior state")
-	TEST_ASSERT_EQUAL(site.true_name, "Previously visited named site", "Departure replaced the site's identity")
+/datum/unit_test/voidcrew_launch_fresh_charts/Run()
 	var/chart_type = /datum/map_template/ruin/space/rare/hospice
-	GLOB.revealed_rumor_charts[chart_type] = WEAKREF(site)
-	var/obj/structure/overmap/ship/late_ship = allocate(/obj/structure/overmap/ship)
-	var/datum/rumor_chart/chart = allocate(/datum/rumor_chart)
-	chart.ruin_template_path = chart_type
-	TEST_ASSERT_EQUAL(chart.reveal(late_ship), site, "Second crew's reveal did not return the existing encounter")
-	TEST_ASSERT(late_ship.get_waypoint("rumor_[REF(site)]"), "Second crew did not receive an encounter waypoint")
-	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), original_signal_count, "Second chart duplicated the named signal")
+	var/obj/structure/overmap/ship/first_ship = allocate(/obj/structure/overmap/ship)
+	var/obj/structure/overmap/ship/second_ship = allocate(/obj/structure/overmap/ship)
+	var/datum/rumor_chart/first_chart = allocate(/datum/rumor_chart)
+	first_chart.ruin_template_path = chart_type
+	first_chart.spawn_zone = 1 // ZONE_GREEN, defined after the unit-test includes.
+	var/signals_before = length(GLOB.space_ruin_signals)
+	var/obj/structure/overmap/space_ruin/first = first_chart.reveal(first_ship)
+	TEST_ASSERT_NOTNULL(first, "A registered chart could not reveal a fresh ruin")
+	spawned_sites += first
+	TEST_ASSERT(first.rare && !first.loaded && !first.visited, "Fresh chart inherited an explored interior")
+	TEST_ASSERT_EQUAL(first.ruin_template.type, chart_type, "Chart revealed the wrong template")
+	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), signals_before + 1, "Reveal did not create exactly one signal")
+	var/datum/ship_waypoint/first_waypoint = first_ship.get_waypoint("rumor_[REF(first)]")
+	TEST_ASSERT_EQUAL(first_waypoint?.tracked_target?.resolve(), first, "First crew's waypoint does not track its own new ruin")
+	TEST_ASSERT_NULL(first_chart.reveal(first_ship), "One paid chart revealed twice")
+	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), signals_before + 1, "Repeated reveal spawned another signal")
+
+	var/datum/rumor_chart/second_chart = allocate(/datum/rumor_chart)
+	second_chart.ruin_template_path = chart_type
+	second_chart.spawn_zone = 1
+	var/obj/structure/overmap/space_ruin/second = second_chart.reveal(second_ship)
+	TEST_ASSERT_NOTNULL(second, "Another chart could not reveal the same template again")
+	spawned_sites += second
+	TEST_ASSERT(first != second, "Second buyer received the first crew's encounter")
+	TEST_ASSERT(get_turf(first) != get_turf(second), "Fresh encounter overlapped the first ruin's occupied coordinates")
+	TEST_ASSERT(!second.loaded && !second.visited, "Second chart reused a visited interior")
+	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), signals_before + 2, "Second chart did not create its own signal")
+	var/datum/ship_waypoint/second_waypoint = second_ship.get_waypoint("rumor_[REF(second)]")
+	TEST_ASSERT_EQUAL(second_waypoint?.tracked_target?.resolve(), second, "Second crew was sent to the old encounter")
+
+	// Give the actual first signal a real empty interior allocation and docks.
+	// No .dmm is loaded, but release_interior and slot/dock deletion run unchanged.
+	var/list/interior = SSovermap.spawn_dynamic_encounter(null, FALSE)
+	TEST_ASSERT(length(interior) >= 4, "Could not allocate the chart cleanup fixture")
+	first.mapzone = interior[1]
+	first.reserve_dock = interior[2]
+	first.reserve_dock_secondary = interior[3]
+	first.footprint = interior[4]
+	first.loaded = TRUE
+	first.visited = TRUE
+	var/datum/map_zone/zone = first.mapzone
+	var/datum/map_footprint/footprint = first.footprint
+	var/obj/docking_port/stationary/primary_dock = first.reserve_dock
+	var/obj/docking_port/stationary/secondary_dock = first.reserve_dock_secondary
+	var/slots_before = zone.used_slot_count()
+	first.first_dock_taken = TRUE
+	TEST_ASSERT(!first.can_release_interior(), "Cleanup ignored an occupied berth")
+	first.first_dock_taken = FALSE
+	first.mission_locked = TRUE
+	first.check_and_respawn()
+	TEST_ASSERT(!QDELETED(first) && first.loaded, "Chart cleanup bypassed a live mission lock")
+	first.mission_locked = FALSE
+	first.check_and_respawn()
+	TEST_ASSERT(QDELETED(first), "An abandoned chart ruin retained its old signal")
+	TEST_ASSERT(QDELETED(footprint), "Chart cleanup did not release its map footprint")
+	TEST_ASSERT_EQUAL(zone.used_slot_count(), slots_before - 1, "Chart cleanup kept its map slot allocated")
+	TEST_ASSERT(QDELETED(primary_dock) && QDELETED(secondary_dock), "Chart cleanup left its docking ports behind")
+	TEST_ASSERT(!QDELETED(second), "Cleaning the first encounter deleted another buyer's fresh ruin")
+	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), signals_before + 1, "Chart cleanup automatically spawned an unpaid replacement")
+
+	// A failed placement keeps the paid chart sealed; a retry creates another fresh site.
+	var/datum/rumor_chart/retry_chart = allocate(/datum/rumor_chart)
+	retry_chart.ruin_template_path = chart_type
+	retry_chart.spawn_zone = 99 // No real zone can match this value.
+	TEST_ASSERT_NULL(first_ship.reveal_pending_rumor(retry_chart), "A foreign chart was accepted as this ship's pending purchase")
+	first_ship.add_pending_rumor(retry_chart)
+	TEST_ASSERT_NULL(first_ship.reveal_pending_rumor(retry_chart), "Impossible placement unexpectedly succeeded")
+	TEST_ASSERT(!retry_chart.revealed && (retry_chart in first_ship.pending_rumors), "Failed reveal consumed its paid chart")
+	retry_chart.spawn_zone = 1
+	var/obj/structure/overmap/space_ruin/retried = first_ship.reveal_pending_rumor(retry_chart)
+	TEST_ASSERT_NOTNULL(retried, "A valid retry could not generate a fresh encounter after cleanup")
+	spawned_sites += retried
+	TEST_ASSERT(retried != second && !retried.visited && !retried.loaded, "Retry reused another crew's ruin state")
+	TEST_ASSERT(QDELETED(retry_chart) && !(retry_chart in first_ship.pending_rumors), "Successful reveal did not consume the sealed chart")

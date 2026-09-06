@@ -73,9 +73,6 @@
 /// How often a trader outpost's supply convoy tops the shelves back up
 #define OUTPOST_RESTOCK_INTERVAL (22 MINUTES)
 
-/// Convoys publish every ordinary catalog line after early-round stock variety.
-#define OUTPOST_FULL_CATALOG_TIME (180 MINUTES)
-
 // ===== CONTRACT PAY BANDS =====
 // Outpost contracts settle in goods, not credits, so the bundle a contract pays
 // has to be assembled to hit a credit-equivalent target. These are that target,

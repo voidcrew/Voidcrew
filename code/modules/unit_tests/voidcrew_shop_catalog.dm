@@ -14,10 +14,6 @@
  */
 
 /datum/unit_test/voidcrew_shop_catalog/Run()
-	// Instantiating a shop deals from the global ruin-chart pool. Snapshot it so
-	// the test doesn't claim charts out from under the real outposts.
-	var/list/saved_charts = GLOB.dealt_rumor_charts.Copy()
-
 	var/shops_checked = 0
 	var/skus_checked = 0
 	for(var/shop_type in subtypesof(/datum/outpost_shop))
@@ -69,10 +65,6 @@
 				if(request["amount"] > ceiling)
 					TEST_FAIL("[shop_type] requests [request["amount"]] of [request["type"]], but that stack caps at [ceiling] - the contract can never be turned in")
 		qdel(shop)
-
-	// Assign rather than `+=`: DM's list addition drops the associations, which
-	// would leave every dealt chart reading as un-dealt.
-	GLOB.dealt_rumor_charts = saved_charts
 
 	TEST_ASSERT(shops_checked >= 5, "only [shops_checked] shops with a category list were checked")
 	TEST_ASSERT(skus_checked >= 100, "only [skus_checked] SKUs were checked. The catalog walk is not seeing the shelves")

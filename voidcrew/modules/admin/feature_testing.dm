@@ -673,7 +673,7 @@ ADMIN_VERB(reveal_rare_ruin, R_ADMIN|R_DEBUG, "Trade: Reveal Rare Ruin", "Spawn 
 		var/datum/map_template/ruin/space/rare/template = SSmapping.space_ruins_templates[ruin_id]
 		if(!istype(template))
 			continue
-		choices["[template.name][GLOB.claimed_rumor_charts[template.type] ? " (chart already sold)" : ""]"] = template
+		choices[template.name] = template
 	if(!length(choices))
 		to_chat(user, span_warning("No rare ruin templates are registered."))
 		return
@@ -694,11 +694,9 @@ ADMIN_VERB(reveal_rare_ruin, R_ADMIN|R_DEBUG, "Trade: Reveal Rare Ruin", "Spawn 
 	var/obj/structure/overmap/space_ruin/ruin = new(spawn_turf)
 	ruin.set_ruin_template(template)
 	ruin.mark_rare()
-	// Same claim the shop purchase makes, so outposts stop selling a chart to a ruin that already exists
-	GLOB.claimed_rumor_charts[template.type] = TRUE
 
 	var/list/coords = ruin.get_relative_overmap_coords()
-	to_chat(user, span_notice("'[template.name]' spawned at overmap ([coords[1]], [coords[2]]) and its rumor chart marked as sold."))
+	to_chat(user, span_notice("A fresh '[template.name]' spawned at overmap ([coords[1]], [coords[2]])."))
 	message_admins("[key_name_admin(user)] revealed rare ruin '[template.name]' at overmap ([coords[1]], [coords[2]]).")
 	log_admin("[key_name(user)] revealed rare ruin '[template.name]'.")
 	BLACKBOX_LOG_ADMIN_VERB("Reveal Rare Ruin")

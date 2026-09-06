@@ -15,9 +15,8 @@
  * every line here names its band in the text, and the generic rumor tip names
  * the band of whatever it rolled at purchase.
  *
- * Ruin charts are dealt globally without repeats (GLOB.dealt_rumor_charts) so
- * early outposts stock different tips. The full manifest opens after three hours;
- * later buyers locate the same revealed encounter rather than spawning another.
+ * Each outpost independently deals its chart shelf. A purchased ruin chart
+ * reveals a fresh encounter; named tips replenish with ordinary supply convoys.
  */
 
 /**
@@ -149,8 +148,8 @@
  * # Ruin charts
  *
  * Each names one rare ruin that exists nowhere until somebody buys the tip and
- * reveals it from their helm. A sealed chart reserves the site until reveal or
- * hull loss. Later purchases locate that existing, possibly visited encounter.
+ * reveals it from their helm. Each purchase generates a fresh instance, which
+ * follows normal ruin cleanup when ships leave. A sealed chart is used once.
  * Prices encode danger, not distance, because spawn_zone
  * decides where the ruin actually lands.
  */

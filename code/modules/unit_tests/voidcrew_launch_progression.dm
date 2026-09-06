@@ -94,35 +94,82 @@
 		qdel(report)
 		qdel(sku)
 
-/// Convoys must expose every ordinary family and refill it without duplicating SKUs.
-/datum/unit_test/voidcrew_launch_full_catalog/Run()
-	var/list/saved_charts = GLOB.dealt_rumor_charts.Copy()
-	for(var/shop_type in subtypesof(/datum/outpost_shop))
-		var/datum/outpost_shop/shop = new shop_type(null)
-		shop.open_full_catalog()
-		var/list/expected = shop.sku_types | shop.rotating_pool | shop.rare_pool | shop.chart_pool
+/// A small real shop with more pool choices than shelf slots.
+/datum/outpost_shop/launch_shelf_test
+	sku_types = list(/datum/shop_sku/general/beans)
+	rotating_pool = list(/datum/shop_sku/general/soap, /datum/shop_sku/general/toolbelt)
+	rotating_picks = 1
+	rare_pool = list(/datum/shop_sku/fitter/rare/suit_advanced, /datum/shop_sku/skunk/rare/hyper_cell)
+	rare_picks_max = 1
+	favor_sku_types = list(/datum/shop_sku/favor/field_contract_pad)
+	chart_pool = list(/datum/shop_sku/ruin_chart/hospice, /datum/shop_sku/ruin_chart/biolab)
+	chart_picks = 1
+
+/// Elapsed time must not change shelf size, gates or ordinary convoy behavior.
+/datum/unit_test/voidcrew_launch_normal_shelves
+	var/saved_round_start
+
+/datum/unit_test/voidcrew_launch_normal_shelves/Destroy()
+	SSticker.round_start_time = saved_round_start
+	return ..()
+
+/datum/unit_test/voidcrew_launch_normal_shelves/Run()
+	saved_round_start = SSticker.round_start_time
+	for(var/elapsed in list(0, 180 MINUTES, 420 MINUTES))
+		SSticker.round_start_time = world.time - elapsed
+		var/datum/outpost_shop/shop = allocate(/datum/outpost_shop/launch_shelf_test)
+		TEST_ASSERT_EQUAL(length(shop.skus), 5, "Round age expanded the shop beyond its normal shelf picks")
 		var/list/found = list()
+		var/datum/shop_sku/core
+		var/datum/shop_sku/rotating
+		var/datum/shop_sku/rare
+		var/datum/shop_sku/favor
+		var/datum/shop_sku/chart
 		for(var/datum/shop_sku/sku as anything in shop.skus)
-			if(sku.type in found)
-				TEST_FAIL("[shop_type] duplicates [sku.type] after the full manifest opens")
+			TEST_ASSERT(!(sku.type in found), "Normal shelves duplicated a SKU")
 			found += sku.type
-			if(sku.shelf == "favor")
-				continue
-			if(sku.shelf != "core" || sku.stock < 1)
-				TEST_FAIL("[shop_type] failed to make [sku.type] available and restockable")
-			sku.stock = 0
-		if(length(expected - found))
-			TEST_FAIL("[shop_type] omits [length(expected - found)] ordinary catalog lines")
-		var/count_before = length(shop.skus)
-		shop.open_full_catalog()
+			if(sku.type in shop.sku_types)
+				core = sku
+				TEST_ASSERT_EQUAL(sku.shelf, "core", "Core goods lost their normal shelf")
+			else if(sku.type in shop.rotating_pool)
+				rotating = sku
+				TEST_ASSERT_EQUAL(sku.shelf, "rotating", "Rotating goods were promoted by round age")
+			else if(sku.type in shop.rare_pool)
+				rare = sku
+				TEST_ASSERT_EQUAL(sku.shelf, "rare", "Rare goods were promoted by round age")
+			else if(sku.type in shop.favor_sku_types)
+				favor = sku
+				TEST_ASSERT_EQUAL(sku.shelf, "favor", "Favor goods lost their gate")
+			else if(sku.type in shop.chart_pool)
+				chart = sku
+				TEST_ASSERT_EQUAL(sku.shelf, "rotating", "Chart picks must stay on their own rotating shelf")
+		TEST_ASSERT(core && rotating && rare && favor && chart, "A normal shelf family was missing")
+		var/rotating_type = rotating.type
+		var/chart_type = chart.type
+		core.stock = 0
+		rotating.stock = 0
+		rare.stock = 0
+		chart.stock = 0
+		SSticker.round_start_time = world.time - (420 MINUTES)
 		shop.convoy_restock()
-		if(length(shop.skus) != count_before)
-			TEST_FAIL("Repeated maturity/restock changed [shop_type]'s SKU count")
+		TEST_ASSERT_EQUAL(length(shop.skus), 5, "A late convoy expanded the catalog")
+		TEST_ASSERT(core.stock > 0, "Core goods did not replenish")
+		TEST_ASSERT_EQUAL(rare.stock, 0, "Normal rare stock became endlessly restockable")
+		TEST_ASSERT_EQUAL(chart.stock, chart.stock_max, "Named charts did not replenish for another paid expedition")
+		TEST_ASSERT_EQUAL(chart.type, chart_type, "Chart restock substituted unrelated goods")
+		TEST_ASSERT_EQUAL(favor.shelf, "favor", "Restock removed the favor gate")
+		var/replacement_found = FALSE
 		for(var/datum/shop_sku/sku as anything in shop.skus)
-			if(sku.shelf != "favor" && sku.stock < 1)
-				TEST_FAIL("[shop_type] did not refill [sku.type]")
-		qdel(shop)
-	GLOB.dealt_rumor_charts = saved_charts
+			if(sku.type in shop.rotating_pool)
+				replacement_found = sku.type != rotating_type && sku.shelf == "rotating" && sku.stock > 0
+		TEST_ASSERT(replacement_found, "Sold rotating stock did not rotate into another pool choice")
+	// Buying/dealing a named template at one shop cannot reserve it galaxy-wide.
+	var/datum/outpost_shop/first = allocate(/datum/outpost_shop)
+	first.chart_pool = list(/datum/shop_sku/ruin_chart/hospice)
+	var/datum/outpost_shop/second = allocate(/datum/outpost_shop)
+	second.chart_pool = first.chart_pool.Copy()
+	TEST_ASSERT_EQUAL(length(first.deal_chart_picks()), 1, "First shop could not deal its chart")
+	TEST_ASSERT_EQUAL(length(second.deal_chart_picks()), 1, "First shop reserved the second shop's chart")
 
 /// A sparse reward pool must meet the actual ask premium within600cr tolerance.
 /datum/unit_test/voidcrew_launch_thin_contract/Run()
@@ -136,33 +183,47 @@
 	TEST_ASSERT(value >= 12000 * 1.6 - 600, "Sparse rewards fell below the actual ask premium after voucher rounding")
 	TEST_ASSERT_EQUAL(length(mission.mission_rewards), 1, "Thin reward generation duplicated the same item")
 
-/// A lost sealed chart releases its reservation; completed encounters stay unique.
-/datum/unit_test/voidcrew_launch_chart_claim/Run()
-	var/list/saved_claims = GLOB.claimed_rumor_charts.Copy()
-	var/chart_type = /datum/map_template/ruin/space/rare/hospice
-	var/datum/rumor_chart/chart = new
-	chart.ruin_template_path = chart_type
-	chart.owns_claim = TRUE
-	GLOB.claimed_rumor_charts[chart_type] = TRUE
-	qdel(chart)
-	if(GLOB.claimed_rumor_charts[chart_type])
-		TEST_FAIL("Deleting a hull's unrevealed chart must release its reservation")
-	chart = new
-	chart.ruin_template_path = chart_type
-	chart.owns_claim = TRUE
-	chart.revealed = TRUE
-	GLOB.claimed_rumor_charts[chart_type] = TRUE
-	qdel(chart)
-	if(!GLOB.claimed_rumor_charts[chart_type])
-		TEST_FAIL("Deleting a consumed chart must not allow a second encounter")
-	GLOB.claimed_rumor_charts = saved_claims
+/// Repeated purchases use real payment, stock and crew lookup, even with a sealed copy.
+/datum/unit_test/voidcrew_launch_chart_purchases/Run()
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	shop.add_sku(/datum/shop_sku/ruin_chart/hospice, "rotating")
+	var/datum/shop_sku/ruin_chart/sku = shop.skus[1]
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
+	buyer.mind_initialize()
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	buyer.mind.ship_teams = list(team)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart purchase test", null, 1, FALSE)
+	account.account_balance = 20000
+	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
+	id_card.registered_account = account
+	TEST_ASSERT(buyer.put_in_hands(id_card), "Buyer could not carry their paying ID")
+	var/price = sku.get_credit_price(buyer)
+	TEST_ASSERT(sku.try_purchase(buyer, null), "First chart purchase failed")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "First chart charged the wrong bill")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 1, "Purchase did not upload a sealed chart")
+	var/datum/rumor_chart/first = ship.pending_rumors[1]
+	TEST_ASSERT(!sku.try_purchase(buyer, null), "Out-of-stock chart could be bought again")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "Refused purchase charged money")
+	shop.convoy_restock()
+	price = sku.get_credit_price(buyer) // Convoys may roll a new ordinary special.
+	var/balance_before = account.account_balance
+	TEST_ASSERT(sku.try_purchase(buyer, null), "An existing sealed chart blocked a second paid copy")
+	TEST_ASSERT_EQUAL(account.account_balance, balance_before - price, "Restocked chart did not charge its quoted price")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "Second purchase reused the first sealed chart")
+	var/datum/rumor_chart/second = ship.pending_rumors[2]
+	TEST_ASSERT(first != second, "Purchases must own separate reveal state")
+	TEST_ASSERT_EQUAL(first.ruin_template_path, second.ruin_template_path, "Restock changed the purchased template")
+	qdel(ship)
+	TEST_ASSERT(QDELETED(first) && QDELETED(second), "Hull loss left its sealed charts alive")
+	buyer.mind.ship_teams = null
+	team.ship = null
 
 /// Repriced and depleted shelves still fund contract bands and real stack quantities.
 /datum/unit_test/voidcrew_launch_contract_rewards/Run()
-	var/list/saved_charts = GLOB.dealt_rumor_charts.Copy()
 	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market))
 		var/datum/outpost_shop/shop = new shop_type(null)
-		shop.open_full_catalog()
 		for(var/datum/shop_sku/sku as anything in shop.skus)
 			sku.stock = 0
 		for(var/difficulty in list(1, 2, 3))
@@ -194,4 +255,3 @@
 					TEST_FAIL("[shop_type] pays [value] against minimum [minimum] with tolerance [600]")
 				qdel(mission)
 		qdel(shop)
-	GLOB.dealt_rumor_charts = saved_charts

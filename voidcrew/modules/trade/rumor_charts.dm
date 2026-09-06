@@ -7,25 +7,11 @@
  * button then spawns the ruin at an uncharted square in the chart's zone band,
  * marks it on the helm readout and paints the overmap signal gold.
  *
- * One encounter per template per round. Later charts share its coordinates.
+ * Each purchased chart reveals one fresh encounter, with normal ruin cleanup.
  * The generic coordinate-tip rumor (/datum/shop_sku/rumor) is a separate, much
  * cheaper thing and every outpost sells it. Both live in shop_catalog_charts.dm;
  * this file is the reveal machinery.
  */
-
-/// Ruin template typepaths already sold as charts this round, so two outposts
-/// (or a convoy restock) can never lead to the same rare ruin spawning twice.
-GLOBAL_LIST_EMPTY(claimed_rumor_charts)
-
-/// A revealed template has exactly one encounter; later charts locate that signal.
-GLOBAL_LIST_EMPTY(revealed_rumor_charts)
-
-/// Ruin chart SKU typepaths already dealt onto some outpost's chart shelf this
-/// round. Charts are drawn from one galaxy-wide pool, so without this two
-/// outposts could stock a tip to the same ruin and the second buyer would be
-/// turned away at the counter by claimed_rumor_charts above. This one is about
-/// what goes on sale; that one is about what has been sold.
-GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 
 /**
  * # Sealed rumor
@@ -43,14 +29,8 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 	var/datum/map_template/ruin/space/ruin_template_path
 	/// Zone band the ruin spawns in (rare tips point at the dangerous deep)
 	var/spawn_zone = ZONE_RED
-	/// Only the purchaser's sealed datum can release an unrevealed reservation.
-	var/owns_claim = FALSE
+	/// One successful reveal per paid chart; failed placement remains retryable.
 	var/revealed = FALSE
-
-/datum/rumor_chart/Destroy()
-	if(owns_claim && !revealed)
-		GLOB.claimed_rumor_charts -= ruin_template_path
-	return ..()
 
 /**
  * Spawns the chart's ruin at an unused square in the chart's zone band and
@@ -58,16 +38,7 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
  * clear square could be found (the rumor stays sealed so it can be retried).
  */
 /datum/rumor_chart/proc/reveal(obj/structure/overmap/ship/ship)
-	if(!ship || !ruin_template_path)
-		return null
-	// A repeated invocation may chart the existing encounter, never spawn loot twice.
-	var/datum/weakref/existing_ref = GLOB.revealed_rumor_charts[ruin_template_path]
-	var/obj/structure/overmap/space_ruin/existing = existing_ref?.resolve()
-	if(existing)
-		var/list/existing_coords = existing.get_relative_overmap_coords()
-		ship.add_waypoint("rumor_[REF(existing)]", name, existing_coords[1], existing_coords[2], "Rumors", existing)
-		return existing
-	if(revealed || existing_ref)
+	if(QDELETED(ship) || !ruin_template_path || revealed)
 		return null
 
 	// SSmapping's instance is the canonical, size-preloaded template
@@ -88,9 +59,7 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 	var/obj/structure/overmap/space_ruin/ruin = new(spawn_turf)
 	ruin.set_ruin_template(template)
 	ruin.mark_rare()
-	ruin.persistent_chart_site = TRUE
 	revealed = TRUE
-	GLOB.revealed_rumor_charts[ruin_template_path] = WEAKREF(ruin)
 
 	var/list/coords = ruin.get_relative_overmap_coords()
 	ship.add_waypoint("rumor_[REF(ruin)]", name, coords[1], coords[2], "Rumors", ruin)
@@ -140,8 +109,8 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
  * # Rumor chart SKU
  *
  * The storefront line for one specific rare ruin. No goods change hands: on
- * purchase the sealed rumor lands straight on the buyer's ship. Once revealed,
- * later purchases chart the existing encounter, including any earlier visits.
+ * purchase the sealed rumor lands straight on the buyer's ship. Each purchase
+ * reveals a fresh instance, even if this crew or another already visited one.
  */
 /datum/shop_sku/ruin_chart
 	category = "Intel & Charts"
@@ -166,28 +135,12 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
 		return "No crew registration, you need a ship to upload the rumor to."
-	return get_chart_denial(ship)
-
-/// Reservations last until reveal or hull loss; revealed charts share one signal.
-/datum/shop_sku/ruin_chart/proc/get_chart_denial(obj/structure/overmap/ship/ship)
-	var/obj/structure/overmap/space_ruin/existing = get_revealed_ruin()
-	if(existing)
-		if(ship.get_waypoint("rumor_[REF(existing)]") || ship.get_waypoint(REF(existing)))
-			return "Your helm already has this signal."
-		return null
-	if(GLOB.claimed_rumor_charts[ruin_template_path])
-		return "Another crew holds the sealed chart, or the revealed signal has disappeared."
-
-/datum/shop_sku/ruin_chart/proc/get_revealed_ruin()
-	var/datum/weakref/existing_ref = GLOB.revealed_rumor_charts[ruin_template_path]
-	var/obj/structure/overmap/space_ruin/ruin = existing_ref?.resolve()
-	return istype(get_turf(ruin), /turf/open/overmap) ? ruin : null
 
 /datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
 		return FALSE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
-	if(!ship || get_chart_denial(ship))
+	if(!ship)
 		return FALSE
 
 	// Validate the credit half before consuming any vouchers. User passed so
@@ -205,20 +158,12 @@ GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 		return FALSE
 
 	stock--
-	var/obj/structure/overmap/space_ruin/existing = get_revealed_ruin()
-	if(existing)
-		var/list/coords = existing.get_relative_overmap_coords()
-		ship.add_waypoint("rumor_[REF(existing)]", rumor_name || name, coords[1], coords[2], "Rumors", existing)
-		to_chat(user, span_notice("The existing encounter is marked on [ship]'s helm. Other crews may already have visited."))
-		return TRUE
-	GLOB.claimed_rumor_charts[ruin_template_path] = TRUE
 
 	var/datum/rumor_chart/chart = new
 	chart.name = rumor_name || name
 	chart.desc = rumor_desc || desc
 	chart.ruin_template_path = ruin_template_path
 	chart.spawn_zone = spawn_zone
-	chart.owns_claim = TRUE
 	ship.add_pending_rumor(chart)
 
 	to_chat(user, span_notice("The rumor data is encrypted and beamed to [ship]'s helm console. Reveal it when your crew is ready to move."))
