@@ -132,7 +132,7 @@
  * multitool_act() relinks unconditionally, and we never touch an existing link.
  */
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/try_link_ship_techweb(announce_link = TRUE)
-	if(linked_techweb || isnull(data))
+	if(validate_research_site(linked_techweb) || isnull(data))
 		return FALSE
 	var/obj/structure/overmap/ship/our_ship = ship_port?.current_ship
 	if(isnull(our_ship))
@@ -140,7 +140,8 @@
 	var/datum/techweb/ship_web = our_ship.find_research_web()
 	if(isnull(ship_web))
 		return FALSE
-	link_to_techweb(ship_web)
+	if(!link_to_techweb(ship_web))
+		return FALSE
 	if(announce_link)
 		// Same line the multitool path speaks, so a self-link is not a silent one - otherwise
 		// the only way to know the console found a server is to examine it.
@@ -149,12 +150,29 @@
 
 /// Shared body of the auto-link and multitool paths.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/link_to_techweb(datum/techweb/new_web)
-	if(!can_link_site_techweb(src, new_web))
-		return
+	if(!new_web || !length(new_web.techweb_servers) || !can_link_site_techweb(src, new_web))
+		return FALSE
+	if(!data)
+		data = new
+	if(linked_techweb != new_web)
+		unsync_research_servers()
 	linked_techweb = new_web
-	data.merge_completed_surveys(new_web.survey_data)
-	new_web.survey_data = data
 	new_web.connected_machines |= src
+	sync_research_surveys()
+	return TRUE
+
+/// The console and each physical research disk own separate, completed-record snapshots.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/sync_research_surveys()
+	if(!data || !validate_research_site(linked_techweb))
+		return FALSE
+	if(!length(linked_techweb.techweb_servers))
+		unsync_research_servers()
+		return FALSE
+	if(!linked_techweb.survey_data || linked_techweb.survey_data == data)
+		linked_techweb.survey_data = new
+	data.merge_completed_surveys(linked_techweb.survey_data)
+	linked_techweb.survey_data.merge_completed_surveys(data)
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/examine(mob/user)
 	. = ..()
@@ -165,10 +183,12 @@
 	. += span_notice("Build an R&D server on this ship, or copy a techweb from one with a [EXAMINE_HINT("multitool")] and use it on this.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
+	sync_research_surveys()
 	var/obj/structure/overmap/object = get_current_celestial_object()
 	if(!object || !data || !is_object_surveyed(object))
 		return
 	data.update_survey_data(object)
+	sync_research_surveys()
 	update_static_data_for_all_viewers()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/unsync_research_servers()
@@ -177,16 +197,13 @@
 		linked_techweb = null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked!")
-				return
-			unsync_research_servers()
-
-		link_to_techweb(tool.buffer)
-		say("Linked to Server!")
-		return TRUE
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		return FALSE
+	if(!link_to_techweb(tool.buffer))
+		balloon_alert(user, "no local research server")
+		return FALSE
+	say("Linked to Server!")
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
 	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
@@ -199,7 +216,7 @@
 		mapping_enabled = TRUE
 		found_tiers |= list("advanced", "superior", "elite", "basic")
 	else
-		if(!linked_techweb)
+		if(!validate_research_site(linked_techweb))
 			return
 		for(var/node_id in linked_techweb.researched_nodes)
 			if(node_id in research_tiers)
@@ -273,6 +290,7 @@
 		ui.open()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+	sync_research_surveys()
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/celestial_object = get_survey_target()
 	survey_research_tiers = get_survey_research_tiers()
@@ -312,8 +330,9 @@
 	return tgui_data
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_static_data(mob/user)
+	sync_research_surveys()
 	. = ..()
-	.["surveyData"] = data.tgui_serialize()
+	.["surveyData"] = data?.tgui_serialize()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, list/params, datum/tgui/ui)
 	. = ..()
@@ -452,6 +471,7 @@
 	return "unsurveyed"
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user, target_ref)
+	sync_research_surveys()
 	if(survey_in_progress || !data)
 		return
 	var/obj/structure/overmap/current_object
@@ -510,6 +530,7 @@
 	survey_timer = addtimer(CALLBACK(src, PROC_REF(complete_survey), source), 1, TIMER_STOPPABLE)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/complete_survey(obj/structure/overmap/object)
+	sync_research_surveys()
 	// A stale callback must neither pay again nor cancel a newer survey.
 	if(!survey_in_progress || current_survey_target != object)
 		return
@@ -524,6 +545,7 @@
 		banked_points += values["points"]
 		banked_cash += values["cash"]
 	data.update_survey_data(object)
+	sync_research_surveys()
 	object.surveyed = TRUE
 	update_static_data_for_all_viewers()
 
@@ -611,6 +633,7 @@
 			destination_list |= celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/save_survey_data(mob/user)
+	sync_research_surveys()
 	if(!survey_disk || !data)
 		return
 
@@ -624,6 +647,7 @@
 		return
 
 	transfer_survey_data(survey_disk.data, data)
+	sync_research_surveys()
 	update_static_data_for_all_viewers()
 	playsound(src, 'sound/machines/high_tech_confirm.ogg', 40)
 	if(user)

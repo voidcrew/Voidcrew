@@ -365,6 +365,7 @@
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_science_program.dm"
+#include "voidcrew_survey_research_links.dm"
 #include "voidcrew_camera_scope.dm"
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_reservation.dm"
