@@ -16,9 +16,9 @@
  * It has been winning matches alone in the lower hall for a century and it keeps score.
  *
  * It is hoarfrost/lich tier and, unlike either of them, it only ever fights one person.
- * The budget below is tuned for exactly that: 1400 HP is roughly four minutes of solid
- * work for a supplicant who has finished every one of the Hollow Master's lessons and
- * is carrying the blade, the stars and the smoke.
+ * The budget below gives it 2000 HP with 25% brute and 15% burn resistance, so an
+ * equipped supplicant has to work through its rotation and second round. Burns still
+ * beat its plating more efficiently than brute damage.
  *
  * It is deliberately **not** `/mob/living/basic/boss` and deliberately not megafauna.
  * `code/modules/unit_tests/voidcrew_loot.dm` text-scans every ruin .dmm and hard-fails
@@ -245,7 +245,8 @@
 /mob/living/basic/vestige_warframe
 	name = "the Warframe"
 	desc = "A two-and-a-half metre sparring machine in clan lacquer, holding a blunted blade in a textbook guard. \
-		Someone has scratched a tally into the plate on its chest and run out of room."
+		Someone has scratched a tally into the plate on its chest and run out of room. \
+		Layered armor blunts physical impacts and burns, though heat gets through more easily."
 	gender = NEUTER
 
 	icon = 'voidcrew/modules/antag_ruins/icons/warframe.dmi'
@@ -255,8 +256,8 @@
 	mouse_opacity = MOUSE_OPACITY_ICON
 
 	// Hand-copied boss tier. See the file header for why it is not inherited.
-	maxHealth = 1400
-	health = 1400
+	maxHealth = 2000
+	health = 2000
 	melee_damage_lower = 20
 	melee_damage_upper = 26
 	armour_penetration = 25
@@ -275,8 +276,8 @@
 	pull_force = MOVE_FORCE_VERY_STRONG
 
 	// A machine: nothing to poison, nothing to tire out, nothing to suffocate.
-	// Heat is the one thing it minds.
-	damage_coeff = list(BRUTE = 1, BURN = 1.15, TOX = 0, STAMINA = 0, OXY = 0)
+	// Plating resists both weapon damage types, with heat the softer point.
+	damage_coeff = list(BRUTE = 0.75, BURN = 0.85, TOX = 0, STAMINA = 0, OXY = 0)
 	unsuitable_atmos_damage = 0
 	unsuitable_cold_damage = 0
 	unsuitable_heat_damage = 0
@@ -1378,7 +1379,8 @@
  */
 /obj/structure/warframe_lever/gate
 	name = "hall gate lever"
-	desc = "The lever that raises the gates into the lower hall. Someone has hung a wooden sign off it reading 'ONE AT A TIME'."
+	desc = "The lever that raises both gates into the lower hall. Click it with an empty hand to open the way to the Warframe. \
+		Someone has hung a wooden sign off it reading 'ONE AT A TIME'."
 
 /obj/structure/warframe_lever/gate/north
 	pixel_y = 26
@@ -1409,6 +1411,7 @@
 		opened++
 	if(opened)
 		visible_message(span_boldnotice("Somewhere below, something heavy slides up into the ceiling."))
+		to_chat(user, span_notice("The hall gates are open. Head north through the gate at the back of the generator room to enter the arena."))
 	else
 		balloon_alert(user, "nothing answers")
 
@@ -1489,7 +1492,14 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 /obj/structure/warframe_gate/examine(mob/user)
 	. = ..()
 	if(!raised)
-		. += span_notice("It is closed. Something else in this hall opens it.")
+		. += span_notice("The hall gate lever opens it. Find the generator room east of the equipment room, then pull the lever on its east wall with an empty hand.")
+
+/obj/structure/warframe_gate/attack_hand(mob/living/user, list/modifiers)
+	. = ..()
+	if(. || raised)
+		return
+	to_chat(user, span_notice("The gate stays shut. Pull the hall gate lever on the east wall of the generator room, east of the equipment room, to open it."))
+	return TRUE
 
 /// Slide it up. Idempotent.
 /obj/structure/warframe_gate/proc/raise()

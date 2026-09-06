@@ -23,8 +23,8 @@
 	var/list/actions = list()
 	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
 	var/enter_time = 2 SECONDS
-	anchorable = TRUE
-	anchored = TRUE
+	anchorable = FALSE
+	anchored = FALSE
 	reverse_option_list = list("Mobs"=TRUE,"Objects"=TRUE,"Anchored"=FALSE,"Underfloor"=FALSE,"Wallmounted"=FALSE,"Floors"=FALSE,"Walls"=FALSE, "Mecha"=FALSE)
 	var/turf/targeted_turf
 	var/obj/machinery/quantumpad/linked_pad
@@ -59,9 +59,6 @@
 		else
 			setClosed()
 			return TRUE
-	if(I.tool_behaviour == TOOL_WRENCH)
-		set_anchored(!anchored)
-		return TRUE
 	if(I.tool_behaviour == TOOL_MULTITOOL)
 		var/obj/item/multitool/tool = I
 		if(istype(tool.buffer, /obj/machinery/quantumpad))
@@ -101,7 +98,7 @@
 	playsound(get_turf(linked_pad), 'sound/items/weapons/emitter2.ogg', 25, TRUE)
 	var/list/atom/pod_contents = opened ? get_turf(src) : contents
 	for(var/atom/movable/ROI in pod_contents)
-		if(QDELETED(ROI))
+		if(ROI == src || QDELETED(ROI))
 			continue //sleeps in CHECK_TICK
 
 		// if is anchored, don't let through
@@ -553,7 +550,6 @@
 			if (!target)
 				turf_list.Cut(list_index, list_index + 1)
 		if (target)
-			set_anchored(TRUE)
 			new /obj/effect/pod_landingzone/drop_pod(target, src)
 			used = TRUE
 			update_static_data(user)
@@ -614,7 +610,6 @@
 		return
 
 	remove_eye_control(map_user)
-	set_anchored(TRUE)
 	new /obj/effect/pod_landingzone/drop_pod(target, src)
 	used = TRUE
 	update_static_data(map_user)

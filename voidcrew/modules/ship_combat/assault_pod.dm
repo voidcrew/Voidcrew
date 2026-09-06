@@ -87,7 +87,6 @@
 		if(here)
 			var/list/riders = pod.get_riders()
 			pod.forceMove(here)
-			pod.set_anchored(TRUE)
 			for(var/mob/living/rider in riders)
 				rider.reset_perspective(null)
 		else
@@ -257,7 +256,6 @@
 
 	var/list/riders = pod.get_riders()
 	pod.forceMove(landing_turf)
-	pod.set_anchored(TRUE)
 	for(var/mob/living/rider in riders)
 		rider.reset_perspective(null)
 
@@ -430,7 +428,6 @@
 	if(loaded_pod || pod.used)
 		return
 
-	pod.set_anchored(FALSE)
 	pod.forceMove(src)
 	loaded_pod = pod
 	// A pod destroyed in the rack has to clear the tube, or it reports itself

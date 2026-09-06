@@ -283,7 +283,7 @@
 /obj/structure/table/wood/fancy/black,
 /obj/item/paper{
 	name = "floor circuit log";
-	default_raw_text = "Floor circuit log. The mat plates draw more every year and nobody can find where it is going. Breaker in the hall trips it clean if it gets loud. Do not leave the breaker down - the hall lights are on the same run and the opponent does not need them.";
+	default_raw_text = "Floor circuit log. The mat plates draw more every year and nobody can find where it is going. The hall gate lever on the EAST wall of this generator room opens both arena gates. Click it with an empty hand, then head NORTH through the gate at the back of this room. The separate hall breaker on the WEST wall inside the arena briefly staggers the Warframe and disables its Live Floor attack for 25 seconds. The breaker resets after one minute.";
 	pixel_y = 3
 	},
 /obj/item/pen{
@@ -332,7 +332,7 @@
 /obj/structure/table/wood/fancy/black,
 /obj/item/paper{
 	name = "lower floor rules";
-	default_raw_text = "Lower floor rules, posted for students. Sandals off at the step. No blades on the mat that you did not sign out. If you are here to be graded, wait for the gates and do not knock. The opponent does not answer knocking and it does not stop for it either.";
+	default_raw_text = "LOWER HALL - ARENA ENTRY\n\n1. Leave this waiting room through the door on the EAST (right). Cross the equipment room and leave through its east door.\n2. Follow the corridor NORTH (up), then take the east door into the generator room with the power storage units.\n3. Find the HALL GATE LEVER on the generator room's EAST wall. Click it with an empty hand. It opens both arena gates immediately.\n4. Head NORTH through the gate at the back of the generator room. The Warframe waits on the mats. The other gate is at the north end of the equipment room.\n\nThe gates do not open by themselves. You must defeat the Warframe to leave; dying here costs your body and everything you carry. Bring your own weapons and medical supplies.\n\nDuring the fight, the separate HALL BREAKER on the arena's WEST wall briefly staggers the Warframe and shuts off its Live Floor attack for 25 seconds. It resets after one minute.";
 	pixel_y = 3
 	},
 /obj/item/flashlight/flare/candle/infinite{
