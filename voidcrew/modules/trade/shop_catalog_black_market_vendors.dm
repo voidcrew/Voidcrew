@@ -431,9 +431,9 @@
 /datum/shop_sku/clinic/advanced_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/advanced
-	price_credits = 900
-	stock_min = 1
-	stock_max = 2
+	price_credits = 600
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/clinic/surgery_kit
 	category = "Field Medicine"
@@ -631,9 +631,10 @@
 	price_vouchers = 2
 
 /datum/shop_sku/clinic/rare/compact_defib
+	price_credits = 2400
 	category = "Field Medicine"
 	item_path = /obj/item/defibrillator/compact
-	price_vouchers = 2
+	price_vouchers = 0
 
 // ===== SAWBONES' INTAKE LEDGER (buybacks) =====
 // Credits only, and nothing a ship lathe can print: organs, monster glands,

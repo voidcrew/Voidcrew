@@ -64,6 +64,8 @@ SUBSYSTEM_DEF(missions)
 			ship.available_missions -= mission
 			qdel(mission)
 
+	// Reserve one of the existing slots before rolling the rest of the board.
+	ensure_safe_exploration_offer(ship)
 	// Fill up to default count
 	var/missions_needed = DEFAULT_AVAILABLE_MISSIONS - length(ship.available_missions)
 	// Asked once and reused: the lookup walks the hull for an R&D server the
@@ -148,7 +150,7 @@ SUBSYSTEM_DEF(missions)
  * * ship - The ship to regenerate missions for
  */
 /datum/controller/subsystem/missions/proc/force_refresh_ship_missions(obj/structure/overmap/ship/ship)
-	if(!ship)
+	if(!ship || istype(ship, /obj/structure/overmap/ship/npc))
 		return
 
 	// Delete existing available missions
@@ -157,12 +159,27 @@ SUBSYSTEM_DEF(missions)
 			qdel(mission)
 	ship.available_missions = list()
 
-	// Generate new missions
-	var/unarmed = !ship.has_ship_combat_research()
-	for(var/i in 1 to DEFAULT_AVAILABLE_MISSIONS)
-		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed))
-		if(new_mission)
-			ship.available_missions += new_mission
+	refresh_ship_missions(ship)
+
+/// Retain or reserve one valid green travel job; never exceed the board's five slots.
+/datum/controller/subsystem/missions/proc/ensure_safe_exploration_offer(obj/structure/overmap/ship/ship)
+	for(var/datum/mission/exploration/offer in ship.available_missions)
+		if(!QDELETED(offer) && !offer.generation_failed && !offer.active && offer.target?.is_valid() && offer.target.get_zone_type() == ZONE_GREEN)
+			return TRUE
+	if(!mission_type_within_limit(/datum/mission/exploration))
+		return FALSE
+	var/datum/mission/exploration/safe_offer = create_mission(/datum/mission/exploration, ZONE_GREEN)
+	if(!safe_offer)
+		return FALSE // No valid green coordinates: retain the existing board.
+	if(!safe_offer.target?.is_valid() || safe_offer.target.get_zone_type() != ZONE_GREEN)
+		qdel(safe_offer)
+		return FALSE
+	if(length(ship.available_missions) >= DEFAULT_AVAILABLE_MISSIONS)
+		var/datum/mission/replaced = ship.available_missions[length(ship.available_missions)]
+		ship.available_missions -= replaced
+		qdel(replaced)
+	ship.available_missions += safe_offer
+	return TRUE
 
 /**
  * Gets the count of active missions of a specific type.

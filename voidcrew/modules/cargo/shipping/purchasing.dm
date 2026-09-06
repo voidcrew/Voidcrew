@@ -4,7 +4,7 @@
 /obj/machinery/computer/voidcrew_cargo/proc/buy()
 	SEND_SIGNAL(src, COMSIG_SUPPLY_SHUTTLE_BUY)
 
-	if(!checkout_list.len)
+	if(!checkout_list.len || !bank_account_holder?.synced_bank_account)
 		return FALSE
 
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
@@ -30,39 +30,15 @@
 
 	// Iterate a copy: paid orders leave checkout_list inside the loop.
 	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
-		// Galactic Materials Market orders draw on a live market. adjust_market() takes the
-		// sheets out of SSstock_market, moves the price the scarcity deserves, and trims - or
-		// cancels - the order when the market ran dry while the ferry was in flight. Upstream's
-		// supply shuttle does this in the same place, right before it bills; skip it and the
-		// market never depletes, its prices never react to buying, and the crate ships sheets
-		// that were never actually on sale.
-		var/datum/supply_pack/custom/minerals/market_sheets = astype(spawning_order.pack)
-		if(market_sheets)
-			var/list/orders_adjusted = market_sheets.adjust_market()
-			if(length(orders_adjusted))
-				var/obj/structure/overmap/ship/notified_ship = get_ship_from_atom(src)
-				if(!length(market_sheets.contains)) // nothing left on the market at all
-					notified_ship?.ship_notify("Order #[spawning_order.id] ([spawning_order.pack.name]) was cancelled - the market has no stock left.", \
-						"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
-					checkout_list -= spawning_order
-					qdel(spawning_order)
-					continue
-				notified_ship?.ship_notify("Order #[spawning_order.id] ([spawning_order.pack.name]) was adjusted:\n[orders_adjusted.Join("\n")]", \
-					"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
-
-		var/price = spawning_order.pack.get_cost()
-		if(spawning_order.applied_coupon)
-			price *= (1 - spawning_order.applied_coupon.discount_pct_off)
-
-		// Pay first, ship second. The balance can move between calling the shuttle and
-		// its arrival - a pirate siphon empties an account in seconds - and adjust_money()
-		// refuses a withdrawal it can't cover. This used to ignore that and spawn the
-		// crate regardless, handing out free cargo to anyone who got robbed in transit.
-		// price can legitimately be 0 (a fully discounted coupon), and adjust_money(0)
-		// reports failure, so only bill when there is something to bill.
-		if(price > 0 && !bank_account_holder.synced_bank_account.adjust_money(-price))
+		// The cart quote is also the debit. Material stock is checked in full before
+		// payment and consumed only after payment, never partially at a pooled price.
+		if(!spawning_order.settle_ship_order(bank_account_holder.synced_bank_account))
+			var/obj/structure/overmap/ship/notified_ship = get_ship_from_atom(src)
+			notified_ship?.ship_notify("Order #[spawning_order.id]: [spawning_order.ship_settlement_error]", \
+				"CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			unpaid++
 			continue
+		var/price = spawning_order.ship_paid_cost
 
 		SSeconomy.track_purchase(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
 		value += price

@@ -3,10 +3,10 @@
 
 /// Earliest the first contested cache may surface into the round.
 #define CONTESTED_CACHE_FIRST_SPAWN_TIME (30 MINUTES)
-/// Delay between one cache surfacing and the next (with the first at ~30min, this yields 1-2 per ~2h round).
-#define CONTESTED_CACHE_SPAWN_INTERVAL (50 MINUTES)
+/// Delay between caches: nominal arrivals at 30, 180 and 330 minutes in a long round.
+#define CONTESTED_CACHE_SPAWN_INTERVAL (150 MINUTES)
 /// Maximum contested caches per round.
-#define CONTESTED_CACHE_MAX_PER_ROUND 2
+#define CONTESTED_CACHE_MAX_PER_ROUND 3
 /// The PvP window: time between the galaxy-wide announcement and the vault unsealing.
 #define CONTESTED_CACHE_UNLOCK_DELAY (10 MINUTES)
 /// On-site channel time to crack the unsealed vault open. Interrupted by moving away or taking damage.

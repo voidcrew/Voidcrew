@@ -13,7 +13,7 @@
 	weight = 4 // rare: roughly a fifth of a standard-weight event
 	max_occurrences = 1
 	earliest_start = COLOSSEUM_EARLIEST_SPAWN
-	min_players = 4 // a venue with nobody to fight in it is just sad
+	min_players = 1 // Venue access is separate from the match's human-opponent requirements.
 	event_scope = EVENT_SCOPE_GALAXY
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "Surfaces the Grand Colosseum PvP venue on the overmap for the rest of the round."

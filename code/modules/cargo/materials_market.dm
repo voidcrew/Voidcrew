@@ -278,7 +278,10 @@
 	switch(action)
 		if("buy")
 			var/material_str = params["material"]
-			var/quantity = text2num(params["quantity"])
+			var/quantity = isnum(params["quantity"]) ? params["quantity"] : text2num(params["quantity"])
+			if(!valid_cargo_order_quantity(quantity, MAX_STACK_SIZE * MAX_STACK_LIMIT))
+				say("Order a whole number of sheets, from 1 to [MAX_STACK_SIZE * MAX_STACK_LIMIT].")
+				return FALSE
 
 			//find material from its name
 			var/datum/material/material_bought
@@ -288,7 +291,7 @@
 					material_bought = mat
 					break
 			if(!material_bought)
-				CRASH("Invalid material name passed to materials market!")
+				return FALSE
 			sheet_to_buy = initial(material_bought.sheet_type)
 			if(!sheet_to_buy)
 				CRASH("Material with no sheet type being sold on materials market!")
@@ -313,18 +316,16 @@
 			// We want to count how many stacks of all sheets we're ordering to make sure they don't exceed the limit of 10
 			// If we already have a custom order on SSshuttle, we should add the things to order to that order
 			var/datum/supply_order/current_order = find_order(living_user, is_ordering_private)
+			var/list/proposed_contents = current_order ? current_order.pack.contains.Copy() : list()
+			proposed_contents[sheet_to_buy] += quantity
+			if(!valid_material_order_contents(proposed_contents))
+				say("One material order can contain at most [MAX_STACK_LIMIT] stacks across all materials.")
+				return FALSE
 			if(!isnull(current_order))
 				// Check if this order exceeded the market limit
 				var/prior_sheets = current_order.pack.contains[sheet_to_buy]
 				if(prior_sheets + quantity > SSstock_market.materials_quantity[material_bought] )
 					say("There aren't enough sheets on the market! Please wait for more sheets to be traded before adding more.")
-					playsound(usr, 'sound/machines/synth/synth_no.ogg', 35, FALSE)
-					return
-
-				// Check if the order exceeded the purchase limit
-				var/prior_stacks = ROUND_UP(prior_sheets / MAX_STACK_SIZE)
-				if(prior_stacks >= MAX_STACK_LIMIT)
-					say("There are already 10 stacks of sheets on order! Please wait for them to arrive before ordering more.")
 					playsound(usr, 'sound/machines/synth/synth_no.ogg', 35, FALSE)
 					return
 
@@ -423,7 +424,7 @@
 /obj/item/stock_block/proc/update_value()
 	if(!SSstock_market.materials_prices[export_mat])
 		return
-	export_value = quantity * SSstock_market.materials_prices[export_mat]
+	export_value = quantity * (export_mat == /datum/material/plasma ? plasma_export_bid() : SSstock_market.materials_prices[export_mat])
 	icon_state = "stock_block_liquid"
 	update_appearance(UPDATE_ICON_STATE)
 	visible_message(span_warning("\The [src] becomes liquid!"))

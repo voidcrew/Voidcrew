@@ -254,7 +254,7 @@ Unless you know what you're doing, only use the first three numbers. They're in 
 	)
 	sheet_type = /obj/item/stack/sheet/mineral/plasma
 	ore_type = /obj/item/stack/ore/plasma
-	value_per_unit = 200 / SHEET_MATERIAL_AMOUNT
+	value_per_unit = 20 / SHEET_MATERIAL_AMOUNT
 	// VOIDCREW EDIT: plasma trades on the galactic materials market. Upstream keeps
 	// it off because plasma is the station's dedicated export; here it's ship fuel
 	// and the market refusing exactly plasma read as a bug to crews (rounds 14/15).

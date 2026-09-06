@@ -41,8 +41,10 @@
  * Guarantees, in order:
  * * An oxygen supply: if nothing aboard provides breathing gear (no emergency
  *   closet, internals crate, survival box or loose oxygen tank), a stocked
- *   internals crate is spawned, plus an oxygen canister to refill from -
- *   printed tanks and drained rooms are both dead ends without a gas source.
+ *   internals crate is spawned.
+ * * A refill source: if there is no oxygen or air canister, an oxygen canister
+ *   is spawned independently of the breathing gear check. Loose tanks and
+ *   emergency closets cannot refill themselves.
  * * A surgical kit: if the ship has an operating table or stasis bed but not a
  *   full basic toolset (scalpel + saw + drill, or a surgical duffel), a
  *   surgical duffel bag is placed on it. Half a toolset is the observed
@@ -94,15 +96,17 @@
 		if(tile_open)
 			floor_tiles += tile
 
+	var/turf/crate_turf
 	if(!has_oxygen_supply)
-		var/turf/crate_turf = pick_supply_drop_turf(floor_tiles)
+		crate_turf = pick_supply_drop_turf(floor_tiles)
 		if(crate_turf)
 			new /obj/structure/closet/crate/internals/ship_reserve(crate_turf)
 			log_shuttle("[name]: loaded with no oxygen supply, spawned reserve internals crate at [COORD(crate_turf)]")
-			if(!has_gas_source)
-				var/turf/canister_turf = pick_supply_drop_turf(floor_tiles - crate_turf) || crate_turf
-				new /obj/machinery/portable_atmospherics/canister/oxygen(canister_turf)
-				log_shuttle("[name]: loaded with no gas source, spawned oxygen canister at [COORD(canister_turf)]")
+	if(!has_gas_source)
+		var/turf/canister_turf = pick_supply_drop_turf(floor_tiles - crate_turf) || crate_turf
+		if(canister_turf)
+			new /obj/machinery/portable_atmospherics/canister/oxygen(canister_turf)
+			log_shuttle("[name]: loaded with no gas source, spawned oxygen canister at [COORD(canister_turf)]")
 
 	if(surgery_site && !has_surgery_duffel && !(has_scalpel && has_saw && has_drill))
 		new /obj/item/storage/backpack/duffelbag/sec/surgery(get_turf(surgery_site))
