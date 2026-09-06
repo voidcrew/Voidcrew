@@ -150,6 +150,7 @@ $muted: #969588;
 .Outpost__live { margin-left: auto; color: #9fbd85; font-size: 9px; letter-spacing: 1px; }
 .Outpost__footer-row { display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 10px; padding-top: 8px; }
 .Outpost__readout { display: flex; flex-direction: column; gap: 3px; strong { color: $amber; font: 18px 'Consolas', monospace; } small { color: $muted; font-size: 10px; } }
+.Outpost__readout .Outpost__broadcast-error { color: $amber; }
 .Outpost__ownership { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; padding-top: 8px; > .Dropdown { flex: 1; min-width: 0; } }
 
 .Outpost {
@@ -168,6 +169,8 @@ $muted: #969588;
     font-size: 11px;
     line-height: 1.2;
     white-space: nowrap;
+    // The shared content wrapper stretches by default, defeating the button's centering.
+    > .Button__content { align-self: center; }
     &.Button--selected { background: linear-gradient(#71552d, #4c381d); border-color: #d2a25790; color: #ffe0a5; }
     &:hover:not(.Button--disabled) { border-color: $amber; color: #fff3d4; }
     &.Button--disabled { opacity: 0.4; }

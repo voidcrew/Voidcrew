@@ -6,8 +6,7 @@
  * founds a player outpost on that tile (see player_outpost.dm).
  *
  * Purchasing charges credits + vouchers every time. Nothing about the deed or
- * the outpost persists across rounds; a player may found a single outpost per
- * round (see GLOB.player_outpost_founder_ckeys).
+ * the outpost persists across rounds. Players may own multiple outposts.
  */
 
 /obj/item/outpost_deed
@@ -59,8 +58,6 @@
 		return "This deed is already registering a claim."
 	if(!user.ckey || user.ckey != owner_ckey)
 		return "The deed isn't registered to you."
-	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The registry already has an active claim under your name this shift."
 	if(SSovermap.jump_mode != BS_JUMP_IDLE)
 		return "The registry has suspended new claims. Bluespace exodus in progress."
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -190,13 +187,12 @@
  * # Outpost Deed SKU
  *
  * Sold over the counter at trader outposts. Charges the full price on every
- * purchase, the deed carries no cross-round persistence. A player who has
- * already founded an outpost this round can't buy another. Deeds dispense
- * name-bound to the buyer.
+ * purchase, the deed carries no cross-round persistence. Deeds dispense
+ * name-bound to the buyer. Existing ownership never prevents another purchase.
  */
 /datum/shop_sku/outpost_deed
 	name = "outpost deed"
-	desc = "A registered habitat in open space. One claim per person per shift."
+	desc = "A registered habitat in open space."
 	item_path = /obj/item/outpost_deed
 	category = "Colonial Registry"
 	price_credits = OUTPOST_DEED_COST_CREDITS
@@ -207,12 +203,10 @@
 /datum/shop_sku/outpost_deed/get_denial_reason(mob/living/user)
 	if(!user.ckey)
 		return "The registry can't establish your identity."
-	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The registry already has an active claim under your name this shift."
 	return ..()
 
 /datum/shop_sku/outpost_deed/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
-	if(!user.ckey || (user.ckey in GLOB.player_outpost_founder_ckeys))
+	if(!user.ckey)
 		return FALSE
 	return ..()
 

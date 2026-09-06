@@ -1,12 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import {
-  Button,
-  Dropdown,
-  Icon,
-  Input,
-  NumberInput,
-  TextArea,
-} from 'tgui-core/components';
+import { Button, Dropdown, Icon, Input, TextArea } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
@@ -27,7 +20,6 @@ const PANELS = {
 type Vessel = { ref: string; name: string };
 type Candidate = Vessel & {
   ckey: string;
-  can_receive_outpost: BooleanLike;
   is_resident?: BooleanLike;
 };
 type Resident = Vessel & {
@@ -42,6 +34,7 @@ export type OutpostData = {
   memo: string;
   is_owner: BooleanLike;
   has_owner: BooleanLike;
+  can_claim: BooleanLike;
   can_manage: BooleanLike;
   can_spend: BooleanLike;
   raidable: BooleanLike;
@@ -50,13 +43,14 @@ export type OutpostData = {
   advert_cost: number;
   advert_cooldown: number;
   advert_remaining: number;
+  advert_denial: string | null;
+  advert_error: string | null;
   dock_requests: Vessel[];
   approved_ships: Vessel[];
   banned_ships: Vessel[];
   builders: string[];
   candidates: Candidate[];
   resident_mode: string;
-  resident_limit: number;
   resident_active: number;
   arrival_available: BooleanLike;
   residents: Resident[];
@@ -453,19 +447,7 @@ function Registry({ data, act }: Props) {
           </div>
         )}
         <div className="Outpost__limit">
-          <span>Resident limit</span>
-          <NumberInput
-            value={data.resident_limit || 6}
-            minValue={1}
-            maxValue={12}
-            step={1}
-            width="64px"
-            disabled={!data.can_manage}
-            onChange={(amount) =>
-              act('resident_limit', { amount: String(amount) })
-            }
-          />
-          <small>{data.resident_active || 0} active</small>
+          <span>{data.resident_active || 0} active residents</span>
         </div>
         <div
           className={
@@ -496,23 +478,29 @@ function Broadcast({ data, act }: Props) {
               ? `${Math.ceil(data.advert_remaining / 60)} min`
               : `${data.advert_cost} cr`}
           </strong>
-          <small>{live ? 'Remaining' : 'Sector listing'}</small>
+          <small
+            role="status"
+            className={
+              !live && (data.advert_denial || data.advert_error)
+                ? 'Outpost__broadcast-error'
+                : undefined
+            }
+          >
+            {live
+              ? 'Broadcast live'
+              : data.advert_denial || data.advert_error || 'Sector listing'}
+          </small>
         </div>
         <Button
           icon="tower-broadcast"
           disabled={
             !data.can_manage ||
+            !!data.advert_denial ||
             !data.can_spend ||
             live ||
             data.advert_cooldown > 0
           }
-          tooltip={
-            !data.can_spend
-              ? 'Treasury permission required'
-              : data.advert_cooldown > 0
-                ? `Ready in ${Math.ceil(data.advert_cooldown)}s`
-                : undefined
-          }
+          tooltip={data.advert_denial || data.advert_error || undefined}
           onClick={() => act('buy_advert')}
         >
           {live ? 'On air' : 'Broadcast'}
@@ -524,9 +512,7 @@ function Broadcast({ data, act }: Props) {
 
 function Ownership({ data, act }: Props) {
   const [recipient, setRecipient] = useState<string>('');
-  const candidates = (data.candidates || []).filter(
-    (person) => !!person.can_receive_outpost,
-  );
+  const candidates = data.candidates || [];
   const selected = candidates.find((person) => person.ref === recipient);
   return (
     <>
@@ -562,8 +548,18 @@ function Ownership({ data, act }: Props) {
             Abandon
           </Button>
         </div>
+      ) : !data.has_owner ? (
+        <div className="Outpost__ownership">
+          <Button
+            icon="flag"
+            disabled={!data.can_claim}
+            onClick={() => act('claim')}
+          >
+            Claim outpost
+          </Button>
+        </div>
       ) : (
-        <div className="Outpost__quiet">{data.founder_name || 'Unclaimed'}</div>
+        <div className="Outpost__quiet">{data.founder_name}</div>
       )}
     </>
   );

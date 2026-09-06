@@ -7,8 +7,19 @@
 	var/list/resident_clearance = list()
 	var/list/invited_residents = list()
 	var/list/blocked_residents = list()
-	var/resident_limit = 6
 	var/list/arrival_reservations = list()
+
+/// Copy the founding ship's roster into independent resident and construction grants.
+/// Called once after successful creation, so later revocations are never overwritten.
+/obj/structure/overmap/dynamic/player_outpost/proc/register_founding_crew(list/datum/mind/crew)
+	for(var/datum/mind/member as anything in crew)
+		if(QDELETED(member))
+			continue
+		residents |= member
+		var/player_key = ckey(member.key)
+		if(player_key)
+			resident_clearance[player_key] = resident_access_revision
+			authorized_builder_ckeys |= player_key
 
 /obj/structure/overmap/dynamic/player_outpost/proc/is_resident(mob/user)
 	return is_owner(user) || (user?.mind && user.mind in residents)
@@ -50,8 +61,6 @@
 	var/wait = cryo_rejoin_wait(player_key, src)
 	if(wait)
 		return "Cryo return cooldown: [DisplayTimeText(wait)] remaining"
-	if(active_resident_count() + length(arrival_reservations) - (reservation ? 1 : 0) >= resident_limit)
-		return "All active resident positions are occupied"
 	if(!reservation && !available_resident_pod())
 		return "No available arrival point; install, anchor or empty a resident cryopod"
 	return null
@@ -104,7 +113,7 @@
 	var/obj/machinery/cryopod/pod = home.available_resident_pod()
 	if(!pod)
 		return FALSE
-	// Reserve both capacity and a particular pod before character creation can yield.
+	// Reserve a particular pod before character creation can yield.
 	var/player_key = ckey
 	var/character_slot = "[client.prefs.default_slot]"
 	var/already_played_slot = (character_slot in persistent_client.joined_as_slots)

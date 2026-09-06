@@ -37,7 +37,6 @@ type SelectedOutpost = {
   balance: number;
   dock_mode: 'open' | 'request' | 'lockdown';
   resident_mode: 'open' | 'password' | 'approved' | 'closed';
-  resident_limit: number;
   resident_active: number;
   freight_state: string;
   freight_error: string;
@@ -282,15 +281,8 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
                   </Button>
                 ))}
                 <Box color="label">
-                  {selected.resident_active}/{selected.resident_limit} active
+                  {selected.resident_active} active residents
                 </Box>
-                <Button
-                  icon="sliders"
-                  disabled={busy}
-                  onClick={() => mutate('resident_limit')}
-                >
-                  Set Limit
-                </Button>
               </Stack>
             </Stack.Item>
             <Stack.Item>
@@ -352,8 +344,7 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
           <Stack align="center" mb={1}>
             <Stack.Item grow>
               <Box color="label">
-                {selected.resident_active} active of {selected.resident_limit}{' '}
-                allowed
+                {selected.resident_active} active residents
               </Box>
             </Stack.Item>
             <Stack.Item>

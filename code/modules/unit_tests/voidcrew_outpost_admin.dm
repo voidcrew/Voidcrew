@@ -14,7 +14,6 @@
 
 /datum/unit_test/voidcrew_outpost_admin/Destroy()
 	if(operator)
-		GLOB.player_outpost_founder_ckeys -= operator.ckey
 		operator.key = null
 	return ..()
 
@@ -33,7 +32,6 @@
 	TEST_ASSERT(home.treasury && home.freight_berth?.dock && length(home.resident_pods), "Admin-created home lacks bank, freight or cryo services")
 	TEST_ASSERT_NULL(home.founder_ckey, "Unowned admin creation silently assigned an owner")
 	TEST_ASSERT_EQUAL(home.resident_mode, "closed", "Unowned admin creation allowed resident arrivals")
-	TEST_ASSERT(!(operator.ckey in GLOB.player_outpost_founder_ckeys), "Unowned admin creation consumed the operator's founding allowance")
 	TEST_ASSERT_NULL(panel.create_home(operator, sector, /datum/map_template/player_outpost/small, "Duplicate"), "Admin creation accepted an occupied sector")
 	TEST_ASSERT_NULL(panel.create_home(operator, SSovermap.get_unused_overmap_square(), /datum/map_template/player_outpost/nothing, "Bare Claim"), "Admin creation accepted an unsupported shell")
 

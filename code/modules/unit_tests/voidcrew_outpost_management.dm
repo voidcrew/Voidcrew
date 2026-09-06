@@ -19,10 +19,8 @@
 	var/area/original_visitor_area
 	var/area/shuttle/voidcrew/visitor_area
 	var/obj/docking_port/mobile/voidcrew/visitor_port
-	var/list/test_player_keys = list()
 
 /datum/unit_test/voidcrew_outpost_management/Destroy()
-	GLOB.player_outpost_founder_ckeys -= test_player_keys
 	// These offline keys simulate players without connecting a client to the test world.
 	for(var/mob/player in allocated)
 		if(!QDELETED(player))
@@ -44,7 +42,6 @@
 	player.key = player_key
 	player.mind_initialize()
 	ADD_TRAIT(player, TRAIT_PRESERVE_UI_WITHOUT_CLIENT, REF(src))
-	test_player_keys |= player.ckey
 	return player
 
 /datum/unit_test/voidcrew_outpost_management/proc/act(datum/player_outpost_management_ui/panel, mob/user, action, datum/candidate, list/extra_params = list())
@@ -75,6 +72,20 @@
 	var/turf/berth_turf = get_turf(home.freight_berth.panel)
 	var/mob/living/carbon/human/resident = make_player(berth_turf, "managementresident")
 	TEST_ASSERT(home.is_owner(owner), "The test actor is not the claim owner.")
+	act(hud_panel, owner, "buy_advert", null)
+	TEST_ASSERT_NULL(home.current_advert, "An unfunded broadcast went live")
+	var/list/broadcast_data = hud_panel.ui_data(owner)
+	TEST_ASSERT_EQUAL(broadcast_data["advert_denial"], "Insufficient outpost funds", "An unfunded broadcast gave no visible rejection reason")
+	home.treasury.adjust_money(2500, "Broadcast fixture") // OUTPOST_ADVERT_COST; fork defines follow test includes.
+	TEST_ASSERT_NULL(hud_panel.advert_denial(owner), "Funding the treasury left stale broadcast rejection feedback")
+	TEST_ASSERT_EQUAL(hud_panel.advert_denial(resident), "Treasury permission required", "Missing treasury authority gave no broadcast rejection reason")
+	act(hud_panel, owner, "buy_advert", null)
+	TEST_ASSERT_NOTNULL(home.current_advert, "A funded authorized broadcast did not start")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 0, "A broadcast charged the wrong amount")
+	TEST_ASSERT_EQUAL(hud_panel.advert_denial(owner), "Broadcast already live", "An active broadcast gave no feedback")
+	TEST_ASSERT(!hud_panel.buy_advert(owner), "A duplicate broadcast was accepted")
+	qdel(home.current_advert)
+	TEST_ASSERT(findtext(hud_panel.advert_denial(owner), "Ready in ") == 1, "Broadcast cooldown gave no feedback")
 	var/datum/action/innate/player_outpost_management/owner_action = grant_player_outpost_management(owner, home)
 	TEST_ASSERT(owner_action && owner_action.managed_outpost == home, "The owner did not receive the claim-bound management action.")
 	TEST_ASSERT_EQUAL(get_outpost_from_atom(resident), home, "The freight facility must belong to the claim.")
@@ -172,3 +183,18 @@
 	var/datum/player_outpost_management_ui/management_test/resident_panel = allocate(__IMPLIED_TYPE__, home, resident)
 	act(resident_panel, resident, "abandon", null)
 	TEST_ASSERT_NULL(home.founder_ckey, "A valid owner could not abandon their claim.")
+	var/datum/bank_account/retained_account = home.treasury
+	var/datum/player_outpost_management_ui/management_test/claim_panel = allocate(__IMPLIED_TYPE__, home, resident, home.management_console)
+	var/list/claim_data = claim_panel.ui_data(resident)
+	TEST_ASSERT(claim_data["can_claim"], "An abandoned outpost did not expose its local claim action")
+	act(claim_panel, resident, "rename", null, list("name" = "Unauthorized rename"))
+	TEST_ASSERT(home.name != "Unauthorized rename", "An unowned site's claim interface allowed management before claiming")
+	act(resident_panel, resident, "claim", null)
+	TEST_ASSERT_NULL(home.founder_ckey, "A stale remote HUD claimed an abandoned site")
+	act(claim_panel, resident, "claim", null)
+	TEST_ASSERT(home.is_owner(resident), "A former owner could not reclaim the outpost at its terminal")
+	TEST_ASSERT_EQUAL(home.treasury, retained_account, "Reclaiming replaced the existing bank account")
+	TEST_ASSERT_EQUAL(home.resident_mode, "approved", "Reclaiming left all resident arrivals closed")
+	TEST_ASSERT(home.home_bundle_installed, "Reclaiming removed the existing equipment")
+	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in resident.actions, "Claiming did not restore the owner's management HUD")
+	TEST_ASSERT(!home.transfer_ownership(owner, owner), "Another visitor could take an already-owned outpost")

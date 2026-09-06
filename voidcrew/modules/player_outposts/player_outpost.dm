@@ -11,15 +11,12 @@
  * never moves. Zone rules are locked in at founding: green-zone outposts are
  * protected from ship weapons, yellow/red outposts are raidable.
  *
- * One outpost per ckey per round (see GLOB.player_outpost_founder_ckeys).
+ * Players may own multiple outposts; each claim has independent services.
  * Nothing about the outpost persists across rounds.
  */
 
 /// All player outposts on the overmap
 GLOBAL_LIST_EMPTY(player_outposts)
-/// Ckeys that have founded (or been transferred) an outpost this round. Append-only.
-GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
-
 /obj/structure/overmap/dynamic/player_outpost
 	name = "player outpost"
 	desc = "An independent outpost."
@@ -366,16 +363,18 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Returns TRUE on success; on failure the outpost deletes itself.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/found(mob/living/founder, datum/map_template/player_outpost/shell, outpost_name)
-	// Reserve the player account before map loading yields. Separate deeds must
-	// not create competing claims while the first founding is still in progress.
-	if(!founder?.ckey || !founder.mind || founder.ckey in GLOB.player_outpost_founder_ckeys)
+	// A single site may only be initialized once, regardless of how many sites its owner holds.
+	if(founder_ckey || loaded || loading)
+		return FALSE
+	if(!founder?.ckey || !founder.mind)
 		qdel(src)
 		return FALSE
-	var/reserved_founder_key = founder.ckey
-	GLOB.player_outpost_founder_ckeys |= reserved_founder_key
 	founder_ckey = founder.ckey
 	founder_name = founder.real_name
 	founder_mind = WEAKREF(founder.mind)
+	// Snapshot the actual crew before map loading yields; nearby ships are visitors.
+	var/obj/structure/overmap/ship/founding_ship = get_crew_ship(founder)
+	var/list/datum/mind/founding_crew = founding_ship?.ship_team?.members.Copy()
 	shell_template = shell
 	name = outpost_name
 	display_name = outpost_name
@@ -387,7 +386,6 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// A broad catch here unwinds past their cleanup instead of allowing it to run.
 	var/site_ready = load_level()
 	if(!site_ready)
-		GLOB.player_outpost_founder_ckeys -= reserved_founder_key
 		qdel(src)
 		return FALSE
 
@@ -397,8 +395,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	sync_close_overmap_objects()
 
 	residents |= founder.mind
-	resident_clearance[founder_ckey] = TRUE
-	GLOB.player_outpost_founder_ckeys |= founder_ckey
+	resident_clearance[founder_ckey] = resident_access_revision
+	register_founding_crew(founding_crew)
 	sync_management_lifecycle()
 
 	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
@@ -751,9 +749,14 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /// Owner approved a pending request
 /obj/structure/overmap/dynamic/player_outpost/proc/approve_dock_request(obj/structure/overmap/ship/requester)
+	if(QDELETED(requester) || !(requester in pending_dock_requests))
+		return
 	pending_dock_requests -= requester
 	approved_ships[requester] = TRUE
 	requester.ship_notify("[name]: docking clearance granted.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+	// Continue the approach they requested, only while still waiting at this site.
+	if(loaded && get_turf(src) && requester.loc == loc && requester.state == OVERMAP_SHIP_FLYING && requester.is_still() && !requester.is_interdicted && !QDELETED(requester.shuttle))
+		requester.overmap_object_act(null, src)
 
 /// Owner denied a pending request
 /obj/structure/overmap/dynamic/player_outpost/proc/deny_dock_request(obj/structure/overmap/ship/requester)
@@ -771,7 +774,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /**
  * The owner walks away: ownership clears, docking opens up, adverts die.
  * The physical outpost persists (round-permanent by design). The previous
- * owner's ckey stays in the founder registry, no re-founding this round.
+ * owner can found or claim another outpost at any time.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user, admin_override = FALSE)
 	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
@@ -794,15 +797,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	sync_management_lifecycle()
 
 /**
- * Transfers ownership to another player. The recipient must not have founded
- * an outpost this round; their ckey joins the founder registry.
+ * Transfers ownership to another player, or accepts a local claim on an unowned site.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user, admin_override = FALSE)
 	if(!istype(new_owner) || !new_owner.ckey || !new_owner.mind)
 		return FALSE
-	if(!admin_override && (new_owner.ckey in GLOB.player_outpost_founder_ckeys))
-		return FALSE
-	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
+	var/claiming = new_owner == user && can_claim(user)
+	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : (!is_owner(user) && !claiming))
 		return FALSE
 	// An owner cannot retain command or spending by delegating authority to themselves
 	// before transferring the deed. Other residents retain their independent grants.
@@ -813,12 +814,20 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	treasurers -= user.mind
 	authorized_builder_ckeys -= founder_ckey
 	residents |= new_owner.mind
-	resident_clearance[new_owner.ckey] = TRUE
+	resident_clearance[new_owner.ckey] = resident_access_revision
+	blocked_residents -= new_owner.ckey
 	founder_ckey = new_owner.ckey
 	founder_name = new_owner.real_name
 	founder_mind = WEAKREF(new_owner.mind)
-	GLOB.player_outpost_founder_ckeys += new_owner.ckey
+	if(claiming)
+		var/obj/structure/overmap/ship/claiming_ship = get_crew_ship(new_owner)
+		register_founding_crew(claiming_ship?.ship_team?.members.Copy())
+		resident_mode = "approved"
 	sync_management_lifecycle()
 	message_admins("[key_name_admin(user)] transferred player outpost '[name]' to [key_name_admin(new_owner)]")
 	to_chat(new_owner, span_boldnotice("You are now the registered owner of [name]."))
 	return TRUE
+
+/// A claim must be vacant and visited in person; prior ownership never disqualifies a player.
+/obj/structure/overmap/dynamic/player_outpost/proc/can_claim(mob/living/user)
+	return !founder_ckey && loaded && !loading && is_management_candidate(user) && user.mind.current == user

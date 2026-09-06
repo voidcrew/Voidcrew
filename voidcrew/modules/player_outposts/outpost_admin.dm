@@ -72,7 +72,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		"ref" = REF(selected), "name" = selected.name, "owner" = selected.founder_ckey || "Unowned",
 		"coords" = "[coords[1]], [coords[2]]", "shell" = selected.shell_template?.name || "Unloaded",
 		"balance" = selected.treasury?.account_balance || 0, "dock_mode" = selected.dock_mode,
-		"resident_mode" = selected.resident_mode, "resident_limit" = selected.resident_limit,
+		"resident_mode" = selected.resident_mode,
 		"resident_active" = selected.active_resident_count(), "residents" = people,
 		"freight_state" = freight_state,
 		"freight_error" = selected.freight?.last_error, "research_pairs" = length(selected.research_pairs),
@@ -140,12 +140,15 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	var/mob/living/new_owner = owners[owner_choice]
 	var/datum/mind/owner_mind = new_owner?.mind
 	var/owner_key = new_owner?.ckey
+	var/obj/structure/overmap/ship/founding_ship = get_crew_ship(new_owner)
+	var/list/datum/mind/founding_crew = founding_ship?.ship_team?.members.Copy()
 	var/obj/structure/overmap/dynamic/player_outpost/home = create_home(user, destination, templates[template_choice], outpost_name)
 	if(!home)
 		return
 	// Map loading can yield while a selected player leaves or changes characters.
 	if(!QDELETED(new_owner) && new_owner.ckey == owner_key && new_owner.mind == owner_mind && check_rights_for(user?.client, R_ADMIN))
-		home.transfer_ownership(new_owner, user, admin_override = TRUE)
+		if(home.transfer_ownership(new_owner, user, admin_override = TRUE))
+			home.register_founding_crew(founding_crew)
 	if(!QDELETED(src))
 		selected = home
 
@@ -241,11 +244,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 			home.resident_password = trim(password)
 			home.resident_access_revision++
 			home.resident_clearance.Cut()
-		if("resident_limit")
-			var/amount = tgui_input_number(user, "Resident limit", home.name, home.resident_limit, max_value = 12, min_value = 1)
-			if(!valid_selection(home, user) || !valid_cargo_order_quantity(amount, 12))
-				return
-			home.resident_limit = amount
 		if("add_resident")
 			var/mob/living/resident = voidcrew_admin_pick_player(user.client, "Add Outpost Resident")
 			if(!valid_selection(home, user) || !resident?.ckey || !resident.mind)

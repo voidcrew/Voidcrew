@@ -82,6 +82,7 @@
 	var/mob/manager
 	var/datum/weakref/console_ref
 	var/turf/console_turf
+	var/advert_error
 
 /datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console)
 	outpost = target
@@ -121,7 +122,7 @@
 		if(!console || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
 			return UI_CLOSE
 		var/physical_status = console.ui_status(user, console.ui_state(user))
-		return min(physical_status, isliving(user) && outpost.is_current_management_user(user) ? UI_INTERACTIVE : UI_UPDATE)
+		return min(physical_status, isliving(user) && (outpost.is_current_management_user(user) || outpost.can_claim(user)) ? UI_INTERACTIVE : UI_UPDATE)
 	if(!isliving(user) || !outpost.is_current_management_user(user))
 		return UI_CLOSE
 	return user.shared_ui_interaction(user)
@@ -143,6 +144,7 @@
 	data["memo"] = outpost.memo
 	data["is_owner"] = outpost.is_owner(user)
 	data["has_owner"] = !!outpost.founder_ckey
+	data["can_claim"] = !!console_ref && outpost.can_claim(user)
 	data["can_manage"] = outpost.is_current_management_user(user)
 	data["can_spend"] = outpost.can_spend(user)
 	data["raidable"] = outpost.raidable
@@ -151,6 +153,8 @@
 	data["advert_cost"] = OUTPOST_ADVERT_COST
 	data["advert_cooldown"] = COOLDOWN_TIMELEFT(outpost, advert_cooldown) / 10
 	data["advert_remaining"] = outpost.current_advert ? outpost.current_advert.get_remaining_seconds() : 0
+	data["advert_denial"] = advert_denial(user)
+	data["advert_error"] = advert_error
 
 	var/list/requests = list()
 	for(var/obj/structure/overmap/ship/requester in outpost.pending_dock_requests)
@@ -171,12 +175,11 @@
 	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
 		if(!outpost.is_management_candidate(candidate) || candidate.ckey == outpost.founder_ckey)
 			continue
-		candidates += list(list("name" = candidate.real_name, "ckey" = candidate.ckey, "ref" = REF(candidate), "can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys), "is_resident" = (candidate.mind in outpost.residents)))
+		candidates += list(list("name" = candidate.real_name, "ckey" = candidate.ckey, "ref" = REF(candidate), "is_resident" = (candidate.mind in outpost.residents)))
 	data["candidates"] = candidates
 
 	outpost.ensure_home_services()
 	data["resident_mode"] = outpost.resident_mode
-	data["resident_limit"] = outpost.resident_limit
 	data["resident_active"] = outpost.active_resident_count()
 	data["arrival_available"] = !!outpost.available_resident_pod()
 	data["resident_invites"] = outpost.invited_residents.Copy()
@@ -192,11 +195,17 @@
 	if(.)
 		return
 	var/mob/living/user = usr
-	if(QDELETED(outpost) || !istype(user) || QDELETED(user) || ui.user != user || ui.src_object != src || ui_status(user, state) != UI_INTERACTIVE || !outpost.is_current_management_user(user))
+	if(QDELETED(outpost) || !istype(user) || QDELETED(user) || ui.user != user || ui.src_object != src || ui_status(user, state) != UI_INTERACTIVE)
+		return
+	if(action == "claim")
+		if(console_ref && outpost.can_claim(user))
+			outpost.transfer_ownership(user, user)
+		return TRUE
+	if(!outpost.is_current_management_user(user))
 		return
 	if((action in list("transfer", "abandon", "add_builder", "remove_builder")) && !outpost.is_owner(user))
 		return
-	if(action in list("resident_mode", "resident_password", "resident_limit", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate"))
+	if(action in list("resident_mode", "resident_password", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate"))
 		return service_action(action, params, user)
 	. = TRUE
 	switch(action)
@@ -272,15 +281,35 @@
 	return !QDELETED(src) && !QDELETED(original_outpost) && !QDELETED(user) && outpost == original_outpost \
 		&& original_outpost.is_owner(user) && ui?.user == user && ui.src_object == src && ui_status(user, ui.state) == UI_INTERACTIVE
 
+/datum/player_outpost_management_ui/proc/advert_denial(mob/living/user)
+	if(outpost.current_advert)
+		return "Broadcast already live"
+	if(!outpost.can_spend(user))
+		return "Treasury permission required"
+	if(!COOLDOWN_FINISHED(outpost, advert_cooldown))
+		return "Ready in [CEILING(COOLDOWN_TIMELEFT(outpost, advert_cooldown) / 10, 1)]s"
+	if(!outpost.treasury)
+		return "Outpost bank unavailable"
+	if(!outpost.treasury.has_money(OUTPOST_ADVERT_COST))
+		return "Insufficient outpost funds"
+	return null
+
 /datum/player_outpost_management_ui/proc/buy_advert(mob/living/user)
-	if(outpost.current_advert || !COOLDOWN_FINISHED(outpost, advert_cooldown) || !outpost.can_spend(user))
-		return
+	advert_error = null
+	var/denial = advert_denial(user)
+	if(denial)
+		to_chat(user, span_warning("Broadcast rejected: [denial]."))
+		return FALSE
 	var/datum/bank_account/account = outpost.treasury
-	if(!account || !account.has_money(OUTPOST_ADVERT_COST) || !account.adjust_money(-OUTPOST_ADVERT_COST, "Paid to Colonial Registry by [user.ckey] for broadcast: [outpost.name]"))
-		return
+	if(!account.adjust_money(-OUTPOST_ADVERT_COST, "Paid to Colonial Registry by [user.ckey] for broadcast: [outpost.name]"))
+		advert_error = "Payment declined"
+		to_chat(user, span_warning("Broadcast rejected: [advert_error]."))
+		return FALSE
 	COOLDOWN_START(outpost, advert_cooldown, OUTPOST_ADVERT_COOLDOWN)
 	outpost.current_advert = new /datum/outpost_advert(outpost)
 	log_game("PLAYER OUTPOST: [key_name(user)] bought an advertisement for '[outpost.name]'")
+	to_chat(user, span_notice("Broadcast live: [outpost.name]."))
+	return TRUE
 
 /datum/player_outpost_management_ui/proc/service_action(action, list/params, mob/living/user)
 	switch(action)
@@ -291,10 +320,6 @@
 			outpost.resident_password = copytext(trim(params["password"]), 1, 65)
 			outpost.resident_access_revision++
 			outpost.resident_clearance.Cut()
-		if("resident_limit")
-			var/amount = text2num(params["amount"])
-			if(valid_cargo_order_quantity(amount, 12))
-				outpost.resident_limit = amount
 		if("reset_resident_access")
 			outpost.resident_access_revision++
 			outpost.resident_clearance.Cut()

@@ -7,10 +7,6 @@
 	var/mob/living/carbon/human/consistent/returning_owner
 
 /datum/unit_test/voidcrew_outpost_management_lifecycle/Destroy()
-	if(owner)
-		GLOB.player_outpost_founder_ckeys -= owner.ckey
-	if(steward)
-		GLOB.player_outpost_founder_ckeys -= steward.ckey
 	if(returning_owner)
 		returning_owner.key = null
 	if(replacement_body)
