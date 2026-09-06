@@ -1,6 +1,34 @@
-/obj/machinery/mecha_part_fabricator/multitool_act(mob/living/user, obj/item/multitool/tool)
+/obj/machinery/mecha_part_fabricator/Destroy()
+	unsync_research_servers()
+	return ..()
+
+/obj/machinery/mecha_part_fabricator/unsync_research_servers()
+	if(stored_research)
+		UnregisterSignal(stored_research, list(COMSIG_TECHWEB_ADD_DESIGN, COMSIG_TECHWEB_REMOVE_DESIGN))
+		stored_research.connected_machines -= src
+		stored_research = null
+	// Locally installed designs and already-paid work do not belong to the disk.
+	cached_designs.Cut()
+	cached_designs |= illegal_local_designs
+	if(!QDELETED(src))
+		update_static_data_for_all_viewers()
+
+/obj/machinery/mecha_part_fabricator/connect_techweb(datum/techweb/new_techweb)
+	if(new_techweb && !can_link_site_techweb(src, new_techweb))
+		return FALSE
+	unsync_research_servers()
 	. = ..()
-	on_techweb_update()
+	if(stored_research)
+		stored_research.connected_machines |= src
+
+/obj/machinery/mecha_part_fabricator/multitool_act(mob/living/user, obj/item/multitool/tool)
+	var/has_techweb_buffer = !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)
+	if(has_techweb_buffer && !can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
+	. = ..()
+	if(. && has_techweb_buffer && stored_research == tool.buffer)
+		say("Linked to Server!")
 
 /**
  * Output-direction affordances the exofab was missing.
