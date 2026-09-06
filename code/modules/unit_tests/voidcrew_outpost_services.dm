@@ -6,6 +6,42 @@
 			terminal_count++
 			TEST_ASSERT_EQUAL(terminal.cargo_account(), home.treasury, "A purchased cargo terminal did not automatically bind to its claim account")
 	TEST_ASSERT_EQUAL(terminal_count, 1, "A purchased habitat must start with one cargo console")
+	var/list/turf/reachable = list(home.arrival_turf)
+	for(var/index = 1; index <= length(reachable); index++)
+		var/turf/current = reachable[index]
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbor = get_step(current, direction)
+			if(!istype(neighbor, /turf/open/floor) || get_area(neighbor) != home.outpost_area || neighbor in reachable)
+				continue
+			var/blocked = FALSE
+			for(var/atom/movable/obstacle in neighbor)
+				// Normal airlocks are traversable; windows and dense furnishings are not.
+				if(obstacle.density && !istype(obstacle, /obj/machinery/door))
+					blocked = TRUE
+					break
+			if(!blocked)
+				reachable += neighbor
+	var/banks = 0
+	var/pods = 0
+	for(var/turf/floor in home.outpost_area)
+		for(var/obj/machinery/machine in floor)
+			if(istype(machine, /obj/machinery/computer/bank_machine))
+				banks++
+			else if(istype(machine, /obj/machinery/cryopod))
+				pods++
+			else if(!istype(machine, /obj/machinery/computer/voidcrew_cargo) && machine != home.management_console && machine != home.construction_console)
+				continue
+			for(var/atom/movable/obstacle in floor)
+				if(obstacle != machine)
+					TEST_ASSERT(!obstacle.density && !istype(obstacle, /obj/effect/spawner/structure/window), "A founding service overlaps a window or another dense object")
+			var/accessible = FALSE
+			for(var/direction in GLOB.cardinals)
+				if(get_step(floor, direction) in reachable)
+					accessible = TRUE
+					break
+			TEST_ASSERT(accessible, "A founding service cannot be reached from arrivals without climbing over furniture")
+	TEST_ASSERT_EQUAL(banks, 1, "A purchased habitat must start with one bank terminal")
+	TEST_ASSERT_EQUAL(pods, 1, "A purchased habitat must start with one resident cryopod")
 
 /// Claim economy and actual ferry integration, including physical delivery without a ship.
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home
@@ -404,13 +440,19 @@
 	home.founder_ckey = null
 	TEST_ASSERT(!home.can_spend(resident), "Abandoned claim allowed new spending")
 
+/datum/unit_test/voidcrew_outpost_medium_bundle
+	var/template_type = /datum/map_template/player_outpost/medium
+
+/datum/unit_test/voidcrew_outpost_medium_bundle/small
+	template_type = /datum/map_template/player_outpost/small
+
 /datum/unit_test/voidcrew_outpost_medium_bundle/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/medium)
-	TEST_ASSERT(home.load_level(), "Waystation Frame failed to install its purchased home services")
-	TEST_ASSERT(home.home_bundle_installed, "Waystation Frame omitted the included bundle")
+	home.shell_template = allocate(template_type)
+	TEST_ASSERT(home.load_level(), "Habitat failed to install its purchased home services")
+	TEST_ASSERT(home.home_bundle_installed, "Habitat omitted the included bundle")
 	assert_outpost_cargo_bundle(home)
-	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Waystation Frame has no resident arrival point")
+	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Habitat has no resident arrival point")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 0, "A new home received an unpurchased allowance")
 
 /// Material/research checks can run after a buffered endpoint leaves the map.

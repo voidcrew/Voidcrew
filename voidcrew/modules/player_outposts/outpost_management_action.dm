@@ -266,10 +266,10 @@
 			if(!ownership_prompt_valid(original_outpost, user, ui) || !original_outpost.is_management_candidate(recipient) || recipient.mind != original_recipient_mind || recipient.ckey != original_recipient_ckey)
 				return
 			if(!original_outpost.transfer_ownership(recipient, user))
-				to_chat(user, span_warning("Transfer refused: the recipient already holds a claim this shift."))
+				to_chat(user, span_warning("Ownership transfer failed."))
 		if("abandon")
 			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
-			if(!confirm_ownership_action(user, "Abandon [outpost.name]? You will lose ownership for the rest of the shift and cannot found another outpost.", "Abandon Outpost", "Abandon"))
+			if(!confirm_ownership_action(user, "Abandon [outpost.name]? Anyone visiting will be able to claim it.", "Abandon Outpost", "Abandon"))
 				return
 			if(ownership_prompt_valid(original_outpost, user, ui))
 				original_outpost.abandon(user)

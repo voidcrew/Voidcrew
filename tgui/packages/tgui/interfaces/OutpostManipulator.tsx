@@ -309,14 +309,6 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
                   Relink Services
                 </Button>
                 <Button
-                  icon="ban"
-                  color="caution"
-                  disabled={busy}
-                  onClick={() => mutate('cancel_freight')}
-                >
-                  Cancel Freight
-                </Button>
-                <Button
                   icon="flask"
                   color="caution"
                   disabled={busy}

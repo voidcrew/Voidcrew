@@ -289,20 +289,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 					var/obj/machinery/cryopod/pod = machine
 					pod.relink_to_ship()
 			home.sync_management_lifecycle()
-		if("cancel_freight")
-			if(!confirm(home, user, "Cancel the pending shipment and refund undelivered reservations? Delivered goods stay on the ferry."))
-				return
-			// The ordinary abort path preserves a docked ferry and its physical goods.
-			if(home.freight?.shuttle_port?.get_docked() == home.freight_berth?.dock && home.freight?.shuttle_port)
-				home.freight.delivery_generation++
-				home.freight.cancel_pending()
-				if(home.freight.warmup_timer)
-					deltimer(home.freight.warmup_timer)
-					home.freight.warmup_timer = null
-				home.freight.state = CARGO_SHUTTLE_DOCKED
-				home.freight.busy = FALSE
-			else
-				home.freight?.cleanup_shuttle()
 		if("revoke_research")
 			if(!confirm(home, user, "Revoke all research pairings? Each physical disk keeps its own research."))
 				return

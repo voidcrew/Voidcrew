@@ -9,6 +9,8 @@
  * - exactly one /obj/machinery/computer/player_outpost_management
  * - exactly one /obj/machinery/computer/camera_advanced/base_construction/ship/outpost
  * - one /obj/machinery/ore_silo (feeds the construction console's internal tools)
+ * - one ordinary cargo console, bank terminal and resident cryopod on accessible
+ *   interior floors (install_home_bundle binds them without spawning stock)
  * - one /obj/effect/landmark/player_outpost_arrival
  * - a hangar elevator kit on the north side: 3x3 /obj/effect/landmark/outpost_elevator_alcove
  *   with one /obj/machinery/outpost_elevator/directional panel, so visiting ships

@@ -1,6 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost,
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost{
+	dir = 2
+	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 1
 	},
@@ -15,7 +17,9 @@
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "d" = (
-/obj/machinery/computer/player_outpost_management,
+/obj/machinery/computer/player_outpost_management{
+	dir = 2
+	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 1
 	},
@@ -163,6 +167,24 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
+"G" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"I" = (
+/obj/machinery/computer/bank_machine{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"J" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 
 (1,1,1) = {"
 e
@@ -216,7 +238,7 @@ e
 e
 e
 j
-N
+G
 N
 N
 N
@@ -285,7 +307,7 @@ e
 e
 e
 j
-N
+a
 N
 N
 N
@@ -308,7 +330,7 @@ e
 e
 e
 j
-N
+d
 N
 N
 N
@@ -354,7 +376,7 @@ j
 j
 j
 U
-a
+N
 N
 N
 N
@@ -377,7 +399,7 @@ v
 v
 v
 F
-d
+N
 N
 N
 N
@@ -538,7 +560,7 @@ e
 e
 e
 j
-N
+I
 N
 N
 N
@@ -561,7 +583,7 @@ e
 e
 e
 j
-N
+J
 N
 N
 N

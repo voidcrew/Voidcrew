@@ -280,23 +280,19 @@
 		return TRUE
 	if(!outpost_area || !management_console || !construction_console || !has_hangar_elevator() || !arrival_turf)
 		return FALSE
-	if(!install_freight_receiver())
-		return FALSE
-	// Use actual free habitat floors, leaving elevator alcoves and door approaches clear.
-	var/list/turf/locations = list()
+	// Furnishings belong in the template so windows, doors and work areas determine
+	// their positions. Reconnecting services must never create replacement stock.
+	var/obj/machinery/computer/voidcrew_cargo/cargo
+	var/obj/machinery/computer/bank_machine/bank
+	var/obj/machinery/cryopod/pod
 	for(var/turf/open/floor/location in outpost_area)
-		if(location == arrival_turf || location in lobby_alcove_turfs || length(location.contents))
-			continue
-		var/near_door = FALSE
-		for(var/obj/machinery/door/door in range(1, location))
-			near_door = TRUE
-		if(!near_door)
-			locations += location
-	if(length(locations) < 3)
+		cargo ||= locate(/obj/machinery/computer/voidcrew_cargo) in location
+		bank ||= locate(/obj/machinery/computer/bank_machine) in location
+		pod ||= locate(/obj/machinery/cryopod) in location
+	if(!cargo || !bank || !pod || !install_freight_receiver())
 		return FALSE
-	new /obj/machinery/computer/voidcrew_cargo(locations[1])
-	new /obj/machinery/computer/bank_machine(locations[2])
-	var/obj/machinery/cryopod/pod = new(locations[3])
+	cargo.cargo_account()
+	bank.resolve_outpost_bank()
 	pod.relink_to_ship()
 	home_bundle_installed = TRUE
 	return TRUE
