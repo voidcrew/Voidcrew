@@ -69,6 +69,8 @@
 	panel.allow_actions = TRUE
 
 	var/obj/structure/overmap/ship/visitor = allocate(/obj/structure/overmap/ship)
+	// Bare ship fixtures skip setup_from_template(), which registers real hulls.
+	SSovermap.simulated_ships |= visitor
 	visitor.docked = home
 	TEST_ASSERT(panel.deletion_denial(home), "Deletion allowed a docked visiting ship")
 	visitor.docked = null
