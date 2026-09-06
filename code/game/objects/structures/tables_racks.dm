@@ -1020,6 +1020,7 @@
 	breath_mask = null
 
 /obj/structure/table/optable/make_climbable()
+	AddComponent(/datum/component/climb_walkable)
 	AddElement(/datum/element/elevation, pixel_shift = 12)
 
 ///Align the mob with the table when buckled.
