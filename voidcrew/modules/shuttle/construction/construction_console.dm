@@ -18,15 +18,33 @@
 /// How much material per RCD unit when using silo link (1/4 sheet per unit)
 #define SHIP_RCD_SILO_USE_AMOUNT (SHEET_MATERIAL_AMOUNT / 4)
 
-/// Deconstruction is charged in vanilla RCD matter units, but this console builds
-/// straight out of the silo at a far cheaper rate - 100 iron to lay a plating tile
-/// against 825 to pull one back up. Scale every deconstruct charge down so tearing
-/// out is never dearer than putting in.
-#define SHIP_RCD_DECONSTRUCT_COST_MULT 0.25
-
 // ============================================
 // Ship Internal RCD - bypasses account checks
 // ============================================
+
+/**
+ * Hull-grade windows only the construction drone can lay.
+ *
+ * Kept out of GLOB.rcd_designs on purpose: these are ship hull plating in window form, and
+ * a pocket RCD printing 1200-integrity plastitanium out of generic matter would be a very
+ * different thing from a drone spending the silo's titanium and plasma on it. The console's
+ * RCD merges this tree into the stock one in get_rcd_designs(); the spritesheet asset
+ * (code/modules/asset_cache/assets/rcd.dm) reads it so these get design icons like any other.
+ *
+ * Full tile only. Hulls are built out of full tiles, and the directional plasma windows
+ * share initial(name) with their full tile counterparts - the design list keys both the
+ * selection highlight and the sprite class off that name, so they would collide.
+ */
+GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
+	"Construction" = list(
+		"Hull Windows" = list(
+			list(RCD_DESIGN_MODE = RCD_WINDOWGRILLE, RCD_DESIGN_PATH = /obj/structure/window/plasma/fulltile),
+			list(RCD_DESIGN_MODE = RCD_WINDOWGRILLE, RCD_DESIGN_PATH = /obj/structure/window/reinforced/plasma/fulltile),
+			list(RCD_DESIGN_MODE = RCD_WINDOWGRILLE, RCD_DESIGN_PATH = /obj/structure/window/reinforced/shuttle),
+			list(RCD_DESIGN_MODE = RCD_WINDOWGRILLE, RCD_DESIGN_PATH = /obj/structure/window/reinforced/plasma/plastitanium),
+		),
+	),
+))
 
 /// Ship-specific internal RCD that bypasses ore silo account checks
 /// This is needed because remote construction doesn't have a user with an ID card
@@ -72,6 +90,52 @@
 			"materials" = list(/datum/material/titanium = 25, /datum/material/plasma = 25)
 		),
 	)
+
+	/// Silo recipe for each hull window in GLOB.ship_rcd_hull_designs, keyed by window path.
+	/// Two glass sheets a tile like any full tile window, plus the alloy's own components the
+	/// way the wall and floor recipes above take theirs, plus a sheet of iron for the rod
+	/// matrix in the reinforced ones (the same premium upstream charges reinforced windows).
+	var/static/list/hull_window_materials = list(
+		/obj/structure/window/plasma/fulltile = list(
+			/datum/material/glass = 200,
+			/datum/material/plasma = 100,
+		),
+		/obj/structure/window/reinforced/plasma/fulltile = list(
+			/datum/material/glass = 200,
+			/datum/material/plasma = 100,
+			/datum/material/iron = 100,
+		),
+		/obj/structure/window/reinforced/shuttle = list(
+			/datum/material/glass = 200,
+			/datum/material/titanium = 100,
+			/datum/material/iron = 100,
+		),
+		/obj/structure/window/reinforced/plasma/plastitanium = list(
+			/datum/material/glass = 200,
+			/datum/material/titanium = 100,
+			/datum/material/plasma = 100,
+			/datum/material/iron = 100,
+		),
+	)
+
+/// The stock RCD design tree with the hull windows folded in under Construction.
+/obj/item/construction/rcd/internal/ship/get_rcd_designs()
+	var/static/list/ship_designs
+	if(isnull(ship_designs))
+		ship_designs = GLOB.rcd_designs.Copy()
+		for(var/root_category in GLOB.ship_rcd_hull_designs)
+			var/list/extra_categories = GLOB.ship_rcd_hull_designs[root_category]
+			//copy before writing: the stock tree is shared with every other RCD in the round
+			var/list/merged_categories = ship_designs[root_category]
+			merged_categories = isnull(merged_categories) ? list() : merged_categories.Copy()
+			for(var/category in extra_categories)
+				merged_categories[category] = extra_categories[category]
+			ship_designs[root_category] = merged_categories
+	return ship_designs
+
+/// Whether design_path is one of the hull windows this console lays in a single action.
+/obj/item/construction/rcd/internal/ship/proc/is_hull_window(design_path)
+	return !isnull(hull_window_materials[design_path])
 
 /// The console owns us and we point back at it; drop that back-reference on the way
 /// out, or console and RCD keep each other alive and both hard delete.
@@ -134,26 +198,8 @@
 	else if(user)
 		balloon_alert(user, message)
 
-/// Applies the deconstruction discount to an RCD matter cost. Never returns zero -
-/// a demolition should still show up on the silo, just not cost more than the build.
-/obj/item/construction/rcd/internal/ship/proc/deconstruct_cost(cost)
-	return max(1, round(cost * SHIP_RCD_DECONSTRUCT_COST_MULT))
-
-/// Human-readable price of `units` RCD matter units, as drawn from whatever this RCD
-/// is actually paying with. Used to tell the operator what a spend costs BEFORE it
-/// happens - playtesting read the silent per-tile sheet burn as a bug.
-/obj/item/construction/rcd/internal/ship/proc/charge_readout(units)
-	if(silo_link && silo_mats?.mat_container)
-		return "[round(units * SHIP_RCD_SILO_USE_AMOUNT / SHEET_MATERIAL_AMOUNT, 0.1)] iron sheet\s"
-	return "[units] matter unit\s"
-
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
 /obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
-	// rcd_create() charges the raw rcd_vals cost itself, so the discount has to land
-	// here rather than at the action's pre-check.
-	if(mode == RCD_DECONSTRUCT)
-		amount = deconstruct_cost(amount)
-
 	if(!silo_mats || !silo_link)
 		return ..()
 
@@ -175,9 +221,6 @@
 
 /// Override to bypass account check when checking resources
 /obj/item/construction/rcd/internal/ship/checkResource(amount, mob/user)
-	if(mode == RCD_DECONSTRUCT)
-		amount = deconstruct_cost(amount)
-
 	if(!silo_mats || !silo_mats.mat_container || !silo_link)
 		return ..()
 
@@ -192,6 +235,108 @@
 		if(has_ammobar)
 			flick("[icon_state]_empty", src)
 	return .
+
+/// Use the action's saved mode so changing blueprints during a delay cannot change its charge.
+/obj/item/construction/rcd/internal/ship/check_rcd_resources(list/rcd_results, mob/user)
+	if(rcd_results["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
+		return can_refund_materials(user)
+	return ..()
+
+/obj/item/construction/rcd/internal/ship/use_rcd_resources(list/rcd_results, mob/user)
+	if(rcd_results["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
+		return TRUE
+	return ..()
+
+/// Demolition needs somewhere to put the recovered materials, but works with an empty silo.
+/obj/item/construction/rcd/internal/ship/proc/can_refund_materials(mob/user)
+	if(!silo_link || QDELETED(silo_mats?.mat_container))
+		drone_alert(user, "no silo linked!")
+		return FALSE
+	return TRUE
+
+/// Deposit only recovered materials, and record the positive transaction in the silo log.
+/obj/item/construction/rcd/internal/ship/proc/refund_materials(list/materials, mob/user)
+	if(!length(materials) || !can_refund_materials(user))
+		return FALSE
+	var/list/returned_materials = list()
+	for(var/material in materials)
+		var/amount = silo_mats.mat_container.insert_amount_mat(materials[material], material)
+		if(amount > 0)
+			returned_materials[material] = amount
+	if(!length(returned_materials))
+		return FALSE
+	silo_mats.silo?.silo_log(ship_console || src, "recycle", 1, "ship construction", returned_materials, ID_DATA(user))
+	drone_alert(user, "materials returned")
+	return TRUE
+
+/// Hull materials follow the material picker, not the currently selected blueprint.
+/// Standard RCD salvage is capped at the cheapest rebuild, including RCD memory discounts.
+/obj/item/construction/rcd/internal/ship/proc/get_deconstruction_materials(atom/target)
+	if(iswallturf(target))
+		// Check the specific mineral types before the base iron wall.
+		for(var/wall_name in list("Plastitanium Wall", "Titanium Wall", "Iron Wall"))
+			var/list/wall_info = wall_types[wall_name]
+			if(istype(target, wall_info["path"]))
+				return wall_info["materials"].Copy()
+	if(isfloorturf(target))
+		for(var/floor_name in list("Plastitanium Floor", "Titanium Floor"))
+			var/list/floor_info = floor_types[floor_name]
+			if(istype(target, floor_info["path"]))
+				return floor_info["materials"].Copy()
+		// Plating can also be built with one RCD unit over a lattice.
+		if(istype(target, /turf/open/floor/plating))
+			return list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT)
+		return list(/datum/material/iron = SHIP_RTD_TILE_IRON)
+	if(istype(target, /obj/machinery/camera))
+		return list(/datum/material/iron = SHIP_CAMERA_IRON_COST, /datum/material/glass = SHIP_CAMERA_GLASS_COST)
+	if(istype(target, /obj/machinery/light/floor))
+		return list(/datum/material/iron = SHIP_RLD_FLOOR_LIGHT_IRON, /datum/material/glass = SHIP_RLD_FLOOR_LIGHT_GLASS)
+	if(istype(target, /obj/machinery/light))
+		return list(/datum/material/iron = SHIP_RLD_WALL_LIGHT_IRON, /datum/material/glass = SHIP_RLD_WALL_LIGHT_GLASS)
+
+	// Hull windows were paid for by recipe, so they come back as one - the generic salvage
+	// below would hand back a few units of iron for a tile of plastitanium.
+	var/list/hull_window_recipe = hull_window_materials[target.type]
+	if(hull_window_recipe)
+		return hull_window_recipe.Copy()
+
+	var/units = 0
+	if(istype(target, /obj/structure/window))
+		var/obj/structure/window/window = target
+		units = (window.reinf ? 6 : 4) * (window.fulltile ? 2 : 1) / RCD_MEMORY_COST_BUFF
+	else if(istype(target, /obj/structure/grille))
+		units = 4 / RCD_MEMORY_COST_BUFF
+	else if(istype(target, /obj/machinery/door/airlock))
+		units = istype(target, /obj/machinery/door/airlock/glass) ? 20 : 16
+	else if(istype(target, /obj/machinery/door/window))
+		units = 16
+	else if(istype(target, /obj/structure/table) || istype(target, /obj/structure/girder))
+		units = 8
+	else if(istype(target, /obj/structure/lattice/catwalk))
+		units = 2
+	else if(istype(target, /obj/structure/door_assembly) || istype(target, /obj/structure/firelock_frame))
+		units = 4
+	return units ? list(/datum/material/iron = OPTIMAL_COST(units * SHIP_RCD_SILO_USE_AMOUNT)) : null
+
+/// The RCD's outer return value also reports handled failures, so refund at the actual success point.
+/obj/item/construction/rcd/internal/ship/apply_rcd_action(atom/target, mob/user, list/rcd_results)
+	if(rcd_results["[RCD_DESIGN_MODE]"] != RCD_DECONSTRUCT)
+		return ..()
+	if(QDELETED(target) || !can_refund_materials(user))
+		return FALSE
+	var/list/materials = get_deconstruction_materials(target)
+	var/turf/target_turf = isturf(target) ? target : null
+	var/original_turf_type = target_turf?.type
+	var/original_layers = target_turf?.count_baseturfs()
+	if(!..())
+		return FALSE
+	// ScrapeAway can report success at the bottom of a turf stack without removing anything.
+	if(target_turf)
+		var/turf/remaining_turf = locate(target_turf.x, target_turf.y, target_turf.z)
+		if(remaining_turf.type == original_turf_type && remaining_turf.count_baseturfs() >= original_layers)
+			return FALSE
+	refund_materials(materials, user)
+	return TRUE
 
 // ============================================
 // Ship RCD TGUI Interface
@@ -421,6 +566,54 @@
 	return TRUE
 
 /**
+ * Build the selected hull window, grille and all, on the target turf.
+ *
+ * The stock RCD lays a full tile window in two clicks - a grille on the floor, then the
+ * window on the grille - because a handheld RCD pays for both out of one pool of matter.
+ * These are paid for by recipe out of the silo instead, so the drone does the whole tile in
+ * one action and one charge, the same way build_wall() and build_floor() do.
+ */
+/obj/item/construction/rcd/internal/ship/proc/build_hull_window(turf/target, mob/user)
+	var/obj/structure/window/window_path = rcd_design_path
+	var/list/materials = hull_window_materials[window_path]
+	if(!materials)
+		return FALSE
+	if(!isfloorturf(target))
+		drone_alert(user, "needs a floor!")
+		return FALSE
+	//a full tile window fills the tile, so nothing may be standing on it - except a grille,
+	//which is part of the window we are about to build
+	if(!can_place_hull_window(target))
+		drone_alert(user, "something is on the tile!")
+		return FALSE
+	if(!check_materials(materials, user))
+		return FALSE
+
+	var/build_time = SHIP_RCD_WINDOW_BUILD_DELAY * get_build_speed_mod()
+	var/obj/effect/constructing_effect/rcd_effect = new(target, build_time, RCD_WINDOWGRILLE)
+
+	if(!build_delay(user, build_time, target))
+		qdel(rcd_effect)
+		return FALSE
+	//recheck after the delay: someone else may have filled the tile while we worked
+	if(!can_place_hull_window(target) || !use_materials(materials, user))
+		qdel(rcd_effect)
+		return FALSE
+
+	var/obj/structure/grille/grille = locate() in target
+	if(isnull(grille))
+		grille = new(target)
+	grille.set_anchored(TRUE)
+	var/obj/structure/window/new_window = new window_path(target)
+	new_window.set_anchored(TRUE)
+	rcd_effect.end_animation()
+	return TRUE
+
+/// Whether a full tile hull window still fits on this turf. Grilles are ours to reuse.
+/obj/item/construction/rcd/internal/ship/proc/can_place_hull_window(turf/target)
+	return !target.is_blocked_turf(exclude_mobs = FALSE, source_atom = null, ignore_atoms = list(/obj/structure/grille), type_list = TRUE)
+
+/**
  * A breach's ScrapeAway() walks past /turf/baseturf_skipover/shuttle and deletes it
  * (baseturfs.dm), and ChangeTurf() carries the marker-less chain onto the rebuilt tile.
  * The repair then fails isshuttleturf(), fromShuttleMove() never grants it MOVE_TURF,
@@ -472,8 +665,6 @@
 // Ship Internal RTD - bypasses proximity checks
 // ============================================
 
-// RTD silo material costs
-#define SHIP_RTD_TILE_IRON 100
 
 /// Ship-specific internal RTD that allows remote UI interaction and uses silo materials
 /obj/item/construction/rtd/internal
@@ -524,8 +715,6 @@
 // Ship Internal RPD - bypasses proximity checks
 // ============================================
 
-// RPD silo material costs
-#define SHIP_RPD_PIPE_IRON 50
 
 /// Ship-specific internal RPD that allows remote UI interaction and uses silo materials
 /obj/item/pipe_dispenser/internal
@@ -549,14 +738,19 @@
 	else if(user)
 		balloon_alert(user, message)
 
-/// Check if we have enough iron in the silo for a pipe
+/// Atmos construction can produce several pipes per click, one on each selected layer.
+/obj/item/pipe_dispenser/internal/proc/get_pipe_material_cost()
+	// ATMOS_CATEGORY is private to RPD.dm.
+	return SHIP_RPD_PIPE_IRON * (category == 0 ? max(1, bit_count(pipe_layers)) : 1)
+
+/// Check if we have enough iron in the silo for the selected pipes
 /obj/item/pipe_dispenser/internal/proc/check_pipe_materials(mob/user)
 	if(!silo_mats?.mat_container || !silo_link)
 		if(user)
 			drone_alert(user, "no silo linked!")
 		return FALSE
 
-	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, SHIP_RPD_PIPE_IRON))
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, get_pipe_material_cost()))
 		if(user)
 			drone_alert(user, "not enough iron!")
 		return FALSE
@@ -568,7 +762,7 @@
 	if(!check_pipe_materials(user))
 		return FALSE
 
-	var/list/materials = list(/datum/material/iron = SHIP_RPD_PIPE_IRON)
+	var/list/materials = list(/datum/material/iron = get_pipe_material_cost())
 
 	// Use SILICON_OVERRIDE to bypass account check
 	var/list/user_data = ID_DATA(user)
@@ -633,13 +827,6 @@
 // Ship Internal RLD - bypasses proximity checks
 // ============================================
 
-// RLD silo material costs
-#define SHIP_RLD_WALL_LIGHT_IRON 25
-#define SHIP_RLD_WALL_LIGHT_GLASS 50
-#define SHIP_RLD_FLOOR_LIGHT_IRON 50
-#define SHIP_RLD_FLOOR_LIGHT_GLASS 25
-#define SHIP_RLD_GLOW_STICK_IRON 10
-#define SHIP_RLD_GLOW_STICK_GLASS 25
 
 /// Ship-specific internal RLD that allows remote UI interaction and uses silo materials
 /obj/item/construction/rld/internal

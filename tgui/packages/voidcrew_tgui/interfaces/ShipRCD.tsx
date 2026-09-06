@@ -114,6 +114,18 @@ const InfoSection = () => {
   );
 };
 
+// Designs whose sprite is a full 32x32 tile (or a grille-backed window), which needs
+// scaling down to sit next to the 32x32 item icons in the same list.
+const FULL_TILE_DESIGNS = [
+  'full tile window',
+  'full tile reinforced window',
+  'plasma window',
+  'reinforced plasma window',
+  'shuttle window',
+  'plastitanium window',
+  'catwalk',
+];
+
 const DesignSection = () => {
   const { act, data } = useBackend<Data>();
   const { categories = [], selected_category, selected_design } = data;
@@ -158,12 +170,9 @@ const DesignSection = () => {
             mr="10px"
             className={classes(['rcd-tgui32x32', design.icon])}
             style={{
-              transform:
-                design.title === 'full tile window' ||
-                design.title === 'full tile reinforced window' ||
-                design.title === 'catwalk'
-                  ? 'scale(0.7)'
-                  : 'scale(1.0)',
+              transform: FULL_TILE_DESIGNS.includes(design.title)
+                ? 'scale(0.7)'
+                : 'scale(1.0)',
             }}
           />
           <span>{capitalizeAll(design.title)}</span>

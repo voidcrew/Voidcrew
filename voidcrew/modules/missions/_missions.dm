@@ -686,25 +686,33 @@
 	return "This contract can't be turned in here."
 
 /**
- * The best item in the user's hands to offer this contract: the first that
+ * The best item in a list to offer this contract: the first that
  * satisfies the ask outright, or failing that the first that is the right KIND
  * of goods. The near-miss matters. It lets a refusal name the real shortfall
- * ("Need 30, only have 12") instead of telling someone holding the goods to go
- * hold the goods. Returns null when nothing in hand is even close.
+ * ("Need 30, only have 12") instead of claiming no goods were provided.
+ * Returns null when nothing offered is even close.
  *
  * Callers must re-check can_turn_in() on the result; a near-miss comes back too.
  */
-/datum/mission/proc/pick_offered_item(mob/living/user)
-	if(!isliving(user) || !requires_item)
+/datum/mission/proc/pick_turn_in_item(list/items)
+	if(!requires_item || failed || completed)
 		return null
 	var/datum/mission_objective/objective = current_objective()
 	var/obj/item/near_miss
-	for(var/obj/item/held in user.held_items)
-		if(can_turn_in(held))
-			return held
-		if(!near_miss && objective?.matches_ask(held))
-			near_miss = held
+	for(var/obj/item/item in items)
+		if(QDELETED(item))
+			continue
+		if(can_turn_in(item))
+			return item
+		if(!near_miss && objective?.matches_ask(item))
+			near_miss = item
 	return near_miss
+
+/// Outpost traders offer the same selection rules over the user's held items.
+/datum/mission/proc/pick_offered_item(mob/living/user)
+	if(!isliving(user))
+		return null
+	return pick_turn_in_item(user.held_items)
 
 /**
  * Short archetype tag for UI iconography ("procurement", "bounty", ...).

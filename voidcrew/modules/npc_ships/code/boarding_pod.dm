@@ -14,6 +14,9 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 /proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
 	if(!target_turf || !mob_type)
 		return null
+	// Combat volleys call this on a timer; the target may have docked since firing.
+	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING)
+		return null
 
 	// Create the boarding pod with the mob inside
 	var/obj/structure/closet/supplypod/boarding/pod = new()
@@ -62,6 +65,8 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	var/datum/weakref/boarder_ref
 	/// This boarder's index in the spawn batch (for patrol distribution)
 	var/spawn_index = 0
+	/// Suppress opening and arrival signals when an inbound drop is cancelled.
+	var/landing_cancelled = FALSE
 
 /obj/structure/closet/supplypod/boarding/preOpen()
 	. = ..()
@@ -70,6 +75,8 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		playsound_ship(get_turf(src), 'sound/effects/meteorimpact.ogg', 60, TRUE, 10, target_ship)
 
 /obj/structure/closet/supplypod/boarding/open_pod(atom/movable/holder, broken = FALSE, forced = FALSE)
+	if(landing_cancelled)
+		return
 	. = ..()
 	log_shuttle("PATROL: open_pod called, holder=[holder], target_ship=[target_ship], boarder_ref=[boarder_ref]")
 
@@ -166,12 +173,41 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	else
 		. = ..()
 
+/// A ship can dock while the pod is in transit or playing its falling animation.
+/obj/effect/pod_landingzone/boarding/proc/cancel_if_target_docked()
+	if(!QDELETED(target_ship) && target_ship.state == OVERMAP_SHIP_FLYING)
+		return FALSE
+
+	// Supplypod destruction opens it, so remove its passengers first.
+	var/obj/structure/closet/supplypod/boarding/boarding_pod = pod
+	boarding_pod.landing_cancelled = TRUE
+	for(var/mob/living/boarder in pod)
+		qdel(boarder)
+	QDEL_NULL(pod)
+	QDEL_NULL(helper)
+	for(var/obj/effect/supplypod_smoke/smoke_part as anything in smoke_effects)
+		qdel(smoke_part)
+	qdel(src)
+	return TRUE
+
+/obj/effect/pod_landingzone/boarding/beginLaunch(effectCircle)
+	if(cancel_if_target_docked())
+		return
+	return ..()
+
+/obj/effect/pod_landingzone/boarding/endLaunch()
+	if(cancel_if_target_docked())
+		return
+	return ..()
+
 // ========== BOSS BOARDING POD ==========
 
 /// Global proc to create a boss boarding pod drop at a target location
 /// Returns the boss mob so the caller can register signals and track it
 /proc/create_boss_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
 	if(!target_turf || !mob_type)
+		return null
+	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING)
 		return null
 
 	// Create the boss boarding pod

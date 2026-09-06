@@ -460,7 +460,9 @@
  * * mob_types - List of mob types to spawn in pods (uses ship's configured types if null)
  */
 /datum/npc_combat_interface/proc/fire_boarding_pods(obj/structure/overmap/ship/target_ship, pod_count = 1, list/mob_types = null)
-	if(!target_ship || !owner_ship)
+	if(QDELETED(target_ship) || QDELETED(owner_ship))
+		return FALSE
+	if(target_ship.state != OVERMAP_SHIP_FLYING || owner_ship.state != OVERMAP_SHIP_FLYING)
 		return FALSE
 
 	// Clamp pod count

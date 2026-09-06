@@ -140,8 +140,8 @@
 		return list("mode" = RCD_DECONSTRUCT, "delay" = 1 SECONDS, "cost" = 5)
 	return FALSE
 
-/obj/structure/lattice/catwalk/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
-	if(passed_mode == RCD_DECONSTRUCT)
+/obj/structure/lattice/catwalk/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
+	if(rcd_data["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
 		var/turf/turf = loc
 		for(var/obj/structure/cable/cable_coil in turf)
 			cable_coil.deconstruct()

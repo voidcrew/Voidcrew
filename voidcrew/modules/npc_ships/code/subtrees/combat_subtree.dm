@@ -63,6 +63,12 @@
 
 	// ========== BOARDING PHASE STATES ==========
 
+	// These phases skip check_disengage, so check docking before interdiction
+	// or wave monitoring can continue an encounter after the target leaves flight.
+	if(combat_state == NPC_COMBAT_BOARDING || combat_state == NPC_COMBAT_BOARDING_COOLDOWN || combat_state == NPC_COMBAT_BOSS_PHASE)
+		if(!controller.validate_boarding_target())
+			return
+
 	// Active boarding wave - monitor the wave
 	if(combat_state == NPC_COMBAT_BOARDING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)

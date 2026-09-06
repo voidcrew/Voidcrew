@@ -83,6 +83,17 @@
 			ship_console.expand_shuttle_to_turf(target_turf, owner)
 		return
 
+	// Hull windows: grille and window in one action, paid for out of the silo by recipe
+	// rather than as generic RCD matter. Same shortcut the wall and floor pickers get.
+	if(rcd_mode == RCD_WINDOWGRILLE && ship_rcd.is_hull_window(ship_rcd.rcd_design_path))
+		if(!ship_rcd.build_hull_window(target_turf, owner))
+			return
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		// Expand shuttle if building outside
+		if(!was_in_shuttle)
+			ship_console.expand_shuttle_to_turf(target_turf, owner)
+		return
+
 	// For other build types (catwalks, airlocks, windows, etc.), use standard RCD system
 	var/atom/rcd_target = target_turf
 
@@ -132,9 +143,6 @@
 	button_icon = 'voidcrew/icons/obj/tools.dmi'
 	button_icon_state = "rcd_remove"
 
-/// Base cost to deconstruct an airlock (standard RCD cost, before the ship
-/// deconstruction discount in deconstruct_cost() is applied)
-#define SHIP_RCD_AIRLOCK_DECONSTRUCT_COST 32
 /// Delay to deconstruct an airlock
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY (5 SECONDS)
 
@@ -146,6 +154,7 @@
 	var/turf/target_turf = get_turf(remote_eye)
 	var/atom/rcd_target = target_turf
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
 
 	// Check for indestructible objects blocking deconstruction (blast doors, r-walls, etc.)
 	for(var/obj/blocker in target_turf)
@@ -158,88 +167,43 @@
 		remote_eye.balloon_alert(owner, "can't deconstruct that!")
 		return
 
-	// Special handling for cameras - cut them off the wall, no material cost
+	// Cameras and airlocks are removed directly; airlocks retain the console's
+	// existing ability to bypass reinforcement and seals.
 	var/obj/machinery/camera/target_camera = locate() in target_turf
-	if(target_camera)
-		owner.changeNext_move(CLICK_CD_RANGE)
-		check_rcd()
-
-		// Fabrication servo upgrades shorten the job
-		var/obj/item/construction/rcd/internal/ship/camera_rcd = base_console.internal_rcd
-		var/camera_decon_time = SHIP_CAMERA_DECONSTRUCT_DELAY * camera_rcd.get_build_speed_mod()
-
-		// Show deconstruction effect
-		var/obj/effect/constructing_effect/camera_rcd_effect = new(target_turf, camera_decon_time, RCD_DECONSTRUCT)
-
-		// Delay for deconstruction
-		if(!camera_rcd.build_delay(owner, camera_decon_time, target_camera))
-			qdel(camera_rcd_effect)
-			return
-
-		// Remove the camera (cameranet cleanup happens in its Destroy)
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
-		qdel(target_camera)
-
-		// Clean up any empty shuttle turfs after deconstruction
-		ship_console.cleanup_deconstructed_turfs()
-		return
-
-	// Special handling for airlocks - bypass reinforcement/seal checks for remote construction
 	var/obj/machinery/door/airlock/target_airlock = locate() in target_turf
-	if(target_airlock)
+	var/obj/fixture = target_camera || target_airlock
+	if(fixture)
 		owner.changeNext_move(CLICK_CD_RANGE)
 		check_rcd()
-
-		// This branch charges directly rather than going through rcd_create(), so it
-		// never sets RCD_DECONSTRUCT mode - apply the deconstruction discount by hand.
-		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
-		var/airlock_cost = ship_rcd.deconstruct_cost(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST)
-
-		// Check resources
-		if(!ship_rcd.checkResource(airlock_cost, owner))
-			remote_eye.balloon_alert(owner, "not enough resources!")
+		if(!ship_rcd.can_refund_materials(owner))
 			return
-
-		// Say what the tear-out costs before it happens
-		remote_eye.balloon_alert(owner, "cost: [ship_rcd.charge_readout(airlock_cost)]")
-
-		// Fabrication servo upgrades shorten the job
-		var/decon_time = SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY * ship_rcd.get_build_speed_mod()
-
-		// Show construction effect
+		var/decon_time = (target_camera ? SHIP_CAMERA_DECONSTRUCT_DELAY : SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY) * ship_rcd.get_build_speed_mod()
 		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, decon_time, RCD_DECONSTRUCT)
-
-		// Delay for deconstruction
-		if(!ship_rcd.build_delay(owner, decon_time, target_airlock))
+		if(!ship_rcd.build_delay(owner, decon_time, fixture))
 			qdel(rcd_effect)
 			return
-
-		// Use resources after delay
-		if(!ship_rcd.useResource(airlock_cost, owner))
+		if(QDELETED(fixture) || !ship_rcd.can_refund_materials(owner))
 			qdel(rcd_effect)
-			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
-
-		// Remove the airlock
+		var/list/materials = ship_rcd.get_deconstruction_materials(fixture)
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 		rcd_effect.end_animation()
-		qdel(target_airlock)
-
-		// Clean up any empty shuttle turfs after deconstruction
+		qdel(fixture)
+		ship_rcd.refund_materials(materials, owner)
 		ship_console.cleanup_deconstructed_turfs()
 		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+	check_rcd()
+
+	// Select targets in demolition mode so windows and girders take priority over the floor.
+	var/old_mode = ship_rcd.mode
+	ship_rcd.mode = RCD_DECONSTRUCT
 
 	// Find structures that can be deconstructed
 	for(var/obj/S in target_turf)
 		if(LAZYLEN(S.rcd_vals(owner, base_console.internal_rcd)))
 			rcd_target = S
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-	check_rcd()
-
-	// Temporarily set RCD to deconstruct mode
-	var/old_mode = base_console.internal_rcd.mode
-	base_console.internal_rcd.mode = RCD_DECONSTRUCT
 
 	// Check if we can deconstruct this target
 	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
@@ -248,17 +212,9 @@
 		remote_eye.balloon_alert(owner, "can't deconstruct that!")
 		return
 
-	var/cost = rcd_results["cost"]
-	if(!base_console.internal_rcd.checkResource(cost, owner))
-		base_console.internal_rcd.mode = old_mode
-		remote_eye.balloon_alert(owner, "not enough resources!")
+	if(!ship_rcd.can_refund_materials(owner))
+		ship_rcd.mode = old_mode
 		return
-
-	// Say what the tear-out costs before it happens. useResource() applies the
-	// deconstruction discount itself, so mirror it here for an honest number.
-	var/obj/item/construction/rcd/internal/ship/decon_rcd = base_console.internal_rcd
-	if(istype(decon_rcd))
-		remote_eye.balloon_alert(owner, "cost: [decon_rcd.charge_readout(decon_rcd.deconstruct_cost(cost))]")
 
 	// Perform the RCD deconstruction
 	base_console.internal_rcd.rcd_create(rcd_target, owner)
@@ -416,10 +372,16 @@
 	if(!istype(target_turf, /turf/open/floor))
 		remote_eye.balloon_alert(owner, "can't remove that!")
 		return
+	var/turf/open/floor/target_floor = target_turf
+	if(target_floor.rcd_proof || (target_floor.resistance_flags & INDESTRUCTIBLE))
+		remote_eye.balloon_alert(owner, "can't remove that!")
+		return
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
+	if(!ship_rcd.can_refund_materials(owner))
+		return
+	var/list/materials = ship_rcd.get_deconstruction_materials(target_turf)
 
 	owner.changeNext_move(CLICK_CD_RANGE)
-
-	// Tile deconstruction is free (no silo materials needed)
 
 	// Remove decals
 	var/list/all_decals = list()
@@ -430,10 +392,16 @@
 		qdel(decal)
 
 	// Change turf to plating
+	var/original_turf_type = target_turf.type
+	var/original_layers = target_turf.count_baseturfs()
+	var/turf/new_turf
 	if(target_turf.baseturf_at_depth(1) == /turf/baseturf_bottom)
-		target_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+		new_turf = target_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 	else
-		target_turf.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+		new_turf = target_turf.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+	if(!new_turf || (new_turf.type == original_turf_type && new_turf.count_baseturfs() >= original_layers))
+		return
+	ship_rcd.refund_materials(materials, owner)
 
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 
@@ -526,7 +494,11 @@
 		return
 
 	// Find and destroy unplaced pipe-related objects on this turf
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
+	if(!ship_rcd.can_refund_materials(owner))
+		return
 	var/destroyed_something = FALSE
+	var/refund_iron = SHIP_RPD_PIPE_IRON
 	for(var/obj/item/pipe/P in target_turf)
 		qdel(P)
 		destroyed_something = TRUE
@@ -555,9 +527,13 @@
 		for(var/obj/structure/disposalpipe/broken/B in target_turf)
 			qdel(B)
 			destroyed_something = TRUE
+			// Broken sections can be fragments of one pipe, not a whole paid-for build.
+			refund_iron = 0
 			break
 
 	if(destroyed_something)
+		if(refund_iron)
+			ship_rcd.refund_materials(list(/datum/material/iron = refund_iron), owner)
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 	else
 		remote_eye.balloon_alert(owner, "nothing to remove!")
@@ -695,27 +671,24 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 
-	var/obj/item/construction/rld/rld = ship_console.internal_rld
-
 	// Find a light fixture to remove
 	var/obj/machinery/light/target_light = locate() in target_turf
 	if(!target_light)
 		remote_eye.balloon_alert(owner, "no light here!")
 		return
 
-	// Check resources (deconstruction costs 10 matter)
-	if(!rld.checkResource(10, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
+	if(target_light.resistance_flags & INDESTRUCTIBLE)
+		remote_eye.balloon_alert(owner, "can't remove that!")
 		return
-
-	// Use resources
-	if(!rld.useResource(10, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
+	if(!ship_rcd.can_refund_materials(owner))
 		return
+	var/list/materials = ship_rcd.get_deconstruction_materials(target_light)
 
 	// Remove the light
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 	qdel(target_light)
+	ship_rcd.refund_materials(materials, owner)
 
 // ============================================
 // T-Ray Scanner Actions

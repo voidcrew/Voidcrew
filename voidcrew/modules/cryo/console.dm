@@ -25,6 +25,11 @@
 	/// The ship object representing the ship that this console is on.
 	var/obj/docking_port/mobile/voidcrew/linked_port
 
+/obj/machinery/computer/cryopod/atom_break(damage_flag)
+	SHOULD_CALL_PARENT(FALSE)
+	// EMPs bypass INDESTRUCTIBLE by calling atom_break() directly. Keep crew management available.
+	return FALSE
+
 /obj/machinery/computer/cryopod/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)

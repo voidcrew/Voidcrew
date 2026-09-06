@@ -191,13 +191,11 @@
 				balloon_alert(usr, "mission not found!")
 				return TRUE
 
-			// Check for item on pad if mission requires it
+			// Search the live pad contents using this contract's objective. The
+			// first item on the pad may be unrelated or fall short of the ask.
 			var/obj/item/turn_in_item = null
-			if(linked_pad && params["item_ref"])
-				// Locate the item by ref, then verify it's actually on the pad's turf
-				var/obj/item/found_item = locate(params["item_ref"])
-				if(found_item && found_item.loc == linked_pad.loc)
-					turn_in_item = found_item
+			if(linked_pad && mission.requires_item)
+				turn_in_item = mission.pick_turn_in_item(linked_pad.get_items_on_pad())
 
 			var/result = ship.complete_mission(mission, linked_pad, turn_in_item)
 			if(result != TRUE)

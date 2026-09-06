@@ -24,6 +24,9 @@
 	/// Ships always process (no player interaction needed)
 	continue_processing_when_client = TRUE
 
+	/// Delayed boarding actions belonging to the current encounter.
+	var/list/boarding_timers = list()
+
 /datum/ai_controller/npc_ship/New(atom/new_pawn)
 	// Initialize combat blackboard
 	blackboard[BB_NPC_COMBAT_STATE] = NPC_COMBAT_IDLE
@@ -91,6 +94,7 @@
 
 /// Override to avoid ai_movement access in parent Destroy
 /datum/ai_controller/npc_ship/Destroy(force)
+	cleanup_boarding_signals()
 	UnpossessPawn(FALSE)
 	if(ai_status)
 		GLOB.ai_controllers_by_status[ai_status] -= src
@@ -466,6 +470,8 @@
  * Also cancels any active interdiction and clears engagement tracking.
  */
 /datum/ai_controller/npc_ship/proc/clear_target()
+	cleanup_boarding_signals()
+
 	// Cancel any active interdiction when losing target
 	var/datum/npc_combat_interface/combat = get_combat_interface()
 	combat?.cancel_interdiction()
@@ -669,6 +675,9 @@
 	clear_target()
 
 /datum/ai_controller/npc_ship/proc/start_boarding_phase()
+	if(!validate_boarding_target())
+		return FALSE
+
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 
@@ -703,10 +712,21 @@
 	// T+8s: Boarding announcement
 	// T+38s: First wave launches (30s after announcement)
 
-	addtimer(CALLBACK(src, PROC_REF(boarding_phase_interdiction)), 5 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(boarding_phase_announcement)), 8 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(launch_boarding_wave), 1), 38 SECONDS)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(boarding_phase_interdiction)), 5 SECONDS, TIMER_STOPPABLE)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(boarding_phase_announcement)), 8 SECONDS, TIMER_STOPPABLE)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(launch_boarding_wave), 1), 38 SECONDS, TIMER_STOPPABLE)
 
+	return TRUE
+
+/// Boarding callbacks can run between AI ticks, including after docking starts.
+/datum/ai_controller/npc_ship/proc/validate_boarding_target()
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+	if(QDELETED(ship) || QDELETED(target) || ship.state != OVERMAP_SHIP_FLYING || target.state != OVERMAP_SHIP_FLYING)
+		if(!QDELETED(target))
+			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+		abort_boarding()
+		return FALSE
 	return TRUE
 
 /**
@@ -715,6 +735,8 @@
 /datum/ai_controller/npc_ship/proc/boarding_phase_interdiction()
 	// Check we're still in boarding state (didn't escalate to combat)
 	if(get_combat_state() != NPC_COMBAT_BOARDING)
+		return
+	if(!validate_boarding_target())
 		return
 
 	var/obj/structure/overmap/ship/target = get_target()
@@ -730,6 +752,9 @@
  * Delayed boarding announcement during boarding phase setup.
  */
 /datum/ai_controller/npc_ship/proc/boarding_phase_announcement()
+	if(!validate_boarding_target())
+		return
+
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 
@@ -768,6 +793,8 @@
 	// Check we're still in boarding state (didn't escalate to combat)
 	var/combat_state = get_combat_state()
 	if(combat_state != NPC_COMBAT_BOARDING)
+		return FALSE
+	if(!validate_boarding_target())
 		return FALSE
 
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
@@ -974,7 +1001,7 @@
 	target.ship_notify("Wave [completed_wave] repelled! Next wave in 30 seconds...", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	// Schedule next wave
-	addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
 
 /**
  * End the cooldown and launch the next wave.
@@ -1027,12 +1054,15 @@
 	target.ship_notify("All waves repelled! Enemy commander boarding in 30 seconds...", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 
 	// Schedule boss spawn
-	addtimer(CALLBACK(src, PROC_REF(spawn_boarding_boss)), NPC_BOARDING_WAVE_COOLDOWN)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(spawn_boarding_boss)), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
 
 /**
  * Spawn the faction boss after all waves are defeated.
  */
 /datum/ai_controller/npc_ship/proc/spawn_boarding_boss()
+	if(get_combat_state() != NPC_COMBAT_BOARDING_COOLDOWN || !validate_boarding_target())
+		return
+
 	// Guard against duplicate boss spawns
 	if(blackboard[BB_NPC_BOARDING_BOSS])
 		return
@@ -1314,6 +1344,10 @@
  * the only place the lists still exist.
  */
 /datum/ai_controller/npc_ship/proc/cleanup_boarding_signals()
+	for(var/timer_id in boarding_timers)
+		deltimer(timer_id)
+	boarding_timers.Cut()
+
 	// Unregister from player crew deaths
 	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
 	for(var/mob/living/crew as anything in tracked_crew)
@@ -1342,14 +1376,11 @@
 	clear_blackboard_key(BB_NPC_BOARDING_TARGET_POS)
 
 /**
- * Abort boarding operation entirely - target escaped to a different zone.
+ * Abort boarding operation entirely after the target escapes or docks.
  * Cleans up all boarding state and returns to IDLE without a target.
  */
 /datum/ai_controller/npc_ship/proc/abort_boarding()
-	// Clean up boarding state - anything already dropped aboard stays there
-	cleanup_boarding_signals()
-
-	// Fully disengage - clear target and return to idle
+	// Clear pending waves and tracking; anything already dropped aboard stays there.
 	clear_target()
 
 /**
@@ -1406,7 +1437,7 @@
 	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, null)
 
 	// Schedule next wave
-	addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN)
+	boarding_timers += addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
 
 /**
  * Check if any boarders have fallen into space and clean them up.

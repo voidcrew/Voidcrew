@@ -2,9 +2,16 @@
 	name = "rcd-tgui"
 
 /datum/asset/spritesheet_batched/rcd/create_spritesheets()
-	for(var/root_category in GLOB.rcd_designs)
+	//the ship construction console's hull windows are not in GLOB.rcd_designs (they are not
+	//offered by the handheld RCD) but they share this spritesheet, so draw both trees
+	for(var/list/design_tree as anything in list(GLOB.rcd_designs, GLOB.ship_rcd_hull_designs))
+		draw_design_tree(design_tree)
 
-		var/list/category_designs = GLOB.rcd_designs[root_category]
+/// Inserts an icon for every design in one GLOB.rcd_designs-shaped tree.
+/datum/asset/spritesheet_batched/rcd/proc/draw_design_tree(list/design_tree)
+	for(var/root_category in design_tree)
+
+		var/list/category_designs = design_tree[root_category]
 		if(!length(category_designs))
 			continue
 
@@ -22,13 +29,17 @@
 
 				//icon for windows are blended with grills if required and loaded from radial menu
 				if(ispath(path, /obj/structure/window))
+					var/obj/structure/window/window_path = path
 					if(path == /obj/structure/window)
 						sprite_icon = uni_icon('icons/hud/radial.dmi', "windowsize")
 					else if(path == /obj/structure/window/reinforced)
 						sprite_icon = uni_icon('icons/hud/radial.dmi', "windowtype")
-					else if(path == /obj/structure/window/fulltile || path == /obj/structure/window/reinforced/fulltile)
-						sprite_icon = uni_icon(initial(path.icon), initial(path.icon_state))
-						sprite_icon.blend_icon(uni_icon('icons/obj/structures.dmi', "grille"), ICON_UNDERLAY)
+					else
+						sprite_icon = uni_icon(initial(window_path.icon), initial(window_path.icon_state))
+						//every other full tile window sits on a grille the same way the two
+						//stock ones do, including the hull windows added above
+						if(initial(window_path.fulltile))
+							sprite_icon.blend_icon(uni_icon('icons/obj/structures.dmi', "grille"), ICON_UNDERLAY)
 
 				//icons for solid airlocks have an added solid overlay on top of their glass icons
 				else if(ispath(path, /obj/machinery/door/airlock))

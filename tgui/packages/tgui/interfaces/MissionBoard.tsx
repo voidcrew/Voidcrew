@@ -198,7 +198,7 @@ const MissionBoardContent = () => {
       </Stack.Item>
 
       {/* Pad contents if any - only show on active tab */}
-      {currentTab === 'active' && has_pad && pad_contents.length > 0 && (
+      {currentTab === 'active' && !!has_pad && pad_contents.length > 0 && (
         <Stack.Item>
           <Section title="Items on Pad">
             {pad_contents.map((item) => (
@@ -414,7 +414,7 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
   for (const item of items) {
     segments.push(
       <Box as="span" bold color={item.rare ? 'orange' : 'average'}>
-        {item.icon && (
+        {!!item.icon && (
           <img
             src={`data:image/png;base64,${item.icon}`}
             style={{
@@ -449,9 +449,12 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
   return (
     <>
       {segments.map((segment, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static, order-stable list
         <Box as="span" key={index}>
-          {index > 0 && <Box as="span" color="label">{' + '}</Box>}
+          {index > 0 && (
+            <Box as="span" color="label">
+              {' + '}
+            </Box>
+          )}
           {segment}
         </Box>
       ))}
@@ -505,7 +508,7 @@ const MissionCard = (props: MissionCardProps) => {
         <RewardSummary mission={mission} full />
       </Box>
 
-      {isActive && (
+      {!!isActive && (
         <>
           <LabeledList>
             <LabeledList.Item label="Time Remaining">
@@ -521,7 +524,7 @@ const MissionCard = (props: MissionCardProps) => {
                 {mission.time_remaining_text}
               </ProgressBar>
             </LabeledList.Item>
-            {mission.progress && (
+            {!!mission.progress && (
               <LabeledList.Item label="Progress">
                 {mission.progress}
               </LabeledList.Item>
@@ -535,12 +538,7 @@ const MissionCard = (props: MissionCardProps) => {
                   icon="check"
                   color="good"
                   disabled={!mission.can_complete && padContents.length === 0}
-                  onClick={() => {
-                    // If there's an item on the pad, use the first one
-                    const itemRef =
-                      padContents.length > 0 ? padContents[0].ref : null;
-                    act('turn_in', { ref: mission.ref, item_ref: itemRef });
-                  }}
+                  onClick={() => act('turn_in', { ref: mission.ref })}
                 >
                   Turn In
                 </Button>
@@ -828,9 +826,7 @@ const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
         icon="plus"
         color="good"
         disabled={
-          shipBalance < reward ||
-          bountyName.length < 3 ||
-          bountyDesc.length < 5
+          shipBalance < reward || bountyName.length < 3 || bountyDesc.length < 5
         }
         tooltip={
           shipBalance < reward
@@ -872,7 +868,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
   return (
     <>
       {/* Show created bounty */}
-      {createdBounty && (
+      {!!createdBounty && (
         <Section
           title="Your Bounty"
           buttons={
@@ -886,7 +882,9 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
           }
         >
           <LabeledList>
-            <LabeledList.Item label="Name">{createdBounty.name}</LabeledList.Item>
+            <LabeledList.Item label="Name">
+              {createdBounty.name}
+            </LabeledList.Item>
             <LabeledList.Item label="Reward">
               <Box color="gold">{createdBounty.reward} cr</Box>
             </LabeledList.Item>
@@ -902,7 +900,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
           </LabeledList>
 
           {/* Show pending offers to approve/reject */}
-          {createdBounty.pending_offers &&
+          {!!createdBounty.pending_offers &&
             createdBounty.pending_offers.length > 0 && (
               <Box mt={1}>
                 <Divider />
@@ -974,7 +972,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
       )}
 
       {/* Show claimed bounty */}
-      {claimedBounty && (
+      {!!claimedBounty && (
         <Section
           title="Accepted Contract"
           buttons={
@@ -990,7 +988,9 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
           }
         >
           <LabeledList>
-            <LabeledList.Item label="Name">{claimedBounty.name}</LabeledList.Item>
+            <LabeledList.Item label="Name">
+              {claimedBounty.name}
+            </LabeledList.Item>
             <LabeledList.Item label="From">
               {claimedBounty.creator_name || 'Unknown'}
             </LabeledList.Item>

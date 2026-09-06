@@ -101,6 +101,87 @@
 		if(initial(objective_type.required_amount) < 1)
 			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something. It can never be satisfied by handing anything over")
 
+/// Delivery selection must search past unrelated pad contents for every core type.
+/datum/unit_test/voidcrew_mission_pad_cores/Run()
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad)
+	var/obj/item/cigarette/cigarette = allocate(/obj/item/cigarette)
+	var/list/core_types = list(
+		/obj/item/assembly/signaler/anomaly/grav,
+		/obj/item/assembly/signaler/anomaly/flux,
+		/obj/item/assembly/signaler/anomaly/hallucination,
+		/obj/item/assembly/signaler/anomaly/pyro,
+		/obj/item/assembly/signaler/anomaly/bioscrambler,
+	)
+	for(var/core_type in core_types)
+		var/datum/mission/mission = allocate(/datum/mission)
+		mission.value = 0
+		mission.requires_item = TRUE
+		var/datum/mission_objective/deliver/delivery = new
+		delivery.required_type = core_type
+		mission.add_objective(delivery)
+		var/obj/item/core = allocate(core_type)
+		mission.register_quest_atom(core)
+		var/list/pad_items = pad.get_items_on_pad()
+		TEST_ASSERT_EQUAL(pad_items[1], cigarette, "The regression setup must have a cigarette ahead of the core")
+		TEST_ASSERT_EQUAL(mission.pick_turn_in_item(pad_items), core, "[core_type] must be selected past an unrelated cigarette")
+		TEST_ASSERT(mission.turn_in(pad, mission.pick_turn_in_item(pad_items)), "[core_type] should complete its delivery")
+		TEST_ASSERT(QDELETED(core), "The accepted core should be consumed")
+		TEST_ASSERT(!QDELETED(cigarette), "Turning in a core must leave the cigarette alone")
+		TEST_ASSERT(QDELETED(mission), "Consuming a tracked core must finish the mission, not trigger quest loss")
+
+/// A matching type is insufficient when a larger stack or better fish is available.
+/datum/unit_test/voidcrew_mission_pad_requirements/Run()
+	var/datum/mission/mission = allocate(/datum/mission)
+	mission.value = 0
+	mission.requires_item = TRUE
+	var/datum/mission_objective/deliver/delivery = new
+	delivery.required_type = /obj/item/stack/ore/iron
+	delivery.required_amount = 10
+	mission.add_objective(delivery)
+	var/obj/item/unrelated = allocate(/obj/item/cigarette)
+	var/obj/item/stack/ore/iron/short_stack = allocate(/obj/item/stack/ore/iron, run_loc_floor_bottom_left, 5, FALSE)
+	var/obj/item/stack/ore/iron/full_stack = allocate(/obj/item/stack/ore/iron, run_loc_floor_bottom_left, 15, FALSE)
+	TEST_ASSERT_EQUAL(mission.pick_turn_in_item(list(unrelated, short_stack, full_stack)), full_stack, "A sufficient stack must take priority over a short stack")
+	TEST_ASSERT_EQUAL(mission.pick_turn_in_item(list(unrelated, short_stack)), short_stack, "Keep a short stack available for the quantity error")
+	TEST_ASSERT_EQUAL(mission.get_failure_reason(short_stack), "Need 10, only have 5.", "A quantity shortfall must not be reported as a type mismatch")
+	TEST_ASSERT(!mission.turn_in(null, short_stack), "A near match must not be accepted")
+	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, full_stack), "A sufficient stack should complete the delivery")
+	TEST_ASSERT_EQUAL(full_stack.amount, 5, "Only the requested amount should be consumed")
+	TEST_ASSERT_EQUAL(short_stack.amount, 5, "The short stack should remain untouched")
+
+	var/datum/mission/fish_mission = allocate(/datum/mission)
+	fish_mission.requires_item = TRUE
+	var/datum/mission_objective/deliver/fish/fish_delivery = new
+	fish_delivery.min_weight = 2500
+	fish_mission.add_objective(fish_delivery)
+	var/obj/item/fish/small_fish = allocate(/obj/item/fish)
+	small_fish.weight = 500
+	var/obj/item/fish/large_fish = allocate(/obj/item/fish)
+	large_fish.weight = 3000
+	TEST_ASSERT_EQUAL(fish_mission.pick_turn_in_item(list(unrelated, small_fish, large_fish)), large_fish, "Selection must honor quality requirements, not just item type")
+	TEST_ASSERT_EQUAL(fish_mission.pick_turn_in_item(list(unrelated, small_fish)), small_fish, "Keep an undersized fish available for the weight error")
+	TEST_ASSERT(!fish_mission.can_turn_in(small_fish), "An undersized fish must still be refused")
+	TEST_ASSERT_NULL(fish_mission.pick_turn_in_item(list(unrelated)), "Unrelated items must not be offered")
+	TEST_ASSERT_NULL(fish_mission.pick_turn_in_item(list()), "An empty pad must not offer an item")
+
+/// Recovery contracts must choose their own current item among other quest items.
+/datum/unit_test/voidcrew_mission_pad_binding/Run()
+	var/datum/mission/mission = allocate(/datum/mission)
+	mission.requires_item = TRUE
+	mission.add_objective(new /datum/mission_objective/deliver/bound)
+	var/datum/mission/other_mission = allocate(/datum/mission)
+	var/obj/item/mission_recovery/foreign_item = allocate(/obj/item/mission_recovery)
+	other_mission.bind_item(foreign_item)
+	var/obj/item/mission_recovery/stale_item = allocate(/obj/item/mission_recovery)
+	mission.bind_item(stale_item)
+	mission.binding_serial++
+	var/obj/item/mission_recovery/current_item = allocate(/obj/item/mission_recovery)
+	mission.bind_item(current_item)
+	TEST_ASSERT_EQUAL(mission.pick_turn_in_item(list(foreign_item, stale_item, current_item)), current_item, "Select the item bound to this contract's current target")
+	TEST_ASSERT(!mission.can_turn_in(foreign_item), "Another contract's item must remain invalid")
+	TEST_ASSERT(!mission.can_turn_in(stale_item), "An item from before retargeting must remain invalid")
+	TEST_ASSERT_EQUAL(mission.pick_turn_in_item(list(stale_item)), stale_item, "Keep an expired binding available for the binding error")
+
 /**
  * # Ruin contracts never point at an occupied site
  *

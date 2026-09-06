@@ -34,3 +34,16 @@
 // fabrication servo speed upgrades are applied
 #define SHIP_RCD_WALL_BUILD_DELAY (2 SECONDS)
 #define SHIP_RCD_FLOOR_BUILD_DELAY (1 SECONDS)
+// Base time to lay a hull window. Covers the grille and the window together, since the
+// console builds both in one action (see build_hull_window()).
+#define SHIP_RCD_WINDOW_BUILD_DELAY (4 SECONDS)
+
+// Shared build and recycling costs for the console's optional tools.
+#define SHIP_RTD_TILE_IRON 100
+#define SHIP_RPD_PIPE_IRON 50
+#define SHIP_RLD_WALL_LIGHT_IRON 25
+#define SHIP_RLD_WALL_LIGHT_GLASS 50
+#define SHIP_RLD_FLOOR_LIGHT_IRON 50
+#define SHIP_RLD_FLOOR_LIGHT_GLASS 25
+#define SHIP_RLD_GLOW_STICK_IRON 10
+#define SHIP_RLD_GLOW_STICK_GLASS 25
