@@ -798,6 +798,14 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		return FALSE
 	if(!is_owner(user))
 		return FALSE
+	// An owner cannot retain command or spending by delegating authority to themselves
+	// before transferring the deed. Other residents retain their independent grants.
+	var/datum/mind/former_owner = founder_mind?.resolve()
+	stewards -= former_owner
+	treasurers -= former_owner
+	stewards -= user.mind
+	treasurers -= user.mind
+	authorized_builder_ckeys -= founder_ckey
 	residents |= new_owner.mind
 	resident_clearance[new_owner.ckey] = TRUE
 	founder_ckey = new_owner.ckey
