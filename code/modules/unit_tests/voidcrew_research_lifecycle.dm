@@ -31,6 +31,8 @@
 	SEND_SIGNAL(arcade, COMSIG_ARCADE_PRIZEVEND)
 	TEST_ASSERT(!experiment.finish_experiment(handler), "Completed physical experiment accepted a duplicate callback")
 	TEST_ASSERT_EQUAL(disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], reward, "Duplicate completion paid points twice")
+	var/datum/experiment/physical/meat_wall_explosion/wall_experiment = allocate(/datum/experiment/physical/meat_wall_explosion)
+	TEST_ASSERT(!wall_experiment.finish_experiment(handler), "An unauthorized physical completion performed its world effects")
 
 /// Maintenance wiring must not be mistaken for uploading a research link.
 /datum/unit_test/voidcrew_rnd_panel_wires/Run()
