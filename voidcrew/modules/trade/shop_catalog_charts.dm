@@ -15,9 +15,8 @@
  * every line here names its band in the text, and the generic rumor tip names
  * the band of whatever it rolled at purchase.
  *
- * Ruin charts are dealt globally without repeats (GLOB.dealt_rumor_charts) so
- * two outposts never stock a tip to the same named ruin. Star charts and the
- * generic rumor are ordinary restockable goods.
+ * Each outpost independently deals its chart shelf. A purchased ruin chart
+ * reveals a fresh encounter; named tips replenish with ordinary supply convoys.
  */
 
 /**
@@ -149,8 +148,9 @@
  * # Ruin charts
  *
  * Each names one rare ruin that exists nowhere until somebody buys the tip and
- * reveals it from their helm. One buyer per ruin, ever: once sold, the trail is
- * cold at every outpost. Prices encode danger, not distance, because spawn_zone
+ * reveals it from their helm. Each purchase generates a fresh instance, which
+ * follows normal ruin cleanup when ships leave. A sealed chart is used once.
+ * Prices encode danger, not distance, because spawn_zone
  * decides where the ruin actually lands.
  */
 

@@ -220,7 +220,10 @@
 	PRIVATE_PROC(TRUE)
 	SHOULD_BE_PURE(TRUE)
 
-	if(ispath(path, /obj/item/stack/sheet) || ispath(path, /obj/item/stack/ore/bluespace_crystal))
+	// Stack outputs retain their per-unit materials instead of receiving the
+	// nonstack salvage adjustment in do_make_item(). Discounting them creates
+	// material when cable, ducts or rods are fed back into a material container.
+	if(ispath(path, /obj/item/stack))
 		return 1
 	else
 		return efficiency_coeff

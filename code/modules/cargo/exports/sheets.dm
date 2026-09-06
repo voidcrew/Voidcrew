@@ -65,7 +65,7 @@
 // For base materials, see materials.dm
 
 /datum/export/stack/plasteel
-	cost = CARGO_CRATE_VALUE * 0.41 // 100u of plasma + 100u of iron.
+	cost = CARGO_CRATE_VALUE * 0.1
 	message = "of plasteel"
 	export_types = list(/obj/item/stack/sheet/plasteel)
 

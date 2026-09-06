@@ -1,5 +1,5 @@
 /datum/export/large/crate
-	cost = CARGO_CRATE_VALUE
+	cost = CARGO_CRATE_VALUE * 0.25
 	k_elasticity = 0
 	unit_name = "crate"
 	export_types = list(/obj/structure/closet/crate)
@@ -14,6 +14,15 @@
 	. = ..()
 	if(. && notes)
 		. += " Thanks for participating in Nanotrasen Crates Recycling Program."
+
+/datum/export/large/crate/get_cost(obj/exported_obj, apply_elastic = TRUE)
+	. = ..()
+	// Preserve each crate type's salvage value, but discounted shipping packaging
+	// must not refund the shipment. Its removable manifest is not the authority.
+	if(istype(exported_obj, /obj/structure/closet/crate))
+		var/obj/structure/closet/crate/crate = exported_obj
+		if(!isnull(crate.cargo_paid_cost))
+			return max(0, min(., FLOOR(crate.cargo_paid_cost * 0.1, 1)))
 
 /datum/export/large/crate/wooden
 	cost = CARGO_CRATE_VALUE/5
@@ -48,11 +57,12 @@
 /datum/export/large/reagent_dispenser/water
 	unit_name = "watertank"
 	export_types = list(/obj/structure/reagent_dispensers/watertank)
-	contents_cost = CARGO_CRATE_VALUE * 0.4
+	contents_cost = CARGO_CRATE_VALUE * 0.25
 
 /datum/export/large/reagent_dispenser/fuel
 	unit_name = "fueltank"
 	export_types = list(/obj/structure/reagent_dispensers/fueltank)
+	contents_cost = CARGO_CRATE_VALUE * 0.55
 
 /datum/export/large/reagent_dispenser/beer
 	unit_name = "beer keg"

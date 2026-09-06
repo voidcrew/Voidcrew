@@ -99,6 +99,7 @@
 		/datum/shop_sku/general/plasteel,
 		/datum/shop_sku/general/soap,
 		/datum/shop_sku/general/autolathe_board,
+		/datum/shop_sku/general/basic_parts,
 		/datum/shop_sku/general/supply_console_board,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
@@ -227,18 +228,22 @@
 // ===== SURVIVAL & EVA =====
 
 /datum/shop_sku/general/oxygen_tank
+	stock_max = 20
+	stock_min = 10
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/internals/oxygen
-	price_credits = 150
+	price_credits = 120
 
 /datum/shop_sku/general/emergency_oxygen
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/internals/emergency_oxygen/engi
 	price_credits = 80
-	stock_min = 4
-	stock_max = 8
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/general/breath_mask
+	stock_max = 20
+	stock_min = 10
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/mask/breath
 	price_credits = 80
@@ -247,15 +252,15 @@
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/suit/space/eva
 	price_credits = 600
-	stock_min = 2
-	stock_max = 3
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/general/eva_helmet
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/head/helmet/space/eva
 	price_credits = 450
-	stock_min = 2
-	stock_max = 3
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/general/gps
 	category = "Survival & EVA"
@@ -305,7 +310,8 @@
 
 /datum/shop_sku/general/toolbelt
 	category = "Tools & Repair"
-	item_path = /obj/item/storage/belt/utility/atmostech
+	item_path = /obj/item/storage/belt/utility/full
+	desc = "A loaded repair belt with hand tools, a multitool and cable. Supplies the tools and wiring needed to assemble a replacement autolathe and link a research bay."
 	price_credits = 500
 
 // The large-tank welder only prints on a hacked lathe, so this is the cheap
@@ -353,16 +359,22 @@
 // ===== MEDICAL =====
 
 /datum/shop_sku/general/medkit
+	stock_max = 20
+	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/regular
 	price_credits = 300
 
 /datum/shop_sku/general/burn_kit
+	stock_max = 20
+	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/fire
 	price_credits = 400
 
 /datum/shop_sku/general/o2_kit
+	stock_max = 20
+	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
 	price_credits = 400
@@ -383,8 +395,8 @@
 	category = "Medical"
 	item_path = /obj/item/stack/medical/gauze
 	price_credits = 120
-	stock_min = 4
-	stock_max = 8
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/general/suture
 	name = "sutures (pack of 10)"
@@ -393,8 +405,8 @@
 	item_path = /obj/item/stack/medical/suture
 	dispense_amount = 10
 	price_credits = 180
-	stock_min = 4
-	stock_max = 8
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/general/regen_mesh
 	name = "regenerative mesh (pack of 15)"
@@ -403,8 +415,8 @@
 	item_path = /obj/item/stack/medical/mesh
 	dispense_amount = 15
 	price_credits = 180
-	stock_min = 4
-	stock_max = 8
+	stock_min = 10
+	stock_max = 20
 
 // ===== PROSPECTING =====
 
@@ -502,7 +514,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/iron
 	dispense_amount = 30
-	price_credits = 200
+	price_credits = 220
 	stock_min = 3
 	stock_max = 6
 
@@ -512,7 +524,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/glass
 	dispense_amount = 30
-	price_credits = 200
+	price_credits = 220
 	stock_min = 3
 	stock_max = 6
 
@@ -526,14 +538,13 @@
 	stock_min = 1
 	stock_max = 3
 
-// The fuel dock: plasma at a comfortable waystation markup. The deeper depots
-// pump it cheaper, the commute is the discount.
+// The fuel dock shares the depot price: routine propulsion fuel is recovery stock.
 /datum/shop_sku/general/plasma_canister
 	name = "plasma canister (full)"
-	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots. You're paying for the haul out to the safe ring."
+	desc = "A full canister of thruster-grade plasma, ready to connect to a heater or refill a propulsion system."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
-	price_credits = 1800
+	price_credits = 1100
 	stock_min = 2
 	stock_max = 3
 
@@ -596,8 +607,8 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/machine/autolathe
 	price_credits = 500 // invented, unplaytested
-	stock_min = 1
-	stock_max = 2
+	stock_min = 3
+	stock_max = 6
 
 // Same story for the supply console: the board design exists on the techweb
 // (Civilian Consoles, imprinter-printed), but a crew without an imprinter has
@@ -608,8 +619,8 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/computer/voidcrew_cargo
 	price_credits = 500 // invented, unplaytested
-	stock_min = 1
-	stock_max = 2
+	stock_min = 3
+	stock_max = 6
 
 // Chart and rumor SKUs live in shop_catalog_charts.dm, Barnaby draws his
 // through chart_pool above rather than defining his own.
@@ -763,3 +774,13 @@
 	item_path = /obj/item/freight_beacon
 	price_credits = 2400
 	price_vouchers = 1
+
+// The replacement lathe cannot print its own construction parts.
+/datum/shop_sku/general/basic_parts
+	name = "basic machine parts box"
+	desc = "Three each of basic matter bins, servos, capacitors, micro-lasers and scanners. Enough parts to rebuild an autolathe; bring a board, five iron sheets for its frame, five cables and one glass sheet."
+	category = "Ship Sundries"
+	item_path = /obj/item/storage/box/stockparts/basic
+	price_credits = 300
+	stock_min = 3
+	stock_max = 6

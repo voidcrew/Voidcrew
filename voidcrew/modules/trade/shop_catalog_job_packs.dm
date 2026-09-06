@@ -82,7 +82,7 @@
 
 /obj/structure/closet/crate/science/xenobiology_pack
 	name = "xenobiology starter crate"
-	desc = "Boards for a slime management console, a processor and a monkey recycler, with a slime scanner and a box of cubes to get a pen running."
+	desc = "Boards, tools, monkey cubes, a grey slime extract and 15 units of liquid plasma. Build and power the machines with frames and stock parts; switch the processor to slime mode with a screwdriver. Build a secure pen in view of a ship camera before injecting the extract with at least 1 unit of plasma to hatch a slime. Rehydrate monkey cubes with water for feeding."
 
 /obj/structure/closet/crate/science/xenobiology_pack/PopulateContents()
 	. = ..()
@@ -92,6 +92,8 @@
 	new /obj/item/circuitboard/machine/monkey_recycler(src)
 	new /obj/item/slime_scanner(src)
 	new /obj/item/storage/box/monkeycubes(src)
+	new /obj/item/slime_extract/grey(src)
+	new /obj/item/reagent_containers/syringe/plasma(src)
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/clothing/suit/toggle/labcoat/science(src)
 	new /obj/item/clothing/under/rank/rnd/scientist(src)
@@ -122,9 +124,9 @@
 /datum/shop_sku/potting/job_pack_botany
 	category = "Job Packs"
 	name = "botany starter pack"
-	desc = "Two tray boards, a seed extractor and a biogenerator, plus a full set of tools and a pair of Fern's own gloves. Enough to put a working garden on a ship that never had one."
+	desc = "Two tray boards, a seed extractor and a biogenerator, plus tools and gloves. Requires machine frames, stock parts, power, water and seeds to start growing."
 	item_path = /obj/structure/closet/crate/hydroponics/botany_pack
-	price_credits = 1400
+	price_credits = 1000
 	stock_min = 1
 	stock_max = 2
 
@@ -132,10 +134,9 @@
 /datum/shop_sku/skunk/job_pack_robotics
 	category = "Job Packs"
 	name = "robotics starter pack"
-	desc = "An exosuit fabricator board and the bench kit to go with it. The fab prints mech parts and cyborg limbs once it's built and wired to a lathe's material stock."
+	desc = "An exosuit fabricator board, endoskeleton, positronic brain and bench tools. Build the fabricator with a machine frame and stock parts, supply power and materials, and link research for advanced designs."
 	item_path = /obj/structure/closet/crate/science/robotics_pack
-	price_credits = 1500
-	price_vouchers = 1
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -143,10 +144,9 @@
 /datum/shop_sku/skunk/job_pack_xenobiology
 	category = "Job Packs"
 	name = "xenobiology starter pack"
-	desc = "Everything needed to run a slime pen except the slimes and the walls. The management console works off the ship's own cameras, so it needs a pen in view of one."
+	desc = "Console, processor and recycler boards, tools, monkey cubes, a grey extract and 15u liquid plasma. Requires frames, parts and power. Build a secure pen in view of a ship camera before injecting at least 1u plasma into the extract to hatch a slime. Add water to monkey cubes for food; screwdriver the processor board into slime mode."
 	item_path = /obj/structure/closet/crate/science/xenobiology_pack
-	price_credits = 2000
-	price_vouchers = 2
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 1
 
@@ -154,9 +154,8 @@
 /datum/shop_sku/clinic/job_pack_genetics
 	category = "Job Packs"
 	name = "genetics starter pack"
-	desc = "A complete genetics lab in board form (scanner, console and infuser) with a sequence scanner and blank disks. Sawbones does not ask what you intend to do with it."
+	desc = "Scanner, console and infuser boards, a sequence scanner and blank disks. Requires frames, stock parts, power and a subject; rehydrated monkey cubes provide a starting subject."
 	item_path = /obj/structure/closet/crate/medical/genetics_pack
-	price_credits = 2500
-	price_vouchers = 4
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 1

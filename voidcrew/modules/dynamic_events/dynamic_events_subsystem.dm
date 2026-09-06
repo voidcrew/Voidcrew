@@ -35,6 +35,10 @@ SUBSYSTEM_DEF(dynamic_events)
 	/// Roster of ported event controls. Shares instances with SSevents.control so
 	/// occurrence counts and the admin "Trigger Event" panel stay coherent.
 	var/list/datum/round_event_control/voidcrew/control = list()
+	/// One deadline offer; cancellation does not cause a forced retry every tick.
+	var/colosseum_deadline_attempted = FALSE
+	/// Latest normal venue offer, measured from round start rather than server boot.
+	var/colosseum_deadline = 180 MINUTES
 
 /datum/controller/subsystem/dynamic_events/Initialize()
 	for(var/datum/round_event_control/voidcrew/event in SSevents.control)
@@ -46,10 +50,27 @@ SUBSYSTEM_DEF(dynamic_events)
 /datum/controller/subsystem/dynamic_events/fire(resumed)
 	if(!enabled || !length(control))
 		return
+	var/datum/round_event_control/voidcrew/grand_colosseum/venue = get_due_colosseum()
+	if(venue)
+		colosseum_deadline_attempted = TRUE
+		spawn_dynamic_event(preferred_event = venue)
+		reschedule()
+		return
 	if(scheduled > world.time)
 		return
 	spawn_dynamic_event()
 	reschedule()
+
+/// Existing venue event, with its normal occurrence/population/admin guards intact.
+/datum/controller/subsystem/dynamic_events/proc/get_due_colosseum(players_amt)
+	if(!enabled || colosseum_deadline_attempted || world.time - SSticker.round_start_time < colosseum_deadline)
+		return null
+	if(isnull(players_amt))
+		players_amt = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
+	for(var/datum/round_event_control/voidcrew/grand_colosseum/venue in control)
+		if(!venue.triggering && venue.can_spawn_event(players_amt))
+			return venue
+	return null
 
 /datum/controller/subsystem/dynamic_events/proc/reschedule()
 	var/interval = rand(frequency_lower, max(frequency_lower, frequency_upper))
@@ -77,7 +98,7 @@ SUBSYSTEM_DEF(dynamic_events)
  * Arguments:
  * * excluded_event - control to skip, used when an admin rerolls an event.
  */
-/datum/controller/subsystem/dynamic_events/proc/spawn_dynamic_event(datum/round_event_control/voidcrew/excluded_event)
+/datum/controller/subsystem/dynamic_events/proc/spawn_dynamic_event(datum/round_event_control/voidcrew/excluded_event, datum/round_event_control/voidcrew/preferred_event)
 	set waitfor = FALSE // preRunEvent() sleeps through the admin cancel window
 
 	var/players_amt = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
@@ -89,7 +110,7 @@ SUBSYSTEM_DEF(dynamic_events)
 			continue
 		roster[event] = event.weight
 
-	var/datum/round_event_control/voidcrew/chosen = pick_weight(roster)
+	var/datum/round_event_control/voidcrew/chosen = preferred_event && roster[preferred_event] ? preferred_event : pick_weight(roster)
 	if(!chosen)
 		return
 

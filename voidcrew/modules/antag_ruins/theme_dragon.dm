@@ -6,13 +6,13 @@
  * starved anyway, hunger that size was never going to fit inside a meal. The
  * patron is the appetite it left behind, heaped over a hoard it can no longer
  * taste. The trials are a dragon's parenting, farmed out: keep a clutch alive
- * (the Broodwatch), kill with flame and nothing else (the Ember Feast), and
+ * (the Broodwatch), mark quarry with flame before the kill (the Ember Feast), and
  * refuse a lunge at the last length (the Wingbeat). The boons, the breath,
  * the gust, the carrion feast. Live in theme_dragon_boons.dm; this file only
  * points the patron at them.
  *
  * Every trial here is built to be PLAYED, not waited out: the egg summons
- * things that must be fought, the jaw only credits hunts you finish yourself,
+ * things that must be fought, the jaw credits marked quarry while its flame remains,
  * and the charm only credits throws timed against something mid-lunge.
  */
 
@@ -21,7 +21,7 @@
 /// Tides of brood carp the Broodwatch egg must survive
 #define VESTIGE_BROOD_WAVES 3
 /// Delay from one tide's arrival to the next tide's herald
-#define VESTIGE_BROOD_WAVE_DELAY (40 SECONDS)
+#define VESTIGE_BROOD_WAVE_DELAY (5 SECONDS)
 /// Warning time between a tide announcing itself and arriving
 #define VESTIGE_BROOD_WARNING_TIME (5 SECONDS)
 /// How far from the egg the brood surfaces (never closer than 3)
@@ -31,7 +31,7 @@
 /// The planted egg's integrity: real, and worth standing in front of
 #define VESTIGE_EGG_INTEGRITY 300
 /// Wild things the Ember Feast demands dead while your flame is still eating them
-#define VESTIGE_EMBER_KILLS_NEEDED 6
+#define VESTIGE_EMBER_KILLS_NEEDED 3
 /// The ember-jaw's breath cooldown
 #define VESTIGE_EMBER_COOLDOWN (8 SECONDS)
 /// How many tiles the ember-jaw's cone reaches
@@ -44,7 +44,7 @@
 #define VESTIGE_EMBER_TEMP 700
 #define VESTIGE_EMBER_VOLUME 50
 /// Lunges the Wingbeat must turn aside
-#define VESTIGE_WINGBEAT_PARRIES_NEEDED 8
+#define VESTIGE_WINGBEAT_PARRIES_NEEDED 4
 /// Most parries any single beast can credit. The same meal twice is beneath the wing
 #define VESTIGE_WINGBEAT_PARRIES_PER_MENACE 2
 /// The gust charm's cooldown: short on purpose; the trial is timing, not rationing
@@ -64,13 +64,47 @@
 /proc/vestige_is_wild_quarry(mob/living/beast, mob/living/hunter)
 	if(!isliving(beast) || beast == hunter || ishuman(beast))
 		return FALSE
-	if(!isanimal_or_basicmob(beast))
+	if(!isanimal_or_basicmob(beast) || beast.mind || beast.client || beast.mob_size < MOB_SIZE_SMALL)
 		return FALSE
 	if(HAS_TRAIT(beast, TRAIT_PACIFISM) || HAS_TRAIT(beast, TRAIT_GODMODE))
 		return FALSE
-	if(beast.faction_check_atom(hunter)) // your own pack is not prey
+	if(hunter && beast.faction_check_atom(hunter)) // your own pack is not prey
 		return FALSE
 	return TRUE
+
+/// Conservative connected approaches: never through doors, walls, lava, or chasms.
+/// Comb resin may be traversed for chewers, who can destroy that specific obstruction.
+/proc/vestige_hunt_approaches(atom/objective, max_range = 7, chew_resin = FALSE)
+	var/turf/origin = get_turf(objective)
+	var/list/perches = list()
+	if(!origin)
+		return perches
+	var/list/frontier = list(origin)
+	var/list/seen = list()
+	seen[origin] = TRUE
+	for(var/index in 1 to (max_range * 2 + 1) ** 2)
+		if(index > length(frontier))
+			break
+		var/turf/current = frontier[index]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(current, direction)
+			if(!next || seen[next] || get_dist(origin, next) > max_range)
+				continue
+			seen[next] = TRUE
+			if(!isopenturf(next) || islava(next) || ischasm(next))
+				continue
+			var/blocked = FALSE
+			for(var/atom/movable/obstacle in next)
+				if(!obstacle.density || ismob(obstacle) || (chew_resin && istype(obstacle, /obj/structure/vestige_comb_resin)))
+					continue
+				blocked = TRUE
+				break
+			if(blocked)
+				continue
+			frontier += next
+			if(get_dist(origin, next) >= 3 && !next.is_blocked_turf(exclude_mobs = TRUE))
+				perches += next
+	return perches
 
 // ===== PATRON =====
 
@@ -131,7 +165,7 @@
 	name = "The Broodwatch"
 	// Keep the count in sync with VESTIGE_BROOD_WAVES
 	// (initial values must be constant, so no define interpolation here)
-	desc = "There were eggs once, and I was elsewhere being enormous. Take this one. It's cold, but cold isn't dead, only patient. Plant it somewhere you can hold and wake it up. The little cousins will come to eat it: three waves of them, each one worse than the last. Keep the shell in one piece until the last of them is dealt with and you will see what I never came home to. If it breaks, renounce the pact and I will cut you another."
+	desc = "There were eggs once, and I was elsewhere being enormous. Take this one. It's cold, but cold isn't dead, only patient. Plant it somewhere you can hold and wake it up. The little cousins will come to eat it: three waves of two carp, attacking you and the shell together. Keep the shell in one piece until the last of them is dealt with and you will see what I never came home to. After each wave, touch the shell to call the next. An empty hand can patch sixty shell twice during the watch. If it breaks, replace your kit from the pact tracker."
 	/// The loaned egg, while it rides in a hand or pocket. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_dragon_egg/egg_item
 	/// The planted egg, once it has been bedded down. Reclaimed the moment the pact ends.
@@ -152,6 +186,8 @@
 	if(egg_structure && !QDELETED(egg_structure))
 		if(!egg_structure.assault_underway)
 			return "The egg sits where you planted it. Wake it once you have picked your ground."
+		if(!length(egg_structure.brood) && !egg_structure.wave_pending && egg_structure.stage < VESTIGE_BROOD_WAVES)
+			return "Wave [egg_structure.stage] cleared. Touch the egg to call the next wave. [egg_structure.repairs_left] shell patches remain."
 		if(egg_structure.stage < VESTIGE_BROOD_WAVES)
 			return "Wave [egg_structure.stage] of [VESTIGE_BROOD_WAVES], [length(egg_structure.brood)] of the brood are still circling the egg."
 		if(length(egg_structure.brood))
@@ -159,7 +195,7 @@
 		return "The brood is dealt with. Something is moving inside the egg."
 	if(egg_item && !QDELETED(egg_item))
 		return "The egg is still cold in your hands. Plant it on open ground you can hold, then wake it."
-	return "The egg is gone. Renounce the pact and [patron_name] will cut you another."
+	return "The egg is gone. Replace the kit from your pact tracker to try again."
 
 // --- The egg, carried ---
 
@@ -217,6 +253,7 @@
 	var/obj/structure/vestige_dragon_egg/nest = new(ground)
 	nest.bound_mind = user.mind
 	trial.egg_structure = nest
+	trial.register_loan(nest)
 	user.visible_message(
 		span_warning("[user] beds [src] down into the ground."),
 		span_notice("You bed the egg down. The cold in it starts to feel less like a dead thing and more like a waiting one."),
@@ -256,6 +293,13 @@
 	var/hatching = FALSE
 	/// Live brood carp currently besieging the egg (culled by death/deletion signals)
 	var/list/brood = list()
+	/// The announced approach, rechecked when the wave arrives.
+	var/turf/wave_perch
+	var/wave_pending = FALSE
+	var/wave_lost = FALSE
+	var/next_wave_at = 0
+	var/repairs_left = 2
+	var/repairing = FALSE
 
 /obj/structure/vestige_dragon_egg/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -321,6 +365,31 @@
 		balloon_alert(user, "cold clean through!")
 		return
 	if(assault_underway)
+		if(!length(brood) && !wave_pending && stage < VESTIGE_BROOD_WAVES)
+			if(world.time < next_wave_at)
+				balloon_alert(user, "[DisplayTimeText(next_wave_at - world.time)] to prepare")
+				return
+			if(atom_integrity >= max_integrity || !repairs_left)
+				herald_wave()
+				return
+			var/choice = tgui_alert(user, "Patch the shell before the next wave?", name, list("Patch shell", "Call wave", "Leave it"))
+			if(QDELETED(src) || !user.Adjacent(src) || user.mind != bound_mind || !get_bound_trial())
+				return
+			if(choice == "Call wave")
+				herald_wave()
+				return
+			if(choice != "Patch shell")
+				return
+		if(atom_integrity < max_integrity && repairs_left && !repairing)
+			repairing = TRUE
+			balloon_alert(user, "patching shell...")
+			var/patched = do_after(user, 3 SECONDS, target = src)
+			repairing = FALSE
+			if(patched && !QDELETED(src) && user.mind == bound_mind && get_bound_trial())
+				repairs_left--
+				repair_damage(60)
+				balloon_alert(user, "shell patched; [repairs_left] patches left")
+			return
 		to_chat(user, span_boldnotice(trial.get_progress_text()))
 		return
 	var/choice = tgui_alert(user, "The egg is planted and waiting. Wake the brood here, on this ground?", name, list("Wake it", "Take it up", "Leave it"))
@@ -341,6 +410,7 @@
 	var/obj/item/vestige_dragon_egg/shell = new(get_turf(src))
 	shell.bound_mind = bound_mind
 	trial.egg_item = shell
+	trial.register_loan(shell)
 	user.put_in_hands(shell)
 	user.visible_message(
 		span_warning("[user] works [src] loose from the ground and gathers it up."),
@@ -363,38 +433,41 @@
 
 /// Each tide announces itself before it lands, the defender's cue to set their feet
 /obj/structure/vestige_dragon_egg/proc/herald_wave()
-	if(QDELETED(src) || !assault_underway)
+	if(QDELETED(src) || !assault_underway || wave_pending || length(brood) || stage >= VESTIGE_BROOD_WAVES)
 		return
-	visible_message(span_boldwarning("The space around [src] begins to churn. Something is coming through!"))
+	var/list/perches = vestige_hunt_approaches(src, VESTIGE_BROOD_SPAWN_RANGE)
+	if(!length(perches))
+		visible_message(span_warning("The brood cannot reach this shell. Clear a route at least three tiles long, then touch the egg again."))
+		return
+	wave_perch = pick(perches)
+	wave_pending = TRUE
+	visible_message(span_boldwarning("The space [dir2text(get_dir(src, wave_perch))] of [src] churns. Wave [stage + 1] approaches in five seconds!"))
 	playsound(src, 'sound/effects/magic/wand_teleport.ogg', 40, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(unleash_wave)), VESTIGE_BROOD_WARNING_TIME)
 
-/// A tide lands: stage+1 brood carp, half sent straight for the shell, half loose to hunt the defenders
+/// One announced approach per wave. Closing it postpones the wave instead of spawning on the egg.
 /obj/structure/vestige_dragon_egg/proc/unleash_wave()
-	if(QDELETED(src) || !assault_underway)
+	if(QDELETED(src) || !assault_underway || !wave_pending)
 		return
+	wave_pending = FALSE
+	var/list/perches = vestige_hunt_approaches(src, VESTIGE_BROOD_SPAWN_RANGE)
+	if(!(wave_perch in perches))
+		visible_message(span_warning("The approach has closed. Clear it and touch the shell to call the brood again."))
+		return
+	wave_lost = FALSE
 	stage++
-	var/list/perches = list()
-	for(var/turf/perch as anything in RANGE_TURFS(VESTIGE_BROOD_SPAWN_RANGE, src))
-		if(get_dist(perch, src) < 3)
-			continue
-		if(perch.is_blocked_turf(exclude_mobs = TRUE))
-			continue
-		perches += perch
-	for(var/i in 1 to stage + 1)
-		var/turf/perch = length(perches) ? pick(perches) : get_turf(src)
-		var/mob/living/basic/carp/vestige_brood/hunter = new(perch)
+	for(var/i in 1 to 2)
+		var/mob/living/basic/carp/vestige_brood/hunter = new(wave_perch)
 		enlist(hunter, egg_bound = (i % 2 == 0))
-	visible_message(span_boldwarning("The brood pours out of nothing, all teeth and pale light, and turns toward [src]!"))
+	visible_message(span_boldwarning("The brood pours from the announced approach and turns toward [src]!"))
 	playsound(src, 'sound/effects/magic/wand_teleport.ogg', 70, TRUE)
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
 	trial?.refresh_tracker()
-	if(stage < VESTIGE_BROOD_WAVES)
-		addtimer(CALLBACK(src, PROC_REF(herald_wave)), VESTIGE_BROOD_WAVE_DELAY)
 
 /// Books a brood carp into the watch: siege roster, death/deletion signals, and its own despawn clock
 /obj/structure/vestige_dragon_egg/proc/enlist(mob/living/basic/carp/vestige_brood/hunter, egg_bound = FALSE)
 	brood += hunter
+	get_bound_trial()?.register_loan(hunter)
 	RegisterSignal(hunter, COMSIG_LIVING_DEATH, PROC_REF(on_brood_slain))
 	RegisterSignal(hunter, COMSIG_QDELETING, PROC_REF(on_brood_gone))
 	// The lifespan rides the CARP, not the egg. Orphans always clean themselves up
@@ -403,15 +476,23 @@
 		hunter.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
 
 /// Strikes a carp from the roster. Safe to call twice (death then deletion).
-/obj/structure/vestige_dragon_egg/proc/muster_out(mob/living/hunter)
+/obj/structure/vestige_dragon_egg/proc/muster_out(mob/living/hunter, slain = FALSE)
 	if(!(hunter in brood))
 		return
 	brood -= hunter
+	if(!slain)
+		wave_lost = TRUE
+	if(!length(brood) && wave_lost)
+		stage--
+		visible_message(span_warning("The brood escaped the watch. Clear the approach and call this wave again."))
+	if(!length(brood) && stage < VESTIGE_BROOD_WAVES)
+		next_wave_at = world.time + VESTIGE_BROOD_WAVE_DELAY
+		visible_message(span_notice("The wave is spent. Touch the egg after five seconds to call the next; patch the shell first if needed."))
 	UnregisterSignal(hunter, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 
 /obj/structure/vestige_dragon_egg/proc/on_brood_slain(mob/living/hunter, gibbed)
 	SIGNAL_HANDLER
-	muster_out(hunter)
+	muster_out(hunter, slain = TRUE)
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
 	trial?.refresh_tracker()
 	check_hatch()
@@ -439,7 +520,7 @@
 
 /// All tides landed, all brood dealt with: the shell has earned its heir
 /obj/structure/vestige_dragon_egg/proc/check_hatch()
-	if(hatching || !assault_underway || stage < VESTIGE_BROOD_WAVES || length(brood))
+	if(hatching || wave_lost || !assault_underway || stage < VESTIGE_BROOD_WAVES || length(brood))
 		return
 	hatching = TRUE
 	visible_message(span_boldwarning("The tapping inside [src] becomes a knocking."))
@@ -473,7 +554,7 @@
 	var/mob/living/keeper = bound_mind?.current
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
 	if(istype(trial) && isliving(keeper))
-		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives flat and unsurprised: \"That happens. It happened to mine. Come and renounce the pact and I will cut you another one.\""))
+		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives flat and unsurprised: \"That happens. It happened to mine. Replace your kit through the pact tracker and try again.\""))
 	return ..()
 
 // --- The brood ---
@@ -601,12 +682,13 @@
 	name = "The Ember Feast"
 	// Keep the count in sync with VESTIGE_EMBER_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the jaw. It remembers a little of my fire, enough to start a meal, not enough to skip the hunt. Six wild things, dead while my flame is still on them. Burn them and finish the job yourself, before the fire goes out or something else takes the kill. Nothing killed cold with a crowbar counts."
+	desc = "Take the jaw. It remembers a little of my fire, enough to start a meal, not enough to skip the hunt. Three wild beasts at least the size of a carp, dead while my flame is still on them. Set them alight, then finish the hunt with your own weapons or a helper. If the flame goes out, breathe again. People, pets, and tiny vermin do not count."
 	/// Prey already savored (weakref -> TRUE). A revived and re-cooked beast is still one meal
 	var/list/devoured = list()
 
 /datum/vestige_trial/ember_feast/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_ember_jaw(get_turf(user)))
+	var/obj/item/vestige_ember_jaw/jaw = hand_over(user, new /obj/item/vestige_ember_jaw(get_turf(user)))
+	jaw.bound_mind = owner
 	to_chat(user, span_notice("The jaw settles into your grip, warm side down."))
 
 /datum/vestige_trial/ember_feast/get_progress_text()
@@ -640,6 +722,7 @@
 	light_color = "#ff9a4d"
 	/// Mobs our flame is currently eating (victim -> hunter's mind), released on extinguish or death
 	var/list/marked_prey = list()
+	var/datum/mind/bound_mind
 	COOLDOWN_DECLARE(breath_cooldown)
 
 /obj/item/vestige_ember_jaw/Destroy()
@@ -650,7 +733,7 @@
 
 /obj/item/vestige_ember_jaw/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count. If the fire goes out, or something else lands the kill, it doesn't.")
+	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count. Helpers may finish a marked beast. Extinguishing it removes the mark. Tiny vermin and player-controlled creatures do not count.")
 
 /obj/item/vestige_ember_jaw/attack_self(mob/user, modifiers)
 	. = ..()
@@ -660,7 +743,7 @@
 		return
 	var/mob/living/hunter = user
 	var/datum/vestige_trial/ember_feast/trial = hunter.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || hunter.mind != bound_mind)
 		balloon_alert(hunter, "the jaw stays cold!")
 		return TRUE
 	if(!COOLDOWN_FINISHED(src, breath_cooldown))
@@ -711,18 +794,16 @@
 
 /// One mouthful of the fire: burn, ignite, and (for honest quarry) a mark for the feast's ledger
 /obj/item/vestige_ember_jaw/proc/sear(mob/living/prey, mob/living/hunter)
-	prey.adjustFireLoss(VESTIGE_EMBER_BURN)
+	if(prey.stat == DEAD)
+		return
 	prey.adjust_fire_stacks(VESTIGE_EMBER_FIRE_STACKS)
 	prey.ignite_mob()
-	to_chat(prey, span_userdanger("You are engulfed by [hunter]'s gout of dragonfire!"))
-	if(!prey.on_fire) // fireproof things owe the feast nothing
-		return
-	if(!vestige_is_wild_quarry(prey, hunter))
-		return
 	var/datum/vestige_trial/ember_feast/trial = hunter.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	mark_prey(prey, hunter.mind)
+	if(prey.on_fire && vestige_is_wild_quarry(prey, hunter) && istype(trial))
+		mark_prey(prey, hunter.mind)
+		balloon_alert(hunter, "[prey]: flame marked; helpers count")
+	prey.adjustFireLoss(VESTIGE_EMBER_BURN)
+	to_chat(prey, span_userdanger("You are engulfed by [hunter]'s gout of dragonfire!"))
 
 /**
  * Attribution, done properly: a mark means OUR flame is on them right now.
@@ -755,6 +836,8 @@
 	if(!istype(trial))
 		return
 	var/mob/living/hunter = hunter_mind.current
+	if(!vestige_is_wild_quarry(prey, hunter))
+		return
 	if(trial.savor(prey) && isliving(hunter)) // savor may complete (and delete) the trial, nothing touches it after this
 		to_chat(hunter, span_notice("[prey] dies with your flame still on it. Somewhere, an old hunger counts the portion."))
 		playsound(hunter, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
@@ -773,22 +856,23 @@
  * The timing trial: stand your ground in a fauna pack and refuse the lunges.
  * The gust charm repulses everything close, but only a beast that is BOTH
  * within two tiles AND currently hunting a living person counts, a
- * last-instant parry, not a crowd-clearing habit. Deduped per beast so eight
- * credits means reading eight real attacks, not juggling one carp.
+ * close interception. Deduped per beast; four credits require at least two
+ * quarry, rather than repeatedly juggling one carp.
  */
 /datum/vestige_trial/wingbeat
 	name = "The Wingbeat"
 	// Keep the counts in sync with VESTIGE_WINGBEAT_PARRIES_NEEDED /
 	// VESTIGE_WINGBEAT_PARRIES_PER_MENACE (initial values must be constant,
 	// so no define interpolation here)
-	desc = "Teeth are the second lesson. The wing is the first. Take the charm and go stand somewhere with teeth in it. When a wild thing throws itself at somebody, beat it back. It only counts if the beast was actually mid-hunt and close enough to reach, a gust at empty air teaches nothing. Eight lunges turned aside, and no single beast counts more than twice."
+	desc = "Teeth are the second lesson. The wing is the first. Take the charm and go stand somewhere with teeth in it. When a wild thing throws itself at somebody, beat it back. It only counts if the beast was actually mid-hunt and close enough to reach, a gust at empty air teaches nothing. Four hunts turned aside, and no single beast counts more than twice."
 	/// Total lunges turned aside so far
 	var/parries = 0
 	/// Parries credited per beast (weakref -> count), capping repeat lessons
 	var/list/parries_per_menace = list()
 
 /datum/vestige_trial/wingbeat/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_gust_charm(get_turf(user)))
+	var/obj/item/vestige_gust_charm/charm = hand_over(user, new /obj/item/vestige_gust_charm(get_turf(user)))
+	charm.bound_mind = owner
 	to_chat(user, span_notice("The charm settles against your palm, and the air around your knuckles goes tight."))
 
 /datum/vestige_trial/wingbeat/get_progress_text()
@@ -821,11 +905,16 @@
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "gust_charm"
 	w_class = WEIGHT_CLASS_SMALL
+	var/datum/mind/bound_mind
 	COOLDOWN_DECLARE(gust_cooldown)
 
 /obj/item/vestige_gust_charm/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeeze it in your hand to beat one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. It only counts as a parry if the beast was wild, that close, and mid-lunge at a living person, and the same beast only counts [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
+	if(isliving(user))
+		for(var/mob/living/menace in view(7, user))
+			if(vestige_is_wild_quarry(menace, user))
+				. += span_notice("[menace]: [is_lunging_menace(menace, user) ? "actively hunting" : "not hunting a living person"], [get_dist(user, menace)] tiles away. The gust reaches two tiles.")
+	. += span_notice("Squeeze it in your hand to beat one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. It only counts as a parry if the beast was wild, that close, and actively hunting a living person, and the same beast only counts [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
 
 /obj/item/vestige_gust_charm/attack_self(mob/user, modifiers)
 	. = ..()
@@ -835,11 +924,19 @@
 		return
 	var/mob/living/keeper = user
 	var/datum/vestige_trial/wingbeat/trial = keeper.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || keeper.mind != bound_mind)
 		balloon_alert(keeper, "the charm hangs slack!")
 		return TRUE
 	if(!COOLDOWN_FINISHED(src, gust_cooldown))
 		balloon_alert(keeper, "the wing is still folding!")
+		return TRUE
+	var/ready = FALSE
+	for(var/mob/living/menace in view(VESTIGE_WINGBEAT_REACH, keeper))
+		if(is_lunging_menace(menace, keeper) && trial.parries_per_menace[WEAKREF(menace)] < VESTIGE_WINGBEAT_PARRIES_PER_MENACE)
+			ready = TRUE
+			break
+	if(!ready)
+		balloon_alert(keeper, "no uncapped hunter within two tiles!")
 		return TRUE
 	COOLDOWN_START(src, gust_cooldown, VESTIGE_WINGBEAT_COOLDOWN)
 	beat_wings(keeper)
@@ -854,7 +951,7 @@
 	playsound(keeper, 'sound/effects/gravhit.ogg', 70, TRUE)
 	new /obj/effect/temp_visual/circle_wave/vestige_wingbeat(get_turf(keeper))
 	var/list/parried = list()
-	for(var/mob/living/blown in range(VESTIGE_WINGBEAT_REACH, keeper))
+	for(var/mob/living/blown in view(VESTIGE_WINGBEAT_REACH, keeper))
 		if(blown == keeper || blown.stat == DEAD || HAS_TRAIT(blown, TRAIT_GODMODE))
 			continue
 		// Judge the lunge BEFORE the throw. The whole point is what they were doing when the wing met them

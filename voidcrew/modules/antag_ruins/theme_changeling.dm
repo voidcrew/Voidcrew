@@ -2,7 +2,7 @@
  * # The Chrysalis: changeling vestige
  *
  * A medical frigate the hive ate from the inside; what's left of the hive
- * still wants to hear new life. Trials revolve around birth and stolen faces;
+ * still wants to hear new life. Trials raise a feeder and borrow adaptive flesh;
  * boons are hive-flesh tricks reimplemented without the changeling datum
  * (cooldowns instead of a chem pool).
  */
@@ -39,183 +39,426 @@
 	exhausted_line = "We've folded everything we remember into you. There's nothing left."
 	remember_line = "New skin! Same song. We remember every note we taught you."
 
+// Both trials use fauna tissue, not a DNA datum that basic animals do not have.
+/proc/vestige_chrysalis_fauna(mob/living/beast, mob/living/keeper)
+	if(!isbasicmob(beast) || QDELETED(beast) || beast.mind || beast.client || beast.mob_size < MOB_SIZE_SMALL || beast.maxHealth < 25)
+		return FALSE
+	if(!(beast.mob_biotypes & MOB_ORGANIC) || HAS_TRAIT(beast, TRAIT_GODMODE) || HAS_TRAIT(beast, TRAIT_PACIFISM) || (keeper && beast.faction_check_atom(keeper)))
+		return FALSE
+	var/mob/living/basic/animal = beast
+	return animal.melee_damage_upper >= 10
+
+/proc/vestige_chrysalis_raw_tissue(obj/item/tissue)
+	return istype(tissue, /obj/item/food/meat/slab) || istype(tissue, /obj/item/food/fishmeat)
+
+/// Return one still-harvestable raw meat type. Empty butcher lists mean an exhausted corpse.
+/proc/vestige_chrysalis_meat(mob/living/beast)
+	for(var/result in beast.butcher_results)
+		if(beast.butcher_results[result] > 0 && (ispath(result, /obj/item/food/meat/slab) || ispath(result, /obj/item/food/fishmeat)))
+			return result
+	return null
+
+/proc/vestige_chrysalis_active(datum/vestige_trial/trial, mob/living/keeper)
+	return !QDELETED(trial) && !trial.fulfilled && !QDELETED(keeper) && keeper.stat == CONSCIOUS && trial.owner?.current == keeper && keeper.mind == trial.owner && keeper.mind.active_vestige_trial == trial
+
 // ===== TRIAL OF BIRTH =====
 
 /datum/vestige_trial/birth
 	name = "Trial of Birth"
-	desc = "Take the egg and plant it in the skull of a dead humanoid. Then guard the body for three minutes while the child wakes up. The corpse won't lie quietly about it."
-	/// Whether the egg has been sown and is incubating
-	var/incubating = FALSE
+	desc = "Plant the egg in a dead wild beast, at least carp-sized, with raw meat still in it. Raise the child by commanding it to bite dangerous living fauna: it needs forty points of real feeding damage. Recall it before it is overwhelmed; raw meat or fish heals it but does not make it grow. Bring the grown child beside you and use the egg to send it home."
+	var/obj/item/vestige_egg/egg
+	var/mob/living/basic/headslug/vestige_child/child
 
 /datum/vestige_trial/birth/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_egg(get_turf(user)))
-	to_chat(user, span_notice("The egg settles into your palm, warm and wrong."))
+	egg = hand_over(user, new /obj/item/vestige_egg(get_turf(user)))
+	egg.trial_ref = WEAKREF(src)
+	hand_over(user, new /obj/item/knife/kitchen(get_turf(user)))
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
+
+/datum/vestige_trial/birth/Destroy()
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	return ..()
+
+/datum/vestige_trial/birth/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	if(!QDELETED(child))
+		child.prey_ref = null
+		child.ai_controller.CancelActions()
 
 /datum/vestige_trial/birth/get_progress_text()
-	return incubating ? "The child is stirring. Guard the body until it wakes." : "The egg is asleep. It needs a cradle - the skull of a dead humanoid."
+	if(QDELETED(child) || child.stat == DEAD)
+		return "Plant the egg in a dead, dangerous NPC beast with unharvested raw meat. A lost kit can be restarted from this pact."
+	return "Child: [child.growth]/40 growth; [round(child.health)]/45 health. Egg on prey: attack. Use egg: recall, or send home when grown and beside you. Raw meat heals 25."
 
 /obj/item/vestige_egg
 	name = "chrysalis egg"
-	desc = "A glistening ovoid of meat that is only pretending to sleep."
+	desc = "A glistening ovoid of meat. Its empty shell becomes a voice the child obeys."
 	icon = 'icons/obj/medical/organs/organs.dmi'
 	icon_state = "innards"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Mind of whoever sowed the egg (credited when the child wakes)
-	var/datum/mind/sower
-	/// The corpse this egg is incubating in, once sown
-	var/mob/living/carbon/human/cradle
-	/// When the current sowing is due to hatch (stale timers from re-sowings check against this)
-	var/hatch_at = 0
+	var/datum/weakref/trial_ref
 
-/obj/item/vestige_egg/Destroy()
-	sower = null
-	cradle = null
-	return ..()
+/obj/item/vestige_egg/proc/get_trial(mob/living/user)
+	var/datum/vestige_trial/birth/trial = trial_ref?.resolve()
+	return vestige_chrysalis_active(trial, user) && trial.egg == src && user.is_holding(src) ? trial : null
 
 /obj/item/vestige_egg/examine(mob/user)
 	. = ..()
-	. += span_notice("Use it on a dead humanoid and it burrows in and starts waking up. It needs [DisplayTimeText(VESTIGE_EGG_INCUBATION)] in the body, and the body makes noise the whole time.")
+	. += span_notice("On an unbutchered wild carcass: hatch a child in five seconds, consuming one raw meat yield. On living prey within seven tiles: command an attack. Use in hand: recall; when fully grown and beside you, send it home. The child is fragile: 45 health, five damage per bite. It must deal forty real damage itself. Feed it raw meat or fish to heal 25; food grants no growth. The loaned knife can butcher carcasses in combat mode.")
 
 /obj/item/vestige_egg/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(!ishuman(target))
-		return ..()
-	if(target.stat != DEAD)
-		balloon_alert(user, "the cradle must be dead!")
+	var/datum/vestige_trial/birth/trial = get_trial(user)
+	if(!trial)
 		return
-	user.visible_message(
-		span_warning("[user] presses [src] against [target]'s head..."),
-		span_notice("You press [src] against [target]'s head and it begins to burrow."),
-	)
-	if(!do_after(user, 5 SECONDS, target = target))
+	if(!QDELETED(trial.child) && trial.child.stat != DEAD)
+		command_child(target, user)
 		return
-	if(target.stat != DEAD || !user.is_holding(src))
+	if(target.stat != DEAD || !vestige_chrysalis_fauna(target, user) || !vestige_chrysalis_meat(target))
+		balloon_alert(user, "needs a wild carcass with raw meat!")
+		return
+	balloon_alert(user, "planting the egg...")
+	if(!do_after(user, 5 SECONDS, target = target) || get_trial(user) != trial)
 		return
 	sow(target, user)
 
-/obj/item/vestige_egg/proc/sow(mob/living/carbon/human/target, mob/living/user)
-	sower = user?.mind
-	cradle = target
-	hatch_at = world.time + VESTIGE_EGG_INCUBATION
-	forceMove(target)
-	target.visible_message(span_danger("[src] burrows into [target]'s skull!"))
+/obj/item/vestige_egg/proc/sow(mob/living/target, mob/living/user)
+	var/datum/vestige_trial/birth/trial = get_trial(user)
+	if(!trial || (!QDELETED(trial.child) && trial.child.stat != DEAD) || !user.Adjacent(target) || target.stat != DEAD || !isturf(target.loc) || !vestige_chrysalis_fauna(target, user))
+		return FALSE
+	var/meat_type = vestige_chrysalis_meat(target)
+	if(!meat_type)
+		return FALSE
+	// Consume actual harvestable tissue, leaving the corpse and its other property intact.
+	target.butcher_results[meat_type]--
+	if(target.butcher_results[meat_type] <= 0)
+		target.butcher_results -= meat_type
+	// Previous dead children remain registered loans until the pact ends.
+	trial.child = trial.register_loan(new /mob/living/basic/headslug/vestige_child(get_turf(target)))
+	trial.child.trial_ref = WEAKREF(trial)
+	trial.child.faction |= REF(user)
+	target.visible_message(span_boldwarning("A hungry child tears free of [target]! The emptied egg squeals in [user]'s hand."))
 	playsound(target, 'sound/effects/magic/demon_consume.ogg', 40, TRUE)
-	var/datum/vestige_trial/birth/trial = get_sower_trial()
-	if(trial)
-		trial.incubating = TRUE
-		trial.refresh_tracker()
-	// The incubation is loud on purpose: warding the body IS the trial
-	addtimer(CALLBACK(src, PROC_REF(twitch)), VESTIGE_EGG_INCUBATION / 3)
-	addtimer(CALLBACK(src, PROC_REF(twitch)), (VESTIGE_EGG_INCUBATION / 3) * 2)
-	addtimer(CALLBACK(src, PROC_REF(hatch)), VESTIGE_EGG_INCUBATION)
+	trial.refresh_tracker()
+	return TRUE
 
-/obj/item/vestige_egg/proc/twitch()
-	if(cradle && loc == cradle)
-		cradle.visible_message(span_warning("[cradle] twitches."))
+/obj/item/vestige_egg/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with))
+		return NONE
+	command_child(interacting_with, user)
+	return ITEM_INTERACT_BLOCKING
 
-/obj/item/vestige_egg/proc/hatch()
-	if(QDELETED(src) || world.time < hatch_at)
+/obj/item/vestige_egg/proc/command_child(mob/living/prey, mob/living/user)
+	var/datum/vestige_trial/birth/trial = get_trial(user)
+	var/mob/living/basic/headslug/vestige_child/child = trial?.child
+	if(QDELETED(child) || child.stat != CONSCIOUS)
+		return FALSE
+	if(prey.stat != CONSCIOUS || !vestige_chrysalis_fauna(prey, user) || !(prey in view(7, user)) || !(child in view(7, user)))
+		balloon_alert(user, "child and wild prey must be in sight!")
+		return FALSE
+	child.prey_ref = WEAKREF(prey)
+	child.ai_controller.CancelActions()
+	balloon_alert(user, "child: hunt [prey]")
+	return TRUE
+
+/obj/item/vestige_egg/attack_self(mob/living/user)
+	var/datum/vestige_trial/birth/trial = get_trial(user)
+	var/mob/living/basic/headslug/vestige_child/child = trial?.child
+	if(QDELETED(child) || child.stat != CONSCIOUS)
+		balloon_alert(user, "plant in a wild carcass")
 		return
-	// Pulled from its cradle mid-incubation: goes dormant, can be re-sown
-	if(!cradle || QDELETED(cradle) || loc != cradle)
-		visible_message(span_warning("[src] shudders once and goes still."))
-		var/datum/vestige_trial/birth/cold_trial = get_sower_trial()
-		if(cold_trial)
-			cold_trial.incubating = FALSE
-			cold_trial.refresh_tracker()
-		cradle = null
-		return
-	var/turf/burst_turf = get_turf(cradle)
-	cradle.visible_message(span_bolddanger("[cradle]'s skull splits open and something slick pulls itself out!"))
-	playsound(burst_turf, 'sound/effects/magic/demon_consume.ogg', 60, TRUE)
-	cradle.apply_damage(60, BRUTE, BODY_ZONE_HEAD)
-	forceMove(burst_turf)
-	new /mob/living/basic/headslug(burst_turf)
-	var/datum/vestige_trial/birth/trial = get_sower_trial()
-	if(trial)
+	child.prey_ref = null
+	child.ai_controller.CancelActions()
+	if(child.growth >= 40 && user.Adjacent(child))
+		child.visible_message(span_boldnotice("[child] unfolds its new limbs, then slips away into a seam in the flesh of the world."))
 		trial.complete()
-	qdel(src)
+		return
+	balloon_alert(user, "child: return ([round(child.health)] health)")
 
-/// The sower's active birth trial, if they still have one
-/obj/item/vestige_egg/proc/get_sower_trial()
-	var/datum/vestige_trial/birth/trial = sower?.active_vestige_trial
-	if(istype(trial))
-		return trial
-	return null
+/mob/living/basic/headslug/vestige_child
+	name = "hungry chrysalis child"
+	desc = "An unfinished creature learning how to feed. Its keeper's egg directs it."
+	health = 45
+	maxHealth = 45
+	melee_damage_lower = 5
+	melee_damage_upper = 5
+	melee_attack_cooldown = 1.5 SECONDS
+	egg_lain = TRUE
+	sentience_type = NONE
+	butcher_results = null
+	guaranteed_butcher_results = null
+	habitable_atmos = null
+	minimum_survivable_temperature = 0
+	maximum_survivable_temperature = 500
+	faction = list("vestige_chrysalis_child")
+	ai_controller = /datum/ai_controller/basic_controller/vestige_child
+	var/datum/weakref/trial_ref
+	var/datum/weakref/prey_ref
+	var/growth = 0
+
+/mob/living/basic/headslug/vestige_child/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
+	REMOVE_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)
+	UnregisterSignal(src, COMSIG_HOSTILE_POST_ATTACKINGTARGET)
+
+/mob/living/basic/headslug/vestige_child/proc/get_trial()
+	var/datum/vestige_trial/birth/trial = trial_ref?.resolve()
+	return !mind && !client && !QDELETED(trial) && trial.child == src && vestige_chrysalis_active(trial, trial.owner?.current) ? trial : null
+
+/mob/living/basic/headslug/vestige_child/examine(mob/user)
+	. = ..()
+	. += span_notice("[growth]/40 growth; [round(health)]/45 health. Feed raw meat or fish to heal; use the egg to attack or recall.")
+
+/mob/living/basic/headslug/vestige_child/early_melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
+	if(!isliving(target))
+		return FALSE
+	var/mob/living/beast = target
+	var/datum/vestige_trial/birth/trial = get_trial()
+	var/mob/living/keeper = trial?.owner?.current
+	if(!trial || stat != CONSCIOUS || growth >= 40 || target != prey_ref?.resolve() || beast.stat != CONSCIOUS || !Adjacent(target) || !(src in view(7, keeper)) || !vestige_chrysalis_fauna(target, keeper))
+		return FALSE
+	return ..()
+
+/mob/living/basic/headslug/vestige_child/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
+	if(!isliving(target))
+		return FALSE
+	var/mob/living/beast = target
+	var/before = beast.health
+	. = ..()
+	var/datum/vestige_trial/birth/trial = get_trial()
+	if(!. || !trial || QDELETED(target))
+		return .
+	var/consumed = min(5, max(0, before), max(0, before - beast.health))
+	growth = min(40, growth + consumed)
+	if(consumed)
+		trial.refresh_tracker()
+	if(growth >= 40)
+		prey_ref = null
+		balloon_alert(trial.owner.current, "child grown: recall it")
+
+/mob/living/basic/headslug/vestige_child/attackby(obj/item/food, mob/living/user, list/modifiers, list/attack_modifiers)
+	if(!vestige_chrysalis_raw_tissue(food))
+		return ..()
+	var/datum/vestige_trial/birth/trial = get_trial()
+	if(!trial || user != trial.owner.current || stat != CONSCIOUS || health >= maxHealth)
+		return
+	if(!do_after(user, 2 SECONDS, target = src) || get_trial() != trial || !user.is_holding(food) || QDELETED(food) || stat != CONSCIOUS)
+		return
+	nourish(food, user)
+
+/mob/living/basic/headslug/vestige_child/proc/nourish(obj/item/food, mob/living/user)
+	var/datum/vestige_trial/birth/trial = get_trial()
+	if(!trial || user != trial.owner.current || stat != CONSCIOUS || health >= maxHealth || !user.Adjacent(src) || !user.is_holding(food) || !vestige_chrysalis_raw_tissue(food))
+		return FALSE
+	qdel(food)
+	adjust_health(-25)
+	trial.refresh_tracker()
+	balloon_alert(user, "fed: [round(health)] health")
+	return TRUE
+
+/datum/ai_controller/basic_controller/vestige_child
+	blackboard = list(BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic, BB_TARGET_MINIMUM_STAT = CONSCIOUS)
+	ai_movement = /datum/ai_movement/basic_avoidance
+	planning_subtrees = list(/datum/ai_planning_subtree/vestige_child)
+
+/datum/ai_planning_subtree/vestige_child/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/basic/headslug/vestige_child/child = controller.pawn
+	var/datum/vestige_trial/birth/trial = child.get_trial()
+	if(!trial)
+		controller.CancelActions()
+		return SUBTREE_RETURN_FINISH_PLANNING
+	var/mob/living/keeper = trial.owner.current
+	var/mob/living/prey = child.prey_ref?.resolve()
+	if(prey && prey.stat == CONSCIOUS && child.growth < 40 && (child in view(7, keeper)) && (prey in view(7, keeper)) && vestige_chrysalis_fauna(prey, keeper))
+		controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, prey)
+		controller.queue_behavior(/datum/ai_behavior/basic_melee_attack, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY)
+	else
+		child.prey_ref = null
+		controller.set_blackboard_key(BB_CURRENT_PET_TARGET, keeper)
+		controller.queue_behavior(/datum/ai_behavior/pet_follow_friend, BB_CURRENT_PET_TARGET)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
 // ===== TRIAL OF FACES =====
 
 /datum/vestige_trial/faces
 	name = "Trial of Faces"
-	// Keep the numbers in sync with VESTIGE_FACES_SAMPLES_NEEDED / _LIVING_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Our proboscis, on loan. Let it taste five different faces, at least two of them still alive. The dead hold still. The living remember you."
-	/// Assoc list of unique enzymes already tasted
-	var/list/sampled = list()
-	/// How many samples came from living targets
-	var/living_samples = 0
-	/// The loaned kit item, reclaimed (deleted) the moment the pact ends
+	desc = "Taste the tissue of one dead wild beast with raw meat still in it. Borrow its carapace: use the proboscis to brace for one real bite, then move at least two tiles from where you caught it and lash that same living attacker within eight seconds. Assimilate forty points of living tissue this way. The two-second brace roots you and blocks only one basic-fauna melee strike; other attacks still hurt."
 	var/obj/item/vestige_proboscis/proboscis
+	var/sampled = FALSE
+	var/assimilated = 0
 
 /datum/vestige_trial/faces/on_accepted(mob/living/user)
 	proboscis = hand_over(user, new /obj/item/vestige_proboscis(get_turf(user)))
+	proboscis.trial_ref = WEAKREF(src)
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
 
 /datum/vestige_trial/faces/Destroy()
-	QDEL_NULL(proboscis)
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	proboscis?.clear_adaptation()
 	return ..()
 
-/datum/vestige_trial/faces/get_progress_text()
-	return "[length(sampled)]/[VESTIGE_FACES_SAMPLES_NEEDED] faces tasted; [min(living_samples, VESTIGE_FACES_LIVING_NEEDED)]/[VESTIGE_FACES_LIVING_NEEDED] living."
+/datum/vestige_trial/faces/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	proboscis?.clear_adaptation()
 
-/// Returns TRUE if this was a new face. May complete (and delete) the trial.
-/datum/vestige_trial/faces/proc/add_sample(mob/living/carbon/human/target)
-	var/key = target.dna?.unique_enzymes
-	if(!key || sampled[key])
-		return FALSE
-	sampled[key] = TRUE
-	if(target.stat != DEAD)
-		living_samples++
-	refresh_tracker()
-	if(length(sampled) >= VESTIGE_FACES_SAMPLES_NEEDED && living_samples >= VESTIGE_FACES_LIVING_NEEDED)
-		complete()
-	return TRUE
+/datum/vestige_trial/faces/get_progress_text()
+	return sampled ? "[assimilated]/40 tissue assimilated. Brace for one bite, move two tiles away from the impact, then lash that attacker within eight seconds. Examine the proboscis for readiness." : "Sample an unbutchered dead wild beast, at least carp-sized. No human DNA is required."
 
 /obj/item/vestige_proboscis
 	name = "borrowed proboscis"
-	desc = "A coil of somebody else's flesh that twitches toward faces."
+	desc = "A coil of flesh that can unfold as a shell or a hungry tendon."
 	icon = 'icons/obj/weapons/changeling_items.dmi'
 	icon_state = "tentacle"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
+	var/datum/weakref/trial_ref
+	var/datum/weakref/attacker_ref
+	var/datum/weakref/body_ref
+	var/turf/impact_turf
+	var/counter_until = 0
+	var/brace_ready_at = 0
+	var/datum/status_effect/vestige_chrysalis_brace/brace
+
+/obj/item/vestige_proboscis/Destroy()
+	clear_adaptation()
+	return ..()
+
+/obj/item/vestige_proboscis/dropped(mob/user, silent = FALSE)
+	clear_adaptation()
+	return ..()
+
+/obj/item/vestige_proboscis/proc/get_trial(mob/living/user)
+	var/datum/vestige_trial/faces/trial = trial_ref?.resolve()
+	return vestige_chrysalis_active(trial, user) && trial.proboscis == src && user.is_holding(src) ? trial : null
+
+/obj/item/vestige_proboscis/proc/clear_adaptation()
+	var/mob/living/body = body_ref?.resolve()
+	if(body)
+		UnregisterSignal(body, COMSIG_LIVING_DEATH)
+	QDEL_NULL(brace)
+	attacker_ref = null
+	body_ref = null
+	impact_turf = null
+	counter_until = 0
+
+/obj/item/vestige_proboscis/examine(mob/user)
+	. = ..()
+	. += span_notice("Sample a dead wild animal with raw meat. Use in hand to brace for two seconds (rooted, one bite blocked, five-second cooldown). After a block, move at least two tiles from the impact and lash the same live attacker within eight seconds, from one to four tiles away. Each lash deals up to twenty brute; only actual living tissue lost counts. Dropping this organ or changing bodies sheds the adaptation.")
+	if(brace)
+		. += span_notice("Carapace braced: waiting for one real fauna bite.")
+	else if(world.time < counter_until)
+		. += span_notice("Tendon ready for [attacker_ref?.resolve()]: [DisplayTimeText(counter_until - world.time)] remains. Move two tiles from the impact before lashing.")
+	else
+		. += span_notice(world.time < brace_ready_at ? "Carapace regrowing: [DisplayTimeText(brace_ready_at - world.time)]." : "Carapace ready.")
 
 /obj/item/vestige_proboscis/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(!ishuman(target))
-		return ..()
-	var/datum/vestige_trial/faces/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "it lies limp in your grip!")
+	var/datum/vestige_trial/faces/trial = get_trial(user)
+	if(!trial)
 		return
-	var/mob/living/carbon/human/victim = target
-	// The living get counterplay: a visible channel before the taste lands
-	if(victim.stat != DEAD)
-		to_chat(victim, span_userdanger("[user] presses something fleshy against your skin!"))
-	if(!do_after(user, 2 SECONDS, target = victim))
+	if(trial.sampled)
+		counter_lash(target, user)
 		return
-	if(!user.is_holding(src))
+	if(target.stat != DEAD || !vestige_chrysalis_fauna(target, user) || !vestige_chrysalis_meat(target))
+		balloon_alert(user, "needs wild corpse tissue!")
 		return
-	// Re-resolve; the pact may have been renounced mid-channel
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "it lies limp in your grip!")
+	if(!do_after(user, 3 SECONDS, target = target) || get_trial(user) != trial || !vestige_chrysalis_fauna(target, user) || target.stat != DEAD || !vestige_chrysalis_meat(target))
 		return
-	var/was_alive = victim.stat != DEAD
-	if(!trial.add_sample(victim))
-		balloon_alert(user, "already tasted!")
-		return
-	balloon_alert(user, "tasted")
-	playsound(src, 'sound/effects/magic/enter_blood.ogg', 30, TRUE)
-	if(was_alive)
-		victim.apply_damage(10, STAMINA)
-		to_chat(victim, span_danger("A needle-sharp sting! Something just took a taste of you."))
+	trial.sampled = TRUE
+	trial.refresh_tracker()
+	balloon_alert(user, "tissue learned: brace in hand")
+
+/obj/item/vestige_proboscis/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with))
+		return NONE
+	counter_lash(interacting_with, user)
+	return ITEM_INTERACT_BLOCKING
+
+/obj/item/vestige_proboscis/attack_self(mob/living/user)
+	begin_brace(user)
+
+/obj/item/vestige_proboscis/proc/begin_brace(mob/living/user)
+	var/datum/vestige_trial/faces/trial = get_trial(user)
+	if(!trial?.sampled || world.time < brace_ready_at || brace)
+		balloon_alert(user, "sample tissue; examine for readiness")
+		return FALSE
+	clear_adaptation()
+	body_ref = WEAKREF(user)
+	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death))
+	brace_ready_at = world.time + 5 SECONDS
+	brace = user.apply_status_effect(/datum/status_effect/vestige_chrysalis_brace, src)
+	balloon_alert(user, "carapace braced for two seconds")
+	return !!brace
+
+/obj/item/vestige_proboscis/proc/on_wearer_death(mob/living/source)
+	SIGNAL_HANDLER
+	clear_adaptation()
+
+/obj/item/vestige_proboscis/proc/catch_bite(mob/living/user, mob/living/basic/attacker)
+	if(!get_trial(user) || body_ref?.resolve() != user || !brace || !user.Adjacent(attacker) || attacker.stat != CONSCIOUS || !vestige_chrysalis_fauna(attacker, user))
+		return FALSE
+	attacker_ref = WEAKREF(attacker)
+	impact_turf = get_turf(user)
+	counter_until = world.time + 8 SECONDS
+	QDEL_NULL(brace)
+	user.visible_message(span_warning("[user]'s borrowed shell catches [attacker]'s bite and splits into a whipping tendon!"))
+	balloon_alert(user, "move two tiles, then lash [attacker]!")
+	return TRUE
+
+/obj/item/vestige_proboscis/proc/counter_lash(mob/living/target, mob/living/user)
+	var/datum/vestige_trial/faces/trial = get_trial(user)
+	if(!trial || body_ref?.resolve() != user || target != attacker_ref?.resolve() || world.time >= counter_until)
+		balloon_alert(user, "catch a bite from this beast first!")
+		return FALSE
+	if(target.stat != CONSCIOUS || !vestige_chrysalis_fauna(target, user) || !isturf(user.loc) || !impact_turf || user.z != impact_turf.z || get_dist(user, impact_turf) < 2 || get_dist(user, target) > 4 || !(target in view(4, user)))
+		balloon_alert(user, "move two tiles; keep live prey in reach!")
+		return FALSE
+	var/before = target.health
+	clear_adaptation()
+	user.do_attack_animation(target, ATTACK_EFFECT_BITE)
+	target.apply_damage(20, BRUTE)
+	if(QDELETED(target) || get_trial(user) != trial)
+		return FALSE
+	var/tissue = min(20, max(0, before), max(0, before - target.health))
+	trial.assimilated += tissue
+	balloon_alert(user, "[tissue] tissue assimilated")
+	trial.refresh_tracker()
+	if(trial.assimilated >= 40)
+		trial.complete()
+	return tissue > 0
+
+/datum/status_effect/vestige_chrysalis_brace
+	id = "vestige_chrysalis_brace"
+	duration = 2 SECONDS
+	tick_interval = 0.2 SECONDS
+	alert_type = null
+	var/datum/weakref/organ_ref
+
+/datum/status_effect/vestige_chrysalis_brace/on_creation(mob/living/new_owner, obj/item/vestige_proboscis/organ)
+	organ_ref = WEAKREF(organ)
+	return ..()
+
+/datum/status_effect/vestige_chrysalis_brace/on_apply()
+	ADD_TRAIT(owner, TRAIT_IMMOBILIZED, TRAIT_STATUS_EFFECT(id))
+	RegisterSignal(owner, COMSIG_ATOM_ATTACK_BASIC_MOB, PROC_REF(on_bite))
+	return TRUE
+
+/datum/status_effect/vestige_chrysalis_brace/tick(seconds_between_ticks)
+	var/obj/item/vestige_proboscis/organ = organ_ref?.resolve()
+	if(!organ?.get_trial(owner))
+		qdel(src)
+
+/datum/status_effect/vestige_chrysalis_brace/proc/on_bite(mob/living/source, mob/living/basic/attacker)
+	SIGNAL_HANDLER
+	var/obj/item/vestige_proboscis/organ = organ_ref?.resolve()
+	if(organ?.catch_bite(source, attacker))
+		return COMSIG_BASIC_ATTACK_CANCEL_CHAIN
+
+/datum/status_effect/vestige_chrysalis_brace/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_IMMOBILIZED, TRAIT_STATUS_EFFECT(id))
+	UnregisterSignal(owner, COMSIG_ATOM_ATTACK_BASIC_MOB)
+	var/obj/item/vestige_proboscis/organ = organ_ref?.resolve()
+	if(organ?.brace == src)
+		organ.brace = null
 
 // ===== BOONS =====
 

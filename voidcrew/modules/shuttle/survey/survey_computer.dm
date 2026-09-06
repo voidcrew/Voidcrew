@@ -163,7 +163,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
 	var/obj/structure/overmap/object = get_current_celestial_object()
-	if(!object)
+	if(!object || !data || !is_object_surveyed(object))
 		return
 	data.update_survey_data(object)
 	update_static_data_for_all_viewers()
@@ -449,7 +449,7 @@
 	return "unsurveyed"
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user, target_ref)
-	if(survey_in_progress)
+	if(survey_in_progress || !data)
 		return
 	var/obj/structure/overmap/current_object
 	if(target_ref)
@@ -480,6 +480,10 @@
 			balloon_alert(user, "no surveyable celestial object found")
 		return
 
+	if(is_object_surveyed(current_object))
+		balloon_alert(user, "already surveyed")
+		return
+
 	soundloop.start()
 	survey_in_progress = TRUE
 	current_survey_target = current_object
@@ -497,21 +501,27 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/on_survey_planet_loaded(datum/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_VOIDCREW_PLANET_LOADED)
+	if(!survey_in_progress || current_survey_target != source)
+		return
 	// Hop out of signal context via timer so completion shares the normal cancel path
 	survey_timer = addtimer(CALLBACK(src, PROC_REF(complete_survey), source), 1, TIMER_STOPPABLE)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/complete_survey(obj/structure/overmap/object)
+	// A stale callback must neither pay again nor cancel a newer survey.
+	if(!survey_in_progress || current_survey_target != object)
+		return
 	soundloop.stop()
 	survey_in_progress = FALSE
 	survey_timer = null
 	current_survey_target = null
-	if(QDELETED(object))
+	if(QDELETED(object) || !data || !(object in get_survey_candidates()) || is_object_surveyed(object))
 		return
 	var/list/values = get_survey_value(object)
 	if(values)
 		banked_points += values["points"]
 		banked_cash += values["cash"]
 	data.update_survey_data(object)
+	object.surveyed = TRUE
 	update_static_data_for_all_viewers()
 
 	// Send signal to ship for mission tracking

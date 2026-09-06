@@ -12,11 +12,6 @@
  * heretic datum (the rusted grasp; see each spell's doc comment).
  */
 
-// Tuning constants for the Scrivener's trials (file-local, #undef at bottom).
-// The Rite of Rust's knob (VESTIGE_RUST_TURFS_NEEDED) lives in the shared defines.
-/// Distinct locked doors the Rite of Transcription demands
-#define VESTIGE_TRANSCRIBE_SENTENCES_NEEDED 6
-
 // ===== PATRON =====
 
 /mob/living/basic/vestige_patron/scrivener
@@ -57,24 +52,87 @@
 
 /datum/vestige_trial/rite_of_rust
 	name = "Rite of Rust"
-	// Keep the count in sync with VESTIGE_RUST_TURFS_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the chrism and rust twenty surfaces with it. Walls, floors, anyone's - I don't care whose."
-	/// Surfaces successfully rusted so far
-	var/turfs_rusted = 0
+	desc = "Set the threshold weight beside an ordinary iron wall with clear floor beyond. Anoint the wall twice to dissolve it: this releases a rust guardian. Pull the weight through that exact breach, protect it, and rebuild the wall behind it with the supplied iron and welder. Recover the weight on the far side of the sealed wall to finish. You may fight the guardian or outbuild it. Build an internal test wall first if your ship has no suitable safe breach."
+	var/obj/item/vestige_threshold_weight/weight
+	var/turf/passage
+	var/turf/destination
+	var/opened = FALSE
+	var/crossed = FALSE
+	var/turf/starting_side
+	var/mob/living/basic/hivebot/vestige_threshold_guardian/guardian
 
 /datum/vestige_trial/rite_of_rust/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_chrism(get_turf(user)))
+	weight = hand_over(user, new /obj/item/vestige_threshold_weight(get_turf(user)))
+	weight.keeper = owner
+	hand_over(user, new /obj/item/stack/sheet/iron(get_turf(user), 10))
+	hand_over(user, new /obj/item/weldingtool(get_turf(user)))
+
+/datum/vestige_trial/rite_of_rust/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(guardian)
+	return ..()
 
 /datum/vestige_trial/rite_of_rust/get_progress_text()
-	return "Surfaces rusted: [turfs_rusted] of [VESTIGE_RUST_TURFS_NEEDED]."
+	return opened ? "Protect the weight, pull it through the breach, and rebuild the wall behind it. Passage crossed: [crossed ? "yes" : "no"]. Recover it on the far side." : "Place the threshold weight beside an iron wall, then anoint that wall twice. Ready a weapon and building materials first."
 
 /// May complete (and delete) the trial
-/datum/vestige_trial/rite_of_rust/proc/anoint()
-	turfs_rusted++
-	refresh_tracker()
-	if(turfs_rusted >= VESTIGE_RUST_TURFS_NEEDED)
-		complete()
+/datum/vestige_trial/rite_of_rust/proc/choose_wall(turf/closed/wall/wall)
+	if(wall.type != /turf/closed/wall || !isturf(weight?.loc) || get_dist(weight, wall) != 1)
+		return FALSE
+	if(weight.x != wall.x && weight.y != wall.y)
+		return FALSE
+	var/turf/far_side = get_step(wall, get_dir(weight, wall))
+	if(!isopenturf(far_side) || isspaceturf(far_side) || far_side.is_blocked_turf(exclude_mobs = TRUE))
+		return FALSE
+	passage = wall
+	destination = far_side
+	starting_side = get_turf(weight)
+	return TRUE
+
+/datum/vestige_trial/rite_of_rust/process(seconds_per_tick)
+	if(!opened || !crossed || !weight || get_turf(weight) != destination || !isturf(weight.loc) || !istype(passage, /turf/closed/wall))
+		return
+	complete()
+
+/datum/vestige_trial/rite_of_rust/proc/release_guardian()
+	guardian = new(starting_side)
+	guardian.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, weight)
+
+/obj/item/vestige_threshold_weight
+	name = "threshold weight"
+	desc = "Drop it beside an iron wall, dissolve the wall, pull the weight through the breach, and rebuild the wall behind it. The released guardian wants the weight."
+	icon = 'icons/obj/ore.dmi'
+	icon_state = "iron"
+	w_class = WEIGHT_CLASS_BULKY
+	max_integrity = 120
+	var/datum/mind/keeper
+
+/obj/item/vestige_threshold_weight/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
+	. = ..()
+	var/datum/vestige_trial/rite_of_rust/trial = keeper?.active_vestige_trial
+	if(istype(trial) && trial.weight == src && trial.opened && old_loc == trial.passage && loc == trial.destination)
+		trial.crossed = TRUE
+		trial.refresh_tracker()
+
+/mob/living/basic/hivebot/vestige_threshold_guardian
+	name = "threshold guardian"
+	desc = "The door's answer, pursuing the stolen iron. Seal the breach after getting the weight through."
+	health = 65
+	maxHealth = 65
+	melee_damage_lower = 8
+	melee_damage_upper = 8
+	obj_damage = 12
+	melee_attack_cooldown = 2 SECONDS
+	ai_controller = /datum/ai_controller/basic_controller/hivebot/vestige_threshold_guardian
+
+/datum/ai_controller/basic_controller/hivebot/vestige_threshold_guardian
+	blackboard = list(BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/vestige_threshold_guardian)
+
+/datum/targeting_strategy/basic/vestige_threshold_guardian/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+	if(istype(the_target, /obj/item/vestige_threshold_weight))
+		return !QDELETED(the_target) && living_mob.z == the_target.z && (!vision_range || get_dist(living_mob, the_target) <= vision_range)
+	return ..()
 
 /obj/item/vestige_chrism
 	name = "corroding chrism"
@@ -85,17 +143,19 @@
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/vestige_chrism/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!isturf(interacting_with))
+	var/datum/vestige_trial/rite_of_rust/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.opened || !istype(interacting_with, /turf/closed/wall))
 		return NONE
-	if(HAS_TRAIT(interacting_with, TRAIT_RUSTY))
-		balloon_alert(user, "already read!")
+	if(trial.passage != interacting_with && !trial.choose_wall(interacting_with))
+		balloon_alert(user, "weight beside wall, clear floor beyond!")
 		return ITEM_INTERACT_BLOCKING
 	balloon_alert(user, "anointing...")
 	if(!do_after(user, 2 SECONDS, interacting_with))
 		return ITEM_INTERACT_BLOCKING
+	if(user.mind?.active_vestige_trial != trial || !user.is_holding(src))
+		return ITEM_INTERACT_BLOCKING
 	interacting_with.rust_heretic_act()
-	// Some turfs refuse the element (space, already-special turfs), only credit a real conversion
-	if(!HAS_TRAIT(interacting_with, TRAIT_RUSTY))
+	if(!isopenturf(trial.passage) && !HAS_TRAIT(interacting_with, TRAIT_RUSTY))
 		balloon_alert(user, "it won't take!")
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
@@ -103,37 +163,100 @@
 		span_notice("You smear the chrism across [interacting_with] and watch the rust take hold."),
 	)
 	playsound(interacting_with, 'sound/effects/magic/curse.ogg', 25, TRUE)
-	var/datum/vestige_trial/rite_of_rust/trial = user.mind?.active_vestige_trial
-	if(istype(trial))
-		trial.anoint()
+	if(isopenturf(trial.passage))
+		trial.opened = TRUE
+		trial.release_guardian()
+		START_PROCESSING(SSobj, trial)
+	trial.refresh_tracker()
 	return ITEM_INTERACT_SUCCESS
 
 // ===== RITE OF TRANSCRIPTION =====
 
 /datum/vestige_trial/rite_of_transcription
 	name = "Rite of Transcription"
-	// Keep the count in sync with VESTIGE_TRANSCRIBE_SENTENCES_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the quill. Find six doors locked against you - bolted, or needing access you don't have - and hold it to each one until it finishes writing. Watch yourself: a door worth locking usually belongs to someone."
-	/// Doors already transcribed (weakref -> TRUE), so no door is read twice
-	var/list/transcribed = list()
+	desc = "Read a closed airlock that is bolted or denies your actual ID. Use engineering to make it pryable, then successfully crowbar it open, walk through its tile, and shut and transcribe it from the opposite side. It must again deny your ID or be bolted when you finish. Your own ship's bolted airlock is valid, but remote toggling alone does not count: the quill witnesses a real manual breach. The tools are supplied."
+	var/obj/machinery/door/airlock/threshold
+	var/turf/approach
+	var/crossed = FALSE
+	var/mob/living/walker
+	var/breached = FALSE
+	var/pry_until = 0
+	var/datum/weakref/prying_tool
 
 /datum/vestige_trial/rite_of_transcription/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_quill(get_turf(user)))
+	hand_over(user, new /obj/item/storage/toolbox/mechanical(get_turf(user)))
+	hand_over(user, new /obj/item/multitool(get_turf(user)))
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
+	bind_walker(user)
 	to_chat(user, span_notice("The quill settles between your fingers, nib first."))
 
+/datum/vestige_trial/rite_of_transcription/Destroy()
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	bind_walker(null)
+	if(threshold)
+		UnregisterSignal(threshold, list(COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR), COMSIG_AIRLOCK_OPEN))
+	return ..()
+
+/datum/vestige_trial/rite_of_transcription/proc/bind_walker(mob/living/user)
+	if(walker)
+		UnregisterSignal(walker, COMSIG_MOVABLE_MOVED)
+	walker = user
+	if(walker)
+		RegisterSignal(walker, COMSIG_MOVABLE_MOVED, PROC_REF(on_walked))
+
+/datum/vestige_trial/rite_of_transcription/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	bind_walker(owner?.current)
+	pry_until = 0
+	prying_tool = null
+
+/// Listen to the successful result of an actual pry attempt, not to panel toggles or failed tool clicks.
+/datum/vestige_trial/rite_of_transcription/proc/on_prying(atom/source, mob/living/user, obj/item/tool, list/recipes)
+	SIGNAL_HANDLER
+	if(user != owner?.current || !threshold.density || threshold.operating || threshold.locked || threshold.welded || threshold.seal)
+		return
+	var/obj/item/crowbar/crowbar = tool
+	if(threshold.hasPower() && (!istype(crowbar) || !crowbar.force_opens))
+		return
+	pry_until = world.time + 6 SECONDS
+	prying_tool = WEAKREF(tool)
+
+/datum/vestige_trial/rite_of_transcription/proc/on_pried(obj/machinery/door/airlock/source, forced)
+	SIGNAL_HANDLER
+	var/mob/living/user = owner?.current
+	if(forced == BYPASS_DOOR_CHECKS && world.time <= pry_until && user?.is_holding(prying_tool?.resolve()))
+		breached = TRUE
+		refresh_tracker()
+	pry_until = 0
+	prying_tool = null
+
+/datum/vestige_trial/rite_of_transcription/proc/on_walked(mob/living/source)
+	SIGNAL_HANDLER
+	if(source == owner?.current && threshold && breached && !threshold.density && get_turf(source) == get_turf(threshold))
+		crossed = TRUE
+		refresh_tracker()
+
 /datum/vestige_trial/rite_of_transcription/get_progress_text()
-	return "Doors transcribed: [length(transcribed)] of [VESTIGE_TRANSCRIBE_SENTENCES_NEEDED]."
+	return threshold ? "Pry open [threshold], cross it, then shut and read it from the opposite side. Manual breach: [breached ? "yes" : "no"]. Crossing: [crossed ? "yes" : "no"]." : "Read a bolted airlock or one that denies your ID from an adjacent cardinal tile."
 
 /// May complete (and delete) the trial. Returns FALSE if this door was already transcribed.
-/datum/vestige_trial/rite_of_transcription/proc/transcribe(obj/machinery/door/door)
-	var/datum/weakref/key = WEAKREF(door)
-	if(transcribed[key])
+/datum/vestige_trial/rite_of_transcription/proc/transcribe(obj/machinery/door/airlock/door, mob/living/user)
+	var/turf/here = get_turf(user)
+	if(get_dist(here, door) != 1 || (here.x != door.x && here.y != door.y))
 		return FALSE
-	transcribed[key] = TRUE
-	refresh_tracker()
-	if(length(transcribed) >= VESTIGE_TRANSCRIBE_SENTENCES_NEEDED)
-		complete()
+	if(!threshold || QDELETED(threshold))
+		threshold = door
+		RegisterSignal(threshold, COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR), PROC_REF(on_prying))
+		RegisterSignal(threshold, COMSIG_AIRLOCK_OPEN, PROC_REF(on_pried))
+		approach = here
+		crossed = FALSE
+		breached = FALSE
+		refresh_tracker()
+		return TRUE
+	if(door != threshold || !crossed || get_dir(door, here) != turn(get_dir(door, approach), 180))
+		return FALSE
+	complete()
 	return TRUE
 
 /obj/item/vestige_quill
@@ -146,10 +269,10 @@
 
 /obj/item/vestige_quill/examine(mob/user)
 	. = ..()
-	. += span_notice("Hold it against a door that is locked against you - bolted, or behind an access check - and it copies the door down. Open doors and unrestricted doors have nothing to say.")
+	. += span_notice("Read a shut airlock that is bolted or denies your ID, engineer a successful crowbar opening and cross it, then close and read it from the opposite side. Stand directly north, south, east or west when reading.")
 
 /obj/item/vestige_quill/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!istype(interacting_with, /obj/machinery/door))
+	if(!istype(interacting_with, /obj/machinery/door/airlock))
 		return NONE
 	var/obj/machinery/door/door = interacting_with
 	var/datum/vestige_trial/rite_of_transcription/trial = user.mind?.active_vestige_trial
@@ -160,10 +283,7 @@
 	if(istype(get_area(door), /area/ruin/space/has_grav/vestige))
 		balloon_alert(user, "these doors don't count!")
 		return ITEM_INTERACT_BLOCKING
-	if(trial.transcribed[WEAKREF(door)])
-		balloon_alert(user, "already transcribed!")
-		return ITEM_INTERACT_BLOCKING
-	if(!has_sentence(door))
+	if(!has_sentence(door, user))
 		balloon_alert(user, "no lock, nothing to write!")
 		return ITEM_INTERACT_BLOCKING
 	// The reading is public: a stranger tracing a guarded door's seams looks exactly like what it is
@@ -174,16 +294,14 @@
 	playsound(door, 'sound/effects/page_turn/pageturn1.ogg', 40, TRUE)
 	if(!do_after(user, 5 SECONDS, door)) // long enough for the door's keepers to take issue
 		return ITEM_INTERACT_BLOCKING
-	// Re-resolve; the pact may have been renounced mid-transcription
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(user.mind?.active_vestige_trial != trial || !user.is_holding(src))
 		return ITEM_INTERACT_BLOCKING
 	// Opening the door mid-reading breaks the line. Its keepers can foil the rite by simply using it
-	if(!has_sentence(door))
+	if(!has_sentence(door, user))
 		balloon_alert(user, "the door opened!")
 		return ITEM_INTERACT_BLOCKING
-	if(!trial.transcribe(door))
-		balloon_alert(user, "already transcribed!")
+	if(!trial.transcribe(door, user))
+		balloon_alert(user, "cross first, then read the opposite side!")
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("A line of rust-red script crawls across [door] and fades."),
@@ -193,103 +311,113 @@
 	return ITEM_INTERACT_SUCCESS
 
 /// A door has a sentence worth taking down while it stands shut against somebody: bolted, or access-restricted
-/obj/item/vestige_quill/proc/has_sentence(obj/machinery/door/door)
+/obj/item/vestige_quill/proc/has_sentence(obj/machinery/door/door, mob/living/user)
 	if(QDELETED(door) || !door.density)
 		return FALSE
-	return door.locked || !door.check_access(null)
+	return door.locked || !door.allowed(user)
 
 // ===== RITE OF THE TOLL =====
 
 /datum/vestige_trial/rite_of_toll
 	name = "Rite of the Toll"
-	// Keep the desc's "six" and its roll-call in sync with toll_instruments below
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Every threshold takes a toll. Take the casket and feed it six different tools - screwdriver, wrench, wirecutters, crowbar, welder, multitool. Each one has to be paid standing next to a door. Tools are the only coin a threshold takes."
-	/// Tool behaviours the toll accepts: the six instruments of opening
-	var/list/toll_instruments = list(TOOL_SCREWDRIVER, TOOL_WRENCH, TOOL_WIRECUTTER, TOOL_CROWBAR, TOOL_WELDER, TOOL_MULTITOOL)
-	/// Instruments already fed to the casket (tool behaviour -> TRUE). Duplicates are not payment
-	var/list/instruments_paid = list()
+	desc = "The casket's lock is caught between pressure and spring tension. A wrench vents up to two pressure; a screwdriver releases up to two tension. Removing two adds one to the other force; releasing a final single point is gentle. A crowbar removes one of each but strains the casing. Reach zero in both without breaking it, then use the casket in hand to sacrifice the last tool that worked the lock. A jam can be reset without losing tools."
+	var/obj/item/vestige_toll_casket/casket
 
 /datum/vestige_trial/rite_of_toll/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_toll_casket(get_turf(user)))
+	casket = hand_over(user, new /obj/item/vestige_toll_casket(get_turf(user)))
+	hand_over(user, new /obj/item/screwdriver(get_turf(user)))
+	hand_over(user, new /obj/item/wrench(get_turf(user)))
+	hand_over(user, new /obj/item/crowbar(get_turf(user)))
 
 /datum/vestige_trial/rite_of_toll/get_progress_text()
-	return "Tools paid: [length(instruments_paid)] of [length(toll_instruments)], no two alike."
-
-/// May complete (and delete) the trial. Returns FALSE if this kind of instrument is not owed.
-/datum/vestige_trial/rite_of_toll/proc/pay(instrument_kind)
-	if(!(instrument_kind in toll_instruments) || instruments_paid[instrument_kind])
-		return FALSE
-	instruments_paid[instrument_kind] = TRUE
-	refresh_tracker()
-	if(length(instruments_paid) >= length(toll_instruments))
-		complete()
-	return TRUE
+	return casket ? "Lock pressure [casket.pressure], spring tension [casket.tension], casing strain [casket.strain]/4. Zero both forces; then use the casket in hand with the last tool in your other hand." : "The casket is missing. Restart the pact for a fresh kit."
 
 /obj/item/vestige_toll_casket
 	name = "toll-casket"
-	desc = "A lockbox with no key, no hinge and no bottom you can find. Just a slot. Something on the far side of it is owed, and knows it."
+	desc = "A lock whose forces must be balanced before it will name its price."
 	icon = 'icons/obj/storage/case.dmi'
 	icon_state = "lockbox+l"
 	color = "#c46a33"
 	w_class = WEIGHT_CLASS_NORMAL
+	var/pressure = 0
+	var/tension = 0
+	var/strain = 0
+	var/datum/weakref/last_tool
+	var/working = FALSE
+
+/obj/item/vestige_toll_casket/Initialize(mapload)
+	. = ..()
+	reset_lock()
+
+/obj/item/vestige_toll_casket/proc/reset_lock()
+	pressure = rand(3, 6)
+	tension = rand(3, 6)
+	strain = 0
+	last_tool = null
 
 /obj/item/vestige_toll_casket/examine(mob/user)
 	. = ..()
-	. += span_notice("The slot takes one of each: screwdriver, wrench, wirecutters, crowbar, welding tool, multitool. It only accepts them within a step of a door. Nothing comes back out.")
+	. += span_notice("Pressure: [pressure]. Tension: [tension]. Casing strain: [strain]/4. Wrench removes up to two pressure; screwdriver removes up to two tension. Removing two adds one to the other force; removing one does not. Crowbar removes one of each and adds one strain. Four strain jams the casing. Use in hand to reset, or, once balanced, to sacrifice the last tool from your other hand.")
+
+/obj/item/vestige_toll_casket/proc/work_lock(instrument)
+	if(strain >= 4 || (!pressure && !tension))
+		return FALSE
+	switch(instrument)
+		if(TOOL_WRENCH)
+			if(!pressure)
+				return FALSE
+			if(pressure >= 2)
+				tension++
+			pressure = max(0, pressure - 2)
+		if(TOOL_SCREWDRIVER)
+			if(!tension)
+				return FALSE
+			if(tension >= 2)
+				pressure++
+			tension = max(0, tension - 2)
+		if(TOOL_CROWBAR)
+			pressure = max(0, pressure - 1)
+			tension = max(0, tension - 1)
+			strain++
+		else
+			return FALSE
+	return TRUE
 
 /obj/item/vestige_toll_casket/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(!tool.tool_behaviour)
-		return NONE
 	var/datum/vestige_trial/rite_of_toll/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the slot stays shut!")
+	if(!istype(trial) || trial.casket != src || working)
 		return ITEM_INTERACT_BLOCKING
-	if(!(tool.tool_behaviour in trial.toll_instruments))
-		balloon_alert(user, "wrong kind of tool!")
+	if(!(tool.tool_behaviour in list(TOOL_WRENCH, TOOL_SCREWDRIVER, TOOL_CROWBAR)))
+		return NONE
+	working = TRUE
+	var/success = tool.use_tool(src, user, 2 SECONDS)
+	working = FALSE
+	if(!success || user.mind?.active_vestige_trial != trial || !user.is_holding(tool))
 		return ITEM_INTERACT_BLOCKING
-	if(trial.instruments_paid[tool.tool_behaviour])
-		balloon_alert(user, "already paid one of those!")
+	if(!work_lock(tool.tool_behaviour))
+		balloon_alert(user, strain >= 4 ? "jammed! reset in hand" : "balanced! pay in hand")
 		return ITEM_INTERACT_BLOCKING
-	if(!at_threshold())
-		balloon_alert(user, "stand next to a door!")
-		return ITEM_INTERACT_BLOCKING
-	// Paying is public: the toll is fed in doorways, where everyone walks
-	user.visible_message(
-		span_warning("[user] feeds [tool] into [src]'s slot..."),
-		span_notice("You feed [tool] to the toll."),
-	)
-	if(!do_after(user, 3 SECONDS, src))
-		return ITEM_INTERACT_BLOCKING
-	// Re-run everything: the pact may have been renounced, the tool's mode toggled, the threshold left behind
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial) || !user.is_holding(tool) || !at_threshold())
-		return ITEM_INTERACT_BLOCKING
-	var/instrument_kind = tool.tool_behaviour
-	if(!(instrument_kind in trial.toll_instruments) || trial.instruments_paid[instrument_kind])
-		return ITEM_INTERACT_BLOCKING
-	// Take the payment before crediting it. A tool that refuses to leave the hand pays nothing
-	if(!user.temporarilyRemoveItemFromInventory(tool))
-		balloon_alert(user, "it won't leave your hand!")
-		return ITEM_INTERACT_BLOCKING
-	user.visible_message(
-		span_warning("[src] grinds [tool] down into red filings, with a sound like a lock giving up."),
-		span_notice("[src] takes [tool]. Somewhere on the far side of the slot, something counts it."),
-	)
-	playsound(src, 'sound/items/tools/welder.ogg', 50, TRUE)
-	qdel(tool)
-	trial.pay(instrument_kind) // may complete (and delete) the trial. Nothing below may touch it
+	last_tool = WEAKREF(tool)
+	trial.refresh_tracker()
+	to_chat(user, span_notice(trial.get_progress_text()))
 	return ITEM_INTERACT_SUCCESS
 
-/// The toll is paid in a door's shadow: TRUE if any door stands within a step of the casket
-/obj/item/vestige_toll_casket/proc/at_threshold()
-	var/turf/here = get_turf(src)
-	if(!here)
-		return FALSE
-	for(var/turf/nearby as anything in RANGE_TURFS(1, here))
-		if(locate(/obj/machinery/door) in nearby)
-			return TRUE
-	return FALSE
+/obj/item/vestige_toll_casket/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/rite_of_toll/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.casket != src || working)
+		return TRUE
+	if(pressure || tension || strain >= 4)
+		reset_lock()
+		trial.refresh_tracker()
+		to_chat(user, span_notice("The lock winds back. No tools were spent; examine the new forces."))
+		return TRUE
+	var/obj/item/payment = last_tool?.resolve()
+	if(!payment || !user.is_holding(payment) || !user.temporarilyRemoveItemFromInventory(payment))
+		balloon_alert(user, "hold the final tool in your other hand!")
+		return TRUE
+	qdel(payment)
+	trial.complete()
+	return TRUE
 
 // ===== BOONS =====
 
@@ -545,5 +673,3 @@
 			cast_on.balloon_alert(owner, "already standing!")
 		return FALSE
 	return TRUE
-
-#undef VESTIGE_TRANSCRIBE_SENTENCES_NEEDED

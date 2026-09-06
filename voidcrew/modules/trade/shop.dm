@@ -62,7 +62,7 @@
 	/// (see trader_favor.dm, supply is per-crew, not shared)
 	var/list/favor_sku_types = list()
 	/// Chart/rumor SKU typepaths this shop's chart shelf draws from. Every
-	/// outpost draws from the same galaxy-wide pool: charts are deliberately
+	/// outpost draws independently from the same catalog: charts are deliberately
 	/// zone-mixed, so which band a tip points at has nothing to do with which
 	/// band you bought it in (see shop_catalog_charts.dm).
 	var/list/chart_pool = list()
@@ -103,8 +103,7 @@
 			add_sku(sku_type, SHELF_RARE)
 	for(var/sku_type in favor_sku_types)
 		add_sku(sku_type, SHELF_FAVOR)
-	// Charts deal last, because the deal is global: it has to see what the
-	// outposts built before this one already took.
+	// Each outpost deals its own chart shelf. Separate purchases reveal fresh sites.
 	for(var/sku_type in deal_chart_picks())
 		add_sku(sku_type, SHELF_ROTATING)
 	roll_special()
@@ -136,33 +135,14 @@
  * Deals this shop's chart shelf: up to `chart_picks` distinct typepaths out of
  * chart_pool.
  *
- * Ruin charts are dealt globally without repeats. Each one names a specific
- * ruin that only ever exists because somebody bought the tip, so two outposts
- * stocking the same chart would be selling the same ruin twice, the second
- * buyer's purchase would be refused at the counter. GLOB.dealt_rumor_charts
- * remembers every ruin chart handed to any shop this round and this deal skips
- * them. Star charts and the generic rumor tip are not unique and stay eligible
- * everywhere.
+ * Picks are distinct within this shop, but another outpost may sell the same
+ * template: every purchased ruin chart generates its own fresh encounter.
  *
  * Picks are stamped SHELF_ROTATING by the caller so the existing stock, reward
  * and UI logic keeps working without a fourth shelf constant.
  */
 /datum/outpost_shop/proc/deal_chart_picks()
-	var/list/dealt = list()
-	if(!length(chart_pool) || chart_picks < 1)
-		return dealt
-	var/list/candidates = list()
-	for(var/sku_type in chart_pool)
-		if(ispath(sku_type, /datum/shop_sku/ruin_chart) && GLOB.dealt_rumor_charts[sku_type])
-			continue
-		candidates += sku_type
-	while(length(candidates) && length(dealt) < chart_picks)
-		var/choice = pick(candidates)
-		candidates -= choice
-		dealt += choice
-		if(ispath(choice, /datum/shop_sku/ruin_chart))
-			GLOB.dealt_rumor_charts[choice] = TRUE
-	return dealt
+	return pick_from_pool(chart_pool, chart_picks)
 
 /**
  * Instantiates a SKU onto the given shelf. Rotating stock is capped at 2,
@@ -210,14 +190,14 @@
 	for(var/datum/shop_sku/sku as anything in skus)
 		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max)
 			sku.stock = min(sku.stock_max, sku.stock + max(1, round(sku.stock_max / 2)))
+		// A new paid chart creates a fresh ruin, so named tips can be sold again.
+		else if(istype(sku, /datum/shop_sku/ruin_chart) && sku.stock < sku.stock_max)
+			sku.stock = sku.stock_max
 
 	// One sold-out rotating slot gets replaced with something new off the manifest.
 	// Chart picks are deliberately excluded: they ride the rotating shelf but came
-	// from chart_pool, so the replacement drawn from rotating_pool would silently
-	// swap a sold tip for an unrelated good. Re-dealing instead is worse, a ruin
-	// chart is claimed globally on purchase, so the reissued copy would name a ruin
-	// that can never be revealed again and would be refused at the counter. A sold
-	// chart is meant to stay sold, so the slot just stays empty.
+	// from chart_pool, so a replacement from rotating_pool would silently swap
+	// a sold tip for an unrelated good. Named tips replenish separately above.
 	var/list/depleted = list()
 	for(var/datum/shop_sku/sku as anything in skus)
 		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && sku.stock <= 0)
@@ -354,7 +334,7 @@
 	mission.rare_reward_types = rare_rewards
 	// Settle the gap in scrip rather than posting a contract that misses its band
 	if(remaining > CONTRACT_SHORTFALL_TOLERANCE)
-		mission.voucher_count += max(1, round(remaining / VOUCHER_CREDIT_VALUE))
+		mission.voucher_count += CEILING((remaining - CONTRACT_SHORTFALL_TOLERANCE) / VOUCHER_CREDIT_VALUE, 1)
 	return TRUE
 
 /**
