@@ -100,19 +100,17 @@
 
 	data["builders"] = outpost.authorized_builder_ckeys.Copy()
 
-	// Living, connected players on the outpost z-level: candidates for
-	// builder authorization and ownership transfer
+	// Claim-owned facilities count too; visiting ships remain separate sites.
 	var/list/candidates = list()
-	if(outpost.mapzone)
-		for(var/mob/living/candidate as anything in outpost.mapzone.get_mind_mobs_in(outpost.footprint))
-			if(!candidate.ckey || candidate.ckey == outpost.founder_ckey)
-				continue
-			candidates += list(list(
-				"name" = candidate.real_name,
-				"ckey" = candidate.ckey,
-				"ref" = REF(candidate),
-				"can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys),
-			))
+	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
+		if(!outpost.is_management_candidate(candidate) || candidate.ckey == outpost.founder_ckey)
+			continue
+		candidates += list(list(
+			"name" = candidate.real_name,
+			"ckey" = candidate.ckey,
+			"ref" = REF(candidate),
+			"can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys),
+		))
 	data["candidates"] = candidates
 
 	data += home_service_data(user)
@@ -197,9 +195,7 @@
 
 		if("add_builder")
 			var/mob/living/candidate = locate(params["ref"])
-			if(!istype(candidate) || !candidate.ckey)
-				return
-			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs_in(outpost.footprint)))
+			if(!outpost.is_management_candidate(candidate))
 				return
 			outpost.authorized_builder_ckeys |= candidate.ckey
 			to_chat(candidate, span_notice("You are now authorized to use [outpost.name]'s construction console."))
@@ -209,19 +205,49 @@
 
 		if("transfer")
 			var/mob/living/candidate = locate(params["ref"])
-			if(!istype(candidate) || !candidate.ckey)
+			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
+			if(!original_outpost.is_management_candidate(candidate))
 				return
-			if(!outpost.mapzone || !(candidate in outpost.mapzone.get_mind_mobs_in(outpost.footprint)))
+			var/mob/acting_user = usr
+			var/turf/original_console_turf = get_turf(src)
+			var/datum/mind/original_candidate_mind = candidate.mind
+			var/original_candidate_ckey = candidate.ckey
+			var/datum/ui_state/prompt_state = ui.state
+			if(!confirm_ownership_action(acting_user, "Transfer ownership of [original_outpost.name] to [candidate.real_name]? This cannot be undone.", "Transfer Ownership", "Transfer"))
 				return
-			if(tgui_alert(usr, "Transfer ownership of [outpost.name] to [candidate.real_name]? This cannot be undone.", "Transfer Ownership", list("Transfer", "Cancel")) != "Transfer")
+			if(!ownership_prompt_valid(original_outpost, acting_user, original_console_turf, prompt_state) \
+				|| !original_outpost.is_management_candidate(candidate) \
+				|| candidate.mind != original_candidate_mind || candidate.ckey != original_candidate_ckey)
 				return
-			if(!outpost.transfer_ownership(candidate, usr))
+			if(!original_outpost.transfer_ownership(candidate, acting_user))
 				say("Transfer refused: the recipient already holds a claim this shift.")
 
 		if("abandon")
-			if(tgui_alert(usr, "Abandon [outpost.name]? You will lose ownership for the rest of the shift and cannot found another outpost.", "Abandon Outpost", list("Abandon", "Cancel")) != "Abandon")
+			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
+			var/mob/acting_user = usr
+			var/turf/original_console_turf = get_turf(src)
+			var/datum/ui_state/prompt_state = ui.state
+			if(!confirm_ownership_action(acting_user, "Abandon [original_outpost.name]? You will lose ownership for the rest of the shift and cannot found another outpost.", "Abandon Outpost", "Abandon"))
 				return
-			outpost.abandon(usr)
+			if(!ownership_prompt_valid(original_outpost, acting_user, original_console_turf, prompt_state))
+				return
+			original_outpost.abandon(acting_user)
+
+/// Preserve the existing minded, non-dead player eligibility on every claim-owned site.
+/obj/structure/overmap/dynamic/player_outpost/proc/is_management_candidate(mob/living/candidate)
+	return istype(candidate) && !QDELETED(candidate) && !QDELETED(candidate.mind) && candidate.ckey \
+		&& candidate.stat != DEAD && get_outpost_from_atom(candidate) == src
+
+/obj/machinery/computer/player_outpost_management/proc/confirm_ownership_action(mob/user, prompt_text, title, confirm_label)
+	return tgui_alert(user, prompt_text, title, list(confirm_label, "Cancel")) == confirm_label
+
+/// A yielding confirmation must still refer to its original console, claim and owner.
+/obj/machinery/computer/player_outpost_management/proc/ownership_prompt_valid(obj/structure/overmap/dynamic/player_outpost/original_outpost, mob/user, turf/original_console_turf, datum/ui_state/prompt_state)
+	if(QDELETED(src) || QDELETED(original_outpost) || QDELETED(user) || outpost != original_outpost)
+		return FALSE
+	if(get_turf(src) != original_console_turf || get_outpost_from_atom(src) != original_outpost || !original_outpost.is_owner(user))
+		return FALSE
+	return ui_status(user, prompt_state) == UI_INTERACTIVE
 
 /**
  * Charges the claim treasury and puts out a galaxy-wide broadcast.
