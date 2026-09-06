@@ -33,8 +33,16 @@
 	if(!ismovable(parent))
 		return COMPONENT_INCOMPATIBLE
 
+	// A deferred transit callback may arrive after the movable has left hyperspace.
+	if(!is_on_hyperspace(parent))
+		return COMPONENT_REDUNDANT
+
 	src.direction = direction
 
+/datum/component/shuttle_cling/RegisterWithParent()
+	. = ..()
+	// Drift may immediately move the parent off transit and delete this component.
+	// Start it only after _JoinParent(), so removal can safely unregister us.
 	ADD_TRAIT(parent, TRAIT_HYPERSPACED, REF(src))
 
 	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_UNBUCKLE, COMSIG_ATOM_NO_LONGER_PULLED), PROC_REF(update_state))
@@ -47,6 +55,8 @@
 
 	if(!HAS_TRAIT(parent, TRAIT_FREE_HYPERSPACE_MOVEMENT))
 		initialize_loop()
+	if(QDELETED(src))
+		return
 
 	update_state(parent) //otherwise we'll get moved 1 tile before we can correct ourselves, which isnt super bad but just looks jank
 
