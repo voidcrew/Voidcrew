@@ -773,8 +773,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * The physical outpost persists (round-permanent by design). The previous
  * owner's ckey stays in the founder registry, no re-founding this round.
  */
-/obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user)
-	if(!is_owner(user))
+/obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user, admin_override = FALSE)
+	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
 		return
 	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
@@ -797,12 +797,12 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Transfers ownership to another player. The recipient must not have founded
  * an outpost this round; their ckey joins the founder registry.
  */
-/obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user)
+/obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user, admin_override = FALSE)
 	if(!istype(new_owner) || !new_owner.ckey || !new_owner.mind)
 		return FALSE
-	if(new_owner.ckey in GLOB.player_outpost_founder_ckeys)
+	if(!admin_override && (new_owner.ckey in GLOB.player_outpost_founder_ckeys))
 		return FALSE
-	if(!is_owner(user))
+	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
 		return FALSE
 	// An owner cannot retain command or spending by delegating authority to themselves
 	// before transferring the deed. Other residents retain their independent grants.

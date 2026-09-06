@@ -7206,6 +7206,7 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_weather.dm"
 #include "voidcrew\modules\paperwork\faxes.dm"
 #include "voidcrew\modules\player_outposts\outpost_adverts.dm"
+#include "voidcrew\modules\player_outposts\outpost_admin.dm"
 #include "voidcrew\modules\player_outposts\outpost_construction.dm"
 #include "voidcrew\modules\player_outposts\outpost_deed.dm"
 #include "voidcrew\modules\player_outposts\outpost_elevator_placement.dm"

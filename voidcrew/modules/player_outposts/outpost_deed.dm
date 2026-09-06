@@ -121,7 +121,7 @@
 		shells += list(list(
 			"id" = "[shell_type]",
 			"name" = initial(shell.name),
-			"description" = "[initial(shell.catalog_desc)] Includes a powered habitat with finite starter fuel, management and construction consoles, a silo, cargo and bank terminals, resident cryopod, and an elevator-linked freight receiver. The treasury starts empty. R&D and fabrication equipment can be ordered or constructed.",
+			"description" = initial(shell.catalog_desc),
 		))
 	data["shells"] = shells
 	data["max_name_length"] = MAX_CHARTER_LEN
@@ -196,7 +196,7 @@
  */
 /datum/shop_sku/outpost_deed
 	name = "outpost deed"
-	desc = "A purchased habitat with charged SMES, portable generator and 10 plasma sheets, management/construction consoles, docking elevator, freight receiver/cargo console, empty silo, bank terminal and resident cryopod. Treasury starts empty. Build your own lab and fabrication. One claim per person per shift."
+	desc = "A registered habitat in open space. One claim per person per shift."
 	item_path = /obj/item/outpost_deed
 	category = "Colonial Registry"
 	price_credits = OUTPOST_DEED_COST_CREDITS
