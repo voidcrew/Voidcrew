@@ -354,6 +354,7 @@
 #include "voidcrew_player_outpost.dm"
 #include "voidcrew_outpost_services.dm"
 #include "voidcrew_research_lifecycle.dm"
+#include "voidcrew_camera_scope.dm"
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_reservation.dm"
 #include "voidcrew_ship_abandonment.dm"

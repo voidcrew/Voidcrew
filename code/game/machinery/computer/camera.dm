@@ -111,9 +111,10 @@
 	if(action == "switch_camera")
 		active_camera?.on_stop_watching(src)
 		var/obj/machinery/camera/selected_camera = locate(params["camera"]) in GLOB.cameranet.cameras
-		active_camera = selected_camera
+		active_camera = can_view_camera(selected_camera) ? selected_camera : null
 
 		if(isnull(active_camera))
+			update_active_camera_screen()
 			return TRUE
 
 		active_camera.on_start_watching(src)
@@ -122,8 +123,14 @@
 		return TRUE
 
 /obj/machinery/computer/security/proc/update_active_camera_screen()
+	// VOIDCREW: a stale/forged reference must not bypass the local camera network.
+	if(active_camera && !can_view_camera(active_camera))
+		active_camera.on_stop_watching(src)
+		active_camera = null
+		last_camera_turf = null
 	// Show static if can't use the camera
 	if(!active_camera?.can_use())
+		last_camera_turf = null
 		cam_screen.show_camera_static()
 		return
 
