@@ -347,6 +347,7 @@
 #include "voidcrew_map_packing.dm"
 #include "voidcrew_planetary_factions.dm"
 #include "voidcrew_missions.dm"
+#include "voidcrew_mission_gps.dm"
 #include "voidcrew_npc_boarding_docking.dm"
 #include "voidcrew_npc_disarm.dm"
 #include "voidcrew_player_outpost.dm"

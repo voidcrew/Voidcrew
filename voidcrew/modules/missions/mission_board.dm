@@ -70,7 +70,30 @@
 	var/datum/component/gps/item/gps_unit = tool.GetComponent(/datum/component/gps/item)
 	if(!gps_unit)
 		return ..()
+	return upload_mission_beacons(user, gps_unit)
 
+/// Resolve only a GPS actually installed in this user's currently worn MODsuit.
+/obj/machinery/computer/mission_board/proc/get_worn_mod_gps(mob/user)
+	var/obj/item/mod/control/suit = user?.get_item_by_slot(ITEM_SLOT_BACK)
+	if(!istype(suit) || QDELETED(suit) || suit.wearer != user)
+		return null
+	for(var/obj/item/mod/module/gps/module in suit.modules)
+		if(!QDELETED(module) && module.mod == suit && module.loc == suit)
+			return module.GetComponent(/datum/component/gps/item)
+	return null
+
+/// The UI resolves the worn module on every click, so dropped or removed suits cannot be targeted.
+/obj/machinery/computer/mission_board/proc/link_worn_mod_gps(mob/user)
+	if(!is_operational || !user.can_perform_action(src, FORBID_TELEKINESIS_REACH))
+		return FALSE
+	var/datum/component/gps/item/gps_unit = get_worn_mod_gps(user)
+	if(!gps_unit)
+		balloon_alert(user, "no worn MOD GPS!")
+		return FALSE
+	return upload_mission_beacons(user, gps_unit) == ITEM_INTERACT_SUCCESS
+
+/// Both handheld units and worn MOD modules use the same mission registration and feedback.
+/obj/machinery/computer/mission_board/proc/upload_mission_beacons(mob/user, datum/component/gps/item/gps_unit)
 	var/obj/structure/overmap/ship/ship = get_ship()
 	if(!ship)
 		balloon_alert(user, "console not on a ship!")
@@ -111,6 +134,7 @@
 	data["max_missions"] = ship.max_missions
 	data["active_count"] = length(ship.active_missions)
 	data["has_pad"] = !!linked_pad
+	data["has_mod_gps"] = !!get_worn_mod_gps(user)
 	data["refresh_cooldown_remaining"] = max(0, round((MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)) / 10))
 
 	// Available missions
@@ -170,6 +194,10 @@
 		return TRUE
 
 	switch(action)
+		if("link_mod_gps")
+			link_worn_mod_gps(ui.user)
+			return TRUE
+
 		if("accept")
 			var/datum/mission/mission = locate(params["ref"]) in ship.available_missions
 			if(!mission)
