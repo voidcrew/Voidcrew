@@ -225,7 +225,7 @@ const MaterialTypeSection = () => {
             options={wallTypes.map((w) => w.name)}
             onSelected={(value) => act('select_wall_type', { type: value })}
           />
-          {selectedWall && (
+          {!!selectedWall && (
             <Box inline ml={1} color="gray">
               ({formatMaterials(selectedWall.materials)})
             </Box>
@@ -238,7 +238,7 @@ const MaterialTypeSection = () => {
             options={floorTypes.map((f) => f.name)}
             onSelected={(value) => act('select_floor_type', { type: value })}
           />
-          {selectedFloor && (
+          {!!selectedFloor && (
             <Box inline ml={1} color="gray">
               ({formatMaterials(selectedFloor.materials)})
             </Box>
