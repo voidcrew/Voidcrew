@@ -95,18 +95,39 @@
 	TEST_ASSERT_EQUAL(length(ship.discovered_contacts), 0, "Navigation must not discover contacts")
 	TEST_ASSERT(isnull(ship.surveyed_tiles), "Navigation must not survey space")
 	TEST_ASSERT(isnull(ship.contact_snapshot), "Navigation must not invoke sensors")
+	// Absolute north/east corner; chart coordinates are (50, 50).
+	ship.forceMove(locate(50, world.maxy - 1, run_loc_floor_bottom_left.z))
+	var/south_row = world.maxy - 49 // OVERMAP_SOUTH_SIDE_COORD + 1
 	ship.autopilot_engaged = TRUE
-	ship.autopilot_dest_x = ship.x + 2
-	ship.autopilot_dest_y = ship.y
-	ship.autopilot_path = list(list(ship.x + 1, ship.y), list(ship.x + 2, ship.y))
+	ship.autopilot_dest_x = 3
+	ship.autopilot_dest_y = south_row
+	// Movement may publish a frame before steering drops the reached first node.
+	ship.autopilot_path = list(list(ship.x, ship.y), list(2, south_row), list(3, south_row))
 	var/list/data = ship.get_autopilot_data()
-	TEST_ASSERT(!("path" in data), "Private route leaked to client")
-	TEST_ASSERT(!("remaining" in data), "Private route length leaked to client")
+	var/list/course = data["path"]
+	TEST_ASSERT_EQUAL(length(course), 2, "Helm should show only the two remaining steps")
+	TEST_ASSERT_EQUAL(json_encode(course), json_encode(list(list(2, 2), list(3, 2))), "Helm route must use chart coordinates and preserve the seam crossing")
+	TEST_ASSERT_EQUAL(data["destX"], 3, "Destination x did not use chart coordinates")
+	TEST_ASSERT_EQUAL(data["destY"], 2, "Destination y did not use chart coordinates")
+	TEST_ASSERT_EQUAL(length(ship.autopilot_path), 3, "Publishing the route must not consume navigation steps")
+	var/list/published_node = course[1]
+	published_node[1] = 10
+	var/list/planned_node = ship.autopilot_path[2]
+	TEST_ASSERT_EQUAL(planned_node[1], 2, "Published coordinates must not alias the navigation path")
 	TEST_ASSERT(!("danger" in data), "Private hazard map leaked to client")
+	TEST_ASSERT_EQUAL(length(ship.discovered_contacts), 0, "Publishing the route must not discover contacts")
+	TEST_ASSERT(isnull(ship.surveyed_tiles), "Publishing the route must not survey space")
+	TEST_ASSERT(isnull(ship.contact_snapshot), "Publishing the route must not invoke sensors")
 	// A safe course does not expire; a newly blocked step does force replanning.
+	ship.autopilot_path.Cut(1, 2)
 	TEST_ASSERT(!ship.autopilot_course_needs_replan(list(), list()), "Safe route should be retained")
-	TEST_ASSERT(ship.autopilot_course_needs_replan(list("[ship.x + 1],[ship.y]" = TRUE), list()), "Newly blocked route must be replaced")
+	TEST_ASSERT(ship.autopilot_course_needs_replan(list("2,[south_row]" = TRUE), list()), "Newly blocked route must be replaced")
+	ship.autopilot_path = list(list(2, ship.y), list(3, south_row))
+	data = ship.get_autopilot_data()
+	TEST_ASSERT_EQUAL(json_encode(data["path"]), json_encode(list(list(2, 50), list(3, 2))), "The next helm frame must show a replacement course")
 	ship.autopilot_engaged = FALSE
+	data = ship.get_autopilot_data()
+	TEST_ASSERT_EQUAL(length(data["path"]), 0, "Inactive autopilot must not leave a stale route on the chart")
 
 /datum/unit_test/overmap_seam_sight/Run()
 	TEST_ASSERT(in_view_ring(list(2, 25), list(50, 25)), "Sight must cross the west/east seam")

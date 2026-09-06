@@ -4,9 +4,9 @@
  * are which zones may be entered. A valid course is kept until it is obstructed,
  * the ship leaves it, or the crew changes the destination or allowed zones.
  *
- * Navigation has private map knowledge. It never charts contacts, changes sensor
- * discoveries, or sends the route/route length to a client. Sight still belongs
- * to the crew's sensors. Manual flight and combat interrupts retain control.
+ * Navigation has private map knowledge. The helm shows the planned course, but
+ * navigation never charts contacts, changes sensor discoveries, or sends its
+ * hazard map to a client. Manual flight and combat interrupts retain control.
  */
 #define AUTOPILOT_MAX_EXPANSIONS 6000
 #define AUTOPILOT_POLL_INTERVAL (2 SECONDS)
@@ -24,7 +24,7 @@
 	var/autopilot_dest_x
 	var/autopilot_dest_y
 	var/autopilot_label
-	/// Private remaining course, next tile first.
+	/// Remaining course in absolute coordinates, next tile first.
 	var/list/autopilot_path
 	var/autopilot_poll_timer
 	/// Last immutable maps against which the remaining course was checked.
@@ -457,6 +457,7 @@
 		autopilot_path = course
 		autopilot_checked_danger = null
 		autopilot_checked_zones = null
+		push_helm_frame()
 	if(!length(autopilot_path))
 		full_stop()
 		return
@@ -553,14 +554,16 @@
 	push_helm_frame()
 	return TRUE
 
-/// Only destination and controls are public. Route geometry and length would
-/// reveal detours around undiscovered hazards, even without sending the hazards.
+/// Publish the remaining course in chart coordinates without invoking sensors
+/// or exposing the hazard map used to plan it.
 /obj/structure/overmap/ship/proc/get_autopilot_data()
+	var/list/course = list()
 	var/list/data = list(
 		"engaged" = autopilot_engaged,
 		"label" = autopilot_label,
 		"status" = autopilot_status,
 		"dockOnArrival" = !!autopilot_dock_ref,
+		"path" = course,
 		"prefs" = list(
 			"allowNeutral" = autopilot_allow_neutral,
 			"allowContested" = autopilot_allow_contested,
@@ -570,6 +573,11 @@
 	if(autopilot_engaged)
 		data["destX"] = autopilot_dest_x - OVERMAP_LEFT_SIDE_COORD + 1
 		data["destY"] = autopilot_dest_y - OVERMAP_SOUTH_SIDE_COORD + 1
+		for(var/list/node as anything in autopilot_path)
+			// A movement frame can arrive before steering consumes the reached node.
+			if(!length(course) && node[1] == x && node[2] == y)
+				continue
+			course += list(list(node[1] - OVERMAP_LEFT_SIDE_COORD + 1, node[2] - OVERMAP_SOUTH_SIDE_COORD + 1))
 	return data
 
 #undef AUTOPILOT_MAX_EXPANSIONS

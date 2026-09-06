@@ -34,7 +34,14 @@ import type { BooleanLike } from 'tgui-core/react';
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
-import { nearestImage, visibleCopies, wrappedDelta, wrapTile } from '../utils/HelmMapGeometry';
+import {
+  type CourseSegment,
+  nearestImage,
+  visibleCopies,
+  visibleCourseSegments,
+  wrappedDelta,
+  wrapTile,
+} from '../utils/HelmMapGeometry';
 
 // ---------------------------------------------------------------- geometry
 
@@ -192,7 +199,7 @@ type AutopilotPrefs = {
   allowLawless: BooleanLike;
 };
 
-/** Public controls and destination only; the navigation route stays on the server. */
+/** The planned course is public; navigation's hazard map stays on the server. */
 type Autopilot = {
   engaged: BooleanLike;
   label: string | null;
@@ -200,6 +207,7 @@ type Autopilot = {
   dockOnArrival?: BooleanLike;
   destX?: number;
   destY?: number;
+  path: [number, number][];
   prefs?: AutopilotPrefs;
 };
 
@@ -2259,6 +2267,16 @@ const Chart = () => {
   }));
   const displayX = (tile: number) => toX(nearestImage(tile, shipX, period));
   const displayY = (tile: number) => toY(nearestImage(tile, shipY, period));
+  const course = autopilot?.engaged ? (autopilot.path ?? []) : [];
+  // Uncontrolled drift extrapolation is misleading while autopilot owns steering.
+  const showDrift = !!drift && !autopilot?.engaged;
+  const courseSegments = visibleCourseSegments(
+    [x, y],
+    course,
+    [cameraTileX, cameraTileY],
+    zoomSpan / 2 + 1,
+    period,
+  );
 
   const gridLines: number[] = [];
   for (let i = 0; i <= size; i += 5) gridLines.push(i);
@@ -2418,13 +2436,21 @@ const Chart = () => {
               </g>
             ))}
 
+            <AutopilotRoute
+              segments={courseSegments}
+              steps={course.length}
+              toX={toX}
+              toY={toY}
+              scale={markScale}
+            />
+
             {/* Amber marks the ship's current drift through visible space. */}
             {shipCopies.map((copy) => (
               <g
                 key={`drift-${copy.x}-${copy.y}`}
                 transform={`translate(${copy.x * period * UNIT},${-copy.y * period * UNIT})`}
               >
-                {!!drift && (
+                {showDrift && !!drift && (
                   <DriftTrack
                     drift={drift}
                     from={[x, y]}
@@ -2599,7 +2625,7 @@ const Chart = () => {
             {String(cursorTile.y).padStart(2, '0')}
           </div>
         )}
-        {!!drift && (
+        {showDrift && !!drift && (
           // Where the ship ends up on the velocity it already has, engines or
           // no engines. The track on the chart says which way; this says where.
           <div className="Helm__hudLine Helm--drift">
@@ -2608,7 +2634,7 @@ const Chart = () => {
             {String(drift.end.y).padStart(2, '0')} · {clockOf(drift.endMs)}
           </div>
         )}
-        {!!drift?.intercept && (
+        {showDrift && !!drift?.intercept && (
           <div
             className={`Helm__hudLine ${
               drift.intercept.contact.kind === 'hazard'
@@ -2647,6 +2673,14 @@ const Chart = () => {
             <span className="Helm__courseLabel">
               AUTO · {autopilot.label ?? 'plotted position'}
             </span>
+            {course.length > 0 && (
+              <span
+                className="Helm__courseDist"
+                title="The green line and arrows show the remaining autopilot route"
+              >
+                Route: {course.length} tiles
+              </span>
+            )}
             {!!autopilot.dockOnArrival && (
               <span className="Helm__courseDist">Dock on arrival</span>
             )}
@@ -2922,7 +2956,44 @@ const DriftTrack = (props: {
   );
 };
 
-/** Marks only the destination selected by the crew, never the private route. */
+/** Exact remaining steps, with arrows pointing toward the selected destination. */
+const AutopilotRoute = (props: {
+  segments: CourseSegment[];
+  steps: number;
+  toX: (tile: number) => number;
+  toY: (tile: number) => number;
+  scale: number;
+}) => {
+  const { segments, steps, toX, toY, scale } = props;
+  if (!segments.length) return null;
+  const line = segments
+    .map(({ from, to }) => `M${toX(from[0])},${toY(from[1])} L${toX(to[0])},${toY(to[1])}`)
+    .join(' ');
+  // Space arrows from the destination so consuming a step does not shift them.
+  const arrowSize = Math.min(UNIT * 0.28, 4 / scale);
+  const arrows = segments
+    .filter(({ step }) => (steps - step - 1) % 3 === 0)
+    .map(({ from, to }) => {
+      const dx = toX(to[0]) - toX(from[0]);
+      const dy = toY(to[1]) - toY(from[1]);
+      const length = Math.hypot(dx, dy);
+      const ux = (dx / length) * arrowSize;
+      const uy = (dy / length) * arrowSize;
+      const cx = (toX(from[0]) + toX(to[0])) / 2;
+      const cy = (toY(from[1]) + toY(to[1])) / 2;
+      return `M${cx - ux + uy * 0.7},${cy - uy - ux * 0.7} L${cx + ux},${cy + uy} L${cx - ux - uy * 0.7},${cy - uy + ux * 0.7}`;
+    })
+    .join(' ');
+  return (
+    <g pointerEvents="none" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d={line} stroke="#081619" strokeWidth={4.5} vectorEffect="non-scaling-stroke" />
+      <path d={line} stroke="#59b871" strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
+      <path d={arrows} stroke="#b8f5c6" strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
+    </g>
+  );
+};
+
+/** The selected destination shares the planned course's green colour. */
 const DestinationMark = ({ cx, cy, scale }: { cx: number; cy: number; scale: number }) => (
   <g className="Helm__plot" pointerEvents="none" transform={`translate(${cx},${cy})`}>
     <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>

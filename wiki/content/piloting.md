@@ -54,7 +54,7 @@ Three buttons at the bottom-left of the chart control where autopilot may go: **
 
 Autopilot always avoids storm and asteroid-field tiles. If the destination is hazardous or no safe route exists through the allowed zones, it refuses the trip or stops the ship. To enter an asteroid field for mining, make the final approach manually. Nebulas remain navigable.
 
-The chart marks your selected destination. Your sensors still determine which contacts you can see and discover. Autopilot stands down if weapons lock onto you, you take hull damage, or an interdiction field catches you. Touching the heading controls restores manual control.
+The chart shows the remaining autopilot route as a **green line with direction arrows**, ending at your selected destination. It follows the actual planned turns and detours, continues across map edges, and updates as you move or change course. The **Route** readout counts the tiles left to travel. During manual flight, amber marks show your current drift instead. Your sensors still determine which contacts you can see and discover. Autopilot stands down if weapons lock onto you, you take hull damage, or an interdiction field catches you. Touching the heading controls restores manual control.
 
 ## Sensors and radar
 
