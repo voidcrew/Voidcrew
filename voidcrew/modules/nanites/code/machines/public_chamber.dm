@@ -66,6 +66,8 @@
 	set_busy(FALSE)
 	if(!occupant)
 		return
+	// Public chambers can inject without research, but cannot keep a foreign disk link.
+	validate_research_site(linked_techweb)
 	if(attacker)
 		log_game("[occupant] was injected with nanites by [key_name(attacker)] using [src] at [AREACOORD(src)].")
 		log_combat(attacker, occupant, "injected", null, "with nanites via [src]")
@@ -193,17 +195,19 @@
 	open_machine()
 
 /obj/machinery/public_nanite_chamber/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked!")
-				return
-			unsync_research_servers()
-
-		linked_techweb = tool.buffer
-		linked_techweb.connected_machines += src //connect new one
-		say("Linked to Server!")
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
 		return TRUE
+	if(!can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
+	if(linked_techweb == tool.buffer)
+		say("Already linked!")
+		return TRUE
+	unsync_research_servers()
+	linked_techweb = tool.buffer
+	linked_techweb.connected_machines |= src
+	say("Linked to Server!")
+	return TRUE
 
 /obj/machinery/public_nanite_chamber/attackby(obj/item/I, mob/user, params)
 	if(!occupant && default_deconstruction_screwdriver(user, icon_state, icon_state, I))//sent icon_state is irrelevant...

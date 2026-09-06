@@ -26,20 +26,19 @@
 		linked_techweb = null
 
 /obj/machinery/computer/nanite_cloud_controller/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(istype(tool.buffer, /datum/techweb) && !can_link_site_techweb(src, tool.buffer))
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		return TRUE
+	if(!can_link_site_techweb(src, tool.buffer))
 		balloon_alert(user, "server belongs to another site")
 		return FALSE
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked!")
-				return
-			unsync_research_servers()
-
-		linked_techweb = tool.buffer
-		linked_techweb.connected_machines += src //connect new one
-		say("Linked to Server!")
+	if(linked_techweb == tool.buffer)
+		say("Already linked!")
 		return TRUE
+	unsync_research_servers()
+	linked_techweb = tool.buffer
+	linked_techweb.connected_machines |= src
+	say("Linked to Server!")
+	return TRUE
 
 /obj/machinery/computer/nanite_cloud_controller/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/disk/nanite_program))
@@ -94,6 +93,8 @@
 	return program.rules[index]
 
 /obj/machinery/computer/nanite_cloud_controller/proc/generate_backup(cloud_id, mob/user)
+	// Backups work without research; only carry a disk link while it is local.
+	validate_research_site(linked_techweb)
 	//Clouds are ship-local, so only IDs already used aboard this ship collide.
 	//A console that somehow isn't on a ship checks globally, which is just conservative.
 	if(SSnanites.get_cloud_backup(cloud_id, TRUE, get_service_site(src)))
@@ -114,6 +115,7 @@
 		ui.open()
 
 /obj/machinery/computer/nanite_cloud_controller/ui_data()
+	validate_research_site(linked_techweb)
 	var/list/data = list()
 
 	if(disk)
