@@ -48,6 +48,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	var/list/banned_ships = list()
 	/// Ckeys allowed to use the construction console besides the owner
 	var/list/authorized_builder_ckeys = list()
+	/// Minds and current bodies watched so management buttons follow relogins and body transfers.
+	var/list/datum/mind/management_hook_minds = list()
+	var/list/mob/management_hook_bodies = list()
 	/// Owner-set public description, shown on examine and advertisements
 	var/memo = ""
 	/// The live advertisement, if any (see outpost_adverts.dm)
@@ -85,6 +88,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	GLOB.player_outposts += src
 
 /obj/structure/overmap/dynamic/player_outpost/Destroy()
+	clear_management_lifecycle()
 	for(var/mob/living/user as anything in GLOB.mob_living_list)
 		remove_player_outpost_management(user, src)
 	GLOB.player_outposts -= src
@@ -167,6 +171,70 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /// Whether the given mob is the outpost's owner. Ckey-based, so it survives death/respawn.
 /obj/structure/overmap/dynamic/player_outpost/proc/is_owner(mob/user)
 	return user?.ckey && user.ckey == founder_ckey
+
+/**
+ * Keep the owner and stewards' action ownership synchronized with their actual
+ * mind/body lifecycle. Actions already follow a mind transfer themselves, but
+ * these hooks also refresh HUDs on reconnect and retire buttons after a role is
+ * revoked while the old body is still present.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/sync_management_lifecycle()
+	var/list/authorized_minds = list()
+	var/datum/mind/owner_mind = founder_mind?.resolve()
+	if(owner_mind)
+		authorized_minds += owner_mind
+	for(var/datum/mind/steward as anything in stewards)
+		if(steward && !(steward in authorized_minds))
+			authorized_minds += steward
+
+	for(var/datum/mind/old_mind as anything in management_hook_minds.Copy())
+		if(!(old_mind in authorized_minds))
+			unregister_management_lifecycle(old_mind)
+	for(var/mob/living/old_body as anything in management_hook_bodies.Copy())
+		if(QDELETED(old_body) || !old_body.mind || !(old_body.mind in authorized_minds) || old_body.mind.current != old_body)
+			UnregisterSignal(old_body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+			management_hook_bodies -= old_body
+	for(var/datum/mind/authorized_mind as anything in authorized_minds)
+		register_management_lifecycle(authorized_mind)
+	refresh_player_outpost_management(src)
+
+/obj/structure/overmap/dynamic/player_outpost/proc/register_management_lifecycle(datum/mind/managed_mind)
+	if(QDELETED(managed_mind))
+		return
+	if(!(managed_mind in management_hook_minds))
+		management_hook_minds += managed_mind
+		RegisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_management_mind_transfer))
+	var/mob/living/current_body = managed_mind.current
+	if(!QDELETED(current_body) && !(current_body in management_hook_bodies))
+		management_hook_bodies += current_body
+		RegisterSignal(current_body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+
+/obj/structure/overmap/dynamic/player_outpost/proc/unregister_management_lifecycle(datum/mind/managed_mind)
+	if(!managed_mind)
+		return
+	UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_management_mind_transfer))
+	management_hook_minds -= managed_mind
+	for(var/mob/living/body as anything in management_hook_bodies.Copy())
+		if(body.mind != managed_mind)
+			continue
+		UnregisterSignal(body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+		management_hook_bodies -= body
+
+/obj/structure/overmap/dynamic/player_outpost/proc/clear_management_lifecycle()
+	for(var/datum/mind/managed_mind as anything in management_hook_minds.Copy())
+		UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_management_mind_transfer))
+	management_hook_minds.Cut()
+	for(var/mob/living/body as anything in management_hook_bodies.Copy())
+		UnregisterSignal(body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+	management_hook_bodies.Cut()
+
+/obj/structure/overmap/dynamic/player_outpost/proc/on_management_mind_transfer(datum/mind/source, mob/living/previous_body)
+	SIGNAL_HANDLER
+	sync_management_lifecycle()
+
+/obj/structure/overmap/dynamic/player_outpost/proc/on_management_body_login(mob/living/source)
+	SIGNAL_HANDLER
+	sync_management_lifecycle()
 
 /// Whether the given mob may use the construction console
 /obj/structure/overmap/dynamic/player_outpost/proc/can_build(mob/user)
@@ -325,7 +393,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	residents |= founder.mind
 	resident_clearance[founder_ckey] = TRUE
 	GLOB.player_outpost_founder_ckeys |= founder_ckey
-	grant_player_outpost_management(founder, src)
+	sync_management_lifecycle()
 
 	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
 	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
@@ -717,7 +785,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	authorized_builder_ckeys.Cut()
 	pending_dock_requests.Cut()
 	QDEL_NULL(current_advert)
-	refresh_player_outpost_management(src)
+	sync_management_lifecycle()
 
 /**
  * Transfers ownership to another player. The recipient must not have founded
@@ -736,7 +804,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	founder_name = new_owner.real_name
 	founder_mind = WEAKREF(new_owner.mind)
 	GLOB.player_outpost_founder_ckeys += new_owner.ckey
-	refresh_player_outpost_management(src)
+	sync_management_lifecycle()
 	message_admins("[key_name_admin(user)] transferred player outpost '[name]' to [key_name_admin(new_owner)]")
 	to_chat(new_owner, span_boldnotice("You are now the registered owner of [name]."))
 	return TRUE
