@@ -451,12 +451,11 @@
 				return TRUE
 			return add_item(list("id" = supply_pack_id, "amount" = amount))
 		if("clear")
-			//create copy of list else we will get runtimes when iterating & removing items on the same list checkout_list
-			for(var/datum/supply_order/cancelled_order as anything in checkout_list)
+			// Keep walking the original orders while removals change the shared cart.
+			for(var/datum/supply_order/cancelled_order as anything in checkout_list.Copy())
 				if(!cancelled_order.can_be_cancelled)
 					continue //don't cancel other department's orders or orders that can't be cancelled
-				if(remove_item(list("id" = "[cancelled_order.id]")))
-					return TRUE
+				remove_item(list("id" = "[cancelled_order.id]"))
 			return TRUE
 		if("toggleprivate")
 			// Not used for voidcrew cargo - all purchases use ship's bank account
