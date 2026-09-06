@@ -362,6 +362,7 @@
 #include "voidcrew_npc_disarm.dm"
 #include "voidcrew_player_outpost.dm"
 #include "voidcrew_outpost_services.dm"
+#include "voidcrew_outpost_founding.dm"
 #include "voidcrew_medical_research_links.dm"
 #include "voidcrew_nanite_research.dm"
 #include "voidcrew_research_lifecycle.dm"

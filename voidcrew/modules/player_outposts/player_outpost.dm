@@ -307,11 +307,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	founded_zone = SSovermap.get_zone_band_for_turf(get_turf(src))
 	raidable = (founded_zone != ZONE_GREEN)
 
-	var/site_ready = FALSE
-	try
-		site_ready = load_level()
-	catch(var/exception/founding_error)
-		log_mapping("PLAYER OUTPOST: Founding failed: [founding_error]")
+	// Preserve the loader's own recovery boundaries for individual map errors.
+	// A broad catch here unwinds past their cleanup instead of allowing it to run.
+	var/site_ready = load_level()
 	if(!site_ready)
 		GLOB.player_outpost_founder_ckeys -= reserved_founder_key
 		qdel(src)
@@ -376,12 +374,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		fail_load()
 		return FALSE
 
-	var/load_success = FALSE
-	try
-		load_success = shell_template.load(bottom_left)
-	catch(var/exception/e)
-		log_mapping("PLAYER OUTPOST: Failed to load shell '[shell_template.name]': [e]")
-		load_success = FALSE
+	var/load_success = shell_template.load(bottom_left)
 
 	if(!load_success)
 		fail_load()
