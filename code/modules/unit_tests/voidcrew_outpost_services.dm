@@ -192,6 +192,27 @@
 	var/obj/item/computer_disk/ship_disk/remote_disk = new(ship_tile)
 	local_server.attacked_by(local_disk, steward)
 	remote_server.attacked_by(remote_disk, steward)
+	// All physical servers must remain selectable when disks and ships share names.
+	var/obj/machinery/rnd/server/ship/second_local_server = new(home_tile)
+	var/obj/machinery/rnd/server/ship/second_remote_server = new(ship_tile)
+	var/obj/item/computer_disk/ship_disk/second_local_disk = new(home_tile)
+	var/obj/item/computer_disk/ship_disk/second_remote_disk = new(ship_tile)
+	second_local_disk.name = local_disk.name
+	second_remote_disk.name = remote_disk.name
+	second_local_server.attacked_by(second_local_disk, steward)
+	second_remote_server.attacked_by(second_remote_disk, steward)
+	var/list/local_choices = home.research_pair_server_options()
+	var/list/remote_choices = home.research_pair_server_options(remote = TRUE)
+	TEST_ASSERT_EQUAL(length(local_choices), 2, "Identical disk names hid a local physical server")
+	TEST_ASSERT_EQUAL(length(remote_choices), 2, "Identical disk names hid a visiting physical server")
+	TEST_ASSERT(local_server in flatten_list(local_choices), "Local choices omitted the first physical disk")
+	TEST_ASSERT(second_local_server in flatten_list(local_choices), "Local choices omitted the second physical disk")
+	TEST_ASSERT(remote_server in flatten_list(remote_choices), "Remote choices omitted the first physical disk")
+	TEST_ASSERT(second_remote_server in flatten_list(remote_choices), "Remote choices omitted the second physical disk")
+	qdel(second_local_server)
+	qdel(second_remote_server)
+	qdel(second_local_disk)
+	qdel(second_remote_disk)
 	local_server.set_machine_stat(0)
 	remote_server.set_machine_stat(0)
 	TEST_ASSERT(!can_link_site_techweb(run_loc_floor_bottom_left, local_server.stored_research), "Machine outside the claim could link its server")
@@ -230,9 +251,11 @@
 	lathe.forceMove(ship_tile)
 	TEST_ASSERT(!lathe.materials.can_use_resource(), "A fabricator moved onto a visitor could consume the home's silo")
 	lathe.forceMove(home_tile)
-	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server), "Visitor proposed a pairing without authority")
+	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, local_disk, remote_disk), "Visitor proposed a pairing without authority")
 	home.stewards |= steward.mind
-	TEST_ASSERT(home.propose_research_pair(steward, local_server, remote_server), "Authorized home could not request a pairing")
+	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, remote_disk, local_disk), "Stale selections authorized disks the player was not shown")
+	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, null, remote_disk), "A missing selected disk implicitly trusted its replacement")
+	TEST_ASSERT(home.propose_research_pair(steward, local_server, remote_server, local_disk, remote_disk), "Authorized home could not request a pairing")
 	var/datum/outpost_research_pair/pair = home.research_pairs[1]
 	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Pair synchronized without ship authorization")
 	pair.ship_approved = TRUE

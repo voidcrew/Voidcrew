@@ -125,11 +125,13 @@
 	for(var/datum/outpost_research_pair/pair as anything in research_pairs)
 		pair.synchronize()
 
-/obj/structure/overmap/dynamic/player_outpost/proc/propose_research_pair(mob/user, obj/machinery/rnd/server/ship/local_server, obj/machinery/rnd/server/ship/remote_server)
+/obj/structure/overmap/dynamic/player_outpost/proc/propose_research_pair(mob/user, obj/machinery/rnd/server/ship/local_server, obj/machinery/rnd/server/ship/remote_server, obj/item/computer_disk/ship_disk/expected_home_disk, obj/item/computer_disk/ship_disk/expected_ship_disk)
 	var/obj/structure/overmap/ship/ship = astype(get_service_site(remote_server))
 	if(!can_manage(user) || get_outpost_from_atom(local_server) != src || !ship || ship.docked != src)
 		return FALSE
 	if(!local_server.source_code_hdd || !remote_server.source_code_hdd)
+		return FALSE
+	if(local_server.source_code_hdd != expected_home_disk || remote_server.source_code_hdd != expected_ship_disk)
 		return FALSE
 	for(var/datum/outpost_research_pair/existing as anything in research_pairs)
 		if(existing.home_server?.resolve() == local_server && existing.ship_server?.resolve() == remote_server)
@@ -217,7 +219,7 @@
 	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
 		for(var/datum/outpost_research_pair/pair as anything in home.research_pairs)
 			if(pair.ship_server?.resolve() == src)
-				options["[pair.ship_approved ? "Revoke" : "Approve"] [home.name]: [pair.label]"] = pair
+				options["[length(options) + 1]. [pair.ship_approved ? "Revoke" : "Approve"] [home.name]: [pair.label]"] = pair
 	var/datum/outpost_research_pair/selected = options[tgui_input_list(user, "Approve exchange of completed records, or revoke an existing pairing. Points and active work stay local.", "Research Pairing", options)]
 	if(QDELETED(selected) || QDELETED(src) || !user.Adjacent(src) || get_service_site(src) != ship || !ship.is_ship_captain(user))
 		return ITEM_INTERACT_BLOCKING

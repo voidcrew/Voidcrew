@@ -107,22 +107,41 @@
 	return TRUE
 
 /obj/machinery/computer/player_outpost_management/proc/prompt_research_pair(mob/living/user)
-	var/list/local_servers = list()
-	var/list/remote_servers = list()
-	for(var/obj/machinery/rnd/server/ship/server as anything in GLOB.ship_research_servers)
-		if(!server.source_code_hdd)
-			continue
-		if(get_outpost_from_atom(server) == outpost)
-			local_servers[server.source_code_hdd.name] = server
-		var/obj/structure/overmap/ship/ship = astype(get_service_site(server))
-		if(ship?.docked == outpost)
-			remote_servers["[ship.name]: [server.source_code_hdd.name]"] = server
+	var/obj/structure/overmap/dynamic/player_outpost/home = outpost
+	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || !home.can_manage(user) || !user.Adjacent(src))
+		return
+	var/list/local_servers = home.research_pair_server_options()
+	var/list/remote_servers = home.research_pair_server_options(remote = TRUE)
 	if(!length(local_servers) || !length(remote_servers))
 		say("Pairing requires a local server with a disk and a ship docked with its own server and disk.")
 		return
+	// Retain the disks the player was shown, not whatever is installed after the prompts.
+	var/list/expected_disks = list()
+	for(var/choice in local_servers)
+		var/obj/machinery/rnd/server/ship/server = local_servers[choice]
+		expected_disks[server] = server.source_code_hdd
+	for(var/choice in remote_servers)
+		var/obj/machinery/rnd/server/ship/server = remote_servers[choice]
+		expected_disks[server] = server.source_code_hdd
 	var/obj/machinery/rnd/server/ship/local_server = local_servers[tgui_input_list(user, "Select the outpost's physical server disk.", "Research Pairing", local_servers)]
-	var/obj/machinery/rnd/server/ship/remote_server = remote_servers[tgui_input_list(user, "Select the docked ship's physical server disk. Its captain must approve at that server.", "Research Pairing", remote_servers)]
-	if(QDELETED(src) || !user.Adjacent(src) || get_outpost_from_atom(src) != outpost || QDELETED(local_server) || QDELETED(remote_server))
+	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || QDELETED(local_server))
 		return
-	if(!outpost.propose_research_pair(user, local_server, remote_server))
+	var/obj/machinery/rnd/server/ship/remote_server = remote_servers[tgui_input_list(user, "Select the docked ship's physical server disk. Its captain must approve at that server.", "Research Pairing", remote_servers)]
+	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || !user.Adjacent(src) || outpost != home || get_outpost_from_atom(src) != home || QDELETED(local_server) || QDELETED(remote_server))
+		return
+	if(!home.propose_research_pair(user, local_server, remote_server, expected_disks[local_server], expected_disks[remote_server]))
 		say("Pairing refused: recheck authority, docking, disks and existing pairings.")
+
+/// Numbered choices keep identical disk/ship names selectable, even at the same location.
+/obj/structure/overmap/dynamic/player_outpost/proc/research_pair_server_options(remote = FALSE)
+	var/list/options = list()
+	for(var/obj/machinery/rnd/server/ship/server as anything in GLOB.ship_research_servers)
+		if(!server.source_code_hdd || server.source_code_hdd.loc != server)
+			continue
+		var/obj/structure/overmap/ship/ship = astype(get_service_site(server))
+		if(remote ? (!ship || ship.docked != src) : get_outpost_from_atom(server) != src)
+			continue
+		var/turf/location = get_turf(server)
+		var/disk_label = "[server.source_code_hdd.name] at [get_area(server)] ([location.x], [location.y], [location.z])"
+		options["[length(options) + 1]. [remote ? "[ship.name]: " : ""][disk_label]"] = server
+	return options
