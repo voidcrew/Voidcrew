@@ -254,7 +254,7 @@
 		if(!local_home.can_manage(user) || !user.can_perform_action(src))
 			balloon_alert(user, "outpost management permission required")
 			return ITEM_INTERACT_BLOCKING
-		INVOKE_ASYNC(local_home, PROC_REF(prompt_research_pair_from_server), user, src)
+		INVOKE_ASYNC(local_home, TYPE_PROC_REF(/obj/structure/overmap/dynamic/player_outpost, prompt_research_pair_from_server), user, src)
 		return ITEM_INTERACT_SUCCESS
 	var/obj/structure/overmap/ship/ship = astype(get_service_site(src))
 	if(!ship?.is_ship_captain(user) || !user.can_perform_action(src))

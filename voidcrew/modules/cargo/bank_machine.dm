@@ -38,7 +38,8 @@
 	data["can_withdraw"] = FALSE
 	data["history"] = null
 	if(site)
-		var/datum/bank_account/user_account = user.get_idcard(TRUE)?.registered_account
+		var/mob/living/account_user = isliving(user) ? user : null
+		var/datum/bank_account/user_account = account_user?.get_idcard(TRUE)?.registered_account
 		data["user_account"] = user_account?.account_holder
 		data["can_withdraw"] = site.can_spend(user)
 		data["history"] = synced_bank_account.transaction_history

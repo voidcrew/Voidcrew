@@ -164,7 +164,7 @@
 	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
 		if(!outpost.is_management_candidate(candidate) || candidate.ckey == outpost.founder_ckey)
 			continue
-		candidates += list(list("name" = candidate.real_name, "ckey" = candidate.ckey, "ref" = REF(candidate), "can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys), "is_resident" = candidate.mind in outpost.residents))
+		candidates += list(list("name" = candidate.real_name, "ckey" = candidate.ckey, "ref" = REF(candidate), "can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys), "is_resident" = (candidate.mind in outpost.residents)))
 	data["candidates"] = candidates
 
 	outpost.ensure_home_services()
