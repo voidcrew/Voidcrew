@@ -4,6 +4,7 @@
 	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
 	var/obj/item/computer_disk/ship_disk/disk = allocate(/obj/item/computer_disk/ship_disk)
 	server.attacked_by(disk, user)
+	var/points_before = disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC]
 	var/obj/item/experi_scanner/scanner = allocate(/obj/item/experi_scanner)
 	var/datum/component/experiment_handler/handler = scanner.GetComponent(/datum/component/experiment_handler)
 	TEST_ASSERT_NOTNULL(handler, "Scanner has no experiment handler")
@@ -18,7 +19,7 @@
 	TEST_ASSERT_NULL(experiment.currently_scanned_atom, "Revocation retained the tracked object")
 	SEND_SIGNAL(arcade, COMSIG_ARCADE_PRIZEVEND)
 	TEST_ASSERT(!experiment.completed, "A revoked callback completed research")
-	TEST_ASSERT_EQUAL(disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], 0, "A revoked callback awarded points")
+	TEST_ASSERT_EQUAL(disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], points_before, "A revoked callback awarded points")
 	handler.link_techweb(disk.stored_research, TRUE)
 	TEST_ASSERT(!experiment.finish_experiment(handler), "Relinking revived an unselected physical callback")
 	handler.link_experiment(experiment)

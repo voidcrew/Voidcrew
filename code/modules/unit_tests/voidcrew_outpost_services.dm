@@ -285,6 +285,7 @@
 	var/obj/item/computer_disk/ship_disk/remote_disk = new(ship_tile)
 	local_server.attacked_by(local_disk, steward)
 	remote_server.attacked_by(remote_disk, steward)
+	var/ship_points_before_relay = remote_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC]
 	visitor.ship_team = new /datum/team/voidcrew()
 	visitor.ship_team.add_member(steward.mind)
 	visitor.claimed_captain = steward.mind
@@ -380,7 +381,7 @@
 	var/obj/item/research_notes/notes = allocate(/obj/item/research_notes, ship_tile, 31)
 	ship_console.attackby(notes, steward)
 	TEST_ASSERT_EQUAL(local_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], points_after_purchase + 31, "Ship research earnings did not enter the one outpost balance")
-	TEST_ASSERT_EQUAL(remote_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], 0, "Relay earnings were copied into the ship's own disk")
+	TEST_ASSERT_EQUAL(remote_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], ship_points_before_relay, "Relay earnings were copied into the ship's own disk")
 	ship_relay.set_machine_stat(NOPOWER)
 	link.reconcile()
 	TEST_ASSERT(!link.available(), "Powered-off relay remained available")
