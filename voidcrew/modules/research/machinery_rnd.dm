@@ -12,20 +12,24 @@
 		stored_research.connected_machines -= src
 		stored_research = null
 
+/// Register every actual connection, including direct links, exactly once.
+/obj/machinery/rnd/connect_techweb(datum/techweb/new_techweb)
+	unsync_research_servers()
+	. = ..()
+	if(stored_research)
+		stored_research.connected_machines |= src
+
 /obj/machinery/rnd/multitool_act(mob/living/user, obj/item/multitool/tool)
+	// The upstream handler also returns success after opening the maintenance wires.
+	// That action must not change a link or dereference an unlinked machine's web.
+	if(panel_open)
+		return ..()
 	if(istype(tool.buffer, /datum/techweb) && !can_link_site_techweb(src, tool.buffer))
 		balloon_alert(user, "server belongs to another site")
 		return FALSE
-	if(stored_research && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
-		stored_research.connected_machines -= src
 	. = ..()
-	if(.)
-		stored_research.connected_machines += src //connect new one
+	if(. && stored_research && stored_research == tool.buffer)
 		say("Linked to Server!")
-		var/obj/machinery/rnd/production/production = src
-		if(istype(production))
-			production.update_designs()
-		return TRUE
 
 /**
  * The destructive scanner is the only experiment-handler machine with no way to pick a server: it
@@ -44,12 +48,28 @@
  */
 /obj/machinery/rnd/production/update_designs()
 	if(!stored_research)
+		techweb_updating = FALSE
 		cached_designs?.Cut()
 		return
+	return ..()
+
+// Production's upstream connect handler unregisters design signals before calling
+// the base R&D handler. Reject an invalid target before it touches the current link.
+/obj/machinery/rnd/production/connect_techweb(datum/techweb/new_techweb)
+	if(new_techweb && !can_link_site_techweb(src, new_techweb))
+		return FALSE
 	return ..()
 
 /obj/machinery/rnd/production/unsync_research_servers()
 	if(stored_research)
 		UnregisterSignal(stored_research, list(COMSIG_TECHWEB_ADD_DESIGN, COMSIG_TECHWEB_REMOVE_DESIGN))
 	cached_designs?.Cut()
+	. = ..()
+	if(!QDELETED(src))
+		update_static_data_for_all_viewers()
+
+/obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui)
+	if(action == "build" && !stored_research)
+		say("No research server linked.")
+		return TRUE
 	return ..()
