@@ -51,7 +51,7 @@ export const OutpostElevator = (props) => {
                       fluid
                       ellipsis
                       fontSize="14px"
-                      fontWeight="bold"
+                      bold
                       textAlign="left"
                       icon={floor.your_ship ? 'star' : 'circle'}
                       color={floor.your_ship ? 'good' : 'default'}
@@ -66,8 +66,7 @@ export const OutpostElevator = (props) => {
                       }
                       onClick={() => act('goto', { id: floor.id })}
                     >
-                      {floor.name}
-                      {!!floor.your_ship && ' (your ship)'}
+                      {`${floor.name}${floor.your_ship ? ' (your ship)' : ''}`}
                     </Button>
                   </Stack.Item>
                 ))}

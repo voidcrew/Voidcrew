@@ -1,0 +1,188 @@
+$amber: #efb966;
+$ice: #80c7d0;
+$ink: #0b0c0c;
+$text: #dddcd4;
+$muted: #969588;
+
+.Outpost {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: $ink;
+  color: $text;
+  font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  user-select: none;
+}
+
+.Outpost__plate {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  filter: hue-rotate(42deg) saturate(0.55) brightness(0.75);
+  pointer-events: none;
+}
+
+.Outpost__panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  background: rgba(12, 13, 12, 0.28);
+  border: 1px solid rgba($amber, 0.08);
+}
+
+.Outpost__rail {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 0 9px;
+  overflow: hidden;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  color: $amber;
+  span { font-size: 9px; letter-spacing: 1px; color: $muted; }
+  strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.Outpost__rail--status { color: $ice; font-size: 11px; }
+.Outpost__panel--directory { padding: 0; }
+.Outpost__tabs {
+  display: flex;
+  flex: 0 0 auto;
+  padding: 9px 10px;
+  gap: 5px;
+  border-bottom: 1px solid rgba($amber, 0.22);
+  background: rgba(0, 0, 0, 0.28);
+  > .Button { flex: 1; justify-content: center; }
+}
+
+.Outpost__directory-scroll, .Outpost__registry-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #5b5142 transparent;
+}
+.Outpost__directory-scroll { padding: 0 12px 12px; flex: 1; }
+.Outpost__registry-scroll { flex: 1; }
+.Outpost__heading {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba($amber, 0.19);
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: $amber;
+}
+.Outpost__section-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-bottom: 7px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: $ice;
+  border-bottom: 1px solid rgba($ice, 0.18);
+  span { font-family: 'Consolas', monospace; color: $muted; }
+}
+.Outpost__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  font-size: 12px;
+  > .Icon { color: $ice; }
+}
+.Outpost__grow, .Outpost__person { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.Outpost__person {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  small { color: $muted; font-size: 10px; }
+}
+.Outpost__dot { flex: 0 0 5px; height: 5px; border-radius: 50%; background: #645f53; }
+.Outpost__dot--online { background: #8dbb79; box-shadow: 0 0 6px #63945280; }
+.Outpost__quiet { padding: 10px 0; color: $muted; font-size: 11px; }
+.Outpost__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 65px;
+  color: $muted;
+  font-size: 11px;
+  > .Icon { font-size: 18px; opacity: 0.7; }
+}
+.Outpost__field-label {
+  display: block;
+  margin: 13px 0 6px;
+  color: $muted;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1.1px;
+}
+.Outpost__inline, .Outpost__memo, .Outpost__switches {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  > .Input, > .TextArea { min-width: 0; flex: 1; }
+}
+.Outpost__memo { align-items: flex-start; }
+.Outpost__switches > .Button { flex: 1; justify-content: center; font-size: 11px; padding: 0 6px; }
+.Outpost__password { margin-top: 8px; }
+.Outpost__limit { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; small { color: $muted; } }
+.Outpost__arrival { display: flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 11px; color: $amber; }
+.Outpost__arrival--ready { color: #9fbd85; }
+.Outpost__reset { margin-top: 18px !important; }
+.Outpost__count { margin-left: 6px; padding: 1px 5px; background: rgba($ice, 0.2); color: $ice; border-radius: 2px; }
+.Outpost__live { margin-left: auto; color: #9fbd85; font-size: 9px; letter-spacing: 1px; }
+.Outpost__footer-row { display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 10px; padding-top: 8px; }
+.Outpost__readout { display: flex; flex-direction: column; gap: 3px; strong { color: $amber; font: 18px 'Consolas', monospace; } small { color: $muted; font-size: 10px; } }
+.Outpost__ownership { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; padding-top: 8px; > .Dropdown { flex: 1; min-width: 0; } }
+
+.Outpost {
+  .Button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    margin: 0;
+    padding: 0 9px;
+    border: 1px solid #75604170;
+    border-radius: 2px;
+    background: linear-gradient(#343026, #211e18);
+    box-shadow: inset 0 1px 0 #ffffff09, 0 1px 2px #00000060;
+    color: #d0c4ab;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    &.Button--selected { background: linear-gradient(#71552d, #4c381d); border-color: #d2a25790; color: #ffe0a5; }
+    &:hover:not(.Button--disabled) { border-color: $amber; color: #fff3d4; }
+    &.Button--disabled { opacity: 0.4; }
+    &.Button--color--bad { background: linear-gradient(#492820, #301b18); color: #e7a296; border-color: #94564b80; }
+    &.Button--color--good { background: linear-gradient(#2a402b, #1a2c1d); color: #b2d8a0; border-color: #7b986380; }
+  }
+  .Input, .TextArea, .NumberInput { background: #0b0d0ca8; border-color: #77664760; color: $text; font-size: 12px; }
+  .Input { min-height: 28px; }
+  .Input__input, .TextArea__textarea { color: $text; font-family: 'Consolas', monospace; }
+  .NumberInput { min-height: 27px; }
+  .Dropdown__control {
+    min-height: 28px;
+    width: 100% !important;
+    background: linear-gradient(#343026, #211e18);
+    border: 1px solid #75604170;
+    color: $text;
+  }
+}

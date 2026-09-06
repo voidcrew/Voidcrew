@@ -33,8 +33,10 @@ export const BankMachine = (props) => {
 
   return (
     <Window width={isOutpost ? 450 : 350} height={isOutpost ? 390 : 155}>
-      <Window.Content>
-        <NoticeBox danger>{isOutpost ? 'Claim treasury' : 'Authorized personnel only'}</NoticeBox>
+      <Window.Content scrollable={isOutpost}>
+        <NoticeBox danger>
+          {isOutpost ? 'Claim treasury' : 'Authorized personnel only'}
+        </NoticeBox>
         <Section title={`${station_name} Vault`}>
           <LabeledList>
             <LabeledList.Item
@@ -60,7 +62,9 @@ export const BankMachine = (props) => {
         </Section>
         {!!isOutpost && (
           <Section title="Account transfer">
-            <Box>Your ID account: {data.user_account || 'No account on ID'}</Box>
+            <Box>
+              Your ID account: {data.user_account || 'No account on ID'}
+            </Box>
             <Box color="label">Amount (whole credits)</Box>
             <Input placeholder="Credits" value={amount} onChange={setAmount} />
             <Button
@@ -68,24 +72,27 @@ export const BankMachine = (props) => {
               disabled={!data.user_account}
               onClick={() => act('deposit', { amount })}
             >
-              ID account → Treasury
+              Deposit
             </Button>
             <Button
               icon="arrow-up"
               disabled={!data.can_withdraw || !data.user_account}
               onClick={() => act('withdraw', { amount })}
             >
-              Treasury → ID account
+              Withdraw
             </Button>
           </Section>
         )}
         {!!isOutpost && !!data.history?.length && (
-          <Section title="Recent transactions" scrollable>
-            {data.history.slice(-10).reverse().map((entry, index) => (
-              <Box key={index}>
-                {entry.adjusted_money} cr: {entry.reason}
-              </Box>
-            ))}
+          <Section title="Recent transactions" scrollable height="145px">
+            {data.history
+              .slice(-10)
+              .reverse()
+              .map((entry, index) => (
+                <Box key={index}>
+                  {entry.adjusted_money} cr: {entry.reason}
+                </Box>
+              ))}
           </Section>
         )}
       </Window.Content>
