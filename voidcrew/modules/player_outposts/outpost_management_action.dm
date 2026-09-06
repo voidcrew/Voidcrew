@@ -72,13 +72,24 @@
 
 /datum/player_outpost_management_ui
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
-	var/mob/living/manager
+	var/mob/manager
+	var/datum/weakref/console_ref
+	var/turf/console_turf
 
-/datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/living/user)
+/datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console)
 	outpost = target
 	manager = user
+	if(console)
+		console_ref = WEAKREF(console)
+		console_turf = get_turf(console)
 
 /datum/player_outpost_management_ui/Destroy()
+	SStgui.close_uis(src)
+	var/obj/machinery/computer/player_outpost_management/console = console_ref?.resolve()
+	if(console)
+		console.panels -= src
+	console_ref = null
+	console_turf = null
 	outpost = null
 	manager = null
 	return ..()
@@ -91,6 +102,26 @@
 
 /datum/player_outpost_management_ui/ui_state(mob/user)
 	return GLOB.always_state
+
+/datum/player_outpost_management_ui/ui_host(mob/user)
+	return console_ref ? console_ref.resolve() : manager
+
+/datum/player_outpost_management_ui/ui_status(mob/user, datum/ui_state/state)
+	if(QDELETED(outpost) || QDELETED(user) || user != manager)
+		return UI_CLOSE
+	if(console_ref)
+		var/obj/machinery/computer/player_outpost_management/console = console_ref.resolve()
+		if(!console || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
+			return UI_CLOSE
+		var/physical_status = console.ui_status(user, console.ui_state(user))
+		return min(physical_status, isliving(user) && outpost.can_manage(user) ? UI_INTERACTIVE : UI_UPDATE)
+	if(!isliving(user) || !outpost.can_manage(user))
+		return UI_CLOSE
+	return user.shared_ui_interaction(user)
+
+/datum/player_outpost_management_ui/ui_close(mob/user)
+	if(console_ref && !QDELETED(src))
+		qdel(src)
 
 /datum/player_outpost_management_ui/ui_assets(mob/user)
 	return list(get_asset_datum(/datum/asset/simple/outpost_management_plate))
@@ -154,7 +185,7 @@
 	if(.)
 		return
 	var/mob/living/user = usr
-	if(QDELETED(outpost) || QDELETED(user) || !outpost.can_manage(user))
+	if(QDELETED(outpost) || !istype(user) || QDELETED(user) || ui.user != user || ui.src_object != src || ui_status(user, state) != UI_INTERACTIVE || !outpost.can_manage(user))
 		return
 	if(action in list("transfer", "abandon", "add_builder", "remove_builder") && !outpost.is_owner(user))
 		return
@@ -208,6 +239,7 @@
 		if("remove_builder")
 			outpost.authorized_builder_ckeys -= params["ckey"]
 		if("transfer")
+			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
 			var/mob/living/recipient = locate(params["ref"])
 			if(!outpost.is_management_candidate(recipient))
 				return
@@ -215,21 +247,23 @@
 			var/original_recipient_ckey = recipient.ckey
 			if(!confirm_ownership_action(user, "Transfer ownership of [outpost.name] to [recipient.real_name]? This cannot be undone.", "Transfer Ownership", "Transfer"))
 				return
-			if(!ownership_prompt_valid(outpost, user, ui) || !outpost.is_management_candidate(recipient) || recipient.mind != original_recipient_mind || recipient.ckey != original_recipient_ckey)
+			if(!ownership_prompt_valid(original_outpost, user, ui) || !original_outpost.is_management_candidate(recipient) || recipient.mind != original_recipient_mind || recipient.ckey != original_recipient_ckey)
 				return
-			if(!outpost.transfer_ownership(recipient, user))
+			if(!original_outpost.transfer_ownership(recipient, user))
 				to_chat(user, span_warning("Transfer refused: the recipient already holds a claim this shift."))
 		if("abandon")
+			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
 			if(!confirm_ownership_action(user, "Abandon [outpost.name]? You will lose ownership for the rest of the shift and cannot found another outpost.", "Abandon Outpost", "Abandon"))
 				return
-			if(ownership_prompt_valid(outpost, user, ui))
-				outpost.abandon(user)
+			if(ownership_prompt_valid(original_outpost, user, ui))
+				original_outpost.abandon(user)
 
 /datum/player_outpost_management_ui/proc/confirm_ownership_action(mob/user, prompt_text, title, confirm_label)
 	return tgui_alert(user, prompt_text, title, list(confirm_label, "Cancel")) == confirm_label
 
 /datum/player_outpost_management_ui/proc/ownership_prompt_valid(obj/structure/overmap/dynamic/player_outpost/original_outpost, mob/user, datum/tgui/ui)
-	return !QDELETED(src) && !QDELETED(original_outpost) && outpost == original_outpost && original_outpost.is_owner(user) && ui_status(user, ui?.state) == UI_INTERACTIVE
+	return !QDELETED(src) && !QDELETED(original_outpost) && !QDELETED(user) && outpost == original_outpost \
+		&& original_outpost.is_owner(user) && ui?.user == user && ui.src_object == src && ui_status(user, ui.state) == UI_INTERACTIVE
 
 /datum/player_outpost_management_ui/proc/buy_advert(mob/living/user)
 	if(outpost.current_advert || !COOLDOWN_FINISHED(outpost, advert_cooldown) || !outpost.can_spend(user))
@@ -239,6 +273,7 @@
 		return
 	COOLDOWN_START(outpost, advert_cooldown, OUTPOST_ADVERT_COOLDOWN)
 	outpost.current_advert = new /datum/outpost_advert(outpost)
+	log_game("PLAYER OUTPOST: [key_name(user)] bought an advertisement for '[outpost.name]'")
 
 /datum/player_outpost_management_ui/proc/service_action(action, list/params, mob/living/user)
 	switch(action)
@@ -272,7 +307,7 @@
 				outpost.blocked_residents -= player_key
 		if("add_resident")
 			var/mob/living/candidate = locate(params["ref"])
-			if(istype(candidate) && candidate.mind && candidate.ckey && get_outpost_from_atom(candidate) == outpost)
+			if(outpost.is_management_candidate(candidate))
 				outpost.residents |= candidate.mind
 				outpost.invited_residents[candidate.ckey] = TRUE
 				outpost.blocked_residents -= candidate.ckey
@@ -284,17 +319,28 @@
 				outpost.residents -= member
 				outpost.stewards -= member
 				outpost.treasurers -= member
-				if(member.current)
-					remove_player_outpost_management(member.current, outpost)
-			else if(outpost.is_owner(user))
+				outpost.sync_management_lifecycle()
+			else if(outpost.is_owner(user) && params["role"] in list("steward", "treasurer"))
 				var/list/permissions = params["role"] == "steward" ? outpost.stewards : outpost.treasurers
 				if(member in permissions)
 					permissions -= member
 				else
 					permissions |= member
-				if(params["role"] == "steward")
-					if(member in outpost.stewards && member.current)
-						grant_player_outpost_management(member.current, outpost)
-					else if(member.current)
-						remove_player_outpost_management(member.current, outpost)
+				outpost.sync_management_lifecycle()
 	return TRUE
+
+/// A new character can still own a round-long claim after their old mind is gone.
+/mob/living/Login()
+	. = ..()
+	if(. && client)
+		sync_player_outpost_management()
+
+/mob/living/proc/sync_player_outpost_management()
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(home.is_owner(src) && mind)
+			home.founder_mind = WEAKREF(mind)
+			home.sync_management_lifecycle()
+		else if(home.can_manage(src))
+			grant_player_outpost_management(src, home)
+		else
+			remove_player_outpost_management(src, home)

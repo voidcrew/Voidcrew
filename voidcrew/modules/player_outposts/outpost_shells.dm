@@ -49,12 +49,12 @@
 
 /datum/map_template/player_outpost/small
 	name = "Compact Habitat"
-	catalog_desc = "One pressurized room with the essential consoles, a hangar elevator, and a charged SMES with a portable generator. Not much else. Cheap on materials and quick to expand."
+	catalog_desc = "A compact, single-room habitat."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_small.dmm"
 
 /datum/map_template/player_outpost/medium
 	name = "Waystation Frame"
-	catalog_desc = "A proper station core: separate work and living space, a powered workshop bay, and a hangar elevator off the main hall. More to defend, but a lot more room to grow."
+	catalog_desc = "Separate living quarters and workshop around a central hall."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_medium.dmm"
 
 /datum/map_template/player_outpost/nothing

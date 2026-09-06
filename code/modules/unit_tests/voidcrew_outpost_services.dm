@@ -1,3 +1,12 @@
+/// Purchased templates must install ordinary, automatically bound cargo terminals.
+/datum/unit_test/proc/assert_outpost_cargo_bundle(obj/structure/overmap/dynamic/player_outpost/home)
+	var/terminal_count = 0
+	for(var/obj/machinery/computer/voidcrew_cargo/terminal as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/voidcrew_cargo))
+		if(get_outpost_from_atom(terminal) == home)
+			terminal_count++
+			TEST_ASSERT_EQUAL(terminal.cargo_account(), home.treasury, "A purchased cargo terminal did not automatically bind to its claim account")
+	TEST_ASSERT_EQUAL(terminal_count, 1, "A purchased habitat must start with one cargo console")
+
 /// Claim economy and actual ferry integration, including physical delivery without a ship.
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home
 	var/obj/docking_port/mobile/voidcrew/test_port
@@ -31,6 +40,7 @@
 	home.founder_ckey = "outpostfounder"
 	TEST_ASSERT(home.load_level(), "Purchased home bundle failed to load")
 	TEST_ASSERT(home.home_bundle_installed, "Founding did not install the included services")
+	assert_outpost_cargo_bundle(home)
 	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Purchased home has no resident arrival point")
 	TEST_ASSERT_NOTNULL(home.freight_berth?.panel, "Freight receiver is inaccessible by elevator")
 	var/datum/bank_account/account = home.treasury
@@ -399,6 +409,7 @@
 	home.shell_template = allocate(/datum/map_template/player_outpost/medium)
 	TEST_ASSERT(home.load_level(), "Waystation Frame failed to install its purchased home services")
 	TEST_ASSERT(home.home_bundle_installed, "Waystation Frame omitted the included bundle")
+	assert_outpost_cargo_bundle(home)
 	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Waystation Frame has no resident arrival point")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 0, "A new home received an unpurchased allowance")
 

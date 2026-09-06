@@ -161,7 +161,7 @@
 	ship_server = WEAKREF(remote_server)
 	home_disk = WEAKREF(local_server.source_code_hdd)
 	ship_disk = WEAKREF(remote_server.source_code_hdd)
-	label = "[ship.name]: [remote_server.source_code_hdd.name] / [local_server.source_code_hdd.name]"
+	label = "[ship.name]: [remote_server.source_code_hdd.name] ([REF(remote_server.source_code_hdd)]) / [local_server.source_code_hdd.name] ([REF(local_server.source_code_hdd)])"
 
 /datum/outpost_research_pair/proc/unavailable_reason()
 	if(!ship_approved)
@@ -213,22 +213,24 @@
 /// Requesting is a physical local-server operation. The ship captain's approval
 /// remains a separate secondary multitool action at the docked ship server.
 /obj/structure/overmap/dynamic/player_outpost/proc/prompt_research_pair_from_server(mob/living/user, obj/machinery/rnd/server/ship/local_server)
-	if(QDELETED(src) || QDELETED(user) || QDELETED(local_server) || !user.Adjacent(local_server) || !can_manage(user) || get_outpost_from_atom(local_server) != src || !local_server.source_code_hdd || local_server.source_code_hdd.loc != local_server)
+	if(QDELETED(src) || QDELETED(user) || QDELETED(local_server) || !user.can_perform_action(local_server) || !can_manage(user) || get_outpost_from_atom(local_server) != src || !local_server.source_code_hdd || local_server.source_code_hdd.loc != local_server)
 		return
 	var/obj/item/computer_disk/ship_disk/expected_local_disk = local_server.source_code_hdd
 	var/list/existing_pairs = list()
 	for(var/datum/outpost_research_pair/pair as anything in research_pairs)
 		if(pair.home_server?.resolve() == local_server)
-			existing_pairs["Revoke [pair.label]"] = pair
+			existing_pairs["[length(existing_pairs) + 1]. Revoke [pair.label]"] = pair
 	var/list/choices = list("Request a new pairing")
 	for(var/pair_choice in existing_pairs)
 		choices += pair_choice
-	var/choice = tgui_input_list(user, "Request a docked ship pairing, or revoke an existing local request.", "Research Pairing", choices)
-	if(!choice)
+	var/selected_action = tgui_input_list(user, "Request a docked ship pairing, or revoke an existing local request.", "Research Pairing", choices)
+	if(!selected_action)
 		return
-	var/datum/outpost_research_pair/selected_pair = existing_pairs[choice]
+	if(QDELETED(src) || QDELETED(user) || QDELETED(local_server) || !user.can_perform_action(local_server) || !can_manage(user) || get_outpost_from_atom(local_server) != src || local_server.source_code_hdd != expected_local_disk || local_server.source_code_hdd?.loc != local_server)
+		return
+	var/datum/outpost_research_pair/selected_pair = existing_pairs[selected_action]
 	if(selected_pair)
-		if(!QDELETED(src) && !QDELETED(user) && !QDELETED(local_server) && user.Adjacent(local_server) && can_manage(user) && local_server.source_code_hdd == expected_local_disk && local_server.source_code_hdd.loc == local_server)
+		if(!QDELETED(src) && !QDELETED(user) && !QDELETED(local_server) && !QDELETED(selected_pair) && (selected_pair in research_pairs) && user.can_perform_action(local_server) && can_manage(user) && get_outpost_from_atom(local_server) == src && local_server.source_code_hdd == expected_local_disk && local_server.source_code_hdd?.loc == local_server)
 			research_pairs -= selected_pair
 			qdel(selected_pair)
 		return
@@ -241,7 +243,7 @@
 		var/obj/machinery/rnd/server/ship/server = remote_servers[choice]
 		expected_disks[server] = server.source_code_hdd
 	var/obj/machinery/rnd/server/ship/remote_server = remote_servers[tgui_input_list(user, "Select the docked ship's physical server disk. Its captain must approve at that server.", "Research Pairing", remote_servers)]
-	if(QDELETED(src) || QDELETED(user) || QDELETED(local_server) || QDELETED(remote_server) || !user.Adjacent(local_server) || !can_manage(user) || get_outpost_from_atom(local_server) != src || !local_server.source_code_hdd || local_server.source_code_hdd != expected_local_disk || local_server.source_code_hdd.loc != local_server)
+	if(QDELETED(src) || QDELETED(user) || QDELETED(local_server) || QDELETED(remote_server) || !user.can_perform_action(local_server) || !can_manage(user) || get_outpost_from_atom(local_server) != src || !local_server.source_code_hdd || local_server.source_code_hdd != expected_local_disk || local_server.source_code_hdd.loc != local_server)
 		return
 	if(!propose_research_pair(user, local_server, remote_server, local_server.source_code_hdd, expected_disks[remote_server]))
 		balloon_alert(user, "pairing refused: recheck docking and installed disks")
@@ -249,13 +251,13 @@
 /obj/machinery/rnd/server/ship/multitool_act_secondary(mob/living/user, obj/item/multitool/tool)
 	var/obj/structure/overmap/dynamic/player_outpost/local_home = get_outpost_from_atom(src)
 	if(local_home)
-		if(!local_home.can_manage(user) || !user.Adjacent(src))
+		if(!local_home.can_manage(user) || !user.can_perform_action(src))
 			balloon_alert(user, "outpost management permission required")
 			return ITEM_INTERACT_BLOCKING
 		INVOKE_ASYNC(local_home, PROC_REF(prompt_research_pair_from_server), user, src)
 		return ITEM_INTERACT_SUCCESS
 	var/obj/structure/overmap/ship/ship = astype(get_service_site(src))
-	if(!ship?.is_ship_captain(user))
+	if(!ship?.is_ship_captain(user) || !user.can_perform_action(src))
 		balloon_alert(user, "ship captain approval required")
 		return ITEM_INTERACT_BLOCKING
 	var/list/options = list()
@@ -264,13 +266,15 @@
 			if(pair.ship_server?.resolve() == src)
 				options["[length(options) + 1]. [pair.ship_approved ? "Revoke" : "Approve"] [home.name]: [pair.label]"] = pair
 	var/datum/outpost_research_pair/selected = options[tgui_input_list(user, "Approve exchange of completed records, or revoke an existing pairing. Points and active work stay local.", "Research Pairing", options)]
-	if(QDELETED(selected) || QDELETED(src) || !user.Adjacent(src) || get_service_site(src) != ship || !ship.is_ship_captain(user))
+	if(QDELETED(selected) || QDELETED(src) || QDELETED(user) || !user.can_perform_action(src) || QDELETED(ship) || get_service_site(src) != ship || !ship.is_ship_captain(user))
 		return ITEM_INTERACT_BLOCKING
 	var/obj/structure/overmap/dynamic/player_outpost/home = selected.home_ref.resolve()
+	if(!home || !(selected in home.research_pairs) || selected.ship_server?.resolve() != src)
+		return ITEM_INTERACT_BLOCKING
 	if(selected.ship_approved)
 		home.research_pairs -= selected
 		qdel(selected)
-	else if(ship.docked == home && source_code_hdd == selected.ship_disk.resolve())
+	else if(ship.docked == home && source_code_hdd && source_code_hdd.loc == src && source_code_hdd == selected.ship_disk.resolve())
 		selected.ship_approved = TRUE
 		selected.synchronize()
 	return ITEM_INTERACT_SUCCESS
@@ -286,7 +290,7 @@
 		for(var/datum/outpost_research_pair/pair as anything in pair_home.research_pairs)
 			if(pair.home_server?.resolve() != src && pair.ship_server?.resolve() != src)
 				continue
-			. += span_notice("Research pairing [pair.ship_approved ? "approved" : "awaiting ship approval"]: [pair.unavailable_reason() || pair.status].")
+			. += span_notice("[pair.label]: [pair.unavailable_reason() || pair.status]. Last exchange: [pair.last_success || "never"].")
 
 /// Physical links stay local even when another ship shares the same z level.
 /datum/component/remote_materials/check_z_level(obj/silo_to_check = silo)

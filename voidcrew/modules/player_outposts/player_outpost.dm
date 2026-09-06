@@ -192,7 +192,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 			unregister_management_lifecycle(old_mind)
 	for(var/mob/living/old_body as anything in management_hook_bodies.Copy())
 		if(QDELETED(old_body) || !old_body.mind || !(old_body.mind in authorized_minds) || old_body.mind.current != old_body)
-			UnregisterSignal(old_body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+			UnregisterSignal(old_body, COMSIG_MOB_LOGIN)
 			management_hook_bodies -= old_body
 	for(var/datum/mind/authorized_mind as anything in authorized_minds)
 		register_management_lifecycle(authorized_mind)
@@ -212,20 +212,20 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /obj/structure/overmap/dynamic/player_outpost/proc/unregister_management_lifecycle(datum/mind/managed_mind)
 	if(!managed_mind)
 		return
-	UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_management_mind_transfer))
+	UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED)
 	management_hook_minds -= managed_mind
 	for(var/mob/living/body as anything in management_hook_bodies.Copy())
 		if(body.mind != managed_mind)
 			continue
-		UnregisterSignal(body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+		UnregisterSignal(body, COMSIG_MOB_LOGIN)
 		management_hook_bodies -= body
 
 /obj/structure/overmap/dynamic/player_outpost/proc/clear_management_lifecycle()
 	for(var/datum/mind/managed_mind as anything in management_hook_minds.Copy())
-		UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_management_mind_transfer))
+		UnregisterSignal(managed_mind, COMSIG_MIND_TRANSFERRED)
 	management_hook_minds.Cut()
 	for(var/mob/living/body as anything in management_hook_bodies.Copy())
-		UnregisterSignal(body, COMSIG_MOB_LOGIN, PROC_REF(on_management_body_login))
+		UnregisterSignal(body, COMSIG_MOB_LOGIN)
 	management_hook_bodies.Cut()
 
 /obj/structure/overmap/dynamic/player_outpost/proc/on_management_mind_transfer(datum/mind/source, mob/living/previous_body)

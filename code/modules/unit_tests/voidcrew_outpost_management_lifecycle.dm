@@ -4,12 +4,15 @@
 	var/mob/living/carbon/human/consistent/owner
 	var/mob/living/carbon/human/consistent/steward
 	var/mob/living/carbon/human/consistent/replacement_body
+	var/mob/living/carbon/human/consistent/returning_owner
 
 /datum/unit_test/voidcrew_outpost_management_lifecycle/Destroy()
 	if(owner)
 		GLOB.player_outpost_founder_ckeys -= owner.ckey
 	if(steward)
 		GLOB.player_outpost_founder_ckeys -= steward.ckey
+	if(returning_owner)
+		returning_owner.key = null
 	if(replacement_body)
 		replacement_body.key = null
 	if(steward)
@@ -61,8 +64,20 @@
 	SEND_SIGNAL(replacement_body, COMSIG_MOB_LOGIN)
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions, "A returning owner body lost its management action on login refresh.")
 
-	TEST_ASSERT(home.transfer_ownership(steward, replacement_body), "A live owner could not transfer the claim to an eligible delegate.")
+	// Respawn may create a different mind; round-long ownership still follows the account.
+	var/owner_key = replacement_body.key
+	replacement_body.key = null
+	returning_owner = allocate(/mob/living/carbon/human/consistent, location)
+	returning_owner.key = owner_key
+	returning_owner.mind_initialize()
+	returning_owner.sync_player_outpost_management()
+	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in returning_owner.actions, "A returning owner's new character did not receive management controls.")
+	TEST_ASSERT_EQUAL(home.founder_mind.resolve(), returning_owner.mind, "Owner notifications retained the old character mind.")
+	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions), "The abandoned old body retained owner controls after a new character returned.")
+
+	TEST_ASSERT(home.transfer_ownership(steward, returning_owner), "A live owner could not transfer the claim to an eligible delegate.")
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions), "The former owner kept a management action after ownership transfer.")
+	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in returning_owner.actions), "The returning former owner retained management controls after transfer.")
 	TEST_ASSERT_EQUAL(management_action_count(steward), 1, "Ownership transfer duplicated the recipient's existing delegate action.")
 	home.abandon(steward)
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions), "Abandoning the claim left an owner action button behind.")
