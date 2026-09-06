@@ -780,7 +780,7 @@
 	TEST_ASSERT(replacement_filter, "The second actual cast must create its own timed glow.")
 	sleep(4.5 SECONDS)
 	TEST_ASSERT(world.time >= first_expiry && world.time < second_expiry, "The ownership check must run after the first expiry and before the second.")
-	TEST_ASSERT_EQUAL(changed_turf.get_filter("rust_wall"), replacement_filter, "An old cast must preserve the newer filter instance.")
+	TEST_ASSERT(changed_turf.get_filter("rust_wall"), "An old cast must preserve the newer wall's actual filter.")
 	TEST_ASSERT_EQUAL(changed_turf.filter_data["rust_wall"], replacement_parameters, "An old cast must preserve the newer filter's exact parameters.")
 	sleep(4 SECONDS)
 	TEST_ASSERT(world.time >= second_expiry, "The newer cast's full cosmetic lifetime must elapse.")
@@ -801,10 +801,16 @@
 	TEST_ASSERT(spell.Activate(changed_turf), "The actual action must construct a wall before it is deleted.")
 	changed_turf = get_step(start, EAST)
 	var/owned_filter = changed_turf.get_filter("rust_wall")
+	var/list/owned_parameters = changed_turf.filter_data["rust_wall"]
 	TEST_ASSERT(owned_filter, "The constructed wall must begin with the real timed glow.")
+	// Native filters[index] accessors are not the parameter-list ownership token.
+	// Observe consecutive reads without asserting any particular engine identity behavior.
+	var/readback_filter = changed_turf.get_filter("rust_wall")
+	log_test("Iron filter consecutive reads without mutation compare equal: [owned_filter == readback_filter].")
 	qdel(spell)
 	TEST_ASSERT(QDELETED(spell), "The originating action must actually be deleted before either cosmetic timer.")
-	TEST_ASSERT_EQUAL(changed_turf.get_filter("rust_wall"), owned_filter, "Action deletion must preserve the already-created wall's normal visual lifetime.")
+	TEST_ASSERT(changed_turf.get_filter("rust_wall"), "Action deletion must preserve the already-created wall's real glow until its normal expiry.")
+	TEST_ASSERT_EQUAL(changed_turf.filter_data["rust_wall"], owned_parameters, "Action deletion must preserve the wall's exact filter ownership.")
 	sleep(4.5 SECONDS)
 	TEST_ASSERT_NULL(changed_turf.get_filter("rust_wall"), "The real expiry must remove the glow even after action deletion.")
 	TEST_ASSERT(istype(changed_turf, /turf/closed/wall), "Deleting the action and expiring its cosmetic must preserve the constructed wall.")
@@ -822,12 +828,13 @@
 	spell.filter_duration = 4 SECONDS
 	TEST_ASSERT(spell.Activate(changed_turf), "The real cast must create a timed glow before unrelated visual changes.")
 	changed_turf = get_step(start, EAST)
-	var/engine_filter = changed_turf.get_filter("rust_wall")
 	var/list/owned_parameters = changed_turf.filter_data["rust_wall"]
-	TEST_ASSERT(engine_filter && owned_parameters, "The actual wall must own both a filter and its parameter list.")
+	TEST_ASSERT(changed_turf.get_filter("rust_wall") && owned_parameters, "The actual wall must own both a filter and its parameter list.")
+	TEST_ASSERT_EQUAL(changed_turf.get_filter_index("rust_wall"), 1, "The original glow must occupy the first native filter slot.")
 	changed_turf.add_filter("vestige_unrelated", 1, list("type" = "outline", "color" = "#ffffff", "size" = 1))
 	var/list/unrelated_parameters = changed_turf.filter_data["vestige_unrelated"]
-	TEST_ASSERT(changed_turf.get_filter("rust_wall") != engine_filter, "Adding an unrelated filter must really rebuild the engine's rust filter.")
+	TEST_ASSERT_EQUAL(length(changed_turf.filters), 2, "The native rebuild must install both filters.")
+	TEST_ASSERT_EQUAL(changed_turf.get_filter_index("rust_wall"), 2, "Adding the priority-one filter must reorder the native list through update_filters.")
 	TEST_ASSERT_EQUAL(changed_turf.filter_data["rust_wall"], owned_parameters, "The native filter rebuild must preserve this cast's parameter-list identity.")
 	sleep(4.5 SECONDS)
 	TEST_ASSERT_NULL(changed_turf.get_filter("rust_wall"), "A native filter rebuild must not prevent the real glow expiry.")
