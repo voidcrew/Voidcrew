@@ -220,6 +220,7 @@
 	busy = FALSE
 	state = CARGO_SHUTTLE_AWAY
 	stall_deadline = 0
+	last_error = null
 	return TRUE
 
 /obj/structure/overmap/dynamic/player_outpost/proc/install_freight_receiver()
