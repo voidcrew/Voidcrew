@@ -21,14 +21,18 @@
 	return null
 
 /datum/voidcrew_cargo_shuttle/outpost/call_shuttle(obj/structure/overmap/ship/unused)
-	try
-		return dispatch_orders()
-	catch(var/exception/dispatch_error)
-		last_error = "Freight preparation interrupted; reservations refunded"
-		busy = FALSE
-		cleanup_shuttle()
-		stack_trace("Outpost freight dispatch interrupted: [dispatch_error]")
-		return last_error
+	if(state != CARGO_SHUTTLE_AWAY || busy || load_pending)
+		return "Freight is already dispatched"
+	// Keep a normal proc boundary around map loading. A broad catch makes BYOND
+	// unwind past the map reader's cleanup on an otherwise recoverable map error.
+	. = dispatch_orders()
+	if(!busy)
+		return
+	// An aborted dispatch did not reach its normal completion/rollback path.
+	last_error = "Freight preparation interrupted; reservations refunded"
+	busy = FALSE
+	cleanup_shuttle()
+	return last_error
 
 /datum/voidcrew_cargo_shuttle/outpost/proc/dispatch_orders()
 	if(state != CARGO_SHUTTLE_AWAY || busy)
@@ -49,25 +53,23 @@
 			return last_error
 		reserved_orders += order
 		home.treasury.add_log_to_history(0, "Reserved order #[order.id]: [order.pack.name], [order.ship_paid_cost] cr to cargo registry, authorized by [order.orderer_ckey]")
-	try
-		if(!spawn_shuttle())
-			last_error = "Unable to prepare freight vessel"
-	catch(var/exception/error_loading)
+	if(!spawn_shuttle())
 		last_error = "Unable to prepare freight vessel"
-		log_shuttle("OUTPOST FREIGHT: [error_loading]")
-	busy = FALSE
 	if(last_error || QDELETED(home) || availability_error())
 		last_error ||= "Receiver became unavailable"
+		busy = FALSE
 		cleanup_shuttle()
 		return last_error
 	var/list/floors = get_cargo_bay_turfs()
 	if(length(reserved_orders) > length(floors))
 		last_error = "Shipment exceeds freight capacity ([length(floors)] packages); reduce the cart"
+		busy = FALSE
 		cleanup_shuttle()
 		return last_error
 	warmup_started = world.time
 	stall_deadline = world.time + CARGO_SHUTTLE_WARMUP + CARGO_SHUTTLE_STALL_GRACE
 	warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_arrival)), CARGO_SHUTTLE_WARMUP, TIMER_STOPPABLE)
+	busy = FALSE
 	return null
 
 /// Refunding a cancelled reservation does not create new market stock or a second payment.
@@ -93,21 +95,22 @@
 	return ..()
 
 /datum/voidcrew_cargo_shuttle/outpost/complete_arrival()
-	try
-		return deliver_orders()
-	catch(var/exception/arrival_error)
-		last_error = "Freight arrival interrupted; undelivered reservations refunded"
-		busy = FALSE
-		cancel_pending()
-		// Preserve already delivered goods if an unrelated failure interrupted a
-		// later package. The physical deck remains accessible for unloading.
-		if(shuttle_port?.get_docked() == home.freight_berth?.dock)
-			state = CARGO_SHUTTLE_DOCKED
-			stall_deadline = 0
-		else
-			cleanup_shuttle()
-		stack_trace("Outpost freight arrival interrupted: [arrival_error]")
+	if(state != CARGO_SHUTTLE_ARRIVING || busy)
 		return FALSE
+	. = deliver_orders()
+	if(!busy)
+		return
+	last_error = "Freight arrival interrupted; undelivered reservations refunded"
+	busy = FALSE
+	cancel_pending()
+	// Preserve already delivered goods if an unrelated failure interrupted a
+	// later package. The physical deck remains accessible for unloading.
+	if(shuttle_port && home?.freight_berth?.dock && shuttle_port.get_docked() == home.freight_berth.dock)
+		state = CARGO_SHUTTLE_DOCKED
+		stall_deadline = 0
+	else
+		cleanup_shuttle()
+	return FALSE
 
 /datum/voidcrew_cargo_shuttle/outpost/proc/deliver_orders()
 	if(state != CARGO_SHUTTLE_ARRIVING || busy)

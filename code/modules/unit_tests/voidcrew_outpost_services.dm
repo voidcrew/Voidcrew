@@ -4,8 +4,13 @@
 	var/area/shuttle/voidcrew/test_ship_area
 	var/turf/test_ship_tile
 	var/area/test_original_area
+	var/datum/shuttle_template_load/test_load_owner
+	var/queued_dispatch_finished = FALSE
+	var/queued_dispatch_error
 
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/Destroy()
+	if(test_load_owner)
+		SSshuttle.release_template_load(test_load_owner)
 	if(test_ship_tile && test_original_area)
 		test_ship_tile.change_area(get_area(test_ship_tile), test_original_area)
 	if(!QDELETED(test_port))
@@ -44,6 +49,23 @@
 	home.cargo_cart += order
 	var/price = order.get_final_cost()
 	var/datum/voidcrew_cargo_shuttle/outpost/ferry = home.freight
+	// A cancelled order waiting behind another ship must refund once and stay cancelled.
+	test_load_owner = SSshuttle.acquire_template_load(1 MINUTES)
+	TEST_ASSERT(test_load_owner, "Could not reserve the template queue for the freight cancellation check")
+	INVOKE_ASYNC(src, PROC_REF(run_queued_dispatch), ferry)
+	TEST_ASSERT(!queued_dispatch_finished && ferry.load_pending && ferry.busy, "The outpost shipment did not wait for the active template load")
+	TEST_ASSERT_EQUAL(account.account_balance, 10000 - price, "Queued freight did not reserve its funds")
+	ferry.cleanup_shuttle()
+	TEST_ASSERT_EQUAL(account.account_balance, 10000, "Cancelling queued freight did not refund its reservation")
+	TEST_ASSERT_NULL(order.ship_paid_cost, "Cancelled queued freight retained a paid order")
+	TEST_ASSERT_NOTNULL(ferry.call_shuttle(), "Cancelled freight accepted a new dispatch before its previous load returned")
+	SSshuttle.release_template_load(test_load_owner)
+	test_load_owner = null
+	UNTIL(queued_dispatch_finished)
+	TEST_ASSERT_NOTNULL(queued_dispatch_error, "Cancelled queued freight reported a successful dispatch")
+	TEST_ASSERT(!ferry.busy && !ferry.load_pending, "Cancelled queued freight remained busy")
+	TEST_ASSERT_EQUAL(account.account_balance, 10000, "A late queued callback refunded the same order twice")
+	TEST_ASSERT(order in home.cargo_cart, "Cancelling queued freight lost its unpaid cart order")
 	TEST_ASSERT_NULL(ferry.call_shuttle(), "Outpost freight refused a shipment with no player ship")
 	TEST_ASSERT_EQUAL(account.account_balance, 10000 - price, "Freight did not reserve the quoted funds")
 	TEST_ASSERT_NOTNULL(ferry.call_shuttle(), "Repeated dispatch started a competing shipment")
@@ -358,3 +380,7 @@
 	second.moveToNullspace()
 	TEST_ASSERT(!same_service_site(first, second), "Two missing endpoints were treated as one service site")
 	TEST_ASSERT(!same_service_site(null, run_loc_floor_bottom_left), "A deleted endpoint retained a service link")
+
+/datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/proc/run_queued_dispatch(datum/voidcrew_cargo_shuttle/outpost/ferry)
+	queued_dispatch_error = ferry.call_shuttle()
+	queued_dispatch_finished = TRUE

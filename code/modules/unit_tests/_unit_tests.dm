@@ -347,6 +347,7 @@
 #include "voidcrew_launch_access.dm"
 #include "voidcrew_launch_cargo.dm"
 #include "voidcrew_cargo_cart.dm"
+#include "voidcrew_cargo_load_queue.dm"
 #include "voidcrew_launch_fabrication.dm"
 #include "voidcrew_launch_progression.dm"
 #include "voidcrew_loot.dm"

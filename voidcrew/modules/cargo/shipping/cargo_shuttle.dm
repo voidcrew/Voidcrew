@@ -13,6 +13,8 @@
 	var/state = CARGO_SHUTTLE_AWAY
 	/// Reference to the shuttle's mobile docking port
 	var/obj/docking_port/mobile/shuttle_port
+	/// A queued or running template load must return before another dispatch can begin.
+	var/load_pending = FALSE
 	/// The cargo console this shuttle is linked to (for callbacks)
 	var/obj/machinery/computer/voidcrew_cargo/linked_console
 	/// Timer ID for warmup periods
@@ -193,6 +195,16 @@
  * reach. Nothing force-releases a live bare reservation.
  */
 /datum/voidcrew_cargo_shuttle/proc/spawn_shuttle()
+	if(load_pending)
+		return FALSE
+	load_pending = TRUE
+	. = SSshuttle.run_template_load(CALLBACK(src, PROC_REF(spawn_shuttle_impl)), wait_timeout = CARGO_SHUTTLE_STALL_GRACE)
+	load_pending = FALSE
+
+/// A queued ferry must still be wanted when the previous template load finishes.
+/datum/voidcrew_cargo_shuttle/proc/spawn_shuttle_impl(datum/shuttle_template_load/load_owner)
+	if(QDELETED(src) || state != CARGO_SHUTTLE_ARRIVING)
+		return FALSE
 	// Always spawn fresh - clean up any existing shuttle first
 	if(shuttle_port && !QDELETED(shuttle_port))
 		cleanup_shuttle()
@@ -339,7 +351,7 @@
  * costs the crew a 30-second warmup if it is left to complete_arrival() to discover.
  */
 /datum/voidcrew_cargo_shuttle/proc/call_shuttle(obj/structure/overmap/ship/ship)
-	if(state != CARGO_SHUTTLE_AWAY)
+	if(state != CARGO_SHUTTLE_AWAY || load_pending)
 		return "Cargo shuttle is not available"
 
 	if(!istype(ship?.docked, /obj/structure/overmap/planet/empty))
