@@ -75,7 +75,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		"resident_mode" = selected.resident_mode,
 		"resident_active" = selected.active_resident_count(), "residents" = people,
 		"freight_state" = freight_state,
-		"freight_error" = selected.freight?.last_error, "research_pairs" = length(selected.research_pairs),
+		"freight_error" = selected.freight?.last_error, "research_connection" = selected.active_research_link?.status_text() || "Disconnected",
 	)
 	return data
 
@@ -292,9 +292,9 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 					pod.relink_to_ship()
 			home.sync_management_lifecycle()
 		if("revoke_research")
-			if(!confirm(home, user, "Revoke all research pairings? Each physical disk keeps its own research."))
+			if(!confirm(home, user, "Disconnect research relays? The outpost keeps its research."))
 				return
-			QDEL_LIST(home.research_pairs)
+			home.revoke_research_links()
 		if("delete")
 			if(!confirm(home, user, "Permanently delete this outpost and its contents?"))
 				return

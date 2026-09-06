@@ -54,6 +54,9 @@
 		say("No local research server linked.")
 		return TRUE
 	if (action == "loadTech")
+		if(!can_export_site_techweb(src, stored_research))
+			say("ERROR- RELAY RESEARCH CANNOT BE DOWNLOADED TO A DISK!")
+			return TRUE
 		var/mob/living/user = usr
 		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
 		if(home && !home.is_resident(user))
@@ -125,7 +128,7 @@
 		exp_to_process += stored_research.completed_experiments[e]
 	for (var/e in exp_to_process)
 		var/datum/experiment/ex = e
-		data["experiments"][ex.research_record_type()] = list(
+		data["experiments"][ex.type] = list(
 			"name" = ex.name,
 			"description" = ex.description,
 			"tag" = ex.exp_tag,

@@ -52,8 +52,20 @@
 	var/datum/shuttle_template_load/test_load_owner
 	var/queued_dispatch_finished = FALSE
 	var/queued_dispatch_error
+	var/list/relay_test_ports = list()
+	var/list/relay_test_areas = list()
 
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/Destroy()
+	for(var/obj/docking_port/mobile/voidcrew/port as anything in relay_test_ports)
+		port.current_ship.shuttle = null
+		port.current_ship = null
+		port.shuttle_areas = list()
+		qdel(port, force = TRUE)
+	for(var/turf/location as anything in relay_test_areas)
+		var/area/shuttle/voidcrew/temporary_area = get_area(location)
+		location.change_area(temporary_area, relay_test_areas[location])
+		temporary_area.shuttle_port = null
+		qdel(temporary_area)
 	if(test_load_owner)
 		SSshuttle.release_template_load(test_load_owner)
 	if(test_ship_tile && test_original_area)
@@ -68,6 +80,30 @@
 		test_ship_area.shuttle_port = null
 		qdel(test_ship_area)
 	return ..()
+
+/datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/proc/make_relay_ship(turf/location, mob/living/captain, obj/structure/overmap/dynamic/player_outpost/home)
+	var/area/shuttle/voidcrew/ship_area = new
+	relay_test_areas[location] = get_area(location)
+	location.change_area(get_area(location), ship_area)
+	var/obj/docking_port/mobile/voidcrew/port = new(location)
+	relay_test_ports += port
+	port.width = 1
+	port.height = 1
+	port.dwidth = 0
+	port.dheight = 0
+	port.shuttle_areas = list()
+	port.shuttle_areas[ship_area] = TRUE
+	ship_area.shuttle_port = port
+	port.register()
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	ship.shuttle = port
+	port.current_ship = ship
+	ship.docked = home
+	ship.state = "idle"
+	ship.ship_team = new /datum/team/voidcrew
+	ship.ship_team.add_member(captain.mind)
+	ship.claimed_captain = captain.mind
+	return ship
 
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/Run()
 	save_economy()
@@ -244,36 +280,35 @@
 	steward.mind_initialize()
 	var/obj/machinery/rnd/server/ship/local_server = new(home_tile)
 	var/obj/machinery/rnd/server/ship/remote_server = new(ship_tile)
+	var/obj/machinery/rnd/server/relay/ship_relay = new(ship_tile)
 	var/obj/item/computer_disk/ship_disk/local_disk = new(home_tile)
 	var/obj/item/computer_disk/ship_disk/remote_disk = new(ship_tile)
 	local_server.attacked_by(local_disk, steward)
 	remote_server.attacked_by(remote_disk, steward)
+	visitor.ship_team = new /datum/team/voidcrew()
+	visitor.ship_team.add_member(steward.mind)
+	visitor.claimed_captain = steward.mind
 	// All physical servers must remain selectable when disks and ships share names.
 	var/obj/machinery/rnd/server/ship/second_local_server = new(home_tile)
-	var/obj/machinery/rnd/server/ship/second_remote_server = new(ship_tile)
 	var/obj/item/computer_disk/ship_disk/second_local_disk = new(home_tile)
-	var/obj/item/computer_disk/ship_disk/second_remote_disk = new(ship_tile)
 	second_local_disk.name = local_disk.name
-	second_remote_disk.name = remote_disk.name
 	second_local_server.attacked_by(second_local_disk, steward)
-	second_remote_server.attacked_by(second_remote_disk, steward)
-	var/list/local_choices = home.research_pair_server_options()
-	var/list/remote_choices = home.research_pair_server_options(remote = TRUE)
+	var/list/local_choices = home.research_server_options()
+	var/list/remote_choices = home.research_relay_options()
 	TEST_ASSERT_EQUAL(length(local_choices), 2, "Identical disk names hid a local physical server")
-	TEST_ASSERT_EQUAL(length(remote_choices), 2, "Identical disk names hid a visiting physical server")
+	TEST_ASSERT_EQUAL(length(remote_choices), 1, "A docked ship relay was not offered for linking")
 	TEST_ASSERT(local_server in flatten_list(local_choices), "Local choices omitted the first physical disk")
 	TEST_ASSERT(second_local_server in flatten_list(local_choices), "Local choices omitted the second physical disk")
-	TEST_ASSERT(remote_server in flatten_list(remote_choices), "Remote choices omitted the first physical disk")
-	TEST_ASSERT(second_remote_server in flatten_list(remote_choices), "Remote choices omitted the second physical disk")
+	TEST_ASSERT(ship_relay in flatten_list(remote_choices), "Relay choices omitted the docked ship relay")
 	qdel(second_local_server)
-	qdel(second_remote_server)
 	qdel(second_local_disk)
-	qdel(second_remote_disk)
 	local_server.set_machine_stat(0)
 	remote_server.set_machine_stat(0)
+	ship_relay.set_machine_stat(0)
 	TEST_ASSERT(!can_link_site_techweb(run_loc_floor_bottom_left, local_server.stored_research), "Machine outside the claim could link its server")
 	TEST_ASSERT(can_link_site_techweb(pod, local_server.stored_research), "Shore lab could not link its own server")
 	TEST_ASSERT(!can_link_site_techweb(pod, remote_server.stored_research), "Shore lab could link a visiting ship's server")
+	TEST_ASSERT_NULL(ship_relay.stored_research, "Unapproved relay retained a research web")
 	// Manufacture from the physical home's disk and actual silo stock.
 	var/obj/machinery/rnd/production/protolathe/lathe = new(home_tile)
 	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
@@ -307,32 +342,105 @@
 	lathe.forceMove(ship_tile)
 	TEST_ASSERT(!lathe.materials.can_use_resource(), "A fabricator moved onto a visitor could consume the home's silo")
 	lathe.forceMove(home_tile)
-	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, local_disk, remote_disk), "Visitor proposed a pairing without authority")
+	TEST_ASSERT(!home.propose_research_link(steward, local_server, ship_relay, local_disk), "Visitor proposed a link without authority")
 	home.stewards |= steward.mind
-	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, remote_disk, local_disk), "Stale selections authorized disks the player was not shown")
-	TEST_ASSERT(!home.propose_research_pair(steward, local_server, remote_server, null, remote_disk), "A missing selected disk implicitly trusted its replacement")
-	TEST_ASSERT(home.propose_research_pair(steward, local_server, remote_server, local_disk, remote_disk), "Authorized home could not request a pairing")
-	var/datum/outpost_research_pair/pair = home.research_pairs[1]
-	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Pair synchronized without ship authorization")
-	pair.ship_approved = TRUE
-	TEST_ASSERT_NULL(pair.unavailable_reason(), "Approved installed powered server pair was unavailable")
-	pair.synchronize()
-	TEST_ASSERT_NOTNULL(pair.last_success, "Valid pair did not synchronize")
-	var/success_time = pair.last_success
-	remote_server.set_machine_stat(NOPOWER)
-	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Unpowered pair reported available")
-	pair.synchronize()
-	TEST_ASSERT_EQUAL(pair.last_success, success_time, "Unpowered pair reported a new success")
-	remote_server.set_machine_stat(0)
-	remote_disk.forceMove(home_tile)
-	TEST_ASSERT_NULL(remote_server.stored_research, "Removed disk left its server linked to data")
-	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Removed trusted disk remained available")
-	var/obj/item/computer_disk/ship_disk/replacement_disk = new(ship_tile)
-	remote_server.attacked_by(replacement_disk, steward)
-	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Pair implicitly trusted a replacement disk")
-	TEST_ASSERT_NOTEQUAL(local_server.stored_research, replacement_disk.stored_research, "Servers shared one mutable research web")
+	TEST_ASSERT(!home.propose_research_link(steward, local_server, ship_relay, remote_disk), "A stale home disk was accepted")
+	TEST_ASSERT(!home.propose_research_link(steward, local_server, ship_relay, null), "A missing home disk implicitly trusted its replacement")
+	var/datum/outpost_research_link/link = home.propose_research_link(steward, local_server, ship_relay, local_disk)
+	TEST_ASSERT_NOTNULL(link, "Authorized home could not request a relay link")
+	TEST_ASSERT(link in home.research_links, "Home did not retain its pending relay link")
+	TEST_ASSERT_NULL(home.active_research_link, "Pending relay request became active before captain approval")
+	TEST_ASSERT(!link.available(), "Unapproved relay link reported available")
+	var/mob/living/carbon/human/noncaptain = allocate(/mob/living/carbon/human/consistent)
+	noncaptain.mind_initialize()
+	TEST_ASSERT(!link.approve(noncaptain), "A non-captain approved the relay link")
+	TEST_ASSERT(link.approve(steward), "The ship captain could not approve the relay link")
+	TEST_ASSERT_EQUAL(home.active_research_link, link, "Captain approval did not activate the relay link")
+	TEST_ASSERT(link.valid_endpoints(), "Approved docked relay endpoints were invalid")
+	TEST_ASSERT(link.available(), "Approved powered relay link was unavailable")
+	TEST_ASSERT_EQUAL(ship_relay.stored_research, local_server.stored_research, "Relay did not expose the outpost disk's authoritative web")
+	var/datum/techweb_node/shared_node = SSresearch.techweb_node_by_id(TECHWEB_NODE_BLUESPACE_THEORY)
+	local_server.stored_research.update_node_status(shared_node)
+	local_server.stored_research.add_point_list(shared_node.get_price(local_server.stored_research))
+	var/points_before_purchase = local_server.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC]
+	TEST_ASSERT(local_server.stored_research.research_node(shared_node, FALSE, TRUE, FALSE), "The shared relay web could not purchase a research node")
+	var/points_after_purchase = local_server.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC]
+	TEST_ASSERT(!ship_relay.stored_research.research_node(shared_node, FALSE, TRUE, FALSE), "The relay purchased an already shared research node twice")
+	TEST_ASSERT_EQUAL(ship_relay.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], points_after_purchase, "The shared relay web deducted points twice")
+	TEST_ASSERT(points_after_purchase < points_before_purchase, "The shared relay purchase did not deduct its cost once")
+	var/obj/machinery/rnd/production/protolathe/ship_lathe = new(ship_tile)
+	var/obj/item/multitool/ship_tool = allocate(/obj/item/multitool)
+	TEST_ASSERT(ship_relay.multitool_act(steward, ship_tool), "Approved relay did not provide a multitool link")
+	TEST_ASSERT(ship_lathe.multitool_act(steward, ship_tool), "Ship equipment could not link through the approved relay")
+	TEST_ASSERT_EQUAL(ship_lathe.stored_research, local_server.stored_research, "Ship equipment did not retain the relay's authoritative web")
+	var/obj/machinery/computer/rdconsole/ship_console = allocate(/obj/machinery/computer/rdconsole, ship_tile)
+	TEST_ASSERT(ship_console.multitool_act(steward, ship_tool), "New ship R&D console could not link while already docked")
+	TEST_ASSERT(!can_export_site_techweb(ship_console, local_disk.stored_research), "Relay allowed a portable copy of outpost research")
+	TEST_ASSERT(can_export_site_techweb(lathe, local_disk.stored_research), "Local outpost research could no longer be exported")
+	var/obj/item/research_notes/notes = allocate(/obj/item/research_notes, ship_tile, 31)
+	ship_console.attackby(notes, steward)
+	TEST_ASSERT_EQUAL(local_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], points_after_purchase + 31, "Ship research earnings did not enter the one outpost balance")
+	TEST_ASSERT_EQUAL(remote_disk.stored_research.research_points[TECHWEB_POINT_TYPE_GENERIC], 0, "Relay earnings were copied into the ship's own disk")
+	ship_relay.set_machine_stat(NOPOWER)
+	link.reconcile()
+	TEST_ASSERT(!link.available(), "Powered-off relay remained available")
+	TEST_ASSERT_NULL(ship_lathe.stored_research, "Power loss left the ship fabricator connected")
+	TEST_ASSERT_NULL(ship_console.stored_research, "Power loss left the ship console connected")
+	TEST_ASSERT_EQUAL(lathe.stored_research, local_disk.stored_research, "Relay power loss severed the outpost lab")
+	ship_relay.set_machine_stat(0)
+	link.reconcile()
+	TEST_ASSERT(link.available(), "Relay did not become available after power returned")
+	local_server.set_machine_stat(NOPOWER)
+	link.reconcile()
+	TEST_ASSERT(!link.available(), "Powered-off outpost server remained available")
+	local_server.set_machine_stat(0)
+	link.reconcile()
+	TEST_ASSERT(link.available(), "Relay did not recover after the outpost server powered on")
 	visitor.docked = null
-	TEST_ASSERT_NOTNULL(pair.unavailable_reason(), "Pair remained available after departure")
+	TEST_ASSERT(link.valid_endpoints(), "Undocking incorrectly invalidated the approved relay")
+	TEST_ASSERT(link.available(), "Undocking incorrectly disabled the approved relay")
+	TEST_ASSERT(ship_lathe.multitool_act(steward, ship_tool), "Ship could not relink fabrication after power returned while undocked")
+	var/obj/machinery/computer/operating/operating = allocate(/obj/machinery/computer/operating, ship_tile)
+	TEST_ASSERT(operating.multitool_act(steward, ship_tool), "Experiment equipment could not use the relay")
+	var/obj/structure/overmap/ship/replacement_ship = make_relay_ship(get_step(ship_tile, EAST), noncaptain, home)
+	var/obj/machinery/rnd/server/relay/replacement_relay = allocate(/obj/machinery/rnd/server/relay, get_turf(replacement_ship.shuttle))
+	replacement_relay.set_machine_stat(0)
+	TEST_ASSERT(!can_link_site_techweb(replacement_relay, local_disk.stored_research), "An unrelated visiting ship inherited relay access")
+	var/datum/outpost_research_link/replacement_link = home.propose_research_link(steward, local_server, replacement_relay, local_disk)
+	TEST_ASSERT_NOTNULL(replacement_link, "Could not request a replacement ship's relay")
+	TEST_ASSERT_EQUAL(home.active_research_link, link, "A pending replacement evicted the current ship")
+	TEST_ASSERT(replacement_link.approve(noncaptain), "Replacement ship captain could not approve")
+	TEST_ASSERT(QDELETED(link), "Approving a replacement left the previous connection alive")
+	TEST_ASSERT_EQUAL(home.active_research_link, replacement_link, "Replacement did not own the one active slot")
+	TEST_ASSERT_NULL(ship_relay.stored_research, "Replaced ship retained the outpost web")
+	TEST_ASSERT_NULL(ship_lathe.stored_research, "Replaced ship retained fabrication access")
+	TEST_ASSERT_NULL(operating.linked_techweb, "Replaced ship retained surgical research access")
+	TEST_ASSERT_NULL(operating.experiment_handler.linked_web, "Replaced ship retained its experiment link")
+	TEST_ASSERT(!ship_lathe.multitool_act(steward, ship_tool), "A stale multitool buffer restored a revoked connection")
+	TEST_ASSERT_EQUAL(lathe.stored_research, local_disk.stored_research, "Replacing a ship disconnected local outpost equipment")
+	TEST_ASSERT_EQUAL(remote_server.stored_research, remote_disk.stored_research, "Replacing a relay changed the ship's independent disk")
+	qdel(replacement_relay)
+	TEST_ASSERT(QDELETED(replacement_link), "Destroying a relay retained its active authorization")
+	TEST_ASSERT(!QDELETED(local_disk.stored_research), "Relay destruction deleted the authoritative outpost web")
+	TEST_ASSERT_NULL(home.active_research_link, "Destroyed relay occupied the active slot")
+	visitor.docked = home
+	link = home.propose_research_link(steward, local_server, ship_relay, local_disk)
+	TEST_ASSERT(link?.approve(steward), "Could not authorize the original ship again")
+	visitor.claimed_captain = noncaptain.mind
+	TEST_ASSERT(!link.available(), "Captain change retained the previous captain's connection")
+	link.reconcile()
+	TEST_ASSERT(QDELETED(link), "Captain change did not release the active slot")
+	visitor.claimed_captain = steward.mind
+	link = home.propose_research_link(steward, local_server, ship_relay, local_disk)
+	TEST_ASSERT(link?.approve(steward), "Could not authorize restored captain")
+	local_disk.forceMove(home_tile)
+	var/obj/item/computer_disk/ship_disk/replacement_disk = new(home_tile)
+	local_server.attacked_by(replacement_disk, steward)
+	TEST_ASSERT(QDELETED(link), "Replacing the home disk left the old link alive")
+	TEST_ASSERT_NULL(home.active_research_link, "Invalidated link remained active")
+	TEST_ASSERT_NULL(ship_relay.stored_research, "A replaced disk left the relay connected")
+	TEST_ASSERT(!can_link_site_techweb(run_loc_floor_bottom_left, local_disk.stored_research), "A removed physical disk became an unscoped fallback web")
+	TEST_ASSERT(!home.propose_research_link(steward, local_server, ship_relay, local_disk), "A stale proposal survived disk replacement")
 	qdel(local_server)
 	TEST_ASSERT_NULL(lathe.stored_research, "Server destruction left fabrication linked to a removed disk")
 	qdel(lathe)
@@ -340,6 +448,8 @@
 	qdel(local_disk)
 	qdel(remote_disk)
 	qdel(replacement_disk)
+	qdel(ship_relay)
+	qdel(ship_lathe)
 	ship_tile.change_area(ship_area, original_area)
 	ship_area.shuttle_port = null
 	port.shuttle_areas = list()
@@ -351,48 +461,6 @@
 	test_ship_area = null
 	test_ship_tile = null
 	test_original_area = null
-
-/datum/unit_test/voidcrew_outpost_research/Run()
-	var/datum/techweb/source = allocate(/datum/techweb)
-	var/datum/techweb/target = allocate(/datum/techweb)
-	source.research_node_id(TECHWEB_NODE_PLASMA_CONTROL, TRUE, FALSE, FALSE)
-	source.research_points[TECHWEB_POINT_TYPE_GENERIC] = 500
-	target.research_points[TECHWEB_POINT_TYPE_GENERIC] = 17
-	var/datum/experiment/scanning/random/material = allocate(/datum/experiment/scanning/random)
-	material.required_atoms = list(/obj/item/stack/sheet/iron = 3)
-	material.scanned = list(/obj/item/stack/sheet/iron = list("one", "two", "three"))
-	material.completed = TRUE
-	source.completed_experiments[material.type] = material
-	target.skipped_experiment_types[material.type] = 200
-	source.survey_data = new
-	var/datum/surveyed_celestial_object/planet/planet = new
-	planet.ref_id = "round-survey-fixture"
-	planet.object_name = "A surveyed planet"
-	planet.visited = TRUE
-	planet.recorded_at = 10
-	source.survey_data.survey_objects_by_type["planets"] += planet
-	target.merge_completed_records(source)
-	target.merge_completed_records(source)
-	source.merge_completed_records(target)
-	TEST_ASSERT(target.researched_nodes[TECHWEB_NODE_PLASMA_CONTROL], "Sync omitted researched technologies")
-	TEST_ASSERT(target.researched_designs["pacman"], "Sync omitted permitted designs")
-	TEST_ASSERT_NULL(target.skipped_experiment_types[/datum/experiment/ordnance/gaseous/plasma], "Imported technology created a refund for points never spent locally")
-	TEST_ASSERT_EQUAL(source.research_points[TECHWEB_POINT_TYPE_GENERIC], 500, "Sync changed the source point balance")
-	TEST_ASSERT_EQUAL(target.research_points[TECHWEB_POINT_TYPE_GENERIC], 17, "Sync copied points or paid experiment rewards")
-	TEST_ASSERT_EQUAL(target.skipped_experiment_types[material.type], -1, "Imported evidence left a repeat refund available")
-	var/datum/experiment/completion_record/record = target.completed_experiments[material.type]
-	TEST_ASSERT_NOTNULL(record, "Completed experiment evidence was omitted")
-	TEST_ASSERT_EQUAL(json_encode(record.check_progress()), json_encode(material.check_progress()), "Copied evidence changed the actual requirements/progress")
-	TEST_ASSERT_NOTEQUAL(record, material, "Sync shared mutable experiment state")
-	TEST_ASSERT_EQUAL(length(target.survey_data.survey_objects_by_type["planets"]), 1, "Repeated sync duplicated survey identity")
-	var/datum/surveyed_celestial_object/planet/copied = target.survey_data.survey_objects_by_type["planets"][1]
-	TEST_ASSERT_NOTEQUAL(copied, planet, "Sync shared mutable survey records")
-	planet.visited = FALSE
-	planet.recorded_at = 5
-	target.merge_completed_records(source)
-	TEST_ASSERT(copied.visited, "Older incoming survey erased newer retained evidence")
-	qdel(source)
-	TEST_ASSERT(record.completed && copied.visited, "Losing the source erased the real backup")
 
 /datum/unit_test/voidcrew_outpost_permissions/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)

@@ -32,30 +32,26 @@
 
 
 /**
- * Ship-scope the server search. Upstream matches servers purely by z-level, but in this fork
- * docked ships share a z: an encounter berth or an outpost pad puts two crews' R&D servers on
- * the same level, so every experiment handler listed its neighbour's techweb in the Experiment
- * Configuration UI, and CONNECT_TO_RND_SERVER_ROUNDSTART could pick the neighbour's server as
- * "the first one found" - after which every experiment quietly paid its points into the other
- * crew's balance, and kept doing so after the ships parted. A server standing on a ship now
- * only serves turfs on that same ship. Servers that aren't aboard any ship (outposts, ruins -
- * e.g. oldstation's CHARLIE web) keep the plain z match, mirroring
- * claim_unlinked_experiment_handlers() (voidcrew/modules/research/server.dm).
+ * Limit the server search to links the server explicitly permits. Upstream matches servers
+ * purely by z-level, but in this fork docked ships share a z: an encounter berth or an outpost
+ * pad puts two crews' R&D servers on the same level. Each server's research_link_available()
+ * applies the normal same-site rule and any approved relay grant, so a neighbour's web cannot
+ * be selected accidentally while a valid relay remains discoverable.
  */
 /datum/controller/subsystem/research/find_valid_servers(turf/location, datum/techweb/checking_web)
 	var/list/valid_servers = list()
 	for(var/obj/machinery/rnd/server/server as anything in checking_web.techweb_servers)
-		if(same_service_site(location, server))
+		if(server.research_link_available(location))
 			valid_servers += server
 	return valid_servers
 
 /**
  * Non-forced links are the ones the Experiment Configuration UI sends. Validate them here
  * rather than trusting the UI: the web must have a server this handler's location may
- * legitimately reach (find_valid_servers above is ship-scoped), so the Connect button works
- * for your own ship's webs while a crafted href still can't tap a docked neighbour's.
- * Forced links - the multitool route and a server claiming its own unlinked handlers -
- * still require the same physical service site.
+ * legitimately reach (find_valid_servers above), so the Connect button works for an approved
+ * local or relay-backed web while a crafted href still cannot tap an unavailable neighbour's.
+ * Forced links - the multitool route and a server claiming its own unlinked handlers - still use
+ * the central site gate.
  */
 /datum/component/experiment_handler/link_techweb(datum/techweb/new_web, forced)
 	if(new_web && !can_link_site_techweb(parent, new_web))

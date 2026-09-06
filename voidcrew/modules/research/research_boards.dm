@@ -1,6 +1,10 @@
 /obj/item/circuitboard/machine/rdserver/ship
 	build_path = /obj/machinery/rnd/server/ship
 
+/obj/item/circuitboard/machine/rdserver/relay
+	name = "R&D Relay"
+	build_path = /obj/machinery/rnd/server/relay
+
 /obj/item/storage/box/rndboards/all
 	name = "\proper the Research & Development Kit"
 	desc = "A box containing everything required to setup Research & Development equipment."
@@ -13,4 +17,3 @@
 	new /obj/item/circuitboard/machine/circuit_imprinter(src)
 	new /obj/item/circuitboard/computer/rdconsole(src)
 	new /obj/item/computer_disk/ship_disk(src)
-

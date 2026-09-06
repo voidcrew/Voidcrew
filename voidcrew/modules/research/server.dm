@@ -17,6 +17,10 @@
  */
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
+/datum/techweb
+	/// Physical disk webs must not become unscoped fallback webs when uninstalled.
+	var/requires_physical_server = FALSE
+
 /obj/machinery/rnd/server/ship
 	desc = "A computer system that hosts a physical R&D source disk and shares its research with linked machinery on the same ship or outpost. Use a multitool to connect local research equipment."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
@@ -39,6 +43,10 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 
 /// Disconnect consumers while retaining the disk's own research data.
 /obj/machinery/rnd/server/ship/proc/detach_source_disk()
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	for(var/datum/outpost_research_link/link as anything in home?.research_links.Copy())
+		if(link.home_server?.resolve() == src)
+			qdel(link)
 	if(source_code_hdd)
 		UnregisterSignal(source_code_hdd, COMSIG_QDELETING)
 	if(stored_research)
@@ -149,6 +157,17 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 /datum/proc/unsync_research_servers()
 	return
 
+/// A physical server serves its own site. Relays additionally validate both endpoints.
+/obj/machinery/rnd/server/proc/research_link_available(atom/machine)
+	return same_service_site(machine, src)
+
+/obj/machinery/rnd/server/ship/refresh_working()
+	. = ..()
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	for(var/datum/outpost_research_link/link as anything in home?.research_links.Copy())
+		if(link.home_server?.resolve() == src)
+			link.reconcile()
+
 /// Recheck both physical endpoints before using a disk. Shuttle movement can move them
 /// separately within one operation, so validating on use avoids severing onboard links.
 /atom/proc/validate_research_site(datum/techweb/web)
@@ -232,6 +251,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	. = ..()
 	name += " [num2hex(rand(1,65535), -1)]"
 	stored_research = new()
+	stored_research.requires_physical_server = TRUE
 	stored_research.id = "[name]"
 	stored_research.organization = "Server Disk"
 

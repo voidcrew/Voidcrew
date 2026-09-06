@@ -93,7 +93,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	QDEL_NULL(freight_berth)
 	QDEL_LIST(cargo_cart)
 	QDEL_NULL(treasury)
-	QDEL_LIST(research_pairs)
+	revoke_research_links()
 	deltimer(home_service_timer)
 	QDEL_NULL(current_advert)
 	approved_ships.Cut()
@@ -785,7 +785,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	treasurers.Cut()
 	resident_mode = "closed"
 	resident_clearance.Cut()
-	QDEL_LIST(research_pairs)
+	revoke_research_links()
 	freight?.cancel_pending()
 	founder_ckey = null
 	founder_name = null
@@ -807,6 +807,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		return FALSE
 	// An owner cannot retain command or spending by delegating authority to themselves
 	// before transferring the deed. Other residents retain their independent grants.
+	revoke_research_links()
 	var/datum/mind/former_owner = founder_mind?.resolve()
 	stewards -= former_owner
 	treasurers -= former_owner

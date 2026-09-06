@@ -41,7 +41,7 @@ type SelectedOutpost = {
   resident_active: number;
   freight_state: string;
   freight_error: string;
-  research_pairs: number;
+  research_connection: string;
   residents: Resident[];
 };
 
@@ -325,7 +325,7 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
                 {selected.freight_error ? ` - ${selected.freight_error}` : null}
               </Box>
               <Box color="label">
-                Research pairings: {selected.research_pairs}
+                Research relay: {selected.research_connection}
               </Box>
             </Stack.Item>
           </Stack>
