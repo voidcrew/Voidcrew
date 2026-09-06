@@ -206,6 +206,7 @@
 #include "machine_disassembly.dm"
 #include "mafia.dm"
 #include "map_landmarks.dm"
+#include "map_parser_attributes.dm"
 #include "mapload_space_verification.dm"
 #include "mapping.dm"
 #include "mapping_nearstation_test.dm"
