@@ -273,6 +273,8 @@
 	var/obj/structure/overmap/space_ruin/first = first_chart.reveal(first_ship)
 	TEST_ASSERT_NOTNULL(first, "A registered chart could not reveal a fresh ruin")
 	spawned_sites += first
+	// The real teardown yields: keep background contracts out of this fixture.
+	first.mission_exclusive = TRUE
 	TEST_ASSERT(first.rare && !first.loaded && !first.visited, "Fresh chart inherited an explored interior")
 	TEST_ASSERT_EQUAL(first.ruin_template.type, chart_type, "Chart revealed the wrong template")
 	TEST_ASSERT_EQUAL(length(GLOB.space_ruin_signals), signals_before + 1, "Reveal did not create exactly one signal")
@@ -287,6 +289,7 @@
 	var/obj/structure/overmap/space_ruin/second = second_chart.reveal(second_ship)
 	TEST_ASSERT_NOTNULL(second, "Another chart could not reveal the same template again")
 	spawned_sites += second
+	second.mission_exclusive = TRUE
 	TEST_ASSERT(first != second, "Second buyer received the first crew's encounter")
 	TEST_ASSERT(get_turf(first) != get_turf(second), "Fresh encounter overlapped the first ruin's occupied coordinates")
 	TEST_ASSERT(!second.loaded && !second.visited, "Second chart reused a visited interior")
@@ -316,6 +319,7 @@
 	first.check_and_respawn()
 	TEST_ASSERT(!QDELETED(first) && first.loaded, "Chart cleanup bypassed a live mission lock")
 	first.mission_locked = FALSE
+	TEST_ASSERT_EQUAL(first.mission_claims, 0, "A background contract claimed the cleanup fixture")
 	first.check_and_respawn()
 	TEST_ASSERT(QDELETED(first), "An abandoned chart ruin retained its old signal")
 	TEST_ASSERT(QDELETED(footprint), "Chart cleanup did not release its map footprint")
