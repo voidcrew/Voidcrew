@@ -7210,6 +7210,7 @@
 #include "voidcrew\modules\player_outposts\outpost_deed.dm"
 #include "voidcrew\modules\player_outposts\outpost_elevator_placement.dm"
 #include "voidcrew\modules\player_outposts\outpost_management.dm"
+#include "voidcrew\modules\player_outposts\outpost_management_action.dm"
 #include "voidcrew\modules\player_outposts\outpost_shells.dm"
 #include "voidcrew\modules\player_outposts\outpost_shield.dm"
 #include "voidcrew\modules\player_outposts\player_outpost.dm"

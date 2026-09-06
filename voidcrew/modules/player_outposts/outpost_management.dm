@@ -24,6 +24,8 @@
 	light_color = LIGHT_COLOR_ORANGE
 	/// The outpost this console manages (set by link_interior_machinery, or found on Initialize for rebuilt consoles)
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
+	/// Reused claim-bound UI; the console is only a compatible physical launcher.
+	var/datum/player_outpost_management_ui/panel
 
 // Machinery always late-initializes; consoles the shell spawned get linked by
 // link_interior_machinery, hand-rebuilt ones relink to their z-level's outpost here
@@ -34,6 +36,7 @@
 		outpost.management_console = src
 
 /obj/machinery/computer/player_outpost_management/Destroy()
+	QDEL_NULL(panel)
 	if(outpost?.management_console == src)
 		outpost.management_console = null
 	outpost = null
@@ -42,12 +45,16 @@
 /// Docking requests changed server-side; refresh any open UIs
 /obj/machinery/computer/player_outpost_management/proc/on_dock_requests_changed()
 	SStgui.update_uis(src)
+	if(panel)
+		SStgui.update_uis(panel)
 
 /obj/machinery/computer/player_outpost_management/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "OutpostManagement", name)
-		ui.open()
+	outpost = get_outpost_from_atom(src)
+	if(!panel || panel.outpost != outpost)
+		QDEL_NULL(panel)
+		panel = new(outpost, user)
+	panel.manager = user
+	panel.ui_interact(user, ui)
 
 /obj/machinery/computer/player_outpost_management/ui_data(mob/user)
 	outpost = get_outpost_from_atom(src)
@@ -110,6 +117,7 @@
 			"ckey" = candidate.ckey,
 			"ref" = REF(candidate),
 			"can_receive_outpost" = !(candidate.ckey in GLOB.player_outpost_founder_ckeys),
+			"is_resident" = candidate.mind in outpost.residents,
 		))
 	data["candidates"] = candidates
 

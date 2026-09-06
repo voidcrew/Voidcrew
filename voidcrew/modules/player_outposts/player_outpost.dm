@@ -85,6 +85,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	GLOB.player_outposts += src
 
 /obj/structure/overmap/dynamic/player_outpost/Destroy()
+	for(var/mob/living/user as anything in GLOB.mob_living_list)
+		remove_player_outpost_management(user, src)
 	GLOB.player_outposts -= src
 	QDEL_NULL(freight)
 	QDEL_NULL(freight_berth)
@@ -323,6 +325,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	residents |= founder.mind
 	resident_clearance[founder_ckey] = TRUE
 	GLOB.player_outpost_founder_ckeys |= founder_ckey
+	grant_player_outpost_management(founder, src)
 
 	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
 	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
@@ -714,6 +717,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	authorized_builder_ckeys.Cut()
 	pending_dock_requests.Cut()
 	QDEL_NULL(current_advert)
+	refresh_player_outpost_management(src)
 
 /**
  * Transfers ownership to another player. The recipient must not have founded
@@ -732,6 +736,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	founder_name = new_owner.real_name
 	founder_mind = WEAKREF(new_owner.mind)
 	GLOB.player_outpost_founder_ckeys += new_owner.ckey
+	refresh_player_outpost_management(src)
 	message_admins("[key_name_admin(user)] transferred player outpost '[name]' to [key_name_admin(new_owner)]")
 	to_chat(new_owner, span_boldnotice("You are now the registered owner of [name]."))
 	return TRUE

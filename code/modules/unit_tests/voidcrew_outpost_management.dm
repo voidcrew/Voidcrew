@@ -71,6 +71,8 @@
 	var/turf/berth_turf = get_turf(home.freight_berth.panel)
 	var/mob/living/carbon/human/resident = make_player(berth_turf, "managementresident")
 	TEST_ASSERT(home.is_owner(owner), "The test actor is not the claim owner.")
+	var/datum/action/innate/player_outpost_management/owner_action = grant_player_outpost_management(owner, home)
+	TEST_ASSERT(owner_action && owner_action.managed_outpost == home, "The owner did not receive the claim-bound management action.")
 	TEST_ASSERT_EQUAL(get_outpost_from_atom(resident), home, "The freight facility must belong to the claim.")
 	TEST_ASSERT(!(resident in home.mapzone.get_mind_mobs_in(home.footprint)), "The freight candidate must exercise a facility outside the habitat footprint.")
 
@@ -111,8 +113,13 @@
 	TEST_ASSERT(resident.ckey in home.authorized_builder_ckeys, "The owner could not authorize a builder in the freight facility.")
 	home.authorized_builder_ckeys.Cut()
 	home.stewards |= visitor.mind
+	grant_player_outpost_management(visitor, home)
+	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in visitor.actions, "A management delegate could not receive the remote management action.")
 	act(console, visitor, "add_builder", resident)
 	TEST_ASSERT(!(resident.ckey in home.authorized_builder_ckeys), "A steward gained owner-only builder delegation.")
+	home.stewards -= visitor.mind
+	refresh_player_outpost_management(home)
+	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in visitor.actions), "Revoking a management delegate left a stale action button.")
 	resident.stat = DEAD
 	TEST_ASSERT(!home.is_management_candidate(resident), "A dead body became an eligible management candidate.")
 	resident.stat = CONSCIOUS

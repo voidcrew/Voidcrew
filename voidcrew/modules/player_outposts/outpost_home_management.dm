@@ -3,14 +3,6 @@
 	var/list/data = list(
 		"can_manage" = outpost.can_manage(user),
 		"can_spend" = outpost.can_spend(user),
-		"balance" = outpost.treasury.account_balance,
-		"treasury_name" = outpost.treasury.account_holder,
-		"personal_account" = user.get_idcard(TRUE)?.registered_account?.account_holder,
-		"ledger" = outpost.treasury.transaction_history,
-		"cargo_state" = outpost.freight.state,
-		"cargo_status" = outpost.freight.availability_error() || outpost.freight.last_error || "Freight receiver ready; deliveries arrive by elevator",
-		"cargo_history" = outpost.freight.transaction_history,
-		"cargo_orders" = length(outpost.cargo_cart),
 		"resident_mode" = outpost.resident_mode,
 		"resident_limit" = outpost.resident_limit,
 		"resident_active" = outpost.active_resident_count(),
@@ -22,29 +14,11 @@
 	for(var/datum/mind/member as anything in outpost.residents)
 		people += list(list("ref" = REF(member), "name" = member.name, "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers)))
 	data["residents"] = people
-	var/list/pairs = list()
-	for(var/datum/outpost_research_pair/pair as anything in outpost.research_pairs)
-		pairs += list(list("ref" = REF(pair), "name" = pair.label, "status" = pair.unavailable_reason() || pair.status, "last_success" = pair.last_success))
-	data["research_pairs"] = pairs
 	return data
 
 /obj/machinery/computer/player_outpost_management/proc/home_service_action(action, list/params, mob/living/user)
-	if(!(action in list("deposit", "withdraw", "open_cargo", "resident_mode", "resident_password", "resident_limit", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate", "pair_research", "revoke_pair")))
+	if(!(action in list("resident_mode", "resident_password", "resident_limit", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate")))
 		return FALSE
-	if(action == "deposit" || action == "withdraw")
-		var/amount = isnum(params["amount"]) ? params["amount"] : text2num(params["amount"])
-		var/success = action == "deposit" ? outpost.deposit_from(user, amount) : outpost.withdraw_to(user, amount)
-		if(!success)
-			say("Transfer refused: check authority, ID account, whole credit amount and available funds.")
-		return TRUE
-	if(action == "open_cargo")
-		for(var/obj/machinery/computer/voidcrew_cargo/console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/voidcrew_cargo))
-			if(get_outpost_from_atom(console) != outpost)
-				continue
-			to_chat(user, span_notice("Use [console] at [get_area(console)]. Deliveries arrive at Freight Receiving by elevator."))
-			return TRUE
-		say("No cargo console. Build one in the habitat to order supplies.")
-		return TRUE
 	if(!outpost.can_manage(user))
 		say("Outpost management permission required.")
 		return TRUE
@@ -91,46 +65,20 @@
 				outpost.residents -= member
 				outpost.stewards -= member
 				outpost.treasurers -= member
+				if(member.current)
+					remove_player_outpost_management(member.current, outpost)
 			else if(outpost.is_owner(user))
 				var/list/permissions = params["role"] == "steward" ? outpost.stewards : outpost.treasurers
 				if(member in permissions)
 					permissions -= member
 				else
 					permissions |= member
-		if("pair_research")
-			INVOKE_ASYNC(src, PROC_REF(prompt_research_pair), user)
-		if("revoke_pair")
-			var/datum/outpost_research_pair/pair = locate(params["ref"]) in outpost.research_pairs
-			if(pair)
-				outpost.research_pairs -= pair
-				qdel(pair)
+			if(action == "delegate" && params["role"] == "steward" && member.current)
+				if(member in outpost.stewards)
+					grant_player_outpost_management(member.current, outpost)
+				else
+					remove_player_outpost_management(member.current, outpost)
 	return TRUE
-
-/obj/machinery/computer/player_outpost_management/proc/prompt_research_pair(mob/living/user)
-	var/obj/structure/overmap/dynamic/player_outpost/home = outpost
-	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || !home.can_manage(user) || !user.Adjacent(src))
-		return
-	var/list/local_servers = home.research_pair_server_options()
-	var/list/remote_servers = home.research_pair_server_options(remote = TRUE)
-	if(!length(local_servers) || !length(remote_servers))
-		say("Pairing requires a local server with a disk and a ship docked with its own server and disk.")
-		return
-	// Retain the disks the player was shown, not whatever is installed after the prompts.
-	var/list/expected_disks = list()
-	for(var/choice in local_servers)
-		var/obj/machinery/rnd/server/ship/server = local_servers[choice]
-		expected_disks[server] = server.source_code_hdd
-	for(var/choice in remote_servers)
-		var/obj/machinery/rnd/server/ship/server = remote_servers[choice]
-		expected_disks[server] = server.source_code_hdd
-	var/obj/machinery/rnd/server/ship/local_server = local_servers[tgui_input_list(user, "Select the outpost's physical server disk.", "Research Pairing", local_servers)]
-	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || QDELETED(local_server))
-		return
-	var/obj/machinery/rnd/server/ship/remote_server = remote_servers[tgui_input_list(user, "Select the docked ship's physical server disk. Its captain must approve at that server.", "Research Pairing", remote_servers)]
-	if(QDELETED(src) || QDELETED(home) || QDELETED(user) || !user.Adjacent(src) || outpost != home || get_outpost_from_atom(src) != home || QDELETED(local_server) || QDELETED(remote_server))
-		return
-	if(!home.propose_research_pair(user, local_server, remote_server, expected_disks[local_server], expected_disks[remote_server]))
-		say("Pairing refused: recheck authority, docking, disks and existing pairings.")
 
 /// Numbered choices keep identical disk/ship names selectable, even at the same location.
 /obj/structure/overmap/dynamic/player_outpost/proc/research_pair_server_options(remote = FALSE)
