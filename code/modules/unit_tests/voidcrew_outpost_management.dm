@@ -1,9 +1,9 @@
 /// The real confirmation boundary, with deterministic changes while the prompt is open.
-/obj/machinery/computer/player_outpost_management/management_test
+/datum/player_outpost_management_ui/management_test
 	var/datum/callback/during_confirmation
 	var/confirmation_result = TRUE
 
-/obj/machinery/computer/player_outpost_management/management_test/confirm_ownership_action(mob/user, prompt_text, title, confirm_label)
+/datum/player_outpost_management_ui/management_test/confirm_ownership_action(mob/user, prompt_text, title, confirm_label)
 	during_confirmation?.Invoke()
 	return confirmation_result
 
@@ -47,18 +47,18 @@
 	test_player_keys |= player.ckey
 	return player
 
-/datum/unit_test/voidcrew_outpost_management/proc/act(obj/machinery/computer/player_outpost_management/console, mob/user, action, mob/candidate)
-	var/datum/tgui/ui = allocate(/datum/tgui, user, console, "OutpostManagement")
-	world.push_usr(user, CALLBACK(console, TYPE_PROC_REF(/datum, ui_act), action, list("ref" = REF(candidate)), ui))
+/datum/unit_test/voidcrew_outpost_management/proc/act(datum/player_outpost_management_ui/panel, mob/user, action, mob/candidate)
+	var/datum/tgui/ui = allocate(/datum/tgui, user, panel, "OutpostManagement")
+	world.push_usr(user, CALLBACK(panel, TYPE_PROC_REF(/datum, ui_act), action, list("ref" = REF(candidate)), ui))
 
 /datum/unit_test/voidcrew_outpost_management/proc/set_owner(obj/structure/overmap/dynamic/player_outpost/home, owner_key)
 	home.founder_ckey = owner_key
 
-/datum/unit_test/voidcrew_outpost_management/proc/retarget_console(obj/machinery/computer/player_outpost_management/console, obj/structure/overmap/dynamic/player_outpost/management_destination_test/other, mob/user, mob/candidate)
+/datum/unit_test/voidcrew_outpost_management/proc/retarget_console(datum/player_outpost_management_ui/panel, obj/machinery/computer/player_outpost_management/console, obj/structure/overmap/dynamic/player_outpost/management_destination_test/other, mob/user, mob/candidate)
 	console.forceMove(other.service_turf)
 	user.forceMove(other.service_turf)
 	candidate.forceMove(other.service_turf)
-	console.ui_data(user) // An ordinary UI refresh now resolves the other claim.
+	panel.ui_data(user) // The claim-bound panel must not retarget to the moved console.
 
 /datum/unit_test/voidcrew_outpost_management/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(__IMPLIED_TYPE__)
@@ -66,8 +66,10 @@
 	home.founder_ckey = "managementowner"
 	TEST_ASSERT(home.load_level(), "The management test home failed to load.")
 	var/turf/console_turf = get_turf(home.management_console)
-	var/obj/machinery/computer/player_outpost_management/management_test/console = allocate(__IMPLIED_TYPE__, console_turf)
+	var/obj/machinery/computer/player_outpost_management/console = allocate(__IMPLIED_TYPE__, console_turf)
 	var/mob/living/carbon/human/owner = make_player(console_turf, "managementowner")
+	var/datum/player_outpost_management_ui/management_test/hud_panel = allocate(__IMPLIED_TYPE__, home, owner)
+	var/datum/player_outpost_management_ui/management_test/physical_panel = allocate(__IMPLIED_TYPE__, home, owner, console)
 	var/turf/berth_turf = get_turf(home.freight_berth.panel)
 	var/mob/living/carbon/human/resident = make_player(berth_turf, "managementresident")
 	TEST_ASSERT(home.is_owner(owner), "The test actor is not the claim owner.")
@@ -100,22 +102,23 @@
 	TEST_ASSERT(visitor in home.mapzone.get_mind_mobs_in(home.footprint), "The visitor must exercise a ship inside the habitat footprint.")
 	TEST_ASSERT_NULL(get_outpost_from_atom(visitor), "A visiting ship must remain outside claim service ownership.")
 
-	var/list/data = console.ui_data(owner)
+	var/list/data = hud_panel.ui_data(owner)
 	var/list/candidate_keys = list()
 	for(var/list/entry as anything in data["candidates"])
 		candidate_keys |= entry["ckey"]
 	TEST_ASSERT(resident.ckey in candidate_keys, "Management omitted a candidate in its freight facility.")
 	TEST_ASSERT(!(visitor.ckey in candidate_keys), "Management listed a visiting ship's occupant as a claim candidate.")
 	TEST_ASSERT(!(owner.ckey in candidate_keys), "The owner should not appear in their own candidate list.")
-	act(console, owner, "add_builder", visitor)
+	act(hud_panel, owner, "add_builder", visitor)
 	TEST_ASSERT(!(visitor.ckey in home.authorized_builder_ckeys), "A forged request authorized a visiting ship occupant.")
-	act(console, owner, "add_builder", resident)
+	act(hud_panel, owner, "add_builder", resident)
 	TEST_ASSERT(resident.ckey in home.authorized_builder_ckeys, "The owner could not authorize a builder in the freight facility.")
 	home.authorized_builder_ckeys.Cut()
 	home.stewards |= visitor.mind
 	grant_player_outpost_management(visitor, home)
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in visitor.actions, "A management delegate could not receive the remote management action.")
-	act(console, visitor, "add_builder", resident)
+	var/datum/player_outpost_management_ui/management_test/delegate_panel = allocate(__IMPLIED_TYPE__, home, visitor)
+	act(delegate_panel, visitor, "add_builder", resident)
 	TEST_ASSERT(!(resident.ckey in home.authorized_builder_ckeys), "A steward gained owner-only builder delegation.")
 	home.stewards -= visitor.mind
 	refresh_player_outpost_management(home)
@@ -127,43 +130,42 @@
 	mindless.key = "managementmindless"
 	TEST_ASSERT(!home.is_management_candidate(mindless), "A keyed body without a mind became an eligible candidate.")
 
-	console.during_confirmation = CALLBACK(resident, TYPE_PROC_REF(/atom/movable, forceMove), run_loc_floor_bottom_left)
-	act(console, owner, "transfer", resident)
+	hud_panel.during_confirmation = CALLBACK(resident, TYPE_PROC_REF(/atom/movable, forceMove), run_loc_floor_bottom_left)
+	act(hud_panel, owner, "transfer", resident)
 	TEST_ASSERT(home.is_owner(owner), "A transfer completed after its candidate left the claim.")
 	resident.forceMove(berth_turf)
-	console.during_confirmation = CALLBACK(src, PROC_REF(set_owner), home, "managementreplacement")
-	act(console, owner, "transfer", resident)
+	hud_panel.during_confirmation = CALLBACK(src, PROC_REF(set_owner), home, "managementreplacement")
+	act(hud_panel, owner, "transfer", resident)
 	TEST_ASSERT_EQUAL(home.founder_ckey, "managementreplacement", "A stale owner completed a transfer after losing authority.")
 	home.founder_ckey = owner.ckey
-	act(console, owner, "abandon", null)
+	act(hud_panel, owner, "abandon", null)
 	TEST_ASSERT_EQUAL(home.founder_ckey, "managementreplacement", "A stale owner abandoned the claim after losing authority.")
 	home.founder_ckey = owner.ckey
 
 	var/obj/structure/overmap/dynamic/player_outpost/management_destination_test/other = allocate(__IMPLIED_TYPE__)
 	other.service_turf = run_loc_floor_bottom_left
 	other.founder_ckey = owner.ckey // Retargeting must fail even if the new site's owner check passes.
-	console.during_confirmation = CALLBACK(src, PROC_REF(retarget_console), console, other, owner, resident)
-	act(console, owner, "transfer", resident)
-	TEST_ASSERT_EQUAL(console.outpost, other, "The confirmation fixture did not retarget the console.")
+	physical_panel.during_confirmation = CALLBACK(src, PROC_REF(retarget_console), physical_panel, console, other, owner, resident)
+	act(physical_panel, owner, "transfer", resident)
+	TEST_ASSERT_EQUAL(physical_panel.outpost, home, "The claim-bound physical panel retargeted after its console moved.")
 	TEST_ASSERT(home.is_owner(owner) && other.is_owner(owner), "A stale transfer changed ownership after the console moved to another claim.")
 	console.forceMove(console_turf)
 	owner.forceMove(console_turf)
 	resident.forceMove(berth_turf)
-	console.ui_data(owner)
-	act(console, owner, "abandon", resident)
+	act(physical_panel, owner, "abandon", resident)
 	TEST_ASSERT(home.is_owner(owner) && other.is_owner(owner), "A stale abandonment affected a claim after the console moved.")
 	console.forceMove(console_turf)
 	owner.forceMove(console_turf)
 	resident.forceMove(berth_turf)
-	console.ui_data(owner)
-	console.during_confirmation = null
-	console.confirmation_result = FALSE
-	act(console, owner, "transfer", resident)
+	physical_panel.during_confirmation = null
+	physical_panel.confirmation_result = FALSE
+	act(physical_panel, owner, "transfer", resident)
 	TEST_ASSERT(home.is_owner(owner), "Cancelling the confirmation still transferred ownership.")
-	console.confirmation_result = TRUE
-	act(console, owner, "transfer", resident)
+	physical_panel.confirmation_result = TRUE
+	act(physical_panel, owner, "transfer", resident)
 	TEST_ASSERT(home.is_owner(resident), "A valid transfer to the freight-facility candidate failed.")
 	TEST_ASSERT(resident.mind in home.residents, "A valid transfer did not retain resident membership.")
 	resident.forceMove(console_turf)
-	act(console, resident, "abandon", null)
+	var/datum/player_outpost_management_ui/management_test/resident_panel = allocate(__IMPLIED_TYPE__, home, resident)
+	act(resident_panel, resident, "abandon", null)
 	TEST_ASSERT_NULL(home.founder_ckey, "A valid owner could not abandon their claim.")
