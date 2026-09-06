@@ -39,7 +39,7 @@
 /obj/machinery/computer/bank_machine/attackby(obj/item/weapon, mob/user, params)
 	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
 	if(site && isidcard(weapon))
-		to_chat(user, span_notice("This terminal serves [site.treasury.account_holder]. Use Outpost Management for account transfers; insert cash or holochips to deposit."))
+		to_chat(user, span_notice("This terminal serves [site.treasury.account_holder]. Use Outpost Management for account transfers; insert cash, coins or holochips to deposit."))
 		return
 	if(isidcard(weapon))
 		var/obj/item/card/id/id_weapon = weapon
