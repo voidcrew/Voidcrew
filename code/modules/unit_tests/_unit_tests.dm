@@ -356,6 +356,7 @@
 #include "voidcrew_npc_disarm.dm"
 #include "voidcrew_player_outpost.dm"
 #include "voidcrew_outpost_services.dm"
+#include "voidcrew_medical_research_links.dm"
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_camera_scope.dm"
 #include "voidcrew_ruin_bounds.dm"
