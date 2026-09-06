@@ -28,6 +28,11 @@
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
 
+/obj/machinery/computer/operating/sync_surgeries()
+	if(!validate_research_site(linked_techweb))
+		return
+	return ..()
+
 /obj/machinery/computer/operating/multitool_act(mob/living/user, obj/item/multitool/tool)
 	// The parent proc returns TRUE whether or not it linked anything, so an empty buffer used to fall
 	// straight through to `linked_techweb.connected_machines` below on a null. Unlinked is the normal

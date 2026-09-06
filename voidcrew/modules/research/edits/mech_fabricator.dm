@@ -30,6 +30,27 @@
 	if(. && has_techweb_buffer && stored_research == tool.buffer)
 		say("Linked to Server!")
 
+/obj/machinery/mecha_part_fabricator/ui_data(mob/user)
+	validate_research_site(stored_research)
+	return ..()
+
+/obj/machinery/mecha_part_fabricator/ui_static_data(mob/user)
+	validate_research_site(stored_research)
+	return ..()
+
+/obj/machinery/mecha_part_fabricator/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	validate_research_site(stored_research)
+	return ..()
+
+/// Research authorizes the next job; the current job already owns its paid materials.
+/obj/machinery/mecha_part_fabricator/build_part(datum/design/design, verbose = TRUE, alist/user_data)
+	validate_research_site(stored_research)
+	if(!design || !(stored_research?.researched_designs[design.id] || (design in illegal_local_designs)))
+		if(verbose)
+			say("Unable to start production: research link or design unavailable.")
+		return FALSE
+	return ..()
+
 /**
  * Output-direction affordances the exofab was missing.
  *

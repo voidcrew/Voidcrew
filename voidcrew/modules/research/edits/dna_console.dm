@@ -21,3 +21,16 @@
 		stored_research.connected_machines |= src
 		say("Linked to Server!")
 		return TRUE
+
+/obj/machinery/computer/dna_console/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	validate_research_site(stored_research)
+	return ..()
+
+/obj/machinery/computer/dna_console/build_mutation_list(can_modify_occ)
+	validate_research_site(stored_research)
+	return ..()
+
+/obj/machinery/computer/dna_console/check_discovery(alias)
+	if(!validate_research_site(stored_research))
+		return FALSE
+	return ..()

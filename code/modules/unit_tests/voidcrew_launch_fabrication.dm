@@ -1,6 +1,8 @@
 /// Run real production and recycling, including a bulk stack that splits on output.
 /datum/unit_test/voidcrew_launch_protolathe_stack_recycling/Run()
 	var/obj/machinery/rnd/production/protolathe/launch_fabrication_test/lathe = allocate(/obj/machinery/rnd/production/protolathe/launch_fabrication_test)
+	var/datum/techweb/web = allocate(/datum/techweb)
+	lathe.connect_techweb(web)
 	lathe.set_machine_stat(NONE)
 	lathe.efficiency_coeff = 0.4
 	lathe.materials.set_local_size(1000 * SHEET_MATERIAL_AMOUNT)
@@ -9,6 +11,7 @@
 	for(var/design_id in design_ids)
 		var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
 		TEST_ASSERT_NOTNULL(design, "Missing stack regression design [design_id]")
+		web.add_design(design)
 		var/list/before = list()
 		for(var/material in design.materials)
 			container.insert_amount_mat(100 * SHEET_MATERIAL_AMOUNT, material)
@@ -47,6 +50,7 @@
 	recycler.materials.max_amount = 1000 * SHEET_MATERIAL_AMOUNT
 	var/datum/design/design = SSresearch.techweb_design_by_id("basic_cell")
 	TEST_ASSERT_NOTNULL(design, "Basic cell must exist for the real mechfab regression")
+	fabricator.illegal_local_designs |= design
 	var/list/spent = list()
 	for(var/material in design.materials)
 		fabricator.rmat.mat_container.insert_amount_mat(1000, material)
@@ -76,6 +80,7 @@
 	var/datum/design/design = allocate(/datum/design)
 	design.build_path = /obj/item/storage/box/launch_fabrication_package
 	design.materials = list(GET_MATERIAL_REF(/datum/material/iron) = 100, GET_MATERIAL_REF(/datum/material/glass) = 4)
+	fabricator.illegal_local_designs |= design
 	var/list/spent = list()
 	for(var/material in design.materials)
 		fabricator.rmat.mat_container.insert_amount_mat(1000, material)

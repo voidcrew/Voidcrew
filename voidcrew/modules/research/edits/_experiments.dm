@@ -65,6 +65,33 @@
 			return
 	return ..()
 
+/datum/component/experiment_handler/proc/validate_research_site()
+	if(!linked_web)
+		return FALSE
+	if(can_link_site_techweb(parent, linked_web))
+		return TRUE
+	unlink_techweb()
+	return FALSE
+
+/datum/component/experiment_handler/action_experiment(datum/source, ...)
+	if(!validate_research_site())
+		return FALSE
+	return ..()
+
+/datum/component/experiment_handler/ui_data(mob/user)
+	validate_research_site()
+	return ..()
+
+/datum/component/experiment_handler/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(!validate_research_site() && (action in list("select_experiment", "start_experiment_callback")))
+		return TRUE
+	return ..()
+
+/datum/component/experiment_handler/can_select_experiment(datum/experiment/experiment)
+	if(!validate_research_site())
+		return FALSE
+	return ..()
+
 /**
  * Experiment handlers are the only research machinery in this fork that links itself: everything
  * else (R&D console, protolathe, operating computer...) is multitooled to the ship's server by hand.
@@ -136,4 +163,3 @@
 		to_chat(user, span_warning("[scanner] has no R&D server link. Copy a techweb from an R&D server with a multitool, then use the multitool on [scanner]."))
 		return
 	return ..()
-

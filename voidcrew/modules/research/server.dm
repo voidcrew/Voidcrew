@@ -149,6 +149,16 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 /atom/proc/unsync_research_servers()
 	return
 
+/// Recheck both physical endpoints before using a disk. Shuttle movement can move them
+/// separately within one operation, so validating on use avoids severing onboard links.
+/atom/proc/validate_research_site(datum/techweb/web)
+	if(!web)
+		return FALSE
+	if(can_link_site_techweb(src, web))
+		return TRUE
+	unsync_research_servers()
+	return FALSE
+
 /**
  * ##attackhand_secondary
  *

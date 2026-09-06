@@ -24,21 +24,24 @@
 	connected_ship_ref = WEAKREF(port)
 
 /obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(istype(tool.buffer, /datum/techweb) && !can_link_site_techweb(src, tool.buffer))
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		balloon_alert(user, "no techweb in buffer!")
+		return TRUE
+	if(!can_link_site_techweb(src, tool.buffer))
 		balloon_alert(user, "server belongs to another site")
 		return FALSE
-	if(stored_research && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
+	if(stored_research)
 		stored_research.connected_machines -= src
 		stored_research.consoles_accessing -= src
 	. = ..()
-	if(.)
-		stored_research.connected_machines += src //connect new one
-		stored_research.consoles_accessing += src
+	if(. && stored_research == tool.buffer)
+		stored_research.connected_machines |= src
+		stored_research.consoles_accessing |= src
 		say("Linked to Server!")
 		return TRUE
 
 /obj/machinery/computer/rdconsole/attackby(obj/item/attacking_item, mob/user, params)
-	if(istype(attacking_item, /obj/item/research_notes) && stored_research)
+	if(istype(attacking_item, /obj/item/research_notes) && validate_research_site(stored_research))
 		var/obj/item/research_notes/research_notes = attacking_item
 		stored_research.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = research_notes.value))
 		playsound(src,'sound/machines/synth/synth_yes.ogg', 50, TRUE)
@@ -47,6 +50,9 @@
 	return ..()
 
 /obj/machinery/computer/rdconsole/ui_act(action, list/params)
+	if(!validate_research_site(stored_research) && (action in list("uploadDisk", "loadTech", "researchNode", "enqueueNode", "dequeueNode")))
+		say("No local research server linked.")
+		return TRUE
 	if (action == "loadTech")
 		var/mob/living/user = usr
 		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
@@ -61,6 +67,7 @@
 	return ..()
 
 /obj/machinery/computer/rdconsole/ui_data(mob/user)
+	validate_research_site(stored_research)
 	var/list/data = list()
 	data["stored_research"] = !!stored_research
 	data["locked"] = locked
@@ -196,3 +203,18 @@
 		"design_cache" = design_cache,
 		"id_cache" = flat_id_cache,
 	)
+
+/obj/machinery/computer/rdconsole/enqueue_node(id, mob/user)
+	if(!validate_research_site(stored_research))
+		return FALSE
+	return ..()
+
+/obj/machinery/computer/rdconsole/dequeue_node(id, mob/user)
+	if(!validate_research_site(stored_research))
+		return FALSE
+	return ..()
+
+/obj/machinery/computer/rdconsole/research_node(id, mob/user)
+	if(!validate_research_site(stored_research))
+		return FALSE
+	return ..()

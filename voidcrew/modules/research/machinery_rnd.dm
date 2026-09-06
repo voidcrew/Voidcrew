@@ -69,7 +69,23 @@
 		update_static_data_for_all_viewers()
 
 /obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui)
-	if(action == "build" && !stored_research)
+	if(action == "build" && !validate_research_site(stored_research))
 		say("No research server linked.")
 		return TRUE
+	return ..()
+
+/obj/machinery/rnd/production/ui_data(mob/user)
+	validate_research_site(stored_research)
+	return ..()
+
+/obj/machinery/rnd/production/ui_static_data(mob/user)
+	validate_research_site(stored_research)
+	return ..()
+
+/// Lathes pay per item, so a queued batch must recheck before each payment.
+/obj/machinery/rnd/production/do_make_item(datum/design/design, items_remaining, build_time_per_item, material_cost_coefficient, charge_per_item, turf/target, alist/user_data)
+	if(!design || !validate_research_site(stored_research) || !stored_research.researched_designs[design.id])
+		say("Unable to continue production: research link or design unavailable.")
+		finalize_build()
+		return
 	return ..()
