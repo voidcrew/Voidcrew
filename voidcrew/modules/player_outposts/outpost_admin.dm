@@ -328,7 +328,8 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	if(home.loading || home.freight?.load_pending || home.freight?.busy || length(home.arrival_reservations))
 		return "An arrival or map load is in progress."
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(ship.docked == home || ship.to_dock?.resolve() == home)
+		// docked is assigned before warmup starts, so this includes approaches.
+		if(ship.docked == home)
 			return "Undock visiting ships and cancel their approaches first."
 	for(var/mob/living/occupant as anything in GLOB.mob_living_list)
 		if(get_outpost_from_atom(occupant) == home)

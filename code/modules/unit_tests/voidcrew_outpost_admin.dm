@@ -57,15 +57,15 @@
 			TEST_ASSERT_EQUAL(cargo.cargo_account(), original_account, "Admin-created cargo terminal did not use the claim treasury")
 	TEST_ASSERT_EQUAL(cargo_count, 1, "Service rescan changed the founding cargo-console count")
 
-	panel.manage_outpost(home, operator, "dock_mode", list("mode" = OUTPOST_DOCK_MODE_LOCKDOWN))
-	TEST_ASSERT_EQUAL(home.dock_mode, OUTPOST_DOCK_MODE_LOCKDOWN, "Admin docking control did not update policy")
+	panel.manage_outpost(home, operator, "dock_mode", list("mode" = "lockdown"))
+	TEST_ASSERT_EQUAL(home.dock_mode, "lockdown", "Admin docking control did not update policy")
 	panel.manage_outpost(home, operator, "resident_mode", list("mode" = "approved"))
 	TEST_ASSERT_EQUAL(home.resident_mode, "approved", "Admin resident control did not update policy")
 	panel.manage_outpost(home, operator, "delegate", list("ref" = REF(operator.mind), "role" = "treasurer"))
 	TEST_ASSERT(operator.mind in home.treasurers, "Admin delegation did not update treasury authority")
 	panel.allow_actions = FALSE
-	panel.manage_outpost(home, operator, "dock_mode", list("mode" = OUTPOST_DOCK_MODE_OPEN))
-	TEST_ASSERT_EQUAL(home.dock_mode, OUTPOST_DOCK_MODE_LOCKDOWN, "A stale admin panel operated after losing authorization")
+	panel.manage_outpost(home, operator, "dock_mode", list("mode" = "open"))
+	TEST_ASSERT_EQUAL(home.dock_mode, "lockdown", "A stale admin panel operated after losing authorization")
 	panel.allow_actions = TRUE
 
 	var/obj/structure/overmap/ship/visitor = allocate(/obj/structure/overmap/ship)
