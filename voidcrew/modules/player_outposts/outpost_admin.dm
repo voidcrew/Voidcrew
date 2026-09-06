@@ -67,7 +67,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	var/list/people = list()
 	for(var/datum/mind/member as anything in selected.residents)
 		if(!QDELETED(member))
-			people += list(list("ref" = REF(member), "name" = member.name, "steward" = (member in selected.stewards), "treasurer" = (member in selected.treasurers)))
+			people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "steward" = (member in selected.stewards), "treasurer" = (member in selected.treasurers)))
 	data["selected"] = list(
 		"ref" = REF(selected), "name" = selected.name, "owner" = selected.founder_ckey || "Unowned",
 		"coords" = "[coords[1]], [coords[2]]", "shell" = selected.shell_template?.name || "Unloaded",
@@ -256,6 +256,8 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 			if(!resident)
 				return
 			if(action == "remove_resident")
+				if(resident == user.mind)
+					return
 				home.residents -= resident
 				home.stewards -= resident
 				home.treasurers -= resident

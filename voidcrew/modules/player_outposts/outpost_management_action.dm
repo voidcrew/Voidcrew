@@ -186,7 +186,7 @@
 	data["resident_blocked"] = outpost.blocked_residents.Copy()
 	var/list/people = list()
 	for(var/datum/mind/member as anything in outpost.residents)
-		people += list(list("ref" = REF(member), "name" = member.name, "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers)))
+		people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers)))
 	data["residents"] = people
 	return data
 
@@ -348,6 +348,8 @@
 			if(!member)
 				return TRUE
 			if(action == "remove_resident")
+				if(member == user.mind)
+					return TRUE
 				outpost.residents -= member
 				outpost.stewards -= member
 				outpost.treasurers -= member

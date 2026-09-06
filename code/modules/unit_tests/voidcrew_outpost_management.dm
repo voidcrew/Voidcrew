@@ -132,11 +132,19 @@
 	TEST_ASSERT(visitor.mind in home.stewards, "The owner could not delegate management through the HUD.")
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in visitor.actions, "A management delegate could not receive the remote management action.")
 	var/datum/player_outpost_management_ui/management_test/delegate_panel = allocate(__IMPLIED_TYPE__, home, visitor)
+	act(delegate_panel, visitor, "remove_resident", visitor.mind)
+	TEST_ASSERT(visitor.mind in home.residents, "A steward removed themselves from the resident list")
+	TEST_ASSERT(visitor.mind in home.stewards, "Refusing self-removal revoked the steward's authority")
+	home.residents |= owner.mind
+	act(hud_panel, owner, "remove_resident", owner.mind)
+	TEST_ASSERT(owner.mind in home.residents, "An owner removed themselves from the resident list")
 	act(delegate_panel, visitor, "add_builder", resident)
 	TEST_ASSERT(!(resident.ckey in home.authorized_builder_ckeys), "A steward gained owner-only builder delegation.")
 	act(hud_panel, owner, "delegate", visitor.mind, list("role" = "steward"))
 	TEST_ASSERT(!(visitor.mind in home.stewards), "The owner could not revoke management through the HUD.")
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in visitor.actions), "Revoking a management delegate left a stale action button.")
+	act(hud_panel, owner, "remove_resident", visitor.mind)
+	TEST_ASSERT(!(visitor.mind in home.residents), "Self-removal protection prevented removing another resident")
 	resident.stat = DEAD
 	TEST_ASSERT(!home.is_management_candidate(resident), "A dead body became an eligible management candidate.")
 	resident.stat = CONSCIOUS

@@ -23,6 +23,7 @@ type Candidate = Vessel & {
   is_resident?: BooleanLike;
 };
 type Resident = Vessel & {
+  is_self: BooleanLike;
   active: BooleanLike;
   steward: BooleanLike;
   treasurer: BooleanLike;
@@ -133,8 +134,10 @@ function Residents({ data, act }: Props) {
           )}
           <Button
             icon="user-minus"
-            tooltip="Remove resident"
-            disabled={!data.can_manage}
+            tooltip={
+              person.is_self ? 'You cannot remove yourself' : 'Remove resident'
+            }
+            disabled={!data.can_manage || !!person.is_self}
             onClick={() => act('remove_resident', { ref: person.ref })}
           />
         </div>

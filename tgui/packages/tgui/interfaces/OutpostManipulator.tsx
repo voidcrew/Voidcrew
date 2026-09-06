@@ -24,6 +24,7 @@ type OutpostSummary = {
 type Resident = {
   ref: string;
   name: string;
+  is_self: BooleanLike;
   steward: BooleanLike;
   treasurer: BooleanLike;
 };
@@ -405,7 +406,12 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
                       compact
                       color="bad"
                       icon="user-minus"
-                      disabled={busy}
+                      disabled={busy || !!resident.is_self}
+                      tooltip={
+                        resident.is_self
+                          ? 'You cannot remove yourself'
+                          : undefined
+                      }
                       onClick={() =>
                         mutate('remove_resident', { ref: resident.ref })
                       }

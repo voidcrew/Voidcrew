@@ -40,6 +40,8 @@
 	home.founder_ckey = operator.ckey
 	home.founder_mind = WEAKREF(operator.mind)
 	home.residents |= operator.mind
+	panel.manage_outpost(home, operator, "remove_resident", list("ref" = REF(operator.mind)))
+	TEST_ASSERT(operator.mind in home.residents, "The admin resident list allowed self-removal")
 	home.abandon(operator, admin_override = TRUE)
 	TEST_ASSERT_EQUAL(home.founder_ckey, operator.ckey, "A non-admin used the administrative abandonment override")
 
