@@ -18,8 +18,27 @@
 	var/obj/effect/jaunt_in_type = /obj/effect/temp_visual/wizard
 	/// Visual for exiting the jaunt
 	var/obj/effect/jaunt_out_type = /obj/effect/temp_visual/wizard/out
-	/// List of valid exit points
+	/// VOIDCREW EDIT: physical exit references travel with the deck during shuttle movement.
 	var/list/exit_point_list
+	var/obj/effect/abstract/jaunt_exit/start_point_anchor
+
+// VOIDCREW EDIT: reclaim reference effects even when the action loses its owner first.
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/Destroy()
+	clear_exit_points()
+	return ..()
+
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/clear_exit_points()
+	QDEL_NULL(start_point_anchor)
+	QDEL_LIST(exit_point_list)
+	exit_point_list = null
+
+/// An invisible location reference, carried by ordinary shuttle movement and rotation.
+/obj/effect/abstract/jaunt_exit
+	name = "jaunt return reference"
+	icon = null
+	invisibility = INVISIBILITY_ABSTRACT
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
 
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/enter_jaunt(mob/living/jaunter, turf/loc_override)
 	. = ..()
@@ -51,9 +70,12 @@
 	if(!holder)
 		CRASH("[type] attempted do_jaunt but failed to create a jaunt holder via enter_jaunt.")
 
+	// VOIDCREW EDIT: keep the starting floor attached to its moving ship.
+	clear_exit_points()
+	start_point_anchor = new(get_turf(holder))
 	LAZYINITLIST(exit_point_list)
 	RegisterSignal(holder, COMSIG_MOVABLE_MOVED, PROC_REF(update_exit_point), target)
-	addtimer(CALLBACK(src, PROC_REF(stop_jaunt), cast_on, holder, get_turf(holder)), jaunt_duration)
+	addtimer(CALLBACK(src, PROC_REF(stop_jaunt), cast_on, holder, start_point_anchor), jaunt_duration)
 
 /**
  * The stopping of the jaunt.
@@ -64,7 +86,7 @@
  * - immediately, if jaunt_in_time >= 2.5 seconds
  * - 2.5 seconds - jaunt_in_time seconds otherwise
  */
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/stop_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/start_point)
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/stop_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, atom/start_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
 
@@ -76,25 +98,30 @@
 
 	// Pick an exit turf to deposit the jaunter
 	var/turf/found_exit
-	for(var/turf/possible_exit as anything in exit_point_list)
-		if(possible_exit.is_blocked_turf_ignore_climbable())
+	// VOIDCREW EDIT: resolve each exit where its original deck tile is now.
+	for(var/obj/effect/abstract/jaunt_exit/exit_anchor as anything in exit_point_list)
+		var/turf/possible_exit = get_turf(exit_anchor)
+		if(!possible_exit || possible_exit.is_blocked_turf_ignore_climbable())
 			continue
 		found_exit = possible_exit
 		break
 
 	// No valid exit was found
 	if(!found_exit)
+		var/turf/start_turf = get_turf(start_point) || get_turf(holder)
 		// It's possible no exit was found, because we literally didn't even move
-		if(get_turf(cast_on) != start_point)
+		if(get_turf(cast_on) != start_turf)
 			to_chat(cast_on, span_danger("Unable to find an unobstructed space, you find yourself ripped back to where you started."))
 		// Either way, default to where we started
-		found_exit = start_point
+		found_exit = start_turf
 
-	exit_point_list = null
+	clear_exit_points()
 	holder.forceMove(found_exit)
 	// Movement callbacks may eject, transform, or remove the caster's action.
 	if(QDELETED(src) || QDELETED(cast_on) || QDELETED(holder) || cast_on.loc != holder || holder.jaunter != cast_on)
 		return
+	// VOIDCREW EDIT: synchronous movement callbacks can relocate the entire deck.
+	found_exit = get_turf(holder)
 	do_steam_effects(found_exit)
 	holder.reappearing = TRUE
 	if(exit_jaunt_sound)
@@ -120,6 +147,8 @@
 		qdel(holder)
 		return
 
+	// VOIDCREW EDIT: the return animation follows its holder through ship transit.
+	final_point = get_turf(holder)
 	new jaunt_in_type(final_point, holder.dir)
 	cast_on.setDir(holder.dir)
 
@@ -149,7 +178,9 @@
 
 	REMOVE_TRAIT(cast_on, TRAIT_IMMOBILIZED, REF(src))
 
-	if(final_point.density)
+	// VOIDCREW EDIT: check the floor we actually emerged on, never the old deck.
+	final_point = get_turf(cast_on)
+	if(final_point?.density)
 		var/list/aside_turfs = get_adjacent_open_turfs(final_point)
 		if(length(aside_turfs))
 			cast_on.forceMove(pick(aside_turfs))
@@ -157,7 +188,7 @@
 /// Removal, body changes and forced ejection can end the return animation early.
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/on_jaunt_exited(obj/effect/dummy/phased_mob/jaunt, mob/living/unjaunter)
 	UnregisterSignal(jaunt, COMSIG_MOVABLE_MOVED)
-	exit_point_list = null
+	clear_exit_points()
 	REMOVE_TRAIT(unjaunter, TRAIT_IMMOBILIZED, REF(src))
 	return ..()
 
@@ -175,8 +206,11 @@
 	var/turf/location = get_turf(source)
 	if(location.is_blocked_turf_ignore_climbable())
 		return
-	exit_point_list.Insert(1, location)
+	// VOIDCREW EDIT: retain the same bounded history using movable references.
+	var/obj/effect/abstract/jaunt_exit/exit_anchor = new(location)
+	exit_point_list.Insert(1, exit_anchor)
 	if(length(exit_point_list) >= 5)
+		qdel(exit_point_list[5])
 		exit_point_list.Cut(5)
 
 /// Does some steam effects from the jaunt at passed loc.

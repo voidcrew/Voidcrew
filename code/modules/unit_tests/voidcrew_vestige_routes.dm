@@ -136,10 +136,6 @@
 /datum/unit_test/vestige_morph/perfect_copy_route/Run()
 	open_test_corridor(8)
 	var/datum/vestige_trial/perfect_copy/trial = prepare(/datum/vestige_trial/perfect_copy)
-	// Widened test terrain borders vacuum; this route checks performance and storage visibility.
-	ADD_TRAIT(user, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
-	ADD_TRAIT(user, TRAIT_RESISTLOWPRESSURE, TRAIT_SOURCE_UNIT_TESTS)
-	ADD_TRAIT(user, TRAIT_RESISTCOLD, TRAIT_SOURCE_UNIT_TESTS)
 	user.put_in_hands(trial.invitation)
 	trial.invitation.attack_self(user, list())
 	TEST_ASSERT(trial.actor && get_dist(user, trial.actor) >= 3, "The real invitation must provide the required approach distance.")

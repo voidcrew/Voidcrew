@@ -532,3 +532,305 @@
 			TEST_ASSERT(!HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, jaunt_trait_source), "The restored body must remain free of the interrupted jaunt's restraint.")
 			qdel(spell)
 		qdel(user)
+
+/** Real body transfers and upgrades must reclaim only their own summoned weapons. */
+/datum/unit_test/vestige_sanguine_body_and_upgrade/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/mob/living/carbon/human/replacement = allocate(/mob/living/carbon/human/consistent)
+	var/datum/action/cooldown/spell/vestige_sanguine_blade/base = allocate(/datum/action/cooldown/spell/vestige_sanguine_blade, keeper.mind)
+	base.Grant(keeper)
+	TEST_ASSERT(base.Activate(keeper), "The actual Sanguine Blade action must summon its held knife.")
+	var/obj/item/knife/ritual/vestige/bound/abandoned = locate() in keeper.held_items
+	TEST_ASSERT(abandoned, "The base spell must equip the actual summoned weapon.")
+	keeper.mind.transfer_to(replacement)
+	TEST_ASSERT(QDELETED(abandoned), "A real mind transfer must dissolve the original body's knife even though no drop occurred.")
+	TEST_ASSERT_EQUAL(base.owner, replacement, "The real mind transfer must carry the action into the new body.")
+	base.reset_spell_cooldown()
+	TEST_ASSERT(base.Activate(replacement), "The replacement body must be able to summon its own fresh blade.")
+	var/obj/item/knife/ritual/vestige/bound/prior = locate() in replacement.held_items
+	var/datum/vestige_boon/spell/sanguine_blade/fang/upgrade = allocate(/datum/vestige_boon/spell/sanguine_blade/fang)
+	upgrade.grant(replacement, replacement.mind)
+	TEST_ASSERT(QDELETED(prior), "The actual boon upgrade must dissolve the obsolete action's held blade.")
+	var/datum/action/cooldown/spell/vestige_sanguine_blade/fang/improved = locate() in replacement.actions
+	TEST_ASSERT(improved && improved.Activate(replacement), "The real granted upgrade must summon the Sanguine Fang.")
+	var/obj/item/knife/ritual/vestige/bound/fang/fang = locate() in replacement.held_items
+	TEST_ASSERT(fang, "The upgraded action must equip its actual stronger knife.")
+	var/obj/item/knife/ritual/vestige/bound/independent = allocate(/obj/item/knife/ritual/vestige/bound, replacement)
+	TEST_ASSERT(replacement.put_in_hands(independent), "The fixture needs a separately supplied bound blade in the other hand.")
+	qdel(improved)
+	TEST_ASSERT(QDELETED(fang), "Deleting the upgraded action must dissolve only its own summoned Fang.")
+	TEST_ASSERT(!QDELETED(independent) && replacement.is_holding(independent), "Cleanup must preserve a blade supplied by an independent source.")
+
+/datum/unit_test/vestige_sanguine_fang_transfer/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/mob/living/carbon/human/replacement = allocate(/mob/living/carbon/human/consistent)
+	var/datum/action/cooldown/spell/vestige_sanguine_blade/fang/spell = allocate(/datum/action/cooldown/spell/vestige_sanguine_blade/fang, keeper.mind)
+	spell.Grant(keeper)
+	TEST_ASSERT(spell.Activate(keeper), "The actual upgraded action must summon a Fang before the transfer.")
+	var/obj/item/knife/ritual/vestige/bound/fang/old_fang = locate() in keeper.held_items
+	TEST_ASSERT(old_fang, "The old body must hold the actual Fang.")
+	keeper.mind.transfer_to(replacement)
+	TEST_ASSERT(QDELETED(old_fang), "The inherited cleanup must reclaim the Fang when the real mind leaves its body.")
+	spell.reset_spell_cooldown()
+	TEST_ASSERT(spell.Activate(replacement), "The new body must retain a working upgraded action.")
+	var/obj/item/knife/ritual/vestige/bound/fang/new_fang = locate() in replacement.held_items
+	TEST_ASSERT(new_fang, "The new body must hold its own fresh Fang.")
+	spell.Remove(replacement)
+	TEST_ASSERT(QDELETED(new_fang), "Explicit action removal must also reclaim its held weapon without deleting the action.")
+
+/** Move every deck occupant through the actual shuttle relocation and rotation callbacks. */
+/datum/unit_test/vestige_jaunt_transit
+	abstract_type = /datum/unit_test/vestige_jaunt_transit
+	var/turf/changed_turf
+	var/changed_turf_type
+	var/list/jaunt_types = list(
+		/datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/vestige,
+		/datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/long/vestige,
+		/datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk,
+	)
+
+/datum/unit_test/vestige_jaunt_transit/Destroy()
+	QDEL_LIST(allocated)
+	if(changed_turf)
+		changed_turf.ChangeTurf(changed_turf_type)
+	return ..()
+
+/datum/unit_test/vestige_jaunt_transit/proc/relocate_deck(list/originals, list/destinations, rotation = 90)
+	var/list/moved = list()
+	for(var/index in 1 to length(originals))
+		var/turf/original = originals[index]
+		var/turf/destination = destinations[index]
+		var/list/occupants = original.contents.Copy()
+		for(var/atom/movable/occupant as anything in occupants)
+			if(istype(occupant, /obj/effect/landmark))
+				continue
+			if(occupant.onShuttleMove(destination, original, list(), NORTH))
+				moved[occupant] = original
+	for(var/atom/movable/occupant as anything in moved)
+		occupant.afterShuttleMove(moved[occupant], list(), NORTH, NORTH, NORTH, rotation)
+	for(var/atom/movable/occupant as anything in moved)
+		occupant.lateShuttleMove(moved[occupant], list(), NORTH)
+
+/// Both the starting fallback and a genuinely visited exit must travel with their deck.
+/datum/unit_test/vestige_jaunt_transit/travel/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/turf/visited = get_step(start, EAST)
+	var/turf/arrived_start = locate(start.x + 2, start.y + 1, start.z)
+	var/turf/arrived_visited = get_step(arrived_start, NORTH)
+	for(var/spell_type in jaunt_types)
+		for(var/visit_exit in list(FALSE, TRUE))
+			var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+			user.mind_initialize()
+			var/mob/living/basic/carp/remains = allocate(/mob/living/basic/carp, start)
+			remains.death()
+			var/datum/action/cooldown/spell/jaunt/ethereal_jaunt/spell = allocate(spell_type, user.mind)
+			spell.Grant(user)
+			spell.jaunt_duration = 1 SECONDS // Accelerate only the travel clock; retain the full native return sequence.
+			TEST_ASSERT(spell.Activate(user), "[spell_type] must enter its actual timed jaunt.")
+			var/obj/effect/dummy/phased_mob/spell_jaunt/holder = user.loc
+			TEST_ASSERT(istype(holder), "The real cast must put its owner inside the phased holder.")
+			if(visit_exit)
+				holder.relaymove(user, EAST)
+				TEST_ASSERT_EQUAL(get_turf(holder), visited, "The actual phased movement control must visit the next clear floor.")
+			var/list/anchors = spell.exit_point_list.Copy()
+			anchors += spell.start_point_anchor
+			relocate_deck(list(start, visited), list(arrived_start, arrived_visited))
+			var/turf/expected = visit_exit ? arrived_visited : arrived_start
+			TEST_ASSERT_EQUAL(get_turf(holder), expected, "The whole-deck relocation must carry the actual jaunt holder.")
+			sleep(4 SECONDS)
+			TEST_ASSERT_EQUAL(user.loc, expected, "[spell_type] must finish on the relocated deck; visited exit [visit_exit].")
+			TEST_ASSERT(QDELETED(holder) && !HAS_TRAIT(user, TRAIT_MAGICALLY_PHASED), "The native timed return must eject its caster and reclaim its holder.")
+			TEST_ASSERT(!HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, REF(spell)), "A relocated return must release its own rematerialization restraint.")
+			for(var/obj/effect/abstract/jaunt_exit/anchor as anything in anchors)
+				TEST_ASSERT(QDELETED(anchor), "A completed jaunt must reclaim every physical return reference.")
+			qdel(spell)
+			qdel(user)
+			qdel(remains)
+
+/// Departing during rematerialization must not consult the obsolete deck's new terrain.
+/datum/unit_test/vestige_jaunt_transit/returning/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/turf/destination = locate(start.x + 2, start.y + 1, start.z)
+	for(var/spell_type in jaunt_types)
+		var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+		user.mind_initialize()
+		var/datum/action/cooldown/spell/jaunt/ethereal_jaunt/spell = allocate(spell_type, user.mind)
+		spell.Grant(user)
+		spell.jaunt_duration = 1 MINUTES
+		TEST_ASSERT(spell.Activate(user), "[spell_type] must enter its actual jaunt before the return test.")
+		var/obj/effect/dummy/phased_mob/spell_jaunt/holder = user.loc
+		spell.stop_jaunt(user, holder, start)
+		TEST_ASSERT(holder.reappearing && HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, REF(spell)), "The real stop handler must begin the timed return before the ship moves.")
+		relocate_deck(list(start), list(destination))
+		changed_turf = start
+		changed_turf_type = start.type
+		changed_turf = changed_turf.ChangeTurf(/turf/closed/wall)
+		sleep(3 SECONDS)
+		TEST_ASSERT_EQUAL(user.loc, destination, "[spell_type] must emerge on its moved deck even if the old coordinates now contain a wall.")
+		TEST_ASSERT(!HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, REF(spell)), "The actual moved return must release its restraint.")
+		start = changed_turf.ChangeTurf(changed_turf_type)
+		changed_turf = null
+		qdel(spell)
+		qdel(user)
+
+/// A real body transfer during travel must clear only the action's owned references.
+/datum/unit_test/vestige_jaunt_transit/body_transfer/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	for(var/spell_type in jaunt_types)
+		var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+		user.mind_initialize()
+		var/mob/living/carbon/human/replacement = allocate(/mob/living/carbon/human/consistent, start)
+		var/datum/action/cooldown/spell/jaunt/ethereal_jaunt/spell = allocate(spell_type, user.mind)
+		spell.Grant(user)
+		spell.jaunt_duration = 1 MINUTES
+		TEST_ASSERT(spell.Activate(user), "[spell_type] must enter its real holder before the mind transfer.")
+		var/obj/effect/dummy/phased_mob/spell_jaunt/holder = user.loc
+		holder.relaymove(user, EAST)
+		var/list/anchors = spell.exit_point_list.Copy()
+		anchors += spell.start_point_anchor
+		TEST_ASSERT_EQUAL(length(anchors), 2, "The real movement must create both a starting and a visited return reference.")
+		var/obj/effect/abstract/jaunt_exit/independent = allocate(/obj/effect/abstract/jaunt_exit, start)
+		user.mind.transfer_to(replacement)
+		TEST_ASSERT_EQUAL(spell.owner, replacement, "The actual mind transfer must carry the jaunt action into the new body.")
+		TEST_ASSERT(isturf(user.loc) && QDELETED(holder), "Mind transfer must still eject the original body and destroy its holder.")
+		for(var/obj/effect/abstract/jaunt_exit/anchor as anything in anchors)
+			TEST_ASSERT(QDELETED(anchor), "A body change must reclaim every reference belonging to the old jaunt.")
+		TEST_ASSERT(!QDELETED(independent), "Jaunt cleanup must preserve an independently owned location reference.")
+		qdel(spell)
+		qdel(user)
+		qdel(replacement)
+		qdel(independent)
+
+/// Deleting the live action or its body before timeout must leave no owned return effects.
+/datum/unit_test/vestige_jaunt_transit/early_deletion/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	for(var/spell_type in jaunt_types)
+		for(var/delete_owner in list(FALSE, TRUE))
+			var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+			user.mind_initialize()
+			var/datum/action/cooldown/spell/jaunt/ethereal_jaunt/spell = allocate(spell_type, user.mind)
+			spell.Grant(user)
+			spell.jaunt_duration = 1 SECONDS
+			TEST_ASSERT(spell.Activate(user), "[spell_type] must enter its actual timed jaunt before deletion.")
+			var/obj/effect/dummy/phased_mob/spell_jaunt/holder = user.loc
+			holder.relaymove(user, EAST)
+			var/list/anchors = spell.exit_point_list.Copy()
+			anchors += spell.start_point_anchor
+			TEST_ASSERT_EQUAL(length(anchors), 2, "The live cast must own both the start and a visited return reference.")
+			var/obj/effect/abstract/jaunt_exit/independent = allocate(/obj/effect/abstract/jaunt_exit, start)
+			if(delete_owner)
+				qdel(user)
+			else
+				qdel(spell)
+			TEST_ASSERT(QDELETED(holder), "Deleting the [delete_owner ? "owner" : "action"] must reclaim the real phased holder.")
+			for(var/obj/effect/abstract/jaunt_exit/anchor as anything in anchors)
+				TEST_ASSERT(QDELETED(anchor), "Early [delete_owner ? "owner" : "action"] deletion must immediately reclaim every owned reference.")
+			TEST_ASSERT(!QDELETED(independent), "Early deletion must preserve an independently owned reference.")
+			if(!delete_owner)
+				TEST_ASSERT(isturf(user.loc) && !HAS_TRAIT(user, TRAIT_MAGICALLY_PHASED), "Deleting the action must eject and unphase its living caster.")
+			sleep(2 SECONDS)
+			TEST_ASSERT(!QDELETED(independent), "An obsolete delayed callback must not reclaim unrelated reference effects.")
+			qdel(spell)
+			qdel(user)
+			qdel(independent)
+
+/datum/unit_test/vestige_iron_filter_generation
+	var/turf/changed_turf
+	var/original_type
+
+/datum/unit_test/vestige_iron_filter_generation/Destroy()
+	QDEL_LIST(allocated)
+	if(changed_turf)
+		changed_turf.ChangeTurf(original_type)
+	return ..()
+
+/// The first caster's actual expiry must not remove a second caster's replacement wall glow.
+/datum/unit_test/vestige_iron_filter_generation/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	changed_turf = get_step(start, EAST)
+	original_type = changed_turf.type
+	var/mob/living/carbon/human/first_caster = allocate(/mob/living/carbon/human/consistent, start)
+	first_caster.mind_initialize()
+	var/mob/living/carbon/human/second_caster = allocate(/mob/living/carbon/human/consistent, get_step(start, NORTH))
+	second_caster.mind_initialize()
+	var/datum/action/cooldown/spell/pointed/rust_construction/vestige/first = allocate(/datum/action/cooldown/spell/pointed/rust_construction/vestige, first_caster.mind)
+	first.Grant(first_caster)
+	first.filter_duration = 4 SECONDS
+	TEST_ASSERT(first.Activate(changed_turf), "The first caster must raise an actual Iron Refusal wall.")
+	var/first_expiry = world.time + first.filter_duration
+	changed_turf = get_step(start, EAST)
+	TEST_ASSERT(istype(changed_turf, /turf/closed/wall) && changed_turf.get_filter("rust_wall"), "The first real wall must have its timed glow.")
+	// Simulate demolition through an actual turf replacement, not by editing filter data.
+	changed_turf = changed_turf.ChangeTurf(/turf/open/floor/plating)
+	var/datum/action/cooldown/spell/pointed/rust_construction/vestige/second = allocate(/datum/action/cooldown/spell/pointed/rust_construction/vestige, second_caster.mind)
+	second.Grant(second_caster)
+	second.filter_duration = 8 SECONDS
+	TEST_ASSERT(second.Activate(changed_turf), "The second caster must raise a new wall at the demolished wall's coordinates.")
+	var/second_expiry = world.time + second.filter_duration
+	changed_turf = get_step(start, EAST)
+	var/replacement_filter = changed_turf.get_filter("rust_wall")
+	var/list/replacement_parameters = changed_turf.filter_data["rust_wall"]
+	TEST_ASSERT(replacement_filter, "The second actual cast must create its own timed glow.")
+	sleep(4.5 SECONDS)
+	TEST_ASSERT(world.time >= first_expiry && world.time < second_expiry, "The ownership check must run after the first expiry and before the second.")
+	TEST_ASSERT_EQUAL(changed_turf.get_filter("rust_wall"), replacement_filter, "An old cast must preserve the newer filter instance.")
+	TEST_ASSERT_EQUAL(changed_turf.filter_data["rust_wall"], replacement_parameters, "An old cast must preserve the newer filter's exact parameters.")
+	sleep(4 SECONDS)
+	TEST_ASSERT(world.time >= second_expiry, "The newer cast's full cosmetic lifetime must elapse.")
+	TEST_ASSERT_NULL(changed_turf.get_filter("rust_wall"), "The newer glow must disappear on its own expiry.")
+	TEST_ASSERT(istype(changed_turf, /turf/closed/wall), "Cosmetic expiry must leave the actual constructed wall intact.")
+
+/// The wall's actual expiry continues after the casting action has been deleted.
+/datum/unit_test/vestige_iron_filter_generation/action_deletion/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	changed_turf = get_step(start, EAST)
+	original_type = changed_turf.type
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+	user.mind_initialize()
+	var/datum/action/cooldown/spell/pointed/rust_construction/vestige/spell = allocate(/datum/action/cooldown/spell/pointed/rust_construction/vestige, user.mind)
+	spell.Grant(user)
+	spell.filter_duration = 4 SECONDS
+	TEST_ASSERT(spell.Activate(changed_turf), "The actual action must construct a wall before it is deleted.")
+	changed_turf = get_step(start, EAST)
+	var/owned_filter = changed_turf.get_filter("rust_wall")
+	TEST_ASSERT(owned_filter, "The constructed wall must begin with the real timed glow.")
+	qdel(spell)
+	TEST_ASSERT(QDELETED(spell), "The originating action must actually be deleted before either cosmetic timer.")
+	TEST_ASSERT_EQUAL(changed_turf.get_filter("rust_wall"), owned_filter, "Action deletion must preserve the already-created wall's normal visual lifetime.")
+	sleep(4.5 SECONDS)
+	TEST_ASSERT_NULL(changed_turf.get_filter("rust_wall"), "The real expiry must remove the glow even after action deletion.")
+	TEST_ASSERT(istype(changed_turf, /turf/closed/wall), "Deleting the action and expiring its cosmetic must preserve the constructed wall.")
+
+/// Rebuilding engine filter objects must neither orphan the glow nor remove another effect.
+/datum/unit_test/vestige_iron_filter_generation/filter_rebuild/Run()
+	restore_atmos()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	changed_turf = get_step(start, EAST)
+	original_type = changed_turf.type
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+	user.mind_initialize()
+	var/datum/action/cooldown/spell/pointed/rust_construction/vestige/spell = allocate(/datum/action/cooldown/spell/pointed/rust_construction/vestige, user.mind)
+	spell.Grant(user)
+	spell.filter_duration = 4 SECONDS
+	TEST_ASSERT(spell.Activate(changed_turf), "The real cast must create a timed glow before unrelated visual changes.")
+	changed_turf = get_step(start, EAST)
+	var/engine_filter = changed_turf.get_filter("rust_wall")
+	var/list/owned_parameters = changed_turf.filter_data["rust_wall"]
+	TEST_ASSERT(engine_filter && owned_parameters, "The actual wall must own both a filter and its parameter list.")
+	changed_turf.add_filter("vestige_unrelated", 1, list("type" = "outline", "color" = "#ffffff", "size" = 1))
+	var/list/unrelated_parameters = changed_turf.filter_data["vestige_unrelated"]
+	TEST_ASSERT(changed_turf.get_filter("rust_wall") != engine_filter, "Adding an unrelated filter must really rebuild the engine's rust filter.")
+	TEST_ASSERT_EQUAL(changed_turf.filter_data["rust_wall"], owned_parameters, "The native filter rebuild must preserve this cast's parameter-list identity.")
+	sleep(4.5 SECONDS)
+	TEST_ASSERT_NULL(changed_turf.get_filter("rust_wall"), "A native filter rebuild must not prevent the real glow expiry.")
+	TEST_ASSERT(changed_turf.get_filter("vestige_unrelated"), "Glow expiry must preserve the unrelated visual.")
+	TEST_ASSERT_EQUAL(changed_turf.filter_data["vestige_unrelated"], unrelated_parameters, "Glow expiry must preserve the unrelated filter's exact parameters.")
+	TEST_ASSERT(istype(changed_turf, /turf/closed/wall), "Cosmetic expiry must leave the constructed wall intact.")

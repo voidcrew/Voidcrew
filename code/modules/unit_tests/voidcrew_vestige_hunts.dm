@@ -496,6 +496,94 @@
 		qdel(spell)
 		qdel(user)
 
+/// Repeated ordinary meals renew one hide; the body keeps it through death until its real expiry.
+/datum/unit_test/vestige_marrow_refresh_and_expiry
+	var/channel_starts = 0
+	var/channel_ends = 0
+	var/channel_started
+	var/channel_finished
+	var/channel_slowdown
+	var/channel_nutrition
+	var/channel_sanity
+
+/datum/unit_test/vestige_marrow_refresh_and_expiry/proc/on_feeding_began(mob/living/source)
+	SIGNAL_HANDLER
+	channel_starts++
+	channel_started = world.time
+	channel_finished = null
+	// do_after snapshots this multiplier before emitting COMSIG_DO_AFTER_BEGAN.
+	// Ordinary mood processing can make a healthy human's four-second channel 3.6 seconds.
+	channel_slowdown = source.cached_multiplicative_actions_slowdown
+	channel_nutrition = source.nutrition
+	channel_sanity = source.mob_mood?.sanity
+
+/datum/unit_test/vestige_marrow_refresh_and_expiry/proc/on_feeding_ended(mob/living/source)
+	SIGNAL_HANDLER
+	channel_ends++
+	channel_finished = world.time
+
+/datum/unit_test/vestige_marrow_refresh_and_expiry/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/consistent/feaster = allocate(/mob/living/carbon/human/consistent, center)
+	feaster.mind_initialize()
+	var/base_brute = feaster.physiology.brute_mod
+	var/base_burn = feaster.physiology.burn_mod
+	// Keep a real independent resistance effect alive throughout this scenario.
+	var/datum/status_effect/blooddrunk/independent = feaster.apply_status_effect(/datum/status_effect/blooddrunk)
+	independent.duration = world.time + 2 MINUTES
+	var/independent_brute = feaster.physiology.brute_mod
+	var/independent_burn = feaster.physiology.burn_mod
+	var/datum/action/cooldown/spell/pointed/vestige_carrion_feast/marrow/feast = allocate(/datum/action/cooldown/spell/pointed/vestige_carrion_feast/marrow, feaster.mind)
+	feast.Grant(feaster)
+	RegisterSignal(feaster, COMSIG_DO_AFTER_BEGAN, PROC_REF(on_feeding_began))
+	RegisterSignal(feaster, COMSIG_DO_AFTER_ENDED, PROC_REF(on_feeding_ended))
+	var/datum/status_effect/vestige_fed_dragon/hide
+	var/original_expiry
+	for(var/meal_number in 1 to 2)
+		var/mob/living/basic/carp/meal = allocate(/mob/living/basic/carp, get_step(center, EAST))
+		meal.death()
+		var/deadline = world.time + feast.cooldown_time + 2 SECONDS
+		while((!feast.IsAvailable() || world.time <= feaster.next_click) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(feast.Trigger(), "The ordinary Marrow Feast button must arm after natural recharge.")
+		feaster.ClickOn(meal, list2params(list(LEFT_CLICK = 1, BUTTON = LEFT_CLICK)))
+		TEST_ASSERT(HAS_TRAIT(meal, "vestige_devoured"), "The actual target click must finish feeding and consume its fresh corpse.")
+		TEST_ASSERT_EQUAL(channel_starts, meal_number, "Each actual meal must begin exactly one ordinary feeding channel.")
+		TEST_ASSERT_EQUAL(channel_ends, meal_number, "Each actual meal must finish its ordinary feeding channel.")
+		var/expected_channel = feast.channel_time * channel_slowdown
+		var/channel_elapsed = channel_finished - channel_started
+		var/channel_diagnostic = "Meal [meal_number]: elapsed [channel_elapsed] ds, expected [expected_channel] ds, base [feast.channel_time] ds, action multiplier [channel_slowdown], nutrition [channel_nutrition], sanity [channel_sanity]."
+		log_world("Marrow Feast channel: [channel_diagnostic]")
+		TEST_ASSERT(expected_channel > 0 && channel_finished >= channel_started + expected_channel, "Each meal must retain the complete feeding channel after native action-speed modifiers. [channel_diagnostic]")
+		if(meal_number == 1)
+			hide = feaster.has_status_effect(/datum/status_effect/vestige_fed_dragon)
+			TEST_ASSERT(hide, "The first actual meal must grant a fed hide.")
+			original_expiry = hide.duration
+		else
+			TEST_ASSERT(world.time < original_expiry, "The ordinary cooldown and channel must permit a second meal before the first hide expires.")
+			TEST_ASSERT_EQUAL(feaster.has_status_effect(/datum/status_effect/vestige_fed_dragon), hide, "The second meal must renew the same hide instead of stacking another resistance application.")
+			TEST_ASSERT(hide.duration > original_expiry, "A repeated meal must extend the existing hide's expiry.")
+		TEST_ASSERT(abs(feaster.physiology.brute_mod - independent_brute * 0.8) < 0.00001, "Each meal must leave exactly one fed brute-resistance multiplier alongside the independent effect.")
+		TEST_ASSERT(abs(feaster.physiology.burn_mod - independent_burn * 0.8) < 0.00001, "Each meal must leave exactly one fed burn-resistance multiplier alongside the independent effect.")
+		qdel(meal)
+	var/mob/living/carbon/human/consistent/replacement = allocate(/mob/living/carbon/human/consistent, get_step(center, NORTH))
+	feaster.mind.transfer_to(replacement)
+	TEST_ASSERT_EQUAL(feast.owner, replacement, "The actual mind transfer must move the meal action to the replacement body.")
+	TEST_ASSERT_EQUAL(hide.owner, feaster, "Already eaten hide must remain on the body that received the meal.")
+	TEST_ASSERT_NULL(replacement.has_status_effect(/datum/status_effect/vestige_fed_dragon), "The replacement body must not inherit the former body's temporary hide.")
+	feaster.death()
+	TEST_ASSERT_EQUAL(feaster.has_status_effect(/datum/status_effect/vestige_fed_dragon), hide, "Ordinary death must leave the body-local effect to its normal duration.")
+	var/deadline = hide.duration + 3 SECONDS
+	while(!QDELETED(hide) && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(QDELETED(hide), "The refreshed hide must actually expire through the live status subsystem.")
+	TEST_ASSERT_EQUAL(feaster.has_status_effect(/datum/status_effect/blooddrunk), independent, "Fed expiry must preserve the independent resistance effect.")
+	TEST_ASSERT(abs(feaster.physiology.brute_mod - independent_brute) < 0.00001, "Expiry must remove all fed brute resistance from the abandoned body.")
+	TEST_ASSERT(abs(feaster.physiology.burn_mod - independent_burn) < 0.00001, "Expiry must remove all fed burn resistance from the abandoned body.")
+	qdel(independent)
+	TEST_ASSERT(abs(feaster.physiology.brute_mod - base_brute) < 0.00001, "Removing the independent effect afterward must restore the exact original brute baseline.")
+	TEST_ASSERT(abs(feaster.physiology.burn_mod - base_burn) < 0.00001, "Removing the independent effect afterward must restore the exact original burn baseline.")
+
 /datum/unit_test/vestige_claws_body_and_upgrade/Run()
 	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent)
 	user.mind_initialize()
@@ -910,6 +998,7 @@
 /datum/unit_test/vestige_hunt_route
 	abstract_type = /datum/unit_test/vestige_hunt_route
 	var/list/restored_ground = list()
+	var/pressure_pushes = 0
 
 /datum/unit_test/vestige_hunt_route/Destroy()
 	. = ..() // Reclaim every actor and kit before putting the surrounding terrain back.
@@ -921,12 +1010,39 @@
 
 /datum/unit_test/vestige_hunt_route/proc/prepare_ground()
 	var/turf/corner = run_loc_floor_bottom_left
-	for(var/turf/ground as anything in block(locate(corner.x - 1, corner.y - 1, corner.z), locate(corner.x + 9, corner.y + 9, corner.z)))
-		if(isfloorturf(ground))
+	var/corner_x = corner.x
+	var/corner_y = corner.y
+	var/corner_z = corner.z
+	// Keep the real standing-still channels: the enlarged deck needs a hull
+	// and uniform air, otherwise its old room vents through the new plating.
+	for(var/turf/ground as anything in block(locate(corner_x - 2, corner_y - 2, corner_z), locate(corner_x + 10, corner_y + 10, corner_z)))
+		var/border = ground.x == corner_x - 2 || ground.x == corner_x + 10 || ground.y == corner_y - 2 || ground.y == corner_y + 10
+		if(!border || ground.type == /turf/closed/wall)
 			continue
 		restored_ground += list(list(ground.x, ground.y, ground.z, ground.type))
-		ground.ChangeTurf(/turf/open/floor/plating)
-	return locate(corner.x + 4, corner.y + 4, corner.z)
+		ground.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_RECALC_ADJACENT)
+	for(var/turf/ground as anything in block(locate(corner_x - 1, corner_y - 1, corner_z), locate(corner_x + 9, corner_y + 9, corner_z)))
+		if(ground.type == /turf/open/floor/plating)
+			continue
+		restored_ground += list(list(ground.x, ground.y, ground.z, ground.type))
+		ground.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_IGNORE_AIR)
+	var/datum/gas_mixture/room_air = SSair.parse_gas_string(OPENTURF_DEFAULT_ATMOS, /datum/gas_mixture/turf)
+	for(var/turf/open/ground as anything in block(locate(corner_x - 1, corner_y - 1, corner_z), locate(corner_x + 9, corner_y + 9, corner_z)))
+		ground.copy_air(room_air)
+		ground.air.archive()
+		ground.immediate_calculate_adjacent_turfs()
+		// Discard only impulses queued before the fixture was sealed and filled.
+		SSair.high_pressure_delta -= ground
+		ground.pressure_difference = 0
+		ground.pressure_direction = NONE
+		ground.air_update_turf(update = FALSE, remove = FALSE)
+	qdel(room_air)
+	return locate(corner_x + 4, corner_y + 4, corner_z)
+
+/// Diagnose environmental interruption without blocking actual pressure movement.
+/datum/unit_test/vestige_hunt_route/proc/observe_pressure(datum/source)
+	SIGNAL_HANDLER
+	pressure_pushes++
 
 /// Retain the production callback and arguments, shortening only an existing scheduled delay.
 /datum/unit_test/vestige_hunt_route/proc/run_pending_callback(datum/source, callback_proc)
@@ -1087,9 +1203,19 @@
 	keeper_mind.active_vestige_trial = trial
 	trial.on_accepted(keeper)
 	var/obj/item/vestige_tremor_spool/spool = trial.spool
+	RegisterSignal(keeper, COMSIG_ATOM_PRE_PRESSURE_PUSH, PROC_REF(observe_pressure))
+	var/line_number = 0
 	for(var/turf/line_floor as anything in line_floors)
 		keeper.forceMove(line_floor)
+		TEST_ASSERT_EQUAL(keeper.get_active_held_item(), spool, "Each real placement must begin with the issued spool in the active hand.")
+		TEST_ASSERT(spool.check_ground(keeper, trial, line_floor), "The actual placement gates must accept this dispersed floor before channeling.")
+		var/channel_started = world.time
 		spool.attack_self(keeper)
+		TEST_ASSERT_EQUAL(get_turf(keeper), line_floor, "The keeper moved during the real placement channel; observed [pressure_pushes] pressure pushes.")
+		TEST_ASSERT(keeper.is_holding(spool), "The issued spool must remain held through each real placement channel.")
+		line_number++
+		TEST_ASSERT_EQUAL(length(trial.lines), line_number, "The real held channel must string this line; elapsed [world.time - channel_started] deciseconds, pressure pushes [pressure_pushes].")
+		TEST_ASSERT(world.time >= channel_started + 2 SECONDS, "Line placement must spend its full ordinary two-second channel.")
 	TEST_ASSERT_EQUAL(length(trial.lines), 3, "The real placement channels must string all three lines at their authored spacing.")
 	TEST_ASSERT(trial.night_begun, "The actual third line must start the night.")
 	var/list/lines = trial.lines.Copy()
@@ -1151,6 +1277,8 @@
 		TEST_ASSERT(crawl.PreActivate(keeper), "The actual borrowed action must accept its dive cast.")
 		var/obj/effect/dummy/phased_mob/blood/holder = keeper.loc
 		TEST_ASSERT(istype(holder), "The cast must physically place the keeper in its real blood holder.")
+		TEST_ASSERT(vestige_is_shambles_quarry(quarry, keeper) && vestige_loom_hunted_prey(quarry) == keeper, "The stock carp must still satisfy both real prey gates while the keeper is contained.")
+		TEST_ASSERT_EQUAL(get_turf(LAZYACCESS(crawl.positions_at_dive, WEAKREF(quarry))), get_turf(quarry), "The real dive must record the surrounding deck from inside its holder.")
 		TEST_ASSERT_EQUAL(keeper.get_active_held_item(), weapon, "The Trapdoor dive must preserve the real held weapon.")
 		if(pounce_number == 1)
 			TEST_ASSERT_EQUAL(keeper.getBruteLoss(), 5, "The first real cast must pay the exact five-brute self-cut toll.")
@@ -1161,6 +1289,7 @@
 		TEST_ASSERT(crawl.IsAvailable(), "The normal action availability gates must allow the submerged keeper to rise.")
 		TEST_ASSERT(crawl.PreActivate(keeper), "The actual borrowed action must accept its voluntary rise cast.")
 		TEST_ASSERT(QDELETED(holder) && isturf(keeper.loc), "The rise must eject the keeper and reclaim its physical blood holder.")
+		TEST_ASSERT_EQUAL(get_turf(LAZYACCESS(crawl.positions_at_rise, WEAKREF(quarry))), get_turf(quarry), "The actual ejection callback must record the quarry's changed floor at the rise.")
 		TEST_ASSERT(crawl.can_pounce(keeper, quarry), "Actual dive and rise snapshots must recognize the beast's movement without assigned progress.")
 		weapon.melee_attack_chain(keeper, quarry, list())
 		TEST_ASSERT(quarry.health < quarry.maxHealth, "The real held-weapon strike must actually damage the moving quarry.")
@@ -1196,6 +1325,7 @@
 		TEST_ASSERT(crawl.Trigger(), "The real action trigger must allow a dive after natural recharge.")
 		var/obj/effect/dummy/phased_mob/blood/holder = keeper.loc
 		TEST_ASSERT(istype(holder), "The timed cast must actually submerge the keeper.")
+		TEST_ASSERT_EQUAL(get_turf(LAZYACCESS(crawl.positions_at_dive, WEAKREF(quarry))), get_turf(quarry), "The timed dive must record its already hunting carp while the keeper is contained.")
 		TEST_ASSERT(!crawl.Trigger(), "An immediate second button press must respect the real dive cooldown.")
 		TEST_ASSERT_EQUAL(keeper.loc, holder, "The cooldown refusal must leave the keeper submerged.")
 		TEST_ASSERT(step(quarry, SOUTH), "The hunting beast must actually move during the timed dive.")
@@ -1213,6 +1343,7 @@
 			TEST_ASSERT(crawl.Trigger(), "A second normal button press after natural recharge must voluntarily surface.")
 			TEST_ASSERT(QDELETED(holder), "The voluntary cast must reclaim the real holder.")
 		TEST_ASSERT(isturf(keeper.loc), "Both real exit routes must land the apprentice directly on the floor.")
+		TEST_ASSERT_EQUAL(get_turf(LAZYACCESS(crawl.positions_at_rise, WEAKREF(quarry))), get_turf(quarry), "Both voluntary and timed ejections must snapshot the actual surrounding deck.")
 		// Do not reset the normal click/move cooldowns: this is the first real click after surfacing.
 		keeper.ClickOn(quarry, list2params(list(LEFT_CLICK = 1, BUTTON = LEFT_CLICK)))
 		TEST_ASSERT_EQUAL(trial.ambushes, forced_exit ? 2 : 1, "The real first weapon click must still fit inside the three-second post-exit strike window.")
@@ -1291,9 +1422,19 @@
 	var/datum/vestige_trial/loom_tremor/trial = allocate(/datum/vestige_trial/loom_tremor, keeper.mind)
 	keeper.mind.active_vestige_trial = trial
 	trial.on_accepted(keeper)
+	RegisterSignal(keeper, COMSIG_ATOM_PRE_PRESSURE_PUSH, PROC_REF(observe_pressure))
+	var/line_number = 0
 	for(var/turf/line_floor as anything in line_floors)
 		keeper.forceMove(line_floor)
+		TEST_ASSERT_EQUAL(keeper.get_active_held_item(), trial.spool, "The autonomous route must use the issued spool in its active hand.")
+		TEST_ASSERT(trial.spool.check_ground(keeper, trial, line_floor), "Every autonomous-route placement must satisfy the actual dispersed-ground gates.")
+		var/channel_started = world.time
 		trial.spool.attack_self(keeper)
+		TEST_ASSERT_EQUAL(get_turf(keeper), line_floor, "The autonomous keeper moved during placement; observed [pressure_pushes] pressure pushes.")
+		TEST_ASSERT(keeper.is_holding(trial.spool), "The autonomous keeper must hold the spool through each placement.")
+		line_number++
+		TEST_ASSERT_EQUAL(length(trial.lines), line_number, "The real autonomous-route channel must string this line; elapsed [world.time - channel_started] deciseconds, pressure pushes [pressure_pushes].")
+		TEST_ASSERT(world.time >= channel_started + 2 SECONDS, "The autonomous route must retain the full ordinary placement channel.")
 	TEST_ASSERT_EQUAL(length(trial.lines), 3, "The autonomous route must begin with a normally deployed dispersed net.")
 	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
 	TEST_ASSERT(keeper.put_in_hands(weapon), "The keeper must equip an ordinary knife for the response.")

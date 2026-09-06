@@ -205,6 +205,9 @@
 	desc = "An egg the colour of old teeth, cold all the way through. It does not feel dead, exactly. Just put off."
 	icon = 'icons/mob/nonhuman-player/alien.dmi'
 	icon_state = "egg_growing"
+	inhand_icon_state = "egg"
+	lefthand_file = 'icons/mob/inhands/items/food_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/food_righthand.dmi'
 	color = "#a8b58c" // gallery-cold
 	w_class = WEIGHT_CLASS_BULKY
 	resistance_flags = ACID_PROOF // hive stock
@@ -577,6 +580,9 @@
 	desc = "A resin-spinning organ, dry but not dead, its ducts still primed with something amber."
 	icon = 'icons/obj/medical/organs/organs.dmi'
 	icon_state = "spinner-x"
+	inhand_icon_state = "coil_white"
+	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	color = "#d9c184"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
@@ -1138,6 +1144,9 @@
 	desc = "An amber tail-barb with a needle that still weeps one slow bead at a time. It handles more like a rubber stamp than a weapon."
 	icon = 'icons/obj/medical/organs/organs.dmi'
 	icon_state = "neurotox"
+	inhand_icon_state = "stinger"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	color = "#d8c06a"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
@@ -1720,7 +1729,8 @@
 /atom/movable/screen/alert/status_effect/vestige_vitriol_coating
 	name = "Coated in Vitriol"
 	desc = "Acid is eating into you. Wash it off. A shower, a sink, a bucket, anything wet will do it."
-	icon_state = "necropolis_curse"
+	icon = 'icons/mob/actions/actions_xeno.dmi'
+	icon_state = "alien_acid"
 
 // ===== THE STING =====
 

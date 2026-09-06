@@ -268,6 +268,9 @@
 	desc = "A spinneret about as long as your forearm, cut from something much bigger and still warm. Silk beads at the tip if you grip it too hard."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "snare_spinneret"
+	inhand_icon_state = "coil_white"
+	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
@@ -510,6 +513,9 @@
 	desc = "A hand-spool of grey binding silk, wound tight enough to hum. The loose end keeps finding your knuckles on its own."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_spool"
+	inhand_icon_state = "coil_white"
+	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
@@ -778,6 +784,7 @@
 	desc = "A larder rack folded down into a parcel of silk-lashed struts. It smells like a pantry that has been empty a long time."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-cloth"
+	inhand_icon_state = "rack_parts"
 	color = "#cdd3e0"
 	w_class = WEIGHT_CLASS_NORMAL
 	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
@@ -1210,6 +1217,9 @@
 	desc = "A spool of silk drawn almost too fine to see. Held up to your ear, it carries faint sounds from somewhere else."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_spool"
+	inhand_icon_state = "coil_white"
+	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	/// Mind of the supplicant this kit was cut for, Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind

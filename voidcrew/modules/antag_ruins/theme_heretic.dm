@@ -108,6 +108,9 @@
 	desc = "Drop it beside an iron wall, dissolve the wall, pull the weight through the breach, and rebuild the wall behind it. The released guardian wants the weight."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "iron"
+	inhand_icon_state = "sheet-metal"
+	lefthand_file = 'icons/mob/inhands/items/sheets_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/sheets_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	max_integrity = 120
 	obj_flags = CAN_BE_HIT
@@ -145,6 +148,9 @@
 	desc = "A flask of oil the colour of old blood. Anything it touches starts rusting through."
 	icon = 'icons/obj/drinks/bottles.dmi'
 	icon_state = "holyflask"
+	inhand_icon_state = "holyflask"
+	lefthand_file = 'icons/mob/inhands/items/drinks_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/drinks_righthand.dmi'
 	color = "#c46a33"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -271,6 +277,7 @@
 	desc = "A sliver of rusted iron, shaved thin enough to flex like a feather. It only writes what doors tell it."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "feather"
+	inhand_icon_state = "pen"
 	color = "#c46a33"
 	w_class = WEIGHT_CLASS_TINY
 
@@ -344,6 +351,9 @@
 	desc = "A lock whose forces must be balanced before it will name its price."
 	icon = 'icons/obj/storage/case.dmi'
 	icon_state = "lockbox+l"
+	inhand_icon_state = "lockbox"
+	lefthand_file = 'icons/mob/inhands/equipment/briefcase_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/briefcase_righthand.dmi'
 	color = "#c46a33"
 	w_class = WEIGHT_CLASS_NORMAL
 	var/pressure = 0

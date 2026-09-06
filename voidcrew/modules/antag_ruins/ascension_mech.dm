@@ -981,6 +981,11 @@
 	owner.add_filter(WARFRAME_GUARD_FILTER, 2, list("type" = "outline", "color" = COLOR_WHITE, "size" = 1))
 	return TRUE
 
+/datum/status_effect/warframe_guard/refresh(mob/living/new_owner, set_duration)
+	. = ..()
+	if(isnum(set_duration))
+		duration = world.time + set_duration
+
 /datum/status_effect/warframe_guard/on_remove()
 	UnregisterSignal(owner, COMSIG_LIVING_CHECK_BLOCK)
 	owner.remove_filter(WARFRAME_GUARD_FILTER)
@@ -1649,6 +1654,9 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	desc = "A slab of deck plate cut out of the lower hall with the hall's current still in it. The cut edges are still bright."
 	icon = 'icons/obj/devices/mecha_equipment.dmi'
 	icon_state = "tesla"
+	inhand_icon_state = "tile"
+	lefthand_file = 'icons/mob/inhands/items/tiles_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/tiles_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	throwforce = 8
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -1713,6 +1721,9 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	desc = "A length of servo assembly cut off at both ends, still tensioned. Squeezing the grip fires the whole travel at once."
 	icon = 'icons/obj/devices/mecha_equipment.dmi'
 	icon_state = "mecha_abooster_ccw"
+	inhand_icon_state = "powerfist"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 10
 	throwforce = 10

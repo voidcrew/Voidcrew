@@ -525,7 +525,9 @@
 	clear_snapshot(positions_at_dive)
 	positions_at_dive = list()
 	var/datum/vestige_trial/trapdoor_feast/trial = jaunter.mind?.active_vestige_trial
-	for(var/mob/living/quarry in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, jaunter))
+	// The parent has already put the jaunter inside its holder. A contained
+	// mob is not a map-range center; take the surrounding deck from its turf.
+	for(var/mob/living/quarry in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, get_turf(jaunter)))
 		if(vestige_is_shambles_quarry(quarry, jaunter) && vestige_loom_hunted_prey(quarry))
 			positions_at_dive[WEAKREF(quarry)] = trial?.mark_turf(get_turf(quarry))
 	deltimer(lurk_timer)
@@ -555,7 +557,7 @@
 	clear_snapshot(positions_at_rise)
 	positions_at_rise = list()
 	var/datum/vestige_trial/trapdoor_feast/trial = unjaunter.mind?.active_vestige_trial
-	for(var/mob/living/bystander in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, unjaunter))
+	for(var/mob/living/bystander in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, get_turf(unjaunter)))
 		positions_at_rise[WEAKREF(bystander)] = trial?.mark_turf(get_turf(bystander))
 	if(istype(unjaunter.mind?.active_vestige_trial, /datum/vestige_trial/trapdoor_feast))
 		to_chat(unjaunter, span_boldnotice("AMBUSH ARMED: strike a moving quarry within three seconds. Your held weapon stays in hand."))
@@ -778,6 +780,9 @@
 	desc = "A folding rack of demon-dark iron with its hooks curled in on themselves. Butcher shops have hung meat from these for centuries. This one hums, very faintly."
 	icon = 'icons/obj/service/kitchen.dmi'
 	icon_state = "spikeframe"
+	inhand_icon_state = "hook"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	color = "#a86a54" // demon-dark iron gone rustward
 	w_class = WEIGHT_CLASS_BULKY
 	/// Mind of the supplicant setting this table, the gambrel answers only its own butcher
@@ -1295,7 +1300,9 @@
 	desc = "A fan of hooked claws grown straight out of the hand. They are much better at opening a wound somebody else already started than at making a new one."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "rending_claw"
-	inhand_icon_state = null
+	inhand_icon_state = "arm_blade"
+	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	color = "#a03535"
 	item_flags = ABSTRACT | DROPDEL
 	w_class = WEIGHT_CLASS_HUGE

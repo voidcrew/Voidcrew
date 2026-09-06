@@ -80,8 +80,12 @@
 	// but I guess a fading filter will have to do for now as walls have 0 depth (currently)
 	// damn though with 3/4ths walls this'll look sick just imagine it
 	new_wall.add_filter("rust_wall", 2, list("type" = "outline", "color" = "#85be299c", "size" = 2))
-	addtimer(CALLBACK(src, PROC_REF(fade_wall_filter), new_wall), filter_duration * 0.5)
-	addtimer(CALLBACK(src, PROC_REF(remove_wall_filter), new_wall), filter_duration)
+	// VOIDCREW EDIT: The constructed wall outlives the action. Capture this cast's
+	// parameter list, which survives unrelated filter rebuilds but not replacement.
+	var/list/owned_filter = new_wall.filter_data["rust_wall"]
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(fade_rust_wall_filter), new_wall, owned_filter, filter_duration * (9/20)), filter_duration * 0.5)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_rust_wall_filter), new_wall, owned_filter), filter_duration)
+	// END VOIDCREW EDIT
 
 	var/message_shown = FALSE
 	for(var/mob/living/living_mob in cast_on)
@@ -119,18 +123,20 @@
 	if(!message_shown)
 		new_wall.visible_message(span_warning("\A [new_wall] [rises_message]!"))
 
-/datum/action/cooldown/spell/pointed/rust_construction/proc/fade_wall_filter(turf/closed/wall)
-	if(QDELETED(wall))
+// VOIDCREW EDIT: Independent cosmetic expiry must not affect a later cast on this turf.
+/proc/fade_rust_wall_filter(turf/closed/wall, list/owned_filter, fade_duration)
+	if(QDELETED(wall) || LAZYACCESS(wall.filter_data, "rust_wall") != owned_filter)
 		return
 
 	var/rust_filter = wall.get_filter("rust_wall")
 	if(!rust_filter)
 		return
 
-	animate(rust_filter, alpha = 0, time = filter_duration * (9/20))
+	animate(rust_filter, alpha = 0, time = fade_duration)
 
-/datum/action/cooldown/spell/pointed/rust_construction/proc/remove_wall_filter(turf/closed/wall)
-	if(QDELETED(wall))
+/proc/remove_rust_wall_filter(turf/closed/wall, list/owned_filter)
+	if(QDELETED(wall) || LAZYACCESS(wall.filter_data, "rust_wall") != owned_filter)
 		return
 
 	wall.remove_filter("rust_wall")
+// END VOIDCREW EDIT

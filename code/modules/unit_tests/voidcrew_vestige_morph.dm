@@ -13,17 +13,60 @@
 	user.mind_initialize()
 
 /datum/unit_test/vestige_morph/Destroy()
+	for(var/datum/vestige_trial/trial in allocated)
+		qdel(trial)
+	QDEL_NULL(user)
 	for(var/list/record as anything in terrain_originals)
 		var/turf/spot = locate(record[1], record[2], record[3])
-		spot.ChangeTurf(record[4])
+		spot.RemoveElement(/datum/element/forced_gravity, 1)
+		spot = spot.ChangeTurf(record[4], flags = CHANGETURF_IGNORE_AIR | CHANGETURF_RECALC_ADJACENT)
+		spot.temperature = record[6]
+		var/datum/gas_mixture/saved_air = record[5]
+		if(isopenturf(spot) && saved_air)
+			var/turf/open/open_spot = spot
+			open_spot.copy_air(saved_air)
+			open_spot.air.archive()
+		qdel(saved_air)
+	for(var/list/record as anything in terrain_originals)
+		var/turf/spot = locate(record[1], record[2], record[3])
+		spot.immediate_calculate_adjacent_turfs()
+		spot.air_update_turf(update = FALSE, remove = FALSE)
 	return ..()
 
-/// The perception regression needs more than the default room's five tiles.
+/// Extend the five-tile room with a sealed, pressurized corridor for real perception/channel checks.
 /datum/unit_test/vestige_morph/proc/open_test_corridor(length)
-	for(var/index in 0 to length)
-		var/turf/spot = locate(center.x + index, center.y, center.z)
-		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type))
-		spot.ChangeTurf(/turf/open/floor/plating)
+	var/center_x = center.x
+	var/center_y = center.y
+	var/center_z = center.z
+	for(var/turf/spot in block(locate(center_x - 3, center_y - 3, center_z), locate(center_x + length + 1, center_y + 3, center_z)))
+		var/datum/gas_mixture/saved_air
+		if(isopenturf(spot))
+			var/turf/open/open_spot = spot
+			if(open_spot.air)
+				saved_air = new
+				saved_air.copy_from(open_spot.air)
+		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type, saved_air, spot.temperature))
+	for(var/turf/spot in block(locate(center_x - 3, center_y - 3, center_z), locate(center_x + length + 1, center_y + 3, center_z)))
+		if(spot.x == center_x - 3 || spot.x == center_x + length + 1 || abs(spot.y - center_y) == 3)
+			spot.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_RECALC_ADJACENT)
+	for(var/list/record as anything in terrain_originals)
+		if(record[1] == center_x - 3 || record[1] == center_x + length + 1 || abs(record[2] - center_y) == 3)
+			continue
+		var/turf/spot = locate(record[1], record[2], record[3])
+		var/turf/open/floor = spot.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_IGNORE_AIR)
+		floor.AddElement(/datum/element/forced_gravity, 1)
+	var/datum/gas_mixture/room_air = SSair.parse_gas_string(OPENTURF_DEFAULT_ATMOS, /datum/gas_mixture/turf)
+	for(var/turf/open/floor in block(locate(center_x - 2, center_y - 2, center_z), locate(center_x + length, center_y + 2, center_z)))
+		floor.copy_air(room_air)
+		floor.air.archive()
+		floor.temperature = room_air.temperature
+		floor.immediate_calculate_adjacent_turfs()
+		SSair.high_pressure_delta -= floor
+		floor.pressure_difference = 0
+		floor.pressure_direction = NONE
+		floor.air_update_turf(update = FALSE, remove = FALSE)
+	qdel(room_air)
+	center = locate(center_x, center_y, center_z)
 
 /datum/unit_test/vestige_morph/proc/prepare(trial_type)
 	var/datum/vestige_trial/morph_scenario/trial = allocate(trial_type, user.mind)
@@ -226,7 +269,12 @@
 	TEST_ASSERT(!trial.porter_sees(user), "Real opaque terrain must break the porter's pursuit sight.")
 	TEST_ASSERT(trial.can_digest(user), "A held actual meal beyond six pantry tiles and behind cover must be digestible.")
 	var/obj/item/food/old_course = trial.course
-	trial.maw.attack_self(user)
+	user.swap_hand(user.get_held_index_of_item(trial.maw))
+	var/turf/digest_floor = get_turf(user)
+	var/digest_started = world.time
+	user.execute_mode()
+	TEST_ASSERT_EQUAL(get_turf(user), digest_floor, "The sealed corridor must preserve the bearer's position during real digestion.")
+	TEST_ASSERT(world.time >= digest_started + 3 SECONDS, "Real digestion must finish its three-second channel; elapsed [world.time - digest_started], conscious [user.stat == CONSCIOUS].")
 	TEST_ASSERT(QDELETED(old_course), "Successful digestion must consume the exact loan meal.")
 	TEST_ASSERT(QDELETED(trial), "Successful digestion must complete and reclaim the encounter.")
 	TEST_ASSERT(/datum/vestige_trial/snatched_meal in user.mind.completed_vestige_trials, "The real digestion channel must record completion.")

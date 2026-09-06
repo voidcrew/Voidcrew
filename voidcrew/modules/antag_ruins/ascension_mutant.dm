@@ -1123,6 +1123,9 @@
 	desc = "A slab of grey wall panel with the bolt holes still in it. It came off the wall sideways."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "sheet-abductor"
+	inhand_icon_state = "sheet-abductor"
+	lefthand_file = 'icons/mob/inhands/items/sheets_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/sheets_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 8
 	throwforce = 14
@@ -1372,8 +1375,19 @@
 	for(var/turf/spot as anything in marks)
 		new /obj/effect/temp_visual/vestige_pin_mark(spot, telegraph_time)
 		owner.Beam(spot, icon_state = "purple_lightning", time = telegraph_time)
-		addtimer(CALLBACK(src, PROC_REF(close_the_mark), spot), telegraph_time)
+		var/obj/effect/vestige_trial_marker/marker = new(spot)
+		// The warning moves with its ship. A deleted anchor also cancels its delayed callback.
+		QDEL_IN(marker, telegraph_time + 1 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(close_marked_turf), marker), telegraph_time)
 	return TRUE
+
+/// Resolve the physical mark when it closes, so damage follows the visible warning across transit.
+/datum/action/cooldown/mob_cooldown/vestige_tk/pin/proc/close_marked_turf(obj/effect/vestige_trial_marker/marker)
+	if(QDELETED(marker))
+		return
+	var/turf/marked = get_turf(marker)
+	qdel(marker)
+	close_the_mark(marked)
 
 /datum/action/cooldown/mob_cooldown/vestige_tk/pin/proc/announce_windup()
 	owner.visible_message(span_boldwarning("[owner] fixes on a patch of floor, and the air over it starts to buzz."))
@@ -1526,6 +1540,14 @@
 	var/hold_time = MUTANT_CONFISCATE_HOLD
 	/// How far away it can reach into a hand.
 	var/reach = 12
+	/// Stolen item => the exact outline parameters installed by this pending return.
+	var/list/booked_property = list()
+
+/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/Destroy()
+	for(var/obj/item/prize as anything in booked_property.Copy())
+		release_booking(prize)
+	booked_property = null
+	return ..()
 
 /datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/worth_using_on(atom/quarry)
 	if(!..() || !isliving(quarry))
@@ -1560,6 +1582,7 @@
 	StartCooldown()
 	prize.forceMove(perch)
 	prize.add_filter(VESTIGE_TK_FILTER, 2, list("type" = "outline", "color" = VESTIGE_TK_COLOR, "size" = 1))
+	booked_property[prize] = prize.filter_data[VESTIGE_TK_FILTER]
 	playsound(owner, 'sound/effects/magic/summon_magic.ogg', 60, TRUE)
 	victim.visible_message(
 		span_boldwarning("[prize] leaves [victim]'s hand and crosses the room to [owner], which turns it over once."),
@@ -1568,10 +1591,18 @@
 	addtimer(CALLBACK(src, PROC_REF(hand_it_back), prize, victim), hold_time)
 	return TRUE
 
-/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/proc/hand_it_back(obj/item/prize, mob/living/victim)
-	if(QDELETED(prize))
-		return
+/// A later telekinetic field owns its own outline and momentum, even on stolen property.
+/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/proc/release_booking(obj/item/prize)
+	var/list/booked_filter = booked_property[prize]
+	booked_property -= prize
+	if(!booked_filter || QDELETED(prize) || prize.filter_data?[VESTIGE_TK_FILTER] != booked_filter)
+		return FALSE
 	prize.remove_filter(VESTIGE_TK_FILTER)
+	return TRUE
+
+/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/proc/hand_it_back(obj/item/prize, mob/living/victim)
+	if(!release_booking(prize))
+		return
 	if(!isturf(prize.loc) || QDELETED(victim) || QDELETED(owner) || owner.stat == DEAD)
 		return
 	owner.visible_message(span_boldwarning("[owner] gives it back."))
@@ -1694,6 +1725,9 @@
 	desc = "An abductor restraint collar, snapped open at the hinge from the inside. The field it projects still \
 		works fine. Nobody ever got round to changing which way it points."
 	icon_state = "petcollar"
+	inhand_icon_state = "handcuff"
+	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	color = "#a9bdb4"
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -1738,6 +1772,9 @@
 		still on an operating table, and it does not care that the table is gone."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "gizmo_scan"
+	inhand_icon_state = "silencer"
+	lefthand_file = 'icons/mob/inhands/antag/abductor_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/abductor_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	force = 4
 	throwforce = 5
@@ -1775,6 +1812,9 @@
 		bolted down and waits for you to point at something."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "belt"
+	inhand_icon_state = "security"
+	lefthand_file = 'icons/mob/inhands/equipment/belt_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/belt_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	actions_types = list(/datum/action/cooldown/mob_cooldown/vestige_tk/sweep/harness)

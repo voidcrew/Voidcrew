@@ -51,6 +51,7 @@
 	desc = "Activate on clear ground to bring out this pact's actors and equipment. Use the pact tracker to restart a failed or blocked performance."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "paper_talisman"
+	inhand_icon_state = "paper"
 	w_class = WEIGHT_CLASS_TINY
 	var/datum/weakref/trial_ref
 
@@ -767,6 +768,9 @@
 	desc = "Use on an ordinary tool or food to copy its appearance for the scavenger, or on your balance-dock custodian to watch and then borrow its identity. Hold the skin throughout. Activate to reveal or shed. Damage, violence, dropping it, or ending this exact pact sheds the disguise."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-hide"
+	inhand_icon_state = "drapes"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/datum/weakref/trial_ref
 	var/form = SKIN_FORM_NONE

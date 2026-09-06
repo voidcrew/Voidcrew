@@ -7,6 +7,7 @@
 	var/turf/center
 	var/datum/vestige_trial/field_encounter/route_trial
 	var/list/terrain_originals = list()
+	var/pressure_pushes = 0
 
 /datum/unit_test/vestige_field_route/New()
 	..()
@@ -15,15 +16,42 @@
 	var/center_x = center.x
 	var/center_y = center.y
 	var/center_z = center.z
+	// Preserve the whole footprint before changing any turf: opening a former wall
+	// can otherwise redistribute its neighbors' air while we are taking snapshots.
+	for(var/turf/spot in RANGE_TURFS(5, center))
+		var/datum/gas_mixture/saved_air
+		if(isopenturf(spot))
+			var/turf/open/open_spot = spot
+			if(open_spot.air)
+				saved_air = new
+				saved_air.copy_from(open_spot.air)
+		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type, saved_air, spot.temperature))
+	// Seal first, then unfold the nine-by-nine interior. Plating alone exposed the
+	// original pressurized unit room to vacuum and pushed actors during do_after.
+	for(var/turf/spot in RANGE_TURFS(5, center))
+		if(get_dist(spot, center) == 5)
+			spot.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_RECALC_ADJACENT)
 	for(var/turf/spot in RANGE_TURFS(4, center))
-		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type))
-		var/turf/floor = spot.ChangeTurf(/turf/open/floor/plating)
+		var/turf/open/floor = spot.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_IGNORE_AIR)
 		// Changing a space turf to plating retains /area/space and its no-gravity flag.
 		floor.AddElement(/datum/element/forced_gravity, 1)
+	var/datum/gas_mixture/room_air = SSair.parse_gas_string(OPENTURF_DEFAULT_ATMOS, /datum/gas_mixture/turf)
+	for(var/turf/open/floor in RANGE_TURFS(4, locate(center_x, center_y, center_z)))
+		floor.copy_air(room_air)
+		floor.air.archive()
+		floor.temperature = room_air.temperature
+		floor.immediate_calculate_adjacent_turfs()
+		// Discard only impulses queued before the sealed fixture was initialized.
+		SSair.high_pressure_delta -= floor
+		floor.pressure_difference = 0
+		floor.pressure_direction = NONE
+		floor.air_update_turf(update = FALSE, remove = FALSE)
+	qdel(room_air)
 	center = locate(center_x, center_y, center_z)
 	user = allocate(/mob/living/carbon/human/consistent, center)
 	user.mind_initialize()
-	// The widened test room borders vacuum; the lesson is about its projections.
+	RegisterSignal(user, COMSIG_ATOM_PRE_PRESSURE_PUSH, PROC_REF(observe_pressure))
+	// Breathing is outside these interaction routes; atmosphere and movement stay live.
 	ADD_TRAIT(user, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(user, TRAIT_RESISTLOWPRESSURE, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(user, TRAIT_RESISTCOLD, TRAIT_SOURCE_UNIT_TESTS)
@@ -34,8 +62,24 @@
 	for(var/list/record as anything in terrain_originals)
 		var/turf/spot = locate(record[1], record[2], record[3])
 		spot.RemoveElement(/datum/element/forced_gravity, 1)
-		spot.ChangeTurf(record[4])
+		spot = spot.ChangeTurf(record[4], flags = CHANGETURF_IGNORE_AIR | CHANGETURF_RECALC_ADJACENT)
+		spot.temperature = record[6]
+		var/datum/gas_mixture/saved_air = record[5]
+		if(isopenturf(spot) && saved_air)
+			var/turf/open/open_spot = spot
+			open_spot.copy_air(saved_air)
+			open_spot.air.archive()
+		qdel(saved_air)
+	for(var/list/record as anything in terrain_originals)
+		var/turf/spot = locate(record[1], record[2], record[3])
+		spot.immediate_calculate_adjacent_turfs()
+		spot.air_update_turf(update = FALSE, remove = FALSE)
 	return ..()
+
+/// Observe the widened fixture's airflow without suppressing real movement or mission checks.
+/datum/unit_test/vestige_field_route/proc/observe_pressure(datum/source)
+	SIGNAL_HANDLER
+	pressure_pushes++
 
 /datum/unit_test/vestige_field_route/proc/prepare(trial_type)
 	route_trial = allocate(trial_type, user.mind)
@@ -94,6 +138,9 @@
 
 /// Reproduce the old widened-room drift and prove the corrected floor holds an actual moved actor still.
 /datum/unit_test/vestige_field_route/fixture_gravity/Run()
+	for(var/turf/open/floor in RANGE_TURFS(4, center))
+		for(var/turf/neighbor as anything in floor.atmos_adjacent_turfs)
+			TEST_ASSERT(neighbor.z == center.z && get_dist(neighbor, center) <= 4, "The enlarged room must be physically sealed against outside atmosphere.")
 	for(var/turf/floor in RANGE_TURFS(4, center))
 		floor.RemoveElement(/datum/element/forced_gravity, 1)
 	user.forceMove(spot(1, 0))
@@ -110,8 +157,12 @@
 	TEST_ASSERT(user.Move(spot(2, 0), EAST), "The same ordinary move must still work with the corrected gravity.")
 	TEST_ASSERT_EQUAL(user.has_gravity(), STANDARD_GRAVITY, "The restored fixture floor must have normal gravity.")
 	entered = get_turf(user)
-	sleep(1 SECONDS)
-	TEST_ASSERT_EQUAL(get_turf(user), entered, "The corrected fixture must preserve a waiting actor's actual position.")
+	var/pressure_before_wait = pressure_pushes
+	var/air_cycle_before_wait = SSair.times_fired
+	sleep(3 SECONDS)
+	TEST_ASSERT(SSair.times_fired > air_cycle_before_wait, "The sealed fixture proof must exercise the live atmosphere subsystem during the wait.")
+	TEST_ASSERT_EQUAL(get_turf(user), entered, "The corrected fixture must preserve position; started [entered.x],[entered.y], ended [user.x],[user.y], gravity [user.has_gravity()], pressure callbacks [pressure_pushes - pressure_before_wait], drift [!!user.drift_handler].")
+	TEST_ASSERT_EQUAL(pressure_pushes - pressure_before_wait, 0, "Equal-pressure air behind real walls must not try to push the waiting actor.")
 
 /datum/unit_test/vestige_field_route/stillness/Run()
 	var/datum/vestige_trial/stillness/trial = prepare(/datum/vestige_trial/stillness)
@@ -123,7 +174,7 @@
 		TEST_ASSERT_EQUAL(trial.phase, 1, "Rest plus incense activation must begin the feint.")
 		sleep(3 SECONDS)
 		trial.manual.process(0.2)
-		TEST_ASSERT_EQUAL(trial.phase, 2, "Holding the real three-second feint must produce the sweep.")
+		TEST_ASSERT_EQUAL(trial.phase, 2, "Holding the real three-second feint must produce the sweep; pressure callbacks [pressure_pushes], resting [user.resting], gravity [user.has_gravity()].")
 		user.toggle_resting()
 		TEST_ASSERT(walk_route_to(spot(1, 1)), "The student must leave both possible sweep lines.")
 		sleep(3 SECONDS)

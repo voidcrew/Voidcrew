@@ -20,7 +20,8 @@
 		name = e_name
 	if(desc_override)
 		desc = "[desc_override]"
-	else
+	else if(desc == initial(desc))
+		// Preserve descriptions supplied by maps before initialization.
 		desc = "A [name] vandalizing the station."
 	if(alt_icon)
 		icon = alt_icon

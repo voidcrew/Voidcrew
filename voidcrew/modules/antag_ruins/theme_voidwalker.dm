@@ -150,6 +150,7 @@
 	desc = "Activate to set a return beacon or take an exterior bearing. Touch the revealed echo to recover it; touch the return beacon to deliver."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "bluespace_crystal"
+	inhand_icon_state = "minimeteor"
 	color = "#3c1a5c"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -223,6 +224,9 @@
 	desc = "A calling card cut from a windowpane. Leave a reflection inside, collect its reply from outside, and return it through your airlock while preserving the pressure seal."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "medium"
+	inhand_icon_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	color = "#3c1a5c"
 	w_class = WEIGHT_CLASS_TINY
 	var/datum/weakref/trial_ref
@@ -406,6 +410,9 @@
 	desc = "Activate beside space to launch the keepsake. Click it from two to six tiles away along a cardinal line to reel and counter its drift. Pulls recoil in vacuum; use EVA propulsion to reposition."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "coil"
+	inhand_icon_state = "coil_white"
+	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/next_pull = 0
 
@@ -452,6 +459,7 @@
 	desc = "A little moon at rest. Bring it back to its launch cradle."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "bluespace_crystal"
+	inhand_icon_state = "minimeteor"
 	color = "#7a5db8"
 	w_class = WEIGHT_CLASS_SMALL
 	light_range = 2
@@ -604,6 +612,11 @@
 /datum/status_effect/vestige_held_breath/on_apply()
 	owner.add_traits(adaptation_traits, TRAIT_STATUS_EFFECT(id))
 	return TRUE
+
+/datum/status_effect/vestige_held_breath/be_replaced()
+	// Another mind can bring the shorter adaptation to a body still wearing Long Exposure.
+	owner.remove_traits(adaptation_traits, TRAIT_STATUS_EFFECT(id))
+	return ..()
 
 /datum/status_effect/vestige_held_breath/on_remove()
 	owner.remove_traits(adaptation_traits, TRAIT_STATUS_EFFECT(id))

@@ -1,3 +1,42 @@
+/// Supplies only the menu answer; the real capstone cast dispatches the command to visible listeners.
+/datum/action/cooldown/spell/voice_of_the_word/unit_test_frenzy/choose_command(mob/living/user)
+	return "TURN ON EACH OTHER"
+
+/// Rejected possession must preserve the target and must not grant release immunity.
+/datum/unit_test/vestige_word_frenzy_rejection/Run()
+	restore_atmos()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/consistent/speaker = allocate(/mob/living/carbon/human/consistent, center)
+	speaker.mind_initialize()
+	var/mob/living/carbon/human/consistent/protected = allocate(/mob/living/carbon/human/consistent, get_step(center, NORTH))
+	var/obj/item/clothing/head/costume/foilhat/hat = allocate(/obj/item/clothing/head/costume/foilhat, center)
+	TEST_ASSERT(protected.equip_to_slot_if_possible(hat, ITEM_SLOT_HEAD), "The rejection scenario must wear an actual mind-antimagic hat.")
+	var/list/protected_faction = protected.faction.Copy()
+	var/datum/ai_controller/protected_ai = protected.ai_controller
+	TEST_ASSERT(!can_be_lich_thralled(protected), "The worn hat must reject actual possession eligibility.")
+	var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(center, EAST))
+	var/quarry_ai_type = quarry.ai_controller.type
+	var/list/quarry_faction = quarry.faction.Copy()
+	TEST_ASSERT(can_be_lich_thralled(quarry), "The same command needs a genuinely eligible stock-AI listener.")
+	var/datum/action/cooldown/spell/voice_of_the_word/unit_test_frenzy/word = allocate(/datum/action/cooldown/spell/voice_of_the_word/unit_test_frenzy, speaker.mind)
+	word.Grant(speaker)
+	TEST_ASSERT(word.Activate(speaker), "The actual capstone cast must select and dispatch its frenzy command.")
+	TEST_ASSERT_NULL(protected.has_status_effect(/datum/status_effect/lich_thrall), "The real tinfoil hat must stop the command's possession.")
+	TEST_ASSERT(!HAS_TRAIT(protected, "lich_thrall_spent"), "Rejecting possession must not grant the ninety-second release immunity.")
+	TEST_ASSERT_EQUAL(protected.ai_controller, protected_ai, "A rejected effect must preserve the original controller.")
+	TEST_ASSERT_EQUAL(json_encode(protected.faction), json_encode(protected_faction), "A rejected effect must preserve the original factions.")
+	TEST_ASSERT_NULL(protected.get_filter("voice_of_the_word_frenzy"), "A rejected effect must leave no possession outline.")
+	var/datum/status_effect/lich_thrall/word_frenzy/possession = quarry.has_status_effect(/datum/status_effect/lich_thrall/word_frenzy)
+	TEST_ASSERT(possession && quarry.ai_controller == possession.puppet_controller, "The same real command must actually possess its eligible listener.")
+	TEST_ASSERT(quarry.get_filter("voice_of_the_word_frenzy"), "An applied possession must install its actual visible effect.")
+	qdel(possession)
+	TEST_ASSERT_EQUAL(quarry.ai_controller.type, quarry_ai_type, "Releasing a successful possession must restore the stock controller type.")
+	TEST_ASSERT_EQUAL(json_encode(quarry.faction), json_encode(quarry_faction), "Successful release must restore the quarry's original factions.")
+	TEST_ASSERT(HAS_TRAIT(quarry, "lich_thrall_spent"), "Successfully released victims must still receive ordinary chain-possession immunity.")
+	TEST_ASSERT_NULL(quarry.get_filter("voice_of_the_word_frenzy"), "Successful release must remove its actual outline.")
+	TEST_ASSERT(protected.dropItemToGround(hat), "The ordinary equipped hat must be removable after rejecting the command.")
+	TEST_ASSERT(can_be_lich_thralled(protected), "Removing the hat must expose an otherwise eligible body immediately, without false release immunity.")
+
 /// Reaches the real entry guards without loading or owning an arena reservation.
 /datum/vestige_ascension_run/unit_test_entry
 	var/load_calls = 0
@@ -881,6 +920,60 @@
 	TEST_ASSERT(!new_table.anchored, "The new body's legitimate rip did not finish tearing its table loose")
 	TEST_ASSERT(new_table in field.lifted, "The new body's legitimate rip did not raise its table")
 	TEST_ASSERT_EQUAL(new_table.orbiting?.parent, new_body, "The new body's ripped table did not orbit its current caster")
+
+/// Damage follows the real item warning's moved tile, and deleting that tile's marker cancels it.
+/datum/unit_test/vestige_warning_transit
+	abstract_type = /datum/unit_test/vestige_warning_transit
+	var/item_type
+	var/action_type
+	var/visual_type
+
+/datum/unit_test/vestige_warning_transit/palm_anchor
+	item_type = /obj/item/vestige_palm_anchor
+	action_type = /datum/action/cooldown/mob_cooldown/vestige_tk/pin/anchor
+	visual_type = /obj/effect/temp_visual/vestige_pin_mark
+
+/datum/unit_test/vestige_warning_transit/oracle_slate
+	item_type = /obj/item/oracle_slate
+	action_type = /datum/action/cooldown/mob_cooldown/oracle_word/antiphon/slate
+	visual_type = /obj/effect/temp_visual/oracle_glyph
+
+/datum/unit_test/vestige_warning_transit/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/turf/caster_floor = get_step(get_step(floor, NORTH), EAST)
+	var/turf/marked_floor = get_step(caster_floor, EAST)
+	var/turf/moved_floor = get_step(get_step(caster_floor, NORTH), NORTH)
+	moved_floor = get_step(get_step(moved_floor, EAST), EAST)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, caster_floor)
+	var/mob/living/carbon/human/old_bystander = allocate(/mob/living/carbon/human/consistent, marked_floor)
+	var/mob/living/carbon/human/new_bystander = allocate(/mob/living/carbon/human/consistent, moved_floor)
+	var/obj/item/instrument = allocate(item_type)
+	user.put_in_hands(instrument)
+	var/datum/action/cooldown/ability = locate(action_type) in user.actions
+	TEST_ASSERT(ability, "The real [item_type] did not grant its action")
+	TEST_ASSERT(ability.Activate(marked_floor), "The real [item_type] could not begin its warning")
+	var/obj/effect/vestige_trial_marker/marker = locate() in marked_floor
+	var/obj/effect/warning = locate(visual_type) in marked_floor
+	TEST_ASSERT(marker && warning, "The real warning did not retain its marked physical tile")
+	for(var/atom/movable/moving as anything in list(marker, warning))
+		moving.beforeShuttleMove(moved_floor, 180, MOVE_CONTENTS)
+		moving.onShuttleMove(moved_floor, marked_floor, list(), NORTH)
+		moving.afterShuttleMove(marked_floor, list(), SOUTH, NORTH, NORTH, 180)
+	TEST_ASSERT(get_turf(marker) == moved_floor && get_turf(warning) == moved_floor, "The warning and its physical tile did not take the same real shuttle transform")
+	var/old_health = old_bystander.health
+	var/new_health = new_bystander.health
+	stoplag(2 SECONDS)
+	TEST_ASSERT_EQUAL(old_bystander.health, old_health, "A delayed [item_type] hit an unmarked bystander at the departed berth")
+	TEST_ASSERT(new_bystander.health < new_health, "A delayed [item_type] missed the bystander standing on its moved warning")
+	TEST_ASSERT(QDELETED(marker), "Resolving the warning leaked its physical marker")
+	ability.ResetCooldown()
+	TEST_ASSERT(ability.Activate(marked_floor), "The item could not begin its deletion regression")
+	marker = locate(/obj/effect/vestige_trial_marker) in marked_floor
+	TEST_ASSERT(marker, "The second warning did not mark its tile")
+	qdel(marker)
+	old_health = old_bystander.health
+	stoplag(2 SECONDS)
+	TEST_ASSERT_EQUAL(old_bystander.health, old_health, "A removed warning marker left delayed damage at its old coordinates")
 
 /// Destroying a real harness releases its bookings without stripping a newer field's hold.
 /datum/unit_test/vestige_debris_harness_booking_cleanup/Run()

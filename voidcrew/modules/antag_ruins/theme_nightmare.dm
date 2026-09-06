@@ -108,6 +108,9 @@
 	desc = "A lantern that burns backwards. It reverses your trial's linked lamps and has no appetite beyond that loaned circuit."
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "syndilantern"
+	inhand_icon_state = "syndilantern"
+	lefthand_file = 'icons/mob/inhands/equipment/mining_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/mining_righthand.dmi'
 	color = "#6a6a8a"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -337,6 +340,9 @@
 	desc = "Carry it through your sweeping-light field in hand. Stand directly on a refuge and touch it with the glass to transfer its charge."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "large"
+	inhand_icon_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	color = "#101015"
 	w_class = WEIGHT_CLASS_SMALL
 

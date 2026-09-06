@@ -5,21 +5,75 @@
 	var/list/puzzle_solution
 	var/list/puzzle_seen
 	var/puzzle_searches = 0
+	var/list/room_originals = list()
+	var/pressure_pushes = 0
+
+/datum/unit_test/vestige_rites_route/Destroy()
+	QDEL_NULL(trial)
+	QDEL_NULL(user)
+	QDEL_LIST(allocated)
+	for(var/list/record as anything in room_originals)
+		var/turf/spot = locate(record[1], record[2], record[3])
+		spot.RemoveElement(/datum/element/forced_gravity, 1)
+		spot = spot.ChangeTurf(record[4], flags = CHANGETURF_IGNORE_AIR | CHANGETURF_RECALC_ADJACENT)
+		spot.temperature = record[6]
+		var/datum/gas_mixture/saved_air = record[5]
+		if(isopenturf(spot) && saved_air)
+			var/turf/open/open_spot = spot
+			open_spot.copy_air(saved_air)
+			open_spot.air.archive()
+		qdel(saved_air)
+	for(var/list/record as anything in room_originals)
+		var/turf/spot = locate(record[1], record[2], record[3])
+		spot.immediate_calculate_adjacent_turfs()
+		spot.air_update_turf(update = FALSE, remove = FALSE)
+	return ..()
 
 /datum/unit_test/vestige_rites_route/proc/open_room(radius = 4)
 	center = locate(run_loc_floor_bottom_left.x + radius, run_loc_floor_bottom_left.y + radius, run_loc_floor_bottom_left.z)
 	var/center_x = center.x
 	var/center_y = center.y
 	var/center_z = center.z
+	// Snapshot the complete footprint before opening the old unit-room walls.
+	for(var/turf/spot in RANGE_TURFS(radius + 1, center))
+		var/datum/gas_mixture/saved_air
+		if(isopenturf(spot))
+			var/turf/open/open_spot = spot
+			if(open_spot.air)
+				saved_air = new
+				saved_air.copy_from(open_spot.air)
+		room_originals += list(list(spot.x, spot.y, spot.z, spot.type, saved_air, spot.temperature))
+	// A real perimeter and uniform air prevent vacuum from displacing a waiting
+	// speaker. Forced gravity alone does not prevent ordinary pressure movement.
+	for(var/turf/spot in RANGE_TURFS(radius + 1, center))
+		if(get_dist(spot, center) == radius + 1)
+			spot.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_RECALC_ADJACENT)
 	for(var/turf/spot in RANGE_TURFS(radius, center))
-		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type))
-		var/turf/floor = spot.ChangeTurf(/turf/open/floor/plating)
+		var/turf/floor = spot.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_IGNORE_AIR)
 		floor.AddElement(/datum/element/forced_gravity, 1)
+	var/datum/gas_mixture/room_air = SSair.parse_gas_string(OPENTURF_DEFAULT_ATMOS, /datum/gas_mixture/turf)
+	for(var/turf/open/floor in RANGE_TURFS(radius, locate(center_x, center_y, center_z)))
+		floor.copy_air(room_air)
+		floor.air.archive()
+		floor.temperature = room_air.temperature
+		floor.immediate_calculate_adjacent_turfs()
+		// Discard only impulses from before the sealed fixture was initialized.
+		SSair.high_pressure_delta -= floor
+		floor.pressure_difference = 0
+		floor.pressure_direction = NONE
+		floor.air_update_turf(update = FALSE, remove = FALSE)
+	qdel(room_air)
 	center = locate(center_x, center_y, center_z)
 	user.forceMove(center)
+	RegisterSignal(user, COMSIG_ATOM_PRE_PRESSURE_PUSH, PROC_REF(observe_pressure))
 	ADD_TRAIT(user, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(user, TRAIT_RESISTLOWPRESSURE, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(user, TRAIT_RESISTCOLD, TRAIT_SOURCE_UNIT_TESTS)
+
+/// Observe live airflow; never block it or compensate by moving the actor back.
+/datum/unit_test/vestige_rites_route/proc/observe_pressure(datum/source)
+	SIGNAL_HANDLER
+	pressure_pushes++
 
 /datum/unit_test/vestige_rites_route/proc/approach(atom/target)
 	if(user.Adjacent(target))
@@ -120,6 +174,7 @@
 	for(var/medicine_type in list(/obj/item/stack/medical/bruise_pack/vestige_sitter, /obj/item/stack/medical/ointment/vestige_sitter))
 		var/obj/item/stack/medical/dressing = loan(medicine_type)
 		TEST_ASSERT(hold(dressing), "The caregiver must select the appropriate supplied dressing.")
+		TEST_ASSERT_NULL(dressing.heal_end_sound, "The actual supplied dressing must exercise the optional end-sound path.")
 		for(var/application in 1 to 10)
 			var/obj/item/bodypart/hurt_limb
 			for(var/obj/item/bodypart/limb as anything in patient.bodyparts)
@@ -130,11 +185,15 @@
 				break
 			// The clientless HUD choice targets the actual injury displayed by the analyzer.
 			user.zone_selected = hurt_limb.body_zone
+			var/amount_before = dressing.get_amount()
+			var/injury_before = hurt_limb.brute_dam + hurt_limb.burn_dam
 			TEST_ASSERT(patient.base_item_interaction(user, dressing, list()) & ITEM_INTERACT_SUCCESS, "The real dressing interaction must start ordinary treatment on the selected injured limb.")
 			for(var/tick in 1 to 200)
 				if(!DOING_INTERACTION_WITH_TARGET(user, patient))
 					break
 				sleep(1)
+			TEST_ASSERT_EQUAL(dressing.get_amount(), amount_before - 1, "Each successful ordinary dressing application must consume one unit.")
+			TEST_ASSERT(hurt_limb.brute_dam + hurt_limb.burn_dam < injury_before, "Each supplied dressing must actually heal its selected injury.")
 	TEST_ASSERT(patient.getBruteLoss() + patient.getFireLoss() <= 10, "Actual dressing application must heal the patient's injuries into the discharge window.")
 	TEST_ASSERT(hold(cloth), "The caregiver must return to the actual cloth for discharge.")
 	patient.base_item_interaction(user, cloth, list())
@@ -216,7 +275,7 @@
 	TEST_ASSERT(first.base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "The carried candle must still close a rift after complete group transit.")
 	TEST_ASSERT_EQUAL(vigil.closed_rifts, 1, "A same-level complete relocated field must preserve its normal progress.")
 
-/// Intentionally exposes the split-z case before any production change; parent runs this probe.
+/// Off-level remains cannot be pulled or certify a closure; bringing them back resumes the same vigil.
 /datum/unit_test/vestige_rites_route/true_vigil_split_z/Run()
 	open_room()
 	var/datum/vestige_trial/true_vigil/vigil = prepare(/datum/vestige_trial/true_vigil)
@@ -228,16 +287,40 @@
 	STOP_PROCESSING(SSobj, vigil)
 	var/obj/structure/vestige_mourning_rift/first = vigil.rifts[1]
 	var/other_z = center.z == 1 ? 2 : 1
-	corpse.forceMove(locate(corpse.x, corpse.y, other_z))
+	var/turf/displaced_floor = locate(corpse.x, corpse.y, other_z)
+	// Give any attempted cross-level pull actual open floor, rather than letting space hide it.
+	for(var/turf/spot in RANGE_TURFS(1, displaced_floor))
+		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type))
+		spot.ChangeTurf(/turf/open/floor/plating)
+	displaced_floor = locate(corpse.x, corpse.y, other_z)
+	corpse.forceMove(displaced_floor)
+	TEST_ASSERT(corpse.z != first.z, "The split fixture must place the body and rift on genuinely different levels.")
 	var/turf/body_before = get_turf(corpse)
 	var/distance_after_split = get_dist(corpse, first)
 	user.forceMove(get_turf(first))
+	// An ordinary anchored chair holds the mourner against unrelated fixture air currents during channels.
+	var/obj/structure/chair/seat = allocate(/obj/structure/chair, get_turf(first))
+	TEST_ASSERT(seat.user_buckle_mob(user, user), "The mourner must be able to sit beside the rift for the controlled channels.")
+	TEST_ASSERT(seat.anchored && user.buckled == seat && user.is_holding(vigil.candle), "The real channel fixture must retain its anchored seat and held candle.")
+	TEST_ASSERT_EQUAL(user.has_gravity(), 1, "The mourner's channel must begin on the fixture's grounded floor.")
 	var/candle_result = first.base_item_interaction(user, vigil.candle, list())
-	var/closures_after_split = vigil.closed_rifts
+	TEST_ASSERT(!(candle_result & ITEM_INTERACT_SUCCESS), "A candle certified remains on another level despite native get_dist=[distance_after_split].")
+	TEST_ASSERT_EQUAL(vigil.closed_rifts, 0, "An off-level body must not provide closure credit.")
 	vigil.process(0.2)
-	TEST_ASSERT_NULL(vigil.watched, "A body actually moved to a different z must release the split field for retry: native get_dist was [distance_after_split], candle result [candle_result], closures [closures_after_split], body moved during process: [get_turf(corpse) != body_before].")
-	TEST_ASSERT_EQUAL(closures_after_split, 0, "A candle must not certify a closure against remains on another level.")
-	TEST_ASSERT(!QDELETED(corpse), "Abandoning a split vigil must preserve the displaced remains.")
+	TEST_ASSERT_EQUAL(get_turf(corpse), body_before, "A rift pulled the body while they occupied different levels.")
+	TEST_ASSERT(vigil.watched == corpse && length(vigil.rifts) == 3 && !QDELETED(corpse), "Separation must preserve the remains and existing vigil for reunion.")
+	corpse.forceMove(center)
+	for(var/obj/structure/vestige_mourning_rift/rift as anything in vigil.rifts)
+		rift.next_pull = world.time + 10 SECONDS // Isolate a mid-channel separation from ordinary tug timing.
+	addtimer(CALLBACK(corpse, TYPE_PROC_REF(/atom/movable, forceMove), displaced_floor), 1 SECONDS)
+	var/channel_started = world.time
+	candle_result = first.base_item_interaction(user, vigil.candle, list())
+	TEST_ASSERT(world.time >= channel_started + 3 SECONDS, "The split regression must reach the real channel's final validation, not fail from unrelated movement.")
+	TEST_ASSERT(corpse.z != first.z && !(candle_result & ITEM_INTERACT_SUCCESS), "A body that changed levels during the candle channel still certified a closure.")
+	TEST_ASSERT_EQUAL(vigil.closed_rifts, 0, "A mid-channel separation awarded closure credit.")
+	corpse.forceMove(center)
+	TEST_ASSERT(first.base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "Returning the remains must let the same physical candle close the original rift.")
+	TEST_ASSERT(vigil.watched == corpse && vigil.closed_rifts == 1 && length(vigil.rifts) == 2, "Reunion must resume the existing vigil without an invented reset or lost progress.")
 
 /datum/unit_test/vestige_rites_route/singed_hand/Run()
 	open_room()
@@ -271,6 +354,9 @@
 
 /datum/unit_test/vestige_rites_route/steady_tongue/Run()
 	open_room()
+	for(var/turf/open/floor in RANGE_TURFS(4, center))
+		for(var/turf/neighbor as anything in floor.atmos_adjacent_turfs)
+			TEST_ASSERT(neighbor.z == center.z && get_dist(neighbor, center) <= 4, "The speaker's enlarged room must be physically sealed against outside atmosphere.")
 	var/datum/vestige_trial/steady_tongue/lesson = prepare(/datum/vestige_trial/steady_tongue)
 	var/obj/item/vestige_primer/primer = loan(/obj/item/vestige_primer)
 	TEST_ASSERT(hold(primer), "The student must select the actual primer.")
@@ -290,10 +376,15 @@
 			else
 				push_direction = miscast.y < center.y ? NORTH : SOUTH
 			TEST_ASSERT(walk_route_to(get_step(miscast, REVERSE_DIR(push_direction))), "The student must physically line up behind the manifestation.")
+			var/turf/aligned = get_turf(user)
+			var/pressure_before_wait = pressure_pushes
 			if(world.time < primer.next_word)
 				sleep(primer.next_word - world.time)
+			var/word_state = "push [push], aligned [aligned.x],[aligned.y], actual [user.x],[user.y], target [miscast.x],[miscast.y], pressure callbacks [pressure_pushes - pressure_before_wait], gravity [user.has_gravity()], drift [!!user.drift_handler], speech [user.can_speak()], held [user.is_holding(primer)], cooldown remaining [primer.next_word - world.time], visible [(miscast in view(3, user))]"
+			TEST_ASSERT_EQUAL(get_turf(user), aligned, "The waiting speaker must remain aligned in the sealed fixture: [word_state].")
+			TEST_ASSERT_EQUAL(pressure_pushes - pressure_before_wait, 0, "Equal-pressure air behind real walls must not push the waiting speaker: [word_state].")
 			var/turf/expected = get_step(miscast, push_direction)
-			TEST_ASSERT(miscast.base_item_interaction(user, primer, list()) & ITEM_INTERACT_SUCCESS, "The actual ready spoken word must repel the manifestation.")
+			TEST_ASSERT(miscast.base_item_interaction(user, primer, list()) & ITEM_INTERACT_SUCCESS, "The actual ready spoken word must repel the manifestation: [word_state], destination [expected], blocked [expected?.is_blocked_turf(exclude_mobs = TRUE)].")
 			if(!QDELETED(miscast))
 				TEST_ASSERT_EQUAL(get_turf(miscast), expected, "The real word must move exactly one cardinal tile away from the speaker.")
 		TEST_ASSERT(QDELETED(miscast), "A sequence of legal spoken pushes must deliver the manifestation into the brazier.")
@@ -397,7 +488,9 @@
 		var/turf/wall = locate(center.x + 1, center.y, center.z)
 		TEST_ASSERT(wall.base_item_interaction(user, chrism, list()) & ITEM_INTERACT_SUCCESS, "Each actual two-second anointing must rust the ordinary wall.")
 	TEST_ASSERT(rust.opened && rust.guardian && isopenturf(get_turf(rust.passage)), "The second real anointing must open the marked breach and release its guardian.")
-	get_turf(rust.passage).AddElement(/datum/element/forced_gravity, 1)
+	var/turf/breach = get_turf(rust.passage)
+	// ChangeTurf carries existing gravity signals through construction and dissolution.
+	TEST_ASSERT_EQUAL(breach.has_gravity(), 1, "The opened breach must preserve the fixture's existing gravity hooks without registering them twice.")
 	// The mission explicitly permits bringing a weapon. Keep the actual combat deterministic.
 	var/mob/living/basic/hivebot/vestige_threshold_guardian/guardian = rust.guardian
 	guardian.ai_controller.PauseAi(1 MINUTES)
@@ -423,7 +516,7 @@
 /datum/unit_test/vestige_rites_route/rite_of_transcription/Run()
 	var/datum/vestige_trial/rite_of_transcription/transcription = prepare(/datum/vestige_trial/rite_of_transcription)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(center, EAST))
-	door.req_access = list(ACCESS_ENGINE) // The fixture is a real door which denies this unequipped human's ID.
+	door.req_access = list(ACCESS_ENGINEERING) // The fixture is a real door which denies this unequipped human's ID.
 	var/obj/item/vestige_quill/quill = loan(/obj/item/vestige_quill)
 	TEST_ASSERT(hold(quill), "The scrivener must hold the actual supplied quill.")
 	TEST_ASSERT(door.base_item_interaction(user, quill, list()) & ITEM_INTERACT_SUCCESS, "The real five-second first reading must register the access-restricted threshold.")

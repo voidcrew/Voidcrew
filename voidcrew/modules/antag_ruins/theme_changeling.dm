@@ -95,6 +95,9 @@
 	desc = "A glistening ovoid of meat. Its empty shell becomes a voice the child obeys."
 	icon = 'icons/obj/medical/organs/organs.dmi'
 	icon_state = "innards"
+	inhand_icon_state = "egg"
+	lefthand_file = 'icons/mob/inhands/items/food_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/food_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/datum/weakref/trial_ref
 
@@ -311,6 +314,9 @@
 	desc = "A coil of flesh that can unfold as a shell or a hungry tendon."
 	icon = 'icons/obj/weapons/changeling_items.dmi'
 	icon_state = "tentacle"
+	inhand_icon_state = "tentacle"
+	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	var/datum/weakref/trial_ref

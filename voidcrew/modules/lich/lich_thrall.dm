@@ -132,6 +132,8 @@
 	var/old_ai_controller_type
 	/// The victim's factions before we rewrote them, restored on release.
 	var/list/original_faction
+	/// Failed eligibility checks must not run release effects or grant post-possession immunity.
+	var/possession_applied = FALSE
 	/**
 	 * TRUE only for the instant the strike behavior is pushing a synthetic click through
 	 * `ai_interact()`. [block_own_clicks] lets a click through while it is raised.
@@ -164,6 +166,7 @@
 	// at planning time; a lot can happen in between.
 	if(!can_be_lich_thralled(owner))
 		return FALSE
+	possession_applied = TRUE
 
 	// His dead must not carve up his own puppet. Restored in on_remove.
 	original_faction = owner.faction?.Copy()
@@ -193,6 +196,9 @@
 	return TRUE
 
 /datum/status_effect/lich_thrall/on_remove()
+	if(!possession_applied)
+		return
+	possession_applied = FALSE
 	// Teardown first and unconditionally: the victim may be mid-deletion.
 	release_the_wheel()
 

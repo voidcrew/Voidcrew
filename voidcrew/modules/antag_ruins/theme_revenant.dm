@@ -94,6 +94,9 @@
 	desc = "A lantern that doesn't put out any light you could actually read by. Something inside it is breathing in, very slowly, and never out."
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "lantern"
+	inhand_icon_state = "lantern"
+	lefthand_file = 'icons/mob/inhands/equipment/mining_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/mining_righthand.dmi'
 	color = "#b8cdd8"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -195,8 +198,13 @@
 		return
 	var/obj/structure/vestige_mourning_rift/nearest
 	for(var/obj/structure/vestige_mourning_rift/rift as anything in rifts)
+		if(rift.z != watched.z)
+			continue
 		if(!nearest || get_dist(watched, rift) < get_dist(watched, nearest))
 			nearest = rift
+	// A separated body can return to the existing vigil; an off-level rift cannot pull it.
+	if(!nearest)
+		return
 	if(get_dist(watched, nearest) == 0)
 		to_chat(owner.current, span_warning("A rift caught the body. The candle closes the torn vigil before it can take the remains. Reposition them and retry."))
 		end_vigil()
@@ -216,6 +224,7 @@
 	desc = "Touch substantial organic remains to begin. Pull the body away from the rifts, then use this candle on each rift from arm's reach while the body is at least three paces away."
 	icon = 'icons/obj/candle.dmi'
 	icon_state = "candle1_lit"
+	inhand_icon_state = "candle_lit"
 	w_class = WEIGHT_CLASS_TINY
 	color = "#b8cdd8"
 	var/working = FALSE
@@ -230,6 +239,9 @@
 		return ITEM_INTERACT_BLOCKING
 	if(!(interacting_with in trial.rifts))
 		return NONE
+	if(!trial.watched || trial.watched.z != interacting_with.z)
+		balloon_alert(user, "bring the body back to this level!")
+		return ITEM_INTERACT_BLOCKING
 	if(get_dist(trial.watched, interacting_with) < 3)
 		balloon_alert(user, "pull the body three paces clear first!")
 		return ITEM_INTERACT_BLOCKING
@@ -238,7 +250,10 @@
 	working = FALSE
 	if(!finished || user.mind?.active_vestige_trial != trial || !(interacting_with in trial.rifts) || !user.is_holding(src))
 		return ITEM_INTERACT_BLOCKING
-	if(!trial.watched || get_dist(trial.watched, interacting_with) < 3)
+	if(!trial.watched || trial.watched.z != interacting_with.z)
+		balloon_alert(user, "the body left this level!")
+		return ITEM_INTERACT_BLOCKING
+	if(get_dist(trial.watched, interacting_with) < 3)
 		balloon_alert(user, "the body is too close!")
 		return ITEM_INTERACT_BLOCKING
 	trial.rifts -= interacting_with
@@ -361,6 +376,9 @@
 	desc = "Use in hand to call the Wake's patient and cot. Use on the patient to comfort them, then again after treatment to discharge them."
 	icon = 'icons/obj/toys/toy.dmi'
 	icon_state = "rag"
+	inhand_icon_state = "drapes"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	w_class = WEIGHT_CLASS_TINY
 	color = "#b8cdd8"
 	var/working = FALSE

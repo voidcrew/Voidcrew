@@ -12,17 +12,39 @@
 	var/center_x = center.x
 	var/center_y = center.y
 	var/center_z = center.z
-	for(var/turf/spot in RANGE_TURFS(8, center))
-		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type))
-		var/turf/floor = spot.ChangeTurf(/turf/open/floor/plating)
+	// Seal the perimeter before filling the larger room; opening the stock room to vacuum
+	// otherwise lets real pressure pushes interrupt the performance's timed channels.
+	for(var/turf/spot in RANGE_TURFS(9, center))
+		var/datum/gas_mixture/saved_air
+		if(isopenturf(spot))
+			var/turf/open/open_spot = spot
+			if(open_spot.air)
+				saved_air = new
+				saved_air.copy_from(open_spot.air)
+		terrain_originals += list(list(spot.x, spot.y, spot.z, spot.type, saved_air, spot.temperature))
+	for(var/turf/spot in RANGE_TURFS(9, center))
+		if(get_dist(spot, center) == 9)
+			spot.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_RECALC_ADJACENT)
+	for(var/list/record as anything in terrain_originals)
+		if(abs(record[1] - center_x) == 9 || abs(record[2] - center_y) == 9)
+			continue
+		var/turf/spot = locate(record[1], record[2], record[3])
+		var/turf/open/floor = spot.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_IGNORE_AIR)
 		floor.AddElement(/datum/element/forced_gravity, 1)
+	var/datum/gas_mixture/room_air = SSair.parse_gas_string(OPENTURF_DEFAULT_ATMOS, /datum/gas_mixture/turf)
+	for(var/turf/open/floor in RANGE_TURFS(8, locate(center_x, center_y, center_z)))
+		floor.copy_air(room_air)
+		floor.air.archive()
+		floor.temperature = room_air.temperature
+		floor.immediate_calculate_adjacent_turfs()
+		SSair.high_pressure_delta -= floor
+		floor.pressure_difference = 0
+		floor.pressure_direction = NONE
+		floor.air_update_turf(update = FALSE, remove = FALSE)
+	qdel(room_air)
 	center = locate(center_x, center_y, center_z)
 	user = allocate(/mob/living/carbon/human/consistent, center)
 	user.mind_initialize()
-	// The enlarged test map borders vacuum. These performances test identity and navigation, not EVA.
-	ADD_TRAIT(user, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
-	ADD_TRAIT(user, TRAIT_RESISTLOWPRESSURE, TRAIT_SOURCE_UNIT_TESTS)
-	ADD_TRAIT(user, TRAIT_RESISTCOLD, TRAIT_SOURCE_UNIT_TESTS)
 
 /datum/unit_test/vestige_morph_route/Destroy()
 	QDEL_NULL(route_trial)
@@ -30,7 +52,18 @@
 	for(var/list/record as anything in terrain_originals)
 		var/turf/spot = locate(record[1], record[2], record[3])
 		spot.RemoveElement(/datum/element/forced_gravity, 1)
-		spot.ChangeTurf(record[4])
+		spot = spot.ChangeTurf(record[4], flags = CHANGETURF_IGNORE_AIR | CHANGETURF_RECALC_ADJACENT)
+		spot.temperature = record[6]
+		var/datum/gas_mixture/saved_air = record[5]
+		if(isopenturf(spot) && saved_air)
+			var/turf/open/open_spot = spot
+			open_spot.copy_air(saved_air)
+			open_spot.air.archive()
+		qdel(saved_air)
+	for(var/list/record as anything in terrain_originals)
+		var/turf/spot = locate(record[1], record[2], record[3])
+		spot.immediate_calculate_adjacent_turfs()
+		spot.air_update_turf(update = FALSE, remove = FALSE)
 	return ..()
 
 /datum/unit_test/vestige_morph_route/proc/prepare(trial_type)
@@ -89,8 +122,12 @@
 	var/turf/escape = locate(center.x - 6, center.y, center.z)
 	TEST_ASSERT(walk_route_to(escape), "The laden keeper must walk around the opaque screen to the getaway tile.")
 	TEST_ASSERT(trial.can_digest(user), "Distance and the real wall must provide a legal hidden digestion site.")
+	user.swap_hand(user.get_held_index_of_item(trial.maw))
+	var/digest_started = world.time
 	// Normal scene processing remains enabled throughout the real three-second digestion channel.
-	trial.maw.attack_self(user, list())
+	user.execute_mode()
+	TEST_ASSERT_EQUAL(get_turf(user), escape, "The sealed room must preserve the getaway position throughout digestion.")
+	TEST_ASSERT(world.time >= digest_started + 3 SECONDS, "The actual held activation must finish its three-second digestion; elapsed [world.time - digest_started], conscious [user.stat == CONSCIOUS].")
 	TEST_ASSERT(/datum/vestige_trial/snatched_meal in user.mind.completed_vestige_trials, "Lure, real theft, walking escape and actual digestion must complete the Snatched Meal.")
 	TEST_ASSERT(QDELETED(trial), "The finished performance must reclaim its temporary actors and kit.")
 

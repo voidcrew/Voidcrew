@@ -728,10 +728,27 @@
 	owner.balloon_alert_to_viewers("the antiphon!")
 	owner.say(pick(written_lines), spans = list("colossus"), forced = "vestige oracle")
 	playsound(owner, 'sound/effects/magic/fireball.ogg', 60, TRUE)
+	var/list/markers = list()
 	for(var/turf/marked as anything in lanes)
 		new /obj/effect/temp_visual/oracle_glyph(marked, telegraph_time)
-	addtimer(CALLBACK(src, PROC_REF(strike), lanes), telegraph_time)
+		var/obj/effect/vestige_trial_marker/marker = new(marked)
+		markers += marker
+		// A destroyed slate cancels its callback; the short fallback also cleans up that case.
+		QDEL_IN(marker, telegraph_time + 1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(strike_marked_lanes), markers), telegraph_time)
 	return TRUE
+
+/// Resolve the marked deck after any shuttle movement, at the same instant its warning ends.
+/datum/action/cooldown/mob_cooldown/oracle_word/antiphon/proc/strike_marked_lanes(list/markers)
+	var/list/lanes = list()
+	for(var/obj/effect/vestige_trial_marker/marker as anything in markers)
+		if(QDELETED(marker))
+			continue
+		var/turf/marked = get_turf(marker)
+		if(marked)
+			lanes += marked
+		qdel(marker)
+	strike(lanes)
 
 /// Walk each direction out from the caster until something dense stops the line.
 /datum/action/cooldown/mob_cooldown/oracle_word/antiphon/proc/pick_lanes()
@@ -965,6 +982,13 @@
 	owner.balloon_alert_to_viewers("called!")
 	return TRUE
 
+/datum/status_effect/oracle_called/refresh(mob/living/new_owner, atom/new_caller, set_duration)
+	. = ..()
+	if(new_caller)
+		caller_ref = WEAKREF(new_caller)
+	if(isnum(set_duration))
+		duration = world.time + set_duration
+
 /datum/status_effect/oracle_called/on_remove()
 	if(!QDELETED(owner))
 		to_chat(owner, span_notice("Your feet are yours again."))
@@ -1086,6 +1110,7 @@
 	desc = "A slab of grey rock with three lines of the Athenaeum liturgy cut into it. Two of them have been scratched out and cut again, deeper."
 	icon = 'voidcrew/modules/antag_ruins/icons/oracle.dmi'
 	icon_state = "slate"
+	inhand_icon_state = "blankplaque"
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 12
 	throwforce = 12
@@ -1122,6 +1147,7 @@
 	desc = "A palm-sized stone token with a name cut into it, then crossed out, then cut again underneath. Neither version is spelled the same way twice."
 	icon = 'voidcrew/modules/antag_ruins/icons/oracle.dmi'
 	icon_state = "name_token"
+	inhand_icon_state = "blankplaque"
 	w_class = WEIGHT_CLASS_SMALL
 	throwforce = 5
 	light_range = 1.5

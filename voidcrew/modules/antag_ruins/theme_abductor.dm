@@ -140,6 +140,9 @@
 	desc = "Use in hand to release the loan specimen. Use on it from two to four tiles away to certify a closed enclosure of at most nine floor tiles. Relocate it at least four tiles from release first. Alt-click a deployed barrier to fold it."
 	icon = 'icons/obj/devices/scanner.dmi'
 	icon_state = "health"
+	inhand_icon_state = "healthanalyzer"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/datum/weakref/trial_ref
 
@@ -357,6 +360,7 @@
 	desc = "Use in hand to deploy the patient on the tile you face. Examine the patient for its waste class. Select chest, turn combat mode off, apply drapes and choose Organ Manipulation. Use scalpel, retractor, saw, hemostat, scalpel; then hemostat to extract the FAILED SURVEY FILTER, insert the matching replacement, and use cautery to close. Use this dossier on the patient to certify recovery. A wrong filter can be removed and replaced during the same operation."
 	icon = 'icons/obj/service/library.dmi'
 	icon_state = "book"
+	inhand_icon_state = "clipboard"
 	var/datum/weakref/trial_ref
 
 /obj/item/vestige_graft_kit/attack_self(mob/living/user)
@@ -561,6 +565,9 @@
 	desc = "Use in hand on clear floor to deploy a living culture. Syringes: use in hand to set volume, right-click bottles to draw, left-click culture to inject. Keep media separate. Start with small doses: nutrient increases energy and stress, buffer decreases stress. Probe left-click measures both and spends viability. Infer dose response, titrate into the displayed windows, then right-click with the probe to harvest. Ten units of water flush a failed preparation immediately."
 	icon = 'icons/obj/devices/scanner.dmi'
 	icon_state = "health"
+	inhand_icon_state = "healthanalyzer"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	var/datum/weakref/trial_ref
 
 /obj/item/vestige_probe_baton/attack_self(mob/living/user)

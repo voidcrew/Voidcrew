@@ -224,6 +224,7 @@
 	desc = "Activate on a clear five-by-five patch of ground to project your lesson. Activating again folds the field away and resets its progress. Projections disappear when the pact ends."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "paper_talisman"
+	inhand_icon_state = "paper"
 	w_class = WEIGHT_CLASS_SMALL
 	var/datum/weakref/trial_ref
 
@@ -449,6 +450,7 @@
 	desc = "Press against the loaned patrol sentry's back after silencing its bells; then withdraw to the center."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "paper_talisman"
+	inhand_icon_state = "paper"
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/vestige_clan_seal/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)

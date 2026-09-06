@@ -160,6 +160,7 @@
 	desc = "Use in hand to unfold or pack up a lesson. Catch blue miscasts from two or three paces away; touch the central well to cool what you caught."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "diamond"
+	inhand_icon_state = "minimeteor"
 	color = "#ff9a4d"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -206,6 +207,9 @@
 	desc = "Use in hand to unfold or pack up a lesson. Click a miscast within three tiles to push it one tile directly away from you. Align on a cardinal axis with the central brazier."
 	icon = 'icons/obj/service/library.dmi'
 	icon_state = "book"
+	inhand_icon_state = "demonomicon"
+	lefthand_file = 'icons/mob/inhands/items/books_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/books_righthand.dmi'
 	color = "#b0663a"
 	w_class = WEIGHT_CLASS_SMALL
 	var/next_word = 0
@@ -469,6 +473,9 @@
 	desc = "Use in hand to lay out or pack up the inscription. Slide numbered syllables into the gap to restore rows 1 2 3; 4 5 6; 7 8 gap. The pact tracker gives the current reading directions. Speaking reshuffles."
 	icon = 'icons/obj/mining_zones/artefacts.dmi'
 	icon_state = "vial"
+	inhand_icon_state = "atoxinbottle"
+	lefthand_file = 'icons/mob/inhands/items/drinks_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/drinks_righthand.dmi'
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/vestige_syllable/attack_self(mob/living/user, modifiers)

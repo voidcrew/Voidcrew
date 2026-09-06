@@ -70,6 +70,7 @@
 	desc = "Chalk cut with ash and something darker. It only wants to draw one shape."
 	icon = 'icons/obj/art/crayons.dmi'
 	icon_state = "crayonwhite"
+	inhand_icon_state = "pen"
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/vestige_chalk/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
@@ -268,6 +269,7 @@
 	desc = "Use in hand to call three hungry clots. Keep every kill within six paces. Once planted, click it with an empty hand to pack up and retry."
 	icon = 'icons/obj/antags/cult/structures.dmi'
 	icon_state = "talismanaltar"
+	inhand_icon_state = "blankplaque"
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = INDESTRUCTIBLE
 
@@ -466,6 +468,15 @@
 	spell_requirements = NONE
 	/// The knife this spell calls
 	var/blade_type = /obj/item/knife/ritual/vestige/bound
+	/// Only this action's summoned knife is reclaimed when the pact leaves a body.
+	var/datum/weakref/summoned_blade_ref
+
+/datum/action/cooldown/spell/vestige_sanguine_blade/Remove(mob/remove_from)
+	var/obj/item/knife/ritual/vestige/bound/summoned_blade = summoned_blade_ref?.resolve()
+	summoned_blade_ref = null
+	if(summoned_blade)
+		qdel(summoned_blade)
+	return ..()
 
 /datum/action/cooldown/spell/vestige_sanguine_blade/fang
 	name = "Sanguine Fang"
@@ -504,6 +515,7 @@
 		// An old model from before the upgrade: reshape it in place
 		qdel(held)
 	var/obj/item/new_blade = new blade_type(cast_on)
+	summoned_blade_ref = WEAKREF(new_blade)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)

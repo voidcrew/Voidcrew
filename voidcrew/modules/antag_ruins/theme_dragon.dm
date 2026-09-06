@@ -204,6 +204,9 @@
 	desc = "An egg the size of a curled-up child, with a shell like cold slate. Hold it to your ear and you hear absolutely nothing, which is somehow worse."
 	icon = 'icons/mob/simple/lavaland/lavaland_monsters.dmi'
 	icon_state = "large_egg"
+	inhand_icon_state = "egg"
+	lefthand_file = 'icons/mob/inhands/items/food_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items/food_righthand.dmi'
 	color = "#7c8fb5" // cold through and through
 	w_class = WEIGHT_CLASS_BULKY
 	resistance_flags = FIRE_PROOF | LAVA_PROOF // dragon stock
@@ -1493,7 +1496,9 @@
 /datum/status_effect/vestige_fed_dragon
 	id = "vestige_fed_dragon"
 	duration = VESTIGE_FED_DURATION
-	status_type = STATUS_EFFECT_REPLACE
+	// Another meal renews the same hide. REPLACE skips on_remove, which would
+	// multiply the physiology a second time and leave resistance after expiry.
+	status_type = STATUS_EFFECT_REFRESH
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = /atom/movable/screen/alert/status_effect/vestige_fed_dragon
 	show_duration = TRUE
