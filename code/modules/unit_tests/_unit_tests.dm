@@ -373,6 +373,7 @@
 #include "voidcrew_science_program.dm"
 #include "voidcrew_survey_research_links.dm"
 #include "voidcrew_survey_archive.dm"
+#include "voidcrew_survey_identity.dm"
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_camera_scope.dm"
 #include "voidcrew_ruin_bounds.dm"

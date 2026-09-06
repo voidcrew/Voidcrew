@@ -365,7 +365,7 @@
 	var/obj/structure/overmap/celestial_object = get_survey_target()
 	survey_research_tiers = get_survey_research_tiers()
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
-	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
+	tgui_data["currentCelestialRef"] = celestial_object ? celestial_object.get_survey_identity() : null
 	tgui_data["currentCelestialType"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
 	tgui_data["shipMoving"] = ship_port?.current_ship?.is_still() || FALSE
 	tgui_data["archiveMode"] = !attached_to_ship
@@ -533,7 +533,7 @@
 	if(!celestial_type)
 		return FALSE
 	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[celestial_type])
-		if(celestial.ref_id == ref(object))
+		if(celestial.ref_id == object.get_survey_identity())
 			return TRUE
 	return FALSE
 

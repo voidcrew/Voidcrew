@@ -13,6 +13,8 @@
 /datum/surveyed_celestial_object
 	var/recorded_at = 0
 	var/ref_id
+	/// Retain a non-owning identity so deleted celestial references cannot alias new discoveries.
+	var/datum/weakref/source_identity
 	var/object_name
 
 /datum/surveyed_celestial_object/nebula
@@ -54,6 +56,7 @@
 /datum/surveyed_celestial_object/proc/copy(var/datum/surveyed_celestial_object/new_object)
 	new_object.recorded_at = recorded_at
 	new_object.ref_id = ref_id
+	new_object.source_identity = source_identity
 	new_object.object_name = object_name
 
 /datum/surveyed_celestial_object/nebula/copy(var/datum/surveyed_celestial_object/nebula/new_object)
@@ -92,7 +95,8 @@
 /// SET VALUES SECTION
 /datum/surveyed_celestial_object/proc/set_values(var/obj/structure/overmap/object)
 	recorded_at = world.time
-	ref_id = ref(object)
+	source_identity = WEAKREF(object)
+	ref_id = REF(source_identity)
 	object_name = object.name
 
 /datum/surveyed_celestial_object/nebula/set_values(var/obj/structure/overmap/event/nebula/object)
@@ -149,6 +153,12 @@
 	// Trigger the ruin's on_surveyed to reveal its true nature
 	object.on_surveyed()
 
+/// Stable while a completed record retains this weakref, even after the celestial is deleted.
+/obj/structure/overmap/proc/get_survey_identity()
+	if(QDELETED(src))
+		return null
+	return REF(WEAKREF(src))
+
 /// HELPER PROCS SECTION
 /datum/survey_research/proc/update_survey_data(var/obj/structure/overmap/object)
 	var/related_celestial_list = get_related_celestial_list(object.type)
@@ -159,7 +169,7 @@
 		if(/datum/surveyed_celestial_object/nebula)
 			var/datum/surveyed_celestial_object/nebula/celestial
 			for(var/datum/surveyed_celestial_object/nebula/surveyed_nebula in survey_objects_by_type[related_celestial_list])
-				if(surveyed_nebula.ref_id == ref(object))
+				if(surveyed_nebula.ref_id == object.get_survey_identity())
 					celestial = surveyed_nebula
 			if(!celestial)
 				celestial = new()
@@ -170,7 +180,7 @@
 		if(/datum/surveyed_celestial_object/asteroid)
 			var/datum/surveyed_celestial_object/asteroid/celestial
 			for(var/datum/surveyed_celestial_object/asteroid/surveyed_asteroid in survey_objects_by_type[related_celestial_list])
-				if(surveyed_asteroid.ref_id == ref(object))
+				if(surveyed_asteroid.ref_id == object.get_survey_identity())
 					celestial = surveyed_asteroid
 			if(!celestial)
 				celestial = new()
@@ -181,7 +191,7 @@
 		if(/datum/surveyed_celestial_object/electric_storm)
 			var/datum/surveyed_celestial_object/electric_storm/celestial
 			for(var/datum/surveyed_celestial_object/electric_storm/surveyed_electric_storm in survey_objects_by_type[related_celestial_list])
-				if(surveyed_electric_storm.ref_id == ref(object))
+				if(surveyed_electric_storm.ref_id == object.get_survey_identity())
 					celestial = surveyed_electric_storm
 			if(!celestial)
 				celestial = new()
@@ -192,7 +202,7 @@
 		if(/datum/surveyed_celestial_object/emp_storm)
 			var/datum/surveyed_celestial_object/emp_storm/celestial
 			for(var/datum/surveyed_celestial_object/emp_storm/surveyed_emp_storm in survey_objects_by_type[related_celestial_list])
-				if(surveyed_emp_storm.ref_id == ref(object))
+				if(surveyed_emp_storm.ref_id == object.get_survey_identity())
 					celestial = surveyed_emp_storm
 			if(!celestial)
 				celestial = new()
@@ -203,7 +213,7 @@
 		if(/datum/surveyed_celestial_object/planet)
 			var/datum/surveyed_celestial_object/planet/celestial
 			for(var/datum/surveyed_celestial_object/planet/surveyed_planet in survey_objects_by_type[related_celestial_list])
-				if(surveyed_planet.ref_id == ref(object))
+				if(surveyed_planet.ref_id == object.get_survey_identity())
 					celestial = surveyed_planet
 			if(!celestial)
 				celestial = new()
@@ -214,7 +224,7 @@
 		if(/datum/surveyed_celestial_object/star)
 			var/datum/surveyed_celestial_object/star/celestial
 			for(var/datum/surveyed_celestial_object/star/surveyed_star in survey_objects_by_type[related_celestial_list])
-				if(surveyed_star.ref_id == ref(object))
+				if(surveyed_star.ref_id == object.get_survey_identity())
 					celestial = surveyed_star
 			if(!celestial)
 				celestial = new()
@@ -225,7 +235,7 @@
 		if(/datum/surveyed_celestial_object/space_ruin)
 			var/datum/surveyed_celestial_object/space_ruin/celestial
 			for(var/datum/surveyed_celestial_object/space_ruin/surveyed_ruin in survey_objects_by_type[related_celestial_list])
-				if(surveyed_ruin.ref_id == ref(object))
+				if(surveyed_ruin.ref_id == object.get_survey_identity())
 					celestial = surveyed_ruin
 			if(!celestial)
 				celestial = new()
