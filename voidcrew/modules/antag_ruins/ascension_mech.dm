@@ -305,6 +305,8 @@
 
 	/// Which round of the match it is on. 2 is the last one.
 	var/round_number = 1
+	/// The same opponent cannot dispense another set of gear after resurrection.
+	var/loot_dropped = FALSE
 	/// TRUE while it is committed to something: no walking, no swinging, no casting.
 	var/committed = FALSE
 
@@ -630,9 +632,12 @@
  * what just beat you. The capstone itself is paid out by the ascension run, not here.
  */
 /mob/living/basic/vestige_warframe/proc/drop_the_match()
+	if(loot_dropped)
+		return
 	var/atom/spot = drop_location()
 	if(isnull(spot))
 		return
+	loot_dropped = TRUE
 	new /obj/item/sparring_blade(spot)
 	var/static/list/jackpot_pool = list(
 		/obj/item/warframe_contact_plate,
@@ -676,6 +681,15 @@
  * I.e. before it has created a single action, so the keys cannot be seeded above.
  * Live Floor is registered later, by [/mob/living/basic/vestige_warframe/proc/begin_second_round].
  */
+/// Temporary possession must not erase the current round's actions from the replacement controller.
+/datum/ai_controller/basic_controller/vestige_warframe/PossessPawn(atom/new_pawn)
+	. = ..()
+	var/mob/living/basic/vestige_warframe/warframe = pawn
+	if(!istype(warframe))
+		return
+	register_kit(warframe.iai, warframe.guard, warframe.sweep)
+	set_blackboard_key(BB_WARFRAME_LIVE_FLOOR, warframe.round_number >= 2 ? warframe.live_floor : null)
+
 /datum/ai_controller/basic_controller/vestige_warframe/proc/register_kit(
 	datum/action/cooldown/iai,
 	datum/action/cooldown/guard,
@@ -1362,6 +1376,33 @@
 	. = ..()
 	if(.)
 		return
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_paw(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_alien(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_larva(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_animal(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/handle_basic_attack(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_robot(mob/living/user, list/modifiers)
+	return pull_lever(user)
+
+/obj/structure/warframe_lever/attack_ai(mob/living/user)
+	return pull_lever(user)
+
+/// The hall admits different bodies, but these controls always require a physical touch.
+/obj/structure/warframe_lever/proc/pull_lever(mob/living/user)
+	if(QDELETED(user) || user.stat != CONSCIOUS || !Adjacent(user))
+		return TRUE
 	if(pulled)
 		balloon_alert(user, "already down!")
 		return TRUE
@@ -2618,13 +2659,17 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 	var/list/sources = communion_arc_sources(center)
 	if(!length(sources))
 		return FALSE
+	// The charged room moves with its ship, and unloading it must end the remaining arcs.
+	var/obj/effect/vestige_trial_marker/room = new(center)
+	QDEL_IN(room, COMMUNION_ARC_PULSES * COMMUNION_ARC_INTERVAL)
 	to_chat(user, span_boldwarning("Everything with a current in it starts looking for somewhere to put it."))
 	for(var/pulse in 1 to COMMUNION_ARC_PULSES)
-		addtimer(CALLBACK(src, PROC_REF(volley), center, WEAKREF(user)), (pulse - 1) * COMMUNION_ARC_INTERVAL)
+		addtimer(CALLBACK(src, PROC_REF(volley), WEAKREF(room), WEAKREF(user)), (pulse - 1) * COMMUNION_ARC_INTERVAL)
 	return TRUE
 
 /// One volley: everybody in the room takes an arc from the machine nearest them, if any.
-/datum/machine_masshack/arc_flash/proc/volley(turf/center, datum/weakref/caster_ref)
+/datum/machine_masshack/arc_flash/proc/volley(datum/weakref/room_ref, datum/weakref/caster_ref)
+	var/turf/center = get_turf(room_ref?.resolve())
 	if(QDELETED(center))
 		return
 	var/mob/living/caster = caster_ref?.resolve()

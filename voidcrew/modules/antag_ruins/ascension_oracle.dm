@@ -207,6 +207,8 @@
 
 	/// TRUE once the Stammer has fired. One-way.
 	var/stammering = FALSE
+	/// Resurrection can restart the body, but this encounter has only one physical loot payment.
+	var/loot_dropped = FALSE
 
 	/// TRUE while it is planted for the Last Line: no movement, no melee, no
 	/// casting. The whole payout for interrupting is that it stays that way.
@@ -451,9 +453,12 @@
  * Voice of the Word is neither.
  */
 /mob/living/basic/vestige_oracle/proc/drop_the_verse()
+	if(loot_dropped)
+		return
 	var/atom/spot = drop_location()
 	if(isnull(spot))
 		return
+	loot_dropped = TRUE
 	new /obj/item/clothing/head/oracle_hood(spot)
 	var/jackpot_type = pick(jackpot_pool)
 	new jackpot_type(spot)
@@ -496,6 +501,15 @@
  * it is registered by [/mob/living/basic/vestige_oracle/proc/begin_stammer], and
  * until then the rotation simply finds a null under its key and skips it.
  */
+/// Temporary possession replaces the controller; reconnect the original actions on return.
+/datum/ai_controller/basic_controller/vestige_oracle/PossessPawn(atom/new_pawn)
+	. = ..()
+	var/mob/living/basic/vestige_oracle/oracle = pawn
+	if(!istype(oracle))
+		return
+	register_kit(oracle.word_of_falling, oracle.antiphon, oracle.called_word)
+	set_blackboard_key(BB_ORACLE_LAST_LINE, oracle.last_line)
+
 /datum/ai_controller/basic_controller/vestige_oracle/proc/register_kit(
 	datum/action/cooldown/word_of_falling,
 	datum/action/cooldown/antiphon,

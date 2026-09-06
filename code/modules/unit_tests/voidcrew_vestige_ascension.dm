@@ -2,11 +2,16 @@
 /datum/vestige_ascension_run/unit_test_entry
 	var/load_calls = 0
 	var/atom/movable/add_during_load
+	var/mob/living/basic/guardian/link_during_load
 
 /datum/vestige_ascension_run/unit_test_entry/load_arena(datum/map_template/vestige_arena/template)
 	load_calls++
 	if(add_during_load)
 		add_during_load.forceMove(supplicant.current)
+		return TRUE
+	if(link_during_load)
+		link_during_load.set_summoner(supplicant.current)
+		link_during_load.manifest(forced = TRUE)
 		return TRUE
 	return FALSE
 
@@ -50,6 +55,35 @@
 	TEST_ASSERT(!late_run.boss && !late_run.watched_supplicant, "A late passenger check ran after committing the arena encounter")
 	qdel(late_run)
 	TEST_ASSERT(!user.mind.active_ascension_run, "Failed entry cleanup retained the active run")
+
+/// A deployed holoparasite remains recallable across the arena boundary despite standing outside inventory.
+/datum/unit_test/vestige_ascension_guardian_entry/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
+	user.mind_initialize()
+	var/mob/living/basic/guardian/standard/guardian = allocate(/mob/living/basic/guardian/standard, get_step(user, EAST))
+	guardian.set_summoner(user)
+	TEST_ASSERT_EQUAL(guardian.loc, user, "Linking the real guardian did not recall it into its summoner")
+	TEST_ASSERT_EQUAL(vestige_ascension_passenger(user), guardian, "A recalled guardian bypassed solo entry")
+	TEST_ASSERT(guardian.manifest(forced = TRUE), "The guardian regression could not manifest")
+	TEST_ASSERT(!(guardian in user.get_all_contents_type(/mob/living)), "The deployed guardian must stand outside the inventory being scanned")
+	TEST_ASSERT_EQUAL(vestige_ascension_passenger(user), guardian, "Manifesting a linked guardian bypassed solo entry")
+	var/datum/vestige_ascension/offer = allocate(/datum/vestige_ascension/oracle)
+	var/datum/vestige_ascension_run/unit_test_entry/run = allocate(/datum/vestige_ascension_run/unit_test_entry, offer, user)
+	TEST_ASSERT(!run.begin(user) && !run.load_calls, "A deployed guardian's host began loading a solo encounter")
+	TEST_ASSERT(!user.mind.active_ascension_run, "Rejecting a guardian host retained an active encounter")
+	qdel(run)
+	guardian.cut_summoner()
+	TEST_ASSERT(!vestige_ascension_passenger(user), "An unrelated nearby guardian prevented solo entry")
+	var/datum/vestige_ascension_run/unit_test_entry/late_run = allocate(/datum/vestige_ascension_run/unit_test_entry, offer, user)
+	late_run.link_during_load = guardian
+	TEST_ASSERT(!late_run.begin(user), "A guardian linked and manifested while arena loading yielded bypassed the second entry guard")
+	TEST_ASSERT_EQUAL(late_run.load_calls, 1, "The late guardian regression did not reach arena loading")
+	TEST_ASSERT(guardian.is_deployed() && guardian.summoner == user, "The late guardian fixture did not leave a real deployed companion")
+	TEST_ASSERT(!late_run.boss && !late_run.watched_supplicant, "The late guardian rejection happened after committing the fight")
+	qdel(late_run)
+	TEST_ASSERT(!user.mind.active_ascension_run, "Late guardian rejection retained an active encounter")
+	guardian.cut_summoner()
+	qdel(guardian)
 
 /// Shapeshifting stores the caster inside the new form; it must not disable ascension.
 /datum/unit_test/vestige_ascension_shapeshifter/Run()
@@ -254,10 +288,11 @@
 	var/obj/item/crowbar/shot = allocate(/obj/item/crowbar, get_turf(boss))
 	boss.begin_revision()
 	boss.sweep.tracked_quarry = victor
+	boss.sweep.lift_one(shot)
 	boss.death()
 	var/before = victor.health
 	boss.sweep.fling_one(shot)
-	TEST_ASSERT(!shot.throwing, "A dead specimen launched another sweep projectile")
+	TEST_ASSERT(!shot.throwing && !shot.get_filter("vestige_telekinesis"), "A dead specimen launched another sweep projectile or retained its ammunition booking")
 	boss.pin.close_the_mark(get_turf(victor))
 	TEST_ASSERT_EQUAL(victor.health, before, "A dead specimen completed its pin and damaged the victor")
 	boss.confiscate.hand_it_back(shot, victor)
@@ -351,6 +386,48 @@
 	reserved_turfs.Cut()
 	cordon_turfs.Cut()
 
+/// A late victory still receives an exit and grace if another encounter already settled the soul's capstone.
+/datum/unit_test/vestige_ascension_existing_capstone_exit/Run()
+	var/turf/home = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, home)
+	user.mind_initialize()
+	var/datum/mind/keeper = user.mind
+	keeper.key = "vestige-existing-capstone-unit-test"
+	var/datum/vestige_record/record = get_vestige_record(keeper, create = TRUE)
+	var/previous_capstone = /datum/vestige_boon/spell/greater_telekinesis
+	record.ascension_boon = previous_capstone
+	record.boons |= previous_capstone
+	var/datum/vestige_ascension/offer = allocate(/datum/vestige_ascension/oracle)
+	var/datum/vestige_ascension_run/run = allocate(/datum/vestige_ascension_run, offer, user)
+	keeper.active_ascension_run = run
+	run.reservation = allocate(/datum/turf_reservation/vestige_unit_test)
+	run.remember_origin(user)
+	user.forceMove(get_step(home, EAST))
+	run.reservation.bottom_left_turfs = list(get_turf(user))
+	run.reservation.top_right_turfs = list(get_turf(user))
+	run.watch_supplicant(user)
+	var/mob/living/basic/vestige_oracle/boss = allocate(/mob/living/basic/vestige_oracle, get_step(user, EAST))
+	run.watch_boss(boss)
+	run.deadline_timer = addtimer(CALLBACK(run, TYPE_PROC_REF(/datum/vestige_ascension_run, on_deadline)), 10 SECONDS, TIMER_STOPPABLE)
+	var/old_deadline = run.deadline_timer
+	boss.death()
+	for(var/attempt in 1 to 10)
+		if(run.way_home)
+			break
+		stoplag(1)
+	TEST_ASSERT(run.won && run.way_home?.run_ref.resolve() == run, "An already-paid soul's real boss kill did not open an exit")
+	TEST_ASSERT(run.way_home.Adjacent(user), "The late victor's exit was not physically accessible")
+	TEST_ASSERT(run.deadline_timer && run.deadline_timer != old_deadline && !timeleft(old_deadline), "The old encounter deadline was not replaced on late victory")
+	// Keep in sync with the six-minute grace, whose define is included after unit tests.
+	TEST_ASSERT(timeleft(run.deadline_timer) > 5 MINUTES && timeleft(run.deadline_timer) <= 6 MINUTES, "An already-paid soul did not receive the normal victory grace")
+	TEST_ASSERT_EQUAL(record.ascension_boon, previous_capstone, "The late encounter replaced the soul's one capstone")
+	TEST_ASSERT_EQUAL(length(record.boons), 1, "The late encounter added a second durable capstone")
+	TEST_ASSERT(!length(keeper.vestige_boons) && !(locate(/datum/action/cooldown/spell/voice_of_the_word) in user.actions), "Opening the late victor's gate granted another capstone")
+	run.finish("unit test completed")
+	TEST_ASSERT(QDELETED(run) && get_turf(user) == home, "The late victor could not return home after receiving its exit")
+	GLOB.vestige_records -= ckey(keeper.key)
+	qdel(record)
+
 /// Represent a movement refusal; the real run must verify where forceMove left its passenger.
 /mob/living/carbon/human/consistent/vestige_return_test
 	var/block_return = FALSE
@@ -424,6 +501,17 @@
 	crew.ship = null
 
 /// Invalid destinations and failed moves retain the living keeper and a retryable physical exit.
+/datum/unit_test/vestige_ascension_return_failure
+	var/area/forbidden_area
+	var/area/original_area
+	var/turf/forbidden_turf
+
+/datum/unit_test/vestige_ascension_return_failure/Destroy()
+	if(forbidden_turf && get_area(forbidden_turf) == forbidden_area)
+		forbidden_turf.change_area(forbidden_area, original_area)
+	QDEL_NULL(forbidden_area)
+	return ..()
+
 /datum/unit_test/vestige_ascension_return_failure/Run()
 	var/turf/home = run_loc_floor_bottom_left
 	var/turf/arena_floor = get_step(home, EAST)
@@ -444,8 +532,11 @@
 	qdel(run.return_marker)
 	run.fallback_turf = arena_floor
 	TEST_ASSERT(!run.send_home(user), "A generic fallback was allowed to return the keeper into the arena being reclaimed")
-	var/area/original_area = get_area(other_arena)
-	var/area/ruin/space/has_grav/vestige/arena/oracle/forbidden_area = allocate(/area/ruin/space/has_grav/vestige/arena/oracle)
+	original_area = get_area(other_arena)
+	forbidden_turf = other_arena
+	// allocate() passes the test room's home turf as an atom's constructor loc, including areas.
+	forbidden_area = new /area/ruin/space/has_grav/vestige/arena/oracle
+	TEST_ASSERT_EQUAL(get_area(home), original_area, "Creating the forbidden area moved the safe exterior floor")
 	other_arena.change_area(original_area, forbidden_area)
 	run.fallback_turf = other_arena
 	TEST_ASSERT(!run.send_home(user), "A generic fallback put the keeper into another NOTELEPORT arena")
@@ -461,8 +552,15 @@
 	TEST_ASSERT(QDELETED(boss) && !run.boss && !run.won, "Failed return left a boss attacking or paid victory without a kill")
 	TEST_ASSERT_EQUAL(run.watched_supplicant, user, "A failed return stopped watching the keeper's current body")
 	user.block_return = FALSE
+	TEST_ASSERT(run.safe_return_turf(home), "The retry fixture's exterior floor is no longer safe")
+	TEST_ASSERT(!run.finishing, "The failed attempt retained its re-entry lock")
+	TEST_ASSERT(run.way_home.Adjacent(user) && keeper.current == user && user.mind == keeper, "The retry fixture lost its gate adjacency or owning body")
+	var/previous_attempts = run.finish_calls
 	run.way_home.attack_hand(user, list())
-	TEST_ASSERT(QDELETED(run) && QDELETED(reservation) && get_turf(user) == home, "A retry through the gate did not finish the intact keeper's return")
+	TEST_ASSERT_EQUAL(run.finish_calls, previous_attempts + 1, "The gate's real hand interaction did not attempt the retry")
+	TEST_ASSERT_EQUAL(get_turf(user), home, "A retry through the gate did not return the intact keeper to the safe exterior floor")
+	TEST_ASSERT(QDELETED(run), "Successful gate return left the run alive")
+	TEST_ASSERT(QDELETED(reservation), "Successful gate return did not release its reservation")
 	TEST_ASSERT(!keeper.active_ascension_run, "Successful retry retained the active run")
 
 /// Every body admitted to the arena can take its own gate, using its actual unarmed dispatch.
@@ -470,7 +568,7 @@
 	var/turf/arena_floor = run_loc_floor_bottom_left
 	var/turf/home = get_step(arena_floor, NORTH)
 	var/datum/vestige_ascension/offer = allocate(/datum/vestige_ascension/oracle)
-	for(var/body_type in list(/mob/living/carbon/human/consistent, /mob/living/basic/carp, /mob/living/carbon/human/species/monkey, /mob/living/silicon/robot))
+	for(var/body_type in list(/mob/living/carbon/human/consistent, /mob/living/basic/carp, /mob/living/carbon/human/species/monkey, /mob/living/silicon/robot, /mob/living/carbon/alien/larva))
 		var/mob/living/user = allocate(body_type, arena_floor)
 		user.mind_initialize()
 		var/datum/vestige_ascension_run/unit_test_disappearance/run = allocate(/datum/vestige_ascension_run/unit_test_disappearance, offer, user)
@@ -621,7 +719,10 @@
 	run.reservation = reserved
 	run.arena_bottom_left = footprint
 	user.forceMove(margin)
-	TEST_ASSERT(check_teleport_valid(user, home, TELEPORT_CHANNEL_MAGIC), "The regression must start with an unprotected, teleportable reservation margin")
+	TEST_ASSERT_EQUAL(get_turf(user), margin, "The allocator fixture did not place its keeper on the margin")
+	var/area/origin_area = get_area(margin)
+	var/area/home_area = get_area(home)
+	TEST_ASSERT(check_teleport_valid(user, home, TELEPORT_CHANNEL_MAGIC), "The initial margin was refused: origin [origin_area.type] flags=[origin_area.area_flags], destination [home_area.type] flags=[home_area.area_flags], no-teleport trait=[HAS_TRAIT(user, TRAIT_NO_TELEPORT)], VR origin=[SSbitrunning.is_domain_turf(margin)], VR destination=[SSbitrunning.is_domain_turf(home)]")
 	TEST_ASSERT(run.extend_arena_area(), "The arena could not protect its reservation margin")
 	TEST_ASSERT(!check_teleport_valid(user, home, TELEPORT_CHANNEL_MAGIC), "A breached wall still exposed a teleport escape through the reservation margin")
 	var/turf/cordon = get_step(margin, WEST)
@@ -662,6 +763,42 @@
 	TEST_ASSERT(!foreign_gate.raised, "A hall lever opened another player's arena on the same reserved z-level")
 	user.forceMove(home)
 
+/// The stock transfer path must reattach before moving, including when two existing orbits merge.
+/datum/unit_test/vestige_orbiter_transfer/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	for(var/merge_existing in list(FALSE, TRUE))
+		var/obj/item/crowbar/old_anchor = allocate(/obj/item/crowbar, floor)
+		var/obj/item/crowbar/new_anchor = allocate(/obj/item/crowbar, get_step(floor, EAST))
+		var/obj/item/screwdriver/traveler = allocate(/obj/item/screwdriver, floor)
+		var/obj/item/wrench/resident
+		traveler.orbit(old_anchor)
+		var/datum/component/orbiter/old_orbit = traveler.orbiting
+		TEST_ASSERT(old_orbit?.parent == old_anchor, "The stock orbiter fixture did not begin orbiting")
+		if(merge_existing)
+			resident = allocate(/obj/item/wrench, get_turf(new_anchor))
+			resident.orbit(new_anchor)
+		old_anchor.transfer_observers_to(new_anchor)
+		TEST_ASSERT(!old_anchor.orbiters, "Transfer left an orbiter component registered to the old anchor")
+		TEST_ASSERT(traveler.orbiting?.parent == new_anchor, "Transfer ended the existing orbit while its parent was detached")
+		TEST_ASSERT_EQUAL(get_turf(traveler), get_turf(new_anchor), "Transfer did not immediately resynchronize the orbiter's location")
+		if(merge_existing)
+			TEST_ASSERT(QDELETED(old_orbit), "Merging two orbits leaked the detached component")
+			TEST_ASSERT(resident.orbiting == traveler.orbiting, "Merging lost the destination's existing orbiter")
+		new_anchor.forceMove(get_step(get_turf(new_anchor), NORTH))
+		TEST_ASSERT_EQUAL(get_turf(traveler), get_turf(new_anchor), "The transferred orbiter stopped following movement")
+		if(resident)
+			TEST_ASSERT_EQUAL(get_turf(resident), get_turf(new_anchor), "Merging stopped the resident orbiter from following movement")
+		traveler.forceMove(floor)
+		TEST_ASSERT(!traveler.orbiting && !HAS_TRAIT(traveler, TRAIT_NO_FLOATING_ANIM), "A transferred orbiter could not leave and clean up normally")
+		if(resident)
+			resident.forceMove(floor)
+			TEST_ASSERT(!resident.orbiting, "The merged resident could not leave its orbit")
+		TEST_ASSERT(!new_anchor.orbiters, "Removing every transferred orbiter leaked its component")
+		qdel(old_anchor)
+		qdel(new_anchor)
+		qdel(traveler)
+		QDEL_NULL(resident)
+
 /// Mind transfer removes field signals from the body that registered them, not the new action owner.
 /datum/unit_test/vestige_telekinesis_body_transfer/Run()
 	var/turf/old_floor = run_loc_floor_bottom_left
@@ -688,7 +825,9 @@
 	old_body.ClickOn(old_held, "")
 	TEST_ASSERT(!(old_held in field.lifted), "The abandoned body's click still controlled the replacement body's telekinesis")
 	old_body.death()
-	TEST_ASSERT(field.lifting && captive in field.lifted && captive.orbiting?.parent == new_body, "The abandoned body's death shut down the replacement body's field")
+	TEST_ASSERT(field.lifting, "The abandoned body's death shut down the replacement body's field")
+	TEST_ASSERT(captive in field.lifted, "The abandoned body's death released the replacement body's captive")
+	TEST_ASSERT_EQUAL(captive.orbiting?.parent, new_body, "The replacement body's captive was not orbiting its current caster")
 	field.stop_lifting(silent = TRUE)
 	TEST_ASSERT(!captive.orbiting && !HAS_TRAIT(captive, TRAIT_IMMOBILIZED), "Releasing the transferred field stranded its captive")
 
@@ -706,10 +845,13 @@
 	second_field.start_lifting()
 	first.next_click = -1
 	first.ClickOn(captive, "")
-	TEST_ASSERT(captive in first_field.lifted && HAS_TRAIT(captive, TRAIT_IMMOBILIZED), "The first caster did not establish its hold")
+	TEST_ASSERT(captive in first_field.lifted, "The first caster did not establish its hold")
+	TEST_ASSERT(HAS_TRAIT(captive, TRAIT_IMMOBILIZED), "The first caster's hold did not immobilize its captive")
 	second.next_click = -1
 	second.ClickOn(captive, "")
-	TEST_ASSERT(!(captive in first_field.lifted) && captive in second_field.lifted && captive.orbiting?.parent == second, "The real orbiter handoff did not transfer the held creature")
+	TEST_ASSERT(!(captive in first_field.lifted), "The real orbiter handoff left the captive in the first caster's field")
+	TEST_ASSERT(captive in second_field.lifted, "The real orbiter handoff did not add the captive to the second caster's field")
+	TEST_ASSERT_EQUAL(captive.orbiting?.parent, second, "The real orbiter handoff did not transfer the held creature")
 	TEST_ASSERT(HAS_TRAIT(captive, TRAIT_IMMOBILIZED), "The first caster's cleanup removed the second caster's immobilization")
 	TEST_ASSERT(captive.get_filter("vestige_telekinesis"), "The first caster's cleanup removed the new hold's outline")
 	captive.execute_resist()
@@ -736,4 +878,188 @@
 	TEST_ASSERT_EQUAL(field.ripping, new_table, "The new body could not begin its own channel after transfer")
 	stoplag(6 SECONDS)
 	TEST_ASSERT(old_table.anchored && !(old_table in field.lifted), "A pre-transfer rip completed through the abandoned body")
-	TEST_ASSERT(!new_table.anchored && new_table in field.lifted && new_table.orbiting?.parent == new_body, "The old channel canceled or displaced the new body's legitimate rip")
+	TEST_ASSERT(!new_table.anchored, "The new body's legitimate rip did not finish tearing its table loose")
+	TEST_ASSERT(new_table in field.lifted, "The new body's legitimate rip did not raise its table")
+	TEST_ASSERT_EQUAL(new_table.orbiting?.parent, new_body, "The new body's ripped table did not orbit its current caster")
+
+/// Destroying a real harness releases its bookings without stripping a newer field's hold.
+/datum/unit_test/vestige_debris_harness_booking_cleanup/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, floor)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/consistent, get_step(get_step(floor, EAST), EAST))
+	var/obj/item/vestige_debris_harness/harness = allocate(/obj/item/vestige_debris_harness)
+	user.put_in_hands(harness)
+	var/datum/action/cooldown/mob_cooldown/vestige_tk/sweep/harness/sweep = locate() in user.actions
+	TEST_ASSERT(sweep, "The real held debris harness did not grant its sweep")
+	var/obj/item/crowbar/free_ammo = allocate(/obj/item/crowbar, get_step(floor, NORTH))
+	var/obj/item/wrench/taken_ammo = allocate(/obj/item/wrench, get_step(floor, EAST))
+	TEST_ASSERT(sweep.Activate(target), "The real debris harness did not begin a volley")
+	TEST_ASSERT(free_ammo in sweep.booked_ammunition, "The volley did not book its loose crowbar")
+	TEST_ASSERT(taken_ammo in sweep.booked_ammunition, "The volley did not book its loose wrench")
+	// Rebuilding render filters must not make us lose ownership of our unchanged parameter list.
+	free_ammo.add_filter("unit_test_other_outline", 1, list("type" = "outline", "color" = COLOR_RED, "size" = 1))
+	var/datum/action/cooldown/spell/greater_telekinesis/field = allocate(/datum/action/cooldown/spell/greater_telekinesis, user)
+	field.Grant(user)
+	field.start_lifting()
+	user.next_click = -1
+	user.ClickOn(taken_ammo, "")
+	TEST_ASSERT(taken_ammo in field.lifted, "A real telekinetic grab could not take the winding-up ammunition")
+	qdel(harness)
+	TEST_ASSERT(QDELETED(sweep), "Deleting the real harness did not delete its granted action")
+	TEST_ASSERT(!free_ammo.get_filter("vestige_telekinesis"), "Deleting the harness stranded its surviving ammunition outline")
+	TEST_ASSERT(free_ammo.get_filter("unit_test_other_outline"), "Sweep cleanup removed an unrelated effect")
+	TEST_ASSERT(taken_ammo.get_filter("vestige_telekinesis") && taken_ammo.orbiting?.parent == user, "Sweep cleanup stripped the newer telekinetic hold")
+	var/obj/item/vestige_debris_harness/replacement = allocate(/obj/item/vestige_debris_harness)
+	user.put_in_hands(replacement)
+	var/datum/action/cooldown/mob_cooldown/vestige_tk/sweep/harness/retry = locate() in user.actions
+	TEST_ASSERT(retry && retry != sweep && retry.Activate(target), "A replacement harness could not retry with the released floor ammunition")
+	TEST_ASSERT(free_ammo in retry.booked_ammunition, "The deleted harness left its old ammunition unavailable to the next sweep")
+	user.next_click = -1
+	user.ClickOn(free_ammo, "")
+	TEST_ASSERT(free_ammo in field.lifted, "The new field could not take the retry's ammunition before launch")
+	stoplag(retry.telegraph_time + retry.stagger_time + 1 SECONDS)
+	TEST_ASSERT(free_ammo in field.lifted, "The old sweep callback stole ammunition from a newer telekinetic field")
+	TEST_ASSERT(free_ammo.get_filter("vestige_telekinesis") && free_ammo.orbiting?.parent == user && !free_ammo.throwing, "The expired sweep booking changed a newer hold's outline or momentum")
+	field.stop_lifting(silent = TRUE)
+	TEST_ASSERT(!free_ammo.get_filter("vestige_telekinesis") && !taken_ammo.get_filter("vestige_telekinesis"), "The real field could not clean up after the old sweep bookings expired")
+
+/// The two hall controls share physical interaction rules across every admitted body.
+/datum/unit_test/vestige_warframe_lever_bodies/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	for(var/body_type in list(/mob/living/carbon/human/consistent, /mob/living/basic/carp, /mob/living/carbon/human/species/monkey, /mob/living/silicon/robot, /mob/living/carbon/alien/larva))
+		var/obj/structure/warframe_lever/lever = allocate(/obj/structure/warframe_lever, floor)
+		var/mob/living/user = allocate(body_type, get_step(floor, EAST))
+		user.set_stat(UNCONSCIOUS)
+		user.UnarmedAttack(lever, TRUE, list())
+		TEST_ASSERT(!lever.pulled, "An unconscious [body_type] pulled a hall lever")
+		user.set_stat(CONSCIOUS)
+		user.forceMove(get_step(get_step(floor, EAST), EAST))
+		if(iscyborg(user))
+			lever.attack_robot(user, list())
+		else
+			lever.pull_lever(user)
+		TEST_ASSERT(!lever.pulled, "A distant [body_type] operated a physical hall lever")
+		user.forceMove(get_step(floor, EAST))
+		user.UnarmedAttack(lever, TRUE, list())
+		TEST_ASSERT(lever.pulled, "[body_type]'s real unarmed click could not pull the hall controls")
+		qdel(user)
+		qdel(lever)
+
+/// Two rooms separated by real opaque walls distinguish the charged deck from its departed berth.
+/datum/unit_test/vestige_communion_arc_movement
+	var/list/wall_types = list()
+
+/datum/unit_test/vestige_communion_arc_movement/Destroy()
+	for(var/turf/wall as anything in wall_types)
+		wall.ChangeTurf(wall_types[wall])
+	return ..()
+
+/datum/unit_test/vestige_communion_arc_movement/Run()
+	var/turf/old_center = run_loc_floor_bottom_left
+	var/turf/new_center = run_loc_floor_top_right
+	for(var/y_coord in old_center.y to new_center.y)
+		var/turf/divider = locate(old_center.x + 2, y_coord, old_center.z)
+		wall_types[divider] = divider.type
+		divider.ChangeTurf(/turf/closed/indestructible)
+	var/mob/living/carbon/human/caster = allocate(/mob/living/carbon/human/consistent, old_center)
+	var/mob/living/carbon/human/old_bystander = allocate(/mob/living/carbon/human/consistent, get_step(old_center, NORTH))
+	var/mob/living/carbon/human/new_bystander = allocate(/mob/living/carbon/human/consistent, get_step(new_center, SOUTH))
+	var/obj/machinery/photocopier/old_machine = allocate(/obj/machinery/photocopier, get_step(old_center, EAST))
+	var/obj/machinery/photocopier/new_machine = allocate(/obj/machinery/photocopier, get_step(new_center, WEST))
+	TEST_ASSERT(old_machine.is_operational && new_machine.is_operational, "Arc regression requires powered machines in both rooms")
+	TEST_ASSERT(!can_see(old_center, new_center, 9), "The separated rooms must not share an arc's sightline")
+	var/datum/machine_masshack/arc_flash/hack = allocate(/datum/machine_masshack/arc_flash)
+	TEST_ASSERT(hack.execute(caster, old_center), "The actual Arc Flash could not charge a powered room")
+	var/obj/effect/vestige_trial_marker/room = locate() in old_center
+	TEST_ASSERT(room, "Arc Flash did not retain a physical charged-room marker")
+	stoplag(0.5 SECONDS)
+	TEST_ASSERT(old_bystander.getFireLoss() > 0 && !new_bystander.getFireLoss(), "The initial volley did not remain inside its original room")
+	var/old_burn = old_bystander.getFireLoss()
+	room.beforeShuttleMove(new_center, 180, MOVE_CONTENTS)
+	room.onShuttleMove(new_center, old_center, list(), NORTH)
+	room.afterShuttleMove(old_center, list(), SOUTH, NORTH, NORTH, 180)
+	caster.forceMove(new_center)
+	stoplag(1.6 SECONDS)
+	TEST_ASSERT_EQUAL(old_bystander.getFireLoss(), old_burn, "A remaining arc struck occupants at the ship's departed berth")
+	TEST_ASSERT(new_bystander.getFireLoss() > 0, "Remaining real Arc Flash timers did not follow the moving charged room")
+	var/new_burn = new_bystander.getFireLoss()
+	qdel(room)
+	stoplag(1.6 SECONDS)
+	TEST_ASSERT_EQUAL(new_bystander.getFireLoss(), new_burn, "Deleting the charged room left later volleys using its old coordinates")
+
+/// A real resurrection bolt revives the defeated mob without refilling its already-paid equipment.
+/datum/unit_test/vestige_ascension_resurrection_loot/Run()
+	var/list/boss_loot = list(
+		/mob/living/basic/vestige_oracle = /obj/item/clothing/head/oracle_hood,
+		/mob/living/basic/vestige_mutant = /obj/item/clothing/neck/vestige_specimen_collar,
+		/mob/living/basic/vestige_warframe = /obj/item/sparring_blade,
+	)
+	var/turf/floor = run_loc_floor_bottom_left
+	for(var/boss_type in boss_loot)
+		var/loot_type = boss_loot[boss_type]
+		var/mob/living/basic/boss = allocate(boss_type, floor)
+		var/before = length(floor.get_all_contents_type(loot_type))
+		TEST_ASSERT(boss.death(), "[boss_type] could not die normally")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "The first defeated [boss_type] did not pay its ordinary loot")
+		var/obj/projectile/magic/resurrection/bolt = allocate(/obj/projectile/magic/resurrection, floor)
+		bolt.on_hit(boss)
+		TEST_ASSERT(boss.stat != DEAD, "The real resurrection projectile must still revive [boss_type]")
+		TEST_ASSERT(boss.death(), "The revived [boss_type] could not die a second time")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "Reviving and killing [boss_type] again printed another equipment payment")
+		qdel(boss)
+
+/// The actual bridle may temporarily possess a boss, but cannot permanently strip its attack rotation.
+/datum/unit_test/vestige_ascension_bridle_recovery/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, floor)
+	user.mind_initialize()
+	for(var/boss_type in list(/mob/living/basic/vestige_oracle, /mob/living/basic/vestige_mutant, /mob/living/basic/vestige_warframe))
+		for(var/phase in 1 to 2)
+			var/mob/living/basic/boss = allocate(boss_type, get_step(floor, EAST))
+			if(phase == 2)
+				if(istype(boss, /mob/living/basic/vestige_oracle))
+					var/mob/living/basic/vestige_oracle/oracle = boss
+					oracle.begin_stammer()
+				else if(istype(boss, /mob/living/basic/vestige_mutant))
+					var/mob/living/basic/vestige_mutant/specimen = boss
+					specimen.begin_revision()
+				else
+					var/mob/living/basic/vestige_warframe/warframe = boss
+					warframe.begin_second_round()
+					warframe.end_round_change()
+			var/list/expected_kit = get_boss_kit(boss)
+			var/datum/ai_controller/old_controller = boss.ai_controller
+			for(var/key in expected_kit)
+				TEST_ASSERT_EQUAL(old_controller.blackboard[key], expected_kit[key], "[boss_type] phase [phase] started with an incorrect ability reference")
+			var/obj/item/verdigris_bridle/bridle = allocate(/obj/item/verdigris_bridle)
+			TEST_ASSERT(user.put_in_hands(bridle), "Could not equip the real bridle")
+			var/datum/action/cooldown/spell/pointed/lich_corruption/bridle/rein = locate() in user.actions
+			TEST_ASSERT(rein && rein.IsAvailable(feedback = FALSE) && rein.is_valid_target(boss), "The equipped bridle did not accept [boss_type] as a normal target")
+			TEST_ASSERT(rein && rein.Activate(boss), "The real bridle could not cast on [boss_type] phase [phase]")
+			var/datum/status_effect/lich_thrall/bridle/possession = boss.has_status_effect(/datum/status_effect/lich_thrall/bridle)
+			TEST_ASSERT(possession && QDELETED(old_controller) && boss.ai_controller == possession.puppet_controller, "The bridle did not actually replace [boss_type]'s AI controller")
+			var/list/cooldowns = list()
+			for(var/key in expected_kit)
+				var/datum/action/cooldown/ability = expected_kit[key]
+				if(ability)
+					ability.StartCooldown(17 SECONDS)
+					cooldowns[ability] = ability.next_use_time
+			qdel(possession)
+			TEST_ASSERT(istype(boss.ai_controller, old_controller.type) && boss.ai_controller != old_controller, "The original controller type did not return after [boss_type]'s possession")
+			for(var/key in expected_kit)
+				TEST_ASSERT_EQUAL(boss.ai_controller.blackboard[key], expected_kit[key], "Restoring [boss_type] phase [phase] lost or prematurely unlocked [key]")
+			for(var/datum/action/cooldown/ability as anything in cooldowns)
+				TEST_ASSERT_EQUAL(ability.next_use_time, cooldowns[ability], "Restoring the controller reset a real boss action cooldown")
+			qdel(bridle)
+			qdel(boss)
+
+/// Local blackboard defines are below the test include; record their exact keys with real mob-owned actions.
+/datum/unit_test/vestige_ascension_bridle_recovery/proc/get_boss_kit(mob/living/basic/boss)
+	if(istype(boss, /mob/living/basic/vestige_oracle))
+		var/mob/living/basic/vestige_oracle/oracle = boss
+		return list("BB_oracle_word_of_falling" = oracle.word_of_falling, "BB_oracle_antiphon" = oracle.antiphon, "BB_oracle_called_word" = oracle.called_word, "BB_oracle_last_line" = oracle.last_line)
+	if(istype(boss, /mob/living/basic/vestige_mutant))
+		var/mob/living/basic/vestige_mutant/specimen = boss
+		return list("BB_mutant_sweep" = specimen.sweep, "BB_mutant_pin" = specimen.pin, "BB_mutant_repulse" = specimen.repulse, "BB_mutant_confiscate" = specimen.confiscate)
+	var/mob/living/basic/vestige_warframe/warframe = boss
+	return list("BB_warframe_iai" = warframe.iai, "BB_warframe_guard" = warframe.guard, "BB_warframe_sweep" = warframe.sweep, "BB_warframe_live_floor" = warframe.round_number >= 2 ? warframe.live_floor : null)

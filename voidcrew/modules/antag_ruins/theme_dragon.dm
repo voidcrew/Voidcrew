@@ -682,7 +682,7 @@
 	name = "The Ember Feast"
 	// Keep the count in sync with VESTIGE_EMBER_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the jaw. It remembers a little of my fire, enough to start a meal, not enough to skip the hunt. Three wild beasts at least the size of a carp, dead while my flame is still on them. Set them alight, then finish the hunt with your own weapons or a helper. If the flame goes out, breathe again. People, pets, and tiny vermin do not count."
+	desc = "Take the jaw. It remembers a little of my fire, enough to start a meal, not enough to skip the hunt. Three flammable wild beasts at least the size of a carp, dead while my flame is still on them. Adult wild spiders can burn; space carp cannot. Wound tough quarry first, then ignite it and finish quickly with your own weapons or a helper. If the flame goes out, breathe again. People, pets, tiny vermin, and beasts that cannot hold a flame do not count."
 	/// Prey already savored (weakref -> TRUE). A revived and re-cooked beast is still one meal
 	var/list/devoured = list()
 
@@ -733,7 +733,22 @@
 
 /obj/item/vestige_ember_jaw/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count. Helpers may finish a marked beast. Extinguishing it removes the mark. Tiny vermin and player-controlled creatures do not count.")
+	if(isliving(user))
+		for(var/mob/living/prey in view(7, user))
+			if(vestige_is_wild_quarry(prey, user))
+				. += span_notice("[prey]: [can_hold_flame(prey) ? "can hold a flame" : "cannot burn; no feast credit"].")
+	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only flammable wild things that die while that flame is still on them count. Adult wild spiders can burn; space carp cannot. The flame is brief: weaken tough prey before igniting it, then finish quickly. Helpers may finish a marked beast. Extinguishing it removes the mark. Tiny vermin and player-controlled creatures do not count.")
+
+/// Match the ordinary fire-status eligibility without changing a beast's innate immunity.
+/obj/item/vestige_ember_jaw/proc/can_hold_flame(mob/living/prey)
+	if(prey.on_fire)
+		return TRUE
+	if(HAS_TRAIT(prey, TRAIT_NOFIRE) || isanimal(prey))
+		return FALSE
+	if(isbasicmob(prey))
+		var/mob/living/basic/beast = prey
+		return !!(beast.basic_mob_flags & FLAMMABLE_MOB)
+	return TRUE
 
 /obj/item/vestige_ember_jaw/attack_self(mob/user, modifiers)
 	. = ..()
@@ -802,6 +817,11 @@
 	if(prey.on_fire && vestige_is_wild_quarry(prey, hunter) && istype(trial))
 		mark_prey(prey, hunter.mind)
 		balloon_alert(hunter, "[prey]: flame marked; helpers count")
+	else if(vestige_is_wild_quarry(prey, hunter))
+		if(!can_hold_flame(prey))
+			balloon_alert(hunter, "[prey] cannot burn; no feast credit!")
+		else
+			balloon_alert(hunter, "[prey] is not burning; dry it or breathe again!")
 	prey.adjustFireLoss(VESTIGE_EMBER_BURN)
 	to_chat(prey, span_userdanger("You are engulfed by [hunter]'s gout of dragonfire!"))
 

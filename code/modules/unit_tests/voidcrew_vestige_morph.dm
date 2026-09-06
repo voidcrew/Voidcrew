@@ -359,9 +359,10 @@
 	TEST_ASSERT_EQUAL(victim.health, initial_health, "A pacifist's refused real punch must not deliver the ambush rider first.")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/vestige_predation), "A refused punch must leave the unused ambush window intact.")
 	REMOVE_TRAIT(user, TRAIT_PACIFISM, TRAIT_GENERIC)
+	TEST_ASSERT(user.can_unarmed_attack() && user.combat_mode, "The second punch must remain an available harm-mode input after pacifism is removed.")
 	user.UnarmedAttack(victim, TRUE, list())
-	TEST_ASSERT(victim.health <= initial_health - 10, "A permitted real unarmed attack must still deliver the ambush rider.")
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/vestige_predation), "A permitted strike must spend the ambush window once.")
+	TEST_ASSERT(victim.health <= initial_health - 10, "A permitted real unarmed attack must still deliver the ambush rider: health [initial_health] to [victim.health], brute [victim.getBruteLoss()], physiology [victim.physiology.brute_mod]/[victim.physiology.damage_resistance].")
 
 /// Beckon uses a timer instead of a do_after, but must still retain its casting body.
 /datum/unit_test/vestige_morph/beckon_transfer/Run()

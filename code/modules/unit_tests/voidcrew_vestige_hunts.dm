@@ -638,7 +638,7 @@
 	TEST_ASSERT(QDELETED(trial) && QDELETED(knife), "Completion must reclaim the finished pact and its knife.")
 	TEST_ASSERT(hunter_mind.vestige_pending_reward, "The successful route must leave its real reward claim.")
 
-/// The actual jaw cone marks three ordinary beasts, whose actual weapon deaths complete the hunt.
+/// The actual jaw cone marks three flammable stock beasts, whose actual weapon deaths complete the hunt.
 /datum/unit_test/vestige_ember_feast_complete_route/Run()
 	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
 	keeper.mind_initialize()
@@ -648,20 +648,28 @@
 	trial.on_accepted(keeper)
 	var/obj/item/vestige_ember_jaw/jaw = locate() in keeper.held_items
 	TEST_ASSERT(jaw, "Accepting the pact must hand over its actual ember-jaw.")
-	var/list/quarry = list()
-	var/turf/prey_floor = get_turf(keeper)
-	for(var/meal in 1 to 3)
-		prey_floor = get_step(prey_floor, EAST)
-		var/mob/living/basic/carp/beast = allocate(/mob/living/basic/carp, prey_floor)
-		ADD_TRAIT(beast, TRAIT_AI_PAUSED, TRAIT_GENERIC)
-		quarry += beast
-	keeper.setDir(EAST)
-	jaw.attack_self(keeper)
-	TEST_ASSERT_EQUAL(length(jaw.marked_prey), 3, "The real in-hand breath must mark three ordinary carp in its cone.")
 	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
 	TEST_ASSERT(keeper.put_in_hands(weapon), "The route needs an ordinary held weapon beside the jaw.")
-	for(var/mob/living/basic/carp/beast as anything in quarry)
-		TEST_ASSERT(beast.on_fire && beast.stat != DEAD, "The breath must leave each carp alive and genuinely burning.")
+	keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+	var/list/quarry = list()
+	var/turf/breath_floor = get_turf(keeper)
+	var/turf/prey_floor = breath_floor
+	for(var/meal in 1 to 3)
+		prey_floor = get_step(prey_floor, EAST)
+		var/mob/living/basic/spider/giant/nurse/beast = allocate(/mob/living/basic/spider/giant/nurse, prey_floor)
+		ADD_TRAIT(beast, TRAIT_AI_PAUSED, TRAIT_GENERIC)
+		keeper.forceMove(get_step(prey_floor, WEST))
+		weapon.melee_attack_chain(keeper, beast, list())
+		TEST_ASSERT(beast.stat != DEAD && beast.health < beast.maxHealth, "An actual preparatory wound must leave the stock spider alive.")
+		quarry += beast
+	keeper.forceMove(breath_floor)
+	keeper.swap_hand(keeper.get_held_index_of_item(jaw))
+	keeper.setDir(EAST)
+	jaw.attack_self(keeper)
+	TEST_ASSERT_EQUAL(length(jaw.marked_prey), 3, "The real in-hand breath must mark three flammable stock spiders in its cone.")
+	keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+	for(var/mob/living/basic/spider/giant/nurse/beast as anything in quarry)
+		TEST_ASSERT(beast.on_fire && beast.stat != DEAD, "The breath must leave each stock spider alive and genuinely burning.")
 		keeper.forceMove(get_step(beast, WEST))
 		for(var/cut in 1 to 3)
 			if(beast.stat == DEAD)
@@ -703,3 +711,634 @@
 	TEST_ASSERT(/datum/vestige_trial/boiling_kiss in hunter_mind.completed_vestige_trials, "The third actual corroding death must complete the Boiling Kiss.")
 	TEST_ASSERT(QDELETED(trial) && QDELETED(maw), "Completion must reclaim the trial and its maw.")
 	TEST_ASSERT(hunter_mind.vestige_pending_reward && !QDELETED(weapon), "Completion must create a claim and preserve the ordinary weapon.")
+
+/// Spin actual webs, let stock target-finding choose the keeper, and move the hunters into them.
+/datum/unit_test/vestige_snare_complete_route/Run()
+	var/turf/web_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, web_floor)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/loom_snare/trial = allocate(/datum/vestige_trial/loom_snare, keeper_mind, "Test Weaver", list(/datum/vestige_boon/spell/armblade))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_snare_spinneret/spinneret = trial.spinneret
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	for(var/catch_number in 1 to 3)
+		keeper.forceMove(web_floor)
+		spinneret.attack_self(keeper)
+		var/obj/structure/spider/stickyweb/vestige_snare/web = locate() in web_floor
+		TEST_ASSERT(web && !web.spent, "The real in-hand spinneret channel must create an unused snare.")
+		TEST_ASSERT(keeper.Move(get_step(web_floor, NORTH), NORTH), "The keeper must leave the snare for its pursuer.")
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(web_floor, SOUTH))
+		targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "Stock target-finding must actually identify the keeper as prey.")
+		step(quarry, NORTH)
+		TEST_ASSERT(HAS_TRAIT(quarry, TRAIT_IMMOBILIZED), "Actual attempted movement into the deployed snare must immobilize the hunter.")
+		if(catch_number < 3)
+			TEST_ASSERT_EQUAL(trial.catches, catch_number, "The movement-triggered spring must award one real catch.")
+		qdel(quarry)
+		var/deadline = world.time + 2 SECONDS
+		while(!QDELETED(web) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(QDELETED(web), "Spent snare silk must collapse before the next placement.")
+	TEST_ASSERT(/datum/vestige_trial/loom_snare in keeper_mind.completed_vestige_trials, "Three actual movement-triggered catches must complete the Snare.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(spinneret), "Completion must reclaim the snare kit and trial.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward, "The successful Snare route must create its reward claim.")
+
+/// Deploy, capture through movement, wrap, drag and hoist three real live meals.
+/datum/unit_test/vestige_pantry_complete_route/Run()
+	var/turf/trap_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/turf/rack_floor = get_step(get_step(trap_floor, NORTHEAST), NORTHEAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, get_step(rack_floor, WEST))
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/loom_pantry/trial = allocate(/datum/vestige_trial/loom_pantry, keeper_mind, "Test Weaver", list(/datum/vestige_boon/spell/armblade))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_larder_bundle/bundle = trial.bundle
+	keeper.swap_hand(keeper.get_held_index_of_item(bundle))
+	TEST_ASSERT_EQUAL(bundle.interact_with_atom(rack_floor, keeper, list()), ITEM_INTERACT_SUCCESS, "The actual bundle channel must deploy a rack.")
+	var/obj/structure/vestige_larder_rack/rack = trial.rack
+	var/obj/item/vestige_wrap_spool/spool = trial.spool
+	TEST_ASSERT(rack && QDELETED(bundle), "Deployment must replace the carried bundle with the real rack.")
+	for(var/meal_number in 1 to 3)
+		keeper.forceMove(trap_floor)
+		if(trial.capture_web)
+			TEST_ASSERT(!keeper.get_active_held_item(), "The keeper's free hand must remain available after hoisting.")
+			trial.capture_web.attack_hand(keeper, list())
+		keeper.swap_hand(keeper.get_held_index_of_item(spool))
+		spool.attack_self(keeper)
+		var/obj/structure/spider/stickyweb/vestige_capture/web = trial.capture_web
+		TEST_ASSERT(web, "The real spool channel must create a capture web.")
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(trap_floor, SOUTH))
+		step(quarry, NORTH)
+		TEST_ASSERT_EQUAL(web.captive?.resolve(), quarry, "Actual movement into the web must trigger capture.")
+		TEST_ASSERT(vestige_loom_is_held_fast(quarry), "The real capture must hold long enough for wrapping.")
+		spool.melee_attack_chain(keeper, quarry, list())
+		var/obj/structure/vestige_silk_cocoon/parcel = quarry.loc
+		TEST_ASSERT(istype(parcel) && (parcel in trial.cocoons), "The actual wrap channel must put the living quarry inside its tracked cocoon.")
+		TEST_ASSERT_EQUAL(get_dist(parcel, rack), 3, "The fixture must require hauling rather than already touching the rack.")
+		keeper.swap_hand()
+		keeper.start_pulling(parcel)
+		TEST_ASSERT_EQUAL(keeper.pulling, parcel, "The keeper must grab the actual movable cocoon.")
+		for(var/direction in list(EAST, NORTH, NORTH))
+			TEST_ASSERT(keeper.Move(get_step(keeper, direction), direction), "The keeper must walk the cocoon toward the rack.")
+		TEST_ASSERT(get_dist(parcel, rack) <= 1 && parcel.z == rack.z, "Ordinary pulling must deliver the fresh cocoon beside the rack.")
+		rack.attack_hand(keeper, list())
+		var/deadline = world.time + 5 SECONDS
+		while(!QDELETED(parcel) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(QDELETED(parcel) && QDELETED(quarry), "The real hoist must take its living meal whole.")
+		if(meal_number < 3)
+			TEST_ASSERT_EQUAL(trial.stocked, meal_number, "Each complete capture-wrap-haul-hoist must stock exactly one meal.")
+	TEST_ASSERT(/datum/vestige_trial/loom_pantry in keeper_mind.completed_vestige_trials, "Three complete physical deliveries must finish the Pantry.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(rack) && QDELETED(spool), "Completion must reclaim the rack and loaned capture kit.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward, "The successful Pantry route must create its reward claim.")
+
+/// Record both ranges through actual fired barbs, stock target selection, and real quarry movement.
+/datum/unit_test/vestige_census_complete_route/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/comb_census/trial = allocate(/datum/vestige_trial/comb_census, keeper_mind, "Test Dowager", list(/datum/vestige_boon/item/alien_baton))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_census_stinger/stinger = trial.stinger
+	var/turf/pursuit_floor = locate(keeper.x + 4, keeper.y, keeper.z)
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	for(var/profile_number in 1 to 2)
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, pursuit_floor)
+		targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "Stock target selection must start a real hunt before the Census shot.")
+		for(var/behavior in list("pursuit", "commitment"))
+			COOLDOWN_RESET(stinger, sting_cooldown)
+			TEST_ASSERT_EQUAL(stinger.ranged_interact_with_atom(quarry, keeper, list()), ITEM_INTERACT_SUCCESS, "The actual stinger handler must accept the new hunting range.")
+			var/deadline = world.time + 3 SECONDS
+			while(!HAS_TRAIT(quarry, TRAIT_IMMOBILIZED) && world.time < deadline)
+				sleep(world.tick_lag)
+			TEST_ASSERT(HAS_TRAIT(quarry, TRAIT_IMMOBILIZED) && quarry.IsStun(), "The real barb must land and stun its ordinary carp subject ([profile_number], [behavior]).")
+			if(behavior == "pursuit")
+				var/list/observations = trial.entries_per_subject[WEAKREF(quarry)]
+				TEST_ASSERT_EQUAL(length(observations), 1, "The distant impact must create only the pursuit observation.")
+				TEST_ASSERT("pursuit" in observations, "The real distance must be recorded as a pursuit.")
+				deadline = world.time + 3 SECONDS
+				while(HAS_TRAIT(quarry, TRAIT_IMMOBILIZED) && world.time < deadline)
+					sleep(world.tick_lag)
+				TEST_ASSERT(step(quarry, WEST) && step(quarry, WEST), "The recovered beast must actually approach to commitment range.")
+				TEST_ASSERT_EQUAL(get_dist(quarry, keeper), 2, "The second barb must use the two-tile commitment boundary.")
+		if(profile_number == 1)
+			TEST_ASSERT_EQUAL(trial.complete_profiles, 1, "Both real impact ranges must complete the first beast's profile.")
+		qdel(quarry)
+	TEST_ASSERT(/datum/vestige_trial/comb_census in keeper_mind.completed_vestige_trials, "Two actual two-range observations must complete the Census.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(stinger), "The final projectile's appraisal must safely reclaim the trial and its stinger.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward, "The completed Census must create its real reward claim.")
+
+/// One real in-hand gust interrupts four independently selected hunts before reclaiming its own charm.
+/datum/unit_test/vestige_wingbeat_complete_route
+	var/list/throw_origins = list()
+
+/datum/unit_test/vestige_wingbeat_complete_route/proc/on_throw(atom/movable/source, datum/thrownthing/flight)
+	SIGNAL_HANDLER
+	throw_origins[source] = get_turf(source)
+
+/datum/unit_test/vestige_wingbeat_complete_route/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, center)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/wingbeat/trial = allocate(/datum/vestige_trial/wingbeat, keeper_mind, "Test Unfed", list(/datum/vestige_boon/spell/armblade))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_gust_charm/charm = locate() in keeper.held_items
+	TEST_ASSERT(charm, "Accepting the trial must hand over the actual gust charm.")
+	var/list/menaces = list()
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	for(var/direction in GLOB.cardinals)
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(center, direction))
+		targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "Each ordinary carp must independently choose the keeper as its target.")
+		RegisterSignal(quarry, COMSIG_MOVABLE_POST_THROW, PROC_REF(on_throw))
+		menaces += quarry
+	charm.attack_self(keeper)
+	TEST_ASSERT(/datum/vestige_trial/wingbeat in keeper_mind.completed_vestige_trials, "The actual gust must count all four successfully thrown hunters.")
+	TEST_ASSERT_EQUAL(length(throw_origins), 4, "Every counted hunter must emit a real throw-start event before the final credit completes the pact.")
+	for(var/mob/living/basic/carp/quarry as anything in menaces)
+		var/deadline = world.time + 3 SECONDS
+		while(get_turf(quarry) == throw_origins[quarry] && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(get_turf(quarry) != throw_origins[quarry], "Every counted hunter must physically move, even if its quick-started throw already hit a wall.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(charm), "The post-throw credit loop must safely reclaim the pact and charm.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward, "The completed Wingbeat must create its real reward claim.")
+
+/// Deploy the actual rack and hang three freshly killed ordinary carcasses through the drag-drop chain.
+/datum/unit_test/vestige_table_complete_route/Run()
+	var/turf/rack_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, get_step(rack_floor, WEST))
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/set_the_table/trial = allocate(/datum/vestige_trial/set_the_table, keeper_mind, "Test Stain", list(/datum/vestige_boon/spell/rending_claws))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_gambrel/bundle = trial.gambrel_item
+	TEST_ASSERT_EQUAL(bundle.interact_with_atom(rack_floor, keeper, list()), ITEM_INTERACT_SUCCESS, "The real bundle channel must unfold the table.")
+	var/obj/structure/vestige_gambrel/rack = trial.gambrel_structure
+	TEST_ASSERT(rack && QDELETED(bundle), "The deployed rack must replace the carried kit.")
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The hunter must equip an ordinary weapon.")
+	var/list/carcasses = list()
+	for(var/setting_number in 1 to 3)
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(rack_floor, SOUTHWEST))
+		for(var/cut in 1 to 3)
+			if(quarry.stat == DEAD)
+				break
+			weapon.melee_attack_chain(keeper, quarry, list())
+		TEST_ASSERT_EQUAL(quarry.stat, DEAD, "The ordinary weapon must produce the fresh carcass.")
+		TEST_ASSERT(rack.mouse_drop_receive(quarry, keeper, null), "The real drag-drop route must complete both hang and buckle channels.")
+		TEST_ASSERT_EQUAL(quarry.buckled, rack, "The credited carcass must actually hang from the rack.")
+		TEST_ASSERT_EQUAL(trial.settings, setting_number, "Each actual fresh hanging must credit one setting.")
+		carcasses += quarry
+	var/deadline = world.time + 3 SECONDS
+	while(!QDELETED(trial) && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(/datum/vestige_trial/set_the_table in keeper_mind.completed_vestige_trials, "Three real fresh hangings must complete through the deferred conclusion.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(rack), "The completed pact must reclaim its planted rack.")
+	for(var/mob/living/basic/carp/quarry as anything in carcasses)
+		TEST_ASSERT(!QDELETED(quarry) && !quarry.buckled && !HAS_TRAIT(quarry, TRAIT_MOVE_UPSIDE_DOWN), "Cleanup must drop and right every intact carcass for normal butchering.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward && !QDELETED(weapon), "Completion must create its claim and preserve the hunter's weapon.")
+
+/// The encounter routes need honest five-tile line spacing and open approaches beyond the 5x5 room.
+/datum/unit_test/vestige_hunt_route
+	abstract_type = /datum/unit_test/vestige_hunt_route
+	var/list/restored_ground = list()
+
+/datum/unit_test/vestige_hunt_route/Destroy()
+	. = ..() // Reclaim every actor and kit before putting the surrounding terrain back.
+	for(var/list/record as anything in restored_ground)
+		var/turf/ground = locate(record[1], record[2], record[3])
+		ground.ChangeTurf(record[4])
+	restored_ground.Cut()
+	restore_atmos()
+
+/datum/unit_test/vestige_hunt_route/proc/prepare_ground()
+	var/turf/corner = run_loc_floor_bottom_left
+	for(var/turf/ground as anything in block(locate(corner.x - 1, corner.y - 1, corner.z), locate(corner.x + 9, corner.y + 9, corner.z)))
+		if(isfloorturf(ground))
+			continue
+		restored_ground += list(list(ground.x, ground.y, ground.z, ground.type))
+		ground.ChangeTurf(/turf/open/floor/plating)
+	return locate(corner.x + 4, corner.y + 4, corner.z)
+
+/// Retain the production callback and arguments, shortening only an existing scheduled delay.
+/datum/unit_test/vestige_hunt_route/proc/run_pending_callback(datum/source, callback_proc)
+	for(var/datum/timedevent/scheduled as anything in source._active_timers?.Copy())
+		if(scheduled.callBack?.delegate != callback_proc)
+			continue
+		var/datum/callback/pending = scheduled.callBack
+		qdel(scheduled)
+		var/timer_id = addtimer(pending, 1, TIMER_STOPPABLE)
+		var/datum/timedevent/expedited = SStimer.timer_id_dict[timer_id]
+		var/deadline = world.time + 3 SECONDS
+		while(!QDELETED(expedited) && world.time < deadline)
+			sleep(world.tick_lag)
+		return QDELETED(expedited)
+	return FALSE
+
+/// Real deployed shell, scheduled waves, carp bites, two empty-hand repairs, combat deaths and hatching.
+/datum/unit_test/vestige_hunt_route/broodwatch/Run()
+	var/turf/nest_floor = prepare_ground()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, get_step(nest_floor, WEST))
+	ADD_TRAIT(keeper, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
+	ADD_TRAIT(keeper, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/broodwatch/trial = allocate(/datum/vestige_trial/broodwatch, keeper_mind, "Test Unfed", list(/datum/vestige_boon/spell/armblade))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_dragon_egg/carried = trial.egg_item
+	TEST_ASSERT_EQUAL(carried.interact_with_atom(nest_floor, keeper, list()), ITEM_INTERACT_SUCCESS, "The real carried egg must channel into a planted shell.")
+	var/obj/structure/vestige_dragon_egg/nest = trial.egg_structure
+	TEST_ASSERT(nest && QDELETED(carried), "Planting must consume the carried egg and register the nest.")
+	// This is the selected 'Wake it' branch; the test world has no client to answer a TGUI alert.
+	nest.begin_assault(keeper)
+	TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_dragon_egg, herald_wave)), "Waking must schedule a real first herald.")
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The defender must equip an ordinary weapon.")
+	for(var/wave_number in 1 to 3)
+		if(wave_number > 1)
+			keeper.forceMove(get_step(nest_floor, WEST))
+			keeper.swap_hand()
+			TEST_ASSERT_NULL(keeper.get_active_held_item(), "Calling the next wave must use a real empty hand.")
+			nest.next_wave_at = world.time // Advance only the rebuilding rest period.
+			nest.attack_hand(keeper, list())
+		TEST_ASSERT(nest.wave_pending, "The actual herald must announce each wave before spawning it.")
+		TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_dragon_egg, unleash_wave)), "The pending arrival must execute through its real scheduled callback.")
+		TEST_ASSERT_EQUAL(nest.stage, wave_number, "Only the actual arrival may advance the wave number.")
+		TEST_ASSERT_EQUAL(length(nest.brood), 2, "Each real wave must supply exactly two brood carp.")
+		var/mob/living/basic/carp/vestige_brood/biter = nest.brood[2]
+		TEST_ASSERT_EQUAL(biter.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], nest, "The egg-bound carp must spawn with the real shell target.")
+		if(wave_number < 3)
+			biter.forceMove(get_step(nest_floor, EAST))
+			biter.melee_attack(nest, list())
+			TEST_ASSERT(nest.atom_integrity < nest.max_integrity, "The actual carp attack must damage the planted shell.")
+			keeper.forceMove(get_step(nest_floor, WEST))
+			if(keeper.get_active_held_item())
+				keeper.swap_hand()
+			nest.attack_hand(keeper, list())
+			var/deadline = world.time + 5 SECONDS
+			while(nest.repairing && world.time < deadline)
+				sleep(world.tick_lag)
+			TEST_ASSERT_EQUAL(nest.atom_integrity, nest.max_integrity, "The real empty-hand patch channel must repair the shell.")
+			TEST_ASSERT_EQUAL(nest.repairs_left, 2 - wave_number, "Each actual patch must spend one of the two repairs.")
+		keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+		for(var/mob/living/basic/carp/vestige_brood/quarry as anything in nest.brood.Copy())
+			keeper.forceMove(get_step(quarry, SOUTH))
+			for(var/cut in 1 to 5)
+				if(QDELETED(quarry))
+					break
+				weapon.melee_attack_chain(keeper, quarry, list())
+			TEST_ASSERT(QDELETED(quarry), "Real weapon damage must kill and dissolve every spawned carp.")
+		TEST_ASSERT_EQUAL(length(nest.brood), 0, "Actual death signals must clear the entire wave roster.")
+	TEST_ASSERT(nest.hatching, "The sixth actual carp death must arm the hatch.")
+	TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_dragon_egg, hatch)), "The actual hatch callback must finish the watch.")
+	var/mob/living/basic/carp/pet/vestige_hatchling/heir = locate() in nest_floor
+	TEST_ASSERT(heir && heir.stat != DEAD, "Successful defense must leave its real living hatchling.")
+	TEST_ASSERT(/datum/vestige_trial/broodwatch in keeper_mind.completed_vestige_trials, "Three complete real waves must complete Broodwatch.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(nest) && !QDELETED(weapon), "Hatching must reclaim the encounter while preserving the defender's weapon.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward, "The defended hatch must create its real reward claim.")
+
+/// Real resin, cutter damage, resin repair, four scheduled gangs and the harmless hatchling reward.
+/datum/unit_test/vestige_hunt_route/warm_season/Run()
+	var/turf/nest_floor = prepare_ground()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, get_step(nest_floor, WEST))
+	ADD_TRAIT(keeper, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
+	ADD_TRAIT(keeper, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/warm_season/trial = allocate(/datum/vestige_trial/warm_season, keeper_mind, "Test Dowager", list(/datum/vestige_boon/item/alien_baton))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_comb_egg/carried = trial.egg_item
+	TEST_ASSERT_EQUAL(carried.interact_with_atom(nest_floor, keeper, list()), ITEM_INTERACT_SUCCESS, "The actual egg channel must plant the clutch.")
+	var/obj/structure/vestige_comb_egg/nest = trial.egg_structure
+	var/obj/item/vestige_comb_spinneret/spinneret = trial.spinneret
+	TEST_ASSERT(nest && QDELETED(carried), "The planted clutch must replace the carried egg.")
+	keeper.swap_hand(keeper.get_held_index_of_item(spinneret))
+	var/turf/resin_floor = get_step(nest_floor, NORTH)
+	TEST_ASSERT_EQUAL(spinneret.interact_with_atom(resin_floor, keeper, list()), ITEM_INTERACT_SUCCESS, "The actual spinneret must channel a real defensive resin wall.")
+	var/obj/structure/vestige_comb_resin/resin = locate() in resin_floor
+	TEST_ASSERT(resin && (resin in trial.woven), "The actual woven wall must join the trial's cleanup ledger.")
+	// This is the selected 'Warm it' branch; no client exists to answer its TGUI alert.
+	nest.begin_season(keeper)
+	TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_comb_egg, herald_squad)), "Warming must schedule a real first gang warning.")
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The defender must equip an ordinary weapon beside the spinneret.")
+	var/list/gang_sizes = list(1, 2, 2, 3)
+	for(var/gang_number in 1 to 4)
+		if(gang_number > 1)
+			keeper.forceMove(get_step(nest_floor, WEST))
+			keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+			TEST_ASSERT(keeper.dropItemToGround(weapon), "Calling a new gang must first free the defender's active hand.")
+			nest.next_squad_at = world.time // Advance only the rebuilding rest period.
+			nest.attack_hand(keeper, list())
+			TEST_ASSERT(keeper.put_in_hands(weapon), "The defender must recover the ordinary weapon after calling the gang.")
+		TEST_ASSERT(nest.squad_pending, "Each real herald must announce its gang before arrival.")
+		TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_comb_egg, land_squad)), "The actual scheduled arrival must create the gang.")
+		TEST_ASSERT_EQUAL(length(nest.chewers), gang_sizes[gang_number], "The real gangs must retain their authored 1/2/2/3 sizes.")
+		TEST_ASSERT_EQUAL(nest.squads_landed, gang_number, "Only actual gang arrivals may advance the season.")
+		if(gang_number == 1)
+			var/mob/living/basic/hivebot/vestige_comb_chewer/biter = nest.chewers[1]
+			TEST_ASSERT_EQUAL(biter.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], nest, "The spawned cutter must receive its real shell directive.")
+			biter.forceMove(get_step(resin_floor, NORTH))
+			biter.melee_attack(resin, list())
+			TEST_ASSERT(resin.atom_integrity < resin.max_integrity, "The cutter must actually damage the woven resin through normal basic-mob combat.")
+			biter.forceMove(get_step(nest_floor, EAST))
+			biter.melee_attack(nest, list())
+			TEST_ASSERT(nest.atom_integrity < nest.max_integrity, "An actual cutter attack must also damage the shell.")
+			keeper.swap_hand(keeper.get_held_index_of_item(spinneret))
+			TEST_ASSERT_EQUAL(spinneret.interact_with_atom(nest, keeper, list()), ITEM_INTERACT_SUCCESS, "The real spinneret repair channel must mend the damaged shell.")
+			TEST_ASSERT_EQUAL(nest.atom_integrity, nest.max_integrity, "The mending channel must restore the actual lost integrity.")
+		keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+		for(var/mob/living/basic/hivebot/vestige_comb_chewer/quarry as anything in nest.chewers.Copy())
+			keeper.forceMove(get_step(quarry, SOUTH))
+			for(var/cut in 1 to 10)
+				if(QDELETED(quarry))
+					break
+				weapon.melee_attack_chain(keeper, quarry, list())
+			TEST_ASSERT(QDELETED(quarry), "Real weapon attacks must destroy every spawned cutter.")
+		TEST_ASSERT_EQUAL(length(nest.chewers), 0, "The actual cutter death signals must clear the gang roster.")
+	TEST_ASSERT(nest.hatching, "Defeating all eight real cutters must arm the hatch.")
+	TEST_ASSERT(run_pending_callback(nest, TYPE_PROC_REF(/obj/structure/vestige_comb_egg, hatch)), "The actual scheduled hatch must finish the Warm Season.")
+	var/obj/item/clothing/mask/facehugger/vestige_comb_heir/heir = locate() in nest_floor
+	TEST_ASSERT(heir && !QDELETED(heir), "The completed season must leave its actual harmless heir.")
+	TEST_ASSERT(/datum/vestige_trial/warm_season in keeper_mind.completed_vestige_trials, "Four complete real gangs must complete the Warm Season.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(nest) && QDELETED(spinneret) && QDELETED(resin), "Hatching must reclaim the shell, spinneret and woven defenses.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward && !QDELETED(weapon), "The successful season must create its claim and preserve the defender's weapon.")
+
+/// String the actual dispersed net, answer four real bite alarms on foot, and kill the supplied thieves.
+/datum/unit_test/vestige_hunt_route/tremor/Run()
+	var/turf/center = prepare_ground()
+	var/list/line_floors = list(locate(center.x - 3, center.y - 3, center.z), locate(center.x + 2, center.y - 3, center.z), locate(center.x - 3, center.y + 2, center.z))
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, center)
+	ADD_TRAIT(keeper, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
+	ADD_TRAIT(keeper, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/loom_tremor/trial = allocate(/datum/vestige_trial/loom_tremor, keeper_mind, "Test Weaver", list(/datum/vestige_boon/spell/armblade))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_tremor_spool/spool = trial.spool
+	for(var/turf/line_floor as anything in line_floors)
+		keeper.forceMove(line_floor)
+		spool.attack_self(keeper)
+	TEST_ASSERT_EQUAL(length(trial.lines), 3, "The real placement channels must string all three lines at their authored spacing.")
+	TEST_ASSERT(trial.night_begun, "The actual third line must start the night.")
+	var/list/lines = trial.lines.Copy()
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The keeper must equip an ordinary weapon beside the spool.")
+	keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+	for(var/answer_number in 1 to 4)
+		trial.next_send_at = world.time // Advance only the pause between thieves.
+		TEST_ASSERT(run_pending_callback(trial, TYPE_PROC_REF(/datum/vestige_trial/loom_tremor, loom_beat)), "The existing heartbeat timer must send the next actual thief.")
+		TEST_ASSERT_EQUAL(length(trial.thieves), 1, "The actual heartbeat must supply one thief at a time.")
+		var/mob/living/basic/vestige_silk_thief/thief = trial.thieves[1]
+		var/obj/structure/vestige_tremor_line/line = trial.thieves[thief]
+		TEST_ASSERT_EQUAL(thief.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], line, "The spawned thief must receive its real assigned-line directive.")
+		TEST_ASSERT(!line.pinged, "Each new thief must begin with a fresh alarm.")
+		for(var/pace in 1 to 15)
+			if(thief.Adjacent(line))
+				break
+			step_towards(thief, line)
+		TEST_ASSERT(thief.Adjacent(line), "The supplied thief must have an actual traversable approach to its line.")
+		thief.melee_attack(line, list())
+		TEST_ASSERT(line.pinged && line.atom_integrity < line.max_integrity, "The real basic-mob bite must damage the line and ring its tremor.")
+		for(var/pace in 1 to 20)
+			if(keeper.Adjacent(thief))
+				break
+			step_towards(keeper, thief)
+		TEST_ASSERT(keeper.Adjacent(thief), "The keeper must reach the actual thief on foot before answering.")
+		for(var/cut in 1 to 5)
+			if(QDELETED(thief))
+				break
+			weapon.melee_attack_chain(keeper, thief, list())
+		TEST_ASSERT(QDELETED(thief), "The normal weapon must actually kill and dissolve the supplied thief.")
+		if(answer_number < 4)
+			TEST_ASSERT_EQUAL(trial.answered, answer_number, "Each in-person combat death must answer exactly one tremor.")
+	TEST_ASSERT(/datum/vestige_trial/loom_tremor in keeper_mind.completed_vestige_trials, "Four actual alarms answered in person must complete the Tremor Line.")
+	for(var/obj/structure/vestige_tremor_line/line as anything in lines)
+		TEST_ASSERT(QDELETED(line), "Completion must reclaim every strung line.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(spool), "Completion must reclaim the night and its borrowed spool.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward && !QDELETED(weapon), "The completed net must create its claim and preserve the keeper's weapon.")
+
+/// Cast the borrowed action through both real jaunt transitions and land three moving-quarry strikes.
+/datum/unit_test/vestige_trapdoor_complete_route/Run()
+	var/turf/door_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, door_floor)
+	keeper.mind_initialize()
+	var/datum/mind/keeper_mind = keeper.mind
+	var/datum/vestige_trial/trapdoor_feast/trial = allocate(/datum/vestige_trial/trapdoor_feast, keeper_mind, "Test Stain", list(/datum/vestige_boon/spell/rending_claws))
+	keeper_mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/crawl = trial.crawl
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The apprentice must carry an actual weapon into the blood.")
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	for(var/pounce_number in 1 to 3)
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(door_floor, NORTHEAST))
+		targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "The ordinary carp must begin a real hunt before the dive.")
+		crawl.reset_spell_cooldown() // Advance only the action's recharge between real casts.
+		TEST_ASSERT(crawl.IsAvailable(), "The normal action availability gates must allow the dive.")
+		TEST_ASSERT(crawl.PreActivate(keeper), "The actual borrowed action must accept its dive cast.")
+		var/obj/effect/dummy/phased_mob/blood/holder = keeper.loc
+		TEST_ASSERT(istype(holder), "The cast must physically place the keeper in its real blood holder.")
+		TEST_ASSERT_EQUAL(keeper.get_active_held_item(), weapon, "The Trapdoor dive must preserve the real held weapon.")
+		if(pounce_number == 1)
+			TEST_ASSERT_EQUAL(keeper.getBruteLoss(), 5, "The first real cast must pay the exact five-brute self-cut toll.")
+			var/obj/effect/decal/cleanable/blood/door = locate() in door_floor
+			TEST_ASSERT(door && door.can_bloodcrawl_in(), "The first cast must create an actual crawlable blood door.")
+		TEST_ASSERT(step(quarry, SOUTH), "The hunting beast must actually move during the dive.")
+		crawl.reset_spell_cooldown()
+		TEST_ASSERT(crawl.IsAvailable(), "The normal action availability gates must allow the submerged keeper to rise.")
+		TEST_ASSERT(crawl.PreActivate(keeper), "The actual borrowed action must accept its voluntary rise cast.")
+		TEST_ASSERT(QDELETED(holder) && isturf(keeper.loc), "The rise must eject the keeper and reclaim its physical blood holder.")
+		TEST_ASSERT(crawl.can_pounce(keeper, quarry), "Actual dive and rise snapshots must recognize the beast's movement without assigned progress.")
+		weapon.melee_attack_chain(keeper, quarry, list())
+		TEST_ASSERT(quarry.health < quarry.maxHealth, "The real held-weapon strike must actually damage the moving quarry.")
+		TEST_ASSERT_EQUAL(trial.ambushes, pounce_number, "Each real rise-and-hit chain must grant one pounce.")
+		qdel(quarry)
+	var/deadline = world.time + 3 SECONDS
+	while(!QDELETED(trial) && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(/datum/vestige_trial/trapdoor_feast in keeper_mind.completed_vestige_trials, "Three actual moving-quarry ambushes must complete the Trapdoor Feast.")
+	TEST_ASSERT(QDELETED(trial) && QDELETED(crawl), "The deferred completion must reclaim the trial and its granted crawl.")
+	TEST_ASSERT(isturf(keeper.loc) && !HAS_TRAIT(keeper, TRAIT_IMMOBILIZED), "The completed apprentice must remain fully surfaced and mobile.")
+	TEST_ASSERT(keeper_mind.vestige_pending_reward && keeper.is_holding(weapon), "Completion must create its claim and leave the ordinary weapon in hand.")
+
+/// The real six-second recharge must leave a voluntary exit window before ten-second forced ejection.
+/datum/unit_test/vestige_trapdoor_real_timing/Run()
+	var/turf/door_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, door_floor)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/trapdoor_feast/trial = allocate(/datum/vestige_trial/trapdoor_feast, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/crawl = trial.crawl
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The apprentice must hold a real weapon throughout the timing scenario.")
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	for(var/forced_exit in list(FALSE, TRUE))
+		var/mob/living/basic/carp/quarry = allocate(/mob/living/basic/carp, get_step(door_floor, NORTHEAST))
+		targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "The actual AI target must exist before each timed dive.")
+		var/deadline = world.time + crawl.cooldown_time + 2 SECONDS
+		while(!crawl.IsAvailable() && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(crawl.Trigger(), "The real action trigger must allow a dive after natural recharge.")
+		var/obj/effect/dummy/phased_mob/blood/holder = keeper.loc
+		TEST_ASSERT(istype(holder), "The timed cast must actually submerge the keeper.")
+		TEST_ASSERT(!crawl.Trigger(), "An immediate second button press must respect the real dive cooldown.")
+		TEST_ASSERT_EQUAL(keeper.loc, holder, "The cooldown refusal must leave the keeper submerged.")
+		TEST_ASSERT(step(quarry, SOUTH), "The hunting beast must actually move during the timed dive.")
+		if(forced_exit)
+			deadline = world.time + 12 SECONDS
+			while(!QDELETED(holder) && world.time < deadline)
+				sleep(world.tick_lag)
+			TEST_ASSERT(QDELETED(holder), "The untouched real lurk timer must forcibly eject its keeper.")
+			TEST_ASSERT(!crawl.IsAvailable(), "Automatic ejection must charge the normal rise cooldown.")
+		else
+			deadline = world.time + crawl.cooldown_time + 2 SECONDS
+			while(!crawl.IsAvailable() && world.time < deadline)
+				sleep(world.tick_lag)
+			TEST_ASSERT_EQUAL(keeper.loc, holder, "Natural recharge must finish before the real lurk timer ejects the keeper.")
+			TEST_ASSERT(crawl.Trigger(), "A second normal button press after natural recharge must voluntarily surface.")
+			TEST_ASSERT(QDELETED(holder), "The voluntary cast must reclaim the real holder.")
+		TEST_ASSERT(isturf(keeper.loc), "Both real exit routes must land the apprentice directly on the floor.")
+		// Do not reset the normal click/move cooldowns: this is the first real click after surfacing.
+		keeper.ClickOn(quarry, list2params(list(LEFT_CLICK = 1, BUTTON = LEFT_CLICK)))
+		TEST_ASSERT_EQUAL(trial.ambushes, forced_exit ? 2 : 1, "The real first weapon click must still fit inside the three-second post-exit strike window.")
+		qdel(quarry)
+	TEST_ASSERT(!QDELETED(trial) && !trial.fulfilled, "Two honest timed strikes must leave the three-strike trial unfinished.")
+	TEST_ASSERT(keeper.is_holding(weapon) && !HAS_TRAIT(keeper, TRAIT_IMMOBILIZED), "Natural dive/exit timing must preserve the weapon and release all movement restraints.")
+
+/// Actual in-hand activation and normal attack cooldowns must permit finishing a flammable stock beast.
+/datum/unit_test/vestige_ember_real_timing/Run()
+	var/turf/breath_floor = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, breath_floor)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/ember_feast/trial = allocate(/datum/vestige_trial/ember_feast, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_ember_jaw/jaw = locate() in keeper.held_items
+	TEST_ASSERT(jaw, "The timing route must use the real issued jaw.")
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The keeper must have a normal weapon ready in the other hand.")
+	var/mob/living/basic/spider/giant/nurse/quarry = allocate(/mob/living/basic/spider/giant/nurse, get_step(breath_floor, EAST))
+	ADD_TRAIT(quarry, TRAIT_AI_PAUSED, TRAIT_SOURCE_UNIT_TESTS)
+	var/mob/living/basic/carp/fireproof = allocate(/mob/living/basic/carp, get_step(quarry, EAST))
+	ADD_TRAIT(fireproof, TRAIT_AI_PAUSED, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(jaw.can_hold_flame(quarry) && !jaw.can_hold_flame(fireproof), "The eligibility feedback must distinguish flammable stock spiders from stock carp.")
+	keeper.setDir(EAST)
+	var/click_params = list2params(list(LEFT_CLICK = 1, BUTTON = LEFT_CLICK))
+	keeper.ClickOn(jaw, click_params)
+	TEST_ASSERT(quarry.on_fire && jaw.marked_prey[quarry], "The real item click must ignite and mark the stock spider.")
+	TEST_ASSERT(!fireproof.on_fire && !jaw.marked_prey[fireproof], "The same real cone must preserve the carp's intrinsic fire immunity and refuse its credit.")
+	TEST_ASSERT(!(fireproof.basic_mob_flags & FLAMMABLE_MOB), "The jaw must never change the stock carp's flammability flag.")
+	var/ignited_at = world.time
+	keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+	for(var/cut in 1 to 2)
+		var/deadline = world.time + 3 SECONDS
+		while((world.time < keeper.next_move || world.time <= keeper.next_click) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(quarry.on_fire, "The real flame must remain active when the normal weapon click becomes available.")
+		keeper.ClickOn(quarry, click_params)
+	TEST_ASSERT_EQUAL(quarry.stat, DEAD, "Two normally timed combat-knife clicks must finish the genuinely burning stock nurse spider.")
+	TEST_ASSERT_EQUAL(length(trial.devoured), 1, "Only the actual burning kill may enter the meal ledger.")
+	TEST_ASSERT(world.time > ignited_at, "This route must allow real time and attack cooldowns to pass after ignition.")
+	TEST_ASSERT(!trial.fulfilled, "One real meal must leave the three-meal hunt unfinished.")
+
+/// Stun-immune wild quarry still supplies an actual projectile observation without false immobilization.
+/datum/unit_test/vestige_census_immune_observation/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/comb_census/trial = allocate(/datum/vestige_trial/comb_census, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/obj/item/vestige_census_stinger/stinger = trial.stinger
+	var/mob/living/basic/spider/giant/nurse/quarry = allocate(/mob/living/basic/spider/giant/nurse, locate(keeper.x + 4, keeper.y, keeper.z))
+	TEST_ASSERT(!(quarry.status_flags & CANSTUN), "The route must use a stock beast with intrinsic stun immunity.")
+	var/datum/ai_behavior/find_potential_targets/targeting = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	targeting.perform(0.1, quarry.ai_controller, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_EQUAL(vestige_loom_hunted_prey(quarry), keeper, "Stock target selection must establish the real pursuit before firing.")
+	TEST_ASSERT_EQUAL(stinger.ranged_interact_with_atom(quarry, keeper, list()), ITEM_INTERACT_SUCCESS, "The actual stinger handler must fire at a new immune pursuer.")
+	var/deadline = world.time + 3 SECONDS
+	while(!trial.entries && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(trial.entries, 1, "The actual projectile impact must still record its eligible pursuit.")
+	var/list/observations = trial.entries_per_subject[WEAKREF(quarry)]
+	TEST_ASSERT("pursuit" in observations, "The immune beast's earned observation must use its real hunting distance.")
+	TEST_ASSERT(!quarry.IsStun() && !HAS_TRAIT(quarry, TRAIT_IMMOBILIZED), "The counted barb must preserve the stock beast's innate stun immunity.")
+	TEST_ASSERT(!(quarry.status_flags & CANSTUN), "The Census must never alter a target's intrinsic stun flags.")
+	TEST_ASSERT(!trial.fulfilled && !trial.complete_profiles, "One immune pursuit must not complete a profile or the trial.")
+
+/// Let the supplied thief actually path and bite, then answer from a different line at normal movement/attack cadence.
+/datum/unit_test/vestige_hunt_route/tremor_autonomous/Run()
+	var/turf/center = prepare_ground()
+	var/list/line_floors = list(locate(center.x - 3, center.y - 3, center.z), locate(center.x + 2, center.y - 3, center.z), locate(center.x - 3, center.y + 2, center.z))
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, center)
+	ADD_TRAIT(keeper, TRAIT_NOBREATH, TRAIT_SOURCE_UNIT_TESTS)
+	ADD_TRAIT(keeper, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/loom_tremor/trial = allocate(/datum/vestige_trial/loom_tremor, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	for(var/turf/line_floor as anything in line_floors)
+		keeper.forceMove(line_floor)
+		trial.spool.attack_self(keeper)
+	TEST_ASSERT_EQUAL(length(trial.lines), 3, "The autonomous route must begin with a normally deployed dispersed net.")
+	var/obj/item/knife/combat/weapon = allocate(/obj/item/knife/combat)
+	TEST_ASSERT(keeper.put_in_hands(weapon), "The keeper must equip an ordinary knife for the response.")
+	keeper.swap_hand(keeper.get_held_index_of_item(weapon))
+	trial.next_send_at = world.time // Only initial waiting is shortened; combat and travel run on the real clock.
+	TEST_ASSERT(run_pending_callback(trial, TYPE_PROC_REF(/datum/vestige_trial/loom_tremor, loom_beat)), "The actual heartbeat must supply the thief.")
+	TEST_ASSERT_EQUAL(length(trial.thieves), 1, "The autonomous route must use the actual single spawned thief.")
+	var/mob/living/basic/vestige_silk_thief/thief = trial.thieves[1]
+	var/obj/structure/vestige_tremor_line/line = trial.thieves[thief]
+	var/turf/thief_start = get_turf(thief)
+	var/turf/keeper_start = line_floors[1]
+	for(var/turf/candidate as anything in line_floors)
+		if(get_dist(candidate, line) > get_dist(keeper_start, line))
+			keeper_start = candidate
+	keeper.forceMove(keeper_start)
+	TEST_ASSERT(get_dist(keeper, line) >= 5, "The response must start at another properly separated line.")
+	// As in mouse_bite_cable, clientless unit-test z-levels need an explicit AI wake.
+	thief.ai_controller.can_idle = FALSE
+	thief.ai_controller.set_ai_status(AI_STATUS_ON)
+	thief.ai_controller.SelectBehaviors(SSai_controllers.wait * 0.1)
+	var/deadline = world.time + 30 SECONDS
+	while(!QDELETED(line) && !line.pinged && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!QDELETED(line) && line.pinged && line.atom_integrity < line.max_integrity, "The real AI must navigate its approach and bite the line without a test-issued attack.")
+	TEST_ASSERT(get_turf(thief) != thief_start, "The autonomous thief must physically travel from its announced approach.")
+	var/alarm_at = world.time
+	for(var/pace in 1 to 15)
+		if(QDELETED(thief) || keeper.Adjacent(thief))
+			break
+		TEST_ASSERT(!QDELETED(line) && (keeper.mobility_flags & MOBILITY_MOVE), "The real line and the keeper's movement must survive the response.")
+		var/direction = get_dir(keeper, thief)
+		var/step_delay = keeper.cached_multiplicative_slowdown
+		if(NSCOMPONENT(direction) && EWCOMPONENT(direction))
+			step_delay *= sqrt(2)
+		TEST_ASSERT(keeper.Process_Spacemove(direction) && step(keeper, direction), "The keeper must take a valid ordinary step toward the gnawing thief.")
+		sleep(max(world.tick_lag, step_delay))
+	TEST_ASSERT(!QDELETED(thief) && keeper.Adjacent(thief), "Normally paced travel from another line must reach the actual gnawing thief.")
+	var/click_params = list2params(list(LEFT_CLICK = 1, BUTTON = LEFT_CLICK))
+	for(var/cut in 1 to 2)
+		deadline = world.time + 3 SECONDS
+		while((world.time < keeper.next_move || world.time <= keeper.next_click) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(!QDELETED(line), "The responding keeper must finish before the real AI chews through the line.")
+		keeper.ClickOn(thief, click_params)
+	TEST_ASSERT(QDELETED(thief), "The two normally timed weapon clicks must actually kill the autonomous thief.")
+	TEST_ASSERT_EQUAL(trial.answered, 1, "A real alarm, normal travel and actual weapon death must award one in-person answer.")
+	TEST_ASSERT(!QDELETED(line) && world.time > alarm_at, "The answer must preserve its line after real response time has elapsed.")
+	TEST_ASSERT(!trial.fulfilled, "One autonomous answer must leave the four-answer night unfinished.")

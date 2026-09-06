@@ -25,6 +25,8 @@
 		tracker = new(target, CALLBACK(src, PROC_REF(move_react)))
 
 	RegisterSignal(parent, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE, PROC_REF(orbiter_glide_size_update))
+	// Transfer temporarily clears parent; moving an orbiter before reattachment fires its stop signal at null.
+	move_react(target)
 
 /datum/component/orbiter/UnregisterFromParent()
 	UnregisterSignal(parent, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE)
@@ -34,7 +36,7 @@
 
 /datum/component/orbiter/Destroy()
 	var/atom/master = parent
-	if(master.orbiters == src)
+	if(master?.orbiters == src)
 		master.orbiters = null
 	for(var/i in orbiter_list)
 		end_orbit(i)
@@ -55,11 +57,12 @@
 
 	orbiter_list += newcomp.orbiter_list
 	newcomp.orbiter_list = null
+	// A transfer into an existing orbit merges here instead of registering a new component.
+	move_react(parent)
 
 /datum/component/orbiter/PostTransfer(datum/new_parent)
 	if(!isatom(new_parent) || isarea(new_parent) || !get_turf(new_parent))
 		return COMPONENT_INCOMPATIBLE
-	move_react(new_parent)
 
 /datum/component/orbiter/proc/begin_orbit(atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 	if(orbiter.orbiting)

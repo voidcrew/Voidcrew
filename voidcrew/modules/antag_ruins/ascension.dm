@@ -169,7 +169,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	if(mind.vestige_pending_reward || length(record.pending_candidates))
 		return "Collect what you're owed before you ask me for something like this."
 	if(vestige_ascension_passenger(user))
-		return "You go in alone. Leave anyone you're carrying outside, living or dead."
+		return "You go in alone. Someone else would follow you through."
 	return null
 
 /// Nested bags, swallowed mobs, and revivable bodies travel with forceMove too.
@@ -183,6 +183,10 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 			own_bodies |= shape.caster_mob
 	var/list/own_mobs = own_bodies.Copy()
 	for(var/mob/living/body as anything in own_bodies)
+		// A manifested guardian stands outside the inventory, but recall still brings it to its host.
+		for(var/mob/living/basic/guardian/linked as anything in body.get_all_linked_holoparasites())
+			if(!QDELETED(linked))
+				return linked
 		var/mob/living/brain/installed_brain
 		if(iscarbon(body))
 			var/mob/living/carbon/carbon_body = body
@@ -310,7 +314,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	if(!offer || QDELETED(supplicant) || QDELETED(user) || user.mind != supplicant || supplicant.current != user || user.stat != CONSCIOUS || supplicant.active_ascension_run)
 		return FALSE
 	if(vestige_ascension_passenger(user))
-		to_chat(user, span_warning("The way admits you alone. Leave anyone you're carrying outside, living or dead."))
+		to_chat(user, span_warning("The way admits you alone. Someone else would follow you through."))
 		return FALSE
 	if(!ispath(offer.template_type, /datum/map_template/vestige_arena))
 		log_mapping("VESTIGE ASCENSION: [offer.name] has no arena template")
@@ -325,7 +329,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		return FALSE
 	// Loading can yield long enough for somebody to put a passenger into the inventory.
 	if(vestige_ascension_passenger(user))
-		to_chat(user, span_warning("The way admits you alone. Leave anyone you're carrying outside, living or dead."))
+		to_chat(user, span_warning("The way admits you alone. Someone else would follow you through."))
 		return FALSE
 
 	var/turf/entry = pick_landmark(/obj/effect/landmark/vestige_arena/entry)
@@ -535,20 +539,20 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	if(QDELETED(victor))
 		return
 	var/datum/vestige_record/record = get_vestige_record(supplicant, create = TRUE)
-	if(record?.ascension_boon) // belt and braces; the gate should have caught this
-		return
-
-	var/datum/vestige_boon/capstone = new offer.boon_type()
-	capstone.grant(victor, supplicant)
-	LAZYADD(supplicant.vestige_boons, offer.boon_type)
-	qdel(capstone)
-	if(record)
-		record.boons |= offer.boon_type
-		record.ascension_boon = offer.boon_type
-	log_game("[key_name(victor)] completed vestige ascension '[offer.name]' and took [offer.boon_type].")
-
-	to_chat(victor, span_boldannounce("It stops moving. Whatever it could do, you can do now."))
-	playsound(get_turf(victor), 'sound/effects/magic/curse.ogg', 100, TRUE)
+	if(!record?.ascension_boon)
+		var/datum/vestige_boon/capstone = new offer.boon_type()
+		capstone.grant(victor, supplicant)
+		LAZYADD(supplicant.vestige_boons, offer.boon_type)
+		qdel(capstone)
+		if(record)
+			record.boons |= offer.boon_type
+			record.ascension_boon = offer.boon_type
+		log_game("[key_name(victor)] completed vestige ascension '[offer.name]' and took [offer.boon_type].")
+		to_chat(victor, span_boldannounce("It stops moving. Whatever it could do, you can do now."))
+		playsound(get_turf(victor), 'sound/effects/magic/curse.ogg', 100, TRUE)
+	else
+		// Another body's encounter may have settled this soul's one capstone first.
+		to_chat(victor, span_boldnotice("The fight is over. You have already taken your ascension; the way home is yours."))
 
 	open_the_gate()
 	deltimer(deadline_timer)
@@ -693,6 +697,9 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	return enter_gate(user)
 
 /obj/structure/vestige_way_home/attack_alien(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_larva(mob/living/user, list/modifiers)
 	return enter_gate(user)
 
 /obj/structure/vestige_way_home/attack_animal(mob/living/user, list/modifiers)

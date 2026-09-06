@@ -1080,7 +1080,7 @@
 	name = "The Census"
 	// Keep the numbers in sync with VESTIGE_CENSUS_MARKS_NEEDED / VESTIGE_CENSUS_PER_SUBJECT
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A queen should know what hunts along her borders. Take the stinger and count them for me: sting wild things in the act of hunting, mid-charge, already committed to something alive. Four entries: record a distant pursuit (at least four tiles from its prey) and a close commitment (within two tiles) from each of two beasts. No beast can contribute the same behavior twice. An idle animal does not count. Anything the sting counts also seizes up for a moment, which you may find useful."
+	desc = "A queen should know what hunts along her borders. Take the stinger and count them for me: sting wild things in the act of hunting, mid-charge, already committed to something alive. Four entries: record a distant pursuit (at least four tiles from its prey) and a close commitment (within two tiles) from each of two beasts. No beast can contribute the same behavior twice. An idle animal does not count. Counted beasts briefly seize up unless they are immune to stuns, which you may find useful."
 	/// Entries in the rolls so far
 	var/entries = 0
 	/// Subjects with both pursuit and commitment recorded; incomplete profiles never block new ones.
@@ -1154,7 +1154,7 @@
 
 /obj/item/vestige_census_stinger/examine(mob/user)
 	. = ..()
-	. += span_notice("Aim it at a living thing within [VESTIGE_CENSUS_RANGE] tiles to fire a neuro-barb. Only a wild animal caught in the act of hunting a living person goes in the rolls, and only counted subjects seize up. Each beast can supply one pursuit (at least four tiles from its prey) and one commitment (within two tiles). The barb checks again at impact.")
+	. += span_notice("Aim it at a living thing within [VESTIGE_CENSUS_RANGE] tiles to fire a neuro-barb. Only a wild animal caught in the act of hunting a living person goes in the rolls. Counted subjects seize up unless they are immune to stuns. Each beast can supply one pursuit (at least four tiles from its prey) and one commitment (within two tiles). The barb checks again at impact.")
 
 /obj/item/vestige_census_stinger/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isliving(interacting_with) || interacting_with == user)
@@ -1218,11 +1218,14 @@
 	if(!trial.tally(subject, behavior)) // may complete (and delete) the trial, nothing touches it after this
 		to_chat(hunter, span_warning("[subject] has already shown that behavior. Observe its other range, or another beast."))
 		return
-	subject.Paralyze(VESTIGE_CENSUS_SEIZE)
-	subject.visible_message(
-		span_danger("[subject] seizes mid-lunge, every limb stamped still at once!"),
-		span_userdanger("Something cold hits you, and your whole body locks up!"),
-	)
+	// Basic fauna commonly have CANSTUN without CANKNOCKDOWN, which Paralyze also requires.
+	if(subject.Stun(VESTIGE_CENSUS_SEIZE))
+		subject.visible_message(
+			span_danger("[subject] seizes mid-lunge, every limb stamped still at once!"),
+			span_userdanger("Something cold hits you, and your whole body locks up!"),
+		)
+	else
+		balloon_alert(hunter, "counted; resists the stun!")
 	to_chat(hunter, span_notice("[subject] is entered in the rolls: [behavior]."))
 
 /**

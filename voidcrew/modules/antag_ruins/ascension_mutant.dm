@@ -889,6 +889,8 @@
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/repulse/repulse
 	/// Confiscation: granted at the revision, not before.
 	var/datum/action/cooldown/mob_cooldown/vestige_tk/confiscate/confiscate
+	/// Resurrection does not refill the specimen's physical loot.
+	var/loot_dropped = FALSE
 
 	/// TRUE once the fourth revision has arrived. One-way.
 	var/revised = FALSE
@@ -1059,9 +1061,12 @@
  * retunes the loot with it.
  */
 /mob/living/basic/vestige_mutant/proc/drop_the_specimen()
+	if(loot_dropped)
+		return
 	var/atom/spot = drop_location()
 	if(isnull(spot))
 		return
+	loot_dropped = TRUE
 	new /obj/item/clothing/neck/vestige_specimen_collar(spot)
 	var/static/list/jackpot_pool = list(
 		/obj/item/vestige_palm_anchor,
@@ -1195,8 +1200,13 @@
 	/// What this volley is being thrown at. Held live rather than resolved up front, so
 	/// each shot leads the quarry's current tile instead of the tile they left.
 	var/atom/tracked_quarry
+	/// Item => the exact filter parameters installed by this booking, before another field can replace them.
+	var/list/booked_ammunition = list()
 
 /datum/action/cooldown/mob_cooldown/vestige_tk/sweep/Destroy()
+	for(var/obj/item/loose as anything in booked_ammunition.Copy())
+		release_booking(loose)
+	booked_ammunition = null
 	tracked_quarry = null
 	return ..()
 
@@ -1283,14 +1293,24 @@
 	if(QDELETED(loose))
 		return
 	loose.add_filter(VESTIGE_TK_FILTER, 2, list("type" = "outline", "color" = VESTIGE_TK_COLOR, "size" = 1))
+	// Render filters are rebuilt whenever any filter changes; their parameter list keeps our identity.
+	booked_ammunition[loose] = loose.filter_data[VESTIGE_TK_FILTER]
 	loose.Shake(pixelshiftx = 1, pixelshifty = 1, duration = telegraph_time)
 	new /obj/effect/temp_visual/telekinesis(get_turf(loose))
 
+/// Release only our own booking. A newer field that took the item also owns its outline and momentum.
+/datum/action/cooldown/mob_cooldown/vestige_tk/sweep/proc/release_booking(obj/item/loose)
+	var/list/booked_filter = booked_ammunition[loose]
+	booked_ammunition -= loose
+	if(!booked_filter || QDELETED(loose) || loose.filter_data?[VESTIGE_TK_FILTER] != booked_filter)
+		return FALSE
+	loose.remove_filter(VESTIGE_TK_FILTER)
+	return TRUE
+
 /// One shot. Anything that stopped being throwable in the meantime is simply skipped.
 /datum/action/cooldown/mob_cooldown/vestige_tk/sweep/proc/fling_one(obj/item/loose)
-	if(QDELETED(loose))
+	if(!release_booking(loose))
 		return
-	loose.remove_filter(VESTIGE_TK_FILTER)
 	// Somebody picked it up mid-telegraph. Good for them; that shot is gone.
 	if(!isturf(loose.loc))
 		return
@@ -1593,6 +1613,15 @@
  * the `blackboard` list above. Confiscation is not here: it is granted at the revision
  * and writes its own key then.
  */
+/// Restore the specimen's existing revision and cooldowns after a temporary controller takes over.
+/datum/ai_controller/basic_controller/vestige_mutant/PossessPawn(atom/new_pawn)
+	. = ..()
+	var/mob/living/basic/vestige_mutant/specimen = pawn
+	if(!istype(specimen))
+		return
+	register_kit(specimen.sweep, specimen.pin, specimen.repulse)
+	set_blackboard_key(BB_MUTANT_CONFISCATE, specimen.confiscate)
+
 /datum/ai_controller/basic_controller/vestige_mutant/proc/register_kit(
 	datum/action/cooldown/sweep,
 	datum/action/cooldown/pin,
