@@ -257,6 +257,7 @@
 #include "rcd.dm"
 #include "reagent_container_defaults.dm"
 #include "reagent_id_typos.dm"
+#include "reagent_holder_teardown.dm"
 #include "reagent_mob_expose.dm"
 #include "reagent_mod_procs.dm"
 #include "reagent_names.dm"
