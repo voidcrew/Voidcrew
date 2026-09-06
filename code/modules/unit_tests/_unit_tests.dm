@@ -347,6 +347,7 @@
 #include "voidcrew_lich.dm"
 #include "voidcrew_launch_access.dm"
 #include "voidcrew_launch_cargo.dm"
+#include "voidcrew_bank_deposits.dm"
 #include "voidcrew_cargo_cart.dm"
 #include "voidcrew_cargo_load_queue.dm"
 #include "voidcrew_launch_fabrication.dm"

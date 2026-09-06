@@ -47,7 +47,7 @@
 		playsound(user, 'sound/machines/ding.ogg', 50, TRUE)
 		balloon_alert_to_viewers(user, "account updated")
 
-	if(!synced_bank_account && (istype(weapon, /obj/item/stack/spacecash) || istype(weapon, /obj/item/holochip)))
+	if(!synced_bank_account && (istype(weapon, /obj/item/stack/spacecash) || istype(weapon, /obj/item/holochip) || istype(weapon, /obj/item/coin)))
 		return //don't let them continue the attack chain because they'll waste money on a machine with no account
 
 	var/previous_balance = site?.treasury.account_balance
