@@ -45,7 +45,7 @@ type SelectedOutpost = {
   residents: Resident[];
 };
 
-type Data = {
+export type Data = {
   outposts: OutpostSummary[];
   selected: SelectedOutpost | null;
   busy: BooleanLike;
@@ -70,76 +70,90 @@ const modeLabel = (mode: string) =>
 
 export const OutpostManipulator = () => {
   const { act, data } = useBackend<Data>();
-  const { outposts, selected, busy, error } = data;
-  const isBusy = !!busy;
 
   return (
     <Window title="Outpost Manipulator" theme="admin" width={920} height={640}>
       <Window.Content fitted>
-        <Stack fill>
-          <Stack.Item width="31%">
-            <Section title="Player Outposts" fill scrollable>
-              <Button
-                fluid
-                icon="plus"
-                color="good"
-                disabled={isBusy}
-                onClick={() => act('create')}
-              >
-                Create Outpost
-              </Button>
-              <Box mt={1}>
-                {outposts.length ? (
-                  <Stack vertical>
-                    {outposts.map((outpost) => (
-                      <Stack.Item key={outpost.ref}>
-                        <Button
-                          fluid
-                          selected={outpost.ref === selected?.ref}
-                          onClick={() => act('select', { ref: outpost.ref })}
-                        >
-                          <Stack align="center">
-                            <Stack.Item grow>
-                              <Box bold>{outpost.name}</Box>
-                              <Box color="label" fontSize="11px">
-                                {outpost.owner || 'Unclaimed'}
-                              </Box>
-                            </Stack.Item>
-                            <Stack.Item>
-                              <Icon
-                                name={
-                                  outpost.loaded ? 'circle-check' : 'circle'
-                                }
-                                color={outpost.loaded ? 'good' : 'label'}
-                              />
-                            </Stack.Item>
-                          </Stack>
-                        </Button>
-                      </Stack.Item>
-                    ))}
-                  </Stack>
-                ) : (
-                  <NoticeBox info>No player outposts found.</NoticeBox>
-                )}
-              </Box>
-            </Section>
-          </Stack.Item>
-
-          <Stack.Item grow>
-            {error ? <NoticeBox danger>{error}</NoticeBox> : null}
-            {selected ? (
-              <OutpostDetails selected={selected} busy={isBusy} act={act} />
-            ) : (
-              <Section title="Registry" fill>
-                <NoticeBox info>
-                  Select an outpost to inspect or manipulate it.
-                </NoticeBox>
-              </Section>
-            )}
-          </Stack.Item>
-        </Stack>
+        <OutpostManipulatorPanel data={data} act={act} />
       </Window.Content>
     </Window>
+  );
+};
+
+type OutpostManipulatorPanelProps = {
+  data: Data;
+  act: (action: string, params?: unknown) => void;
+};
+
+export const OutpostManipulatorPanel = ({
+  data,
+  act,
+}: OutpostManipulatorPanelProps) => {
+  const { outposts, selected, busy, error } = data;
+  const isBusy = !!busy;
+
+  return (
+    <Stack fill>
+      <Stack.Item width="31%">
+        <Section title="Player Outposts" fill scrollable>
+          <Button
+            fluid
+            icon="plus"
+            color="good"
+            disabled={isBusy}
+            onClick={() => act('create')}
+          >
+            Create Outpost
+          </Button>
+          <Box mt={1}>
+            {outposts.length ? (
+              <Stack vertical>
+                {outposts.map((outpost) => (
+                  <Stack.Item key={outpost.ref}>
+                    <Button
+                      fluid
+                      selected={outpost.ref === selected?.ref}
+                      disabled={isBusy}
+                      onClick={() => act('select', { ref: outpost.ref })}
+                    >
+                      <Stack align="center">
+                        <Stack.Item grow>
+                          <Box bold>{outpost.name}</Box>
+                          <Box color="label" fontSize="11px">
+                            {outpost.owner || 'Unclaimed'}
+                          </Box>
+                        </Stack.Item>
+                        <Stack.Item>
+                          <Icon
+                            name={outpost.loaded ? 'circle-check' : 'circle'}
+                            color={outpost.loaded ? 'good' : 'label'}
+                          />
+                        </Stack.Item>
+                      </Stack>
+                    </Button>
+                  </Stack.Item>
+                ))}
+              </Stack>
+            ) : (
+              <NoticeBox info>No player outposts found.</NoticeBox>
+            )}
+          </Box>
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item grow overflowY="auto">
+        {error ? <NoticeBox danger>{error}</NoticeBox> : null}
+        {selected ? (
+          <OutpostDetails selected={selected} busy={isBusy} act={act} />
+        ) : (
+          <Section title="Registry" fill>
+            <NoticeBox info>
+              Select an outpost to inspect or manipulate it.
+            </NoticeBox>
+          </Section>
+        )}
+      </Stack.Item>
+    </Stack>
   );
 };
 
@@ -178,13 +192,21 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
       <Stack.Item>
         <Section title="Navigation and Identity">
           <Stack wrap>
-            <Button icon="location-crosshairs" onClick={() => act('jump')}>
+            <Button
+              icon="location-crosshairs"
+              disabled={busy}
+              onClick={() => act('jump')}
+            >
               Jump to Outpost
             </Button>
-            <Button icon="globe" onClick={() => act('jump_overmap')}>
+            <Button
+              icon="globe"
+              disabled={busy}
+              onClick={() => act('jump_overmap')}
+            >
               Jump Overmap
             </Button>
-            <Button icon="code" onClick={() => act('vv')}>
+            <Button icon="code" disabled={busy} onClick={() => act('vv')}>
               View Variables
             </Button>
             <Button icon="pen" disabled={busy} onClick={() => mutate('rename')}>
