@@ -24,6 +24,9 @@
 	connected_ship_ref = WEAKREF(port)
 
 /obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(istype(tool.buffer, /datum/techweb) && !can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
 	if(stored_research && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
 		stored_research.connected_machines -= src
 		stored_research.consoles_accessing -= src
@@ -46,8 +49,12 @@
 /obj/machinery/computer/rdconsole/ui_act(action, list/params)
 	if (action == "loadTech")
 		var/mob/living/user = usr
-		var/obj/docking_port/mobile/voidcrew/port = connected_ship_ref?.resolve()
-		if(port)
+		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+		if(home && !home.is_resident(user))
+			say("ERROR- DOWNLOADING REQUIRES RESIDENT MEMBERSHIP!")
+			return
+		var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
+		if(istype(port))
 			if(!(user.mind in port.current_ship.ship_team.members))
 				say("ERROR- DOWNLOADING NOT ALLOWED FOR NON-CREW!")
 				return
@@ -111,7 +118,7 @@
 		exp_to_process += stored_research.completed_experiments[e]
 	for (var/e in exp_to_process)
 		var/datum/experiment/ex = e
-		data["experiments"][ex.type] = list(
+		data["experiments"][ex.research_record_type()] = list(
 			"name" = ex.name,
 			"description" = ex.description,
 			"tag" = ex.exp_tag,

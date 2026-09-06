@@ -47,9 +47,16 @@
  */
 /obj/machinery/materials_market/proc/find_ship_cargo_console()
 	var/obj/machinery/computer/voidcrew_cargo/cached = cached_cargo_console?.resolve()
-	if(cached && (world.time - cached_console_time) < MARKET_CONSOLE_CACHE_TIME)
+	if(cached && same_service_site(src, cached) && (world.time - cached_console_time) < MARKET_CONSOLE_CACHE_TIME)
 		return cached
 
+	var/obj/structure/overmap/dynamic/player_outpost/site = get_outpost_from_atom(src)
+	if(site)
+		for(var/obj/machinery/computer/voidcrew_cargo/console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/voidcrew_cargo))
+			if(get_outpost_from_atom(console) == site)
+				console.cargo_account()
+				return console
+		return null
 	var/obj/machinery/computer/voidcrew_cargo/found
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 	// Deliberately the raw var, not get_cargo_shuttle(): that one lazily constructs the
@@ -84,7 +91,7 @@
 		// that list, so the order would be taken, confirmed, charged nothing and then lost -
 		// the original #255 symptom. There is no cargo network off a hull, so say so.
 		if(isnull(get_ship_from_atom(src)))
-			return "Error: no cargo network here. This market only works aboard a ship."
+			return "Error: no cargo network here. Build a cargo console on this ship or purchased outpost."
 		return "Error: no cargo console aboard to file this order with."
 
 	// The cart is the manifest of an in-flight delivery once the ferry has been called -
@@ -130,6 +137,13 @@
 	var/obj/machinery/computer/voidcrew_cargo/console = find_ship_cargo_console()
 	if(!console)
 		return ..()
-	return console.bank_account_holder?.synced_bank_account
+	return console.cargo_account()
 
 #undef MARKET_CONSOLE_CACHE_TIME
+
+/obj/machinery/materials_market/ui_act(action, list/params, datum/tgui/ui)
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	if(home && !home.can_spend(ui.user))
+		say("Outpost treasury spending permission required.")
+		return TRUE
+	return ..()

@@ -43,16 +43,10 @@
  * claim_unlinked_experiment_handlers() (voidcrew/modules/research/server.dm).
  */
 /datum/controller/subsystem/research/find_valid_servers(turf/location, datum/techweb/checking_web)
-	var/list/z_matched_servers = ..()
-	if(!length(z_matched_servers))
-		return z_matched_servers
-	var/obj/structure/overmap/ship/local_ship = get_voidcrew_ship_for_turf(location)
 	var/list/valid_servers = list()
-	for(var/obj/machinery/rnd/server/server as anything in z_matched_servers)
-		var/obj/structure/overmap/ship/server_ship = get_voidcrew_ship_for_turf(get_turf(server))
-		if(server_ship && server_ship != local_ship)
-			continue
-		valid_servers += server
+	for(var/obj/machinery/rnd/server/server as anything in checking_web.techweb_servers)
+		if(same_service_site(location, server))
+			valid_servers += server
 	return valid_servers
 
 /**
@@ -60,10 +54,12 @@
  * rather than trusting the UI: the web must have a server this handler's location may
  * legitimately reach (find_valid_servers above is ship-scoped), so the Connect button works
  * for your own ship's webs while a crafted href still can't tap a docked neighbour's.
- * Forced links - the multitool route and a ship server claiming its own unlinked handlers -
- * skip the check on purpose.
+ * Forced links - the multitool route and a server claiming its own unlinked handlers -
+ * still require the same physical service site.
  */
 /datum/component/experiment_handler/link_techweb(datum/techweb/new_web, forced)
+	if(new_web && !can_link_site_techweb(parent, new_web))
+		return FALSE
 	if(!forced)
 		if(isnull(new_web) || !length(SSresearch.find_valid_servers(get_turf(parent), new_web)))
 			return
@@ -119,6 +115,9 @@
 		return FALSE
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
 		target.balloon_alert(user, "no techweb in buffer!")
+		return FALSE
+	if(!can_link_site_techweb(target, tool.buffer))
+		target.balloon_alert(user, "server belongs to another site")
 		return FALSE
 	// One click relinks. The old Experi-Scanner flow spent the first click silently unlinking and only
 	// linked on a second one, which reads as a multitool that does nothing.

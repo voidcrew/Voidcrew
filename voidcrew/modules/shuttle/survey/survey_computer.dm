@@ -149,7 +149,10 @@
 
 /// Shared body of the auto-link and multitool paths.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/link_to_techweb(datum/techweb/new_web)
+	if(!can_link_site_techweb(src, new_web))
+		return
 	linked_techweb = new_web
+	data.merge_completed_surveys(new_web.survey_data)
 	new_web.survey_data = data
 	new_web.connected_machines |= src
 

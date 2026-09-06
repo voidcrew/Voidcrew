@@ -86,6 +86,12 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/Destroy()
 	GLOB.player_outposts -= src
+	QDEL_NULL(freight)
+	QDEL_NULL(freight_berth)
+	QDEL_LIST(cargo_cart)
+	QDEL_NULL(treasury)
+	QDEL_LIST(research_pairs)
+	deltimer(home_service_timer)
 	QDEL_NULL(current_advert)
 	approved_ships.Cut()
 	pending_dock_requests.Cut()
@@ -284,6 +290,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Returns TRUE on success; on failure the outpost deletes itself.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/found(mob/living/founder, datum/map_template/player_outpost/shell, outpost_name)
+	// Reserve the player account before map loading yields. Separate deeds must
+	// not create competing claims while the first founding is still in progress.
+	if(!founder?.ckey || !founder.mind || founder.ckey in GLOB.player_outpost_founder_ckeys)
+		qdel(src)
+		return FALSE
+	var/reserved_founder_key = founder.ckey
+	GLOB.player_outpost_founder_ckeys |= reserved_founder_key
 	founder_ckey = founder.ckey
 	founder_name = founder.real_name
 	founder_mind = WEAKREF(founder.mind)
@@ -294,7 +307,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	founded_zone = SSovermap.get_zone_band_for_turf(get_turf(src))
 	raidable = (founded_zone != ZONE_GREEN)
 
-	if(!load_level())
+	var/site_ready = FALSE
+	try
+		site_ready = load_level()
+	catch(var/exception/founding_error)
+		log_mapping("PLAYER OUTPOST: Founding failed: [founding_error]")
+	if(!site_ready)
+		GLOB.player_outpost_founder_ckeys -= reserved_founder_key
 		qdel(src)
 		return FALSE
 
@@ -303,7 +322,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// from their helm/sensors until they re-cross the tile.
 	sync_close_overmap_objects()
 
-	GLOB.player_outpost_founder_ckeys += founder_ckey
+	residents |= founder.mind
+	resident_clearance[founder_ckey] = TRUE
+	GLOB.player_outpost_founder_ckeys |= founder_ckey
 
 	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
 	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
@@ -391,8 +412,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	else
 		log_mapping("PLAYER OUTPOST: Shell '[shell_template.name]' loaded without a /area/voidcrew/player_outpost area; built turfs cannot be powered.")
 
+	ensure_home_services()
+	if(!install_home_bundle())
+		fail_load()
+		return FALSE
 	loaded = TRUE
 	loading = FALSE
+	home_service_timer = addtimer(CALLBACK(src, PROC_REF(process_home_services)), 5 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
 
 /// Cleanup after a failed shell load: release the freshly-claimed mapzone
@@ -408,7 +434,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /// Whether the given turf is inside the outpost's buildable region
 /obj/structure/overmap/dynamic/player_outpost/proc/is_turf_buildable(turf/target)
-	if(!build_bounds || !mapzone)
+	if(!target || !build_bounds || !mapzone)
 		return FALSE
 	var/datum/space_level/zlevel = mapzone.z_levels[1]
 	if(!zlevel || target.z != zlevel.z_value)
@@ -513,6 +539,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	message_admins("[key_name_admin(user)] renamed player outpost '[name]' to '[new_name]'")
 	name = new_name
 	display_name = new_name
+	if(treasury)
+		treasury.account_holder = "[new_name] Treasury"
 	COOLDOWN_START(src, rename_cooldown, PLAYER_OUTPOST_RENAME_COOLDOWN)
 	return TRUE
 
@@ -676,8 +704,16 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * owner's ckey stays in the founder registry, no re-founding this round.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user)
+	if(!is_owner(user))
+		return
 	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
+	stewards.Cut()
+	treasurers.Cut()
+	resident_mode = "closed"
+	resident_clearance.Cut()
+	QDEL_LIST(research_pairs)
+	freight?.cancel_pending()
 	founder_ckey = null
 	founder_name = null
 	founder_mind = null
@@ -695,6 +731,10 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		return FALSE
 	if(new_owner.ckey in GLOB.player_outpost_founder_ckeys)
 		return FALSE
+	if(!is_owner(user))
+		return FALSE
+	residents |= new_owner.mind
+	resident_clearance[new_owner.ckey] = TRUE
 	founder_ckey = new_owner.ckey
 	founder_name = new_owner.real_name
 	founder_mind = WEAKREF(new_owner.mind)

@@ -11,6 +11,7 @@
 	)
 
 /datum/surveyed_celestial_object
+	var/recorded_at = 0
 	var/ref_id
 	var/object_name
 
@@ -51,6 +52,7 @@
 
 /// COPY SECTION
 /datum/surveyed_celestial_object/proc/copy(var/datum/surveyed_celestial_object/new_object)
+	new_object.recorded_at = recorded_at
 	new_object.ref_id = ref_id
 	new_object.object_name = object_name
 
@@ -60,7 +62,7 @@
 
 /datum/surveyed_celestial_object/asteroid/copy(var/datum/surveyed_celestial_object/asteroid/new_object)
 	. = ..()
-	new_object.minerals = minerals
+	new_object.minerals = minerals?.Copy()
 
 /datum/surveyed_celestial_object/electric_storm/copy(var/datum/surveyed_celestial_object/electric_storm/new_object)
 	. = ..()
@@ -89,6 +91,7 @@
 
 /// SET VALUES SECTION
 /datum/surveyed_celestial_object/proc/set_values(var/obj/structure/overmap/object)
+	recorded_at = world.time
 	ref_id = ref(object)
 	object_name = object.name
 

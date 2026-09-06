@@ -14,6 +14,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
+import { OutpostHomeServices } from './OutpostHomeServices';
 
 type ShipEntry = {
   name: string;
@@ -33,6 +34,8 @@ type Data = {
   founder_name: string | null;
   memo: string;
   is_owner: BooleanLike;
+  can_manage: BooleanLike;
+  can_spend: BooleanLike;
   has_owner: BooleanLike;
   raidable: BooleanLike;
   dock_mode: string;
@@ -55,7 +58,7 @@ const DOCK_MODES = [
 
 const IdentitySection = () => {
   const { act, data } = useBackend<Data>();
-  const { outpost_name, memo, is_owner, rename_cooldown } = data;
+  const { outpost_name, memo, can_manage, rename_cooldown } = data;
   const [newName, setNewName] = useState('');
   const [newMemo, setNewMemo] = useState(memo);
 
@@ -64,7 +67,7 @@ const IdentitySection = () => {
       <LabeledList>
         <LabeledList.Item label="Outpost">{outpost_name}</LabeledList.Item>
       </LabeledList>
-      {!!is_owner && (
+      {!!can_manage && (
         <>
           <Stack mt={1}>
             <Stack.Item grow>
@@ -111,21 +114,27 @@ const IdentitySection = () => {
           </Box>
         </>
       )}
-      {!is_owner && memo && <Box color="label">&quot;{memo}&quot;</Box>}
+      {!can_manage && !!memo && <Box color="label">&quot;{memo}&quot;</Box>}
     </Section>
   );
 };
 
 const BroadcastSection = () => {
   const { act, data } = useBackend<Data>();
-  const { is_owner, advert_cost, advert_cooldown, advert_remaining } = data;
+  const {
+    can_manage,
+    can_spend,
+    advert_cost,
+    advert_cooldown,
+    advert_remaining,
+  } = data;
 
   return (
     <Section title="Galaxy-Wide Broadcast">
       {advert_remaining > 0 ? (
         <NoticeBox success>
-          Broadcast live, {Math.ceil(advert_remaining / 60)} min remaining.
-          Your outpost is pinned on every ship&apos;s nav chart.
+          Broadcast live, {Math.ceil(advert_remaining / 60)} min remaining. Your
+          outpost is pinned on every ship&apos;s nav chart.
         </NoticeBox>
       ) : (
         <Box color="label">
@@ -133,13 +142,13 @@ const BroadcastSection = () => {
           One-time notification to all ships; listing lasts 20 minutes.
         </Box>
       )}
-      {!!is_owner && (
+      {!!can_manage && (
         <Button
           mt={1}
           fluid
           icon="satellite-dish"
           textAlign="center"
-          disabled={advert_remaining > 0 || advert_cooldown > 0}
+          disabled={!can_spend || advert_remaining > 0 || advert_cooldown > 0}
           tooltip={
             advert_cooldown > 0
               ? `Array recharging: ${Math.ceil(advert_cooldown)}s`
@@ -147,7 +156,7 @@ const BroadcastSection = () => {
           }
           onClick={() => act('buy_advert')}
         >
-          Buy Broadcast ({advert_cost} cr, charged to your ID)
+          Buy Broadcast ({advert_cost} cr from the outpost treasury)
         </Button>
       )}
     </Section>
@@ -157,7 +166,7 @@ const BroadcastSection = () => {
 const DockingSection = () => {
   const { act, data } = useBackend<Data>();
   const {
-    is_owner,
+    can_manage,
     dock_mode,
     dock_requests = [],
     approved_ships = [],
@@ -174,7 +183,7 @@ const DockingSection = () => {
               icon={mode.icon}
               textAlign="center"
               selected={dock_mode === mode.id}
-              disabled={!is_owner}
+              disabled={!can_manage}
               onClick={() => act('set_dock_mode', { mode: mode.id })}
             >
               {mode.label}
@@ -189,7 +198,7 @@ const DockingSection = () => {
               <Stack.Item grow bold>
                 {ship.name}
               </Stack.Item>
-              {!!is_owner && (
+              {!!can_manage && (
                 <>
                   <Stack.Item>
                     <Button
@@ -228,7 +237,7 @@ const DockingSection = () => {
           {approved_ships.map((ship) => (
             <Stack key={ship.ref} align="center" className="candystripe">
               <Stack.Item grow>{ship.name}</Stack.Item>
-              {!!is_owner && (
+              {!!can_manage && (
                 <Stack.Item>
                   <Button
                     icon="times"
@@ -247,7 +256,7 @@ const DockingSection = () => {
           {banned_ships.map((ship) => (
             <Stack key={ship.ref} align="center" className="candystripe">
               <Stack.Item grow>{ship.name}</Stack.Item>
-              {!!is_owner && (
+              {!!can_manage && (
                 <Stack.Item>
                   <Button
                     icon="undo"
@@ -359,13 +368,13 @@ export const OutpostManagement = (props) => {
     <Window title="Outpost Management" width={500} height={640}>
       <Window.Content scrollable>
         {!has_owner && (
-          <NoticeBox warning>
+          <NoticeBox>
             This outpost has been abandoned. It has no registered owner.
           </NoticeBox>
         )}
         {!!has_owner && !is_owner && (
           <NoticeBox>
-            Registered to {founder_name}. Read-only access.
+            Registered to {founder_name}. Service permissions are shown below.
           </NoticeBox>
         )}
         {!!raidable && (
@@ -373,6 +382,7 @@ export const OutpostManagement = (props) => {
             Unpatrolled space: this outpost can be attacked by other ships.
           </NoticeBox>
         )}
+        <OutpostHomeServices />
         <IdentitySection />
         <BroadcastSection />
         <DockingSection />

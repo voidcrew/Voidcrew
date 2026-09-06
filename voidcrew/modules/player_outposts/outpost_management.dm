@@ -29,17 +29,9 @@
 // link_interior_machinery, hand-rebuilt ones relink to their z-level's outpost here
 /obj/machinery/computer/player_outpost_management/LateInitialize()
 	. = ..()
-	if(outpost)
-		return
-	for(var/obj/structure/overmap/dynamic/player_outpost/candidate as anything in GLOB.player_outposts)
-		if(!candidate.mapzone)
-			continue
-		for(var/datum/space_level/level as anything in candidate.mapzone.z_levels)
-			if(level.z_value == z)
-				outpost = candidate
-				if(!candidate.management_console)
-					candidate.management_console = src
-				return
+	outpost = get_outpost_from_atom(src)
+	if(outpost && !outpost.management_console)
+		outpost.management_console = src
 
 /obj/machinery/computer/player_outpost_management/Destroy()
 	if(outpost?.management_console == src)
@@ -58,6 +50,7 @@
 		ui.open()
 
 /obj/machinery/computer/player_outpost_management/ui_data(mob/user)
+	outpost = get_outpost_from_atom(src)
 	var/list/data = list()
 	data["linked"] = !!outpost
 	if(!outpost)
@@ -122,6 +115,7 @@
 			))
 	data["candidates"] = candidates
 
+	data += home_service_data(user)
 	return data
 
 /obj/machinery/computer/player_outpost_management/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -131,8 +125,14 @@
 	if(!outpost)
 		return
 
-	// Everything below is owner-only
-	if(!outpost.is_owner(usr))
+	if(get_outpost_from_atom(src) != outpost)
+		return
+	if(home_service_action(action, params, usr))
+		return TRUE
+	if(action in list("transfer", "abandon", "add_builder", "remove_builder"))
+		if(!outpost.is_owner(usr))
+			return
+	else if(!outpost.can_manage(usr))
 		to_chat(usr, span_warning("The console rejects you. You aren't the registered owner."))
 		return
 
@@ -161,6 +161,10 @@
 			if(!(new_mode in list(OUTPOST_DOCK_MODE_OPEN, OUTPOST_DOCK_MODE_REQUEST, OUTPOST_DOCK_MODE_LOCKDOWN)))
 				return
 			outpost.dock_mode = new_mode
+			if(new_mode == OUTPOST_DOCK_MODE_LOCKDOWN)
+				outpost.approved_ships.Cut()
+				for(var/obj/structure/overmap/ship/requester in outpost.pending_dock_requests.Copy())
+					outpost.deny_dock_request(requester)
 
 		if("approve_request")
 			var/obj/structure/overmap/ship/requester = locate(params["ref"]) in outpost.pending_dock_requests
@@ -220,7 +224,7 @@
 			outpost.abandon(usr)
 
 /**
- * Charges the buyer's ID account and puts out a galaxy-wide broadcast.
+ * Charges the claim treasury and puts out a galaxy-wide broadcast.
  */
 /obj/machinery/computer/player_outpost_management/proc/buy_advert(mob/living/user)
 	if(outpost.current_advert)
@@ -229,15 +233,17 @@
 	if(!COOLDOWN_FINISHED(outpost, advert_cooldown))
 		say("Broadcast array recharging: [COOLDOWN_TIMELEFT(outpost, advert_cooldown) / 10] seconds.")
 		return
-	var/obj/item/card/id/id_card = user.get_idcard(TRUE)
-	var/datum/bank_account/account = id_card?.registered_account
+	if(!outpost.can_spend(user))
+		say("Treasury spending permission required.")
+		return
+	var/datum/bank_account/account = outpost.treasury
 	if(!account)
-		say("No bank account on your ID.")
+		say("No treasury connected. Reconnect the outpost services.")
 		return
 	if(!account.has_money(OUTPOST_ADVERT_COST))
 		say("Insufficient credits: broadcast costs [OUTPOST_ADVERT_COST] cr.")
 		return
-	if(!account.adjust_money(-OUTPOST_ADVERT_COST, "Outpost Broadcast: [outpost.name]"))
+	if(!account.adjust_money(-OUTPOST_ADVERT_COST, "Paid to Colonial Registry by [user.ckey] for broadcast: [outpost.name]"))
 		say("Transaction failed.")
 		return
 	COOLDOWN_START(outpost, advert_cooldown, OUTPOST_ADVERT_COOLDOWN)

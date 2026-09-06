@@ -22,6 +22,7 @@
 	/// Display name of the buyer, for examine
 	var/owner_name
 	/// The open catalog UI, if any
+	var/founding = FALSE
 	var/datum/outpost_shell_catalog_ui/catalog
 
 /obj/item/outpost_deed/Destroy()
@@ -54,6 +55,8 @@
  * Re-run at confirm time; UI state can go stale.
  */
 /obj/item/outpost_deed/proc/get_founding_denial(mob/user)
+	if(founding)
+		return "This deed is already registering a claim."
 	if(!user.ckey || user.ckey != owner_ckey)
 		return "The deed isn't registered to you."
 	if(user.ckey in GLOB.player_outpost_founder_ckeys)
@@ -112,11 +115,13 @@
 	var/list/data = list()
 	var/list/shells = list()
 	for(var/shell_type in subtypesof(/datum/map_template/player_outpost))
+		if(shell_type == /datum/map_template/player_outpost/nothing)
+			continue
 		var/datum/map_template/player_outpost/shell = shell_type
 		shells += list(list(
 			"id" = "[shell_type]",
 			"name" = initial(shell.name),
-			"description" = initial(shell.catalog_desc),
+			"description" = "[initial(shell.catalog_desc)] Includes a powered habitat with finite starter fuel, management and construction consoles, a silo, cargo and bank terminals, resident cryopod, and an elevator-linked freight receiver. The treasury starts empty. R&D and fabrication equipment can be ordered or constructed.",
 		))
 	data["shells"] = shells
 	data["max_name_length"] = MAX_CHARTER_LEN
@@ -157,7 +162,7 @@
 		return
 
 	var/datum/map_template/player_outpost/shell_type = text2path(params["shell_id"])
-	if(!ispath(shell_type, /datum/map_template/player_outpost))
+	if(!(shell_type in list(/datum/map_template/player_outpost/small, /datum/map_template/player_outpost/medium)))
 		return
 	var/datum/map_template/player_outpost/shell = new shell_type
 
@@ -170,8 +175,10 @@
 		return
 
 	var/obj/structure/overmap/ship/ship = get_crew_ship(usr)
+	deed.founding = TRUE
 	var/obj/structure/overmap/dynamic/player_outpost/outpost = new(get_turf(ship))
 	if(!outpost.found(usr, shell, outpost_name))
+		deed.founding = FALSE
 		to_chat(usr, span_warning("Registration failed - the site couldn't be prepared. Your deed is still good."))
 		return
 
@@ -189,7 +196,7 @@
  */
 /datum/shop_sku/outpost_deed
 	name = "outpost deed"
-	desc = "A colonial registry claim for one sector of open space. Found your own outpost. One active claim per person per shift."
+	desc = "A purchased habitat with charged SMES, portable generator and 10 plasma sheets, management/construction consoles, docking elevator, freight receiver/cargo console, empty silo, bank terminal and resident cryopod. Treasury starts empty. Build your own lab and fabrication. One claim per person per shift."
 	item_path = /obj/item/outpost_deed
 	category = "Colonial Registry"
 	price_credits = OUTPOST_DEED_COST_CREDITS

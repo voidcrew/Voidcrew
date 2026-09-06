@@ -56,6 +56,9 @@
 		if(LOWER_TEXT(voidcrew_ship_camera_net(port)) == LOWER_TEXT(net_key))
 			var/ship_name = port.current_ship ? port.current_ship.name : port.name
 			return "[ship_name] (ship-local)"
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(LOWER_TEXT(net_key) == LOWER_TEXT("outpost_[REF(home)]"))
+			return "[home.name] (outpost local)"
 	return net_key
 
 /// Tell players what network the console is tuned to - there was no in-game way
@@ -80,6 +83,8 @@
 		var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 		if(ship_port)
 			network = list(voidcrew_ship_camera_net(ship_port))
+		else if(get_outpost_from_atom(src))
+			network = list("outpost_[REF(get_outpost_from_atom(src))]")
 	// Consoles hide cameras without a c_tag. Upstream station maps hand-name
 	// every camera; our ship maps mostly place bare /obj/machinery/camera, so
 	// fall back to autoname-style area naming. Autoname subtypes are skipped -
@@ -104,12 +109,13 @@
 	if(camera_construction_state != CAMERA_STATE_WIRED)
 		return ..()
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
-	if(!ship_port)
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	if(!ship_port && !home)
 		return ..()
 	tool.play_tool_sound(src)
 	camera_construction_state = CAMERA_STATE_FINISHED
 	toggle_cam(user, displaymessage = FALSE)
-	network = list(voidcrew_ship_camera_net(ship_port))
+	network = list(ship_port ? voidcrew_ship_camera_net(ship_port) : "outpost_[REF(home)]")
 	balloon_alert(user, "wired to ship network")
 	to_chat(user, span_notice("You wire [src] into the [voidcrew_camera_net_display_name(network[1])] camera network."))
 	return ITEM_INTERACT_SUCCESS
@@ -132,6 +138,8 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 	if(ship_port)
 		network = list(voidcrew_ship_camera_net(ship_port))
+	else if(get_outpost_from_atom(src))
+		network = list("outpost_[REF(get_outpost_from_atom(src))]")
 
 /**
  * SecurEye follows the tablet it is running on.
@@ -145,6 +153,8 @@
 		var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(computer)
 		if(ship_port)
 			network = list(voidcrew_ship_camera_net(ship_port))
+		else if(get_outpost_from_atom(computer))
+			network = list("outpost_[REF(get_outpost_from_atom(computer))]")
 	return ..()
 
 /**
@@ -173,4 +183,6 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 	if(ship_port)
 		networks = list(voidcrew_ship_camera_net(ship_port))
+	else if(get_outpost_from_atom(src))
+		networks = list("outpost_[REF(get_outpost_from_atom(src))]")
 	return ..()

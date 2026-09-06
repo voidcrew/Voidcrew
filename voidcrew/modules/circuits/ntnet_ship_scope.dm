@@ -20,6 +20,8 @@
 
 /// TRUE if `context` can reach an NTNet node. Ships are their own node.
 /proc/ntnet_reachable_from(atom/context)
+	if(get_outpost_from_atom(context))
+		return TRUE
 	var/turf/context_turf = get_turf(context)
 	if(context_turf && is_station_level(context_turf.z))
 		return TRUE
@@ -51,13 +53,8 @@
 	var/turf/second_turf = get_turf(second)
 	if(isnull(first_turf) || isnull(second_turf))
 		return FALSE
-	if(first_turf.z != second_turf.z)
-		return FALSE
-
-	var/obj/structure/overmap/ship/first_ship = get_ship_from_atom(first)
-	if(isnull(first_ship))
-		return FALSE
-	return first_ship == get_ship_from_atom(second)
+	var/obj/structure/overmap/site = get_service_site(first)
+	return site && site == get_service_site(second)
 
 /**
  * Restores a signal to tablets and PDAs aboard a ship.

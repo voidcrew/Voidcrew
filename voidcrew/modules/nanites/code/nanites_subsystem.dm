@@ -29,11 +29,11 @@ PROCESSING_SUBSYSTEM_DEF(nanites)
  * ship - the ship whose cloud network we are searching. Null searches every ship
  *        (used for admin/debug and conservative duplicate checks).
  */
-/datum/controller/subsystem/processing/nanites/proc/get_cloud_backup(cloud_id, force = FALSE, obj/structure/overmap/ship/ship)
+/datum/controller/subsystem/processing/nanites/proc/get_cloud_backup(cloud_id, force = FALSE, obj/structure/overmap/ship)
 	for(var/datum/nanite_cloud_backup/backup as anything in cloud_backups)
 		if(backup.cloud_id != cloud_id)
 			continue
-		if(ship && get_ship_from_atom(backup.storage) != ship)
+		if(ship && get_service_site(backup.storage) != ship)
 			continue
 		if(!force && !check_hardware(backup))
 			continue //this cloud's hardware is down; another ship may still serve this ID

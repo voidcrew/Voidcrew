@@ -32,15 +32,33 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 /obj/machinery/rnd/server/ship/Destroy()
 	GLOB.ship_research_servers -= src
 	UnregisterSignal(src, COMSIG_ATOM_ATTACK_HAND_SECONDARY)
+	var/obj/item/computer_disk/ship_disk/disk = source_code_hdd
+	detach_source_disk()
+	disk?.forceMove(drop_location())
+	return ..()
+
+/// Disconnect consumers while retaining the disk's own research data.
+/obj/machinery/rnd/server/ship/proc/detach_source_disk()
+	if(source_code_hdd)
+		UnregisterSignal(source_code_hdd, COMSIG_QDELETING)
 	if(stored_research)
 		stored_research.techweb_servers -= src
-	if(source_code_hdd)
-		for(var/atom/everything_connected as anything in source_code_hdd.stored_research.connected_machines)
-			everything_connected.unsync_research_servers()
-		source_code_hdd.forceMove(loc)
-		source_code_hdd = null
+		for(var/atom/consumer as anything in stored_research.connected_machines.Copy())
+			consumer.unsync_research_servers()
+		for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
+			if(handler.linked_web == stored_research)
+				handler.unlink_techweb()
+	source_code_hdd = null
 	stored_research = null
-	return ..()
+
+/obj/machinery/rnd/server/ship/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone == source_code_hdd)
+		detach_source_disk()
+
+/obj/machinery/rnd/server/ship/proc/on_source_disk_deleted(datum/source)
+	SIGNAL_HANDLER
+	detach_source_disk()
 
 /obj/machinery/rnd/server/ship/attacked_by(obj/item/attacking_item, mob/living/user)
 	if(istype(attacking_item, /obj/item/computer_disk/ship_disk))
@@ -51,6 +69,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 			balloon_alert(user, "won't fit!")
 			return
 		source_code_hdd = attacking_item
+		RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_disk_deleted))
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
@@ -79,7 +98,6 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	// (voidcrew/modules/overmap/code/modules/overmap/_overmap.dm). Servers standing somewhere that
 	// isn't a ship - an outpost, a ruin - fall back to plain z matching, which is what the
 	// self-link in CONNECT_TO_RND_SERVER_ROUNDSTART uses.
-	var/obj/structure/overmap/ship/our_ship = get_voidcrew_ship_for_turf(our_turf)
 	for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
 		if(handler.linked_web)
 			continue
@@ -89,10 +107,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		var/turf/holder_turf = get_turf(holder)
 		if(!holder_turf)
 			continue
-		if(our_ship)
-			if(get_voidcrew_ship_for_turf(holder_turf) != our_ship)
-				continue
-		else if(!is_valid_z_level(holder_turf, our_turf))
+		if(!same_service_site(src, holder))
 			continue
 		handler.link_techweb(stored_research, TRUE)
 

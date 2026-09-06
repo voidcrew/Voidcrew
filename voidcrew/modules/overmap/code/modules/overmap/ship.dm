@@ -2243,6 +2243,15 @@
 		ship_notify("Docking aborted: destination no longer available.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
+	var/obj/structure/overmap/dynamic/player_outpost/home = astype(to_dock)
+	if(home)
+		var/denial = home.get_docking_denial(src)
+		if(denial)
+			home.on_ship_undock_complete(src)
+			state = OVERMAP_SHIP_FLYING
+			docked = null
+			ship_notify(denial, "DOCKING", SHIP_NOTIFY_WARNING)
+			return
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
 	// Messaging only - the request is issued either way and the stall watchdog still
 	// owns recovery. On a refusal, skip the "Docking now." line so the crew isn't told
@@ -4535,7 +4544,7 @@
 /// Returns null if the atom is not on a ship
 /proc/get_ship_from_atom(atom/source)
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(source)
-	return port?.current_ship
+	return istype(port) ? port.current_ship : null
 
 // ===== MISSION PROCS =====
 

@@ -26,6 +26,9 @@
 		linked_techweb = null
 
 /obj/machinery/computer/nanite_cloud_controller/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(istype(tool.buffer, /datum/techweb) && !can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
 	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
 		if(linked_techweb)
 			if(linked_techweb == tool.buffer)
@@ -93,7 +96,7 @@
 /obj/machinery/computer/nanite_cloud_controller/proc/generate_backup(cloud_id, mob/user)
 	//Clouds are ship-local, so only IDs already used aboard this ship collide.
 	//A console that somehow isn't on a ship checks globally, which is just conservative.
-	if(SSnanites.get_cloud_backup(cloud_id, TRUE, get_ship_from_atom(src)))
+	if(SSnanites.get_cloud_backup(cloud_id, TRUE, get_service_site(src)))
 		to_chat(user, span_warning("Cloud ID already registered on this ship's network."))
 		return
 
@@ -150,7 +153,7 @@
 
 	data["new_backup_id"] = new_backup_id
 
-	var/obj/structure/overmap/ship/host_ship = get_ship_from_atom(src)
+	var/obj/structure/overmap/ship/host_ship = get_service_site(src)
 	data["ship_name"] = host_ship ? host_ship.name : null
 
 	data["current_view"] = current_view
