@@ -47,9 +47,11 @@
 	test_player_keys |= player.ckey
 	return player
 
-/datum/unit_test/voidcrew_outpost_management/proc/act(datum/player_outpost_management_ui/panel, mob/user, action, mob/candidate)
+/datum/unit_test/voidcrew_outpost_management/proc/act(datum/player_outpost_management_ui/panel, mob/user, action, datum/candidate, list/extra_params = list())
+	var/list/params = list("ref" = REF(candidate))
+	params += extra_params
 	var/datum/tgui/ui = allocate(/datum/tgui, user, panel, "OutpostManagement")
-	world.push_usr(user, CALLBACK(panel, TYPE_PROC_REF(/datum, ui_act), action, list("ref" = REF(candidate)), ui))
+	world.push_usr(user, CALLBACK(panel, TYPE_PROC_REF(/datum, ui_act), action, params, ui))
 
 /datum/unit_test/voidcrew_outpost_management/proc/set_owner(obj/structure/overmap/dynamic/player_outpost/home, owner_key)
 	home.founder_ckey = owner_key
@@ -114,14 +116,15 @@
 	act(hud_panel, owner, "add_builder", resident)
 	TEST_ASSERT(resident.ckey in home.authorized_builder_ckeys, "The owner could not authorize a builder in the freight facility.")
 	home.authorized_builder_ckeys.Cut()
-	home.stewards |= visitor.mind
-	grant_player_outpost_management(visitor, home)
+	home.residents |= visitor.mind
+	act(hud_panel, owner, "delegate", visitor.mind, list("role" = "steward"))
+	TEST_ASSERT(visitor.mind in home.stewards, "The owner could not delegate management through the HUD.")
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in visitor.actions, "A management delegate could not receive the remote management action.")
 	var/datum/player_outpost_management_ui/management_test/delegate_panel = allocate(__IMPLIED_TYPE__, home, visitor)
 	act(delegate_panel, visitor, "add_builder", resident)
 	TEST_ASSERT(!(resident.ckey in home.authorized_builder_ckeys), "A steward gained owner-only builder delegation.")
-	home.stewards -= visitor.mind
-	refresh_player_outpost_management(home)
+	act(hud_panel, owner, "delegate", visitor.mind, list("role" = "steward"))
+	TEST_ASSERT(!(visitor.mind in home.stewards), "The owner could not revoke management through the HUD.")
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in visitor.actions), "Revoking a management delegate left a stale action button.")
 	resident.stat = DEAD
 	TEST_ASSERT(!home.is_management_candidate(resident), "A dead body became an eligible management candidate.")

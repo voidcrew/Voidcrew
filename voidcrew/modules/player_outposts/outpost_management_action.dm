@@ -31,7 +31,7 @@
 	return ..()
 
 /datum/action/innate/player_outpost_management/Activate()
-	if(QDELETED(managed_outpost) || !managed_outpost.can_manage(owner))
+	if(QDELETED(managed_outpost) || !managed_outpost.is_current_management_user(owner))
 		to_chat(owner, span_warning("You no longer hold management authorization for this outpost."))
 		qdel(src)
 		return
@@ -40,8 +40,15 @@
 	panel.manager = owner
 	panel.ui_interact(owner)
 
+/// Retired bodies may retain a ckey, but only the owner's current mind holds the HUD.
+/obj/structure/overmap/dynamic/player_outpost/proc/is_current_management_user(mob/living/user)
+	if(!istype(user) || QDELETED(user.mind) || user.mind.current != user || !can_manage(user))
+		return FALSE
+	var/datum/mind/current_owner = founder_mind?.resolve()
+	return !is_owner(user) || !current_owner || current_owner == user.mind
+
 /proc/grant_player_outpost_management(mob/living/user, obj/structure/overmap/dynamic/player_outpost/outpost)
-	if(!user || QDELETED(outpost) || !outpost.can_manage(user))
+	if(!user || QDELETED(outpost) || !outpost.is_current_management_user(user))
 		return null
 	for(var/datum/action/innate/player_outpost_management/existing in user.actions)
 		if(existing.managed_outpost == outpost)
@@ -65,7 +72,7 @@
 	if(QDELETED(outpost))
 		return
 	for(var/mob/living/user as anything in GLOB.mob_living_list)
-		if(outpost.can_manage(user))
+		if(outpost.is_current_management_user(user))
 			grant_player_outpost_management(user, outpost)
 		else
 			remove_player_outpost_management(user, outpost)
@@ -114,8 +121,8 @@
 		if(!console || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
 			return UI_CLOSE
 		var/physical_status = console.ui_status(user, console.ui_state(user))
-		return min(physical_status, isliving(user) && outpost.can_manage(user) ? UI_INTERACTIVE : UI_UPDATE)
-	if(!isliving(user) || !outpost.can_manage(user))
+		return min(physical_status, isliving(user) && outpost.is_current_management_user(user) ? UI_INTERACTIVE : UI_UPDATE)
+	if(!isliving(user) || !outpost.is_current_management_user(user))
 		return UI_CLOSE
 	return user.shared_ui_interaction(user)
 
@@ -136,7 +143,7 @@
 	data["memo"] = outpost.memo
 	data["is_owner"] = outpost.is_owner(user)
 	data["has_owner"] = !!outpost.founder_ckey
-	data["can_manage"] = outpost.can_manage(user)
+	data["can_manage"] = outpost.is_current_management_user(user)
 	data["can_spend"] = outpost.can_spend(user)
 	data["raidable"] = outpost.raidable
 	data["dock_mode"] = outpost.dock_mode
@@ -185,9 +192,9 @@
 	if(.)
 		return
 	var/mob/living/user = usr
-	if(QDELETED(outpost) || !istype(user) || QDELETED(user) || ui.user != user || ui.src_object != src || ui_status(user, state) != UI_INTERACTIVE || !outpost.can_manage(user))
+	if(QDELETED(outpost) || !istype(user) || QDELETED(user) || ui.user != user || ui.src_object != src || ui_status(user, state) != UI_INTERACTIVE || !outpost.is_current_management_user(user))
 		return
-	if(action in list("transfer", "abandon", "add_builder", "remove_builder") && !outpost.is_owner(user))
+	if((action in list("transfer", "abandon", "add_builder", "remove_builder")) && !outpost.is_owner(user))
 		return
 	if(action in list("resident_mode", "resident_password", "resident_limit", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate"))
 		return service_action(action, params, user)
@@ -320,7 +327,7 @@
 				outpost.stewards -= member
 				outpost.treasurers -= member
 				outpost.sync_management_lifecycle()
-			else if(outpost.is_owner(user) && params["role"] in list("steward", "treasurer"))
+			else if(outpost.is_owner(user) && (params["role"] in list("steward", "treasurer")))
 				var/list/permissions = params["role"] == "steward" ? outpost.stewards : outpost.treasurers
 				if(member in permissions)
 					permissions -= member

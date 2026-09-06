@@ -70,7 +70,9 @@
 // that has to refuse loudly rather than fail somewhere down in the economy code.
 /obj/machinery/computer/bank_machine/ui_act(action, params, datum/tgui/ui)
 	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
-	if(site && action in list("deposit", "withdraw"))
+	if(site && (action in list("deposit", "withdraw")))
+		if(!ui || ui.user != usr || ui.status != UI_INTERACTIVE)
+			return TRUE
 		var/amount = isnum(params["amount"]) ? params["amount"] : text2num(params["amount"])
 		var/success = transfer_outpost_account(ui?.user, action, amount)
 		if(!success)

@@ -16,6 +16,7 @@
 
 /datum/unit_test/voidcrew_bank_coin_deposits/Run()
 	var/mob/living/carbon/human/consistent/user = allocate(__IMPLIED_TYPE__)
+	ADD_TRAIT(user, TRAIT_PRESERVE_UI_WITHOUT_CLIENT, REF(src))
 	var/obj/machinery/computer/bank_machine/bank = allocate(__IMPLIED_TYPE__)
 	var/obj/item/coin/gold/coin = allocate(__IMPLIED_TYPE__)
 	var/coin_value = coin.value
@@ -64,13 +65,14 @@
 	TEST_ASSERT(!ui_data["can_withdraw"], "An unrecognized user could withdraw from the claim treasury.")
 	TEST_ASSERT(!shore_bank.transfer_outpost_account(null, "deposit", 1), "A missing user could transfer claim funds.")
 	TEST_ASSERT(!shore_bank.transfer_outpost_account(user, "withdraw", 25), "An unauthorized user could withdraw from the claim treasury.")
-	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "deposit", 40), "The claim bank rejected a valid ID deposit.")
+	var/datum/tgui/bank_ui = allocate(/datum/tgui, user, shore_bank, "BankMachine")
+	world.push_usr(user, CALLBACK(shore_bank, TYPE_PROC_REF(/datum, ui_act), "deposit", list("amount" = "40"), bank_ui))
 	TEST_ASSERT_EQUAL(personal.account_balance, 60, "The claim bank did not debit the payer account.")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 40, "The claim bank did not credit the treasury.")
 	TEST_ASSERT(home.treasury.transaction_history.len >= 2, "The claim bank did not record its account deposit.")
 	user.ckey = "coinowner"
 	home.founder_ckey = user.ckey
-	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "withdraw", 25), "The claim bank rejected an authorized ID withdrawal.")
+	world.push_usr(user, CALLBACK(shore_bank, TYPE_PROC_REF(/datum, ui_act), "withdraw", list("amount" = "25"), bank_ui))
 	TEST_ASSERT_EQUAL(personal.account_balance, 85, "The claim bank did not credit the withdrawal recipient.")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 15, "The claim bank debited the wrong withdrawal amount.")
 	shore_bank.machine_stat |= NOPOWER
@@ -94,5 +96,5 @@
 	TEST_ASSERT_NULL(shore_bank.synced_bank_account, "A moved terminal retained its former claim's treasury.")
 	TEST_ASSERT(!QDELETED(coin), "A moved terminal consumed a coin after losing its account.")
 	TEST_ASSERT_EQUAL(coin.loc, user, "The moved terminal removed a refused coin from the user's inventory.")
-	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value, "A refused deposit changed the former claim balance.")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 15, "A refused deposit changed the former claim balance.")
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, coin_value, "A refused deposit changed the ship balance.")

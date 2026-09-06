@@ -83,7 +83,7 @@
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions), "The former owner kept a management action after ownership transfer.")
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in returning_owner.actions), "The returning former owner retained management controls after transfer.")
 	TEST_ASSERT(!home.can_manage(returning_owner) && !home.can_spend(returning_owner) && !home.can_build(returning_owner), "Self-delegation preserved a former owner's authority after transfer.")
-	TEST_ASSERT(steward.mind in home.treasurers && steward.ckey in home.authorized_builder_ckeys, "Ownership transfer discarded another resident's delegated permissions.")
+	TEST_ASSERT((steward.mind in home.treasurers) && (steward.ckey in home.authorized_builder_ckeys), "Ownership transfer discarded another resident's delegated permissions.")
 	TEST_ASSERT_EQUAL(management_action_count(steward), 1, "Ownership transfer duplicated the recipient's existing delegate action.")
 	home.abandon(steward)
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions), "Abandoning the claim left an owner action button behind.")
