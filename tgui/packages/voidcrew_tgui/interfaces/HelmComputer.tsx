@@ -29,11 +29,12 @@ import {
 import { Input } from 'tgui-core/components';
 import { globalEvents } from 'tgui-core/events';
 import { acquireHotKey, releaseHotKey } from 'tgui-core/hotkeys';
-import { type BooleanLike } from 'tgui-core/react';
+import type { BooleanLike } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
+import { nearestImage, visibleCopies, wrappedDelta, wrapTile } from '../utils/HelmMapGeometry';
 
 // ---------------------------------------------------------------- geometry
 
@@ -186,32 +187,20 @@ type ChartedContact = {
  * whatever the server last confirmed, so a rejected key simply never moves.
  */
 type AutopilotPrefs = {
-  crossMeteor: BooleanLike;
-  crossElectric: BooleanLike;
-  crossEmp: BooleanLike;
-  avoidHostiles: BooleanLike;
-  zoneCaution: BooleanLike;
-  hazardLanding: BooleanLike;
+  allowNeutral: BooleanLike;
+  allowContested: BooleanLike;
+  allowLawless: BooleanLike;
 };
 
-/** A plotted course. See ship_autopilot.dm. */
+/** Public controls and destination only; the navigation route stays on the server. */
 type Autopilot = {
   engaged: BooleanLike;
-  /** Server-side label for the destination, never echoed back from the client. */
   label: string | null;
-  /** Why the last course ended, shown until a new one is plotted. */
   status: string | null;
-  /** The plotted course ends in a docking approach, not just an arrival. */
   dockOnArrival?: BooleanLike;
   destX?: number;
   destY?: number;
-  remaining?: number;
-  /** Remaining course, next step first, in relative overmap coordinates. */
-  path: [number, number][];
-  /** Present engaged or idle: the policy panel works while nothing is flown. */
   prefs?: AutopilotPrefs;
-  /** Shields are up, so asteroid impacts are absorbed (crossMeteor hint). */
-  shieldsActive?: BooleanLike;
 };
 
 /** One thing the Dock button could do from the tile the ship is on. */
@@ -551,8 +540,8 @@ const useContacts = (): Contact[] => {
   const remembered: Contact[] = [];
   for (const entry of chartedContacts) {
     if (entry.target && alreadyLive.has(entry.target)) continue;
-    const dx = entry.x - x;
-    const dy = entry.y - y;
+    const dx = wrappedDelta(entry.x - x, (data.chart?.size ?? 51) - 2);
+    const dy = wrappedDelta(entry.y - y, (data.chart?.size ?? 51) - 2);
     remembered.push({
       ...entry,
       ref: null,
@@ -1326,7 +1315,7 @@ const AlertStrip = () => {
   if (data.autopilot?.engaged) {
     alerts.push([
       'info',
-      `Autopilot, ${data.autopilot.label ?? 'plotted course'} in ${data.autopilot.remaining ?? 0}${
+      `Autopilot, ${data.autopilot.label ?? 'selected destination'}${
         data.autopilot.dockOnArrival ? ' · docking on arrival' : ''
       }`,
     ]);
@@ -1629,12 +1618,8 @@ const UNIT = 10;
  * full tile size, consecutive cells on a straight track share their edges and
  * merge back into one unbroken corridor. The inset is the gap that keeps them
  * reading as separate hops.
- *
- * Drift sits inside the plotted course rather than on top of it, so where the
- * autopilot is flying the ship and the two tracks coincide, they nest instead of
- * covering each other.
+
  */
-const PLOT_INSET = 1.2;
 const DRIFT_INSET = 2.2;
 
 /**
@@ -1786,7 +1771,7 @@ const useDrift = (contacts: Contact[]): Drift | null => {
   // tick_move()'s own wraparound, in the chart's relative coordinates: the ship
   // flies the band 2..size-1, and a step off either end lands on the far side.
   const wrap = (value: number) =>
-    value <= 1 ? size - 1 : value >= size ? 2 : value;
+    wrapTile(value, size);
 
   const steps = clamp(
     Math.round(DRIFT_HORIZON_MS / moveIntervalMs),
@@ -1853,51 +1838,48 @@ const useDrift = (contacts: Contact[]): Drift | null => {
   };
 };
 
-/** The policy rows, in the order the panel lists them. */
-const AUTOPILOT_POLICY_ROWS: { key: keyof AutopilotPrefs; label: string }[] = [
-  { key: 'crossMeteor', label: 'Cross asteroid fields' },
-  { key: 'crossElectric', label: 'Cross ion storms' },
-  { key: 'crossEmp', label: 'Cross EMP clouds' },
-  { key: 'avoidHostiles', label: 'Avoid known hostiles' },
-  { key: 'zoneCaution', label: 'Prefer safer zones' },
-  { key: 'hazardLanding', label: 'Allow hazardous destination' },
+const AUTOPILOT_ZONES: {
+  key: keyof AutopilotPrefs;
+  label: string;
+  colour: string;
+}[] = [
+  { key: 'allowNeutral', label: 'Neutral Zone', colour: '#59b871' },
+  { key: 'allowContested', label: 'Contested Zone', colour: '#d9a230' },
+  { key: 'allowLawless', label: 'Lawless Zone', colour: '#cf4a38' },
 ];
 
-/**
- * The autopilot's flight-policy checkboxes, opened from the gear beside the
- * autopilot readout. Editable engaged or idle; a change while a course is
- * being flown re-plans it on the spot under the new rules (server side, see
- * set_autopilot_pref in ship_autopilot.dm).
- */
-const AutopilotPolicyPanel = () => {
+const AutopilotZones = () => {
   const { act, data } = useBackend<Data>();
   const locked = useLocked();
   const prefs = data.autopilot?.prefs;
   if (!prefs) return null;
   return (
-    <div className="Helm__policyPanel">
-      <div className="Helm__policyTitle">FLIGHT POLICY</div>
-      {AUTOPILOT_POLICY_ROWS.map((row) => (
-        <label key={row.key} className="Helm__policyRow">
-          <input
-            type="checkbox"
-            checked={!!prefs[row.key]}
+    <div className="Helm__zoneControls">
+      <div className="Helm__zoneTitle">AUTOPILOT ZONES / HAZARDS AVOIDED</div>
+      <div className="Helm__zoneButtons">
+        {AUTOPILOT_ZONES.map(({ key, label, colour }) => (
+          <button
+            key={key}
+            type="button"
+            className="Helm__zoneButton"
+            style={{ borderTopColor: colour }}
+            aria-pressed={!!prefs[key]}
             disabled={locked}
-            onChange={(event) =>
-              act('autopilot_pref', {
-                key: row.key,
-                value: event.currentTarget.checked ? 1 : 0,
-              })
+            title={`${prefs[key] ? 'Block' : 'Allow'} autopilot entry into the ${label}`}
+            onClick={() =>
+              act('autopilot_pref', { key, value: prefs[key] ? 0 : 1 })
             }
-          />
-          {row.label}
-          {row.key === 'crossMeteor' && !!data.autopilot?.shieldsActive && (
-            <span className="Helm__policyHint">
-              Shields online — impacts absorbed
+          >
+            <span>{label}</span>
+            <span className="Helm__zoneState">
+              <span
+                className={`Helm__zoneLight ${prefs[key] ? 'Helm--allowed' : 'Helm--blocked'}`}
+              />
+              {prefs[key] ? 'Allowed' : 'Blocked'}
             </span>
-          )}
-        </label>
-      ))}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -1931,8 +1913,6 @@ const Chart = () => {
   // there was one) and the tile it was over, because plotting a course is an
   // action on the position rather than on any mark.
   const [hovered, setHovered] = useState<string | null>(null);
-  // The flight-policy panel, opened from the gear beside the autopilot readout.
-  const [showPolicy, setShowPolicy] = useState(false);
   const openActionMenu = useContext(MenuControl);
   const viewportRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<SVGGElement>(null);
@@ -1941,28 +1921,32 @@ const Chart = () => {
     key ? waypoints.find((contact) => contactKey(contact) === key) : undefined;
   const hoveredContact = byKey(hovered);
 
-  // Docking, jumping and recovery move the ship a long way at once; sliding the
-  // camera across half the sector for those reads as a bug, so they cut.
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
-  const previous = lastPos.current;
-  const teleported =
-    !previous || Math.hypot(x - previous.x, y - previous.y) > 2.5;
-  useEffect(() => {
-    lastPos.current = { x, y };
-  });
-
   const size = chart?.size ?? 51;
+  const period = size - 2;
   const extent = size * UNIT;
   const toX = (tileX: number) => tileX * UNIT - UNIT / 2;
   const toY = (tileY: number) => (size + 1 - tileY) * UNIT - UNIT / 2;
 
+  // Keep the camera and hull in continuous coordinates across every seam.
+  // A real jump/dock still cuts immediately instead of sliding across the sector.
+  const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const previous = lastPos.current;
+  const dx = previous ? wrappedDelta(x - previous.x, period) : 0;
+  const dy = previous ? wrappedDelta(y - previous.y, period) : 0;
+  const teleported = !previous || Math.hypot(dx, dy) > 2.5;
+  const shipX = previous && !teleported ? previous.x + dx : x;
+  const shipY = previous && !teleported ? previous.y + dy : y;
+  useEffect(() => {
+    lastPos.current = { x: shipX, y: shipY };
+  });
+
   const [span, setSpan] = useState(13);
-  const maxSpan = size;
+  const maxSpan = period;
   const zoomSpan = clamp(span, ZOOM_MIN_SPAN, maxSpan);
   const scale = extent / (zoomSpan * UNIT);
 
   // Contact glyphs sit in a group that counter-scales against the camera zoom
-  // (see ContactMark/TransmissionPulse/PlottedCourse below), which is what
+  // (see ContactMark/TransmissionPulse/DestinationMark below), which is what
   // keeps a mark legible at any zoom instead of shrinking to a dot at max
   // zoom-in. Left uncorrected, though, that counter-scale is exact, 1/scale
   // exactly cancels the camera's scale(${scale}), so a glyph is the IDENTICAL
@@ -1990,20 +1974,14 @@ const Chart = () => {
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       const step = event.deltaY > 0 ? ZOOM_WHEEL_STEP : 1 / ZOOM_WHEEL_STEP;
-      setSpan((current) =>
-        clamp(current * step, ZOOM_MIN_SPAN, maxSpan),
-      );
+      setSpan((current) => clamp(current * step, ZOOM_MIN_SPAN, maxSpan));
     };
     viewport.addEventListener('wheel', onWheel, { passive: false });
     return () => viewport.removeEventListener('wheel', onWheel);
   }, [maxSpan]);
 
-  // Zoomed in, the chart follows the ship. Zoomed most of the way out, following
-  // the ship would push the map's own edges into the middle of the viewport, so
-  // the focus eases across to the centre of the sector over the last of the range.
-  const centreBlend = clamp((zoomSpan - maxSpan * 0.6) / (maxSpan * 0.4), 0, 1);
-  const followX = toX(x) + (extent / 2 - toX(x)) * centreBlend;
-  const followY = toY(y) + (extent / 2 - toY(y)) * centreBlend;
+  const followX = toX(shipX);
+  const followY = toY(shipY);
 
   // Dragging the chart parks the camera on a map position instead of on the ship,
   // which is the whole point of looking around: the sector holds still and the
@@ -2040,7 +2018,10 @@ const Chart = () => {
     if (!focusRequest || focusRequest.nonce === servedFocus.current) return;
     servedFocus.current = focusRequest.nonce;
 
-    const target = { x: toX(focusRequest.x), y: toY(focusRequest.y) };
+    const target = {
+      x: nearestImage(toX(focusRequest.x), focusX, period * UNIT),
+      y: nearestImage(toY(focusRequest.y), focusY, period * UNIT),
+    };
     const camera = cameraRef.current;
     const viewport = viewportRef.current;
     const svg = camera?.ownerSVGElement;
@@ -2073,9 +2054,12 @@ const Chart = () => {
   }, [focusRequest]);
 
   // A console closed mid-pan would otherwise set state on a dead component.
-  useEffect(() => () => {
-    if (easeTimer.current) clearTimeout(easeTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (easeTimer.current) clearTimeout(easeTimer.current);
+    },
+    [],
+  );
 
   // An anchored camera doesn't move on its own, so there is nothing to glide and
   // a transition would only smear the drag a frame behind the cursor. The
@@ -2111,34 +2095,22 @@ const Chart = () => {
     };
   };
 
-  /** The same tile, clamped to somewhere a course may legally be plotted to. */
+  /** Every repeated copy refers to the same canonical destination tile. */
   const tileFromEvent = (event: React.MouseEvent) => {
     const tile = rawTileFromEvent(event);
     if (!tile) return null;
     return {
-      x: clamp(tile.x, 2, size - 1),
-      y: clamp(tile.y, 2, size - 1),
+      x: wrapTile(tile.x, size),
+      y: wrapTile(tile.y, size),
     };
   };
 
-  /**
-   * The tile the cursor is resting on, printed in the corner readout.
-   *
-   * Coordinates get passed around over comms ("meet us at 30 / 18") and the only
-   * way to find one on the chart used to be counting tiles off the border. The
-   * plot clamp above is deliberately not applied here: this is a reading of where
-   * the crew is pointing, so it says the truth on the border tiles and reads
-   * nothing at all once the cursor is off the sector entirely.
-   */
+  /** Read canonical coordinates even when pointing across a seam. */
   const [cursorTile, setCursorTile] = useState<{ x: number; y: number } | null>(
     null,
   );
   const trackCursor = (event: React.PointerEvent) => {
-    const tile = rawTileFromEvent(event);
-    const onChart =
-      tile && tile.x >= 1 && tile.x <= size && tile.y >= 1 && tile.y <= size
-        ? tile
-        : null;
+    const onChart = tileFromEvent(event);
     // Same tile, same object: a pointermove that hasn't crossed a tile boundary
     // must not re-render the chart, and the cursor crosses plenty of pixels per
     // tile at any zoom.
@@ -2266,15 +2238,27 @@ const Chart = () => {
   const nose = vector ?? DIR_VECTOR[driftDirection];
   const heeling = nose ? (Math.atan2(nose[0], nose[1]) * 180) / Math.PI : 0;
 
-  // Arrival clock for a plotted course, off the planned path's own length rather
-  // than the distance to the destination: the route detours around storms and
-  // standoff bands, and the tiles it spends doing that are tiles the ship flies.
-  // PlottedCourse deliberately draws no per-step clocks, on the grounds that the
-  // destination one lives here. It just never did until now.
-  const courseEta =
-    moveIntervalMs && autopilot?.remaining
-      ? clockOf(autopilot.remaining * moveIntervalMs)
-      : null;
+  // Background copies share the 49-tile flyable band, without a dead border.
+  const cameraTileX = (focusX + UNIT / 2) / UNIT;
+  const cameraTileY = size + 1 - (focusY + UNIT / 2) / UNIT;
+  const copies = visibleCopies(cameraTileX, zoomSpan / 2 + 1, period).flatMap(
+    (copyX) =>
+      visibleCopies(cameraTileY, zoomSpan / 2 + 1, period).map((copyY) => ({
+        x: copyX,
+        y: copyY,
+      })),
+  );
+  // Keep distant remembered contacts out of the SVG, especially when several
+  // map copies meet at a corner. The margin covers glyphs and camera gliding.
+  const onScreen = (tileX: number, tileY: number) =>
+    Math.abs(tileX - cameraTileX) <= zoomSpan / 2 + 4 &&
+    Math.abs(tileY - cameraTileY) <= zoomSpan / 2 + 4;
+  const shipCopies = copies.map((copy) => ({
+    x: copy.x - Math.floor((shipX - 2) / period),
+    y: copy.y - Math.floor((shipY - 2) / period),
+  }));
+  const displayX = (tile: number) => toX(nearestImage(tile, shipX, period));
+  const displayY = (tile: number) => toY(nearestImage(tile, shipY, period));
 
   const gridLines: number[] = [];
   for (let i = 0; i <= size; i += 5) gridLines.push(i);
@@ -2323,6 +2307,14 @@ const Chart = () => {
         aria-label="Overmap navigation chart"
       >
         <defs>
+          <clipPath id="helm-sector-clip">
+            <rect
+              x={UNIT}
+              y={UNIT}
+              width={period * UNIT}
+              height={period * UNIT}
+            />
+          </clipPath>
           <radialGradient id="helm-sunglow">
             <stop offset="0%" stopColor="#f2a341" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#f2a341" stopOpacity="0" />
@@ -2330,228 +2322,256 @@ const Chart = () => {
         </defs>
 
         <g style={{ ...SVG_ORIGIN, transform: zoomTransform }}>
-        <g
-          className="Helm__camera"
-          ref={cameraRef}
-          style={{ ...SVG_ORIGIN, transform: followTransform, transition: glide }}
-        >
-          {/*
-            Everything decorative, behind the marks and deaf to the mouse. The
-            zone discs are filled, and a filled SVG shape takes hits across its
-            whole area, without this they'd eat right-clicks meant for the chart.
-          */}
-          <g pointerEvents="none">
-          {rings.map(([radius, colour]) => (
-            <g key={colour}>
-              <circle
-                cx={toX(centre)}
-                cy={toY(centre)}
-                r={radius * UNIT}
-                fill={colour}
-                fillOpacity={0.06}
-              />
-              <circle
-                cx={toX(centre)}
-                cy={toY(centre)}
-                r={radius * UNIT}
-                fill="none"
-                stroke={colour}
-                strokeOpacity={0.3}
-                strokeDasharray="5 4"
-                vectorEffect="non-scaling-stroke"
-              />
-            </g>
-          ))}
+          <g
+            className="Helm__camera"
+            ref={cameraRef}
+            style={{
+              ...SVG_ORIGIN,
+              transform: followTransform,
+              transition: glide,
+            }}
+          >
+            {copies.map((copy) => (
+              <g
+                key={`sector-${copy.x}-${copy.y}`}
+                transform={`translate(${copy.x * period * UNIT},${-copy.y * period * UNIT})`}
+                clipPath="url(#helm-sector-clip)"
+              >
+                <g pointerEvents="none">
+                  {rings.map(([radius, colour]) => (
+                    <g key={colour}>
+                      <circle
+                        cx={toX(centre)}
+                        cy={toY(centre)}
+                        r={radius * UNIT}
+                        fill={colour}
+                        fillOpacity={0.06}
+                      />
+                      <circle
+                        cx={toX(centre)}
+                        cy={toY(centre)}
+                        r={radius * UNIT}
+                        fill="none"
+                        stroke={colour}
+                        strokeOpacity={0.3}
+                        strokeDasharray="5 4"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  ))}
 
-          <g stroke="#74c8dd" strokeOpacity={0.028} strokeWidth={0.4}>
-            {fineGrid.map((i) => (
-              <line
-                key={`fv${i}`}
-                x1={i * UNIT}
-                y1={0}
-                x2={i * UNIT}
-                y2={extent}
-              />
+                  <g stroke="#74c8dd" strokeOpacity={0.028} strokeWidth={0.4}>
+                    {fineGrid.map((i) => (
+                      <line
+                        key={`fv${i}`}
+                        x1={i * UNIT}
+                        y1={0}
+                        x2={i * UNIT}
+                        y2={extent}
+                      />
+                    ))}
+                    {fineGrid.map((i) => (
+                      <line
+                        key={`fh${i}`}
+                        x1={0}
+                        y1={i * UNIT}
+                        x2={extent}
+                        y2={i * UNIT}
+                      />
+                    ))}
+                  </g>
+
+                  <g stroke="#74c8dd" strokeOpacity={0.055} strokeWidth={0.6}>
+                    {gridLines.map((i) => (
+                      <line
+                        key={`v${i}`}
+                        x1={i * UNIT}
+                        y1={0}
+                        x2={i * UNIT}
+                        y2={extent}
+                      />
+                    ))}
+                    {gridLines.map((i) => (
+                      <line
+                        key={`h${i}`}
+                        x1={0}
+                        y1={i * UNIT}
+                        x2={extent}
+                        y2={i * UNIT}
+                      />
+                    ))}
+                  </g>
+
+                  <circle
+                    cx={toX(centre)}
+                    cy={toY(centre)}
+                    r={60}
+                    fill="url(#helm-sunglow)"
+                  />
+                  <circle
+                    cx={toX(centre)}
+                    cy={toY(centre)}
+                    r={7}
+                    fill="#f2a341"
+                  />
+                </g>
+              </g>
             ))}
-            {fineGrid.map((i) => (
-              <line
-                key={`fh${i}`}
-                x1={0}
-                y1={i * UNIT}
-                x2={extent}
-                y2={i * UNIT}
-              />
+
+            {/* Amber marks the ship's current drift through visible space. */}
+            {shipCopies.map((copy) => (
+              <g
+                key={`drift-${copy.x}-${copy.y}`}
+                transform={`translate(${copy.x * period * UNIT},${-copy.y * period * UNIT})`}
+              >
+                {!!drift && (
+                  <DriftTrack
+                    drift={drift}
+                    from={[x, y]}
+                    toX={displayX}
+                    toY={displayY}
+                    scale={markScale}
+                    span={zoomSpan}
+                  />
+                )}
+              </g>
             ))}
-          </g>
 
-          <g stroke="#74c8dd" strokeOpacity={0.055} strokeWidth={0.6}>
-            {gridLines.map((i) => (
-              <line
-                key={`v${i}`}
-                x1={i * UNIT}
-                y1={0}
-                x2={i * UNIT}
-                y2={extent}
-              />
-            ))}
-            {gridLines.map((i) => (
-              <line
-                key={`h${i}`}
-                x1={0}
-                y1={i * UNIT}
-                x2={extent}
-                y2={i * UNIT}
-              />
-            ))}
-          </g>
-
-          <rect
-            x={0}
-            y={0}
-            width={extent}
-            height={extent}
-            fill="none"
-            stroke="#3a474b"
-            vectorEffect="non-scaling-stroke"
-          />
-
-          <circle
-            cx={toX(centre)}
-            cy={toY(centre)}
-            r={60}
-            fill="url(#helm-sunglow)"
-          />
-          <circle cx={toX(centre)} cy={toY(centre)} r={7} fill="#f2a341" />
-          </g>
-
-          {/*
-            Under the plotted course: where a course is flying the ship, the
-            drift is only ever a step behind it, and the two lines lie on top of
-            each other. Amber, because this is the ship's own state, the green
-            line is where it means to go, the amber one is where it is going.
-          */}
-          {!!drift && (
-            <DriftTrack
-              drift={drift}
-              from={[x, y]}
-              toX={toX}
-              toY={toY}
-              scale={markScale}
-              span={zoomSpan}
-            />
-          )}
-
-          {!!autopilot?.engaged && (
-            <PlottedCourse
-              from={[x, y]}
-              path={autopilot.path ?? []}
-              toX={toX}
-              toY={toY}
-              scale={markScale}
-            />
-          )}
-
-          {/*
+            {/*
             Hails, under the contact marks so a pulse never swallows a click.
             The ring expands and fades in CSS; a transmission that has aged out
             simply stops arriving in the live set and the mark disappears.
           */}
-          {transmissions
-            .filter((hail) => hail.live)
-            .map((hail, index) => (
-              <TransmissionPulse
-                key={`${hail.x}-${hail.y}-${hail.age}-${index}`}
-                hail={hail}
-                cx={toX(hail.x)}
-                cy={toY(hail.y)}
-                scale={markScale}
-              />
+            {copies.map((copy) => (
+              <g key={`contacts-${copy.x}-${copy.y}`}>
+                {!!autopilot?.engaged &&
+                  autopilot.destX !== undefined &&
+                  autopilot.destY !== undefined && (
+                    <DestinationMark
+                      cx={toX(autopilot.destX + copy.x * period)}
+                      cy={toY(autopilot.destY + copy.y * period)}
+                      scale={markScale}
+                    />
+                  )}
+                {transmissions
+                  .filter((hail) => hail.live)
+                  .map((hail, index) => (
+                    <TransmissionPulse
+                      key={`${copy.x}-${copy.y}-${hail.x}-${hail.y}-${hail.age}-${index}`}
+                      hail={hail}
+                      cx={toX(hail.x + copy.x * period)}
+                      cy={toY(hail.y + copy.y * period)}
+                      scale={markScale}
+                    />
+                  ))}
+
+                {waypoints
+                  .filter((contact) =>
+                    onScreen(
+                      contact.x + copy.x * period,
+                      contact.y + copy.y * period,
+                    ),
+                  )
+                  .map((contact) => {
+                    const key = contactKey(contact);
+                    return (
+                      <ContactMark
+                        key={`${copy.x}-${copy.y}-${key}`}
+                        contact={contact}
+                        cx={toX(contact.x + copy.x * period)}
+                        cy={toY(contact.y + copy.y * period)}
+                        scale={markScale}
+                        inRange={!!contact.live}
+                        selected={selected === key}
+                        onSelect={() => select(key)}
+                        onHover={(entered) =>
+                          setHovered((current) =>
+                            entered ? key : current === key ? null : current,
+                          )
+                        }
+                        onMenu={(event) => openMenu(event, key)}
+                      />
+                    );
+                  })}
+              </g>
             ))}
 
-          {waypoints.map((contact) => {
-            const key = contactKey(contact);
-            return (
-              <ContactMark
-                key={key}
-                contact={contact}
-                cx={toX(contact.x)}
-                cy={toY(contact.y)}
-                scale={markScale}
-                inRange={!!contact.live}
-                selected={selected === key}
-                onSelect={() => select(key)}
-                onHover={(entered) =>
-                  setHovered((current) =>
-                    entered ? key : current === key ? null : current,
-                  )
-                }
-                onMenu={(event) => openMenu(event, key)}
-              />
-            );
-          })}
-
-          {/*
+            {/*
             Deaf to the mouse. The view ring below is a filled disc four tiles
             across drawn on top of every mark inside it, so while it took hits it
             silently swallowed hover and right-click for every contact the ship
             was closest to, the ones the crew most wants to inspect.
           */}
-          <g
-            className="Helm__shipToken"
-            pointerEvents="none"
-            style={{
-              ...SVG_ORIGIN,
-              transform: `translate(${toX(x)}px, ${toY(y)}px)`,
-              transition: glide,
-            }}
-          >
-            {/*
+            {shipCopies.map((copy) => (
+              <g
+                key={`ship-${copy.x}-${copy.y}`}
+                transform={`translate(${copy.x * period * UNIT},${-copy.y * period * UNIT})`}
+              >
+                <g
+                  className="Helm__shipToken"
+                  pointerEvents="none"
+                  style={{
+                    ...SVG_ORIGIN,
+                    transform: `translate(${toX(shipX)}px, ${toY(shipY)}px)`,
+                    transition: glide,
+                  }}
+                >
+                  {/*
               Two rings, and the gap between them is the radar tree made visible.
               Solid inner: what the crew can see, free and fixed. Dashed outer:
               how far a scan reaches, everything charted came from this band.
               At base radar they sit on top of each other, which is the honest
               picture of a ship that has researched nothing.
             */}
-            <circle
-              r={viewRange * UNIT}
-              fill="#74c8dd"
-              fillOpacity={0.05}
-              stroke="#74c8dd"
-              strokeOpacity={0.34}
-              vectorEffect="non-scaling-stroke"
-            />
-            {sensorRange > viewRange && (
-              <circle
-                r={sensorRange * UNIT}
-                fill="none"
-                stroke="#74c8dd"
-                strokeOpacity={0.22}
-                strokeDasharray="3 4"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
-            <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-              <circle r={12} fill="#f2a341" fillOpacity={0.1} />
-              {!!vector && !!speed && (
-                <line
-                  x1={0}
-                  y1={0}
-                  x2={(vector[0] / Math.hypot(...vector)) * (14 + speed * 9)}
-                  y2={(-vector[1] / Math.hypot(...vector)) * (14 + speed * 9)}
-                  stroke="#f2a341"
-                  strokeWidth={1.6}
-                  strokeDasharray="4 3"
-                  strokeOpacity={0.85}
-                />
-              )}
-              <path
-                d="M0,-7 L5,6 L0,3 L-5,6 Z"
-                fill="#f2a341"
-                transform={`rotate(${heeling})`}
-              />
-            </g>
+                  <circle
+                    r={viewRange * UNIT}
+                    fill="#74c8dd"
+                    fillOpacity={0.05}
+                    stroke="#74c8dd"
+                    strokeOpacity={0.34}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {sensorRange > viewRange && (
+                    <circle
+                      r={sensorRange * UNIT}
+                      fill="none"
+                      stroke="#74c8dd"
+                      strokeOpacity={0.22}
+                      strokeDasharray="3 4"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+                  <g
+                    style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}
+                  >
+                    <circle r={12} fill="#f2a341" fillOpacity={0.1} />
+                    {!!vector && !!speed && (
+                      <line
+                        x1={0}
+                        y1={0}
+                        x2={
+                          (vector[0] / Math.hypot(...vector)) * (14 + speed * 9)
+                        }
+                        y2={
+                          (-vector[1] / Math.hypot(...vector)) *
+                          (14 + speed * 9)
+                        }
+                        stroke="#f2a341"
+                        strokeWidth={1.6}
+                        strokeDasharray="4 3"
+                        strokeOpacity={0.85}
+                      />
+                    )}
+                    <path
+                      d="M0,-7 L5,6 L0,3 L-5,6 Z"
+                      fill="#f2a341"
+                      transform={`rotate(${heeling})`}
+                    />
+                  </g>
+                </g>
+              </g>
+            ))}
           </g>
-        </g>
         </g>
       </svg>
 
@@ -2618,7 +2638,7 @@ const Chart = () => {
       {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
 
       <div className="Helm__hud Helm--bl">
-        {!!showPolicy && <AutopilotPolicyPanel />}
+        <AutopilotZones />
         <div className="Helm__hudLine" style={{ color: '#3d6a76' }}>
           <span className="Helm__hudKey">SENSOR</span> {sensorRange} TILES
         </div>
@@ -2627,10 +2647,9 @@ const Chart = () => {
             <span className="Helm__courseLabel">
               AUTO · {autopilot.label ?? 'plotted position'}
             </span>
-            <span className="Helm__courseDist">
-              {autopilot.remaining ?? 0} tiles
-              {!!courseEta && ` · ${courseEta}`}
-            </span>
+            {!!autopilot.dockOnArrival && (
+              <span className="Helm__courseDist">Dock on arrival</span>
+            )}
             <button
               type="button"
               className="Helm__btn"
@@ -2640,33 +2659,15 @@ const Chart = () => {
             >
               Cancel
             </button>
-            <button
-              type="button"
-              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
-              title="Autopilot flight policy"
-              onClick={() => setShowPolicy((open) => !open)}
-            >
-              ⚙
-            </button>
           </div>
         )}
         {!autopilot?.engaged && (
-          // The gear stays reachable with no course engaged; the readout line
-          // only appears once there is an outcome to report.
           <div className="Helm__course">
             <span className="Helm__courseStatus" style={{ marginTop: 0 }}>
               {autopilot?.status
                 ? `AUTOPILOT OFF · ${autopilot.status}`
                 : 'AUTOPILOT'}
             </span>
-            <button
-              type="button"
-              className={`Helm__btn Helm__policyGear${showPolicy ? ' Helm--selected' : ''}`}
-              title="Autopilot flight policy"
-              onClick={() => setShowPolicy((open) => !open)}
-            >
-              ⚙
-            </button>
           </div>
         )}
       </div>
@@ -2716,9 +2717,8 @@ const Chart = () => {
  * The drift track: the tiles the ship crosses from here on the velocity it
  * already has, and a ghost of it at the end of the horizon.
  *
- * Segments split on wraparound for the same reason PlottedCourse's do, a drift
- * that leaves one edge and re-enters the other would otherwise draw one line
- * straight back across the whole chart.
+ * Coordinates are projected into the continuous chart around the ship, so the
+ * line and its marks cross either seam without a jump.
  */
 const DriftTrack = (props: {
   drift: Drift;
@@ -2734,21 +2734,10 @@ const DriftTrack = (props: {
   // be marked, that case is precisely the one the crew most needs to see.
   if (!tiles.length && !hold) return null;
 
-  const segments: string[][] = [];
-  let current: string[] = [`${toX(from[0])},${toY(from[1])}`];
-  let previous = from;
-  for (const tile of tiles) {
-    if (
-      Math.abs(tile.x - previous[0]) > 1 ||
-      Math.abs(tile.y - previous[1]) > 1
-    ) {
-      if (current.length > 1) segments.push(current);
-      current = [];
-    }
-    current.push(`${toX(tile.x)},${toY(tile.y)}`);
-    previous = [tile.x, tile.y];
-  }
-  if (current.length > 1) segments.push(current);
+  const segments = [[
+    `${toX(from[0])},${toY(from[1])}`,
+    ...tiles.map((tile) => `${toX(tile.x)},${toY(tile.y)}`),
+  ]];
 
   const heeling =
     (Math.atan2(drift.vector[0], drift.vector[1]) * 180) / Math.PI;
@@ -2933,106 +2922,15 @@ const DriftTrack = (props: {
   );
 };
 
-/**
- * The plotted course, drawn from the ship along the remaining path.
- *
- * Split into segments wherever consecutive steps aren't adjacent: the overmap
- * wraps at its edges and the route planner uses that, so a course that leaves one
- * side and re-enters the other would otherwise draw one line straight back across
- * the whole chart.
- */
-const PlottedCourse = (props: {
-  from: [number, number];
-  path: [number, number][];
-  toX: (tile: number) => number;
-  toY: (tile: number) => number;
-  scale: number;
-}) => {
-  const { from, path, toX, toY, scale } = props;
-  if (!path.length) return null;
-
-  const segments: string[][] = [];
-  let current: string[] = [`${toX(from[0])},${toY(from[1])}`];
-  let previous = from;
-  for (const point of path) {
-    if (
-      Math.abs(point[0] - previous[0]) > 1 ||
-      Math.abs(point[1] - previous[1]) > 1
-    ) {
-      if (current.length > 1) segments.push(current);
-      current = [];
-    }
-    current.push(`${toX(point[0])},${toY(point[1])}`);
-    previous = point;
-  }
-  if (current.length > 1) segments.push(current);
-
-  const destination = path[path.length - 1];
-
-  return (
-    <g className="Helm__plot" pointerEvents="none">
-      {segments.map((segment) => (
-        <polyline
-          key={segment[0]}
-          points={segment.join(' ')}
-          fill="none"
-          stroke="#59b871"
-          strokeWidth={1.5}
-          strokeOpacity={0.7}
-          strokeDasharray="6 5"
-          vectorEffect="non-scaling-stroke"
-        />
-      ))}
-
-      {/*
-        The route's own tiles, on the same footing as the drift's: a course is
-        a list of tiles the ship will stand on, and the line between them is a
-        drawing convenience rather than anything the overmap does.
-
-        No clocks here. A plotted course runs as far as the crew asked for
-        rather than to the sensor horizon, so labelling every step of a
-        sector-crossing route buries the chart it is drawn on; the remaining
-        count and the destination ETA live in the autopilot readout instead.
-      */}
-      {path.map((point, index) => (
-        <rect
-          key={`plot-${point[0]}-${point[1]}-${index}`}
-          x={toX(point[0]) - UNIT / 2 + PLOT_INSET}
-          y={toY(point[1]) - UNIT / 2 + PLOT_INSET}
-          width={UNIT - PLOT_INSET * 2}
-          height={UNIT - PLOT_INSET * 2}
-          rx={0.7}
-          fill="#59b871"
-          fillOpacity={0.06}
-          stroke="#59b871"
-          strokeOpacity={0.45}
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-        />
-      ))}
-
-      <g
-        transform={`translate(${toX(destination[0])},${toY(destination[1])})`}
-      >
-        <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-          <circle
-            className="Helm__plotTarget"
-            r={9}
-            fill="none"
-            stroke="#59b871"
-            strokeWidth={1.4}
-          />
-          <path
-            d="M-4,0 H4 M0,-4 V4"
-            stroke="#59b871"
-            strokeWidth={1.2}
-            strokeOpacity={0.9}
-          />
-        </g>
-      </g>
+/** Marks only the destination selected by the crew, never the private route. */
+const DestinationMark = ({ cx, cy, scale }: { cx: number; cy: number; scale: number }) => (
+  <g className="Helm__plot" pointerEvents="none" transform={`translate(${cx},${cy})`}>
+    <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
+      <circle className="Helm__plotTarget" r={9} fill="none" stroke="#59b871" strokeWidth={1.4} />
+      <path d="M-4,0 H4 M0,-4 V4" stroke="#59b871" strokeWidth={1.2} />
     </g>
-  );
-};
+  </g>
+);
 
 const ContactMark = (props: {
   contact: Contact;
@@ -3304,7 +3202,7 @@ const ContactMenu = (props: {
   if (!here) {
     items.push({
       label: contact ? `Set course · ${contact.name}` : 'Set course here',
-      hint: blocked ?? 'Routes around known hazards',
+      hint: blocked ?? 'Avoids hazards in allowed zones',
       disabled: locked || !!blocked,
       onClick: () => act('autopilot', { x: tile.x, y: tile.y }),
     });
@@ -3935,7 +3833,7 @@ const ContactList = () => {
                         <button
                           type="button"
                           className="Helm__btn"
-                          title="Autopilot flies there, routes around known hazards"
+                          title="Autopilot flies there, avoids hazards"
                           onClick={(event) => {
                             event.stopPropagation();
                             act('autopilot', { x: contact.x, y: contact.y });

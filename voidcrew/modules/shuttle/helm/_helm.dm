@@ -313,8 +313,8 @@
 	// even while the ship is moving a tile at a time.
 	data["waypoints"] = list()
 	for(var/list/contact as anything in current_ship.get_contact_snapshot())
-		var/dx = contact["x"] - data["x"]
-		var/dy = contact["y"] - data["y"]
+		var/dx = overmap_wrapped_delta(contact["x"] - data["x"], OVERMAP_SIZE - 2)
+		var/dy = overmap_wrapped_delta(contact["y"] - data["y"], OVERMAP_SIZE - 2)
 		// Copy so the per-read distance never writes back into the shared cache.
 		var/list/entry = contact.Copy()
 		entry["dist"] = round(sqrt(dx * dx + dy * dy))

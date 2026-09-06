@@ -295,7 +295,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	if(category == "Ships")
 		return identify_vessels(center)
 	var/found = 0
-	for(var/obj/structure/overmap/candidate in range(get_sensor_range(), center))
+	for(var/obj/structure/overmap/candidate in overmap_sensor_range(get_sensor_range(), center))
 		if(candidate == src || !candidate.sensor_detectable)
 			continue
 		if(category && candidate.sensor_category != category)
@@ -318,7 +318,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  */
 /obj/structure/overmap/ship/proc/identify_vessels(turf/center)
 	var/found = 0
-	for(var/obj/structure/overmap/ship/other in range(SHIP_VIEW_RANGE, center))
+	for(var/obj/structure/overmap/ship/other in overmap_sensor_range(SHIP_VIEW_RANGE, center))
 		if(other == src || other.hidden_in_nebula)
 			continue
 		if(mark_vessel_identified(other))
@@ -463,6 +463,21 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 /obj/structure/overmap/proc/get_hazard_note()
 	return null
 
+/// Circular sight/scan footprint across both seams. Only visits local tiles;
+/// navigation's private hazard registry never participates in discovery.
+/proc/overmap_sensor_range(radius, turf/center)
+	var/list/contacts = list()
+	if(!center || center.z != OVERMAP_Z_LEVEL)
+		return contacts
+	for(var/offset_x in -radius to radius)
+		for(var/offset_y in -radius to radius)
+			if(offset_x * offset_x + offset_y * offset_y > radius * radius)
+				continue
+			var/turf/tile = locate(overmap_wrap_x(center.x + offset_x), overmap_wrap_y(center.y + offset_y), center.z)
+			for(var/obj/structure/overmap/contact in tile)
+				contacts += contact
+	return contacts
+
 /**
  * Whether a contact at `coords` is close enough to be seen rather than merely
  * known, the helm draws the difference as solid versus faded. Both arguments
@@ -471,8 +486,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 /proc/in_view_ring(list/origin, list/coords)
 	if(!origin || !coords)
 		return FALSE
-	var/dx = coords[1] - origin[1]
-	var/dy = coords[2] - origin[2]
+	var/dx = overmap_wrapped_delta(coords[1] - origin[1], OVERMAP_SIZE - 2)
+	var/dy = overmap_wrapped_delta(coords[2] - origin[2], OVERMAP_SIZE - 2)
 	return sqrt(dx * dx + dy * dy) <= SHIP_VIEW_RANGE
 
 /**
@@ -502,17 +517,11 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	var/sensor_range = get_sensor_range()
 	mark_surveyed(own_position)
 	if(our_turf && own_position)
-		for(var/obj/structure/overmap/nearby in range(SHIP_VIEW_RANGE, our_turf))
+		for(var/obj/structure/overmap/nearby in overmap_sensor_range(SHIP_VIEW_RANGE, our_turf))
 			if(nearby == src || !nearby.sensor_visible)
 				continue
 			var/list/nearby_coords = nearby.get_relative_overmap_coords()
 			if(!nearby_coords)
-				continue
-			// range() is a square; the helm draws the ring as a circle. Trim the
-			// corners so what the crew sees matches the ring on the chart.
-			var/view_dx = nearby_coords[1] - own_position[1]
-			var/view_dy = nearby_coords[2] - own_position[2]
-			if(sqrt(view_dx * view_dx + view_dy * view_dy) > SHIP_VIEW_RANGE)
 				continue
 			var/nearby_ref = REF(nearby)
 			live_refs[nearby_ref] = TRUE
@@ -599,8 +608,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			var/list/other_coords = other.get_relative_overmap_coords()
 			if(!other_coords)
 				continue
-			var/dx = other_coords[1] - own_position[1]
-			var/dy = other_coords[2] - own_position[2]
+			var/dx = overmap_wrapped_delta(other_coords[1] - own_position[1], OVERMAP_SIZE - 2)
+			var/dy = overmap_wrapped_delta(other_coords[2] - own_position[2], OVERMAP_SIZE - 2)
 			if(sqrt(dx * dx + dy * dy) > vessel_reach)
 				continue
 			var/ship_ref = REF(other)
@@ -724,10 +733,8 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 			// exactly the area the crew was actually shown.
 			if(offset_x * offset_x + offset_y * offset_y > SHIP_VIEW_RANGE * SHIP_VIEW_RANGE)
 				continue
-			var/tile_x = origin[1] + offset_x
-			var/tile_y = origin[2] + offset_y
-			if(tile_x < 1 || tile_x > OVERMAP_SIZE || tile_y < 1 || tile_y > OVERMAP_SIZE)
-				continue
+			var/tile_x = overmap_wrap_x(origin[1] + OVERMAP_LEFT_SIDE_COORD - 1 + offset_x) - OVERMAP_LEFT_SIDE_COORD + 1
+			var/tile_y = overmap_wrap_y(origin[2] + OVERMAP_SOUTH_SIDE_COORD - 1 + offset_y) - OVERMAP_SOUTH_SIDE_COORD + 1
 			surveyed_tiles[(tile_y - 1) * OVERMAP_SIZE + tile_x] = TRUE
 
 /// Whether this ship has ever had eyes on the given relative overmap tile.

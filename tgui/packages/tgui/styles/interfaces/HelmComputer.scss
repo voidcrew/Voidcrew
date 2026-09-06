@@ -953,64 +953,66 @@ $caption: 1.6cqw;
   text-transform: uppercase;
 }
 
-// The flight-policy gear and its panel, anchored in the bottom-left HUD next
-// to the autopilot readout.
-
-.Helm__policyGear {
-  padding: 0.16cqw 0.4cqw;
-  font-size: 0.95cqw;
-  line-height: 1;
-}
-
-.Helm__policyPanel {
-  width: max-content;
-  max-width: 20cqw;
-  margin-bottom: 0.4cqw;
-  padding: 0.5cqw 0.7cqw 0.55cqw;
-  border: 1px solid $steel-700;
-  background: rgba(6, 12, 13, 0.92);
-  // The parent HUD is pointer-events: none so the chart stays draggable
-  // through it; the panel has controls, so it opts back in.
+.Helm__zoneControls {
+  margin-bottom: 0.6cqw;
   pointer-events: auto;
 }
 
-.Helm__policyTitle {
+.Helm__zoneTitle {
   margin-bottom: 0.35cqw;
   color: $ice-dim;
-  font-family: $stencil;
-  font-size: 0.8cqw;
-  letter-spacing: 0.14em;
+  font-family: $mono;
+  font-size: 0.7cqw;
+  letter-spacing: 0.08em;
 }
 
-.Helm__policyRow {
+.Helm__zoneButtons {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
   gap: 0.4cqw;
+}
+
+.Helm__zoneButton {
+  min-width: 10cqw;
+  padding: 0.45cqw 0.6cqw;
+  border: 1px solid $steel-700;
+  border-top: 2px solid;
+  border-radius: 2px;
+  background: rgba(6, 12, 13, 0.94);
   color: $label;
-  font-family: $mono;
-  font-size: 0.82cqw;
-  letter-spacing: 0.04em;
+  font: 0.85cqw $mono;
+  text-align: left;
   cursor: pointer;
 
-  input {
-    cursor: pointer;
-
-    &:disabled {
-      cursor: not-allowed;
-    }
+  &:hover, &:focus-visible {
+    background: $steel-800;
+    outline: 1px solid $ice-dim;
   }
 
-  & + & {
-    margin-top: 0.18cqw;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-.Helm__policyHint {
-  flex-basis: 100%;
-  padding-left: 1.3cqw;
-  color: $ice-dim;
-  font-size: 0.7cqw;
+.Helm__zoneState {
+  display: flex;
+  align-items: center;
+  gap: 0.4cqw;
+  margin-top: 0.3cqw;
+  font-size: 0.72cqw;
+}
+
+.Helm__zoneLight {
+  width: 0.55cqw;
+  height: 0.55cqw;
+  border-radius: 50%;
+  background: #cf4a38;
+  box-shadow: 0 0 0.35cqw #cf4a3880;
+
+  &.Helm--allowed {
+    background: #59d87b;
+    box-shadow: 0 0 0.35cqw #59d87b80;
+  }
 }
 
 .Helm__contact {
@@ -1094,7 +1096,7 @@ $caption: 1.6cqw;
 .Helm__readout {
   position: absolute;
   right: 0.9cqw;
-  bottom: 0.8cqw;
+  bottom: 7cqw;
   z-index: 4;
   max-width: 27cqw;
   padding: 0.6cqw 0.85cqw;

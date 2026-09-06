@@ -3054,26 +3054,14 @@
 		movement_callback_id = null
 		return
 
-	var/new_x = x + SIGN(speed[1])
-	var/new_y = y + SIGN(speed[2])
-
-	// Handle wraparound at edges
-	var/low_x = OVERMAP_LEFT_SIDE_COORD + 1  // 2
-	var/high_x = OVERMAP_RIGHT_SIDE_COORD - 1  // 24
-	var/low_y = OVERMAP_SOUTH_SIDE_COORD + 1
-	var/high_y = OVERMAP_NORTH_SIDE_COORD - 1
-
-	if(new_x <= OVERMAP_LEFT_SIDE_COORD)
-		new_x = high_x
-	else if(new_x >= OVERMAP_RIGHT_SIDE_COORD)
-		new_x = low_x
-
-	if(new_y <= OVERMAP_SOUTH_SIDE_COORD)
-		new_y = high_y
-	else if(new_y >= OVERMAP_NORTH_SIDE_COORD)
-		new_y = low_y
-
+	var/new_x = overmap_wrap_x(x + SIGN(speed[1]))
+	var/new_y = overmap_wrap_y(y + SIGN(speed[2]))
 	var/turf/newloc = locate(new_x, new_y, z)
+	if(autopilot_engaged && !autopilot_can_enter(newloc))
+		full_stop()
+		autopilot_path = null
+		autopilot_steer()
+		return
 
 	// The crossing is enforced here, on the step that actually leaves the zone.
 	//
@@ -3277,6 +3265,12 @@
 	if(zone_transitioning)
 		return
 
+	if(autopilot_engaged && !autopilot_can_enter(target))
+		full_stop()
+		autopilot_path = null
+		schedule_autopilot_poll()
+		return
+
 	zone_transitioning = TRUE
 	zone_transition_target = target
 	zone_transition_start_time = world.time
@@ -3339,6 +3333,14 @@
 	zone_transition_target = null
 	zone_transition_start_time = null
 	zone_transition_timer = null
+
+	// The weather or allowed zones may have changed during the crossing delay.
+	if(autopilot_engaged && !autopilot_can_enter(target))
+		zone_resume_burn = BURN_NONE
+		full_stop()
+		autopilot_path = null
+		autopilot_steer()
+		return
 
 	// Actually move to the target turf
 	if(target && !QDELETED(src))
@@ -4380,18 +4382,17 @@
 		decelerate(acceleration_speed * (percentage / 100))
 		return
 
-	// Ordering a burn straight at a boundary starts the crossing there and then,
-	// rather than letting the ship build speed it is only going to have taken off
-	// it a tile later. The authoritative check is the one in tick_move(), on the
-	// step that actually leaves the zone. This is the early one, for the case
-	// where the crew is already sitting on the line.
-	var/target_x = x + ((n_dir & EAST) ? 1 : 0) - ((n_dir & WEST) ? 1 : 0)
-	var/target_y = y + ((n_dir & NORTH) ? 1 : 0) - ((n_dir & SOUTH) ? 1 : 0)
-	var/turf/target_turf = locate(target_x, target_y, z)
-	var/datum/overmap_zone/crossing = zone_crossing(get_turf(src), target_turf)
-	if(crossing)
-		start_zone_transition(target_turf, crossing)
-		return
+	// Manual burns retain the early crossing shortcut. Autopilot turns can burn
+	// just one missing axis: that is not its course, so only tick_move() may
+	// choose the crossing tile for an automated ship.
+	if(!autopilot_engaged)
+		var/target_x = overmap_wrap_x(x + ((n_dir & EAST) ? 1 : 0) - ((n_dir & WEST) ? 1 : 0))
+		var/target_y = overmap_wrap_y(y + ((n_dir & NORTH) ? 1 : 0) - ((n_dir & SOUTH) ? 1 : 0))
+		var/turf/target_turf = locate(target_x, target_y, z)
+		var/datum/overmap_zone/crossing = zone_crossing(get_turf(src), target_turf)
+		if(crossing)
+			start_zone_transition(target_turf, crossing)
+			return
 
 	var/thrust_used = 0 //The amount of thrust that the engines will provide with one burn
 	refresh_engines()

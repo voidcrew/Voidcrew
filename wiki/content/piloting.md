@@ -40,7 +40,7 @@ Burning toward a tile in a different zone band starts a **zone transition**: the
 
 ## The navigation chart
 
-The chart is the middle panel. Drag with the left or middle mouse button to pan, use the wheel or the slider to zoom, and double-click (or press **Recentre**) to snap back onto your ship. The coloured rings are the zone bands.
+The chart is the middle panel. Drag with the left or middle mouse button to pan, use the wheel or the slider to zoom, and double-click (or press **Recentre**) to snap back onto your ship. The coloured rings are the zone bands. The chart continues across every map edge: the opposite side is adjacent, and nearby contacts, sight and scans work across the seam. Panning through a repeated section still selects the same map coordinates.
 
 **Right-click** the chart or a contact for the action menu: set a course for the autopilot, interact with something sharing your tile, run a Ships scan on an unknown vessel, or clear a waypoint you are done with.
 
@@ -48,18 +48,13 @@ The drawer beside the chart has four tabs. **Contacts** lists every mark you kno
 
 ## Autopilot
 
-Right-click a destination and choose **Set course**. The autopilot flies with the same headings and throttle you would use, so it burns the same fuel and sits out the same zone transitions. It steers, it does not teleport. On a planet, ruin or outpost the same menu offers **Travel & dock**, which flies there and starts the docking approach the moment it arrives. That includes asteroid fields: a course that ends in a docking approach is allowed to finish on the field itself, so you can send the ship to one and let it dock. Both commands also appear as buttons under the selected contact in the drawer.
+Right-click a destination and choose **Set course**. Autopilot takes a safe route around storms and asteroid fields, burns normal engine fuel, waits at zone boundaries, and stops on arrival. It keeps a safe course instead of repeatedly changing its mind. **Travel & dock** also starts a docking approach when you arrive at a planet, ruin or outpost.
 
-It routes around storms, asteroid fields and known hostile vessels, but only around things **this ship has actually seen**. It also prefers space you have charted: tiles nobody aboard has ever looked at cost extra to route through, so a known clean corridor beats a shortcut through the dark, and courses stop wandering off through the unexplored side of the map just because nothing bad is on record there. When it does fly into unexplored tiles it halves cruise speed, so it has time to react to what turns up.
+Three buttons at the bottom-left of the chart control where autopilot may go: **Neutral Zone**, **Contested Zone**, and **Lawless Zone**. Each shows a green **Allowed** light or a red **Blocked** light. All three start enabled; click any one to change it independently. A change takes effect immediately, including cancelling a pending crossing into a newly blocked zone. If you block the zone you are already in, autopilot can still leave it for an allowed destination.
 
-The gear button next to the autopilot readout (bottom-left of the chart) opens the **flight policy** panel, which works whether or not a course is engaged. Changing a setting mid-course re-plans the course immediately under the new rules.
+Autopilot always avoids storm and asteroid-field tiles. If the destination is hazardous or no safe route exists through the allowed zones, it refuses the trip or stops the ship. To enter an asteroid field for mining, make the final approach manually. Nebulas remain navigable.
 
-- **Cross asteroid fields / Cross ion storms / Cross EMP clouds** — off by default. Switched on, the autopilot treats that kind of weather as a nuisance rather than a wall: it will fly through one when going around costs more, and it tells you at engage time how many such crossings the plotted course contains. With shields up, asteroid impacts are absorbed, which is what makes crossing fields worth switching on.
-- **Avoid known hostiles** — on by default. Stamps every hostile vessel you have identified into the route planner with a wide standoff band. Switch it off if you would rather fly the short way and take your chances.
-- **Prefer safer zones** — on by default. A trip that starts and ends in green will not cut through yellow or red to save a couple of tiles; a trip that is headed into a hotter band anyway does not fight itself over it.
-- **Allow hazardous destination** — off by default. Lets a plain set-course order end on a hazard tile instead of stopping one tile short and standing down. Travel & dock orders never need this; picking the field as the destination is consent enough.
-
-It stands down on its own if you are locked on by weapons, take hull damage, get caught in an interdiction field, or end up inside a hazard; touching the compass rose also drops it. On arrival it stops the ship and holds station.
+The chart marks your selected destination. Your sensors still determine which contacts you can see and discover. Autopilot stands down if weapons lock onto you, you take hull damage, or an interdiction field catches you. Touching the heading controls restores manual control.
 
 ## Sensors and radar
 

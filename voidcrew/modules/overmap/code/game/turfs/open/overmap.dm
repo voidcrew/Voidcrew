@@ -13,6 +13,7 @@
 /// Called when this turf's zone changes
 /turf/open/overmap/proc/on_zone_changed(datum/source, old_zone_type, new_zone_type)
 	SIGNAL_HANDLER
+	SSovermap.autopilot_zone_tiles = null
 	update_zone_color()
 
 /// Updates the turf color based on current zone

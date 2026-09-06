@@ -11,7 +11,9 @@ The overmap is the galaxy: a 51-by-51 grid of tiles with a star burning at the c
 
 Your ship burns its engines in a direction and keeps coasting until you brake, so it handles like a ship and not like a cursor. The helm gives you a heading, a throttle percentage, an engine list and a Stop button that switches between cutting thrust and actively braking. Engines need power and fuel, so a ship that has run dry is a ship that drifts.
 
-You can also plot a course: click a charted destination and the autopilot flies there. It routes around known storms, and if it blunders into one anyway it hands control straight back rather than pressing on. Touching the heading controls takes the ship off autopilot silently. Full details are on [Piloting](piloting.md).
+The map wraps across every edge, and the helm shows the other side seamlessly. Sight and scans reach across the seam, so you can see nearby hazards before crossing.
+
+You can also plot a course: right-click a destination and choose **Set course**. Autopilot avoids storms and asteroid fields, using only the zones you enable with the three zone buttons. If no safe route exists, it refuses the trip or stops the ship. Touching the heading controls restores manual control. Full details are on [Piloting](piloting.md).
 
 ## What is out there
 
