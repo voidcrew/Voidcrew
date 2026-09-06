@@ -364,6 +364,7 @@
 #include "voidcrew_shop_catalog.dm"
 #include "voidcrew_silicon_ship_systems.dm"
 #include "voidcrew_simple_mob_ai.dm"
+#include "voidcrew_smart_locker.dm"
 #include "voidcrew_vestige.dm"
 #include "voidcrew_vestige_abductor.dm"
 #include "voidcrew_vestige_changeling.dm"
