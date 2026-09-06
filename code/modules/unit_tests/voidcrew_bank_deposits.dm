@@ -52,6 +52,26 @@
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value, "The claim did not receive exactly the coin's value.")
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, coin_value, "A treasury deposit changed the ship's account.")
 
+	var/obj/item/card/id/id = allocate(/obj/item/card/id)
+	var/datum/bank_account/personal = allocate(/datum/bank_account, "Coin test personal", null, 1, FALSE)
+	personal.account_balance = 100
+	id.registered_account = personal
+	TEST_ASSERT(user.put_in_active_hand(id), "The user could not hold the account ID.")
+	var/list/ui_data = shore_bank.ui_data(user)
+	TEST_ASSERT(ui_data["is_outpost"], "The claim bank did not expose its treasury workflow.")
+	TEST_ASSERT_EQUAL(ui_data["user_account"], personal.account_holder, "The claim bank did not show the held ID account.")
+	TEST_ASSERT(!ui_data["can_withdraw"], "An unrecognized user could withdraw from the claim treasury.")
+	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "deposit", 40), "The claim bank rejected a valid ID deposit.")
+	TEST_ASSERT_EQUAL(personal.account_balance, 60, "The claim bank did not debit the payer account.")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 40, "The claim bank did not credit the treasury.")
+	TEST_ASSERT(home.treasury.transaction_history.len >= 2, "The claim bank did not record its account deposit.")
+	user.ckey = "coinowner"
+	home.founder_ckey = user.ckey
+	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "withdraw", 25), "The claim bank rejected an authorized ID withdrawal.")
+	TEST_ASSERT_EQUAL(personal.account_balance, 85, "The claim bank did not credit the withdrawal recipient.")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 15, "The claim bank debited the wrong withdrawal amount.")
+
+	user.drop_all_held_items()
 	shore_bank.forceMove(run_loc_floor_bottom_left)
 	coin = allocate(/obj/item/coin/gold)
 	TEST_ASSERT(user.put_in_active_hand(coin), "The user could not hold the moved-terminal deposit coin.")

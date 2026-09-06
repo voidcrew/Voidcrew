@@ -28,18 +28,24 @@
 	return TRUE
 
 /obj/machinery/computer/bank_machine/ui_data(mob/user)
-	resolve_outpost_bank()
+	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
 	var/list/data = ..()
 
 	if(synced_bank_account)
 		data["station_name"] = synced_bank_account.account_holder
+		data["history"] = synced_bank_account.transaction_history
+	if(site)
+		var/datum/bank_account/user_account = user.get_idcard(TRUE)?.registered_account
+		data["is_outpost"] = TRUE
+		data["user_account"] = user_account?.account_holder
+		data["can_withdraw"] = site.can_spend(user)
 
 	return data
 
 /obj/machinery/computer/bank_machine/attackby(obj/item/weapon, mob/user, params)
 	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
 	if(site && isidcard(weapon))
-		to_chat(user, span_notice("This terminal serves [site.treasury.account_holder]. Use Outpost Management for account transfers; insert cash, coins or holochips to deposit."))
+		to_chat(user, span_notice("This terminal serves [site.treasury.account_holder]. Keep your ID in hand and use the terminal interface for account transfers."))
 		return
 	if(isidcard(weapon))
 		var/obj/item/card/id/id_weapon = weapon
@@ -60,14 +66,26 @@
 // that has to refuse loudly rather than fail somewhere down in the economy code.
 /obj/machinery/computer/bank_machine/ui_act(action, params, datum/tgui/ui)
 	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
+	if(site && action in list("deposit", "withdraw"))
+		var/amount = isnum(params["amount"]) ? params["amount"] : text2num(params["amount"])
+		var/success = transfer_outpost_account(ui?.user, action, amount)
+		if(!success)
+			say("Transfer refused: check your ID account, authority, whole credit amount and available funds.")
+		return TRUE
 	if(site && action == "siphon")
-		say("Use Outpost Management for an authorized withdrawal to a named account.")
+		say("Use the withdrawal control for an authorized transfer to your ID account.")
 		return TRUE
 	if(action == "siphon" && synced_bank_account?.is_siphon_locked())
 		say("Error: hostile intrusion detected on the account. Withdrawals are locked out.")
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE)
 		return TRUE
 	return ..()
+
+/obj/machinery/computer/bank_machine/proc/transfer_outpost_account(mob/living/user, action, amount)
+	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
+	if(!site || !(action in list("deposit", "withdraw")))
+		return FALSE
+	return action == "deposit" ? site.deposit_from(user, amount) : site.withdraw_to(user, amount)
 
 // A withdrawal already running when the pirate's tap lands gets cut off. Upstream's
 // process() would stop it anyway once has_money() starts refusing, but it announces
