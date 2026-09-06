@@ -869,19 +869,17 @@
 			GLOB.starlight -= T
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
 		new /turf/open/space/basic(T)
+		// Neighbours still awaiting this sweep may be processing atmos. Strip their
+		// references to this now-null air before yielding, including on whole-level
+		// teardown: repairing only the outer ring after the loop leaves a race inside it.
+		T.immediate_calculate_adjacent_turfs()
 		// Every caller is an unqueued flat-encounter/outpost teardown: never wait
 		// behind a queued planet job - see worldgen_yield() in worldgen_queue.dm
 		SSovermap.worldgen_yield(throttled = FALSE)
 
-	// Nothing above recalculated atmos adjacency, so a co-tenant that is still LIVE next door is
-	// holding blanked turfs in its atmos_adjacent_turfs - and process_cell() archives every entry
-	// it finds there, which is "Cannot execute null.archive()" every tick for the rest of the
-	// round. This is packing-specific: before slots, a teardown took the whole z-level at once and
-	// there was never a live neighbour to hold the reference.
-	//
-	// Only the RING outside the rectangle needs repairing - see map_boundary_ring() for why the
-	// interior heals itself. The whole-level case (no footprint) has no ring at all: everything on
-	// the z went, so there is nobody left holding anything.
+	// The swaps removed null-air adjacency immediately. Also retire the outside ring's
+	// active/excited-group state after changing its neighbours. Interior turfs already
+	// left active processing before replacement; a whole-level wipe has no live ring.
 	if(footprint && !isnull(footprint.low_x))
 		for(var/turf/edge_turf as anything in map_boundary_ring(footprint.low_x, footprint.low_y, footprint.high_x, footprint.high_y, z_value))
 			// update = rebuild adjacency, which now strips the null-air pairing from BOTH sides
