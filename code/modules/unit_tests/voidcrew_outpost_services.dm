@@ -397,6 +397,22 @@
 	local_server.set_machine_stat(0)
 	link.reconcile()
 	TEST_ASSERT(link.available(), "Relay did not recover after the outpost server powered on")
+	TEST_ASSERT(ship_lathe.multitool_act(steward, ship_tool), "Could not restore fabrication before departure")
+	// Model the yielding move stage where hull areas and mobile bounds disagree.
+	visitor.state = "undocking" // OVERMAP_SHIP_UNDOCKING
+	port.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT_NOTEQUAL(get_service_site(ship_relay), visitor, "Transit fixture did not separate the hull from its mobile bounds")
+	TEST_ASSERT(link.available(), "A moving hull lost relay access before its port caught up")
+	link.reconcile()
+	TEST_ASSERT(ship_lathe.validate_research_site(ship_lathe.stored_research), "Transit interrupted a still-powered research link")
+	ship_relay.set_machine_stat(NOPOWER)
+	TEST_ASSERT(!ship_lathe.validate_research_site(ship_lathe.stored_research), "An unpowered relay authorized fabrication during transit")
+	TEST_ASSERT_EQUAL(ship_lathe.stored_research, local_disk.stored_research, "Temporary transit power loss permanently severed the ship link")
+	ship_relay.set_machine_stat(0)
+	port.forceMove(ship_tile)
+	visitor.state = "idle"
+	link.reconcile()
+	TEST_ASSERT(ship_lathe.validate_research_site(ship_lathe.stored_research), "Research did not resume after the hull and port finished moving")
 	visitor.docked = null
 	TEST_ASSERT(link.valid_endpoints(), "Undocking incorrectly invalidated the approved relay")
 	TEST_ASSERT(link.available(), "Undocking incorrectly disabled the approved relay")

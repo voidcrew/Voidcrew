@@ -18,7 +18,8 @@
 		return FALSE
 	if(computer && length(stored_research.techweb_servers) && can_link_site_techweb(computer, stored_research))
 		return TRUE
-	unsync_research_servers()
+	if(!research_link_in_transit(computer, stored_research))
+		unsync_research_servers()
 	return FALSE
 
 /datum/computer_file/program/science/multitool_act(mob/living/user, obj/item/multitool/used_multitool)

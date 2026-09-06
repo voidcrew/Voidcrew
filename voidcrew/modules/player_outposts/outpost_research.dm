@@ -34,6 +34,15 @@
 			return TRUE
 	return FALSE
 
+/// Preserve an existing link through temporary bounds/power changes during docking.
+/// This does not authorize an operation or a new connection while the relay is offline.
+/proc/research_link_in_transit(atom/machine, datum/techweb/web)
+	for(var/obj/machinery/rnd/server/relay/relay in web?.techweb_servers)
+		var/datum/outpost_research_link/link = relay.connection
+		if(!QDELETED(link) && link.ship_approved && link.valid_endpoints() && link.ship_is_moving() && link.ship_contains_endpoint(relay) && link.ship_contains_endpoint(machine))
+			return TRUE
+	return FALSE
+
 /obj/machinery/rnd/connect_techweb(datum/techweb/new_techweb)
 	if(new_techweb && !can_link_site_techweb(src, new_techweb))
 		return FALSE

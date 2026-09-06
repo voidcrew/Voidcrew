@@ -103,7 +103,8 @@
 		return FALSE
 	if(can_link_site_techweb(parent, linked_web))
 		return TRUE
-	unlink_techweb()
+	if(!research_link_in_transit(parent, linked_web))
+		unlink_techweb()
 	return FALSE
 
 /datum/component/experiment_handler/action_experiment(datum/source, ...)

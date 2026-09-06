@@ -175,7 +175,8 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		return FALSE
 	if(can_link_site_techweb(src, web))
 		return TRUE
-	unsync_research_servers()
+	if(!research_link_in_transit(src, web))
+		unsync_research_servers()
 	return FALSE
 
 /**

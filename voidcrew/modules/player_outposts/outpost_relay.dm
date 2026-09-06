@@ -100,7 +100,21 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	var/obj/machinery/rnd/server/ship/server = home_server.resolve()
 	var/obj/machinery/rnd/server/relay/relay = ship_relay.resolve()
 	return server.is_operational && relay.is_operational && !server.research_disabled && !relay.research_disabled \
-		&& get_service_site(relay) == ship_ref.resolve()
+		&& ship_contains_endpoint(relay)
+
+/// Hull areas move before the mobile port's bounds during a yielding shuttle move.
+/datum/outpost_research_link/proc/ship_contains_endpoint(atom/machine)
+	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
+	if(!ship || !machine)
+		return FALSE
+	if(get_service_site(machine) == ship)
+		return TRUE
+	var/area/location = get_area(machine)
+	return ship_is_moving() && location && (location in ship.shuttle?.shuttle_areas)
+
+/datum/outpost_research_link/proc/ship_is_moving()
+	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
+	return ship && (ship.state in list(OVERMAP_SHIP_DOCKING, OVERMAP_SHIP_UNDOCKING))
 
 /datum/outpost_research_link/proc/approve(mob/living/user)
 	var/obj/structure/overmap/dynamic/player_outpost/home = home_ref?.resolve()
@@ -127,7 +141,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 		qdel(src)
 		return
 	var/obj/machinery/rnd/server/relay/relay = ship_relay.resolve()
-	if(ship_approved && !available())
+	if(ship_approved && !available() && !ship_is_moving())
 		relay.disconnect_consumers()
 	relay.update_appearance()
 
@@ -163,7 +177,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	return !QDELETED(connection) && connection.available()
 
 /obj/machinery/rnd/server/relay/research_link_available(atom/machine)
-	return connection_available() && same_service_site(machine, src)
+	return connection_available() && connection.ship_contains_endpoint(machine)
 
 /// Relays cannot be pointed at raw web buffers, even by crafted connection calls.
 /obj/machinery/rnd/server/relay/connect_techweb(datum/techweb/new_techweb)
