@@ -61,19 +61,17 @@ export const BankMachine = (props) => {
         {!!isOutpost && (
           <Section title="Account transfer">
             <Box>Your ID account: {data.user_account || 'No account on ID'}</Box>
-            <Input
-              mt={1}
-              placeholder="Whole credits"
-              value={amount}
-              onChange={setAmount}
-            />
+            <Box color="label">Amount (whole credits)</Box>
+            <Input placeholder="Credits" value={amount} onChange={setAmount} />
             <Button
+              icon="arrow-down"
               disabled={!data.user_account}
               onClick={() => act('deposit', { amount })}
             >
               ID account → Treasury
             </Button>
             <Button
+              icon="arrow-up"
               disabled={!data.can_withdraw || !data.user_account}
               onClick={() => act('withdraw', { amount })}
             >
@@ -82,7 +80,7 @@ export const BankMachine = (props) => {
           </Section>
         )}
         {!!isOutpost && !!data.history?.length && (
-          <Section title="Recent transactions">
+          <Section title="Recent transactions" scrollable>
             {data.history.slice(-10).reverse().map((entry, index) => (
               <Box key={index}>
                 {entry.adjusted_money} cr: {entry.reason}

@@ -33,12 +33,15 @@
 
 	if(synced_bank_account)
 		data["station_name"] = synced_bank_account.account_holder
-		data["history"] = synced_bank_account.transaction_history
+	data["is_outpost"] = !!site
+	data["user_account"] = null
+	data["can_withdraw"] = FALSE
+	data["history"] = null
 	if(site)
 		var/datum/bank_account/user_account = user.get_idcard(TRUE)?.registered_account
-		data["is_outpost"] = TRUE
 		data["user_account"] = user_account?.account_holder
 		data["can_withdraw"] = site.can_spend(user)
+		data["history"] = synced_bank_account.transaction_history
 
 	return data
 
@@ -83,7 +86,8 @@
 
 /obj/machinery/computer/bank_machine/proc/transfer_outpost_account(mob/living/user, action, amount)
 	var/obj/structure/overmap/dynamic/player_outpost/site = resolve_outpost_bank()
-	if(!site || !(action in list("deposit", "withdraw")))
+	if(!site || !istype(user) || QDELETED(user) || QDELETED(src) || !user.can_perform_action(src) \
+		|| (machine_stat & (BROKEN | NOPOWER)) || !(action in list("deposit", "withdraw")))
 		return FALSE
 	return action == "deposit" ? site.deposit_from(user, amount) : site.withdraw_to(user, amount)
 

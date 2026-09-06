@@ -57,10 +57,13 @@
 	personal.account_balance = 100
 	id.registered_account = personal
 	TEST_ASSERT(user.put_in_active_hand(id), "The user could not hold the account ID.")
+	user.forceMove(home.service_turf)
 	var/list/ui_data = shore_bank.ui_data(user)
 	TEST_ASSERT(ui_data["is_outpost"], "The claim bank did not expose its treasury workflow.")
 	TEST_ASSERT_EQUAL(ui_data["user_account"], personal.account_holder, "The claim bank did not show the held ID account.")
 	TEST_ASSERT(!ui_data["can_withdraw"], "An unrecognized user could withdraw from the claim treasury.")
+	TEST_ASSERT(!shore_bank.transfer_outpost_account(null, "deposit", 1), "A missing user could transfer claim funds.")
+	TEST_ASSERT(!shore_bank.transfer_outpost_account(user, "withdraw", 25), "An unauthorized user could withdraw from the claim treasury.")
 	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "deposit", 40), "The claim bank rejected a valid ID deposit.")
 	TEST_ASSERT_EQUAL(personal.account_balance, 60, "The claim bank did not debit the payer account.")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 40, "The claim bank did not credit the treasury.")
@@ -70,9 +73,21 @@
 	TEST_ASSERT(shore_bank.transfer_outpost_account(user, "withdraw", 25), "The claim bank rejected an authorized ID withdrawal.")
 	TEST_ASSERT_EQUAL(personal.account_balance, 85, "The claim bank did not credit the withdrawal recipient.")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 15, "The claim bank debited the wrong withdrawal amount.")
+	shore_bank.machine_stat |= NOPOWER
+	TEST_ASSERT(!shore_bank.transfer_outpost_account(user, "deposit", 1), "An unpowered claim bank accepted a transfer.")
+	shore_bank.machine_stat &= ~NOPOWER
+	user.stat = UNCONSCIOUS
+	TEST_ASSERT(!shore_bank.transfer_outpost_account(user, "deposit", 1), "An incapacitated user transferred claim funds.")
+	user.stat = CONSCIOUS
 
 	user.drop_all_held_items()
 	shore_bank.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!shore_bank.transfer_outpost_account(user, "deposit", 1), "A moved claim bank retained its transfer account.")
+	var/list/moved_ui_data = shore_bank.ui_data(user)
+	TEST_ASSERT(!moved_ui_data["is_outpost"], "A moved bank retained its claim UI state.")
+	TEST_ASSERT_NULL(moved_ui_data["user_account"], "A moved bank exposed an account from its former claim.")
+	TEST_ASSERT(!moved_ui_data["can_withdraw"], "A moved bank exposed withdrawal authority from its former claim.")
+	TEST_ASSERT_NULL(moved_ui_data["history"], "A moved bank exposed transaction history from its former claim.")
 	coin = allocate(/obj/item/coin/gold)
 	TEST_ASSERT(user.put_in_active_hand(coin), "The user could not hold the moved-terminal deposit coin.")
 	shore_bank.attackby(coin, user)
