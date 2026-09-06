@@ -11,7 +11,7 @@
 		var/turf/current = reachable[index]
 		for(var/direction in GLOB.cardinals)
 			var/turf/neighbor = get_step(current, direction)
-			if(!istype(neighbor, /turf/open/floor) || get_area(neighbor) != home.outpost_area || neighbor in reachable)
+			if(!istype(neighbor, /turf/open/floor) || get_area(neighbor) != home.outpost_area || (neighbor in reachable))
 				continue
 			var/blocked = FALSE
 			for(var/atom/movable/obstacle in neighbor)
