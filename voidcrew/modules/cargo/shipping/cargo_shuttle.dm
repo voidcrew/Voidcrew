@@ -761,7 +761,12 @@
 			T.ScrapeAway(shuttle_depth, flags = CHANGETURF_DEFER_CHANGE)
 		else
 			T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
-		space_area.contents += T
+		// Restore the same area as a normal shuttle departure. Direct contents
+		// assignment leaves this turf registered in the ferry's area forever.
+		var/area/underlying_area = shuttle_port.underlying_areas_by_turf[T]
+		if(QDELETED(underlying_area))
+			underlying_area = space_area
+		T.change_area(T.loc, underlying_area)
 
 	// Delete the shuttle port (force = TRUE to actually delete it)
 	qdel(shuttle_port, force = TRUE)

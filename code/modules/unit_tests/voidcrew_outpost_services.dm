@@ -62,9 +62,28 @@
 	TEST_ASSERT_EQUAL(delivered, 1, "Paid order did not produce exactly one accessible crate")
 	TEST_ASSERT(!ferry.complete_arrival(), "A repeated arrival settled twice")
 	TEST_ASSERT_EQUAL(account.account_balance, 10000 - price, "Arrival charged the reserved amount again")
+	var/list/ferry_areas = ferry.shuttle_port.shuttle_areas.Copy()
+	var/list/former_ferry_turfs = list()
+	for(var/area/ferry_area as anything in ferry_areas)
+		for(var/turf/deck in ferry_area)
+			former_ferry_turfs += deck
+	var/list/underlying_areas = ferry.shuttle_port.underlying_areas_by_turf.Copy()
 	TEST_ASSERT(ferry.send_shuttle(), "Delivered freight could not depart without its console")
 	deltimer(ferry.warmup_timer)
 	TEST_ASSERT(ferry.complete_departure(), "Outpost exports could not settle without a console")
+	for(var/area/ferry_area as anything in ferry_areas)
+		for(var/turf/listed_turf as anything in ferry_area.get_turfs_from_all_zlevels())
+			TEST_ASSERT_EQUAL(get_area(listed_turf), ferry_area, "Departed ferry retained another area's turf in its registry")
+	for(var/turf/former_deck as anything in former_ferry_turfs)
+		var/area/restored_area = get_area(former_deck)
+		TEST_ASSERT(!(restored_area in ferry_areas), "Departed ferry kept a berth turf in its area")
+		if(underlying_areas[former_deck])
+			TEST_ASSERT_EQUAL(restored_area, underlying_areas[former_deck], "Freight teardown replaced the underlying berth area")
+		var/registrations = 0
+		for(var/turf/listed_turf as anything in restored_area.get_turfs_by_zlevel(former_deck.z))
+			if(listed_turf == former_deck)
+				registrations++
+		TEST_ASSERT_EQUAL(registrations, 1, "A restored berth turf must appear exactly once in its area's registry")
 	var/after_export = account.account_balance
 	TEST_ASSERT(after_export > 10000 - price, "Exported physical packaging did not credit the claim")
 	TEST_ASSERT(!ferry.complete_departure(), "Duplicate export settled twice")
