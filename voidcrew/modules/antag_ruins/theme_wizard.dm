@@ -3,26 +3,12 @@
  *
  * A library barge that burned from the inside out when its master mispronounced
  * something. The patron is what the mispronunciation left behind. The trials
- * are tuition in the three disciplines of the art, the price (paid in scorched
- * flesh), the delivery (spoken whole, while burning), and the harder lesson of
- * not speaking at all, and the boons are honest wizard spells, taught as words
+ * are practical lessons in containing a miscast, directing a spoken word,
+ * and restoring an inscription without speaking. The boons are wizard spells, taught as words
  * of the art: granted as-is where upstream asks for no garb (fireball, knock,
  * forcewall), and locally subtyped where it does (blink) or where crew tempo
  * wants a retune.
  */
-
-// Trial tuning (VESTIGE_SINGED_BURN_NEEDED lives in voidcrew/_DEFINES/antag_ruins.dm).
-// Trial descs quote these numbers literally. Keep them in sync.
-/// Verses the Trial of the Steady Tongue demands, spoken whole while burning
-#define VESTIGE_TONGUE_VERSES_NEEDED 3
-/// How long each verse must be held without stumbling
-#define VESTIGE_TONGUE_VERSE_TIME (5 SECONDS)
-/// Burn damage a stumbled verse bites back with
-#define VESTIGE_TONGUE_BITE_BURN 5
-/// Unbroken carried silence the Trial of the Swallowed Word demands
-#define VESTIGE_WORD_SETTLE_TIME (4 MINUTES)
-/// Burn damage the word scalds a busy mouth with on its way back up
-#define VESTIGE_WORD_SCALD_BURN 5
 
 // ===== PATRON =====
 
@@ -60,333 +46,412 @@
 	exhausted_line = "I've taught you every word I still remember how to say."
 	remember_line = "Death mispronounced you. It happens. Your education was fireproof, at least."
 
-// ===== TRIAL OF THE SINGED HAND =====
+// ===== PRACTICAL LESSONS =====
+
+/datum/vestige_trial/wizard_lesson
+	var/obj/structure/vestige_lesson_well/focus
+	var/list/manifestations = list()
+	var/resolved = 0
+
+/datum/vestige_trial/wizard_lesson/Destroy()
+	clear_lesson()
+	return ..()
+
+/datum/vestige_trial/wizard_lesson/proc/clear_lesson()
+	QDEL_NULL(focus)
+	QDEL_LIST(manifestations)
+	manifestations = list()
+	resolved = 0
+
+/// Flood-fill walking surfaces so a wall cannot strand the supplied manifestations.
+/datum/vestige_trial/wizard_lesson/proc/set_up(mob/living/user)
+	if(focus)
+		clear_lesson()
+		to_chat(user, span_notice("You pack up the unfinished exercise. Use the kit again to retry."))
+		return FALSE
+	var/turf/origin = get_turf(user)
+	if(!isopenturf(origin) || isspaceturf(origin))
+		return FALSE
+	var/list/reachable = list(origin)
+	var/list/perimeter = list()
+	for(var/index = 1; index <= length(reachable); index++)
+		var/turf/current = reachable[index]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(current, direction)
+			if(!next || next in reachable || get_dist(next, origin) > 3)
+				continue
+			if(!isopenturf(next) || isspaceturf(next) || next.is_blocked_turf(exclude_mobs = FALSE))
+				continue
+			reachable += next
+			if(get_dist(next, origin) == 3)
+				perimeter += next
+	if(length(perimeter) < 3 || length(reachable) < 18)
+		to_chat(user, span_warning("The lesson needs eighteen connected clear floor tiles, reaching three paces away. Try a larger room."))
+		return FALSE
+	focus = new(origin)
+	for(var/index in 1 to 3)
+		var/obj/structure/vestige_miscast/miscast = new(pick_n_take(perimeter))
+		miscast.student = owner
+		manifestations += miscast
+		START_PROCESSING(SSobj, miscast)
+	return TRUE
 
 /datum/vestige_trial/singed_hand
+	parent_type = /datum/vestige_trial/wizard_lesson
 	name = "Trial of the Singed Hand"
-	// Keep the count in sync with VESTIGE_SINGED_BURN_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the geode and keep it on you. It feeds on one thing: burns, yours specifically. Take a hundred points of burn damage with it on your person and you've paid the first law's tuition. I don't care how you catch fire."
-	/// Burn damage drunk so far
-	var/burn_drunk = 0
+	desc = "Unfold the geode in a clear room. Three miscasts mark your footing, then flare there: move out of the red tile. While a miscast is blue and spent, catch it with the geode from two or three paces away. The geode holds two. Empty it at the central cooling well when every remaining miscast is at least three paces from the well. Cool all three. Use the geode in hand to pack up and retry."
+	var/stored_heat = 0
 
 /datum/vestige_trial/singed_hand/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_geode(get_turf(user)))
 
-/datum/vestige_trial/singed_hand/get_progress_text()
-	return "Burns fed to the geode: [round(burn_drunk)] of [VESTIGE_SINGED_BURN_NEEDED]."
+/datum/vestige_trial/singed_hand/clear_lesson()
+	stored_heat = 0
+	return ..()
 
-/// May complete (and delete) the trial
-/datum/vestige_trial/singed_hand/proc/drink(amount)
-	burn_drunk += amount
+/datum/vestige_trial/singed_hand/get_progress_text()
+	return focus ? "[resolved] of three miscasts cooled; [stored_heat] of two heat held. Dodge red tiles; catch blue miscasts from two or three paces." : "Use the geode in hand in a clear room."
+
+/datum/vestige_trial/singed_hand/proc/catch_miscast(mob/living/user, obj/structure/vestige_miscast/miscast)
+	if(!(miscast in manifestations) || stored_heat >= 2)
+		return FALSE
+	var/distance = get_dist(user, miscast)
+	if(distance < 2 || distance > 3 || world.time >= miscast.spent_until || !(miscast in view(3, user)))
+		return FALSE
+	manifestations -= miscast
+	qdel(miscast)
+	stored_heat++
 	refresh_tracker()
-	if(burn_drunk >= VESTIGE_SINGED_BURN_NEEDED)
+	return TRUE
+
+/datum/vestige_trial/singed_hand/proc/cool(mob/living/user)
+	if(!stored_heat || !focus || !user.Adjacent(focus))
+		return FALSE
+	for(var/obj/structure/vestige_miscast/miscast as anything in manifestations)
+		if(get_dist(miscast, focus) < 3)
+			to_chat(user, span_warning("A miscast is too close to the well. Lure it away before cooling!"))
+			return FALSE
+	resolved += stored_heat
+	stored_heat = 0
+	refresh_tracker()
+	if(resolved == 3)
 		complete()
+	return TRUE
 
 /obj/item/vestige_geode
 	name = "mana geode"
-	desc = "A cracked-open stone lined with crystal the colour of banked embers. It's warmer than it has any business being."
+	desc = "Use in hand to unfold or pack up a lesson. Catch blue miscasts from two or three paces away; touch the central well to cool what you caught."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "diamond"
 	color = "#ff9a4d"
 	w_class = WEIGHT_CLASS_SMALL
-	light_range = 1.4
-	light_power = 0.6
-	light_color = "#ff9a4d"
-	/// Whose burns we're currently drinking (registered while carried)
-	var/mob/living/listening_to
 
-/obj/item/vestige_geode/Destroy()
-	stop_listening()
-	return ..()
+/obj/item/vestige_geode/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/singed_hand/trial = user.mind?.active_vestige_trial
+	if(istype(trial))
+		trial.set_up(user)
+		trial.refresh_tracker()
+	return TRUE
 
-/obj/item/vestige_geode/equipped(mob/user, slot, initial)
-	. = ..()
-	if(listening_to == user)
-		return
-	stop_listening()
-	if(isliving(user))
-		listening_to = user
-		RegisterSignal(user, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_holder_burned))
+/obj/item/vestige_geode/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return handle_lesson(interacting_with, user)
 
-/obj/item/vestige_geode/dropped(mob/user)
-	. = ..()
-	// dropped also fires on slot-to-slot moves; equipped() re-registers right after
-	stop_listening()
+/obj/item/vestige_geode/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return handle_lesson(interacting_with, user)
 
-/obj/item/vestige_geode/proc/stop_listening()
-	if(!listening_to)
-		return
-	UnregisterSignal(listening_to, COMSIG_MOB_APPLY_DAMAGE)
-	listening_to = null
-
-/obj/item/vestige_geode/proc/on_holder_burned(mob/living/source, damage, damagetype)
-	SIGNAL_HANDLER
-	if(damagetype != BURN || damage <= 0)
-		return
-	var/datum/vestige_trial/singed_hand/trial = source.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	if(prob(25))
-		to_chat(source, span_notice("[src] pulses warmly, savoring the burn."))
-	trial.drink(damage)
-
-// ===== TRIAL OF THE STEADY TONGUE =====
+/obj/item/vestige_geode/proc/handle_lesson(atom/target, mob/living/user)
+	var/datum/vestige_trial/singed_hand/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || !user.is_holding(src))
+		return NONE
+	if(target == trial.focus)
+		if(!trial.cool(user))
+			balloon_alert(user, "well not ready!")
+		return ITEM_INTERACT_BLOCKING
+	if(istype(target, /obj/structure/vestige_miscast))
+		if(!trial.catch_miscast(user, target))
+			balloon_alert(user, "needs room, capacity and a blue miscast!")
+		return ITEM_INTERACT_BLOCKING
+	return NONE
 
 /datum/vestige_trial/steady_tongue
+	parent_type = /datum/vestige_trial/wizard_lesson
 	name = "Trial of the Steady Tongue"
-	// Keep the count in sync with VESTIGE_TONGUE_VERSES_NEEDED (file-local, above)
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the primer. Three verses of first-year liturgy, read out loud and finished properly, while you are on fire. I don't care how you catch fire. Stand still and don't stumble - the verses bite students who chew them."
-	/// Verses recited whole so far
-	var/verses_spoken = 0
+	desc = "Unfold the primer in a clear room. Click a miscast with the primer to speak a repelling word: it moves one tile directly away from you, then hangs still for four seconds. Line yourself up on a cardinal axis and drive all three into the central brazier. Words need two seconds between casts. Keep moving out of the red flare marks. Use the primer in hand to pack up and retry."
 
 /datum/vestige_trial/steady_tongue/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_primer(get_turf(user)))
-	to_chat(user, span_notice("The primer is warm. Books from the Athenaeum never really cooled."))
 
 /datum/vestige_trial/steady_tongue/get_progress_text()
-	return "Verses recited in full: [verses_spoken] of [VESTIGE_TONGUE_VERSES_NEEDED]."
-
-/// May complete (and delete) the trial
-/datum/vestige_trial/steady_tongue/proc/recite()
-	verses_spoken++
-	refresh_tracker()
-	if(verses_spoken >= VESTIGE_TONGUE_VERSES_NEEDED)
-		complete()
+	return focus ? "[resolved] of three miscasts driven into the brazier. Align on a row or column and repel them toward it." : "Use the primer in hand in a clear room."
 
 /obj/item/vestige_primer
 	name = "singed primer"
-	desc = "A pocket volume of the Athenaeum's first-year liturgy, scorched exactly to the margins. The margins are full of corrections."
+	desc = "Use in hand to unfold or pack up a lesson. Click a miscast within three tiles to push it one tile directly away from you. Align on a cardinal axis with the central brazier."
 	icon = 'icons/obj/service/library.dmi'
 	icon_state = "book"
 	color = "#b0663a"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Whether a verse is currently being recited from these pages
-	var/reciting = FALSE
-	/// The liturgy, one verse per required recital
-	var/static/list/verses = list(
-		"ILN ASH VERBA... SOMA VESH ENNA.",
-		"OXI ATH'ENNA MORI... VECTA UN'DAL RETH.",
-		"SIC ITUR AD ASHTA... EX LIBRIS, EX OSSIBUS.",
-	)
-	/// The marginalia, one note per verse
-	var/static/list/margin_notes = list(
-		"The margin note reads: \"The flesh is kindling; the word is what burns.\" It is underlined twice.",
-		"The margin note reads: \"Price first. Power after. No exceptions, no refunds.\" The hand is different. Shakier.",
-		"The margin note reads: \"Mind the final syllable. MIND IT.\" The pen went through the paper.",
-	)
+	var/next_word = 0
 
-/obj/item/vestige_primer/examine(mob/user)
-	. = ..()
-	. += span_notice("Embossed on the cover: THE STUDENT MUST BE ALIGHT. Each verse takes [DisplayTimeText(VESTIGE_TONGUE_VERSE_TIME)] of steady reading. Stand still, stay on fire, and don't get interrupted.")
-
-/obj/item/vestige_primer/attack_self(mob/user, modifiers)
-	. = ..()
-	if(.)
-		return
-	if(!isliving(user))
-		return
-	// the recital sleeps (say, do_after); don't hold up the click chain
-	INVOKE_ASYNC(src, PROC_REF(recite_verse), user)
+/obj/item/vestige_primer/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/steady_tongue/trial = user.mind?.active_vestige_trial
+	if(istype(trial))
+		trial.set_up(user)
+		trial.refresh_tracker()
 	return TRUE
 
-/obj/item/vestige_primer/proc/recite_verse(mob/living/user)
-	if(reciting)
-		balloon_alert(user, "already mid-verse!")
-		return
+/obj/item/vestige_primer/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return repel(interacting_with, user)
+
+/obj/item/vestige_primer/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return repel(interacting_with, user)
+
+/obj/item/vestige_primer/proc/repel(atom/target, mob/living/user)
 	var/datum/vestige_trial/steady_tongue/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the pages are blank!")
+	if(!istype(trial) || !user.is_holding(src) || !(target in trial.manifestations))
+		return NONE
+	if(!user.can_speak() || world.time < next_word || !(target in view(3, user)))
+		balloon_alert(user, "the word isn't ready!")
+		return ITEM_INTERACT_BLOCKING
+	if(user.x != target.x && user.y != target.y)
+		balloon_alert(user, "align on a row or column!")
+		return ITEM_INTERACT_BLOCKING
+	if(get_turf(user) == get_turf(target))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/structure/vestige_miscast/miscast = target
+	var/turf/destination = get_step(miscast, get_dir(user, miscast))
+	if(!isopenturf(destination) || isspaceturf(destination) || destination.is_blocked_turf(exclude_mobs = TRUE))
+		balloon_alert(user, "no room behind it!")
+		return ITEM_INTERACT_BLOCKING
+	next_word = world.time + 2 SECONDS
+	user.say("RETRO!", forced = "vestige practical lesson")
+	miscast.forceMove(destination)
+	miscast.spent_until = world.time + 4 SECONDS
+	miscast.update_appearance()
+	if(destination == get_turf(trial.focus))
+		trial.manifestations -= miscast
+		qdel(miscast)
+		trial.resolved++
+		trial.refresh_tracker()
+		if(trial.resolved == 3)
+			trial.complete()
+	return ITEM_INTERACT_SUCCESS
+
+/obj/structure/vestige_lesson_well
+	name = "miscast cooling well"
+	desc = "A shallow bowl of blue fire. The geode unloads heat here; the primer drives miscasts into it."
+	icon = 'icons/obj/antags/cult/structures.dmi'
+	icon_state = "forge"
+	color = "#74bfff"
+	density = FALSE
+	anchored = TRUE
+	resistance_flags = INDESTRUCTIBLE
+
+/obj/structure/vestige_miscast
+	name = "loose miscast"
+	desc = "It marks your footing in red before flaring there. Spent blue miscasts can be caught with a geode."
+	icon = 'icons/obj/service/library.dmi'
+	icon_state = "book"
+	color = "#ff6544"
+	density = FALSE
+	anchored = TRUE
+	resistance_flags = INDESTRUCTIBLE
+	var/datum/mind/student
+	var/spent_until = 0
+	var/strike_at = 0
+	var/turf/marked
+	var/obj/effect/temp_visual/vestige_miscast_warning/warning
+
+/obj/structure/vestige_miscast/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(warning)
+	student = null
+	return ..()
+
+/obj/structure/vestige_miscast/update_appearance(updates=ALL)
+	color = world.time < spent_until ? "#74bfff" : "#ff6544"
+	return ..()
+
+/obj/structure/vestige_miscast/process(seconds_per_tick)
+	var/datum/vestige_trial/wizard_lesson/trial = student?.active_vestige_trial
+	var/mob/living/user = student?.current
+	if(!istype(trial) || !(src in trial.manifestations))
+		qdel(src)
 		return
-	if(!user.can_speak())
-		balloon_alert(user, "your voice fails you!")
+	if(!isliving(user) || user.stat != CONSCIOUS || user.z != z || get_dist(user, trial.focus) > 7)
 		return
-	if(!user.on_fire)
-		balloon_alert(user, "you're not on fire!")
-		to_chat(user, span_warning("The primer stays shut. The cover repeats itself: THE STUDENT MUST BE ALIGHT."))
+	if(strike_at)
+		if(world.time < strike_at)
+			return
+		if(get_turf(user) == marked)
+			user.adjustStaminaLoss(18)
+			to_chat(user, span_warning("The miscast flares under your feet, knocking the breath out of you!"))
+		QDEL_NULL(warning)
+		strike_at = 0
+		marked = null
+		spent_until = world.time + 4 SECONDS
+		update_appearance()
 		return
-	var/verse_index = min(trial.verses_spoken + 1, length(verses))
-	user.visible_message(
-		span_warning("[user] opens [src] and begins to recite over the sound of [user.p_their()] own burning!"),
-		span_notice("You open [src] and read aloud over the sound of your own burning."),
-	)
-	to_chat(user, span_notice(margin_notes[verse_index]))
-	user.say(verses[verse_index], forced = "vestige recitation")
-	reciting = TRUE
-	var/spoke_whole = do_after(user, VESTIGE_TONGUE_VERSE_TIME, target = user)
-	reciting = FALSE
-	if(!spoke_whole)
-		// The Magister's entire biography, in miniature
-		to_chat(user, span_danger("You stumble mid-syllable, and the verse bites back!"))
-		user.apply_damage(VESTIGE_TONGUE_BITE_BURN, BURN, BODY_ZONE_HEAD)
-		playsound(user, 'sound/effects/wounds/sizzle1.ogg', 40, TRUE)
+	if(world.time < spent_until)
 		return
-	if(!user.is_holding(src))
+	update_appearance()
+	if(get_dist(src, user) <= 3)
+		marked = get_turf(user)
+		warning = new(marked)
+		strike_at = world.time + 2 SECONDS
 		return
-	if(!user.on_fire)
-		to_chat(user, span_warning("The fire goes out before you finish, and the primer snaps shut."))
-		return
-	// Re-resolve; the pact may have been renounced mid-verse
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "the pages are blank!")
-		return
-	user.say("OM.", forced = "vestige recitation")
-	playsound(user, 'sound/effects/magic/fireball.ogg', 30, TRUE)
-	to_chat(user, span_boldnotice("Every syllable comes out whole. Somewhere, a dead librarian stops wincing."))
-	trial.recite()
+	var/turf/destination = get_step_towards(src, user)
+	if(isopenturf(destination) && !isspaceturf(destination) && !destination.is_blocked_turf(exclude_mobs = TRUE))
+		forceMove(destination)
+
+/obj/effect/temp_visual/vestige_miscast_warning
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "shield2"
+	color = "#ff3333"
+	duration = 3 SECONDS
 
 // ===== TRIAL OF THE SWALLOWED WORD =====
 
 /datum/vestige_trial/swallowed_word
 	name = "Trial of the Swallowed Word"
-	// Keep the duration in sync with VESTIGE_WORD_SETTLE_TIME (file-local, above)
-	// (initial values must be constant, so no define interpolation here)
-	desc = "The other half of the lesson: knowing when not to speak. Take the phial and keep it on you - pocket, belt or hand, never in a bag - and say nothing at all for four unbroken minutes. One word and it burns its way back up your throat and the clock starts over."
-	/// world.time at which the carried word settles, or 0 while it isn't listening
-	var/settle_at = 0
-	/// Times the word has fled a mouth that could not stay shut
-	var/escapes = 0
-	/// The loaned phial, reclaimed (deleted) the moment the pact ends
-	var/obj/item/vestige_syllable/phial
+	desc = "Unstopper the phial over clear three-by-three floor. Eight numbered syllables and a gap appear. Touch a syllable beside the gap to slide it into the empty space. Restore reading order: 1 2 3 across the north row, 4 5 6 in the middle, 7 8 and the gap along the south row. Speaking reshuffles the inscription into another solvable order. Use the phial in hand to pack up and retry."
+	var/list/syllables = list()
+	var/moves = 0
+	var/mob/living/listener
 
 /datum/vestige_trial/swallowed_word/on_accepted(mob/living/user)
-	to_chat(user, span_notice("[patron_name] hands it over with exaggerated care and, pointedly, says nothing at all."))
-	phial = hand_over(user, new /obj/item/vestige_syllable(get_turf(user)))
+	hand_over(user, new /obj/item/vestige_syllable(get_turf(user)))
+	RegisterSignal(owner, COMSIG_MIND_TRANSFERRED, PROC_REF(on_body_changed))
+	bind_listener(user)
 
 /datum/vestige_trial/swallowed_word/Destroy()
-	QDEL_NULL(phial)
+	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
+	bind_listener(null)
+	QDEL_LIST(syllables)
 	return ..()
 
+/datum/vestige_trial/swallowed_word/proc/bind_listener(mob/living/user)
+	if(listener)
+		UnregisterSignal(listener, COMSIG_MOB_SAY)
+	listener = user
+	if(listener)
+		RegisterSignal(listener, COMSIG_MOB_SAY, PROC_REF(on_spoken))
+
+/datum/vestige_trial/swallowed_word/proc/on_body_changed(datum/mind/source)
+	SIGNAL_HANDLER
+	bind_listener(owner?.current)
+
 /datum/vestige_trial/swallowed_word/get_progress_text()
-	var/flights = escapes ? " It has escaped your mouth [escapes] time[escapes == 1 ? "" : "s"]." : ""
-	if(!settle_at)
-		return "The word isn't listening. Carry it on your person, never in a bag, and stay quiet.[flights]"
-	return "The word is settling. [DisplayTimeText(max(settle_at - world.time, 1 SECONDS))] of silence to go.[flights]"
+	return length(syllables) ? "Slide syllables into the gap: north row 1 2 3, middle 4 5 6, south 7 8 gap. [moves] moves made. Speaking reshuffles." : "Use the phial in hand on clear three-by-three floor."
+
+/datum/vestige_trial/swallowed_word/proc/unfold(mob/living/user)
+	if(length(syllables))
+		QDEL_LIST(syllables)
+		syllables = list()
+		moves = 0
+		return
+	var/turf/center = get_turf(user)
+	var/list/places = list()
+	for(var/dy = 1; dy >= -1; dy--)
+		for(var/dx in -1 to 1)
+			var/turf/place = locate(center.x + dx, center.y + dy, center.z)
+			if(!isopenturf(place) || isspaceturf(place) || place.is_blocked_turf(exclude_mobs = TRUE))
+				to_chat(user, span_warning("The inscription needs a clear three-by-three patch of floor."))
+				return
+			places += place
+	for(var/turf/place as anything in places)
+		var/obj/structure/vestige_silent_glyph/glyph = new(place)
+		glyph.home = place
+		glyph.number = length(syllables) + 1
+		glyph.name = glyph.number == 9 ? "gap in the inscription" : "syllable [glyph.number]"
+		glyph.maptext = glyph.number == 9 ? "" : "<span style='font-size:16px;color:white;text-align:center'>[glyph.number]</span>"
+		glyph.color = glyph.number == 9 ? "#333344" : "#ffd27f"
+		syllables += glyph
+	scramble()
+
+/// Legal moves from the solved state guarantee that every inscription is solvable.
+/datum/vestige_trial/swallowed_word/proc/scramble()
+	for(var/obj/structure/vestige_silent_glyph/glyph as anything in syllables)
+		glyph.forceMove(glyph.home)
+	var/obj/structure/vestige_silent_glyph/gap = syllables[9]
+	var/obj/structure/vestige_silent_glyph/previous
+	var/distance = 0
+	for(var/index = 1; index <= 80 || distance < 10; index++)
+		var/list/options = list()
+		for(var/obj/structure/vestige_silent_glyph/glyph as anything in syllables)
+			if(glyph != gap && glyph != previous && abs(glyph.x - gap.x) + abs(glyph.y - gap.y) == 1)
+				options += glyph
+		var/obj/structure/vestige_silent_glyph/chosen = pick(options)
+		slide(chosen)
+		previous = chosen
+		distance = 0
+		for(var/obj/structure/vestige_silent_glyph/glyph as anything in syllables)
+			distance += abs(glyph.x - glyph.home.x) + abs(glyph.y - glyph.home.y)
+	moves = 0
+	refresh_tracker()
+
+/datum/vestige_trial/swallowed_word/proc/on_spoken(mob/living/source, list/say_args)
+	SIGNAL_HANDLER
+	if(source != owner?.current || !length(syllables))
+		return
+	scramble()
+	to_chat(source, span_warning("Your spoken word tangles the inscription. A new pattern lights up."))
+
+/datum/vestige_trial/swallowed_word/proc/slide(obj/structure/vestige_silent_glyph/glyph)
+	var/obj/structure/vestige_silent_glyph/gap = syllables[9]
+	if(glyph == gap || abs(glyph.x - gap.x) + abs(glyph.y - gap.y) != 1)
+		return FALSE
+	var/turf/previous = get_turf(glyph)
+	glyph.forceMove(get_turf(gap))
+	gap.forceMove(previous)
+	return TRUE
+
+/datum/vestige_trial/swallowed_word/proc/touch_glyph(obj/structure/vestige_silent_glyph/glyph)
+	if(!(glyph in syllables))
+		return FALSE
+	if(!slide(glyph))
+		return FALSE
+	moves++
+	refresh_tracker()
+	for(var/obj/structure/vestige_silent_glyph/other as anything in syllables)
+		if(get_turf(other) != other.home)
+			return TRUE
+	complete()
+	return TRUE
 
 /obj/item/vestige_syllable
 	name = "sealed syllable"
-	desc = "A stoppered phial with something small and bright circling inside, mouthing itself over and over. It stops if you hold it up to your ear."
+	desc = "Use in hand to lay out or pack up the inscription. Slide numbered syllables into the gap to restore reading order. North: 1 2 3. Middle: 4 5 6. South: 7 8 gap. Speaking reshuffles."
 	icon = 'icons/obj/mining_zones/artefacts.dmi'
 	icon_state = "vial"
 	w_class = WEIGHT_CLASS_TINY
-	light_range = 1.2
-	light_power = 0.5
-	light_color = "#ffd27f"
-	/// Whose silence we're currently listening to (registered while carried)
-	var/mob/living/listening_to
 
-/obj/item/vestige_syllable/Destroy()
-	// A destroyed phial mustn't leave a countdown that can never land
-	var/datum/vestige_trial/swallowed_word/trial = listening_to?.mind?.active_vestige_trial
-	if(istype(trial) && trial.settle_at)
-		trial.settle_at = 0
+/obj/item/vestige_syllable/attack_self(mob/living/user, modifiers)
+	var/datum/vestige_trial/swallowed_word/trial = user.mind?.active_vestige_trial
+	if(istype(trial))
+		trial.unfold(user)
 		trial.refresh_tracker()
-	stop_listening()
-	return ..()
-
-/obj/item/vestige_syllable/examine(mob/user)
-	. = ..()
-	. += span_notice("It only settles for someone who stays quiet. Keep it on your person, never in a bag, and say nothing for [DisplayTimeText(VESTIGE_WORD_SETTLE_TIME)]. Speaking or putting it down restarts the clock.")
-
-/obj/item/vestige_syllable/equipped(mob/user, slot, initial)
-	. = ..()
-	if(!isliving(user))
-		return
-	if(listening_to != user)
-		stop_listening()
-		listening_to = user
-		RegisterSignal(user, COMSIG_MOB_SAY, PROC_REF(on_holder_spoke))
-	var/datum/vestige_trial/swallowed_word/trial = user.mind?.active_vestige_trial
-	if(istype(trial) && !trial.settle_at)
-		begin_settling(trial, user)
-
-/obj/item/vestige_syllable/dropped(mob/user)
-	. = ..()
-	if(!isliving(user))
-		return
-	// dropped also fires on slot-to-slot moves; give equipped() a tick to land before judging
-	addtimer(CALLBACK(src, PROC_REF(check_still_carried), user), 1)
-
-/// A nudge for the stuck cases (renounced and re-accepted mid-carry): restart or report
-/obj/item/vestige_syllable/attack_self(mob/user, modifiers)
-	. = ..()
-	if(.)
-		return
-	if(!isliving(user))
-		return
-	var/datum/vestige_trial/swallowed_word/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "it doesn't know your voice!")
-		return TRUE
-	if(!trial.settle_at && listening_to == user)
-		begin_settling(trial, user)
-	else
-		to_chat(user, span_notice(trial.get_progress_text()))
 	return TRUE
 
-/obj/item/vestige_syllable/proc/stop_listening()
-	if(!listening_to)
-		return
-	UnregisterSignal(listening_to, COMSIG_MOB_SAY)
-	listening_to = null
+/obj/item/vestige_syllable/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/swallowed_word/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || !user.is_holding(src) || !user.Adjacent(interacting_with))
+		return NONE
+	if(trial.touch_glyph(interacting_with))
+		return ITEM_INTERACT_SUCCESS
+	return NONE
 
-/**
- * (Re)starts the settling clock. Every (re)start schedules its own settle check;
- * stale checks from older clocks fail the settle_at deadline test and die quietly
- * (the same trick the chrysalis egg's hatch_at plays).
- */
-/obj/item/vestige_syllable/proc/begin_settling(datum/vestige_trial/swallowed_word/trial, mob/living/user)
-	trial.settle_at = world.time + VESTIGE_WORD_SETTLE_TIME
-	trial.refresh_tracker()
-	to_chat(user, span_notice("[src] goes quiet against you. It's listening now."))
-	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
-
-/// The word left this mob's person, or only changed slots, in which case equipped() beat us
-/// here and loc is still the mob. A true departure voids the vigil.
-/obj/item/vestige_syllable/proc/check_still_carried(mob/living/former)
-	if(QDELETED(src) || QDELETED(former))
-		return
-	if(loc == former)
-		return
-	if(listening_to == former)
-		stop_listening()
-	var/datum/vestige_trial/swallowed_word/trial = former.mind?.active_vestige_trial
-	if(istype(trial) && trial.settle_at)
-		trial.settle_at = 0
-		trial.refresh_tracker()
-		to_chat(former, span_warning("[src] stirs again the moment it leaves your person. The word has stopped listening."))
-
-/obj/item/vestige_syllable/proc/on_holder_spoke(mob/living/source, list/say_args)
-	SIGNAL_HANDLER
-	var/datum/vestige_trial/swallowed_word/trial = source.mind?.active_vestige_trial
-	if(!istype(trial) || !trial.settle_at)
-		return
-	trial.settle_at = world.time + VESTIGE_WORD_SETTLE_TIME
-	trial.escapes++
-	trial.refresh_tracker()
-	source.apply_damage(VESTIGE_WORD_SCALD_BURN, BURN, BODY_ZONE_HEAD)
-	to_chat(source, span_danger("The word bolts back up your throat, scalding on the way. It won't settle in a mouth that keeps talking."))
-	playsound(source, 'sound/effects/wounds/sizzle1.ogg', 30, TRUE)
-	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
-
-/// May complete the trial, which reclaims (deletes) this phial with it
-/obj/item/vestige_syllable/proc/try_settle()
-	if(QDELETED(src))
-		return
-	var/mob/living/holder = listening_to
-	if(!holder || loc != holder)
-		return
-	var/datum/vestige_trial/swallowed_word/trial = holder.mind?.active_vestige_trial
-	if(!istype(trial) || !trial.settle_at || world.time < trial.settle_at)
-		return
-	holder.visible_message(
-		span_warning("[src] cracks with a sound like a struck bell."),
-		span_notice("The glass parts, and the word slips down your throat and settles, warm as a swallowed coal."),
-	)
-	playsound(holder, 'sound/effects/magic/fireball.ogg', 20, TRUE)
-	trial.complete()
+/obj/structure/vestige_silent_glyph
+	name = "unspoken syllable"
+	desc = "Touch with the phial while beside the gap to slide into it. Restore 1 2 3 across the north row, 4 5 6 in the middle, 7 8 gap to the south."
+	icon = 'icons/obj/antags/cult/rune.dmi'
+	icon_state = "1"
+	color = "#ffd27f"
+	density = FALSE
+	anchored = TRUE
+	resistance_flags = INDESTRUCTIBLE
+	var/number
+	var/turf/home
 
 // ===== BOONS =====
 
@@ -524,9 +589,3 @@
 	name = "Word of Denial"
 	desc = "Raise a barrier only you can pass through. It holds for a while."
 	cooldown_time = 30 SECONDS // upstream 10; matched to the wall's 30 second lifetime
-
-#undef VESTIGE_TONGUE_VERSES_NEEDED
-#undef VESTIGE_TONGUE_VERSE_TIME
-#undef VESTIGE_TONGUE_BITE_BURN
-#undef VESTIGE_WORD_SETTLE_TIME
-#undef VESTIGE_WORD_SCALD_BURN

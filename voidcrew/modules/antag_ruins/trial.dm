@@ -7,8 +7,9 @@
  * All pact state rides the MIND. Ruin interiors (and their patron mobs)
  * unload whenever everyone leaves, so nothing here may hold a reference to
  * the patron or the map. Trial kit items follow the same rule from the other
- * side: they never store trial references, they resolve the wielder's
- * mind.active_vestige_trial at interaction time and istype-check it.
+ * side: resolve the wielder's mind.active_vestige_trial at interaction time.
+ * Encounter actors may additionally bind a weakref to the exact attempt,
+ * so a stale callback cannot progress a replacement trial.
  *
  * One active trial per mind, each trial fulfillable once. Completion pays out
  * a CHOICE of boons, up to VESTIGE_REWARD_CHOICES rolled from the patron's
@@ -80,6 +81,10 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	var/patron_name = "the patron"
 	/// HUD reminder action, granted on accept and cleared with the pact (see below)
 	var/datum/action/vestige_pact/tracker
+	/// Only trial-created equipment/actors belong here, never borrowed player property.
+	var/list/loan_refs = list()
+	/// Completion callbacks may arrive more than once in the same tick.
+	var/fulfilled = FALSE
 
 /datum/vestige_trial/New(datum/mind/owner_mind, offering_patron_name, list/reward_pool)
 	. = ..()
@@ -92,8 +97,46 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	QDEL_NULL(tracker)
 	if(owner?.active_vestige_trial == src)
 		owner.active_vestige_trial = null
+	// Containers delete their contents. Return anything the player added after
+	// the kit was issued before reclaiming the original loans.
+	for(var/datum/weakref/loan_ref as anything in loan_refs)
+		var/atom/movable/loan = loan_ref.resolve()
+		if(!loan)
+			continue
+		var/turf/drop_turf = get_turf(loan) || get_turf(owner?.current)
+		if(istype(loan, /obj/item/bodypart/chest))
+			var/obj/item/bodypart/chest/chest = loan
+			if(chest.cavity_item && !(WEAKREF(chest.cavity_item) in loan_refs))
+				chest.cavity_item = null // Chest destruction also deletes this cached reference.
+		for(var/atom/movable/content as anything in loan.contents.Copy())
+			if(!(WEAKREF(content) in loan_refs) && drop_turf)
+				return_player_property(content, drop_turf)
+	for(var/datum/weakref/loan_ref as anything in loan_refs)
+		var/atom/movable/loan = loan_ref.resolve()
+		if(loan)
+			qdel(loan)
+	loan_refs = null
 	owner = null
 	return ..()
+
+/// Anatomy must detach before movement, or its callbacks can strand it in nullspace.
+/datum/vestige_trial/proc/return_player_property(atom/movable/property, turf/drop_turf)
+	if(isorgan(property))
+		var/obj/item/organ/organ = property
+		if(organ.owner)
+			organ.Remove(organ.owner, special = TRUE)
+		else if(organ.bodypart_owner)
+			organ.bodypart_remove(organ.bodypart_owner)
+	else if(istype(property, /obj/item/bodypart))
+		var/obj/item/bodypart/limb = property
+		// Special limb removal moves organs out but leaves them on the mob's
+		// registry. Return player transplants before that registry is destroyed.
+		for(var/obj/item/organ/organ in limb.contents.Copy())
+			if(!(WEAKREF(organ) in loan_refs))
+				return_player_property(organ, drop_turf)
+		if(limb.owner)
+			limb.drop_limb(special = TRUE, dismembered = FALSE, move_to_floor = FALSE)
+	property.forceMove(drop_turf)
 
 /**
  * Called once when the pact is struck. Stands up the HUD reminder, then runs
@@ -120,9 +163,36 @@ GLOBAL_LIST_EMPTY(vestige_records)
 
 /// Puts a freshly created kit item into the supplicant's hands, or at their feet
 /datum/vestige_trial/proc/hand_over(mob/living/user, obj/item/kit)
+	register_loan(kit)
 	if(!user.put_in_hands(kit))
 		kit.forceMove(get_turf(user))
 	return kit
+
+/// Track a newly created loan, including the original contents of a supplied kit.
+/// Deployed structures and actors must register separately. Weakrefs ensure a
+/// consumed item never keeps the trial or its owner alive.
+/datum/vestige_trial/proc/register_loan(atom/movable/loan)
+	if(!loan || QDELETED(loan))
+		return null
+	loan_refs |= WEAKREF(loan)
+	for(var/obj/item/part in loan.contents)
+		register_loan(part)
+	return loan
+
+/// Recover a lost or failed kit without rerolling the assigned trial or its reward pool.
+/datum/vestige_trial/proc/restart(mob/living/user)
+	if(QDELETED(src) || fulfilled || owner?.current != user || owner.active_vestige_trial != src || user.stat != CONSCIOUS)
+		return FALSE
+	var/datum/mind/keeper = owner
+	var/trial_type = type
+	var/patron = patron_name
+	var/list/pool = boon_pool?.Copy()
+	qdel(src)
+	var/datum/vestige_trial/replacement = new trial_type(keeper, patron, pool)
+	keeper.active_vestige_trial = replacement
+	replacement.begin(user)
+	to_chat(user, span_notice("The pact begins again. Its old equipment and progress are gone."))
+	return TRUE
 
 /**
  * Fulfills the pact: bookkeeping, the reward roll, flavor.
@@ -131,21 +201,27 @@ GLOBAL_LIST_EMPTY(vestige_records)
  * touch the trial after calling this.
  */
 /datum/vestige_trial/proc/complete()
-	if(!owner)
+	if(!owner || QDELETED(src) || fulfilled || owner.active_vestige_trial != src || (type in owner.completed_vestige_trials))
 		return
+	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
+	// A deferred old-body attempt can finish after this soul has respawned
+	// and begun the same assignment again. The round ledger decides once.
+	if(type in record?.completed_trials)
+		LAZYOR(owner.completed_vestige_trials, type)
+		qdel(src)
+		return
+	fulfilled = TRUE
 	LAZYADD(owner.completed_vestige_trials, type)
 	if(owner.active_vestige_trial == src)
 		owner.active_vestige_trial = null
-	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
 	record?.completed_trials |= type
 
 	var/mob/living/user = owner.current
 	if(isliving(user))
 		to_chat(user, span_bolddanger("You hear [patron_name] in the back of your head: \"The pact is done.\""))
 		playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
-	// Runs body or no body. Deferred completions (the egg's hatch beat, the Red
-	// Road's concluding beat) can land after the keeper has been gibbed, and the
-	// pact is spent either way, so the debt has to be booked regardless.
+	// Runs body or no body. Deferred combat callbacks can land after the keeper
+	// has been gibbed; the spent pact must still book its reward debt.
 	offer_reward(user)
 	qdel(src)
 
@@ -189,8 +265,8 @@ GLOBAL_LIST_EMPTY(vestige_records)
  * the mind's active pact whenever it's read, the same rule the kit items obey.
  *
  * Hovering the button shows the pact's live terms and progress; clicking it
- * prints the full pitch and progress to chat. It is a readout, not a power, so
- * it stays usable while downed or dead.
+ * prints the full pitch and progress to chat. A conscious owner may also
+ * restart the same assignment to recover a failed or missing kit.
  */
 /datum/action/vestige_pact
 	name = "Vestige Pact"
@@ -225,3 +301,8 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	to_chat(owner, span_boldnotice("[trial.patron_name]'s pact: [trial.name]"))
 	to_chat(owner, span_notice(trial.desc))
 	to_chat(owner, span_boldnotice(trial.get_progress_text()))
+	if(!isliving(owner) || owner.stat != CONSCIOUS)
+		return
+	var/choice = tgui_alert(owner, "[trial.get_progress_text()]\n\nRestarting resets all progress and reclaims the old trial equipment. You receive the same trial and a fresh kit.", trial.name, list("Keep going", "Restart trial"))
+	if(choice == "Restart trial" && !QDELETED(src) && get_trial() == trial)
+		trial.restart(owner)

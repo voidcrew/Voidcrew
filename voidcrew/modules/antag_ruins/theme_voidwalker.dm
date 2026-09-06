@@ -10,14 +10,6 @@
  * coupling it was checked for.
  */
 
-// Tuning constants for the Watcher's trials (file-local, #undef at bottom)
-/// Distinct rooms the caller's card must be pressed against from the void side (Trial of the Other Side)
-#define VESTIGE_CALLER_ROOMS_NEEDED 5
-/// How long one press of the card against a pane takes
-#define VESTIGE_CALLER_PRESS_TIME (4 SECONDS)
-/// Space turfs the keepsake must cross in one unbroken flight (Trial of the Little Moon)
-#define VESTIGE_MOON_DRIFT_NEEDED 20
-
 // ===== PATRON =====
 
 /mob/living/basic/vestige_patron/watcher
@@ -59,193 +51,255 @@
 
 /datum/vestige_trial/long_dark
 	name = "Trial of the Long Dark"
-	// Keep the count in sync with VESTIGE_VOID_SECONDS_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the shard and carry it out into open space. Five minutes out there, alive, with the shard on you. It doesn't have to be all in one go."
-	/// Cumulative seconds spent in hard vacuum with the shard
-	var/seconds_in_void = 0
+	desc = "Activate the shard on a pressurized floor to set a return beacon. It will report a bearing toward a hidden exterior echo. Take two readings in open space, at least five tiles apart and from different angles to the echo; readings need a clear view and cannot be taken beside it. The second reading reveals the echo. Touch it with the shard to recover it, then bring the held shard back to the return beacon. Bring ordinary EVA protection and propulsion."
+	var/obj/item/vestige_shard/shard
+	var/obj/structure/vestige_void_beacon/home_beacon
+	var/obj/structure/vestige_void_beacon/echo
+	var/datum/weakref/first_reading
+	var/revealed = FALSE
+	var/recovered = FALSE
 
 /datum/vestige_trial/long_dark/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_shard(get_turf(user)))
+	shard = hand_over(user, new /obj/item/vestige_shard(get_turf(user)))
+
+/datum/vestige_trial/long_dark/Destroy()
+	QDEL_NULL(shard)
+	QDEL_NULL(home_beacon)
+	QDEL_NULL(echo)
+	return ..()
 
 /datum/vestige_trial/long_dark/get_progress_text()
-	return "Time spent in the void: [round(seconds_in_void)] of [VESTIGE_VOID_SECONDS_NEEDED] seconds."
+	var/mob/living/user = owner?.current
+	if(!home_beacon)
+		return "Set a return beacon by activating the shard on a pressurized floor."
+	if(recovered)
+		return "Echo recovered. Return the held shard to the beacon: [get_dist(user, home_beacon)] tiles [dir2text(get_dir(user, home_beacon))]."
+	return "[first_reading ? "One bearing recorded; find a second angle." : "Take a bearing in open space."] Echo: [dir2text(get_dir(user, echo))], [get_dist(user, echo)] tiles.[revealed ? " Echo revealed: touch it with the shard." : ""]"
 
-/// May complete (and delete) the trial
-/datum/vestige_trial/long_dark/proc/soak(seconds)
-	seconds_in_void += seconds
+/datum/vestige_trial/long_dark/proc/set_home(mob/living/user)
+	var/turf/center = get_turf(user)
+	if(!isfloorturf(center))
+		return FALSE
+	var/datum/gas_mixture/air = center.return_air()
+	if(!air || air.return_pressure() < HAZARD_LOW_PRESSURE)
+		return FALSE
+	var/list/candidates = list()
+	for(var/turf/open/space/spot in range(10, center))
+		if(get_dist(spot, center) < 6)
+			continue
+		var/clear = TRUE
+		for(var/turf/nearby in range(2, spot))
+			if(!isspaceturf(nearby))
+				clear = FALSE
+				break
+		if(clear)
+			candidates += spot
+	if(!length(candidates))
+		to_chat(user, span_warning("No open exterior echo within ten tiles. Set the beacon nearer a hull with open space beyond it."))
+		return FALSE
+	home_beacon = new(center)
+	home_beacon.name = "void return beacon"
+	register_loan(home_beacon)
+	echo = new(pick(candidates))
+	echo.name = "unresolved void echo"
+	echo.invisibility = INVISIBILITY_ABSTRACT
+	register_loan(echo)
 	refresh_tracker()
-	if(seconds_in_void >= VESTIGE_VOID_SECONDS_NEEDED)
-		complete()
+	return TRUE
+
+/// A useful baseline must be separated and not point along the same line.
+/datum/vestige_trial/long_dark/proc/valid_baseline(turf/first, turf/second, turf/source)
+	if(!first || !second || !source || first.z != second.z || source.z != first.z || get_dist(first, second) < 5)
+		return FALSE
+	var/twice_area = abs((first.x - source.x) * (second.y - source.y) - (second.x - source.x) * (first.y - source.y))
+	return twice_area >= 15
+
+/datum/vestige_trial/long_dark/proc/take_reading(mob/living/user)
+	var/turf/here = get_turf(user)
+	if(!home_beacon)
+		return set_home(user)
+	if(recovered || !isspaceturf(here) || get_dist(here, echo) < 3 || get_dist(here, echo) > 12 || !can_see(here, echo, 12))
+		to_chat(user, span_warning("Readings need open space, a clear bearing, and a distance of three to twelve tiles from the echo."))
+		return FALSE
+	if(!first_reading)
+		first_reading = WEAKREF(here)
+	else if(!revealed)
+		if(!valid_baseline(first_reading.resolve(), here, get_turf(echo)))
+			to_chat(user, span_warning("That baseline is too short or too nearly in line with the first bearing. Move at least five tiles across the bearing, not straight toward the echo."))
+			return FALSE
+		revealed = TRUE
+		echo.invisibility = 0
+		echo.name = "resolved void echo"
+		echo.set_light(3, 1, "#9966dd")
+	to_chat(user, span_notice(get_progress_text()))
+	refresh_tracker()
+	return TRUE
+
+/obj/structure/vestige_void_beacon
+	name = "void beacon"
+	desc = "A temporary marker belonging to an exterior lesson."
+	icon = 'icons/obj/ore.dmi'
+	icon_state = "bluespace_crystal"
+	color = "#9966dd"
+	anchored = TRUE
+	density = FALSE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 
 /obj/item/vestige_shard
 	name = "void shard"
-	desc = "A splinter of crystal, a shade blacker than whatever is behind it. Cold enough to feel through gloves."
+	desc = "Activate to set a return beacon or take an exterior bearing. Touch the revealed echo to recover it; touch the return beacon to deliver."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "bluespace_crystal"
 	color = "#3c1a5c"
 	w_class = WEIGHT_CLASS_SMALL
-	light_range = 1.4
-	light_power = 0.4
-	light_color = "#6633aa"
 
-/obj/item/vestige_shard/Initialize(mapload)
-	. = ..()
-	START_PROCESSING(SSobj, src)
+/obj/item/vestige_shard/attack_self(mob/living/user, list/modifiers)
+	var/datum/vestige_trial/long_dark/trial = user.mind?.active_vestige_trial
+	if(istype(trial) && trial.shard == src)
+		trial.take_reading(user)
 
-/obj/item/vestige_shard/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	return ..()
-
-// Credits void-time while carried on someone's person (loc == mob covers
-// hands, pockets and worn slots; a backpack's insides don't count as "held")
-/obj/item/vestige_shard/process(seconds_per_tick)
-	var/mob/living/holder = loc
-	if(!istype(holder) || holder.stat == DEAD)
-		return
-	var/datum/vestige_trial/long_dark/trial = holder.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	var/turf/here = get_turf(holder)
-	if(!here)
-		return
-	if(!isspaceturf(here))
-		var/datum/gas_mixture/air = here.return_air()
-		if(air && air.return_pressure() >= HAZARD_LOW_PRESSURE)
-			return
-	if(prob(6))
-		to_chat(holder, span_notice("The shard hums against you, pleased with the company."))
-	trial.soak(seconds_per_tick)
+/obj/item/vestige_shard/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/long_dark/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.shard != src || !user.Adjacent(interacting_with))
+		return NONE
+	if(interacting_with == trial.home_beacon && trial.recovered)
+		trial.complete()
+		return ITEM_INTERACT_SUCCESS
+	if(interacting_with != trial.echo || !trial.revealed || trial.recovered || !isspaceturf(get_turf(user)))
+		return NONE
+	if(!do_after(user, 2 SECONDS, target = interacting_with))
+		return ITEM_INTERACT_BLOCKING
+	if(QDELETED(trial) || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || !isspaceturf(get_turf(user)))
+		return ITEM_INTERACT_BLOCKING
+	trial.recovered = TRUE
+	trial.echo.invisibility = INVISIBILITY_ABSTRACT
+	trial.echo.set_light(0)
+	trial.refresh_tracker()
+	balloon_alert(user, "echo held; return home")
+	return ITEM_INTERACT_SUCCESS
 
 // ===== TRIAL OF THE OTHER SIDE =====
 
-/**
- * The theme's flagship image, made into homework: a face at the window, seen
- * from indoors, with nothing behind it. The card only works from the void's
- * side of a pane with a breathing room beyond, so every credit is that scene
- * happening to somebody's ship, and the knock lands at the START of the
- * press, so anyone inside gets the whole channel to look up and meet it.
- * Progress is deduped by the AREA beyond the glass, not the pane: a row of
- * mess-hall windows is one introduction, the walk around the whole hull is
- * five.
- */
 /datum/vestige_trial/other_side
 	name = "Trial of the Other Side"
-	// Keep the count in sync with VESTIGE_CALLER_ROOMS_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the card. Step outside and press it against the windows of five different rooms that still have air in them. You have to be on the void side of the glass. Let whoever looks up get a good look at you."
-	/// Rooms already called upon (area weakref -> TRUE). Every introduction needs a new room
-	var/list/rooms_called = list()
-	/// The loaned card, reclaimed (deleted) the moment the pact ends
+	desc = "Choose one intact window separating a pressurized room from vacuum. Press the card from the room side to leave your reflection, travel outside and press the same pane from the matching void side, then carry the reply back inside and press it home. Keep the pane intact and the room pressurized throughout; venting it erases the reflection. A single full-tile or directional window is enough. Bring EVA equipment and plan the airlock route before leaving."
 	var/obj/item/vestige_calling_card/card
+	var/datum/weakref/pane_ref
+	var/datum/weakref/inside_ref
+	var/datum/weakref/outside_ref
+	var/phase = 0
 
 /datum/vestige_trial/other_side/on_accepted(mob/living/user)
 	card = hand_over(user, new /obj/item/vestige_calling_card(get_turf(user)))
-	to_chat(user, span_notice("The card settles into your palm. It is colder than the room."))
 
 /datum/vestige_trial/other_side/Destroy()
 	QDEL_NULL(card)
 	return ..()
 
 /datum/vestige_trial/other_side/get_progress_text()
-	return "Rooms called on: [length(rooms_called)] of [VESTIGE_CALLER_ROOMS_NEEDED]."
+	return phase == 0 ? "Find one intact air-to-vacuum window; press the card from inside." : phase == 1 ? "Reflection waiting. Reach the same pane's opposite face through your airlock." : "Reply received. Bring the card back inside without breaking the pane or venting the room."
 
-/// Credits one room. May complete (and delete) the trial. Returns FALSE if this room has already been called upon.
-/datum/vestige_trial/other_side/proc/call_upon(area/room)
-	var/datum/weakref/key = WEAKREF(room)
-	if(rooms_called[key])
-		return FALSE
-	rooms_called[key] = TRUE
+/datum/vestige_trial/other_side/proc/check_seal()
+	if(!phase)
+		return TRUE
+	var/obj/structure/window/pane = pane_ref?.resolve()
+	var/turf/inside = inside_ref?.resolve()
+	var/turf/outside = outside_ref?.resolve()
+	if(!QDELETED(pane) && pane.density && inside && outside && !card.void_side(inside) && card.void_side(outside))
+		return TRUE
+	phase = 0
+	pane_ref = null
+	inside_ref = null
+	outside_ref = null
+	to_chat(owner?.current, span_warning("The pressure seal changed or the pane broke. The reflection is gone; start again from inside."))
 	refresh_tracker()
-	if(length(rooms_called) >= VESTIGE_CALLER_ROOMS_NEEDED)
-		complete()
-	return TRUE
+	return FALSE
 
 /obj/item/vestige_calling_card
 	name = "caller's card"
-	desc = "A calling card cut from a windowpane. The edges are far too smooth to have been cut."
+	desc = "A calling card cut from a windowpane. Leave a reflection inside, collect its reply from outside, and return it through your airlock while preserving the pressure seal."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "medium"
 	color = "#3c1a5c"
 	w_class = WEIGHT_CLASS_TINY
+	var/datum/weakref/trial_ref
 
-/obj/item/vestige_calling_card/examine(mob/user)
+/obj/item/vestige_calling_card/Initialize(mapload)
 	. = ..()
-	. += span_notice("Press it to a window from outside, with vacuum at your back and a pressurized room on the far side. It needs [VESTIGE_CALLER_ROOMS_NEEDED] different rooms.")
+	START_PROCESSING(SSobj, src)
+
+/obj/item/vestige_calling_card/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/item/vestige_calling_card/process(seconds_per_tick)
+	var/datum/vestige_trial/other_side/trial = trial_ref?.resolve()
+	trial?.check_seal()
 
 /obj/item/vestige_calling_card/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!istype(interacting_with, /obj/structure/window))
+	if(!istype(interacting_with, /obj/structure/window) || !user.Adjacent(interacting_with))
 		return NONE
-	var/obj/structure/window/pane = interacting_with
 	var/datum/vestige_trial/other_side/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		balloon_alert(user, "just cold glass in your hand!")
+	if(!istype(trial) || trial.card != src)
+		return NONE
+	trial_ref = WEAKREF(trial)
+	var/obj/structure/window/pane = interacting_with
+	var/turf/here = get_turf(user)
+	var/turf/far_side = resolve_far_side(user, pane)
+	if(!pane.density || !far_side || void_side(here) == void_side(far_side))
+		balloon_alert(user, "need intact air-to-vacuum glass!")
 		return ITEM_INTERACT_BLOCKING
-	if(!pane.density)
+	trial.check_seal()
+	var/starting_phase = trial.phase
+	if(trial.phase && pane != trial.pane_ref?.resolve())
+		balloon_alert(user, "return to your marked pane!")
 		return ITEM_INTERACT_BLOCKING
-	if(!void_side(get_turf(user)))
-		balloon_alert(user, "you must call from the void's side!")
+	var/want_outside = trial.phase == 1
+	if(void_side(here) != want_outside)
+		balloon_alert(user, want_outside ? "collect it from outside!" : "press it from inside!")
 		return ITEM_INTERACT_BLOCKING
-	var/turf/far_turf = resolve_far_side(user, pane)
-	if(!far_turf)
-		balloon_alert(user, "square up to the glass!")
+	var/turf/expected = want_outside ? trial.outside_ref?.resolve() : trial.inside_ref?.resolve()
+	if(trial.phase && here != expected)
+		balloon_alert(user, "stand opposite your original print!")
 		return ITEM_INTERACT_BLOCKING
-	if(void_side(far_turf))
-		balloon_alert(user, "no air beyond this pane!")
+	pane.visible_message(span_warning("A pale handprint presses against [pane], from [want_outside ? "outside" : "inside"]."))
+	playsound(pane, 'sound/effects/glass/glassknock.ogg', 50, TRUE)
+	if(!do_after(user, 3 SECONDS, target = pane))
 		return ITEM_INTERACT_BLOCKING
-	var/area/room = get_area(far_turf)
-	if(istype(room, /area/ruin/space/has_grav/vestige))
-		balloon_alert(user, "this ruin's glass doesn't count!")
+	if(QDELETED(trial) || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || QDELETED(pane) || !pane.density || get_turf(user) != here || void_side(here) == void_side(far_side))
 		return ITEM_INTERACT_BLOCKING
-	if(trial.rooms_called[WEAKREF(room)])
-		balloon_alert(user, "already called this room!")
+	if(!trial.check_seal())
 		return ITEM_INTERACT_BLOCKING
-	// The tell fires before the press lands: the knock is the point
-	pane.visible_message(span_warning("Something knocks, once, and presses flat against [pane], from the outside."))
-	playsound(pane, 'sound/effects/glass/glassknock.ogg', 75, TRUE)
-	if(!do_after(user, VESTIGE_CALLER_PRESS_TIME, target = pane))
+	if(trial.phase != starting_phase || void_side(here) != want_outside)
 		return ITEM_INTERACT_BLOCKING
-	// Re-resolve everything; the pact may have been renounced (or the room vented) mid-press
-	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
-		return ITEM_INTERACT_BLOCKING
-	if(QDELETED(pane) || !pane.density)
-		return ITEM_INTERACT_BLOCKING
-	if(!void_side(get_turf(user)) || void_side(far_turf))
-		balloon_alert(user, "the moment passed!")
-		return ITEM_INTERACT_BLOCKING
-	if(!trial.call_upon(room))
-		return ITEM_INTERACT_BLOCKING
-	// call_upon may have completed (and deleted) the trial, which reclaims this
-	// card, the same tail the proboscis rides; nothing past here touches either
-	pane.visible_message(span_danger("Frost blooms across [pane] in the shape of a spread hand."))
-	playsound(pane, 'sound/effects/magic/voidblink.ogg', 40, TRUE)
-	balloon_alert(user, "introduced")
+	if(!trial.phase)
+		trial.pane_ref = WEAKREF(pane)
+		trial.inside_ref = WEAKREF(here)
+		trial.outside_ref = WEAKREF(far_side)
+	trial.phase++
+	trial.refresh_tracker()
+	if(trial.phase >= 3)
+		trial.complete()
 	return ITEM_INTERACT_SUCCESS
 
-/// TRUE when a turf sits on the void's side of things: space, or air too thin to matter (the shard's own standard)
 /obj/item/vestige_calling_card/proc/void_side(turf/here)
-	if(!here || isspaceturf(here))
+	if(!here)
+		return FALSE
+	if(isspaceturf(here))
 		return TRUE
 	var/datum/gas_mixture/air = here.return_air()
 	return !air || air.return_pressure() < HAZARD_LOW_PRESSURE
 
-/**
- * The turf beyond the pane from where the caller floats, or null when the
- * geometry refuses. Windows are border objects: a fulltile pane seals its
- * whole tile (the room starts one step past it), a directional pane seals one
- * edge (its own tile IS the room, and it must actually face the caller, a
- * pane sealing some other edge has no glass between the two of you).
- */
+/// Full-tile panes seal a tile; directional panes seal one edge of their tile.
 /obj/item/vestige_calling_card/proc/resolve_far_side(mob/living/user, obj/structure/window/pane)
 	var/turf/pane_turf = get_turf(pane)
 	var/turf/user_turf = get_turf(user)
-	if(!pane_turf || !user_turf)
+	if(!pane_turf || !user_turf || get_dist(user_turf, pane_turf) > 1)
 		return null
-	if(pane_turf == user_turf) // a border pane on the caller's own tile: beyond is past the edge it seals
-		return get_step(pane_turf, pane.dir)
+	if(pane_turf == user_turf)
+		return pane.fulltile ? null : get_step(pane_turf, pane.dir)
 	var/press_dir = get_dir(user_turf, pane_turf)
-	if(!(press_dir in GLOB.cardinals)) // no diagonal introductions
+	if(!(press_dir in GLOB.cardinals))
 		return null
 	if(pane.fulltile)
 		return get_step(pane_turf, press_dir)
@@ -255,168 +309,158 @@
 
 // ===== TRIAL OF THE LITTLE MOON =====
 
-/**
- * A trust exercise with ballistics: hurl the keepsake into the nothing, let it
- * cross twenty uninterrupted space turfs, then go out and collect it. Flight
- * physics live on the item (the trial datum only mirrors them for the
- * readout). Mechanics checked against source: a throw converts to newtonian
- * drift when SSthrowing finalizes it, every drift step is a real Move (so
- * Moved counts turfs), and a flight that ends by HITTING something never
- * resumes drifting, the THROW_LANDED signal catches that case. Stopping a
- * qualified flight is done by qdel-ing the drift_handler, which is the
- * handler's own supported teardown (its handle_move qdels itself mid-Moved
- * routinely). Deleting the keepsake mid-equip on completion is likewise safe:
- * put_in_hand explicitly null-checks QDELETED items after on_equipped.
- */
 /datum/vestige_trial/little_moon
 	name = "Trial of the Little Moon"
-	// Keep the count in sync with VESTIGE_MOON_DRIFT_NEEDED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the keepsake and throw it into open space. It needs twenty tiles of clear flight, no interruptions. Wherever it stops it will light up and wait, and then you go out and bring it back. Lose it and you can renounce the pact for a new one."
-	/// Longest unbroken flight so far, in space turfs (a mirror of the keepsake's live count, for the readout)
-	var/best_flight = 0
-	/// Whether the keepsake has finished its flight and now waits to be brought home
-	var/keepsake_settled = FALSE
-	/// The loaned keepsake, reclaimed (deleted) the moment the pact ends
+	desc = "Activate the recovery tether beside open space to launch the tumbling keepsake five tiles out. Examine it or the pact tracker for its two drift components. Pull it with the tether from two to six tiles away along a cardinal line: each pull moves it one tile toward you and subtracts that direction's drift, while you recoil one tile toward it in vacuum. Counter both components to zero, collect it, and deliver it to the launch cradle. Wrong-direction pulls add drift. Bring EVA propulsion so you can change approach sides."
+	var/obj/item/vestige_recovery_tether/tether
+	var/obj/structure/vestige_void_beacon/cradle
+	var/obj/structure/vestige_tumbling_keepsake/cargo
 	var/obj/item/vestige_keepsake/keepsake
 
 /datum/vestige_trial/little_moon/on_accepted(mob/living/user)
-	keepsake = hand_over(user, new /obj/item/vestige_keepsake(get_turf(user)))
-	to_chat(user, span_notice("The keepsake tugs gently at your grip, in no particular direction."))
+	tether = hand_over(user, new /obj/item/vestige_recovery_tether(get_turf(user)))
 
 /datum/vestige_trial/little_moon/Destroy()
+	QDEL_NULL(tether)
+	QDEL_NULL(cradle)
+	QDEL_NULL(cargo)
 	QDEL_NULL(keepsake)
 	return ..()
 
 /datum/vestige_trial/little_moon/get_progress_text()
-	if(keepsake_settled)
-		return "The keepsake is shining somewhere out there, where its flight ended. Go and get it."
-	return "Longest unbroken flight: [best_flight] of [VESTIGE_MOON_DRIFT_NEEDED] tiles."
+	if(!cradle)
+		return "Activate the tether beside five tiles of clear space to launch."
+	if(keepsake)
+		return "Keepsake stabilized. Collect it and touch it to the launch cradle."
+	return "[cargo?.drift_text()] Cargo is [get_dist(owner?.current, cargo)] tiles [dir2text(get_dir(owner?.current, cargo))]. Pull opposite the remaining drift."
 
-/// Mirrors the keepsake's live flight distance into the pact readout
-/datum/vestige_trial/little_moon/proc/track_flight(tiles)
-	if(tiles <= best_flight)
-		return
-	best_flight = tiles
+/datum/vestige_trial/little_moon/proc/launch(mob/living/user)
+	if(cradle)
+		to_chat(user, span_notice(get_progress_text()))
+		return FALSE
+	var/turf/start = get_turf(user)
+	var/turf/destination
+	for(var/direction in GLOB.cardinals)
+		var/turf/step_turf = start
+		var/clear = TRUE
+		for(var/index in 1 to 5)
+			step_turf = get_step(step_turf, direction)
+			if(!isspaceturf(step_turf) || step_turf.is_blocked_turf(exclude_mobs = TRUE))
+				clear = FALSE
+				break
+		if(clear)
+			destination = step_turf
+			break
+	if(!destination)
+		to_chat(user, span_warning("Stand beside a clear five-tile stretch of open space. The tether checks all four cardinal directions."))
+		return FALSE
+	cradle = new(start)
+	cradle.name = "little moon launch cradle"
+	register_loan(cradle)
+	cargo = new(destination)
+	cargo.drift_x = pick(-2, 2)
+	cargo.drift_y = pick(-2, 2)
+	register_loan(cargo)
 	refresh_tracker()
+	to_chat(user, span_notice(get_progress_text()))
+	return TRUE
 
-/// The flight is done; all that is left is the walk out to collect it
-/datum/vestige_trial/little_moon/proc/mark_settled()
-	keepsake_settled = TRUE
-	refresh_tracker()
+/obj/structure/vestige_tumbling_keepsake
+	name = "tumbling keepsake"
+	desc = "A glowing little moon precessing around its tether point. Counter both drift components with cardinal tether impulses before it can be handled."
+	icon = 'icons/obj/ore.dmi'
+	icon_state = "bluespace_crystal"
+	color = "#ffaa66"
+	anchored = TRUE
+	density = FALSE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	light_range = 2
+	light_power = 1
+	var/drift_x = 2
+	var/drift_y = 2
+
+/obj/structure/vestige_tumbling_keepsake/proc/drift_text()
+	return "Drift: [abs(drift_x)] [drift_x >= 0 ? "east" : "west"], [abs(drift_y)] [drift_y >= 0 ? "north" : "south"]."
+
+/obj/structure/vestige_tumbling_keepsake/examine(mob/user)
+	. = ..()
+	. += span_notice(drift_text())
+
+/// The impulse follows the cable. Wrong-side pulls worsen that component.
+/obj/structure/vestige_tumbling_keepsake/proc/apply_impulse(direction)
+	switch(direction)
+		if(EAST)
+			drift_x = clamp(drift_x + 1, -4, 4)
+		if(WEST)
+			drift_x = clamp(drift_x - 1, -4, 4)
+		if(NORTH)
+			drift_y = clamp(drift_y + 1, -4, 4)
+		if(SOUTH)
+			drift_y = clamp(drift_y - 1, -4, 4)
+	return !drift_x && !drift_y
+
+/obj/item/vestige_recovery_tether
+	name = "little moon recovery tether"
+	desc = "Activate beside space to launch the keepsake. Click it from two to six tiles away along a cardinal line to reel and counter its drift. Pulls recoil in vacuum; use EVA propulsion to reposition."
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "coil"
+	w_class = WEIGHT_CLASS_SMALL
+	var/next_pull = 0
+
+/obj/item/vestige_recovery_tether/attack_self(mob/living/user, list/modifiers)
+	var/datum/vestige_trial/little_moon/trial = user.mind?.active_vestige_trial
+	if(istype(trial) && trial.tether == src)
+		trial.launch(user)
+
+/obj/item/vestige_recovery_tether/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/little_moon/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.tether != src || interacting_with != trial.cargo || world.time < next_pull)
+		return NONE
+	var/obj/structure/vestige_tumbling_keepsake/cargo = trial.cargo
+	var/direction = get_dir(cargo, user)
+	var/turf/destination = get_step(cargo, direction)
+	if(!(direction in GLOB.cardinals) || get_dist(user, cargo) < 2 || get_dist(user, cargo) > 6 || !can_see(user, cargo, 6) || !isspaceturf(destination))
+		balloon_alert(user, "need cardinal cable, 2-6 tiles!")
+		return ITEM_INTERACT_BLOCKING
+	for(var/turf/cable_turf as anything in get_line(user, cargo))
+		if(cable_turf.is_blocked_turf(exclude_mobs = TRUE))
+			balloon_alert(user, "cable snagged!")
+			return ITEM_INTERACT_BLOCKING
+	if(!cargo.Move(destination, direction))
+		balloon_alert(user, "cable snagged!")
+		return ITEM_INTERACT_BLOCKING
+	next_pull = world.time + 1 SECONDS
+	if(isspaceturf(get_turf(user)))
+		step_towards(user, cargo)
+	if(cargo.apply_impulse(direction))
+		trial.keepsake = new(get_turf(cargo))
+		trial.register_loan(trial.keepsake)
+		QDEL_NULL(trial.cargo)
+		balloon_alert(user, "stable; collect and return!")
+	else
+		to_chat(user, span_notice(cargo.drift_text()))
+	trial.refresh_tracker()
+	return ITEM_INTERACT_SUCCESS
+
+/obj/item/vestige_recovery_tether/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	return interact_with_atom(interacting_with, user, modifiers)
 
 /obj/item/vestige_keepsake
-	name = "void keepsake"
-	desc = "A knuckle of dark glass, fused smooth. Hold it still and it pulls, very slightly, toward the nearest window."
+	name = "stabilized keepsake"
+	desc = "A little moon at rest. Bring it back to its launch cradle."
 	icon = 'icons/obj/ore.dmi'
-	icon_state = "slag"
-	color = "#9b7fc4"
+	icon_state = "bluespace_crystal"
+	color = "#7a5db8"
 	w_class = WEIGHT_CLASS_SMALL
-	throwforce = 0
-	/// Mind of whoever last let go of it, that soul's flights are the ones that count
-	var/datum/mind/bound_mind
-	/// Space turfs crossed by the current unbroken flight
-	var/flight_tiles = 0
-	/// Whether the flight has finished: it now shines and waits to be brought home
-	var/settled = FALSE
+	light_range = 2
+	light_power = 1
 
-/obj/item/vestige_keepsake/Initialize(mapload)
-	. = ..()
-	// Catches the flight that ends by hitting something at full distance.
-	// Drift never resumes there, so Moved alone would miss the settle
-	RegisterSignal(src, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(on_flight_landed))
-
-/obj/item/vestige_keepsake/Destroy()
-	bound_mind = null
-	return ..()
-
-/obj/item/vestige_keepsake/examine(mob/user)
-	. = ..()
-	if(settled)
-		. += span_notice("It is done flying. Now it just needs picking up.")
-	else
-		. += span_notice("Throw it into open space and it drifts until something stops it. It needs [VESTIGE_MOON_DRIFT_NEEDED] tiles in a row - catching it, pulling it or hitting a floor resets the count.")
-
-// A settled keepsake keeps its provenance: couriers who ferry it home for the
-// thrower must not steal (or break) the binding by putting it down
-/obj/item/vestige_keepsake/dropped(mob/user, silent = FALSE)
-	. = ..()
-	if(!settled && user?.mind)
-		bound_mind = user.mind
-
-/// The bound soul's little-moon trial, if it still runs, resolved fresh every time, never stored (renounce-safe)
-/obj/item/vestige_keepsake/proc/get_bound_trial()
-	var/datum/vestige_trial/little_moon/trial = bound_mind?.active_vestige_trial
-	if(istype(trial))
-		return trial
-	return null
-
-/obj/item/vestige_keepsake/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
-	. = ..()
-	if(settled)
-		return
-	// Into a hand, a bag, a locker: the flight (if any) is over
-	if(!isturf(loc))
-		flight_tiles = 0
-		return
-	// Out of a hand onto a turf: the launch itself, counted from zero
-	if(!isturf(old_loc))
-		flight_tiles = 0
-		return
-	// Only unaccompanied flight over open space counts, a floor grounds it, a leash disqualifies it
-	if(!isspaceturf(loc) || pulledby)
-		flight_tiles = 0
-		return
-	flight_tiles++
-	var/datum/vestige_trial/little_moon/trial = get_bound_trial()
-	trial?.track_flight(flight_tiles)
-	if(flight_tiles < VESTIGE_MOON_DRIFT_NEEDED)
-		return
-	if(throwing) // still mid-throw: the drift handoff (or the landing hook) settles it
-		return
-	settle()
-
-/// A throw that ends by hitting something never resumes drifting, settle here if the flight already qualifies
-/obj/item/vestige_keepsake/proc/on_flight_landed(datum/source, datum/thrownthing/flight)
-	SIGNAL_HANDLER
-	if(settled || flight_tiles < VESTIGE_MOON_DRIFT_NEEDED)
-		return
-	if(!isturf(loc) || !isspaceturf(loc))
-		return
-	settle()
-
-/**
- * The flight is complete: kill whatever momentum is left and turn the
- * keepsake into a little moon. Anchored by nothing, lit well enough to be
- * found again from a long way off.
- */
-/obj/item/vestige_keepsake/proc/settle()
-	settled = TRUE
-	if(drift_handler)
-		qdel(drift_handler)
-	set_light(2, 1, "#7a5db8")
-	visible_message(span_warning("[src] stops dead in open space and starts to glow."))
-	var/datum/vestige_trial/little_moon/trial = get_bound_trial()
-	trial?.mark_settled()
-	var/mob/living/thrower = bound_mind?.current
-	if(istype(thrower))
-		to_chat(thrower, span_boldnotice("Somewhere out in the dark, the keepsake stops and starts to glow. It is waiting for you."))
-		playsound(thrower, 'sound/effects/magic/voidblink.ogg', 30, TRUE)
-
-// Retrieval is the completion: the settled keepsake returning to the thrower's
-// own possession fulfills the pact, wherever that reunion happens, geography
-// already puts it twenty-plus tiles of nothing away from where it was let go
-/obj/item/vestige_keepsake/equipped(mob/user, slot, initial = FALSE)
-	. = ..()
-	if(!settled || initial)
-		return
-	if(!user.mind || user.mind != bound_mind)
-		return
-	var/datum/vestige_trial/little_moon/trial = get_bound_trial()
-	if(!istype(trial))
-		return
-	to_chat(user, span_notice("The keepsake goes warm for a second, then vanishes out of your hand. Delivered."))
-	trial.complete() // deletes the trial, which reclaims the keepsake, touch neither afterward
+/obj/item/vestige_keepsake/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/datum/vestige_trial/little_moon/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.keepsake != src || interacting_with != trial.cradle || !user.Adjacent(interacting_with))
+		return NONE
+	trial.complete()
+	return ITEM_INTERACT_SUCCESS
 
 // ===== BOONS =====
 
@@ -755,7 +799,3 @@
 		span_warning("[owner] passes through [pane] like a smear on the glass!"),
 		span_notice("You slide through [pane] and come out the other side."),
 	)
-
-#undef VESTIGE_CALLER_ROOMS_NEEDED
-#undef VESTIGE_CALLER_PRESS_TIME
-#undef VESTIGE_MOON_DRIFT_NEEDED

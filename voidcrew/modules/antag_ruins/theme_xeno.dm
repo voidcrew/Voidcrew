@@ -29,23 +29,19 @@
 // Trial tuning (file-local, #undef at bottom). Trial descs quote these
 // numbers literally, keep them in sync.
 
-/// How long the Warm Season egg must stay warm once woken
-#define VESTIGE_WARM_INCUBATION (3 MINUTES)
-/// Delay from one work-gang's landing to the next gang's herald
-#define VESTIGE_WARM_SQUAD_DELAY (20 SECONDS)
+/// Minimum rebuilding window after a cleared gang
+#define VESTIGE_WARM_SQUAD_DELAY (8 SECONDS)
 /// Warning time between a gang announcing itself and arriving
 #define VESTIGE_WARM_WARNING_TIME (4 SECONDS)
-/// Largest work-gang the season sends at once
-#define VESTIGE_WARM_SQUAD_MAX 4
-/// Gangs landed before a salvage foreman starts leading them in
-#define VESTIGE_WARM_FOREMAN_FROM 5
+/// Work-gangs the normal season requires; no foreman
+#define VESTIGE_WARM_SQUADS 4
 /// How far from the egg the gangs surface (never closer than 3)
 #define VESTIGE_WARM_SPAWN_RANGE 7
 /// Hard lifespan on every chewer: abandoned assaults always clean themselves up
 #define VESTIGE_WARM_CHEWER_LIFESPAN (4 MINUTES)
-/// The planted egg's integrity: three unguarded chewer bites end the dynasty
+/// Ten unguarded cutter bites break the planted egg
 #define VESTIGE_WARM_EGG_INTEGRITY 240
-/// A woven resin wall's integrity (resin armor quarters melee brute, ~4 chewer bites)
+/// Thirteen cutter bites break a resin wall (melee brute is quartered)
 #define VESTIGE_WARM_RESIN_INTEGRITY 80
 /// How long a woven wall lasts before it dries out and crumbles on its own
 #define VESTIGE_WARM_RESIN_LIFESPAN (4 MINUTES)
@@ -59,7 +55,7 @@
 #define VESTIGE_WARM_WEAVE_TIME (1.5 SECONDS)
 
 /// Wild things the Boiling Kiss demands dead while the acid is still working in them
-#define VESTIGE_KISS_KILLS_NEEDED 5
+#define VESTIGE_KISS_KILLS_NEEDED 3
 /// The caustic maw's spit cooldown
 #define VESTIGE_KISS_COOLDOWN (6 SECONDS)
 /// How many tiles the acid glob flies
@@ -74,7 +70,7 @@
 #define VESTIGE_KISS_BITE_CAP 6
 
 /// Entries the Census demands: wild things stung in the very act of hunting
-#define VESTIGE_CENSUS_MARKS_NEEDED 7
+#define VESTIGE_CENSUS_MARKS_NEEDED 4
 /// Most entries any single subject can put in the rolls
 #define VESTIGE_CENSUS_PER_SUBJECT 2
 /// The census stinger's cooldown
@@ -97,11 +93,11 @@
 /proc/vestige_comb_quarry(mob/living/beast, mob/living/hunter)
 	if(!isliving(beast) || beast == hunter || ishuman(beast))
 		return FALSE
-	if(!isanimal_or_basicmob(beast))
+	if(!isanimal_or_basicmob(beast) || beast.mind || beast.client || beast.mob_size < MOB_SIZE_SMALL)
 		return FALSE
 	if(HAS_TRAIT(beast, TRAIT_PACIFISM) || HAS_TRAIT(beast, TRAIT_GODMODE))
 		return FALSE
-	if(beast.faction_check_atom(hunter)) // your own pack is not prey
+	if(hunter && beast.faction_check_atom(hunter)) // your own pack is not prey
 		return FALSE
 	return TRUE
 
@@ -165,9 +161,7 @@
  */
 /datum/vestige_trial/warm_season
 	name = "The Warm Season"
-	// Keep the numbers in sync with VESTIGE_WARM_INCUBATION / VESTIGE_WARM_SQUAD_DELAY
-	// (initial values must be constant, so no define interpolation here)
-	desc = "One egg in the gallery is still viable. I have counted twice. Take it, and take my spinneret with it. Plant the egg on ground you can hold and warm it: it needs three unbroken minutes, and the salvage vermin will smell the warmth inside the first one. They come in work-gangs, another every twenty seconds or so, and they chew through walls far faster than they chew through you. So build walls. Weave resin between them and the shell, let them eat it, and weave again. If the shell breaks, come back and renounce, and I will advance you another."
+	desc = "Plant the egg and weave resin around it. Four salvage gangs come for the comb: one cutter, then two, two, and three. They favor structures over flesh. Clear each gang, repair and rebuild, then touch the shell to call the next. The spinneret can spend one length to mend sixty shell. No previous boon is needed. If the egg is lost, replace your kit from the pact tracker."
 	/// The loaned egg, while it rides in a hand or pocket. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_comb_egg/egg_item
 	/// The planted egg, once it has been bedded down. Reclaimed the moment the pact ends.
@@ -199,15 +193,10 @@
 
 /datum/vestige_trial/warm_season/get_progress_text()
 	if(egg_structure && !QDELETED(egg_structure))
-		if(egg_structure.hatching)
-			return "The season is over. Something is happening inside the egg."
-		if(!egg_structure.assault_underway)
-			return "The egg is planted and cooling. Weave your ground, then warm it."
-		var/remaining = max(0, round((egg_structure.incubation_ends - world.time) / (1 SECONDS)))
-		return "The egg is warm, [remaining] seconds of the season remain, and [length(egg_structure.chewers)] of the vermin are on the comb."
+		return "Gang [egg_structure.squads_landed] of four; [length(egg_structure.chewers)] cutters remain. Clear the gang, then touch the egg to call the next. Shell: [round(egg_structure.atom_integrity)]/[egg_structure.max_integrity]."
 	if(egg_item && !QDELETED(egg_item))
-		return "The egg is warm in your keeping. Plant it on open ground you can hold, weave, and warm it."
-	return "The egg is gone. Renounce the pact and [patron_name] will advance you another."
+		return "Plant the egg on clear ground, weave resin, and touch the egg when ready."
+	return "The egg is gone. Replace your kit from the pact tracker to retry."
 
 // --- The egg, carried ---
 
@@ -265,6 +254,7 @@
 	var/obj/structure/vestige_comb_egg/clutch = new(ground)
 	clutch.bound_mind = user.mind
 	trial.egg_structure = clutch
+	trial.register_loan(clutch)
 	user.visible_message(
 		span_warning("[user] beds [src] down against the ground."),
 		span_notice("You bed the egg down. It settles in like it belongs there."),
@@ -281,10 +271,9 @@
  * hand. Once warm it runs the season itself. Heralds, work-gangs on a clock,
  * escalating sizes, idle stragglers re-converged, and holds no trial
  * reference: everything resolves through bound_mind at the moment it's needed,
- * the same rule the kit items follow. Unlike the Roost's broodwatch, victory
- * is not clearing the waves; it is the CLOCK. The shell must simply still be
- * whole when three minutes of warmth have passed, which makes delaying and
- * funneling (architecture) worth as much as killing.
+ * the same rule the kit items follow. The shell must still be
+ * whole when all four gangs are defeated. Resin delays the cutters long enough
+ * to intercept them and repair the shell.
  */
 /obj/structure/vestige_comb_egg
 	name = "hive egg"
@@ -300,14 +289,16 @@
 	var/datum/mind/bound_mind
 	/// Whether the season has been started. Set once, never unset
 	var/assault_underway = FALSE
-	/// world.time at which the warmth has been held long enough
-	var/incubation_ends = 0
 	/// Work-gangs landed so far (drives escalation)
 	var/squads_landed = 0
 	/// Whether the hatch has been scheduled (guards the deferred timer)
 	var/hatching = FALSE
 	/// Live chewers currently on the comb (culled by death/deletion signals)
 	var/list/chewers = list()
+	var/turf/squad_perch
+	var/squad_pending = FALSE
+	var/squad_lost = FALSE
+	var/next_squad_at = 0
 
 /obj/structure/vestige_comb_egg/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -335,11 +326,9 @@
 /obj/structure/vestige_comb_egg/examine(mob/user)
 	. = ..()
 	if(!assault_underway)
-		// Keep the numbers in sync with VESTIGE_WARM_INCUBATION / VESTIGE_WARM_SQUAD_DELAY
-		. += span_notice("It is planted and cold. A tap from the hand that planted it offers to warm it. Once warm it needs three unbroken minutes, and the comb's vermin come in work-gangs, another every twenty seconds or so. They would much rather eat walls than people.")
+		. += span_notice("It is planted and cold. A tap from the hand that planted it offers to warm it. Four work-gangs must be defeated. Touch the shell between gangs when ready. They would much rather eat walls than people.")
 	else if(!hatching)
-		var/remaining = max(0, round((incubation_ends - world.time) / (1 SECONDS)))
-		. += span_boldwarning("It is warm, and everything that chews nearby knows it. [remaining] seconds of the season remain.")
+		. += span_boldwarning("Gang [squads_landed] of four; [length(chewers)] cutters remain. Use the spinneret on the shell to repair it.")
 	if(atom_integrity < max_integrity * 0.35)
 		. += span_danger("The shell is webbed with cracks. It will not take much more.")
 	else if(atom_integrity < max_integrity * 0.7)
@@ -374,6 +363,12 @@
 		balloon_alert(user, "cold clean through!")
 		return
 	if(assault_underway)
+		if(!length(chewers) && !squad_pending && squads_landed < VESTIGE_WARM_SQUADS)
+			if(world.time < next_squad_at)
+				balloon_alert(user, "[DisplayTimeText(next_squad_at - world.time)] to rebuild")
+				return
+			herald_squad()
+			return
 		to_chat(user, span_boldnotice(trial.get_progress_text()))
 		return
 	var/choice = tgui_alert(user, "The egg is planted and patient. Begin the warm season here, on this ground?", name, list("Warm it", "Take it up", "Leave it"))
@@ -394,6 +389,7 @@
 	var/obj/item/vestige_comb_egg/shell = new(get_turf(src))
 	shell.bound_mind = bound_mind
 	trial.egg_item = shell
+	trial.register_loan(shell)
 	user.put_in_hands(shell)
 	user.visible_message(
 		span_warning("[user] works [src] loose from the ground and gathers it up."),
@@ -401,10 +397,9 @@
 	)
 	qdel(src) // Destroy clears the trial's structure pointer and refreshes the tracker
 
-/// Begins the season: the shell warms, the clock starts, and the first work-gang is heralded
+/// Begins the season: the shell warms and the first work-gang is heralded
 /obj/structure/vestige_comb_egg/proc/begin_season(mob/living/user)
 	assault_underway = TRUE
-	incubation_ends = world.time + VESTIGE_WARM_INCUBATION
 	START_PROCESSING(SSobj, src)
 	color = "#e0c47f" // the warmth takes
 	set_light(1.5, 0.8, "#ffce7a")
@@ -417,47 +412,42 @@
 
 /// Each work-gang announces itself before it lands, the weaver's cue to spend resin
 /obj/structure/vestige_comb_egg/proc/herald_squad()
-	if(QDELETED(src) || !assault_underway || hatching)
+	if(QDELETED(src) || !assault_underway || hatching || squad_pending || length(chewers) || squads_landed >= VESTIGE_WARM_SQUADS)
 		return
-	if(world.time >= incubation_ends) // the season ends before the gang arrives; let it
+	var/list/perches = vestige_hunt_approaches(src, VESTIGE_WARM_SPAWN_RANGE, chew_resin = TRUE)
+	if(!length(perches))
+		visible_message(span_warning("The cutters have no approach. Clear a route through to open ground, then touch the shell again. Your own resin may remain in their way."))
 		return
-	visible_message(span_boldwarning("Cutter-motors shrill somewhere close. A salvage gang has smelled the warmth!"))
+	squad_perch = pick(perches)
+	squad_pending = TRUE
+	visible_message(span_boldwarning("Cutter-motors shrill to the [dir2text(get_dir(src, squad_perch))] of [src]. Gang [squads_landed + 1] approaches in four seconds!"))
 	playsound(src, 'sound/machines/buzz/buzz-two.ogg', 60, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(land_squad)), VESTIGE_WARM_WARNING_TIME)
 
-/// A work-gang lands: escalating numbers, a foreman leading the late gangs, most of them comb-bound
 /obj/structure/vestige_comb_egg/proc/land_squad()
-	if(QDELETED(src) || !assault_underway || hatching)
+	if(QDELETED(src) || !assault_underway || hatching || !squad_pending)
 		return
-	var/list/perches = list()
-	for(var/turf/perch as anything in RANGE_TURFS(VESTIGE_WARM_SPAWN_RANGE, src))
-		if(get_dist(perch, src) < 3)
-			continue
-		if(perch.is_blocked_turf(exclude_mobs = TRUE))
-			continue
-		perches += perch
-	// BYOND round() floors: gangs run 1, 1, 2, 3, 3, 4, 4... capped at VESTIGE_WARM_SQUAD_MAX
-	var/squad_size = min(1 + round(squads_landed * 0.7), VESTIGE_WARM_SQUAD_MAX)
+	squad_pending = FALSE
+	var/list/perches = vestige_hunt_approaches(src, VESTIGE_WARM_SPAWN_RANGE, chew_resin = TRUE)
+	if(!(squad_perch in perches))
+		visible_message(span_warning("The approach has closed. Clear it and touch the shell to call the gang again."))
+		return
+	squad_lost = FALSE
+	var/list/gang_sizes = list(1, 2, 2, 3)
+	var/squad_size = gang_sizes[squads_landed + 1]
 	for(var/i in 1 to squad_size)
-		var/turf/perch = length(perches) ? pick(perches) : get_turf(src)
-		var/mob/living/basic/hivebot/vestige_comb_chewer/vermin
-		if(i == 1 && squads_landed >= VESTIGE_WARM_FOREMAN_FROM)
-			vermin = new /mob/living/basic/hivebot/vestige_comb_chewer/foreman(perch)
-		else
-			vermin = new /mob/living/basic/hivebot/vestige_comb_chewer(perch)
+		var/mob/living/basic/hivebot/vestige_comb_chewer/vermin = new(squad_perch)
 		do_sparks(3, TRUE, vermin)
-		// Late gangs bring a loose hunter to keep the weaver honest; everything else wants the comb
-		enlist(vermin, egg_bound = !(squad_size >= 3 && i == squad_size))
+		enlist(vermin, egg_bound = TRUE)
 	squads_landed++
-	visible_message(span_boldwarning("Salvage machines clatter out of the dark, cutters already spinning, and turn toward [src]!"))
+	visible_message(span_boldwarning("The salvage gang clatters from the announced approach, cutters spinning!"))
 	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
 	trial?.refresh_tracker()
-	if(world.time + VESTIGE_WARM_SQUAD_DELAY + VESTIGE_WARM_WARNING_TIME < incubation_ends)
-		addtimer(CALLBACK(src, PROC_REF(herald_squad)), VESTIGE_WARM_SQUAD_DELAY)
 
 /// Books a chewer into the season: siege roster, death/deletion signals, and its own despawn clock
 /obj/structure/vestige_comb_egg/proc/enlist(mob/living/basic/hivebot/vestige_comb_chewer/vermin, egg_bound = TRUE)
 	chewers += vermin
+	get_bound_trial()?.register_loan(vermin)
 	RegisterSignal(vermin, COMSIG_LIVING_DEATH, PROC_REF(on_chewer_slain))
 	RegisterSignal(vermin, COMSIG_QDELETING, PROC_REF(on_chewer_gone))
 	// The lifespan rides the CHEWER, not the egg. Orphans always clean themselves up
@@ -466,15 +456,26 @@
 		vermin.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
 
 /// Strikes a chewer from the roster. Safe to call twice (death then deletion).
-/obj/structure/vestige_comb_egg/proc/muster_out(mob/living/vermin)
+/obj/structure/vestige_comb_egg/proc/muster_out(mob/living/vermin, slain = FALSE)
 	if(!(vermin in chewers))
 		return
 	chewers -= vermin
+	if(!slain)
+		squad_lost = TRUE
+	if(!length(chewers))
+		if(squad_lost)
+			squads_landed--
+			visible_message(span_warning("The gang escaped the season. Call that gang again when the approach is clear."))
+		if(squads_landed >= VESTIGE_WARM_SQUADS)
+			finish_season()
+		else
+			next_squad_at = world.time + VESTIGE_WARM_SQUAD_DELAY
+			visible_message(span_notice("The gang is cleared. Repair and rebuild; touch the egg after eight seconds to call the next."))
 	UnregisterSignal(vermin, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 
 /obj/structure/vestige_comb_egg/proc/on_chewer_slain(mob/living/vermin, gibbed)
 	SIGNAL_HANDLER
-	muster_out(vermin)
+	muster_out(vermin, slain = TRUE)
 	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
 	trial?.refresh_tracker()
 
@@ -485,15 +486,11 @@
 	trial?.refresh_tracker()
 
 /**
- * The season's clock, and its honesty: the warmth is checked here, stragglers
- * with nothing to chew are re-pointed at the shell, and the tracker's countdown
- * is kept roughly current without rebuilding buttons every tick.
+ * Stragglers with nothing to chew are re-pointed at the shell. Progress remains
+ * on the gang roster; merely surviving a clock cannot complete the season.
  */
 /obj/structure/vestige_comb_egg/process(seconds_per_tick)
 	if(!assault_underway || hatching)
-		return
-	if(world.time >= incubation_ends)
-		finish_season()
 		return
 	for(var/mob/living/basic/hivebot/vestige_comb_chewer/vermin as anything in chewers)
 		var/datum/ai_controller/directive = vermin.ai_controller
@@ -508,9 +505,9 @@
 	if(SPT_PROB(3, seconds_per_tick))
 		visible_message(span_warning("Something shifts its weight, once, inside [src]."))
 
-/// Three minutes of warmth held: the gangs wind down, and the shell has earned its heir
+/// All four gangs defeated: the shell has earned its heir
 /obj/structure/vestige_comb_egg/proc/finish_season()
-	if(hatching)
+	if(hatching || squad_lost || squads_landed < VESTIGE_WARM_SQUADS || length(chewers))
 		return
 	hatching = TRUE
 	assault_underway = FALSE // no gang lands after the season, no clock keeps running
@@ -548,7 +545,7 @@
 	var/mob/living/keeper = bound_mind?.current
 	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
 	if(istype(trial) && isliving(keeper))
-		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives level and unhurried: \"So the count is one fewer. Come back and renounce, and I will advance you another.\""))
+		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives level and unhurried: \"So the count is one fewer. Replace your kit through the pact tracker and I will advance you another.\""))
 	return ..()
 
 // --- The heir ---
@@ -613,7 +610,7 @@
 
 /obj/item/vestige_comb_spinneret/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed toward open ground within [VESTIGE_WARM_WEAVE_RANGE] tiles, it weaves a wall of fresh comb resin. It holds [VESTIGE_WARM_RESIN_CHARGES] lengths at a time and redraws one every [VESTIGE_WARM_RESIN_REGEN / (1 SECONDS)] seconds; each wall dries out and crumbles on its own after a few minutes. It only weaves while the planted egg is still standing.")
+	. += span_notice("Pressed toward open ground within [VESTIGE_WARM_WEAVE_RANGE] tiles, it weaves a wall of fresh comb resin. It holds [VESTIGE_WARM_RESIN_CHARGES] lengths at a time and redraws one every [VESTIGE_WARM_RESIN_REGEN / (1 SECONDS)] seconds; each wall dries out and crumbles on its own after a few minutes. It only weaves while the planted egg is still standing. Use it on the shell to spend one length and three seconds repairing sixty integrity.")
 	. += span_notice("[charges] of [VESTIGE_WARM_RESIN_CHARGES] lengths are drawn and ready.")
 
 /obj/item/vestige_comb_spinneret/attack_self(mob/user, modifiers)
@@ -624,6 +621,8 @@
 	return TRUE
 
 /obj/item/vestige_comb_spinneret/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(istype(interacting_with, /obj/structure/vestige_comb_egg))
+		return mend_egg(interacting_with, user)
 	if(!isopenturf(interacting_with))
 		return NONE
 	return weave(interacting_with, user)
@@ -632,6 +631,26 @@
 	if(!isopenturf(interacting_with))
 		return NONE
 	return weave(interacting_with, user)
+
+/// Repair trades a weaving charge and a vulnerable channel for shell integrity.
+/obj/item/vestige_comb_spinneret/proc/mend_egg(obj/structure/vestige_comb_egg/egg, mob/living/user)
+	var/datum/vestige_trial/warm_season/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.spinneret != src || trial.egg_structure != egg || !user.Adjacent(egg))
+		return ITEM_INTERACT_BLOCKING
+	if(charges < 1 || egg.atom_integrity >= egg.max_integrity)
+		balloon_alert(user, "needs damaged shell and one length of resin!")
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(user, "mending shell...")
+	if(!do_after(user, 3 SECONDS, target = egg))
+		return ITEM_INTERACT_BLOCKING
+	if(QDELETED(egg) || !user.is_holding(src) || trial != user.mind?.active_vestige_trial || charges < 1)
+		return ITEM_INTERACT_BLOCKING
+	charges--
+	next_draw_at = max(next_draw_at, world.time + VESTIGE_WARM_RESIN_REGEN)
+	egg.repair_damage(60)
+	balloon_alert(user, "shell mended")
+	trial.refresh_tracker()
+	return ITEM_INTERACT_SUCCESS
 
 /// The weave: gate, channel, re-gate, wall. The mid-assault loop lives here.
 /obj/item/vestige_comb_spinneret/proc/weave(turf/open/ground, mob/living/user)
@@ -669,6 +688,7 @@
 	var/obj/structure/vestige_comb_resin/wall = new(ground)
 	wall.bound_mind = user.mind
 	trial.woven += wall
+	trial.register_loan(wall)
 	user.visible_message(
 		span_warning("[user] draws a rope of amber resin from [src] and it stands up into a wall!"),
 		span_notice("You weave a length of the comb back into the world. It sets fast."),
@@ -731,7 +751,7 @@
 	maxHealth = 35
 	melee_damage_lower = 6
 	melee_damage_upper = 6
-	obj_damage = 80 // the priorities: walls are food, people are furniture
+	obj_damage = 25 // 6.25 per melee bite against resin, 25 against the bare egg
 	death_message = "grinds to a halt and comes apart!"
 	ai_controller = /datum/ai_controller/basic_controller/vestige_comb_chewer
 
@@ -807,7 +827,7 @@
  * and the trial credits a wild thing only if it dies inside that window. Where
  * the Roost's ember-jaw is a cone you sweep and a fire that either takes or
  * doesn't, the kiss is a commitment: spit, then close on the melting target
- * and finish it yourself before the acid dries. Attribution is honest the same
+ * and finish it with weapons or helpers before the acid dries. Attribution is honest the same
  * way the ember-jaw's is. The maw marks what it lands on, an expired
  * corrosion releases the mark, and only a mark that dies still melting pays.
  */
@@ -815,7 +835,7 @@
 	name = "The Boiling Kiss"
 	// Keep the numbers in sync with VESTIGE_KISS_KILLS_NEEDED / VESTIGE_KISS_CLING
 	// (initial values must be constant, so no define interpolation here)
-	desc = "My daughters carried acid the way courtiers carry seals. Take this maw. The acid clings for fourteen seconds and eats deeper the whole time, and I want five wild things finished while it is still working in them. Spit, then close. Kill them yourself, before the acid dries or something else gets there first. Anything that dies unmarked is scavenge, and I do not count scavenge."
+	desc = "My daughters carried acid the way courtiers carry seals. Take this maw. The acid clings for fourteen seconds and eats deeper the whole time, and I want three wild beasts at least carp-sized finished while it is still working in them. Spit, then close. You or your helpers must finish them before the acid dries. Another spit refreshes the fourteen-second window. Anything that dies unmarked is scavenge, and I do not count scavenge."
 	/// Prey already entered in the ledger (weakref -> TRUE). A revived and re-melted beast is still one appointment
 	var/list/dissolved = list()
 	/// The loaned maw. Reclaimed the moment the pact ends.
@@ -883,7 +903,11 @@
 
 /obj/item/vestige_kiss_maw/examine(mob/user)
 	. = ..()
-	. += span_notice("Aim it at a living thing within [VESTIGE_KISS_RANGE] tiles to spit a glob of clinging acid. Only wild animals that die while the acid is still working in them count. If it dries first, or something else lands the kill, that one is wasted.")
+	for(var/mob/living/prey as anything in marked_prey)
+		var/datum/status_effect/vestige_kiss_corrosion/coating = prey.has_status_effect(/datum/status_effect/vestige_kiss_corrosion)
+		if(coating)
+			. += span_notice("[prey]: marked for [DisplayTimeText(max(0, coating.duration - world.time))]; next acid bite [coating.bite].")
+	. += span_notice("Aim it at a living thing within [VESTIGE_KISS_RANGE] tiles to spit a glob of clinging acid. Only wild animals that die while the acid is still working in them count. Helpers may finish your marked quarry. Reapply acid before it dries; examine the maw for active marks and their remaining time.")
 
 /obj/item/vestige_kiss_maw/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isliving(interacting_with) || interacting_with == user)
@@ -903,6 +927,9 @@
 		return ITEM_INTERACT_BLOCKING
 	if(!COOLDOWN_FINISHED(src, spit_cooldown))
 		balloon_alert(hunter, "the glands are still swelling!")
+		return ITEM_INTERACT_BLOCKING
+	if(trial.maw != src || hunter.mind != bound_mind || !vestige_comb_quarry(target, hunter) || target.stat == DEAD || target.z != hunter.z || get_dist(target, hunter) > VESTIGE_KISS_RANGE)
+		balloon_alert(hunter, "needs living wild quarry within six tiles!")
 		return ITEM_INTERACT_BLOCKING
 	COOLDOWN_START(src, spit_cooldown, VESTIGE_KISS_COOLDOWN)
 	hunter.visible_message(
@@ -948,6 +975,8 @@
 	if(!istype(trial))
 		return
 	var/mob/living/hunter = hunter_mind.current
+	if(!vestige_comb_quarry(prey, hunter))
+		return
 	if(trial.consume(prey) && isliving(hunter)) // consume may complete (and delete) the trial, nothing touches it after this
 		to_chat(hunter, span_notice("[prey] dies with the acid still working. That one counts."))
 		playsound(hunter, 'sound/mobs/non-humanoids/hiss/lowHiss3.ogg', 25, TRUE)
@@ -978,24 +1007,21 @@
 
 /obj/projectile/vestige_kiss_glob/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
-	if(!isliving(target) || blocked >= 100)
+	if(. != BULLET_ACT_HIT)
 		return
-	var/mob/living/prey = target
-	if(HAS_TRAIT(prey, TRAIT_GODMODE)) // patrons and traders do not melt
-		return
-	prey.apply_status_effect(/datum/status_effect/vestige_kiss_corrosion)
-	to_chat(prey, span_userdanger("[firer ? "[firer]'s" : "A"] glob of acid splashes across you and starts to work inward!"))
-	// The ledger only opens for honest quarry with a live pact behind the spit
 	var/obj/item/vestige_kiss_maw/maw = fired_from
 	var/mob/living/hunter = firer
-	if(!istype(maw) || !isliving(hunter))
-		return
-	if(!vestige_comb_quarry(prey, hunter))
-		return
-	var/datum/vestige_trial/boiling_kiss/trial = hunter.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	maw.mark_prey(prey, hunter.mind)
+	var/datum/vestige_trial/boiling_kiss/trial = hunter?.mind?.active_vestige_trial
+	// atom/bullet_act calls on_hit before living applies projectile damage.
+	// Keep the mark here so a lethal first glob retains its existing credit.
+	if(isliving(target) && blocked < 100 && istype(maw) && !QDELETED(maw) && istype(trial) && trial.maw == maw && maw.bound_mind == hunter.mind)
+		var/mob/living/prey = target
+		if(!HAS_TRAIT(prey, TRAIT_GODMODE) && prey.stat != DEAD)
+			prey.apply_status_effect(/datum/status_effect/vestige_kiss_corrosion)
+			if(vestige_comb_quarry(prey, hunter))
+				maw.mark_prey(prey, hunter.mind)
+				maw.balloon_alert(hunter, "[prey]: fourteen-second acid mark")
+	return .
 
 // --- The corrosion ---
 
@@ -1047,18 +1073,19 @@
  * scenery: no entry, no seize, so the barb never becomes a stun weapon (the
  * Menagerie's probe precedent). Where the Roost's Wingbeat is a two-tile
  * melee-range parry, the Census is read-and-intercept at seven tiles, the
- * pressure is watching OTHER hunts, not surviving your own. Capped per
- * subject so seven entries means reading seven real hunts, not farming one
- * persistent carp.
+ * pressure is watching OTHER hunts, not surviving your own. Recorded per
+ * behavior: each quarry supplies one distant pursuit and one close commitment.
  */
 /datum/vestige_trial/comb_census
 	name = "The Census"
 	// Keep the numbers in sync with VESTIGE_CENSUS_MARKS_NEEDED / VESTIGE_CENSUS_PER_SUBJECT
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A queen should know what hunts along her borders. Take the stinger and count them for me: sting wild things in the act of hunting, mid-charge, already committed to something alive. Seven entries. An idle animal does not count, it is scenery. No subject goes in the rolls more than twice. Anything the sting counts also seizes up for a moment, which you may find useful."
+	desc = "A queen should know what hunts along her borders. Take the stinger and count them for me: sting wild things in the act of hunting, mid-charge, already committed to something alive. Four entries: record a distant pursuit (at least four tiles from its prey) and a close commitment (within two tiles) from each of two beasts. No beast can contribute the same behavior twice. An idle animal does not count. Anything the sting counts also seizes up for a moment, which you may find useful."
 	/// Entries in the rolls so far
 	var/entries = 0
-	/// Entries per subject (weakref -> count), capping repeat appearances
+	/// Subjects with both pursuit and commitment recorded; incomplete profiles never block new ones.
+	var/complete_profiles = 0
+	/// Recorded behaviors per subject (weakref -> list of behavior names)
 	var/list/entries_per_subject = list()
 	/// The loaned stinger. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_census_stinger/stinger
@@ -1074,18 +1101,25 @@
 	return ..()
 
 /datum/vestige_trial/comb_census/get_progress_text()
-	return "The rolls hold [entries] of [VESTIGE_CENSUS_MARKS_NEEDED] entries."
+	return "[complete_profiles]/2 complete profiles: each beast needs both a distant pursuit and a close commitment. [entries] observations total; you may abandon an incomplete profile and observe another beast."
 
 /// Enters a mid-hunt subject in the rolls. May complete (and delete) the trial. Returns FALSE if this subject is counted out.
-/datum/vestige_trial/comb_census/proc/tally(mob/living/subject)
-	var/datum/weakref/key = WEAKREF(subject)
-	var/prior = entries_per_subject[key] || 0
-	if(prior >= VESTIGE_CENSUS_PER_SUBJECT)
+/datum/vestige_trial/comb_census/proc/tally(mob/living/subject, behavior)
+	if(!(behavior in list("pursuit", "commitment")))
 		return FALSE
-	entries_per_subject[key] = prior + 1
+	var/datum/weakref/key = WEAKREF(subject)
+	var/list/prior = entries_per_subject[key]
+	if(!prior)
+		prior = list()
+		entries_per_subject[key] = prior
+	if(!behavior || (behavior in prior))
+		return FALSE
+	prior += behavior
 	entries++
+	if(length(prior) == 2)
+		complete_profiles++
 	refresh_tracker()
-	if(entries >= VESTIGE_CENSUS_MARKS_NEEDED)
+	if(complete_profiles >= 2)
 		complete()
 	return TRUE
 
@@ -1120,7 +1154,7 @@
 
 /obj/item/vestige_census_stinger/examine(mob/user)
 	. = ..()
-	. += span_notice("Aim it at a living thing within [VESTIGE_CENSUS_RANGE] tiles to fire a neuro-barb. Only a wild animal caught in the act of hunting a living person goes in the rolls, and only counted subjects seize up. The same subject can appear at most [VESTIGE_CENSUS_PER_SUBJECT] times.")
+	. += span_notice("Aim it at a living thing within [VESTIGE_CENSUS_RANGE] tiles to fire a neuro-barb. Only a wild animal caught in the act of hunting a living person goes in the rolls, and only counted subjects seize up. Each beast can supply one pursuit (at least four tiles from its prey) and one commitment (within two tiles). The barb checks again at impact.")
 
 /obj/item/vestige_census_stinger/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isliving(interacting_with) || interacting_with == user)
@@ -1135,12 +1169,18 @@
 /// The barb itself: one aimed shot, pact-gated, on the stinger's own clock
 /obj/item/vestige_census_stinger/proc/sting_at(mob/living/target, mob/living/hunter, list/modifiers)
 	var/datum/vestige_trial/comb_census/trial = hunter.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || trial.stinger != src || bound_mind != hunter.mind)
 		balloon_alert(hunter, "the stinger hangs limp!")
 		return ITEM_INTERACT_BLOCKING
 	if(!COOLDOWN_FINISHED(src, sting_cooldown))
 		balloon_alert(hunter, "the barb is still weeping!")
 		return ITEM_INTERACT_BLOCKING
+	var/behavior = observed_behavior(target)
+	var/list/prior = trial.entries_per_subject[WEAKREF(target)]
+	if(!vestige_comb_quarry(target, hunter) || !is_declared_hunter(target, hunter) || !behavior || (behavior in prior))
+		balloon_alert(hunter, "need a new pursuit (4+ tiles) or commitment (1-2 tiles)!")
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(hunter, "[behavior] ready")
 	COOLDOWN_START(src, sting_cooldown, VESTIGE_CENSUS_COOLDOWN)
 	hunter.visible_message(
 		span_danger("[hunter] flicks [src], and a barb whips out toward [target]!"),
@@ -1161,22 +1201,26 @@
  */
 /obj/item/vestige_census_stinger/proc/appraise(mob/living/subject, mob/living/hunter)
 	var/datum/vestige_trial/comb_census/trial = hunter.mind?.active_vestige_trial
-	if(!istype(trial)) // the pact ended while the barb was in the air
+	if(!istype(trial) || trial.stinger != src || bound_mind != hunter.mind) // the pact ended while the barb was in the air
 		return
 	if(!vestige_comb_quarry(subject, hunter))
 		return
 	if(!is_declared_hunter(subject, hunter))
 		to_chat(hunter, span_warning("[subject] was idle when the barb landed. Only hunts already underway count."))
 		return
-	if(!trial.tally(subject)) // may complete (and delete) the trial, nothing touches it after this
-		to_chat(hunter, span_warning("[subject] is already in the rolls [VESTIGE_CENSUS_PER_SUBJECT] times. Find a new subject."))
+	var/behavior = observed_behavior(subject)
+	if(!behavior)
+		balloon_alert(hunter, "between pursuit and commitment ranges")
+		return
+	if(!trial.tally(subject, behavior)) // may complete (and delete) the trial, nothing touches it after this
+		to_chat(hunter, span_warning("[subject] has already shown that behavior. Observe its other range, or another beast."))
 		return
 	subject.Paralyze(VESTIGE_CENSUS_SEIZE)
 	subject.visible_message(
 		span_danger("[subject] seizes mid-lunge, every limb stamped still at once!"),
 		span_userdanger("Something cold hits you, and your whole body locks up!"),
 	)
-	to_chat(hunter, span_notice("[subject] is caught in the act and entered in the rolls."))
+	to_chat(hunter, span_notice("[subject] is entered in the rolls: [behavior]."))
 
 /**
  * TRUE when a subject's sting should count: conscious and currently hunting a
@@ -1184,6 +1228,19 @@
  * hunt through the AI blackboard; the old simple_animal hostiles still carry
  * theirs on a target var. (Quarry-ness is checked separately, above.)
  */
+/obj/item/vestige_census_stinger/proc/observed_behavior(mob/living/subject)
+	var/mob/living/prey = vestige_loom_hunted_prey(subject)
+	if(!prey)
+		return null
+	var/distance = get_dist(subject, prey)
+	if(subject.z != prey.z)
+		return null
+	if(distance >= 4)
+		return "pursuit"
+	if(distance <= 2)
+		return "commitment"
+	return null
+
 /obj/item/vestige_census_stinger/proc/is_declared_hunter(mob/living/subject, mob/living/hunter)
 	if(subject.stat != CONSCIOUS)
 		return FALSE
@@ -1221,15 +1278,13 @@
 		return
 	var/obj/item/vestige_census_stinger/stinger = fired_from
 	var/mob/living/hunter = firer
-	if(!istype(stinger) || !isliving(hunter))
+	if(!istype(stinger) || QDELETED(stinger) || !isliving(hunter))
 		return
 	stinger.appraise(target, hunter)
 
-#undef VESTIGE_WARM_INCUBATION
 #undef VESTIGE_WARM_SQUAD_DELAY
 #undef VESTIGE_WARM_WARNING_TIME
-#undef VESTIGE_WARM_SQUAD_MAX
-#undef VESTIGE_WARM_FOREMAN_FROM
+#undef VESTIGE_WARM_SQUADS
 #undef VESTIGE_WARM_SPAWN_RANGE
 #undef VESTIGE_WARM_CHEWER_LIFESPAN
 #undef VESTIGE_WARM_EGG_INTEGRITY
