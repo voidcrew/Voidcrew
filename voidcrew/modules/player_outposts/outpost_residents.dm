@@ -93,6 +93,14 @@
 	var/datum/job/job = SSjob.get_job_type(/datum/job/assistant)
 	if(SSjob.check_job_eligibility(src, job, "Outpost resident arrival") != JOB_AVAILABLE || !job.special_check_latejoin(client))
 		return FALSE
+	// Eligibility can yield on the database. Another join request may have begun
+	// spawning this same lobby mob meanwhile; only one may reserve a pod and role.
+	if(spawning || spawning_ship || !client || QDELETED(home) || revision != home.resident_access_revision)
+		return FALSE
+	error = home.resident_admission_error(ckey, attempt)
+	if(error)
+		to_chat(src, span_warning(error))
+		return FALSE
 	var/obj/machinery/cryopod/pod = home.available_resident_pod()
 	if(!pod)
 		return FALSE
