@@ -19,11 +19,15 @@
 	return get_voidcrew_ship_for_turf(get_turf(thing)) || get_outpost_from_atom(thing)
 
 /proc/same_service_site(atom/first, atom/second)
+	var/turf/first_turf = get_turf(first)
+	var/turf/second_turf = get_turf(second)
+	if(!first_turf || !second_turf)
+		return FALSE
 	var/obj/structure/overmap/site = get_service_site(first)
 	var/obj/structure/overmap/other = get_service_site(second)
 	if(site || other)
 		return site && site == other
-	return is_valid_z_level(get_turf(first), get_turf(second))
+	return is_valid_z_level(first_turf, second_turf)
 
 /datum/outpost_berth/proc/contains_service_turf(turf/location)
 	if(!reservation || !location)

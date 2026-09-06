@@ -327,3 +327,15 @@
 	TEST_ASSERT(home.home_bundle_installed, "Waystation Frame omitted the included bundle")
 	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Waystation Frame has no resident arrival point")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 0, "A new home received an unpurchased allowance")
+
+/// Material/research checks can run after a buffered endpoint leaves the map.
+/datum/unit_test/voidcrew_service_site_nullspace/Run()
+	var/obj/item/first = allocate(/obj/item)
+	var/obj/item/second = allocate(/obj/item)
+	TEST_ASSERT(same_service_site(first, second), "Co-located unregistered endpoints lost normal local linking")
+	first.moveToNullspace()
+	TEST_ASSERT(!same_service_site(first, second), "A removed source retained a physical service link")
+	TEST_ASSERT(!same_service_site(second, first), "A removed target retained a physical service link")
+	second.moveToNullspace()
+	TEST_ASSERT(!same_service_site(first, second), "Two missing endpoints were treated as one service site")
+	TEST_ASSERT(!same_service_site(null, run_loc_floor_bottom_left), "A deleted endpoint retained a service link")
