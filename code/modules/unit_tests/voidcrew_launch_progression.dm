@@ -191,12 +191,14 @@
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
 	buyer.mind_initialize()
+	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
 	buyer.mind.ship_teams = list(team)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart purchase test", null, 1, FALSE)
 	account.account_balance = 20000
 	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
+	qdel(id_card.registered_account)
 	id_card.registered_account = account
 	TEST_ASSERT(buyer.put_in_hands(id_card), "Buyer could not carry their paying ID")
 	var/price = sku.get_credit_price(buyer)
