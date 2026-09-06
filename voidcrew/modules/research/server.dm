@@ -18,7 +18,7 @@
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
 /obj/machinery/rnd/server/ship
-	desc = "A computer system that hosts a source R&D server drive, allowing research to be loaded and saved onto a disk, and shared within a vessel."
+	desc = "A computer system that hosts a physical R&D source disk and shares its research with linked machinery on the same ship or outpost. Use a multitool to connect local research equipment."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
 	///Installed source code files that hosts our research.
 	var/obj/item/computer_disk/ship_disk/source_code_hdd
@@ -221,7 +221,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  */
 /obj/item/computer_disk/ship_disk
 	name = "R&D server source code"
-	desc = "The source code on this drive stores all the research from a ship, insert it into an R&D console to make use of it."
+	desc = "This drive stores research for a ship or outpost. Insert it into an R&D server, then use a multitool to link local research equipment."
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research

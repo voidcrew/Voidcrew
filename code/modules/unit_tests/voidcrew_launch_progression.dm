@@ -63,9 +63,12 @@
 	console.current_survey_target = null
 	QDEL_NULL(console.data)
 
-/// Only the location discovery is substituted: production survey/reward code runs.
+/// Only physical hull/target discovery is substituted: production survey/reward code runs.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/launch_test
 	var/list/test_candidates = list()
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/launch_test/validate_ship_binding()
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/launch_test/get_survey_candidates()
 	return test_candidates
