@@ -145,4 +145,3 @@
 	TEST_ASSERT_EQUAL(controller.get_backup(backup_id), original, "Research separation discarded an existing cloud backup")
 	TEST_ASSERT(program in original.nanites.programs, "Research separation erased an existing cloud program")
 	qdel(controller)
-

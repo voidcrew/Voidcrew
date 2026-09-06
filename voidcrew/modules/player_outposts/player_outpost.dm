@@ -230,6 +230,12 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/proc/on_management_mind_transfer(datum/mind/source, mob/living/previous_body)
 	SIGNAL_HANDLER
+	// Our signal runs before the action's own mind-transfer callback. Move the
+	// existing action first so the refresh cannot delete it while that callback
+	// is still queued, then have the callback grant the deleted action again.
+	for(var/datum/action/innate/player_outpost_management/action in previous_body?.actions?.Copy())
+		if(action.managed_outpost == src)
+			action.Grant(source.current)
 	sync_management_lifecycle()
 
 /obj/structure/overmap/dynamic/player_outpost/proc/on_management_body_login(mob/living/source)

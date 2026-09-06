@@ -57,9 +57,12 @@
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in steward.actions, "Restoring steward authority did not restore the action.")
 
 	replacement_body = allocate(/mob/living/carbon/human/consistent, location)
+	var/datum/action/innate/player_outpost_management/original_action = locate() in owner.actions
 	owner.mind.transfer_to(replacement_body, TRUE)
 	TEST_ASSERT(!(locate(/datum/action/innate/player_outpost_management) in owner.actions), "The old owner body kept a management action after body transfer.")
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions, "The owner action did not follow the mind to its replacement body.")
+	TEST_ASSERT(!QDELETED(original_action) && (original_action in replacement_body.actions), "Mind transfer deleted the action before its own transfer callback ran.")
+	TEST_ASSERT_EQUAL(management_action_count(replacement_body), 1, "Mind transfer granted a duplicate or deleted action.")
 
 	SEND_SIGNAL(replacement_body, COMSIG_MOB_LOGIN)
 	TEST_ASSERT(locate(/datum/action/innate/player_outpost_management) in replacement_body.actions, "A returning owner body lost its management action on login refresh.")
