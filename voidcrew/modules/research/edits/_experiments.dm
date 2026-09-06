@@ -3,10 +3,47 @@
 #define RESEARCH_POINTS_PER_EXPERIMENT 200
 
 /datum/experiment/finish_experiment(datum/component/experiment_handler/experiment_handler)
+	if(QDELETED(experiment_handler) || !experiment_handler.validate_research_site())
+		return FALSE
+	var/datum/techweb/web = experiment_handler.linked_web
+	// A delayed signal must not finish work on a replacement link, or pay twice.
+	if(web.completed_experiments[type] || !(src in web.available_experiments))
+		return FALSE
 	. = ..()
-	experiment_handler.linked_web.add_point_list(list(
+	web.add_point_list(list(
 		TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT),
 	)
+	return TRUE
+
+/// Stop physical callbacks when a relay, disk or selected experiment is removed.
+/datum/experiment/physical/on_unselected(datum/component/experiment_handler/experiment_handler)
+	. = ..()
+	if(linked_experiment_handler != experiment_handler)
+		return
+	if(currently_scanned_atom)
+		unregister_events()
+	currently_scanned_atom = null
+	linked_experiment_handler = null
+
+/datum/experiment/physical/Destroy()
+	if(currently_scanned_atom)
+		unregister_events()
+	currently_scanned_atom = null
+	linked_experiment_handler = null
+	return ..()
+
+/datum/component/experiment_handler/Destroy(force)
+	unlink_techweb()
+	return ..()
+
+/datum/experiment/physical/finish_experiment(datum/component/experiment_handler/experiment_handler)
+	if(experiment_handler != linked_experiment_handler)
+		return FALSE
+	if(currently_scanned_atom)
+		unregister_events()
+	. = ..()
+	linked_experiment_handler = null
+	// Physical subtypes still use the target for their completion effects.
 
 /**
  * Ordnance experiments never pass through finish_experiment() - they are finished off from
