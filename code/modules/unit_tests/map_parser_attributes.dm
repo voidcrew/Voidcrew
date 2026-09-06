@@ -3,6 +3,9 @@
 
 /datum/unit_test/map_parser_attributes/Run()
 	var/datum/parsed_map/parsed = allocate(/datum/parsed_map)
+	// This fixture builds a cache directly; initialize the bounds normally supplied by file parsing.
+	parsed.bounds = list(1, 1, 1, 1, 1, 1)
+	parsed.parsed_bounds = parsed.bounds.Copy()
 	var/missing_path = "/obj/unit_test_missing_map_path"
 	var/list/bad_paths = list()
 	parsed.grid_models["a"] = {"/obj/effect/map_parser_attributes{
