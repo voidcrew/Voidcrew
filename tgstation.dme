@@ -7245,6 +7245,7 @@
 #include "voidcrew\modules\research\edits\mech_fabricator.dm"
 #include "voidcrew\modules\research\edits\medbot.dm"
 #include "voidcrew\modules\research\edits\operating.dm"
+#include "voidcrew\modules\research\edits\science_program.dm"
 #include "voidcrew\modules\ship_combat\_console_ambience.dm"
 #include "voidcrew\modules\ship_combat\_realtime_sound.dm"
 #include "voidcrew\modules\ship_combat\_ship_effects.dm"

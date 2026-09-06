@@ -43,7 +43,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		UnregisterSignal(source_code_hdd, COMSIG_QDELETING)
 	if(stored_research)
 		stored_research.techweb_servers -= src
-		for(var/atom/consumer as anything in stored_research.connected_machines.Copy())
+		for(var/datum/consumer as anything in stored_research.connected_machines.Copy())
 			consumer.unsync_research_servers()
 		for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
 			if(handler.linked_web == stored_research)
@@ -146,7 +146,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	to_chat(user, span_notice("Stored [src]'s techweb information in [multi]."))
 	return TRUE
 
-/atom/proc/unsync_research_servers()
+/datum/proc/unsync_research_servers()
 	return
 
 /// Recheck both physical endpoints before using a disk. Shuttle movement can move them
