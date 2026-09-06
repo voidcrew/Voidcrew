@@ -111,7 +111,10 @@
 	home.arrival_reservations[player_key] = TRUE
 	pod.arrival_reserved = TRUE
 	spawning_ship = TRUE
-	if(!SSjob.assign_role(src, job, TRUE))
+	// Eligibility was checked immediately before reserving. Do not yield again
+	// here: a disconnect could delete this lobby mob while its pod is reserved.
+	// The final appearance callback still rechecks eligibility before arrival.
+	if(!SSjob.assign_role(src, job, TRUE, do_eligibility_checks = FALSE))
 		home.arrival_reservations -= player_key
 		pod.arrival_reserved = FALSE
 		spawning_ship = FALSE
