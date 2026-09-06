@@ -9,6 +9,10 @@
 	var/obj/docking_port/mobile/voidcrew/test_port
 
 /datum/unit_test/voidcrew_bank_coin_deposits/Destroy()
+	for(var/mob/player in allocated)
+		if(!QDELETED(player))
+			player.key = null
+			player.ckey = null
 	if(!QDELETED(test_port))
 		test_port.current_ship = null
 		qdel(test_port, force = TRUE)
@@ -70,7 +74,7 @@
 	TEST_ASSERT_EQUAL(personal.account_balance, 60, "The claim bank did not debit the payer account.")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, 200 + coin_value + 40, "The claim bank did not credit the treasury.")
 	TEST_ASSERT(home.treasury.transaction_history.len >= 2, "The claim bank did not record its account deposit.")
-	user.ckey = "coinowner"
+	user.key = "coinowner"
 	home.founder_ckey = user.ckey
 	world.push_usr(user, CALLBACK(shore_bank, TYPE_PROC_REF(/datum, ui_act), "withdraw", list("amount" = "25"), bank_ui))
 	TEST_ASSERT_EQUAL(personal.account_balance, 85, "The claim bank did not credit the withdrawal recipient.")
