@@ -405,7 +405,7 @@
 	stock_max = 1
 
 // =========================================================================
-// AMMUNITION: parlor-only reloads (the return-visit hook)
+// AMMUNITION: proprietary reloads (late research also offers fabrication)
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/ronin_mag

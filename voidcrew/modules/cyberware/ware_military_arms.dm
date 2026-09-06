@@ -620,7 +620,7 @@
 
 /obj/item/ammo_casing/cyberware_ronin
 	name = "10x24mm caseless round"
-	desc = "A stubby caseless round in Ronin's proprietary 10x24mm. The parlor is the only place in the sector that presses these."
+	desc = "A stubby caseless round in Ronin's proprietary 10x24mm."
 	caliber = CYBERWARE_CALIBER_RONIN
 	projectile_type = /obj/projectile/bullet/cyberware_ronin
 
@@ -629,12 +629,12 @@
 	AddElement(/datum/element/caseless)
 
 /**
- * The proprietary magazine. Sold only at the parlor, the return-visit hook
- * (the shop SKU itself is the catalog wave's job; the type lives here).
+ * The proprietary magazine. Sold at the parlor, with a costly fabrication
+ * alternative unlocked by Experimental Ammunition research.
  */
 /obj/item/ammo_box/magazine/cyberware_ronin
 	name = "\improper Ronin flush-feed magazine (10x24mm)"
-	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's. Twenty caseless rounds, parlor-pressed."
+	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's. Holds twenty caseless rounds."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "ronin_mag"
 	base_icon_state = "ronin_mag"
@@ -653,7 +653,7 @@
  */
 /obj/item/gun/ballistic/automatic/cyberware_ronin
 	name = "\improper Popup Ronin machine-pistol"
-	desc = "A skeletal machine-pistol that folds flat enough to live inside a forearm. Feeds from proprietary flush-feed magazines sold only at the chrome parlor."
+	desc = "A skeletal machine-pistol that folds flat enough to live inside a forearm. Feeds from proprietary flush-feed magazines."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "ronin"
 	inhand_icon_state = "ronin"
@@ -681,7 +681,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	name = "\improper Popup Ronin housing"
-	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast. The mag well only takes parlor-pressed magazines."
+	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast. The mag well only takes Ronin flush-feed magazines."
 	icon_state = "ronin"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
@@ -693,7 +693,7 @@
 // BUNKER BUSTER
 // =========================================================================
 
-/// Proprietary rocket caliber, parlor-only reloads.
+/// Proprietary rocket caliber, sold at the parlor and fabricable with late research.
 #define CYBERWARE_CALIBER_BUSTER "30mm buster"
 
 /**
@@ -752,7 +752,7 @@
  */
 /obj/item/ammo_box/cyberware_buster_rockets
 	name = "\improper Buster rocket pair"
-	desc = "Two 30mm shaped rockets in a carry bracket. The parlor is the only place that racks these, so don't waste them."
+	desc = "Two 30mm shaped rockets in a carry bracket, keyed to the Buster's rotary rack."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "buster_rockets"
 	base_icon_state = "buster_rockets"
@@ -792,12 +792,12 @@
 /**
  * # Bunker Buster (T3, one arm, aug slot, load 5)
  *
- * The arm that ends arguments with cover. Two rockets, then a walk back to
- * the parlor, an event, not a spam tool.
+ * The arm that ends arguments with cover. Two rockets before reloading;
+ * replacements require a parlor visit or expensive late-research fabrication.
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	name = "\improper Bunker Buster housing"
-	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be. Reloads are parlor-only, so make both count."
+	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be. Takes proprietary 30mm shaped rockets, so make both count."
 	icon_state = "bunker_buster"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3

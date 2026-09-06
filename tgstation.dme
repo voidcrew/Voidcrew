@@ -7222,6 +7222,7 @@
 #include "voidcrew\modules\research\server.dm"
 #include "voidcrew\modules\research\survey_scanner.dm"
 #include "voidcrew\modules\research\techweb_nodes.dm"
+#include "voidcrew\modules\research\designs\ammo_catalogue.dm"
 #include "voidcrew\modules\research\designs\ammo_designs.dm"
 #include "voidcrew\modules\research\designs\autolathe_designs.dm"
 #include "voidcrew\modules\research\designs\cargo_designs.dm"

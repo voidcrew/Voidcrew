@@ -377,9 +377,8 @@
  * Generic ammunition manufacturing.
  *
  * The weapons bench covers each blueprint gun's own ammo (voidcrew/modules/weapons_bench/).
- * These two nodes cover everything else: the plain calibers upstream leaves with no lathe
- * design at all, or only an autolathe-only one that a ship techweb can never reach. A crew
- * that ran dry previously had no option but a ruin printer.
+ * Common reloads branch into specialist, experimental and explosive ammunition.
+ * L6, Bulldog and sniper specialty loads also require their standard ammo research.
  */
 /datum/techweb_node/ballistic_ammunition
 	id = TECHWEB_NODE_BALLISTIC_AMMO
@@ -395,6 +394,16 @@
 		"vc_mag_m9mm",
 		"vc_mag_m10mm",
 		"vc_mag_m45",
+		"vc_ammo_m50",
+		"vc_ammo_a357",
+		"vc_ammo_harpoon",
+		"vc_ammo_foam_smg",
+		"vc_ammo_foam_pistol",
+		"vc_ammo_foam_smgm45",
+		"vc_ammo_foam_m762",
+		"vc_c9mm_lathe",
+		"vc_c10mm_lathe",
+		"vc_c45_lathe",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
@@ -407,6 +416,134 @@
 		"vc_mag_m9mm_aps",
 		"vc_mag_smgm9mm",
 		"vc_shotgun_dragonsbreath",
+		"vc_ammo_uzi",
+		"vc_ammo_tommygun",
+		"vc_ammo_m223",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/specialist_ammo
+	id = TECHWEB_NODE_SPECIALIST_AMMO
+	display_name = "Specialist Ammunition"
+	description = "Precision, armor-piercing, hollow-point and incendiary loads for conventional firearms."
+	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXOTIC_AMMO)
+	design_ids = list(
+		"vc_ammo_m9mm_ap",
+		"vc_ammo_m9mm_hp",
+		"vc_ammo_m9mm_fire",
+		"vc_ammo_m10mm_ap",
+		"vc_ammo_m10mm_hp",
+		"vc_ammo_m10mm_fire",
+		"vc_ammo_aps_ap",
+		"vc_ammo_aps_hp",
+		"vc_ammo_aps_fire",
+		"vc_ammo_saber_ap",
+		"vc_ammo_saber_fire",
+		"vc_ammo_c20r_ap",
+		"vc_ammo_c20r_hp",
+		"vc_ammo_c20r_fire",
+		"vc_ammo_c38_match",
+		"vc_ammo_m38_match",
+		"vc_ammo_c38_dumdum",
+		"vc_ammo_m38_dumdum",
+		"vc_ammo_a357_match",
+		"vc_ammo_grenade_rubber",
+		"vc_ammo_shotgun_stun",
+		"vc_ammo_shotgun_milspec_slug",
+		"vc_ammo_shotgun_milspec_buckshot",
+		"vc_ammo_shotgun_executioner",
+		"vc_ammo_shotgun_pulverizer",
+		"vc_ammo_shotgun_incendiary_precision",
+		"vc_ammo_shotgun_meteor",
+		"vc_ammo_shotgun_incapacitating",
+		"vc_ammo_shotgun_ion",
+		"vc_ammo_shotgun_dart_large",
+		"vc_ammo_shotgun_breacher",
+		"vc_ammo_foam_smg_riot",
+		"vc_ammo_foam_pistol_riot",
+		"vc_ammo_foam_smgm45_riot",
+		"vc_ammo_foam_m762_riot",
+		"mag_autorifle_ap",
+		"mag_autorifle_ic",
+		"donkshell",
+		"vc_riot_darts_lathe",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/experimental_ammo
+	id = TECHWEB_NODE_EXPERIMENTAL_AMMO
+	display_name = "Experimental Ammunition"
+	description = "Guided and phasic projectiles, advanced payloads and high-energy shells."
+	prereq_ids = list(TECHWEB_NODE_SPECIALIST_AMMO, TECHWEB_NODE_APPLIED_BLUESPACE)
+	design_ids = list(
+		"vc_ammo_smartgun",
+		"vc_ammo_reaper",
+		"vc_ammo_a357_phasic",
+		"vc_ammo_a357_heartseeker",
+		"vc_ammo_strilka_phasic",
+		"vc_ammo_m223_phasic",
+		"vc_ammo_rocket_heap",
+		"vc_ammo_shotgun_pulse",
+		"vc_ammo_shotgun_bioterror",
+		"vc_ammo_ronin",
+		"vc_ammo_buster",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/explosive_ammo
+	id = TECHWEB_NODE_EXPLOSIVE_AMMO
+	display_name = "Explosive Ammunition"
+	description = "Gyrojet cartridges, launcher grenades and 84mm rockets."
+	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXPLOSIVES)
+	design_ids = list(
+		"vc_ammo_gyrojet",
+		"vc_ammo_grenade_he",
+		"vc_ammo_rocket_he",
+		"vc_ammo_rocket_low_yield",
+		"vc_ammo_shotgun_frag12",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/bulldog_special_ammo
+	id = TECHWEB_NODE_BULLDOG_SPECIAL_AMMO
+	display_name = "Specialist Bulldog Ammunition"
+	description = "Specialty 12-gauge drums, including taser, incendiary and biochemical loads."
+	prereq_ids = list(TECHWEB_NODE_WEAPON_AMMO_BULLDOG, TECHWEB_NODE_EXPERIMENTAL_AMMO)
+	design_ids = list(
+		"vc_ammo_bulldog_stun",
+		"vc_ammo_bulldog_dragon",
+		"vc_ammo_bulldog_bioterror",
+		"vc_ammo_bulldog_meteor",
+		"vc_ammo_bulldog_flechette",
+		"vc_ammo_bulldog_donk",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/l6_special_ammo
+	id = TECHWEB_NODE_L6_SPECIAL_AMMO
+	display_name = "Specialist L6 SAW Ammunition"
+	description = "Special-purpose 7mm ammunition and high-capacity rubber magazines for the L6 SAW."
+	prereq_ids = list(TECHWEB_NODE_WEAPON_AMMO_L6_SAW, TECHWEB_NODE_SPECIALIST_AMMO)
+	design_ids = list(
+		"vc_ammo_l6_ap",
+		"vc_ammo_l6_hp",
+		"vc_ammo_l6_incendiary",
+		"vc_ammo_l6_match",
+		"vc_ammo_l6_rubber",
+		"vc_ammo_l6_rubber_hicap",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/sniper_special_ammo
+	id = TECHWEB_NODE_SNIPER_SPECIAL_AMMO
+	display_name = "Specialist Sniper Ammunition"
+	description = "Disruptor, incendiary, penetrator and marksman loads for anti-materiel rifles."
+	prereq_ids = list(TECHWEB_NODE_WEAPON_AMMO_SNIPER, TECHWEB_NODE_EXPERIMENTAL_AMMO)
+	design_ids = list(
+		"vc_ammo_sniper_disruptor",
+		"vc_ammo_sniper_incendiary",
+		"vc_ammo_sniper_penetrator",
+		"vc_ammo_sniper_marksman",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 

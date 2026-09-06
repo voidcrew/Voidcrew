@@ -2,7 +2,8 @@
  * Generic ballistic ammunition designs.
  *
  * voidcrew/modules/weapons_bench/ already gives every blueprint gun (C-20r, Bulldog,
- * WT-550, L6 SAW, anti-materiel rifle) its own ammo node and design. What had no
+ * WT-550, L6 SAW, anti-materiel rifle) its own ammo node and design. ammo_catalogue.dm
+ * adds the remaining firearm calibers and specialty loads. What had no
  * manufacturing path at all was the plain stuff every crew is actually carrying:
  * 9mm/10mm/.45 handgun magazines, the Saber and APS magazines, lethal 12g shells, the
  * Nagant box, the Strilka stripper clip. Upstream only ships .38, foam darts and a few

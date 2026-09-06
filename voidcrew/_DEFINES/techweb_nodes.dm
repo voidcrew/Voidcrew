@@ -57,3 +57,9 @@
 // Generic ammunition (the per-gun blueprint ammo nodes live in _DEFINES above)
 #define TECHWEB_NODE_BALLISTIC_AMMO "ballistic_ammo"
 #define TECHWEB_NODE_AUTOMATIC_AMMO "automatic_ammo"
+#define TECHWEB_NODE_SPECIALIST_AMMO "specialist_ammo"
+#define TECHWEB_NODE_EXPERIMENTAL_AMMO "experimental_ammo"
+#define TECHWEB_NODE_EXPLOSIVE_AMMO "explosive_ammo"
+#define TECHWEB_NODE_BULLDOG_SPECIAL_AMMO "bulldog_special_ammo"
+#define TECHWEB_NODE_L6_SPECIAL_AMMO "l6_special_ammo"
+#define TECHWEB_NODE_SNIPER_SPECIAL_AMMO "sniper_special_ammo"
