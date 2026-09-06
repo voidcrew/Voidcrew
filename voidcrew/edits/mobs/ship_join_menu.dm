@@ -123,7 +123,7 @@
 	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
 		if(!home.loaded || !home.founder_ckey)
 			continue
-		homes += list(list("ref" = REF(home), "name" = home.name, "mode" = home.resident_mode, "cleared" = home.has_resident_clearance(user.ckey), "residents" = home.active_resident_count(), "limit" = home.resident_limit, "status" = home.resident_admission_error(user.ckey), "pods" = !!home.available_resident_pod()))
+		homes += list(list("ref" = REF(home), "name" = home.name, "mode" = home.resident_mode, "cleared" = home.has_resident_clearance(user.ckey), "residents" = home.active_resident_count(), "status" = home.resident_admission_error(user.ckey), "pods" = !!home.available_resident_pod()))
 	data["outposts"] = homes
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)

@@ -29,7 +29,6 @@ type ShipJoinMenuData = {
     mode: string;
     cleared: BooleanLike;
     residents: number;
-    limit: number;
     status: string | null;
     pods: BooleanLike;
   }[];
@@ -75,7 +74,7 @@ export const ShipJoinMenu = () => {
                 <Box key={home.ref} mb={1}>
                   <Box bold>{home.name}</Box>
                   <Box>
-                    {home.residents}/{home.limit} active residents | {home.mode}{' '}
+                    {home.residents} active residents | {home.mode}{' '}
                     |{' '}
                     {home.cleared
                       ? 'Return clearance saved'
