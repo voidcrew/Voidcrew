@@ -886,7 +886,12 @@ SUBSYSTEM_DEF(shuttle)
  * * destination_port - The station docking port to send the shuttle to once loaded
  * * replace - Whether to replace the shuttle or create a new one
 */
-/datum/controller/subsystem/shuttle/proc/action_load(datum/map_template/shuttle/loading_template, obj/docking_port/stationary/destination_port, replace = FALSE)
+/datum/controller/subsystem/shuttle/proc/action_load(datum/map_template/shuttle/loading_template, obj/docking_port/stationary/destination_port, replace = FALSE, datum/shuttle_template_load/load_owner)
+	return run_template_load(CALLBACK(src, PROC_REF(action_load_impl), loading_template, destination_port, replace), load_owner)
+
+/datum/controller/subsystem/shuttle/proc/action_load_impl(datum/map_template/shuttle/loading_template, obj/docking_port/stationary/destination_port, replace, datum/shuttle_template_load/load_owner)
+	if(destination_port && QDELETED(destination_port))
+		return FALSE
 	// Check for an existing preview
 	if(preview_shuttle && (loading_template != preview_template))
 		preview_shuttle.jumpToNullSpace()
@@ -895,7 +900,7 @@ SUBSYSTEM_DEF(shuttle)
 		QDEL_NULL(preview_reservation)
 
 	if(!preview_shuttle)
-		load_template(loading_template)
+		load_template(loading_template, load_owner)
 		// VOIDCREW EDIT: load_template() can now refuse gracefully (no transit
 		// reservation free - see the capacity note in it). Without this bail the null
 		// preview fell through to generate_transit_dock(null) and a CRASH of its own.
@@ -962,7 +967,11 @@ SUBSYSTEM_DEF(shuttle)
  * Arguments:
  * * loading_template - The shuttle template to load
  */
-/datum/controller/subsystem/shuttle/proc/load_template(datum/map_template/shuttle/loading_template)
+/datum/controller/subsystem/shuttle/proc/load_template(datum/map_template/shuttle/loading_template, datum/shuttle_template_load/load_owner)
+	return run_template_load(CALLBACK(src, PROC_REF(load_template_impl), loading_template), load_owner)
+
+/datum/controller/subsystem/shuttle/proc/load_template_impl(datum/map_template/shuttle/loading_template, datum/shuttle_template_load/load_owner)
+	unload_preview(load_owner)
 	. = FALSE
 	// Load shuttle template to a fresh block reservation.
 	preview_reservation = SSmapping.request_turf_block_reservation(
@@ -1018,10 +1027,14 @@ SUBSYSTEM_DEF(shuttle)
 /**
  * Removes the preview_shuttle from the transit Z-level
  */
-/datum/controller/subsystem/shuttle/proc/unload_preview()
+/datum/controller/subsystem/shuttle/proc/unload_preview(datum/shuttle_template_load/load_owner)
+	return run_template_load(CALLBACK(src, PROC_REF(unload_preview_impl)), load_owner)
+
+/datum/controller/subsystem/shuttle/proc/unload_preview_impl(datum/shuttle_template_load/load_owner)
 	if(preview_shuttle)
 		preview_shuttle.jumpToNullSpace()
 	preview_shuttle = null
+	preview_template = null
 	if(preview_reservation)
 		QDEL_NULL(preview_reservation)
 
@@ -1224,7 +1237,6 @@ SUBSYSTEM_DEF(shuttle)
 			else
 				if(S && !shuttle_loading)
 					. = TRUE
-					shuttle_loading = TRUE
 					// If successful, returns the mobile docking port
 					var/obj/docking_port/mobile/mdp = action_load(S)
 					if(mdp)
@@ -1232,20 +1244,17 @@ SUBSYSTEM_DEF(shuttle)
 						message_admins("[key_name_admin(usr)] loaded [mdp] with the shuttle manipulator.")
 						log_admin("[key_name(usr)] loaded [mdp] with the shuttle manipulator.</span>")
 						SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "[mdp.name]")
-					shuttle_loading = FALSE
 				//]
 
 		if("preview")
 			//if(preview_shuttle && (loading_template != preview_template))
 			if(S && !shuttle_loading)
 				. = TRUE
-				shuttle_loading = TRUE
 				unload_preview()
 				load_template(S)
 				if(preview_shuttle)
 					preview_template = S
 					user.forceMove(get_turf(preview_shuttle))
-				shuttle_loading = FALSE
 
 		if("replace")
 			if(existing_shuttle == backup_shuttle)
@@ -1255,7 +1264,6 @@ SUBSYSTEM_DEF(shuttle)
 					intact for round sanity.")
 			else if(S && !shuttle_loading)
 				. = TRUE
-				shuttle_loading = TRUE
 				// If successful, returns the mobile docking port
 				var/obj/docking_port/mobile/mdp = action_load(S, replace = TRUE)
 				if(mdp)
@@ -1263,7 +1271,6 @@ SUBSYSTEM_DEF(shuttle)
 					message_admins("[key_name_admin(usr)] load/replaced [mdp] with the shuttle manipulator.")
 					log_admin("[key_name(usr)] load/replaced [mdp] with the shuttle manipulator.</span>")
 					SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "[mdp.name]")
-				shuttle_loading = FALSE
 				if(emergency == mdp) //you just changed the emergency shuttle, there are events in game + captains that can change your snowflake choice.
 					var/set_purchase = tgui_alert(usr, "Do you want to also disable shuttle purchases/random events that would change the shuttle?", "Butthurt Admin Prevention", list("Yes, disable purchases/events", "No, I want to possibly get owned"))
 					if(set_purchase == "Yes, disable purchases/events")
