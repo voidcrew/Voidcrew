@@ -74,8 +74,7 @@ export const ShipJoinMenu = () => {
                 <Box key={home.ref} mb={1}>
                   <Box bold>{home.name}</Box>
                   <Box>
-                    {home.residents} active residents | {home.mode}{' '}
-                    |{' '}
+                    {home.residents} active residents | {home.mode} |{' '}
                     {home.cleared
                       ? 'Return clearance saved'
                       : 'No saved clearance'}
