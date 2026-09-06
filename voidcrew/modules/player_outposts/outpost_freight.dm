@@ -4,6 +4,8 @@
 	var/list/datum/supply_order/reserved_orders = list()
 	var/busy = FALSE
 	var/last_error
+	/// Changes when dispatch or teardown replaces the operation owning a yielding callback.
+	var/delivery_generation = 0
 
 /datum/voidcrew_cargo_shuttle/outpost/New(obj/structure/overmap/dynamic/player_outpost/site)
 	home = site
@@ -40,6 +42,7 @@
 	var/error = availability_error()
 	if(error)
 		return error
+	delivery_generation++
 	state = CARGO_SHUTTLE_ARRIVING
 	busy = TRUE
 	last_error = null
@@ -86,8 +89,10 @@
 	reserved_orders.Cut()
 
 /datum/voidcrew_cargo_shuttle/outpost/cleanup_shuttle()
+	delivery_generation++
 	cancel_pending()
-	return ..()
+	. = ..()
+	busy = FALSE
 
 /datum/voidcrew_cargo_shuttle/outpost/check_stalled()
 	if(busy)
@@ -97,7 +102,12 @@
 /datum/voidcrew_cargo_shuttle/outpost/complete_arrival()
 	if(state != CARGO_SHUTTLE_ARRIVING || busy)
 		return FALSE
+	var/arrival_generation = delivery_generation
 	. = deliver_orders()
+	// A generator can yield into cancellation and a replacement dispatch. Do not
+	// let this completed arrival clean up or report against the replacement ferry.
+	if(QDELETED(src) || arrival_generation != delivery_generation)
+		return .
 	if(!busy)
 		return
 	last_error = "Freight arrival interrupted; undelivered reservations refunded"
@@ -117,6 +127,7 @@
 		return FALSE
 	warmup_timer = null
 	busy = TRUE
+	var/operation_generation = delivery_generation
 	var/error = availability_error()
 	if(!error && shuttle_port && !home.freight_berth.dock.get_docked())
 		adjust_reserve_dock_to_shuttle(home.freight_berth.dock, shuttle_port)
@@ -124,6 +135,8 @@
 			error = "Freight berth is obstructed; clear the landing pad and retry"
 	else
 		error ||= "Freight receiver unavailable"
+	if(QDELETED(src) || operation_generation != delivery_generation)
+		return FALSE
 	if(!error)
 		error = availability_error()
 	if(error)
@@ -141,6 +154,8 @@
 		cleanup_shuttle()
 		return FALSE
 	for(var/datum/supply_order/order as anything in reserved_orders.Copy())
+		if(QDELETED(home) || state != CARGO_SHUTTLE_ARRIVING || !(order in reserved_orders) || isnull(order.ship_paid_cost))
+			return FALSE
 		// Stage each complete package off-map. A failed generator cannot leave paid
 		// fragments on the deck, and the cart survives for retry after its refund.
 		var/obj/effect/staging = new(null)
@@ -158,6 +173,18 @@
 		catch(var/exception/generation_error)
 			log_shuttle("OUTPOST FREIGHT: order #[order.id] generation failed: [generation_error]")
 			package = null
+		// Check cancellation before inspecting the generated package. A generator may
+		// cancel and return null, and that path must not fall through to a successful
+		// arrival or touch a replacement dispatch.
+		if(QDELETED(src) || operation_generation != src.delivery_generation)
+			qdel(package)
+			qdel(staging)
+			return FALSE
+		if(QDELETED(home) || state != CARGO_SHUTTLE_ARRIVING || !(order in reserved_orders) || isnull(order.ship_paid_cost))
+			qdel(package)
+			qdel(staging)
+			last_error = "Freight reservation was cancelled while packing; undelivered orders refunded"
+			return FALSE
 		if(QDELETED(package))
 			qdel(staging)
 			last_error = "An order could not be packed; undelivered orders refunded"

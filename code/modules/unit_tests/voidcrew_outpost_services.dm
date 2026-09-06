@@ -417,3 +417,142 @@
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/proc/run_queued_dispatch(datum/voidcrew_cargo_shuttle/outpost/ferry)
 	queued_dispatch_error = ferry.call_shuttle()
 	queued_dispatch_finished = TRUE
+
+/// Test-only pack: exercise the real cancellation path while a package is being generated.
+/datum/supply_pack/voidcrew_outpost_cancel_during_generation
+	name = "outpost cancellation race fixture"
+	cost = 100
+	crate_name = "cancellation race fixture crate"
+	var/datum/voidcrew_cargo_shuttle/outpost/ferry
+	var/armed = FALSE
+	var/fired = FALSE
+	var/obj/structure/closet/crate/generated_crate
+	var/redispatch = FALSE
+	var/refund_pending = FALSE
+	var/replacement_error
+
+/datum/supply_pack/voidcrew_outpost_cancel_during_generation/New(datum/voidcrew_cargo_shuttle/outpost/target_ferry)
+	. = ..()
+	ferry = target_ferry
+	armed = !!target_ferry
+	contains = list(/obj/item/stack/sheet/iron = 1)
+
+/datum/supply_pack/voidcrew_outpost_cancel_during_generation/fill(obj/structure/closet/crate/crate)
+	generated_crate = crate
+	. = ..()
+	if(armed && !fired)
+		fired = TRUE
+		if(refund_pending)
+			ferry.cancel_pending()
+		else
+			ferry.cleanup_shuttle()
+			if(redispatch)
+				replacement_error = ferry.call_shuttle()
+
+/// Same cancellation point, with no package returned. This catches null generation before
+/// the normal QDELETED(package) failure branch.
+/datum/supply_pack/voidcrew_outpost_cancel_null_during_generation
+	name = "outpost null cancellation race fixture"
+	cost = 100
+	crate_name = "null cancellation race fixture crate"
+	var/datum/voidcrew_cargo_shuttle/outpost/ferry
+	var/armed = FALSE
+	var/fired = FALSE
+
+/datum/supply_pack/voidcrew_outpost_cancel_null_during_generation/New(datum/voidcrew_cargo_shuttle/outpost/target_ferry)
+	. = ..()
+	ferry = target_ferry
+	armed = !!target_ferry
+	contains = list(/obj/item/stack/sheet/iron = 1)
+
+/datum/supply_pack/voidcrew_outpost_cancel_null_during_generation/generate(atom/location, datum/bank_account/paying_account)
+	if(armed && !fired)
+		fired = TRUE
+		ferry.cleanup_shuttle()
+		return null
+	return ..()
+
+/// A generator-side cancellation must not turn a refunded reservation into a delivered order.
+/datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/cancel_during_generation
+/datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/cancel_during_generation/Run()
+	save_economy()
+	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
+	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.founder_ckey = "outpostcancelrace"
+	TEST_ASSERT(home.load_level(), "Cancellation race home failed to load")
+	var/datum/bank_account/account = home.treasury
+	account.account_balance = 1000
+	var/datum/voidcrew_cargo_shuttle/outpost/ferry = home.freight
+	var/datum/supply_pack/voidcrew_outpost_cancel_during_generation/pack = new(ferry)
+	var/datum/supply_order/order = new(pack)
+	home.cargo_cart += order
+	var/price = order.get_final_cost()
+	TEST_ASSERT_NULL(ferry.call_shuttle(), "Cancellation race shipment failed to dispatch")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000 - price, "Cancellation race did not reserve funds")
+	deltimer(ferry.warmup_timer)
+	var/delivered = ferry.complete_arrival()
+	TEST_ASSERT(!delivered, "Generator-side cancellation reported a successful delivery")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000, "Generator-side cancellation did not refund the reservation")
+	TEST_ASSERT(order in home.cargo_cart, "Generator-side cancellation lost the unpaid cart order")
+	TEST_ASSERT_NULL(order.ship_paid_cost, "Generator-side cancellation left the order marked paid")
+	TEST_ASSERT(QDELETED(pack.generated_crate), "Cancelled generated package survived the reservation refund")
+	home.cargo_cart -= order
+	qdel(order)
+
+	var/datum/supply_pack/voidcrew_outpost_cancel_null_during_generation/null_pack = new(ferry)
+	var/datum/supply_order/null_order = new(null_pack)
+	home.cargo_cart += null_order
+	var/null_price = null_order.get_final_cost()
+	TEST_ASSERT_NULL(ferry.call_shuttle(), "Null cancellation race shipment failed to dispatch")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000 - null_price, "Null cancellation race did not reserve funds")
+	deltimer(ferry.warmup_timer)
+	TEST_ASSERT(!ferry.complete_arrival(), "Null generator cancellation reported a successful delivery")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000, "Null generator cancellation did not refund the reservation")
+	TEST_ASSERT(null_order in home.cargo_cart, "Null generator cancellation lost the unpaid cart order")
+	TEST_ASSERT_NULL(null_order.ship_paid_cost, "Null generator cancellation left the order marked paid")
+
+	home.cargo_cart -= null_order
+	qdel(null_order)
+	var/datum/supply_pack/voidcrew_outpost_cancel_during_generation/replacement_pack = new(ferry)
+	replacement_pack.redispatch = TRUE
+	var/datum/supply_order/replacement_order = new(replacement_pack)
+	home.cargo_cart += replacement_order
+	var/replacement_price = replacement_order.get_final_cost()
+	TEST_ASSERT_NULL(ferry.call_shuttle(), "Replacement-race shipment failed to dispatch")
+	deltimer(ferry.warmup_timer)
+	TEST_ASSERT(!ferry.complete_arrival(), "Old arrival reported success after a replacement dispatch")
+	TEST_ASSERT_NULL(replacement_pack.replacement_error, "Replacement dispatch failed inside the old generator")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000 - replacement_price, "Replacement reservation was lost or charged twice")
+	TEST_ASSERT_NOTNULL(ferry.warmup_timer, "Old arrival erased the replacement warmup")
+	TEST_ASSERT(QDELETED(replacement_pack.generated_crate), "Old generation left an unpaid crate after replacement")
+	deltimer(ferry.warmup_timer)
+	TEST_ASSERT(ferry.complete_arrival(), "Old completion damaged the replacement shipment")
+	TEST_ASSERT_EQUAL(account.account_balance, 1000 - replacement_price, "Replacement delivery charged twice")
+	TEST_ASSERT(!QDELETED(replacement_pack.generated_crate), "Replacement delivery lost its paid crate")
+
+/// Refunding remaining orders while a later package is generated must leave earlier paid goods accessible.
+/datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/cancel_during_generation/partial_refund/Run()
+	save_economy()
+	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
+	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.founder_ckey = "outpostpartialcancel"
+	TEST_ASSERT(home.load_level(), "Partial cancellation home failed to load")
+	home.treasury.account_balance = 1000
+	var/datum/voidcrew_cargo_shuttle/outpost/ferry = home.freight
+	var/datum/supply_pack/voidcrew_outpost_cancel_during_generation/paid_pack = new
+	var/datum/supply_pack/voidcrew_outpost_cancel_during_generation/cancelled_pack = new(ferry)
+	cancelled_pack.refund_pending = TRUE
+	var/datum/supply_order/paid_order = new(paid_pack)
+	var/datum/supply_order/cancelled_order = new(cancelled_pack)
+	var/paid_price = paid_order.get_final_cost()
+	home.cargo_cart += paid_order
+	home.cargo_cart += cancelled_order
+	TEST_ASSERT_NULL(ferry.call_shuttle(), "Partial cancellation shipment failed to dispatch")
+	deltimer(ferry.warmup_timer)
+	TEST_ASSERT(!ferry.complete_arrival(), "Cancelled shipment reported complete delivery")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 1000 - paid_price, "Cancellation did not preserve only the settled payment")
+	TEST_ASSERT(!QDELETED(paid_pack.generated_crate), "Cancellation destroyed an earlier paid package")
+	TEST_ASSERT(ferry.shuttle_port?.is_in_shuttle_bounds(paid_pack.generated_crate), "Paid package is no longer on the accessible freight deck")
+	TEST_ASSERT(QDELETED(cancelled_pack.generated_crate), "Cancellation left an unpaid staged package")
+	TEST_ASSERT(!ferry.busy, "Cancellation left freight processing stuck")
+	TEST_ASSERT_EQUAL(ferry.shuttle_port?.get_docked(), home.freight_berth.dock, "Cancellation removed the delivered goods' physical receiver")
