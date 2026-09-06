@@ -146,10 +146,24 @@
 
 /datum/vestige_trial/true_vigil/proc/end_vigil()
 	STOP_PROCESSING(SSobj, src)
-	QDEL_LIST(rifts)
+	var/list/old_rifts = rifts
 	rifts = list()
+	if(watched)
+		UnregisterSignal(watched, COMSIG_QDELETING)
 	watched = null
 	closed_rifts = 0
+	for(var/obj/structure/vestige_mourning_rift/rift as anything in old_rifts)
+		UnregisterSignal(rift, COMSIG_QDELETING)
+	for(var/obj/structure/vestige_mourning_rift/rift as anything in old_rifts)
+		if(!QDELETED(rift))
+			qdel(rift)
+
+/datum/vestige_trial/true_vigil/proc/on_vigil_part_deleted(atom/source)
+	SIGNAL_HANDLER
+	if(source != watched && !(source in rifts))
+		return
+	end_vigil()
+	refresh_tracker()
 
 /datum/vestige_trial/true_vigil/get_progress_text()
 	return watched ? "[closed_rifts] of three mourning rifts closed. Keep the body three paces clear of the rift you are extinguishing." : "Touch the candle to substantial organic remains in an open room."
@@ -165,9 +179,11 @@
 		to_chat(user, span_warning("The body needs open floor with at least three clear tiles three paces away."))
 		return FALSE
 	watched = body
+	RegisterSignal(watched, COMSIG_QDELETING, PROC_REF(on_vigil_part_deleted))
 	for(var/index in 1 to 3)
 		var/obj/structure/vestige_mourning_rift/rift = new(pick_n_take(places))
 		rifts += rift
+		RegisterSignal(rift, COMSIG_QDELETING, PROC_REF(on_vigil_part_deleted))
 	START_PROCESSING(SSobj, src)
 	refresh_tracker()
 	return TRUE
@@ -254,8 +270,8 @@
 
 /datum/vestige_trial/sitters_rounds/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_cloth(get_turf(user)))
-	hand_over(user, new /obj/item/stack/medical/bruise_pack/vestige_sitter(get_turf(user), 10))
-	hand_over(user, new /obj/item/stack/medical/ointment/vestige_sitter(get_turf(user), 10))
+	hand_over(user, new /obj/item/stack/medical/bruise_pack/vestige_sitter(get_turf(user), 10, FALSE))
+	hand_over(user, new /obj/item/stack/medical/ointment/vestige_sitter(get_turf(user), 10, FALSE))
 	hand_over(user, new /obj/item/healthanalyzer(get_turf(user)))
 
 /datum/vestige_trial/sitters_rounds/Destroy()
@@ -266,7 +282,7 @@
 /datum/vestige_trial/sitters_rounds/get_progress_text()
 	if(!patient)
 		return "Use the cloth in hand on safe floor to call the patient and cot."
-	return "Patient injury: [round(patient.getBruteLoss())] brute, [round(patient.getFireLoss())] burn. Resting: [patient.buckled == cot ? "yes" : "no"]. Settle their shaking, treat the injuries, then use the cloth to discharge."
+	return "Patient injury: [round(patient.getBruteLoss())] brute, [round(patient.getFireLoss())] burn. Resting: [!QDELETED(cot) && patient.buckled == cot ? "yes" : "no"]. Settle their shaking, treat the injuries, then use the cloth to discharge."
 
 /datum/vestige_trial/sitters_rounds/proc/call_patient(mob/living/user)
 	if(patient)
@@ -290,7 +306,7 @@
 	refresh_tracker()
 
 /datum/vestige_trial/sitters_rounds/proc/ready_for_discharge()
-	if(!patient || patient.stat == DEAD || patient.buckled != cot || !patient.comforted)
+	if(QDELETED(patient) || QDELETED(cot) || patient.stat == DEAD || patient.buckled != cot || !patient.comforted)
 		return FALSE
 	return patient.getBruteLoss() + patient.getFireLoss() + patient.getToxLoss() + patient.getOxyLoss() <= 10 && patient.bodytemperature >= BODYTEMP_COLD_DAMAGE_LIMIT && patient.bodytemperature <= BODYTEMP_HEAT_DAMAGE_LIMIT
 
@@ -312,6 +328,8 @@
 /obj/item/stack/medical/bruise_pack/vestige_sitter
 	name = "Wake bruise dressings"
 	desc = "Dressings bound to the Wake's stranded patient. Their medicine evaporates on anyone else."
+	merge_type = /obj/item/stack/medical/bruise_pack/vestige_sitter
+	grind_results = null
 
 /obj/item/stack/medical/bruise_pack/vestige_sitter/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
 	if(!istype(patient, /mob/living/carbon/human/vestige_patient))
@@ -325,6 +343,9 @@
 /obj/item/stack/medical/ointment/vestige_sitter
 	name = "Wake burn dressings"
 	desc = "Dressings bound to the Wake's stranded patient. Their medicine evaporates on anyone else."
+	max_amount = 10
+	merge_type = /obj/item/stack/medical/ointment/vestige_sitter
+	grind_results = null
 
 /obj/item/stack/medical/ointment/vestige_sitter/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
 	if(!istype(patient, /mob/living/carbon/human/vestige_patient))
@@ -355,13 +376,13 @@
 	if(!istype(trial) || interacting_with != trial.patient || !trial.patient || working)
 		return NONE
 	var/mob/living/carbon/human/vestige_patient/patient = trial.patient
-	if(patient.stat == DEAD || patient.buckled != trial.cot)
+	if(QDELETED(trial.cot) || patient.stat == DEAD || patient.buckled != trial.cot)
 		balloon_alert(user, "they need to rest alive on the cot!")
 		return ITEM_INTERACT_BLOCKING
 	working = TRUE
 	var/finished = do_after(user, 3 SECONDS, target = patient)
 	working = FALSE
-	if(!finished || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || patient.stat == DEAD || patient.buckled != trial.cot)
+	if(!finished || user.mind?.active_vestige_trial != trial || !user.is_holding(src) || QDELETED(trial.cot) || patient.stat == DEAD || patient.buckled != trial.cot)
 		return ITEM_INTERACT_BLOCKING
 	patient.comforted = TRUE
 	patient.adjustStaminaLoss(-60)
@@ -541,7 +562,7 @@
  */
 /datum/action/cooldown/spell/touch/vestige_mourning_touch/last_breath
 	name = "Steal the Last Breath"
-	desc = "Touch someone bare-handed to chill them, drop them off their feet, and leave them gasping and unable to speak for a few seconds."
+	desc = "Touch someone bare-handed to chill them, drain their stamina, and leave them gasping and unable to speak for a few seconds."
 	cooldown_time = 20 SECONDS
 	draw_message = span_notice("Cold gathers in your palm, and something in it holds its breath.")
 

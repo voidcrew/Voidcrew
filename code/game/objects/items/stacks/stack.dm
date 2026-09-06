@@ -641,6 +641,8 @@
 			return FALSE
 	if(SEND_SIGNAL(src, COMSIG_STACK_CAN_MERGE, check, inhand) & CANCEL_STACK_MERGE)
 		return FALSE
+	if(SEND_SIGNAL(check, COMSIG_STACK_CAN_RECEIVE_MERGE, src, inhand) & CANCEL_STACK_MERGE)
+		return FALSE
 	return TRUE
 
 /**
@@ -727,6 +729,7 @@
 		return null
 	var/obj/item/stack/new_stack = new type(null, amount, FALSE, mats_per_unit)
 	new_stack.copy_evidences(src)
+	SEND_SIGNAL(src, COMSIG_STACK_SPLIT, new_stack)
 	loc.atom_storage?.refresh_views()
 	is_zero_amount(delete_if_zero = TRUE)
 	return new_stack

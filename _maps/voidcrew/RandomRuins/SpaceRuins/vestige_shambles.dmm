@@ -22,7 +22,9 @@
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/shambles)
 "ae" = (
-/obj/structure/fence,
+/obj/structure/fence{
+	dir = 4
+	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/shambles)
 "af" = (
@@ -959,7 +961,9 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/vestige/shambles)
 "SW" = (
-/obj/structure/fence/door/opened,
+/obj/structure/fence/door/opened{
+	dir = 4
+	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/shambles)
 "Tg" = (
@@ -1024,7 +1028,7 @@
 /area/ruin/space/has_grav/vestige/shambles)
 "XO" = (
 /obj/structure/fence{
-	dir = 4
+	dir = 2
 	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/shambles)

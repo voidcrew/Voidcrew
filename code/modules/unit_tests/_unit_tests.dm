@@ -364,6 +364,7 @@
 #include "voidcrew_simple_mob_ai.dm"
 #include "voidcrew_vestige.dm"
 #include "voidcrew_vestige_abductor.dm"
+#include "voidcrew_vestige_ascension.dm"
 #include "voidcrew_vestige_changeling.dm"
 #include "voidcrew_vestige_field.dm"
 #include "voidcrew_vestige_hunts.dm"

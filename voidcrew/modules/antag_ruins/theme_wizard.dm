@@ -58,10 +58,25 @@
 	return ..()
 
 /datum/vestige_trial/wizard_lesson/proc/clear_lesson()
-	QDEL_NULL(focus)
-	QDEL_LIST(manifestations)
+	var/list/old_parts = manifestations.Copy()
+	if(focus)
+		old_parts += focus
 	manifestations = list()
+	focus = null
 	resolved = 0
+	for(var/atom/part as anything in old_parts)
+		UnregisterSignal(part, COMSIG_QDELETING)
+	for(var/atom/part as anything in old_parts)
+		if(!QDELETED(part))
+			qdel(part)
+
+/// A lost focus or manifestation must not leave a partial exercise running.
+/datum/vestige_trial/wizard_lesson/proc/on_lesson_part_deleted(atom/source)
+	SIGNAL_HANDLER
+	if(source != focus && !(source in manifestations))
+		return
+	clear_lesson()
+	refresh_tracker()
 
 /// Flood-fill walking surfaces so a wall cannot strand the supplied manifestations.
 /datum/vestige_trial/wizard_lesson/proc/set_up(mob/living/user)
@@ -89,10 +104,12 @@
 		to_chat(user, span_warning("The lesson needs eighteen connected clear floor tiles, reaching three paces away. Try a larger room."))
 		return FALSE
 	focus = new(origin)
+	RegisterSignal(focus, COMSIG_QDELETING, PROC_REF(on_lesson_part_deleted))
 	for(var/index in 1 to 3)
 		var/obj/structure/vestige_miscast/miscast = new(pick_n_take(perimeter))
 		miscast.student = owner
 		manifestations += miscast
+		RegisterSignal(miscast, COMSIG_QDELETING, PROC_REF(on_lesson_part_deleted))
 		START_PROCESSING(SSobj, miscast)
 	return TRUE
 
@@ -259,7 +276,6 @@
 	var/datum/mind/student
 	var/spent_until = 0
 	var/strike_at = 0
-	var/turf/marked
 	var/obj/effect/temp_visual/vestige_miscast_warning/warning
 
 /obj/structure/vestige_miscast/Destroy()
@@ -283,12 +299,12 @@
 	if(strike_at)
 		if(world.time < strike_at)
 			return
-		if(get_turf(user) == marked)
+		// The visible tell follows a moving deck; expired tells cannot hit later.
+		if(!QDELETED(warning) && get_turf(user) == get_turf(warning))
 			user.adjustStaminaLoss(18)
 			to_chat(user, span_warning("The miscast flares under your feet, knocking the breath out of you!"))
 		QDEL_NULL(warning)
 		strike_at = 0
-		marked = null
 		spent_until = world.time + 4 SECONDS
 		update_appearance()
 		return
@@ -296,8 +312,7 @@
 		return
 	update_appearance()
 	if(get_dist(src, user) <= 3)
-		marked = get_turf(user)
-		warning = new(marked)
+		warning = new(get_turf(user))
 		strike_at = world.time + 2 SECONDS
 		return
 	var/turf/destination = get_step_towards(src, user)
@@ -314,7 +329,7 @@
 
 /datum/vestige_trial/swallowed_word
 	name = "Trial of the Swallowed Word"
-	desc = "Unstopper the phial over clear three-by-three floor. Eight numbered syllables and a gap appear. Touch a syllable beside the gap to slide it into the empty space. Restore reading order: 1 2 3 across the north row, 4 5 6 in the middle, 7 8 and the gap along the south row. Speaking reshuffles the inscription into another solvable order. Use the phial in hand to pack up and retry."
+	desc = "Unstopper the phial over clear three-by-three floor. Eight numbered syllables and a gap appear. Touch a syllable beside the gap to slide it into the empty space. Restore the rows: 1 2 3, then 4 5 6, then 7 8 and the gap. The pact tracker gives the board's reading directions, which follow the deck if your ship turns. Speaking reshuffles the inscription into another solvable order. Use the phial in hand to pack up and retry."
 	var/list/syllables = list()
 	var/moves = 0
 	var/mob/living/listener
@@ -327,8 +342,27 @@
 /datum/vestige_trial/swallowed_word/Destroy()
 	UnregisterSignal(owner, COMSIG_MIND_TRANSFERRED)
 	bind_listener(null)
-	QDEL_LIST(syllables)
+	clear_inscription()
 	return ..()
+
+/// Unhook the entire board before deleting pieces whose home markers delete with them.
+/datum/vestige_trial/swallowed_word/proc/clear_inscription()
+	var/list/old_syllables = syllables
+	syllables = list()
+	moves = 0
+	for(var/obj/structure/vestige_silent_glyph/glyph as anything in old_syllables)
+		UnregisterSignal(glyph, COMSIG_QDELETING)
+		if(glyph.home)
+			UnregisterSignal(glyph.home, COMSIG_QDELETING)
+	for(var/obj/structure/vestige_silent_glyph/glyph as anything in old_syllables)
+		if(!QDELETED(glyph))
+			qdel(glyph)
+
+/// A ruin or deck unloading may destroy only part of the board. Permit a fresh deployment.
+/datum/vestige_trial/swallowed_word/proc/on_inscription_deleted(datum/source)
+	SIGNAL_HANDLER
+	clear_inscription()
+	refresh_tracker()
 
 /datum/vestige_trial/swallowed_word/proc/bind_listener(mob/living/user)
 	if(listener)
@@ -342,13 +376,16 @@
 	bind_listener(owner?.current)
 
 /datum/vestige_trial/swallowed_word/get_progress_text()
-	return length(syllables) ? "Slide syllables into the gap: north row 1 2 3, middle 4 5 6, south 7 8 gap. [moves] moves made. Speaking reshuffles." : "Use the phial in hand on clear three-by-three floor."
+	if(!length(syllables))
+		return "Use the phial in hand on clear three-by-three floor."
+	var/obj/structure/vestige_silent_glyph/first = syllables[1]
+	var/obj/structure/vestige_silent_glyph/second = syllables[2]
+	var/obj/structure/vestige_silent_glyph/next_row = syllables[4]
+	return "Read each row toward [dir2text(get_dir(first.home, second.home))], then start the next row toward [dir2text(get_dir(first.home, next_row.home))]: 1 2 3; 4 5 6; 7 8 gap. [moves] moves made. Speaking reshuffles."
 
 /datum/vestige_trial/swallowed_word/proc/unfold(mob/living/user)
 	if(length(syllables))
-		QDEL_LIST(syllables)
-		syllables = list()
-		moves = 0
+		clear_inscription()
 		return
 	var/turf/center = get_turf(user)
 	var/list/places = list()
@@ -361,18 +398,22 @@
 			places += place
 	for(var/turf/place as anything in places)
 		var/obj/structure/vestige_silent_glyph/glyph = new(place)
-		glyph.home = place
+		glyph.home = mark_turf(place)
 		glyph.number = length(syllables) + 1
 		glyph.name = glyph.number == 9 ? "gap in the inscription" : "syllable [glyph.number]"
 		glyph.maptext = glyph.number == 9 ? "" : "<span style='font-size:16px;color:white;text-align:center'>[glyph.number]</span>"
 		glyph.color = glyph.number == 9 ? "#333344" : "#ffd27f"
 		syllables += glyph
+		RegisterSignal(glyph, COMSIG_QDELETING, PROC_REF(on_inscription_deleted))
+		RegisterSignal(glyph.home, COMSIG_QDELETING, PROC_REF(on_inscription_deleted))
 	scramble()
 
 /// Legal moves from the solved state guarantee that every inscription is solvable.
 /datum/vestige_trial/swallowed_word/proc/scramble()
+	if(length(syllables) != 9)
+		return
 	for(var/obj/structure/vestige_silent_glyph/glyph as anything in syllables)
-		glyph.forceMove(glyph.home)
+		glyph.forceMove(get_turf(glyph.home))
 	var/obj/structure/vestige_silent_glyph/gap = syllables[9]
 	var/obj/structure/vestige_silent_glyph/previous
 	var/distance = 0
@@ -381,6 +422,10 @@
 		for(var/obj/structure/vestige_silent_glyph/glyph as anything in syllables)
 			if(glyph != gap && glyph != previous && abs(glyph.x - gap.x) + abs(glyph.y - gap.y) == 1)
 				options += glyph
+		if(!length(options))
+			clear_inscription()
+			refresh_tracker()
+			return
 		var/obj/structure/vestige_silent_glyph/chosen = pick(options)
 		slide(chosen)
 		previous = chosen
@@ -414,14 +459,14 @@
 	moves++
 	refresh_tracker()
 	for(var/obj/structure/vestige_silent_glyph/other as anything in syllables)
-		if(get_turf(other) != other.home)
+		if(get_turf(other) != get_turf(other.home))
 			return TRUE
 	complete()
 	return TRUE
 
 /obj/item/vestige_syllable
 	name = "sealed syllable"
-	desc = "Use in hand to lay out or pack up the inscription. Slide numbered syllables into the gap to restore reading order. North: 1 2 3. Middle: 4 5 6. South: 7 8 gap. Speaking reshuffles."
+	desc = "Use in hand to lay out or pack up the inscription. Slide numbered syllables into the gap to restore rows 1 2 3; 4 5 6; 7 8 gap. The pact tracker gives the current reading directions. Speaking reshuffles."
 	icon = 'icons/obj/mining_zones/artefacts.dmi'
 	icon_state = "vial"
 	w_class = WEIGHT_CLASS_TINY
@@ -443,7 +488,7 @@
 
 /obj/structure/vestige_silent_glyph
 	name = "unspoken syllable"
-	desc = "Touch with the phial while beside the gap to slide into it. Restore 1 2 3 across the north row, 4 5 6 in the middle, 7 8 gap to the south."
+	desc = "Touch with the phial while beside the gap to slide into it. Restore rows 1 2 3; 4 5 6; 7 8 gap. The pact tracker gives the current reading directions."
 	icon = 'icons/obj/antags/cult/rune.dmi'
 	icon_state = "1"
 	color = "#ffd27f"
@@ -451,7 +496,13 @@
 	anchored = TRUE
 	resistance_flags = INDESTRUCTIBLE
 	var/number
-	var/turf/home
+	var/obj/effect/vestige_trial_marker/home
+
+/obj/structure/vestige_silent_glyph/Destroy()
+	if(!QDELETED(home))
+		qdel(home)
+	home = null
+	return ..()
 
 // ===== BOONS =====
 

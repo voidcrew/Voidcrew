@@ -132,7 +132,7 @@
 	var/obj/structure/vestige_field_node/repair_target
 	var/repair_until = 0
 	var/search_until = 0
-	var/datum/weakref/search_spot
+	var/obj/effect/vestige_trial_marker/search_spot
 
 /datum/vestige_trial/the_watched/on_accepted(mob/living/user)
 	..()
@@ -140,6 +140,10 @@
 
 /datum/vestige_trial/the_watched/Destroy()
 	QDEL_NULL(eye)
+	return ..()
+
+/datum/vestige_trial/the_watched/clear_field()
+	QDEL_NULL(search_spot)
 	return ..()
 
 /datum/vestige_trial/the_watched/setup_field(turf/center, mob/living/user)
@@ -169,7 +173,8 @@
 		if(suspicion >= 1)
 			haunted_corners.Cut()
 			suspicion = 0
-			search_spot = WEAKREF(get_turf(user))
+			QDEL_NULL(search_spot)
+			search_spot = mark_turf(get_turf(user))
 			search_until = world.time + 5 SECONDS
 			refresh_tracker()
 	else
@@ -179,7 +184,7 @@
 		return
 	next_step = world.time + 1 SECONDS
 	if(world.time < search_until)
-		var/turf/searched = search_spot?.resolve()
+		var/turf/searched = get_turf(search_spot)
 		if(searched && get_turf(actor) != searched)
 			step_towards(actor, searched)
 		else
@@ -243,7 +248,8 @@
 	lamp.light_state(TRUE)
 	trial.repair_target = null
 	trial.repair_until = 0
-	trial.search_spot = WEAKREF(get_turf(user))
+	QDEL_NULL(trial.search_spot)
+	trial.search_spot = trial.mark_turf(get_turf(user))
 	trial.search_until = world.time + 5 SECONDS
 	node.balloon_alert(user, "something behind me?!")
 	trial.refresh_tracker()
@@ -293,15 +299,15 @@
 	return "Transfers: [max(0, route_index - 1)]/3. Glass: [charge ? "charged" : "empty"]. Next: refuge [next_refuge].[route_index ? " Recharge at refuge [refuge_route[route_index]] if empty." : ""]"
 
 /datum/vestige_trial/long_night/proc/beam_hits(turf/spot, step_number)
-	var/turf/center = field_center?.resolve()
-	if(!center || !spot || spot.z != center.z)
+	var/list/offset = field_offset(spot)
+	if(!offset)
 		return FALSE
 	var/row = (step_number % 5) - 2
 	var/column = 2 - ((step_number + 2) % 5)
-	return spot.y - center.y == row || spot.x - center.x == column
+	return offset[2] == row || offset[1] == column
 
 /datum/vestige_trial/long_night/field_tick(mob/living/user, seconds_per_tick)
-	var/turf/center = field_center?.resolve()
+	var/turf/center = get_turf(field_center)
 	if(world.time >= next_beam)
 		beam_step++
 		next_beam = world.time + 2 SECONDS
@@ -333,6 +339,29 @@
 	icon_state = "large"
 	color = "#101015"
 	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/vestige_gloom_glass/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/connect_loc, list(COMSIG_MOVABLE_MOVED = PROC_REF(on_holder_moved)))
+
+/// A fast step through a beam must count even between field processing ticks.
+/obj/item/vestige_gloom_glass/proc/on_holder_moved(atom/movable/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	SIGNAL_HANDLER
+	// Shuttle relocation uses abstract_move, whose no-effects movement may
+	// run before the field's other turfs and origin have been relocated.
+	if(!momentum_change || !isliving(source))
+		return
+	var/mob/living/user = source
+	var/datum/vestige_trial/long_night/trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || trial.glass != src)
+		return
+	var/turf/center = get_turf(trial.field_center)
+	if(!center || trial.field_center.shuttle_moving)
+		return
+	if(!isturf(user.loc) || user.z != center.z)
+		trial.field_abandoned()
+		return
+	trial.field_tick(user, 0)
 
 /obj/item/vestige_gloom_glass/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	var/datum/vestige_trial/long_night/trial = user.mind?.active_vestige_trial

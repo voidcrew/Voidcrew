@@ -67,7 +67,8 @@
  */
 /datum/vestige_trial/field_encounter
 	var/obj/item/vestige_field_manual/manual
-	var/datum/weakref/field_center
+	/// A physical origin and orientation, carried and rotated with a ship.
+	var/obj/effect/vestige_trial_marker/field_center
 	var/list/field_nodes = list()
 	var/obj/structure/vestige_field_node/actor
 	var/patrol_corner = 1
@@ -86,17 +87,32 @@
 
 /datum/vestige_trial/field_encounter/proc/clear_field()
 	for(var/obj/structure/vestige_field_node/node as anything in field_nodes)
+		UnregisterSignal(node, COMSIG_QDELETING)
 		qdel(node)
 	field_nodes.Cut()
 	actor = null
-	field_center = null
+	if(field_center)
+		UnregisterSignal(field_center, COMSIG_QDELETING)
+	QDEL_NULL(field_center)
 	suspicion = 0
+
+/// Losing any part of a projection must leave a clean, redeployable field.
+/datum/vestige_trial/field_encounter/proc/on_projection_deleted(atom/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_QDELETING)
+	field_nodes -= source
+	if(source == field_center)
+		field_center = null
+	clear_field()
+	field_abandoned()
+	to_chat(owner?.current, span_warning("Part of the lesson projection was lost. Activate the manual to deploy a fresh field."))
+	refresh_tracker()
 
 /datum/vestige_trial/field_encounter/proc/deploy(mob/living/user)
 	var/turf/center = get_turf(user)
 	if(user != owner?.current || user.stat != CONSCIOUS || !isturf(user.loc))
 		return FALSE
-	if(field_center)
+	if(field_center || length(field_nodes))
 		clear_field()
 		to_chat(user, span_notice("The field folds away. Activate the manual again to restart the exercise."))
 		return FALSE
@@ -106,7 +122,9 @@
 			if(!isopenturf(spot) || isspaceturf(spot) || islava(spot) || ischasm(spot) || spot.is_blocked_turf(exclude_mobs = TRUE))
 				to_chat(user, span_warning("The projection needs a clear five-by-five patch of ground, centered on you. Remove dense objects or choose another site."))
 				return FALSE
-	field_center = WEAKREF(center)
+	field_center = mark_turf(center)
+	RegisterSignal(field_center, COMSIG_QDELETING, PROC_REF(on_projection_deleted))
+	field_center.setDir(NORTH)
 	patrol_corner = 2
 	actor_steps = 0
 	next_step = world.time + 3 SECONDS
@@ -121,6 +139,7 @@
 	node.field_tag = node_tag
 	node.trial_ref = WEAKREF(src)
 	field_nodes += node
+	RegisterSignal(node, COMSIG_QDELETING, PROC_REF(on_projection_deleted))
 	return node
 
 /datum/vestige_trial/field_encounter/proc/setup_field(turf/center, mob/living/user)
@@ -136,18 +155,48 @@
 	return
 
 /datum/vestige_trial/field_encounter/proc/corner_turf(index)
-	var/turf/center = field_center?.resolve()
+	var/turf/center = get_turf(field_center)
 	if(!center)
 		return null
+	var/offset_x
+	var/offset_y
 	switch(index)
 		if(1)
-			return locate(center.x - 2, center.y - 2, center.z)
+			offset_x = -2
+			offset_y = -2
 		if(2)
-			return locate(center.x - 2, center.y + 2, center.z)
+			offset_x = -2
+			offset_y = 2
 		if(3)
-			return locate(center.x + 2, center.y + 2, center.z)
+			offset_x = 2
+			offset_y = 2
 		if(4)
-			return locate(center.x + 2, center.y - 2, center.z)
+			offset_x = 2
+			offset_y = -2
+	switch(field_center.dir)
+		if(EAST)
+			return locate(center.x + offset_y, center.y - offset_x, center.z)
+		if(SOUTH)
+			return locate(center.x - offset_x, center.y - offset_y, center.z)
+		if(WEST)
+			return locate(center.x - offset_y, center.y + offset_x, center.z)
+	return locate(center.x + offset_x, center.y + offset_y, center.z)
+
+/// Coordinates relative to the deployed field, including subsequent ship turns.
+/datum/vestige_trial/field_encounter/proc/field_offset(turf/spot)
+	var/turf/center = get_turf(field_center)
+	if(!center || !spot || center.z != spot.z)
+		return null
+	var/offset_x = spot.x - center.x
+	var/offset_y = spot.y - center.y
+	switch(field_center.dir)
+		if(EAST)
+			return list(-offset_y, offset_x)
+		if(SOUTH)
+			return list(-offset_x, -offset_y)
+		if(WEST)
+			return list(offset_y, -offset_x)
+	return list(offset_x, offset_y)
 
 /// One tile per second, with three-second corner pauses. Blocking it earns nothing.
 /datum/vestige_trial/field_encounter/proc/patrol()
@@ -195,8 +244,8 @@
 /obj/item/vestige_field_manual/process(seconds_per_tick)
 	var/datum/vestige_trial/field_encounter/trial = trial_ref?.resolve()
 	var/mob/living/user = trial?.owner?.current
-	var/turf/center = trial?.field_center?.resolve()
-	if(!trial || !center)
+	var/turf/center = get_turf(trial?.field_center)
+	if(!trial || !center || trial.field_center.shuttle_moving)
 		return
 	if(!isliving(user) || user.stat != CONSCIOUS || !isturf(user.loc) || get_dist(user, center) > 7 || user.z != center.z)
 		trial.field_abandoned()
@@ -273,10 +322,18 @@
 	patrol()
 
 /datum/vestige_trial/thrown_star/get_progress_text()
-	return "Clean firing sides: [length(firing_sides)]/3. Used: [length(firing_sides) ? english_list(firing_sides) : "none"]."
+	var/list/current_sides = list()
+	for(var/side in firing_sides)
+		current_sides += current_side_name(side)
+	return "Clean firing sides: [length(firing_sides)]/3. Used: [length(current_sides) ? english_list(current_sides) : "none"]."
+
+/// Side credit follows the field, while compass labels describe its current pose.
+/datum/vestige_trial/thrown_star/proc/current_side_name(side)
+	var/local_direction = text2dir(side)
+	return dir2text(angle2dir(dir2angle(local_direction) + dir2angle(field_center?.dir || NORTH)))
 
 /datum/vestige_trial/thrown_star/proc/strike(atom/hit, datum/thrownthing/flight)
-	var/turf/center = field_center?.resolve()
+	var/turf/center = get_turf(field_center)
 	if(hit != actor || !center || flight?.get_thrower() != owner?.current || get_dist(flight.starting_turf, actor) < 3)
 		return FALSE
 	if(actor_steps - last_strike_step < 2)
@@ -285,15 +342,18 @@
 	if(is_source_facing_target(actor, flight.starting_turf))
 		actor.balloon_alert(owner.current, "shield blocked it!")
 		return FALSE
-	var/delta_x = flight.starting_turf.x - center.x
-	var/delta_y = flight.starting_turf.y - center.y
+	var/list/offset = field_offset(flight.starting_turf)
+	if(!offset)
+		return FALSE
+	var/delta_x = offset[1]
+	var/delta_y = offset[2]
 	var/side = abs(delta_x) > abs(delta_y) ? (delta_x > 0 ? "east" : "west") : (delta_y > 0 ? "north" : "south")
 	if(side in firing_sides)
 		actor.balloon_alert(owner.current, "change firing side!")
 		return FALSE
 	firing_sides += side
 	last_strike_step = actor_steps
-	actor.balloon_alert(owner.current, "clean [side] strike")
+	actor.balloon_alert(owner.current, "clean [current_side_name(side)] strike")
 	refresh_tracker()
 	if(length(firing_sides) >= 3)
 		complete()
@@ -412,11 +472,11 @@
 /datum/vestige_trial/stillness
 	parent_type = /datum/vestige_trial/field_encounter
 	name = "Lesson of Stillness"
-	desc = "Deploy the instructor on a clear five-by-five patch of ground. Use Rest at least two tiles from it, then activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: toggle Rest again to rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
+	desc = "Deploy the instructor on a clear five-by-five patch of ground. Use Rest exactly two tiles from it, then activate the incense to bait a feint: hold that tile and posture for its three-second tell. The following red sweep covers your row or column: toggle Rest again to rise and move off that line, then touch the instructor with the incense during its six-second recovery. Three counters finish the lesson; mistakes cost focus and a little stamina."
 	var/counters = 0
 	var/phase = 0
 	var/deadline = 0
-	var/datum/weakref/bait_turf
+	var/obj/effect/vestige_trial_marker/bait_turf
 	var/sweep_horizontal = FALSE
 	var/obj/item/vestige_incense/incense
 
@@ -426,6 +486,10 @@
 
 /datum/vestige_trial/stillness/Destroy()
 	QDEL_NULL(incense)
+	return ..()
+
+/datum/vestige_trial/stillness/clear_field()
+	QDEL_NULL(bait_turf)
 	return ..()
 
 /datum/vestige_trial/stillness/setup_field(turf/center, mob/living/user)
@@ -440,9 +504,10 @@
 	return "Counters: [counters]/3. [phase == 0 ? "Kneel two tiles away; activate incense to bait." : phase == 1 ? "FEINT: hold your tile and kneel." : phase == 2 ? "SWEEP: move off the red line!" : "RECOVERY: reach the instructor and counter with incense."]"
 
 /datum/vestige_trial/stillness/proc/bait(mob/living/user)
-	if(!field_center || phase || get_dist(user, actor) < 2 || get_dist(user, actor) > 3 || !user.resting)
+	if(!field_center || phase || get_dist(user, actor) != 2 || !user.resting)
 		return FALSE
-	bait_turf = WEAKREF(get_turf(user))
+	QDEL_NULL(bait_turf)
+	bait_turf = mark_turf(get_turf(user))
 	phase = 1
 	deadline = world.time + 3 SECONDS
 	actor.setDir(get_dir(actor, user))
@@ -462,16 +527,20 @@
 		if(node == actor)
 			continue
 		field_nodes -= node
+		UnregisterSignal(node, COMSIG_QDELETING)
 		qdel(node)
 
 /datum/vestige_trial/stillness/proc/on_sweep(turf/spot)
-	var/turf/bait = bait_turf?.resolve()
-	return bait && spot && spot.z == bait.z && (sweep_horizontal ? spot.y == bait.y : spot.x == bait.x)
+	var/list/bait_offset = field_offset(get_turf(bait_turf))
+	var/list/spot_offset = field_offset(spot)
+	if(!bait_offset || !spot_offset)
+		return FALSE
+	return sweep_horizontal ? spot_offset[2] == bait_offset[2] : spot_offset[1] == bait_offset[1]
 
 /datum/vestige_trial/stillness/field_tick(mob/living/user, seconds_per_tick)
 	if(!phase)
 		return
-	var/turf/bait = bait_turf?.resolve()
+	var/turf/bait = get_turf(bait_turf)
 	if(phase == 1 && (get_turf(user) != bait || !user.resting || !user.is_holding(incense)))
 		failed_exchange(user)
 		return
@@ -482,7 +551,7 @@
 			phase = 2
 			sweep_horizontal = prob(50)
 			deadline = world.time + 3 SECONDS
-			var/turf/center = field_center?.resolve()
+			var/turf/center = get_turf(field_center)
 			for(var/turf/spot in range(2, center))
 				if(on_sweep(spot))
 					var/obj/structure/vestige_field_node/warning = add_node(spot, "committed sweep: leave this line")

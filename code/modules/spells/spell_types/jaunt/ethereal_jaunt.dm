@@ -92,6 +92,9 @@
 
 	exit_point_list = null
 	holder.forceMove(found_exit)
+	// Movement callbacks may eject, transform, or remove the caster's action.
+	if(QDELETED(src) || QDELETED(cast_on) || QDELETED(holder) || cast_on.loc != holder || holder.jaunter != cast_on)
+		return
 	do_steam_effects(found_exit)
 	holder.reappearing = TRUE
 	if(exit_jaunt_sound)
@@ -113,6 +116,9 @@
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/do_jaunt_in(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
+	if(cast_on.loc != holder || holder.jaunter != cast_on)
+		qdel(holder)
+		return
 
 	new jaunt_in_type(final_point, holder.dir)
 	cast_on.setDir(holder.dir)
@@ -133,6 +139,9 @@
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/end_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
+	if(cast_on.loc != holder || holder.jaunter != cast_on)
+		qdel(holder)
+		return
 
 	ADD_TRAIT(cast_on, TRAIT_NO_TRANSFORM, REF(src))
 	exit_jaunt(cast_on)
@@ -144,6 +153,13 @@
 		var/list/aside_turfs = get_adjacent_open_turfs(final_point)
 		if(length(aside_turfs))
 			cast_on.forceMove(pick(aside_turfs))
+
+/// Removal, body changes and forced ejection can end the return animation early.
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/on_jaunt_exited(obj/effect/dummy/phased_mob/jaunt, mob/living/unjaunter)
+	UnregisterSignal(jaunt, COMSIG_MOVABLE_MOVED)
+	exit_point_list = null
+	REMOVE_TRAIT(unjaunter, TRAIT_IMMOBILIZED, REF(src))
+	return ..()
 
 /**
  * Updates the exit point of the jaunt

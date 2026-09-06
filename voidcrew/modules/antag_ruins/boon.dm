@@ -84,11 +84,12 @@
  */
 /proc/get_eligible_vestige_boons(datum/mind/owner, list/pool)
 	var/list/eligible = list()
+	var/datum/vestige_record/record = get_vestige_record(owner)
 	for(var/datum/vestige_boon/boon_type as anything in pool)
-		if(boon_type in owner.vestige_boons)
+		if((boon_type in owner.vestige_boons) || (boon_type in record?.boons))
 			continue
 		var/prerequisite = initial(boon_type.upgrades_from)
-		if(prerequisite && !(prerequisite in owner.vestige_boons))
+		if(prerequisite && !(prerequisite in owner.vestige_boons) && !(prerequisite in record?.boons))
 			continue
 		eligible += boon_type
 	return eligible
@@ -138,10 +139,15 @@
 	var/choosing = FALSE
 	/// Also guards callbacks from menus already open when another claim settles the debt.
 	var/paid = FALSE
+	/// A restored old body's button cannot spend a later pact's payment.
+	var/reward_generation
 
 /datum/action/vestige_reward/New(Target, list/boon_candidates, offering_patron_name)
 	. = ..()
 	candidates = boon_candidates
+	if(istype(Target, /datum/mind))
+		var/datum/vestige_record/record = get_vestige_record(Target)
+		reward_generation = record?.reward_generation
 	if(offering_patron_name)
 		patron_name = offering_patron_name
 
@@ -174,7 +180,7 @@
 	// mind, and both read the same ckey-keyed record. Whichever is spent first clears
 	// the record, and this voids the other instead of paying the boon out twice.
 	var/datum/vestige_record/record = get_vestige_record(mind)
-	if(record && !length(record.pending_candidates))
+	if(record && (record.reward_generation != reward_generation || !length(record.pending_candidates)))
 		to_chat(user, span_notice("[patron_name] has already settled this debt."))
 		qdel(src)
 		return
@@ -184,6 +190,7 @@
 		to_chat(user, span_notice("[patron_name] has nothing left to give you."))
 		clear_recorded_pending(mind)
 		qdel(src)
+		restore_vestige_reward(mind)
 		return
 	choosing = TRUE
 	var/choice_type = run_reward_menu(user, live_candidates)
@@ -218,7 +225,7 @@
 	if(QDELETED(src) || paid || mind != target || user != owner || !menu_check(user))
 		return
 	var/datum/vestige_record/record = get_vestige_record(mind)
-	if(record && !(choice_type in record.pending_candidates))
+	if(record && (record.reward_generation != reward_generation || !(choice_type in record.pending_candidates)))
 		return
 	if(!(choice_type in get_eligible_vestige_boons(mind, candidates)))
 		return
@@ -226,6 +233,13 @@
 	// Settle before granting: grants can invoke callbacks, and an old body's
 	// open menu must never turn one completed trial into two different boons.
 	clear_recorded_pending(mind)
+	// A late old-body reward can upgrade a power earned on the replacement mind.
+	// Its recorded ancestors are superseded too; later restoration must not add
+	// an obsolete base action beside the upgrade on this body.
+	var/datum/vestige_boon/prerequisite = initial(choice_type.upgrades_from)
+	while(ispath(prerequisite, /datum/vestige_boon) && (prerequisite in record?.boons) && !(prerequisite in mind.vestige_boons))
+		LAZYADD(mind.vestige_boons, prerequisite)
+		prerequisite = initial(prerequisite.upgrades_from)
 	var/datum/vestige_boon/boon = new choice_type()
 	boon.grant(user, mind)
 	LAZYADD(mind.vestige_boons, choice_type)
@@ -235,15 +249,28 @@
 	if(record)
 		record.boons |= choice_type
 	clear_recorded_pending(mind)
+	user = mind.current // An upgraded shapeshift may have deleted the claiming form.
 	playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
 	to_chat(user, span_bolddanger("[patron_name] sounds satisfied. \"Paid in full.\""))
 	qdel(src)
+	restore_vestige_reward(mind)
 
 /// Settles the pending entry on the soul's ledger, NOT called from Destroy, which
 /// also runs on death cleanup, where the record must keep the debt for restoration
 /datum/action/vestige_reward/proc/clear_recorded_pending(datum/mind/mind)
 	var/datum/vestige_record/record = get_vestige_record(mind)
-	if(!record)
+	if(!record || record.reward_generation != reward_generation)
 		return
-	record.pending_candidates = null
-	record.pending_patron_name = null
+	record.settle_reward()
+
+/// A respawn or settlement can leave a recorded debt without a button on this body.
+/proc/restore_vestige_reward(datum/mind/mind)
+	if(QDELETED(mind) || mind.vestige_pending_reward || !isliving(mind.current))
+		return null
+	var/datum/vestige_record/record = get_vestige_record(mind)
+	if(!length(record?.pending_candidates))
+		return null
+	var/datum/action/vestige_reward/reward = new(mind, record.pending_candidates.Copy(), record.pending_patron_name)
+	reward.Grant(mind.current)
+	mind.vestige_pending_reward = reward
+	return reward

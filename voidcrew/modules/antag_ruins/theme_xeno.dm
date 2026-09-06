@@ -228,7 +228,7 @@
 		return NONE
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/warm_season/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.egg_item != src)
 		balloon_alert(user, "the egg is cold clean through!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
@@ -246,7 +246,7 @@
 		return ITEM_INTERACT_BLOCKING
 	// Re-resolve everything; the pact may have been renounced mid-plant
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.egg_item != src)
 		return ITEM_INTERACT_BLOCKING
 	if(ground.is_blocked_turf(exclude_mobs = TRUE))
 		balloon_alert(user, "no room to bed it down!")
@@ -655,7 +655,7 @@
 /// The weave: gate, channel, re-gate, wall. The mid-assault loop lives here.
 /obj/item/vestige_comb_spinneret/proc/weave(turf/open/ground, mob/living/user)
 	var/datum/vestige_trial/warm_season/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.spinneret != src)
 		balloon_alert(user, "the spinneret hangs slack!")
 		return ITEM_INTERACT_BLOCKING
 	if(!trial.egg_structure || QDELETED(trial.egg_structure))
@@ -677,7 +677,7 @@
 		return ITEM_INTERACT_BLOCKING
 	// Re-resolve the world; the channel slept through renounces, chewers and worse
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial) || !trial.egg_structure || QDELETED(trial.egg_structure))
+	if(!istype(trial) || user.mind != bound_mind || trial.spinneret != src || !trial.egg_structure || QDELETED(trial.egg_structure))
 		return ITEM_INTERACT_BLOCKING
 	if(ground.is_blocked_turf() || charges < 1)
 		balloon_alert(user, "the weave is spoiled!")
@@ -1172,6 +1172,9 @@
 	if(!istype(trial) || trial.stinger != src || bound_mind != hunter.mind)
 		balloon_alert(hunter, "the stinger hangs limp!")
 		return ITEM_INTERACT_BLOCKING
+	if(target.z != hunter.z || get_dist(target, hunter) > VESTIGE_CENSUS_RANGE)
+		balloon_alert(hunter, "the barb only reaches seven tiles!")
+		return ITEM_INTERACT_BLOCKING
 	if(!COOLDOWN_FINISHED(src, sting_cooldown))
 		balloon_alert(hunter, "the barb is still weeping!")
 		return ITEM_INTERACT_BLOCKING
@@ -1584,6 +1587,8 @@
 		new /obj/effect/vestige_vitriol_residue(splash)
 	// Anyone it caught wears it until they wash it off
 	if(isliving(target))
+		if(blocked >= 100)
+			return
 		var/mob/living/splashed = target
 		splashed.apply_status_effect(/datum/status_effect/vestige_vitriol_coating)
 		return
@@ -1835,6 +1840,8 @@
 	var/works_cap = VESTIGE_RESIN_CAP
 	/// The shape chosen in before_cast, consumed by cast
 	var/chosen_shape
+	/// Guards the menu and channel until the original caster finishes.
+	var/weaving = FALSE
 	/// The works this weaver currently sustains, eldest first (pruned by deletion signals)
 	var/list/standing_works = list()
 
@@ -1874,23 +1881,30 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
-	var/turf/open/ground = cast_on
+	if(weaving || !weave_check(owner))
+		return . | SPELL_CANCEL_CAST
+	weaving = TRUE
+	var/prepared = prepare_weave(owner, cast_on)
+	weaving = FALSE
+	return . | prepared
+
+/// Both sleeping operations belong to the body that started the work.
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/prepare_weave(mob/living/caster, turf/open/ground)
+	chosen_shape = null
 	var/shape_path = pick_shape() // sleeps on the radial
-	if(!shape_path || QDELETED(src) || QDELETED(owner) || !isliving(owner))
-		return . | SPELL_CANCEL_CAST
-	if(!can_raise(ground, shape_path))
-		return . | SPELL_CANCEL_CAST
-	owner.visible_message(
-		span_warning("[owner] hunches and begins working up a thick purple resin!"),
+	if(!shape_path || !weave_check(caster) || !can_raise(ground, shape_path))
+		return SPELL_CANCEL_CAST
+	caster.visible_message(
+		span_warning("[caster] hunches and begins working up a thick purple resin!"),
 		span_noticealien("You work your throat around the old craft."),
 	)
-	playsound(owner, 'sound/mobs/non-humanoids/alien/alien_york.ogg', 60, TRUE)
-	if(!do_after(owner, channel_time, target = ground))
-		return . | SPELL_CANCEL_CAST
-	// The world had [channel_time] to move: re-verify everything before paying
-	if(!can_raise(ground, shape_path))
-		return . | SPELL_CANCEL_CAST
+	playsound(caster, 'sound/mobs/non-humanoids/alien/alien_york.ogg', 60, TRUE)
+	if(!do_after(caster, channel_time, target = ground, extra_checks = CALLBACK(src, PROC_REF(weave_check), caster)))
+		return SPELL_CANCEL_CAST
+	if(!weave_check(caster) || !can_raise(ground, shape_path))
+		return SPELL_CANCEL_CAST
 	chosen_shape = shape_path
+	return NONE
 
 /// Radial over the house's shapes, anchored on the weaver. Returns a structure typepath or null.
 /datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/pick_shape()
@@ -1906,13 +1920,14 @@
 
 /// Menu/channel validity: the spell still exists and its owner is still up to this
 /datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/weave_check(mob/living/weaver)
-	return !QDELETED(src) && !QDELETED(weaver) && weaver == owner && !weaver.incapacitated
+	return !QDELETED(src) && isliving(weaver) && !QDELETED(weaver) && weaver == owner && weaver.stat == CONSCIOUS && !weaver.incapacitated
 
 /// Shape-aware placement check, run before AND after the channel
 /datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/can_raise(turf/open/ground, obj/structure/shape_path)
 	if(QDELETED(ground) || !isopenturf(ground) || isspaceturf(ground))
 		return FALSE
-	if(get_dist(get_turf(owner), ground) > cast_range) // the weaver may have wandered mid-channel
+	var/turf/weaver_turf = get_turf(owner)
+	if(!weaver_turf || weaver_turf.z != ground.z || get_dist(weaver_turf, ground) > cast_range) // the weaver may have wandered mid-channel
 		ground.balloon_alert(owner, "too far!")
 		return FALSE
 	if(ground.is_blocked_turf(exclude_mobs = TRUE))

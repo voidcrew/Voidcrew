@@ -52,29 +52,29 @@
 
 /datum/vestige_trial/rite_of_rust
 	name = "Rite of Rust"
-	desc = "Set the threshold weight beside an ordinary iron wall with clear floor beyond. Anoint the wall twice to dissolve it: this releases a rust guardian. Pull the weight through that exact breach, protect it, and rebuild the wall behind it with the supplied iron and welder. Recover the weight on the far side of the sealed wall to finish. You may fight the guardian or outbuild it. Build an internal test wall first if your ship has no suitable safe breach."
+	desc = "Set the threshold weight beside an ordinary iron wall with clear floor beyond. Anoint the wall twice to dissolve it: this releases a rust guardian. Pull the weight through that exact breach, protect it, and rebuild the wall behind it with the supplied iron and welder. Leave the weight on the first floor tile beyond the rebuilt wall until the rite finishes. You may fight the guardian or outbuild it. Build an internal test wall first if your ship has no suitable safe breach."
 	var/obj/item/vestige_threshold_weight/weight
-	var/turf/passage
-	var/turf/destination
+	var/obj/effect/vestige_trial_marker/passage
+	var/obj/effect/vestige_trial_marker/destination
 	var/opened = FALSE
 	var/crossed = FALSE
-	var/turf/starting_side
+	var/obj/effect/vestige_trial_marker/starting_side
 	var/mob/living/basic/hivebot/vestige_threshold_guardian/guardian
 
 /datum/vestige_trial/rite_of_rust/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_chrism(get_turf(user)))
 	weight = hand_over(user, new /obj/item/vestige_threshold_weight(get_turf(user)))
 	weight.keeper = owner
-	hand_over(user, new /obj/item/stack/sheet/iron(get_turf(user), 10))
+	hand_over(user, new /obj/item/stack/sheet/iron(get_turf(user), 10, FALSE))
 	hand_over(user, new /obj/item/weldingtool(get_turf(user)))
 
 /datum/vestige_trial/rite_of_rust/Destroy()
 	STOP_PROCESSING(SSobj, src)
-	QDEL_NULL(guardian)
+	guardian = null // Shared loan cleanup preserves a guardian which acquired a player.
 	return ..()
 
 /datum/vestige_trial/rite_of_rust/get_progress_text()
-	return opened ? "Protect the weight, pull it through the breach, and rebuild the wall behind it. Passage crossed: [crossed ? "yes" : "no"]. Recover it on the far side." : "Place the threshold weight beside an iron wall, then anoint that wall twice. Ready a weapon and building materials first."
+	return opened ? "Protect the weight, pull it through the breach, and rebuild the wall behind it. Passage crossed: [crossed ? "yes" : "no"]. Leave it on the first floor tile beyond the rebuilt wall until the rite finishes." : "Place the threshold weight beside an iron wall, then anoint that wall twice. Ready a weapon and building materials first."
 
 /// May complete (and delete) the trial
 /datum/vestige_trial/rite_of_rust/proc/choose_wall(turf/closed/wall/wall)
@@ -85,18 +85,22 @@
 	var/turf/far_side = get_step(wall, get_dir(weight, wall))
 	if(!isopenturf(far_side) || isspaceturf(far_side) || far_side.is_blocked_turf(exclude_mobs = TRUE))
 		return FALSE
-	passage = wall
-	destination = far_side
-	starting_side = get_turf(weight)
+	QDEL_NULL(passage)
+	QDEL_NULL(destination)
+	QDEL_NULL(starting_side)
+	passage = mark_turf(wall)
+	destination = mark_turf(far_side)
+	starting_side = mark_turf(get_turf(weight))
 	return TRUE
 
 /datum/vestige_trial/rite_of_rust/process(seconds_per_tick)
-	if(!opened || !crossed || !weight || get_turf(weight) != destination || !isturf(weight.loc) || !istype(passage, /turf/closed/wall))
+	if(!opened || !crossed || !weight || get_turf(weight) != get_turf(destination) || !isturf(weight.loc) || !istype(get_turf(passage), /turf/closed/wall))
 		return
 	complete()
 
 /datum/vestige_trial/rite_of_rust/proc/release_guardian()
-	guardian = new(starting_side)
+	guardian = new(get_turf(starting_side))
+	register_loan(guardian)
 	guardian.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, weight)
 
 /obj/item/vestige_threshold_weight
@@ -106,12 +110,13 @@
 	icon_state = "iron"
 	w_class = WEIGHT_CLASS_BULKY
 	max_integrity = 120
+	obj_flags = CAN_BE_HIT
 	var/datum/mind/keeper
 
 /obj/item/vestige_threshold_weight/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
 	. = ..()
 	var/datum/vestige_trial/rite_of_rust/trial = keeper?.active_vestige_trial
-	if(istype(trial) && trial.weight == src && trial.opened && old_loc == trial.passage && loc == trial.destination)
+	if(istype(trial) && trial.weight == src && trial.opened && old_loc == get_turf(trial.passage) && loc == get_turf(trial.destination))
 		trial.crossed = TRUE
 		trial.refresh_tracker()
 
@@ -125,6 +130,7 @@
 	obj_damage = 12
 	melee_attack_cooldown = 2 SECONDS
 	ai_controller = /datum/ai_controller/basic_controller/hivebot/vestige_threshold_guardian
+	sentience_type = NONE
 
 /datum/ai_controller/basic_controller/hivebot/vestige_threshold_guardian
 	blackboard = list(BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/vestige_threshold_guardian)
@@ -146,7 +152,7 @@
 	var/datum/vestige_trial/rite_of_rust/trial = user.mind?.active_vestige_trial
 	if(!istype(trial) || trial.opened || !istype(interacting_with, /turf/closed/wall))
 		return NONE
-	if(trial.passage != interacting_with && !trial.choose_wall(interacting_with))
+	if(get_turf(trial.passage) != interacting_with && !trial.choose_wall(interacting_with))
 		balloon_alert(user, "weight beside wall, clear floor beyond!")
 		return ITEM_INTERACT_BLOCKING
 	balloon_alert(user, "anointing...")
@@ -155,7 +161,7 @@
 	if(user.mind?.active_vestige_trial != trial || !user.is_holding(src))
 		return ITEM_INTERACT_BLOCKING
 	interacting_with.rust_heretic_act()
-	if(!isopenturf(trial.passage) && !HAS_TRAIT(interacting_with, TRAIT_RUSTY))
+	if(!isopenturf(get_turf(trial.passage)) && !HAS_TRAIT(interacting_with, TRAIT_RUSTY))
 		balloon_alert(user, "it won't take!")
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
@@ -163,7 +169,7 @@
 		span_notice("You smear the chrism across [interacting_with] and watch the rust take hold."),
 	)
 	playsound(interacting_with, 'sound/effects/magic/curse.ogg', 25, TRUE)
-	if(isopenturf(trial.passage))
+	if(isopenturf(get_turf(trial.passage)))
 		trial.opened = TRUE
 		trial.release_guardian()
 		START_PROCESSING(SSobj, trial)
@@ -176,7 +182,7 @@
 	name = "Rite of Transcription"
 	desc = "Read a closed airlock that is bolted or denies your actual ID. Use engineering to make it pryable, then successfully crowbar it open, walk through its tile, and shut and transcribe it from the opposite side. It must again deny your ID or be bolted when you finish. Your own ship's bolted airlock is valid, but remote toggling alone does not count: the quill witnesses a real manual breach. The tools are supplied."
 	var/obj/machinery/door/airlock/threshold
-	var/turf/approach
+	var/obj/effect/vestige_trial_marker/approach
 	var/crossed = FALSE
 	var/mob/living/walker
 	var/breached = FALSE
@@ -249,7 +255,8 @@
 		threshold = door
 		RegisterSignal(threshold, COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR), PROC_REF(on_prying))
 		RegisterSignal(threshold, COMSIG_AIRLOCK_OPEN, PROC_REF(on_pried))
-		approach = here
+		QDEL_NULL(approach)
+		approach = mark_turf(here)
 		crossed = FALSE
 		breached = FALSE
 		refresh_tracker()
@@ -449,7 +456,7 @@
 
 /datum/vestige_boon/spell/rusted_grasp
 	name = "Rusted Grasp"
-	desc = "Rust your hand, then touch something with it. People lose stamina and start slurring, airlocks lose power for a while, machines corrode visibly, and iron walls and floors rust through, reinforced ones included."
+	desc = "Rust your hand, then touch something with it. People lose stamina and start slurring, airlocks briefly lose power, machines corrode visibly, and iron walls and floors gain a coat of rust, reinforced ones included."
 	grant_text = "Red rust settles into the creases of your palm."
 	spell_type = /datum/action/cooldown/spell/touch/vestige_rusted_grasp
 
@@ -498,7 +505,8 @@
  * One hand, four confessions, all tuned below the antag original (which
  * deals 80 stamina plus a 5-second knockdown on a 10-second loop):
  * - the living: a stamina sap and a rusted tongue; no knockdown at this tier
- * - airlocks: loseMainPower: ~60 seconds without power, pryable meanwhile
+ * - airlocks: loseMainPower disables the main supply for 60 seconds, but intact
+ *   backup power normally returns after 10 seconds. Pry during that brief outage.
  * - machines and structures: corrosion damage plus the rust element, so the
  *   hit is visible; still far below the flat 500 the heretic
  *   rust_heretic_act deals to machinery. The damage carries no armour flag on
@@ -584,7 +592,7 @@
 	playsound(victim, 'sound/effects/magic/curse.ogg', 40, TRUE)
 	return TRUE
 
-/// Doors confess their wiring: loseMainPower cuts the lock for ~a minute, prying allowed meanwhile
+/// Main power fails for a minute; intact backup power restores operation after ten seconds.
 /datum/action/cooldown/spell/touch/vestige_rusted_grasp/proc/grasp_airlock(obj/machinery/door/airlock/lock, mob/living/carbon/caster)
 	lock.loseMainPower()
 	do_sparks(3, FALSE, lock)

@@ -105,16 +105,65 @@
 		. += span_boldnotice("It still owes you a boon. Talk to it to collect.")
 
 /mob/living/basic/vestige_patron/attack_hand(mob/living/carbon/human/user, list/modifiers)
-	if(user.combat_mode)
-		return ..()
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_paw(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_alien(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_larva(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_drone(mob/living/user)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_animal(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/handle_basic_attack(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_robot(mob/living/user, list/modifiers)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/mob/living/basic/vestige_patron/attack_ai(mob/living/user)
+	if(try_open_patron_menu(user))
+		return TRUE
+	return ..()
+
+/// Boons and resurrection can leave the soul in a body that does not use attack_hand.
+/mob/living/basic/vestige_patron/proc/try_open_patron_menu(mob/living/user)
+	if(!check_menu(user) || user.combat_mode)
+		return FALSE
 	// show_radial_menu sleeps; don't hold up the click chain
 	INVOKE_ASYNC(src, PROC_REF(open_patron_menu), user)
 	return TRUE
 
 /mob/living/basic/vestige_patron/proc/open_patron_menu(mob/living/user)
+	if(!check_menu(user))
+		return
 	if(!user.mind)
 		to_chat(user, span_warning("[src] doesn't react to you at all."))
 		return
+	var/datum/mind/opening_mind = user.mind
 	var/list/options = list(
 		PATRON_OPTION_SPEAK = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_talk"),
 		PATRON_OPTION_PACT = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_quest"),
@@ -123,8 +172,8 @@
 	// (ascension.dm). Every other refusal is spoken rather than hidden.
 	if(should_offer_ascension(user))
 		options[PATRON_OPTION_ASCEND] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_lore")
-	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
-	if(!choice || !check_menu(user))
+	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user, opening_mind), require_near = TRUE, tooltips = TRUE)
+	if(!choice || !check_menu(user, opening_mind))
 		return
 	switch(choice)
 		if(PATRON_OPTION_SPEAK)
@@ -152,10 +201,12 @@
 	return TRUE
 
 /// Radial validity: supplicant still there, still conscious, still adjacent
-/mob/living/basic/vestige_patron/proc/check_menu(mob/living/user)
-	if(!istype(user))
+/mob/living/basic/vestige_patron/proc/check_menu(mob/living/user, datum/mind/expected_mind)
+	if(QDELETED(src) || !istype(user) || QDELETED(user))
 		return FALSE
 	if(IS_DEAD_OR_INCAP(user) || !user.Adjacent(src))
+		return FALSE
+	if(expected_mind && (QDELETED(expected_mind) || user.mind != expected_mind || expected_mind.current != user))
 		return FALSE
 	return TRUE
 
@@ -173,6 +224,10 @@
 	if(restore_lost_legacy(user))
 		say(remember_line)
 		playsound(src, 'sound/effects/magic/curse.ogg', 30, TRUE)
+	// Restoring an upgraded shapeshift can delete the form that opened this conversation.
+	user = mind.current
+	if(!check_menu(user))
+		return
 
 	// An unclaimed boon comes before any new bargain, reopen the claim for them
 	var/datum/action/vestige_reward/pending = mind.vestige_pending_reward
@@ -185,7 +240,7 @@
 	// Their pact with us is underway: report progress, offer renunciation
 	if(active && (active.type in trial_types))
 		var/renounce = tgui_alert(user, "[active.get_progress_text()]", active.name, list("Continue", "Renounce"))
-		if(renounce == "Renounce" && check_menu(user) && mind.active_vestige_trial == active)
+		if(renounce == "Renounce" && check_menu(user, mind) && mind.active_vestige_trial == active)
 			qdel(active) // Destroy clears mind.active_vestige_trial
 			say(renounce_line)
 		return
@@ -205,13 +260,27 @@
 	// Offer the assignment. Declining doesn't reroll it. This is the trial they get.
 	var/datum/vestige_trial/offered = new trial_type(mind, name, boon_types.Copy())
 	var/accept = tgui_alert(user, offered.desc, offered.name, list("Accept", "Decline"))
-	if(accept != "Accept" || !check_menu(user) || mind.active_vestige_trial)
+	if(accept != "Accept" || !can_accept_pact(user, offered))
 		qdel(offered)
 		return
 	mind.active_vestige_trial = offered
 	offered.begin(user)
 	say(accept_line)
 	playsound(src, 'sound/effects/magic/curse.ogg', 30, TRUE)
+
+/// A dialog can outlive a body swap or a second dialog's completed pact.
+/mob/living/basic/vestige_patron/proc/can_accept_pact(mob/living/user, datum/vestige_trial/offered)
+	if(QDELETED(offered) || !check_menu(user))
+		return FALSE
+	var/datum/mind/mind = offered.owner
+	if(QDELETED(mind) || user.mind != mind || mind.current != user)
+		return FALSE
+	if(mind.active_vestige_trial || mind.vestige_pending_reward || mind.active_ascension_run)
+		return FALSE
+	var/datum/vestige_record/record = get_vestige_record(mind)
+	if((offered.type in mind.completed_vestige_trials) || (offered.type in record?.completed_trials) || length(record?.pending_candidates))
+		return FALSE
+	return length(get_eligible_vestige_boons(mind, offered.boon_pool)) > 0
 
 /**
  * The trial this patron has assigned the given mind, rolling a fresh one from
@@ -265,15 +334,13 @@
 			continue
 		var/datum/vestige_boon/boon = new boon_type()
 		boon.grant(user, mind)
+		user = mind.current
 		LAZYADD(mind.vestige_boons, boon_type)
 		qdel(boon)
 		regained = TRUE
 
 	// The debt they died holding
-	if(length(record.pending_candidates) && !mind.vestige_pending_reward)
-		var/datum/action/vestige_reward/reward = new(mind, record.pending_candidates.Copy(), record.pending_patron_name)
-		reward.Grant(user)
-		mind.vestige_pending_reward = reward
+	if(restore_vestige_reward(mind))
 		regained = TRUE
 
 	return regained

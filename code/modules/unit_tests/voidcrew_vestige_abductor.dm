@@ -8,12 +8,12 @@
 	var/mob/living/basic/vestige_survey_specimen/specimen = allocate(/mob/living/basic/vestige_survey_specimen, center)
 	trial.specimen = specimen
 	specimen.trial_ref = WEAKREF(trial)
-	trial.release_turf = center
+	trial.release_turf = trial.mark_turf(center)
 	var/list/walls = list()
 	for(var/direction in GLOB.cardinals)
 		walls += allocate(/obj/structure/vestige_field_barrier, get_step(center, direction))
 	TEST_ASSERT(!trial.is_contained(user), "Building a cage around the release point instantly completed Acquisition")
-	trial.release_turf = get_step(get_step(get_step(get_step(center, NORTH), NORTH), NORTH), NORTH)
+	trial.release_turf.forceMove(get_step(get_step(get_step(get_step(center, NORTH), NORTH), NORTH), NORTH))
 	TEST_ASSERT(trial.is_contained(user), "A relocated healthy specimen in a closed enclosure was rejected")
 	var/obj/structure/vestige_field_barrier/east_wall = locate() in get_step(center, EAST)
 	east_wall.density = FALSE
@@ -228,3 +228,204 @@
 	qdel(table)
 	TEST_ASSERT(!QDELETED(tank) && tank.loc == drop_turf, "The operating table reclaimed a player-added tank")
 	TEST_ASSERT(!QDELETED(mask) && mask.loc == drop_turf, "The operating table reclaimed a player-added mask")
+
+/// Sentience and ordinary brain transplantation must not turn player bodies into recalled specimens.
+/datum/unit_test/vestige_abductor_occupied_specimens/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/researcher = allocate(/mob/living/carbon/human/consistent, get_step(get_step(center, EAST), EAST))
+	researcher.mind_initialize()
+	var/datum/vestige_trial/acquisition/acquisition = allocate(/datum/vestige_trial/acquisition, researcher.mind)
+	researcher.mind.active_vestige_trial = acquisition
+	var/mob/living/basic/vestige_survey_specimen/specimen = allocate(/mob/living/basic/vestige_survey_specimen, center)
+	acquisition.specimen = specimen
+	acquisition.release_turf = acquisition.mark_turf(get_step(get_step(get_step(get_step(center, NORTH), NORTH), NORTH), NORTH))
+	for(var/direction in GLOB.cardinals)
+		allocate(/obj/structure/vestige_field_barrier, get_step(center, direction))
+	TEST_ASSERT(acquisition.is_contained(researcher), "The closed relocated cage must certify before its subject gains a mind.")
+	TEST_ASSERT_EQUAL(specimen.sentience_type, NONE, "An issued survey specimen must not accept ordinary sentience potions.")
+	specimen.mind_initialize()
+	TEST_ASSERT(!acquisition.is_contained(researcher), "A player occupying the specimen must prevent destructive certification.")
+	var/datum/vestige_trial/vivisection/graft = allocate(/datum/vestige_trial/vivisection, researcher.mind)
+	researcher.mind.active_vestige_trial = graft
+	var/mob/living/carbon/human/vestige_graft_patient/patient = allocate(/mob/living/carbon/human/vestige_graft_patient)
+	graft.patient = patient
+	patient.trial_ref = WEAKREF(graft)
+	var/obj/item/organ/vestige_filter/filter = allocate(/obj/item/organ/vestige_filter)
+	filter.configure(patient.waste_class, graft)
+	filter.Insert(patient)
+	filter.on_surgical_insertion(researcher, patient, BODY_ZONE_CHEST, filter)
+	graft.surgical_closure = TRUE
+	TEST_ASSERT(graft.can_discharge(), "The healthy compatible graft must certify before brain transplantation.")
+	var/mob/living/carbon/human/donor = allocate(/mob/living/carbon/human/consistent)
+	donor.mind_initialize()
+	var/datum/mind/donor_mind = donor.mind
+	var/obj/item/organ/brain/donor_brain = donor.get_organ_slot(ORGAN_SLOT_BRAIN)
+	donor_brain.Remove(donor, special = TRUE)
+	TEST_ASSERT_EQUAL(donor_mind.current, donor_brain.brainmob, "Ordinary donor extraction must move the mind into its real brainmob.")
+	donor_brain.Insert(patient)
+	TEST_ASSERT_EQUAL(donor_mind.current, patient, "The stock brain insertion hook must actually transfer the donor into the loan patient.")
+	TEST_ASSERT(!graft.can_discharge(), "The dossier must not recall a patient now controlled by a transplanted player mind.")
+
+/// A deterministic channel seam exercises the same reentrant Trigger and mind-transfer callbacks as a yielded wind-up.
+/datum/action/cooldown/spell/vestige_recall_anchor/vestige_channel_test
+	var/mob/living/replacement_body
+	var/nested_result
+	var/nested_planting
+
+/datum/action/cooldown/spell/vestige_recall_anchor/vestige_channel_test/channel_pull(mob/living/user)
+	channelling = TRUE
+	if(replacement_body)
+		user.mind.transfer_to(replacement_body)
+	else
+		nested_result = Trigger(user, TRIGGER_SECONDARY_ACTION)
+		nested_planting = planting_this_cast
+	channelling = FALSE
+	return TRUE
+
+/datum/unit_test/vestige_abductor_anchor_channel/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/action/cooldown/spell/vestige_recall_anchor/vestige_channel_test/anchor_spell = allocate(/datum/action/cooldown/spell/vestige_recall_anchor/vestige_channel_test, keeper.mind)
+	anchor_spell.Grant(keeper)
+	anchor_spell.anchor = allocate(/obj/effect/vestige_anchor_tag, get_step(keeper, NORTH))
+	var/turf/original_anchor = get_turf(anchor_spell.anchor)
+	var/result = anchor_spell.before_cast(keeper)
+	TEST_ASSERT(!(result & SPELL_CANCEL_CAST), "An uninterrupted original pull should remain eligible to cast.")
+	TEST_ASSERT(!anchor_spell.nested_result, "Right-clicking during a pull must not start a reentrant planting cast.")
+	TEST_ASSERT(!anchor_spell.nested_planting, "A rejected replant must not change the original pull's intent.")
+	TEST_ASSERT_EQUAL(get_turf(anchor_spell.anchor), original_anchor, "A rejected concurrent replant must leave the destination alone.")
+	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human/consistent)
+	anchor_spell.replacement_body = new_body
+	result = anchor_spell.before_cast(keeper)
+	TEST_ASSERT_EQUAL(anchor_spell.owner, new_body, "The real mind transfer must migrate the boon to the replacement body.")
+	TEST_ASSERT(result & SPELL_CANCEL_CAST, "A pull prepared by the old body must cancel after its owner's mind transfers.")
+
+/// The other surgeon cancels their real extraction menu while our real graft insertion is in its do_after.
+/datum/unit_test/vestige_abductor_parallel_surgery
+	var/mob/living/carbon/human/other_surgeon
+	var/datum/surgery/organ_manipulation/other_operation
+	var/interleaved = FALSE
+	var/datum/surgery_step/finished_step
+
+/datum/unit_test/vestige_abductor_parallel_surgery/Run()
+	var/mob/living/carbon/human/surgeon = allocate(/mob/living/carbon/human/consistent)
+	surgeon.mind_initialize()
+	var/datum/vestige_trial/vivisection/trial = allocate(/datum/vestige_trial/vivisection, surgeon.mind)
+	surgeon.mind.active_vestige_trial = trial
+	var/mob/living/carbon/human/vestige_graft_patient/patient = allocate(/mob/living/carbon/human/vestige_graft_patient)
+	trial.patient = patient
+	patient.SetSleeping(1 MINUTES)
+	allocate(/obj/structure/table/optable/vestige_graft_table, get_turf(patient))
+	var/obj/item/organ/vestige_filter/filter = allocate(/obj/item/organ/vestige_filter)
+	filter.configure(patient.waste_class, trial)
+	surgeon.put_in_active_hand(filter)
+	surgeon.zone_selected = BODY_ZONE_CHEST
+	var/datum/surgery/organ_manipulation/operation = allocate(/datum/surgery/organ_manipulation, patient, BODY_ZONE_CHEST, patient.get_bodypart(BODY_ZONE_CHEST))
+	operation.status = 6 // The stock repeatable organ manipulation step after opening.
+	operation.speed_modifier = 0.01 // Keep the actual do_after and its signal, without a long test delay.
+	other_surgeon = allocate(/mob/living/carbon/human/consistent)
+	other_surgeon.zone_selected = BODY_ZONE_CHEST
+	other_surgeon.put_in_active_hand(allocate(/obj/item/hemostat))
+	var/mob/living/carbon/human/other_patient = allocate(/mob/living/carbon/human/consistent)
+	other_operation = allocate(/datum/surgery/organ_manipulation, other_patient, BODY_ZONE_CHEST, other_patient.get_bodypart(BODY_ZONE_CHEST))
+	other_operation.status = 6
+	RegisterSignal(surgeon, COMSIG_DO_AFTER_BEGAN, PROC_REF(on_insertion_began))
+	RegisterSignal(surgeon, COMSIG_MOB_SURGERY_STEP_SUCCESS, PROC_REF(on_step_finished))
+	TEST_ASSERT(operation.next_step(surgeon, list()), "The real stock surgery must accept the compatible held filter.")
+	TEST_ASSERT(interleaved, "The second surgery must actually run inside the insertion's channel.")
+	TEST_ASSERT_EQUAL(filter.owner, patient, "Another surgeon cancelling extraction must not erase our in-flight graft insertion.")
+	TEST_ASSERT(filter.surgically_installed, "The successful independent insertion must execute the real graft hook.")
+	TEST_ASSERT(finished_step && QDELETED(finished_step), "The completed invocation must reclaim its private execution state.")
+	TEST_ASSERT(!QDELETED(GLOB.surgery_steps[/datum/surgery_step/manipulate_organs/internal]), "Introspection must retain the shared surgery prototype.")
+	surgeon.put_in_active_hand(allocate(/obj/item/cautery))
+	finished_step = null
+	TEST_ASSERT(operation.next_step(surgeon, list()), "Cautery must leave the repeatable insertion step and run the stock closure.")
+	TEST_ASSERT(QDELETED(operation), "The final closure must complete the operation.")
+	TEST_ASSERT(finished_step && QDELETED(finished_step), "The repeatable fallback must reclaim its temporary closure step too.")
+	UnregisterSignal(surgeon, COMSIG_MOB_SURGERY_STEP_SUCCESS)
+
+/datum/unit_test/vestige_abductor_parallel_surgery/proc/on_insertion_began(mob/living/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_DO_AFTER_BEGAN)
+	interleaved = TRUE
+	// A clientless surgeon closes the normal selection with null, the same result as Cancel.
+	other_operation.next_step(other_surgeon, list())
+
+/datum/unit_test/vestige_abductor_parallel_surgery/proc/on_step_finished(mob/living/source, datum/surgery_step/step)
+	SIGNAL_HANDLER
+	finished_step = step
+
+/// Exercise the callbacks actually scheduled by the Gift, including removal and reimplantation.
+/datum/unit_test/vestige_abductor_gift_delayed_healing/Run()
+	for(var/scenario in list("uninterrupted", "removed", "other recipient", "same recipient", "gland deleted", "recipient deleted"))
+		var/mob/living/carbon/human/recipient = allocate(/mob/living/carbon/human/consistent)
+		var/datum/vestige_boon/gland_graft/boon = allocate(/datum/vestige_boon/gland_graft)
+		boon.grant(recipient, recipient.mind)
+		var/obj/item/organ/heart/gland/heal/gland = recipient.get_organ_slot(ORGAN_SLOT_HEART)
+		TEST_ASSERT(istype(gland) && gland.active, "The Gift must implant and activate its real heal gland.")
+		gland.replace_eyes(recipient.get_organ_slot(ORGAN_SLOT_EYES))
+		gland.replace_limb(BODY_ZONE_R_ARM, recipient.get_bodypart(BODY_ZONE_R_ARM))
+		recipient.setToxLoss(60)
+		gland.replace_blood()
+		TEST_ASSERT(!recipient.get_organ_slot(ORGAN_SLOT_EYES) && !recipient.get_bodypart(BODY_ZONE_R_ARM), "The real operations must first remove the damaged anatomy.")
+		TEST_ASSERT_EQUAL(recipient.getToxLoss(), 45, "Blood replacement must start once before scheduling its continuation.")
+		var/list/pending = accelerate_healing(gland)
+		TEST_ASSERT_EQUAL(length(pending), 3, "The actual gland must schedule eyes, limb and blood continuations.")
+		var/mob/living/carbon/human/other
+		var/obj/item/organ/eyes/other_eyes
+		if(scenario in list("removed", "other recipient", "same recipient"))
+			gland.Remove(recipient, special = TRUE)
+		if(scenario == "other recipient")
+			other = allocate(/mob/living/carbon/human/consistent)
+			other_eyes = other.get_organ_slot(ORGAN_SLOT_EYES)
+			var/obj/item/bodypart/other_arm = other.get_bodypart(BODY_ZONE_R_ARM)
+			other_arm.drop_limb()
+			other.setToxLoss(45)
+			gland.Insert(other)
+		else if(scenario == "same recipient")
+			gland.Insert(recipient)
+		else if(scenario == "gland deleted")
+			qdel(gland)
+		else if(scenario == "recipient deleted")
+			qdel(recipient)
+		var/deadline = world.time + 5 SECONDS
+		while(callbacks_pending(pending) && world.time < deadline)
+			sleep(world.tick_lag)
+		TEST_ASSERT(!callbacks_pending(pending), "The real timer subsystem did not finish or cancel the accelerated [scenario] callbacks.")
+		if(scenario == "recipient deleted")
+			TEST_ASSERT(QDELETED(gland), "Deleting the recipient must reclaim its gland and its remaining timers.")
+		else if(scenario == "uninterrupted")
+			TEST_ASSERT(recipient.get_organ_slot(ORGAN_SLOT_EYES) && recipient.get_bodypart(BODY_ZONE_R_ARM), "Uninterrupted delayed healing must restore the original recipient's anatomy.")
+			TEST_ASSERT_EQUAL(recipient.getToxLoss(), 30, "The uninterrupted scheduled blood continuation must heal another fifteen toxin damage.")
+		else
+			TEST_ASSERT(!recipient.get_organ_slot(ORGAN_SLOT_EYES) && !recipient.get_bodypart(BODY_ZONE_R_ARM), "The [scenario] operation must not continue after its implantation ends.")
+			TEST_ASSERT_EQUAL(recipient.getToxLoss(), 45, "The [scenario] operation must not continue its old blood treatment.")
+		if(other)
+			TEST_ASSERT_EQUAL(other.get_organ_slot(ORGAN_SLOT_EYES), other_eyes, "An earlier recipient's pending eyes must not replace the new recipient's healthy eyes.")
+			TEST_ASSERT(!other.get_bodypart(BODY_ZONE_R_ARM), "Pending regrowth must not migrate to the new recipient.")
+			TEST_ASSERT_EQUAL(other.getToxLoss(), 45, "The old blood continuation must not treat the new recipient.")
+		if(!QDELETED(gland))
+			qdel(gland)
+
+/// Retain each real callback and its captured arguments; shorten only its timer delay.
+/datum/unit_test/vestige_abductor_gift_delayed_healing/proc/accelerate_healing(obj/item/organ/heart/gland/heal/gland)
+	var/list/pending = list()
+	var/list/healing_procs = list(
+		TYPE_PROC_REF(/obj/item/organ/heart/gland/heal, finish_replace_eyes),
+		TYPE_PROC_REF(/obj/item/organ/heart/gland/heal, finish_replace_limb),
+		TYPE_PROC_REF(/obj/item/organ/heart/gland/heal, keep_replacing_blood),
+	)
+	for(var/datum/timedevent/scheduled as anything in gland._active_timers?.Copy())
+		if(!(scheduled.callBack?.delegate in healing_procs))
+			continue
+		var/datum/callback/healing = scheduled.callBack
+		qdel(scheduled)
+		var/timer_id = addtimer(healing, 1, TIMER_STOPPABLE)
+		pending += SStimer.timer_id_dict[timer_id]
+	return pending
+
+/datum/unit_test/vestige_abductor_gift_delayed_healing/proc/callbacks_pending(list/pending)
+	for(var/datum/timedevent/scheduled as anything in pending)
+		if(!QDELETED(scheduled))
+			return TRUE
+	return FALSE

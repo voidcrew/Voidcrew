@@ -121,13 +121,20 @@
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		try_to_fail = TRUE
 
-	var/datum/surgery_step/surgery_step = GLOB.surgery_steps[steps[status]]
-	if(isnull(surgery_step))
+	// VOIDCREW EDIT BEGIN - execution state must not be shared across sleeping operations.
+	var/datum/surgery_step/prototype = GLOB.surgery_steps[steps[status]]
+	if(isnull(prototype))
 		return FALSE
+	var/datum/surgery_step/surgery_step = new prototype.type
+	// VOIDCREW EDIT END
 	var/obj/item/tool = user.get_active_held_item()
 	if(tool)
 		tool = tool.get_proxy_attacker_for(target, user)
-	if(surgery_step.try_op(user, target, user.zone_selected, tool, src, try_to_fail))
+	// VOIDCREW EDIT BEGIN - the invocation owns its step until every channel returns.
+	var/step_handled = surgery_step.try_op(user, target, user.zone_selected, tool, src, try_to_fail)
+	qdel(surgery_step)
+	// VOIDCREW EDIT END
+	if(step_handled)
 		return TRUE
 	if(!tool)
 		return FALSE

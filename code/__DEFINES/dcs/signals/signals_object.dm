@@ -214,6 +214,10 @@
 /// from [/obj/item/stack/proc/can_merge]: (obj/item/stack/merge_with, in_hand)
 #define COMSIG_STACK_CAN_MERGE "stack_can_merge"
 	#define CANCEL_STACK_MERGE (1<<0)
+/// Sent to the destination of a proposed stack merge: (obj/item/stack/source_stack, inhand)
+#define COMSIG_STACK_CAN_RECEIVE_MERGE "stack_can_receive_merge"
+/// Sent before a split source can be deleted: (obj/item/stack/new_stack)
+#define COMSIG_STACK_SPLIT "stack_split"
 
 ///from /obj/item/book/bible/interact_with_atom(): (mob/user)
 #define COMSIG_BIBLE_SMACKED "bible_smacked"

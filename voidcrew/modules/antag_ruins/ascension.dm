@@ -168,6 +168,35 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	// and the Pact option rebuilds the button from it.
 	if(mind.vestige_pending_reward || length(record.pending_candidates))
 		return "Collect what you're owed before you ask me for something like this."
+	if(vestige_ascension_passenger(user))
+		return "You go in alone. Leave anyone you're carrying outside, living or dead."
+	return null
+
+/// Nested bags, swallowed mobs, and revivable bodies travel with forceMove too.
+/// A shapeshifter's own stored body and a cyborg's installed brain are parts of the supplicant.
+/proc/vestige_ascension_passenger(mob/living/user)
+	var/list/own_bodies = list(user)
+	for(var/index = 1; index <= length(own_bodies); index++)
+		var/mob/living/body = own_bodies[index]
+		var/datum/status_effect/shapechange_mob/from_spell/shape = body.has_status_effect(/datum/status_effect/shapechange_mob/from_spell)
+		if(!QDELETED(shape?.caster_mob))
+			own_bodies |= shape.caster_mob
+	var/list/own_mobs = own_bodies.Copy()
+	for(var/mob/living/body as anything in own_bodies)
+		var/mob/living/brain/installed_brain
+		if(iscarbon(body))
+			var/mob/living/carbon/carbon_body = body
+			var/obj/item/organ/brain/brain = carbon_body.get_organ_slot(ORGAN_SLOT_BRAIN)
+			installed_brain = brain?.brainmob
+		else if(iscyborg(body))
+			var/mob/living/silicon/robot/robot_body = body
+			installed_brain = robot_body.mmi?.brainmob
+		// An independently occupied brain is still another person, even if installed.
+		if(!QDELETED(installed_brain) && !installed_brain.mind && !installed_brain.client)
+			own_mobs |= installed_brain
+	for(var/mob/living/passenger as anything in user.get_all_contents_type(/mob/living))
+		if(!QDELETED(passenger) && !(passenger in own_mobs))
+			return passenger
 	return null
 
 /// Does this patron host a capstone at all? Gates the radial option's existence.
@@ -219,18 +248,16 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	var/datum/vestige_ascension/offer
 	/// The mind attempting it
 	var/datum/mind/supplicant
+	/// The body whose death/deletion signals are currently watched.
+	var/mob/living/watched_supplicant
 	/// The arena's turf reservation, owned outright by this run
 	var/datum/turf_reservation/reservation
 	/// Bottom-left turf of the loaded template footprint
 	var/turf/arena_bottom_left
 	/// The boss, while it lives
 	var/mob/living/boss
-	/// Where the supplicant stood when the way opened. Weak: their ruin may unload behind them.
-	var/datum/weakref/return_turf_ref
-	/// Area typepath that turf belonged to at that moment. If a different area holds the
-	/// turf when it is time to go back, the ruin has unloaded (or the reservation was
-	/// reused) and the fallbacks take over.
-	var/return_area_type
+	/// Moves with a ship and disappears with an unloaded ruin, unlike a cached turf.
+	var/obj/effect/vestige_trial_marker/return_marker
 	/// The ship they came in on, as a fallback destination when that turf is gone
 	var/datum/weakref/home_ship_ref
 	/// Timer id of the hard time limit
@@ -239,20 +266,33 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	var/won = FALSE
 	/// Guards [finish] against re-entry from stacked signal handlers
 	var/finishing = FALSE
+	/// The encounter ended, but no safe exterior destination has accepted the supplicant yet.
+	var/awaiting_return = FALSE
+	/// The one physical exit, also available while a failed return is being retried.
+	var/obj/structure/vestige_way_home/way_home
 
 /datum/vestige_ascension_run/New(datum/vestige_ascension/attempted, mob/living/user)
 	. = ..()
 	offer = attempted
 	supplicant = user?.mind
+	if(supplicant)
+		RegisterSignal(supplicant, COMSIG_MIND_TRANSFERRED, PROC_REF(on_supplicant_transferred))
+		RegisterSignal(supplicant, COMSIG_QDELETING, PROC_REF(on_mind_deleted))
 
 /datum/vestige_ascension_run/Destroy()
+	watch_supplicant(null)
+	if(supplicant)
+		UnregisterSignal(supplicant, list(COMSIG_MIND_TRANSFERRED, COMSIG_QDELETING))
 	if(supplicant?.active_ascension_run == src)
 		supplicant.active_ascension_run = null
 	deltimer(deadline_timer)
 	deadline_timer = null
-	if(!QDELETED(boss))
-		qdel(boss)
-	boss = null
+	QDEL_NULL(return_marker)
+	QDEL_NULL(way_home)
+	var/mob/living/old_boss = boss
+	watch_boss(null)
+	if(!QDELETED(old_boss))
+		qdel(old_boss)
 	// The reservation is the expensive part; it must not outlive the run
 	if(reservation)
 		QDEL_NULL(reservation)
@@ -267,16 +307,25 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
  * A half-loaded arena must never be left holding a reservation.
  */
 /datum/vestige_ascension_run/proc/begin(mob/living/user)
-	if(!offer || !supplicant || QDELETED(user))
+	if(!offer || QDELETED(supplicant) || QDELETED(user) || user.mind != supplicant || supplicant.current != user || user.stat != CONSCIOUS || supplicant.active_ascension_run)
+		return FALSE
+	if(vestige_ascension_passenger(user))
+		to_chat(user, span_warning("The way admits you alone. Leave anyone you're carrying outside, living or dead."))
 		return FALSE
 	if(!ispath(offer.template_type, /datum/map_template/vestige_arena))
 		log_mapping("VESTIGE ASCENSION: [offer.name] has no arena template")
 		return FALSE
+	// Arena loading can yield. Claim the slot before another open dialog starts a run.
+	supplicant.active_ascension_run = src
 	// Instantiating parses the .dmm for its bounds, so this is also the size preload
 	var/datum/map_template/vestige_arena/template = new offer.template_type()
 	var/opened = load_arena(template)
 	qdel(template)
-	if(!opened)
+	if(!opened || QDELETED(src) || QDELETED(user) || user.mind != supplicant || user.stat != CONSCIOUS)
+		return FALSE
+	// Loading can yield long enough for somebody to put a passenger into the inventory.
+	if(vestige_ascension_passenger(user))
+		to_chat(user, span_warning("The way admits you alone. Leave anyone you're carrying outside, living or dead."))
 		return FALSE
 
 	var/turf/entry = pick_landmark(/obj/effect/landmark/vestige_arena/entry)
@@ -285,15 +334,9 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		log_mapping("VESTIGE ASCENSION: [offer.name]'s arena is missing an entry or boss landmark")
 		return FALSE
 
-	boss = new offer.boss_type(boss_spot)
-	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
-	RegisterSignal(boss, COMSIG_QDELETING, PROC_REF(on_boss_deleted))
+	watch_boss(new offer.boss_type(boss_spot))
 
-	var/turf/origin = get_turf(user)
-	return_turf_ref = WEAKREF(origin)
-	var/area/origin_area = get_area(origin)
-	return_area_type = origin_area?.type
-	home_ship_ref = WEAKREF(get_ship_from_atom(user))
+	remember_origin(user)
 	supplicant.active_ascension_run = src
 	watch_supplicant(user)
 
@@ -336,10 +379,27 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		QDEL_NULL(reservation)
 		arena_bottom_left = null
 		return FALSE
+	if(!extend_arena_area())
+		log_mapping("VESTIGE ASCENSION: '[template.name]' has no arena area at its footprint origin")
+		QDEL_NULL(reservation)
+		arena_bottom_left = null
+		return FALSE
 
 	// The margin loads as uninitialized /turf/open/space/basic, which players cannot
 	// interact with at all. Anything reachable has to pass through here first.
 	initialize_uninitialized_block_turfs(reservation.bottom_left_turfs[1], reservation.top_right_turfs[1])
+	return TRUE
+
+/// A breached outer wall must not expose a teleportable strip inside the private reservation.
+/datum/vestige_ascension_run/proc/extend_arena_area()
+	var/area/arena_area = get_area(arena_bottom_left)
+	if(!istype(arena_area, /area/ruin/space/has_grav/vestige/arena) || !reservation)
+		return FALSE
+	for(var/turf/interior as anything in block(reservation.bottom_left_turfs[1], reservation.top_right_turfs[1]))
+		var/area/previous_area = get_area(interior)
+		if(previous_area != arena_area)
+			interior.change_area(previous_area, arena_area)
+	// The allocator's dense NOJAUNT cordon lies outside these bounds and keeps its own area.
 	return TRUE
 
 /// A turf inside the loaded footprint carrying the given landmark type, or null. Consumes the landmark.
@@ -365,8 +425,22 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 /// Hooks the signals that end the run on the supplicant's side. Re-callable across body swaps.
 /datum/vestige_ascension_run/proc/watch_supplicant(mob/living/user)
+	if(watched_supplicant)
+		UnregisterSignal(watched_supplicant, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
+	watched_supplicant = user
+	if(QDELETED(user))
+		return
 	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_supplicant_death), override = TRUE)
 	RegisterSignal(user, COMSIG_QDELETING, PROC_REF(on_supplicant_deleted), override = TRUE)
+
+/// Shapeshifting deletes the old shape after transferring the mind out of it.
+/datum/vestige_ascension_run/proc/on_supplicant_transferred(datum/mind/source)
+	SIGNAL_HANDLER
+	watch_supplicant(supplicant?.current)
+
+/datum/vestige_ascension_run/proc/on_mind_deleted(datum/mind/source)
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(finish), "mind destroyed")
 
 /**
  * The whole point of the tier. The body is deleted outright, no corpse, no
@@ -412,6 +486,26 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 // ===== WINNING =====
 
+/// Keep the encounter attached to its boss without TRAIT_NO_TRANSFORM, which also stops AI movement.
+/datum/vestige_ascension_run/proc/watch_boss(mob/living/new_boss)
+	if(boss)
+		UnregisterSignal(boss, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING, COMSIG_LIVING_PRE_WABBAJACKED, COMSIG_PRE_MOB_CHANGED_TYPE))
+	boss = new_boss
+	if(QDELETED(boss))
+		return
+	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
+	RegisterSignal(boss, COMSIG_QDELETING, PROC_REF(on_boss_deleted))
+	RegisterSignal(boss, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(on_boss_polymorph))
+	RegisterSignal(boss, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(on_boss_type_change))
+
+/datum/vestige_ascension_run/proc/on_boss_polymorph(mob/living/source)
+	SIGNAL_HANDLER
+	return STOP_WABBAJACK
+
+/datum/vestige_ascension_run/proc/on_boss_type_change(mob/living/source)
+	SIGNAL_HANDLER
+	return COMPONENT_BLOCK_MOB_CHANGE
+
 /**
  * The kill. Grants the capstone immediately (no radial. There is exactly one
  * thing on offer and it was named up front), locks the soul out of the other two,
@@ -430,7 +524,11 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 /datum/vestige_ascension_run/proc/on_boss_deleted(mob/living/dead_boss)
 	SIGNAL_HANDLER
-	boss = null
+	watch_boss(null)
+	if(finishing || won)
+		return
+	// Let the removed boss finish its cleanup before ending the encounter.
+	addtimer(CALLBACK(src, PROC_REF(finish), "boss disappeared"), 0)
 
 /datum/vestige_ascension_run/proc/award_capstone()
 	var/mob/living/victor = supplicant?.current
@@ -456,15 +554,18 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	deltimer(deadline_timer)
 	deadline_timer = addtimer(CALLBACK(src, PROC_REF(on_deadline)), VESTIGE_ASCENSION_VICTORY_GRACE, TIMER_STOPPABLE)
 
-/// Drops the way home on the entry landmark's turf, or under the victor if the arena has drifted.
+/// Open one physical exit beside the current supplicant.
 /datum/vestige_ascension_run/proc/open_the_gate()
 	var/mob/living/victor = supplicant?.current
 	var/turf/spot = get_turf(victor)
 	if(!spot)
 		return
-	var/obj/structure/vestige_way_home/gate = new(spot)
-	gate.run_ref = WEAKREF(src)
-	to_chat(victor, span_boldnotice("A way back opens next to you. It won't stay open forever."))
+	if(!QDELETED(way_home))
+		return
+	way_home = new(spot)
+	way_home.run_ref = WEAKREF(src)
+	var/exit_message = awaiting_return ? "A way back opens next to you. It is waiting for safe ground." : "A way back opens next to you. It won't stay open forever."
+	to_chat(victor, span_boldnotice(exit_message))
 
 // ===== ENDINGS =====
 
@@ -483,42 +584,69 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	finishing = TRUE
 	var/mob/living/user = supplicant?.current
 	if(!QDELETED(user))
+		if(in_arena(user) && !send_home(user))
+			// A failed forceMove or an unavailable destination cannot cost the survivor their body.
+			finishing = FALSE
+			awaiting_return = TRUE
+			var/mob/living/old_boss = boss
+			watch_boss(null)
+			if(!QDELETED(old_boss))
+				qdel(old_boss)
+			open_the_gate()
+			deltimer(deadline_timer)
+			deadline_timer = addtimer(CALLBACK(src, PROC_REF(on_deadline)), 30 SECONDS, TIMER_STOPPABLE)
+			to_chat(user, span_warning("The way back cannot find safe ground yet. The encounter is over; the doorway will keep trying."))
+			return FALSE
 		UnregisterSignal(user, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
-		if(in_arena(user))
-			send_home(user)
 	log_game("Vestige ascension '[offer?.name]' ended: [reason].")
 	qdel(src)
+	return TRUE
 
 /// Is this mob standing inside our reservation?
 /datum/vestige_ascension_run/proc/in_arena(mob/living/user)
 	var/turf/spot = get_turf(user)
-	return spot && arena_bottom_left && spot.z == arena_bottom_left.z
+	return spot && reservation?.contains_turf(spot)
 
-/**
- * Puts the supplicant back where they left from.
- *
- * Usually that turf is still there. They flew to the patron and their ship is
- * still docked, which is what keeps the ruin interior loaded. But a crew that
- * leaves without them frees the ruin's reservation, and returning someone into
- * freed turfs would be worse than any of the fallbacks.
- *
- * "Still there" cannot be a z-level check: ruin interiors live in turf
- * reservations, so the remembered turf is ALWAYS on a reserved z whether the
- * ruin stands or not. Instead the turf's current area is compared against the
- * area it belonged to when the way opened, a freed (or reused) reservation
- * fails that. So: remembered turf if its area still stands, else the ship they
- * arrived on, else anywhere safe at all.
- */
+/// Cache the physical origin and the crew's vessel before leaving the patron's ruin.
+/datum/vestige_ascension_run/proc/remember_origin(mob/living/user)
+	QDEL_NULL(return_marker)
+	var/turf/origin = get_turf(user)
+	if(origin)
+		return_marker = new(origin)
+	home_ship_ref = WEAKREF(get_ship_from_atom(user) || get_crew_ship(user))
+
+/// Return only to safe ground outside this reservation; recycled turf addresses prove nothing.
 /datum/vestige_ascension_run/proc/send_home(mob/living/user)
-	var/turf/destination = return_turf_ref?.resolve()
-	var/area/destination_area = QDELETED(destination) ? null : get_area(destination)
-	if(isnull(destination_area) || !return_area_type || destination_area.type != return_area_type)
-		destination = find_home_ship_turf() || find_safe_turf() || get_safe_random_station_turf()
-	if(!destination)
-		return
+	var/turf/destination = QDELETED(return_marker) ? null : get_turf(return_marker)
+	if(!safe_return_turf(destination))
+		destination = find_home_ship_turf()
+	if(!safe_return_turf(destination))
+		destination = find_return_fallback()
+	if(!safe_return_turf(destination))
+		return FALSE
 	user.forceMove(destination)
+	if(QDELETED(user) || in_arena(user) || get_turf(user) != destination)
+		return FALSE
 	user.flash_act(1, TRUE)
 	to_chat(user, span_boldnotice("The floor changes under you. You're back."))
+	return TRUE
+
+/// Even a generic station fallback may pick another reserved arena on the same z-level.
+/datum/vestige_ascension_run/proc/safe_return_turf(turf/destination)
+	if(QDELETED(destination) || reservation?.contains_turf(destination))
+		return FALSE
+	return is_safe_turf(destination, extended_safety_checks = TRUE, no_teleport = TRUE)
+
+/// Keep the existing bounded searches, but do not accept their relaxed NOTELEPORT fallback.
+/datum/vestige_ascension_run/proc/find_return_fallback()
+	var/turf/destination
+	if(length(SSmapping.levels_by_trait(ZTRAIT_STATION)))
+		destination = find_safe_turf()
+	if(safe_return_turf(destination))
+		return destination
+	if(length(GLOB.the_station_areas))
+		destination = get_safe_random_station_turf()
+	return safe_return_turf(destination) ? destination : null
 
 /// An open turf aboard the ship they left from, or null if it's gone too
 /datum/vestige_ascension_run/proc/find_home_ship_turf()
@@ -527,7 +655,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		return null
 	var/list/candidates = list()
 	for(var/turf/deck as anything in home.shuttle.return_turfs())
-		if(!isopenturf(deck) || deck.density || isspaceturf(deck))
+		if(!safe_return_turf(deck))
 			continue
 		candidates += deck
 	return length(candidates) ? pick(candidates) : null
@@ -559,8 +687,32 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	. = ..()
 	if(.)
 		return
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_paw(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_alien(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_animal(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/handle_basic_attack(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_robot(mob/living/user, list/modifiers)
+	return enter_gate(user)
+
+/obj/structure/vestige_way_home/attack_ai(mob/living/user)
+	return enter_gate(user)
+
+/// Every admitted body may use the physical exit; a silicon's remote click is insufficient.
+/obj/structure/vestige_way_home/proc/enter_gate(mob/living/user)
+	if(QDELETED(user) || user.stat != CONSCIOUS || !Adjacent(user))
+		return TRUE
 	var/datum/vestige_ascension_run/run = run_ref?.resolve()
-	if(!run || run.supplicant != user.mind)
+	if(!run || run.supplicant != user.mind || run.supplicant.current != user || (!run.won && !run.awaiting_return))
 		to_chat(user, span_warning("It isn't for you."))
 		return TRUE
 	run.finish("victor left")

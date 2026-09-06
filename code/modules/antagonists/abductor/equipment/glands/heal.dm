@@ -9,6 +9,18 @@
 	icon_state = "health"
 	mind_control_uses = 3
 	mind_control_duration = 3000
+	// VOIDCREW ADD: delayed healing belongs to one continuous implantation.
+	var/healing_generation = 0
+
+// VOIDCREW ADD START
+/obj/item/organ/heart/gland/heal/on_mob_remove(mob/living/carbon/gland_owner, special, movement_flags)
+	healing_generation++
+	return ..()
+
+/// Removal invalidates pending work even if this gland returns to the same body.
+/obj/item/organ/heart/gland/heal/proc/can_finish_healing(mob/living/carbon/recipient, generation)
+	return !QDELETED(src) && !QDELETED(recipient) && owner == recipient && active && generation == healing_generation && ownerCheck()
+// VOIDCREW ADD END
 
 /obj/item/organ/heart/gland/heal/activate()
 	if(!(owner.mob_biotypes & MOB_ORGANIC))
@@ -151,6 +163,9 @@
 	new_stomach.Insert(owner)
 
 /obj/item/organ/heart/gland/heal/proc/replace_eyes(obj/item/organ/eyes/eyes)
+	// VOIDCREW ADD: capture the recipient before organ-removal callbacks can change it.
+	var/mob/living/carbon/recipient = owner
+	var/generation = healing_generation
 	if(eyes)
 		owner.visible_message(span_warning("[owner]'s [eyes.name] fall out of their sockets!"), span_userdanger("Your [eyes.name] fall out of their sockets!"))
 		playsound(owner, 'sound/effects/splat.ogg', 50, TRUE)
@@ -159,17 +174,24 @@
 	else
 		to_chat(owner, span_warning("You feel a weird rumble behind your eye sockets..."))
 
-	addtimer(CALLBACK(src, PROC_REF(finish_replace_eyes)), rand(10 SECONDS, 20 SECONDS))
+	addtimer(CALLBACK(src, PROC_REF(finish_replace_eyes), recipient, generation), rand(10 SECONDS, 20 SECONDS)) // VOIDCREW EDIT
 
-/obj/item/organ/heart/gland/heal/proc/finish_replace_eyes()
+/obj/item/organ/heart/gland/heal/proc/finish_replace_eyes(mob/living/carbon/recipient, generation) // VOIDCREW EDIT
+	// VOIDCREW ADD START
+	if(!can_finish_healing(recipient, generation))
+		return
+	// VOIDCREW ADD END
 	var/eye_type = /obj/item/organ/eyes
-	if(owner.dna.species && owner.dna.species.mutanteyes)
-		eye_type = owner.dna.species.mutanteyes
+	if(recipient.dna.species && recipient.dna.species.mutanteyes) // VOIDCREW EDIT
+		eye_type = recipient.dna.species.mutanteyes // VOIDCREW EDIT
 	var/obj/item/organ/eyes/new_eyes = new eye_type()
-	new_eyes.Insert(owner)
-	owner.visible_message(span_warning("A pair of new eyes suddenly inflates into [owner]'s eye sockets!"), span_userdanger("A pair of new eyes suddenly inflates into your eye sockets!"))
+	new_eyes.Insert(recipient) // VOIDCREW EDIT
+	recipient.visible_message(span_warning("A pair of new eyes suddenly inflates into [recipient]'s eye sockets!"), span_userdanger("A pair of new eyes suddenly inflates into your eye sockets!")) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/replace_limb(body_zone, obj/item/bodypart/limb)
+	// VOIDCREW ADD: limb-removal callbacks must not redirect the pending regrowth.
+	var/mob/living/carbon/recipient = owner
+	var/generation = healing_generation
 	if(limb)
 		owner.visible_message(span_warning("[owner]'s [limb.plaintext_zone] suddenly detaches from [owner.p_their()] body!"), span_userdanger("Your [limb.plaintext_zone] suddenly detaches from your body!"))
 		playsound(owner, SFX_DESECRATION, 50, TRUE, -1)
@@ -177,37 +199,49 @@
 	else
 		to_chat(owner, span_warning("You feel a weird tingle in your [parse_zone(body_zone)]... even if you don't have one."))
 
-	addtimer(CALLBACK(src, PROC_REF(finish_replace_limb), body_zone), rand(15 SECONDS, 30 SECONDS))
+	addtimer(CALLBACK(src, PROC_REF(finish_replace_limb), body_zone, recipient, generation), rand(15 SECONDS, 30 SECONDS)) // VOIDCREW EDIT
 
-/obj/item/organ/heart/gland/heal/proc/finish_replace_limb(body_zone)
-	owner.visible_message(span_warning("With a loud snap, [owner]'s [parse_zone(body_zone)] rapidly grows back from [owner.p_their()] body!"),
+/obj/item/organ/heart/gland/heal/proc/finish_replace_limb(body_zone, mob/living/carbon/recipient, generation) // VOIDCREW EDIT
+	// VOIDCREW ADD START
+	if(!can_finish_healing(recipient, generation))
+		return
+	// VOIDCREW ADD END
+	recipient.visible_message(span_warning("With a loud snap, [recipient]'s [parse_zone(body_zone)] rapidly grows back from [recipient.p_their()] body!"), // VOIDCREW EDIT
 	span_userdanger("With a loud snap, your [parse_zone(body_zone)] rapidly grows back from your body!"),
 	span_warning("Your hear a loud snap."))
-	playsound(owner, 'sound/effects/magic/demon_consume.ogg', 50, TRUE)
-	owner.regenerate_limb(body_zone)
+	playsound(recipient, 'sound/effects/magic/demon_consume.ogg', 50, TRUE) // VOIDCREW EDIT
+	recipient.regenerate_limb(body_zone) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/replace_blood()
 	owner.visible_message(span_warning("[owner] starts vomiting huge amounts of blood!"), span_userdanger("You suddenly start vomiting huge amounts of blood!"))
-	keep_replacing_blood()
+	keep_replacing_blood(owner, healing_generation) // VOIDCREW EDIT
 
-/obj/item/organ/heart/gland/heal/proc/keep_replacing_blood()
+/obj/item/organ/heart/gland/heal/proc/keep_replacing_blood(mob/living/carbon/recipient, generation) // VOIDCREW EDIT
+	// VOIDCREW ADD START
+	if(!can_finish_healing(recipient, generation))
+		return
+	// VOIDCREW ADD END
 	var/keep_going = FALSE
-	owner.vomit(vomit_flags = (MOB_VOMIT_BLOOD | MOB_VOMIT_FORCE), lost_nutrition = 0, distance = 3)
-	owner.Stun(15)
-	owner.adjustToxLoss(-15, forced = TRUE)
+	// VOIDCREW EDIT START
+	recipient.vomit(vomit_flags = (MOB_VOMIT_BLOOD | MOB_VOMIT_FORCE), lost_nutrition = 0, distance = 3)
+	if(!can_finish_healing(recipient, generation))
+		return
+	recipient.Stun(15)
+	recipient.adjustToxLoss(-15, forced = TRUE)
 
-	owner.blood_volume = min(BLOOD_VOLUME_NORMAL, owner.blood_volume + 20)
-	if(owner.blood_volume < BLOOD_VOLUME_NORMAL)
+	recipient.blood_volume = min(BLOOD_VOLUME_NORMAL, recipient.blood_volume + 20)
+	if(recipient.blood_volume < BLOOD_VOLUME_NORMAL)
 		keep_going = TRUE
 
-	if(owner.getToxLoss())
+	if(recipient.getToxLoss())
 		keep_going = TRUE
-	for(var/datum/reagent/toxin/R in owner.reagents.reagent_list)
-		owner.reagents.remove_reagent(R.type, 4)
-		if(owner.reagents.has_reagent(R.type))
+	for(var/datum/reagent/toxin/R in recipient.reagents.reagent_list)
+		recipient.reagents.remove_reagent(R.type, 4)
+		if(recipient.reagents.has_reagent(R.type))
 			keep_going = TRUE
+	// VOIDCREW EDIT END
 	if(keep_going)
-		addtimer(CALLBACK(src, PROC_REF(keep_replacing_blood)), 3 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(keep_replacing_blood), recipient, generation), 3 SECONDS) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/replace_chest(obj/item/bodypart/chest/chest)
 	if(!IS_ORGANIC_LIMB(chest))

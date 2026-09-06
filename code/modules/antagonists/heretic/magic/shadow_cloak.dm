@@ -63,7 +63,8 @@
 		return
 
 	uncloak_mob(cast_on)
-	StartCooldown(uncloak_timer / 3)
+	// VOIDCREW EDIT: uncloak_mob clears the timer ID; the duration determines recovery.
+	StartCooldown(uncloak_time / 3)
 
 /datum/action/cooldown/spell/shadow_cloak/proc/cloak_mob(mob/living/cast_on)
 	playsound(cast_on, 'sound/effects/chemistry/ahaha.ogg', 50, TRUE, -1, extrarange = SILENCED_SOUND_EXTRARANGE, frequency = 0.5)

@@ -243,6 +243,10 @@
 	var/atom/movable/ripping
 	/// TRUE while the field is up and clicks are being read.
 	var/lifting = FALSE
+	/// Grant changes owner before removing the old body; field signals still belong to this body.
+	var/mob/living/field_owner
+	/// A canceled old rip cannot complete or clear a later body's channel.
+	var/rip_generation = 0
 
 /datum/action/cooldown/spell/greater_telekinesis/Destroy()
 	stop_lifting(silent = TRUE)
@@ -274,6 +278,7 @@
 	if(lifting || !isliving(owner))
 		return
 	lifting = TRUE
+	field_owner = owner
 	RegisterSignal(owner, COMSIG_MOB_CLICKON, PROC_REF(on_click), override = TRUE)
 	RegisterSignal(owner, COMSIG_ATOM_ORBIT_STOP, PROC_REF(on_orbit_lost), override = TRUE)
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_died), override = TRUE)
@@ -293,17 +298,19 @@
 	if(!lifting)
 		return
 	lifting = FALSE
+	rip_generation++
 	for(var/atom/movable/thing as anything in lifted.Copy())
 		release_thing(thing)
 	// Anything still mid-pull keeps its momentum and lands as an ordinary object.
 	for(var/atom/movable/thing as anything in pulling_in.Copy())
 		cancel_pull(thing)
 	ripping = null
-	if(owner)
-		UnregisterSignal(owner, list(COMSIG_MOB_CLICKON, COMSIG_ATOM_ORBIT_STOP, COMSIG_LIVING_DEATH, COMSIG_LIVING_CHECK_BLOCK))
+	if(field_owner)
+		UnregisterSignal(field_owner, list(COMSIG_MOB_CLICKON, COMSIG_ATOM_ORBIT_STOP, COMSIG_LIVING_DEATH, COMSIG_LIVING_CHECK_BLOCK))
 		if(!silent)
-			playsound(owner, 'sound/effects/magic/blind.ogg', 30, TRUE)
-			to_chat(owner, span_notice("You let the room go. Everything you were holding lands at your feet."))
+			playsound(field_owner, 'sound/effects/magic/blind.ogg', 30, TRUE)
+			to_chat(field_owner, span_notice("You let the room go. Everything you were holding lands at your feet."))
+	field_owner = null
 	build_all_button_icons(UPDATE_BUTTON_STATUS)
 
 /datum/action/cooldown/spell/greater_telekinesis/proc/on_owner_died(mob/living/source)
@@ -324,7 +331,7 @@
  */
 /datum/action/cooldown/spell/greater_telekinesis/proc/on_click(mob/living/source, atom/target, list/modifiers)
 	SIGNAL_HANDLER
-	if(!lifting || QDELETED(target) || !isliving(source))
+	if(!lifting || QDELETED(target) || source != field_owner || source != owner || !isliving(source))
 		return NONE
 	if(source.stat != CONSCIOUS)
 		return NONE
@@ -492,20 +499,25 @@
  * handler, because a signal handler must not sleep.
  */
 /datum/action/cooldown/spell/greater_telekinesis/proc/rip_loose(mob/living/source, atom/movable/thing)
+	if(!lifting || source != owner || source != field_owner || !can_rip(thing))
+		return
 	if(ripping)
 		source.balloon_alert(source, "already tearing something loose!")
 		return
 	ripping = thing
+	var/this_rip = ++rip_generation
 	source.balloon_alert(source, "tearing it loose...")
 	thing.visible_message(span_warning("[thing] starts straining against its own bolts!"))
 	playsound(thing, 'sound/machines/airlock/airlock_alien_prying.ogg', 60, TRUE)
 	thing.Shake(pixelshiftx = 1, pixelshifty = 1, duration = GREATER_TK_RIP_TIME)
-	var/held_on = do_after(source, GREATER_TK_RIP_TIME, target = thing, extra_checks = CALLBACK(src, PROC_REF(keep_ripping)))
+	var/held_on = do_after(source, GREATER_TK_RIP_TIME, target = thing, extra_checks = CALLBACK(src, PROC_REF(keep_ripping), source, thing, this_rip))
+	if(this_rip != rip_generation)
+		return
 	ripping = null
 	if(!held_on)
 		source.balloon_alert(source, "lost your grip!")
 		return
-	if(!lifting || QDELETED(thing) || !thing.anchored || !can_rip(thing))
+	if(!lifting || source != owner || source != field_owner || QDELETED(thing) || !thing.anchored || !can_rip(thing))
 		return
 	// The channel guaranteed a slot when it started; somebody may have filled it since.
 	if(used_slots() + slot_cost(thing) > GREATER_TK_MAX_HELD)
@@ -518,8 +530,8 @@
 	pull_thing(source, thing)
 
 /// The rip channel only holds while the field is up and the caster is with us.
-/datum/action/cooldown/spell/greater_telekinesis/proc/keep_ripping()
-	return lifting && !QDELETED(owner)
+/datum/action/cooldown/spell/greater_telekinesis/proc/keep_ripping(mob/living/source, atom/movable/thing, generation)
+	return lifting && !QDELETED(owner) && source == owner && source == field_owner && ripping == thing && generation == rip_generation
 
 // ===== PULLING =====
 
@@ -608,6 +620,9 @@
 /datum/action/cooldown/spell/greater_telekinesis/proc/lift_thing(mob/living/source, atom/movable/thing)
 	if(!isturf(thing.loc))
 		return FALSE
+	// End the previous caster's hold before adding our shared outline and immobilization source.
+	// Orbiter.begin_orbit would otherwise release it after our new effects were installed.
+	thing.orbiting?.end_orbit(thing)
 
 	pulling_in -= thing
 	lifted += thing
@@ -627,6 +642,9 @@
 	// five objects rather than one blurred clump.
 	var/slot = length(lifted)
 	thing.orbit(source, GREATER_TK_ORBIT_RADIUS + (slot * 4), (slot % 2), 18 + (slot * 3), 36, FALSE)
+	if(thing.orbiting?.parent != source)
+		forget_thing(thing)
+		return FALSE
 	new /obj/effect/temp_visual/telekinesis(get_turf(source))
 	playsound(source, 'sound/effects/magic/ethereal_enter.ogg', 25, TRUE)
 	source.balloon_alert(source, "lifted ([used_slots()]/[GREATER_TK_MAX_HELD])")
@@ -1027,7 +1045,7 @@
 /mob/living/basic/vestige_mutant/death(gibbed)
 	remove_filter(MUTANT_REVISION_FILTER)
 	. = ..()
-	if(gibbed)
+	if(!. || gibbed)
 		return
 	drop_the_specimen()
 
@@ -1277,7 +1295,7 @@
 	if(!isturf(loose.loc))
 		return
 	var/atom/at_what = tracked_quarry
-	if(QDELETED(at_what) || QDELETED(owner))
+	if(QDELETED(at_what) || QDELETED(owner) || owner.stat == DEAD)
 		return
 	loose.throw_at(at_what, throw_range, throw_speed, owner, spin = TRUE, force = MOVE_FORCE_STRONG)
 
@@ -1354,7 +1372,7 @@
 
 /// The mark closes on whoever is still standing in it.
 /datum/action/cooldown/mob_cooldown/vestige_tk/pin/proc/close_the_mark(turf/spot)
-	if(QDELETED(spot))
+	if(QDELETED(spot) || QDELETED(owner) || owner.stat == DEAD)
 		return
 	playsound(spot, 'sound/effects/gravhit.ogg', 80, TRUE)
 	new /obj/effect/temp_visual/telekinesis(spot)
@@ -1534,7 +1552,7 @@
 	if(QDELETED(prize))
 		return
 	prize.remove_filter(VESTIGE_TK_FILTER)
-	if(!isturf(prize.loc) || QDELETED(victim) || QDELETED(owner))
+	if(!isturf(prize.loc) || QDELETED(victim) || QDELETED(owner) || owner.stat == DEAD)
 		return
 	owner.visible_message(span_boldwarning("[owner] gives it back."))
 	playsound(owner, 'sound/effects/magic/repulse.ogg', 60, TRUE)

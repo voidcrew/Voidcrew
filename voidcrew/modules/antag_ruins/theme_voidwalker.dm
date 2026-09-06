@@ -55,7 +55,7 @@
 	var/obj/item/vestige_shard/shard
 	var/obj/structure/vestige_void_beacon/home_beacon
 	var/obj/structure/vestige_void_beacon/echo
-	var/datum/weakref/first_reading
+	var/obj/effect/vestige_trial_marker/first_reading
 	var/revealed = FALSE
 	var/recovered = FALSE
 
@@ -122,9 +122,9 @@
 		to_chat(user, span_warning("Readings need open space, a clear bearing, and a distance of three to twelve tiles from the echo."))
 		return FALSE
 	if(!first_reading)
-		first_reading = WEAKREF(here)
+		first_reading = mark_turf(here)
 	else if(!revealed)
-		if(!valid_baseline(first_reading.resolve(), here, get_turf(echo)))
+		if(!valid_baseline(get_turf(first_reading), here, get_turf(echo)))
 			to_chat(user, span_warning("That baseline is too short or too nearly in line with the first bearing. Move at least five tiles across the bearing, not straight toward the echo."))
 			return FALSE
 		revealed = TRUE
@@ -185,8 +185,7 @@
 	desc = "Choose one intact window separating a pressurized room from vacuum. Press the card from the room side to leave your reflection, travel outside and press the same pane from the matching void side, then carry the reply back inside and press it home. Keep the pane intact and the room pressurized throughout; venting it erases the reflection. A single full-tile or directional window is enough. Bring EVA equipment and plan the airlock route before leaving."
 	var/obj/item/vestige_calling_card/card
 	var/datum/weakref/pane_ref
-	var/datum/weakref/inside_ref
-	var/datum/weakref/outside_ref
+	var/obj/effect/vestige_trial_marker/inside_ref
 	var/phase = 0
 
 /datum/vestige_trial/other_side/on_accepted(mob/living/user)
@@ -200,20 +199,24 @@
 	return phase == 0 ? "Find one intact air-to-vacuum window; press the card from inside." : phase == 1 ? "Reflection waiting. Reach the same pane's opposite face through your airlock." : "Reply received. Bring the card back inside without breaking the pane or venting the room."
 
 /datum/vestige_trial/other_side/proc/check_seal()
-	if(!phase)
+	if(!phase || inside_ref?.shuttle_moving)
 		return TRUE
 	var/obj/structure/window/pane = pane_ref?.resolve()
-	var/turf/inside = inside_ref?.resolve()
-	var/turf/outside = outside_ref?.resolve()
+	var/turf/inside = get_turf(inside_ref)
+	var/turf/outside = outside_turf()
 	if(!QDELETED(pane) && pane.density && inside && outside && !card.void_side(inside) && card.void_side(outside))
 		return TRUE
 	phase = 0
 	pane_ref = null
-	inside_ref = null
-	outside_ref = null
+	QDEL_NULL(inside_ref)
 	to_chat(owner?.current, span_warning("The pressure seal changed or the pane broke. The reflection is gone; start again from inside."))
 	refresh_tracker()
 	return FALSE
+
+/// The vacuum face may be outside the shuttle footprint, so derive it from
+/// the moving pane and its marked interior contact instead of a space marker.
+/datum/vestige_trial/other_side/proc/outside_turf()
+	return card?.resolve_far_side(inside_ref, pane_ref?.resolve())
 
 /obj/item/vestige_calling_card
 	name = "caller's card"
@@ -258,7 +261,7 @@
 	if(void_side(here) != want_outside)
 		balloon_alert(user, want_outside ? "collect it from outside!" : "press it from inside!")
 		return ITEM_INTERACT_BLOCKING
-	var/turf/expected = want_outside ? trial.outside_ref?.resolve() : trial.inside_ref?.resolve()
+	var/turf/expected = want_outside ? trial.outside_turf() : get_turf(trial.inside_ref)
 	if(trial.phase && here != expected)
 		balloon_alert(user, "stand opposite your original print!")
 		return ITEM_INTERACT_BLOCKING
@@ -274,8 +277,7 @@
 		return ITEM_INTERACT_BLOCKING
 	if(!trial.phase)
 		trial.pane_ref = WEAKREF(pane)
-		trial.inside_ref = WEAKREF(here)
-		trial.outside_ref = WEAKREF(far_side)
+		trial.inside_ref = trial.mark_turf(here)
 	trial.phase++
 	trial.refresh_tracker()
 	if(trial.phase >= 3)
@@ -291,7 +293,7 @@
 	return !air || air.return_pressure() < HAZARD_LOW_PRESSURE
 
 /// Full-tile panes seal a tile; directional panes seal one edge of their tile.
-/obj/item/vestige_calling_card/proc/resolve_far_side(mob/living/user, obj/structure/window/pane)
+/obj/item/vestige_calling_card/proc/resolve_far_side(atom/user, obj/structure/window/pane)
 	var/turf/pane_turf = get_turf(pane)
 	var/turf/user_turf = get_turf(user)
 	if(!pane_turf || !user_turf || get_dist(user_turf, pane_turf) > 1)
@@ -519,6 +521,19 @@
 	charge_damage = 15
 	charge_past = 0
 	destroy_objects = FALSE
+	/// A blocked charge can bump the same intervening mob on several steps.
+	var/list/dash_victims = list()
+
+/datum/action/cooldown/mob_cooldown/charge/vestige_dash/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
+	dash_victims.Cut()
+	return ..()
+
+/datum/action/cooldown/mob_cooldown/charge/vestige_dash/can_hit_target(atom/movable/source, atom/target)
+	return ..() && !(target in dash_victims)
+
+/datum/action/cooldown/mob_cooldown/charge/vestige_dash/hit_target(atom/movable/source, mob/living/target, damage_dealt)
+	dash_victims += target
+	return ..()
 
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash/do_charge_indicator(atom/charger, atom/charge_target)
 	playsound(owner, 'sound/effects/curse/curse1.ogg', 60)
@@ -653,11 +668,11 @@
 	owner.Beam(victim, icon_state = "purple_lightning", time = windup)
 	if(victim.stat == CONSCIOUS)
 		to_chat(victim, span_userdanger("The air between you and [owner] pulls thin, like a pane about to give!"))
-	addtimer(CALLBACK(src, PROC_REF(yank), victim), windup)
+	addtimer(CALLBACK(src, PROC_REF(yank), victim, owner), windup)
 
 /// The delayed yank. Every out it checks is deliberate counterplay. Don't quietly relax them.
-/datum/action/cooldown/spell/pointed/vestige_beckon/proc/yank(mob/living/victim)
-	if(QDELETED(victim) || QDELETED(owner) || !isliving(owner) || owner.stat == DEAD)
+/datum/action/cooldown/spell/pointed/vestige_beckon/proc/yank(mob/living/victim, mob/living/caster)
+	if(QDELETED(victim) || QDELETED(caster) || owner != caster || !isliving(caster) || caster.stat == DEAD)
 		return
 	if(!isturf(victim.loc) || victim.z != owner.z || get_dist(owner, victim) > cast_range + 1)
 		owner.balloon_alert(owner, "they got too far away!")
@@ -712,6 +727,8 @@
 	var/phase_time = 3 SECONDS
 	/// The pane a successful before_cast carried the owner through, for cast()'s flavor. Same-tick handoff only.
 	var/obj/structure/passed_pane
+	/// Only one pane may be channeled at once, including across a mind transfer.
+	var/phasing = FALSE
 
 /datum/action/cooldown/spell/pointed/vestige_glass_phase/Destroy()
 	passed_pane = null
@@ -748,41 +765,51 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
-	passed_pane = null
-	var/obj/structure/pane = resolve_pane(cast_on)
-	if(!pane)
+	if(phasing)
 		return . | SPELL_CANCEL_CAST
-	var/move_dir = get_dir(owner, pane) || pane.dir
+	passed_pane = null
+	var/mob/living/caster = owner
+	var/obj/structure/pane = resolve_pane(cast_on)
+	if(!pane || !isliving(caster) || !isturf(caster.loc) || !caster.Adjacent(pane))
+		return . | SPELL_CANCEL_CAST
+	var/pane_direction = pane.dir
+	var/move_dir = get_dir(caster, pane) || pane_direction
 	if(!(move_dir in GLOB.cardinals))
-		owner.balloon_alert(owner, "square up to the glass!")
+		caster.balloon_alert(caster, "square up to the glass!")
 		return . | SPELL_CANCEL_CAST
 	var/turf/destination
-	if(pane.loc == owner.loc) // a border window on our own tile: step across it
-		destination = get_step(owner, move_dir)
+	if(pane.loc == caster.loc) // a border window on our own tile: step across it
+		destination = get_step(caster, move_dir)
 	else
 		destination = get_turf(pane)
 	if(!destination)
 		return . | SPELL_CANCEL_CAST
-	owner.visible_message(
-		span_warning("[owner] presses flat against [pane]..."),
+	caster.visible_message(
+		span_warning("[caster] presses flat against [pane]..."),
 		span_notice("You press yourself against [pane] and start working your way into it."),
 	)
 	playsound(pane, 'sound/effects/glass/glassknock.ogg', 60, TRUE)
-	if(!do_after(owner, phase_time, target = pane))
+	phasing = TRUE
+	var/finished_channel = do_after(caster, phase_time, target = pane)
+	phasing = FALSE
+	if(!finished_channel || QDELETED(src) || QDELETED(caster) || owner != caster)
 		return . | SPELL_CANCEL_CAST
-	if(QDELETED(pane) || !pane.density)
+	if(QDELETED(pane) || !pane.density || pane.dir != pane_direction || !isturf(caster.loc) || !caster.Adjacent(pane))
+		return . | SPELL_CANCEL_CAST
+	var/turf/current_destination = pane.loc == caster.loc ? get_step(caster, get_dir(caster, pane) || pane.dir) : get_turf(pane)
+	if(current_destination != destination)
 		return . | SPELL_CANCEL_CAST
 	// Live lattice is the hard counter, exactly as it is for the voidwalker
 	for(var/obj/structure/grille/lattice in destination)
 		if(lattice.is_shocked())
-			owner.balloon_alert(owner, "the grille is live!")
+			caster.balloon_alert(caster, "the grille is live!")
 			return . | SPELL_CANCEL_CAST
 	// The step itself: PASSWINDOW crosses window and grille borders; any other dense thing still refuses
-	passwindow_on(owner, REF(src))
-	var/moved = owner.Move(destination)
-	passwindow_off(owner, REF(src))
+	passwindow_on(caster, REF(src))
+	var/moved = caster.Move(destination)
+	passwindow_off(caster, REF(src))
 	if(!moved)
-		owner.balloon_alert(owner, "something blocks the far side!")
+		caster.balloon_alert(caster, "something blocks the far side!")
 		return . | SPELL_CANCEL_CAST
 	passed_pane = pane
 

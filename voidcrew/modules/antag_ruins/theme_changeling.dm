@@ -150,7 +150,7 @@
 /obj/item/vestige_egg/proc/command_child(mob/living/prey, mob/living/user)
 	var/datum/vestige_trial/birth/trial = get_trial(user)
 	var/mob/living/basic/headslug/vestige_child/child = trial?.child
-	if(QDELETED(child) || child.stat != CONSCIOUS)
+	if(QDELETED(child) || child.stat != CONSCIOUS || child.get_trial() != trial)
 		return FALSE
 	if(prey.stat != CONSCIOUS || !vestige_chrysalis_fauna(prey, user) || !(prey in view(7, user)) || !(child in view(7, user)))
 		balloon_alert(user, "child and wild prey must be in sight!")
@@ -163,7 +163,7 @@
 /obj/item/vestige_egg/attack_self(mob/living/user)
 	var/datum/vestige_trial/birth/trial = get_trial(user)
 	var/mob/living/basic/headslug/vestige_child/child = trial?.child
-	if(QDELETED(child) || child.stat != CONSCIOUS)
+	if(QDELETED(child) || child.stat != CONSCIOUS || child.get_trial() != trial)
 		balloon_alert(user, "plant in a wild carcass")
 		return
 	child.prey_ref = null
@@ -226,7 +226,9 @@
 	var/before = beast.health
 	. = ..()
 	var/datum/vestige_trial/birth/trial = get_trial()
-	if(!. || !trial || QDELETED(target))
+	// A lethal hit may delete basic fauna immediately; its health still records
+	// the damage in this synchronous attack, and early_melee_attack qualified it.
+	if(!. || !trial)
 		return .
 	var/consumed = min(5, max(0, before), max(0, before - beast.health))
 	growth = min(40, growth + consumed)
@@ -314,7 +316,7 @@
 	var/datum/weakref/trial_ref
 	var/datum/weakref/attacker_ref
 	var/datum/weakref/body_ref
-	var/turf/impact_turf
+	var/obj/effect/vestige_trial_marker/impact_point
 	var/counter_until = 0
 	var/brace_ready_at = 0
 	var/datum/status_effect/vestige_chrysalis_brace/brace
@@ -338,7 +340,7 @@
 	QDEL_NULL(brace)
 	attacker_ref = null
 	body_ref = null
-	impact_turf = null
+	QDEL_NULL(impact_point)
 	counter_until = 0
 
 /obj/item/vestige_proboscis/examine(mob/user)
@@ -394,10 +396,11 @@
 	clear_adaptation()
 
 /obj/item/vestige_proboscis/proc/catch_bite(mob/living/user, mob/living/basic/attacker)
-	if(!get_trial(user) || body_ref?.resolve() != user || !brace || !user.Adjacent(attacker) || attacker.stat != CONSCIOUS || !vestige_chrysalis_fauna(attacker, user))
+	var/datum/vestige_trial/faces/trial = get_trial(user)
+	if(!trial || body_ref?.resolve() != user || !brace || !user.Adjacent(attacker) || attacker.stat != CONSCIOUS || !vestige_chrysalis_fauna(attacker, user))
 		return FALSE
 	attacker_ref = WEAKREF(attacker)
-	impact_turf = get_turf(user)
+	impact_point = trial.mark_turf(get_turf(user))
 	counter_until = world.time + 8 SECONDS
 	QDEL_NULL(brace)
 	user.visible_message(span_warning("[user]'s borrowed shell catches [attacker]'s bite and splits into a whipping tendon!"))
@@ -409,6 +412,7 @@
 	if(!trial || body_ref?.resolve() != user || target != attacker_ref?.resolve() || world.time >= counter_until)
 		balloon_alert(user, "catch a bite from this beast first!")
 		return FALSE
+	var/turf/impact_turf = get_turf(impact_point)
 	if(target.stat != CONSCIOUS || !vestige_chrysalis_fauna(target, user) || !isturf(user.loc) || !impact_turf || user.z != impact_turf.z || get_dist(user, impact_turf) < 2 || get_dist(user, target) > 4 || !(target in view(4, user)))
 		balloon_alert(user, "move two tiles; keep live prey in reach!")
 		return FALSE
@@ -416,7 +420,8 @@
 	clear_adaptation()
 	user.do_attack_animation(target, ATTACK_EFFECT_BITE)
 	target.apply_damage(20, BRUTE)
-	if(QDELETED(target) || get_trial(user) != trial)
+	// Self-deleting fauna still contributed their remaining living tissue.
+	if(get_trial(user) != trial)
 		return FALSE
 	var/tissue = min(20, max(0, before), max(0, before - target.health))
 	trial.assimilated += tissue
@@ -499,6 +504,15 @@
 	spell_requirements = NONE
 	/// The blade this spell forms
 	var/blade_type = /obj/item/melee/arm_blade
+	/// Only this action's growth is reclaimed when its mind leaves the body.
+	var/datum/weakref/grown_blade_ref
+
+/datum/action/cooldown/spell/vestige_armblade/Remove(mob/remove_from)
+	var/obj/item/melee/arm_blade/grown_blade = grown_blade_ref?.resolve()
+	grown_blade_ref = null
+	if(grown_blade)
+		qdel(grown_blade)
+	return ..()
 
 /datum/action/cooldown/spell/vestige_armblade/perfected
 	name = "Form Perfected Armblade"
@@ -510,7 +524,6 @@
 	name = "perfected arm blade"
 	desc = "A grotesque blade of bone and flesh, refined by a dead hive into something better than the living ones ever managed."
 	force = 30
-	armour_penetration = 20
 
 /datum/action/cooldown/spell/vestige_armblade/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
@@ -548,6 +561,7 @@
 	// visible message), but it does it silently. The noise is ours to make
 	playsound(cast_on, 'sound/effects/blob/blobattack.ogg', 60, TRUE)
 	var/obj/item/new_blade = new blade_type(cast_on)
+	grown_blade_ref = WEAKREF(new_blade)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)

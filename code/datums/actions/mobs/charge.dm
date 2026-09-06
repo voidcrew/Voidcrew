@@ -20,21 +20,67 @@
 	var/actively_moving = FALSE
 	/// List of charging mobs
 	var/list/charging = list()
+	// VOIDCREW EDIT BEGIN - a charge owns its movement and disabled actions across yields.
+	/// Charger -> its own move loop; never stop unrelated higher-priority movement.
+	var/list/charge_loops = list()
+	/// Distinguishes a cancelled warm-up from a replacement charge on the same mob.
+	var/charge_serial = 0
+	var/mob/charge_activator
+	var/list/charge_disabled_actions = list()
+	// VOIDCREW EDIT END
+
+// VOIDCREW EDIT BEGIN - removal can happen before a moving body's packet is deleted.
+/datum/action/cooldown/mob_cooldown/charge/Destroy()
+	stop_charges()
+	restore_charge_actions()
+	return ..()
+
+/datum/action/cooldown/mob_cooldown/charge/Remove(mob/removed_from)
+	stop_charges()
+	restore_charge_actions()
+	return ..()
+
+/datum/action/cooldown/mob_cooldown/charge/proc/stop_charges()
+	for(var/atom/movable/charger as anything in charging.Copy())
+		finish_charge(charger, notify_owner = FALSE)
+
+/datum/action/cooldown/mob_cooldown/charge/proc/restore_charge_actions()
+	charge_activator = null
+	for(var/datum/action/cooldown/ability as anything in charge_disabled_actions)
+		if(!QDELETED(ability))
+			ability.enable()
+	charge_disabled_actions.Cut()
+	// A cancelled wind-up must not leave the inherited melee lock on its new owner.
+	next_melee_use_time = min(next_melee_use_time, world.time)
+// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/Activate(atom/target_atom)
-	disable_cooldown_actions()
+	// VOIDCREW EDIT BEGIN - remember exactly which actions this invocation disabled.
+	if(charge_activator || QDELETED(owner))
+		return FALSE
+	var/mob/starting_owner = owner
+	charge_activator = starting_owner
+	for(var/datum/action/cooldown/ability in starting_owner.actions)
+		if(!ability.action_disabled)
+			charge_disabled_actions += ability
+			ability.disable()
+	// VOIDCREW EDIT END
 	// No charging and meleeing (overridded by StartCooldown after charge ends)
 	next_melee_use_time = world.time + 100 SECONDS
 	charge_sequence(owner, target_atom, charge_delay, charge_past)
+	// VOIDCREW EDIT BEGIN - removal/transfer already unwound this invocation.
+	if(QDELETED(src) || charge_activator != starting_owner || owner != starting_owner)
+		return FALSE
+	restore_charge_actions()
+	// VOIDCREW EDIT END
 	StartCooldown()
-	enable_cooldown_actions()
 	return TRUE
 
 /datum/action/cooldown/mob_cooldown/charge/proc/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
-	do_charge(owner, target_atom, charge_delay, charge_past)
+	do_charge(charger, target_atom, delay, past) // VOIDCREW EDIT - retain the caller's charge snapshot.
 
 /datum/action/cooldown/mob_cooldown/charge/proc/do_charge(atom/movable/charger, atom/target_atom, delay, past)
-	if(!target_atom || target_atom == owner)
+	if(QDELETED(src) || QDELETED(owner) || QDELETED(charger) || QDELETED(target_atom) || target_atom == charger)
 		return
 	var/chargeturf = get_turf(target_atom)
 	if(!chargeturf)
@@ -46,32 +92,64 @@
 
 	if(charger in charging)
 		// Stop any existing charging, this'll clean things up properly
-		GLOB.move_manager.stop_looping(charger)
+		finish_charge(charger, notify_owner = FALSE) // VOIDCREW EDIT - only cancel our own loop.
 
-	charging += charger
+	var/charge_id = ++charge_serial // VOIDCREW EDIT - invalidate sleeping replaced invocations.
+	charging[charger] = charge_id
 	actively_moving = FALSE
-	SEND_SIGNAL(owner, COMSIG_STARTED_CHARGE)
+	// VOIDCREW EDIT BEGIN - a start listener may synchronously remove or transfer us.
+	var/mob/starting_owner = owner
+	SEND_SIGNAL(starting_owner, COMSIG_STARTED_CHARGE)
+	if(QDELETED(src) || charging[charger] != charge_id)
+		return FALSE
+	if(QDELETED(charger) || owner != starting_owner)
+		finish_charge(charger, notify_owner = FALSE)
+		return FALSE
+	// VOIDCREW EDIT END
 	RegisterSignal(charger, COMSIG_MOVABLE_BUMP, PROC_REF(on_bump), override = TRUE)
 	RegisterSignal(charger, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_move), override = TRUE)
 	RegisterSignal(charger, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved), override = TRUE)
 	RegisterSignal(charger, COMSIG_LIVING_DEATH, PROC_REF(charge_end), override = TRUE)
+	// VOIDCREW EDIT - the owner's existing clear_ref handler invokes Remove; preserve it.
+	if(charger != owner)
+		RegisterSignal(charger, COMSIG_QDELETING, PROC_REF(charge_end), override = TRUE)
 	charger.setDir(dir)
 	do_charge_indicator(charger, target)
 
-	SLEEP_CHECK_DEATH(delay, charger)
+	// VOIDCREW EDIT BEGIN - every unsuccessful warm-up must release its movement lock.
+	sleep(delay)
+	if(QDELETED(src) || charging[charger] != charge_id)
+		return FALSE
+	if(QDELETED(charger) || (ismob(charger) && isdead(charger)))
+		finish_charge(charger, notify_owner = FALSE)
+		return FALSE
+	// VOIDCREW EDIT END
 
 	var/time_to_hit = min(get_dist(charger, target), charge_distance) * charge_speed
 
 	var/datum/move_loop/new_loop = GLOB.move_manager.home_onto(charger, target, delay = charge_speed, timeout = time_to_hit, priority = MOVEMENT_ABOVE_SPACE_PRIORITY)
-	if(!new_loop)
-		return
+	// VOIDCREW EDIT BEGIN - replacing an old loop emits callbacks before this call returns.
+	if(QDELETED(src) || QDELETED(charger) || QDELETED(new_loop) || owner != starting_owner || charging[charger] != charge_id)
+		if(!QDELETED(src) && charging[charger] == charge_id)
+			finish_charge(charger, notify_owner = FALSE)
+		if(!QDELETED(new_loop))
+			qdel(new_loop)
+		return FALSE
+	// VOIDCREW EDIT END
+	charge_loops[charger] = new_loop // VOIDCREW EDIT - own the loop before any later yield.
 	RegisterSignal(new_loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move), override = TRUE)
 	RegisterSignal(new_loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move), override = TRUE)
 	RegisterSignal(new_loop, COMSIG_QDELETING, PROC_REF(charge_end), override = TRUE)
 
 	// Yes this is disgusting. But we need to queue this stuff, and this code just isn't setup to support that right now. So gotta do it with sleeps
 	sleep(time_to_hit + charge_speed)
-	charger.setDir(dir)
+	// VOIDCREW EDIT BEGIN - never resume a removed or replaced charge after its sleep.
+	if(QDELETED(src) || QDELETED(charger))
+		return FALSE
+	if(charging[charger] == charge_id)
+		charge_end(charger)
+		charger.setDir(dir)
+	// VOIDCREW EDIT END
 
 	return TRUE
 
@@ -90,15 +168,31 @@
 	if(istype(source, /datum/move_loop))
 		var/datum/move_loop/move_loop_source = source
 		charger = move_loop_source.moving
-	UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
-	SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
-	actively_moving = FALSE
+	finish_charge(charger)
+
+// VOIDCREW EDIT BEGIN - cleanup is idempotent, including loop deletion during body removal.
+/datum/action/cooldown/mob_cooldown/charge/proc/finish_charge(atom/movable/charger, notify_owner = TRUE)
+	if(!charger || !(charger in charging))
+		return
 	charging -= charger
+	UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
+	if(charger != owner)
+		UnregisterSignal(charger, COMSIG_QDELETING)
+	var/datum/move_loop/charge_loop = charge_loops[charger]
+	charge_loops -= charger
+	if(charge_loop)
+		UnregisterSignal(charge_loop, list(COMSIG_MOVELOOP_PREPROCESS_CHECK, COMSIG_MOVELOOP_POSTPROCESS, COMSIG_QDELETING))
+		if(!QDELETED(charge_loop))
+			qdel(charge_loop)
+	actively_moving = FALSE
+	if(notify_owner && !QDELETED(owner))
+		SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
+// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/update_status_on_signal(mob/source, new_stat, old_stat)
 	. = ..()
 	if(new_stat == DEAD)
-		GLOB.move_manager.stop_looping(source) //This will cause the loop to qdel, triggering an end to our charging
+		finish_charge(source, notify_owner = FALSE) // VOIDCREW EDIT - leave unrelated movement alone.
 
 /datum/action/cooldown/mob_cooldown/charge/proc/do_charge_indicator(atom/charger, atom/charge_target)
 	var/turf/target_turf = get_turf(charge_target)
@@ -250,7 +344,9 @@
 
 /datum/action/cooldown/mob_cooldown/charge/triple_charge/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
 	for(var/i in 0 to 2)
-		do_charge(owner, target_atom, charge_delay - 2 * i, charge_past)
+		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT - cancellation ends the whole sequence.
+			return
+		do_charge(charger, target_atom, charge_delay - 2 * i, charge_past)
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge
 	name = "Hallucination Charge"
@@ -271,39 +367,51 @@
 		hallucination_charge(target_atom, 6, 8, 0, 6, TRUE)
 		return
 	for(var/i in 0 to 2)
+		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			return
 		hallucination_charge(target_atom, 4, 9 - 2 * i, 0, 4, TRUE)
 	for(var/i in 0 to 2)
-		do_charge(owner, target_atom, charge_delay - 2 * i, charge_past)
+		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			return
+		do_charge(charger, target_atom, charge_delay - 2 * i, charge_past)
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/do_charge(atom/movable/charger, atom/target_atom, delay, past)
+	var/disposable_clone = charger != owner // VOIDCREW EDIT - owner may change while the parent sleeps.
 	. = ..()
-	if(charger != owner)
+	if(disposable_clone)
 		qdel(charger)
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/proc/hallucination_charge(atom/target_atom, clone_amount, delay, past, radius, use_self)
+	var/mob/caster = owner // VOIDCREW EDIT - a synchronous movement/start callback can change owner.
 	var/starting_angle = rand(1, 360)
-	if(!radius)
+	if(!radius || QDELETED(caster) || QDELETED(target_atom))
 		return
 	var/angle_difference = 360 / clone_amount
 	var/self_placed = FALSE
 	for(var/i = 1 to clone_amount)
+		if(QDELETED(src) || QDELETED(caster) || owner != caster || QDELETED(target_atom)) // VOIDCREW EDIT
+			return
 		var/angle = (starting_angle + angle_difference * i)
 		var/turf/place = locate(target_atom.x + cos(angle) * radius, target_atom.y + sin(angle) * radius, target_atom.z)
 		if(!place)
 			continue
 		if(use_self && !self_placed)
-			owner.forceMove(place)
+			caster.forceMove(place)
+			if(QDELETED(src) || QDELETED(caster) || owner != caster) // VOIDCREW EDIT
+				return
 			self_placed = TRUE
 			continue
 		var/mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination/our_clone = new /mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination(place)
-		our_clone.appearance = owner.appearance
-		our_clone.name = "[owner]'s hallucination"
+		our_clone.appearance = caster.appearance
+		our_clone.name = "[caster]'s hallucination"
 		our_clone.alpha = 127.5
-		our_clone.move_through_mob = owner
+		our_clone.move_through_mob = caster
 		our_clone.spawn_blood = spawn_blood
 		INVOKE_ASYNC(src, PROC_REF(do_charge), our_clone, target_atom, delay, past)
+		if(QDELETED(src) || QDELETED(caster) || owner != caster) // VOIDCREW EDIT
+			return
 	if(use_self)
-		do_charge(owner, target_atom, delay, past)
+		do_charge(caster, target_atom, delay, past)
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/hit_target(atom/movable/source, atom/A, damage_dealt)
 	var/applied_damage = charge_damage
@@ -321,5 +429,7 @@
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/hallucination_surround/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
 	for(var/i in 0 to 4)
+		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			return
 		hallucination_charge(target_atom, 2, 8, 2, 2, FALSE)
-		do_charge(owner, target_atom, charge_delay, charge_past)
+		do_charge(charger, target_atom, charge_delay, charge_past)

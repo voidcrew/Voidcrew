@@ -52,7 +52,14 @@
 		return FALSE
 
 	if(!right_click_attack_chain(attack_target, modifiers))
+		var/mob/living/living_target = isliving(attack_target) ? attack_target : null
+		var/health_before = living_target?.health
+		var/stamina_before = living_target?.getStaminaLoss()
 		resolve_unarmed_attack(attack_target, modifiers)
+		// Report real damage after pacifism, blocking, and attack-type checks have run.
+		// Keep the local reference through the call so lethal DEL_ON_DEATH hits still report their result.
+		if(living_target)
+			SEND_SIGNAL(src, COMSIG_LIVING_AFTER_UNARMED_ATTACK, attack_target, modifiers, max(0, health_before - living_target.health), max(0, living_target.getStaminaLoss() - stamina_before))
 	return TRUE
 
 /mob/living/carbon/human/UnarmedAttack(atom/attack_target, proximity_flag, list/modifiers)

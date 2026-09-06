@@ -296,7 +296,7 @@
 		return
 	var/mob/living/weaver = user
 	var/datum/vestige_trial/loom_snare/trial = weaver.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || weaver.mind != bound_mind || trial.spinneret != src)
 		balloon_alert(weaver, "the spinneret is dry!")
 		return TRUE
 	var/turf/open/ground = get_turf(weaver)
@@ -309,7 +309,7 @@
 		return TRUE
 	// Re-resolve everything; the pact may have been renounced mid-spin
 	trial = weaver.mind?.active_vestige_trial
-	if(!istype(trial) || !check_ground(weaver, trial, ground))
+	if(!istype(trial) || weaver.mind != bound_mind || trial.spinneret != src || !check_ground(weaver, trial, ground))
 		return TRUE
 	var/obj/structure/spider/stickyweb/vestige_snare/web = new(ground)
 	web.bound_mind = weaver.mind
@@ -615,7 +615,7 @@
 	if(!isliving(target) || target == user)
 		return ..()
 	var/datum/vestige_trial/loom_pantry/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.spool != src)
 		balloon_alert(user, "the spool hangs slack!")
 		return
 	if(ishuman(target) || target.mind || target.client)
@@ -646,7 +646,7 @@
 		return
 	// Re-resolve everything; the pact may have been renounced mid-wrap
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.spool != src)
 		return
 	if(target.stat == DEAD || !vestige_loom_is_held_fast(target) || !vestige_loom_is_wild_quarry(target, user) || target.mob_size >= MOB_SIZE_LARGE)
 		return
@@ -711,7 +711,7 @@
 	var/turf/here = get_turf(src)
 	var/mob/living/wrangler = bound_mind?.current
 	for(var/atom/movable/meal in contents)
-		if(racked)
+		if(racked && isliving(meal) && vestige_loom_is_wild_quarry(meal, wrangler))
 			qdel(meal) // taken whole by the Weaver, no corpse, no loot
 			continue
 		meal.forceMove(here)
@@ -800,7 +800,7 @@
 		return NONE
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/loom_pantry/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.bundle != src)
 		balloon_alert(user, "the bundle won't unfold!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
@@ -818,7 +818,7 @@
 		return ITEM_INTERACT_BLOCKING
 	// Re-resolve everything; the pact may have been renounced mid-plant
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.bundle != src)
 		return ITEM_INTERACT_BLOCKING
 	if(ground.is_blocked_turf(exclude_mobs = TRUE))
 		balloon_alert(user, "no room to stand it up!")
@@ -934,6 +934,10 @@
 	if(!meal || meal.stat == DEAD)
 		balloon_alert(user, "the meal is dead, she wants it breathing!")
 		return
+	if(!vestige_loom_is_wild_quarry(meal, user) || meal.mob_size >= MOB_SIZE_LARGE)
+		balloon_alert(user, "the silk releases this unfit meal!")
+		qdel(parcel)
+		return
 	parcel.racked = TRUE
 	user.visible_message(
 		span_warning("[user] hoists [parcel] onto [src], and the silk pulls it in whole."),
@@ -996,7 +1000,7 @@
 	// VESTIGE_TREMOR_MAX_LINES / VESTIGE_TREMOR_MIN_LINES /
 	// VESTIGE_TREMOR_SPREAD / VESTIGE_TREMOR_ANSWER_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come, little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer four tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
+	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing on your level, the thieves come, little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer four tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
 	/// The loaned tremor spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_tremor_spool/spool
 	/// Standing tremor-lines (culled by their own Destroy)
@@ -1035,25 +1039,35 @@
 	if(!spool || QDELETED(spool))
 		if(!length(lines))
 			return "The spool is lost and the net with it. Restart the trial from your pact tracker for fresh equipment."
-	var/standing = length(lines)
+	var/standing = length(lines_on_level(owner?.current?.z))
 	if(!night_begun)
-		return "String [VESTIGE_TREMOR_MIN_LINES] tremor-lines, spread wide ([standing] of [VESTIGE_TREMOR_MAX_LINES] standing), and the thieves will come."
+		return "String [VESTIGE_TREMOR_MIN_LINES] tremor-lines, spread wide ([standing] on your level; [length(lines)] of [VESTIGE_TREMOR_MAX_LINES] standing total), and the thieves will come."
 	var/alarm = length(thieves) ? " Something is in the web NOW." : ""
 	if(standing < VESTIGE_TREMOR_MIN_LINES)
-		return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors, but only [standing] line[standing == 1 ? "" : "s"] stand[standing == 1 ? "s" : ""]. The web hangs slack; restring it.[alarm]"
+		return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors, but only [standing] line[standing == 1 ? "" : "s"] stand[standing == 1 ? "s" : ""] on your level. The web hangs slack; restring it.[alarm]"
 	return "Answered [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED] tremors, [standing] line[standing == 1 ? "" : "s"] standing.[alarm]"
+
+/// Separate z-levels cannot form one net for a keeper to answer on foot.
+/datum/vestige_trial/loom_tremor/proc/lines_on_level(z_level)
+	var/list/local_lines = list()
+	if(!z_level)
+		return local_lines
+	for(var/obj/structure/vestige_tremor_line/line as anything in lines)
+		if(!QDELETED(line) && line.z == z_level)
+			local_lines += line
+	return local_lines
 
 /// Called whenever a line is strung: wakes the night the first time the net goes taut
 /datum/vestige_trial/loom_tremor/proc/check_night()
 	refresh_tracker()
 	if(night_begun)
-		if(slack_notified && length(lines) >= VESTIGE_TREMOR_MIN_LINES)
+		if(slack_notified && length(lines_on_level(owner?.current?.z)) >= VESTIGE_TREMOR_MIN_LINES)
 			slack_notified = FALSE
 			var/mob/living/keeper = owner?.current
 			if(isliving(keeper))
 				to_chat(keeper, span_boldnotice("The net pulls taut again. Listen."))
 		return
-	if(length(lines) < VESTIGE_TREMOR_MIN_LINES)
+	if(length(lines_on_level(owner?.current?.z)) < VESTIGE_TREMOR_MIN_LINES)
 		return
 	night_begun = TRUE
 	next_send_at = world.time + VESTIGE_TREMOR_FIRST_DELAY
@@ -1084,20 +1098,15 @@
 			instincts.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, errand)
 	if(length(thieves) || world.time < next_send_at)
 		return
-	if(length(lines) < VESTIGE_TREMOR_MIN_LINES)
+	var/list/reachable = lines_on_level(keeper?.z)
+	if(length(reachable) < VESTIGE_TREMOR_MIN_LINES)
 		if(!slack_notified)
 			slack_notified = TRUE
 			if(isliving(keeper))
-				to_chat(keeper, span_boldwarning("The web hangs slack. Fewer than [VESTIGE_TREMOR_MIN_LINES] lines stand. The thieves will keep what they took until you restring it."))
+				to_chat(keeper, span_boldwarning("The web hangs slack. Fewer than [VESTIGE_TREMOR_MIN_LINES] lines stand on your level. The thieves will keep what they took until you restring it."))
 			refresh_tracker()
 		return
 	if(!isliving(keeper) || keeper.stat == DEAD)
-		return
-	var/list/reachable = list()
-	for(var/obj/structure/vestige_tremor_line/line as anything in lines)
-		if(!QDELETED(line) && line.z == keeper.z)
-			reachable += line
-	if(!length(reachable))
 		return
 	send_thief(pick(reachable), keeper)
 
@@ -1111,6 +1120,7 @@
 	next_send_at = world.time + VESTIGE_TREMOR_RESPITE // floor, so an instant kill can't machine-gun the night
 	var/mob/living/basic/vestige_silk_thief/filcher = new(pick(perches))
 	thieves[filcher] = line
+	line.pinged = FALSE // every new thief must announce its own first bite
 	register_loan(filcher)
 	RegisterSignal(filcher, COMSIG_LIVING_DEATH, PROC_REF(on_thief_died))
 	RegisterSignal(filcher, COMSIG_QDELETING, PROC_REF(on_thief_gone))
@@ -1155,7 +1165,7 @@
 		return
 	var/mob/living/keeper = owner?.current
 	var/line_stands = istype(line) && !QDELETED(line)
-	var/in_person = isliving(keeper) && keeper.z == filcher.z && get_dist(keeper, filcher) <= VESTIGE_TREMOR_ANSWER_RANGE
+	var/in_person = isliving(keeper) && keeper.stat != DEAD && keeper.z == filcher.z && get_dist(keeper, filcher) <= VESTIGE_TREMOR_ANSWER_RANGE
 	if(!line_stands)
 		refresh_tracker()
 		return // it died with the line already parted; the cut was the answer, and it wasn't yours
@@ -1219,7 +1229,7 @@
 		for(var/obj/structure/vestige_tremor_line/line as anything in trial.lines)
 			if(line.z == user.z)
 				. += span_notice("Line to the [dir2text(get_dir(user, line)) || "same spot"]: [get_dist(user, line)] tiles away; new lines need five tiles of separation.")
-	. += span_notice("Use in hand to string a tremor-line across the floor under you, [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
+	. += span_notice("Use in hand to string a tremor-line across the floor under you, [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing on your level, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
 
 /obj/item/vestige_tremor_spool/attack_self(mob/user, modifiers)
 	. = ..()
@@ -1229,7 +1239,7 @@
 		return
 	var/mob/living/keeper = user
 	var/datum/vestige_trial/loom_tremor/trial = keeper.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || keeper.mind != bound_mind || trial.spool != src)
 		balloon_alert(keeper, "the spool is silent!")
 		return TRUE
 	var/turf/open/ground = get_turf(keeper)
@@ -1242,7 +1252,7 @@
 		return TRUE
 	// Re-resolve everything; the pact may have been renounced mid-string
 	trial = keeper.mind?.active_vestige_trial
-	if(!istype(trial) || !check_ground(keeper, trial, ground))
+	if(!istype(trial) || keeper.mind != bound_mind || trial.spool != src || !check_ground(keeper, trial, ground))
 		return TRUE
 	var/obj/structure/vestige_tremor_line/line = new(ground)
 	line.bound_mind = keeper.mind
@@ -1711,6 +1721,8 @@
 	var/can_seal = FALSE
 	/// The turf validated and channelled over in before_cast, consumed by cast(). Same-cast handoff only.
 	var/turf/pending_turf
+	/// Keeps an old body's channel from overlapping its new body's cast.
+	var/spinning = FALSE
 	/// Weakrefs to every thread this spell has planted, spin order, the fray ledger
 	var/list/spun_webs = list()
 
@@ -1739,44 +1751,59 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
+	if(spinning || !isliving(owner) || QDELETED(owner))
+		return . | SPELL_CANCEL_CAST
+	spinning = TRUE
+	var/prepared = prepare_spin(owner, cast_on)
+	spinning = FALSE
+	return . | prepared
+
+/datum/action/cooldown/spell/pointed/vestige_silk_spin/proc/spin_check(mob/living/caster, turf/spin_turf)
+	if(QDELETED(src) || !isliving(caster) || QDELETED(caster) || caster != owner || caster.stat != CONSCIOUS || caster.incapacitated)
+		return FALSE
+	return isturf(caster.loc) && isopenturf(spin_turf) && caster.z == spin_turf.z && get_dist(caster, spin_turf) <= cast_range
+
+/datum/action/cooldown/spell/pointed/vestige_silk_spin/proc/prepare_spin(mob/living/caster, atom/cast_on)
 	pending_turf = null
 	var/turf/spin_turf = get_turf(cast_on)
 	if(!isopenturf(spin_turf))
-		owner.balloon_alert(owner, "nothing to string silk across!")
-		return . | SPELL_CANCEL_CAST
-	if(!isturf(owner.loc))
-		owner.balloon_alert(owner, "no footing to spin from!")
-		return . | SPELL_CANCEL_CAST
+		caster.balloon_alert(caster, "nothing to string silk across!")
+		return SPELL_CANCEL_CAST
+	if(!isturf(caster.loc))
+		caster.balloon_alert(caster, "no footing to spin from!")
+		return SPELL_CANCEL_CAST
+	if(!spin_check(caster, spin_turf))
+		return SPELL_CANCEL_CAST
 	// One spin at a time: lay_web's DOING_INTERACTION guard, ported
-	if(DOING_INTERACTION(owner, VESTIGE_SILK_DOAFTER))
-		owner.balloon_alert(owner, "already spinning!")
-		return . | SPELL_CANCEL_CAST
+	if(DOING_INTERACTION(caster, VESTIGE_SILK_DOAFTER))
+		caster.balloon_alert(caster, "already spinning!")
+		return SPELL_CANCEL_CAST
 	// Someone (or something) has already claimed this turf for a web, lay_web's turf-trait guard, ported
 	if(HAS_TRAIT(spin_turf, TRAIT_SPINNING_WEB_TURF))
-		owner.balloon_alert(owner, "already being webbed!")
-		return . | SPELL_CANCEL_CAST
+		caster.balloon_alert(caster, "already being webbed!")
+		return SPELL_CANCEL_CAST
 	var/sealing = FALSE
 	var/obj/structure/spider/stickyweb/existing = locate() in spin_turf
 	if(existing)
 		if(!can_seal)
-			owner.balloon_alert(owner, "already webbed!")
-			return . | SPELL_CANCEL_CAST
+			caster.balloon_alert(caster, "already webbed!")
+			return SPELL_CANCEL_CAST
 		if(istype(existing, /obj/structure/spider/stickyweb/sealed))
-			owner.balloon_alert(owner, "already a wall!")
-			return . | SPELL_CANCEL_CAST
+			caster.balloon_alert(caster, "already a wall!")
+			return SPELL_CANCEL_CAST
 		if(!is_my_thread(existing))
-			owner.balloon_alert(owner, "not your thread to build on!")
-			return . | SPELL_CANCEL_CAST
+			caster.balloon_alert(caster, "not your thread to build on!")
+			return SPELL_CANCEL_CAST
 		sealing = TRUE
 	ADD_TRAIT(spin_turf, TRAIT_SPINNING_WEB_TURF, REF(src))
-	owner.balloon_alert_to_viewers(sealing ? "drawing the weft tight..." : "spinning silk...")
-	var/spun = do_after(owner, spin_time, target = spin_turf, interaction_key = VESTIGE_SILK_DOAFTER)
+	caster.balloon_alert_to_viewers(sealing ? "drawing the weft tight..." : "spinning silk...")
+	var/spun = do_after(caster, spin_time, target = spin_turf, interaction_key = VESTIGE_SILK_DOAFTER, extra_checks = CALLBACK(src, PROC_REF(spin_check), caster, spin_turf))
 	REMOVE_TRAIT(spin_turf, TRAIT_SPINNING_WEB_TURF, REF(src))
-	if(!spun || QDELETED(src) || QDELETED(owner))
-		owner?.balloon_alert(owner, "the thread snaps!")
-		return . | SPELL_CANCEL_CAST
+	if(!spun || !spin_check(caster, spin_turf))
+		caster?.balloon_alert(caster, "the thread snaps!")
+		return SPELL_CANCEL_CAST
 	pending_turf = spin_turf
-	return .
+	return NONE
 
 /datum/action/cooldown/spell/pointed/vestige_silk_spin/cast(atom/cast_on)
 	. = ..()

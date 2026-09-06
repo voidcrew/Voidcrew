@@ -8,7 +8,7 @@
 /datum/vestige_trial/morph_scenario
 	var/obj/item/vestige_morph_invitation/invitation
 	var/mob/living/basic/vestige_morph_actor/actor
-	var/datum/weakref/home_ref
+	var/obj/effect/vestige_trial_marker/home_ref
 	var/next_action = 0
 
 /datum/vestige_trial/morph_scenario/on_accepted(mob/living/user)
@@ -76,6 +76,8 @@
 	var/mob/living/user = trial?.owner?.current
 	if(!trial || QDELETED(trial.actor) || !isliving(user) || user.mind?.active_vestige_trial != trial || user.stat != CONSCIOUS || !isturf(user.loc) || user.z != trial.actor.z)
 		return
+	if(trial.home_ref?.shuttle_moving)
+		return
 	trial.run_scene(user, seconds_per_tick)
 
 /mob/living/basic/vestige_morph_actor
@@ -94,6 +96,7 @@
 	unsuitable_heat_damage = 0
 	ai_controller = null
 	mob_biotypes = MOB_SPIRIT
+	sentience_type = NONE
 	var/list/held_appearances = list()
 	var/datum/weakref/trial_ref
 
@@ -183,7 +186,7 @@
 	var/approaching = FALSE
 	var/approach_steps = 0
 	var/inspection_until = 0
-	var/datum/weakref/watched_spot
+	var/obj/effect/vestige_trial_marker/watched_spot
 	var/rejected_until = 0
 
 /datum/vestige_trial/perfect_copy/on_accepted(mob/living/user)
@@ -203,7 +206,7 @@
 	if(!site)
 		to_chat(user, span_warning("The scavenger needs a clear four-tile approach from this spot."))
 		return FALSE
-	home_ref = WEAKREF(site)
+	home_ref = mark_turf(site)
 	spawn_actor(site, "parlor scavenger")
 	to_chat(user, span_notice("The scavenger calls: 'Bring me [roles[role_index]]. I dislike seeing double.'"))
 	return TRUE
@@ -238,7 +241,7 @@
 	approaching = FALSE
 	approach_steps = 0
 	inspection_until = 0
-	watched_spot = null
+	QDEL_NULL(watched_spot)
 	rejected_until = world.time + 2 SECONDS
 	actor.balloon_alert(user, reason)
 	skin.shed_form(user)
@@ -253,19 +256,20 @@
 	if(approaching && (!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || !visible))
 		approaching = FALSE
 		inspection_until = 0
-		watched_spot = null
+		QDEL_NULL(watched_spot)
 	if(!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || world.time < rejected_until)
-		var/turf/home = home_ref?.resolve()
+		var/turf/home = get_turf(home_ref)
 		if(home && get_turf(actor) != home)
 			step_towards(actor, home)
 		return
 	if(!visible)
-		watched_spot = null
+		QDEL_NULL(watched_spot)
 		return
-	if(watched_spot && watched_spot.resolve() != get_turf(user))
+	if(watched_spot && get_turf(watched_spot) != get_turf(user))
 		reject_shape(user, "objects don't walk!")
 		return
-	watched_spot = WEAKREF(get_turf(user))
+	if(!watched_spot)
+		watched_spot = mark_turf(get_turf(user))
 	if(!matches_role(source))
 		actor.balloon_alert(user, "wrong kind of object")
 		return
@@ -295,14 +299,14 @@
 		reject_shape(user, "this one feels wrong!")
 
 /datum/vestige_trial/perfect_copy/proc/reveal(mob/living/user)
-	if(!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || !approaching || approach_steps < 2 || !inspection_until || world.time > inspection_until || get_dist(actor, user) > 1 || !matches_role(skin.form_source_ref?.resolve()) || source_visible(skin.form_source_ref?.resolve()))
+	if(!skin.valid_wearer(user) || skin.form != SKIN_FORM_OBJECT || !approaching || approach_steps < 2 || !inspection_until || world.time > inspection_until || get_turf(watched_spot) != get_turf(user) || get_dist(actor, user) > 1 || !matches_role(skin.form_source_ref?.resolve()) || source_visible(skin.form_source_ref?.resolve()))
 		return FALSE
 	skin.shed_form(user, feedback = FALSE)
 	actor.balloon_alert(user, "that was alive!")
 	role_index++
 	approaching = FALSE
 	inspection_until = 0
-	watched_spot = null
+	QDEL_NULL(watched_spot)
 	refresh_tracker()
 	if(role_index > 2)
 		complete()
@@ -322,7 +326,7 @@
 	var/obj/structure/vestige_morph_scent/decoy
 	var/decoy_ready = TRUE
 	var/investigate_until = 0
-	var/datum/weakref/last_seen
+	var/obj/effect/vestige_trial_marker/last_seen
 
 /datum/vestige_trial/snatched_meal/on_accepted(mob/living/user)
 	..()
@@ -338,7 +342,7 @@
 	if(!site)
 		to_chat(user, span_warning("The pantry needs a clear four-tile approach. Leave room beyond it for your escape."))
 		return FALSE
-	home_ref = WEAKREF(get_turf(user))
+	home_ref = mark_turf(get_turf(user))
 	pantry = new(get_turf(user))
 	pantry.name = "guarded pantry"
 	pantry.desc = "The porter's reserved meal is inside. A maw can take it only while the porter is at least three tiles away."
@@ -374,7 +378,9 @@
 		return
 	next_action = world.time + 0.4 SECONDS
 	if(!QDELETED(decoy))
-		if(!actor.Adjacent(decoy))
+		// The closest legal lure is three tiles from the pantry. Stopping
+		// beside it would leave the porter too close to permit the theft.
+		if(get_turf(actor) != get_turf(decoy))
 			step_towards(actor, decoy)
 			return
 		if(!investigate_until)
@@ -386,13 +392,16 @@
 	if(maw.stored_course)
 		if(actor.Adjacent(user))
 			maw.release_course(pantry)
-			last_seen = null
+			QDEL_NULL(last_seen)
 			actor.balloon_alert(user, "put that back!")
 			refresh_tracker()
 			return
 		if(porter_sees(user))
-			last_seen = WEAKREF(get_turf(user))
-		var/turf/pursuit = last_seen?.resolve()
+			if(QDELETED(last_seen))
+				last_seen = mark_turf(get_turf(user))
+			else
+				last_seen.forceMove(get_turf(user))
+		var/turf/pursuit = get_turf(last_seen)
 		if(pursuit && get_turf(actor) != pursuit)
 			step_towards(actor, pursuit)
 		return
@@ -471,7 +480,8 @@
 	stored_course = trial.course
 	stored_course.forceMove(src)
 	set_fullness(TRUE, user)
-	trial.last_seen = WEAKREF(get_turf(user))
+	QDEL_NULL(trial.last_seen)
+	trial.last_seen = trial.mark_turf(get_turf(user))
 	balloon_alert(user, "full: flee and digest!")
 	trial.refresh_tracker()
 	return ITEM_INTERACT_SUCCESS
@@ -575,7 +585,7 @@
 	if(!first)
 		to_chat(user, span_warning("The balance dock needs seven clear ground tiles in a straight line, centered here."))
 		return FALSE
-	home_ref = WEAKREF(center)
+	home_ref = mark_turf(center)
 	input = new(center)
 	input.name = "balance dock release"
 	left_dock = new(first)
@@ -856,6 +866,7 @@
 	RegisterSignal(user, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_wearer_armed_attack))
 	RegisterSignal(user, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_wearer_unarmed_attack))
 	RegisterSignal(user, COMSIG_ATOM_EXAMINE, PROC_REF(on_wearer_examined))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_wearer_moved))
 
 /obj/item/vestige_second_skin/process(seconds_per_tick)
 	if(form == SKIN_FORM_NONE)
@@ -880,7 +891,7 @@
 	form = SKIN_FORM_NONE
 	var/mob/living/wearer = wearer_ref?.resolve()
 	if(wearer && !QDELETED(wearer))
-		UnregisterSignal(wearer, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_ATOM_EXAMINE))
+		UnregisterSignal(wearer, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_ATOM_EXAMINE, COMSIG_MOVABLE_MOVED))
 		wearer.remove_movespeed_modifier(/datum/movespeed_modifier/vestige_skin_creep)
 		if(saved_appearance)
 			wearer.appearance = saved_appearance
@@ -916,6 +927,16 @@
 	SIGNAL_HANDLER
 	if(get_dist(examiner, source) <= 3)
 		examine_list += span_warning("It doesn't look quite right...")
+
+/// Visible movement must count even if the wearer returns or reveals between scene ticks.
+/obj/item/vestige_second_skin/proc/on_wearer_moved(mob/living/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	SIGNAL_HANDLER
+	if(!momentum_change || form != SKIN_FORM_OBJECT)
+		return
+	var/datum/vestige_trial/perfect_copy/trial = trial_ref?.resolve()
+	if(!istype(trial) || !trial.watched_spot || trial.watched_spot.shuttle_moving || get_turf(trial.watched_spot) == get_turf(source))
+		return
+	trial.reject_shape(source, "objects don't walk!")
 
 /datum/movespeed_modifier/vestige_skin_creep
 	multiplicative_slowdown = VESTIGE_SKIN_CREEP_SLOWDOWN
@@ -1354,6 +1375,11 @@
 /// Any damage breaks the form, deferred a tick so the blow finishes resolving first
 /mob/living/basic/vestige_mimic/proc/on_damaged(datum/source)
 	SIGNAL_HANDLER
+	// The shapeshift rail copies existing wounds before putting the caster
+	// inside the shape. Those wounds are not a new hit against the disguise.
+	var/datum/status_effect/shapechange_mob/from_spell/shift = has_status_effect(/datum/status_effect/shapechange_mob/from_spell)
+	if(!shift || shift.caster_mob?.loc != src)
+		return
 	queue_break()
 
 /// Queues the break exactly once, off the current call stack (apply_damage
@@ -1437,6 +1463,8 @@
 	var/obj/item/pending_swallow
 	/// Keeping cleared to come up, handed from before_cast to cast. Same-cast handoff only.
 	var/obj/item/pending_regurgitate
+	/// Covers selection and channeling, before a successful cast starts cooldown.
+	var/gullet_busy = FALSE
 
 /datum/action/cooldown/spell/vestige_devour/gluttony
 	name = "Bottomless Gullet"
@@ -1477,6 +1505,10 @@
 
 /datum/action/cooldown/spell/vestige_devour/Remove(mob/remove_from)
 	if(remove_from)
+		// The action's base QDELETING handler calls Remove before the body loses its turf.
+		// Normal mind transfers keep the stash; deleting its carrier must spill it safely.
+		if(QDELETED(remove_from))
+			empty_gullet(get_turf(remove_from))
 		UnregisterSignal(remove_from, COMSIG_LIVING_DEATH)
 	return ..()
 
@@ -1511,41 +1543,50 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
+	if(gullet_busy || !gullet_menu_check(owner))
+		return . | SPELL_CANCEL_CAST
+	gullet_busy = TRUE
+	var/prepared = prepare_gullet(owner)
+	gullet_busy = FALSE
+	return . | prepared
+
+/// Keep all sleeping operations tied to the body which began this gulp.
+/datum/action/cooldown/spell/vestige_devour/proc/prepare_gullet(mob/living/caster)
 	pending_swallow = null
 	pending_regurgitate = null
-	var/obj/item/held = owner.get_active_held_item()
+	var/obj/item/held = caster.get_active_held_item()
 	if(held)
 		if(!validate_swallow(held))
-			return . | SPELL_CANCEL_CAST
-		owner.visible_message(
-			span_warning("[owner]'s throat begins to work, horribly, around [held]..."),
+			return SPELL_CANCEL_CAST
+		caster.visible_message(
+			span_warning("[caster]'s throat begins to work, horribly, around [held]..."),
 			span_notice("You unhinge something no anatomy chart says you have, and start [held] on its way down."),
 		)
-		playsound(owner, 'sound/items/eatfood.ogg', 40, TRUE)
-		if(!do_after(owner, VESTIGE_GULLET_SWALLOW_TIME, target = held))
-			return . | SPELL_CANCEL_CAST
+		playsound(caster, 'sound/items/eatfood.ogg', 40, TRUE)
+		if(!do_after(caster, VESTIGE_GULLET_SWALLOW_TIME, target = held, extra_checks = CALLBACK(src, PROC_REF(gullet_menu_check), caster)))
+			return SPELL_CANCEL_CAST
 		// Re-validate: the meal may have been snatched, dropped or crammed in beside a full load mid-gulp
-		if(QDELETED(held) || owner.get_active_held_item() != held || !validate_swallow(held, feedback = FALSE))
-			return . | SPELL_CANCEL_CAST
+		if(!gullet_menu_check(caster) || QDELETED(held) || caster.get_active_held_item() != held || !validate_swallow(held, feedback = FALSE))
+			return SPELL_CANCEL_CAST
 		pending_swallow = held
-		return .
+		return NONE
 	// Empty-handed: bring a keeping back up
 	if(!length(stash.contents))
-		owner.balloon_alert(owner, "nothing down there!")
-		return . | SPELL_CANCEL_CAST
-	var/obj/item/choice = pick_from_gullet()
-	if(!choice)
-		return . | SPELL_CANCEL_CAST
-	owner.visible_message(
-		span_warning("[owner]'s throat bulges going the wrong way..."),
+		caster.balloon_alert(caster, "nothing down there!")
+		return SPELL_CANCEL_CAST
+	var/obj/item/choice = pick_from_gullet(caster)
+	if(!gullet_menu_check(caster) || QDELETED(choice) || choice.loc != stash)
+		return SPELL_CANCEL_CAST
+	caster.visible_message(
+		span_warning("[caster]'s throat bulges going the wrong way..."),
 		span_notice("You call [choice] back up."),
 	)
-	if(!do_after(owner, VESTIGE_GULLET_HEAVE_TIME))
-		return . | SPELL_CANCEL_CAST
-	if(QDELETED(choice) || choice.loc != stash)
-		return . | SPELL_CANCEL_CAST
+	if(!do_after(caster, VESTIGE_GULLET_HEAVE_TIME, extra_checks = CALLBACK(src, PROC_REF(gullet_menu_check), caster)))
+		return SPELL_CANCEL_CAST
+	if(!gullet_menu_check(caster) || QDELETED(choice) || choice.loc != stash)
+		return SPELL_CANCEL_CAST
 	pending_regurgitate = choice
-	return .
+	return NONE
 
 /// Whether an item can go down right now, balloon feedback included
 /datum/action/cooldown/spell/vestige_devour/proc/validate_swallow(obj/item/meal, feedback = TRUE)
@@ -1566,7 +1607,7 @@
 	return TRUE
 
 /// Picks the keeping to bring up: the only one, or a radial when the bottomless version holds several
-/datum/action/cooldown/spell/vestige_devour/proc/pick_from_gullet()
+/datum/action/cooldown/spell/vestige_devour/proc/pick_from_gullet(mob/living/caster)
 	if(length(stash.contents) == 1)
 		return stash.contents[1]
 	var/list/options = list()
@@ -1579,14 +1620,14 @@
 			copy++
 		by_key[key] = kept
 		options[key] = image(icon = kept.icon, icon_state = kept.icon_state)
-	var/choice = show_radial_menu(owner, owner, options, custom_check = CALLBACK(src, PROC_REF(gullet_menu_check)), tooltips = TRUE)
+	var/choice = show_radial_menu(caster, caster, options, custom_check = CALLBACK(src, PROC_REF(gullet_menu_check), caster), tooltips = TRUE)
 	if(!choice)
 		return null
 	return by_key[choice]
 
 /// Menu validity for the regurgitation radial
-/datum/action/cooldown/spell/vestige_devour/proc/gullet_menu_check()
-	return !QDELETED(src) && !QDELETED(owner) && owner.stat == CONSCIOUS
+/datum/action/cooldown/spell/vestige_devour/proc/gullet_menu_check(mob/living/caster)
+	return !QDELETED(src) && !QDELETED(stash) && !QDELETED(caster) && isliving(caster) && owner == caster && caster.stat == CONSCIOUS
 
 /datum/action/cooldown/spell/vestige_devour/cast(atom/cast_on)
 	. = ..()
@@ -1733,7 +1774,7 @@
 	SIGNAL_HANDLER
 	if(!isliving(target) || target == source || !proximity)
 		return
-	if(!source.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
+	if(!source.combat_mode || HAS_TRAIT(source, TRAIT_PACIFISM) || LAZYACCESS(modifiers, RIGHT_CLICK))
 		return
 	var/mob/living/victim = target
 	victim.apply_damage(VESTIGE_AMBUSH_BONUS_FORCE, BRUTE, wound_bonus = CANT_WOUND)

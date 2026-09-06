@@ -167,8 +167,9 @@
 	return "You have felled [length(felled)] of [VESTIGE_ROAD_KILLS_NEEDED] wild things with wet blood underfoot."
 
 /// Credits a kill made standing in the red. Returns FALSE if this beast already walked the road.
-/datum/vestige_trial/red_road/proc/fell(mob/living/prey)
-	var/datum/weakref/key = WEAKREF(prey)
+/datum/vestige_trial/red_road/proc/fell(mob/living/prey, datum/weakref/key = WEAKREF(prey))
+	if(!key)
+		return FALSE
 	if(felled[key])
 		return FALSE
 	felled[key] = TRUE
@@ -252,33 +253,34 @@
 	return TRUE
 
 /obj/item/vestige_flensing_knife/attack(mob/living/prey, mob/living/butcher, list/modifiers, list/attack_modifiers)
-	var/was_alive = isliving(prey) && prey.stat != DEAD
-	. = ..() // the swing itself, damage (and any death) happens in here, synchronously
-	if(!was_alive || !isliving(prey) || !isliving(butcher))
-		return
 	var/datum/vestige_trial/red_road/trial = butcher.mind?.active_vestige_trial
-	if(!istype(trial))
+	var/qualified = istype(trial) && butcher.mind == bound_mind && trial.knife == src && prey.stat != DEAD && vestige_is_shambles_quarry(prey, butcher)
+	var/datum/weakref/prey_key = qualified ? WEAKREF(prey) : null
+	var/health_before = prey.health
+	var/turf/prey_floor = get_turf(prey)
+	var/wet_footing = FALSE
+	if(qualified)
+		for(var/obj/effect/decal/cleanable/blood/pool in get_turf(butcher))
+			if(!pool.dried)
+				wet_footing = TRUE
+				break
+	. = ..() // Damage (including DEL_ON_DEATH deletion) happens synchronously here.
+	if(!qualified || prey.health >= health_before || QDELETED(trial) || trial != butcher.mind?.active_vestige_trial)
 		return
-	if(!vestige_is_shambles_quarry(prey, butcher))
+	if(!QDELETED(prey) && !vestige_is_shambles_quarry(prey, butcher))
 		return
 	// Every honest cut paints, including the last one, so the kill itself
 	// keeps laying road for the next
-	paint_the_road(prey)
+	paint_the_road(prey, prey_floor)
 	if(prey.stat != DEAD)
 		return
 	// The beast went from alive to dead inside OUR attack call: the killing
 	// blow was this knife's. Now the only question is where the boots are.
-	var/turf/underfoot = get_turf(butcher)
-	var/obj/effect/decal/cleanable/blood/road
-	for(var/obj/effect/decal/cleanable/blood/pool in underfoot)
-		if(!pool.dried)
-			road = pool
-			break
-	if(!road)
+	if(!wet_footing)
 		to_chat(butcher, span_warning("[prey] falls on a dry floor. Somewhere, a tongue clicks twice. The killing blow only counts with wet blood under your boots, apprentice."))
 		return
 	// fell() may schedule completion (which later deletes the trial), nothing touches trial after this
-	if(trial.fell(prey))
+	if(trial.fell(prey, prey_key))
 		to_chat(butcher, span_notice("[prey] drops with your boots planted in the red. From nowhere in particular: two slow, delighted claps."))
 		playsound(butcher, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
 	else
@@ -290,11 +292,11 @@
  * bloodless, the trial cannot hinge on which fauna happen to have plumbing.
  * Never stacks: an existing wet pool on the turf is left to do its job.
  */
-/obj/item/vestige_flensing_knife/proc/paint_the_road(mob/living/prey)
-	var/turf/floor = get_turf(prey)
+/obj/item/vestige_flensing_knife/proc/paint_the_road(mob/living/prey, turf/floor = get_turf(prey))
 	if(!floor)
 		return
-	prey.add_splatter_floor(floor)
+	if(!QDELETED(prey))
+		prey.add_splatter_floor(floor)
 	for(var/obj/effect/decal/cleanable/blood/pool in floor)
 		if(!pool.dried)
 			return
@@ -353,8 +355,9 @@
 	return "You have pounced on [ambushes] of [VESTIGE_TRAPDOOR_AMBUSHES_NEEDED] moving targets."
 
 /// Credits a pounce. May schedule completion. Returns FALSE if this beast has been surprised out.
-/datum/vestige_trial/trapdoor_feast/proc/pounce(mob/living/prey)
-	var/datum/weakref/key = WEAKREF(prey)
+/datum/vestige_trial/trapdoor_feast/proc/pounce(mob/living/prey, datum/weakref/key = WEAKREF(prey))
+	if(!key)
+		return FALSE
 	var/prior = strikes_per_prey[key] || 0
 	if(prior >= VESTIGE_TRAPDOOR_STRIKES_PER_PREY)
 		return FALSE
@@ -399,10 +402,18 @@
 	var/emerged_at = 0
 	/// Whether this rise has already paid out, one pounce per surfacing, however fast you swing
 	var/credited_this_rise = FALSE
-	/// Where every living thing nearby stood at the instant of surfacing (weakref -> turf), the "mid-stride" evidence
+	/// Ship-following markers of nearby positions at surfacing (quarry weakref -> marker).
 	var/list/positions_at_rise
-	/// Locations seen at the dive, so a quarry that reaches the exit and stops can still be ambushed.
+	/// Positions at the dive, so quarry that reaches the exit and stops can still be ambushed.
 	var/list/positions_at_dive
+	/// A qualifying attempt is only paid after its attack actually damages the quarry.
+	var/datum/weakref/armed_weapon
+	var/datum/weakref/armed_quarry
+	var/armed_quarry_ref
+	var/armed_rise = 0
+	var/datum/weakref/unarmed_quarry
+	var/unarmed_quarry_ref
+	var/unarmed_rise = 0
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/Destroy()
 	deltimer(lurk_timer)
@@ -420,10 +431,26 @@
 	. = ..()
 	RegisterSignal(grant_to, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_armed_strike))
 	RegisterSignal(grant_to, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_strike))
+	RegisterSignal(grant_to, COMSIG_LIVING_AFTER_UNARMED_ATTACK, PROC_REF(on_unarmed_hit))
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/Remove(mob/living/remove_from)
-	UnregisterSignal(remove_from, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))
-	return ..()
+	UnregisterSignal(remove_from, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_LIVING_AFTER_UNARMED_ATTACK))
+	clear_armed_strike()
+	unarmed_quarry = null
+	unarmed_quarry_ref = null
+	unarmed_rise = 0
+	. = ..()
+	clear_snapshot(positions_at_rise)
+	clear_snapshot(positions_at_dive)
+	emerged_at = 0
+
+/// Retire obsolete positional markers between attempts and when changing bodies.
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/clear_snapshot(list/snapshot)
+	for(var/datum/weakref/key as anything in snapshot)
+		var/obj/effect/vestige_trial_marker/marker = snapshot[key]
+		if(istype(marker))
+			qdel(marker)
+	snapshot?.Cut()
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/can_cast_spell(feedback = TRUE)
 	. = ..()
@@ -494,10 +521,13 @@
 	. = ..()
 	if(!.)
 		return
+	clear_snapshot(positions_at_rise)
+	clear_snapshot(positions_at_dive)
 	positions_at_dive = list()
+	var/datum/vestige_trial/trapdoor_feast/trial = jaunter.mind?.active_vestige_trial
 	for(var/mob/living/quarry in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, jaunter))
 		if(vestige_is_shambles_quarry(quarry, jaunter) && vestige_loom_hunted_prey(quarry))
-			positions_at_dive[WEAKREF(quarry)] = get_turf(quarry)
+			positions_at_dive[WEAKREF(quarry)] = trial?.mark_turf(get_turf(quarry))
 	deltimer(lurk_timer)
 	// The clock rides the timer subsystem, not the holder, a renounced pact's
 	// Destroy deltimers it, and the jaunt machinery ejects the lurker itself
@@ -512,13 +542,21 @@
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/on_jaunt_exited(obj/effect/dummy/phased_mob/jaunt, mob/living/unjaunter)
 	. = ..()
+	if(QDELETED(src))
+		return
 	deltimer(lurk_timer)
 	lurk_timer = null
+	clear_armed_strike()
+	unarmed_quarry = null
+	unarmed_quarry_ref = null
+	unarmed_rise = 0
 	emerged_at = world.time
 	credited_this_rise = FALSE
+	clear_snapshot(positions_at_rise)
 	positions_at_rise = list()
+	var/datum/vestige_trial/trapdoor_feast/trial = unjaunter.mind?.active_vestige_trial
 	for(var/mob/living/bystander in range(VESTIGE_TRAPDOOR_SNAPSHOT_RANGE, unjaunter))
-		positions_at_rise[WEAKREF(bystander)] = get_turf(bystander)
+		positions_at_rise[WEAKREF(bystander)] = trial?.mark_turf(get_turf(bystander))
 	if(istype(unjaunter.mind?.active_vestige_trial, /datum/vestige_trial/trapdoor_feast))
 		to_chat(unjaunter, span_boldnotice("AMBUSH ARMED: strike a moving quarry within three seconds. Your held weapon stays in hand."))
 		unjaunter.balloon_alert(unjaunter, "ambush armed: three seconds!")
@@ -559,19 +597,60 @@
 /// An armed swing by the crawl's owner. Signal args per COMSIG_MOB_ITEM_ATTACK: (target, user, modifiers, attack_modifiers).
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/on_armed_strike(mob/living/butcher, mob/living/prey, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
-	// The signal fires for every item touch, scanners included, only a real
-	// weapon in the striking hand reads as a strike
+	clear_armed_strike()
 	var/obj/item/blade = butcher.get_active_held_item()
-	if(!blade || blade.force <= 0)
+	if(!blade || CALCULATE_FORCE(blade, attack_modifiers) <= 0 || !can_pounce(butcher, prey))
 		return
-	judge_pounce(butcher, prey)
+	armed_weapon = WEAKREF(blade)
+	armed_quarry = WEAKREF(prey)
+	armed_quarry_ref = text_ref(prey) // REF() changes when Destroy clears the mob's generated tag.
+	armed_rise = emerged_at
+	// The item survives a lethal hit even when DEL_ON_DEATH deletes the quarry.
+	// The parent emits this only after attacked_by returns actual damage for a positive-force weapon.
+	RegisterSignal(blade, COMSIG_ITEM_AFTERATTACK, PROC_REF(on_armed_hit))
+
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/clear_armed_strike()
+	var/obj/item/blade = armed_weapon?.resolve()
+	if(blade)
+		UnregisterSignal(blade, COMSIG_ITEM_AFTERATTACK)
+	armed_weapon = null
+	armed_quarry = null
+	armed_quarry_ref = null
+	armed_rise = 0
+
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/on_armed_hit(obj/item/blade, atom/prey, mob/living/butcher, list/modifiers, list/attack_modifiers)
+	SIGNAL_HANDLER
+	var/datum/weakref/quarry_key = armed_quarry
+	var/quarry_ref = armed_quarry_ref
+	var/attempt_rise = armed_rise
+	clear_armed_strike()
+	if(butcher != owner || !quarry_key || text_ref(prey) != quarry_ref || CALCULATE_FORCE(blade, attack_modifiers) <= 0)
+		return
+	credit_pounce(butcher, prey, quarry_key, attempt_rise)
 
 /// An unarmed swing by the crawl's owner. Signal args per COMSIG_LIVING_UNARMED_ATTACK: (target, proximity, modifiers).
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/on_unarmed_strike(mob/living/butcher, atom/prey, proximity, list/modifiers)
 	SIGNAL_HANDLER
-	if(!proximity || !butcher.combat_mode)
+	unarmed_quarry = null
+	unarmed_quarry_ref = null
+	unarmed_rise = 0
+	if(!proximity || !butcher.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK) || !can_pounce(butcher, prey))
 		return
-	judge_pounce(butcher, prey)
+	unarmed_quarry = WEAKREF(prey)
+	unarmed_quarry_ref = text_ref(prey)
+	unarmed_rise = emerged_at
+
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/on_unarmed_hit(mob/living/butcher, atom/prey, list/modifiers, health_damage, stamina_damage)
+	SIGNAL_HANDLER
+	var/datum/weakref/quarry_key = unarmed_quarry
+	var/quarry_ref = unarmed_quarry_ref
+	var/attempt_rise = unarmed_rise
+	unarmed_quarry = null
+	unarmed_quarry_ref = null
+	unarmed_rise = 0
+	if(butcher != owner || !quarry_key || text_ref(prey) != quarry_ref || (health_damage <= 0 && stamina_damage <= 0))
+		return
+	credit_pounce(butcher, prey, quarry_key, attempt_rise)
 
 /**
  * The pounce, judged: inside the window, first credit of this rise, honest
@@ -581,30 +660,41 @@
  * time; completion may delete the trial (deferred), so nothing here touches
  * it after pounce() returns.
  */
-/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/judge_pounce(mob/living/butcher, atom/prey)
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/can_pounce(mob/living/butcher, atom/prey)
 	if(!emerged_at || world.time > emerged_at + VESTIGE_TRAPDOOR_STRIKE_WINDOW || credited_this_rise)
-		return
+		return FALSE
 	if(!isliving(prey))
-		return
+		return FALSE
 	var/mob/living/quarry = prey
 	if(quarry.stat == DEAD || !vestige_is_shambles_quarry(quarry, butcher))
-		return
+		return FALSE
 	var/datum/vestige_trial/trapdoor_feast/trial = butcher.mind?.active_vestige_trial
-	if(!istype(trial))
-		return
-	var/turf/seen_at = LAZYACCESS(positions_at_rise, WEAKREF(quarry))
-	var/turf/dive_at = LAZYACCESS(positions_at_dive, WEAKREF(quarry))
+	if(!istype(trial) || trial.crawl != src)
+		return FALSE
+	var/turf/seen_at = get_turf(LAZYACCESS(positions_at_rise, WEAKREF(quarry)))
+	var/turf/dive_at = get_turf(LAZYACCESS(positions_at_dive, WEAKREF(quarry)))
 	if(!seen_at)
-		return
+		return FALSE
 	var/moved_during_dive = dive_at && dive_at != seen_at
 	if(!moved_during_dive && seen_at == get_turf(quarry))
 		to_chat(butcher, span_warning("[quarry] has not moved during your dive or since you rose. A pounce only counts on something that was moving."))
+		return FALSE
+	return TRUE
+
+/// Commit a previously qualified attempt after real damage, using its pre-death identity.
+/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/proc/credit_pounce(mob/living/butcher, atom/prey, datum/weakref/quarry_key, attempt_rise)
+	if(attempt_rise != emerged_at || world.time > emerged_at + VESTIGE_TRAPDOOR_STRIKE_WINDOW || credited_this_rise)
 		return
-	if(!trial.pounce(quarry))
-		to_chat(butcher, span_warning("[quarry] has been surprised enough times. It knows where the floor keeps its doors now. Go find something else."))
+	var/datum/vestige_trial/trapdoor_feast/trial = butcher.mind?.active_vestige_trial
+	if(!istype(trial) || trial.crawl != src)
+		return
+	if(!QDELETED(prey) && !vestige_is_shambles_quarry(prey, butcher))
+		return
+	if(!trial.pounce(prey, quarry_key))
+		to_chat(butcher, span_warning("[prey] has been surprised enough times. It knows where the floor keeps its doors now. Go find something else."))
 		return
 	credited_this_rise = TRUE
-	to_chat(butcher, span_notice("Up through the red and into [quarry] mid-stride. From under the floor, briefly: laughter."))
+	to_chat(butcher, span_notice("Up through the red and into [prey] mid-stride. From under the floor, briefly: laughter."))
 	playsound(butcher, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
 
 // ===== SET THE TABLE =====
@@ -710,7 +800,7 @@
 		return NONE
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/set_the_table/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.gambrel_item != src)
 		balloon_alert(user, "the hooks hang slack!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
@@ -728,7 +818,7 @@
 		return ITEM_INTERACT_BLOCKING
 	// Re-resolve everything; the pact may have been renounced mid-plant
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.gambrel_item != src)
 		return ITEM_INTERACT_BLOCKING
 	if(ground.is_blocked_turf(exclude_mobs = TRUE))
 		balloon_alert(user, "no room to stand it up!")
@@ -868,7 +958,7 @@
 		return
 	// The hang took time and the clock kept running; re-verify all of it
 	trial = get_bound_trial()
-	if(!istype(trial) || meat.stat != DEAD || trial.served[WEAKREF(meat)])
+	if(!istype(trial) || QDELETED(meat) || butcher.mind != bound_mind || meat.stat != DEAD || !vestige_is_shambles_quarry(meat, butcher) || trial.served[WEAKREF(meat)])
 		return
 	if(world.time > meat.timeofdeath + VESTIGE_TABLE_FRESHNESS)
 		balloon_alert(butcher, "went cold on the way up!")
@@ -889,6 +979,8 @@
 	// other roads (admin fiat, future code). Re-derive the cheap, honest checks
 	var/datum/vestige_trial/set_the_table/trial = get_bound_trial()
 	if(!istype(trial))
+		return
+	if(meat.stat != DEAD || !vestige_is_shambles_quarry(meat, bound_mind?.current))
 		return
 	if(world.time > meat.timeofdeath + VESTIGE_TABLE_FRESHNESS)
 		return
@@ -1131,6 +1223,8 @@
 	spell_requirements = NONE
 	/// The claw item this spell grows
 	var/claw_type = /obj/item/vestige_rending_claw
+	/// Only this action's growth is reclaimed when the lesson leaves a body.
+	var/datum/weakref/grown_claw_ref
 
 /datum/action/cooldown/spell/vestige_rending_claws/butchers
 	name = "Form Butcher's Claws"
@@ -1138,6 +1232,13 @@
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "butcher_claws"
 	claw_type = /obj/item/vestige_rending_claw/butchers
+
+/datum/action/cooldown/spell/vestige_rending_claws/Remove(mob/remove_from)
+	var/obj/item/vestige_rending_claw/grown = grown_claw_ref?.resolve()
+	grown_claw_ref = null
+	if(!QDELETED(grown))
+		qdel(grown)
+	return ..()
 
 /datum/action/cooldown/spell/vestige_rending_claws/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
@@ -1169,6 +1270,7 @@
 			return
 		// An old model from before the upgrade: reshape it in place
 	var/obj/item/new_claw = new claw_type(cast_on)
+	grown_claw_ref = WEAKREF(new_claw)
 	if(!cast_on.put_in_hands(new_claw))
 		if(!QDELETED(new_claw)) // DROPDEL usually beat us to it
 			qdel(new_claw)
@@ -1253,19 +1355,25 @@
 	var/datum/weakref/rhythm_prey
 
 /obj/item/vestige_rending_claw/butchers/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(isliving(target) && target.stat != DEAD)
-		var/mob/living/current_prey = rhythm_prey?.resolve()
-		if(current_prey == target)
-			if(rhythm < VESTIGE_CLAWS_RHYTHM_CAP)
-				rhythm = min(rhythm + VESTIGE_CLAWS_RHYTHM_STEP, VESTIGE_CLAWS_RHYTHM_CAP)
-				if(rhythm == VESTIGE_CLAWS_RHYTHM_CAP && user)
-					user.balloon_alert(user, "full rhythm!")
-		else
-			rhythm = 0
-			rhythm_prey = WEAKREF(target)
+	var/was_living = isliving(target) && target.stat != DEAD
+	var/health_before = target.health
+	var/datum/weakref/prey_key = was_living ? WEAKREF(target) : null
+	var/next_rhythm = rhythm
+	if(was_living)
+		next_rhythm = rhythm_prey?.resolve() == target ? min(rhythm + VESTIGE_CLAWS_RHYTHM_STEP, VESTIGE_CLAWS_RHYTHM_CAP) : 0
+	// Apply this stroke's prospective bonus, but only bank it after a landed hit.
+	wound_bonus = initial(wound_bonus) + next_rhythm
+	exposed_wound_bonus = initial(exposed_wound_bonus) + next_rhythm
+	. = ..()
+	if(QDELETED(src))
+		return
+	if(was_living && target.health < health_before)
+		if(next_rhythm == VESTIGE_CLAWS_RHYTHM_CAP && rhythm < next_rhythm && user)
+			user.balloon_alert(user, "full rhythm!")
+		rhythm = next_rhythm
+		rhythm_prey = prey_key
 	wound_bonus = initial(wound_bonus) + rhythm
 	exposed_wound_bonus = initial(exposed_wound_bonus) + rhythm
-	return ..()
 
 // ===== SLAUGHTER'S MIRTH =====
 

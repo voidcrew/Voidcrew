@@ -146,3 +146,100 @@
 	TEST_ASSERT(QDELETED(organ), "Ending the attempt must reclaim its adaptation organ.")
 	TEST_ASSERT(!HAS_TRAIT_FROM(new_body, TRAIT_IMMOBILIZED, TRAIT_STATUS_EFFECT("vestige_chrysalis_brace")), "Reclaiming the organ must remove its own brace restraint.")
 	TEST_ASSERT(HAS_TRAIT_FROM(new_body, TRAIT_IMMOBILIZED, TRAIT_KNOCKEDOUT), "Removing the brace must preserve the body's legitimate death restraint.")
+
+/// Some eligible wildlife disappears immediately on death; the killing bite still fed the child.
+/mob/living/basic/carp/vestige_chrysalis_fleeting
+	basic_mob_flags = DEL_ON_DEATH
+
+/datum/unit_test/vestige_chrysalis_lethal_development/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/birth/trial = allocate(/datum/vestige_trial/birth, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/mob/living/basic/headslug/vestige_child/child = allocate(/mob/living/basic/headslug/vestige_child, get_turf(keeper))
+	trial.child = trial.register_loan(child)
+	child.trial_ref = WEAKREF(trial)
+	var/mob/living/basic/carp/vestige_chrysalis_fleeting/prey = allocate(/mob/living/basic/carp/vestige_chrysalis_fleeting, get_step(child, NORTH))
+	prey.adjustBruteLoss(prey.maxHealth - 3)
+	TEST_ASSERT(trial.egg.command_child(prey, keeper), "A self-deleting wild animal must accept an ordinary hunt command.")
+	TEST_ASSERT(child.melee_attack(prey, ignore_cooldown = TRUE), "The commanded child must land the killing bite.")
+	TEST_ASSERT(QDELETED(prey), "The wildlife must really delete itself in the damage pipeline.")
+	TEST_ASSERT_EQUAL(child.growth, 3, "Immediate deletion must not discard the remaining three points of living tissue.")
+	child.growth = 40
+	child.mind_initialize()
+	trial.egg.attack_self(keeper)
+	TEST_ASSERT(!trial.fulfilled, "A child that acquired a player mind must not be sent home as a disposable loan.")
+
+/// The counter measures movement relative to its ship and counts a lethal lash before actor cleanup.
+/datum/unit_test/vestige_chrysalis_moving_counter/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, get_step(run_loc_floor_bottom_left, NORTH))
+	keeper.mind_initialize()
+	var/datum/vestige_trial/faces/trial = allocate(/datum/vestige_trial/faces, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	trial.sampled = TRUE
+	var/obj/item/vestige_proboscis/organ = trial.proboscis
+	var/mob/living/basic/carp/vestige_chrysalis_fleeting/prey = allocate(/mob/living/basic/carp/vestige_chrysalis_fleeting, get_step(keeper, NORTH))
+	prey.adjustBruteLoss(prey.maxHealth - 3)
+	TEST_ASSERT(organ.begin_brace(keeper), "Prepare an ordinary defensive adaptation.")
+	prey.melee_attack(keeper, ignore_cooldown = TRUE)
+	var/obj/effect/vestige_trial_marker/impact = organ.impact_point
+	TEST_ASSERT(impact, "A real bite must mark its impact on the deck.")
+	keeper.forceMove(get_step(get_step(keeper, EAST), EAST))
+	prey.forceMove(get_step(keeper, NORTH))
+	impact.forceMove(get_turf(keeper))
+	TEST_ASSERT(!organ.counter_lash(prey, keeper), "Transporting the keeper and impact together must not substitute for retreating.")
+	keeper.forceMove(get_step(get_step(keeper, EAST), EAST))
+	TEST_ASSERT(organ.counter_lash(prey, keeper), "Moving away from the transported impact must permit the counter.")
+	TEST_ASSERT(QDELETED(prey), "The actual lash must delete this fragile target.")
+	TEST_ASSERT_EQUAL(trial.assimilated, 3, "A self-deleting target contributes exactly its remaining living tissue.")
+	TEST_ASSERT(QDELETED(impact), "Consuming a counter must reclaim its temporary spatial marker.")
+
+/// The upgrade must retain upstream armor penetration as it replaces an already formed blade.
+/datum/unit_test/vestige_chrysalis_armblade_upgrade/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/action/cooldown/spell/vestige_armblade/base = allocate(/datum/action/cooldown/spell/vestige_armblade, keeper.mind)
+	base.Grant(keeper)
+	TEST_ASSERT(base.Activate(keeper), "The base boon must form its blade through the ordinary spell chain.")
+	var/obj/item/melee/arm_blade/original = locate() in keeper.held_items
+	TEST_ASSERT(original, "The initial cast did not equip a blade.")
+	var/original_penetration = original.armour_penetration
+	var/original_force = original.force
+	var/datum/action/cooldown/spell/vestige_armblade/perfected/upgrade = allocate(/datum/action/cooldown/spell/vestige_armblade/perfected, keeper.mind)
+	upgrade.Grant(keeper)
+	TEST_ASSERT(upgrade.Activate(keeper), "The upgraded spell must reshape the held old blade.")
+	var/obj/item/melee/arm_blade/vestige_perfected/replacement = locate() in keeper.held_items
+	TEST_ASSERT(QDELETED(original) && replacement, "An upgrade cast must replace the obsolete NODROP blade in place.")
+	TEST_ASSERT(replacement.armour_penetration >= original_penetration, "Perfecting the blade must not reduce upstream armor penetration.")
+	TEST_ASSERT(replacement.force >= original_force, "The perfected blade must not reduce melee force.")
+
+/// A mind-bound growth must not strand an undismissable armblade in an abandoned body.
+/datum/unit_test/vestige_chrysalis_armblade_body_and_upgrade/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/mob/living/carbon/human/replacement = allocate(/mob/living/carbon/human/consistent)
+	var/datum/action/cooldown/spell/vestige_armblade/base = allocate(/datum/action/cooldown/spell/vestige_armblade, keeper.mind)
+	base.Grant(keeper)
+	TEST_ASSERT(base.Activate(keeper), "The base action must form an actual held blade.")
+	var/obj/item/melee/arm_blade/abandoned = locate() in keeper.held_items
+	TEST_ASSERT(abandoned, "The base blade was not equipped.")
+	keeper.mind.transfer_to(replacement)
+	TEST_ASSERT(QDELETED(abandoned), "Transferring the mind must retract its old body's NODROP blade.")
+	TEST_ASSERT_EQUAL(base.owner, replacement, "The armblade action must follow the real mind transfer.")
+	base.reset_spell_cooldown()
+	TEST_ASSERT(base.Activate(replacement), "The replacement body must be able to grow a fresh blade.")
+	var/obj/item/melee/arm_blade/prior = locate() in replacement.held_items
+	var/datum/vestige_boon/spell/armblade/perfected/upgrade = allocate(/datum/vestige_boon/spell/armblade/perfected)
+	upgrade.grant(replacement, replacement.mind)
+	TEST_ASSERT(QDELETED(prior), "The real boon upgrade must retract the obsolete growth before replacing its action.")
+	var/datum/action/cooldown/spell/vestige_armblade/perfected/improved = locate() in replacement.actions
+	TEST_ASSERT(improved && improved.Activate(replacement), "The actual upgraded action must form the perfected blade.")
+	var/obj/item/melee/arm_blade/vestige_perfected/perfected_blade = locate() in replacement.held_items
+	TEST_ASSERT(perfected_blade, "The upgrade did not equip its stronger blade.")
+	var/obj/item/melee/arm_blade/independent = allocate(/obj/item/melee/arm_blade, replacement)
+	TEST_ASSERT(replacement.put_in_hands(independent), "The fixture needs an unrelated armblade in the other hand.")
+	qdel(improved)
+	TEST_ASSERT(QDELETED(perfected_blade), "Deleting the action must retract its own growth.")
+	TEST_ASSERT(!QDELETED(independent), "Action removal must preserve an independently granted armblade.")

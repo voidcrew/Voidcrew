@@ -593,7 +593,7 @@
 
 /// Is it holding guard right now?
 /mob/living/basic/vestige_warframe/proc/is_guarding()
-	return !isnull(has_status_effect(/datum/status_effect/warframe_guard))
+	return stat != DEAD && !isnull(has_status_effect(/datum/status_effect/warframe_guard))
 
 /**
  * Second-round guard catches bullets too.
@@ -618,7 +618,7 @@
 	remove_filter(WARFRAME_GUARD_FILTER)
 	set_committed(FALSE)
 	. = ..()
-	if(gibbed)
+	if(!. || gibbed)
 		return
 	drop_the_match()
 
@@ -803,7 +803,7 @@
 	for(var/turf/marked as anything in path)
 		new /obj/effect/temp_visual/warframe_line(marked, WARFRAME_IAI_TELEGRAPH)
 	commit(TRUE)
-	addtimer(CALLBACK(src, PROC_REF(cut), path, 1), WARFRAME_IAI_TELEGRAPH)
+	addtimer(CALLBACK(src, PROC_REF(cut), path, 1, caster, here), WARFRAME_IAI_TELEGRAPH)
 	return TRUE
 
 /// The tiles the cut will cover: everything from the caster to the aim point, stopping
@@ -820,9 +820,10 @@
 
 /// One tile of the cut, then the next. Timer-driven rather than a sleeping loop, so the
 /// AI planner is never sitting inside it.
-/datum/action/cooldown/mob_cooldown/warframe_iai/proc/cut(list/path, index)
-	var/mob/living/caster = owner
-	if(QDELETED(caster) || caster.stat == DEAD)
+/datum/action/cooldown/mob_cooldown/warframe_iai/proc/cut(list/path, index, mob/living/caster, turf/expected_origin)
+	// A gate, shuttle move or changed holder ends this cut. Continuing old coordinates
+	// could send a player back into an arena that has already begun unloading.
+	if(QDELETED(caster) || caster != owner || caster.stat == DEAD || get_turf(caster) != expected_origin)
 		release()
 		return
 	if(index > length(path))
@@ -838,11 +839,14 @@
 		playsound(caster, 'sound/items/weapons/bladeslice.ogg', 75, TRUE)
 	new /obj/effect/temp_visual/decoy/fading(caster.loc, caster)
 	caster.forceMove(step_turf)
+	if(QDELETED(caster) || get_turf(caster) != step_turf)
+		release()
+		return
 	for(var/mob/living/victim in step_turf)
 		if(victim == caster || victim.stat == DEAD)
 			continue
 		strike(victim, caster)
-	addtimer(CALLBACK(src, PROC_REF(cut), path, index + 1), WARFRAME_IAI_STEP_DELAY)
+	addtimer(CALLBACK(src, PROC_REF(cut), path, index + 1, caster, step_turf), WARFRAME_IAI_STEP_DELAY)
 
 /// One person caught on the line.
 /datum/action/cooldown/mob_cooldown/warframe_iai/proc/strike(mob/living/victim, mob/living/caster)
@@ -981,6 +985,8 @@
 	damage_type = BRUTE,
 )
 	SIGNAL_HANDLER
+	if(source.stat == DEAD)
+		return
 	if(attack_type == PROJECTILE_ATTACK && !deflects_ranged)
 		return
 	// Shoves and stamina pokes are not a duel. Let them through so a disarm still reads.
@@ -991,7 +997,7 @@
 
 /// The parry and the counter. Async, it messages, plays sound and hurts people.
 /datum/status_effect/warframe_guard/proc/deflect(atom/hit_by, attack_text)
-	if(QDELETED(owner))
+	if(QDELETED(owner) || owner.stat == DEAD)
 		return
 	playsound(owner, 'sound/items/weapons/parry.ogg', 75, TRUE)
 	owner.visible_message(span_warning("[owner] turns [attack_text] aside without stepping."))
@@ -1189,7 +1195,7 @@
 	return candidates.Copy(1, wanted + 1)
 
 /datum/action/cooldown/mob_cooldown/warframe_live_floor/proc/energise(list/plates)
-	if(QDELETED(owner))
+	if(QDELETED(owner) || owner.stat == DEAD)
 		return
 	playsound(owner, 'sound/effects/magic/lightningbolt.ogg', 70, TRUE)
 	for(var/turf/plate_turf as anything in plates)
@@ -1234,6 +1240,10 @@
 	. = ..()
 	if(!isnull(creator))
 		creator_ref = WEAKREF(creator)
+	if(istype(creator, /mob/living/basic/vestige_warframe))
+		if(QDELETED(creator) || creator.stat == DEAD)
+			return INITIALIZE_HINT_QDEL
+		RegisterSignals(creator, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_boss_gone))
 	playsound(src, SFX_SPARKS, 30, TRUE)
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
@@ -1241,6 +1251,11 @@
 	AddElement(/datum/element/connect_loc, loc_connections)
 	START_PROCESSING(SSfastprocess, src)
 	QDEL_IN(src, plate_duration)
+
+/// A defeated or removed boss no longer powers the hall; player-deployed mines keep their clock.
+/obj/effect/warframe_live_plate/proc/on_boss_gone(mob/living/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /obj/effect/warframe_live_plate/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
@@ -1398,14 +1413,13 @@
 	var/turf/here = get_turf(src)
 	if(isnull(here))
 		return
-	// Reservations share a z-level with every other reservation in the round, so the
-	// sweep is z-gated. Two arenas loaded at once must not open each other's gates.
+	// The reserved z-level may hold several matches. Only gates in this map region belong to us.
 	var/opened = 0
 	for(var/obj/structure/warframe_gate/gate as anything in GLOB.warframe_gates)
 		if(QDELETED(gate))
 			continue
 		var/turf/gate_turf = get_turf(gate)
-		if(isnull(gate_turf) || gate_turf.z != here.z)
+		if(isnull(gate_turf) || gate_turf.z != here.z || !map_regions_match(here, gate_turf))
 			continue
 		gate.raise()
 		opened++
@@ -1694,7 +1708,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	caster.face_atom(aim_at)
 	caster.visible_message(span_warning("[caster] snaps forward, blurring."))
 	playsound(caster, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
-	cut(path, 1)
+	cut(path, 1, caster, here)
 	return TRUE
 
 /datum/action/cooldown/mob_cooldown/warframe_iai/held/strike(mob/living/victim, mob/living/caster)
@@ -1822,14 +1836,16 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 /datum/action/cooldown/spell/machine_communion/proc/menu_check(mob/living/user, atom/cast_on)
 	if(QDELETED(src) || QDELETED(user) || QDELETED(cast_on))
 		return FALSE
-	if(!(src in user.actions))
+	if(owner != user || !(src in user.actions) || !IsAvailable(feedback = FALSE))
 		return FALSE
-	return get_dist(get_turf(user), get_turf(cast_on)) <= cast_range
+	var/turf/source_turf = get_turf(user)
+	var/turf/target_turf = get_turf(cast_on)
+	return source_turf && target_turf && source_turf.z == target_turf.z && get_dist(source_turf, target_turf) <= cast_range
 
 /// The radial. Sleeps; only ever called through INVOKE_ASYNC.
 /datum/action/cooldown/spell/machine_communion/proc/open_hack_menu(atom/cast_on)
 	var/mob/living/user = owner
-	if(hacking || !isliving(user) || QDELETED(cast_on))
+	if(hacking || !isliving(user) || !menu_check(user, cast_on))
 		return
 	var/list/available = applicable_hacks(cast_on, user)
 	if(!length(available))
@@ -1849,7 +1865,7 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	// autopick_single_option is off deliberately: several of these are expensive and a
 	// target that only accepts one of them must not fire it on a stray click.
 	hacking = TRUE
-	var/choice = show_radial_menu(user, cast_on, options, custom_check = CALLBACK(src, PROC_REF(menu_check), user, cast_on), tooltips = TRUE, autopick_single_option = FALSE)
+	var/choice = choose_hack(user, cast_on, options)
 	hacking = FALSE
 	if(!choice || !menu_check(user, cast_on))
 		return
@@ -1863,6 +1879,10 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	user.log_message("used the [chosen.name] quickhack on [cast_on] ([cast_on.type]).", LOG_ATTACK)
 	StartCooldown(chosen.cooldown)
 	build_all_button_icons()
+
+/// Keep the sleeping input separate from the post-selection action checks.
+/datum/action/cooldown/spell/machine_communion/proc/choose_hack(mob/living/user, atom/cast_on, list/options)
+	return show_radial_menu(user, cast_on, options, custom_check = CALLBACK(src, PROC_REF(menu_check), user, cast_on), tooltips = TRUE, autopick_single_option = FALSE)
 
 // =========================================================================
 // THE QUICKHACKS
@@ -2345,7 +2365,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 /// Menu validity: we still exist and still belong to this mob. Where they are standing
 /// when they confirm is where it lands, so there is nothing else to re-check.
 /datum/action/cooldown/spell/mass_hack/proc/menu_check(mob/living/user)
-	return !QDELETED(src) && !QDELETED(user) && (src in user.actions)
+	return !QDELETED(src) && !QDELETED(user) && owner == user && (src in user.actions) && IsAvailable(feedback = FALSE)
 
 /**
  * The radial goes here rather than in an async chain off `cast` because this ability is
@@ -2359,7 +2379,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 		return
 	chosen = null
 	var/mob/living/user = owner
-	if(hacking || !isliving(user))
+	if(hacking || !isliving(user) || !menu_check(user))
 		return . | SPELL_CANCEL_CAST
 
 	var/list/available = applicable_hacks(user)
@@ -2380,7 +2400,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	// Same reasoning as the quickhack radial: every one of these is expensive, so a room
 	// that only accepts one of them must not fire it off a stray click.
 	hacking = TRUE
-	var/choice = show_radial_menu(user, user, options, custom_check = CALLBACK(src, PROC_REF(menu_check), user), tooltips = TRUE, autopick_single_option = FALSE)
+	var/choice = choose_hack(user, options)
 	hacking = FALSE
 	if(!choice || !menu_check(user))
 		return . | SPELL_CANCEL_CAST
@@ -2393,6 +2413,10 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	chosen = picked
 	// The picked hack decides the cooldown, so cast charges it by hand.
 	return . | SPELL_NO_IMMEDIATE_COOLDOWN
+
+/// Keep the sleeping input separate from the post-selection action checks.
+/datum/action/cooldown/spell/mass_hack/proc/choose_hack(mob/living/user, list/options)
+	return show_radial_menu(user, user, options, custom_check = CALLBACK(src, PROC_REF(menu_check), user), tooltips = TRUE, autopick_single_option = FALSE)
 
 /datum/action/cooldown/spell/mass_hack/cast(atom/cast_on)
 	. = ..()

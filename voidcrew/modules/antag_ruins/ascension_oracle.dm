@@ -437,7 +437,7 @@
 	remove_filter(ORACLE_STAMMER_FILTER)
 	set_inert(FALSE)
 	. = ..()
-	if(gibbed)
+	if(!. || gibbed)
 		return
 	drop_the_verse()
 
@@ -961,6 +961,11 @@
 	if(QDELETED(summoner))
 		qdel(src)
 		return
+	if(isliving(summoner))
+		var/mob/living/living_summoner = summoner
+		if(living_summoner.stat == DEAD)
+			qdel(src)
+			return
 	if(get_dist(owner, summoner) > call_range || !can_see(owner, summoner, call_range))
 		qdel(src)
 		return
@@ -1211,6 +1216,8 @@
 
 	/// The order to deliver on cast.
 	var/command
+	/// Only one prompt may reserve an order at a time.
+	var/choosing_word = FALSE
 	/// Multiplier on the command's power.
 	var/power_mod = WORD_POWER_MULTIPLIER
 	/// How far it carries, in tiles of line of sight.
@@ -1327,27 +1334,35 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
+	var/mob/living/user = owner
+	if(choosing_word || !menu_check(user))
+		return . | SPELL_CANCEL_CAST
+	choosing_word = TRUE
+	var/selected_command = choose_command(user)
+	choosing_word = FALSE
+	if(!selected_command || !menu_check(user) || get_caster_from_target(user) != cast_on)
+		return . | SPELL_CANCEL_CAST
+	command = selected_command
 
+/// Recheck the owning body and the full action gate after either sleeping input.
+/datum/action/cooldown/spell/voice_of_the_word/proc/menu_check(mob/living/user)
+	return !QDELETED(src) && !QDELETED(user) && owner == user && (src in user.actions) && IsAvailable(feedback = FALSE)
+
+/// Input alone never starts or refunds a cooldown; the successful cast owns it.
+/datum/action/cooldown/spell/voice_of_the_word/proc/choose_command(mob/living/user)
 	if(!word_menu)
 		word_menu = build_word_menu()
-	var/choice = tgui_input_list(cast_on, "What does the room do?", "Voice of the Word", word_menu)
-	if(QDELETED(src) || QDELETED(cast_on) || !can_cast_spell())
-		return . | SPELL_CANCEL_CAST
-	if(!choice)
-		reset_spell_cooldown()
-		return . | SPELL_CANCEL_CAST
+	var/choice = tgui_input_list(user, "What does the room do?", "Voice of the Word", word_menu)
+	if(!choice || !menu_check(user))
+		return null
 
 	// tgui_input_list hands back the mapped words; the classic-input fallback
 	// (for players with tgui inputs off) hands back the label it displayed.
 	// Looking the answer up as a key resolves both to the same thing.
-	command = word_menu[choice] || choice
-	if(command == WORD_MENU_FREEHAND)
-		command = tgui_input_text(cast_on, "Say it to the room.", "Voice of the Word", max_length = MAX_MESSAGE_LEN)
-		if(QDELETED(src) || QDELETED(cast_on) || !can_cast_spell())
-			return . | SPELL_CANCEL_CAST
-		if(!command)
-			reset_spell_cooldown()
-			return . | SPELL_CANCEL_CAST
+	var/selected_command = word_menu[choice] || choice
+	if(selected_command == WORD_MENU_FREEHAND)
+		return tgui_input_text(user, "Say it to the room.", "Voice of the Word", max_length = MAX_MESSAGE_LEN)
+	return selected_command
 
 /datum/action/cooldown/spell/voice_of_the_word/cast(atom/cast_on)
 	. = ..()

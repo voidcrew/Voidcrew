@@ -89,7 +89,10 @@
 	balloon_alert(user, "scribing...")
 	if(!do_after(user, 8 SECONDS, target = target_turf))
 		return ITEM_INTERACT_BLOCKING
-	if(user.mind?.active_vestige_trial != trial || QDELETED(src))
+	if(user.mind?.active_vestige_trial != trial || QDELETED(src) || !user.is_holding(src))
+		return ITEM_INTERACT_BLOCKING
+	// Another scribe, construction, or ship movement can change the site during the channel.
+	if(!isopenturf(target_turf) || isspaceturf(target_turf) || istype(get_area(target_turf), /area/ruin/space/has_grav/vestige) || (locate(/obj/structure/vestige_rune) in target_turf))
 		return ITEM_INTERACT_BLOCKING
 	trial.register_loan(new /obj/structure/vestige_rune(target_turf))
 	trial.rune_scribed = TRUE
@@ -196,7 +199,12 @@
 
 /datum/vestige_trial/vigil/proc/reset_rite()
 	running = FALSE
-	QDEL_LIST(clots)
+	for(var/mob/living/basic/carp/vestige_clot/clot as anything in clots)
+		if(QDELETED(clot))
+			continue
+		UnregisterSignal(clot, COMSIG_LIVING_DEATH)
+		if(!clot.mind && !clot.client)
+			qdel(clot)
 	clots = list()
 	slain = 0
 	if(votive)
@@ -240,10 +248,16 @@
 	SIGNAL_HANDLER
 	if(!running || !(source in clots))
 		return
+	if(source.mind || source.client)
+		running = FALSE
+		to_chat(owner.current, span_warning("A clot became someone else's body. Pack the rite to release them and retry."))
+		return
 	if(!votive || source.z != votive.z || get_dist(source, votive) > 6)
 		running = FALSE
 		to_chat(owner.current, span_warning("A clot died beyond the blood circle. Use the votive to pack up, then retry."))
 		return
+	// A revived clot is still the same participant, not a second offering.
+	UnregisterSignal(source, COMSIG_LIVING_DEATH)
 	slain++
 	refresh_tracker()
 	if(slain == 3)
@@ -280,6 +294,7 @@
 	melee_attack_cooldown = 2 SECONDS
 	obj_damage = 0
 	butcher_results = null
+	sentience_type = NONE
 
 /obj/structure/vestige_altar
 	name = "sepulcher altar"

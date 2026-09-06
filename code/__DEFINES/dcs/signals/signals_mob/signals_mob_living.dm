@@ -157,6 +157,9 @@
 #define COMSIG_LIVING_EARLY_UNARMED_ATTACK "human_pre_attack_hand"
 /// from mob/living/*/UnarmedAttack(): (mob/living/source, atom/target, proximity, modifiers)
 #define COMSIG_LIVING_UNARMED_ATTACK "living_unarmed_attack"
+/// After normal /mob/living/UnarmedAttack resolution: (atom/target, list/modifiers, health_damage, stamina_damage).
+/// Damage is the synchronous change during this attack; target may have been deleted by a lethal hit.
+#define COMSIG_LIVING_AFTER_UNARMED_ATTACK "living_after_unarmed_attack"
 ///From base of mob/living/MobBump(): (mob/bumped, mob/living/bumper)
 #define COMSIG_LIVING_PRE_MOB_BUMP "movable_pre_bump"
 	#define COMPONENT_LIVING_BLOCK_PRE_MOB_BUMP (1<<0)

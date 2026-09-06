@@ -37,7 +37,7 @@
 	// an async callback that would outlive the qdel. Read the source instead.
 	var/list/pools = vc_test_scan_list_var(sources, "/mob/living/basic/vestige_patron", "boon_types")
 	var/list/trials = vc_test_scan_list_var(sources, "/mob/living/basic/vestige_patron", "trial_types")
-	var/list/patrons = subtypesof(/mob/living/basic/vestige_patron)
+	var/list/patrons = subtypesof(/mob/living/basic/vestige_patron) - /mob/living/basic/vestige_patron/unit_test_menu
 	TEST_ASSERT(length(patrons), "no vestige patrons are defined")
 	// If the source format ever drifts, this test must fail loudly rather than
 	// pass while checking nothing.
@@ -61,6 +61,10 @@
 				TEST_FAIL("[boon_type] is in both [owner_of[boon_type]]'s and [patron_type]'s pool. Boon pools MUST stay disjoint (see boon_types in patron.dm): a supplicant can take a shared boon elsewhere mid-pact, complete into an empty pool, and spend the trial for nothing with no way to retake it. Give each patron its own /datum/vestige_boon subtype instead.")
 				continue
 			owner_of[boon_type] = patron_type
+			// Exercise the same inherited icon resolution used by the actual reward menu.
+			var/image/reward_icon = vestige_boon_radial_image(boon_type)
+			if(!reward_icon.icon || !(reward_icon.icon_state in icon_states(reward_icon.icon)))
+				TEST_FAIL("[boon_type] has a missing reward-menu icon state: [reward_icon.icon] / [reward_icon.icon_state]")
 			var/prerequisite = initial(boon_type.upgrades_from)
 			if(prerequisite && !(prerequisite in pool))
 				TEST_FAIL("[patron_type] offers [boon_type], whose upgrades_from ([prerequisite]) is not in the same pool, get_eligible_vestige_boons() can never offer it, so the upgrade is unreachable through this patron.")
@@ -90,7 +94,7 @@
 	priority = TEST_LONGER
 
 /datum/unit_test/vestige_ruin_patrons/Run()
-	var/list/patrons = subtypesof(/mob/living/basic/vestige_patron)
+	var/list/patrons = subtypesof(/mob/living/basic/vestige_patron) - /mob/living/basic/vestige_patron/unit_test_menu
 	TEST_ASSERT(length(patrons), "no vestige patrons are defined")
 	var/list/unplaced = patrons.Copy()
 	var/templates_seen = 0

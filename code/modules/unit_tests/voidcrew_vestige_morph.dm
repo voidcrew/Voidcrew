@@ -101,7 +101,8 @@
 	original.forceMove(get_turf(user))
 	trial.skin.wear_object(user, original)
 	original.forceMove(bag)
-	trial.watched_spot = WEAKREF(center)
+	QDEL_NULL(trial.watched_spot)
+	trial.watched_spot = trial.mark_turf(center)
 	trial.next_action = 0
 	trial.run_scene(user, 0.6)
 	TEST_ASSERT_EQUAL(trial.skin.form, 0, "Visible movement must shed the object disguise.")
@@ -122,7 +123,10 @@
 	TEST_ASSERT(result & ITEM_INTERACT_SUCCESS, "The real ranged click must dispatch the maw's scent lure.")
 	TEST_ASSERT_EQUAL(get_turf(trial.decoy), lure_site, "The lure must spawn on the aimed ground.")
 	TEST_ASSERT(!trial.decoy_ready, "Spitting must consume the one available lure.")
-	trial.actor.forceMove(lure_site)
+	for(var/index in 1 to 3)
+		trial.next_action = 0
+		trial.run_scene(user, 0.4)
+	TEST_ASSERT_EQUAL(get_turf(trial.actor), lure_site, "The porter must reach the nearest legal lure instead of stopping too close to the pantry.")
 	TEST_ASSERT(trial.can_take(user), "Separating the guard by three tiles must permit the theft channel.")
 	result = trial.pantry.base_item_interaction(user, trial.maw, list())
 	TEST_ASSERT(result & ITEM_INTERACT_SUCCESS, "The pantry click must channel the guarded taking interaction.")
@@ -252,3 +256,129 @@
 	TEST_ASSERT(QDELETED(trial), "A whole shipment matching the demonstrated ratio must complete.")
 	TEST_ASSERT(/datum/vestige_trial/understudy in user.mind.completed_vestige_trials, "The actual release must record the completed trial.")
 	TEST_ASSERT_EQUAL(user.real_name, original_name, "Completing must restore the original identity immediately.")
+
+/// Existing wounds transfer into a disguise without counting as a new strike.
+/datum/unit_test/vestige_morph/mimic_existing_damage/Run()
+	user.adjustBruteLoss(10)
+	var/obj/item/wrench/model = allocate(/obj/item/wrench, center)
+	var/datum/action/cooldown/spell/shapeshift/vestige_mimic/spell = allocate(/datum/action/cooldown/spell/shapeshift/vestige_mimic, user.mind)
+	spell.Grant(user)
+	TEST_ASSERT(spell.PreActivate(model), "An injured caster must be able to activate a valid object disguise.")
+	var/mob/living/basic/vestige_mimic/shape = user.loc
+	TEST_ASSERT(istype(shape), "The actual cast must put the caster inside its borrowed shape.")
+	sleep(2)
+	TEST_ASSERT(!QDELETED(shape) && user.loc == shape, "Damage transferred during initialization must not immediately break the new disguise.")
+	TEST_ASSERT_EQUAL(shape.getBruteLoss(), 10, "Ignoring the initialization hit must preserve the caster's existing damage.")
+	shape.apply_damage(1, BRUTE)
+	sleep(2)
+	TEST_ASSERT(QDELETED(shape) && isturf(user.loc), "A new hit after formation must still break the disguise and restore its caster.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 11, "The caster must keep both the old wounds and the new disguise-breaking hit.")
+
+/datum/unit_test/vestige_morph/gullet_transfer
+	var/mob/living/replacement
+
+/datum/unit_test/vestige_morph/gullet_transfer/proc/transfer_during_heave(mob/living/source)
+	SIGNAL_HANDLER
+	source.mind.transfer_to(replacement)
+
+/datum/unit_test/vestige_morph/gullet_transfer/Run()
+	var/datum/action/cooldown/spell/vestige_devour/spell = allocate(/datum/action/cooldown/spell/vestige_devour, user.mind)
+	spell.Grant(user)
+	var/obj/item/wrench/keeping = allocate(/obj/item/wrench, spell.stash)
+	replacement = allocate(/mob/living/carbon/human/consistent, get_step(center, EAST))
+	RegisterSignal(user, COMSIG_DO_AFTER_BEGAN, PROC_REF(transfer_during_heave))
+	var/cast_succeeded = spell.PreActivate(user)
+	UnregisterSignal(user, COMSIG_DO_AFTER_BEGAN)
+	TEST_ASSERT_EQUAL(spell.owner, replacement, "The gullet must follow the real mind transfer during its channel.")
+	TEST_ASSERT(!cast_succeeded, "The old body's heave must cancel when the gullet moves to another body.")
+	TEST_ASSERT_EQUAL(keeping.loc, spell.stash, "Changing bodies must preserve the keeping until the new owner deliberately retrieves it.")
+	TEST_ASSERT(!spell.gullet_busy, "An interrupted heave must release the busy guard.")
+	TEST_ASSERT(spell.PreActivate(replacement), "The new owner must be able to begin a fresh heave after the canceled channel.")
+	TEST_ASSERT(replacement.is_holding(keeping), "A fresh successful heave must retrieve the original keeping into the new owner's hand.")
+
+/datum/unit_test/vestige_morph/gullet_reentrant
+	var/datum/action/cooldown/spell/vestige_devour/spell
+	var/reentrant_result
+
+/datum/unit_test/vestige_morph/gullet_reentrant/proc/reenter_during_heave(mob/living/source)
+	SIGNAL_HANDLER
+	// One attempted reentry is enough; do not recurse if the guard regresses.
+	UnregisterSignal(source, COMSIG_DO_AFTER_BEGAN)
+	reentrant_result = spell.before_cast(source)
+
+/datum/unit_test/vestige_morph/gullet_reentrant/Run()
+	spell = allocate(/datum/action/cooldown/spell/vestige_devour, user.mind)
+	spell.Grant(user)
+	var/obj/item/wrench/keeping = allocate(/obj/item/wrench, spell.stash)
+	RegisterSignal(user, COMSIG_DO_AFTER_BEGAN, PROC_REF(reenter_during_heave))
+	TEST_ASSERT(spell.PreActivate(user), "The first heave must still finish when a second activation is attempted.")
+	TEST_ASSERT(reentrant_result & SPELL_CANCEL_CAST, "The channel must reject a second activation before cooldown starts.")
+	TEST_ASSERT(user.is_holding(keeping), "The original successful activation must retrieve its keeping exactly once.")
+	TEST_ASSERT(!spell.gullet_busy, "Successful completion must release the busy guard.")
+
+/datum/unit_test/vestige_morph/copy_between_ticks/Run()
+	var/datum/vestige_trial/perfect_copy/trial = prepare(/datum/vestige_trial/perfect_copy)
+	STOP_PROCESSING(SSobj, trial.skin)
+	trial.roles = list("tool", "food")
+	user.forceMove(get_step(get_step(center, EAST), EAST))
+	trial.spawn_actor(get_step(get_step(center, WEST), WEST), "test scavenger")
+	TEST_ASSERT(!trial.actor.compare_sentience_type(SENTIENCE_ORGANIC), "An invulnerable scripted projection must reject organic sentience and mind-transfer potions.")
+	var/obj/item/wrench/original = allocate(/obj/item/wrench, get_turf(user))
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, get_turf(user))
+	trial.skin.wear_object(user, original)
+	original.forceMove(bag)
+	for(var/index in 1 to 6)
+		trial.next_action = 0
+		trial.run_scene(user, 0.6)
+	TEST_ASSERT(trial.inspection_until > world.time, "A real approach must reach the inspection window.")
+	TEST_ASSERT(user.Move(get_step(user, NORTH), NORTH), "The fixture must perform a real visible move before the next scene tick.")
+	TEST_ASSERT_EQUAL(trial.skin.form, 0, "Movement between scene ticks must immediately shed the watched object form.")
+	TEST_ASSERT(!trial.reveal(user), "Activating immediately after moving must not award the inspection.")
+	TEST_ASSERT_EQUAL(trial.role_index, 1, "The moving performance must remain uncredited.")
+
+/datum/unit_test/vestige_morph/gullet_deleted_owner/Run()
+	var/datum/action/cooldown/spell/vestige_devour/spell = allocate(/datum/action/cooldown/spell/vestige_devour, user.mind)
+	spell.Grant(user)
+	var/obj/item/wrench/keeping = allocate(/obj/item/wrench, center)
+	user.put_in_hands(keeping)
+	TEST_ASSERT(spell.PreActivate(user), "The real swallow channel must finish before deleting the carrier.")
+	TEST_ASSERT_EQUAL(keeping.loc, spell.stash, "The real item must be held in the nullspace gullet.")
+	qdel(user)
+	TEST_ASSERT(!QDELETED(keeping), "Deleting the body directly must preserve swallowed property.")
+	TEST_ASSERT_EQUAL(keeping.loc, center, "The deletion callback must spill while the original body still has a turf.")
+	qdel(spell)
+	TEST_ASSERT(!QDELETED(keeping), "Deleting the now-ownerless action must not destroy the previously swallowed item.")
+
+/datum/unit_test/vestige_morph/predation_pacifism/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, get_step(center, EAST))
+	user.set_combat_mode(TRUE)
+	user.apply_status_effect(/datum/status_effect/vestige_predation)
+	ADD_TRAIT(user, TRAIT_PACIFISM, TRAIT_GENERIC)
+	var/initial_health = victim.health
+	user.UnarmedAttack(victim, TRUE, list())
+	TEST_ASSERT_EQUAL(victim.health, initial_health, "A pacifist's refused real punch must not deliver the ambush rider first.")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/vestige_predation), "A refused punch must leave the unused ambush window intact.")
+	REMOVE_TRAIT(user, TRAIT_PACIFISM, TRAIT_GENERIC)
+	user.UnarmedAttack(victim, TRUE, list())
+	TEST_ASSERT(victim.health <= initial_health - 10, "A permitted real unarmed attack must still deliver the ambush rider.")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/vestige_predation), "A permitted strike must spend the ambush window once.")
+
+/// Beckon uses a timer instead of a do_after, but must still retain its casting body.
+/datum/unit_test/vestige_morph/beckon_transfer/Run()
+	var/datum/action/cooldown/spell/pointed/vestige_beckon/spell = allocate(/datum/action/cooldown/spell/pointed/vestige_beckon, user.mind)
+	spell.Grant(user)
+	spell.windup = 1
+	spell.pull_range = 1
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, get_step(center, WEST))
+	var/mob/living/carbon/human/consistent/replacement = allocate(/mob/living/carbon/human/consistent, get_step(center, EAST))
+	var/turf/victim_start = get_turf(victim)
+	spell.cast(victim)
+	user.mind.transfer_to(replacement)
+	sleep(2)
+	TEST_ASSERT_EQUAL(spell.owner, replacement, "The real mind transfer must move the action during its telegraph.")
+	TEST_ASSERT(!victim.IsKnockdown(), "The old body's delayed Beckon must not strike after the action changes bodies.")
+	TEST_ASSERT_EQUAL(get_turf(victim), victim_start, "A changed caster must not silently redirect the telegraphed pull.")
+	spell.cast(victim)
+	sleep(2)
+	TEST_ASSERT(victim.IsKnockdown(), "A fresh cast from the new body must still resolve its actual timer.")
+	sleep(10)

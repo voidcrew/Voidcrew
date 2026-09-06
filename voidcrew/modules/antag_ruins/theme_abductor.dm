@@ -47,7 +47,7 @@
 	name = "Protocol: Acquisition"
 	desc = "Unfold the observation lens in an open area to release a nervous survey specimen. It flees your approach and shakes off pulling. Herd it at least four tiles from its release point into a small enclosure, close every exit, then scan it from outside with the lens. Four folding barriers are supplied; existing walls can help. The specimen must remain alive, conscious, and on the floor. No timed reading is required."
 	var/mob/living/basic/vestige_survey_specimen/specimen
-	var/turf/release_turf
+	var/obj/effect/vestige_trial_marker/release_turf
 
 /datum/vestige_trial/acquisition/on_accepted(mob/living/user)
 	var/obj/item/vestige_observation_lens/lens = new(get_turf(user))
@@ -93,8 +93,9 @@
 	if(!length(candidates))
 		to_chat(user, span_warning("The release needs connected open floor at least four tiles from you, with three clear exits."))
 		return FALSE
-	release_turf = pick(candidates)
-	specimen = new(release_turf)
+	QDEL_NULL(release_turf)
+	release_turf = mark_turf(pick(candidates))
+	specimen = new(get_turf(release_turf))
 	specimen.trial_ref = WEAKREF(src)
 	register_loan(specimen)
 	to_chat(user, span_notice("The lens releases a survey specimen. It flees nearby movement. Position yourself behind it to drive it toward your enclosure."))
@@ -117,7 +118,7 @@
 	return TRUE
 
 /datum/vestige_trial/acquisition/proc/is_contained(mob/living/user)
-	if(QDELETED(specimen) || specimen.stat != CONSCIOUS || specimen.health < specimen.maxHealth / 2 || specimen.buckled || !isturf(specimen.loc))
+	if(QDELETED(specimen) || specimen.mind || specimen.client || specimen.stat != CONSCIOUS || specimen.health < specimen.maxHealth / 2 || specimen.buckled || !isturf(specimen.loc))
 		return FALSE
 	if(!release_turf || get_dist(specimen, release_turf) < 4 || get_dist(user, specimen) < 2 || get_dist(user, specimen) > 4 || !(specimen in view(4, user)))
 		return FALSE
@@ -212,6 +213,7 @@
 	maxHealth = 60
 	mob_biotypes = MOB_ORGANIC | MOB_BEAST
 	ai_controller = null
+	sentience_type = NONE
 	habitable_atmos = null
 	minimum_survivable_temperature = 0
 	maximum_survivable_temperature = 1500
@@ -319,7 +321,7 @@
 		surgical_closure = TRUE
 
 /datum/vestige_trial/vivisection/proc/can_discharge()
-	if(QDELETED(patient) || patient.stat == DEAD || patient.getToxLoss() > 5 || patient.health < 75 || length(patient.surgeries) || !surgical_closure)
+	if(QDELETED(patient) || patient.mind || patient.client || patient.stat == DEAD || patient.getToxLoss() > 5 || patient.health < 75 || length(patient.surgeries) || !surgical_closure)
 		return FALSE
 	var/obj/item/organ/vestige_filter/filter = patient.get_organ_slot(VESTIGE_FILTER_SLOT)
 	return istype(filter) && filter.compatible_with(patient) && filter.surgically_installed
@@ -1049,6 +1051,9 @@
 	return ..()
 
 /datum/action/cooldown/spell/vestige_recall_anchor/Trigger(mob/clicker, trigger_flags, atom/target)
+	if(channelling)
+		owner.balloon_alert(owner, "already pulling!")
+		return FALSE
 	replant_requested = !!(trigger_flags & TRIGGER_SECONDARY_ACTION)
 	if(!replant_requested)
 		return ..()
@@ -1072,19 +1077,19 @@
 
 /datum/action/cooldown/spell/vestige_recall_anchor/before_cast(atom/cast_on)
 	. = ..()
-	planting_this_cast = replant_requested || !get_anchor_turf()
-	replant_requested = FALSE // never let a stale right-click steer a later keybind cast
 	if(. & SPELL_CANCEL_CAST)
 		return
+	if(channelling)
+		owner.balloon_alert(owner, "already pulling!")
+		return . | SPELL_CANCEL_CAST
+	planting_this_cast = replant_requested || !get_anchor_turf()
+	replant_requested = FALSE // never let a stale right-click steer a later keybind cast
 	// Both halves start their own cooldown (plant_tag and pull_to_tag), so the
 	// automatic one is waved off. Otherwise planting, which is free, would
 	// stamp the pull's minute onto the button on its way out
 	. |= SPELL_NO_IMMEDIATE_COOLDOWN
 	if(planting_this_cast)
 		return
-	if(channelling)
-		owner.balloon_alert(owner, "already pulling!")
-		return . | SPELL_CANCEL_CAST
 	var/turf/here = get_turf(cast_on)
 	var/turf/destination = get_anchor_turf()
 	if(here == destination)
@@ -1102,7 +1107,7 @@
 		return . | SPELL_CANCEL_CAST
 	// Five seconds is long enough for the world to move underneath the tag, or
 	// for the caster to stop being one
-	if(QDELETED(owner) || QDELETED(cast_on))
+	if(QDELETED(src) || QDELETED(owner) || QDELETED(cast_on) || owner != cast_on)
 		return . | SPELL_CANCEL_CAST
 	here = get_turf(cast_on)
 	destination = get_anchor_turf()

@@ -56,6 +56,31 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	var/list/pending_candidates
 	/// Name of the patron owing that reward
 	var/pending_patron_name
+	/// Identifies which completed pact an outstanding claim belongs to.
+	var/reward_generation = 0
+	/// Different old/new-body trials can finish after respawn. Every completion still pays.
+	var/list/queued_rewards = list()
+
+/// Retain the oldest unpaid roll when a previous body's work finishes late.
+/datum/vestige_record/proc/queue_reward(list/candidates, patron_name)
+	if(length(pending_candidates))
+		queued_rewards += list(list("candidates" = candidates.Copy(), "patron_name" = patron_name))
+		return
+	reward_generation++
+	pending_candidates = candidates.Copy()
+	pending_patron_name = patron_name
+
+/// Settling a debt advances once; old buttons no longer match the new generation.
+/datum/vestige_record/proc/settle_reward()
+	pending_candidates = null
+	pending_patron_name = null
+	if(!length(queued_rewards))
+		return
+	var/list/next_reward = queued_rewards[1]
+	queued_rewards.Cut(1, 2)
+	reward_generation++
+	pending_candidates = next_reward["candidates"]
+	pending_patron_name = next_reward["patron_name"]
 
 /// The vestige record for the soul behind a mind, made on demand when create is set
 /proc/get_vestige_record(datum/mind/mind, create = FALSE)
@@ -89,14 +114,19 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /datum/vestige_trial/New(datum/mind/owner_mind, offering_patron_name, list/reward_pool)
 	. = ..()
 	owner = owner_mind
+	if(owner)
+		RegisterSignal(owner, COMSIG_QDELETING, PROC_REF(on_owner_deleted))
 	if(offering_patron_name)
 		patron_name = offering_patron_name
 	boon_pool = reward_pool
 
 /datum/vestige_trial/Destroy()
 	QDEL_NULL(tracker)
+	if(owner)
+		UnregisterSignal(owner, COMSIG_QDELETING)
 	if(owner?.active_vestige_trial == src)
 		owner.active_vestige_trial = null
+	release_occupied_loans()
 	// Containers delete their contents. Return anything the player added after
 	// the kit was issued before reclaiming the original loans.
 	for(var/datum/weakref/loan_ref as anything in loan_refs)
@@ -118,6 +148,34 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	loan_refs = null
 	owner = null
 	return ..()
+
+/// A supplied actor can become somebody's body through ordinary brain surgery.
+/// Reclaim loose equipment, but never reclaim a person or their installed anatomy.
+/datum/vestige_trial/proc/release_occupied_loans()
+	for(var/datum/weakref/loan_ref as anything in loan_refs.Copy())
+		var/atom/movable/loan = loan_ref.resolve()
+		var/mob/living/occupant
+		if(isliving(loan))
+			occupant = loan
+		else if(isorgan(loan))
+			var/obj/item/organ/organ = loan
+			occupant = organ.owner || organ.bodypart_owner?.owner
+			if(istype(organ, /obj/item/organ/brain))
+				var/obj/item/organ/brain/brain = organ
+				// Brain Destroy deletes this cached mob even if it was moved outside.
+				if(brain.brainmob?.mind || brain.brainmob?.client)
+					loan_refs -= loan_ref
+					continue
+		else if(istype(loan, /obj/item/bodypart))
+			var/obj/item/bodypart/limb = loan
+			occupant = limb.owner
+		if(occupant?.mind || occupant?.client)
+			loan_refs -= loan_ref
+
+/// The attempt owns its loans; deleting its mind must not orphan them.
+/datum/vestige_trial/proc/on_owner_deleted(datum/mind/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /// Anatomy must detach before movement, or its callbacks can strand it in nullspace.
 /datum/vestige_trial/proc/return_player_property(atom/movable/property, turf/drop_turf)
@@ -174,10 +232,26 @@ GLOBAL_LIST_EMPTY(vestige_records)
 /datum/vestige_trial/proc/register_loan(atom/movable/loan)
 	if(!loan || QDELETED(loan))
 		return null
+	var/already_registered = (WEAKREF(loan) in loan_refs)
 	loan_refs |= WEAKREF(loan)
+	if(isstack(loan) && !already_registered)
+		RegisterSignal(loan, COMSIG_STACK_SPLIT, PROC_REF(on_loan_stack_split))
+		RegisterSignals(loan, list(COMSIG_STACK_CAN_MERGE, COMSIG_STACK_CAN_RECEIVE_MERGE), PROC_REF(check_loan_stack_merge))
 	for(var/obj/item/part in loan.contents)
 		register_loan(part)
 	return loan
+
+/// Splitting a loan does not turn its contents into permanent player property.
+/datum/vestige_trial/proc/on_loan_stack_split(obj/item/stack/source, obj/item/stack/split)
+	SIGNAL_HANDLER
+	register_loan(split)
+
+/// Mixing player supplies into a loan would delete them when the pact ends.
+/datum/vestige_trial/proc/check_loan_stack_merge(obj/item/stack/source, obj/item/stack/other, inhand)
+	SIGNAL_HANDLER
+	if(!(WEAKREF(other) in loan_refs))
+		return CANCEL_STACK_MERGE
+	return NONE
 
 /// Recover a lost or failed kit without rerolling the assigned trial or its reward pool.
 /datum/vestige_trial/proc/restart(mob/living/user)
@@ -231,8 +305,6 @@ GLOBAL_LIST_EMPTY(vestige_records)
  * leisure, mid-fight completions shouldn't force a menu through the chaos.
  */
 /datum/vestige_trial/proc/offer_reward(mob/living/user)
-	if(owner.vestige_pending_reward) // can't normally happen. Patrons refuse pacts while a debt is unclaimed
-		return
 	var/list/eligible = get_eligible_vestige_boons(owner, boon_pool)
 	if(!length(eligible))
 		if(isliving(user))
@@ -246,11 +318,13 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	// rebuilds the claim from it (restore_lost_legacy in patron.dm).
 	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
 	if(record)
-		record.pending_candidates = candidates.Copy()
-		record.pending_patron_name = patron_name
+		record.queue_reward(candidates, patron_name)
+	if(owner.vestige_pending_reward)
+		return // The additional payment is safely queued behind its current button.
 	if(!isliving(user)) // nobody to hand it to; the ledger holds it until they come back
 		return
-	var/datum/action/vestige_reward/reward = new(owner, candidates, patron_name)
+	// If another body's debt came first, this body settles that one before its own.
+	var/datum/action/vestige_reward/reward = new(owner, record?.pending_candidates?.Copy() || candidates, record?.pending_patron_name || patron_name)
 	reward.Grant(user)
 	owner.vestige_pending_reward = reward
 	to_chat(user, span_boldnotice("\"Now for your payment. Pick one.\""))
@@ -306,3 +380,28 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	var/choice = tgui_alert(owner, "[trial.get_progress_text()]\n\nRestarting resets all progress and reclaims the old trial equipment. You receive the same trial and a fresh kit.", trial.name, list("Keep going", "Restart trial"))
 	if(choice == "Restart trial" && !QDELETED(src) && get_trial() == trial)
 		trial.restart(owner)
+
+/// A world turf stays at its coordinates when a shuttle leaves. Keep spatial
+/// objectives attached to the deck instead, including when that deck rotates.
+/datum/vestige_trial/proc/mark_turf(turf/location)
+	if(!location)
+		return null
+	return register_loan(new /obj/effect/vestige_trial_marker(location))
+
+/// An invisible reference point; ordinary shuttle movement carries it with its tile.
+/obj/effect/vestige_trial_marker
+	name = "vestige reference point"
+	icon = null
+	invisibility = INVISIBILITY_ABSTRACT
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	/// Committed shuttle movement lasts until every atom has its final direction.
+	var/shuttle_moving = FALSE
+
+/obj/effect/vestige_trial_marker/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
+	shuttle_moving = TRUE
+	return ..()
+
+/obj/effect/vestige_trial_marker/lateShuttleMove(turf/oldT, list/movement_force, move_dir)
+	. = ..()
+	shuttle_moving = FALSE

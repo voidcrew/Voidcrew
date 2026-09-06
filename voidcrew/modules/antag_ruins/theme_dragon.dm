@@ -227,7 +227,7 @@
 		return NONE
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/broodwatch/trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.egg_item != src)
 		balloon_alert(user, "the egg is cold clean through!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
@@ -245,7 +245,7 @@
 		return ITEM_INTERACT_BLOCKING
 	// Re-resolve everything; the pact may have been renounced mid-plant
 	trial = user.mind?.active_vestige_trial
-	if(!istype(trial))
+	if(!istype(trial) || user.mind != bound_mind || trial.egg_item != src)
 		return ITEM_INTERACT_BLOCKING
 	if(ground.is_blocked_turf(exclude_mobs = TRUE))
 		balloon_alert(user, "no room to bed it down!")
@@ -1373,6 +1373,8 @@
 	var/heal_amount = VESTIGE_FEAST_HEAL
 	/// Length of the channel, spent conspicuously elbow-deep
 	var/channel_time = VESTIGE_FEAST_CHANNEL
+	/// One feeding at a time, including across body transfers.
+	var/feeding = FALSE
 
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/is_valid_target(atom/cast_on)
 	. = ..()
@@ -1399,20 +1401,33 @@
 	. = ..()
 	if(. & SPELL_CANCEL_CAST)
 		return
-	var/mob/living/meal = cast_on
-	owner.visible_message(
-		span_boldwarning("[owner] kneels over [meal] and begins to feed!"),
+	if(feeding || !feast_check(owner))
+		return . | SPELL_CANCEL_CAST
+	feeding = TRUE
+	var/prepared = prepare_feast(owner, cast_on)
+	feeding = FALSE
+	return . | prepared
+
+/datum/action/cooldown/spell/pointed/vestige_carrion_feast/proc/feast_check(mob/living/caster)
+	return !QDELETED(src) && isliving(caster) && !QDELETED(caster) && caster == owner && caster.stat == CONSCIOUS && !caster.incapacitated
+
+/datum/action/cooldown/spell/pointed/vestige_carrion_feast/proc/prepare_feast(mob/living/caster, mob/living/meal)
+	caster.visible_message(
+		span_boldwarning("[caster] kneels over [meal] and begins to feed!"),
 		span_notice("You kneel over [meal] and start taking back what it isn't using."),
 	)
 	playsound(meal, 'sound/items/eatfood.ogg', 60, TRUE)
-	if(!do_after(owner, channel_time, target = meal))
-		return . | SPELL_CANCEL_CAST
-	// Re-resolve the whole meal: it may have been dragged off, eaten by a rival, or (awkwardly) gotten better
-	if(QDELETED(meal) || meal.stat != DEAD || HAS_TRAIT(meal, TRAIT_VESTIGE_DEVOURED))
-		return . | SPELL_CANCEL_CAST
-	if(get_dist(get_turf(owner), get_turf(meal)) > cast_range)
-		meal.balloon_alert(owner, "out of reach!")
-		return . | SPELL_CANCEL_CAST
+	if(!do_after(caster, channel_time, target = meal, extra_checks = CALLBACK(src, PROC_REF(feast_check), caster)))
+		return SPELL_CANCEL_CAST
+	// Re-resolve the whole meal and its eater after the channel.
+	if(!feast_check(caster) || QDELETED(meal) || meal.stat != DEAD || !(meal.mob_biotypes & MOB_ORGANIC) || HAS_TRAIT(meal, TRAIT_VESTIGE_DEVOURED))
+		return SPELL_CANCEL_CAST
+	var/turf/eater_turf = get_turf(caster)
+	var/turf/meal_turf = get_turf(meal)
+	if(!eater_turf || !meal_turf || eater_turf.z != meal_turf.z || get_dist(eater_turf, meal_turf) > cast_range)
+		meal.balloon_alert(caster, "out of reach!")
+		return SPELL_CANCEL_CAST
+	return NONE
 
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/cast(mob/living/meal)
 	. = ..()

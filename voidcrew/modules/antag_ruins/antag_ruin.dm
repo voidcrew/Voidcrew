@@ -134,6 +134,10 @@
 // stay on the overmap and never spawn a replacement. Crews come back for
 // their patron.
 /obj/structure/overmap/space_ruin/vestige/check_and_respawn()
+	// Multiple departures may queue checks. Once another check has unloaded this
+	// persistent signal, there is nothing left to retry until a new visitor loads it.
+	if(!mapzone && !loading)
+		return
 	if(!release_interior())
 		// Same re-arm as the base proc: a refusal is usually the departing hull still
 		// mid-move, or the worldgen queue timing out - and nothing else ever retries,
