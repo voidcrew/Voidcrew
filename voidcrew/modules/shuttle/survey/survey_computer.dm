@@ -209,6 +209,7 @@
 	linked_techweb = new_web
 	new_web.connected_machines |= src
 	sync_research_surveys()
+	survey_research_tiers = get_survey_research_tiers()
 	return TRUE
 
 /// The console and each physical research disk own separate, completed-record snapshots.
@@ -246,6 +247,7 @@
 	if(linked_techweb)
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
+	survey_research_tiers = get_survey_research_tiers()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
@@ -257,7 +259,14 @@
 	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
-	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
+	var/previous_obj_sight = obj_sight
+	var/previous_mob_sight = mob_sight
+	var/previous_view_range = view_range
+	mapping_enabled = FALSE
+	obj_sight = FALSE
+	mob_sight = FALSE
+	view_range = initial(view_range)
+	icon_scaling_amount = initial(icon_scaling_amount)
 	var/list/found_tiers = list()
 	if(debug_mode)
 		mob_sight = TRUE
@@ -266,33 +275,40 @@
 		icon_scaling_amount = 3
 		mapping_enabled = TRUE
 		found_tiers |= list("advanced", "superior", "elite", "basic")
-	else
-		if(!validate_research_site(linked_techweb))
-			return
-		for(var/node_id in linked_techweb.researched_nodes)
-			if(node_id in research_tiers)
-				var/tier_type
-				switch(node_id)
-					if("survey_console_advanced")
-						tier_type = "advanced"
-						mapping_enabled = TRUE
-						view_range = 10
-						icon_scaling_amount = 2
-					if("survey_console_superior")
-						tier_type = "superior"
-						obj_sight = TRUE
-						view_range = 15
-						icon_scaling_amount = 2.5
-					if("survey_console_elite")
-						tier_type = "elite"
-						mob_sight = TRUE
-						view_range = 20
-						icon_scaling_amount = 3
-					else
-						tier_type = "basic"
-
-				found_tiers += tier_type
+	else if(validate_research_site(linked_techweb))
+		// Apply tiers in ascending order, independent of the disk's research/import order.
+		var/list/research_tiers = list(TECHWEB_NODE_SURVEY_CONSOLE, TECHWEB_NODE_SURVEY_CONSOLE_ADV, TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR, TECHWEB_NODE_SURVEY_CONSOLE_ELITE)
+		for(var/node_id in research_tiers)
+			if(!linked_techweb.researched_nodes[node_id])
+				continue
+			switch(node_id)
+				if(TECHWEB_NODE_SURVEY_CONSOLE)
+					found_tiers += "basic"
+				if(TECHWEB_NODE_SURVEY_CONSOLE_ADV)
+					found_tiers += "advanced"
+					mapping_enabled = TRUE
+					view_range = 10
+					icon_scaling_amount = 2
+				if(TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR)
+					found_tiers += "superior"
+					obj_sight = TRUE
+					view_range = 15
+					icon_scaling_amount = 2.5
+				if(TECHWEB_NODE_SURVEY_CONSOLE_ELITE)
+					found_tiers += "elite"
+					mob_sight = TRUE
+					view_range = 20
+					icon_scaling_amount = 3
+	if(current_user && (!mapping_enabled || (previous_obj_sight && !obj_sight) || (previous_mob_sight && !mob_sight) || view_range < previous_view_range))
+		remove_eye_control(current_user)
 	return found_tiers
+
+/// Map actions can arrive directly or from an old UI; resolve their current physical source.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/can_use_survey_map()
+	if(!validate_ship_binding())
+		return FALSE
+	survey_research_tiers = get_survey_research_tiers()
+	return mapping_enabled
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
 	if(owns_survey_data)
@@ -733,7 +749,7 @@
 		balloon_alert(user, "disk ejected")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/activate_survey_map(mob/user)
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return FALSE
 	refresh()
 	if(length(ship_port.current_ship.close_overmap_objects) == 0)
@@ -869,7 +885,7 @@
  * so upstream navigation, syndicate, whiteship and caravan consoles keep their full reach.
  */
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/eye_may_enter(turf/destination)
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return FALSE
 	if(!destination)
 		return FALSE
@@ -883,7 +899,7 @@
 	return isnull(owner) || owner == celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return SHUTTLE_DOCKER_BLOCKED
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	var/turf/eyeturf = get_turf(the_eye)
@@ -927,7 +943,7 @@
 				. = SHUTTLE_DOCKER_BLOCKED
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/placeLandingSpot()
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return FALSE
 	if(designating_target_loc || !current_user)
 		return
@@ -1108,6 +1124,8 @@
 	user.hud_used.toggle_palette.scale_to(scaling_integer, scaling_integer)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
+	if(!can_use_survey_map())
+		return FALSE
 	..()
 	if(!QDELETED(user) && user.client)
 		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
@@ -1138,7 +1156,8 @@
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
 		set_action_scaling(user, 1)
-	// Always drop the eye, even if the user disconnected mid-control
+	// Always release the operator and eye, even if the user disconnected mid-control.
+	current_user = null
 	QDEL_NULL(eyeobj)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
@@ -1171,7 +1190,7 @@
 		LAZYCLEARLIST(the_eye.placed_images)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return FALSE
 	var/o = get_current_celestial_object()
 	if(istype(o, /obj/structure/overmap/planet))
@@ -1236,10 +1255,10 @@
 		docking_location = null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/canDesignateTarget()
-	return validate_ship_binding() && ..()
+	return can_use_survey_map() && ..()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/rotateLandingSpot()
-	if(!validate_ship_binding())
+	if(!can_use_survey_map())
 		return FALSE
 	return ..()
 
@@ -1249,3 +1268,8 @@
 		survey_disk = null
 		return FALSE
 	return TRUE
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/process()
+	if(current_user && !can_use_survey_map())
+		return PROCESS_KILL
+	return ..()
