@@ -506,7 +506,7 @@
      7
     ]
    },
-   "src_md5": "28810c6c6ee9d3eca86e7df8f233d1bc"
+   "src_md5": "b162e40d325bb3c051ccf409bb2a7427"
   },
   "test_modular_pirate": {
    "png": "ship_test_modular_pirate.png",
@@ -522,7 +522,7 @@
      7
     ]
    },
-   "src_md5": "fcc6155af3c3721249bb6e068e0ef93a"
+   "src_md5": "c9031390396ebd74b71e163386b5836a"
   }
  },
  "modules": {
@@ -2624,6 +2624,16 @@
    "png": "pill_pill_extra_engineering.png",
    "src_md5": "d59cc5bc18d05fe50a141da7f92c4b62"
   },
+  "pill/pill_extra_builder.dmm": {
+   "width": 1,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "pill_pill_extra_builder.png",
+   "src_md5": "cf16531275197b61460253960c09168b"
+  },
   "scarab/scarab_med_basic.dmm": {
    "width": 3,
    "height": 4,
@@ -3032,7 +3042,7 @@
     2
    ],
    "png": "test_modular_cargo_basic.png",
-   "src_md5": "f230bb5182459b8923fe987bf2d11d51",
+   "src_md5": "d509f64ee6f93aecf785fbc7047bd9d2",
    "themes": {
     "pirate": {
      "width": 3,
@@ -3042,7 +3052,7 @@
       2
      ],
      "png": "test_modular_cargo_basic_pirate.png",
-     "src_md5": "541c6358c29f30186d39d69902a2aec8"
+     "src_md5": "9681b7de4efb2946e93720e20263889d"
     }
    }
   },
@@ -3054,7 +3064,7 @@
     2
    ],
    "png": "test_modular_cargo_expanded.png",
-   "src_md5": "5d117b528993ddc16eee783f9ad1b7d6"
+   "src_md5": "3c69ef83c36a761dc05ff760d99448aa"
   },
   "test_modular/engine_basic.dmm": {
    "width": 3,
@@ -3064,7 +3074,7 @@
     2
    ],
    "png": "test_modular_engine_basic.png",
-   "src_md5": "49a5a51135d7533c5eb8df717af5560e"
+   "src_md5": "d963a52fc9ae248d33dc639b54494762"
   },
   "test_modular/engine_advanced.dmm": {
    "width": 3,
@@ -3074,7 +3084,7 @@
     2
    ],
    "png": "test_modular_engine_advanced.png",
-   "src_md5": "877870976b96c178dadb80522108f340"
+   "src_md5": "826b53cc70a57d98f8b71faef71165e2"
   }
  }
 }
