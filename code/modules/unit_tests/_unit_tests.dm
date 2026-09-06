@@ -198,6 +198,7 @@
 #include "kinetic_crusher.dm"
 #include "knockoff_component.dm"
 #include "language_transfer.dm"
+#include "late_initialization_reentry.dm"
 #include "leash.dm"
 #include "lesserform.dm"
 #include "limbsanity.dm"

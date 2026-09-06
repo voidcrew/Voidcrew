@@ -56,15 +56,17 @@ SUBSYSTEM_DEF(atoms)
 	clear_tracked_initalize(source)
 	SSicon_smooth.free_deferred(source)
 
-	if(late_loaders.len)
-		for(var/I in 1 to late_loaders.len)
-			var/atom/A = late_loaders[I]
+	while(length(late_loaders))
+		// Late callbacks can load another map. Give that load its own queue so it
+		// cannot repeat or clear the callbacks this invocation is still processing.
+		var/list/current_late_loaders = late_loaders
+		late_loaders = list()
+		for(var/atom/A as anything in current_late_loaders)
 			//I hate that we need this
 			if(QDELETED(A))
 				continue
 			A.LateInitialize()
-		testing("Late initialized [late_loaders.len] atoms")
-		late_loaders.Cut()
+		testing("Late initialized [length(current_late_loaders)] atoms")
 
 	if (created_atoms)
 		atoms_to_return += created_atoms
