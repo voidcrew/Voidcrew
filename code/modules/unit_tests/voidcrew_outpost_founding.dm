@@ -95,6 +95,7 @@
 /datum/unit_test/voidcrew_outpost_docking_clearance
 	var/obj/structure/overmap/ship/ship
 	var/obj/docking_port/mobile/voidcrew/port
+	var/obj/docking_port/stationary/destination
 
 /datum/unit_test/voidcrew_outpost_docking_clearance/Destroy()
 	if(!QDELETED(ship))
@@ -106,6 +107,8 @@
 	if(!QDELETED(port))
 		port.current_ship = null
 		qdel(port, force = TRUE)
+	if(!QDELETED(destination))
+		qdel(destination, force = TRUE)
 	return ..()
 
 /datum/unit_test/voidcrew_outpost_docking_clearance/Run()
@@ -115,7 +118,8 @@
 	port = allocate(/obj/docking_port/mobile/voidcrew)
 	port.width = 1
 	port.height = 1
-	port.port_destinations = allocate(/obj/docking_port/stationary)
+	destination = allocate(/obj/docking_port/stationary)
+	port.port_destinations = destination
 	ship.shuttle = port
 	// Fork state defines are included after unit tests.
 	ship.state = "flying"
@@ -139,6 +143,11 @@
 	home.approve_dock_request(ship)
 	TEST_ASSERT_NULL(ship.dock_warmup_timer, "Approval interrupted another docking operation")
 	ship.state = "flying"
+	home.pending_dock_requests[ship] = world.time
+	home.approve_dock_request(ship)
+	TEST_ASSERT_NULL(ship.docked, "Automatic approval bypassed the destination size check")
+	destination.width = 1
+	destination.height = 1
 	home.pending_dock_requests[ship] = world.time
 	home.approve_dock_request(ship)
 	TEST_ASSERT_EQUAL(ship.docked, home, "Approval did not automatically resume the waiting ship's approach")
