@@ -17,13 +17,29 @@
 	pixel_x = 1;
 	pixel_y = -9
 	},
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = 3;
+	pixel_y = -7
+	},
 /obj/item/stack/sheet/glass/fifty{
 	pixel_x = 9;
 	pixel_y = 3
 	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 11;
+	pixel_y = 5
+	},
 /obj/item/stack/cable_coil{
 	pixel_x = -1;
 	pixel_y = 6
+	},
+/obj/item/circuitboard/machine/ore_silo{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/item/circuitboard/computer/ship_construction{
+	pixel_x = 0;
+	pixel_y = 1
 	},
 /turf/template_noop,
 /area/template_noop)

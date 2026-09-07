@@ -125,6 +125,9 @@
 
 	var/ckey = user.client.ckey
 	unlocked_upgrade_ids = GLOB.ship_economy_db?.get_unlocked_upgrades_for_ship(ckey, "[template.type]") || list()
+	// Builder Bay was merged into Engineering Bay; honor existing purchases.
+	if(template.type == /datum/map_template/shuttle/voidcrew/pill && ("pill_extra_builder" in unlocked_upgrade_ids))
+		unlocked_upgrade_ids |= "pill_extra_engineering"
 
 /**
  * Refresh the cached list of unlocked theme IDs

@@ -148,9 +148,57 @@
 		observed += list(list("icon" = "[overlay.icon]", "state" = overlay.icon_state, "dir" = overlay.dir, "color" = overlay.color, "alpha" = overlay.alpha))
 	TEST_ASSERT(!builder.complete_decoration_job(paint_job, painted, engineer), "Duplicate decal was painted: picker [json_encode(paint_job.decal_data)], actual [json_encode(observed)]")
 	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/plastic), plastic_after, "Duplicate decal consumed pigment")
+	test_decal_removal(paint_job)
 	qdel(paint_job)
 	test_free_piping()
 	test_queue_supply_and_failure()
+
+/datum/unit_test/voidcrew_construction_automation/proc/test_decal_removal(datum/ship_construction_job/paint_job)
+	var/turf/painted = spot(3, 3)
+	var/turf/neighbor = spot(4, 3)
+	var/floor_type = painted.type
+	// Mapped markings and a directionless decal must be removed alongside the painted one.
+	new /obj/effect/turf_decal(painted)
+	painted.AddElement(/datum/element/decal, 'icons/turf/decals.dmi', "warningline", NONE)
+	// The same shared element on another tile must survive removal here.
+	TEST_ASSERT(builder.complete_decoration_job(paint_job, neighbor, engineer), "Could not paint neighboring floor")
+	painted.AddElement(/datum/element/decal, 'icons/effects/crayondecal.dmi', "star", EAST, _cleanable = CLEAN_TYPE_HARD_DECAL)
+	var/list/decals = list()
+	SEND_SIGNAL(painted, COMSIG_ATOM_GET_DECALS, decals)
+	var/datum/element/decal/preserved = decals[length(decals)]
+	TEST_ASSERT_EQUAL(length(builder.construction_floor_decals(painted)), 3, "Mapped and directionless decals were not found")
+	var/iron_before = materials.get_material_amount(/datum/material/iron)
+	var/plastic_before = materials.get_material_amount(/datum/material/plastic)
+	builder.build_size = 1
+	builder.queue_enabled = FALSE
+	rcd.silo_link = FALSE
+	TEST_ASSERT(builder.decorate_turf(painted, engineer, "decal_remove"), "Direct decal removal required a silo")
+	TEST_ASSERT_EQUAL(painted.type, floor_type, "Removing decals changed the floor")
+	TEST_ASSERT_EQUAL(length(builder.construction_floor_decals(painted)), 0, "Floor markings remained attached")
+	TEST_ASSERT_EQUAL(length(builder.construction_floor_decals(neighbor)), 1, "Removing a shared decal affected another tile")
+	decals.Cut()
+	SEND_SIGNAL(painted, COMSIG_ATOM_GET_DECALS, decals)
+	TEST_ASSERT((length(decals) == 1) && (preserved in decals), "Removal detached an unrelated decal")
+	TEST_ASSERT(painted._listen_lookup?[COMSIG_ATOM_DIR_CHANGE], "Remaining decal lost its rotation handler")
+	preserved.Detach(painted)
+	painted.update_appearance(UPDATE_OVERLAYS)
+	TEST_ASSERT(!builder.decorate_turf(painted, engineer, "decal_remove"), "An empty tile was treated as removable")
+	TEST_ASSERT(builder.complete_decoration_job(paint_job, painted, engineer), "Could not repaint immediately after removal")
+	// Area removal skips blank tiles and rechecks jobs if another action already clears them.
+	builder.build_size = 3
+	builder.queue_enabled = TRUE
+	TEST_ASSERT(builder.decorate_turf(painted, engineer, "decal_remove"), "Could not queue area decal removal")
+	TEST_ASSERT_EQUAL(length(builder.construction_queue), 2, "Area removal queued undecorated floors")
+	var/datum/ship_construction_job/job = builder.construction_queue[1]
+	TEST_ASSERT_EQUAL(job.kind, "decal_remove", "Removal became a construction job")
+	TEST_ASSERT(builder.complete_decoration_job(job, painted, engineer), "Could not clear a tile before its queued removal")
+	builder.process_construction_queue()
+	TEST_ASSERT_EQUAL(length(builder.construction_queue), 0, "Area removal retained a completed or empty job")
+	TEST_ASSERT_EQUAL(length(builder.construction_floor_decals(neighbor)), 0, "Area removal left neighboring decals")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), iron_before, "Decal removal changed iron reserves")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/plastic), plastic_before, "Decal removal changed plastic reserves")
+	rcd.silo_link = TRUE
+	builder.build_size = 1
 
 /// Real RCD rejection must refund payment, and a depleted/disconnected silo retains jobs.
 /datum/unit_test/voidcrew_construction_automation/proc/test_queue_supply_and_failure()

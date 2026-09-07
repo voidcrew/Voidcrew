@@ -104,6 +104,11 @@
 	job.wall_type = rcd.selected_wall_type
 	job.floor_type = rcd.selected_floor_type
 	job.operator = WEAKREF(user)
+	if(tool_kind == "decal_remove")
+		job.kind = "decal_remove"
+		job.label = "Remove floor decals"
+		job.duration = 0.5 SECONDS
+		return job
 	if(tool_kind == "tile")
 		job.kind = "tile"
 		job.tile_design = internal_rtd.selected_design
@@ -160,6 +165,8 @@
 		return istype(target, /turf/open/floor/plating)
 	if(job.kind == "decal")
 		return isfloorturf(target) && !construction_has_decal(target, job.decal_data, construction_direction(job.build_dir))
+	if(job.kind == "decal_remove")
+		return isfloorturf(target) && length(construction_floor_decals(target)) > 0
 	if(job.kind == "wall")
 		return isfloorturf(target)
 	if(job.build_mode == RCD_AIRLOCK && (locate(/obj/machinery/door) in target))
@@ -176,7 +183,7 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/queue_construction(turf/center, mob/user, tool_kind = "rcd")
 	if(!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_QUEUE) || !can_operate() || !is_crew_member(user) || !center)
 		return FALSE
-	if((tool_kind == "tile" && !internal_rtd) || (tool_kind == "decal" && !internal_painter))
+	if((tool_kind == "tile" && !internal_rtd) || ((tool_kind == "decal" || tool_kind == "decal_remove") && !internal_painter))
 		return FALSE
 	if(!queue_origin)
 		queue_origin = new(get_turf(src))
@@ -282,7 +289,7 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/complete_construction_job(datum/ship_construction_job/job, turf/target, mob/user)
 	if(!construction_job_needed(job, target))
 		return FALSE
-	if(job.kind == "tile" || job.kind == "decal")
+	if(job.kind == "tile" || job.kind == "decal" || job.kind == "decal_remove")
 		return complete_decoration_job(job, target, user)
 	var/obj/item/construction/rcd/internal/ship/queue_worker/worker = new(src)
 	worker.ship_console = src

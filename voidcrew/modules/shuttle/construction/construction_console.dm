@@ -1382,6 +1382,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_DECAL)
 		actions += new /datum/action/innate/construction/ship/decal_configure(src)
 		actions += new /datum/action/innate/construction/ship/decal_paint(src)
+		actions += new /datum/action/innate/construction/ship/decal_remove(src)
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
 		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
 		actions += new /datum/action/innate/construction/ship/rtd_build(src)

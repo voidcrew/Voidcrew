@@ -2622,17 +2622,7 @@
     1
    ],
    "png": "pill_pill_extra_engineering.png",
-   "src_md5": "d59cc5bc18d05fe50a141da7f92c4b62"
-  },
-  "pill/pill_extra_builder.dmm": {
-   "width": 1,
-   "height": 1,
-   "connector": [
-    1,
-    1
-   ],
-   "png": "pill_pill_extra_builder.png",
-   "src_md5": "cf16531275197b61460253960c09168b"
+   "src_md5": "bbbbbb4d39b09528651dcb31920d7548"
   },
   "scarab/scarab_med_basic.dmm": {
    "width": 3,

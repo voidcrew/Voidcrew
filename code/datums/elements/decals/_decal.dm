@@ -75,6 +75,7 @@
 	smoothing = _smoothing
 
 	RegisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(apply_overlay), TRUE)
+	RegisterSignal(target, COMSIG_ATOM_GET_DECALS, PROC_REF(collect_decals), TRUE)
 	if(target.flags_1 & INITIALIZED_1)
 		target.update_appearance(UPDATE_OVERLAYS) //could use some queuing here now maybe.
 	else
@@ -114,7 +115,10 @@
 
 /datum/element/decal/Detach(atom/source)
 	UnregisterSignal(source, list(COMSIG_ATOM_DIR_CHANGE, COMSIG_COMPONENT_CLEAN_ACT, COMSIG_ATOM_EXAMINE, COMSIG_ATOM_UPDATE_OVERLAYS, COMSIG_TURF_ON_SHUTTLE_MOVE, COMSIG_ATOM_SMOOTHED_ICON, COMSIG_ATOM_DECALS_ROTATING))
-	SSdcs.UnregisterSignal(source, COMSIG_ATOM_DIR_CHANGE)
+	UnregisterSignal(source, COMSIG_ATOM_GET_DECALS)
+	// Removing one decal must not stop the remaining decals from rotating with their host.
+	if(!source._listen_lookup?[COMSIG_ATOM_DECALS_ROTATING])
+		SSdcs.UnregisterSignal(source, COMSIG_ATOM_DIR_CHANGE)
 	source.update_appearance(UPDATE_OVERLAYS)
 	if(isitem(source))
 		INVOKE_ASYNC(source, TYPE_PROC_REF(/obj/item/, update_slot_icon))
@@ -133,6 +137,11 @@
 	SIGNAL_HANDLER
 
 	overlay_list += pic
+
+/datum/element/decal/proc/collect_decals(atom/source, list/decals)
+	SIGNAL_HANDLER
+
+	decals += src
 
 /datum/element/decal/proc/clean_react(datum/source, clean_types)
 	SIGNAL_HANDLER
