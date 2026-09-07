@@ -136,16 +136,8 @@
 /atom/movable/screen/skills
 	name = "view skills and experience"
 	icon = 'icons/hud/screen_midnight.dmi'
-	icon_state = "template_tiny"
+	icon_state = "skills"
 	mouse_over_pointer = MOUSE_HAND_POINTER
-	// Align the label with the small frame at the icon's lower-right corner.
-	maptext_x = 17
-	maptext_width = 15
-	maptext_height = 15
-
-/atom/movable/screen/skills/Initialize(mapload, datum/hud/hud_owner)
-	. = ..()
-	maptext = MAPTEXT_SPESSFONT("<span style='text-align: center; color: white'>XP</span>")
 
 /atom/movable/screen/skills/Click()
 	usr.view_skills()
