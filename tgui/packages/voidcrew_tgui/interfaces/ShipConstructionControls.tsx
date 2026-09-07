@@ -1,9 +1,21 @@
-import { Box, Button, LabeledList, Section, Stack } from 'tgui-core/components';
+import {
+  Box,
+  Button,
+  Collapsible,
+  LabeledList,
+  Section,
+  Stack,
+} from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 
 export interface ConstructionControlsData {
+  areaManagement: {
+    name: string;
+    atDrone: BooleanLike;
+    canEdit: BooleanLike;
+  } | null;
   queueUnlocked: BooleanLike;
   areaUnlocked: BooleanLike;
   queueEnabled: BooleanLike;
@@ -18,6 +30,7 @@ export interface ConstructionControlsData {
 export const ShipConstructionControls = () => {
   const { act, data } = useBackend<ConstructionControlsData>();
   const {
+    areaManagement,
     queueUnlocked,
     areaUnlocked,
     queueEnabled,
@@ -116,6 +129,28 @@ export const ShipConstructionControls = () => {
         <Box color="label" mt={1}>
           Install a job queue disk to queue construction.
         </Box>
+      )}
+      {!!areaManagement && (
+        <Collapsible title="Ship areas" mt={1}>
+          <Box mb={1}>
+            {areaManagement.atDrone ? 'Drone area' : 'Console area'}:{' '}
+            {areaManagement.name}
+          </Box>
+          <Button
+            icon="pen"
+            disabled={!areaManagement.canEdit}
+            onClick={() => act('ship_area_rename')}
+          >
+            Rename area
+          </Button>
+          <Button
+            icon="draw-polygon"
+            disabled={!areaManagement.canEdit}
+            onClick={() => act('ship_area_reassign')}
+          >
+            Reassign room
+          </Button>
+        </Collapsible>
       )}
     </Section>
   );

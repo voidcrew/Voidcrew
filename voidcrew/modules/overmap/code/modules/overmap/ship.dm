@@ -3981,12 +3981,14 @@
 
 	// Register on shuttle areas - these persist through shuttle movement
 	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
-		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_ADDED, PROC_REF(on_area_turf_added))
-		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_REMOVED, PROC_REF(on_area_turf_removed))
-		// Register COMSIG_TURF_CHANGE on ALL turfs (including space) for in-place type changes
-		// This is necessary to detect repairs (space -> floor)
-		for(var/turf/T in shuttle_area)
-			RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change))
+		track_hull_area(shuttle_area)
+
+/// New compartments need the same damage tracking as the ship's original areas.
+/obj/structure/overmap/ship/proc/track_hull_area(area/shuttle_area)
+	RegisterSignal(shuttle_area, COMSIG_AREA_TURF_ADDED, PROC_REF(on_area_turf_added), override = TRUE)
+	RegisterSignal(shuttle_area, COMSIG_AREA_TURF_REMOVED, PROC_REF(on_area_turf_removed), override = TRUE)
+	for(var/turf/tile in shuttle_area)
+		RegisterSignal(tile, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change), override = TRUE)
 
 /**
  * Signal handler for when a turf joins a shuttle area
@@ -4004,6 +4006,9 @@
 
 	// Register for in-place type changes on this turf (including space turfs for future repairs)
 	RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change), override = TRUE)
+	// Reassigning a room within this hull neither adds mass nor repairs damage.
+	if(shuttle?.shuttle_areas[old_area])
+		return
 
 	// Space turfs don't contribute mass, but we still registered for future changes above
 	if(isspaceturf(T))
@@ -4019,6 +4024,9 @@
 	SIGNAL_HANDLER
 
 	if(!integrity_initialized)
+		return
+	// Keep the turf's damage tracking when only its compartment changes.
+	if(shuttle?.shuttle_areas[new_area])
 		return
 
 	// Unregister turf change signal (we register on all turfs including space)

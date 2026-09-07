@@ -334,11 +334,12 @@
 	return TRUE
 
 /// Shared controls for the main console and the remote RCD configuration window.
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/construction_controls_data()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/construction_controls_data(mob/user)
 	var/list/jobs = list()
 	for(var/datum/ship_construction_job/job as anything in construction_queue)
 		jobs += list(list("ref" = REF(job), "name" = job.label, "x" = job.offset_x, "y" = job.offset_y))
 	return list(
+		"areaManagement" = ship_area_controls_data(user),
 		"queueUnlocked" = !!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_QUEUE),
 		"areaUnlocked" = !!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_AREA),
 		"queueEnabled" = queue_enabled,
@@ -353,6 +354,8 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/construction_control_act(action, list/params, mob/user)
 	if(!is_crew_member(user))
 		return FALSE
+	if(ship_area_control_act(action, user))
+		return TRUE
 	switch(action)
 		if("queue_toggle")
 			if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_QUEUE)

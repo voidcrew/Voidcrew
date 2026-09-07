@@ -74,6 +74,8 @@
 	test_commission_needs_an_outer_door()
 	test_port_seat_rejects_an_interior_door()
 	test_new_hull_area_belongs_to_the_ship()
+	test_console_edits_existing_areas()
+	test_existing_window_room_boundaries()
 	test_expansion_past_the_port_needs_a_door_on_the_new_face()
 	test_drone_growth_reseats_or_warns()
 	test_reseat_can_turn_onto_another_face()
@@ -715,6 +717,118 @@
 
 	var/underfoot = hull_survey_bearing(here, here)
 	TEST_ASSERT(findtext(underfoot, "standing on"), "a problem on the player's own tile was not reported as such: [underfoot]")
+
+/// Exercise the console's area edits, ownership checks, APC transfer and hull accounting.
+/datum/unit_test/voidcrew_hull_survey/proc/test_console_edits_existing_areas()
+	reset_block()
+	build_walled_room()
+	var/list/turfs = block(spot(2, 2), spot(6, 6))
+	for(var/turf/tile as anything in turfs)
+		tile.insert_baseturf(turf_type = /turf/baseturf_skipover/shuttle)
+	var/obj/docking_port/mobile/voidcrew/port = new(spot(2, 2))
+	port.register()
+	port.area_type = /area/shuttle/voidcrew
+	var/area/original = create_hull_area(port, "Original compartment")
+	assign_hull_area(port, turfs, original, TRUE)
+	var/obj/structure/overmap/ship/integrity_dummy/hull = allocate(/obj/structure/overmap/ship/integrity_dummy)
+	hull.shuttle = port
+	port.current_ship = hull
+	hull.state = "idle"
+	hull.calculate_mass()
+	// Existing damage must not disappear when a room is renamed or reassigned.
+	hull.max_integrity = hull.mass + 5
+	var/original_mass = hull.mass
+	var/original_baseline = hull.max_integrity
+
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/automation_test/builder = allocate(/obj/machinery/computer/camera_advanced/base_construction/ship/automation_test, spot(3, 3))
+	var/mob/living/carbon/human/engineer = allocate(/mob/living/carbon/human/consistent, spot(3, 4))
+	builder.test_port = port
+	builder.test_operator = engineer
+	builder.current_ship = hull
+	// The console stays usable as its test room moves through unpowered compartments.
+	builder.use_power = NO_POWER_USE
+	builder.power_change()
+	TEST_ASSERT(builder.reassign_ship_room(engineer, spot(3, 3), port, null, "Workshop"), "Console could not split an existing mapped compartment into a new area")
+	var/area/workshop = get_area(spot(3, 3))
+	TEST_ASSERT_EQUAL(workshop.name, "Workshop", "Console created the wrong area")
+	TEST_ASSERT(workshop in hull_owned_areas(port), "New compartment lost its ship ownership")
+	TEST_ASSERT(port.shuttle_areas[original], "Reassigning the room removed the ship's default area")
+	TEST_ASSERT_EQUAL(hull.mass, original_mass, "Reassigning a room changed ship mass")
+	TEST_ASSERT_EQUAL(hull.max_integrity, original_baseline, "Reassigning a room erased existing damage")
+	for(var/turf/tile as anything in turfs)
+		TEST_ASSERT_EQUAL(get_area(tile), workshop, "The reassignment left a room tile behind")
+		TEST_ASSERT(isshuttleturf(tile), "The reassignment removed a hull baseturf")
+
+	// Newly created areas must keep tracking subsequent hull damage.
+	spot(4, 4).ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT_EQUAL(hull.mass, original_mass + 1, "The new area does not track turf mass changes")
+	spot(4, 4).ChangeTurf(/turf/open/floor/plating)
+
+	var/area/storage = create_hull_area(port, "Storage")
+	var/turf/storage_floor = spot(8, 8).ChangeTurf(/turf/open/floor/plating)
+	assign_hull_area(port, list(storage_floor), storage, TRUE)
+	var/obj/machinery/power/apc/room_apc = allocate(/obj/machinery/power/apc, spot(3, 5))
+	var/obj/machinery/power/apc/storage_apc = allocate(/obj/machinery/power/apc, storage_floor)
+	TEST_ASSERT(!builder.reassign_ship_room(engineer, spot(3, 3), port, storage), "Console merged two APCs into one area")
+	TEST_ASSERT_EQUAL(get_area(spot(3, 3)), workshop, "Rejected APC conflict partially changed the room")
+	qdel(storage_apc)
+	TEST_ASSERT(builder.reassign_ship_room(engineer, spot(3, 3), port, storage), "Console could not merge a room into an existing ship area")
+	TEST_ASSERT_EQUAL(room_apc.area, storage, "The moved APC still controls the old area")
+
+	builder.test_docked = FALSE
+	TEST_ASSERT(!builder.reassign_ship_room(engineer, spot(3, 3), port, original), "Console edited areas while the ship was moving")
+	builder.test_docked = TRUE
+	builder.test_operator = null
+	TEST_ASSERT(!builder.reassign_ship_room(engineer, spot(3, 3), port, original), "Console allowed a non-crew area edit")
+	builder.test_operator = engineer
+	TEST_ASSERT(!builder.reassign_ship_room(engineer, spot(4, 3), port, original), "Console accepted a stale drone position")
+
+	// A berth visitor's areas can appear in the host's area list, but cannot be edited.
+	var/obj/docking_port/mobile/voidcrew/guest = new(spot(9, 9))
+	guest.register()
+	guest.area_type = /area/shuttle/voidcrew
+	var/area/guest_area = create_hull_area(guest, "Guest compartment")
+	port.shuttle_areas[guest_area] = TRUE
+	TEST_ASSERT(!builder.reassign_ship_room(engineer, spot(3, 3), port, guest_area), "Console assigned a room to a docked visitor")
+	port.shuttle_areas -= guest_area
+	qdel(guest, force = TRUE)
+	qdel(guest_area)
+
+	qdel(room_apc)
+	qdel(builder)
+	hull.shuttle = null
+	port.current_ship = null
+	qdel(hull)
+	qdel(port, force = TRUE)
+	for(var/area/cleanup as anything in list(original, workshop, storage))
+		evacuate_area(cleanup)
+		qdel(cleanup)
+
+/datum/unit_test/voidcrew_hull_survey/proc/test_existing_window_room_boundaries()
+	reset_block()
+	build_window_room()
+	var/obj/docking_port/mobile/voidcrew/port = new(spot(3, 3))
+	port.register()
+	port.area_type = /area/shuttle/voidcrew
+	var/area/compartment = create_hull_area(port, "Window room")
+	assign_hull_area(port, block(spot(2, 2), spot(4, 4)), compartment, TRUE)
+	var/datum/hull_claim/room = survey_ship_room(spot(3, 3), port)
+	TEST_ASSERT_NULL(room.refusal, "Thin windows did not seal an existing ship room")
+	TEST_ASSERT_EQUAL(length(room.turfs), 9, "Area editing included space beyond a thin window")
+	qdel(room)
+	room = survey_ship_room(spot(3, 3), port, 4)
+	TEST_ASSERT(room.refusal, "Area editing ignored its room size limit")
+	qdel(room)
+	for(var/obj/structure/window/pane in spot(3, 4))
+		if(pane.dir == NORTH)
+			qdel(pane)
+	settle()
+	room = survey_ship_room(spot(3, 3), port)
+	TEST_ASSERT(room.refusal, "Area editing accepted a room open to space")
+	qdel(room)
+	qdel(port, force = TRUE)
+	evacuate_area(compartment)
+	qdel(compartment)
 
 /// Moves every turf still inside `leaving` back into the reserved block's own space area,
 /// so the area can be deleted without stranding turfs in a destroyed datum. See the call site.

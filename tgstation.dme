@@ -7305,6 +7305,7 @@
 #include "voidcrew\modules\shuttle\emergency.dm"
 #include "voidcrew\modules\shuttle\construction\construction_actions.dm"
 #include "voidcrew\modules\shuttle\construction\construction_console.dm"
+#include "voidcrew\modules\shuttle\construction\construction_areas.dm"
 #include "voidcrew\modules\shuttle\construction\construction_decoration.dm"
 #include "voidcrew\modules\shuttle\construction\construction_drone.dm"
 #include "voidcrew\modules\shuttle\construction\construction_queue.dm"

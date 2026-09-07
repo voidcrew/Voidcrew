@@ -1042,6 +1042,9 @@
 	// Voidcrew areas learn their owning port here, which is what tells hull_area_is_guest()
 	// and the pre-move hull audit that these tiles are ours.
 	new_area.connect_to_shuttle(FALSE, port, port.get_docked())
+	var/obj/docking_port/mobile/voidcrew/voidcrew_port = port
+	if(istype(voidcrew_port) && voidcrew_port.current_ship?.mass_tracking_initialized)
+		voidcrew_port.current_ship.track_hull_area(new_area)
 	return new_area
 
 /**
@@ -1062,7 +1065,9 @@
 		return FALSE
 
 	var/list/affected_areas = list()
-	set_turfs_to_area(turfs, destination, affected_areas)
+	for(var/turf/tile as anything in turfs)
+		affected_areas |= get_area(tile)
+	set_turfs_to_area(turfs, destination)
 
 	destination.reg_in_areas_in_z()
 	if(fresh_area && destination.static_lighting)
@@ -1073,8 +1078,8 @@
 	// on both sides of every door on the new boundary.
 	for(var/obj/machinery/door/firedoor/firelock as anything in destination.firedoors)
 		firelock.CalculateAffectingAreas()
-	for(var/area_name in affected_areas)
-		var/area/touched = affected_areas[area_name]
+	for(var/area/touched as anything in affected_areas)
+		touched.power_change()
 		for(var/obj/machinery/door/firedoor/firelock as anything in touched.firedoors)
 			firelock.CalculateAffectingAreas()
 		// Areas the ship still owns are kept even when empty - shuttle_areas[1] in
@@ -1339,7 +1344,7 @@
  * at once, and there is no way to give an engine room its own power, its own air alarm or its
  * own fire response.
  */
-/mob/living/proc/choose_hull_area(obj/docking_port/mobile/port)
+/mob/proc/choose_hull_area(obj/docking_port/mobile/port)
 	var/list/choices = list()
 	var/new_area_label = "New compartment..."
 	choices[new_area_label] = port.area_type

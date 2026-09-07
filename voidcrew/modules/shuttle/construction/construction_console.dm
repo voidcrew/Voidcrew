@@ -362,7 +362,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Get all standard RCD data from parent
 	var/list/data = ..()
 	if(ship_console)
-		data += ship_console.construction_controls_data()
+		data += ship_console.construction_controls_data(user)
 
 	// Add ship-specific wall/floor type data
 	data["selectedWallType"] = selected_wall_type
@@ -2125,7 +2125,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 	// Theme preference
 	data["theme"] = theme
-	data += construction_controls_data()
+	data += construction_controls_data(user)
 	data += repair_controls_data()
 
 	return data
