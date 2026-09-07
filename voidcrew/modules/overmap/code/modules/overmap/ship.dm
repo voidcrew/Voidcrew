@@ -1083,7 +1083,9 @@
 	if(crash && (state in list(OVERMAP_SHIP_FLYING, OVERMAP_SHIP_UNDOCKING, OVERMAP_SHIP_ACTING)))
 		enter_integrity_failure()
 
-	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! It will despawn in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes if unclaimed. [ADMIN_COORDJMP(shuttle?.loc)]")
+	// Crash docking finishes asynchronously. Follow the shuttle itself so this link
+	// still reaches the hull after it leaves the coordinates where it was abandoned.
+	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! It will despawn in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes if unclaimed. [ADMIN_FLW(shuttle)]")
 	log_shuttle("[name] has been abandoned and is claimable; despawn due in [SHIP_DERELICT_DESPAWN_TIME / 600] minutes.")
 
 	// Use the saved roster because ship_notify() would see the now-empty team.

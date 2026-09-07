@@ -1,28 +1,19 @@
-/** Flyable chart coordinates are 2..size-1; the outer ring is a transport seam. */
-export const wrapTile = (value: number, size: number) => {
-  const period = size - 2;
-  return ((((value - 2) % period) + period) % period) + 2;
-};
+/** Flyable chart coordinates exclude the outer ring of looping barriers. */
+export const isChartTile = (x: number, y: number, size: number) =>
+  x >= 2 && x < size && y >= 2 && y < size;
 
-/** Signed shortest displacement, also valid after panning through several copies. */
+/** Actual contact distance/bearing still uses the shorter path around the map. */
 export const wrappedDelta = (delta: number, period: number) =>
   delta - Math.floor(delta / period + 0.5) * period;
 
-/** Place a canonical coordinate in the copy nearest an unbounded camera/ship. */
-export const nearestImage = (value: number, anchor: number, period: number) =>
-  anchor + wrappedDelta(value - anchor, period);
-
-/** Copies touching a viewport, with one tile of room for marks and interpolation. */
-export const visibleCopies = (
+/** Keep the visible interval inside the single chart, including at full zoom out. */
+export const clampCameraAxis = (
   focus: number,
-  halfSpan: number,
-  period: number,
+  visibleSpan: number,
+  extent: number,
 ) => {
-  const copies: number[] = [];
-  const first = Math.floor((focus - halfSpan - 2) / period);
-  const last = Math.floor((focus + halfSpan) / period);
-  for (let copy = first; copy <= last; copy++) copies.push(copy);
-  return copies;
+  const halfSpan = Math.min(visibleSpan, extent) / 2;
+  return Math.max(halfSpan, Math.min(extent - halfSpan, focus));
 };
 
 type ChartPoint = readonly [number, number];
@@ -34,46 +25,32 @@ export type CourseSegment = {
 };
 
 /**
- * Draw the server's course one adjacent step at a time. Unwrap each edge around
- * its own start: placing every node nearest the ship would cut long detours in
- * half. Only emit copies of edges touching the viewport, including either seam.
+ * Draw the server's course at its chart coordinates. A non-adjacent step is a
+ * barrier crossing: leave a break there instead of drawing across the map or
+ * inventing another copy. The remaining route resumes at the arrival side.
  */
 export const visibleCourseSegments = (
   from: ChartPoint,
   course: readonly ChartPoint[],
   camera: ChartPoint,
   halfSpan: number,
-  period: number,
 ) => {
   const segments: CourseSegment[] = [];
   let previous = from;
   course.forEach((node, step) => {
-    const next: ChartPoint = [
-      nearestImage(node[0], previous[0], period),
-      nearestImage(node[1], previous[1], period),
-    ];
-    if (next[0] !== previous[0] || next[1] !== previous[1]) {
-      const firstX = Math.ceil(
-        (camera[0] - halfSpan - Math.max(previous[0], next[0])) / period,
-      );
-      const lastX = Math.floor(
-        (camera[0] + halfSpan - Math.min(previous[0], next[0])) / period,
-      );
-      const firstY = Math.ceil(
-        (camera[1] - halfSpan - Math.max(previous[1], next[1])) / period,
-      );
-      const lastY = Math.floor(
-        (camera[1] + halfSpan - Math.min(previous[1], next[1])) / period,
-      );
-      for (let copyX = firstX; copyX <= lastX; copyX++) {
-        for (let copyY = firstY; copyY <= lastY; copyY++) {
-          segments.push({
-            from: [previous[0] + copyX * period, previous[1] + copyY * period],
-            to: [next[0] + copyX * period, next[1] + copyY * period],
-            step,
-          });
-        }
-      }
+    const distance = Math.max(
+      Math.abs(node[0] - previous[0]),
+      Math.abs(node[1] - previous[1]),
+    );
+    if (
+      distance > 0 &&
+      distance <= 1 &&
+      Math.max(previous[0], node[0]) >= camera[0] - halfSpan &&
+      Math.min(previous[0], node[0]) <= camera[0] + halfSpan &&
+      Math.max(previous[1], node[1]) >= camera[1] - halfSpan &&
+      Math.min(previous[1], node[1]) <= camera[1] + halfSpan
+    ) {
+      segments.push({ from: previous, to: node, step });
     }
     previous = node;
   });

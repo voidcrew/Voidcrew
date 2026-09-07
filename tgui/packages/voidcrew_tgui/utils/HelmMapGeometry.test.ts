@@ -1,54 +1,55 @@
 import { describe, expect, test } from 'bun:test';
 import {
-  nearestImage,
-  visibleCopies,
+  clampCameraAxis,
+  isChartTile,
   visibleCourseSegments,
   wrappedDelta,
-  wrapTile,
 } from './HelmMapGeometry';
 
-describe('seamless helm coordinates', () => {
-  test('canonical clicks cross either seam, even after repeated panning', () => {
-    expect(wrapTile(1, 51)).toBe(50);
-    expect(wrapTile(51, 51)).toBe(2);
-    expect(wrapTile(-48, 51)).toBe(50);
-    expect(wrapTile(149, 51)).toBe(2);
-    for (let tile = 2; tile <= 50; tile++) {
-      for (let lap = -5; lap <= 5; lap++) {
-        expect(wrapTile(tile + lap * 49, 51)).toBe(tile);
+describe('bounded helm coordinates', () => {
+  test('clicks and drift stop at every barrier instead of wrapping', () => {
+    for (let tile = 2; tile < 51; tile++) {
+      expect(isChartTile(tile, 2, 51)).toBe(true);
+      expect(isChartTile(50, tile, 51)).toBe(true);
+      for (const outside of [-150, 0, 1, 51, 52, 200]) {
+        expect(isChartTile(outside, tile, 51)).toBe(false);
+        expect(isChartTile(tile, outside, 51)).toBe(false);
       }
     }
   });
-  test('camera, contacts and drift travel one tile through the seam', () => {
-    expect(nearestImage(2, 50, 49)).toBe(51);
-    expect(nearestImage(50, 2, 49)).toBe(1);
-    expect(nearestImage(3, 51, 49)).toBe(52);
+
+  test('panning and following keep the viewport inside the map at every zoom', () => {
+    for (const span of [7, 13, 25, 51]) {
+      for (const aspect of [0.5, 1, 1.6, 2]) {
+        for (const visibleSpan of [
+          span * Math.min(1, aspect),
+          span * Math.min(1, 1 / aspect),
+        ]) {
+          for (const focus of [-1000, 0, 1.5, 25.5, 49.5, 51, 1000]) {
+            const bounded = clampCameraAxis(focus, visibleSpan, 51);
+            expect(bounded - visibleSpan / 2).toBeGreaterThanOrEqual(0);
+            expect(bounded + visibleSpan / 2).toBeLessThanOrEqual(51);
+          }
+        }
+      }
+    }
+    expect(clampCameraAxis(20, 13, 51)).toBe(20);
+    expect(clampCameraAxis(-1000, 51, 51)).toBe(25.5);
+    expect(clampCameraAxis(1000, 51, 51)).toBe(25.5);
+  });
+
+  test('reversing a drag at the boundary moves immediately', () => {
+    const edge = clampCameraAxis(1000, 13, 51);
+    expect(clampCameraAxis(edge - 1, 13, 51)).toBe(edge - 1);
+    // Zooming out clamps the old anchor before the next drag applies its delta.
+    const zoomedEdge = clampCameraAxis(edge, 25, 51);
+    expect(clampCameraAxis(zoomedEdge - 1, 25, 51)).toBe(zoomedEdge - 1);
+  });
+
+  test('actual contact distances still account for looping space', () => {
     expect(wrappedDelta(50 - 2, 49)).toBe(-1);
     expect(wrappedDelta(2 - 50, 49)).toBe(1);
-    let position = 50;
-    for (let step = 1; step <= 150; step++) {
-      position = nearestImage(wrapTile(50 + step, 51), position, 49);
-      expect(position).toBe(50 + step);
-    }
-  });
-  test('visible copies cover the viewport continuously at all zoom levels', () => {
-    for (const focus of [-150, 1, 2, 25, 50, 51, 200]) {
-      for (const span of [5, 13, 49]) {
-        const copies = visibleCopies(focus, span / 2 + 1, 49);
-        for (
-          let tile = Math.floor(focus - span / 2);
-          tile <= Math.ceil(focus + span / 2);
-          tile++
-        ) {
-          expect(
-            copies.some(
-              (copy) => tile >= 2 + copy * 49 && tile <= 50 + copy * 49,
-            ),
-          ).toBe(true);
-        }
-        expect(copies.length).toBeLessThanOrEqual(3);
-      }
-    }
+    expect(wrappedDelta(15 - 10, 49)).toBe(5);
   });
 });
 
@@ -59,7 +60,7 @@ describe('autopilot route overlay', () => {
       [12, 26],
       [13, 25],
     ];
-    expect(visibleCourseSegments([10, 25], course, [12, 25], 5, 49)).toEqual([
+    expect(visibleCourseSegments([10, 25], course, [12, 25], 5)).toEqual([
       { from: [10, 25], to: [11, 26], step: 0 },
       { from: [11, 26], to: [12, 26], step: 1 },
       { from: [12, 26], to: [13, 25], step: 2 },
@@ -71,7 +72,7 @@ describe('autopilot route overlay', () => {
     ]);
   });
 
-  test('joins the route through either seam and through corners in both directions', () => {
+  test('breaks at every barrier and corner, then resumes on the arrival side', () => {
     for (const [from, to] of [
       [
         [50, 25],
@@ -86,6 +87,10 @@ describe('autopilot route overlay', () => {
         [2, 2],
       ],
       [
+        [50, 2],
+        [2, 50],
+      ],
+      [
         [2, 25],
         [50, 25],
       ],
@@ -97,20 +102,26 @@ describe('autopilot route overlay', () => {
         [2, 2],
         [50, 50],
       ],
+      [
+        [2, 50],
+        [50, 2],
+      ],
     ] as [number, number][][]) {
-      for (const lap of [-3, 0, 4]) {
-        const camera: [number, number] = [
-          from[0] + lap * 49,
-          from[1] - lap * 49,
-        ];
-        const segments = visibleCourseSegments(from, [to], camera, 3, 49);
-        expect(segments).toHaveLength(1);
-        expect(segments[0].from).toEqual(camera);
-        expect(segments[0].to).toEqual([
-          camera[0] + wrappedDelta(to[0] - from[0], 49),
-          camera[1] + wrappedDelta(to[1] - from[1], 49),
-        ]);
-      }
+      const before: [number, number] = [
+        from[0] + Math.sign(26 - from[0]),
+        from[1] + Math.sign(26 - from[1]),
+      ];
+      const after: [number, number] = [
+        to[0] + Math.sign(26 - to[0]),
+        to[1] + Math.sign(26 - to[1]),
+      ];
+      expect(
+        visibleCourseSegments(before, [from, to, after], [26, 26], 26),
+      ).toEqual([
+        { from: before, to: from, step: 0 },
+        { from: to, to: after, step: 2 },
+      ]);
+      expect(visibleCourseSegments(from, [to], from, 3)).toEqual([]);
     }
   });
 
@@ -119,7 +130,7 @@ describe('autopilot route overlay', () => {
       i + 3,
       25,
     ]);
-    const segments = visibleCourseSegments([2, 25], course, [26, 26], 24, 49);
+    const segments = visibleCourseSegments([2, 25], course, [26, 26], 24);
     expect(segments).toHaveLength(35);
     segments.forEach(({ from, to }, step) => {
       expect(from).toEqual([step + 2, 25]);
@@ -127,19 +138,10 @@ describe('autopilot route overlay', () => {
     });
   });
 
-  test('shows both visible images of a seam crossing at full zoom out', () => {
-    expect(
-      visibleCourseSegments([50, 25], [[2, 25]], [26, 26], 24.5, 49),
-    ).toEqual([
-      { from: [1, 25], to: [2, 25], step: 0 },
-      { from: [50, 25], to: [51, 25], step: 0 },
-    ]);
-  });
-
   test('drops distant edges, reached nodes and cleared courses', () => {
-    expect(
-      visibleCourseSegments([10, 10], [[11, 10]], [30, 30], 3, 49),
-    ).toEqual([]);
+    expect(visibleCourseSegments([10, 10], [[11, 10]], [30, 30], 3)).toEqual(
+      [],
+    );
     expect(
       visibleCourseSegments(
         [10, 10],
@@ -149,9 +151,11 @@ describe('autopilot route overlay', () => {
         ],
         [10, 10],
         3,
-        49,
       ),
     ).toEqual([{ from: [10, 10], to: [11, 10], step: 1 }]);
-    expect(visibleCourseSegments([10, 10], [], [10, 10], 3, 49)).toEqual([]);
+    expect(visibleCourseSegments([10, 10], [], [10, 10], 3)).toEqual([]);
+    expect(visibleCourseSegments([10, 10], [[11, 10]], [59, 59], 3)).toEqual(
+      [],
+    );
   });
 });
