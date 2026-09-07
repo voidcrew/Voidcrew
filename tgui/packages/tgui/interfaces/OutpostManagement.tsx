@@ -28,6 +28,13 @@ type Resident = Vessel & {
   steward: BooleanLike;
   treasurer: BooleanLike;
 };
+type ResearchConnection = {
+  ref: string;
+  ship: string;
+  server: string;
+  status: string;
+  approved: BooleanLike;
+};
 export type OutpostData = {
   linked: BooleanLike;
   outpost_name: string;
@@ -57,6 +64,10 @@ export type OutpostData = {
   residents: Resident[];
   resident_invites: Record<string, BooleanLike>;
   resident_blocked: string[];
+  research_servers: Vessel[];
+  research_ships: Vessel[];
+  research_connections: ResearchConnection[];
+  research_error: string | null;
 };
 type Act = (action: string, params?: Record<string, unknown>) => unknown;
 type Props = { data: OutpostData; act: Act };
@@ -335,6 +346,105 @@ function Access({ data, act }: Props) {
   );
 }
 
+function Research({ data, act }: Props) {
+  const [serverRef, setServerRef] = useState('');
+  const [shipRef, setShipRef] = useState('');
+  const servers = data.research_servers || [];
+  const ships = data.research_ships || [];
+  const connections = data.research_connections || [];
+  const server =
+    servers.find((candidate) => candidate.ref === serverRef) || servers[0];
+  const ship = ships.find((candidate) => candidate.ref === shipRef) || ships[0];
+  const canInvite = !!data.can_manage && !!server && !!ship;
+
+  return (
+    <>
+      <div className="Outpost__heading">
+        <Icon name="flask" />
+        Research connections
+      </div>
+      <label className="Outpost__field-label">Source server</label>
+      <div className="Outpost__inline">
+        <Dropdown
+          fluid
+          placeholder="No local server"
+          selected={server?.ref || ''}
+          displayText={server?.name || 'No local server'}
+          options={servers.map((candidate) => ({
+            displayText: candidate.name,
+            value: candidate.ref,
+          }))}
+          onSelected={setServerRef}
+          disabled={!data.can_manage || servers.length === 0}
+        />
+      </div>
+      <label className="Outpost__field-label">Docked ship</label>
+      <div className="Outpost__inline">
+        <Dropdown
+          fluid
+          placeholder="No docked ship"
+          selected={ship?.ref || ''}
+          displayText={ship?.name || 'No docked ship'}
+          options={ships.map((candidate) => ({
+            displayText: candidate.name,
+            value: candidate.ref,
+          }))}
+          onSelected={setShipRef}
+          disabled={!data.can_manage || ships.length === 0}
+        />
+        <Button
+          icon="link"
+          color="good"
+          disabled={!canInvite}
+          onClick={() => {
+            if (!server || !ship) {
+              return;
+            }
+            act('invite_research', { ship: ship.ref, server: server.ref });
+          }}
+        >
+          Invite
+        </Button>
+      </div>
+      {data.research_error ? (
+        <div className="Outpost__research-error" role="alert">
+          {data.research_error}
+        </div>
+      ) : null}
+      <div className="Outpost__section-label">
+        Connections<span>{connections.length}</span>
+      </div>
+      {connections.length === 0 && (
+        <Empty icon="link-slash">No research connections</Empty>
+      )}
+      {connections.map((connection) => {
+        const approved = !!connection.approved;
+        return (
+          <div className="Outpost__row" key={connection.ref}>
+            <Icon name={approved ? 'link' : 'hourglass-half'} />
+            <div className="Outpost__person">
+              <strong>{connection.ship}</strong>
+              <small>{connection.server}</small>
+            </div>
+            <span className="Outpost__research-status">
+              {connection.status || (approved ? 'Connected' : 'Pending')}
+            </span>
+            <Button
+              icon={approved ? 'link-slash' : 'xmark'}
+              color={approved ? 'bad' : undefined}
+              tooltip={approved ? 'Disconnect' : 'Cancel pending invitation'}
+              disabled={!data.can_manage}
+              onClick={() => act('revoke_research', { ref: connection.ref })}
+            >
+              {approved ? 'Disconnect' : 'Cancel'}
+            </Button>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function Registry({ data, act }: Props) {
   const [name, setName] = useState(data.outpost_name || '');
   const [memo, setMemo] = useState(data.memo || '');
@@ -574,6 +684,7 @@ export function OutpostManagementPanel({ data, act }: Props) {
     { id: 'docking', title: 'Docking', icon: 'anchor' },
     { id: 'residents', title: 'Residents', icon: 'users' },
     { id: 'access', title: 'Access', icon: 'id-card' },
+    { id: 'research', title: 'Research', icon: 'flask' },
   ];
   return (
     <div className="Outpost">
@@ -623,6 +734,8 @@ export function OutpostManagementPanel({ data, act }: Props) {
                 <Docking data={data} act={act} />
               ) : tab === 'residents' ? (
                 <Residents data={data} act={act} />
+              ) : tab === 'research' ? (
+                <Research data={data} act={act} />
               ) : (
                 <Access data={data} act={act} />
               )}

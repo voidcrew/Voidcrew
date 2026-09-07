@@ -83,6 +83,7 @@
 	var/datum/weakref/console_ref
 	var/turf/console_turf
 	var/advert_error
+	var/research_error
 
 /datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console)
 	outpost = target
@@ -188,6 +189,28 @@
 	for(var/datum/mind/member as anything in outpost.residents)
 		people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers)))
 	data["residents"] = people
+	var/list/servers = list()
+	var/list/server_options = outpost.research_server_options()
+	for(var/label in server_options)
+		var/obj/machinery/rnd/server/ship/server = server_options[label]
+		servers += list(list("ref" = REF(server), "name" = "[server.name] - [server.source_code_hdd.name]"))
+	data["research_servers"] = servers
+	var/list/ships = list()
+	var/list/ship_options = outpost.research_ship_options()
+	for(var/label in ship_options)
+		var/obj/structure/overmap/ship/ship = ship_options[label]
+		ships += list(list("ref" = REF(ship), "name" = ship.name))
+	data["research_ships"] = ships
+	var/list/connections = list()
+	for(var/datum/outpost_research_link/link as anything in outpost.research_links.Copy())
+		link.reconcile()
+		if(QDELETED(link))
+			continue
+		var/obj/structure/overmap/ship/ship = link.ship_ref.resolve()
+		var/obj/machinery/rnd/server/ship/server = link.home_server.resolve()
+		connections += list(list("ref" = REF(link), "ship" = ship.name, "server" = server.name, "status" = link.status_text(), "approved" = link.ship_approved))
+	data["research_connections"] = connections
+	data["research_error"] = research_error
 	return data
 
 /datum/player_outpost_management_ui/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -209,6 +232,21 @@
 		return service_action(action, params, user)
 	. = TRUE
 	switch(action)
+		if("invite_research")
+			research_error = null
+			var/obj/structure/overmap/ship/ship = locate(params["ship"]) in SSovermap.simulated_ships
+			var/obj/machinery/rnd/server/ship/server = locate(params["server"]) in GLOB.ship_research_servers
+			if(!ship || ship.docked != outpost || ship.state != OVERMAP_SHIP_IDLE)
+				research_error = "Ship is no longer docked"
+			else if(!server?.source_code_hdd || get_research_service_site(server) != outpost)
+				research_error = "Research server unavailable"
+			else if(!outpost.propose_research_link(user, server, ship, server.source_code_hdd))
+				research_error = "Invitation refused"
+		if("revoke_research")
+			research_error = null
+			var/datum/outpost_research_link/link = locate(params["ref"]) in outpost.research_links
+			if(link)
+				qdel(link)
 		if("rename")
 			var/new_name = trim(params["name"])
 			if(length(new_name) && new_name != outpost.name && reject_bad_text(new_name, MAX_CHARTER_LEN))

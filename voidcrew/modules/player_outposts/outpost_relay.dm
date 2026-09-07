@@ -2,8 +2,6 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 
 /obj/structure/overmap/dynamic/player_outpost
 	var/list/datum/outpost_research_link/research_links = list()
-	/// Pending requests do not evict the active ship until its replacement approves.
-	var/datum/outpost_research_link/active_research_link
 	var/home_service_timer
 
 /obj/structure/overmap/dynamic/player_outpost/proc/process_home_services()
@@ -15,20 +13,18 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	for(var/datum/outpost_research_link/link as anything in research_links.Copy())
 		qdel(link)
 
-/// The request records exactly the disk and relay the manager selected.
-/obj/structure/overmap/dynamic/player_outpost/proc/propose_research_link(mob/user, obj/machinery/rnd/server/ship/server, obj/machinery/rnd/server/relay/relay, obj/item/computer_disk/ship_disk/expected_disk)
-	var/obj/structure/overmap/ship/ship = astype(get_service_site(relay))
-	if(!can_manage(user) || QDELETED(server) || QDELETED(relay) || !ship || ship.docked != src || ship.state != OVERMAP_SHIP_IDLE)
+/// Invitations bind a docked ship and physical source disk, even before a relay exists.
+/obj/structure/overmap/dynamic/player_outpost/proc/propose_research_link(mob/user, obj/machinery/rnd/server/ship/server, obj/structure/overmap/ship/ship, obj/item/computer_disk/ship_disk/expected_disk)
+	if(!can_manage(user) || QDELETED(server) || QDELETED(ship) || ship.docked != src || ship.state != OVERMAP_SHIP_IDLE)
 		return null
-	if(get_outpost_from_atom(server) != src || !expected_disk || server.source_code_hdd != expected_disk || expected_disk.loc != server)
+	if(get_research_service_site(server) != src || !expected_disk || server.source_code_hdd != expected_disk || expected_disk.loc != server)
 		return null
-	// A relay cannot have simultaneous requests against several outposts.
-	if(relay.connection)
-		return null
-	var/datum/outpost_research_link/link = new(src, server, relay, ship)
+	for(var/datum/outpost_research_link/existing as anything in research_links)
+		if(!existing.ship_approved && existing.ship_ref.resolve() == ship && existing.home_server.resolve() == server && existing.valid_endpoints())
+			return existing
+	var/datum/outpost_research_link/link = new(src, server, ship)
 	research_links += link
-	relay.connection = link
-	ship.ship_notify("[name] requests a research connection. Captain approval is available at [relay].", "RESEARCH")
+	ship.ship_notify("[name] invites you to share research. A crew member can accept at an R&D relay.", "RESEARCH")
 	return link
 
 /datum/outpost_research_link
@@ -37,16 +33,14 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	var/datum/weakref/home_server
 	var/datum/weakref/home_disk
 	var/datum/weakref/ship_relay
-	var/datum/weakref/captain_ref
 	var/owner_ckey
 	var/ship_approved = FALSE
 
-/datum/outpost_research_link/New(obj/structure/overmap/dynamic/player_outpost/home, obj/machinery/rnd/server/ship/server, obj/machinery/rnd/server/relay/relay, obj/structure/overmap/ship/ship)
+/datum/outpost_research_link/New(obj/structure/overmap/dynamic/player_outpost/home, obj/machinery/rnd/server/ship/server, obj/structure/overmap/ship/ship)
 	home_ref = WEAKREF(home)
 	ship_ref = WEAKREF(ship)
 	home_server = WEAKREF(server)
 	home_disk = WEAKREF(server.source_code_hdd)
-	ship_relay = WEAKREF(relay)
 	owner_ckey = home.founder_ckey
 	RegisterSignal(server, COMSIG_QDELETING, PROC_REF(endpoint_deleted))
 	RegisterSignal(server.source_code_hdd, COMSIG_QDELETING, PROC_REF(endpoint_deleted))
@@ -56,8 +50,6 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	var/obj/structure/overmap/dynamic/player_outpost/home = home_ref?.resolve()
 	var/obj/machinery/rnd/server/relay/relay = ship_relay?.resolve()
 	ship_approved = FALSE
-	if(home?.active_research_link == src)
-		home.active_research_link = null
 	home?.research_links.Remove(src)
 	if(relay?.connection == src)
 		relay.connection = null
@@ -72,25 +64,24 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	SIGNAL_HANDLER
 	qdel(src)
 
-/// Undocking does not change approval. Physical replacement and command changes do.
+/// Invitations survive departure; connected relays retain access until revoked or replaced.
 /datum/outpost_research_link/proc/valid_endpoints()
 	var/obj/structure/overmap/dynamic/player_outpost/home = home_ref?.resolve()
 	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
 	var/obj/machinery/rnd/server/ship/server = home_server?.resolve()
 	var/obj/machinery/rnd/server/relay/relay = ship_relay?.resolve()
 	var/obj/item/computer_disk/ship_disk/disk = home_disk?.resolve()
-	if(!home || !ship || !server || !relay || !disk || relay.connection != src || owner_ckey != home.founder_ckey)
+	if(!home || !ship || !server || !disk || owner_ckey != home.founder_ckey || !(src in home.research_links))
 		return FALSE
 	if(server.source_code_hdd != disk || disk.loc != server || server.stored_research != disk.stored_research)
 		return FALSE
 	if(get_research_service_site(server) != home)
 		return FALSE
-	// A shuttle relocates its turfs in stages. Check its final footprint when idle.
-	if(ship.state == OVERMAP_SHIP_IDLE && get_service_site(relay) != ship)
-		return FALSE
 	if(ship_approved)
-		var/datum/mind/captain = captain_ref?.resolve()
-		if(home.active_research_link != src || !captain || !ship.is_ship_captain(captain.current))
+		if(!relay || relay.connection != src)
+			return FALSE
+		// A shuttle relocates its turfs in stages. Check its final footprint when idle.
+		if(ship.state == OVERMAP_SHIP_IDLE && get_service_site(relay) != ship)
 			return FALSE
 	return TRUE
 
@@ -116,18 +107,16 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
 	return ship && (ship.state in list(OVERMAP_SHIP_DOCKING, OVERMAP_SHIP_UNDOCKING))
 
-/datum/outpost_research_link/proc/approve(mob/living/user)
+/datum/outpost_research_link/proc/approve(mob/living/user, obj/machinery/rnd/server/relay/relay)
 	var/obj/structure/overmap/dynamic/player_outpost/home = home_ref?.resolve()
 	var/obj/structure/overmap/ship/ship = ship_ref?.resolve()
-	if(ship_approved || !valid_endpoints() || !ship.is_ship_captain(user) || ship.docked != home || ship.state != OVERMAP_SHIP_IDLE)
+	if(ship_approved || !valid_endpoints() || QDELETED(relay) || relay.connection || get_service_site(relay) != ship || !relay.can_manage_connection(user) || ship.docked != home || ship.state != OVERMAP_SHIP_IDLE)
 		return FALSE
 	var/obj/machinery/rnd/server/ship/server = home_server.resolve()
-	var/obj/machinery/rnd/server/relay/relay = ship_relay.resolve()
 	if(!server.is_operational || !relay.is_operational || server.research_disabled || relay.research_disabled)
 		return FALSE
-	QDEL_NULL(home.active_research_link)
-	home.active_research_link = src
-	captain_ref = WEAKREF(user.mind)
+	ship_relay = WEAKREF(relay)
+	relay.connection = src
 	ship_approved = TRUE
 	relay.stored_research = server.stored_research
 	relay.stored_research.techweb_servers |= relay
@@ -140,8 +129,10 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	if(!valid_endpoints())
 		qdel(src)
 		return
+	if(!ship_approved)
+		return
 	var/obj/machinery/rnd/server/relay/relay = ship_relay.resolve()
-	if(ship_approved && !available() && !ship_is_moving())
+	if(!available() && !ship_is_moving())
 		relay.disconnect_consumers()
 	relay.update_appearance()
 
@@ -149,13 +140,13 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	if(!valid_endpoints())
 		return "Disconnected"
 	if(!ship_approved)
-		return "Awaiting captain"
+		return "Invited"
 	return available() ? "Connected" : "Offline"
 
 /// This machine exposes a disk, never owns or copies one. It cannot serve another relay.
 /obj/machinery/rnd/server/relay
 	name = "R&D relay"
-	desc = "Connects ship equipment to an outpost's R&D server. Copy its link with a multitool, then link equipment normally. The outpost requests a connection at its server; the ship captain approves or disconnects with a secondary multitool click here."
+	desc = "Connects ship equipment to shared outpost research. Click empty-handed to accept an invitation or disconnect. Copy an active link with a multitool to connect machinery."
 	circuit = /obj/item/circuitboard/machine/rdserver/relay
 	var/datum/outpost_research_link/connection
 
@@ -188,7 +179,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 		balloon_alert(user, "outpost connection required")
 		return TRUE
 	if(!connection.ship_approved)
-		balloon_alert(user, "captain approval required")
+		balloon_alert(user, "accept invitation empty-handed")
 		return TRUE
 	if(!connection_available())
 		balloon_alert(user, "relay offline")
@@ -228,78 +219,77 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	connection?.reconcile()
 
 /obj/machinery/rnd/server/relay/get_status_text()
-	return connection?.status_text() || "Unpaired"
+	return connection ? connection.status_text() : "Unpaired"
 
 /obj/machinery/rnd/server/relay/examine(mob/user)
 	. = ..()
 	var/obj/structure/overmap/dynamic/player_outpost/home = connection?.home_ref.resolve()
 	. += span_notice("[home ? "[home.name]: [connection.status_text()]" : "Unpaired"].")
 
-/obj/machinery/rnd/server/relay/multitool_act_secondary(mob/living/user, obj/item/multitool/tool)
+/// Ship membership grants control of the local relay, including after a captain change.
+/obj/machinery/rnd/server/relay/proc/can_manage_connection(mob/living/user)
 	var/obj/structure/overmap/ship/ship = astype(get_service_site(src))
-	if(!ship?.is_ship_captain(user) || !user.can_perform_action(src))
-		balloon_alert(user, "ship captain required")
-		return ITEM_INTERACT_BLOCKING
+	return user?.mind && ship && (user.mind in ship.ship_team?.members) && user.can_perform_action(src)
+
+/obj/machinery/rnd/server/relay/proc/invitation_options()
+	var/list/options = list()
+	var/obj/structure/overmap/ship/ship = astype(get_service_site(src))
+	if(!ship || ship.state != OVERMAP_SHIP_IDLE)
+		return options
+	var/obj/structure/overmap/dynamic/player_outpost/home = astype(ship.docked)
+	for(var/datum/outpost_research_link/link as anything in home?.research_links)
+		if(link.ship_approved || link.ship_ref.resolve() != ship || !link.valid_endpoints())
+			continue
+		var/obj/machinery/rnd/server/ship/server = link.home_server.resolve()
+		options["[length(options) + 1]. [home.name] - [server.name]"] = link
+	return options
+
+/obj/machinery/rnd/server/relay/attack_hand(mob/living/user, list/modifiers)
+	. = ..()
+	if(.)
+		return
+	if(!can_manage_connection(user))
+		balloon_alert(user, "ship crew required")
+		return TRUE
+	INVOKE_ASYNC(src, PROC_REF(prompt_connection), user)
+	return TRUE
+
+/obj/machinery/rnd/server/relay/proc/prompt_connection(mob/living/user)
+	if(!can_manage_connection(user))
+		return
 	var/datum/outpost_research_link/selected = connection
-	if(QDELETED(selected))
-		balloon_alert(user, "no connection request")
-		return ITEM_INTERACT_BLOCKING
+	if(selected)
+		var/obj/structure/overmap/dynamic/player_outpost/home = selected.home_ref.resolve()
+		var/confirmed = confirm_connection(user, home, TRUE)
+		if(!QDELETED(src) && !QDELETED(selected) && connection == selected && can_manage_connection(user) && confirmed)
+			qdel(selected)
+			balloon_alert(user, "disconnected")
+		return
+	var/list/options = invitation_options()
+	if(!length(options))
+		balloon_alert(user, "no outpost invitation")
+		return
+	if(length(options) == 1)
+		selected = options[options[1]]
+	else
+		selected = options[tgui_input_list(user, "Research invitation", "R&D Relay", options)]
+	if(QDELETED(src) || QDELETED(selected) || !can_manage_connection(user))
+		return
 	var/obj/structure/overmap/dynamic/player_outpost/home = selected.home_ref.resolve()
-	var/action = selected.ship_approved ? "Disconnect" : "Approve"
-	var/choice = tgui_alert(user, "[action] research with [home.name]?", "R&D Relay", list(action, "Cancel"))
-	if(QDELETED(src) || QDELETED(selected) || QDELETED(user) || !user.can_perform_action(src) || get_service_site(src) != ship || !ship.is_ship_captain(user) || connection != selected || choice != action)
-		return ITEM_INTERACT_BLOCKING
-	if(action == "Disconnect")
-		qdel(selected)
-	else if(!selected.approve(user))
-		balloon_alert(user, "connection refused: check docking and power")
-		return ITEM_INTERACT_BLOCKING
-	balloon_alert(user, action == "Disconnect" ? "disconnected" : "connected")
-	return ITEM_INTERACT_SUCCESS
-
-/obj/machinery/rnd/server/ship/multitool_act_secondary(mob/living/user, obj/item/multitool/tool)
-	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
-	if(!home?.can_manage(user) || !user.can_perform_action(src))
-		balloon_alert(user, "outpost management permission required")
-		return ITEM_INTERACT_BLOCKING
-	INVOKE_ASYNC(home, TYPE_PROC_REF(/obj/structure/overmap/dynamic/player_outpost, prompt_research_relay), user, src)
-	return ITEM_INTERACT_SUCCESS
-
-/obj/structure/overmap/dynamic/player_outpost/proc/prompt_research_relay(mob/living/user, obj/machinery/rnd/server/ship/server)
-	var/obj/item/computer_disk/ship_disk/expected_disk = server.source_code_hdd
-	var/list/options = list("Connect ship" = "connect")
-	for(var/datum/outpost_research_link/link as anything in research_links)
-		var/obj/structure/overmap/ship/ship = link.ship_ref.resolve()
-		options["[length(options)]. Disconnect [ship?.name] ([link.status_text()])"] = link
-	var/choice = tgui_input_list(user, "Connection", "Outpost R&D", options)
-	if(QDELETED(src) || QDELETED(server) || QDELETED(user) || !user.can_perform_action(server) || !can_manage(user) || get_outpost_from_atom(server) != src)
+	var/confirmed = confirm_connection(user, home)
+	if(QDELETED(src) || QDELETED(selected) || !can_manage_connection(user) || !confirmed)
 		return
-	var/datum/outpost_research_link/selected = options[choice]
-	if(istype(selected) && !QDELETED(selected) && (selected in research_links))
-		qdel(selected)
-		server.balloon_alert(user, "disconnected")
+	if(!selected.approve(user, src))
+		balloon_alert(user, "invitation unavailable: check docking and power")
 		return
-	if(options[choice] != "connect")
-		return
-	var/list/relays = research_relay_options()
-	if(!length(relays))
-		server.balloon_alert(user, "no available docked ship relay")
-		return
-	var/obj/machinery/rnd/server/relay/relay = relays[tgui_input_list(user, "Ship relay", "Outpost R&D", relays)]
-	if(QDELETED(src) || QDELETED(server) || QDELETED(relay) || QDELETED(user) || !user.can_perform_action(server))
-		return
-	if(!propose_research_link(user, server, relay, expected_disk))
-		server.balloon_alert(user, "connection request refused")
-		return
-	server.balloon_alert(user, "awaiting ship captain")
+	balloon_alert(user, "research connected")
 
 /obj/machinery/rnd/server/ship/examine(mob/user)
 	. = ..()
 	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
-	if(!home)
-		return
-	. += span_notice("An outpost manager can connect a docked ship's R&D relay with a secondary multitool click. The captain approves at the relay. One ship stays connected, including after departure.")
-	for(var/datum/outpost_research_link/link as anything in home.research_links)
-		if(link.home_server.resolve() == src)
-			var/obj/structure/overmap/ship/ship = link.ship_ref.resolve()
-			. += span_notice("[ship?.name]: [link.status_text()].")
+	if(home)
+		. += span_notice("Invite docked ships through Outpost Management to share this server's research.")
+
+/obj/machinery/rnd/server/relay/proc/confirm_connection(mob/living/user, obj/structure/overmap/dynamic/player_outpost/home, disconnect = FALSE)
+	var/action = disconnect ? "Disconnect" : "Accept"
+	return tgui_alert(user, disconnect ? "Disconnect from [home?.name]?" : "Share research with [home?.name]?", "R&D Relay", list(action, "Cancel")) == action

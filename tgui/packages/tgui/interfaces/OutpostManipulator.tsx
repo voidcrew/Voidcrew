@@ -325,7 +325,7 @@ const OutpostDetails = ({ selected, busy, act }: DetailsProps) => {
                 {selected.freight_error ? ` - ${selected.freight_error}` : null}
               </Box>
               <Box color="label">
-                Research relay: {selected.research_connection}
+                Research connections: {selected.research_connection}
               </Box>
             </Stack.Item>
           </Stack>

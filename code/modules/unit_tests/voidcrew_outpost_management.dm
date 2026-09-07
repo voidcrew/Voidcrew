@@ -115,6 +115,31 @@
 	TEST_ASSERT(visitor in home.mapzone.get_mind_mobs_in(home.footprint), "The visitor must exercise a ship inside the habitat footprint.")
 	TEST_ASSERT_NULL(get_outpost_from_atom(visitor), "A visiting ship must remain outside claim service ownership.")
 
+	// Management sends ship invitations before the crew has built a relay.
+	var/obj/machinery/rnd/server/ship/research_server = allocate(__IMPLIED_TYPE__, console_turf)
+	var/obj/item/computer_disk/ship_disk/research_disk = allocate(__IMPLIED_TYPE__, console_turf)
+	research_server.attacked_by(research_disk, owner)
+	var/old_ship_state = visitor_ship.state
+	visitor_ship.docked = home
+	visitor_ship.state = "idle"
+	var/list/invite_params = list("ship" = REF(visitor_ship), "server" = REF(research_server))
+	act(hud_panel, owner, "invite_research", null, invite_params)
+	TEST_ASSERT_EQUAL(length(home.research_links), 1, "Management could not invite a docked ship without a relay")
+	var/datum/outpost_research_link/invitation = home.research_links[1]
+	TEST_ASSERT_EQUAL(invitation.ship_ref.resolve(), visitor_ship, "Management invited the wrong ship")
+	TEST_ASSERT_NULL(invitation.ship_relay, "Sending an invitation invented a ship relay")
+	act(hud_panel, owner, "invite_research", null, invite_params)
+	TEST_ASSERT_EQUAL(length(home.research_links), 1, "Repeated management clicks duplicated a pending invitation")
+	act(physical_panel, visitor, "revoke_research", invitation)
+	TEST_ASSERT(!QDELETED(invitation), "A visitor revoked the outpost's research invitation")
+	visitor_ship.docked = null
+	act(hud_panel, owner, "invite_research", null, invite_params)
+	TEST_ASSERT_NOTNULL(hud_panel.research_error, "Inviting a departed ship gave no rejection feedback")
+	act(hud_panel, owner, "revoke_research", invitation)
+	TEST_ASSERT(QDELETED(invitation), "Management could not cancel a pending invitation")
+	TEST_ASSERT_EQUAL(length(home.research_links), 0, "Cancellation retained the pending invitation")
+	visitor_ship.state = old_ship_state
+
 	var/list/data = hud_panel.ui_data(owner)
 	var/list/candidate_keys = list()
 	for(var/list/entry as anything in data["candidates"])

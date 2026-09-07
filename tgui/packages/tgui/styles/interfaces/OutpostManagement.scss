@@ -115,6 +115,8 @@ $muted: #969588;
 .Outpost__dot { flex: 0 0 5px; height: 5px; border-radius: 50%; background: #645f53; }
 .Outpost__dot--online { background: #8dbb79; box-shadow: 0 0 6px #63945280; }
 .Outpost__quiet { padding: 10px 0; color: $muted; font-size: 11px; }
+.Outpost__research-error { margin-top: 10px; color: #e7a296; font-size: 11px; }
+.Outpost__research-status { flex: 0 0 auto; color: $muted; font-size: 10px; text-align: right; }
 .Outpost__empty {
   display: flex;
   align-items: center;

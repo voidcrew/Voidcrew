@@ -45,15 +45,15 @@ Build an **R&D server** and install its source-code disk. Copy its link with a m
 
 To share research with a ship, build an **R&D relay** aboard it. Print the relay board from Fundamental Science at a circuit imprinter. The relay needs no disk; keep the research server at the outpost.
 
-1. Dock the ship. As outpost owner or management delegate, secondary-click the outpost server with a multitool and choose **Connect ship**, then its relay.
-2. As ship captain, secondary-click the relay with a multitool and approve.
+1. In **Outpost Management > Research**, choose your source server and a docked ship, then press **Invite**. You can send the invitation before its crew builds a relay.
+2. A ship crew member clicks the **R&D relay empty-handed** and presses **Accept**.
 3. Copy the relay's link with a multitool and connect ship equipment normally. Equipment built later can use the same link.
 
-Both labs now use **one tech tree and points balance**, including after undocking. A technology researched at either site becomes available at both. The ship's separate research disk stays independent, and fabricators still need local materials.
+Any number of ship relays can share the outpost server's **tech tree and research points**, including after undocking. Research earned or purchased at one connected lab is available at the others. Each ship keeps its own bank account, separate research disk, and fabrication materials.
 
-Each outpost allows **one active ship connection**. Approving a replacement disconnects the previous ship. Either side can disconnect using the same multitool menu. You cannot download a technology disk through the relay.
+Outpost Management lists invitations and connections. Cancel an invitation or disconnect an individual relay there; the other fleet ships keep their access. Ship crew can also click their relay empty-handed to disconnect. You cannot download a technology disk through the relay.
 
-Keep both endpoints powered. After a power outage, restore power and relink equipment. Removing the outpost disk, replacing an endpoint, or changing the owner or approving captain requires a new approval while docked.
+Keep the relay and outpost server powered. After a power outage, restore power and relink equipment. Removing the source disk, replacing an endpoint, or changing the outpost owner requires a new invitation. A change of ship captain keeps the connection intact.
 
 ## Residents and visitors
 
