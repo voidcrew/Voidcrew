@@ -1,7 +1,7 @@
 /**
  * # Outpost Management Console
  *
- * A physical launcher for the same claim-bound panel as the owner HUD action.
+ * The physical access point for the claim-bound management panel.
  * Visitors can inspect the registry here; authority remains claim-owned.
  *
  * The circuit board exists so a raided or deconstructed console can be
@@ -22,7 +22,7 @@
 	light_color = LIGHT_COLOR_ORANGE
 	/// The outpost this console manages (set by link_interior_machinery, or found on Initialize for rebuilt consoles)
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
-	/// Reused claim-bound UI; the console is only a compatible physical launcher.
+	/// Claim-bound panels belonging to users of this console.
 	var/list/datum/player_outpost_management_ui/panels = list()
 
 // Machinery always late-initializes; consoles the shell spawned get linked by

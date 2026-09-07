@@ -203,7 +203,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 				return
 			COOLDOWN_RESET(home, rename_cooldown)
 			home.set_outpost_name(trim(new_name), user)
-			home.sync_management_lifecycle()
 		if("owner")
 			var/mob/living/recipient = voidcrew_admin_pick_player(user.client, "Assign Outpost Owner")
 			if(!valid_selection(home, user) || !recipient?.ckey || !recipient.mind)
@@ -269,7 +268,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 					roles -= resident
 				else
 					roles |= resident
-			home.sync_management_lifecycle()
 		if("reset_resident_access")
 			if(!confirm(home, user, "Clear remembered return access and invitations?"))
 				return
@@ -290,7 +288,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 				else if(istype(machine, /obj/machinery/cryopod))
 					var/obj/machinery/cryopod/pod = machine
 					pod.relink_to_ship()
-			home.sync_management_lifecycle()
 		if("revoke_research")
 			if(!confirm(home, user, "Disconnect research relays? The outpost keeps its research."))
 				return

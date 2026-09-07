@@ -146,7 +146,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 /// This machine exposes a disk, never owns or copies one. It cannot serve another relay.
 /obj/machinery/rnd/server/relay
 	name = "R&D relay"
-	desc = "Connects ship equipment to shared outpost research. Click empty-handed to accept an invitation or disconnect. Copy an active link with a multitool to connect machinery."
+	desc = "Connects ship equipment to shared outpost research."
 	circuit = /obj/item/circuitboard/machine/rdserver/relay
 	var/datum/outpost_research_link/connection
 

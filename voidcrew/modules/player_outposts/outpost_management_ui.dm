@@ -1,6 +1,5 @@
 /**
- * A claim-bound management action. The physical console remains a launcher for
- * rebuild compatibility, while the action is the owner's normal entry point.
+ * A claim-bound management panel accessed through a console or installed Registry uplink.
  */
 
 /datum/asset/simple/outpost_management_plate
@@ -8,95 +7,34 @@
 		"outpost_management_plate.png" = 'voidcrew/modules/cyberware/icons/chrome_cradle_plate.png',
 	)
 
-/datum/action/innate/player_outpost_management
-	name = "Outpost Management"
-	desc = "Open the registered outpost management panel."
-	button_icon = 'icons/hud/actions.dmi'
-	button_icon_state = "round_end"
-	check_flags = AB_CHECK_CONSCIOUS
-	var/obj/structure/overmap/dynamic/player_outpost/managed_outpost
-	var/datum/player_outpost_management_ui/panel
-
-/datum/action/innate/player_outpost_management/New(mob/living/target, obj/structure/overmap/dynamic/player_outpost/outpost)
-	. = ..(target?.mind)
-	managed_outpost = outpost
-
-/datum/action/innate/player_outpost_management/Destroy()
-	managed_outpost = null
-	QDEL_NULL(panel)
-	return ..()
-
-/datum/action/innate/player_outpost_management/update_button_name(atom/movable/screen/movable/action_button/button, force = FALSE)
-	name = QDELETED(managed_outpost) ? initial(name) : "Outpost Management ([managed_outpost.name])"
-	return ..()
-
-/datum/action/innate/player_outpost_management/Activate()
-	if(QDELETED(managed_outpost) || !managed_outpost.is_current_management_user(owner))
-		to_chat(owner, span_warning("You no longer hold management authorization for this outpost."))
-		qdel(src)
-		return
-	if(!panel)
-		panel = new(managed_outpost, owner)
-	panel.manager = owner
-	panel.ui_interact(owner)
-
-/// Retired bodies may retain a ckey, but only the owner's current mind holds the HUD.
-/obj/structure/overmap/dynamic/player_outpost/proc/is_current_management_user(mob/living/user)
-	if(!istype(user) || QDELETED(user.mind) || user.mind.current != user || !can_manage(user))
-		return FALSE
-	var/datum/mind/current_owner = founder_mind?.resolve()
-	return !is_owner(user) || !current_owner || current_owner == user.mind
-
-/proc/grant_player_outpost_management(mob/living/user, obj/structure/overmap/dynamic/player_outpost/outpost)
-	if(!user || QDELETED(outpost) || !outpost.is_current_management_user(user))
-		return null
-	for(var/datum/action/innate/player_outpost_management/existing in user.actions)
-		if(existing.managed_outpost == outpost)
-			existing.build_all_button_icons(UPDATE_BUTTON_NAME)
-			return existing
-	var/datum/action/innate/player_outpost_management/granted = new(user, outpost)
-	granted.Grant(user)
-	return granted
-
-/proc/remove_player_outpost_management(mob/living/user, obj/structure/overmap/dynamic/player_outpost/outpost)
-	if(!user || !outpost)
-		return
-	var/list/retiring = list()
-	for(var/datum/action/innate/player_outpost_management/existing in user.actions)
-		if(existing.managed_outpost == outpost)
-			retiring += existing
-	for(var/datum/action/innate/player_outpost_management/doomed as anything in retiring)
-		qdel(doomed)
-
-/proc/refresh_player_outpost_management(obj/structure/overmap/dynamic/player_outpost/outpost)
-	if(QDELETED(outpost))
-		return
-	for(var/mob/living/user as anything in GLOB.mob_living_list)
-		if(outpost.is_current_management_user(user))
-			grant_player_outpost_management(user, outpost)
-		else
-			remove_player_outpost_management(user, outpost)
-
 /datum/player_outpost_management_ui
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/mob/manager
 	var/datum/weakref/console_ref
+	var/datum/weakref/uplink_ref
 	var/turf/console_turf
 	var/advert_error
 	var/research_error
 
-/datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console)
+/datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console, obj/item/organ/cyberimp/cyberware/registry_uplink/uplink)
 	outpost = target
 	manager = user
 	if(console)
 		console_ref = WEAKREF(console)
 		console_turf = get_turf(console)
+	else if(uplink)
+		uplink_ref = WEAKREF(uplink)
+		uplink.management_panels += src
 
 /datum/player_outpost_management_ui/Destroy()
 	SStgui.close_uis(src)
 	var/obj/machinery/computer/player_outpost_management/console = console_ref?.resolve()
 	if(console)
 		console.panels -= src
+	var/obj/item/organ/cyberimp/cyberware/registry_uplink/uplink = uplink_ref?.resolve()
+	if(uplink)
+		uplink.management_panels -= src
+	uplink_ref = null
 	console_ref = null
 	console_turf = null
 	outpost = null
@@ -113,23 +51,24 @@
 	return GLOB.always_state
 
 /datum/player_outpost_management_ui/ui_host(mob/user)
-	return console_ref ? console_ref.resolve() : manager
+	return console_ref ? console_ref.resolve() : uplink_ref?.resolve()
 
 /datum/player_outpost_management_ui/ui_status(mob/user, datum/ui_state/state)
 	if(QDELETED(outpost) || QDELETED(user) || user != manager)
 		return UI_CLOSE
-	if(console_ref)
-		var/obj/machinery/computer/player_outpost_management/console = console_ref.resolve()
-		if(!console || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
+	if(uplink_ref)
+		var/obj/item/organ/cyberimp/cyberware/registry_uplink/uplink = uplink_ref.resolve()
+		if(!uplink?.can_manage_outpost(user, outpost))
 			return UI_CLOSE
-		var/physical_status = console.ui_status(user, console.ui_state(user))
-		return min(physical_status, isliving(user) && (outpost.is_current_management_user(user) || outpost.can_claim(user)) ? UI_INTERACTIVE : UI_UPDATE)
-	if(!isliving(user) || !outpost.is_current_management_user(user))
+		return user.shared_ui_interaction(user)
+	var/obj/machinery/computer/player_outpost_management/console = console_ref?.resolve()
+	if(QDELETED(console) || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
 		return UI_CLOSE
-	return user.shared_ui_interaction(user)
+	var/physical_status = console.ui_status(user, console.ui_state(user))
+	return min(physical_status, isliving(user) && (outpost.is_current_management_user(user) || outpost.can_claim(user)) ? UI_INTERACTIVE : UI_UPDATE)
 
 /datum/player_outpost_management_ui/ui_close(mob/user)
-	if(console_ref && !QDELETED(src))
+	if(!QDELETED(src))
 		qdel(src)
 
 /datum/player_outpost_management_ui/ui_assets(mob/user)
@@ -391,28 +330,10 @@
 				outpost.residents -= member
 				outpost.stewards -= member
 				outpost.treasurers -= member
-				outpost.sync_management_lifecycle()
 			else if(outpost.is_owner(user) && (params["role"] in list("steward", "treasurer")))
 				var/list/permissions = params["role"] == "steward" ? outpost.stewards : outpost.treasurers
 				if(member in permissions)
 					permissions -= member
 				else
 					permissions |= member
-				outpost.sync_management_lifecycle()
 	return TRUE
-
-/// A new character can still own a round-long claim after their old mind is gone.
-/mob/living/Login()
-	. = ..()
-	if(. && client)
-		sync_player_outpost_management()
-
-/mob/living/proc/sync_player_outpost_management()
-	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
-		if(home.is_owner(src) && mind)
-			home.founder_mind = WEAKREF(mind)
-			home.sync_management_lifecycle()
-		else if(home.can_manage(src))
-			grant_player_outpost_management(src, home)
-		else
-			remove_player_outpost_management(src, home)

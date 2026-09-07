@@ -25,7 +25,9 @@ Both include a bank terminal, cargo console, empty ore silo, resident cryopod, m
 
 ## Managing and building
 
-The buyer receives an **Outpost Management** button on their HUD. Use it to rename the outpost, set a public memo, manage docking and residents, grant permissions, or transfer ownership. The management console opens the same panel.
+Use the **outpost management console** to rename the outpost, set a public memo, manage docking and residents, grant permissions, or transfer ownership.
+
+A **Registry uplink** implant adds an **Outpost Management** action that works from anywhere, including other ships and sectors. Splice sells it for **2,800 credits**; it uses **2 neural load**. Choose any outpost you own or have management permission for. The implant grants no additional permissions, and removal or chrome failure disconnects remote access. Without it, use the physical console.
 
 You can delegate management, bank withdrawals, and construction separately. Your founding ship's crew automatically become residents with construction permission. Other residents need construction permission granted separately.
 
