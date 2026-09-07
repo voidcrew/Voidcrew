@@ -17,7 +17,7 @@
 	for(var/obj/machinery/rnd/server/server as anything in web.techweb_servers)
 		if(istype(server, /obj/machinery/rnd/server/relay))
 			continue
-		if(same_service_site(machine, server))
+		if(server.research_link_available(machine))
 			return TRUE
 	return !web.requires_physical_server && !length(web.techweb_servers) && !get_service_site(machine)
 
@@ -56,11 +56,11 @@
 	var/list/data = .
 	for(var/list/server_data as anything in data["servers"]?.Copy())
 		var/obj/machinery/rnd/server/server = locate(server_data["server_ref"])
-		if(!same_service_site(src, server))
+		if(!same_research_service_site(src, server))
 			data["servers"] -= list(server_data)
 	for(var/list/console_data as anything in data["consoles"]?.Copy())
 		var/obj/machinery/computer/rdconsole/console = locate(console_data["console_ref"])
-		if(!same_service_site(src, console))
+		if(!same_research_service_site(src, console))
 			data["consoles"] -= list(console_data)
 
 /obj/machinery/computer/rdservercontrol/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -69,10 +69,10 @@
 	// Sharing research does not grant control over the other site's equipment.
 	if(action == "lockdown_server")
 		var/obj/machinery/rnd/server/server = locate(params["selected_server"])
-		if(!same_service_site(src, server))
+		if(!same_research_service_site(src, server))
 			return TRUE
 	if(action == "lock_console")
 		var/obj/machinery/computer/rdconsole/console = locate(params["selected_console"])
-		if(!same_service_site(src, console))
+		if(!same_research_service_site(src, console))
 			return TRUE
 	return ..()

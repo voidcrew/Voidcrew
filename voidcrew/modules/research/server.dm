@@ -159,7 +159,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 
 /// A physical server serves its own site. Relays additionally validate both endpoints.
 /obj/machinery/rnd/server/proc/research_link_available(atom/machine)
-	return same_service_site(machine, src)
+	return same_research_service_site(machine, src)
 
 /obj/machinery/rnd/server/ship/refresh_working()
 	. = ..()

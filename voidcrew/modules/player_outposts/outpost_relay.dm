@@ -83,7 +83,7 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 		return FALSE
 	if(server.source_code_hdd != disk || disk.loc != server || server.stored_research != disk.stored_research)
 		return FALSE
-	if(get_outpost_from_atom(server) != home)
+	if(get_research_service_site(server) != home)
 		return FALSE
 	// A shuttle relocates its turfs in stages. Check its final footprint when idle.
 	if(ship.state == OVERMAP_SHIP_IDLE && get_service_site(relay) != ship)

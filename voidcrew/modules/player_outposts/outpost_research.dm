@@ -24,6 +24,24 @@
 /datum/component/remote_materials/check_z_level(obj/silo_to_check = silo)
 	return silo_to_check && same_service_site(parent, silo_to_check)
 
+/// During a shuttle move, room ownership is already authoritative even while
+/// the port's bounding box still points at the previous end of the move.
+/proc/get_research_service_site(atom/machine)
+	var/area/shuttle/voidcrew/ship_area = astype(get_area(machine))
+	var/obj/structure/overmap/ship/ship = ship_area?.shuttle_port?.current_ship
+	if(ship && (ship.state in list(OVERMAP_SHIP_DOCKING, OVERMAP_SHIP_UNDOCKING)) && (ship_area in ship.shuttle?.shuttle_areas))
+		return ship
+	return get_service_site(machine)
+
+/proc/same_research_service_site(atom/first, atom/second)
+	if(!first || !second)
+		return FALSE
+	var/obj/structure/overmap/first_site = get_research_service_site(first)
+	var/obj/structure/overmap/second_site = get_research_service_site(second)
+	if(first_site || second_site)
+		return first_site && first_site == second_site
+	return same_service_site(first, second)
+
 /proc/can_link_site_techweb(atom/machine, datum/techweb/web)
 	if(!web)
 		return FALSE

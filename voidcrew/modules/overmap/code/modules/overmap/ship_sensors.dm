@@ -188,7 +188,7 @@
 	for(var/obj/machinery/rnd/server/relay/relay as anything in GLOB.outpost_research_relays)
 		if(QDELETED(relay) || !relay.stored_research || !relay.connection_available())
 			continue
-		if(get_service_site(relay) != src)
+		if(get_research_service_site(relay) != src)
 			continue
 		return relay.stored_research
 	return null
