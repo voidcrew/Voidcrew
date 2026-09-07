@@ -49,15 +49,15 @@ Ten named sites never appear on the chart on their own. The only way to one is t
 | Kestrel Anchorage, a Syndicate depot still under orders | Lawless space |
 | Nullstack Arcade, an overrun netpod parlour | Lawless space |
 
-Each of the three outpost types deals three charts onto its shelf, drawn from one galaxy-wide pool, so a tip sold at one outpost is gone everywhere. One chart per ruin per round, and one use each. Contested-lane tips run 3000–4800 credits, sometimes with a voucher or two attached; deep-lane tips cost three vouchers, and the hardest of them add credits on top. See [Trader Outposts](trader-outposts.md) and [Money & Trade](money-and-trade.md).
+Each outpost stocks three randomly selected charts. Sold ruin charts return with supply convoys, and each purchase gives your ship a fresh expedition. See [Trader Outposts](trader-outposts.md) for destinations and prices.
 
-Buying uploads a sealed rumour to your ship. Nothing exists yet. The ruin is spawned when someone hits reveal at the helm, which puts it on the chart as a gold "encrypted signal" and marks it as a waypoint. Reveal it when the crew is actually ready, not the moment you dock back home. Rare ruins are one-shots: clearing one does not seed a replacement.
+Buying uploads a sealed rumour to your ship. Use the helm's reveal button when your crew is ready; it creates the ruin and marks a gold signal and waypoint. Each chart reveals once. Take your loot before everyone leaves, because the site clears out like an ordinary ruin.
 
 There is also a cheap standing tip ("word on the lanes", 1500 credits at any outpost) which simply marks one uncharted ordinary signal on your helm and names the band it sits in. Useful when the chart is empty and you do not want to fly a search pattern.
 
 ## Contested caches
 
-Roughly half an hour into the round, and at most twice per round, a bonded courier platform surfaces in contested or lawless space and announces itself to the entire galaxy on every channel, position included. Its vault unseals ten minutes after the notice, and everyone heard the same broadcast.
+Bonded courier platforms appear in contested or lawless space at about 30 minutes, 3 hours, and 5 hours 30 minutes into the round, up to three per round. Each broadcasts its position to the galaxy. Its vault unseals ten minutes after the announcement.
 
 Once the seals drop, anyone standing at the vault can force it by hand. It takes thirty uninterrupted seconds, and taking any damage breaks your grip. The prize is a crate of ship-grade components, which still has to be carried back to your ship and flown home, and can be taken off you on the way. Every other crew got the same announcement you did, so expect company; see [Threats & Elites](threats-and-elites.md).
 

@@ -322,6 +322,31 @@
 	TEST_ASSERT(QDELETED(shape) && isturf(user.loc), "A new hit after formation must still break the disguise and restore its caster.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 11, "The caster must keep both the old wounds and the new disguise-breaking hit.")
 
+/// Both object-disguise boons must preserve hostility when cast on a planet.
+/datum/unit_test/vestige_morph/mimic_planet_faction/Run()
+	var/datum/map_footprint/planet = allocate(/datum/map_footprint, null, "planet", 1)
+	planet.attach_level(SSmapping.z_list[center.z])
+	planet.set_rect(center.x, center.y, 2, 1)
+	planet.enable_planetary_faction()
+	var/mob/living/basic/carp/native = allocate(/mob/living/basic/carp, get_step(center, EAST))
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(native.ai_controller.blackboard[BB_TARGETING_STRATEGY])
+	var/obj/item/wrench/model = allocate(/obj/item/wrench, center)
+	for(var/spell_type in list(/datum/action/cooldown/spell/shapeshift/vestige_mimic, /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless))
+		var/datum/action/cooldown/spell/shapeshift/vestige_mimic/spell = allocate(spell_type, user.mind)
+		spell.Grant(user)
+		TEST_ASSERT(spell.PreActivate(model), "[spell_type] must create its actual disguise on a planet.")
+		var/mob/living/basic/vestige_mimic/shape = user.loc
+		TEST_ASSERT(istype(shape), "The cast must put the original body inside a borrowed shape.")
+		TEST_ASSERT(!(planet.planetary_faction in shape.faction), "A new disguise must not become native wildlife.")
+		planet.add_planetary_faction_to_existing_mobs()
+		TEST_ASSERT(!(planet.planetary_faction in shape.faction), "A later faction pass must also exclude the disguise.")
+		TEST_ASSERT(!(planet.planetary_faction in user.faction), "The original body inside the disguise must also stay out of the native alliance.")
+		TEST_ASSERT(strategy.can_attack(native, shape), "The object disguise must not grant faction immunity against native wildlife.")
+		spell.unshift_owner()
+		TEST_ASSERT(isturf(user.loc) && user.mind, "Ending the disguise must restore the original player body.")
+		TEST_ASSERT(strategy.can_attack(native, user), "Ending the disguise must leave the original body hostile to native wildlife.")
+		qdel(spell)
+
 /datum/unit_test/vestige_morph/gullet_transfer
 	var/mob/living/replacement
 

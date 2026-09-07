@@ -31,11 +31,22 @@ You can hold one pact at a time, across all patrons. Walk into a second vestige 
 
 ## Trials
 
-A trial is a specific piece of work, usually with a kit handed to you when you accept, and it is tracked on a button in your action bar. Hover it for live progress, click it to reprint the terms. The button appears with the pact and vanishes with it.
+A trial gives you a task and usually a kit. Hover over its action-bar button to check progress, or click it to read the full instructions. Examine the supplied tools for their controls.
 
-They are bespoke, and none of them are "go kill ten of something". The Rite of Offering hands you a satchel of chalk, candles and a knife: go somewhere well away from the Sepulcher, draw the rune, ring it with three lit candles and lay a body on it that once had a soul. The Trial of Birth gives you a chrysalis egg that needs incubating. The Trial of the Snuffed Flame wants a great many lights put out. The Trial of the Thrown Star wants hits on live targets with a training star. The Rite of Rust wants tiles corroded with the chrism you are given. Protocol: Field Study wants a telemetric probe deployed and read.
+To replace a lost kit or start over, click the tracker and choose **Restart trial**. This resets your progress and replaces the old trial equipment with a fresh kit. You keep the same assignment.
 
-Fulfilling one pays out **wherever you are**, immediately. There is no trip back to the ruin to collect, which matters because its interior may well have unloaded behind you.
+Some examples:
+
+| Trial | What to do |
+|---|---|
+| Rite of Offering | Outside the Sepulcher, draw the rune, surround it with three lit candles, and place a dead carp or larger organic creature on it. Use the supplied knife on the rune. |
+| Trial of Birth | Plant the egg in a dead wild beast with meat left in it. Command the child to feed on dangerous living fauna, recall it when hurt, then use the egg beside the grown child to send it home. |
+| Trial of the Snuffed Flame | Deploy the nine-lamp circuit. Use the censer on lamps to toggle them and their connected neighbors until all nine are dark. |
+| Trial of the Thrown Star | Deploy the shield target. Hit it from behind at least three tiles away, using three different sides of the field. Click the central focus empty-handed to recall a grounded star. |
+| Rite of Rust | Set the threshold weight beside an iron wall. Dissolve the wall with the supplied chrism, pull the weight through, and rebuild the wall while protecting the weight from its guardian. |
+| Protocol: Field Study | Use the supplied syringes to balance the tissue culture's nutrients and stress. Check it with the probe, then right-click with the probe to harvest a viable sample. |
+
+Each completed trial earns **one boon**, claimable wherever you are. You do not need to return to the patron.
 
 ## Boons
 

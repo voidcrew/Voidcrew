@@ -71,15 +71,15 @@ Quartermain, and only Quartermain, has **rental stash lockers**. Swipe an ID, pa
 
 ## Charts and rumours
 
-Every outpost sells intel, and this is the shelf that changes how you play the round. All three draw from the same galaxy-wide pool, so a tip bought over the safe outer-ring counter can point straight into the deep. You buy the intel *before* you commit to the flight.
+Every outpost stocks its own selection of charts. Check the destination's band before buying: a chart sold at Halcyon can still send you into the lawless deep.
 
 **Star charts** reveal every contact in a whole zone band at once: 1200 credits for the outer ring, 2400 for the contested band, 2 vouchers for the lawless deep.
 
 **Word on the lanes** costs 1500 credits anywhere. The trader marks one uncharted signal on your helm and names the band it sits in.
 
-**Ruin charts** are the real prize. Each names a specific rare derelict that *does not exist* until somebody buys the tip. Purchase uploads a sealed rumour to your ship, and the helm gets a reveal button that spawns the ruin, marks it on your chart, and paints the signal gold. Reveal it when your crew is ready, not before.
+**Ruin charts** upload a sealed rumour to your ship. When your crew is ready, use the helm's reveal button to mark a fresh copy of the named ruin on your chart in gold. Each purchased chart reveals once.
 
-There is exactly one chart per ruin per round, galaxy-wide. Once any outpost sells it, that trail is cold everywhere.
+Sold ruin charts restock with supply convoys. Buying another gives you another fresh expedition. Take your loot before leaving: these sites clear out like ordinary ruins once everyone has left.
 
 | Ruin chart | Band | Price |
 |---|---|---|
@@ -102,9 +102,21 @@ The main trader's **Contracts** menu is a second, separate mission board. Four o
 
 The mix is supply requests, salvage and kill contracts on ruins, and courier runs hauling a sealed freight pod to a *different* outpost. Halcyon also posts angling requests and **kitchen orders**, because it has a fishing stall and a diner. A kitchen order wants dishes cooked by an actual person at a stated recipe depth. Factory food is refused at turn-in, and so are plates bought off Roux's own counter, so somebody on your crew genuinely has to cook.
 
-Pay quality follows difficulty by reaching deeper into the shop: easy contracts off the core shelf, medium off the rotating stock, and the hardest out of a back room of items that trader **never sells at any price**. Chasing a trader's board is the only way to get those.
+Check the offered reward before accepting. Harder contracts can offer rarer gear.
 
 Turn them in at any outpost trader or at your own mission pad. Except courier runs, whose pod only opens at its destination. See [Missions](missions.md).
+
+### Trader favor
+
+Completing a trader's contracts earns your ship favor with that trader: **1 point** for easy, **2** for medium, and **4** for hard contracts.
+
+| Favor | Standing | Credit discount |
+|---|---|---|
+| 2 | Regular | 5% |
+| 4 | Partner | 10% |
+| 6 | Trusted | 15% |
+
+The discount applies at every stall on that outpost. Voucher prices stay the same. **Trusted** also opens the **Back Room** shop, with up to three of each special item available to your crew per round. Favor belongs to the ship, so losing the hull loses its standing.
 
 ## Violence
 

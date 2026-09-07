@@ -81,7 +81,7 @@ Receiver research costs **160 points** after Exotic Ammunition. Ammunition resea
 
 The receiver exceeds a basic protolathe's local storage, so upgrade its matter bins or supply it through a material silo. Fully upgraded lathes reduce printed material costs to 40%; the assembly's plasteel requirement stays at 20 sheets.
 
-Firing pins come from the Quartermain Depot's shelf at 900 credits apiece — that is also the fix for ruin-salvage guns that arrive pinless. You cannot harvest a pin from another gun: prying one out destroys it.
+Firing pins cost 250 credits at Quartermain Depot. Fit one to a crafted or salvaged gun that has no pin. You cannot reuse a pin from another gun: prying one out destroys it.
 
 Six schematics exist:
 
@@ -102,13 +102,15 @@ What you get is the recipe bound to you for the rest of the round: theft-proof, 
 
 ## Job packs
 
-If your ship has no research bay (and most don't) you can buy a whole department in a crate. Each **starter pack** holds the circuit boards that discipline needs plus its hand equipment:
+**Starter packs** contain department circuit boards and hand equipment. You still need frames, stock parts, power, and working supplies to build and use the machines.
 
 | Pack | Sold by | Price |
 |---|---|---|
-| Botany starter pack | Fern, The Potting Shed (Waystation Halcyon) | 1400 cr |
-| Robotics starter pack | Boffin, The Skunkworks (Quartermain Depot) | 1500 cr + 1 voucher |
-| Xenobiology starter pack | Boffin, The Skunkworks (Quartermain Depot) | 2000 cr + 2 vouchers |
-| Genetics starter pack | Sawbones, the Patch-Up Clinic (the Undertow) | 2500 cr + 4 vouchers |
+| Botany starter pack | Fern, The Potting Shed (Waystation Halcyon) | 1000 cr |
+| Robotics starter pack | Boffin, The Skunkworks (Quartermain Depot) | 1200 cr |
+| Xenobiology starter pack | Boffin, The Skunkworks (Quartermain Depot) | 1800 cr |
+| Genetics starter pack | Sawbones, the Patch-Up Clinic (the Undertow) | 2400 cr |
 
-Prices track how much research each pack skips: robotics is cheap because those boards sit near the start of the tech tree, genetics is dear because it sits behind the entire cytology chain. Stock is deliberately thin (one or two of each per round) so a pack is a shortcut, not a supply line. Printing any *further* boards still needs a circuit imprinter, which comes out of the Research & Development Kit that every ship autolathe can print from roundstart.
+The xenobiology pack includes a grey slime extract, liquid plasma, and monkey cubes. Build a secure pen in view of a ship camera before injecting at least 1 unit of plasma into the extract to hatch a slime. Add water to monkey cubes for food. Use a screwdriver on the processor board to select slime mode before building it.
+
+To print more boards yourself, build a circuit imprinter from the autolathe's **Research & Development Kit** and research the designs you need. See [Research](research.md).

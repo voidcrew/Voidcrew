@@ -13,6 +13,8 @@ The **mission board** is a console. It links itself to any **mission pad** withi
 
 The board keeps **five offers** posted at a time and tops itself back up as you take them. An offer nobody accepts rotates off after 20 minutes and is replaced. A **refresh** button wipes all five and deals a new hand, on a 5-minute cooldown. Use it when the board has nothing your crew can do, not to fish for the top-paying contract.
 
+For a simple starting job, look for a green-band **Exploration Contract**. Fly to its marked coordinates and return to the board to collect 400–700 credits. The board reserves an offer for one when available.
+
 Your ship can run **three missions at once**. Each has its own clock, usually 30 minutes, longer on the planet-side contracts.
 
 Accepting a contract does three things: it starts the timer, it drops a waypoint on the helm chart so the pilot can find the target, and for some contracts it dispenses equipment onto your mission pad. Tapping a **handheld GPS unit** on the board uploads the objective beacons of every active mission to that unit, which is how you find a small object inside a large ruin.

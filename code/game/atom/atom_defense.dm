@@ -69,6 +69,9 @@
 	if(atom_integrity == new_value)
 		return
 	atom_integrity = new_value
+	// VOIDCREW: record supported ship fixtures only when they actually lose integrity.
+	if(new_value < old_value)
+		record_ship_fixture_damage(src)
 	on_update_integrity(old_value, new_value)
 	return new_value
 

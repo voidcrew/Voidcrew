@@ -165,8 +165,8 @@
 		servant.remove_waypoint(REF(src))
 		servant.active_missions -= src
 		servant = null
-	// The subsystem's list is dropped here for the same reason the ship's is: complete(),
-	// fail() and give_up() each remove themselves on the way out, but every OTHER route to
+	// The subsystem's list is dropped here for the same reason the ship's is: complete()
+	// and fail() each remove themselves on the way out, but every OTHER route to
 	// qdel - force_refresh_ship_missions(), a ship despawning, an admin - left the entry
 	// behind, holding a hard reference to a qdel'd datum. SSmissions.fire()'s sweep was the
 	// only thing collecting those, once every 30 seconds, and it skipped entries while it ran.
@@ -377,7 +377,7 @@
 	timeout_timer = null
 	fail("Mission timed out!")
 
-/// Deactivates the live objective (fail/complete/abandon/retarget paths)
+/// Deactivates the live objective (fail/complete/retarget paths)
 /datum/mission/proc/deactivate_objectives()
 	var/datum/mission_objective/objective = current_objective()
 	if(objective?.active)
@@ -408,27 +408,6 @@
 	SSmissions.all_active_missions -= src
 
 	SEND_SIGNAL(src, COMSIG_MISSION_FAILED, reason)
-
-	qdel(src)
-
-/**
- * Called when player abandons the mission voluntarily.
- * No penalty, mission is just removed.
- */
-/datum/mission/proc/give_up()
-	if(failed || completed)
-		return
-
-	deactivate_objectives()
-
-	if(timeout_timer)
-		deltimer(timeout_timer)
-		timeout_timer = null
-
-	if(servant)
-		servant.active_missions -= src
-
-	SSmissions.all_active_missions -= src
 
 	qdel(src)
 

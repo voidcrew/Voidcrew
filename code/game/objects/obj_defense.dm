@@ -194,6 +194,9 @@
 /obj/proc/deconstruct(disassembled = TRUE)
 	SHOULD_NOT_OVERRIDE(TRUE)
 
+	// VOIDCREW: capture destruction before the fixture's configuration is discarded.
+	record_ship_fixture_damage(src, disassembled)
+
 	//allow objects to deconstruct themselves
 	handle_deconstruct(disassembled)
 

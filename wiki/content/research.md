@@ -73,7 +73,9 @@ A survey takes **60 seconds** and is cancelled the moment the ship moves, so par
 | Asteroid storm | 100 |
 | Nebula | 50 |
 
-Those are family rates, so severity and flavour do not matter: a minor electrical storm pays the same as a major one, a tritium nebula the same as any other, and all five planet types the same 500. A contact nobody has surveyed before pays 20% more, and the upgrade nodes below multiply everything by 1.2, 1.5 or 2 in turn. Surveying a space ruin also reveals what it actually is on the chart. The console shows you the exact figure for whatever you are orbiting before you start.
+Storm severity, nebula gas, and planet type do not change these base rates. Survey upgrades multiply payouts by 1.2, 1.5, or 2. The console shows the exact amount before you start. Surveying a space ruin also reveals its name on the chart.
+
+Each contact pays once per ship. The 20% bonus goes only to the first crew to survey it. Imported survey records count as completed surveys and cannot be scanned again for payment.
 
 Only one survey console works per ship, and it must be multitooled to your server. Unlinked, you get no payout multipliers and none of your surveys count toward the nodes that require them.
 
@@ -94,7 +96,14 @@ Feed a **refined anomaly core** to the destructive analyzer and it pays **200 po
 
 Getting there is about 240 points of bluespace research: Bluespace Theory, Applied Bluespace, then **Anomaly Research** for the refinery. Raw cores come from anomalies that turn up aboard your ship as a [dynamic event](dynamic-events.md), and from research-themed loot caches.
 
-Cores are the only thing deconstruction pays for. The analyzer's other job (revealing hidden nodes from illegal or alien hardware) is often the more valuable one.
+Cores are the only items that pay research points when deconstructed.
+
+### Revealing hidden technology
+
+Load a suitable item into a linked destructive analyzer and choose the hidden field to reveal. This consumes the item. You still need the node's prerequisites and research points to buy it.
+
+- **Illegal Technology:** Vex sells a suppressor at the Undertow for 1200 credits that works as a research sample.
+- **Alien research:** Boffin sells alien crowbar samples at Quartermain for 1500 credits each. Each reveals one field: Alien Technology, Alien Engineering, or Alien Surgery. Bring three to reveal all three.
 
 ### Dissection
 

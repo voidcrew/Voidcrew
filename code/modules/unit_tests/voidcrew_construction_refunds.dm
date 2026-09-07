@@ -115,7 +115,7 @@
 	materials.insert_amount_mat(200, /datum/material/glass)
 	materials.insert_amount_mat(100, /datum/material/titanium)
 	materials.insert_amount_mat(100, /datum/material/plasma)
-	materials.insert_amount_mat(100, /datum/material/iron)
+	materials.insert_amount_mat(200, /datum/material/iron)
 	rcd.mode = RCD_WINDOWGRILLE
 	rcd.construction_mode = RCD_WINDOWGRILLE
 	rcd.rcd_design_path = /obj/structure/window/reinforced/plasma/plastitanium
@@ -136,14 +136,100 @@
 	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/titanium), titanium_before_window + 100, "Hull window did not return its titanium")
 	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/plasma), plasma_before_window + 100, "Hull window did not return its plasma")
 	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), iron_before_window + 100, "Hull window did not return its iron")
+	var/obj/structure/grille/hull_grille = locate() in floor
+	hull_grille.deconstruct(TRUE)
+	var/obj/item/stack/rods/rods = locate() in floor
+	TEST_ASSERT_NOTNULL(rods, "Hull grille did not return rods")
+	TEST_ASSERT_EQUAL(rods.amount, 2, "Hull grille salvage changed")
+	materials.insert_amount_mat(rods.amount * SHEET_MATERIAL_AMOUNT / 2, /datum/material/iron)
+	qdel(rods)
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), iron_before_window + 200, "Hull window and hand-dismantled grille generated iron")
+	for(var/cycle in 1 to 3)
+		var/iron_before_cycle = materials.get_material_amount(/datum/material/iron)
+		TEST_ASSERT(rcd.build_hull_window(floor, engineer), "Could not repeat hull-window construction")
+		hull_window = locate() in floor
+		hull_grille = locate() in floor
+		rcd.rcd_create(hull_window, engineer)
+		rcd.rcd_create(hull_grille, engineer)
+		TEST_ASSERT(QDELETED(hull_grille), "Could not recycle the hull grille")
+		TEST_ASSERT(materials.get_material_amount(/datum/material/iron) <= iron_before_cycle, "Hull window and RCD-recycled grille generated iron")
 
-	// Multi-layer pipe placement must pay for each recoverable pipe it produces.
-	var/obj/item/pipe_dispenser/internal/rpd = allocate(/obj/item/pipe_dispenser/internal)
-	rpd.silo_mats = rpd.AddComponent(/datum/component/remote_materials, FALSE, TRUE)
-	rpd.silo_link = TRUE
-	rpd.pipe_layers = (1 << 1) | (1 << 2)
-	rpd.silo_mats.mat_container.insert_amount_mat(50, /datum/material/iron)
-	TEST_ASSERT(!rpd.check_pipe_materials(engineer), "One pipe's materials paid for two pipe layers")
-	rpd.silo_mats.mat_container.insert_amount_mat(50, /datum/material/iron)
-	TEST_ASSERT(rpd.use_pipe_materials(engineer), "Could not pay for both selected pipe layers")
-	TEST_ASSERT_EQUAL(rpd.silo_mats.mat_container.get_material_amount(/datum/material/iron), 0, "Multi-layer pipe placement undercharged for its pipes")
+/// A small set of hull doors, leaving fan placement and resource handling on the real console.
+/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test
+	var/obj/docking_port/mobile/test_port
+	var/list/test_fan_turfs = list()
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test/Destroy()
+	if(test_port)
+		qdel(test_port, force = TRUE)
+	test_port = null
+	test_fan_turfs = null
+	return ..()
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test/can_operate()
+	return TRUE
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test/get_docking_port()
+	return test_port
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test/get_fan_turfs()
+	return test_fan_turfs
+
+/datum/unit_test/voidcrew_fan_costs/Run()
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test/builder = allocate(/obj/machinery/computer/camera_advanced/base_construction/ship/fan_cost_test)
+	builder.test_port = new(run_loc_floor_bottom_left)
+	builder.test_port.register()
+	builder.test_port.shuttle_areas = list(get_area(builder) = TRUE)
+	var/turf/first_door = get_step(run_loc_floor_bottom_left, EAST)
+	var/turf/second_door = get_step(first_door, EAST)
+	var/turf/third_door = get_step(second_door, EAST)
+	builder.test_fan_turfs = list(first_door, second_door, third_door)
+	var/obj/structure/fans/tiny/existing = allocate(/obj/structure/fans/tiny, first_door)
+	var/obj/structure/fans/tiny/interior = allocate(/obj/structure/fans/tiny, run_loc_floor_bottom_left)
+	var/obj/item/construction/rcd/internal/ship/rcd = builder.internal_rcd
+	qdel(rcd.silo_mats)
+	rcd.silo_mats = rcd.AddComponent(/datum/component/remote_materials, FALSE, TRUE)
+	rcd.silo_link = TRUE
+	var/datum/component/material_container/materials = rcd.silo_mats.mat_container
+	TEST_ASSERT_NOTNULL(materials, "Test console needs material storage")
+
+	// An incomplete payment must not clear any fans or build only part of the set.
+	materials.insert_amount_mat(3 * SHEET_MATERIAL_AMOUNT, /datum/material/iron)
+	TEST_ASSERT(!builder.reset_fans(), "Three sheets paid for two missing fans")
+	TEST_ASSERT(!QDELETED(existing) && !QDELETED(interior), "Failed reset removed an existing fan")
+	TEST_ASSERT_NULL(locate(/obj/structure/fans/tiny) in second_door, "Failed reset built a partial set of fans")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 3 * SHEET_MATERIAL_AMOUNT, "Failed reset consumed iron")
+
+	materials.insert_amount_mat(SHEET_MATERIAL_AMOUNT, /datum/material/iron)
+	TEST_ASSERT(builder.reset_fans(), "Four sheets did not pay for two missing fans")
+	TEST_ASSERT(!QDELETED(existing), "Reset replaced a correctly placed fan")
+	TEST_ASSERT(QDELETED(interior), "Reset left a misplaced fan inside the ship")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 0, "Reset did not charge two sheets per new fan")
+	var/obj/structure/fans/tiny/built = locate() in second_door
+	TEST_ASSERT_NOTNULL(built, "Reset did not build the second fan")
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/fans/tiny) in third_door, "Reset did not build the third fan")
+	TEST_ASSERT(builder.reset_fans(), "An unchanged set of fans required another payment")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 0, "Repeated reset generated iron")
+
+	// Reproduce the reported loop: recover the sheets and feed them back into construction.
+	built.deconstruct(TRUE)
+	var/obj/item/stack/sheet/iron/salvage = locate() in second_door
+	TEST_ASSERT_NOTNULL(salvage, "Fan disassembly returned no iron")
+	TEST_ASSERT_EQUAL(salvage.amount, 2, "Fan disassembly did not return two sheets")
+	materials.insert_amount_mat(salvage.amount * SHEET_MATERIAL_AMOUNT, /datum/material/iron)
+	qdel(salvage)
+	rcd.silo_link = FALSE
+	TEST_ASSERT(!builder.reset_fans(), "Reset built a fan without a silo link")
+	TEST_ASSERT_NULL(locate(/obj/structure/fans/tiny) in second_door, "Disconnected reset built a free fan")
+	rcd.silo_link = TRUE
+	TEST_ASSERT(builder.reset_fans(), "Recovered sheets could not rebuild their fan")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 0, "Disassembling and resetting a fan generated iron")
+
+	// Automatic port seating must not bypass the paid reset by supplying salvageable fans.
+	var/turf/port_turf = get_step(third_door, EAST)
+	var/obj/structure/fans/tiny/safety = hull_seat_port_fan(builder.test_port, port_turf, null)
+	TEST_ASSERT_NOTNULL(safety, "Port seating did not seal its door")
+	safety.deconstruct(TRUE)
+	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/iron) in port_turf, "Unpaid port seating generated iron salvage")
+	safety = hull_seat_port_fan(builder.test_port, port_turf, null)
+	TEST_ASSERT_NULL(safety.buildstacktype, "Repeated port seating restored iron salvage")

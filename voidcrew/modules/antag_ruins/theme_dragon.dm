@@ -670,6 +670,9 @@
 	. = ..()
 	update_transform(0.7) // still growing into the name
 
+/mob/living/basic/carp/pet/vestige_hatchling/should_inherit_planetary_faction()
+	return FALSE
+
 /mob/living/basic/carp/pet/vestige_hatchling/apply_colour()
 	add_atom_colour("#e8b84a", FIXED_COLOUR_PRIORITY) // hatched warm
 

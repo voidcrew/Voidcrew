@@ -198,6 +198,9 @@
 	var/datum/weakref/prey_ref
 	var/growth = 0
 
+/mob/living/basic/headslug/vestige_child/should_inherit_planetary_faction()
+	return FALSE
+
 /mob/living/basic/headslug/vestige_child/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)

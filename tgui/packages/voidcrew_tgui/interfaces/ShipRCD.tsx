@@ -13,8 +13,9 @@ import { type BooleanLike, classes } from 'tgui-core/react';
 import { capitalizeAll } from 'tgui-core/string';
 
 import { useBackend } from '../../tgui/backend';
-import { Window } from '../../tgui/layouts';
 import { AirLockMainSection } from '../../tgui/interfaces/AirlockElectronics';
+import { Window } from '../../tgui/layouts';
+import { ShipConstructionControls } from './ShipConstructionControls';
 
 interface MaterialData {
   name: string;
@@ -175,7 +176,11 @@ const DesignSection = () => {
                 : 'scale(1.0)',
             }}
           />
-          <span>{capitalizeAll(design.title)}</span>
+          <span>
+            {design.title === 'shuttle window'
+              ? 'Titanium Shuttle Window'
+              : capitalizeAll(design.title)}
+          </span>
         </Button>
       ))}
     </Section>
@@ -272,14 +277,17 @@ const MaterialTypeSection = () => {
 
 export const ShipRCD = () => {
   return (
-    <Window width={480} height={680} title="Ship RCD">
-      <Window.Content>
+    <Window width={580} height={820} title="Ship RCD">
+      <Window.Content scrollable>
         <Stack vertical fill>
           <Stack.Item>
             <InfoSection />
           </Stack.Item>
           <Stack.Item>
             <MaterialTypeSection />
+          </Stack.Item>
+          <Stack.Item>
+            <ShipConstructionControls />
           </Stack.Item>
           <Stack.Item grow>
             <Stack fill>

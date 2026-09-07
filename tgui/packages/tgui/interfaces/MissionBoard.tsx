@@ -547,38 +547,25 @@ const MissionCard = (props: MissionCardProps) => {
             )}
           </LabeledList>
           <Divider />
-          <Flex justify="space-between">
-            <Flex.Item>
-              {mission.requires_item ? (
-                <Button
-                  icon="check"
-                  color="good"
-                  disabled={!mission.can_complete && padContents.length === 0}
-                  onClick={() => act('turn_in', { ref: mission.ref })}
-                >
-                  Turn In
-                </Button>
-              ) : (
-                <Button
-                  icon="check"
-                  color="good"
-                  disabled={!mission.can_complete}
-                  onClick={() => act('turn_in', { ref: mission.ref })}
-                >
-                  Complete
-                </Button>
-              )}
-            </Flex.Item>
-            <Flex.Item>
-              <Button
-                icon="times"
-                color="bad"
-                onClick={() => act('abandon', { ref: mission.ref })}
-              >
-                Abandon
-              </Button>
-            </Flex.Item>
-          </Flex>
+          {mission.requires_item ? (
+            <Button
+              icon="check"
+              color="good"
+              disabled={!mission.can_complete && padContents.length === 0}
+              onClick={() => act('turn_in', { ref: mission.ref })}
+            >
+              Turn In
+            </Button>
+          ) : (
+            <Button
+              icon="check"
+              color="good"
+              disabled={!mission.can_complete}
+              onClick={() => act('turn_in', { ref: mission.ref })}
+            >
+              Complete
+            </Button>
+          )}
         </>
       )}
 

@@ -96,6 +96,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 /datum/preferences/New(client/parent)
 	src.parent = parent
+	// Voidcrew has no antagonist preferences page, so offer all roles by default.
+	be_special = assoc_to_keys(get_all_antag_flags())
 
 	for (var/middleware_type in subtypesof(/datum/preference_middleware))
 		middleware += new middleware_type(src)

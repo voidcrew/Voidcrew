@@ -32,6 +32,30 @@
 	TEST_ASSERT_EQUAL(trial.slain, 1, "A revived clot paid for a second participant")
 	TEST_ASSERT(!trial.fulfilled, "One revived clot completed the three-clot vigil")
 
+/// Feeding the blood rite's attackers must not bypass the fight by taming them.
+/datum/unit_test/vestige_rites_untameable_clots/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, center)
+	user.mind_initialize()
+	var/datum/vestige_trial/vigil/trial = allocate(/datum/vestige_trial/vigil, user.mind)
+	user.mind.active_vestige_trial = trial
+	trial.on_accepted(user)
+	trial.unfold(user)
+	TEST_ASSERT_EQUAL(length(trial.clots), 3, "The real votive must create three hungry clots.")
+	var/obj/item/food/meat/slab/food = allocate(/obj/item/food/meat/slab, center)
+	for(var/mob/living/basic/carp/vestige_clot/clot as anything in trial.clots)
+		// Stock carp reach a guaranteed tame within 19 unsuccessful meals.
+		for(var/meal in 1 to 20)
+			SEND_SIGNAL(clot, COMSIG_MOB_ATE, food, user)
+		TEST_ASSERT(!clot.faction_check_atom(user), "Repeated feeding must not befriend a hungry clot.")
+		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(clot.ai_controller.blackboard[BB_TARGETING_STRATEGY])
+		TEST_ASSERT(strategy.can_attack(clot, user), "The fed clot must remain able to attack the rite's participant.")
+	// Check the same feeding signal still tames ordinary carp.
+	var/mob/living/basic/carp/ordinary = allocate(/mob/living/basic/carp, center)
+	for(var/meal in 1 to 20)
+		SEND_SIGNAL(ordinary, COMSIG_MOB_ATE, food, user)
+	TEST_ASSERT(ordinary.faction_check_atom(user), "Removing taming from clots must not break feeding ordinary carp.")
+
 /// A scripted attacker which becomes a person's body cannot be reclaimed as disposable encounter state.
 /datum/unit_test/vestige_rites_occupied_clot/Run()
 	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)

@@ -165,7 +165,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /// Multiplier applied to our own build delays, from the console's fabrication servo upgrades.
 /// Returns 1 when the console has no speed upgrade installed (or we've been unlinked).
 /obj/item/construction/rcd/internal/ship/proc/get_build_speed_mod()
-	return ship_console?.get_build_speed_mod() || 1
+	return ship_console ? ship_console.get_build_speed_mod() : 1
 
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
@@ -346,6 +346,11 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /obj/item/construction/rcd/internal/ship/ui_state(mob/user)
 	return GLOB.always_state
 
+/obj/item/construction/rcd/internal/ship/ui_status(mob/user, datum/ui_state/state)
+	if(ship_console && (ship_console.current_user != user || user.remote_control != ship_console.eyeobj))
+		return UI_CLOSE
+	return ..()
+
 /// Override ui_interact to use our custom ShipRCD interface (extends standard RCD UI)
 /obj/item/construction/rcd/internal/ship/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -356,6 +361,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /obj/item/construction/rcd/internal/ship/ui_data(mob/user)
 	// Get all standard RCD data from parent
 	var/list/data = ..()
+	if(ship_console)
+		data += ship_console.construction_controls_data()
 
 	// Add ship-specific wall/floor type data
 	data["selectedWallType"] = selected_wall_type
@@ -408,6 +415,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	return data
 
 /obj/item/construction/rcd/internal/ship/handle_ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(ship_console?.construction_control_act(action, params, usr))
+		return TRUE
 	// Handle our custom actions first
 	switch(action)
 		if("select_wall_type")
@@ -460,6 +469,10 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		if(user)
 			drone_alert(user, "no silo linked!")
 		return FALSE
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	if(!silo_mats.can_use_resource(user_data = user_data))
+		return FALSE
 
 	for(var/mat_path in materials)
 		var/required = materials[mat_path]
@@ -483,8 +496,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Use SILICON_OVERRIDE to bypass account check for ship construction
 	var/list/user_data = ID_DATA(user)
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	silo_mats.use_materials(materials, action = "build", name = "ship construction", user_data = user_data)
-	return TRUE
+	return silo_mats.use_materials(materials, action = "build", name = "ship construction", user_data = user_data) > 0
 
 /// Check if we have enough materials for the selected wall type
 /obj/item/construction/rcd/internal/ship/proc/check_wall_materials(mob/user)
@@ -504,7 +516,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 /// Build a wall of the selected type at the target turf
 /obj/item/construction/rcd/internal/ship/proc/build_wall(turf/target, mob/user)
-	if(!check_wall_materials(user))
+	var/wall_path = get_selected_wall_path()
+	var/list/materials = get_selected_wall_materials()
+	if(!isfloorturf(target) || target.is_blocked_turf(exclude_mobs = FALSE) || !check_materials(materials, user))
 		return FALSE
 
 	var/build_time = SHIP_RCD_WALL_BUILD_DELAY * get_build_speed_mod()
@@ -518,7 +532,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		return FALSE
 
 	// Double check materials after delay
-	if(!use_wall_materials(user))
+	if(!isfloorturf(target) || target.is_blocked_turf(exclude_mobs = FALSE) || !use_materials(materials, user))
 		qdel(rcd_effect)
 		return FALSE
 
@@ -532,7 +546,6 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// marker-less-chain problem restamp_hull_marker() below papers over for breach
 	// repairs; stacking properly fixes it at the source for walls. Matches how hand-built
 	// walls (girders) and the standard RCD (/turf/open/floor/rcd_act) raise walls.
-	var/wall_path = get_selected_wall_path()
 	var/turf/new_wall = target.place_on_top(wall_path, flags = CHANGETURF_INHERIT_AIR)
 	restamp_hull_marker(new_wall)
 	rcd_effect.end_animation()
@@ -540,7 +553,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 /// Build a floor of the selected type at the target turf
 /obj/item/construction/rcd/internal/ship/proc/build_floor(turf/target, mob/user)
-	if(!check_floor_materials(user))
+	var/floor_path = get_selected_floor_path()
+	var/list/materials = get_selected_floor_materials()
+	if(!isspaceturf(target) || !check_materials(materials, user))
 		return FALSE
 
 	var/build_time = SHIP_RCD_FLOOR_BUILD_DELAY * get_build_speed_mod()
@@ -554,12 +569,11 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		return FALSE
 
 	// Double check materials after delay
-	if(!use_floor_materials(user))
+	if(!isspaceturf(target) || !use_materials(materials, user))
 		qdel(rcd_effect)
 		return FALSE
 
 	// Build the floor
-	var/floor_path = get_selected_floor_path()
 	var/turf/new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
 	restamp_hull_marker(new_floor)
 	rcd_effect.end_animation()
@@ -575,8 +589,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
  */
 /obj/item/construction/rcd/internal/ship/proc/build_hull_window(turf/target, mob/user)
 	var/obj/structure/window/window_path = rcd_design_path
-	var/list/materials = hull_window_materials[window_path]
-	if(!materials)
+	var/list/window_materials = hull_window_materials[window_path]
+	if(!window_materials)
 		return FALSE
 	if(!isfloorturf(target))
 		drone_alert(user, "needs a floor!")
@@ -586,6 +600,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	if(!can_place_hull_window(target))
 		drone_alert(user, "something is on the tile!")
 		return FALSE
+	var/list/materials = window_materials.Copy()
+	if(!(locate(/obj/structure/grille) in target))
+		materials[/datum/material/iron] += SHEET_MATERIAL_AMOUNT
 	if(!check_materials(materials, user))
 		return FALSE
 
@@ -596,6 +613,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		qdel(rcd_effect)
 		return FALSE
 	//recheck after the delay: someone else may have filled the tile while we worked
+	materials = window_materials.Copy()
+	if(!(locate(/obj/structure/grille) in target))
+		materials[/datum/material/iron] += SHEET_MATERIAL_AMOUNT
 	if(!can_place_hull_window(target) || !use_materials(materials, user))
 		qdel(rcd_effect)
 		return FALSE
@@ -716,7 +736,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 // ============================================
 
 
-/// Ship-specific internal RPD that allows remote UI interaction and uses silo materials
+/// Ship-specific internal RPD that allows remote UI interaction and free pipe placement
 /obj/item/pipe_dispenser/internal
 	name = "ship internal RPD"
 	/// Reference to the ship construction console for drone tracking
@@ -737,38 +757,6 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		drone.balloon_alert(user, message)
 	else if(user)
 		balloon_alert(user, message)
-
-/// Atmos construction can produce several pipes per click, one on each selected layer.
-/obj/item/pipe_dispenser/internal/proc/get_pipe_material_cost()
-	// ATMOS_CATEGORY is private to RPD.dm.
-	return SHIP_RPD_PIPE_IRON * (category == 0 ? max(1, bit_count(pipe_layers)) : 1)
-
-/// Check if we have enough iron in the silo for the selected pipes
-/obj/item/pipe_dispenser/internal/proc/check_pipe_materials(mob/user)
-	if(!silo_mats?.mat_container || !silo_link)
-		if(user)
-			drone_alert(user, "no silo linked!")
-		return FALSE
-
-	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, get_pipe_material_cost()))
-		if(user)
-			drone_alert(user, "not enough iron!")
-		return FALSE
-
-	return TRUE
-
-/// Use iron from the silo for a pipe
-/obj/item/pipe_dispenser/internal/proc/use_pipe_materials(mob/user)
-	if(!check_pipe_materials(user))
-		return FALSE
-
-	var/list/materials = list(/datum/material/iron = get_pipe_material_cost())
-
-	// Use SILICON_OVERRIDE to bypass account check
-	var/list/user_data = ID_DATA(user)
-	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	silo_mats.use_materials(materials, action = "build", name = "ship piping", user_data = user_data)
-	return TRUE
 
 /**
  * A pressure blast is a location effect, so it hits whoever is standing at the pipe - not
@@ -981,6 +969,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	var/obj/item/pipe_dispenser/internal/internal_rpd
 	/// Internal RLD for lighting (created when upgrade installed)
 	var/obj/item/construction/rld/internal/internal_rld
+	var/obj/item/airlock_painter/decal/ship/internal_painter
 	/// Current T-ray scanner mode (off, t-ray, pipe, thermal)
 	var/tray_mode = SHIP_TRAY_MODE_OFF
 	/// Pipe connection images for T-ray pipe mode
@@ -1014,6 +1003,10 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	console_ambience.start()
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/Destroy()
+	clear_construction_queue()
+	clear_repair_journal(TRUE)
+	for(var/obj/structure/ship_repair_drone/drone as anything in repair_drones.Copy())
+		drone.unlink_console()
 	QDEL_NULL(console_ambience)
 	// The parent qdels the RCD but leaves the var pointing at it; null it here so the
 	// two don't hold each other up.
@@ -1021,6 +1014,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	QDEL_NULL(internal_rtd)
 	QDEL_NULL(internal_rpd)
 	QDEL_NULL(internal_rld)
+	QDEL_NULL(internal_painter)
 	tray_connection_images.Cut()
 	return ..()
 
@@ -1033,6 +1027,10 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
  * 1 with no upgrade, 0.75 with fabrication servos, 0.5 with the mk2 package.
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_build_speed_mod()
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK4)
+		return SHIP_CONSTRUCTION_SERVO_MK4_SPEED_MOD
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK3)
+		return SHIP_CONSTRUCTION_SERVO_MK3_SPEED_MOD
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2)
 		return SHIP_CONSTRUCTION_SERVO_MK2_SPEED_MOD
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO)
@@ -1121,6 +1119,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		SStgui.close_uis(internal_rcd)
 	if(internal_rtd)
 		SStgui.close_uis(internal_rtd)
+	if(internal_painter)
+		SStgui.close_uis(internal_painter)
 	if(internal_rpd)
 		SStgui.close_uis(internal_rpd)
 	if(internal_rld)
@@ -1158,7 +1158,19 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		console_upgrade_list += "rapid piping"
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RLD)
 		console_upgrade_list += "rapid lighting"
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_QUEUE)
+		console_upgrade_list += "job queue"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_AREA)
+		console_upgrade_list += "area construction"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_REPAIR)
+		console_upgrade_list += "repair swarm"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_DECAL)
+		console_upgrade_list += "decal painter"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK4)
+		console_upgrade_list += "instant fabrication"
+	else if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK3)
+		console_upgrade_list += "fabrication servos mk3"
+	else if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2)
 		console_upgrade_list += "fabrication servos mk2"
 	else if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_SERVO)
 		console_upgrade_list += "fabrication servos"
@@ -1209,13 +1221,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Handle ship construction console upgrades (RTD, RPD, RLD)
 	if(istype(tool, /obj/item/ship_construction_upgrade))
 		var/obj/item/ship_construction_upgrade/upgrade_disk = tool
-		if(upgrade_disk.upgrade_flags & console_upgrades)
+		// Bundled upgrades can add capabilities even when part of the disk is installed.
+		if((upgrade_disk.upgrade_flags & console_upgrades) == upgrade_disk.upgrade_flags)
 			balloon_alert(user, "already installed!")
-			return ITEM_INTERACT_FAILURE
-
-		// Tiered upgrades refuse to install until their prerequisite disk is in
-		if((console_upgrades & upgrade_disk.required_upgrades) != upgrade_disk.required_upgrades)
-			balloon_alert(user, "needs earlier upgrade!")
 			return ITEM_INTERACT_FAILURE
 
 		// Install the upgrade
@@ -1223,12 +1231,18 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 		// Push any fabrication servo upgrade onto the internal RCD's delay_mod
 		update_build_speed()
+		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_REPAIR) && length(repair_drones))
+			set_repair_tracking(TRUE)
+			wake_repair_drones()
 
 		// Inherit whatever silo the console is already linked to - the multitool linkup usually
 		// happened rounds' worth of construction ago and nothing else will relink these devices.
 		var/obj/machinery/ore_silo/linked_silo = get_linked_silo()
 
 		// Create internal devices as needed
+		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_DECAL) && !internal_painter)
+			internal_painter = new(src)
+			internal_painter.ship_console = src
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RTD) && !internal_rtd)
 			internal_rtd = new(src)
 			internal_rtd.ship_console = src
@@ -1282,14 +1296,15 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_linked_silo()
 	return internal_rcd?.silo_mats?.silo
 
-/// Forward multitool interactions to the internal RCD for silo linking
+/// Link a buffered silo, then save this console for repair-drone linking.
 /obj/machinery/computer/camera_advanced/base_construction/ship/multitool_act(mob/living/user, obj/item/multitool/M)
 	. = ..()
-	if(!internal_rcd?.silo_mats)
-		return .
 
 	// Forward the multitool interaction to the internal RCD's remote_materials component
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
+		if(!internal_rcd?.silo_mats)
+			balloon_alert(user, "silo link unavailable")
+			return ITEM_INTERACT_SUCCESS
 		var/obj/machinery/ore_silo/silo = M.buffer
 		if(!same_service_site(src, silo))
 			balloon_alert(user, "silo belongs to another site")
@@ -1316,9 +1331,12 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 		balloon_alert(user, already_linked ? "relinked" : "linked")
 		to_chat(user, span_notice("You connect [src]'s tools to [silo]."))
-		return ITEM_INTERACT_SUCCESS
 
-	return .
+	// Copying a reference grants no control. Drone linking checks crew access;
+	// repair capability is unlocked on the console separately.
+	M.set_buffer(src)
+	balloon_alert(user, "console saved")
+	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/LateInitialize()
 	. = ..()
@@ -1350,6 +1368,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	actions += new /datum/action/innate/construction/ship/deconstruct(src)
 	actions += new /datum/action/innate/construction/ship/camera_build(src)
 	// RTD actions (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_DECAL)
+		actions += new /datum/action/innate/construction/ship/decal_configure(src)
+		actions += new /datum/action/innate/construction/ship/decal_paint(src)
 	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
 		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
 		actions += new /datum/action/innate/construction/ship/rtd_build(src)
@@ -1809,14 +1830,16 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	return fan_turfs
 
 /**
- * Resets tiny fans - removes all existing fans and adds new ones to every fan turf.
+ * Keeps fans on hull doors and blast doors, removes misplaced fans, and builds missing fans.
+ * New fans cost the same iron they return when disassembled. Pay before removing anything
+ * so an empty or unavailable silo cannot leave the ship unsealed.
  *
  * Refuses outright when there is nowhere to put a fan. The removal pass used to run first
  * unconditionally, so a hull with no edge door left - which is exactly the state an
  * expansion over the old airlock produces - was stripped of every fan it had and told the
  * operation succeeded.
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/reset_fans()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/reset_fans(mob/user)
 	if(!can_operate())
 		last_operation_message = "Cannot modify ship while in flight."
 		last_operation_success = FALSE
@@ -1836,14 +1859,31 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		last_operation_success = FALSE
 		return FALSE
 
+	var/list/missing_fan_turfs = list()
+	for(var/turf/fan_turf as anything in fan_turfs)
+		if(!(locate(/obj/structure/fans/tiny) in fan_turf))
+			missing_fan_turfs += fan_turf
+	if(length(missing_fan_turfs))
+		var/obj/structure/fans/tiny/fan_type = /obj/structure/fans/tiny
+		var/iron_sheets = length(missing_fan_turfs) * initial(fan_type.buildstackamount)
+		var/list/materials = list(/datum/material/iron = iron_sheets * SHEET_MATERIAL_AMOUNT)
+		var/obj/item/construction/rcd/internal/ship/rcd = internal_rcd
+		if(!rcd?.use_materials(materials, user))
+			last_operation_message = "Fan reset requires [iron_sheets] iron sheets from an available linked silo ([initial(fan_type.buildstackamount)] per missing fan)."
+			last_operation_success = FALSE
+			return FALSE
+
 	var/fans_removed = 0
 	var/fans_added = 0
 	var/fans_preserved = 0
 
-	// Remove all existing tiny fans in shuttle areas (except those on blast doors)
+	// Keep fans already in the right place so resetting does not charge for them again.
 	for(var/area/shuttle_area as anything in port.shuttle_areas)
 		for(var/obj/structure/fans/tiny/fan in shuttle_area)
 			var/turf/fan_turf = get_turf(fan)
+			if(fan_turf in fan_turfs)
+				fans_preserved++
+				continue
 			// Preserve fans on blast doors (poddoors)
 			var/on_blast_door = FALSE
 			for(var/obj/machinery/door/poddoor/door in fan_turf)
@@ -1855,17 +1895,11 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 			qdel(fan)
 			fans_removed++
 
-	for(var/turf/fan_turf as anything in fan_turfs)
-		// Check if there's already a fan here (shouldn't be after removal, but safety check)
-		var/has_fan = FALSE
-		for(var/obj/structure/fans/tiny/existing in fan_turf)
-			has_fan = TRUE
-			break
-		if(!has_fan)
-			new /obj/structure/fans/tiny(fan_turf)
-			fans_added++
+	for(var/turf/fan_turf as anything in missing_fan_turfs)
+		new /obj/structure/fans/tiny(fan_turf)
+		fans_added++
 
-	var/preserved_msg = fans_preserved ? ", [fans_preserved] preserved on blast doors" : ""
+	var/preserved_msg = fans_preserved ? ", [fans_preserved] preserved" : ""
 	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to hull doors[preserved_msg]."
 	last_operation_success = TRUE
 	return TRUE
@@ -2061,6 +2095,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 	// Theme preference
 	data["theme"] = theme
+	data += construction_controls_data()
+	data += repair_controls_data()
 
 	return data
 
@@ -2080,6 +2116,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	if(!is_crew_member(usr))
 		say("ERROR: Access denied. Crew authorization required.")
 		return
+	if(construction_control_act(action, params, usr) || repair_control_act(action, params, usr))
+		return TRUE
 
 	switch(action)
 		if("relocate_port")
@@ -2100,7 +2138,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 			enter_construction_mode(usr)
 			return TRUE
 		if("reset_fans")
-			reset_fans()
+			reset_fans(usr)
 			return TRUE
 		if("setTheme")
 			theme = params["theme"]

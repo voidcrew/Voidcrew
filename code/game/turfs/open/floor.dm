@@ -161,6 +161,14 @@
 	return remove_tile(user, silent)
 
 /turf/open/floor/proc/remove_tile(mob/user, silent = FALSE, make_tile = TRUE, force_plating)
+	// VOIDCREW: taking up tiles with a tool is deliberate remodeling.
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller
+	if(user)
+		repair_controller = SSship_repairs.area_controllers[get_area(src)]
+	var/was_repairing = repair_controller?.repair_applying
+	if(repair_controller)
+		repair_controller.forget_repair_record(repair_controller.repair_coordinate_key(src))
+		repair_controller.repair_applying = TRUE
 	if(broken || burnt)
 		broken = FALSE
 		burnt = FALSE
@@ -171,7 +179,9 @@
 			to_chat(user, span_notice("You remove the floor tile."))
 		if(make_tile)
 			spawn_tile()
-	return make_plating(force_plating)
+	. = make_plating(force_plating)
+	if(repair_controller)
+		repair_controller.repair_applying = was_repairing
 
 /turf/open/floor/proc/has_tile()
 	return floor_tile

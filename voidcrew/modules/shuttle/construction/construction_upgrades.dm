@@ -16,12 +16,10 @@
 	w_class = WEIGHT_CLASS_SMALL
 	/// Bitflags for what this upgrade provides
 	var/upgrade_flags = NONE
-	/// Bitflags that must ALL already be installed on the console before this disk will take
-	var/required_upgrades = NONE
 
 /// RTD upgrade - allows placing and removing floor tiles
 /obj/item/ship_construction_upgrade/rtd
-	name = "ship construction upgrade: rapid tiling"
+	name = "ship construction upgrade: tile placer (rapid tiling)"
 	desc = "Adds rapid tiling functionality to the ship construction console, allowing placement and removal of various floor tiles."
 	icon_state = "datadisk6"
 	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_RTD
@@ -54,10 +52,40 @@
 	icon_state = "datadisk2"
 	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_SERVO
 
-/// Fabrication servo upgrade - tier 2, cuts drone build times by 50%. Needs tier 1 first.
+/// Higher servo disks include the benefits of every slower tier.
 /obj/item/ship_construction_upgrade/servo/mk2
 	name = "ship construction upgrade: fabrication servos mk2"
-	desc = "A second-generation servo package for the construction drone, halving the time it spends on every job. Requires the first-generation servos to already be installed."
+	desc = "A second-generation servo package for the construction drone, halving the time it spends on every job."
 	icon_state = "datadisk7"
-	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2
-	required_upgrades = SHIP_CONSTRUCTION_UPGRADE_SERVO
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2 | SHIP_CONSTRUCTION_UPGRADE_SERVO
+
+/obj/item/ship_construction_upgrade/servo/mk3
+	name = "ship construction upgrade: fabrication servos mk3"
+	desc = "Reduces construction time by 80%."
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_SERVO_MK3 | SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2 | SHIP_CONSTRUCTION_UPGRADE_SERVO
+
+/obj/item/ship_construction_upgrade/servo/mk4
+	name = "ship construction upgrade: instant fabrication"
+	desc = "Eliminates fabrication delays."
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_SERVO_MK4 | SHIP_CONSTRUCTION_UPGRADE_SERVO_MK3 | SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2 | SHIP_CONSTRUCTION_UPGRADE_SERVO
+
+/obj/item/ship_construction_upgrade/queue
+	name = "ship construction upgrade: job queue"
+	desc = "Stores up to 128 RCD construction jobs, including their blueprints and access settings. The console completes jobs while you move the camera."
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_QUEUE
+
+/obj/item/ship_construction_upgrade/area
+	name = "ship construction upgrade: area construction"
+	desc = "Adds queued construction with 2x2 and 3x3 brushes."
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_AREA | SHIP_CONSTRUCTION_UPGRADE_QUEUE
+
+/obj/item/ship_construction_upgrade/repair
+	name = "ship construction upgrade: repair swarm"
+	desc = "Records flight damage and coordinates Robotics-built repair drones supplied by the console's ore silo."
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_REPAIR
+
+/obj/item/ship_construction_upgrade/decal
+	name = "ship construction upgrade: decal painter"
+	desc = "Adds a remote decal painter with queued area painting."
+	icon_state = "datadisk5"
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_DECAL

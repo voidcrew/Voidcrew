@@ -38,11 +38,7 @@
  * * target - The turf being painted to
 */
 /obj/item/airlock_painter/decal/proc/paint_floor(turf/open/floor/target)
-	var/list/decal_data = current_category.get_decal_info(
-		state = selected_decal_icon_state,
-		color = selected_color,
-		dir = selected_dir,
-	)
+	var/list/decal_data = get_decal_data()
 
 	target.AddElement( \
 		/datum/element/decal, \
@@ -53,6 +49,10 @@
 		_color = decal_data[DECAL_INFO_COLOR], \
 		_cleanable = FALSE, \
 	)
+
+/// An immutable description of the current paint selection for remote construction jobs.
+/obj/item/airlock_painter/decal/proc/get_decal_data()
+	return current_category.get_decal_info(state = selected_decal_icon_state, color = selected_color, dir = selected_dir)
 
 /obj/item/airlock_painter/decal/proc/set_category(datum/paintable_decal_category/category)
 	current_category = category

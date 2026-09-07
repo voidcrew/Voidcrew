@@ -43,6 +43,7 @@
 	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
 	design_ids = list(
 		"ship_construction_upgrade_rtd",
+		"ship_construction_upgrade_decal",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
@@ -682,3 +683,43 @@
 /datum/techweb_node/fundamental_sci/New()
 	. = ..()
 	design_ids |= "rdrelay"
+
+/datum/techweb_node/ship_automation
+	id = TECHWEB_NODE_SHIP_AUTOMATION
+	display_name = "Shuttle Construction Automation"
+	description = "Queue construction jobs while moving the drone."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list("ship_construction_upgrade_queue")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_area_construction
+	id = TECHWEB_NODE_SHIP_AREA_CONSTRUCTION
+	display_name = "Shuttle Area Construction"
+	description = "Fabricate several tiles in one stroke."
+	prereq_ids = list(TECHWEB_NODE_SHIP_AUTOMATION)
+	design_ids = list("ship_construction_upgrade_area")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/ship_repair_swarm
+	id = TECHWEB_NODE_SHIP_REPAIR_SWARM
+	display_name = "Shuttle Repair Swarm"
+	description = "Record flight damage and assemble autonomous repair drones in Robotics."
+	prereq_ids = list(TECHWEB_NODE_SHIP_AUTOMATION, TECHWEB_NODE_ROBOTICS, TECHWEB_NODE_MECH_ASSEMBLY)
+	design_ids = list("ship_construction_upgrade_repair", "ship_repair_drone_chassis", "ship_repair_drone_propulsion", "ship_repair_drone_arm", "ship_repair_drone_controller")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/ship_fabrication_mk3
+	id = TECHWEB_NODE_SHIP_FABRICATION_MK3
+	display_name = "Precision Shuttle Fabrication"
+	description = "Reduce fabrication delays by 80%."
+	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION_ADV)
+	design_ids = list("ship_construction_upgrade_servo_mk3")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/ship_fabrication_mk4
+	id = TECHWEB_NODE_SHIP_FABRICATION_MK4
+	display_name = "Instant Shuttle Fabrication"
+	description = "Complete matter assembly without fabrication delays."
+	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION_MK3)
+	design_ids = list("ship_construction_upgrade_servo_mk4")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)

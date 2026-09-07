@@ -1607,6 +1607,8 @@
 
 	if(!disassembled)
 		A?.update_integrity(A.max_integrity * 0.5)
+		// VOIDCREW: this exact wrecked frame belongs to the recorded destruction.
+		record_ship_repair_wreckage(src, A)
 
 	else if(!(obj_flags & EMAGGED))
 		var/obj/item/electronics/airlock/ae

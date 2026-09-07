@@ -298,6 +298,11 @@
 	butcher_results = null
 	sentience_type = NONE
 
+/mob/living/basic/carp/vestige_clot/Initialize(mapload, mob/tamer)
+	. = ..()
+	// Feeding the rite's attackers must not turn them into harmless pets.
+	qdel(GetComponent(/datum/component/tameable))
+
 /obj/structure/vestige_altar
 	name = "sepulcher altar"
 	desc = "A stone altar with a groove worn smooth down the middle. It is very obviously a drain."

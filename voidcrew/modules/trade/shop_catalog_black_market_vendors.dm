@@ -8,8 +8,8 @@
  * on interior load (see outpost.dm get_shop(), trader_npc.dm for the mobs).
  *
  * Balance notes:
- * - Both stalls are credit-first; the few voucher SKUs sit on the rotating/
- *   rare shelves, same tier logic as Vex's counter.
+ * - Both stalls are credit-first; voucher SKUs include the clinic autosurgeon
+ *   and select items on the rotating/rare shelves.
  * - The Dregs only BUYS bottle types the cantina's own Booze-O-Mat never
  *   dispenses (moonshine, hooch, ...), so there's no vend-and-resell loop.
  * - Sawbones only buys what a ship can't lathe-print: organs, monster glands,
@@ -585,7 +585,7 @@
 	name = "autosurgeon"
 	desc = "Load an organ, press it against your chest, look away. Surgery for people who don't have a surgeon."
 	item_path = /obj/item/autosurgeon
-	price_credits = 600
+	price_vouchers = 2
 	stock_min = 1
 	stock_max = 2
 

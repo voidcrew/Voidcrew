@@ -76,6 +76,58 @@
 	TEST_ASSERT(!child.melee_attack(next_prey, ignore_cooldown = TRUE), "A dead keeper cannot keep earning development from autonomous attacks.")
 	TEST_ASSERT_EQUAL(child.growth, 3, "Death must leave the previous progress unchanged.")
 
+/// Hatching on a planet must permit the real AI attack path, not just direct melee calls.
+/datum/unit_test/vestige_chrysalis_planet_hunting/Run()
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
+	keeper.mind_initialize()
+	var/datum/vestige_trial/birth/trial = allocate(/datum/vestige_trial/birth, keeper.mind)
+	keeper.mind.active_vestige_trial = trial
+	trial.on_accepted(keeper)
+	var/turf/cradle = get_step(keeper, NORTH)
+	var/datum/space_level/test_level = SSmapping.z_list[cradle.z]
+	TEST_ASSERT(test_level, "The hunting test needs a space level for its planetary footprint.")
+	// Keep the visiting keeper outside the footprint, as with a crew member arriving by shuttle.
+	var/datum/map_footprint/planet = allocate(/datum/map_footprint, null, "planet", 1)
+	planet.attach_level(test_level)
+	planet.set_rect(cradle.x, cradle.y, 1, 2)
+	planet.enable_planetary_faction()
+	var/mob/living/basic/carp/carcass = allocate(/mob/living/basic/carp, cradle)
+	TEST_ASSERT(planet.planetary_faction in carcass.faction, "The cradle must actually belong to the planet's fauna alliance.")
+	carcass.death()
+	TEST_ASSERT(trial.egg.sow(carcass, keeper), "A planet-native carcass must hatch the commanded child.")
+	var/mob/living/basic/headslug/vestige_child/child = trial.child
+	TEST_ASSERT(!(planet.planetary_faction in child.faction), "The child must not join the alliance of the wildlife it needs to hunt.")
+	TEST_ASSERT(REF(child) in child.faction, "Excluding the planet faction must preserve the child's own identity.")
+	TEST_ASSERT(child.faction_check_atom(keeper), "The child must remain allied with its keeper.")
+	planet.add_planetary_faction_to_existing_mobs()
+	TEST_ASSERT(!(planet.planetary_faction in child.faction), "A later planet pass must not turn the child into native wildlife.")
+	TEST_ASSERT(!inherit_planetary_faction(child), "An explicit faction refresh must also respect the child's allegiance.")
+	var/datum/ai_controller/controller = child.ai_controller
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
+	var/datum/ai_behavior/basic_melee_attack/bite = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_melee_attack)
+	var/list/prey_types = list(/mob/living/basic/mining/goliath, /mob/living/basic/trooper/pirate/melee, /mob/living/basic/carp)
+	for(var/prey_type in prey_types)
+		var/mob/living/basic/prey = allocate(prey_type, get_step(cradle, NORTH))
+		TEST_ASSERT(planet.planetary_faction in prey.faction, "The [prey.type] must retain its native planet alliance.")
+		TEST_ASSERT(trial.egg.command_child(prey, keeper), "The egg must accept a hunt command for [prey.type].")
+		controller.SelectBehaviors(0.2)
+		TEST_ASSERT_EQUAL(controller.current_movement_target, prey, "The child must pursue the commanded [prey.type].")
+		TEST_ASSERT(strategy.can_attack(child, prey), "The AI must allow the child to bite planet-native [prey.type].")
+		var/health_before = prey.health
+		var/growth_before = child.growth
+		// Expire the bite windup and click cooldowns without bypassing AI validation or dispatch.
+		controller.set_blackboard_key(BB_BASIC_MOB_MELEE_COOLDOWN_TIMER, world.time)
+		child.next_move = 0
+		child.next_click = 0
+		controller.ProcessBehavior(0.2, bite)
+		TEST_ASSERT_EQUAL(prey.health, health_before - 5, "The AI must land a real bite on [prey.type].")
+		TEST_ASSERT_EQUAL(child.growth, growth_before + 5, "AI damage to [prey.type] must advance the trial.")
+		qdel(prey)
+	TEST_ASSERT(!trial.egg.command_child(keeper, keeper), "The faction exemption must not permit hunting the keeper.")
+	var/mob/living/basic/carp/friend = allocate(/mob/living/basic/carp, get_step(cradle, NORTH))
+	friend.faction |= REF(keeper)
+	TEST_ASSERT(!trial.egg.command_child(friend, keeper), "The child must still refuse fauna allied with its keeper.")
+
 /datum/unit_test/vestige_chrysalis_adaptive_counter/Run()
 	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent)
 	keeper.mind_initialize()

@@ -68,7 +68,8 @@
 	. = ..()
 
 	var/turf/location = gone.loc
-	if(istype(location, /turf/open/space) && !istype(location, src.type))//they got forced out of transit area into default space tiles
+	// VOIDCREW: crossing into a normal-space breach respects the same exemption as the soft cordon.
+	if(istype(location, /turf/open/space) && !istype(location, src.type) && !HAS_TRAIT(gone, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT))
 		dump_in_space(gone) //launch them into game space, away from transitspace
 
 ///Get rid of all our contents, called when our reservation is released (which in our case means the shuttle arrived)

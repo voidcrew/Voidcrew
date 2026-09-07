@@ -70,6 +70,7 @@
 	test_open_window_room_leaks()
 	test_walled_room_takes_its_corners()
 	test_room_sharing_a_hull_wall()
+	test_generated_planet_ground_needs_an_enclosure()
 	test_commission_needs_an_outer_door()
 	test_port_seat_rejects_an_interior_door()
 	test_new_hull_area_belongs_to_the_ship()
@@ -164,6 +165,78 @@
 	for(var/turf/hull_wall as anything in borrowed)
 		TEST_ASSERT(!claim.turfs[hull_wall], "the claim tried to take [hull_wall], which already belongs to a hull")
 	TEST_ASSERT_EQUAL(length(claim.turfs), 20, "the claim should be the 25 tile room minus the 5 hull tiles it borrows")
+
+/**
+ * Mid-round planet generation uses raw turf swaps on ambient-lit ground. Open ground must
+ * get an atmos graph, and a missing graph from an earlier swap must not count as walls.
+ * Real walls and thin windows must still let crews claim a room on that same ground.
+ */
+/datum/unit_test/voidcrew_hull_survey/proc/test_generated_planet_ground_needs_an_enclosure()
+	reset_block()
+	TEST_ASSERT(SSair.initialized && SSlighting.initialized, "this regression requires mid-round terrain generation")
+	var/area/overmap_encounter/planetoid/planet_area = new
+	planet_area.static_lighting = FALSE
+	planet_area.ambient_lighting = TRUE
+	planet_area.base_lighting_alpha = 255
+	var/datum/map_generator/planet_generator/generator = new
+	var/list/ground = list()
+	for(var/offset_x in 2 to 10)
+		for(var/offset_y in 2 to 10)
+			var/turf/scratch = spot(offset_x, offset_y)
+			scratch.change_area(get_area(scratch), planet_area)
+			ground += generator.place_biome_turf(scratch, /turf/open/misc/dirt/jungle)
+
+	var/all_queued = TRUE
+	for(var/turf/generated as anything in ground)
+		if(!(generated in SSair.adjacent_rebuild))
+			all_queued = FALSE
+
+	// Reproduce terrain generated before the queue fix. Rebuilding only queued turfs
+	// would accept a 3x3 patch of this field as an airtight enclosure.
+	SSair.adjacent_rebuild -= ground
+	for(var/turf/generated as anything in ground)
+		generated.atmos_adjacent_turfs = null
+	var/datum/hull_claim/field = survey_enclosure(spot(6, 6), max_tiles = 25)
+	var/field_refused = !isnull(field.refusal)
+
+	// Enclose nine native ground tiles with walls, keeping all four wall corners.
+	for(var/offset_x in 4 to 8)
+		for(var/offset_y in 4 to 8)
+			if(offset_x == 4 || offset_x == 8 || offset_y == 4 || offset_y == 8)
+				spot(offset_x, offset_y).ChangeTurf(/turf/closed/wall)
+	var/datum/hull_claim/walled = survey_enclosure(spot(6, 6))
+	var/walled_refusal = walled.refusal
+	var/walled_size = length(walled.turfs)
+
+	// Replace the walls with ground and seal only the interior tiles' outward edges.
+	for(var/offset_x in 4 to 8)
+		for(var/offset_y in 4 to 8)
+			if(offset_x == 4 || offset_x == 8 || offset_y == 4 || offset_y == 8)
+				spot(offset_x, offset_y).ChangeTurf(/turf/open/misc/dirt/jungle)
+	for(var/offset in 5 to 7)
+		glaze(spot(5, offset), WEST)
+		glaze(spot(7, offset), EAST)
+		glaze(spot(offset, 5), SOUTH)
+		glaze(spot(offset, 7), NORTH)
+	var/datum/hull_claim/glazed = survey_enclosure(spot(6, 6))
+	var/glazed_refusal = glazed.refusal
+	var/glazed_size = length(glazed.turfs)
+
+	// Restore the reservation and delete its temporary area before any assertion returns.
+	evacuate_area(planet_area)
+	reset_block()
+	qdel(planet_area)
+	qdel(generator)
+	qdel(field)
+	qdel(walled)
+	qdel(glazed)
+
+	TEST_ASSERT(all_queued, "raw-generated planet ground must schedule an atmos adjacency rebuild")
+	TEST_ASSERT(field_refused, "open planet ground with missing, unqueued adjacency was accepted as a sealed enclosure")
+	TEST_ASSERT_NULL(walled_refusal, "a walled room on native planet ground was refused: [walled_refusal]")
+	TEST_ASSERT_EQUAL(walled_size, 25, "the planet room must claim nine ground tiles and all sixteen walls")
+	TEST_ASSERT_NULL(glazed_refusal, "a room sealed with thin windows on native planet ground was refused: [glazed_refusal]")
+	TEST_ASSERT_EQUAL(glazed_size, 9, "thin windows must not cause the surrounding planet ground to be claimed")
 
 /**
  * A commissioned vessel must have a door on its outer hull to serve as the docking port.

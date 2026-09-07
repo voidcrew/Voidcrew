@@ -165,10 +165,15 @@
 
 /// Adds this planet's token without replacing any identity or role factions on the mob.
 /datum/map_footprint/proc/add_planetary_faction(mob/living/local_mob)
-	if(!planetary_faction || QDELETED(local_mob))
+	if(!planetary_faction || QDELETED(local_mob) || !local_mob.should_inherit_planetary_faction())
 		return FALSE
 	local_mob.faction |= planetary_faction
 	return TRUE
+
+/// Only NPC mob families inherit the native alliance; player forms and companions can opt out.
+/mob/living/proc/should_inherit_planetary_faction()
+	// New player bodies (including vat clones) do not have a mind or client during Initialize.
+	return isanimal_or_basicmob(src)
 
 /**
  * Gives the token to living mobs already inside the footprint.

@@ -54,22 +54,12 @@ ADMIN_VERB(manage_ship_crews, R_ADMIN, "Manage Ship Crews", "View and manage eve
 	data["memo"] = selected_ship.memo || ""
 	data["joining_allowed"] = selected_ship.joining_allowed
 
-	var/datum/job/captain_job = selected_ship.get_captain_job()
 	for(var/datum/mind/member in selected_ship.ship_team?.members)
-		// is_ship_captain() takes the mob and fails offline members, so test the mind.
-		// Held command is exclusive there (a transfer or an election sets claimed_captain
-		// and the officer job stops conferring it), so mirror that or this readout shows
-		// two captains on a hull that has one.
-		var/is_captain
-		if(selected_ship.claimed_captain)
-			is_captain = (selected_ship.claimed_captain == member)
-		else
-			is_captain = (captain_job && member.assigned_role?.type == captain_job.type)
 		data["crew"] += list(list(
 			"name" = member.current?.real_name || member.name || "Unknown",
 			"job" = member.assigned_role?.title || "Unknown",
 			"ref" = REF(member),
-			"is_captain" = is_captain,
+			"is_captain" = selected_ship.is_ship_captain_mind(member),
 			"is_online" = !!member.current?.client,
 		))
 
@@ -128,27 +118,29 @@ ADMIN_VERB(manage_ship_crews, R_ADMIN, "Manage Ship Crews", "View and manage eve
 /// Removes captaincy from a team mind without touching their membership. Returns TRUE if they were captain.
 /datum/admin_crew_panel/proc/demote_from_captain(datum/mind/member, obj/structure/overmap/ship/ship, mob/user)
 	var/is_claimed = ship.claimed_captain == member
+	var/is_acting = ship.acting_captain == member
 	var/datum/job/captain_job = ship.get_captain_job()
-	var/is_job_captain = captain_job && member.assigned_role?.type == captain_job.type
-	if(!is_claimed && !is_job_captain)
+	var/is_job_captain = captain_job && member.assigned_role == captain_job
+	if(!is_claimed && !is_acting && !is_job_captain)
 		return FALSE
 
 	if(is_claimed)
 		ship.claimed_captain = null
+	if(is_acting)
+		ship.acting_captain = null
 	if(is_job_captain)
 		// Hand them the hull's first non-officer job; single-job hulls have none, so
 		// the demoted captain ends up roleless (admin-only edge case, worth logging).
 		var/datum/job/replacement
 		for(var/datum/job/job in ship.job_slots)
-			if(!job.officer)
+			if(!job.officer && job != captain_job)
 				replacement = job
 				break
 		member.assigned_role = replacement
 
-	if(member.current)
-		remove_captain_management(member.current, ship)
-		if(user)
-			to_chat(member.current, span_warning("An admin has relieved you of command of [ship.name]."))
+	ship.refresh_command_buttons()
+	if(member.current && user)
+		to_chat(member.current, span_warning("An admin has relieved you of command of [ship.name]."))
 
 	if(user)
 		log_admin("[key_name(user)] demoted [key_name(member.current || member)] from captain of [ship.name].")
@@ -170,11 +162,12 @@ ADMIN_VERB(manage_ship_crews, R_ADMIN, "Manage Ship Crews", "View and manage eve
 	var/datum/job/captain_job = ship.get_captain_job()
 	if(captain_job)
 		target.assigned_role = captain_job
-	else // claimed/NPC hulls have no job slots - captaincy rides on claimed_captain
-		ship.claimed_captain = target
+	// An admin appointment is exclusive, just like a command transfer or election.
+	ship.claimed_captain = target
+	ship.acting_captain = null
+	ship.refresh_command_buttons()
 
 	if(target.current)
-		grant_captain_management(target.current, ship)
 		to_chat(target.current, span_notice("An admin has made you captain of [ship.name]."))
 
 	ship.ship_notify("[target.current?.real_name || target.name] now holds command of the ship.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

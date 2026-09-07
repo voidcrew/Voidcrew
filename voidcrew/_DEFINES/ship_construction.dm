@@ -10,11 +10,27 @@
 #define SHIP_CONSTRUCTION_UPGRADE_TRAY (1 << 3)
 #define SHIP_CONSTRUCTION_UPGRADE_SERVO (1 << 4)
 #define SHIP_CONSTRUCTION_UPGRADE_SERVO_MK2 (1 << 5)
+#define SHIP_CONSTRUCTION_UPGRADE_QUEUE (1 << 6)
+#define SHIP_CONSTRUCTION_UPGRADE_AREA (1 << 7)
+#define SHIP_CONSTRUCTION_UPGRADE_SERVO_MK3 (1 << 8)
+#define SHIP_CONSTRUCTION_UPGRADE_SERVO_MK4 (1 << 9)
+#define SHIP_CONSTRUCTION_UPGRADE_REPAIR (1 << 10)
+#define SHIP_CONSTRUCTION_UPGRADE_DECAL (1 << 11)
 
 // Build time multipliers the fabrication servo upgrades apply to every delay the
 // construction drone incurs. Tier 1 shaves a quarter off, tier 2 halves it.
 #define SHIP_CONSTRUCTION_SERVO_SPEED_MOD 0.75
 #define SHIP_CONSTRUCTION_SERVO_MK2_SPEED_MOD 0.5
+#define SHIP_CONSTRUCTION_SERVO_MK3_SPEED_MOD 0.2
+#define SHIP_CONSTRUCTION_SERVO_MK4_SPEED_MOD 0
+
+// Bounded work and storage, independent of swarm size.
+#define SHIP_CONSTRUCTION_QUEUE_LIMIT 128
+#define SHIP_REPAIR_DRONE_LIMIT 12
+#define SHIP_REPAIR_JOURNAL_LIMIT 512
+#define SHIP_REPAIR_LAYER_LIMIT 8
+#define SHIP_REPAIR_GLOBAL_RECORD_LIMIT 8192
+#define SHIP_REPAIR_WORK_BUDGET 32
 
 // T-ray scanner modes for ship construction console
 #define SHIP_TRAY_MODE_OFF "off"
@@ -40,7 +56,6 @@
 
 // Shared build and recycling costs for the console's optional tools.
 #define SHIP_RTD_TILE_IRON 100
-#define SHIP_RPD_PIPE_IRON 50
 #define SHIP_RLD_WALL_LIGHT_IRON 25
 #define SHIP_RLD_WALL_LIGHT_GLASS 50
 #define SHIP_RLD_FLOOR_LIGHT_IRON 50

@@ -309,10 +309,9 @@
  *    them with. That is what a cave mouth lit on one side and black on the other is.
  *
 
- * The fast path only ever lays OPEN turfs, because generate_overworld only ever picks from
- * open_turf_types. That matters for atmos: an open turf queues its own adjacency rebuild
- * through requires_activation in /turf/Initialize, where a closed one never does and would
- * have to be handed to CALCULATE_ADJACENT_TURFS by hand.
+ * The fast path must queue atmos adjacency explicitly. requires_activation defaults to
+ * false even on open turfs, so Initialize() alone does not schedule a rebuild. Without
+ * one, bare ground has an empty atmos graph and hull surveys mistake it for a sealed room.
  */
 /datum/map_generator/planet_generator/proc/place_biome_turf(turf/gen_turf, turf/turf_type, destined_for_cave = FALSE)
 	if(!SSlighting.initialized)
@@ -354,6 +353,8 @@
 			var/datum/lighting_corner/corner_nw = gen_turf.lighting_corner_NW
 			var/old_dynamic_lumcount = gen_turf.dynamic_lumcount
 			var/turf/fast_turf = new turf_type(gen_turf)
+			if(SSair.initialized)
+				CALCULATE_ADJACENT_TURFS(fast_turf, NORMAL_TURF)
 			fast_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
 			fast_turf.turf_flags |= carryover_flags
 			fast_turf.assemble_baseturfs(initial(fast_turf.baseturfs) || fast_turf.type)

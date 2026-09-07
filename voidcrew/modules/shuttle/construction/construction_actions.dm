@@ -43,6 +43,9 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 	check_rcd()
+	if(ship_console.queue_enabled || ship_console.build_size > 1)
+		ship_console.queue_construction(target_turf, owner)
+		return
 
 	// Store turf state before building to detect if we built something new
 	var/was_in_shuttle = ship_console.is_in_shuttle_area(target_turf)
@@ -64,7 +67,7 @@
 	var/building_plating = (ship_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
 
 	// Build floor: RCD is in turf mode and target is space (need to create floor first)
-	if(rcd_mode == RCD_TURF && building_plating && isspaceturf(target_turf))
+	if(rcd_mode == RCD_TURF && building_plating && isspaceturf(target_turf) && ship_console.turf_build_mode != "wall")
 		if(!ship_rcd.build_floor(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
@@ -74,13 +77,17 @@
 		return
 
 	// Build wall: RCD is in turf mode and target is any open floor (including plating)
-	if(rcd_mode == RCD_TURF && building_plating && istype(target_turf, /turf/open/floor))
+	if(rcd_mode == RCD_TURF && building_plating && istype(target_turf, /turf/open/floor) && ship_console.turf_build_mode != "floor")
 		if(!ship_rcd.build_wall(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 		// Expand shuttle if building outside
 		if(!was_in_shuttle)
 			ship_console.expand_shuttle_to_turf(target_turf, owner)
+		return
+
+	// An explicit intent must not fall through to the RCD's floor/wall toggle.
+	if(rcd_mode == RCD_TURF && building_plating && ship_console.turf_build_mode != "auto")
 		return
 
 	// Hull windows: grille and window in one action, paid for out of the silo by recipe
@@ -186,6 +193,7 @@
 			qdel(rcd_effect)
 			return
 		var/list/materials = ship_rcd.get_deconstruction_materials(fixture)
+		ship_console.forget_repair_record(ship_console.repair_coordinate_key(target_turf))
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 		rcd_effect.end_animation()
 		qdel(fixture)
@@ -317,34 +325,8 @@
 		remote_eye.balloon_alert(owner, "no RTD installed!")
 		return
 
-	var/obj/item/construction/rtd/internal/rtd = ship_console.internal_rtd
-
-	// RTD can only tile on plating
-	if(!istype(target_turf, /turf/open/floor/plating))
-		remote_eye.balloon_alert(owner, "need plating!")
-		return
-
 	owner.changeNext_move(CLICK_CD_RANGE)
-
-	// Check and use silo materials
-	if(!rtd.check_tile_materials(owner))
-		return
-	if(!rtd.use_tile_materials(owner))
-		return
-
-	// Create and place the tile
-	var/obj/item/stack/tile/final_tile = rtd.selected_design.new_tile(target_turf, rtd.selected_direction)
-	if(QDELETED(final_tile))
-		remote_eye.balloon_alert(owner, "tile creation failed!")
-		return
-
-	var/turf/open/new_turf = final_tile.place_tile(target_turf, owner)
-	if(new_turf)
-		// Apply any saved overlays
-		for(var/datum/overlay_info/info in rtd.design_overlays)
-			info.add_decal(new_turf)
-
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	ship_console.decorate_turf(target_turf, owner, "tile")
 
 /// Ship RTD deconstruct action - removes floor tiles
 /datum/action/innate/construction/ship/rtd_deconstruct
@@ -447,12 +429,6 @@
 
 	var/obj/item/pipe_dispenser/internal/rpd = ship_console.internal_rpd
 
-	// Check and use silo materials before placing pipe
-	if(!rpd.check_pipe_materials(owner))
-		return
-	if(!rpd.use_pipe_materials(owner))
-		return
-
 	// Use the RPD's interact_with_atom to handle pipe placement
 	rpd.interact_with_atom(target_turf, owner)
 
@@ -494,11 +470,8 @@
 		return
 
 	// Find and destroy unplaced pipe-related objects on this turf
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
-	if(!ship_rcd.can_refund_materials(owner))
-		return
+	// Pipes are free to place and remove, so removal must not generate silo materials.
 	var/destroyed_something = FALSE
-	var/refund_iron = SHIP_RPD_PIPE_IRON
 	for(var/obj/item/pipe/P in target_turf)
 		qdel(P)
 		destroyed_something = TRUE
@@ -527,13 +500,9 @@
 		for(var/obj/structure/disposalpipe/broken/B in target_turf)
 			qdel(B)
 			destroyed_something = TRUE
-			// Broken sections can be fragments of one pipe, not a whole paid-for build.
-			refund_iron = 0
 			break
 
 	if(destroyed_something)
-		if(refund_iron)
-			ship_rcd.refund_materials(list(/datum/material/iron = refund_iron), owner)
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 	else
 		remote_eye.balloon_alert(owner, "nothing to remove!")

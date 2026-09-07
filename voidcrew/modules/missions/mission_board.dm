@@ -235,19 +235,6 @@
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 			return TRUE
 
-		if("abandon")
-			var/datum/mission/mission = locate(params["ref"]) in ship.active_missions
-			if(!mission)
-				balloon_alert(usr, "mission not found!")
-				return TRUE
-
-			var/result = ship.abandon_mission(mission)
-			if(result != TRUE)
-				balloon_alert(usr, result)
-			else
-				balloon_alert(usr, "mission abandoned")
-			return TRUE
-
 		if("refresh")
 			var/cooldown_remaining = MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)
 			if(cooldown_remaining > 0)

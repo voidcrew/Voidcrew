@@ -1332,6 +1332,9 @@
 	speed = VESTIGE_MIMIC_FLAWLESS_SPEED
 	has_tell = FALSE
 
+/mob/living/basic/vestige_mimic/should_inherit_planetary_faction()
+	return FALSE
+
 /mob/living/basic/vestige_mimic/Initialize(mapload)
 	. = ..()
 	RegisterSignal(src, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_damaged))

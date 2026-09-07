@@ -244,3 +244,86 @@
 	TEST_ASSERT(ship.set_crew_only_airlocks(FALSE), "could not disable crew-only airlocks")
 	TEST_ASSERT(door.try_safety_unlock(visitor), "disabling the crew lock did not restore visitor entry")
 	TEST_ASSERT(!door.density, "the exterior airlock stayed shut after the crew lock was disabled")
+
+/// Same-type ship jobs must not confer command, prevent acting command, or survive demotion.
+/datum/unit_test/voidcrew_pill_captain_commands/Run()
+	var/datum/map_template/shuttle/voidcrew/pill/template = allocate(/datum/map_template/shuttle/voidcrew/pill)
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	ship.job_slots = template.assemble_job_slots()
+	for(var/datum/job/job as anything in ship.job_slots)
+		allocated += job
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	var/datum/job/head_prisoner = ship.get_captain_job()
+	var/datum/job/prisoner = ship.job_slots[2]
+	TEST_ASSERT_EQUAL(head_prisoner.type, prisoner.type, "The real Pill slots must exercise jobs with the same type")
+	TEST_ASSERT_NOTEQUAL(head_prisoner, prisoner, "The Pill's command and crew slots must be separate datums")
+
+	var/mob/living/carbon/human/consistent/captain = allocate(/mob/living/carbon/human/consistent)
+	captain.mind_initialize()
+	captain.mind.assigned_role = head_prisoner
+	var/mob/living/carbon/human/consistent/crew = allocate(/mob/living/carbon/human/consistent)
+	crew.mind_initialize()
+	crew.mind.assigned_role = prisoner
+	ship.ship_team.add_member(crew.mind)
+
+	TEST_ASSERT(!ship.has_real_captain(), "An ordinary Prisoner must not count as the Head Prisoner")
+	TEST_ASSERT(!ship.is_ship_captain(crew), "An ordinary Prisoner must not receive job-based command")
+	TEST_ASSERT(!ship.is_ship_captain(captain), "The command slot must not authorize someone outside the roster")
+	TEST_ASSERT(ship.make_acting_captain(crew), "The first Prisoner must be able to take acting command")
+	TEST_ASSERT(ship.is_ship_captain(crew), "Acting command must authorize the Prisoner's ship controls")
+
+	var/datum/admin_crew_panel/admin_panel = allocate(/datum/admin_crew_panel)
+	admin_panel.selected_ship = ship
+	var/list/panel_data = admin_panel.ui_data(crew)
+	var/list/crew_row = panel_data["crew"][1]
+	TEST_ASSERT(crew_row["is_captain"], "The admin roster must show acting command")
+	TEST_ASSERT(admin_panel.demote_from_captain(crew.mind, ship), "An admin must be able to demote an acting captain")
+	TEST_ASSERT(!ship.is_ship_captain(crew), "Demotion must remove acting command")
+	TEST_ASSERT_NULL(locate(/datum/action/innate/captain_management) in crew.actions, "Demotion must remove the acting captain's controls")
+
+	ship.ship_team.add_member(captain.mind)
+	ship.refresh_command_buttons()
+	TEST_ASSERT(ship.has_real_captain(), "The actual Head Prisoner must count as a real captain")
+	TEST_ASSERT(ship.is_ship_captain(captain), "The actual Head Prisoner must hold command")
+	TEST_ASSERT(!ship.is_ship_captain(crew), "A Prisoner must not share the Head Prisoner's command")
+	TEST_ASSERT_NOTNULL(locate(/datum/action/innate/captain_management) in captain.actions, "The Head Prisoner must receive ship controls")
+	TEST_ASSERT(admin_panel.demote_from_captain(captain.mind, ship), "An admin must be able to demote the Head Prisoner")
+	TEST_ASSERT_EQUAL(captain.mind.assigned_role, prisoner, "Demotion must assign the ordinary Prisoner slot")
+	TEST_ASSERT(!ship.has_real_captain(), "Changing to a same-type crew slot must remove real command")
+	TEST_ASSERT(!ship.is_ship_captain(captain), "The demoted Head Prisoner must lose command")
+	TEST_ASSERT_NULL(locate(/datum/action/innate/captain_management) in captain.actions, "The demoted Head Prisoner must lose ship controls")
+	TEST_ASSERT(!admin_panel.demote_from_captain(captain.mind, ship), "Repeated demotion must recognize that the Prisoner is already demoted")
+
+	// An invited officer can come from another Pill with identically named job slots.
+	var/list/other_slots = template.assemble_job_slots()
+	for(var/datum/job/job as anything in other_slots)
+		allocated += job
+	var/datum/job/other_head_prisoner = other_slots[1]
+	captain.mind.assigned_role = other_head_prisoner
+	TEST_ASSERT(!ship.has_real_captain(), "Another Pill's Head Prisoner must not fill this ship's command slot")
+	TEST_ASSERT(!ship.is_ship_captain(captain), "An invited captain must not inherit command of another Pill")
+	TEST_ASSERT(!admin_panel.demote_from_captain(captain.mind, ship), "Demotion on this ship must not change another ship's officer role")
+	TEST_ASSERT_EQUAL(captain.mind.assigned_role, other_head_prisoner, "An unrelated officer role must be preserved")
+
+	admin_panel.promote_to_captain(crew.mind, captain)
+	TEST_ASSERT(ship.is_ship_captain(crew), "Admin promotion must authorize the selected crewmember")
+	TEST_ASSERT(!ship.is_ship_captain(captain), "Admin promotion must confer exclusive command")
+	TEST_ASSERT_NOTNULL(locate(/datum/action/innate/captain_management) in crew.actions, "Admin promotion must restore ship controls")
+	TEST_ASSERT(admin_panel.demote_from_captain(crew.mind, ship), "An admin-appointed captain must be demotable")
+	TEST_ASSERT(!ship.is_ship_captain(crew), "Demotion must clear both the appointment and the officer job")
+	TEST_ASSERT_NULL(locate(/datum/action/innate/captain_management) in crew.actions, "Demotion must retire the restored controls")
+
+	// The admin panel must use the same rules even for minds without a current body.
+	var/datum/mind/offline_captain = allocate(/datum/mind)
+	offline_captain.assigned_role = head_prisoner
+	ship.ship_team.members += offline_captain
+	panel_data = admin_panel.ui_data(crew)
+	var/list/offline_row = panel_data["crew"][3]
+	TEST_ASSERT(offline_row["is_captain"], "A bodyless Head Prisoner must still appear as captain to admins")
+	TEST_ASSERT(!offline_row["is_online"], "A bodyless captain must appear offline")
+	TEST_ASSERT(admin_panel.demote_from_captain(offline_captain, ship), "A bodyless captain must be demotable")
+	TEST_ASSERT(!ship.is_ship_captain_mind(offline_captain), "The bodyless captain must remain demoted")
+	ship.ship_team.members -= offline_captain
+	ship.ship_team.remove_member(captain.mind)
+	ship.ship_team.remove_member(crew.mind)

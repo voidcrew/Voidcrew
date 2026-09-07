@@ -23,11 +23,10 @@
  * to match anyway, so the admin panel and the roundstart telemetry report the same 0 that
  * actually happens.
  *
- * Note this is the only gate that actually holds. The Antagonists page was dropped from
- * character setup (AntagsPage.tsx is no longer mounted), but that only stops players from
- * editing prefs.be_special - savefiles written before it was removed still carry old flags,
- * and trim_candidates() will happily pick those players. Selection is the right place to
- * stop it.
+ * The Antagonists page was dropped from character setup (AntagsPage.tsx is no longer
+ * mounted). Antagonist preferences default to all roles, including for existing accounts,
+ * so ghost-role polls such as alien larvae can find volunteers. These selection gates
+ * keep automatic antagonist assignment disabled regardless of those preferences.
  *
  * Tier selection is deliberately left running. It now only supplies the flavour text for
  * the roundstart threat advisory, and forcing Greenshift instead would trip the

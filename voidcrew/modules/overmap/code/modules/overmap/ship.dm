@@ -1114,9 +1114,13 @@
  * or if they are the claimed_captain (for NPC ships without job_slots).
  */
 /obj/structure/overmap/ship/proc/is_ship_captain(mob/living/check_mob)
-	if(!check_mob?.mind)
+	return is_ship_captain_mind(check_mob?.mind)
+
+/// Mind-based command check, also used by the admin roster for offline crew.
+/obj/structure/overmap/ship/proc/is_ship_captain_mind(datum/mind/check_mind)
+	if(!check_mind)
 		return FALSE
-	if(!(check_mob.mind in ship_team?.members))
+	if(!(check_mind in ship_team?.members))
 		return FALSE
 
 	// An explicit claim is authoritative AND exclusive. Claiming a derelict lands
@@ -1127,18 +1131,20 @@
 	// clears the var (see /datum/team/voidcrew/remove_member), so this can never lock
 	// a crew out of their own bridge.
 	if(claimed_captain)
-		return check_mob.mind == claimed_captain
+		return check_mind == claimed_captain
 
 	// Acting captain: first joiner on a captainless ship. Holds command only while
 	// no real captain exists - their authority ends the moment one arrives.
-	if(acting_captain && check_mob.mind == acting_captain && !has_real_captain())
+	if(acting_captain && check_mind == acting_captain && !has_real_captain())
 		return TRUE
 
 	var/datum/job/captain_job = get_captain_job()
 	if(!captain_job)
 		return FALSE
 
-	return check_mob.mind.assigned_role?.type == captain_job.type
+	// Ship slots are distinct datums even when their outfits use the same job type:
+	// the Pill's Head Prisoner and Prisoner are both /datum/job/prisoner.
+	return check_mind.assigned_role == captain_job
 
 /**
  * Get the captain job datum for this ship.
@@ -1158,12 +1164,8 @@
  * Get the current captain mob if they are online.
  */
 /obj/structure/overmap/ship/proc/get_captain()
-	var/datum/job/captain_job = get_captain_job()
-	if(!captain_job)
-		return null
-
 	for(var/datum/mind/member in ship_team?.members)
-		if(member.assigned_role?.type == captain_job.type && member.current?.client)
+		if(member.current?.client && is_ship_captain_mind(member))
 			return member.current
 	return null
 
@@ -1179,7 +1181,7 @@
 	if(!captain_job)
 		return FALSE
 	for(var/datum/mind/member in ship_team?.members)
-		if(member.assigned_role?.type == captain_job.type)
+		if(member.assigned_role == captain_job)
 			return TRUE
 	return FALSE
 
@@ -3991,6 +3993,10 @@
 /obj/structure/overmap/ship/proc/on_area_turf_added(area/source, turf/T, area/old_area)
 	SIGNAL_HANDLER
 
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller = shuttle?.ship_repair_controller?.resolve()
+	if(repair_controller?.repair_tracking && !(source in repair_controller.repair_areas))
+		repair_controller.refresh_repair_areas()
+
 	if(!integrity_initialized)
 		return
 
@@ -4028,6 +4034,9 @@
  */
 /obj/structure/overmap/ship/proc/on_shuttle_turf_change(turf/old_turf, path, list/new_baseturfs, flags, list/post_change_callbacks)
 	SIGNAL_HANDLER
+
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller = shuttle?.ship_repair_controller?.resolve()
+	repair_controller?.on_repair_turf_change(old_turf, path)
 
 	if(!integrity_initialized)
 		return
@@ -4560,14 +4569,14 @@
 	if(!(mission in available_missions))
 		return "Mission not available."
 	if(length(active_missions) >= max_missions)
-		return "Maximum active missions reached ([max_missions])."
+		return "Your ship's active mission limit reached ([max_missions])."
 	if(mission.active)
 		return "Mission already accepted."
 	// Boards can hold more copies of a capped contract than the cap allows (the
 	// roll only counts live missions), so the cap has to hold here too or N ships
 	// run the same "limit 1" job at once.
 	if(!mission_type_within_limit(mission.type, mission))
-		return "Contract limit reached for this type."
+		return "Global contract limit reached for this type (all ships)."
 
 	if(!mission.start_mission(src))
 		return "Failed to start mission."
@@ -4600,19 +4609,6 @@
 	if(!mission.turn_in(reward_anchor, item))
 		return "Failed to complete mission."
 
-	return TRUE
-
-/**
- * Abandons/gives up on a mission.
- * * mission - The mission to abandon
- */
-/obj/structure/overmap/ship/proc/abandon_mission(datum/mission/mission)
-	if(!mission)
-		return "Invalid mission."
-	if(!(mission in active_missions))
-		return "Mission not active on this ship."
-
-	mission.give_up()
 	return TRUE
 
 // ===== COMBAT ALARM SIGNAL HANDLERS =====

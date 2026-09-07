@@ -97,7 +97,15 @@
 /turf/closed/wall/attack_tk()
 	return
 
-/turf/closed/wall/proc/dismantle_wall(devastated = FALSE, explode = FALSE)
+/turf/closed/wall/proc/dismantle_wall(devastated = FALSE, explode = FALSE, disassembled = FALSE)
+	// VOIDCREW: successful hand demolition supersedes repairs, including during flight.
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller
+	if(disassembled)
+		repair_controller = SSship_repairs.area_controllers[get_area(src)]
+	var/was_repairing = repair_controller?.repair_applying
+	if(repair_controller)
+		repair_controller.forget_repair_record(repair_controller.repair_coordinate_key(src))
+		repair_controller.repair_applying = TRUE
 	if(devastated)
 		devastate_wall()
 	else
@@ -115,6 +123,8 @@
 	else
 		ScrapeAway()
 	QUEUE_SMOOTH_NEIGHBORS(src)
+	if(repair_controller)
+		repair_controller.repair_applying = was_repairing
 
 /turf/closed/wall/proc/break_wall()
 	new sheet_type(src, sheet_amount)
@@ -261,7 +271,7 @@
 		if(I.use_tool(src, user, slicing_duration, volume=100))
 			if(iswallturf(src))
 				to_chat(user, span_notice("You remove the outer plating."))
-				dismantle_wall()
+				dismantle_wall(disassembled = TRUE)
 			return TRUE
 
 	return FALSE

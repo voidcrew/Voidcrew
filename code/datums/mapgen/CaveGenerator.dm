@@ -184,9 +184,9 @@
 		// encounters, meteor fields, planet builds) over live turfs. The raw `new` above
 		// bypasses ChangeTurf, so a closed turf laid over open space stays inside every
 		// neighbour's atmos_adjacent_turfs and LINDA runtimes on it (enemy_tile.run_later)
-		// every cycle, forever. Open turfs self-queue a rebuild via requires_activation in
-		// /turf/Initialize; closed turfs never do, so queue them here.
-		if(SSair.initialized && isclosedturf(new_turf))
+		// every cycle, forever. Open turfs need this too: requires_activation defaults to
+		// false, so Initialize() does not queue them and their atmos graph stays empty.
+		if(SSair.initialized)
 			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
 		// VOIDCREW EDIT: same mid-round reality as above - thousands of turfs with no

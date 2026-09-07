@@ -349,7 +349,12 @@
 
 /// Applies a validated, paid-for action. Subtypes can handle successful resource recovery here.
 /obj/item/construction/rcd/proc/apply_rcd_action(atom/target, mob/user, list/rcd_results)
-	return target.rcd_act(user, src, rcd_results)
+	var/turf/location = get_turf(target)
+	. = target.rcd_act(user, src, rcd_results)
+	// VOIDCREW: a successful deliberate removal supersedes an old repair order.
+	if(. && rcd_results["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
+		var/obj/machinery/computer/camera_advanced/base_construction/ship/controller = SSship_repairs.area_controllers[get_area(location)]
+		controller?.forget_repair_record(controller.repair_coordinate_key(location))
 
 /obj/item/construction/rcd/ui_assets(mob/user)
 	return list(

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-
-import { useBackend } from '../../tgui/backend';
 import {
   Box,
   Button,
@@ -14,8 +12,10 @@ import {
   Table,
   Tabs,
 } from 'tgui-core/components';
-import { type BooleanLike } from 'tgui-core/react';
+import type { BooleanLike } from 'tgui-core/react';
+import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { ShipConstructionControls } from './ShipConstructionControls';
 
 interface PortDoorData {
   name: string;
@@ -35,6 +35,21 @@ interface PortData {
 }
 
 interface Data {
+  repairUnlocked: BooleanLike;
+  repairEnabled: BooleanLike;
+  repairStatus: string;
+  repairTracking: BooleanLike;
+  repairRecords: number;
+  repairRecordLimit: number;
+  repairOverflow: number;
+  repairDroneLimit: number;
+  repairDrones: {
+    ref: string;
+    name: string;
+    status: string;
+    enabled: BooleanLike;
+    repaired: number;
+  }[];
   canOperate: boolean;
   shipState: string;
   shipName: string;
@@ -57,7 +72,7 @@ interface Data {
   theme?: string;
 }
 
-type TabType = 'construction' | 'relocation' | 'settings';
+type TabType = 'construction' | 'repair' | 'relocation' | 'settings';
 
 export const ShipConstructionConsole = () => {
   const { act, data } = useBackend<Data>();
@@ -84,13 +99,20 @@ export const ShipConstructionConsole = () => {
   const [activeTab, setActiveTab] = useState<TabType>('construction');
 
   return (
-    <Window width={480} height={400} title="Ship Construction Console" theme={theme}>
+    <Window
+      width={600}
+      height={650}
+      title="Ship Construction Console"
+      theme={theme}
+    >
       <Window.Content scrollable>
         <Stack vertical fill>
           {/* Operation Status Message */}
           {!!lastMessage && (
             <Stack.Item>
-              <NoticeBox success={lastSuccess} danger={!lastSuccess}>
+              <NoticeBox
+                {...(lastSuccess ? { success: true } : { danger: true })}
+              >
                 {lastMessage}
                 <Button
                   icon="times"
@@ -109,6 +131,12 @@ export const ShipConstructionConsole = () => {
                 onClick={() => setActiveTab('construction')}
               >
                 Construction
+              </Tabs.Tab>
+              <Tabs.Tab
+                selected={activeTab === 'repair'}
+                onClick={() => setActiveTab('repair')}
+              >
+                Repair Drones
               </Tabs.Tab>
               <Tabs.Tab
                 selected={activeTab === 'relocation'}
@@ -153,6 +181,7 @@ export const ShipConstructionConsole = () => {
               />
             )}
             {activeTab === 'settings' && <SettingsTab />}
+            {activeTab === 'repair' && <RepairTab />}
           </Stack.Item>
         </Stack>
       </Window.Content>
@@ -212,8 +241,7 @@ const ConstructionTab = (props: ConstructionTabProps) => {
                       bad: [-Infinity, 40],
                     }}
                   >
-                    {integrity}%
-                    {overhealth > 0 && ` (+${overhealth}%)`}
+                    {integrity}%{overhealth > 0 && ` (+${overhealth}%)`}
                   </ProgressBar>
                 </Box>
               </Box>
@@ -276,6 +304,9 @@ const ConstructionTab = (props: ConstructionTabProps) => {
 
       {/* Collapsible Help Section */}
       <Stack.Item>
+        <ShipConstructionControls />
+      </Stack.Item>
+      <Stack.Item>
         <Collapsible title="Help" color="label">
           <Box color="gray" fontSize="12px">
             <Box mb={0.5}>
@@ -293,7 +324,7 @@ const ConstructionTab = (props: ConstructionTabProps) => {
 
       {!canOperate && (
         <Stack.Item>
-          <NoticeBox warning>
+          <NoticeBox>
             Ship must be docked to use construction features.
           </NoticeBox>
         </Stack.Item>
@@ -341,7 +372,7 @@ const RelocationTab = (props: RelocationTabProps) => {
             <Button
               icon="fan"
               content="Reset Fans"
-              tooltip="Removes all tiny fans and adds new ones to every hull door, plus the docking port's own tile"
+              tooltip="Keeps fans on hull doors and blast doors, removes misplaced fans, and adds missing fans for 2 iron sheets each from the linked silo"
               disabled={!canOperate || isNotCrew}
               onClick={() => act('reset_fans')}
             />
@@ -415,7 +446,7 @@ const RelocationTab = (props: RelocationTabProps) => {
 
       {!canOperate && (
         <Stack.Item>
-          <NoticeBox warning>Ship must be docked.</NoticeBox>
+          <NoticeBox>Ship must be docked.</NoticeBox>
         </Stack.Item>
       )}
     </Stack>
@@ -449,6 +480,105 @@ const SettingsTab = () => {
               />
             </LabeledList.Item>
           </LabeledList>
+        </Section>
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const RepairTab = () => {
+  const { act, data } = useBackend<Data>();
+  const {
+    repairUnlocked,
+    repairEnabled,
+    repairStatus,
+    repairTracking,
+    repairRecords,
+    repairRecordLimit,
+    repairOverflow,
+    repairDroneLimit,
+    repairDrones = [],
+    isNotCrew,
+  } = data;
+  if (!repairUnlocked) {
+    return (
+      <NoticeBox>
+        Install a repair swarm upgrade disk to control repair drones.
+      </NoticeBox>
+    );
+  }
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title="Damage monitoring">
+          <Box mb={1}>
+            {repairRecords} / {repairRecordLimit} locations awaiting repair
+          </Box>
+          {repairOverflow > 0 && (
+            <NoticeBox danger>
+              Repair backlog full. Additional damage requires manual repair.
+            </NoticeBox>
+          )}
+          <Button
+            icon={repairTracking ? 'stop' : 'record-vinyl'}
+            disabled={isNotCrew}
+            selected={!!repairTracking}
+            onClick={() => act('repair_tracking')}
+          >
+            {repairTracking ? 'Disable monitoring' : 'Enable monitoring'}
+          </Button>
+          <Button.Confirm
+            disabled={isNotCrew || repairRecords === 0}
+            color="bad"
+            onClick={() => act('repair_clear')}
+          >
+            Clear repair backlog
+          </Button.Confirm>
+          <Box mt={1} color="label">
+            {repairStatus}
+          </Box>
+        </Section>
+      </Stack.Item>
+      <Stack.Item>
+        <Section
+          title={`Repair swarm (${repairDrones.length}/${repairDroneLimit})`}
+        >
+          <Button
+            icon={repairEnabled ? 'pause' : 'play'}
+            disabled={isNotCrew}
+            onClick={() => act('repair_toggle')}
+          >
+            {repairEnabled ? 'Pause swarm' : 'Deploy swarm'}
+          </Button>
+          <Button
+            icon="house"
+            disabled={isNotCrew || repairDrones.length === 0}
+            onClick={() => act('repair_recall_all')}
+          >
+            Recall all
+          </Button>
+          <Box mt={1} color="label">
+            Link drones with a multitool. Repairs use the linked silo.
+          </Box>
+          {repairDrones.map((drone) => (
+            <Section key={drone.ref} title={drone.name} mt={1}>
+              <Box mb={1}>
+                {drone.status} | {drone.repaired} repairs completed
+              </Box>
+              <Button
+                disabled={isNotCrew}
+                onClick={() => act('repair_drone_toggle', { ref: drone.ref })}
+              >
+                {drone.enabled ? 'Pause' : 'Enable'}
+              </Button>
+              <Button
+                disabled={isNotCrew}
+                onClick={() => act('repair_drone_recall', { ref: drone.ref })}
+              >
+                Recall
+              </Button>
+            </Section>
+          ))}
         </Section>
       </Stack.Item>
     </Stack>

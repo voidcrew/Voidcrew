@@ -606,6 +606,10 @@
  * air blockage from Initialize() and Destroy(), so a forceMove()d fan would leave the tile it
  * left still sealed and the tile it arrived on still open - the fan would be decorative, and
  * an interior door would silently keep dividing the ship's atmos.
+ *
+ * A newly supplied safety fan has no salvage: automatic port seating has no material
+ * payment, and must not become a second way to farm iron by rebuilding fans. Moving an
+ * existing fan preserves its salvage, including the lack of salvage on a safety fan.
  */
 /proc/hull_seat_port_fan(obj/docking_port/mobile/port, turf/destination, turf/previous)
 	if(!destination)
@@ -618,9 +622,18 @@
 	if(previous && previous != destination && !hull_turf_on_edge(previous, port))
 		var/obj/structure/fans/tiny/redundant = locate() in previous
 		if(redundant)
+			var/obj/structure/fans/tiny/moved = new redundant.type(destination)
+			moved.buildstacktype = redundant.buildstacktype
+			moved.buildstackamount = redundant.buildstackamount
 			qdel(redundant)
+			return moved
 
-	return new /obj/structure/fans/tiny(destination)
+	return new /obj/structure/fans/tiny/port_safety(destination)
+
+/// Supplied automatically when seating a port, without consuming construction materials.
+/obj/structure/fans/tiny/port_safety
+	desc = "A tiny fan keeping the docking port airtight. This automatic safety fan has no recoverable metal."
+	buildstacktype = null
 
 /**
  * The berth orientation adjust_reserve_dock_to_shuttle() will guess for this port.
@@ -719,17 +732,19 @@
 	return null
 
 /**
- * Brings one turf's cached atmos adjacency up to date if SSair has not got to it yet.
+ * Brings one turf's cached atmos adjacency up to date before trusting it as a seal.
  *
  * Outside DEBUG builds CALCULATE_ADJACENT_TURFS only queues the recalculation, so a survey
  * run in the same breath as the last wall going up reads the hole that wall just filled and
  * refuses a room the player is looking straight at. We leave the turf on SSair's queue - the
  * queued entry also carries an excited-group goal that is not ours to drop - and only make
- * sure the cache we are about to read is current. immediate_calculate_adjacent_turfs()
+ * sure the cache we are about to read is current. An empty cache also needs rebuilding:
+ * raw terrain swaps can leave open ground with no adjacency and no queued rebuild. That
+ * is missing data, not proof of an airtight barrier. immediate_calculate_adjacent_turfs()
  * updates both sides of every edge it touches, so doing this per turf covers its neighbours.
  */
 /proc/refresh_atmos_adjacency(turf/target)
-	if(target in SSair.adjacent_rebuild)
+	if(!TURF_SHARES(target) || (target in SSair.adjacent_rebuild))
 		target.immediate_calculate_adjacent_turfs()
 
 /// TRUE if this turf is itself an airtight barrier, and so is part of the hull's skin.

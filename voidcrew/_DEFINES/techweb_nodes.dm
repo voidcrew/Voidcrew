@@ -63,3 +63,9 @@
 #define TECHWEB_NODE_BULLDOG_SPECIAL_AMMO "bulldog_special_ammo"
 #define TECHWEB_NODE_L6_SPECIAL_AMMO "l6_special_ammo"
 #define TECHWEB_NODE_SNIPER_SPECIAL_AMMO "sniper_special_ammo"
+
+#define TECHWEB_NODE_SHIP_AUTOMATION "ship_automation"
+#define TECHWEB_NODE_SHIP_AREA_CONSTRUCTION "ship_area_construction"
+#define TECHWEB_NODE_SHIP_REPAIR_SWARM "ship_repair_swarm"
+#define TECHWEB_NODE_SHIP_FABRICATION_MK3 "ship_fabrication_mk3"
+#define TECHWEB_NODE_SHIP_FABRICATION_MK4 "ship_fabrication_mk4"
