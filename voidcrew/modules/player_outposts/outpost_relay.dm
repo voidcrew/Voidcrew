@@ -184,6 +184,12 @@ GLOBAL_LIST_EMPTY(outpost_research_relays)
 	return FALSE
 
 /obj/machinery/rnd/server/relay/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(QDELETED(connection))
+		balloon_alert(user, "outpost connection required")
+		return TRUE
+	if(!connection.ship_approved)
+		balloon_alert(user, "captain approval required")
+		return TRUE
 	if(!connection_available())
 		balloon_alert(user, "relay offline")
 		return TRUE
