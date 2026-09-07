@@ -66,6 +66,11 @@
 	using.screen_loc = ui_human_navigate
 	static_inventory += using
 
+	using = new /atom/movable/screen/skills(null, src)
+	using.icon = ui_style
+	using.screen_loc = ui_human_skills
+	static_inventory += using
+
 	using = new /atom/movable/screen/area_creator(null, src)
 	using.icon = ui_style
 	using.screen_loc = ui_human_area

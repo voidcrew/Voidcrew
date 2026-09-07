@@ -775,9 +775,11 @@ GLOBAL_LIST_EMPTY(map_model_default)
 			var/atom_def = text2path(path_to_init) //path definition, e.g /obj/foo/bar
 
 			if(!ispath(atom_def, /atom)) // Skip the item if the path does not exist.  Fix your crap, mappers!
+				// Attributes were appended before resolving this path. Remove their slot too,
+				// or every later atom receives the preceding atom's mapped variables.
+				members_attributes.len--
 				if(bad_paths)
-					// Rare case, avoid the var to save time most of the time
-					LAZYOR(bad_paths[copytext(line, 1, -1)], model_key)
+					LAZYOR(bad_paths[path_to_init], model_key)
 				continue
 			// Index is already incremented either way, just gotta set the path and all
 			members += atom_def

@@ -1,4 +1,3 @@
-import { useBackend, useSharedState } from '../../tgui/backend';
 import {
   AnimatedNumber,
   Box,
@@ -13,6 +12,7 @@ import {
   Tabs,
 } from 'tgui-core/components';
 import { formatMoney } from 'tgui-core/format';
+import { useBackend, useSharedState } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
 import { VoidcrewCargoCatalog } from './VoidcrewCargoCatalog';
 
@@ -154,6 +154,9 @@ const VoidcrewCargoStatus = () => {
         )) || <AnimatedNumber value="No credits" />}
       </Box>
       <LabeledList>
+        <LabeledList.Item label="Paying account">
+          {data.account_name || 'Linked bank account'}
+        </LabeledList.Item>
         <LabeledList.Item label="Cargo Shuttle">
           <Button
             color={getButtonColor()}

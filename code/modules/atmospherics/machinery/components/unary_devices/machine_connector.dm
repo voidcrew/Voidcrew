@@ -95,7 +95,10 @@
 /datum/gas_machine_connector/proc/destroy_connected_machine()
 	SIGNAL_HANDLER
 
-	disconnect_connector()
+	// The internal connector can be deleted first during map cleanup. Its own
+	// destruction disconnects the pipes, and connector_deleted has cleared this reference.
+	if(gas_connector)
+		disconnect_connector()
 	SSair.stop_processing_machine(connected_machine)
 	unregister_from_machine()
 	qdel(src)

@@ -119,6 +119,12 @@
 			"applied" = !isnull(active_ship.find_crew_application(user.ckey))
 		))
 
+	var/list/homes = list()
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(!home.loaded || !home.founder_ckey)
+			continue
+		homes += list(list("ref" = REF(home), "name" = home.name, "mode" = home.resident_mode, "cleared" = home.has_resident_clearance(user.ckey), "residents" = home.active_resident_count(), "status" = home.resident_admission_error(user.ckey), "pods" = !!home.available_resident_pod()))
+	data["outposts"] = homes
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)
 	return data
@@ -156,6 +162,11 @@
 	. = TRUE
 
 	switch(action)
+		if("join_outpost")
+			var/obj/structure/overmap/dynamic/player_outpost/home = locate(params["ref"]) in GLOB.player_outposts
+			if(home && user == ui.user)
+				INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, join_outpost), home)
+			return TRUE
 		if("open_wiki")
 			var/wiki_url = CONFIG_GET(string/wikiurl)
 			if(!wiki_url)

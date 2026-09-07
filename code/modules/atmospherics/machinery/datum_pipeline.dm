@@ -300,6 +300,10 @@
 			pipeline_list |= atmos_machine.return_pipenets_for_reconcilation(src)
 			gas_mixture_list += atmos_machine.return_airs_for_reconcilation(src)
 
+	// A network or port being rebuilt can have no mixture yet. As in return_air(),
+	// leave absent volumes out while still reconciling the surviving connections.
+	list_clear_nulls(gas_mixture_list)
+
 	var/total_thermal_energy = 0
 	var/total_heat_capacity = 0
 

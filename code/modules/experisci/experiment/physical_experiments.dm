@@ -28,6 +28,8 @@
 
 /datum/experiment/physical/meat_wall_explosion/finish_experiment(datum/component/experiment_handler/experiment_handler)
 	. = ..()
+	if(!.)
+		return FALSE
 	new /obj/effect/gibspawner/generic(currently_scanned_atom)
 	var/turf/meat_wall = currently_scanned_atom
 	var/turf/new_turf = meat_wall.ScrapeAway()

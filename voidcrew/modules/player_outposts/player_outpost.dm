@@ -11,15 +11,12 @@
  * never moves. Zone rules are locked in at founding: green-zone outposts are
  * protected from ship weapons, yellow/red outposts are raidable.
  *
- * One outpost per ckey per round (see GLOB.player_outpost_founder_ckeys).
+ * Players may own multiple outposts; each claim has independent services.
  * Nothing about the outpost persists across rounds.
  */
 
 /// All player outposts on the overmap
 GLOBAL_LIST_EMPTY(player_outposts)
-/// Ckeys that have founded (or been transferred) an outpost this round. Append-only.
-GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
-
 /obj/structure/overmap/dynamic/player_outpost
 	name = "player outpost"
 	desc = "An independent outpost."
@@ -86,6 +83,12 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/Destroy()
 	GLOB.player_outposts -= src
+	QDEL_NULL(freight)
+	QDEL_NULL(freight_berth)
+	QDEL_LIST(cargo_cart)
+	QDEL_NULL(treasury)
+	revoke_research_links()
+	deltimer(home_service_timer)
 	QDEL_NULL(current_advert)
 	approved_ships.Cut()
 	pending_dock_requests.Cut()
@@ -159,6 +162,26 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /// Whether the given mob is the outpost's owner. Ckey-based, so it survives death/respawn.
 /obj/structure/overmap/dynamic/player_outpost/proc/is_owner(mob/user)
 	return user?.ckey && user.ckey == founder_ckey
+
+/// Retired bodies may retain a ckey, but only the owner's current mind can manage.
+/obj/structure/overmap/dynamic/player_outpost/proc/is_current_management_user(mob/living/user)
+	if(!istype(user) || QDELETED(user.mind) || user.mind.current != user || !can_manage(user))
+		return FALSE
+	var/datum/mind/current_owner = founder_mind?.resolve()
+	return !is_owner(user) || !current_owner || current_owner == user.mind
+
+/// A returning character retains their account's claims without gaining remote controls.
+/mob/living/Login()
+	. = ..()
+	if(. && client)
+		sync_player_outpost_owner()
+
+/mob/living/proc/sync_player_outpost_owner()
+	if(!mind)
+		return
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(home.is_owner(src))
+			home.founder_mind = WEAKREF(mind)
 
 /// Whether the given mob may use the construction console
 /obj/structure/overmap/dynamic/player_outpost/proc/can_build(mob/user)
@@ -284,9 +307,18 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Returns TRUE on success; on failure the outpost deletes itself.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/found(mob/living/founder, datum/map_template/player_outpost/shell, outpost_name)
+	// A single site may only be initialized once, regardless of how many sites its owner holds.
+	if(founder_ckey || loaded || loading)
+		return FALSE
+	if(!founder?.ckey || !founder.mind)
+		qdel(src)
+		return FALSE
 	founder_ckey = founder.ckey
 	founder_name = founder.real_name
 	founder_mind = WEAKREF(founder.mind)
+	// Snapshot the actual crew before map loading yields; nearby ships are visitors.
+	var/obj/structure/overmap/ship/founding_ship = get_crew_ship(founder)
+	var/list/datum/mind/founding_crew = founding_ship?.ship_team?.members.Copy()
 	shell_template = shell
 	name = outpost_name
 	display_name = outpost_name
@@ -294,7 +326,10 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	founded_zone = SSovermap.get_zone_band_for_turf(get_turf(src))
 	raidable = (founded_zone != ZONE_GREEN)
 
-	if(!load_level())
+	// Preserve the loader's own recovery boundaries for individual map errors.
+	// A broad catch here unwinds past their cleanup instead of allowing it to run.
+	var/site_ready = load_level()
+	if(!site_ready)
 		qdel(src)
 		return FALSE
 
@@ -303,7 +338,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// from their helm/sensors until they re-cross the tile.
 	sync_close_overmap_objects()
 
-	GLOB.player_outpost_founder_ckeys += founder_ckey
+	residents |= founder.mind
+	resident_clearance[founder_ckey] = resident_access_revision
+	register_founding_crew(founding_crew)
 
 	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
 	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
@@ -355,12 +392,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		fail_load()
 		return FALSE
 
-	var/load_success = FALSE
-	try
-		load_success = shell_template.load(bottom_left)
-	catch(var/exception/e)
-		log_mapping("PLAYER OUTPOST: Failed to load shell '[shell_template.name]': [e]")
-		load_success = FALSE
+	var/load_success = shell_template.load(bottom_left)
 
 	if(!load_success)
 		fail_load()
@@ -391,8 +423,13 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	else
 		log_mapping("PLAYER OUTPOST: Shell '[shell_template.name]' loaded without a /area/voidcrew/player_outpost area; built turfs cannot be powered.")
 
+	ensure_home_services()
+	if(!install_home_bundle())
+		fail_load()
+		return FALSE
 	loaded = TRUE
 	loading = FALSE
+	home_service_timer = addtimer(CALLBACK(src, PROC_REF(process_home_services)), 5 SECONDS, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
 
 /// Cleanup after a failed shell load: release the freshly-claimed mapzone
@@ -408,7 +445,7 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /// Whether the given turf is inside the outpost's buildable region
 /obj/structure/overmap/dynamic/player_outpost/proc/is_turf_buildable(turf/target)
-	if(!build_bounds || !mapzone)
+	if(!target || !build_bounds || !mapzone)
 		return FALSE
 	var/datum/space_level/zlevel = mapzone.z_levels[1]
 	if(!zlevel || target.z != zlevel.z_value)
@@ -513,6 +550,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	message_admins("[key_name_admin(user)] renamed player outpost '[name]' to '[new_name]'")
 	name = new_name
 	display_name = new_name
+	if(treasury)
+		treasury.account_holder = "[new_name] Treasury"
 	COOLDOWN_START(src, rename_cooldown, PLAYER_OUTPOST_RENAME_COOLDOWN)
 	return TRUE
 
@@ -653,9 +692,14 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /// Owner approved a pending request
 /obj/structure/overmap/dynamic/player_outpost/proc/approve_dock_request(obj/structure/overmap/ship/requester)
+	if(QDELETED(requester) || !(requester in pending_dock_requests))
+		return
 	pending_dock_requests -= requester
 	approved_ships[requester] = TRUE
 	requester.ship_notify("[name]: docking clearance granted.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+	// Continue the approach they requested, only while still waiting at this site.
+	if(loaded && get_turf(src) && requester.loc == loc && requester.state == OVERMAP_SHIP_FLYING && requester.is_still() && !requester.is_interdicted && !QDELETED(requester.shuttle))
+		requester.overmap_object_act(null, src)
 
 /// Owner denied a pending request
 /obj/structure/overmap/dynamic/player_outpost/proc/deny_dock_request(obj/structure/overmap/ship/requester)
@@ -673,11 +717,19 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 /**
  * The owner walks away: ownership clears, docking opens up, adverts die.
  * The physical outpost persists (round-permanent by design). The previous
- * owner's ckey stays in the founder registry, no re-founding this round.
+ * owner can found or claim another outpost at any time.
  */
-/obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user)
+/obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user, admin_override = FALSE)
+	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
+		return
 	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
+	stewards.Cut()
+	treasurers.Cut()
+	resident_mode = "closed"
+	resident_clearance.Cut()
+	revoke_research_links()
+	freight?.cancel_pending()
 	founder_ckey = null
 	founder_name = null
 	founder_mind = null
@@ -687,18 +739,37 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	QDEL_NULL(current_advert)
 
 /**
- * Transfers ownership to another player. The recipient must not have founded
- * an outpost this round; their ckey joins the founder registry.
+ * Transfers ownership to another player, or accepts a local claim on an unowned site.
  */
-/obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user)
+/obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user, admin_override = FALSE)
 	if(!istype(new_owner) || !new_owner.ckey || !new_owner.mind)
 		return FALSE
-	if(new_owner.ckey in GLOB.player_outpost_founder_ckeys)
+	var/claiming = new_owner == user && can_claim(user)
+	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : (!is_owner(user) && !claiming))
 		return FALSE
+	// An owner cannot retain command or spending by delegating authority to themselves
+	// before transferring the deed. Other residents retain their independent grants.
+	revoke_research_links()
+	var/datum/mind/former_owner = founder_mind?.resolve()
+	stewards -= former_owner
+	treasurers -= former_owner
+	stewards -= user.mind
+	treasurers -= user.mind
+	authorized_builder_ckeys -= founder_ckey
+	residents |= new_owner.mind
+	resident_clearance[new_owner.ckey] = resident_access_revision
+	blocked_residents -= new_owner.ckey
 	founder_ckey = new_owner.ckey
 	founder_name = new_owner.real_name
 	founder_mind = WEAKREF(new_owner.mind)
-	GLOB.player_outpost_founder_ckeys += new_owner.ckey
+	if(claiming)
+		var/obj/structure/overmap/ship/claiming_ship = get_crew_ship(new_owner)
+		register_founding_crew(claiming_ship?.ship_team?.members.Copy())
+		resident_mode = "approved"
 	message_admins("[key_name_admin(user)] transferred player outpost '[name]' to [key_name_admin(new_owner)]")
 	to_chat(new_owner, span_boldnotice("You are now the registered owner of [name]."))
 	return TRUE
+
+/// A claim must be vacant and visited in person; prior ownership never disqualifies a player.
+/obj/structure/overmap/dynamic/player_outpost/proc/can_claim(mob/living/user)
+	return !founder_ckey && loaded && !loading && is_management_candidate(user) && user.mind.current == user

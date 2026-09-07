@@ -31,6 +31,7 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 /obj/item/radio
 	/// Weakref to the /obj/docking_port/mobile this radio's ship-scoped channels are bound to.
 	/// Sticky: leaving the ship does not unbind, only re-tuning or the ship being destroyed.
+	var/datum/weakref/comms_outpost_ref
 	var/datum/weakref/comms_ship_ref
 
 /// Resolve (and lazily establish) the ship this radio is bound to.
@@ -40,6 +41,8 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 	if(!QDELETED(bound))
 		return bound
 	comms_ship_ref = null
+	if(comms_outpost_ref?.resolve() || get_outpost_from_atom(src))
+		return null
 	bound = SSshuttle.get_containing_shuttle(src)
 	if(!bound)
 		return null
@@ -48,6 +51,7 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 
 /// Bind this radio's ship-scoped channels to the given ship (or unbind with null).
 /obj/item/radio/proc/bind_comms_to_ship(obj/docking_port/mobile/ship)
+	comms_outpost_ref = null
 	comms_ship_ref = ship ? WEAKREF(ship) : null
 
 /**
@@ -72,6 +76,9 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 /proc/voidcrew_physical_comms_net(turf/here)
 	if(!here)
 		return null
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(here)
+	if(home)
+		return "outpost_[REF(home)]"
 	var/datum/region = map_region_for_turf(here)
 	if(region)
 		return "site_[REF(region)]"
@@ -79,6 +86,9 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 
 /// Network key for wherever this radio physically is right now.
 /obj/item/radio/proc/get_physical_comms_net()
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	if(home)
+		return "outpost_[REF(home)]"
 	var/obj/docking_port/mobile/container = SSshuttle.get_containing_shuttle(src)
 	if(container)
 		return "ship_[REF(container)]"
@@ -89,6 +99,10 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 	var/obj/docking_port/mobile/bound = get_bound_comms_ship()
 	if(bound)
 		return "ship_[REF(bound)]"
+	var/obj/structure/overmap/dynamic/player_outpost/home = comms_outpost_ref?.resolve() || get_outpost_from_atom(src)
+	if(home)
+		bind_comms_to_outpost(home)
+		return "outpost_[REF(home)]"
 	return get_physical_comms_net()
 
 /// Whether this radio can hear a message scoped to the given network key. Matches on
@@ -99,6 +113,9 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 		return TRUE
 	var/obj/docking_port/mobile/bound = get_bound_comms_ship()
 	if(bound && net == "ship_[REF(bound)]")
+		return TRUE
+	var/obj/structure/overmap/dynamic/player_outpost/home = comms_outpost_ref?.resolve()
+	if(home && net == "outpost_[REF(home)]")
 		return TRUE
 	return net == get_physical_comms_net()
 
@@ -114,13 +131,19 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 /obj/item/radio/proc/get_comms_ship_name()
 	var/obj/docking_port/mobile/voidcrew/bound = get_bound_comms_ship()
 	if(!bound)
-		return null
+		var/obj/structure/overmap/dynamic/player_outpost/home = comms_outpost_ref?.resolve()
+		return home?.name
 	if(istype(bound) && bound.current_ship)
 		return bound.current_ship.display_name || bound.current_ship.name
 	return bound.name
 
 /// Multitool re-tunes the radio's ship channel to whatever ship it is currently aboard.
 /obj/item/radio/multitool_act(mob/living/user, obj/item/tool)
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	if(home)
+		bind_comms_to_outpost(home)
+		balloon_alert(user, "tuned to outpost")
+		return TRUE
 	var/obj/docking_port/mobile/here = SSshuttle.get_containing_shuttle(src)
 	if(!here)
 		balloon_alert(user, "no ship signature here!")
@@ -274,3 +297,7 @@ GLOBAL_LIST_INIT(voidcrew_unscoped_frequencies, list(
 	QDEL_IN(virt, 5 SECONDS)  // Make extra sure the virtualspeaker gets qdeleted
 
 #undef COMPRESSION_REPLACE_CHARACTER_THRESHOLD
+
+/obj/item/radio/proc/bind_comms_to_outpost(obj/structure/overmap/dynamic/player_outpost/home)
+	comms_ship_ref = null
+	comms_outpost_ref = home ? WEAKREF(home) : null

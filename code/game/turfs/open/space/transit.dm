@@ -36,6 +36,10 @@
 /turf/open/space/transit/proc/initialize_drifting(atom/entered, atom/movable/enterer)
 	SIGNAL_HANDLER
 
+	// The async initialization callback can outlive the move or turf replacement.
+	if(QDELETED(enterer) || enterer.loc != src || !istype(src, /turf/open/space/transit))
+		return
+
 	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
 	// does not take hold. The tiles are still vacuum and you still get around by pushing off
 	// the hull; all the grace buys is not being dragged off the instant you step out of an

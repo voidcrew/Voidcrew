@@ -51,6 +51,7 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. "P
 |---|---|---|---|
 | Harpoon Spool | 2,800 cr | 2 | Reel loose items and small creatures to you from six tiles; anything heavier drags you to it |
 | Hemoglass filter | 2,800 cr | 2 | Continuous blood scrub of toxins, drugs and radiation. Toggleable party mode keeps the booze |
+| Registry uplink | 2,800 cr | 2 | Manage your authorized outposts from anywhere through the Outpost Management action. Sold by Splice |
 | Hopper piston calves | 3,600 cr | 3 | A targeted leap up to four tiles, clearing tables and gaps. Evicts Shock Coils |
 | Coolant Loop lattice | 3,600 cr | 3 | No heat-exposure damage, half burn damage, actively sheds fire stacks |
 | Icepick Jack | 1 voucher | 3 | Data spike: suppress a hostile turret for 15s or flip its IFF to you for 10s, and force bolted doors. Spiking a player ship's turrets alarms its crew |

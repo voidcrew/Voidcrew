@@ -30,20 +30,12 @@
 	outpost = null
 	return ..()
 
-/// Rebuilt consoles relink to the outpost that owns their z-level
+/// Rebuilt consoles relink to the claim containing their actual footprint.
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/attempt_ship_connection()
-	if(outpost)
-		return TRUE
-	for(var/obj/structure/overmap/dynamic/player_outpost/candidate as anything in GLOB.player_outposts)
-		if(!candidate.mapzone)
-			continue
-		for(var/datum/space_level/level as anything in candidate.mapzone.z_levels)
-			if(level.z_value == z)
-				outpost = candidate
-				if(!candidate.construction_console)
-					candidate.construction_console = src
-				return TRUE
-	return FALSE
+	outpost = get_outpost_from_atom(src)
+	if(outpost && !outpost.construction_console)
+		outpost.construction_console = src
+	return !!outpost
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	return // not shuttle machinery
@@ -52,13 +44,13 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/is_crew_member(mob/user)
 	if(isAdminGhostAI(user))
 		return TRUE
-	if(!outpost)
+	if(!attempt_ship_connection())
 		return FALSE
 	return outpost.can_build(user)
 
 /// Outposts don't fly: operable whenever linked
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/can_operate()
-	return !!outpost
+	return attempt_ship_connection()
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/get_operate_error()
 	return "No outpost registry link established."

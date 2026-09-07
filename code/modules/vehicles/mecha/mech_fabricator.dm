@@ -183,7 +183,7 @@
 	var/previous_design_count = cached_designs.len
 
 	cached_designs.Cut()
-	for(var/v in stored_research.researched_designs)
+	for(var/v in stored_research?.researched_designs) // VOIDCREW EDIT: removable server disks can leave us unlinked
 		var/datum/design/design = SSresearch.techweb_design_by_id(v)
 
 		if(design.build_type & MECHFAB)
@@ -506,10 +506,10 @@
 				if(!istext(design_id))
 					continue
 
-				if(!(stored_research.researched_designs.Find(design_id) || is_type_in_list(SSresearch.techweb_design_by_id(design_id), illegal_local_designs)))
-					continue
-
 				var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
+				// VOIDCREW EDIT: independent local designs still work with the server disk removed.
+				if(!((stored_research && stored_research.researched_designs.Find(design_id)) || (design in illegal_local_designs)))
+					continue
 
 				if(!(design.build_type & MECHFAB) || design.id != design_id)
 					continue

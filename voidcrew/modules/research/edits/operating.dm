@@ -28,6 +28,11 @@
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
 
+/obj/machinery/computer/operating/sync_surgeries()
+	if(!validate_research_site(linked_techweb))
+		return
+	return ..()
+
 /obj/machinery/computer/operating/multitool_act(mob/living/user, obj/item/multitool/tool)
 	// The parent proc returns TRUE whether or not it linked anything, so an empty buffer used to fall
 	// straight through to `linked_techweb.connected_machines` below on a null. Unlinked is the normal
@@ -35,12 +40,19 @@
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
 		balloon_alert(user, "no techweb in buffer!")
 		return TRUE
+	if(!can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
+	if(linked_techweb == tool.buffer && experiment_handler.linked_web == tool.buffer)
+		linked_techweb.connected_machines |= src
+		say("Already linked!")
+		return TRUE
 	if(linked_techweb) //disconnect old one
 		linked_techweb.connected_machines -= src
 		experiment_handler.unlink_techweb()
 	. = ..()
-	if(.)
-		linked_techweb.connected_machines += src //connect new one
+	if(. && linked_techweb == tool.buffer)
+		linked_techweb.connected_machines |= src
 		experiment_handler.link_techweb(linked_techweb, TRUE)
 		say("Linked to Server!")
 		return TRUE

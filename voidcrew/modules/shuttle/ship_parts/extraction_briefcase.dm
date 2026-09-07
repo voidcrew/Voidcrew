@@ -23,7 +23,7 @@
 /// The extraction case item - based on secure briefcase for PIN locking
 /obj/item/storage/briefcase/secure/extraction
 	name = "extraction case"
-	desc = "A compact secure case designed for ship part extraction. Upon extraction the contents will be scanned and deposited into your storage."
+	desc = "A compact secure case designed for ship part extraction. Carry it in your hands or inventory, including inside a backpack, when extracting. Its ship parts are deposited into the current carrier's account."
 	icon_state = "secure"
 	base_icon_state = "secure"
 	inhand_icon_state = "sec-case"
@@ -36,16 +36,17 @@
 
 /obj/item/storage/briefcase/secure/extraction/examine(mob/user)
 	. = ..()
-	. += span_notice("This case can hold up to 5 ship parts. Parts inside it are banked to your account when your ship bluespace jumps or the round ends; loose parts are not.")
-	. += span_notice("Anyone can get one for free with the Request Extraction Case verb in the IC tab, but you can only carry one at a time.")
-	. += span_notice("You can only have one of these on you when you leave.")
+	. += span_notice("This case can hold up to [atom_storage.max_slots] ship parts.")
+	. += span_notice("To bank its parts, stay alive and carry the case in your hands or inventory when your ship bluespace jumps or the round ends. Inside a backpack counts; leaving it on the floor does not. The current carrier receives the parts.")
+	. += span_notice("Only one standard extraction case is banked per person; champion's cases are banked in addition. Loose ship parts are not extracted.")
+	. += span_notice("Use the Request Extraction Case verb in the IC tab for a free standard case if you aren't already carrying an extraction case.")
 	. += span_notice("Use in-hand to set a PIN code and lock it.")
 
 	// Show contents count
 	var/part_count = 0
 	for(var/obj/item/ship_parts/part in contents)
 		part_count++
-	. += span_notice("Currently holding [part_count]/5 ship parts.")
+	. += span_notice("Currently holding [part_count]/[atom_storage.max_slots] ship parts.")
 
 /// Spawner for placing extraction cases on maps
 /obj/effect/spawner/extraction_case

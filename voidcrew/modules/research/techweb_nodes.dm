@@ -678,3 +678,7 @@
 		"transporter_biofilter",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/fundamental_sci/New()
+	. = ..()
+	design_ids |= "rdrelay"

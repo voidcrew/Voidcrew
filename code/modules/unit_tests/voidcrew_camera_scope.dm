@@ -1,0 +1,73 @@
+/// Forged/stale selections must not bypass the camera list's local network filtering.
+/datum/unit_test/voidcrew_camera_scope/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
+	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	TEST_ASSERT(home.load_level(), "Camera fixture home failed to load")
+	var/obj/machinery/camera/local_camera = allocate(/obj/machinery/camera, home.arrival_turf)
+	var/obj/machinery/camera/foreign_camera = allocate(/obj/machinery/camera, run_loc_floor_bottom_left)
+	var/obj/machinery/computer/security/console = allocate(/obj/machinery/computer/security, home.arrival_turf)
+	TEST_ASSERT(console.can_view_camera(local_camera), "Home console cannot use its local camera")
+	TEST_ASSERT(!console.can_view_camera(foreign_camera), "Home console accepted a foreign camera reference")
+	// Even a copied network key cannot grant access from a different physical site.
+	foreign_camera.network = local_camera.network.Copy()
+	TEST_ASSERT(!console.can_view_camera(foreign_camera), "A copied camera network crossed the claim boundary")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
+	var/datum/tgui/console_ui = allocate(/datum/tgui, user, console, "CameraConsole")
+	console.ui_act("switch_camera", list("camera" = REF(foreign_camera)), console_ui)
+	TEST_ASSERT_NULL(console.active_camera, "A forged camera action bypassed the console network")
+	console.active_camera = foreign_camera
+	console.last_camera_turf = get_turf(foreign_camera)
+	console.update_active_camera_screen()
+	TEST_ASSERT_NULL(console.active_camera, "A forged active camera survived display validation")
+	TEST_ASSERT_NULL(console.last_camera_turf, "A refused camera left a cached image location")
+
+	var/obj/item/modular_computer/tablet = allocate(/obj/item/modular_computer, home.arrival_turf)
+	var/datum/computer_file/program/secureye/program = allocate(/datum/computer_file/program/secureye)
+	TEST_ASSERT(tablet.store_file(program), "Camera program could not install normally")
+	TEST_ASSERT(program.can_view_camera(local_camera), "Installed camera program cannot use its local camera")
+	TEST_ASSERT(!program.can_view_camera(foreign_camera), "Camera program accepted a foreign camera reference")
+	var/datum/tgui/tablet_ui = allocate(/datum/tgui, user, tablet, "NtosSecurEye")
+	program.ui_act("switch_camera", list("camera" = REF(foreign_camera)), tablet_ui)
+	TEST_ASSERT_NULL(program.camera_ref, "A forged camera action bypassed the program network")
+	program.camera_ref = WEAKREF(local_camera)
+	program.last_camera_turf = home.arrival_turf
+	tablet.forceMove(run_loc_floor_bottom_left)
+	program.ui_data()
+	TEST_ASSERT_NULL(program.camera_ref, "Moving a tablet retained the outpost's active camera")
+	TEST_ASSERT_NULL(program.site_camera_network, "Moving off the claim retained its network binding")
+	TEST_ASSERT(!program.can_view_camera(local_camera), "A moved tablet could select an old outpost camera")
+	tablet.forceMove(home.arrival_turf)
+	TEST_ASSERT(program.can_view_camera(local_camera), "Returning to the claim did not restore its camera network")
+	local_camera.moveToNullspace()
+	TEST_ASSERT(!program.can_view_camera(local_camera), "A camera removed from the map remained accessible")
+
+	// A disabled feed invalidates the cached image so repair restores the same camera.
+	local_camera.forceMove(home.arrival_turf)
+	console.active_camera = local_camera
+	program.camera_ref = WEAKREF(local_camera)
+	console.update_active_camera_screen()
+	program.update_active_camera_screen()
+	TEST_ASSERT(length(console.cam_screen.vis_contents), "The console failed to display an authorized camera")
+	TEST_ASSERT(length(program.cam_screen.vis_contents), "The tablet failed to display an authorized camera")
+	local_camera.camera_enabled = FALSE
+	console.update_active_camera_screen()
+	program.update_active_camera_screen()
+	TEST_ASSERT_EQUAL(length(console.cam_screen.vis_contents), 0, "The disabled console feed retained its image")
+	TEST_ASSERT_EQUAL(length(program.cam_screen.vis_contents), 0, "The disabled tablet feed retained its image")
+	local_camera.camera_enabled = TRUE
+	console.update_active_camera_screen()
+	program.update_active_camera_screen()
+	TEST_ASSERT(length(console.cam_screen.vis_contents), "Re-enabling the same camera left the console on static")
+	TEST_ASSERT(length(program.cam_screen.vis_contents), "Re-enabling the same camera left the tablet on static")
+
+	// Public entertainment broadcasts deliberately cross sites, using only their broadcast networks.
+	var/obj/machinery/computer/security/telescreen/entertainment/television = allocate(__IMPLIED_TYPE__, home.arrival_turf)
+	television.network = list("unit_test_broadcast")
+	foreign_camera.network = television.network.Copy()
+	TEST_ASSERT(television.can_view_camera(foreign_camera), "A home television refused a public broadcast from another site")
+	TEST_ASSERT(!console.can_view_camera(foreign_camera), "Public broadcasts granted an ordinary console foreign access")
+
+	var/mob/living/carbon/human/foreign_target = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(!program.can_track_camera_target(foreign_target), "Tracking selected a target outside the local camera network")
+	foreign_target.moveToNullspace()
+	TEST_ASSERT(!program.can_track_camera_target(foreign_target), "Tracking accepted a target removed from the map")

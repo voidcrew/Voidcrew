@@ -68,6 +68,9 @@ export const Window = (props: Props) => {
 
   const { scale } = config.window;
 
+  // A pooled browser can resume with the same interface and dimensions. The
+  // backend hides it on suspension even if React batches away that render.
+  // Restore geometry and visibility for each new UI identity as well as resumes.
   useEffect(() => {
     if (!suspended && isReadyToRender) {
       const updateGeometry = () => {
@@ -99,7 +102,7 @@ export const Window = (props: Props) => {
         logger.log('unmounting');
       };
     }
-  }, [isReadyToRender, width, height, scale]);
+  }, [isReadyToRender, width, height, scale, suspended, config.window.key]);
 
   const dispatch = globalStore.dispatch;
   const fancy = config.window?.fancy;
@@ -128,9 +131,9 @@ export const Window = (props: Props) => {
       </TitleBar>
       <div className={classes(['Window__rest', debugLayout && 'debug-layout'])}>
         {!suspended && children}
-        {showDimmer && <div className="Window__dimmer" />}
+        {!!showDimmer && <div className="Window__dimmer" />}
       </div>
-      {fancy && (
+      {!!fancy && (
         <>
           <div
             className="Window__resizeHandle__e"

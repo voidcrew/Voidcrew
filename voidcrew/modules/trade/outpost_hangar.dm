@@ -143,7 +143,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 		ship = null
 	// Deregister the floor first so the elevator stops offering it, then get
 	// everyone out, releasing the reservation force-deletes living mobs.
-	if(outpost?.berths && berth_number && outpost.berths[berth_number] == src)
+	if(outpost?.berths && berth_number && berth_number <= length(outpost.berths) && outpost.berths[berth_number] == src)
 		outpost.berths[berth_number] = null
 	eject_occupants()
 	if(panel)
@@ -272,7 +272,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	dock.dheight = 0
 
 	for(var/obj/machinery/status_display/outpost_berth/sign as anything in status_signs)
-		sign.set_messages("BERTH [berth_number]", ship.name)
+		sign.set_messages("BERTH [berth_number]", ship?.name || "FREIGHT")
 	return TRUE
 
 /**

@@ -20,19 +20,24 @@
 	if(linked_techweb)
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
+		if(!QDELETED(src))
+			update_static_data_for_all_viewers()
 
 /obj/machinery/nanite_program_hub/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked!")
-				return
-			unsync_research_servers()
-
-		linked_techweb = tool.buffer
-		linked_techweb.connected_machines += src //connect new one
-		say("Linked to Server!")
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
 		return TRUE
+	if(!can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
+	if(linked_techweb == tool.buffer)
+		say("Already linked!")
+		return TRUE
+	unsync_research_servers()
+	linked_techweb = tool.buffer
+	linked_techweb.connected_machines |= src
+	update_static_data_for_all_viewers()
+	say("Linked to Server!")
+	return TRUE
 
 /obj/machinery/nanite_program_hub/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/disk/nanite_program))
@@ -60,7 +65,7 @@
 	return
 
 /obj/machinery/nanite_program_hub/ui_interact(mob/user, datum/tgui/ui)
-	if(!linked_techweb)
+	if(!validate_research_site(linked_techweb))
 		balloon_alert(user, "no linked server!")
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -69,6 +74,7 @@
 		ui.open()
 
 /obj/machinery/nanite_program_hub/ui_data()
+	validate_research_site(linked_techweb)
 	var/list/data = list()
 	if(disk)
 		data["has_disk"] = TRUE
@@ -88,6 +94,9 @@
 
 /obj/machinery/nanite_program_hub/ui_static_data(mob/user)
 	var/list/data = list()
+	if(!validate_research_site(linked_techweb))
+		data["programs"] = null
+		return data
 
 	data["programs"] = list()
 	for(var/i in linked_techweb.researched_designs)
@@ -117,7 +126,7 @@
 			eject(usr)
 			. = TRUE
 		if("download")
-			if(!disk)
+			if(!disk || !validate_research_site(linked_techweb))
 				return
 			var/datum/design/nanites/downloaded = linked_techweb.isDesignResearchedID(params["program_id"]) //check if it's a valid design
 			if(!istype(downloaded))

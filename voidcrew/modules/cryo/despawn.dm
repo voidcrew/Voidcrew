@@ -55,7 +55,7 @@ GLOBAL_LIST_EMPTY(cryo_rejoin_cooldowns)
  * Deciseconds until this ckey may rejoin this specific ship, or 0 if they are clear now.
  * Other ships are never gated - the cooldown exists to stop same-seat loadout cycling.
  */
-/proc/cryo_rejoin_wait(ckey, obj/structure/overmap/ship/ship)
+/proc/cryo_rejoin_wait(ckey, obj/structure/overmap/ship)
 	if(!ship)
 		return 0
 	var/until = GLOB.cryo_rejoin_cooldowns["[ckey]@[REF(ship)]"]
@@ -105,7 +105,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 /obj/machinery/cryopod/proc/try_return_to_cryo(mob/living/user)
 	if(!iscarbon(user) || !user.client)
 		return
-	if(occupant && occupant != user)
+	if(arrival_reserved || (occupant && occupant != user))
 		balloon_alert(user, "already occupied!")
 		return
 	if(user.loc == src)
@@ -130,7 +130,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 
 	var/confirm = tgui_alert(
 		user,
-		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens. The pod takes [CRYO_DESPAWN_GRACE / 10] seconds to cycle - climbing out cancels it - and you will not be able to rejoin THIS ship for [CRYO_REJOIN_COOLDOWN / 600] minutes afterwards. Other ships stay open to you.",
+		"Return to cryosleep? [user.real_name] leaves the round for good, and everything you are carrying goes into storage with you - nothing is left aboard. Your seat on the crew roster reopens. The pod takes [CRYO_DESPAWN_GRACE / 10] seconds to cycle - climbing out cancels it - and you will not be able to rejoin THIS home or ship for [CRYO_REJOIN_COOLDOWN / 600] minutes afterwards. Other ships stay open to you.",
 		"Return to Cryosleep",
 		list("Return to Cryosleep", "Stay Awake"),
 		timeout = 30 SECONDS,
@@ -142,7 +142,7 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 	// off, handed the mission item, or the pod can be filled by a joiner arriving.
 	if(QDELETED(src) || QDELETED(user) || !user.client || user.stat != CONSCIOUS)
 		return
-	if(!user.Adjacent(src) || (occupant && occupant != user))
+	if(arrival_reserved || !crew_can_modify(user) || !user.Adjacent(src) || (occupant && occupant != user))
 		balloon_alert(user, "can't reach!")
 		return
 	blocker = find_cryo_blocking_item(user)
@@ -214,6 +214,12 @@ GLOBAL_LIST_INIT(cryo_undeletable_items, typecacheof(list(
 	// Announced before the roster edit, so the notice still reaches a crew of one.
 	owner?.ship_notify("[despawn_name] has entered cryogenic storage.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 40)
 	release_ship_seat(owner, leaving_mind)
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(leaving_mind in home.residents || home == linked_outpost)
+			GLOB.cryo_rejoin_cooldowns["[player_ckey]@[REF(home)]"] = world.time + CRYO_REJOIN_COOLDOWN
+			home.residents -= leaving_mind
+			home.stewards -= leaving_mind
+			home.treasurers -= leaving_mind
 	detach_from_crews(leaving_mind, despawn_name)
 	GLOB.manifest.remove(despawn_name)
 

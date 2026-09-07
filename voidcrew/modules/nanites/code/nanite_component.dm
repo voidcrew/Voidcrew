@@ -75,7 +75,7 @@
 
 		if(cloud_id)
 			//Pair to the ship the host is aboard right now (e.g. the public chamber that injected them)
-			cloud_ship_ref = WEAKREF(get_ship_from_atom(host_mob))
+			cloud_ship_ref = WEAKREF(get_service_site(host_mob))
 			announce_cloud_takeover = TRUE
 			if(cloud_active)
 				cloud_sync()
@@ -216,7 +216,7 @@
 /datum/component/nanites/proc/cloud_sync()
 	if(cloud_id)
 		//Clouds are ship-local: only search backups stored aboard the ship we were paired to
-		var/obj/structure/overmap/ship/cloud_ship = cloud_ship_ref?.resolve()
+		var/obj/structure/overmap/cloud_ship = cloud_ship_ref?.resolve()
 		if(cloud_ship)
 			var/datum/nanite_cloud_backup/backup = SSnanites.get_cloud_backup(cloud_id, FALSE, cloud_ship)
 			if(backup)
@@ -393,7 +393,7 @@
 		next_cloud_warning = 0
 	//Re-pair to the ship the host is standing on when the ID is assigned. Chambers can only
 	//set this on their occupant, so joining a ship's cloud requires being physically aboard it.
-	cloud_ship_ref = (cloud_id && host_mob) ? WEAKREF(get_ship_from_atom(host_mob)) : null
+	cloud_ship_ref = (cloud_id && host_mob) ? WEAKREF(get_service_site(host_mob)) : null
 
 /datum/component/nanites/proc/set_cloud_sync(datum/source, method)
 	SIGNAL_HANDLER
@@ -447,7 +447,7 @@
 		to_chat(user, span_info("================"))
 		to_chat(user, span_info("Saturation: [nanite_volume]/[max_nanites]"))
 		to_chat(user, span_info("Safety Threshold: [safety_threshold]"))
-		var/obj/structure/overmap/ship/scan_cloud_ship = cloud_ship_ref?.resolve()
+		var/obj/structure/overmap/scan_cloud_ship = cloud_ship_ref?.resolve()
 		to_chat(user, span_info("Cloud ID: [cloud_id ? "[cloud_id] (network: [scan_cloud_ship ? scan_cloud_ship.name : "unreachable"])" : "None"]"))
 		to_chat(user, span_info("Cloud Sync: [cloud_active ? "Active" : "Disabled"]"))
 		to_chat(user, span_info("================"))
@@ -468,7 +468,7 @@
 	data["safety_threshold"] = safety_threshold
 	data["cloud_id"] = cloud_id
 	data["cloud_active"] = cloud_active
-	var/obj/structure/overmap/ship/ui_cloud_ship = cloud_ship_ref?.resolve()
+	var/obj/structure/overmap/ui_cloud_ship = cloud_ship_ref?.resolve()
 	data["cloud_ship"] = ui_cloud_ship ? ui_cloud_ship.name : null
 	var/list/mob_programs = list()
 	var/id = 1

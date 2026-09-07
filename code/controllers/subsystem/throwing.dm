@@ -113,7 +113,9 @@ SUBSYSTEM_DEF(throwing)
 
 /datum/thrownthing/Destroy()
 	SSthrowing.processing -= thrownthing
-	SSthrowing.currentrun -= thrownthing
+	// Throws can finish during map loading, before the subsystem has started its first run.
+	if(SSthrowing.currentrun)
+		SSthrowing.currentrun -= thrownthing
 	thrownthing.throwing = null
 	thrownthing = null
 	thrower = null

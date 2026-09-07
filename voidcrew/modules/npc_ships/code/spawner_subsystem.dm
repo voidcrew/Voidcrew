@@ -394,8 +394,9 @@ SUBSYSTEM_DEF(npc_ships)
  * @param ship_type_path The ship type path
  */
 /datum/controller/subsystem/npc_ships/proc/create_npc_ship(template_path, turf/spawn_turf, ship_type_path)
-	UNTIL(!SSshuttle.shuttle_loading)
-	SSshuttle.shuttle_loading = TRUE
+	return SSshuttle.run_template_load(CALLBACK(src, PROC_REF(create_npc_ship_impl), template_path, spawn_turf, ship_type_path))
+
+/datum/controller/subsystem/npc_ships/proc/create_npc_ship_impl(template_path, turf/spawn_turf, ship_type_path, datum/shuttle_template_load/load_owner)
 
 	var/datum/map_template/shuttle/voidcrew/template_instance
 	if(istype(template_path, /datum/map_template/shuttle/voidcrew))
@@ -404,11 +405,9 @@ SUBSYSTEM_DEF(npc_ships)
 		template_instance = new template_path()
 	else
 		stack_trace("create_npc_ship called with invalid template: [template_path]")
-		SSshuttle.shuttle_loading = FALSE
 		return null
 
 	if(!template_instance)
-		SSshuttle.shuttle_loading = FALSE
 		return null
 
 	var/datum/worldgen_probe/probe = worldgen_begin("ship-npc", "[template_instance.name]")
@@ -416,21 +415,18 @@ SUBSYSTEM_DEF(npc_ships)
 	var/obj/structure/overmap/ship/npc/ship = new ship_type_path(spawn_turf)
 
 	if(!ship || QDELETED(ship))
-		SSshuttle.shuttle_loading = FALSE
 		worldgen_end(probe, "spawn-failed")
 		return null
 
 	if(!ship.setup_from_template(template_instance))
 		stack_trace("NPC ship failed to setup from template [template_path]")
 		qdel(ship)
-		SSshuttle.shuttle_loading = FALSE
 		worldgen_end(probe, "setup-failed")
 		return null
 
 	SSair.can_fire = FALSE
-	var/obj/docking_port/mobile/voidcrew/loaded = SSshuttle.action_load(ship.source_template)
-	SSair.can_fire = TRUE
-	SSshuttle.shuttle_loading = FALSE
+	var/obj/docking_port/mobile/voidcrew/loaded = SSshuttle.action_load(ship.source_template, load_owner = load_owner)
+	SSair.can_fire = load_owner.previous_air_can_fire
 
 	if(!loaded)
 		stack_trace("Failed to load shuttle for NPC ship [template_path]")

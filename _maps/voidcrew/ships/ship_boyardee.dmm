@@ -467,7 +467,7 @@
 "lG" = (
 /obj/structure/table/reinforced,
 /obj/machinery/requests_console{
-	announcementConsole = 1;
+	can_send_announcements = 1;
 	department = "Cockpit";
 	pixel_y = 30
 	},

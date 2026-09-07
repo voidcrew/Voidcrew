@@ -27,24 +27,27 @@
 		current_unlocked_designs.Cut()
 	. = ..()
 	if(techweb)
-		techweb.connected_machines += src
+		techweb.connected_machines |= src
 	update_static_data_for_all_viewers()
 
 /obj/machinery/component_printer/multitool_act(mob/living/user, obj/item/multitool/tool)
 	var/has_techweb_buffer = !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)
+	if(has_techweb_buffer && !can_link_site_techweb(src, tool.buffer))
+		balloon_alert(user, "server belongs to another site")
+		return FALSE
 	. = ..()
-	if(. && has_techweb_buffer)
+	if(. && has_techweb_buffer && techweb == tool.buffer)
 		say("Linked to Server!")
 
 /obj/machinery/component_printer/ui_static_data(mob/user)
-	if(!isnull(techweb))
+	if(validate_research_site(techweb))
 		return ..()
 	var/list/data = materials.mat_container.ui_static_data()
 	data["designs"] = list()
 	return data
 
 /obj/machinery/component_printer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	if(action == "print" && isnull(techweb))
+	if(action == "print" && !validate_research_site(techweb))
 		say("No research server linked.")
 		return TRUE
 	return ..()
@@ -52,6 +55,10 @@
 // Reached by integrated circuits printing remotely; an unlinked printer has no designs, and
 // techweb_design_by_id(null) would hand back something ui_act's checks never see.
 /obj/machinery/component_printer/print_component(typepath, alist/user_data)
-	if(isnull(current_unlocked_designs[typepath]))
+	if(!validate_research_site(techweb) || isnull(current_unlocked_designs[typepath]))
 		return
+	return ..()
+
+/obj/machinery/component_printer/ui_data(mob/user)
+	validate_research_site(techweb)
 	return ..()

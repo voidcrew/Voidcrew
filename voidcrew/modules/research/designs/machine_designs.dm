@@ -1,6 +1,14 @@
 /datum/design/board/rdserver
 	build_path = /obj/item/circuitboard/machine/rdserver/ship
 
+/datum/design/board/rdrelay
+	name = "Machine Design (R&D Relay Board)"
+	desc = "The circuit board for a ship's outpost research relay."
+	id = "rdrelay"
+	build_path = /obj/item/circuitboard/machine/rdserver/relay
+	category = list(RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_RESEARCH)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE
+
 // Upstream ships the TEG, its circulators and the RTG as circuit boards and hull
 // fittings, but never gave any of them a design datum - so nothing in the web could
 // print them and a crew that wanted to add or replace a generator had no route to

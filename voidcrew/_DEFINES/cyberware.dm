@@ -54,6 +54,8 @@
 #define ORGAN_SLOT_CYBERWARE_EARS "cyberware_ears"
 /// Pilot interface, head. Rigger Socket.
 #define ORGAN_SLOT_CYBERWARE_RIGGER "cyberware_rigger"
+/// Colonial Registry interface, head. Remote outpost management.
+#define ORGAN_SLOT_CYBERWARE_REGISTRY "cyberware_registry"
 
 // ---- Chrome read -------------------------------------------------------
 // How much of a body's hardware a set of optics can resolve. Set per-optics

@@ -17,8 +17,12 @@
  */
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
+/datum/techweb
+	/// Physical disk webs must not become unscoped fallback webs when uninstalled.
+	var/requires_physical_server = FALSE
+
 /obj/machinery/rnd/server/ship
-	desc = "A computer system that hosts a source R&D server drive, allowing research to be loaded and saved onto a disk, and shared within a vessel."
+	desc = "A computer system that hosts a physical R&D source disk and shares its research with linked machinery on the same ship or outpost. Use a multitool to connect local research equipment."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
 	///Installed source code files that hosts our research.
 	var/obj/item/computer_disk/ship_disk/source_code_hdd
@@ -32,15 +36,37 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 /obj/machinery/rnd/server/ship/Destroy()
 	GLOB.ship_research_servers -= src
 	UnregisterSignal(src, COMSIG_ATOM_ATTACK_HAND_SECONDARY)
+	var/obj/item/computer_disk/ship_disk/disk = source_code_hdd
+	detach_source_disk()
+	disk?.forceMove(drop_location())
+	return ..()
+
+/// Disconnect consumers while retaining the disk's own research data.
+/obj/machinery/rnd/server/ship/proc/detach_source_disk()
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	for(var/datum/outpost_research_link/link as anything in home?.research_links.Copy())
+		if(link.home_server?.resolve() == src)
+			qdel(link)
+	if(source_code_hdd)
+		UnregisterSignal(source_code_hdd, COMSIG_QDELETING)
 	if(stored_research)
 		stored_research.techweb_servers -= src
-	if(source_code_hdd)
-		for(var/atom/everything_connected as anything in source_code_hdd.stored_research.connected_machines)
-			everything_connected.unsync_research_servers()
-		source_code_hdd.forceMove(loc)
-		source_code_hdd = null
+		for(var/datum/consumer as anything in stored_research.connected_machines.Copy())
+			consumer.unsync_research_servers()
+		for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
+			if(handler.linked_web == stored_research)
+				handler.unlink_techweb()
+	source_code_hdd = null
 	stored_research = null
-	return ..()
+
+/obj/machinery/rnd/server/ship/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone == source_code_hdd)
+		detach_source_disk()
+
+/obj/machinery/rnd/server/ship/proc/on_source_disk_deleted(datum/source)
+	SIGNAL_HANDLER
+	detach_source_disk()
 
 /obj/machinery/rnd/server/ship/attacked_by(obj/item/attacking_item, mob/living/user)
 	if(istype(attacking_item, /obj/item/computer_disk/ship_disk))
@@ -51,6 +77,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 			balloon_alert(user, "won't fit!")
 			return
 		source_code_hdd = attacking_item
+		RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_disk_deleted))
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
@@ -79,7 +106,6 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	// (voidcrew/modules/overmap/code/modules/overmap/_overmap.dm). Servers standing somewhere that
 	// isn't a ship - an outpost, a ruin - fall back to plain z matching, which is what the
 	// self-link in CONNECT_TO_RND_SERVER_ROUNDSTART uses.
-	var/obj/structure/overmap/ship/our_ship = get_voidcrew_ship_for_turf(our_turf)
 	for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
 		if(handler.linked_web)
 			continue
@@ -89,10 +115,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		var/turf/holder_turf = get_turf(holder)
 		if(!holder_turf)
 			continue
-		if(our_ship)
-			if(get_voidcrew_ship_for_turf(holder_turf) != our_ship)
-				continue
-		else if(!is_valid_z_level(holder_turf, our_turf))
+		if(!same_service_site(src, holder))
 			continue
 		handler.link_techweb(stored_research, TRUE)
 
@@ -131,8 +154,30 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	to_chat(user, span_notice("Stored [src]'s techweb information in [multi]."))
 	return TRUE
 
-/atom/proc/unsync_research_servers()
+/datum/proc/unsync_research_servers()
 	return
+
+/// A physical server serves its own site. Relays additionally validate both endpoints.
+/obj/machinery/rnd/server/proc/research_link_available(atom/machine)
+	return same_research_service_site(machine, src)
+
+/obj/machinery/rnd/server/ship/refresh_working()
+	. = ..()
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	for(var/datum/outpost_research_link/link as anything in home?.research_links.Copy())
+		if(link.home_server?.resolve() == src)
+			link.reconcile()
+
+/// Recheck both physical endpoints before using a disk. Shuttle movement can move them
+/// separately within one operation, so validating on use avoids severing onboard links.
+/atom/proc/validate_research_site(datum/techweb/web)
+	if(!web)
+		return FALSE
+	if(can_link_site_techweb(src, web))
+		return TRUE
+	if(!research_link_in_transit(src, web))
+		unsync_research_servers()
+	return FALSE
 
 /**
  * ##attackhand_secondary
@@ -196,7 +241,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  */
 /obj/item/computer_disk/ship_disk
 	name = "R&D server source code"
-	desc = "The source code on this drive stores all the research from a ship, insert it into an R&D console to make use of it."
+	desc = "This drive stores research for a ship or outpost. Insert it into an R&D server, then use a multitool to link local research equipment."
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research
@@ -207,6 +252,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	. = ..()
 	name += " [num2hex(rand(1,65535), -1)]"
 	stored_research = new()
+	stored_research.requires_physical_server = TRUE
 	stored_research.id = "[name]"
 	stored_research.organization = "Server Disk"
 

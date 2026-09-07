@@ -1270,7 +1270,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /// forever even though the console next to it is drawing from the silo fine. Anything that creates
 /// or relinks a device goes through here.
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/link_internal_device(obj/item/device, datum/component/remote_materials/mats, obj/machinery/ore_silo/silo)
-	if(isnull(device) || isnull(mats) || QDELETED(silo))
+	if(isnull(device) || isnull(mats) || QDELETED(silo) || !same_service_site(src, silo))
 		return FALSE
 	if(mats.silo == silo)
 		return TRUE
@@ -1291,6 +1291,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Forward the multitool interaction to the internal RCD's remote_materials component
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
 		var/obj/machinery/ore_silo/silo = M.buffer
+		if(!same_service_site(src, silo))
+			balloon_alert(user, "silo belongs to another site")
+			return TRUE
 		// Don't bail out when the RCD is already on this silo - relinking is how a player repairs
 		// an RTD/RPD/RLD that was installed after the console was linked, and each call below is
 		// a no-op for anything already connected.

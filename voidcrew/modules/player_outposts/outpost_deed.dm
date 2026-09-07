@@ -6,8 +6,7 @@
  * founds a player outpost on that tile (see player_outpost.dm).
  *
  * Purchasing charges credits + vouchers every time. Nothing about the deed or
- * the outpost persists across rounds; a player may found a single outpost per
- * round (see GLOB.player_outpost_founder_ckeys).
+ * the outpost persists across rounds. Players may own multiple outposts.
  */
 
 /obj/item/outpost_deed
@@ -22,6 +21,7 @@
 	/// Display name of the buyer, for examine
 	var/owner_name
 	/// The open catalog UI, if any
+	var/founding = FALSE
 	var/datum/outpost_shell_catalog_ui/catalog
 
 /obj/item/outpost_deed/Destroy()
@@ -54,10 +54,10 @@
  * Re-run at confirm time; UI state can go stale.
  */
 /obj/item/outpost_deed/proc/get_founding_denial(mob/user)
+	if(founding)
+		return "This deed is already registering a claim."
 	if(!user.ckey || user.ckey != owner_ckey)
 		return "The deed isn't registered to you."
-	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The registry already has an active claim under your name this shift."
 	if(SSovermap.jump_mode != BS_JUMP_IDLE)
 		return "The registry has suspended new claims. Bluespace exodus in progress."
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
@@ -112,6 +112,8 @@
 	var/list/data = list()
 	var/list/shells = list()
 	for(var/shell_type in subtypesof(/datum/map_template/player_outpost))
+		if(shell_type == /datum/map_template/player_outpost/nothing)
+			continue
 		var/datum/map_template/player_outpost/shell = shell_type
 		shells += list(list(
 			"id" = "[shell_type]",
@@ -157,7 +159,7 @@
 		return
 
 	var/datum/map_template/player_outpost/shell_type = text2path(params["shell_id"])
-	if(!ispath(shell_type, /datum/map_template/player_outpost))
+	if(!(shell_type in list(/datum/map_template/player_outpost/small, /datum/map_template/player_outpost/medium)))
 		return
 	var/datum/map_template/player_outpost/shell = new shell_type
 
@@ -170,8 +172,10 @@
 		return
 
 	var/obj/structure/overmap/ship/ship = get_crew_ship(usr)
+	deed.founding = TRUE
 	var/obj/structure/overmap/dynamic/player_outpost/outpost = new(get_turf(ship))
 	if(!outpost.found(usr, shell, outpost_name))
+		deed.founding = FALSE
 		to_chat(usr, span_warning("Registration failed - the site couldn't be prepared. Your deed is still good."))
 		return
 
@@ -183,13 +187,12 @@
  * # Outpost Deed SKU
  *
  * Sold over the counter at trader outposts. Charges the full price on every
- * purchase, the deed carries no cross-round persistence. A player who has
- * already founded an outpost this round can't buy another. Deeds dispense
- * name-bound to the buyer.
+ * purchase, the deed carries no cross-round persistence. Deeds dispense
+ * name-bound to the buyer. Existing ownership never prevents another purchase.
  */
 /datum/shop_sku/outpost_deed
 	name = "outpost deed"
-	desc = "A colonial registry claim for one sector of open space. Found your own outpost. One active claim per person per shift."
+	desc = "A registered habitat in open space."
 	item_path = /obj/item/outpost_deed
 	category = "Colonial Registry"
 	price_credits = OUTPOST_DEED_COST_CREDITS
@@ -200,12 +203,10 @@
 /datum/shop_sku/outpost_deed/get_denial_reason(mob/living/user)
 	if(!user.ckey)
 		return "The registry can't establish your identity."
-	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The registry already has an active claim under your name this shift."
 	return ..()
 
 /datum/shop_sku/outpost_deed/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
-	if(!user.ckey || (user.ckey in GLOB.player_outpost_founder_ckeys))
+	if(!user.ckey)
 		return FALSE
 	return ..()
 

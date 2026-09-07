@@ -143,8 +143,13 @@
  */
 /obj/structure/overmap/ship/proc/get_research_web()
 	var/datum/techweb/web = research_web_ref?.resolve()
+	// A shared outpost web survives relay revocation, so a live weakref alone
+	// cannot preserve permission. Also prefer a newly installed local disk.
 	if(web)
+		web = find_research_web()
+		research_web_ref = web ? WEAKREF(web) : null
 		return web
+	research_web_ref = null
 	if(!COOLDOWN_FINISHED(src, research_web_search_cooldown))
 		return null
 	COOLDOWN_START(src, research_web_search_cooldown, 10 SECONDS)
@@ -173,7 +178,19 @@
 		var/area/server_area = get_area(server)
 		if(!server_area || !(server_area in shuttle.shuttle_areas))
 			continue
-		return server.stored_research
+		var/turf/server_turf = get_turf(server)
+		if(server_turf && server.research_link_available(server_turf))
+			return server.stored_research
+
+	// An authorized outpost relay is a second physical endpoint for the same
+	// disk-backed web. It is intentionally considered only after local servers,
+	// making the result deterministic when a ship has both options.
+	for(var/obj/machinery/rnd/server/relay/relay as anything in GLOB.outpost_research_relays)
+		if(QDELETED(relay) || !relay.stored_research || !relay.connection_available())
+			continue
+		if(get_research_service_site(relay) != src)
+			continue
+		return relay.stored_research
 	return null
 
 /**

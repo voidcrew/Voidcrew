@@ -9,6 +9,8 @@
  * - exactly one /obj/machinery/computer/player_outpost_management
  * - exactly one /obj/machinery/computer/camera_advanced/base_construction/ship/outpost
  * - one /obj/machinery/ore_silo (feeds the construction console's internal tools)
+ * - one ordinary cargo console, bank terminal and resident cryopod on accessible
+ *   interior floors (install_home_bundle binds them without spawning stock)
  * - one /obj/effect/landmark/player_outpost_arrival
  * - a hangar elevator kit on the north side: 3x3 /obj/effect/landmark/outpost_elevator_alcove
  *   with one /obj/machinery/outpost_elevator/directional panel, so visiting ships
@@ -49,12 +51,12 @@
 
 /datum/map_template/player_outpost/small
 	name = "Compact Habitat"
-	catalog_desc = "One pressurized room with the essential consoles, a hangar elevator, and a charged SMES with a portable generator. Not much else. Cheap on materials and quick to expand."
+	catalog_desc = "A compact, single-room habitat."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_small.dmm"
 
 /datum/map_template/player_outpost/medium
 	name = "Waystation Frame"
-	catalog_desc = "A proper station core: separate work and living space, a powered workshop bay, and a hangar elevator off the main hall. More to defend, but a lot more room to grow."
+	catalog_desc = "Separate living quarters and workshop around a central hall."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_medium.dmm"
 
 /datum/map_template/player_outpost/nothing

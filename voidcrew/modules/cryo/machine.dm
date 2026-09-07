@@ -27,14 +27,20 @@
 
 /obj/machinery/cryopod/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	. = ..()
-	if(!port)
+	if(!istype(port))
 		return FALSE
 	if(linked_ship && linked_ship != port)
 		linked_ship.spawn_points -= src
+	if(linked_outpost)
+		linked_outpost.resident_pods -= src
+		linked_outpost = null
 	linked_ship = port
 	linked_ship.spawn_points |= src
 
 /obj/machinery/cryopod/Destroy()
+	if(linked_outpost)
+		linked_outpost.resident_pods -= src
+		linked_outpost = null
 	if(linked_ship)
 		linked_ship.spawn_points -= src
 		linked_ship = null
@@ -47,6 +53,13 @@
 /obj/machinery/cryopod/proc/relink_to_ship()
 	var/area/shuttle/voidcrew/current_area = get_area(src)
 	var/obj/docking_port/mobile/voidcrew/new_ship = istype(current_area) ? current_area.shuttle_port : null
+	var/obj/structure/overmap/dynamic/player_outpost/new_outpost = new_ship ? null : get_outpost_from_atom(src)
+	if(linked_outpost != new_outpost)
+		if(linked_outpost)
+			linked_outpost.resident_pods -= src
+		linked_outpost = new_outpost
+		if(linked_outpost)
+			linked_outpost.resident_pods |= src
 	if(new_ship == linked_ship)
 		return
 	if(linked_ship)
@@ -69,7 +82,7 @@
 	. += span_notice("Climbing back in - click it, or drag yourself onto it - puts you back into cryosleep and ends your round. Everything you are carrying is stored with you.")
 
 /obj/machinery/cryopod/wrench_act(mob/living/user, obj/item/tool)
-	if(occupant)
+	if(occupant || arrival_reserved)
 		balloon_alert(user, "someone inside!")
 		return ITEM_INTERACT_BLOCKING
 	if(!crew_can_modify(user))
@@ -85,6 +98,9 @@
  * etc.) or on abandoned ships are fair game for anyone.
  */
 /obj/machinery/cryopod/proc/crew_can_modify(mob/living/user)
+	relink_to_ship()
+	if(linked_outpost)
+		return linked_outpost.is_resident(user) || linked_outpost.can_build(user)
 	var/obj/structure/overmap/ship/owner = linked_ship?.current_ship
 	if(!owner || owner.abandoned)
 		return TRUE

@@ -103,6 +103,7 @@ type Data = {
   max_missions: number;
   active_count: number;
   has_pad: BooleanLike;
+  has_mod_gps: BooleanLike;
   available_missions: Mission[];
   active_missions: Mission[];
   pad_contents: PadItem[];
@@ -147,6 +148,7 @@ const MissionBoardContent = () => {
     max_missions,
     active_count,
     has_pad,
+    has_mod_gps,
     available_missions,
     active_missions,
     pad_contents,
@@ -192,6 +194,20 @@ const MissionBoardContent = () => {
               <Box color={has_pad ? 'good' : 'bad'}>
                 {has_pad ? 'Connected' : 'Not Found'}
               </Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="MOD GPS">
+              <Button
+                icon="location-dot"
+                disabled={!has_mod_gps}
+                tooltip={
+                  has_mod_gps
+                    ? 'Upload active mission beacons to your worn MODsuit GPS.'
+                    : 'Wear a MODsuit with an installed GPS module to link it here.'
+                }
+                onClick={() => act('link_mod_gps')}
+              >
+                Link Mission Beacons
+              </Button>
             </LabeledList.Item>
           </LabeledList>
         </Section>

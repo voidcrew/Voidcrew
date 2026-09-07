@@ -66,11 +66,15 @@
 		return
 
 	var/obj/item/held_item = bumping.get_active_held_item()
-	// !held_item exists to be nice to snow. the other bit is for pickaxes obviously
-	if(!held_item)
+	var/obj/item/mining_tool = held_item
+	// Prefer the selected tool, then a mining tool held in another hand. Do not
+	// switch hands or send a click with the active item, which might be a weapon.
+	if(mining_tool?.tool_behaviour != TOOL_MINING)
+		mining_tool = bumping.is_holding_tool_quality(TOOL_MINING)
+	if(mining_tool)
+		attackby(mining_tool, bumping)
+	else if(!held_item) // Preserve empty-hand bump digging for snow and mining arms.
 		INVOKE_ASYNC(bumping, TYPE_PROC_REF(/mob, ClickOn), src)
-	else if(held_item.tool_behaviour == TOOL_MINING)
-		attackby(held_item, bumping)
 
 /turf/closed/mineral/proc/Spread_Vein()
 	var/spreadChance = initial(mineralType.spreadChance)
@@ -178,7 +182,12 @@
 
 	balloon_alert(user, "picking...")
 
-	if(!I.use_tool(src, user, tool_mine_speed, volume=50))
+	// do_after already watches the active hand. An off-hand tool needs its own
+	// check so dropping or stowing it also interrupts mining.
+	var/datum/callback/held_tool_check
+	if(I != user.get_active_held_item() && user.is_holding(I))
+		held_tool_check = CALLBACK(user, TYPE_PROC_REF(/mob, is_holding), I)
+	if(!I.use_tool(src, user, tool_mine_speed, volume=50, extra_checks=held_tool_check))
 		TIMER_COOLDOWN_END(src, REF(user)) //if we fail we can start again immediately
 		return
 	if(ismineralturf(src))

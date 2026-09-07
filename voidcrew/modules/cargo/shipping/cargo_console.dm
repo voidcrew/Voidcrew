@@ -72,7 +72,10 @@
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)
 		on_bank_deletion(bank_account_holder)
-	QDEL_LIST(checkout_list)
+	if(!cart_outpost_ref)
+		QDEL_LIST(checkout_list)
+	cart_outpost_ref = null
+	checkout_list = null
 	QDEL_LAZYLIST(loaded_coupons)
 	// The ship's cargo shuttle datum outlives its consoles; its linked_console
 	// back-ref is otherwise only cleared in the datum's own Destroy. Prefer the
@@ -95,6 +98,10 @@
  * All consoles on the same ship share the same shuttle
  */
 /obj/machinery/computer/voidcrew_cargo/proc/get_cargo_shuttle()
+	var/obj/structure/overmap/dynamic/player_outpost/site = get_outpost_from_atom(src)
+	if(site)
+		site.ensure_home_services()
+		return site.freight
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 	if(!ship)
 		return null
@@ -258,12 +265,13 @@
 
 	// The pack catalog is deliberately NOT built here - see ui_static_data(). Everything
 	// below is small and genuinely per-tick; keep it that way.
-	data["has_bank_account"] = !!bank_account_holder
-	if(!bank_account_holder?.synced_bank_account)
+	data["has_bank_account"] = !!cargo_account()
+	data["account_name"] = cargo_account()?.account_holder
+	if(!cargo_account())
 		data["shuttle_error"] = "NO BANK ACCOUNT CONNECTED"
 		return data
 
-	data["points"] = bank_account_holder.synced_bank_account.account_balance
+	data["points"] = cargo_account().account_balance
 
 	// CargoCatalog compatibility - we don't use private buying for voidcrew
 	data["self_paid"] = FALSE
@@ -348,6 +356,9 @@
  * Get error message for shuttle restrictions
  */
 /obj/machinery/computer/voidcrew_cargo/proc/get_shuttle_error_message()
+	var/obj/structure/overmap/dynamic/player_outpost/site = get_outpost_from_atom(src)
+	if(site)
+		return site.freight?.availability_error()
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 	if(!ship)
 		return "Not on a registered ship"
@@ -383,7 +394,11 @@
 	. = ..()
 	if(.)
 		return
-	if(!bank_account_holder?.synced_bank_account)
+	var/obj/structure/overmap/dynamic/player_outpost/site = get_outpost_from_atom(src)
+	if(site && !site.can_spend(usr))
+		say("Treasury spending permission required.")
+		return TRUE
+	if(!cargo_account())
 		balloon_alert(usr, "no bank account connected.")
 		usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 		return
@@ -436,12 +451,11 @@
 				return TRUE
 			return add_item(list("id" = supply_pack_id, "amount" = amount))
 		if("clear")
-			//create copy of list else we will get runtimes when iterating & removing items on the same list checkout_list
-			for(var/datum/supply_order/cancelled_order as anything in checkout_list)
+			// Keep walking the original orders while removals change the shared cart.
+			for(var/datum/supply_order/cancelled_order as anything in checkout_list.Copy())
 				if(!cancelled_order.can_be_cancelled)
 					continue //don't cancel other department's orders or orders that can't be cancelled
-				if(remove_item(list("id" = "[cancelled_order.id]")))
-					return TRUE
+				remove_item(list("id" = "[cancelled_order.id]"))
 			return TRUE
 		if("toggleprivate")
 			// Not used for voidcrew cargo - all purchases use ship's bank account
@@ -493,7 +507,7 @@
 			switch(cargo_shuttle.state)
 				if(CARGO_SHUTTLE_AWAY)
 					// Call the shuttle with our orders (allow empty cart if loan accepted)
-					if(!length(checkout_list) && !cargo_shuttle.loan_accepted)
+					if(!site && !length(checkout_list) && !cargo_shuttle.loan_accepted)
 						say("Error: No orders in cart.")
 						return TRUE
 
@@ -502,11 +516,11 @@
 					// A siphon on the account freezes ordering: shipping the balance out
 					// as crates while a pirate drains it is just laundering. A loan-only
 					// call brings credits in, so that one still goes.
-					if(total_cost > 0 && bank_account_holder.synced_bank_account.is_siphon_locked())
+					if(total_cost > 0 && cargo_account().is_siphon_locked())
 						say("Error: accounts locked - hostile intrusion detected. Orders cannot be placed.")
 						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 						return TRUE
-					var/available = bank_account_holder.synced_bank_account.account_balance
+					var/available = cargo_account().account_balance
 					if(total_cost > available)
 						say("Error: Insufficient credits. Need [total_cost], have [available].")
 						return TRUE
@@ -518,7 +532,7 @@
 						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 					else
 						say("Cargo shuttle called. ETA 30 seconds.")
-						usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle.", INVESTIGATE_CARGO)
+						usr.investigate_log("called the [cargo_account().account_holder] cargo shuttle.", INVESTIGATE_CARGO)
 
 				if(CARGO_SHUTTLE_DOCKED)
 					// Check for living mobs before sending
@@ -528,7 +542,7 @@
 					// Send shuttle away
 					if(cargo_shuttle.send_shuttle())
 						say("Cargo shuttle departing. Exports will be processed shortly.")
-						usr.investigate_log("sent the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle away.", INVESTIGATE_CARGO)
+						usr.investigate_log("sent the [cargo_account().account_holder] cargo shuttle away.", INVESTIGATE_CARGO)
 					else
 						say("Error: Could not send cargo shuttle.")
 

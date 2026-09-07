@@ -18,7 +18,7 @@
  * somewhere even before it gets a home.
  */
 GLOBAL_LIST_INIT(cyberware_ui_groups, list(
-	list("id" = "cortex", "name" = "Frontal Cortex", "region" = "head", "slots" = list(ORGAN_SLOT_CYBERWARE_GOVERNOR, ORGAN_SLOT_CYBERWARE_RIGGER)),
+	list("id" = "cortex", "name" = "Frontal Cortex", "region" = "head", "slots" = list(ORGAN_SLOT_CYBERWARE_GOVERNOR, ORGAN_SLOT_CYBERWARE_RIGGER, ORGAN_SLOT_CYBERWARE_REGISTRY)),
 	list("id" = "ocular", "name" = "Ocular System", "region" = "head", "slots" = list(ORGAN_SLOT_EYES)),
 	list("id" = "aural", "name" = "Auditory System", "region" = "head", "slots" = list(ORGAN_SLOT_CYBERWARE_EARS, ORGAN_SLOT_CYBERWARE_LARYNX)),
 	list("id" = "os", "name" = "Operating System", "region" = "torso", "slots" = list(ORGAN_SLOT_CYBERWARE_OS)),

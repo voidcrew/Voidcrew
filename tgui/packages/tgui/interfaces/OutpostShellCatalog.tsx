@@ -48,11 +48,8 @@ export const OutpostShellCatalog = (props) => {
         {denial ? (
           <NoticeBox danger>{denial}</NoticeBox>
         ) : (
-          <NoticeBox success={!!isProtected} warning={!isProtected}>
-            Claim site is in the {zone_name} zone, {' '}
-            {isProtected
-              ? 'patrolled space. Your outpost will be protected from ship weapons.'
-              : 'unpatrolled space. Your outpost CAN be attacked by other ships.'}
+          <NoticeBox success={!!isProtected}>
+            {zone_name} ? {isProtected ? 'Patrolled' : 'Unpatrolled'}
           </NoticeBox>
         )}
         <Section title="Outpost Name">
@@ -102,10 +99,6 @@ export const OutpostShellCatalog = (props) => {
           >
             Register Claim &amp; Found Outpost
           </Button>
-          <Box color="label" fontSize="0.85em" mt={1}>
-            Founding is permanent for the shift: the claim is fixed at your
-            ship&apos;s current coordinates and the deed is consumed.
-          </Box>
         </Section>
       </Window.Content>
     </Window>

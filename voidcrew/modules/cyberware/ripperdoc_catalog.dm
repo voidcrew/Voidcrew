@@ -78,6 +78,7 @@
 		// ---- Pro Chrome (mixed) ----
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/hemoglass,
+		/datum/shop_sku/ripperdoc/registry_uplink,
 		/datum/shop_sku/ripperdoc/hopper,
 		/datum/shop_sku/ripperdoc/coolant,
 		/datum/shop_sku/ripperdoc/icepick,
@@ -268,6 +269,11 @@
 /datum/shop_sku/ripperdoc/hemoglass
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/hemoglass
+	price_credits = 2800
+
+/datum/shop_sku/ripperdoc/registry_uplink
+	category = "Pro Chrome"
+	item_path = /obj/item/organ/cyberimp/cyberware/registry_uplink
 	price_credits = 2800
 
 /datum/shop_sku/ripperdoc/hopper

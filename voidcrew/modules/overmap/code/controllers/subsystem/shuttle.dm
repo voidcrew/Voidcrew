@@ -1,65 +1,68 @@
-/// The ship currently being loaded via create_ship(). Used by modular_map_root/ship_upgrade
-/// to find the ship during map loading (before current_ship is set on the docking port).
+/// The ship currently being loaded, before its mobile port has current_ship assigned.
 /datum/controller/subsystem/shuttle
 	var/obj/structure/overmap/ship/loading_ship
+	/// The only operation allowed to mutate the subsystem-wide template preview.
+	var/datum/shuttle_template_load/active_template_load
 
-/// How long a mid-round berth waits for somebody else's shuttle-template load before
-/// giving up and loading anyway. See setup_shuttle_late().
-#define SHUTTLE_LATE_SETUP_MAX_WAIT (2 MINUTES)
+/// Shared by nested operations belonging to one serialized template load.
+/datum/shuttle_template_load
+	var/obj/structure/overmap/ship/previous_loading_ship
+	var/previous_air_can_fire
 
-/**
- * Serialised mid-round shuttle-template load for one stationary berth.
- *
- * /obj/docking_port/stationary/LateInitialize() fires once per port, independently, and a
- * port carrying a roundstart_template answers it by calling action_load() - which SLEEPS
- * (the map template load and initiate_docking() both yield) while writing to the
- * SUBSYSTEM-WIDE preview_shuttle, preview_template and preview_reservation.
- *
- * Roundstart is safe: SSshuttle/Initialize() runs setup_shuttles() over every mapped port
- * in one synchronous loop, and LateInitialize does not fire at all before the subsystem is
- * up. Mid-round is not. Voidcrew stamps whole ruins into reservations mid-round and several
- * space ruins map more than one templated berth - the Syndicate Ambush maps four - so four
- * LateInitialize()s land in the same tick and interleave inside one set of singletons: the
- * second call sees the first's preview_shuttle, jumpToNullSpace()s it and QDEL_NULLs the
- * reservation it is still standing in, and the first wakes to write into a null
- * preview_shuttle ("Cannot modify null.timer", the CRASH at shuttle.dm:927).
- *
- * What an interleave strands is permanent: a registered mobile port that never docked
- * anywhere, its stationary port, the transit reservation it was loaded into, and every
- * pipeline in its hull. Measured on the 2026-08-19 soak, one Syndicate Ambush ruin leaked
- * 4 mobile ports, 4 stationary ports, 2 turf reservations and 32 pipelines in a single
- * load - and the leaked ports then made every later ruin reservation allocated over their
- * coordinates refuse its own teardown, because can_release_interior() reads a port
- * standing in the block as a hull that must not be recycled.
- *
- * Takes the same `shuttle_loading` latch create_ship() and the NPC ship spawner already
- * take, so all three mid-round producers queue behind each other rather than each only
- * behind itself. Bounded rather than a bare UNTIL(): a runtime inside somebody else's
- * latched load unwinds without clearing the flag, and a berth that waits forever is a
- * worse failure than one that loads late.
- */
-/datum/controller/subsystem/shuttle/proc/setup_shuttle_late(obj/docking_port/stationary/port)
-	var/give_up_at = world.time + SHUTTLE_LATE_SETUP_MAX_WAIT
+/// A timeout refuses the waiter without changing the active owner's state.
+/datum/controller/subsystem/shuttle/proc/acquire_template_load(wait_timeout = null)
+	var/deadline = isnum(wait_timeout) ? world.time + max(0, wait_timeout) : null
 	while(shuttle_loading)
-		if(world.time >= give_up_at)
-			stack_trace("SSshuttle: a shuttle template load held shuttle_loading for over [SHUTTLE_LATE_SETUP_MAX_WAIT / 10]s - loading [port]'s template anyway.")
-			break
+		if(isnum(deadline) && world.time >= deadline)
+			return null
 		stoplag(1)
 
-	if(QDELETED(port))
-		return
-
+	var/datum/shuttle_template_load/load_owner = new
+	load_owner.previous_loading_ship = loading_ship
+	load_owner.previous_air_can_fire = SSair.can_fire
+	active_template_load = load_owner
 	shuttle_loading = TRUE
-	port.load_roundstart()
-	shuttle_loading = FALSE
+	return load_owner
 
-#undef SHUTTLE_LATE_SETUP_MAX_WAIT
+/datum/controller/subsystem/shuttle/proc/release_template_load(datum/shuttle_template_load/load_owner)
+	if(!load_owner || active_template_load != load_owner)
+		return FALSE
+	loading_ship = load_owner.previous_loading_ship
+	SSair.can_fire = load_owner.previous_air_can_fire
+	active_template_load = null
+	shuttle_loading = FALSE
+	return TRUE
+
+/// Own the preview across every yield, including nested ship/template operations.
+/datum/controller/subsystem/shuttle/proc/run_template_load(datum/callback/operation, datum/shuttle_template_load/load_owner, wait_timeout = null)
+	var/acquired_owner = !load_owner
+	if(acquired_owner)
+		load_owner = acquire_template_load(wait_timeout)
+	if(!load_owner)
+		return FALSE
+	if(active_template_load != load_owner)
+		CRASH("A shuttle template operation tried to use another load's ownership.")
+
+	// Keep a normal proc boundary here. Catching across the map stack makes BYOND
+	// unwind past the reader/atom subsystem's own cleanup after legacy map runtimes.
+	// Invoke returns even when the operation aborts, so ownership still gets released.
+	. = operation.Invoke(load_owner)
+	if(acquired_owner)
+		release_template_load(load_owner)
+
+/// Mid-round ports only queue when they actually have a template to load.
+/datum/controller/subsystem/shuttle/proc/setup_shuttle_late(obj/docking_port/stationary/port)
+	if(QDELETED(port) || (!port.roundstart_template && !port.json_key && !port.shuttle_template_id))
+		return
+	// action_load() owns serialization. In particular, a transit port must never
+	// wait two minutes then clear a different ship's active load as the old path did.
+	port.load_roundstart()
 
 /datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme)
 	RETURN_TYPE(/obj/structure/overmap/ship)
+	return run_template_load(CALLBACK(src, PROC_REF(create_ship_impl), ship_template_to_spawn, upgrade_selections, selected_theme))
 
-	UNTIL(!shuttle_loading)
-	shuttle_loading = TRUE
+/datum/controller/subsystem/shuttle/proc/create_ship_impl(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme, datum/shuttle_template_load/load_owner)
 
 	// Handle both type paths and already-instantiated templates
 	var/datum/map_template/shuttle/voidcrew/template_instance
@@ -71,12 +74,10 @@
 		template_instance = new ship_template_to_spawn()
 	else
 		stack_trace("create_ship called with invalid argument: [ship_template_to_spawn]")
-		shuttle_loading = FALSE
 		return FALSE
 
 	if(!template_instance)
 		stack_trace("Failed to instantiate ship template [ship_template_to_spawn].")
-		shuttle_loading = FALSE
 		return FALSE
 
 	// No theme picked but the ship is themed (roundstart list, admin spawn): use the
@@ -108,7 +109,6 @@
 
 	if(!ship_to_spawn || QDELETED(ship_to_spawn))
 		stack_trace("Unable to properly load ship [ship_template_to_spawn].")
-		shuttle_loading = FALSE
 		worldgen_end(probe, "spawn-failed")
 		return FALSE
 
@@ -123,7 +123,6 @@
 	if(!ship_to_spawn.setup_from_template(template_instance, selected_theme))
 		stack_trace("Ship failed to setup from template [ship_template_to_spawn].")
 		qdel(ship_to_spawn)
-		shuttle_loading = FALSE
 		worldgen_end(probe, "setup-failed")
 		return FALSE
 
@@ -131,12 +130,11 @@
 	loading_ship = ship_to_spawn
 
 	SSair.can_fire = FALSE
-	var/obj/docking_port/mobile/voidcrew/loaded = action_load(ship_to_spawn.source_template)
-	SSair.can_fire = TRUE
+	var/obj/docking_port/mobile/voidcrew/loaded = action_load(ship_to_spawn.source_template, load_owner = load_owner)
+	SSair.can_fire = load_owner.previous_air_can_fire
 
 	// Clear loading_ship now that map is loaded
 	loading_ship = null
-	shuttle_loading = FALSE
 
 	if(!loaded)
 		// A refusal for want of transit map volume (world.maxz at its ceiling with the

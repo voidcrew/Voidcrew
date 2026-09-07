@@ -196,13 +196,33 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
-	parents[nodes.Find(target_component)] = reference
+	var/port_index = nodes.Find(target_component)
+	var/datum/pipeline/previous_parent = parents[port_index]
+	if(previous_parent == reference)
+		return
+	parents[port_index] = reference
+	if(!previous_parent)
+		return
+
+	// Rebuilding can take a port from a still-live network. Remove the reverse link
+	// too, or a later merge tries to move this port again from an unrelated parent.
+	previous_parent.other_airs -= airs[port_index]
+	if(!(previous_parent in parents))
+		previous_parent.other_atmos_machines -= src
+		if(custom_reconcilation)
+			previous_parent.require_custom_reconcilation -= src
 
 /obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument
 	return parents[nodes.Find(target_component)]
 
 /obj/machinery/atmospherics/components/replace_pipenet(datum/pipeline/Old, datum/pipeline/New)
-	parents[parents.Find(Old)] = New
+	var/first_port = parents.Find(Old)
+	if(!first_port)
+		CRASH("[type] at [COORD(src)] was asked to replace a pipeline it does not belong to.")
+	// Multiple ports can share a network, so a merge must replace every match.
+	for(var/port_index in first_port to length(parents))
+		if(parents[port_index] == Old)
+			parents[port_index] = New
 
 // Helpers
 

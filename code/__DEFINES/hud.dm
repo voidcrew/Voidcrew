@@ -110,6 +110,7 @@
 
 //Humans
 #define ui_human_floor_changer "EAST-4:22,SOUTH:5"
+#define ui_human_skills "EAST-4:22,SOUTH+1:7"
 #define ui_human_crafting "EAST-3:24,SOUTH+1:7"
 #define ui_human_navigate "EAST-3:7,SOUTH+1:7"
 #define ui_human_language "EAST-3:7,SOUTH+1:24"

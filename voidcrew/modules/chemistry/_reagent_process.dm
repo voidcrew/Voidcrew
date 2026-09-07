@@ -25,7 +25,10 @@
 	var/processing_reagents = FALSE
 
 /obj/item/reagent_containers/proc/reagent_processing()
-	if(processing_reagents || isnull(reagents))
+	// A holder can be tearing down while its atom still points at it: Destroy()
+	// nulls reagent_list before clearing my_atom.reagents, and update_total()
+	// signals during that window.
+	if(processing_reagents || isnull(reagents) || isnull(reagents.reagent_list))
 		return
 	processing_reagents = TRUE
 	// Copy first - reagent_fire() is allowed to add and remove reagents, which

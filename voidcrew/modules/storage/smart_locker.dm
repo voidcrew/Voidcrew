@@ -6,8 +6,8 @@
  *
  * The one thing it refuses is other storage: bags, boxes, belts and cases. Letting those
  * in would turn one machine slot into a whole backpack's worth of stuff, so they bounce.
- * Handing it a bag still works the way it does on every other smartfridge - the bag's
- * contents get unloaded into the locker and the bag stays in your hand.
+ * Clicking with, or dragging, a storage container unloads accepted contents while
+ * leaving the container and any refused or excess items where they were.
  */
 
 /// Items a single-tier smart locker holds. Scales with the matter bin like every smartfridge.
@@ -24,6 +24,53 @@
 	contents_overlay_icon = null
 	/// Heaviest thing the locker will swallow.
 	var/max_item_weight = WEIGHT_CLASS_HUGE
+
+/obj/machinery/smartfridge/storage/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_STORAGE_DUMP_CONTENT, PROC_REF(on_storage_dump))
+
+/obj/machinery/smartfridge/storage/attackby(obj/item/weapon, mob/living/user, list/modifiers, list/attack_modifiers)
+	if(weapon.atom_storage && !accept_check(weapon))
+		return load_storage(weapon.atom_storage, user) > 0
+	return ..()
+
+/// Intercept storage's normal floor-dumping path, including when nothing fits.
+/obj/machinery/smartfridge/storage/proc/on_storage_dump(datum/source, datum/storage/storage, mob/user)
+	SIGNAL_HANDLER
+	load_storage(storage, user)
+	return STORAGE_DUMP_HANDLED
+
+/// Move only accepted loose items through the source storage's normal removal checks.
+/obj/machinery/smartfridge/storage/proc/load_storage(datum/storage/storage, mob/user)
+	if(!user.canUseStorage() || !user.can_perform_action(src, FORBID_TELEKINESIS_REACH))
+		return 0
+	if(machine_stat)
+		balloon_alert(user, "not operational!")
+		return 0
+	if(storage.locked)
+		balloon_alert(user, "container locked!")
+		return 0
+	if(!user.CanReach(storage.parent))
+		return 0
+
+	var/loaded = 0
+	for(var/obj/item/to_store in storage.real_location.contents.Copy())
+		if(visible_items() >= max_n_of_items)
+			break
+		if(!accept_check(to_store))
+			continue
+		if(storage.attempt_remove(to_store, src, silent = TRUE))
+			loaded++
+
+	if(loaded)
+		add_fingerprint(user)
+		to_chat(user, span_notice("You load [loaded] item[loaded == 1 ? "" : "s"] from [storage.parent] into [src]."))
+		SStgui.update_uis(src)
+	else if(visible_items() >= max_n_of_items)
+		balloon_alert(user, "no space!")
+	else
+		balloon_alert(user, "no acceptable items!")
+	return loaded
 
 /obj/machinery/smartfridge/storage/accept_check(obj/item/weapon)
 	if(!isitem(weapon) || QDELETED(weapon))
@@ -45,7 +92,7 @@
 
 /obj/machinery/smartfridge/storage/examine(mob/user)
 	. = ..()
-	. += span_notice("It refuses bags, boxes and belts. Empty the pockets of anything you want to store.")
+	. += span_notice("Drag a storage container onto it to unload loose items. It refuses bags, boxes and belts, and leaves excess or refused items in the container. Empty the pockets of anything you want to store.")
 
 /*
  * Board and research

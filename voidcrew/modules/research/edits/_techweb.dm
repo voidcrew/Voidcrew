@@ -1,5 +1,5 @@
 /datum/techweb
-	///List of everything connected to this techweb via Multitool, used for R&D server deconstruction.
+	/// Machines and installed programs using this disk; disconnected when its physical server loses it.
 	var/list/connected_machines = list()
 	/// Research data collected from a survey console. Used to restrict tech behind surveys
 	var/datum/survey_research/survey_data

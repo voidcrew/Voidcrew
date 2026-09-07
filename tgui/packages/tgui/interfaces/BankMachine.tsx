@@ -1,6 +1,10 @@
+import { useState } from 'react';
+
 import {
   AnimatedNumber,
+  Box,
   Button,
+  Input,
   LabeledList,
   NoticeBox,
   Section,
@@ -15,27 +19,37 @@ type Data = {
   current_balance: number;
   siphoning: BooleanLike;
   station_name: string;
+  is_outpost?: BooleanLike;
+  user_account?: string | null;
+  can_withdraw?: BooleanLike;
+  history?: { adjusted_money: number; reason: string }[];
 };
 
 export const BankMachine = (props) => {
   const { act, data } = useBackend<Data>();
   const { current_balance, siphoning, station_name } = data;
+  const [amount, setAmount] = useState('');
+  const isOutpost = !!data.is_outpost;
 
   return (
-    <Window width={350} height={155}>
-      <Window.Content>
-        <NoticeBox danger>Authorized personnel only</NoticeBox>
+    <Window width={isOutpost ? 450 : 350} height={isOutpost ? 390 : 155}>
+      <Window.Content scrollable={isOutpost}>
+        <NoticeBox danger>
+          {isOutpost ? 'Claim treasury' : 'Authorized personnel only'}
+        </NoticeBox>
         <Section title={`${station_name} Vault`}>
           <LabeledList>
             <LabeledList.Item
               label="Current Balance"
               buttons={
-                <Button
-                  icon={siphoning ? 'times' : 'sync'}
-                  content={siphoning ? 'Stop Siphoning' : 'Siphon Credits'}
-                  selected={siphoning}
-                  onClick={() => act(siphoning ? 'halt' : 'siphon')}
-                />
+                !isOutpost && (
+                  <Button
+                    icon={siphoning ? 'times' : 'sync'}
+                    content={siphoning ? 'Stop Siphoning' : 'Siphon Credits'}
+                    selected={siphoning}
+                    onClick={() => act(siphoning ? 'halt' : 'siphon')}
+                  />
+                )
               }
             >
               <AnimatedNumber
@@ -46,6 +60,41 @@ export const BankMachine = (props) => {
             </LabeledList.Item>
           </LabeledList>
         </Section>
+        {!!isOutpost && (
+          <Section title="Account transfer">
+            <Box>
+              Your ID account: {data.user_account || 'No account on ID'}
+            </Box>
+            <Box color="label">Amount (whole credits)</Box>
+            <Input placeholder="Credits" value={amount} onChange={setAmount} />
+            <Button
+              icon="arrow-down"
+              disabled={!data.user_account}
+              onClick={() => act('deposit', { amount })}
+            >
+              Deposit
+            </Button>
+            <Button
+              icon="arrow-up"
+              disabled={!data.can_withdraw || !data.user_account}
+              onClick={() => act('withdraw', { amount })}
+            >
+              Withdraw
+            </Button>
+          </Section>
+        )}
+        {!!isOutpost && !!data.history?.length && (
+          <Section title="Recent transactions" scrollable height="145px">
+            {data.history
+              .slice(-10)
+              .reverse()
+              .map((entry, index) => (
+                <Box key={index}>
+                  {entry.adjusted_money} cr: {entry.reason}
+                </Box>
+              ))}
+          </Section>
+        )}
       </Window.Content>
     </Window>
   );

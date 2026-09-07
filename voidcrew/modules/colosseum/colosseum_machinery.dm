@@ -215,10 +215,6 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 /obj/item/storage/briefcase/secure/extraction/tournament/examine(mob/user)
 	. = ..()
 	. += span_boldnotice("Colosseum plunder: this case extracts in addition to your standard extraction case.")
-	var/part_count = 0
-	for(var/obj/item/ship_parts/part in contents)
-		part_count++
-	. += span_notice("Currently holding [part_count] ship part\s.")
 
 // ===== SIGNUP CONSOLE =====
 

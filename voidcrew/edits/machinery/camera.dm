@@ -56,6 +56,9 @@
 		if(LOWER_TEXT(voidcrew_ship_camera_net(port)) == LOWER_TEXT(net_key))
 			var/ship_name = port.current_ship ? port.current_ship.name : port.name
 			return "[ship_name] (ship-local)"
+	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in GLOB.player_outposts)
+		if(LOWER_TEXT(net_key) == LOWER_TEXT("outpost_[REF(home)]"))
+			return "[home.name] (outpost local)"
 	return net_key
 
 /// Tell players what network the console is tuned to - there was no in-game way
@@ -80,6 +83,8 @@
 		var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 		if(ship_port)
 			network = list(voidcrew_ship_camera_net(ship_port))
+		else if(get_outpost_from_atom(src))
+			network = list("outpost_[REF(get_outpost_from_atom(src))]")
 	// Consoles hide cameras without a c_tag. Upstream station maps hand-name
 	// every camera; our ship maps mostly place bare /obj/machinery/camera, so
 	// fall back to autoname-style area naming. Autoname subtypes are skipped -
@@ -104,12 +109,13 @@
 	if(camera_construction_state != CAMERA_STATE_WIRED)
 		return ..()
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
-	if(!ship_port)
+	var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+	if(!ship_port && !home)
 		return ..()
 	tool.play_tool_sound(src)
 	camera_construction_state = CAMERA_STATE_FINISHED
 	toggle_cam(user, displaymessage = FALSE)
-	network = list(voidcrew_ship_camera_net(ship_port))
+	network = list(ship_port ? voidcrew_ship_camera_net(ship_port) : "outpost_[REF(home)]")
 	balloon_alert(user, "wired to ship network")
 	to_chat(user, span_notice("You wire [src] into the [voidcrew_camera_net_display_name(network[1])] camera network."))
 	return ITEM_INTERACT_SUCCESS
@@ -132,20 +138,66 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 	if(ship_port)
 		network = list(voidcrew_ship_camera_net(ship_port))
+	else if(get_outpost_from_atom(src))
+		network = list("outpost_[REF(get_outpost_from_atom(src))]")
 
 /**
  * SecurEye follows the tablet it is running on.
  *
  * The program is the one camera viewer that isn't bolted to a hull, so it can't bind
- * once - it re-resolves the ship every time its static data is rebuilt. Without this it
+ * once - it re-resolves the site whenever its data or camera view updates. Without this it
  * sat on the stock "ss13" network and listed nothing at all aboard a ship.
  */
+/datum/computer_file/program/secureye
+	/// Restore the program's original networks after leaving a registered site.
+	var/list/unscoped_camera_network
+	var/site_camera_network
+
+/datum/computer_file/program/secureye/proc/refresh_site_camera_network(update_viewers = TRUE)
+	if(isnull(unscoped_camera_network))
+		unscoped_camera_network = network.Copy()
+	var/new_network
+	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(computer)
+	if(ship_port)
+		new_network = voidcrew_ship_camera_net(ship_port)
+	else
+		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(computer)
+		if(home)
+			new_network = "outpost_[REF(home)]"
+	if(new_network == site_camera_network)
+		return FALSE
+	site_camera_network = new_network
+	network = new_network ? list(new_network) : unscoped_camera_network.Copy()
+	internal_tracker?.reset_tracking()
+	if(update_viewers)
+		computer?.update_static_data_for_all_viewers()
+	return TRUE
+
 /datum/computer_file/program/secureye/ui_static_data(mob/user)
-	if(computer)
-		var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(computer)
-		if(ship_port)
-			network = list(voidcrew_ship_camera_net(ship_port))
+	refresh_site_camera_network(FALSE)
 	return ..()
+
+/datum/computer_file/program/secureye/ui_data()
+	refresh_site_camera_network()
+	update_active_camera_screen()
+	return ..()
+
+/// UI camera lists are advisory: enforce the network again at selection and display.
+/proc/voidcrew_can_view_camera(atom/viewer, list/networks, obj/machinery/camera/camera, enforce_site = TRUE)
+	if(!get_turf(viewer) || QDELETED(camera) || !get_turf(camera) || !length(networks & camera.network))
+		return FALSE
+	if(!enforce_site)
+		return TRUE
+	var/obj/structure/overmap/site = get_service_site(viewer)
+	var/obj/structure/overmap/camera_site = get_service_site(camera)
+	return (!site && !camera_site) || (site && site == camera_site)
+
+/obj/machinery/computer/security/proc/can_view_camera(obj/machinery/camera/camera)
+	return voidcrew_can_view_camera(src, network, camera, ship_scoped_network)
+
+/datum/computer_file/program/secureye/proc/can_view_camera(obj/machinery/camera/camera)
+	refresh_site_camera_network()
+	return voidcrew_can_view_camera(computer, network, camera)
 
 /**
  * The slime management console reads a camera network, and aboard a ship there
@@ -173,4 +225,38 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_get_camera_ship_port(src)
 	if(ship_port)
 		networks = list(voidcrew_ship_camera_net(ship_port))
+	else if(get_outpost_from_atom(src))
+		networks = list("outpost_[REF(get_outpost_from_atom(src))]")
+	return ..()
+
+/obj/machinery/computer/security/ui_data()
+	update_active_camera_screen()
+	return ..()
+
+/// Tracking lists and delayed callbacks must obey the same scope as direct selection.
+/datum/computer_file/program/secureye/proc/can_track_camera_target(mob/living/target)
+	var/turf/target_turf = get_turf(target)
+	if(QDELETED(target) || !target_turf)
+		return FALSE
+	var/datum/camerachunk/chunk = GLOB.cameranet.getTurfVis(target_turf)
+	if(!chunk)
+		return FALSE
+	for(var/obj/machinery/camera/camera as anything in chunk.cameras["[target_turf.z]"])
+		if(can_view_camera(camera) && camera.can_use() && (target in camera.can_see()))
+			return TRUE
+	return FALSE
+
+/datum/trackable/secureye/find_trackable_mobs()
+	. = ..()
+	var/datum/computer_file/program/secureye/program = tracking_holder
+	var/list/targets = .
+	for(var/name in targets.Copy())
+		var/datum/weakref/person = targets[name]
+		if(!program.can_track_camera_target(person.resolve()))
+			targets -= name
+
+/datum/trackable/secureye/attempt_track()
+	var/datum/computer_file/program/secureye/program = tracking_holder
+	if(tracked_mob && !program.can_track_camera_target(tracked_mob))
+		return FALSE
 	return ..()

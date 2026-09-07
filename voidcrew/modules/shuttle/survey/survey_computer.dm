@@ -5,7 +5,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	name = "Orbital survey console"
-	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void. Surveys only need the ship parked on the same overmap tile as the target, not docked or landed; storms can also be scanned from a few tiles away at reduced yield."
+	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void. Surveys only need the ship parked on the same overmap tile as the target, not docked or landed; storms can also be scanned from a few tiles away at reduced yield. On outpost ground, it imports and exports completed survey records for local research."
 	view_range = 10
 	x_offset = 0
 	y_offset = -5
@@ -22,6 +22,9 @@
 	/// The celestial object the in-progress survey was started on
 	var/obj/structure/overmap/current_survey_target
 	var/datum/survey_research/data
+	var/datum/weakref/bound_ship
+	/// Unbound consoles retain their own completed-record archive. Ship data belongs to the hull.
+	var/owns_survey_data = FALSE
 	var/survey_value
 	/// Payout multiplier when the survey target sits on a nearby tile instead of
 	/// our own (storms only, see get_survey_target). Parking inside stays the
@@ -61,6 +64,9 @@
 	// A console that loads with its hull is bound before anyone is aboard, so it has nobody
 	// to tell. One built mid-round announces the link the same way the multitool path does.
 	bind_to_ship(announce_link = !mapload)
+	if(!data)
+		data = new
+		owns_survey_data = TRUE
 
 	soundloop = new(src)
 
@@ -85,9 +91,14 @@
 	if(isnull(our_ship))
 		return FALSE
 
+	if(owns_survey_data)
+		our_ship.survey_data.merge_completed_surveys(data)
+		QDEL_NULL(data)
+		owns_survey_data = FALSE
 	data = our_ship.survey_data
+	bound_ship = WEAKREF(our_ship)
 
-	if(!our_ship.survey_console)
+	if(!our_ship.survey_console?.resolve() || our_ship.survey_console.resolve() == src)
 		our_ship.survey_console = WEAKREF(src)
 		attached_to_ship = TRUE
 		shuttleId = ship_port.shuttle_id
@@ -98,6 +109,45 @@
 
 	try_link_ship_techweb(announce_link)
 	return TRUE
+
+/// Recheck physical hull identity at use time; ordinary docking keeps the same hull and data.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/validate_ship_binding()
+	var/obj/structure/overmap/ship/physical_ship = get_voidcrew_ship_for_turf(get_turf(src))
+	if(physical_ship && bound_ship?.resolve() == physical_ship && ship_port?.current_ship == physical_ship)
+		attached_to_ship = physical_ship.survey_console?.resolve() == src
+		if(!attached_to_ship && !physical_ship.survey_console?.resolve())
+			bind_to_ship(announce_link = FALSE)
+		return attached_to_ship
+	if(bound_ship)
+		var/obj/structure/overmap/ship/previous_ship = bound_ship.resolve()
+		if(previous_ship)
+			UnregisterSignal(previous_ship, list(COMSIG_VOIDCREW_SHIP_MOVED, COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED))
+			if(previous_ship.survey_console?.resolve() == src)
+				previous_ship.survey_console = null
+		bound_ship = null
+		cancel_survey()
+		if(current_user)
+			remove_eye_control(current_user)
+		// Keep only records already held by the physical console, never a live old-ship store.
+		var/datum/survey_research/archive = new
+		archive.merge_completed_surveys(data)
+		if(owns_survey_data)
+			qdel(data)
+		data = archive
+		owns_survey_data = TRUE
+		attached_to_ship = FALSE
+		ship_port = null
+		shuttle_port = null
+		shuttleId = null
+		shuttlePortId = null
+		docking_location = null
+	if(physical_ship)
+		ship_port = physical_ship.shuttle
+		bind_to_ship(announce_link = FALSE)
+	if(!data)
+		data = new
+		owns_survey_data = TRUE
+	return attached_to_ship
 
 /**
  * A console that ships with a hull initialises inside action_load(), before the subsystem
@@ -132,7 +182,7 @@
  * multitool_act() relinks unconditionally, and we never touch an existing link.
  */
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/try_link_ship_techweb(announce_link = TRUE)
-	if(linked_techweb || isnull(data))
+	if(validate_research_site(linked_techweb) || isnull(data))
 		return FALSE
 	var/obj/structure/overmap/ship/our_ship = ship_port?.current_ship
 	if(isnull(our_ship))
@@ -140,7 +190,8 @@
 	var/datum/techweb/ship_web = our_ship.find_research_web()
 	if(isnull(ship_web))
 		return FALSE
-	link_to_techweb(ship_web)
+	if(!link_to_techweb(ship_web))
+		return FALSE
 	if(announce_link)
 		// Same line the multitool path speaks, so a self-link is not a silent one - otherwise
 		// the only way to know the console found a server is to examine it.
@@ -149,9 +200,31 @@
 
 /// Shared body of the auto-link and multitool paths.
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/link_to_techweb(datum/techweb/new_web)
+	if(!new_web || !length(new_web.techweb_servers) || !can_link_site_techweb(src, new_web))
+		return FALSE
+	if(!data)
+		data = new
+	if(linked_techweb != new_web)
+		unsync_research_servers()
 	linked_techweb = new_web
-	new_web.survey_data = data
 	new_web.connected_machines |= src
+	sync_research_surveys()
+	survey_research_tiers = get_survey_research_tiers()
+	return TRUE
+
+/// The console and each physical research disk own separate, completed-record snapshots.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/sync_research_surveys()
+	validate_ship_binding()
+	if(!data || !validate_research_site(linked_techweb))
+		return FALSE
+	if(!length(linked_techweb.techweb_servers))
+		unsync_research_servers()
+		return FALSE
+	if(!linked_techweb.survey_data || linked_techweb.survey_data == data)
+		linked_techweb.survey_data = new
+	data.merge_completed_surveys(linked_techweb.survey_data)
+	linked_techweb.survey_data.merge_completed_surveys(data)
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/examine(mob/user)
 	. = ..()
@@ -162,31 +235,38 @@
 	. += span_notice("Build an R&D server on this ship, or copy a techweb from one with a [EXAMINE_HINT("multitool")] and use it on this.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
+	sync_research_surveys()
 	var/obj/structure/overmap/object = get_current_celestial_object()
 	if(!object || !data || !is_object_surveyed(object))
 		return
 	data.update_survey_data(object)
+	sync_research_surveys()
 	update_static_data_for_all_viewers()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/unsync_research_servers()
 	if(linked_techweb)
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
+	survey_research_tiers = get_survey_research_tiers()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked!")
-				return
-			unsync_research_servers()
-
-		link_to_techweb(tool.buffer)
-		say("Linked to Server!")
-		return TRUE
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		return FALSE
+	if(!link_to_techweb(tool.buffer))
+		balloon_alert(user, "no local research server")
+		return FALSE
+	say("Linked to Server!")
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
-	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
+	var/previous_obj_sight = obj_sight
+	var/previous_mob_sight = mob_sight
+	var/previous_view_range = view_range
+	mapping_enabled = FALSE
+	obj_sight = FALSE
+	mob_sight = FALSE
+	view_range = initial(view_range)
+	icon_scaling_amount = initial(icon_scaling_amount)
 	var/list/found_tiers = list()
 	if(debug_mode)
 		mob_sight = TRUE
@@ -195,35 +275,44 @@
 		icon_scaling_amount = 3
 		mapping_enabled = TRUE
 		found_tiers |= list("advanced", "superior", "elite", "basic")
-	else
-		if(!linked_techweb)
-			return
-		for(var/node_id in linked_techweb.researched_nodes)
-			if(node_id in research_tiers)
-				var/tier_type
-				switch(node_id)
-					if("survey_console_advanced")
-						tier_type = "advanced"
-						mapping_enabled = TRUE
-						view_range = 10
-						icon_scaling_amount = 2
-					if("survey_console_superior")
-						tier_type = "superior"
-						obj_sight = TRUE
-						view_range = 15
-						icon_scaling_amount = 2.5
-					if("survey_console_elite")
-						tier_type = "elite"
-						mob_sight = TRUE
-						view_range = 20
-						icon_scaling_amount = 3
-					else
-						tier_type = "basic"
-
-				found_tiers += tier_type
+	else if(validate_research_site(linked_techweb))
+		// Apply tiers in ascending order, independent of the disk's research/import order.
+		var/list/research_tiers = list(TECHWEB_NODE_SURVEY_CONSOLE, TECHWEB_NODE_SURVEY_CONSOLE_ADV, TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR, TECHWEB_NODE_SURVEY_CONSOLE_ELITE)
+		for(var/node_id in research_tiers)
+			if(!linked_techweb.researched_nodes[node_id])
+				continue
+			switch(node_id)
+				if(TECHWEB_NODE_SURVEY_CONSOLE)
+					found_tiers += "basic"
+				if(TECHWEB_NODE_SURVEY_CONSOLE_ADV)
+					found_tiers += "advanced"
+					mapping_enabled = TRUE
+					view_range = 10
+					icon_scaling_amount = 2
+				if(TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR)
+					found_tiers += "superior"
+					obj_sight = TRUE
+					view_range = 15
+					icon_scaling_amount = 2.5
+				if(TECHWEB_NODE_SURVEY_CONSOLE_ELITE)
+					found_tiers += "elite"
+					mob_sight = TRUE
+					view_range = 20
+					icon_scaling_amount = 3
+	if(current_user && (!mapping_enabled || (previous_obj_sight && !obj_sight) || (previous_mob_sight && !mob_sight) || view_range < previous_view_range))
+		remove_eye_control(current_user)
 	return found_tiers
 
+/// Map actions can arrive directly or from an old UI; resolve their current physical source.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/can_use_survey_map()
+	if(!validate_ship_binding())
+		return FALSE
+	survey_research_tiers = get_survey_research_tiers()
+	return mapping_enabled
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
+	if(owns_survey_data)
+		QDEL_NULL(data)
 	unsync_research_servers()
 	QDEL_NULL(soundloop)
 	if(ship_port?.current_ship)
@@ -232,19 +321,20 @@
 			ship_port.current_ship.survey_console = null
 	attached_to_ship = FALSE
 	current_survey_target = null
-	if(survey_disk)
+	if(validate_survey_disk())
 		survey_disk.forceMove(get_turf(src))
 		survey_disk = null
 	return ..()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
-	if(!attached_to_ship)
-		balloon_alert(user, "can't connect to shuttle.")
+	if(!validate_ship_binding() && !get_outpost_from_atom(src))
+		balloon_alert(user, "no ship or outpost connection")
 		to_chat(user, "Could not connect survey console to the shuttle network. Perhaps there is already a survey console on this ship?")
 		return
 	ui_interact(user)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attackby(obj/item/D, mob/user, params)
+	validate_survey_disk()
 	if(istype(D, /obj/item/disk))
 		if(istype(D, /obj/item/disk/survey_data_disk))
 			if(survey_disk)
@@ -270,13 +360,16 @@
 		ui.open()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+	sync_research_surveys()
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/celestial_object = get_survey_target()
 	survey_research_tiers = get_survey_research_tiers()
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
-	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
+	tgui_data["currentCelestialRef"] = celestial_object ? celestial_object.get_survey_identity() : null
 	tgui_data["currentCelestialType"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
-	tgui_data["shipMoving"] = ship_port.current_ship.is_still()
+	tgui_data["shipMoving"] = ship_port?.current_ship?.is_still() || FALSE
+	tgui_data["archiveMode"] = !attached_to_ship
+	tgui_data["researchLinked"] = !!linked_techweb
 	tgui_data["bankedPoints"] = banked_points
 	tgui_data["bankedCash"] = banked_cash
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
@@ -285,7 +378,7 @@
 	tgui_data["rangeSurveyDistance"] = range_survey_distance
 	tgui_data["rangeSurveyPercent"] = round(range_survey_value_mult * 100)
 	tgui_data["theme"] = theme
-	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
+	tgui_data["surveyDataDisk"] = validate_survey_disk()
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
 
 	// Everything surveyable from here, for the UI's target picker
@@ -309,10 +402,14 @@
 	return tgui_data
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_static_data(mob/user)
+	sync_research_surveys()
 	. = ..()
-	.["surveyData"] = data.tgui_serialize()
+	.["surveyData"] = data?.tgui_serialize()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, list/params, datum/tgui/ui)
+	if(!validate_ship_binding())
+		if(!get_outpost_from_atom(src) || !(action in list("saveData", "downloadData", "eject", "setTheme", "refresh", "error")))
+			return TRUE
 	. = ..()
 	if(.)
 		return
@@ -357,6 +454,8 @@
 	return debug_mode ? debug_blacklist : normal_blacklist
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
+	if(!validate_ship_binding())
+		return null
 	var/list/blacklisted_types = get_blacklisted_overmap_types()
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
@@ -378,6 +477,8 @@
  * aimed into the reservation of a field the ship isn't on.
  */
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_candidates()
+	if(!validate_ship_binding())
+		return list()
 	var/list/candidates = list()
 	if(!ship_port?.current_ship)
 		return candidates
@@ -432,7 +533,7 @@
 	if(!celestial_type)
 		return FALSE
 	for(var/datum/surveyed_celestial_object/celestial in data.survey_objects_by_type[celestial_type])
-		if(celestial.ref_id == ref(object))
+		if(celestial.ref_id == object.get_survey_identity())
 			return TRUE
 	return FALSE
 
@@ -449,6 +550,9 @@
 	return "unsurveyed"
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user, target_ref)
+	if(!validate_ship_binding())
+		return FALSE
+	sync_research_surveys()
 	if(survey_in_progress || !data)
 		return
 	var/obj/structure/overmap/current_object
@@ -507,6 +611,9 @@
 	survey_timer = addtimer(CALLBACK(src, PROC_REF(complete_survey), source), 1, TIMER_STOPPABLE)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/complete_survey(obj/structure/overmap/object)
+	if(!validate_ship_binding())
+		return FALSE
+	sync_research_surveys()
 	// A stale callback must neither pay again nor cancel a newer survey.
 	if(!survey_in_progress || current_survey_target != object)
 		return
@@ -521,6 +628,7 @@
 		banked_points += values["points"]
 		banked_cash += values["cash"]
 	data.update_survey_data(object)
+	sync_research_surveys()
 	object.surveyed = TRUE
 	update_static_data_for_all_viewers()
 
@@ -571,8 +679,10 @@
 	point_list["points"] = points
 	return point_list
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cancel_survey()
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cancel_survey(datum/source)
 	SIGNAL_HANDLER
+	if(source && !validate_ship_binding())
+		return
 
 	if(survey_in_progress)
 		// Unregister from the object the survey actually started on - the ship has
@@ -608,7 +718,8 @@
 			destination_list |= celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/save_survey_data(mob/user)
-	if(!survey_disk || !data)
+	sync_research_surveys()
+	if(!validate_survey_disk() || !data)
 		return
 
 	transfer_survey_data(data, survey_disk.data)
@@ -617,17 +728,19 @@
 		balloon_alert(user, "data saved to disk")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/download_survey_data(mob/user)
-	if(!survey_disk || !data)
+	validate_ship_binding()
+	if(!validate_survey_disk() || !data)
 		return
 
 	transfer_survey_data(survey_disk.data, data)
+	sync_research_surveys()
 	update_static_data_for_all_viewers()
 	playsound(src, 'sound/machines/high_tech_confirm.ogg', 40)
 	if(user)
 		balloon_alert(user, "data downloaded from disk")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/eject_disk(mob/user)
-	if(!survey_disk)
+	if(!validate_survey_disk())
 		return
 	survey_disk.forceMove(get_turf(src))
 	survey_disk = null
@@ -636,6 +749,8 @@
 		balloon_alert(user, "disk ejected")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/activate_survey_map(mob/user)
+	if(!can_use_survey_map())
+		return FALSE
 	refresh()
 	if(length(ship_port.current_ship.close_overmap_objects) == 0)
 		balloon_alert(user, "ship is not in orbit!")
@@ -770,6 +885,8 @@
  * so upstream navigation, syndicate, whiteship and caravan consoles keep their full reach.
  */
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/eye_may_enter(turf/destination)
+	if(!can_use_survey_map())
+		return FALSE
 	if(!destination)
 		return FALSE
 	var/obj/structure/overmap/celestial = get_current_celestial_object()
@@ -782,6 +899,8 @@
 	return isnull(owner) || owner == celestial
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
+	if(!can_use_survey_map())
+		return SHUTTLE_DOCKER_BLOCKED
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	var/turf/eyeturf = get_turf(the_eye)
 	if(!eyeturf)
@@ -824,6 +943,8 @@
 				. = SHUTTLE_DOCKER_BLOCKED
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/placeLandingSpot()
+	if(!can_use_survey_map())
+		return FALSE
 	if(designating_target_loc || !current_user)
 		return
 
@@ -964,7 +1085,8 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/remove_old_ports(port_id)
 	jump_to_ports = list()
-	ship_port.port_destinations = null
+	if(ship_port && ship_port.port_destinations == my_port)
+		ship_port.port_destinations = null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/add_jumpable_port(port_id)
 	jump_to_ports = list(port_id)
@@ -1002,6 +1124,8 @@
 	user.hud_used.toggle_palette.scale_to(scaling_integer, scaling_integer)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
+	if(!can_use_survey_map())
+		return FALSE
 	..()
 	if(!QDELETED(user) && user.client)
 		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
@@ -1032,11 +1156,14 @@
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
 		set_action_scaling(user, 1)
-	// Always drop the eye, even if the user disconnected mid-control
+	// Always release the operator and eye, even if the user disconnected mid-control.
+	current_user = null
 	QDEL_NULL(eyeobj)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
 	SIGNAL_HANDLER
+	if(!validate_ship_binding())
+		return
 	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
 	// No custom port means we docked somewhere else (outpost, another ship) - nothing to light
 	if(!my_port)
@@ -1047,6 +1174,8 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undocked()
 	SIGNAL_HANDLER
+	if(!validate_ship_binding())
+		return
 	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 	undo_lighting()
 	remove_old_ports(my_port)
@@ -1061,6 +1190,8 @@
 		LAZYCLEARLIST(the_eye.placed_images)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)
+	if(!can_use_survey_map())
+		return FALSE
 	var/o = get_current_celestial_object()
 	if(istype(o, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/planet = o
@@ -1122,3 +1253,23 @@
 	else
 		// No dockable celestial in orbit - don't reuse a stale location from a previous target
 		docking_location = null
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/canDesignateTarget()
+	return can_use_survey_map() && ..()
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/rotateLandingSpot()
+	if(!can_use_survey_map())
+		return FALSE
+	return ..()
+
+/// A disk pulled out by other machinery must not remain writable through an old UI.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/validate_survey_disk()
+	if(QDELETED(survey_disk) || survey_disk.loc != src)
+		survey_disk = null
+		return FALSE
+	return TRUE
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/process()
+	if(current_user && !can_use_survey_map())
+		return PROCESS_KILL
+	return ..()

@@ -23,6 +23,15 @@ type ActiveShip = {
 type ShipJoinMenuData = {
   player_name: string;
   ships: ActiveShip[];
+  outposts: {
+    ref: string;
+    name: string;
+    mode: string;
+    cleared: BooleanLike;
+    residents: number;
+    status: string | null;
+    pods: BooleanLike;
+  }[];
   can_requisition: BooleanLike;
   wiki_url: string | null;
 };
@@ -35,7 +44,7 @@ export const ShipJoinMenu = () => {
     <Window
       title={`Welcome, ${player_name}`}
       width={500}
-      height={520}
+      height={700}
       buttons={
         <Button
           icon="book"
@@ -47,7 +56,7 @@ export const ShipJoinMenu = () => {
         </Button>
       }
     >
-      <Window.Content>
+      <Window.Content scrollable>
         <Stack vertical fill>
           {/* Purchase Ship Section */}
           <Stack.Item>
@@ -57,6 +66,35 @@ export const ShipJoinMenu = () => {
           {/* Free Hull Section */}
           <Stack.Item>
             <RequisitionSection canRequisition={!!can_requisition} />
+          </Stack.Item>
+
+          <Stack.Item>
+            <Section title="Purchased Outposts: Resident Arrival">
+              {(data.outposts || []).map((home) => (
+                <Box key={home.ref} mb={1}>
+                  <Box bold>{home.name}</Box>
+                  <Box>
+                    {home.residents} active residents | {home.mode} |{' '}
+                    {home.cleared
+                      ? 'Return clearance saved'
+                      : 'No saved clearance'}
+                  </Box>
+                  <Box color="label">
+                    {home.status || 'Resident arrival available'}
+                  </Box>
+                  <Button
+                    disabled={!home.pods || home.mode === 'closed'}
+                    onClick={() => act('join_outpost', { ref: home.ref })}
+                  >
+                    Join as resident
+                  </Button>
+                </Box>
+              ))}
+              <Box color="label">
+                Join an existing home using normal respawn eligibility. This
+                creates no new property.
+              </Box>
+            </Section>
           </Stack.Item>
 
           {/* Join Existing Ship Section */}
@@ -259,10 +297,7 @@ const ShipCard = (props: { ship: ActiveShip }) => {
                 )}
                 {!!ship.crew_locked && (
                   <Stack.Item ml={1.5}>
-                    <Box
-                      fontSize="12px"
-                      color="yellow"
-                    >
+                    <Box fontSize="12px" color="yellow">
                       <Icon name="door-closed" mr={0.5} />
                       Crew-only doors
                     </Box>
@@ -326,7 +361,7 @@ const ShipCard = (props: { ship: ActiveShip }) => {
                   tooltip={
                     ship.applied
                       ? 'Your application is waiting on this crew'
-                      : "Ask this crew to let you in without the password"
+                      : 'Ask this crew to let you in without the password'
                   }
                   onClick={() => act('apply_to_ship', { ship_ref: ship.ref })}
                 >

@@ -132,6 +132,24 @@
 "Z" = (
 /turf/open/floor/iron/white,
 /area/voidcrew/player_outpost)
+"G" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"I" = (
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"J" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 
 (1,1,1) = {"
 P
@@ -165,7 +183,7 @@ z
 g
 z
 z
-z
+J
 n
 n
 f
@@ -206,7 +224,7 @@ z
 z
 z
 z
-z
+G
 u
 "}
 (5,1,1) = {"
@@ -225,7 +243,7 @@ z
 z
 z
 z
-z
+I
 u
 "}
 (6,1,1) = {"

@@ -279,7 +279,7 @@
 	// Spawn the case
 	var/obj/item/storage/briefcase/secure/extraction/extraction_case = new(player.loc)
 	if(extraction_case)
-		to_chat(src, span_notice("An extraction case has been provided. Store ship parts inside to extract them on bluespace jump or round end!"))
+		to_chat(src, span_notice("An extraction case has been provided. Put ship parts inside and pick it up before a bluespace jump or round end. Carrying it inside a backpack counts; the current carrier receives the parts."))
 		to_chat(src, span_warning("Warning: This case can be stolen, hacked, or broken into with an EMAG!"))
 	else
 		to_chat(src, span_warning("Failed to create case. Please try again."))

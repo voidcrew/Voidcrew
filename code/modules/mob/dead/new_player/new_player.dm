@@ -254,13 +254,14 @@
 			employmentCabinet.addFile(employee)
 
 /// Creates, assigns and returns the new_character to spawn as. Assumes a valid mind.assigned_role exists.
-/mob/dead/new_player/proc/create_character(atom/destination)
+/mob/dead/new_player/proc/create_character(atom/destination, datum/callback/validate_arrival)
 	spawning = TRUE
 
 	mind.active = FALSE //we wish to transfer the key manually
 	var/mob/living/spawning_mob = mind.assigned_role.get_spawn_mob(client, destination)
-	if(QDELETED(src) || !HAS_CONNECTED_PLAYER(src))
-		return // Disconnected while checking for the appearance ban.
+	if(QDELETED(src) || !HAS_CONNECTED_PLAYER(src) || (validate_arrival && !validate_arrival.Invoke(spawning_mob)))
+		qdel(spawning_mob)
+		return // Disconnected or destination refused after appearance checks.
 
 	if(!isAI(spawning_mob)) // Unfortunately there's still snowflake AI code out there.
 		// transfer_to sets mind to null
