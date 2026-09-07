@@ -1,26 +1,17 @@
-## /tg/station codebase
-
-[![Build Status](https://github.com/tgstation/tgstation/workflows/CI%20Suite/badge.svg)](https://github.com/tgstation/tgstation/actions?query=workflow%3A%22CI+Suite%22)
-[![Percentage of issues still open](https://isitmaintained.com/badge/open/tgstation/tgstation.svg)](https://isitmaintained.com/project/tgstation/tgstation "Percentage of issues still open")
-[![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/tgstation/tgstation.svg)](https://isitmaintained.com/project/tgstation/tgstation "Average time to resolve an issue")
-![Coverage](https://img.shields.io/badge/coverage---4%25-red.svg)
-
-[![resentment](.github/images/badges/built-with-resentment.svg)](.github/images/comics/131-bug-free.png) [![technical debt](.github/images/badges/contains-technical-debt.svg)](.github/images/comics/106-tech-debt-modified.png) [![forinfinityandbyond](.github/images/badges/made-in-byond.gif)](https://www.reddit.com/r/SS13/comments/5oplxp/what_is_the_main_problem_with_byond_as_an_engine/dclbu1a)
+## Voidcrew Reborn Codebase
+A /tg/station ship-based fork
 
 | Website             | Link                                                                                                 |
 | ------------------- | ---------------------------------------------------------------------------------------------------- |
-| Website             | [https://tgstation13.org](https://tgstation13.org)                                                   |
-| Code                | [https://github.com/tgstation/tgstation](https://github.com/tgstation/tgstation)                     |
-| Wiki                | [https://tgstation13.org/wiki/Main_Page](https://tgstation13.org/wiki/Main_Page)                     |
-| Codedocs            | [https://codedocs.tgstation13.org/](https://codedocs.tgstation13.org/)                               |
-| /tg/station Discord | [https://tgstation13.org/phpBB/viewforum.php?f=60](https://tgstation13.org/phpBB/viewforum.php?f=60) |
-| Coderbus Discord    | [https://discord.gg/Vh8TJp9](https://discord.gg/Vh8TJp9)                                             |
+| Code                | [https://github.com/voidcrew/Voidcrew](https://github.com/voidcrew/Voidcrew)                     |
+| Wiki                | [https://wiki.voidcrew-lrp.com](https://wiki.voidcrew-lrp.com.com)                     |                            |
+| Voidcrew Reborn Discord | [https://discord.gg/6z9wQTYJmK](https://discord.gg/6z9wQTYJmK) |
 
-This is the codebase for the /tg/station flavoured fork of SpaceStation 13.
+This is the codebase for Voidcrew, a Space Station 13 server focused on ship-based gameplay.
 
 Space Station 13 is a paranoia-laden round-based roleplaying game set against the backdrop of a nonsensical, metal death trap masquerading as a space station, with charming spritework designed to represent the sci-fi setting and its dangerous undertones. Have fun, and survive!
 
-_All github inquiries (such as moderation actions) may be handled via the /tg/station discord [#coding-general](https://discord.com/channels/326822144233439242/326831214667235328). Simply ping the `@Maintainer` role, following the guide on asking questions located in the channel description, with your issue!_
+All github inquiries (such as moderation actions) may be handled via Jackrip in the discord.
 
 ## DOWNLOADING
 
@@ -39,16 +30,6 @@ _All github inquiries (such as moderation actions) may be handled via the /tg/st
 **Building tgstation in DreamMaker directly is deprecated and might produce errors**, such as `'tgui.bundle.js': cannot find file`.
 
 **[How to compile in VSCode and other build options](tools/build/README.md).**
-
-## Getting started
-
-For contribution guidelines refer to the [Guides for Contributors](.github/CONTRIBUTING.md).
-
-For getting started (dev env, compilation) see the HackMD document [here](https://hackmd.io/@tgstation/HJ8OdjNBc#tgstation-Development-Guide).
-
-For overall design documentation see [HackMD](https://hackmd.io/@tgstation).
-
-For lore, [see Common Core](https://github.com/tgstation/common_core).
 
 ## LICENSE
 
