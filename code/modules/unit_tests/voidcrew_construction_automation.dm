@@ -949,3 +949,108 @@
 	TEST_ASSERT_EQUAL(length(builder.repair_records), 0, "Finished window fallback stayed queued")
 	hull.state = "idle"
 	qdel(rebuilt_window)
+
+/// Exercise construction on the same indestructible deck used by outpost berths.
+/datum/unit_test/voidcrew_construction_hangar
+	parent_type = /datum/unit_test/voidcrew_hull_survey
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/automation_test/builder
+	var/obj/docking_port/mobile/voidcrew/port
+	var/area/voidcrew/outpost_hangar/hangar_area
+	var/area/shuttle/voidcrew/hull_area
+
+/datum/unit_test/voidcrew_construction_hangar/Destroy()
+	QDEL_NULL(builder)
+	if(port)
+		qdel(port, force = TRUE)
+	port = null
+	evacuate_area(hull_area)
+	evacuate_area(hangar_area)
+	QDEL_NULL(hull_area)
+	QDEL_NULL(hangar_area)
+	return ..()
+
+/datum/unit_test/voidcrew_construction_hangar/Run()
+	TEST_ASSERT(reserved, "Could not reserve a test hangar")
+	reset_block()
+	hangar_area = new
+	hull_area = new
+	hull_area.setup("Construction test hull")
+	for(var/turf/deck as anything in block(spot(2, 2), spot(10, 10)))
+		deck.ChangeTurf(/turf/open/indestructible/dark/smooth_large, /turf/open/space)
+		deck.change_area(get_area(deck), hangar_area)
+	port = new(spot(4, 3))
+	port.register()
+	port.dir = NORTH
+	port.shuttle_areas = list()
+	port.shuttle_areas[hull_area] = TRUE
+	for(var/turf/hull as anything in block(spot(3, 3), spot(5, 5)))
+		hull.place_on_top(/turf/open/floor/plating)
+		hull.insert_baseturf(turf_type = /turf/baseturf_skipover/shuttle)
+		hull.change_area(hangar_area, hull_area)
+		port.underlying_areas_by_turf[hull] = hangar_area
+	port.calculate_docking_port_information()
+	builder = allocate(/obj/machinery/computer/camera_advanced/base_construction/ship/automation_test, spot(4, 4))
+	builder.test_port = port
+	var/mob/living/carbon/human/engineer = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+	builder.test_operator = engineer
+	builder.set_is_operational(TRUE)
+	// Fork defines are included after the tests: queue, area construction and instant servos.
+	builder.console_upgrades = (1<<6) | (1<<7) | (1<<9)
+	var/obj/item/construction/rcd/internal/ship/rcd = builder.internal_rcd
+	qdel(rcd.silo_mats)
+	rcd.silo_mats = rcd.AddComponent(/datum/component/remote_materials, FALSE, TRUE)
+	rcd.silo_link = TRUE
+	var/datum/component/material_container/materials = rcd.silo_mats.mat_container
+	materials.insert_amount_mat(1000, /datum/material/iron)
+	materials.insert_amount_mat(100, /datum/material/titanium)
+
+	var/turf/edge = spot(6, 4)
+	TEST_ASSERT(builder.can_move_to(edge), "The drone cannot leave the hull onto adjacent hangar deck")
+	TEST_ASSERT(builder.can_build_at(edge), "Adjacent hangar deck rejects construction")
+	TEST_ASSERT(!builder.can_move_to(spot(7, 4)), "The drone can roam beyond the hull's adjacent tiles")
+	TEST_ASSERT(!hull_claim_area_valid(edge), "Hull survey may absorb the outpost's bare deck")
+	var/obj/machinery/light/floor/fixture = allocate(/obj/machinery/light/floor, edge)
+	fixture.AddElement(/datum/element/outpost_property)
+	TEST_ASSERT(!builder.can_build_at(edge), "Expansion may absorb a hangar fixture")
+	qdel(fixture)
+
+	// Direct construction uses the same floor predicate as the manual build action.
+	TEST_ASSERT(rcd.build_floor(edge, engineer), "Direct floor construction rejected hangar deck")
+	TEST_ASSERT(builder.expand_shuttle_to_turf(edge, engineer), "New flooring was not added to the hull")
+	TEST_ASSERT(isshuttleturf(edge), "New flooring has no shuttle movement marker")
+	TEST_ASSERT_EQUAL(port.underlying_areas_by_turf[edge], hangar_area, "Expansion lost the underlying hangar area")
+	TEST_ASSERT(builder.can_move_to(spot(7, 4)), "The drone cannot follow the expanded hull")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 900, "Direct flooring charged the wrong material amount")
+
+	// Queue auto mode must lay a floor, then advance onto the next adjacent deck tile.
+	builder.build_size = 1
+	builder.turf_build_mode = "auto"
+	TEST_ASSERT(builder.queue_construction(spot(7, 4), engineer), "Hangar flooring could not be queued")
+	var/datum/ship_construction_job/job = builder.construction_queue[1]
+	TEST_ASSERT_EQUAL(job.kind, "floor", "Auto mode queued a wall on bare hangar deck")
+	builder.process_construction_queue()
+	TEST_ASSERT_EQUAL(length(builder.construction_queue), 0, "Hangar floor job did not finish")
+	TEST_ASSERT(isshuttleturf(spot(7, 4)), "Queued flooring was not incorporated into the hull")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/iron), 800, "Queued flooring charged the wrong material amount")
+
+	// A breach retains its hull area while exposing the hangar deck below it.
+	edge.ScrapeAway(edge.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle))
+	TEST_ASSERT_EQUAL(edge.type, /turf/open/indestructible/dark/smooth_large, "Removing new flooring destroyed the hangar deck")
+	rcd.selected_floor_type = "Titanium Floor"
+	TEST_ASSERT(rcd.build_floor(edge, engineer), "A breach over hangar deck could not be repaired")
+	TEST_ASSERT(isshuttleturf(edge), "A repaired breach would be left behind when undocking")
+	var/shuttle_markers = 0
+	for(var/layer in edge.baseturfs)
+		if(layer == /turf/baseturf_skipover/shuttle)
+			shuttle_markers++
+	TEST_ASSERT_EQUAL(shuttle_markers, 1, "Repairing hangar flooring duplicated the shuttle marker")
+	TEST_ASSERT_EQUAL(materials.get_material_amount(/datum/material/titanium), 50, "Alloy flooring charged the wrong material amount")
+
+	// Use the real turf movement callbacks to check which layers leave the berth.
+	var/turf/destination = spot(11, 4)
+	TEST_ASSERT(edge.fromShuttleMove(destination, MOVE_AREA) & MOVE_TURF, "New flooring is not eligible to move with the ship")
+	edge.onShuttleMove(destination, list(), NORTH)
+	destination.afterShuttleMove(edge, 0)
+	TEST_ASSERT_EQUAL(destination.type, /turf/open/floor/mineral/titanium, "Undocking left the new ship floor behind")
+	TEST_ASSERT_EQUAL(edge.type, /turf/open/indestructible/dark/smooth_large, "Undocking removed the hangar deck")
+	TEST_ASSERT(!destination.depth_to_find_baseturf(/turf/open/indestructible/dark/smooth_large), "The ship carried away the hangar deck")

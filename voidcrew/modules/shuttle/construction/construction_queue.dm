@@ -133,7 +133,7 @@
 		"shell" = electronics.shell,
 	)
 	if(job.build_mode == RCD_TURF && job.design_path == /turf/open/floor/plating/rcd)
-		job.kind = intent == "auto" ? (isspaceturf(target) ? "floor" : "wall") : intent
+		job.kind = intent == "auto" ? (rcd.can_build_floor(target) ? "floor" : "wall") : intent
 		job.label = job.kind == "floor" ? job.floor_type : job.wall_type
 		job.duration = job.kind == "floor" ? SHIP_RCD_FLOOR_BUILD_DELAY : SHIP_RCD_WALL_BUILD_DELAY
 	else if(rcd.is_hull_window(job.design_path))
@@ -147,16 +147,19 @@
 /// Existing floors are already a completed floor job, regardless of their finish.
 /// Never let overlapping area strokes turn these floors into walls or replace fixtures.
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/construction_job_needed(datum/ship_construction_job/job, turf/target)
-	if(!target || (target.resistance_flags & INDESTRUCTIBLE))
+	if(!target)
 		return FALSE
 	if(locate(/obj/machinery/door/poddoor) in target)
+		return FALSE
+	if(job.kind == "floor")
+		var/obj/item/construction/rcd/internal/ship/rcd = internal_rcd
+		return rcd.can_build_floor(target)
+	if(target.resistance_flags & INDESTRUCTIBLE)
 		return FALSE
 	if(job.kind == "tile")
 		return istype(target, /turf/open/floor/plating)
 	if(job.kind == "decal")
 		return isfloorturf(target) && !construction_has_decal(target, job.decal_data, construction_direction(job.build_dir))
-	if(job.kind == "floor")
-		return isspaceturf(target)
 	if(job.kind == "wall")
 		return isfloorturf(target)
 	if(job.build_mode == RCD_AIRLOCK && (locate(/obj/machinery/door) in target))
@@ -182,6 +185,7 @@
 	var/intent = turf_build_mode
 	if(size > 1 && intent == "auto")
 		intent = "floor"
+	var/obj/item/construction/rcd/internal/ship/rcd = internal_rcd
 	var/added = 0
 	var/low = size == 3 ? -1 : 0
 	// Center first, then the surrounding ring: expansion proceeds out from existing hull.
@@ -198,7 +202,7 @@
 		if(length(construction_queue) >= SHIP_CONSTRUCTION_QUEUE_LIMIT)
 			break
 		// Adjacency is rechecked on completion, after earlier tiles have expanded the hull.
-		if(!is_in_shuttle_area(target) && (!is_valid_expansion_area(target) || !isspaceturf(target)))
+		if(!is_in_shuttle_area(target) && (!is_valid_expansion_area(target) || !rcd.can_build_floor(target)))
 			continue
 		var/datum/ship_construction_job/job = capture_construction_job(target, user, intent, tool_kind)
 		if(construction_claims[job.coordinate_key()] || !construction_job_needed(job, target))

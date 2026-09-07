@@ -366,6 +366,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	data["shop_name"] = shop ? shop.outpost_name : "OFFLINE"
 	data["trader_name"] = shop ? shop.trader_name : ""
 	data["categories"] = shop ? shop.categories : list()
+	data["restock_interval"] = OUTPOST_RESTOCK_INTERVAL
 
 	var/list/catalog = list()
 	if(shop)
@@ -411,6 +412,10 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	var/datum/outpost_shop/shop = npc.shop
 
 	data["barred"] = npc.outpost ? npc.outpost.is_user_barred(user) : FALSE
+	// All vendors at an outpost share its convoy timer. Standalone shops may
+	// restock through events instead, so they have no scheduled countdown.
+	var/restock_remaining = timeleft(npc.outpost?.restock_timer)
+	data["restock_remaining"] = isnull(restock_remaining) ? null : max(0, restock_remaining)
 
 	// The viewer's crew standing with this trader, for the header and the
 	// back-room shelf. Everything favor is per-viewer, so it all rides ui_data.

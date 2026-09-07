@@ -2,13 +2,16 @@ import { useState } from 'react';
 import {
   Box,
   Button,
+  Icon,
   Image,
   NoticeBox,
   Section,
   Stack,
   Tabs,
+  TimeDisplay,
   Tooltip,
 } from 'tgui-core/components';
+import { formatTime } from 'tgui-core/format';
 import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
@@ -76,7 +79,9 @@ type Data = {
   categories: string[];
   catalog: CatalogSku[];
   ledger: LedgerEntry[];
+  restock_interval: number;
   // dynamic
+  restock_remaining: number | null;
   barred: BooleanLike;
   held_vouchers: number;
   account_credits: number | null;
@@ -318,7 +323,10 @@ const BuyView = (props: { barred: BooleanLike }) => {
     <Stack fill>
       <Stack.Item minWidth="130px">
         <Tabs vertical>
-          <Tabs.Tab selected={category === 'All'} onClick={() => setCategory('All')}>
+          <Tabs.Tab
+            selected={category === 'All'}
+            onClick={() => setCategory('All')}
+          >
             All ({catalog.length})
           </Tabs.Tab>
           {withItems.map((cat) => (
@@ -382,7 +390,12 @@ const LedgerRow = (props: {
   );
 
   return (
-    <Stack align="center" py={0.5} className="candystripe" opacity={done ? 0.5 : 1}>
+    <Stack
+      align="center"
+      py={0.5}
+      className="candystripe"
+      opacity={done ? 0.5 : 1}
+    >
       <Stack.Item>
         <ProductImage icon={entry.icon} />
       </Stack.Item>
@@ -456,6 +469,8 @@ export const TraderShop = (props) => {
     catalog = [],
     ledger = [],
     favor,
+    restock_interval,
+    restock_remaining = null,
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
@@ -466,6 +481,24 @@ export const TraderShop = (props) => {
     <Window title={shop_name} width={720} height={640}>
       <Window.Content>
         <Stack fill vertical>
+          {restock_remaining !== null && (
+            <Stack.Item>
+              <Box px={1}>
+                <Icon name="clock" mr={1} />
+                Next restock:{' '}
+                <Box inline bold>
+                  {restock_remaining > 0 ? (
+                    <TimeDisplay value={restock_remaining} auto="down" />
+                  ) : (
+                    'Restocking...'
+                  )}
+                </Box>
+                <Box inline color="label" ml={1}>
+                  (every {formatTime(restock_interval, 'short')})
+                </Box>
+              </Box>
+            </Stack.Item>
+          )}
           {!!barred && (
             <Stack.Item>
               <NoticeBox danger>
@@ -538,8 +571,8 @@ export const TraderShop = (props) => {
           </Stack.Item>
           <Stack.Item>
             <Box color="label" fontSize="0.85em" px={1}>
-              Fixed prices, charged on the spot, vouchers from anywhere on
-              you, credits off your ID, barter goods held in hand. No refunds.
+              Fixed prices, charged on the spot, vouchers from anywhere on you,
+              credits off your ID, barter goods held in hand. No refunds.
             </Box>
           </Stack.Item>
         </Stack>

@@ -66,8 +66,8 @@
 	// wall over the floor already there, and never a catwalk (issue #251).
 	var/building_plating = (ship_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
 
-	// Build floor: RCD is in turf mode and target is space (need to create floor first)
-	if(rcd_mode == RCD_TURF && building_plating && isspaceturf(target_turf) && ship_console.turf_build_mode != "wall")
+	// Space and bare hangar deck need ship flooring before walls can be built.
+	if(rcd_mode == RCD_TURF && building_plating && ship_rcd.can_build_floor(target_turf) && ship_console.turf_build_mode != "wall")
 		if(!ship_rcd.build_floor(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)

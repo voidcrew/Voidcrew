@@ -551,11 +551,15 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	rcd_effect.end_animation()
 	return TRUE
 
+/// Space and bare hangar deck both need a new layer of ship flooring.
+/obj/item/construction/rcd/internal/ship/proc/can_build_floor(turf/target)
+	return isspaceturf(target) || ship_console?.can_build_over_hangar(target)
+
 /// Build a floor of the selected type at the target turf
 /obj/item/construction/rcd/internal/ship/proc/build_floor(turf/target, mob/user)
 	var/floor_path = get_selected_floor_path()
 	var/list/materials = get_selected_floor_materials()
-	if(!isspaceturf(target) || !check_materials(materials, user))
+	if(!can_build_floor(target) || !check_materials(materials, user))
 		return FALSE
 
 	var/build_time = SHIP_RCD_FLOOR_BUILD_DELAY * get_build_speed_mod()
@@ -569,12 +573,19 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		return FALSE
 
 	// Double check materials after delay
-	if(!isspaceturf(target) || !use_materials(materials, user))
+	if(!can_build_floor(target) || !use_materials(materials, user))
 		qdel(rcd_effect)
 		return FALSE
 
-	// Build the floor
-	var/turf/new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	var/turf/new_floor
+	if(isspaceturf(target))
+		new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	else
+		// Keep the hangar deck below the ship's plating so undocking exposes it again.
+		// In a breached shuttle area, place_on_top() also restores the shuttle marker.
+		new_floor = target.place_on_top(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+		if(floor_path != /turf/open/floor/plating)
+			new_floor = new_floor.place_on_top(floor_path, flags = CHANGETURF_INHERIT_AIR)
 	restamp_hull_marker(new_floor)
 	rcd_effect.end_animation()
 	return TRUE
@@ -1589,10 +1600,28 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 /**
  * Checks if a turf is a valid area type for expansion building
- * (space or planetoid, not ruin, not other shuttle)
+ * (space, planetoid, or bare hangar deck)
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_valid_expansion_area(turf/T)
-	return hull_claim_area_valid(T)
+	return hull_claim_area_valid(T) || can_build_over_hangar(T)
+
+/// Hangar deck may support new ship flooring, but its fixtures must stay at the outpost.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_build_over_hangar(turf/target)
+	if(!istype(target, /turf/open/indestructible) || isshuttleturf(target) || !map_regions_match(get_turf(src), target))
+		return FALSE
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+	var/area/deck_area = get_area(target)
+	if(is_in_shuttle_area(target))
+		// A breach exposes the deck without immediately relinquishing the ship's area.
+		deck_area = port.underlying_areas_by_turf[target]
+	if(!istype(deck_area, /area/voidcrew/outpost_hangar))
+		return FALSE
+	for(var/obj/fixture in target)
+		if(HAS_TRAIT(fixture, TRAIT_OUTPOST_PROPERTY))
+			return FALSE
+	return TRUE
 
 /**
  * Checks if the drone can move to a destination turf
