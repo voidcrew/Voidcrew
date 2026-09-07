@@ -109,6 +109,7 @@
 	visitor_area.shuttle_port = visitor_port
 	visitor_port.register()
 	var/obj/structure/overmap/ship/visitor_ship = allocate(__IMPLIED_TYPE__)
+	SSovermap.simulated_ships |= visitor_ship
 	visitor_ship.shuttle = visitor_port
 	visitor_port.current_ship = visitor_ship
 	var/mob/living/carbon/human/visitor = make_player(visitor_turf, "managementvisitor")

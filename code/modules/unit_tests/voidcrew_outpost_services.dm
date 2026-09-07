@@ -100,6 +100,7 @@
 	ship_area.shuttle_port = port
 	port.register()
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	SSovermap.simulated_ships |= ship
 	ship.shuttle = port
 	port.current_ship = ship
 	ship.docked = home
@@ -266,6 +267,7 @@
 	port.register()
 	TEST_ASSERT_NULL(get_outpost_from_atom(ship_tile), "A hull under assembly inherited the claim host")
 	var/obj/structure/overmap/ship/visitor = allocate(/obj/structure/overmap/ship)
+	SSovermap.simulated_ships |= visitor
 	visitor.shuttle = port
 	port.current_ship = visitor
 	visitor.docked = home
@@ -301,7 +303,7 @@
 	var/list/local_choices = home.research_server_options()
 	var/list/remote_choices = home.research_ship_options()
 	TEST_ASSERT_EQUAL(length(local_choices), 2, "Identical disk names hid a local physical server")
-	TEST_ASSERT_EQUAL(length(remote_choices), 1, "A docked ship relay was not offered for linking")
+	TEST_ASSERT_EQUAL(length(remote_choices), 1, "A registered docked ship was not offered for invitation")
 	TEST_ASSERT(local_server in flatten_list(local_choices), "Local choices omitted the first physical disk")
 	TEST_ASSERT(second_local_server in flatten_list(local_choices), "Local choices omitted the second physical disk")
 	TEST_ASSERT(visitor in flatten_list(remote_choices), "Invitation choices omitted a docked ship without a relay")
