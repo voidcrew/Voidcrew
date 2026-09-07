@@ -781,11 +781,12 @@
 	for(var/console_type in list(/obj/machinery/computer/camera_advanced/base_construction/ship, /obj/machinery/computer/camera_advanced/base_construction/ship/outpost))
 		for(var/disk_type in standalone_disks)
 			var/obj/machinery/computer/camera_advanced/base_construction/ship/console = allocate(console_type)
+			var/base_rcd_delay = console.internal_rcd.delay_mod
 			var/obj/item/ship_construction_upgrade/disk = allocate(disk_type)
 			TEST_ASSERT_EQUAL(console.item_interaction(user, disk, list()), ITEM_INTERACT_SUCCESS, "[disk_type] could not install by itself on [console_type]")
 			TEST_ASSERT(QDELETED(disk), "Successful standalone installation did not consume [disk_type]")
 			TEST_ASSERT_EQUAL(console.get_build_speed_mod(), standalone_disks[disk_type], "Standalone [disk_type] applied the wrong fabrication speed")
-			TEST_ASSERT_EQUAL(console.internal_rcd.delay_mod, standalone_disks[disk_type], "Standalone [disk_type] did not update RCD speed")
+			TEST_ASSERT_EQUAL(console.internal_rcd.delay_mod, base_rcd_delay * standalone_disks[disk_type], "Standalone [disk_type] did not update RCD speed")
 			if(disk_type == /obj/item/ship_construction_upgrade/area)
 				var/list/controls = console.construction_controls_data()
 				TEST_ASSERT(controls["queueUnlocked"] && controls["areaUnlocked"], "Standalone area disk did not enable both the queue and brushes")
