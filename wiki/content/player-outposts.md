@@ -2,73 +2,76 @@
 title: Player Outposts
 category: Economy
 order: 5
-blurb: Buying a deed, founding your own station on the overmap, building it out, and defending it from siege.
+blurb: Found a home with its own bank, cargo deliveries, research, and resident cryopods.
 ---
 
-For 10,000 credits and three trade vouchers you can stop renting space and found your own station. A player outpost is a permanent structure on the [overmap](overmap.md) with its own interior, its own hangar, and a build region you fill in however you like. It lasts the whole round, and where you plant it decides whether anyone is allowed to shoot at it.
+Player outposts are homes on the [overmap](overmap.md) that last for the round. Run a workshop, receive supplies, and welcome returning residents even after your founding ship is gone. Visiting ships keep their own money, equipment links, and crew membership.
 
-## Buying the deed
+## Founding a home
 
-**Outpost deeds** are sold over the counter at Waystation Halcyon and Quartermain Depot, on their Colonial Registry shelf. The price is 10,000 credits plus 3 trade vouchers, and it does not go down.
+Buy an **outpost deed** from the Colonial Registry shelf at Waystation Halcyon or Quartermain Depot. Each costs **10,000 credits and 3 trade vouchers** and is bound to its buyer. You can own multiple outposts.
 
-A deed is bound to the buyer by name. Nobody else can use it, and each person may hold **one active claim per round**. If you already founded an outpost this shift, the registry refuses to sell you another deed.
+Your crew's ship must be stationary on an empty overmap tile, away from planets, ruins, and other outposts. Undock before using the deed. Choose a name and one of two homes:
 
-## Founding
-
-To found, your crew's ship has to be **holding still on an empty overmap tile**, not docked, not moving, and not on top of a planet, ruin or another outpost. Use the deed in hand and the registry catalogue opens.
-
-Pick a shell and a name:
-
-| Shell | What you get |
+| Home | Layout |
 |---|---|
-| Compact Habitat | One pressurised room with the essential consoles, a hangar elevator, and a charged power bay. Cheap on materials and quick to expand. |
-| Waystation Frame | A proper station core: separate work and living space, a powered workshop bay, and a hangar elevator off the main hall. More to defend, more room to grow. |
-| Bare Claim | No prefab at all. An empty sector, a survey pad, and a crate holding the two registry console boards. Bring your own everything, including the floor and the air. |
+| Compact Habitat | A small pressurised core with room to expand. |
+| Waystation Frame | Separate living and workshop space around a central hall. |
 
-Confirming registers the claim, announces it galaxy-wide, and drops the outpost onto the overmap where your ship is sitting. Then fly over and dock to move in.
-
-The two prefab shells arrive with lights, a pressurised core, an APC and cable, a charged SMES with an input terminal, and an **unanchored portable generator with fuel**. The area needs power, so once the SMES buffer drains it is on you to keep the generator fed or build something better.
+Both include a bank terminal, cargo console, empty ore silo, resident cryopod, management and construction consoles, and a hangar elevator. A charged SMES and portable generator provide starting power. Keep the generator fuelled or build another power supply.
 
 !!! warning "Where you plant it is permanent"
-    Zone rules lock in at founding and never change. An outpost founded in the patrolled outer ring is **protected from ship weapons forever**. An outpost founded in the contested band or the lawless deep is **raidable forever**. Nothing you build later changes that, and you cannot move it.
+    Zone rules lock in at founding. An outpost founded in the patrolled outer ring is protected from ship weapons. One founded in contested or lawless space is raidable. You cannot move it later.
 
-## The consoles
+## Managing and building
 
-Every shell ships with two consoles, and if either is destroyed you can rebuild it, a fresh console relinks itself to whatever outpost's z-level it is standing on. The Bare Claim's starter crate holds both boards.
+The buyer receives an **Outpost Management** button on their HUD. Use it to rename the outpost, set a public memo, manage docking and residents, grant permissions, or transfer ownership. The management console opens the same panel.
 
-The **management console** is the owner's control panel. Ownership is tied to your account rather than your body, so it survives death and respawn. Everyone else gets a read-only view. From it you can:
+You can delegate management, bank withdrawals, and construction separately. Your founding ship's crew automatically become residents with construction permission. Other residents need construction permission granted separately.
 
-- Rename the outpost (announced galaxy-wide, on a 5-minute cooldown) and set a public memo.
-- Set the docking policy.
-- Authorise other people to use the construction console.
-- Buy a galaxy-wide **broadcast**.
-- Transfer ownership to somebody standing on the outpost, or abandon the claim.
+The **construction console** controls a building drone supplied by your local ore silo. Link the console to the silo with a multitool and deposit materials before building. You can also expand the habitat with ordinary tools.
 
-The **construction console** puts you behind a remote drone with a built-in RCD, RTD, RPD and RLD, fed from the outpost's ore silo. It is the same tool ships use to expand their hulls, pointed at your claim instead. Anything the drone builds is automatically pulled into the outpost's powered area so it gets light, gravity and APC coverage; anything you build by hand gets swept in the same way within half a minute.
+## Money and deliveries
 
-The claim's **survey bounds** cover its entire z-level: **255 by 255 tiles**, with the starting shell centered on it. Every shell gets the same build area. If you use the ordinary landing pads, keep them clear for arriving ships.
+The **bank machine** handles the outpost's money. Deposit from your ID account or physical currency; owners and treasury delegates can withdraw. The bank starts empty and keeps its balance through ownership changes or loss of the founding ship.
 
-## The hangar
+Order supplies through the ordinary **cargo console**, or buy sheets through a **Galactic Materials Market** you build locally. Both charge the outpost bank and send a physical freight ferry. Ride the elevator to **Freight Receiving** to unload it. No player ship needs to stay docked for deliveries.
 
-Both prefab shells arrive with a **hangar elevator** already installed, which means visiting ships get their own private berth from the moment you found the place, exactly like a trader outpost. Ride the elevator from the concourse to any occupied berth and back.
+Load eligible goods onto the ferry and dispatch it to export them. Payment goes to the outpost bank. Everyone must leave the ferry before it can depart. Failed deliveries refund undelivered purchases.
 
-If you took the Bare Claim, or you want the elevator somewhere else, the construction console has a three-step workflow for it: **plan** projects a coloured blueprint of the elevator kit under your drone, **rotate** turns it to face another way, and **confirm** stamps it down and wires it in.
+## Research and manufacturing
 
-Without an elevator, an outpost still has two ordinary landing pads, and that is all.
+Build an **R&D server** and install its source-code disk. Copy its link with a multitool, then link R&D consoles, experiment equipment, and fabricators. Link fabricators to the local silo too, and supply materials. See [Research](research.md) for experiments and technologies.
 
-## Who is allowed in
+To share research with a ship, build an **R&D relay** aboard it. Print the relay board from Fundamental Science at a circuit imprinter. The relay needs no disk; keep the research server at the outpost.
 
-The management console sets one of three docking policies:
+1. Dock the ship. As outpost owner or management delegate, secondary-click the outpost server with a multitool and choose **Connect ship**, then its relay.
+2. As ship captain, secondary-click the relay with a multitool and approve.
+3. Copy the relay's link with a multitool and connect ship equipment normally. Equipment built later can use the same link.
 
-- **Open**: anybody may dock without asking. This is the default.
-- **By request**: a visiting ship's dock attempt queues a request, the owner is notified wherever they are, and they approve or deny it from the console. Approved ships stay approved.
-- **Lockdown**: only the owner's own crew gets in.
+Both labs now use **one tech tree and points balance**, including after undocking. A technology researched at either site becomes available at both. The ship's separate research disk stays independent, and fabricators still need local materials.
 
-You can also **ban** specific ships outright, which overrides everything including an existing approval.
+Each outpost allows **one active ship connection**. Approving a replacement disconnects the previous ship. Either side can disconnect using the same multitool menu. You cannot download a technology disk through the relay.
+
+Keep both endpoints powered. After a power outage, restore power and relink equipment. Removing the outpost disk, replacing an endpoint, or changing the owner or approving captain requires a new approval while docked.
+
+## Residents and visitors
+
+Use Outpost Management to add residents and invite players back. There is no outpost resident limit. Admission can be **open**, **password**, **approved-only**, or **closed**.
+
+Eligible players choose the outpost in the join menu and arrive through an available resident cryopod with an assistant loadout. Normal respawn rules and cryo cooldowns still apply. Returning residents keep their remembered access unless it is revoked; changing the password clears remembered password access.
+
+Ship docking has separate controls:
+
+- **Open:** visiting ships may dock freely.
+- **By request:** approve requests in Outpost Management. A ship still waiting in your sector begins docking when cleared. It needs new clearance after leaving.
+- **Lockdown:** only the owner's crew ships may enter. Existing visitors can leave.
+
+Banning a ship overrides docking clearance. Use the hangar elevator to travel between the habitat and occupied visitor berths.
 
 ## Advertising
 
-A **broadcast** costs 2500 credits off your ID's account and runs for 20 minutes, with a 10-minute cooldown between purchases. Buying one pushes a one-time notification to every crewed ship in the galaxy, lists your outpost with its memo and coordinates on every ship's [mission board](missions.md) feed, and pins it on every helm's nav chart for the duration. It is the only way anyone finds a shop, bar or repair yard you have built out in the middle of nowhere.
+A **broadcast** costs **2,500 credits from the outpost bank** and lasts 20 minutes, with a 10-minute purchase cooldown. Buy it through Outpost Management with treasury permission. It announces the outpost to crewed ships, adds its memo and coordinates to [mission boards](missions.md), and marks it on helm charts. The panel shows why a purchase is refused.
 
 ## Raiding and siege
 
@@ -95,8 +98,8 @@ Building a second generator does **not** double your shield. Only the first work
 
 Nothing stops boarders. The shield is anti-ordnance only; a crew that docks at your hangar walks in the same as anybody else, which is what the docking policy and ban list are for.
 
-## Endings
+## Ownership and abandonment
 
-There is no cross-round persistence. When the round ends, the outpost, its contents and its deed are all gone. Nothing carries over.
+You can transfer ownership to another player, including someone who already owns an outpost. Abandonment leaves the buildings, bank balance, and research in place, but ends delegated permissions, research connections, and resident admission.
 
-Two things can happen before then. You can **transfer** ownership to somebody standing on the outpost, provided they have not already founded a claim this round. Their account becomes the owner and yours does not get a second claim. Or you can **abandon** it, which announces the abandonment galaxy-wide, clears ownership, reopens docking to everybody and kills any live broadcast. The station itself stays standing, unowned, with the doors open. Your account still cannot found another.
+To take over an unowned outpost, visit its management terminal and choose **Claim outpost**. Abandoning or transferring a home does not prevent you from owning another. Outposts and their contents do not carry over between rounds.
