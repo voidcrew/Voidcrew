@@ -135,7 +135,7 @@ VOTE_PERIOD 600
 ALLOW_RESPAWN 1
 
 ## Respawn delay (deciseconds), which doesn't allow to return to lobby
-RESPAWN_DELAY 0
+RESPAWN_DELAY 4200
 
 ## set a hosted by name for unix platforms
 HOSTEDBY Yournamehere

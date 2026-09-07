@@ -3,9 +3,9 @@
 ALLOW_VOTE_TRANSFER
 
 ## Makes all ship hulls, themes, and modules free: everything shows as unlocked
-## in the shipyard and no ship parts are ever charged. Uncomment to enable.
+## in the shipyard and no ship parts are ever charged. Set to 1 to enable.
 
-# FREE_SHIPS
+FREE_SHIPS 0
 
 ## Player wiki. Drives the lobby wiki button, the OOC > Wiki verb, and the Wiki entry
 ## under Resources in the escape menu. Blank it out to hide all three.
