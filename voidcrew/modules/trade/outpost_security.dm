@@ -198,8 +198,8 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /obj/machinery/door/airlock/outpost
 	name = "outpost airlock"
 	desc = "A blast-rated airlock kept in better repair than most warship hulls."
-	icon = 'icons/obj/doors/airlocks/external/external.dmi'
-	overlays_file = 'icons/obj/doors/airlocks/external/overlays.dmi'
+	icon = 'voidcrew/icons/obj/doors/airlocks/external/external.dmi'
+	overlays_file = 'voidcrew/icons/obj/doors/airlocks/external/overlays.dmi'
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	damage_deflection = 100
