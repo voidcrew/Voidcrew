@@ -4,7 +4,7 @@
 	/// The assembly type for this door, when it is deconstructed or broken
 	var/assembly_type = /obj/machinery/door/poddoor/preopen/deconstructed
 
-/obj/machinery/door/poddoor/preopen/deconstructed // VOID TEST EDIT
+/obj/machinery/door/poddoor/preopen/deconstructed
 	deconstruction = BLASTDOOR_NEEDS_WIRES
 
 /obj/machinery/door/poddoor/on_deconstruction(disassembled)
@@ -24,7 +24,6 @@
 
 	if(!disassembled)
 		A?.update_integrity(A.max_integrity * 0.5)
-		// VOIDCREW: this exact wrecked frame belongs to the recorded destruction.
 		record_ship_repair_wreckage(src, A)
 
 //"BLAST" doors are obviously stronger than regular doors when it comes to BLASTS.
