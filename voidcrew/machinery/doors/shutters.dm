@@ -6,6 +6,10 @@
 	max_integrity = 200
 	assembly_type = /obj/machinery/door/poddoor/shutters/preopen/deconstructed
 
+/obj/machinery/door/poddoor/shutters/preopen/deconstructed
+	deconstruction = BLASTDOOR_NEEDS_WIRES
+	panel_open = TRUE
+
 /datum/armor/poddoor_shutters
 	melee = 30
 	bullet = 30

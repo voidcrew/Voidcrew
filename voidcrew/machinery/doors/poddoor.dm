@@ -6,11 +6,12 @@
 
 /obj/machinery/door/poddoor/preopen/deconstructed
 	deconstruction = BLASTDOOR_NEEDS_WIRES
+	panel_open = TRUE
 
 /obj/machinery/door/poddoor/on_deconstruction(disassembled)
 	var/obj/machinery/door/poddoor/A
 
-	if(deconstruction == BLASTDOOR_NEEDS_WIRES)
+	if(deconstruction != BLASTDOOR_FINISHED)
 		var/datum/crafting_recipe/recipe = locate(recipe_type) in GLOB.crafting_recipes
 		if(!recipe)
 			return ..()
