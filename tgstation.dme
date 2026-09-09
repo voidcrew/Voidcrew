@@ -7414,4 +7414,6 @@
 #include "voidcrew\turfs\open\floor\plating\asteroid.dm"
 #include "voidcrew\turfs\open\floor\plating\misc_plating.dm"
 #include "voidcrew\turfs\open\floor\plating\planet.dm"
+#include "voidcrew\machinery\doors\poddoor.dm"
+#include "voidcrew\machinery\doors\shutters.dm"
 // END_INCLUDE
