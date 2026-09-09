@@ -21,6 +21,7 @@ type Contact = {
   kind: string;
   coords: number[] | null;
   status: string;
+  active: BooleanLike;
 };
 
 type Port = {
@@ -93,7 +94,7 @@ export const OvermapManagement = () => {
   const { act, data } = useBackend<Data>();
   const [search, setSearch] = useState('');
   const [kind, setKind] = useState('All types');
-  const [status, setStatus] = useState('All states');
+  const [activity, setActivity] = useState('All');
   const [showSpawn, setShowSpawn] = useState(false);
   const { objects, selected } = data;
   useEffect(() => {
@@ -106,7 +107,7 @@ export const OvermapManagement = () => {
     .filter(
       (contact) =>
         (kind === 'All types' || kind === contact.kind) &&
-        (status === 'All states' || status === contact.status) &&
+        (activity === 'All' || !!contact.active === (activity === 'Active')) &&
         `${contact.name} ${contact.kind} ${coordinates(contact.coords)}`
           .toLowerCase()
           .includes(query),
@@ -115,10 +116,6 @@ export const OvermapManagement = () => {
   const kinds = [
     'All types',
     ...new Set(objects.map((item) => item.kind).sort()),
-  ];
-  const states = [
-    'All states',
-    ...new Set(objects.map((item) => item.status).sort()),
   ];
 
   return (
@@ -196,9 +193,9 @@ export const OvermapManagement = () => {
                     <Stack.Item>
                       <Dropdown
                         width="100%"
-                        options={states}
-                        selected={status}
-                        onSelected={setStatus}
+                        options={['All', 'Active', 'Inactive']}
+                        selected={activity}
+                        onSelected={setActivity}
                       />
                     </Stack.Item>
                     <Stack.Item>
@@ -206,7 +203,7 @@ export const OvermapManagement = () => {
                         {contacts.length} shown
                         {(!!query ||
                           kind !== 'All types' ||
-                          status !== 'All states') && (
+                          activity !== 'All') && (
                           <Button
                             compact
                             color="transparent"
@@ -214,7 +211,7 @@ export const OvermapManagement = () => {
                             onClick={() => {
                               setSearch('');
                               setKind('All types');
-                              setStatus('All states');
+                              setActivity('All');
                             }}
                           >
                             Clear filters

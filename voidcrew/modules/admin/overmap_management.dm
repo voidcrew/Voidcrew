@@ -102,6 +102,7 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 			"kind" = contact.admin_kind(),
 			"coords" = contact.get_relative_overmap_coords(),
 			"status" = contact.admin_status(),
+			"active" = contact.admin_is_active(),
 		))
 	var/obj/structure/overmap/selected = selected_ref?.resolve()
 	if(selected)
@@ -122,6 +123,7 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 		"type" = "[contact.type]",
 		"kind" = contact.admin_kind(),
 		"status" = contact.admin_status(),
+		"active" = contact.admin_is_active(),
 		"coords" = contact.get_relative_overmap_coords(),
 		"interior" = contact.is_loading() ? "Loading" : (has_interior ? "Loaded" : "Not loaded"),
 		"footprint" = footprint?.describe(),
@@ -447,6 +449,19 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 	if(footprint)
 		return locate(footprint.low_x, footprint.low_y, footprint.z_value)
 	return null
+
+/// Activity describes whether the contact is in use in the world, independently of
+/// its lifecycle label. A loaded interior remains active while waiting for cleanup.
+/obj/structure/overmap/proc/admin_is_active()
+	if(admin_operation || is_loading() || concerned || SSovermap.worldgen_owner == src || SSovermap.worldgen_waiting_for(src))
+		return TRUE
+	if(admin_mapzone() || is_loaded())
+		return TRUE
+	if(istype(src, /obj/structure/overmap/ship))
+		var/obj/structure/overmap/ship/ship = src
+		return !QDELETED(ship.shuttle)
+	// These contacts have an unloaded state; hazards and permanent contacts do not.
+	return !(istype(src, /obj/structure/overmap/planet) || istype(src, /obj/structure/overmap/space_ruin) || istype(src, /obj/structure/overmap/event/meteor))
 
 /obj/structure/overmap/proc/admin_status()
 	if(admin_operation)
