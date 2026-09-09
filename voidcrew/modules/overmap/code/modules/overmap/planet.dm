@@ -1302,34 +1302,40 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
  * planet that was empty when it got in line need not still be empty at the front of it.
  */
 /obj/structure/overmap/planet/proc/can_release_interior(ignore_ssd_grace = FALSE)
-	if(preserve_level || !mapzone)
-		return FALSE
+	return isnull(get_interior_release_blocker(ignore_ssd_grace))
+
+/obj/structure/overmap/planet/proc/get_interior_release_blocker(ignore_ssd_grace = FALSE)
+	if(preserve_level)
+		return "Interior preservation is enabled."
+	if(!mapzone)
+		return "The interior is not loaded."
 
 	// Never mid-build: build_planet() assigns mapzone long before the surface is done,
 	// and worldgen_claim() is reentrant by requester, so a teardown fired during the
 	// load would be granted the queue instantly (both claim as src) and sweep the
 	// level out from under the generator.
 	if(loading)
-		return FALSE
+		return "Interior generation is in progress."
 
+	var/docking_blocker = get_docking_blocker()
+	if(docking_blocker)
+		return docking_blocker
 	if(first_dock_taken || second_dock_taken)
-		return FALSE
+		return "A landing pad is reserved, but no assigned ship was found. Inspect its docking port before retrying."
 
-	// Check if any ships are still docked inside (catches race conditions with async unload)
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return FALSE
 
 	// Protect connected survivors, including those inside containers, within our own
 	// footprint. A retained mind alone must not keep an abandoned planet loaded forever.
 	if(mapzone.has_living_players_in(footprint))
-		return FALSE
+		return "A connected living player is inside the interior."
 
 	// Countdown setup accounts for this grace in its delay. Actual teardown checks it
 	// again, including after the worldgen queue, in case someone just disconnected.
-	if(!ignore_ssd_grace && mapzone.get_ssd_grace_remaining_in(footprint, PLANET_SSD_GRACE_PERIOD))
-		return FALSE
+	var/grace = mapzone.get_ssd_grace_remaining_in(footprint, PLANET_SSD_GRACE_PERIOD)
+	if(!ignore_ssd_grace && grace)
+		return "Disconnected player grace: [DisplayTimeText(grace)] remaining."
 
-	return TRUE
+	return null
 
 /// Catatonic/empty sites use the base delay; SSD bodies can extend it until their grace expires.
 /obj/structure/overmap/planet/proc/get_despawn_delay()

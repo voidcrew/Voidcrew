@@ -772,8 +772,8 @@
 	GLOB.crew_locked_ships -= src
 	QDEL_LIST(crew_applications)
 	source_template = null
-	shuttle?.intoTheSunset()
-	shuttle = null
+	var/obj/docking_port/mobile/owned_shuttle = detach_shuttle()
+	owned_shuttle?.intoTheSunset()
 	SSovermap.simulated_ships -= src
 	QDEL_NULL(ship_account)
 	manifest?.Cut()
@@ -1437,7 +1437,8 @@
 			return FALSE
 		message_admins("\[SHUTTLE]: [shuttle?.name] has been FORCE deleted!")
 		log_shuttle("[shuttle?.name] has been force deleted!")
-		shuttle?.jumpToNullSpace()
+		var/obj/docking_port/mobile/owned_shuttle = detach_shuttle()
+		owned_shuttle?.jumpToNullSpace()
 		qdel(src)
 		return TRUE
 
@@ -1467,7 +1468,8 @@
 	// A ship docked to us ship-to-ship parks its overmap token in our contents.
 	// Deleting the host would strand the guest inside a deleted loc.
 	for(var/obj/structure/overmap/ship/guest in src)
-		return FALSE
+		if(!QDELETED(guest))
+			return FALSE
 
 	log_shuttle("[name]: derelict despawned (abandoned [(world.time - abandoned_at) / 600] minutes ago).")
 	message_admins("\[SHUTTLE]: Derelict [name] has despawned. [ADMIN_COORDJMP(shuttle?.loc)]")
@@ -1479,7 +1481,7 @@
 	if(site)
 		if(istype(site, /obj/structure/overmap/ship))
 			var/obj/structure/overmap/ship/host = site
-			if(host.shuttle && host.shuttle != shuttle)
+			if(host.shuttle && shuttle && host.shuttle != shuttle)
 				host.shuttle.shuttle_areas -= shuttle.shuttle_areas
 			SEND_SIGNAL(host, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 		release_berth_flags(site)
@@ -1525,9 +1527,20 @@
 					continue
 				aboard.ghostize(FALSE) // a disconnected player's body still holds their key
 				qdel(aboard)
-		shuttle.intoTheSunset()
+		var/obj/docking_port/mobile/owned_shuttle = detach_shuttle()
+		owned_shuttle.intoTheSunset()
 	qdel(src)
 	return TRUE
+
+/// Planned hull removal must release both ownership links before the port's Destroy().
+/// Otherwise its unexpected-deletion stack trace aborts callers inside try/catch,
+/// leaving a hull-less overmap ship behind that continues to pin its landing site.
+/obj/structure/overmap/ship/proc/detach_shuttle()
+	var/obj/docking_port/mobile/voidcrew/owned_shuttle = shuttle
+	shuttle = null
+	if(owned_shuttle?.current_ship == src)
+		owned_shuttle.current_ship = null
+	return owned_shuttle
 
 /**
  * The dynamic encounter this hull should be force-undocked from, or null if it should

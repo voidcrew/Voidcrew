@@ -475,38 +475,41 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
  * way out of it, because the wait is long enough for the answer to change.
  */
 /obj/structure/overmap/space_ruin/proc/can_release_interior()
+	return isnull(get_interior_release_blocker(log_failure = TRUE))
+
+/obj/structure/overmap/space_ruin/proc/get_interior_release_blocker(log_failure = FALSE)
 	if(!mapzone || !footprint)
-		return FALSE
+		return "The interior is not loaded."
 
 	// Never while the interior is still being generated. worldgen_claim() is reentrant
 	// by requester, so a teardown fired mid-load would be granted the queue instantly
 	// (load and teardown both claim as src) and reset the ground out from under the
 	// template still stamping into it.
 	if(loading)
-		return FALSE
+		return "Interior generation is in progress."
 
 	// A claimed berth means a ship is somewhere between "approach started" and "undock
 	// complete" - possibly in hyperspace transit, which the contents and hull-overlap
 	// checks below are both blind to.
+	var/docking_blocker = get_docking_blocker()
+	if(docking_blocker)
+		return docking_blocker
 	if(first_dock_taken || second_dock_taken)
-		return FALSE
+		return "A landing pad is reserved, but no assigned ship was found. Inspect its docking port before retrying."
 
-	// Check if any ships are still docked here (docked ships move INTO the ruin, so check contents)
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return FALSE
 
 	// Players inside OUR rectangle - a packed level carries up to three neighbours, and a
 	// level-wide check would keep this site pinned for as long as any of them has a crew
 	// standing on it.
 	if(has_players_in_site())
-		return FALSE
+		return "A player is inside the interior."
 
 	// Anyone with a mind standing on our ground, client or not: the same gate the flat
 	// encounters use, scoped to the slot rather than the z (map_zones.dm get_mind_mobs_in).
 	// Catches a crewman who disconnected inside the ruin, whom the client sweep above
 	// cannot see and whose body the teardown would delete.
 	if(length(mapzone.get_mind_mobs_in(footprint)))
-		return FALSE
+		return "A disconnected player or their body remains inside. Move them out before unloading."
 
 	// No ship hull may overlap the slot. The overmap token leaves a full second before the
 	// interior physically moves (complete_undock_warmup schedules both), and the undock
@@ -517,10 +520,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	// used to have no such guard at all - see footprint_blocking_hull_reason().
 	var/blocking_reason = footprint_blocking_hull_reason(footprint)
 	if(blocking_reason)
-		log_mapping("SSovermap: Space ruin '[name]' teardown refused - [blocking_reason]")
-		return FALSE
+		if(log_failure)
+			log_mapping("SSovermap: Space ruin '[name]' teardown refused - [blocking_reason]")
+		return blocking_reason
 
-	return TRUE
+	return null
 
 /**
  * Frees the ruin's interior, under the worldgen queue, if it is genuinely abandoned.

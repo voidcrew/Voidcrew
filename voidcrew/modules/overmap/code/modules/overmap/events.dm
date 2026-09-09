@@ -468,30 +468,33 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.
  */
 /obj/structure/overmap/event/meteor/proc/can_release_interior()
+	return isnull(get_interior_release_blocker(log_failure = TRUE))
+
+/obj/structure/overmap/event/meteor/proc/get_interior_release_blocker(log_failure = FALSE)
 	if(!mapzone || !footprint)
-		return FALSE
+		return "The interior is not loaded."
 
 	// Never while the interior is still being generated. worldgen_claim() is reentrant
 	// by requester, so a teardown fired mid-load would be granted the queue instantly
 	// (load and teardown both claim as src) and reset the ground out from under the
 	// generator still carving into it.
 	if(loading)
-		return FALSE
+		return "Interior generation is in progress."
 
 	// A claimed berth means a ship is somewhere between "approach started" and "undock
 	// complete" - possibly in hyperspace transit, which the contents and player checks
 	// below are both blind to.
+	var/docking_blocker = get_docking_blocker()
+	if(docking_blocker)
+		return docking_blocker
 	if(first_dock_taken || second_dock_taken)
-		return FALSE
+		return "A landing pad is reserved, but no assigned ship was found. Inspect its docking port before retrying."
 
-	// Check if any ships are still docked
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return FALSE
 
 	// Check for players within our own slot - a packed level carries up to four tenants,
 	// so a level-wide check would false-positive on a neighbour's visitors
 	if(turf_footprint_has_players(footprint))
-		return FALSE
+		return "A player is inside the interior."
 
 	// No ship hull may overlap the slot. The field never had this guard, which the space
 	// ruin has had since round 803 - the overmap token leaves a full second before the
@@ -500,10 +503,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// loses its thrusters. See footprint_blocking_hull_reason().
 	var/blocking_reason = footprint_blocking_hull_reason(footprint)
 	if(blocking_reason)
-		log_mapping("SSovermap: asteroid field '[name]' teardown refused - [blocking_reason]")
-		return FALSE
+		if(log_failure)
+			log_mapping("SSovermap: asteroid field '[name]' teardown refused - [blocking_reason]")
+		return blocking_reason
 
-	return TRUE
+	return null
 
 /obj/structure/overmap/event/meteor/proc/unload_level()
 	if(concerned)
