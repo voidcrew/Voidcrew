@@ -38,6 +38,9 @@
 /obj/machinery/door/poddoor/shutters/preopen/deconstructed
 	deconstruction = BLASTDOOR_NEEDS_WIRES
 
+/obj/machinery/door/poddoor/preopen/deconstructed // VOID TEST EDIT
+	deconstruction = BLASTDOOR_NEEDS_WIRES
+
 /obj/machinery/door/poddoor/shutters/indestructible
 	name = "hardened shutters"
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF

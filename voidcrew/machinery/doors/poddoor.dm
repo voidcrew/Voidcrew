@@ -4,9 +4,6 @@
 	/// The assembly type for this door, when it is deconstructed or broken
 	var/assembly_type = /obj/machinery/door/poddoor/preopen/deconstructed
 
-/obj/machinery/door/poddoor/preopen/deconstructed
-	deconstruction = BLASTDOOR_NEEDS_WIRES
-
 //"BLAST" doors are obviously stronger than regular doors when it comes to BLASTS.
 /obj/machinery/door/poddoor/ex_act(severity, target)
 	switch(severity)
