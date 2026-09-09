@@ -230,3 +230,57 @@
 	TEST_ASSERT(QDELETED(footprint), "Planet teardown retained its footprint")
 	TEST_ASSERT_EQUAL(zone.used_slot_count(), slots_before - 1, "Planet teardown did not release its map slot")
 	TEST_ASSERT(!QDELETED(neighbour) && !QDELETED(neighbour_mob), "Planet teardown cleared the neighbouring encounter")
+
+/// An empty planet may reap its fauna, but never animals or bodies in ships and outposts.
+/datum/unit_test/voidcrew_planet_mobs_protected_areas
+	var/turf/protected_turf
+	var/area/original_area
+
+/datum/unit_test/voidcrew_planet_mobs_protected_areas/Destroy()
+	if(protected_turf && original_area)
+		protected_turf.change_area(get_area(protected_turf), original_area)
+	return ..()
+
+/datum/unit_test/voidcrew_planet_mobs_protected_areas/Run()
+	protected_turf = run_loc_floor_bottom_left
+	original_area = get_area(protected_turf)
+	var/turf/surface_turf = get_step(protected_turf, EAST)
+	var/turf/neighbour_turf = get_step(surface_turf, EAST)
+	var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
+	footprint.z_value = protected_turf.z
+	footprint.set_rect(protected_turf.x, protected_turf.y, 2, 1)
+	var/datum/planet_mob_tracker/tracker = allocate(/datum/planet_mob_tracker)
+	tracker.surface_z = protected_turf.z
+	tracker.footprint = footprint
+	TEST_ASSERT(!SSplanet_mobs.check_players(tracker), "The cleanup fixture must have no connected players")
+
+	var/mob/living/basic/slime/pet_slime = allocate(/mob/living/basic/slime, protected_turf)
+	var/mob/living/carbon/human/consistent/stored_body = allocate(/mob/living/carbon/human/consistent, protected_turf)
+	stored_body.death()
+	TEST_ASSERT_NULL(stored_body.mind, "The stored corpse must rely on area protection, not a player mind")
+	var/mob/living/basic/neighbour_mob = allocate(/mob/living/basic, neighbour_turf)
+
+	var/list/protected_area_types = list(
+		/area/shuttle/voidcrew/phalanx/nanites/a,
+		/area/shuttle/voidcrew/phalanx/medbay/a,
+		/area/voidcrew/trader_outpost,
+		/area/voidcrew/outpost_hangar,
+		/area/voidcrew/player_outpost,
+	)
+	for(var/area_type in protected_area_types)
+		// Ships are not singletons: look through all areas before creating a test fixture.
+		var/area/protected_area = locate(area_type) in GLOB.areas
+		if(!protected_area)
+			protected_area = allocate(area_type)
+		protected_turf.change_area(get_area(protected_turf), protected_area)
+		var/mob/living/basic/surface_mob = allocate(/mob/living/basic, surface_turf)
+		var/mob/living/carbon/human/consistent/surface_body = allocate(/mob/living/carbon/human/consistent, surface_turf)
+		surface_body.death()
+		tracker.populated = TRUE
+		TEST_ASSERT_EQUAL(SSplanet_mobs.count_planet_mobs(tracker), 1, "[area_type]: ship/outpost animals counted as planet fauna")
+		SSplanet_mobs.despawn_planet_mobs(tracker)
+		TEST_ASSERT(!QDELETED(pet_slime), "[area_type]: cleanup deleted a protected slime")
+		TEST_ASSERT(!QDELETED(stored_body), "[area_type]: cleanup deleted a stored human corpse")
+		TEST_ASSERT(QDELETED(surface_mob) && QDELETED(surface_body), "[area_type]: cleanup stopped clearing ordinary planet mobs and corpses")
+		TEST_ASSERT(!QDELETED(neighbour_mob), "[area_type]: cleanup escaped the planet footprint")
+		TEST_ASSERT(!tracker.populated, "[area_type]: cleanup did not finish depopulating the planet")
