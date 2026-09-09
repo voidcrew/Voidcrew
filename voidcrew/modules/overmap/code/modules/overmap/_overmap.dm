@@ -115,6 +115,18 @@
 /obj/structure/overmap/proc/get_interior_footprint()
 	return null
 
+/// Whether a visitor is inside this site or one of its elevator-connected hangars.
+/// Reservations can share z-levels, so each part must use its own bounds.
+/obj/structure/overmap/proc/contains_site_turf(turf/location)
+	if(!location)
+		return FALSE
+	if(get_interior_footprint()?.contains_turf(location))
+		return TRUE
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(berth?.reservation?.contains_turf(location))
+			return TRUE
+	return FALSE
+
 /**
  * Standard response to a site load that was refused for want of MAP VOLUME rather than
  * for anything the crew did.

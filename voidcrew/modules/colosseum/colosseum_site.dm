@@ -170,6 +170,17 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	/// Landmarks are deleted at link; only their turfs are kept.
 	var/list/landmark_turfs = list()
 
+/// Arena and gallery are dedicated levels; hangars use the shared berth bounds.
+/obj/structure/overmap/colosseum/contains_site_turf(turf/location)
+	if(..())
+		return TRUE
+	if(!location)
+		return FALSE
+	for(var/datum/space_level/level as anything in interior_levels)
+		if(level.z_value == location.z)
+			return TRUE
+	return FALSE
+
 /obj/structure/overmap/colosseum/Initialize(mapload)
 	. = ..()
 	if(GLOB.colosseum_site && GLOB.colosseum_site != src)

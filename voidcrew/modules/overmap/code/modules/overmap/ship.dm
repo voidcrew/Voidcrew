@@ -1601,11 +1601,10 @@
  * 1. Physically aboard - get_event_crew(), any player at all, roster or not. Someone
  *    standing in the engine room is someone the hull is not empty of, and a boarder
  *    who has taken up residence is a crew as far as the teardown is concerned.
- * 2. On the hull's own z-level, and on this hull's roster. A landing party is not an
- *    abandoned crew: they walked out through their own airlock, they are alive, they
- *    are connected, and their ship is thirty tiles away. Aboard-only read that as
- *    derelict and handed their hull to whoever found it while they were standing on
- *    it - so the crewless clock now needs them to be gone, not merely outdoors.
+ * 2. On this hull's roster and still at its docked site, including the concourse,
+ *    elevator-connected hangars and other interior floors. Facilities with hangars
+ *    span several z-levels, and visiting their interior must not abandon the ship.
+ *    Outside hangar facilities, the hull's own z-level still counts for away teams.
  *
  * The roster scoping in 2 is load-bearing, not decoration. Ship z-levels are shared:
  * a flying hull sits on a transit level with every other hull in flight, and a berthed
@@ -1641,11 +1640,17 @@
 			continue
 		// A ghosted player's mind still points at the body they left, so DEAD covers
 		// the corpse and the client check covers everyone who logged off or aghosted.
-		if(body.stat == DEAD || !body.client)
+		if(body.stat == DEAD || !GET_CLIENT(body))
 			continue
 		// get_turf() again: a player inside a locker, a mech or a bodybag reads z 0 off
 		// the mob itself.
 		var/turf/body_turf = get_turf(body)
+		if(docked?.contains_site_turf(body_turf))
+			return TRUE
+		// Hangars from different facilities can occupy the same reservation level.
+		// Their elevator host, not their z, determines whether the crew is still here.
+		if(length(docked?.berths))
+			continue
 		if(body_turf?.z == hull_turf.z)
 			return TRUE
 	return FALSE
