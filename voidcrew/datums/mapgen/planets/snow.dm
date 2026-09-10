@@ -1,4 +1,8 @@
 /datum/planet/snow
+	terrain_generator = /datum/map_generator/planet_generator/snow
+	environment = /datum/planet_environment/snow
+	ruin_settings = /datum/planet_ruins/snow
+	river_settings = /datum/planet_rivers/plasma
 	overworld_biomes = list(
 		//NORMAL BIOMES
 		BIOME_COLDEST = list(

@@ -140,6 +140,8 @@
 		if(isnull(cave_area))
 			cave_area = new
 			minted_cave_area = TRUE
+		cave_area.planet_type = planet_type
+		cave_area.prepare_planet_definition()
 		cave_area.map_generator = src
 	// This is needed because planet surfaces start as /area/overmap_encounter/planetoid/planet_type
 	// If we're starting with an /area/overmap_encounter/planetoid/cave, we want to ignore overworld_biomes
@@ -458,7 +460,7 @@
 
 	for(var/turf/target_turf as anything in turfs)
 
-		if(!target_turf.generating_biome)
+		if(target_turf.planet_river || !target_turf.generating_biome)
 			continue
 
 		var/datum/biome/selected_biome = target_turf.generating_biome

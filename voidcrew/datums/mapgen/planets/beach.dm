@@ -1,4 +1,7 @@
 /datum/planet/beach
+	terrain_generator = /datum/map_generator/planet_generator/beach
+	environment = /datum/planet_environment/beach
+	ruin_settings = /datum/planet_ruins/beach
 	overworld_biomes = list(
 		BIOME_COLDEST = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/grass,

@@ -122,7 +122,7 @@
 /// Whether this is a real terrain planet (surface + caves) rather than a flat encounter
 /// like empty space or a crashed ship, which have no areas to generate into.
 /obj/structure/overmap/planet/proc/is_terrain_planet()
-	return planet && initial(planet.surface_area)
+	return planet && initial(planet.planet_template)
 
 /// Terrain planets pull a landed ship down with the surface areas' own gravity
 /// (/area/overmap_encounter/planetoid is STANDARD_GRAVITY). Flat encounters.
@@ -319,8 +319,14 @@
 /obj/structure/overmap/planet/proc/build_planet(datum/worldgen_probe/parent_probe)
 	var/datum/worldgen_probe/build_probe = worldgen_begin("planet-build", "[display_name || name]", parent_probe?.id)
 	var/datum/overmap/planet/planet_info = new planet
+	if(planet_info.planet_definition_error)
+		log_mapping("Planet '[name]' was not generated: [planet_info.planet_definition_error]")
+		qdel(planet_info)
+		worldgen_end(build_probe)
+		return FALSE
 	var/planet_size = planet_info.planet_size
 	var/ruin_trait = planet_info.ruin_type
+	var/planet_type = planet_info.planet_template
 	var/weather_trait = planet_info.weather_trait
 	var/area/surface_area_type = planet_info.surface_area
 	var/turf/ground_baseturf = planet_info.baseturf
@@ -454,10 +460,6 @@
 	planet_key = "[REF(src)]"
 	SSplanet_mobs.register_planet(planet_key, surface_level.z_value, footprint, zone_band)
 
-	stage_probe = worldgen_begin("stage", "populate", build_probe.id)
-	populate_planet_level(surface_level)
-	worldgen_end(stage_probe)
-
 	// One walk of our own block, used twice: the ruin seeder whitelists these instances, and
 	// the weather site storms only these areas. Without the second, setup_weather_areas()
 	// falls back to get_areas(/area/overmap_encounter/planetoid), which matches a co-tenant's
@@ -470,13 +472,17 @@
 		weather_site.set_owned_areas(storm_areas)
 
 	stage_probe = worldgen_begin("stage", "ruins", build_probe.id)
-	seed_planet_ruins(surface_level, ruin_trait, surface_area_type, owned_planet_areas)
+	seed_planet_ruins(surface_level, planet_type, surface_area_type, owned_planet_areas)
 	worldgen_end(stage_probe)
 	generate_ruin_terrain(surface_level)
 	light_ruin_terrain(surface_level, surface_area)
 
 	stage_probe = worldgen_begin("stage", "rivers", build_probe.id)
-	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
+	spawn_planet_rivers_for(surface_level, planet_type, surface_area_type)
+	worldgen_end(stage_probe)
+
+	stage_probe = worldgen_begin("stage", "populate", build_probe.id)
+	populate_planet_level(surface_level)
 	worldgen_end(stage_probe)
 
 	// Mapped ruin mobs normally inherited during Initialize(). This post-load pass also
@@ -841,31 +847,11 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
  * * owned_areas - the instance whitelist, when the caller has already walked the block for
  *   it. Omitted, it is derived here, which costs one extra ~15k-turf walk.
  */
-/obj/structure/overmap/planet/proc/seed_planet_ruins(datum/space_level/surface_level, ruin_trait, area/surface_area_type, list/owned_areas)
-	if(!ruin_trait)
-		return
-	var/list/ruin_templates = SSmapping.themed_ruins[ruin_trait]
-	if(!length(ruin_templates))
-		return
+/obj/structure/overmap/planet/proc/seed_planet_ruins(datum/space_level/surface_level, planet_type, area/surface_area_type, list/owned_areas)
 	if(isnull(owned_areas))
 		owned_areas = get_owned_planet_areas(surface_level)
-	// Ruin /area subtypes keep UNIQUE_AREA, so the map loader hands every load of the same
-	// template the SAME area instance. Two planets rolling one template then share an area
-	// straddling both of them, and generate_ruin_terrain()'s "has this generator run yet?"
-	// test means only the first planet's copy ever fills in its genturf tiles. Instance them
-	// per load for the duration of OUR seeding, on OUR z only - see the proc's doc comment.
 	planet_ruin_area_instancing_begin(surface_level.z_value)
-	seedRuins(
-		list(surface_level.z_value),
-		CONFIG_GET(number/lavaland_budget),
-		list(surface_area_type, /area/overmap_encounter/planetoid/cave),
-		ruin_templates,
-		clear_below = TRUE,
-		mineral_budget = 15,
-		mineral_budget_update = OREGEN_PRESET_LAVALAND,
-		bounds = get_terrain_bounds(surface_level),
-		area_whitelist_instances = owned_areas,
-	)
+	generate_planet_ruins(planet_type, list(surface_level.z_value), list(surface_area_type, /area/overmap_encounter/planetoid/cave), get_terrain_bounds(surface_level), owned_areas)
 	planet_ruin_area_instancing_end(surface_level.z_value)
 
 /**
@@ -1079,38 +1065,12 @@ GLOBAL_LIST_EMPTY(planet_ruin_area_instancing)
 			continue
 		tile.set_light(l_range = RUIN_DAYLIGHT_RANGE, l_power = daylight_power, l_color = daylight_color, l_on = TRUE)
 
-/// Lava and ice planets get their rivers, bounded to the planet's footprint.
-/// The generic cave area is whitelisted too: terrain generation carves rock pockets out
-/// into one, and a river that stopped dead at every outcrop would look wrong.
-///
-/// The rect is passed twice on purpose: once as the min/max the river NODES are dropped
-/// between, and once as `bounds`, the rect the river walk and its spread may not leave.
-/// The area whitelist cannot do the second job - it is type-based, and on a shared z-level
-/// the neighbour's caves are the same type as ours, so a river reaching the footprint edge
-/// would carve into their ground.
-/obj/structure/overmap/planet/proc/spawn_planet_rivers_for(datum/space_level/surface_level, ruin_trait, area/surface_area_type)
-	var/river_turf
-	switch(ruin_trait)
-		if(ZTRAIT_LAVA_RUINS)
-			river_turf = /turf/open/lava/smooth/lava_land_surface/planetary
-		if(ZTRAIT_ICE_RUINS)
-			river_turf = /turf/open/lava/plasma/planetary
-	if(!river_turf)
-		return
+/// Apply this planet definition's rivers within its own footprint, including its cave pockets.
+/obj/structure/overmap/planet/proc/spawn_planet_rivers_for(datum/space_level/surface_level, planet_type, area/surface_area_type)
 	var/list/river_bounds = get_terrain_bounds(surface_level)
 	if(!river_bounds)
 		return
-	spawn_planet_rivers(
-		surface_level.z_value,
-		4,
-		river_turf,
-		list(surface_area_type, /area/overmap_encounter/planetoid/cave),
-		river_bounds[1],
-		river_bounds[2],
-		river_bounds[3],
-		river_bounds[4],
-		bounds = river_bounds,
-	)
+	return generate_planet_rivers(planet_type, surface_level.z_value, list(surface_area_type, /area/overmap_encounter/planetoid/cave), river_bounds)
 
 /**
   * Creates docking ports for an existing mapzone that doesn't have them.
