@@ -20,8 +20,12 @@
 			else if(record.recorded_at > existing.recorded_at)
 				record.copy(existing)
 
-/// Physical links stay local even when another ship shares the same z level.
+/// RCDs can work outside the hull on the silo's z level; machines stay on their own service site.
 /datum/component/remote_materials/check_z_level(obj/silo_to_check = silo)
+	if(istype(parent, /obj/item/construction/rcd))
+		var/turf/device_turf = get_turf(parent)
+		var/turf/silo_turf = get_turf(silo_to_check)
+		return device_turf && silo_turf && device_turf.z == silo_turf.z
 	return silo_to_check && same_service_site(parent, silo_to_check)
 
 /// During a shuttle move, room ownership is already authoritative even while
