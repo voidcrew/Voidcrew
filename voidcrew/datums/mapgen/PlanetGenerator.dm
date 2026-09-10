@@ -73,6 +73,12 @@
 	var/throttled = TRUE
 	var/mountain_height = 0.85
 	var/perlin_zoom = 65
+	/// Each climate band's share of the map, coldest to hottest and driest to
+	/// wettest. The lookup normalizes them, so they read as percentages, and a
+	/// zero share removes that band. The defaults are the historical cut points.
+	var/list/heat_shares = list(20, 20, 20, 5, 15, 20)
+	var/list/cave_heat_shares = list(25, 25, 25, 25)
+	var/list/humidity_shares = list(20, 20, 20, 20, 20)
 	var/initial_closed_chance = 45
 	var/smoothing_iterations = 20
 	var/birth_limit = 4
@@ -212,17 +218,7 @@
 			if(!(A.area_flags & CAVES_ALLOWED))
 				continue
 
-		switch(humidity)
-			if(0 to 0.20)
-				humidity_level = BIOME_LOWEST_HUMIDITY
-			if(0.20 to 0.40)
-				humidity_level = BIOME_LOW_HUMIDITY
-			if(0.40 to 0.60)
-				humidity_level = BIOME_MEDIUM_HUMIDITY
-			if(0.60 to 0.80)
-				humidity_level = BIOME_HIGH_HUMIDITY
-			if(0.80 to 1)
-				humidity_level = BIOME_HIGHEST_HUMIDITY
+		humidity_level = GLOB.planet_humidity_bands[planet_climate_band(humidity, humidity_shares)]
 
 		if(height <= mountain_height)
 			if(overworld)
@@ -251,19 +247,7 @@
 	var/heat_level
 	var/datum/biome/selected_biome
 
-	switch(heat)
-		if(0 to 0.20)
-			heat_level = planet_type.overworld_biomes[BIOME_COLDEST]
-		if(0.20 to 0.40)
-			heat_level = planet_type.overworld_biomes[BIOME_COLD]
-		if(0.40 to 0.60)
-			heat_level = planet_type.overworld_biomes[BIOME_WARM]
-		if(0.60 to 0.65)
-			heat_level = planet_type.overworld_biomes[BIOME_TEMPERATE]
-		if(0.65 to 0.80)
-			heat_level = planet_type.overworld_biomes[BIOME_HOT]
-		if(0.80 to 1)
-			heat_level = planet_type.overworld_biomes[BIOME_HOTTEST]
+	heat_level = planet_type.overworld_biomes[GLOB.planet_heat_bands[planet_climate_band(heat, heat_shares)]]
 	selected_biome = heat_level[humidity_level]
 	selected_biome = SSmapping.biomes[selected_biome]
 	var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
@@ -384,15 +368,7 @@
 	var/datum/biome/cave/selected_cave_biome
 	var/heat_level
 
-	switch(heat)
-		if(0 to 0.25)
-			heat_level = planet_type.cave_biomes[BIOME_COLDEST_CAVE]
-		if(0.25 to 0.5)
-			heat_level = planet_type.cave_biomes[BIOME_COLD_CAVE]
-		if(0.5 to 0.75)
-			heat_level = planet_type.cave_biomes[BIOME_WARM_CAVE]
-		if(0.75 to 1)
-			heat_level = planet_type.cave_biomes[BIOME_HOT_CAVE]
+	heat_level = planet_type.cave_biomes[GLOB.planet_cave_heat_bands[planet_climate_band(heat, cave_heat_shares)]]
 	selected_cave_biome = heat_level[humidity_level]
 	selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
@@ -715,3 +691,26 @@
 		return 1
 
 	return 0
+
+GLOBAL_LIST_INIT(planet_heat_bands, list(BIOME_COLDEST, BIOME_COLD, BIOME_WARM, BIOME_TEMPERATE, BIOME_HOT, BIOME_HOTTEST))
+GLOBAL_LIST_INIT(planet_cave_heat_bands, list(BIOME_COLDEST_CAVE, BIOME_COLD_CAVE, BIOME_WARM_CAVE, BIOME_HOT_CAVE))
+GLOBAL_LIST_INIT(planet_humidity_bands, list(BIOME_LOWEST_HUMIDITY, BIOME_LOW_HUMIDITY, BIOME_MEDIUM_HUMIDITY, BIOME_HIGH_HUMIDITY, BIOME_HIGHEST_HUMIDITY))
+
+/**
+ * The 1-based band a 0..1 noise value falls in, given each band's share of the
+ * map. Shares are accumulated before dividing so a boundary lands on the same
+ * tile as the editor preview. Shares that total zero split the map evenly.
+ */
+/proc/planet_climate_band(value, list/shares)
+	var/count = length(shares)
+	var/total = 0
+	for(var/share in shares)
+		total += max(share, 0)
+	if(total <= 0)
+		return clamp(round(value * count) + 1, 1, count)
+	var/accumulated = 0
+	for(var/i in 1 to count - 1)
+		accumulated += max(shares[i], 0)
+		if(value <= accumulated / total)
+			return i
+	return count
