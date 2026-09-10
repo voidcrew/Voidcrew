@@ -1,0 +1,85 @@
+name: Pull Request Discord Notifications
+
+on:
+  pull_request_target:
+    types: [opened, closed]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  notify:
+    name: Notify ${{ matrix.channel }}
+    if: >-
+      github.repository == 'voidcrew/Voidcrew' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.action == 'opened' ||
+       (github.event.action == 'closed' && github.event.pull_request.merged == true))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - channel: general-coding
+            webhook_secret: DISCORD_PR_GENERAL_CODING_WEBHOOK_URL
+          - channel: github
+            webhook_secret: DISCORD_PR_GITHUB_WEBHOOK_URL
+    steps:
+      # Process event data only; never check out or execute pull request code.
+      - name: Send notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets[matrix.webhook_secret] }}
+        shell: python
+        run: |
+          import json
+          import os
+          import re
+          from urllib.error import HTTPError, URLError
+          from urllib.request import Request, urlopen
+
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as source:
+              event = json.load(source)
+
+          if os.environ["GITHUB_EVENT_NAME"] == "workflow_dispatch":
+              payload = {
+                  "content": "Pull request notifications for **voidcrew/Voidcrew** are enabled: opened and merged PRs only.",
+              }
+          else:
+              pr = event["pull_request"]
+              action = event["action"]
+              if action == "opened":
+                  verb, color, timestamp = "opened", 0x238636, pr["created_at"]
+              elif action == "closed" and pr.get("merged") is True:
+                  verb, color, timestamp = "merged", 0x8957E5, pr["merged_at"]
+              else:
+                  raise SystemExit(0)
+              payload = {
+                  "embeds": [{
+                      "title": f"#{pr['number']}: {pr['title']}"[:256],
+                      "url": pr["html_url"],
+                      "description": f"**{event['sender']['login']}** {verb} a pull request.",
+                      "color": color,
+                      "timestamp": timestamp,
+                      "footer": {"text": event["repository"]["full_name"]},
+                  }],
+              }
+          payload["allowed_mentions"] = {"parse": []}
+
+          webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip().rstrip("/")
+          if not re.fullmatch(r"https://discord(?:app)?\.com/api(?:/v\d+)?/webhooks/\d+/[A-Za-z0-9_-]+", webhook_url):
+              raise SystemExit("The Discord webhook secret is missing or invalid.")
+          request = Request(
+              webhook_url + "?wait=true",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={"Content-Type": "application/json", "User-Agent": "Voidcrew-PR-Notifications"},
+              method="POST",
+          )
+          try:
+              with urlopen(request, timeout=30) as response:
+                  response.read()
+          except HTTPError as error:
+              raise SystemExit(f"Discord notification failed (HTTP {error.code}).") from None
+          except (URLError, TimeoutError):
+              raise SystemExit("Discord notification failed to connect.") from None
+          print("Discord notification delivered.")

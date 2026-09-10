@@ -141,6 +141,8 @@
 	var/worldgen_label
 	/// FIFO of ticket numbers waiting their turn. Position 1 goes next.
 	var/list/worldgen_tickets = list()
+	/// Diagnostic metadata only; weak owners must not retain deleted contacts.
+	var/list/worldgen_waiting_jobs = list()
 	/// Monotonic ticket counter, so waiters are served in the order they arrived.
 	var/worldgen_next_ticket = 1
 	/// Jobs completed since roundstart, for the stat line.
@@ -195,6 +197,7 @@
 
 	var/ticket = worldgen_next_ticket++
 	worldgen_tickets += ticket
+	worldgen_waiting_jobs["[ticket]"] = list("owner" = WEAKREF(requester), "label" = label)
 	var/queued_at = world.time
 	var/deadline = world.time + timeout
 	// Best (lowest) queue position seen so far. The deadline re-arms whenever this drops.
@@ -211,6 +214,7 @@
 		// same reason: a zero timeout must not be able to extend itself into a sleep.
 		if(world.time >= deadline)
 			worldgen_tickets -= ticket
+			worldgen_waiting_jobs -= "[ticket]"
 			// A no-wait caller bailing is the system working, not an event; only a real
 			// wait that ran out is worth a line in the log.
 			if(timeout)
@@ -229,6 +233,7 @@
 			deadline = world.time + timeout
 		if(QDELETED(requester))
 			worldgen_tickets -= ticket
+			worldgen_waiting_jobs -= "[ticket]"
 			return FALSE
 		// The crew being paged can stop caring mid-wait: the ship may be deleted, or its
 		// crew may have superseded this survey with a newer approach (request_site_load()
@@ -262,6 +267,7 @@
 		stoplag(WORLDGEN_QUEUE_POLL)
 
 	worldgen_tickets -= ticket
+	worldgen_waiting_jobs -= "[ticket]"
 	worldgen_owner = requester
 	worldgen_depth = 1
 	worldgen_claimed_at = world.time
@@ -422,3 +428,12 @@
 #undef WORLDGEN_QUEUE_UPDATE_INTERVAL
 #undef WORLDGEN_TICK_BUDGET
 #undef WORLDGEN_MIN_ITERATIONS_PER_TICK
+
+/// The first pending job for this contact, including its current FIFO position.
+/datum/controller/subsystem/overmap/proc/worldgen_waiting_for(obj/structure/overmap/requester)
+	for(var/position in 1 to length(worldgen_tickets))
+		var/list/job = worldgen_waiting_jobs["[worldgen_tickets[position]]"]
+		var/datum/weakref/owner = job?["owner"]
+		if(owner?.resolve() == requester)
+			return list("label" = job["label"], "position" = position)
+	return null

@@ -175,20 +175,23 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /// encounter that never got as far as allocating one still needs cleaning up.
 /// preserve_level is handled by unload_level() itself, which has to stop the retries.
 /obj/structure/overmap/planet/empty/can_release_interior()
-	// Don't unload if any ships are still docked here
-	if(first_dock_taken || second_dock_taken)
-		return FALSE
+	return isnull(get_interior_release_blocker())
 
-	// Check if any ships are still inside (catches race conditions with async unload)
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return FALSE
+/obj/structure/overmap/planet/empty/get_interior_release_blocker(ignore_ssd_grace = FALSE)
+	// Don't unload if any ships are still docked here
+	var/docking_blocker = get_docking_blocker()
+	if(docking_blocker)
+		return docking_blocker
+	if(first_dock_taken || second_dock_taken)
+		return "A landing pad is reserved, but no assigned ship was found. Inspect its docking port before retrying."
+
 
 	// Footprint-scoped: three other encounters may share this z-level, and the z-wide
 	// answer would keep this one pinned for as long as ANY of them has a crew on it.
 	if(length(mapzone?.get_mind_mobs_in(footprint)))
-		return FALSE
+		return "A disconnected player or their body remains inside. Move them out before unloading."
 
-	return TRUE
+	return null
 
 /obj/structure/overmap/planet/empty/unload_level()
 	if(preserve_level)
