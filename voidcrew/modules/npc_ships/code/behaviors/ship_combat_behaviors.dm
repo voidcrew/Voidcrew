@@ -999,8 +999,16 @@
 	if(!ship || !combat)
 		return AI_BEHAVIOR_DELAY
 
-	// If we have no weapons and ship type retreats without weapons, enter retreat mode
-	if(!combat.has_any_weapons() && ship.retreat_without_weapons)
+	// If our guns are physically gone and this ship type retreats without weapons, flee.
+	//
+	// has_intact_weapons(), NOT has_any_weapons(): the latter is a can-fire-this-instant
+	// test (turret cooldown, power, launcher reload, zone weapons_allowed), so a fully
+	// armed pirate reads as disarmed in the gap between shots and screams "all weapons
+	// systems offline" mid-fight. Round 59 has the siege warship going
+	// idle -> engaging -> retreating in half a second at 20:58:33, and dropping out of a
+	// live fight 52 seconds in at 20:51:54. scan_threats() and resolve_disarmed() were
+	// already fixed to use the intact test; this was the last caller reading the wrong one.
+	if(!combat.has_intact_weapons() && ship.retreat_without_weapons)
 		controller.blackboard[BB_NPC_RETREAT_REASON] = "no_weapons"
 		// set_combat_state stores BB_NPC_LAST_TARGET automatically when entering retreat
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
