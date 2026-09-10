@@ -1335,7 +1335,7 @@
 	if(!istype(target))
 		CRASH("Missing target arg for can_perform_action")
 
-	if(stat != CONSCIOUS)
+	if(stat != CONSCIOUS && !(stat == SOFT_CRIT && (action_bitflags & ALLOW_SOFT_CRIT)))
 		to_chat(src, span_warning("You are not conscious enough for this action!"))
 		return FALSE
 
@@ -1343,10 +1343,11 @@
 		var/ignore_flags = NONE
 		if(interaction_flags_atom & INTERACT_ATOM_IGNORE_RESTRAINED)
 			ignore_flags |= INCAPABLE_RESTRAINTS
-		if(!(interaction_flags_atom & INTERACT_ATOM_CHECK_GRAB))
+		if(!(interaction_flags_atom & INTERACT_ATOM_CHECK_GRAB) && stat != SOFT_CRIT)
 			ignore_flags |= INCAPABLE_GRAB
 
-		if(INCAPACITATED_IGNORING(src, ignore_flags))
+		var/is_incapacitated = (action_bitflags & ALLOW_SOFT_CRIT) ? incapacitated_except_softcrit(ignore_flags) : INCAPACITATED_IGNORING(src, ignore_flags)
+		if(is_incapacitated)
 			to_chat(src, span_warning("You are incapacitated at the moment!"))
 			return FALSE
 
@@ -2372,6 +2373,7 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 		if(SOFT_CRIT)
 			if(stat >= UNCONSCIOUS)
 				ADD_TRAIT(src, TRAIT_IMMOBILIZED, TRAIT_KNOCKEDOUT) //adding trait sources should come before removing to avoid unnecessary updates
+				ADD_TRAIT(src, TRAIT_HANDS_BLOCKED, STAT_TRAIT)
 			if(pulledby)
 				REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, PULLED_WHILE_SOFTCRIT_TRAIT)
 		if(UNCONSCIOUS)
@@ -2396,6 +2398,7 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 				REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, TRAIT_KNOCKEDOUT)
 			ADD_TRAIT(src, TRAIT_CRITICAL_CONDITION, STAT_TRAIT)
 			log_combat(src, src, "entered soft crit")
+			REMOVE_TRAIT(src, TRAIT_HANDS_BLOCKED, STAT_TRAIT)
 		if(UNCONSCIOUS)
 			if(. != HARD_CRIT)
 				become_blind(UNCONSCIOUS_TRAIT)
