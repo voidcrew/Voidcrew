@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/superpill",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/superpill/engine",
+      "Name": "Engine",
+      "IconState": "engie"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "Version": 1,
+  "ID": "superpill",
+  "Description": "A ship for purely power generation and lack of safety regulations.",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/superpill",
+    "Name": "Power-class Climate Destroyer",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "superpill",
+    "Slots": [
+      "engine"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Rustbucket",
+        "Suffix": "superpill",
+        "Description": "Held together by duct tape, prayer, and whatever the last assistant found lying around.",
+        "Slots": [
+          "engine"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "climate_destroyer_supreme",
+        "Name": "Ironclad",
+        "Suffix": "superpill_climate_destroyer_supreme",
+        "Description": "Built and kept by engineers who treat \"good enough\" as a personal insult.",
+        "Slots": [
+          "engine"
+        ],
+        "Default": false
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "engine_basic",
+        "Name": "Supermatter Crystal",
+        "Slot": "engine",
+        "File": "superpill/supermatter_crystal.dmm",
+        "Description": "A compact supermatter crystal meant to give you infinite power and maybe even super powers.",
+        "Themes": [
+          "standard",
+          "climate_destroyer_supreme"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "teg_engine",
+        "Name": "Thermo-Electric Generator",
+        "Slot": "engine",
+        "File": "superpill/teg_engine.dmm",
+        "Description": "A much cleaner power generator for those environmentalists.",
+        "Themes": [
+          "standard",
+          "climate_destroyer_supreme"
+        ],
+        "Default": false
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PartCosts": {
+    "module/teg_engine": {
+      "misc": 2
+    },
+    "ship": {},
+    "theme/climate_destroyer_supreme": {
+      "combat": 2,
+      "misc": 2
+    }
+  },
+  "PortDirection": 2
+}

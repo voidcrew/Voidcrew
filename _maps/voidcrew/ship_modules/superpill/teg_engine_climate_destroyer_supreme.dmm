@@ -1,0 +1,151 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aic" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/machinery/atmospherics/components/unary/thermomachine{
+	piping_layer = 2
+	},
+/turf/template_noop,
+/area/template_noop)
+"bYK" = (
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"cba" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"ftr" = (
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/visible/layer2{
+	dir = 9
+	},
+/turf/template_noop,
+/area/template_noop)
+"gZF" = (
+/obj/machinery/atmospherics/components/binary/circulator{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/orange/visible/layer2{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"klD" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/orange/visible/layer2,
+/turf/template_noop,
+/area/template_noop)
+"kuF" = (
+/obj/machinery/atmospherics/components/binary/circulator/cold{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/visible/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mbP" = (
+/obj/item/multitool,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4,
+/obj/machinery/atmospherics/components/binary/volume_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/visible,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"oQR" = (
+/obj/machinery/portable_atmospherics/canister/plasma,
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"qzz" = (
+/obj/machinery/atmospherics/components/unary/thermomachine{
+	piping_layer = 2
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/power/terminal{
+	dir = 4;
+	cable_layer = 1
+	},
+/obj/structure/cable/layer1,
+/turf/template_noop,
+/area/template_noop)
+"sgH" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"uXb" = (
+/obj/machinery/power/thermoelectric_generator{
+	dir = 1;
+	cable_layer = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/orange/visible/layer2{
+	dir = 9
+	},
+/obj/structure/cable/layer1,
+/turf/template_noop,
+/area/template_noop)
+"vdf" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/turf/template_noop,
+/area/template_noop)
+"vrD" = (
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"wcc" = (
+/obj/machinery/holopad,
+/turf/template_noop,
+/area/template_noop)
+"xLy" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/visible/layer2{
+	dir = 5
+	},
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+oQR
+gZF
+klD
+vdf
+vrD
+sgH
+"}
+(2,1,1) = {"
+qzz
+uXb
+wcc
+aic
+xLy
+cba
+"}
+(3,1,1) = {"
+bYK
+kuF
+mbP
+vdf
+ftr
+cba
+"}

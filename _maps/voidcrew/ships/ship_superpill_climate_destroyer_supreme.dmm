@@ -1,0 +1,123 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"alf" = (
+/obj/machinery/light,
+/obj/machinery/computer/cryopod{
+	pixel_y = -40
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"bTG" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"duI" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"dTP" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"frx" = (
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"htd" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "engine"
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"kyh" = (
+/obj/machinery/door/window/brigdoor/security/cell/left/directional/west,
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/superpill,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"lUd" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"nRe" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"ojw" = (
+/turf/template_noop,
+/area/template_noop)
+"sAr" = (
+/obj/machinery/cryopod,
+/obj/item/circuitboard/machine/autolathe,
+/obj/item/stack/cable_coil/thirty,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stack/sheet/iron/ten,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/storage/box/rndboards/all,
+/obj/item/circuitboard/machine/mission_pad,
+/obj/item/circuitboard/computer/mission_board,
+/obj/item/circuitboard/computer/voidcrew_cargo,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"txU" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/superpill/engine)
+"wKr" = (
+/turf/closed/indestructible/reinforced,
+/area/shuttle/voidcrew/superpill/engine)
+
+(1,1,1) = {"
+ojw
+ojw
+ojw
+ojw
+ojw
+ojw
+"}
+(2,1,1) = {"
+frx
+nRe
+kyh
+dTP
+bTG
+htd
+"}
+(3,1,1) = {"
+frx
+frx
+frx
+alf
+wKr
+frx
+"}
+(4,1,1) = {"
+frx
+txU
+sAr
+lUd
+duI
+frx
+"}
+(5,1,1) = {"
+ojw
+ojw
+ojw
+ojw
+ojw
+ojw
+"}
