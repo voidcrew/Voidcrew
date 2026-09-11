@@ -94,6 +94,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/get_contact_variant()
 	return "market"
 
+/obj/structure/overmap/trader_outpost/contains_site_turf(turf/location)
+	return ..() || reservation?.contains_turf(location)
+
 /obj/structure/overmap/trader_outpost/Initialize(mapload)
 	. = ..()
 	GLOB.trader_outposts += src
