@@ -506,7 +506,6 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 		shuttle.calculate_docking_port_information()
 	shuttle.initiate_docking(shuttle.get_docked(), force = TRUE)
 
-	message_admins("[key_name(user)] has expanded [shuttle] at [ADMIN_VERBOSEJMP(user)].")
 	log_shuttle("[key_name(user)] expanded [shuttle] at [get_area(user)].")
 
 /proc/clear_empty_shuttle_turfs(obj/docking_port/mobile/shuttle)
