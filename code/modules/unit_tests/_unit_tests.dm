@@ -285,6 +285,7 @@
 #include "siunit.dm"
 #include "slime_mood.dm"
 #include "slips.dm"
+#include "soft_crit.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
 #include "species_change_clothing.dm"
