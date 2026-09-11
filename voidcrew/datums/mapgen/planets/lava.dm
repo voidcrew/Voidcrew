@@ -1,4 +1,8 @@
 /datum/planet/lava
+	terrain_generator = /datum/map_generator/planet_generator/lava
+	environment = /datum/planet_environment/lava
+	ruin_settings = /datum/planet_ruins/lava
+	river_settings = /datum/planet_rivers/lava
 	cave_biomes = list(
 		//CAVE BIOMES
 		BIOME_COLDEST_CAVE = list(

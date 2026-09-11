@@ -57,6 +57,7 @@
 	#endif
 
 /turf/open/Initialize(mapload)
+	prepare_planet_atmosphere() // VOIDCREW: authored atmosphere precedes air creation.
 	if(!blocks_air)
 		air = create_gas_mixture()
 		if(planetary_atmos)

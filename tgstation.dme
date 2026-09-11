@@ -6732,6 +6732,8 @@
 #include "voidcrew\datums\mapgen\LavaGenerator.dm"
 #include "voidcrew\datums\mapgen\planet_anomalies.dm"
 #include "voidcrew\datums\mapgen\PlanetGenerator.dm"
+#include "voidcrew\datums\mapgen\planet_rivers.dm"
+#include "voidcrew\datums\mapgen\planet_settings.dm"
 #include "voidcrew\datums\mapgen\SnowGenerator.dm"
 #include "voidcrew\datums\mapgen\biomes\_biome.dm"
 #include "voidcrew\datums\mapgen\biomes\beach_biomes.dm"
