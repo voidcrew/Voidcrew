@@ -2372,7 +2372,14 @@
 		ship_notify("Chart complete: [site.get_site_label()]. Resuming docking approach.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src)
 	else
-		ship_notify("Chart complete: [site.get_site_label()]. It will hold position - dock when ready.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		// "Dock when ready" is not open-ended any more: a charted interior nobody has
+		// landed on counts down and then drifts to another sector. Quote the window.
+		var/obj/structure/overmap/planet/charted = astype(site, /obj/structure/overmap/planet)
+		var/hold_remaining = charted?.get_interior_hold_remaining()
+		if(hold_remaining)
+			ship_notify("Chart complete: [site.get_site_label()]. It holds for [DisplayTimeText(hold_remaining)] - dock within that window or it drifts.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		else
+			ship_notify("Chart complete: [site.get_site_label()]. It will hold position - dock when ready.", "SURVEY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
  * Signal handler - the site we were waiting on was deleted mid-survey.

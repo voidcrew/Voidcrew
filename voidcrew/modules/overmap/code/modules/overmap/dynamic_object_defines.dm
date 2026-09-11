@@ -171,6 +171,14 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	else
 		addtimer(CALLBACK(src, PROC_REF(try_unload_level)), unload_backoff_delay, TIMER_UNIQUE)
 
+/// Placeholders keep their own cleanup loop (try_unload_level(), armed on undock) and
+/// must not also run the planet countdown: the two would race, and attempt_despawn()
+/// logs a relocation the parent's unload_level() does but ours - which deletes itself -
+/// does not. Note this does NOT cover a placeholder that was stood up and then never
+/// docked at; that leak is separate and lives in the ship-to-ship docking failure paths.
+/obj/structure/overmap/planet/empty/check_start_despawn()
+	return
+
 /// Same contract as the parent's, minus its mapzone requirement: an empty-space
 /// encounter that never got as far as allocating one still needs cleaning up.
 /// preserve_level is handled by unload_level() itself, which has to stop the retries.
