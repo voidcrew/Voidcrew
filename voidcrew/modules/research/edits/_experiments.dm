@@ -197,3 +197,14 @@
 		to_chat(user, span_warning("[scanner] has no R&D server link. Copy a techweb from an R&D server with a multitool, then use the multitool on [scanner]."))
 		return
 	return ..()
+
+/**
+ * Voidcrew has multiple independent ships and research networks, so the upstream
+ * round-wide anomaly core production limit does not apply here.
+ *
+ * Keep the typepath sanity check, but remove the global per-round quota.
+ */
+/datum/controller/subsystem/research/is_core_available(core_type)
+	if (!ispath(core_type, /obj/item/assembly/signaler/anomaly))
+		return FALSE
+	return TRUE
