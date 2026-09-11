@@ -136,7 +136,15 @@
 /area/overmap_encounter/planetoid
 	var/datum/planet_environment/planet_environment
 
-/area/overmap_encounter/planetoid/Initialize(mapload)
+/**
+ * Resolved in New(), not Initialize(). The map loader mints a fresh instance of a
+ * ruin's mapped planet-surface area and changes turfs into it while that instance is
+ * still waiting for Initialize(), and ChangeTurf reads static_lighting and
+ * ambient_lighting off the area to decide whether the new tile carries a lighting
+ * object. Applied any later, every yard tile a ruin brings with it is built as
+ * statically lit ground and renders black against the daylit surface around it.
+ */
+/area/overmap_encounter/planetoid/New()
 	prepare_planet_definition()
 	return ..()
 

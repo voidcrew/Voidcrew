@@ -386,7 +386,11 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	map_generator.generate_terrain(turfs, planet_type, FALSE, TRUE)
 
 /area/overmap_encounter/planetoid/RunTerrainPopulation()
-	if(map_generator)
+	// A typepath here is an area that never generated terrain: the planet-surface yard a
+	// ruin maps around itself, minted by the loader after the planet's own ground was laid.
+	// Roundstart instantiates every generator before populating; a dynamic planet populates
+	// after its ruins land, and those yards keep the mapper's ground exactly as placed.
+	if(map_generator && !ispath(map_generator))
 		var/list/turfs = list()
 		for(var/turf/T in contents)
 			turfs += T

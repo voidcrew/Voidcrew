@@ -132,3 +132,58 @@
 	TEST_ASSERT_EQUAL(length(GLOB.planet_heat_bands), length(generator.heat_shares), "Heat band keys and shares disagree")
 	TEST_ASSERT_EQUAL(length(GLOB.planet_cave_heat_bands), length(generator.cave_heat_shares), "Cave band keys and shares disagree")
 	TEST_ASSERT_EQUAL(length(GLOB.planet_humidity_bands), length(generator.humidity_shares), "Humidity band keys and shares disagree")
+
+/**
+ * The map loader mints a fresh instance of a ruin's mapped planet-surface yard and changes
+ * turfs into it before that instance initializes. The planet definition has to be applied by
+ * then, or every yard tile is built statically lit and renders black on daylit ground - and
+ * the yard never generated terrain, so populating it must not call a bare generator path.
+ */
+/datum/unit_test/voidcrew_planet_ruin_yard
+	var/datum/turf_reservation/reserve
+
+/datum/unit_test/voidcrew_planet_ruin_yard/Destroy()
+	QDEL_NULL(reserve)
+	return ..()
+
+/datum/unit_test/voidcrew_planet_ruin_yard/Run()
+	TEST_ASSERT(SSlighting.initialized, "Lighting must be initialized for this regression")
+	var/datum/map_template/ruin/template = SSmapping.ruins_templates["Tidewater Tiki Bar"]
+	TEST_ASSERT_NOTNULL(template, "The tiki bar ruin is missing")
+	reserve = SSmapping.request_turf_block_reservation(template.width + 4, template.height + 4, 1)
+	TEST_ASSERT_NOTNULL(reserve, "Could not reserve room for the ruin")
+	var/turf/bottom_left = reserve.bottom_left_turfs[1]
+
+	// A beach surface the way build_planet() lays one: a fresh area instance, then ground.
+	var/area/overmap_encounter/planetoid/beach/surface = new
+	for(var/turf/tile as anything in reserve.reserved_turfs)
+		tile.change_area(get_area(tile), surface)
+	surface.reg_in_areas_in_z()
+	var/datum/map_generator/planet_generator/beach/generator = new
+	for(var/turf/tile as anything in reserve.reserved_turfs)
+		generator.place_biome_turf(tile, /turf/open/misc/asteroid/sand/beach)
+
+	planet_ruin_area_instancing_begin(bottom_left.z)
+	var/loaded = template.load(locate(bottom_left.x + 2, bottom_left.y + 2, bottom_left.z))
+	planet_ruin_area_instancing_end(bottom_left.z)
+	TEST_ASSERT(loaded, "The ruin did not load")
+
+	var/list/yard_areas = list()
+	var/checked_tiles = 0
+	for(var/turf/tile as anything in reserve.reserved_turfs)
+		var/area/overmap_encounter/planetoid/tile_area = tile.loc
+		if(!istype(tile_area) || tile_area == surface)
+			continue
+		yard_areas |= tile_area
+		TEST_ASSERT(tile_area.ambient_lighting && !tile_area.static_lighting && tile_area.area_has_base_lighting, "The ruin's yard area is not daylit")
+		// Ground that lights itself keeps an object on purpose; see /turf/proc/skips_lighting_object().
+		if(tile.light_range)
+			continue
+		checked_tiles++
+		TEST_ASSERT_NULL(tile.lighting_object, "A ruin yard tile was built statically lit: [tile] at [tile.x],[tile.y]")
+	TEST_ASSERT(checked_tiles, "The ruin brought no plain planet-surface yard tiles to test")
+	for(var/area/yard as anything in yard_areas)
+		try
+			yard.RunTerrainPopulation()
+		catch(var/exception/problem)
+			TEST_FAIL("Populating an ungenerated ruin yard runtimed: [problem.name]")
