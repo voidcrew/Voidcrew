@@ -505,16 +505,6 @@
 /obj/structure/sign/warning/vacuum/external,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
-"wi" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 4
-	},
-/obj/structure/cable,
-/turf/open/floor/iron/white/smooth_large,
-/area/shuttle/voidcrew/kilo/bridge/d)
 "wl" = (
 /obj/effect/turf_decal/stripes{
 	dir = 10
@@ -630,16 +620,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
-"zq" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/corner,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
 "zD" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -733,13 +713,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
-"Bo" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "kilo_hold"
-	},
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/d)
 "Bp" = (
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/stripes/corner{
@@ -829,16 +802,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/kilo/cargo/d)
-"Dv" = (
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/cryopod,
-/turf/open/floor/iron/white/smooth_large,
-/area/shuttle/voidcrew/kilo/dorms/d)
 "DM" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/rack,
@@ -967,15 +930,6 @@
 /obj/structure/window/reinforced/plasma/spawner/directional/west,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/kilo/engineering/d)
-"Jw" = (
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
 "Ks" = (
 /obj/effect/turf_decal/stripes/corner,
@@ -1146,14 +1100,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
-"RK" = (
-/obj/structure/ore_box,
-/obj/effect/turf_decal/box/corners{
-	dir = 8
-	},
-/obj/structure/cable,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/kilo/cargo/d)
 "RM" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -1341,6 +1287,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Xl" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "###/###/#..";
+	key = "kilo_hold"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/d)
 "Xn" = (
 /obj/structure/cable,
@@ -1617,7 +1571,7 @@ Db
 mo
 oe
 oe
-Bo
+Xl
 zV
 CQ
 CQ

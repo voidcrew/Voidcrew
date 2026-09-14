@@ -16,6 +16,11 @@
 	/// Cached reference to the ship - captured in Initialize before async load_map runs
 	/// This is necessary because SSshuttle.loading_ship gets cleared before INVOKE_ASYNC fires
 	var/obj/structure/overmap/ship/cached_ship
+	/// Shape of this upgrade room inside the module's bounding box, written by the map editor.
+	/// Rows from the top of the module down, separated by "/"; "#" is part of the room, "." is hull.
+	/// Null means the whole rectangle. The loader ignores it: module maps already use
+	/// template_noop tiles outside the room.
+	var/footprint
 
 /**
  * Override Initialize to capture the ship reference BEFORE the async load_map call

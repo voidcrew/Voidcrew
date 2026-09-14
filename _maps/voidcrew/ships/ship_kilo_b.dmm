@@ -78,16 +78,6 @@
 /obj/machinery/power/apc/auto_name/directional/north,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/kilo/bridge/b)
-"eN" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 4
-	},
-/obj/structure/cable,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/kilo/bridge/b)
 "eQ" = (
 /obj/structure/table,
 /obj/machinery/button/door{
@@ -147,6 +137,14 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/kilo/bridge/b)
+"gq" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "###/###/#..";
+	key = "kilo_hold"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/b)
 "gx" = (
 /obj/effect/turf_decal/trimline/neutral/warning,
 /obj/machinery/door/airlock/command{
@@ -471,16 +469,6 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/b)
-"rI" = (
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/cryopod,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/dorms/b)
 "rJ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/plastitanium,
@@ -1069,13 +1057,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/dorms/b)
-"Mv" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "kilo_hold"
-	},
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/b)
 "My" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/power/smes/engineering{
@@ -1229,16 +1210,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/engineering/b)
-"QP" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/engineering/b)
 "QT" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -1380,16 +1351,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/kilo/bridge/b)
-"SM" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/corner,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/kilo/cargo/mining_dock/b)
 "Ta" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -1501,14 +1462,6 @@
 /obj/structure/sign/warning/vacuum/external,
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/b)
-"VK" = (
-/obj/structure/ore_box,
-/obj/effect/turf_decal/box/corners{
-	dir = 8
-	},
-/obj/structure/cable,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/cargo/b)
 "WZ" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -1740,7 +1693,7 @@ QV
 ZW
 ds
 ds
-Mv
+gq
 JS
 um
 um

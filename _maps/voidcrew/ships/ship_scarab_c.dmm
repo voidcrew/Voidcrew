@@ -127,12 +127,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/bridge/c)
-"ez" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_med"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/medbay/c)
 "eE" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -259,6 +253,13 @@
 "gH" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering/c)
+"gJ" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "########/########/########/########/#######./......#.";
+	key = "scarab_engineering"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering/c)
 "hq" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/dark_green/half{
@@ -319,6 +320,13 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/dormitories/c)
+"iq" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".#####./.######/#######/#######/#######/#######";
+	key = "scarab_cargo"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "iC" = (
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/door/window/brigdoor/right/directional/east{
@@ -455,6 +463,13 @@
 "le" = (
 /turf/closed/wall/mineral/titanium/survival,
 /area/shuttle/voidcrew/scarab/dormitories/c)
+"lt" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "...##.../...##.../########/########/########/########";
+	key = "scarab_common"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/c)
 "lv" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -491,6 +506,13 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/c)
+"lU" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".#./###/###/.##";
+	key = "scarab_med"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/medbay/c)
 "mb" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/commons/c)
@@ -591,12 +613,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/scarab/dormitories/c)
-"mY" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_common"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons/c)
 "np" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -984,12 +1000,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/captains_office/c)
-"xg" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_engineering"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering/c)
 "xo" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -1684,12 +1694,6 @@
 /obj/machinery/pipedispenser,
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
-"Sz" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_cargo"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "SY" = (
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/reinforced/plasma,
@@ -2176,14 +2180,14 @@ QV
 QV
 QV
 QV
-Sz
+iq
 QV
 hv
 To
 wA
 gH
 gH
-xg
+gJ
 gH
 gH
 Rz
@@ -2355,7 +2359,7 @@ mb
 mb
 mb
 mb
-mY
+lt
 Lo
 kT
 Ih
@@ -2446,7 +2450,7 @@ mb
 mb
 kb
 at
-ez
+lU
 at
 at
 Oo
