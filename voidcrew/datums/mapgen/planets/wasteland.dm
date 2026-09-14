@@ -1,4 +1,7 @@
 /datum/planet/wasteland
+	terrain_generator = /datum/map_generator/planet_generator/lava
+	environment = /datum/planet_environment/wasteland
+	ruin_settings = /datum/planet_ruins/wasteland
 	overworld_biomes = list(
 		//NORMAL BIOMES
 		BIOME_COLDEST = list(

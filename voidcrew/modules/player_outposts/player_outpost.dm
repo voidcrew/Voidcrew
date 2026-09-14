@@ -77,6 +77,9 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/get_contact_variant()
 	return "colony"
 
+/obj/structure/overmap/dynamic/player_outpost/contains_site_turf(turf/location)
+	return ..() || freight_berth?.reservation?.contains_turf(location)
+
 /obj/structure/overmap/dynamic/player_outpost/Initialize(mapload)
 	. = ..()
 	GLOB.player_outposts += src

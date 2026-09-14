@@ -69,13 +69,6 @@
 	desc = "A planet with lots of seismic and volcanic activity."
 	color = COLOR_ORANGE
 
-	ruin_type = ZTRAIT_LAVA_RUINS
-	mapgen = /datum/map_generator/planet_generator/lava
-	target_area = /area/overmap_encounter/planetoid/lava
-	surface_area = /area/overmap_encounter/planetoid/lava
-	baseturf = /turf/open/misc/asteroid/basalt/lava_land_surface
-	weather_controller_type = /datum/weather/ash_storm
-	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
 	parallax_theme = PARALLAX_THEME_PLANET
 	chart_variant = "lava"
@@ -85,16 +78,6 @@
 	desc = "A planet with traces of water and extremely low temperatures."
 	color = COLOR_BLUE_LIGHT
 
-	ruin_type = ZTRAIT_ICE_RUINS
-	mapgen = /datum/map_generator/planet_generator/snow
-	target_area = /area/overmap_encounter/planetoid/ice
-	surface_area = /area/overmap_encounter/planetoid/ice
-	// NOT plain /turf/open/misc/asteroid/snow/icemoon: that one's own baseturf is
-	// /turf/open/openspace/icemoon, so it would drop diggers through the floor of a
-	// single-z planet.
-	baseturf = /turf/open/misc/asteroid/snow/icemoon/breathable
-	weather_controller_type = /datum/weather/snow_storm
-	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
 	parallax_theme = PARALLAX_THEME_ICEMOON
 	chart_variant = "ice"
@@ -104,13 +87,6 @@
 	desc = "A planet with many traces of fish."
 	color = COLOR_NAVY
 
-	ruin_type = ZTRAIT_BEACH_RUINS
-	mapgen = /datum/map_generator/planet_generator/beach
-	target_area = /area/overmap_encounter/planetoid/beach
-	surface_area = /area/overmap_encounter/planetoid/beach
-	baseturf = /turf/open/misc/asteroid/sand/beach
-	weather_controller_type = /datum/weather/rain_storm
-	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/beach
 	chart_variant = "ocean"
 
@@ -119,13 +95,6 @@
 	desc = "A planet teeming with life."
 	color = COLOR_LIME
 
-	ruin_type = ZTRAIT_JUNGLE_RUINS
-	mapgen = /datum/map_generator/planet_generator
-	target_area = /area/overmap_encounter/planetoid/jungle
-	surface_area = /area/overmap_encounter/planetoid/jungle
-	baseturf = /turf/open/misc/dirt/jungle
-	weather_controller_type = /datum/weather/rain_storm
-	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/jungle
 	chart_variant = "jungle"
 
@@ -134,13 +103,6 @@
 	desc = "An abandoned industrial planet."
 	color = COLOR_BEIGE
 
-	ruin_type = ZTRAIT_WASTELAND_RUINS
-	mapgen = /datum/map_generator/planet_generator/lava
-	target_area = /area/overmap_encounter/planetoid/wasteland
-	surface_area = /area/overmap_encounter/planetoid/wasteland
-	baseturf = /turf/open/misc/wasteland
-	weather_controller_type = /datum/weather/sand_storm
-	weather_trait = ZTRAIT_SANDSTORM
 	planet_template = /datum/planet/wasteland
 	chart_variant = "wasteland"
 

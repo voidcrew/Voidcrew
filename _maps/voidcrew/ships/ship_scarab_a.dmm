@@ -132,6 +132,13 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
+"dw" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".#####./.######/#######/#######/#######/#######";
+	key = "scarab_cargo"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "dS" = (
 /obj/structure/cable,
 /obj/machinery/light/small/red/directional/east,
@@ -362,12 +369,6 @@
 /obj/structure/sink/directional/east,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/commons/a)
-"kQ" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_cargo"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "kS" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
@@ -603,12 +604,6 @@
 /obj/structure/extinguisher_cabinet/directional/east,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
-"qR" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_common"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons/a)
 "qS" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/firecloset{
@@ -751,12 +746,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
-"tr" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_engineering"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering/a)
 "ts" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
@@ -992,6 +981,13 @@
 /obj/structure/sign/warning/docking/directional/south,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
+"zQ" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "########/########/########/########/#######./......#.";
+	key = "scarab_engineering"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering/a)
 "AC" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -1379,12 +1375,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/dormitories/a)
-"Mi" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "scarab_med"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/medbay/a)
 "Mw" = (
 /obj/item/radio/intercom/directional/north,
 /obj/structure/cable,
@@ -1639,6 +1629,13 @@
 	},
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/scarab/engineering/a)
+"Uu" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "...##.../...##.../########/########/########/########";
+	key = "scarab_common"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/a)
 "UM" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -1779,6 +1776,13 @@
 /obj/machinery/meter,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/a)
+"Yy" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".#./###/###/.##";
+	key = "scarab_med"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/medbay/a)
 "YI" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
@@ -2066,14 +2070,14 @@ Eo
 Eo
 Eo
 Eo
-kQ
+dw
 Eo
 UM
 zx
 Lu
 eW
 eW
-tr
+zQ
 eW
 eW
 bT
@@ -2245,7 +2249,7 @@ Iz
 Iz
 Iz
 Iz
-qR
+Uu
 yp
 BD
 Vd
@@ -2336,7 +2340,7 @@ Iz
 Iz
 xO
 kt
-Mi
+Yy
 kt
 kt
 pV

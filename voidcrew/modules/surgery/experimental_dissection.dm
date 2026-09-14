@@ -75,6 +75,12 @@
 /datum/surgery/advanced/experimental_dissection/elite
 	name = "Elite Dissection"
 	requires_tech = TRUE
+	// The base tier above sets replaced_by to the advanced tier, and every subtype inherits
+	// it. This tier is the top of the ladder and must clear it: with it inherited, the
+	// operating computer knowing Advanced Dissection made Elite hide itself (it looked
+	// "replaced" by the advanced tier) while Elite's presence still hid Superior, so a crew
+	// that researched Elite lost every dissection at once.
+	replaced_by = null
 	steps = list(
 		/datum/surgery_step/incise,
 		/datum/surgery_step/retract_skin,

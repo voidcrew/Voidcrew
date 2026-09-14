@@ -1,4 +1,12 @@
 /datum/planet
+	/// Authoritative generation definition. Overmap records reference this type.
+	var/definition_version = 1
+	var/planet_size = 123
+	var/datum/map_generator/planet_generator/terrain_generator = /datum/map_generator/planet_generator
+	var/datum/planet_environment/environment
+	var/datum/planet_ruins/ruin_settings = /datum/planet_ruins
+	/// Shared river settings for this planet, independent of its ruin selection.
+	var/datum/planet_rivers/river_settings = /datum/planet_rivers
 	var/list/cave_biomes = list(
 		BIOME_COLDEST_CAVE = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/cave/beach/cove,

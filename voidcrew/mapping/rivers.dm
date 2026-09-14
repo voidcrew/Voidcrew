@@ -36,15 +36,20 @@
 /proc/place_river_turf(turf/target, turf/turf_type, new_baseturfs)
 	if(isnull(target) || isnull(turf_type))
 		return null
+	var/datum/biome/original_biome = target.generating_biome
 	if(!SSlighting.initialized)
 		var/turf/raw_turf = new turf_type(target)
 		if(new_baseturfs)
 			raw_turf.baseturfs = new_baseturfs
+		raw_turf.generating_biome = original_biome
+		raw_turf.planet_river = TRUE
 		return raw_turf
 	var/turf/placed = target.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
 	if(isnull(placed))
 		return null
 	placed.assemble_baseturfs(new_baseturfs || initial(placed.baseturfs) || placed.type)
+	placed.generating_biome = original_biome
+	placed.planet_river = TRUE
 	return placed
 
 /**
@@ -58,9 +63,16 @@
  * is the same type - so a river reaching the footprint edge would carve straight into the
  * neighbour's ground.
  */
-/proc/spawn_planet_rivers(target_z, nodes, turf_type, list/whitelist_areas, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, list/bounds = null)
-	if(length(bounds) < 4)
-		bounds = null // A malformed rect must never be treated as "clamp to nothing".
+/proc/spawn_planet_rivers(target_z, nodes, turf_type, list/whitelist_areas, min_x = RANDOM_LOWER_X, min_y = RANDOM_LOWER_Y, max_x = RANDOM_UPPER_X, max_y = RANDOM_UPPER_Y, list/bounds = null, datum/planet_rivers/settings)
+	if(!isnull(bounds) && length(bounds) != 4)
+		return FALSE
+	if(settings && settings.validation_error())
+		return FALSE
+	if(!ispath(turf_type, /turf/open) || nodes < 2 || nodes > 12 || !locate(min_x, min_y, target_z) || max_x <= min_x || max_y <= min_y)
+		return FALSE
+	var/spread_chance = settings ? settings.spread_chance : 25
+	var/spread_loss = settings ? settings.spread_loss : 11
+	var/detour_chance = settings ? settings.detour_chance : 20
 	var/list/river_nodes = list()
 	var/num_spawned = 0
 	var/width = max_x - min_x
@@ -75,12 +87,16 @@
 			if(istype(A, whitelist_area))
 				valid_area = TRUE
 				break
-		if(!valid_area || (T.turf_flags & NO_LAVA_GEN))
+		if(!valid_area || (T.turf_flags & NO_LAVA_GEN) || (settings && !settings.allows(T)))
 			possible_locs -= T
 		else
 			river_nodes += new /obj/effect/landmark/river_waypoint(T)
 			num_spawned++
 		valid_area = FALSE
+	if(length(river_nodes) < 2)
+		for(var/waypoint in river_nodes)
+			qdel(waypoint)
+		return FALSE
 	//make some randomly pathing rivers
 	for(var/obj/effect/landmark/river_waypoint/waypoints as anything in river_nodes)
 		if (waypoints.z != target_z || waypoints.connected)
@@ -94,13 +110,14 @@
 			break
 		var/detouring = FALSE
 		var/cur_dir = get_dir(cur_turf, target_turf)
-		while(cur_turf != target_turf)
+		var/remaining_steps = world.maxx * world.maxy
+		while(cur_turf && cur_turf != target_turf && remaining_steps-- > 0)
 
 			if(detouring) //randomly snake around a bit
 				if(prob(20))
 					detouring = FALSE
 					cur_dir = get_dir(cur_turf, target_turf)
-			else if(prob(20))
+			else if(prob(detour_chance))
 				detouring = TRUE
 				if(prob(50))
 					cur_dir = turn(cur_dir, 45)
@@ -120,13 +137,15 @@
 				if(!TURF_IN_RIVER_BOUNDS(stepped_turf, bounds))
 					break // Cornered; nothing left to carve without writing outside the rect.
 			cur_turf = stepped_turf
+			if(!cur_turf)
+				break
 			var/area/new_area = get_area(cur_turf)
 			var/valid_area = FALSE
 			for(var/whitelist_area in whitelist_areas)
 				if(istype(new_area, whitelist_area))
 					valid_area = TRUE
 					break
-			if(!valid_area || (cur_turf.turf_flags & NO_LAVA_GEN)) //Rivers will skip ruins
+			if(!cur_turf || !valid_area || (cur_turf.turf_flags & NO_LAVA_GEN) || (settings && !settings.allows(cur_turf))) //Rivers will skip ruins
 				detouring = FALSE
 				cur_dir = get_dir(cur_turf, target_turf)
 				var/turf/skipped_turf = get_step(cur_turf, cur_dir)
@@ -137,7 +156,7 @@
 			else
 				// Raw swap only while nothing is initialized - see place_river_turf()
 				var/turf/river_turf = place_river_turf(cur_turf, turf_type)
-				river_turf.SpreadAcrossPlanet(25, 11, whitelist_areas, bounds)
+				river_turf.SpreadAcrossPlanet(spread_chance, spread_loss, whitelist_areas, bounds, settings)
 
 	for(var/waypoints_spawned in river_nodes)
 		qdel(waypoints_spawned)
@@ -151,7 +170,7 @@
  * know about footprints, so without this the last ring of a river's spread writes over
  * the co-tenant next door.
  */
-/turf/proc/SpreadAcrossPlanet(probability = 30, prob_loss = 25, list/whitelisted_areas, list/bounds = null)
+/turf/proc/SpreadAcrossPlanet(probability = 30, prob_loss = 25, list/whitelisted_areas, list/bounds = null, datum/planet_rivers/settings)
 	if(probability <= 0)
 		return
 	if(length(bounds) < 4)
@@ -171,7 +190,7 @@
 		for(var/whitelisted_area in whitelisted_areas)
 			if(istype(new_area, whitelisted_area))
 				area_found = TRUE
-		if((!area_found) || (canidate.turf_flags & NO_LAVA_GEN))
+		if((!area_found) || (canidate.turf_flags & NO_LAVA_GEN) || (settings && !settings.allows(canidate)))
 			continue
 
 		if(!logged_turf_type && ismineralturf(canidate))
@@ -189,11 +208,11 @@
 	// proc's doc comment for what the raw swap leaks when the ground is already lit.
 	for(var/turf/cardinal_canidate as anything in cardinal_turfs) //cardinal turfs are always changed but don't always spread
 		if(!istype(cardinal_canidate, logged_turf_type) && place_river_turf(cardinal_canidate, type, baseturfs) && prob(probability))
-			cardinal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds)
+			cardinal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds, settings)
 
 	for(var/turf/diagonal_canidate as anything in diagonal_turfs) //diagonal turfs only sometimes change, but will always spread if changed
 		if(!istype(diagonal_canidate, logged_turf_type) && prob(probability) && place_river_turf(diagonal_canidate, type, baseturfs))
-			diagonal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds)
+			diagonal_canidate.SpreadAcrossPlanet(probability - prob_loss, prob_loss, whitelisted_areas, bounds, settings)
 		else if(ismineralturf(diagonal_canidate))
 			var/turf/closed/mineral/diagonal_mineral = diagonal_canidate
 			place_river_turf(diagonal_mineral, diagonal_mineral.turf_type)

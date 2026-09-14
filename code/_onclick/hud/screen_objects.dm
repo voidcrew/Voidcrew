@@ -196,7 +196,7 @@
 	if(world.time <= usr.next_move)
 		return TRUE
 
-	if(INCAPACITATED_IGNORING(usr, INCAPABLE_STASIS))
+	if(usr.incapacitated_except_softcrit(INCAPABLE_STASIS))
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
 		return TRUE
@@ -286,7 +286,7 @@
 		return TRUE
 	if(world.time <= user.next_move)
 		return TRUE
-	if(user.incapacitated)
+	if(user.incapacitated_except_softcrit())
 		return TRUE
 	if (ismecha(user.loc)) // stops inventory actions in a mech
 		return TRUE
@@ -530,7 +530,7 @@
 
 	if(world.time <= usr.next_move)
 		return TRUE
-	if(usr.incapacitated)
+	if(usr.incapacitated_except_softcrit())
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
 		return TRUE

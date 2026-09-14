@@ -480,6 +480,10 @@
 /obj/item/gun/proc/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	var/base_bonus_spread = 0
 	if(user)
+		// MonkeStation's poor-aim penalty for firing while in soft crit.
+		if(user.stat == SOFT_CRIT)
+			base_bonus_spread += 10
+			bonus_spread += 35
 		var/list/bonus_spread_values = list(base_bonus_spread, bonus_spread)
 		SEND_SIGNAL(user, COMSIG_MOB_FIRED_GUN, src, target, params, zone_override, bonus_spread_values)
 		base_bonus_spread = bonus_spread_values[MIN_BONUS_SPREAD_INDEX]

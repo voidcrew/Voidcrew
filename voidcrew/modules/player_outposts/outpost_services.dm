@@ -132,11 +132,11 @@
 	return ..()
 
 /datum/component/remote_materials/can_use_resource(check_hold = TRUE, alist/user_data)
-	if(silo && !same_service_site(parent, silo))
+	if(silo && !check_z_level())
 		return FALSE
 	return ..()
 
 /datum/component/remote_materials/attempt_insert(mob/living/user, obj/item/target)
-	if(silo && !same_service_site(parent, silo))
+	if(silo && !check_z_level())
 		return ITEM_INTERACT_BLOCKING
 	return ..()

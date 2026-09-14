@@ -11,3 +11,17 @@ Tiny Unicode created by Jakob Riedle/DuffsDevice. Website indicates free for com
 
 VCR OSD Mono created by Riciery Leal/mrmanet. Website indicates 100% free, author confirms it's free for all to use.
 (https://www.dafont.com/font-comment.php?file=vcr_osd_mono)
+
+Cyrillic variants Grand9K_Pixel_modif.ttf, Pixellari_modif.ttf and SpessFontRus.ttf
+ported unchanged from SS220/Nemesis, "ru font fixes (#107)" by Ksaikok (Ksaikok46):
+https://github.com/ss220-space/Nemesis/commit/896ffa53c6dbbe881b8956319c2b8095cd4b2e5e
+
+Grand9K_Pixel_modif.ttf and Pixellari_modif.ttf Cyrillic additions by Zagovori:
+https://github.com/ss220-space/Skyrat-tg/pull/25
+
+SpessFontRus.ttf Cyrillic additions by AyIong:
+https://github.com/ss220club/BandaStation/pull/776
+
+Original font authors are credited above. Grand9K_Pixel_modif.ttf retains its
+embedded Creative Commons Attribution-ShareAlike 3.0 license notice:
+https://creativecommons.org/licenses/by-sa/3.0/

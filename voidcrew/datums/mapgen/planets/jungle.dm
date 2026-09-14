@@ -1,4 +1,7 @@
 /datum/planet/jungle
+	terrain_generator = /datum/map_generator/planet_generator
+	environment = /datum/planet_environment/jungle
+	ruin_settings = /datum/planet_ruins/jungle
 	overworld_biomes = list(
 		//NORMAL BIOMES
 		BIOME_COLDEST = list(

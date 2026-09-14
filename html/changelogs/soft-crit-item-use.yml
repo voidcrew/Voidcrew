@@ -1,0 +1,4 @@
+author: "MonkeStation contributors: dwasint, SirNightKnight, Xander3359"
+delete-after: true
+changes:
+  - rscadd: "Ported MonkeStation's soft-crit item use: access your inventory, use items, and self-inject medipens while critically injured but still conscious. Actions are slower and gunfire is less accurate."

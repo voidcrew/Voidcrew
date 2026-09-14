@@ -63,13 +63,14 @@
  * that they are standing inside the hull. A landing party exploring the planet their
  * ship is parked on is a crew, and losing the ship they walked out of is not a
  * lifecycle rule, it is a bug. has_active_crew() is the predicate: anyone aboard, or
- * any of this hull's own roster alive, connected and on the hull's z-level.
+ * any of this hull's own roster alive, connected and at the docked site (including
+ * elevator-connected interiors and hangars), or on the hull's z-level elsewhere.
  *
  * What is left after that is the case the clocks are actually for - everybody dead,
  * logged off, cryoed out or genuinely gone elsewhere. That hull IS the abandoned ship.
  * Getting it back afterwards is one claim at the helm.
  */
-/// No living, connected crew aboard or on the hull's z-level for this long -> the hull
+/// No living, connected crew aboard or visiting the docked site for this long -> the hull
 /// is abandoned (claimable derelict). Hulls that never had a crew at all skip the
 /// derelict window and despawn outright.
 #define SHIP_CREWLESS_ABANDON_TIME (20 MINUTES)
