@@ -386,6 +386,7 @@
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_science_program.dm"
+#include "voidcrew_sensor_research.dm"
 #include "voidcrew_survey_research_links.dm"
 #include "voidcrew_survey_archive.dm"
 #include "voidcrew_survey_identity.dm"

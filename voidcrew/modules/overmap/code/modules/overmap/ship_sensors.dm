@@ -136,8 +136,8 @@
 	var/surveyed_from_y = 0
 
 /**
- * Returns the ship's research techweb, the one hosted on its onboard R&D
- * server's disk, which is where radar nodes actually get researched. Cached by
+ * Returns the ship's research techweb, hosted by an onboard R&D server or an
+ * authorized outpost relay. Local source disks take priority. Cached by
  * weakref; the (potentially expensive) server search is throttled so a ship
  * with no R&D server doesn't rescan its whole hull every tick.
  */
@@ -161,7 +161,7 @@
 /**
  * Locates the techweb hosted by an R&D server somewhere on the ship's hull.
  *
- * Walks the server registry (GLOB.ship_research_servers, a handful of machines) and asks
+ * Walks the ship-server and machinery registries (a handful of servers) and asks
  * which hull each one is standing in, rather than walking every turf of every shuttle
  * area and every turf's contents looking for one. The old form was O(hull turfs x turf
  * contents); on a Phalanx that is thousands of iterations, and get_research_web()'s
@@ -180,6 +180,17 @@
 			continue
 		var/turf/server_turf = get_turf(server)
 		if(server_turf && server.research_link_available(server_turf))
+			return server.stored_research
+
+	// Some mapped and salvaged servers host their own web without a source disk.
+	// They can research radar normally, but are absent from ship_research_servers.
+	// Use the machinery registry rather than scanning every turf on the hull.
+	for(var/obj/machinery/rnd/server/server as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/rnd/server))
+		if(QDELETED(server) || !server.stored_research || istype(server, /obj/machinery/rnd/server/ship) || istype(server, /obj/machinery/rnd/server/relay))
+			continue
+		if(get_research_service_site(server) != src)
+			continue
+		if(server.research_link_available(get_turf(server)))
 			return server.stored_research
 
 	// An authorized outpost relay is a second physical endpoint for the same
