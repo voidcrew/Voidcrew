@@ -27,7 +27,7 @@
 		else
 			return
 	mecha_attacker.visible_message(span_danger("[mecha_attacker] hits [src]!"), span_danger("You hit [src]!"), null, COMBAT_MESSAGE_RANGE)
-	if(prob(hardness + mecha_attacker.force) && mecha_attacker.force > 20)
+	if(prob((hardness + mecha_attacker.force) * 2 - 105))
 		dismantle_wall(1)
 		playsound(src, mecha_attacker.destroy_wall_sound, 100, TRUE)
 	else

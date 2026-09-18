@@ -464,6 +464,10 @@
 	if (can_hit_target(bumped_atom, bumped_atom == original, TRUE, TRUE))
 		impact(bumped_atom)
 
+// VOID TEST EDIT: Only used for mechas firing projectiles
+/obj/projectile/proc/ignore_target(atom/thing)
+	impacted[WEAKREF(thing)] = TRUE
+
 /**
  * Called when the projectile hits something
  * This can either be from it bumping something,
@@ -1246,6 +1250,9 @@
 		stack_trace("WARNING: Projectile [type] was aimed after already being fired.")
 		qdel(src)
 		return FALSE
+
+	if(ismecha(firer)) // VOID TEST EDIT: Fixes mech projectiles rubberbanding behind the mech
+		ignore_target(firer)
 
 	free_hitscan_forceMove = TRUE
 	forceMove(source_loc)
