@@ -42,10 +42,11 @@
 	AddElement(/datum/element/relay_attackers)
 
 /mob/living/basic/mining/proc/add_ranged_armour(list/vulnerable_projectiles)
+	// VOIDCREW EDIT CHANGE - below_projectile_multiplier was 0.3, a 30% damage soak
 	AddElement(\
 		/datum/element/ranged_armour,\
 		minimum_projectile_force = 30,\
-		below_projectile_multiplier = 0.3,\
+		below_projectile_multiplier = 0.75,\
 		vulnerable_projectile_types = vulnerable_projectiles,\
 		minimum_thrown_force = 20,\
 		throw_blocked_message = throw_blocked_message,\

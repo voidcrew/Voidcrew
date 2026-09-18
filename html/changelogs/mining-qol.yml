@@ -1,0 +1,6 @@
+author: RandomDudeFromTheRim
+delete-after: true
+changes:
+  - qol: "Ore redemption machines no longer need an ore silo connection to pay out points; they redeem from their own local storage instead."
+  - balance: "Lavaland and icebox fauna now soak 25% of projectile damage instead of 70%."
+  - qol: "The mining equipment order console now quotes the price it actually charges, and calls its only button Order."

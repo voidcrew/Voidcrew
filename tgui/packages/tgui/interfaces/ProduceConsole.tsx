@@ -318,7 +318,8 @@ function CheckoutTab(props) {
                 tooltipPosition="top-start"
                 onClick={() => act('express')}
               >
-                Express: {total_cost * express_cost_multiplier}{' '}
+                {forced_express ? 'Order' : 'Express'}:{' '}
+                {total_cost * express_cost_multiplier}{' '}
                 <CreditIcon credit_type={credit_type} color="black" />
               </Button>
             </Stack.Item>
