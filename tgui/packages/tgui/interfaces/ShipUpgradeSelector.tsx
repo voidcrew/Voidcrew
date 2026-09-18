@@ -1,10 +1,4 @@
-import {
-  type CSSProperties,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +14,7 @@ import {
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
+import { HelmPlane } from './common/HelmPlane';
 
 type PartsInventory = {
   combat: number;
@@ -172,6 +167,8 @@ export const ShipUpgradeSelector = () => {
   // Preview hover state: temporarily show a hovered theme/module on the map
   const [hoverTheme, setHoverTheme] = useState<string | null>(null);
   const [hoverModule, setHoverModule] = useState<HoverModule | null>(null);
+  // Slot clicked on the preview map, highlighted in the upgrades list
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   // Draggable split between the map on top and the selection lists below
   const splitContainerRef = useRef<HTMLDivElement>(null);
@@ -418,7 +415,11 @@ export const ShipUpgradeSelector = () => {
               }}
             >
               <Section
-                title="Ship Preview"
+                title={
+                  hoverTheme
+                    ? (themes?.find((t) => t.id === hoverTheme)?.name ?? '')
+                    : (selectedThemeData?.name ?? '')
+                }
                 fill={showMap}
                 fitted
                 buttons={
@@ -446,22 +447,11 @@ export const ShipUpgradeSelector = () => {
                         slots={slots}
                         selectedUpgrades={selected_upgrades}
                         hoverModule={hoverModule}
+                        onSelectSlot={(slot) => {
+                          setSelectedSlot(slot);
+                          setActiveTab('upgrades');
+                        }}
                       />
-                    </Stack.Item>
-                    <Stack.Item>
-                      <Box
-                        fontSize="11px"
-                        color="label"
-                        textAlign="center"
-                        py={0.5}
-                      >
-                        {!!previewLabel && (
-                          <Box as="span" color="white" bold mr={1}>
-                            {previewLabel}
-                          </Box>
-                        )}
-                        Hover a theme or module to preview it on the map.
-                      </Box>
                     </Stack.Item>
                   </Stack>
                 )}
@@ -788,6 +778,7 @@ export const ShipUpgradeSelector = () => {
                               <UpgradeSlotSection
                                 slot={slot}
                                 selectedModuleId={selected_upgrades?.[slot.key]}
+                                highlighted={selectedSlot === slot.key}
                                 playerParts={parts}
                                 unlockedUpgrades={unlocked_upgrades || []}
                                 onUnlockClick={(module) =>
@@ -1113,36 +1104,32 @@ const ShipPreview = (props: {
   slots: UpgradeSlot[];
   selectedUpgrades: Record<string, string>;
   hoverModule: HoverModule | null;
+  onSelectSlot?: (slot: string) => void;
 }) => {
-  const { preview, themeKey, slots, selectedUpgrades, hoverModule } = props;
+  const {
+    preview,
+    themeKey,
+    slots,
+    selectedUpgrades,
+    hoverModule,
+    onSelectSlot,
+  } = props;
   const hull = preview.hulls[themeKey] ?? preview.hulls[''];
 
-  // Measure the space we've been given so the map can be scaled to fit it in
-  // both axes - the window is much wider than a typical hull is tall.
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [avail, setAvail] = useState({ width: 0, height: 0 });
+  if (!hull) {
+    return (
+      <Box color="label" textAlign="center" p={2}>
+        No preview available for this configuration.
+      </Box>
+    );
+  }
 
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) {
-      return;
-    }
-    const measure = () =>
-      setAvail({ width: element.clientWidth, height: element.clientHeight });
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  const scale = hull
-    ? Math.min(avail.width / hull.width, avail.height / hull.height)
-    : 0;
-  const mapWidth = hull ? hull.width * scale : 0;
-  const mapHeight = hull ? hull.height * scale : 0;
+  const tile = preview.tile_px || 32;
+  const mapWidth = hull.width * tile;
+  const mapHeight = hull.height * tile;
 
   const overlays: ReactNode[] = [];
-  Object.entries(hull?.slots ?? {}).forEach(([slotKey, marker]) => {
+  Object.entries(hull.slots ?? {}).forEach(([slotKey, marker]) => {
     const [sx, sy] = marker;
     const slotInfo = slots?.find((s) => s.key === slotKey);
     const isHovered = !!hoverModule && hoverModule.slot === slotKey;
@@ -1155,48 +1142,58 @@ const ShipPreview = (props: {
     if (!mod) {
       return;
     }
-    // Themed reskin geometry if one exists, else the base module art
+    // Themed reskin geometry if one exists, else the base module art.
     const geom = (themeKey && mod.themes?.[themeKey]) || mod;
     const [cx, cy] = geom.connector ?? [1, 1];
-    // The loader aligns the module's connector tile onto the slot marker tile
-    const px0 = sx - (cx - 1);
-    const py0 = sy - (cy - 1);
-    const leftPct = ((px0 - 1) / hull.width) * 100;
-    const topPct =
-      ((hull.height - (py0 - 1) - geom.height) / hull.height) * 100;
-    const widthPct = (geom.width / hull.width) * 100;
-    const heightPct = (geom.height / hull.height) * 100;
-    const boxStyle: CSSProperties = {
-      position: 'absolute',
-      left: `${leftPct}%`,
-      top: `${topPct}%`,
-      width: `${widthPct}%`,
-      height: `${heightPct}%`,
-    };
+    // The loader aligns the module's connector tile onto the slot marker tile.
+    const left = (sx - (cx - 1) - 1) * tile;
+    const top = (hull.height - (sy - (cy - 1) - 1) - geom.height) * tile;
+    const width = geom.width * tile;
+    const height = geom.height * tile;
+    const label = slotInfo?.display_name ?? slotKey;
+
     overlays.push(
-      <img
+      // The module sprite and its outline live in map-space, so they scale
+      // with the hull like the in-game loader would place them.
+      <HelmPlane.Button
         key={`img-${slotKey}`}
-        src={resolveAsset(geom.png)}
+        x={left}
+        y={top}
+        anchor="top-left"
         style={{
-          ...boxStyle,
-          imageRendering: 'pixelated',
-        }}
-      />,
-      <div
-        key={`outline-${slotKey}`}
-        style={{
-          ...boxStyle,
-          border: isHovered
+          width: `${width}px`,
+          height: `${height}px`,
+          // Outline, not border: the dashed frame sits outside the sprite
+          // instead of eating into it (box-sizing is border-box), so the
+          // composited module lines up with the hull's tile grid exactly.
+          outline: isHovered
             ? '2px dashed rgba(255, 200, 0, 0.9)'
             : '1px dashed rgba(255, 255, 255, 0.35)',
+          outlineOffset: '0px',
           pointerEvents: 'none',
         }}
       >
+        <img
+          src={resolveAsset(geom.png)}
+          style={{
+            width: '100%',
+            height: '100%',
+            imageRendering: 'pixelated',
+          }}
+        />
+      </HelmPlane.Button>,
+      // The slot label counter-scales, so it stays readable at any zoom.
+      <HelmPlane.Button
+        key={`label-${slotKey}`}
+        x={left}
+        y={top}
+        anchor="top-left"
+        keepScale
+        onClick={() => onSelectSlot?.(slotKey)}
+        style={{ cursor: 'pointer' }}
+      >
         <div
           style={{
-            position: 'absolute',
-            top: '-1px',
-            left: '-1px',
             padding: '0 4px',
             fontSize: '11px',
             whiteSpace: 'nowrap',
@@ -1204,78 +1201,53 @@ const ShipPreview = (props: {
             backgroundColor: 'rgba(0, 0, 0, 0.6)',
           }}
         >
-          {slotInfo?.display_name ?? slotKey}
+          {label}
         </div>
-      </div>,
+      </HelmPlane.Button>,
     );
   });
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-      }}
+    <HelmPlane
+      mapWidth={mapWidth}
+      mapHeight={mapHeight}
+      maxScale={3}
+      stageBackground={
+        // Not pure black: the darkest wall sprites (plastitanium, cult) are
+        // near-black and vanish against it. A dim space backdrop keeps dark
+        // hulls readable.
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'radial-gradient(ellipse at 35% 30%, #232a3d 0%, #161a26 65%, #10131c 100%)',
+          }}
+        />
+      }
+      background={
+        <img
+          src={resolveAsset(hull.png)}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            imageRendering: 'pixelated',
+          }}
+        />
+      }
     >
-      {/*
-       * The map is laid out in its own absolutely positioned layer so its
-       * pixel size never counts towards the height of the box we measure.
-       * If it did, shrinking the split would deadlock: the row can't get
-       * smaller than the map, so the observer never sees less space, so the
-       * map never scales down.
-       */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {!hull && (
-          <Box color="label" textAlign="center">
-            No preview available for this configuration.
-          </Box>
-        )}
-        {!!hull && scale > 0 && (
-          <div
-            style={{
-              position: 'relative',
-              width: `${mapWidth}px`,
-              height: `${mapHeight}px`,
-              // Not pure black: the darkest wall sprites (plastitanium,
-              // cult) are near-black and vanish against it. A dim space
-              // backdrop keeps dark hulls readable.
-              background:
-                'radial-gradient(ellipse at 35% 30%, #232a3d 0%, #161a26 65%, #10131c 100%)',
-            }}
-          >
-            <img
-              src={resolveAsset(hull.png)}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: '100%',
-                height: '100%',
-                imageRendering: 'pixelated',
-              }}
-            />
-            {overlays}
-          </div>
-        )}
-      </div>
-    </div>
+      {overlays}
+    </HelmPlane>
   );
 };
 
 const UpgradeSlotSection = (props: {
   slot: UpgradeSlot;
   selectedModuleId?: string;
+  highlighted?: boolean;
   playerParts: PartsInventory;
   unlockedUpgrades: string[];
   onUnlockClick: (module: UpgradeModule) => void;
@@ -1285,6 +1257,7 @@ const UpgradeSlotSection = (props: {
   const {
     slot,
     selectedModuleId,
+    highlighted,
     playerParts,
     unlockedUpgrades,
     onUnlockClick,
@@ -1295,7 +1268,7 @@ const UpgradeSlotSection = (props: {
     <Section
       title={slot.display_name}
       style={{
-        borderLeft: '3px solid #666',
+        borderLeft: `3px solid ${highlighted ? '#4488ff' : '#666'}`,
         marginBottom: '8px',
       }}
     >

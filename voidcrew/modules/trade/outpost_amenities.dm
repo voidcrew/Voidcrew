@@ -245,6 +245,7 @@
 	walk_chance = 10
 
 /datum/idle_behavior/idle_random_walk/outpost_loiterer/perform_idle_behavior(seconds_per_tick, datum/ai_controller/controller)
+	. = ..()
 	var/mob/living/living_pawn = controller.pawn
 	if(LAZYLEN(living_pawn.do_afters))
 		return FALSE

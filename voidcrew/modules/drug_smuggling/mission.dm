@@ -269,7 +269,10 @@
 	if(!lab.mapzone)
 		qdel(lab)
 		return
-	lab.check_and_respawn()
+	// check_and_respawn() drives the worldgen teardown/requeue path, which can
+	// sleep waiting for the overmap queue. release_lab() runs from Destroy(), so
+	// defer the heavy half onto the ruin, which outlives the mission.
+	INVOKE_ASYNC(lab, TYPE_PROC_REF(/obj/structure/overmap/space_ruin, check_and_respawn))
 
 // =========================================================================
 // THE FORMULA CHIP: the shopping list, delivered at accept

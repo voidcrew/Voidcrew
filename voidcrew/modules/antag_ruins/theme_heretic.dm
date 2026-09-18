@@ -116,7 +116,7 @@
 	obj_flags = CAN_BE_HIT
 	var/datum/mind/keeper
 
-/obj/item/vestige_threshold_weight/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
+/obj/item/vestige_threshold_weight/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	var/datum/vestige_trial/rite_of_rust/trial = keeper?.active_vestige_trial
 	if(istype(trial) && trial.weight == src && trial.opened && old_loc == get_turf(trial.passage) && loc == get_turf(trial.destination))

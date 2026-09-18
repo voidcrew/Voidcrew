@@ -2,7 +2,7 @@
 
 /**
  * Whether this console may name a contact: the ship's own identity gate (see
- * knows_vessel in ship_sensors.dm), plus the hull we are actively painting.
+ * knows_vessel in ship/sensors.dm), plus the hull we are actively painting.
  *
  * The lock counts on its own because the helm's contact ring is a circle where
  * this scope is a square, a target held at the corner of our range can fall out

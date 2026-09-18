@@ -89,7 +89,7 @@
 	new_web.remove_design_by_id("cable_coil")
 	new_web.add_design_by_id("cable_coil")
 	TEST_ASSERT(lathe.techweb_updating, "A rejected remote link stopped the current disk's design updates")
-	lathe.update_designs()
+	UNLINT(lathe.update_designs())
 	TEST_ASSERT(length(lathe.cached_designs), "The current physical disk did not supply any designs")
 	new_disk.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_NULL(lathe.stored_research, "Removing the physical disk left a direct-linked lathe connected")

@@ -6,7 +6,7 @@
 		/datum/experiment/ordnance/explosive/lowyieldbomb,
 		/datum/experiment/ordnance/explosive/highyieldbomb,
 	)
-	multipliers = list(SCIPAPER_COOPERATION_INDEX = 0.75, SCIPAPER_FUNDING_INDEX = 0.75)
+	multipliers = alist(SCIPAPER_COOPERATION_INDEX = 0.75, SCIPAPER_FUNDING_INDEX = 0.75)
 	boostable_nodes = list(
 		TECHWEB_NODE_LOW_PRESSURE_EXCAVATION = TECHWEB_TIER_2_POINTS,
 		TECHWEB_NODE_PLASMA_MINING = TECHWEB_TIER_3_POINTS,
@@ -18,7 +18,7 @@
 /datum/scientific_partner/baron
 	name = "Ghost Writing"
 	flufftext = "A nearby research station ran by a very wealthy captain seems to be struggling with their scientific output. They might reward us handsomely if we ghostwrite for them."
-	multipliers = list(SCIPAPER_COOPERATION_INDEX = 0.25, SCIPAPER_FUNDING_INDEX = 2)
+	multipliers = alist(SCIPAPER_COOPERATION_INDEX = 0.25, SCIPAPER_FUNDING_INDEX = 2)
 	boostable_nodes = list(
 		TECHWEB_NODE_CONSOLES = TECHWEB_TIER_1_POINTS,
 		TECHWEB_NODE_GAMING = TECHWEB_TIER_2_POINTS,

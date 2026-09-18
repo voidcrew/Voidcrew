@@ -981,7 +981,7 @@
 				break
 			weapon.melee_attack_chain(keeper, quarry, list())
 		TEST_ASSERT_EQUAL(quarry.stat, DEAD, "The ordinary weapon must produce the fresh carcass.")
-		TEST_ASSERT(rack.mouse_drop_receive(quarry, keeper, null), "The real drag-drop route must complete both hang and buckle channels.")
+		TEST_ASSERT(UNLINT(rack.mouse_drop_receive(quarry, keeper, null)), "The real drag-drop route must complete both hang and buckle channels.")
 		TEST_ASSERT_EQUAL(quarry.buckled, rack, "The credited carcass must actually hang from the rack.")
 		TEST_ASSERT_EQUAL(trial.settings, setting_number, "Each actual fresh hanging must credit one setting.")
 		carcasses += quarry

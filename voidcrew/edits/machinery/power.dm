@@ -37,7 +37,7 @@
  * is the one machine spared, and only for storms - a syndicate EMP grenade or a
  * malfunctioning cell still scrambles the SMES the way upstream intends.
  *
- * The flag is set around the pulse loop in apply_ion_storm_damage() (ship_damage.dm).
+ * The flag is set around the pulse loop in apply_ion_storm_damage() (ship/damage.dm).
  */
 /obj/machinery/power/smes/emp_act(severity)
 	if(!GLOB.ion_storm_pulse_active)

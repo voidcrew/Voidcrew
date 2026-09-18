@@ -184,7 +184,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * where the raid is until somebody answers it.
  *
  * broadcast_fleet_waypoint() is idempotent: add_waypoint() dedups on
- * source_key (ship_waypoints.dm), so the re-push refreshes existing markers in
+ * source_key (ship/waypoints.dm), so the re-push refreshes existing markers in
  * place rather than stacking duplicates, and restores any a crew cleared.
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/run_beacon()

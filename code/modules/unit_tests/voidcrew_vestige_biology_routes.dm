@@ -56,7 +56,7 @@
 	for(var/prey_index in 1 to 2)
 		var/mob/living/basic/carp/prey = allocate(/mob/living/basic/carp, get_step(child, EAST))
 		prey.ai_controller.PauseAi(1 MINUTES)
-		TEST_ASSERT(prey.base_ranged_item_interaction(user, birth.egg, list()) & ITEM_INTERACT_BLOCKING, "The actual ranged egg handler must accept the hunt input.")
+		TEST_ASSERT(prey.vc_test_base_ranged_item_interaction(user, birth.egg, list()) & ITEM_INTERACT_BLOCKING, "The actual ranged egg handler must accept the hunt input.")
 		TEST_ASSERT_EQUAL(child.prey_ref?.resolve(), prey, "The kit must command the actual live prey.")
 		for(var/bite in 1 to 5)
 			if(child.growth >= 40)
@@ -89,7 +89,7 @@
 		var/direction = exchange == 1 ? EAST : WEST
 		for(var/step in 1 to 2)
 			TEST_ASSERT(user.Move(get_step(user, direction), direction), "The keeper must physically retreat two tiles after the bite.")
-		prey.base_ranged_item_interaction(user, proboscis, list())
+		prey.vc_test_base_ranged_item_interaction(user, proboscis, list())
 		if(exchange == 1)
 			TEST_ASSERT_EQUAL(faces.assimilated, 20, "The first ranged counter must consume twenty actual tissue.")
 	TEST_ASSERT(/datum/vestige_trial/faces in user.mind.completed_vestige_trials, "Two complete sampled-brace-bite-retreat-counter exchanges must finish Faces.")
@@ -106,9 +106,9 @@
 			user.execute_mode()
 		if(syringe.amount_per_transfer_from_this != portion)
 			return FALSE
-		if(!(bottle.base_item_interaction(user, syringe, list(RIGHT_CLICK = "1")) & ITEM_INTERACT_SUCCESS))
+		if(!(bottle.vc_test_base_item_interaction(user, syringe, list(RIGHT_CLICK = "1")) & ITEM_INTERACT_SUCCESS))
 			return FALSE
-		if(!(culture.base_item_interaction(user, syringe, list()) & ITEM_INTERACT_SUCCESS))
+		if(!(culture.vc_test_base_item_interaction(user, syringe, list()) & ITEM_INTERACT_SUCCESS))
 			return FALSE
 		volume -= portion
 	return TRUE
@@ -140,18 +140,18 @@
 	user.dropItemToGround(buffer)
 	TEST_ASSERT(dose(syringes[1], nutrient, culture, 1), "The researcher must draw and inject one real nutrient unit.")
 	TEST_ASSERT(hold(probe), "The researcher must select the probe for the first assay.")
-	TEST_ASSERT(culture.base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the first measured dose.")
+	TEST_ASSERT(culture.vc_test_base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the first measured dose.")
 	var/observed_uptake = culture.energy()
 	TEST_ASSERT(dose(syringes[2], buffer, culture, 1), "The researcher must draw and inject one real buffer unit.")
 	TEST_ASSERT(hold(probe), "The researcher must select the probe for the second assay.")
-	TEST_ASSERT(culture.base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the buffer response.")
+	TEST_ASSERT(culture.vc_test_base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the buffer response.")
 	var/observed_buffer = culture.energy() - culture.stress()
 	TEST_ASSERT(dose(syringes[1], nutrient, culture, culture.target_energy / observed_uptake - 1), "The supplied nutrient and syringe increments must reach the measured energy target.")
 	TEST_ASSERT(dose(syringes[2], buffer, culture, culture.target_energy / observed_buffer - 1), "The supplied buffer and syringe increments must balance the measured stress.")
 	TEST_ASSERT(hold(probe), "The researcher must select the probe for the final assay.")
-	TEST_ASSERT(culture.base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the prepared culture.")
+	TEST_ASSERT(culture.vc_test_base_item_interaction(user, probe, list()) & ITEM_INTERACT_SUCCESS, "The actual probe must assay the prepared culture.")
 	TEST_ASSERT_EQUAL(culture.viability, 70, "Three necessary assays must leave a viable preparation.")
-	TEST_ASSERT(culture.base_item_interaction(user, probe, list(RIGHT_CLICK = "1")) & ITEM_INTERACT_SUCCESS, "The real right-click probe input must harvest the balanced live culture.")
+	TEST_ASSERT(culture.vc_test_base_item_interaction(user, probe, list(RIGHT_CLICK = "1")) & ITEM_INTERACT_SUCCESS, "The real right-click probe input must harvest the balanced live culture.")
 	TEST_ASSERT(/datum/vestige_trial/field_study in user.mind.completed_vestige_trials, "Actual measured bottle-to-culture chemistry must finish Field Study.")
 
 /datum/unit_test/vestige_biology_route/proc/walk_route_to(turf/destination)
@@ -226,7 +226,7 @@
 				break
 		TEST_ASSERT(approached, "The researcher must physically approach each enclosure side.")
 		TEST_ASSERT(hold(panels[index]), "The researcher must hold the supplied panel before deploying it.")
-		TEST_ASSERT(barrier_spot.base_item_interaction(user, panels[index], list()) & ITEM_INTERACT_SUCCESS, "The real panel input must build each of the first three enclosure sides.")
+		TEST_ASSERT(barrier_spot.vc_test_base_item_interaction(user, panels[index], list()) & ITEM_INTERACT_SUCCESS, "The real panel input must build each of the first three enclosure sides.")
 	TEST_ASSERT(walk_route_to(get_step(specimen, REVERSE_DIR(drive_direction))), "The researcher must walk behind the released specimen.")
 	for(var/step in 1 to 4)
 		var/turf/previous_spot = get_turf(specimen)
@@ -238,10 +238,10 @@
 	var/turf/final_barrier = get_turf(user)
 	TEST_ASSERT(user.Move(get_step(user, perpendicular), perpendicular), "The herder must leave the final doorway before closing it.")
 	TEST_ASSERT(hold(panels[4]), "The researcher must select the final supplied barrier.")
-	TEST_ASSERT(final_barrier.base_item_interaction(user, panels[4], list()) & ITEM_INTERACT_SUCCESS, "The actual fourth panel must close the last escape.")
+	TEST_ASSERT(final_barrier.vc_test_base_item_interaction(user, panels[4], list()) & ITEM_INTERACT_SUCCESS, "The actual fourth panel must close the last escape.")
 	TEST_ASSERT(user.Move(get_step(user, REVERSE_DIR(drive_direction)), REVERSE_DIR(drive_direction)), "The researcher must stand outside scanning distance.")
 	TEST_ASSERT(hold(lens), "The researcher must recover the actual observation lens.")
-	TEST_ASSERT(specimen.base_ranged_item_interaction(user, lens, list()) & ITEM_INTERACT_SUCCESS, "The actual lens must certify the live, herded, enclosed specimen.")
+	TEST_ASSERT(specimen.vc_test_base_ranged_item_interaction(user, lens, list()) & ITEM_INTERACT_SUCCESS, "The actual lens must certify the live, herded, enclosed specimen.")
 	TEST_ASSERT(/datum/vestige_trial/acquisition in user.mind.completed_vestige_trials, "Real release, herding, barrier placement and scanning must finish Acquisition.")
 
 /**
@@ -267,7 +267,7 @@
 	var/mob/living/carbon/human/vestige_graft_patient/patient = graft.patient
 	TEST_ASSERT(patient && graft.operating_table, "The dossier must deploy its patient on a real pressurized operating table.")
 	TEST_ASSERT(patient.buckled == graft.operating_table && patient.IsSleeping(), "The issued patient must be positioned for ordinary surgery.")
-	TEST_ASSERT(patient.base_item_interaction(user, dossier, list()) & ITEM_INTERACT_BLOCKING, "The diagnostic input must reject the sick, unopened patient.")
+	TEST_ASSERT(patient.vc_test_base_item_interaction(user, dossier, list()) & ITEM_INTERACT_BLOCKING, "The diagnostic input must reject the sick, unopened patient.")
 	var/obj/item/organ/vestige_filter/failed = patient.get_organ_slot("vestige_filter")
 	var/obj/item/organ/vestige_filter/replacement
 	for(var/datum/weakref/ref as anything in graft.loan_refs)
@@ -313,5 +313,5 @@
 	TEST_ASSERT(cautery.melee_attack_chain(user, patient, list()), "Actual cautery dispatch must close the stock operation.")
 	TEST_ASSERT(QDELETED(operation) && graft.surgical_closure, "The final actual cautery must complete surgery and record closure.")
 	TEST_ASSERT(hold(dossier), "The researcher must return to the supplied dossier for certification.")
-	TEST_ASSERT(patient.base_item_interaction(user, dossier, list()) & ITEM_INTERACT_SUCCESS, "The actual dossier must certify the recovered, closed, living specimen.")
+	TEST_ASSERT(patient.vc_test_base_item_interaction(user, dossier, list()) & ITEM_INTERACT_SUCCESS, "The actual dossier must certify the recovered, closed, living specimen.")
 	TEST_ASSERT(/datum/vestige_trial/vivisection in user.mind.completed_vestige_trials, "Actual deployment, ordinary surgery, organ physiology and certification must finish Graft.")

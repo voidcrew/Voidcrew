@@ -140,9 +140,14 @@
 #endif // 1 to use the default behaviour;
 								// 2 for preloading absolutely everything;
 
+// FORCE_MAP (set from the build command line) needs a directory to look in.
+// Without this, mapping.dm's "#ifdef FORCE_MAP" branch fails to compile.
+#ifndef FORCE_MAP_DIRECTORY
+#define FORCE_MAP_DIRECTORY "_maps"
+#endif
+
 #ifdef LOWMEMORYMODE
 #define FORCE_MAP "runtimestation"
-#define FORCE_MAP_DIRECTORY "_maps"
 #endif
 
 //Additional code for the above flags.

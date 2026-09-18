@@ -48,7 +48,7 @@
 	/// Recharge suppression after an absorbed hit
 	COOLDOWN_DECLARE(recharge_suppressed)
 
-/obj/machinery/outpost_shield_generator/LateInitialize()
+/obj/machinery/outpost_shield_generator/post_machine_initialize()
 	. = ..()
 	link_to_outpost()
 

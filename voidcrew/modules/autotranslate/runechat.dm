@@ -70,6 +70,11 @@
  * that currently fits can start clipping.
  */
 /datum/chatmessage/proc/grow_to_fit(body)
+	// Measuring text is a blocking client round trip. The caller only needs the
+	// height set eventually (and ignores the return), so this is fire-and-forget:
+	// it must not drag MeasureText's sleep into synchronously-called paths like
+	// Hear()/say(), where a signal handler or Life() may already be running.
+	set waitfor = FALSE
 	if(!can_retext())
 		return FALSE
 	var/measured

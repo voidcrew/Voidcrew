@@ -66,7 +66,7 @@
 			else if(organ.organ_flags & ORGAN_ORGANIC)
 				organic_bodytypes += 0.02
 
-	return list(
+	return alist(
 		BODYPART_SCORE_ORGANIC = organic_bodytypes,
 		BODYPART_SCORE_SILICON = silicon_bodytypes,
 		BODYPART_SCORE_OTHER_BODYTYPES = other_bodytypes,

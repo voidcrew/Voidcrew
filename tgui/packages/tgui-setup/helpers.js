@@ -382,6 +382,18 @@
 // ------------------------------------------------------
 
 window.onerror = function (msg, url, line, col, error) {
+  // Chrome reports the ResizeObserver delivery loop as an error even though it
+  // is only a diagnostic: the callback changed layout again before the browser
+  // finished delivering resize notifications. It is not an exception, the
+  // observer simply runs again next frame, and every resize-heavy interface
+  // trips it. Left unhandled it bluescreens the window in strict mode.
+  if (
+    typeof msg === 'string' &&
+    (msg === 'ResizeObserver loop completed with undelivered notifications.' ||
+      msg === 'ResizeObserver loop limit exceeded')
+  ) {
+    return true;
+  }
   window.onerror.errorCount = (window.onerror.errorCount || 0) + 1;
   // Proper stacktrace
   var stack = error && error.stack;

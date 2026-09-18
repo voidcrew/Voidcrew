@@ -189,7 +189,7 @@
 	/// When demon first appears, it does not take damage while in Jaunt. He also doesn't take damage while he's eating someone.
 	var/resist_jaunt_damage = TRUE
 
-/datum/action/cooldown/spell/jaunt/bloodcrawl/slaughter_demon/try_enter_jaunt(obj/effect/decal/cleanable/blood, mob/living/jaunter)
+/datum/action/cooldown/spell/jaunt/bloodcrawl/slaughter_demon/try_enter_jaunt(obj/effect/decal/cleanable/blood, mob/living/jaunter, forced = FALSE)
 	// Save this before the actual jaunt
 	var/atom/coming_with = jaunter.pulling
 

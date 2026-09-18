@@ -254,7 +254,7 @@ SUBSYSTEM_DEF(dynamic)
 
 /// Picks as many roundstart rulesets as we are allowed to spawn, returns them
 /datum/controller/subsystem/dynamic/proc/pick_roundstart_rulesets(list/antag_candidates)
-	PRIVATE_PROC(TRUE)
+	PROTECTED_PROC(TRUE)
 
 	if(rulesets_to_spawn[ROUNDSTART] <= 0)
 		return list()

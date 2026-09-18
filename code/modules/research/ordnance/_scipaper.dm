@@ -98,7 +98,7 @@
  * Also doubles as an initialization for the gains list.
  */
 /datum/scientific_paper/proc/set_amount()
-	gains = list(SCIPAPER_COOPERATION_INDEX = 0, SCIPAPER_FUNDING_INDEX = 0)
+	gains = alist(SCIPAPER_COOPERATION_INDEX = 0, SCIPAPER_FUNDING_INDEX = 0)
 	if(!tier || !experiment_path || !tracked_variable)
 		return FALSE
 	var/gain = calculate_gains(tier)
@@ -283,7 +283,7 @@
 	/// Brief explanation of the associated program. Can be used for lore.
 	var/flufftext
 	/// Cash and renown multiplier for allying with this partner.
-	var/list/multipliers = list(SCIPAPER_COOPERATION_INDEX = 1, SCIPAPER_FUNDING_INDEX = 1)
+	var/list/multipliers = alist(SCIPAPER_COOPERATION_INDEX = 1, SCIPAPER_FUNDING_INDEX = 1)
 	/// List of ordnance experiments that our partner is willing to accept. If this list is not filled it means the partner will accept everything.
 	var/list/accepted_experiments = list()
 	/// Associative list of which technology the partner might be able to boost and by how much.

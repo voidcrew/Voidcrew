@@ -62,7 +62,7 @@
 		return 0
 	if(length(powernet?.nodes) >= 1)
 		for(var/obj/machinery/power/smes/S in powernet.nodes)
-			return S.total_charge()
+			return UNLINT(S.total_charge())
 	return avail()
 
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel_cap()

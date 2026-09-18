@@ -13,13 +13,13 @@ $steel-900: #0b0e0f;
 $steel-800: #161c1e;
 $steel-700: #1d2528;
 $steel-600: #2a3438;
-$steel-500: #3a474b;
+$steel-500: #5a6e74;
 $well: #05090a;
 $amber: #f2a341;
 $amber-dim: #8a5f26;
 $ice: #74c8dd;
-$ice-dim: #3d6a76;
-$label: #7d8f94;
+$ice-dim: #7ba0ac;
+$label: #aebfc4;
 $good: #59b871;
 $warn: #d9a230;
 $crit: #cf4a38;
@@ -28,7 +28,7 @@ $crit: #cf4a38;
 $sos: #ff4d6d;
 
 $stencil:
-  'Arial Narrow', 'Helvetica Neue', 'Liberation Sans Narrow', sans-serif;
+  'Adwaita Mono', 'Helvetica Neue', 'Liberation Sans Narrow', sans-serif;
 $mono: ui-monospace, 'Cascadia Mono', 'Consolas', 'Liberation Mono', monospace;
 
 .Helm {
@@ -180,9 +180,7 @@ $caption: 1.6cqw;
   left: 0;
   z-index: 2;
   display: flex;
-  // A flex container strips leading whitespace from each item, so the space
-  // ahead of the "/" separator is gone whatever the markup says, the gap is
-  // what actually holds the two halves apart.
+  // Holds the caption label clear of the well's action control, if it has one.
   gap: 0.4em;
   align-items: center;
   overflow: hidden;
@@ -197,17 +195,10 @@ $caption: 1.6cqw;
   white-space: nowrap;
 }
 
-.Helm__wellAux {
-  // Secondary, but on black rather than on brushed metal, so it can be genuinely
-  // readable instead of merely present.
-  color: #5c6c70;
-  letter-spacing: 0.1em;
-}
-
 // A control in a well caption (the manual-control switch on the Helm panel).
 // The caption is only $caption tall, so the base button chrome is squeezed to
 // fit inside it; the auto margin holds it against the right edge, clear of the
-// label and aux text. Armed borrows the engine toggle's green.
+// label. Armed borrows the engine toggle's green.
 .Helm__wellAction {
   margin-left: auto;
   padding: 0.05cqw 0.45cqw;
@@ -364,11 +355,15 @@ $caption: 1.6cqw;
   padding: 0 1cqw;
 }
 
-// The name's slot. min-width: 0 is what lets a flex item shrink below its content
-// width at all, without it the name simply pushes the class and position readouts
-// off the end of the plate instead of giving way.
+// The name slab is a column: the hull name sits above its class/mass subline.
+// min-width: 0 lets the slot shrink below its content width at all, otherwise
+// a long name pushes the rest of the plate off the bezel instead of giving way.
 .Helm__identName {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.12cqw;
   min-width: 0;
   overflow: hidden;
 }
@@ -386,7 +381,7 @@ $caption: 1.6cqw;
   background: none;
   color: #d6e2e4;
   font-family: $stencil;
-  font-size: calc(1.7cqw * var(--helm-name-scale));
+  font-size: calc(1.4cqw * var(--helm-name-scale));
   letter-spacing: 0.06em;
   text-align: left;
   text-overflow: ellipsis;
@@ -408,17 +403,15 @@ $caption: 1.6cqw;
   }
 }
 
-// The ident bezel is too narrow for name + class + position at their natural
-// widths even for a short name, so something always has to give. The lopsided
-// shrink factor makes it this: the class readout collapses to nothing before the
-// name gives up a single pixel, because the name is what the crew reads off the
-// plate and the class never changes.
+// The class/mass subline under the name. It shares the name's slot, so it is
+// clipped to the same width and ellipsises rather than spilling across the
+// bezel; the name itself is what the crew reads off the plate.
 .Helm__shipClass {
-  flex: 0 999 auto;
+  flex: none;
   min-width: 0;
   overflow: hidden;
   color: $label;
-  font-size: 1cqw;
+  font-size: 0.7cqw;
   letter-spacing: 0.14em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -777,12 +770,31 @@ $caption: 1.6cqw;
   }
 }
 
+// The chart body is the same inset:0 absolute panel body as .Helm__viewport,
+// but without the pan cursor or the blanket SVG sizing, which HelmPlane owns
+// now. .Helm__well--labelled pushes its top below the caption (see above), so
+// the plane's own bottom-anchored controls stay inside the well.
+.Helm__chart {
+  position: absolute;
+  inset: 0;
+}
+
 .Helm__hud {
   position: absolute;
   pointer-events: none;
   font-family: $mono;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
+
+  &.Helm__hud--row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.8cqw;
+
+    .Helm__zoneControls {
+      margin-bottom: 0;
+    }
+  }
 
   &.Helm--tl {
     top: 0.8cqw;
@@ -830,10 +842,95 @@ $caption: 1.6cqw;
   letter-spacing: 0.14em;
 }
 
+.Helm__readouts {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  align-content: start;
+  column-gap: 1cqw;
+  row-gap: 0.15cqw;
+}
+
 .Helm__hudBig {
   color: $ice;
   font-size: 2cqw;
   line-height: 1.1;
+}
+
+// Full-width control strip along the bottom of the chart: HelmPlane's own zoom
+// controls, the autopilot readout/Cancel and the ship-recentre button. Buttons
+// adopt the console chrome so they sit in the faceplate rather than looking
+// like stock tgui. Scoped to the chart, the shared plane keeps its native look
+// in the shipyard preview.
+.Helm__chart .Helm__chartControls {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  align-items: center;
+  gap: 0.3cqw;
+  padding: 0.35cqw 0.6cqw;
+  border-top: 1px solid $steel-700;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 14, 16, 0.92),
+    rgba(5, 9, 10, 0.98)
+  );
+
+  .Button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    min-height: 1.7cqw;
+    padding: 0.32cqw 0.55cqw;
+    border: 1px solid $steel-600;
+    border-radius: 2px;
+    background: linear-gradient(#232c30, #171e21);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    color: $label;
+    font-family: $stencil;
+    font-size: 0.85cqw;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &:hover:not(.Button--disabled) {
+      border-color: $steel-500;
+      color: #cfe0e3;
+    }
+
+    &.Button--selected {
+      border-color: $ice-dim;
+      background: linear-gradient(#16333a, #0f2429);
+      color: $ice;
+    }
+
+    &.Button--disabled {
+      opacity: 0.35;
+    }
+
+    .Button--icon {
+      margin: 0;
+      font-size: 0.85cqw;
+    }
+  }
+
+  // The centre button carries a fill bar; let it share the row's height instead
+  // of clipping its label at a fixed 1.6em.
+  .HelmPlane__Controls--center {
+    height: auto;
+  }
+
+  // The autopilot readout lives in the strip now, so it has no HUD stacking to
+  // clear and sits on the row's centreline.
+  .Helm__course {
+    margin-top: 0;
+  }
+
+  .HelmPlane__Controls--extra,
+  .HelmPlane__Controls--main {
+    gap: 0.3cqw;
+  }
 }
 
 .Helm__zoomRow {
@@ -917,6 +1014,50 @@ $caption: 1.6cqw;
   }
 }
 
+// The autopilot destination pip spins, so a course being flown reads apart from
+// a mere projection at a glance. The plane scales the node; this only rotates.
+.Helm__reticle {
+  display: block;
+  transform-origin: 50% 50%;
+  animation: helm-reticle-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes helm-reticle-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// The destination pip and its ETA. The reticle lives in map space and zooms
+// with the chart; the clock is counter-scaled (KeepScale) so it stays a
+// readable size, floating just above the reticle.
+.Helm__target {
+  position: relative;
+  pointer-events: none;
+}
+
+.Helm__etaAnchor {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-bottom: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.Helm__eta {
+  display: inline-block;
+  padding: 0 3px;
+  border-radius: 2px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: $crit;
+  font-family: $mono;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 .Helm__course {
   display: flex;
   align-items: center;
@@ -930,27 +1071,32 @@ $caption: 1.6cqw;
   overflow: hidden;
   color: $good;
   font-family: $stencil;
-  font-size: 0.85cqw;
-  letter-spacing: 0.1em;
+  font-size: 0.9cqw;
+  margin-left: 0.6em;
+  letter-spacing: 0.06em;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+  margin-top: 0.3cqw;
 }
 
 .Helm__courseDist {
   color: $label;
   font-family: $mono;
-  font-size: 0.8cqw;
+  font-size: 1cqw;
   font-variant-numeric: tabular-nums;
+  margin-top: 0.3cqw;
+  margin-right: 0.2em;
 }
 
 .Helm__courseStatus {
   margin-top: 0.3cqw;
-  color: $steel-500;
+  color: $label;
   font-family: $mono;
-  font-size: 0.78cqw;
+  font-size: 1cqw;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  margin-left: 0.6em;
 }
 
 .Helm__zoneControls {
@@ -962,7 +1108,7 @@ $caption: 1.6cqw;
   margin-bottom: 0.35cqw;
   color: $ice-dim;
   font-family: $mono;
-  font-size: 0.7cqw;
+  font-size: 1cqw;
   letter-spacing: 0.08em;
 }
 
@@ -973,7 +1119,7 @@ $caption: 1.6cqw;
 
 .Helm__zoneButton {
   min-width: 10cqw;
-  padding: 0.45cqw 0.6cqw;
+  padding: 0.45cqw 0.3cqw 0.45cqw 0.6cqw;
   border: 1px solid $steel-700;
   border-top: 2px solid;
   border-radius: 2px;
@@ -983,7 +1129,8 @@ $caption: 1.6cqw;
   text-align: left;
   cursor: pointer;
 
-  &:hover, &:focus-visible {
+  &:hover,
+  &:focus-visible {
     background: $steel-800;
     outline: 1px solid $ice-dim;
   }
@@ -1644,7 +1791,7 @@ $caption: 1.6cqw;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: $steel-500;
+  color: $label;
   font-family: $mono;
   font-size: 0.78cqw;
 }
@@ -1719,18 +1866,24 @@ $caption: 1.6cqw;
   }
 }
 
+// Digits stack above the labelled metrics rather than beside them: at max speed
+// the number is wide enough that sharing a row with the labels clipped it.
 .Helm__velocity {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
-  gap: 1cqw;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4cqw;
   padding: 0.9cqw;
 }
 
 .Helm__velBig {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5cqw;
+  min-width: 0;
 }
 
 .Helm__velValue {

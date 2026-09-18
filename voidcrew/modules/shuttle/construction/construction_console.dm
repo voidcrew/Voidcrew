@@ -1349,7 +1349,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	balloon_alert(user, "console saved")
 	return ITEM_INTERACT_SUCCESS
 
-/obj/machinery/computer/camera_advanced/base_construction/ship/LateInitialize()
+/obj/machinery/computer/camera_advanced/base_construction/ship/post_machine_initialize()
 	. = ..()
 	attempt_ship_connection()
 
@@ -2026,6 +2026,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 // ============================================
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/ui_interact(mob/user, datum/tgui/ui)
+	SHOULD_CALL_PARENT(FALSE)
 	if(!current_ship && !attempt_ship_connection())
 		to_chat(user, span_warning("No ship connection."))
 		return FALSE

@@ -407,7 +407,7 @@
 		explosion_info += TANK_MERGE_OVERPRESSURE
 
 /obj/item/tank/proc/explosion_information()
-	return list(TANK_RESULTS_REACTION = reaction_info, TANK_RESULTS_MISC = explosion_info)
+	return alist(TANK_RESULTS_REACTION = reaction_info, TANK_RESULTS_MISC = explosion_info)
 
 /obj/item/tank/on_found(mob/finder) //for mousetraps
 	. = ..()
