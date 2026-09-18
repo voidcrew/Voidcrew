@@ -1,0 +1,258 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bVQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"dwT" = (
+/obj/structure/railing/corner{
+	dir = 8
+	},
+/obj/structure/railing/corner,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fRx" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/trimline/purple/arrow_ccw{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"jVR" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/plasteel/twenty{
+	pixel_x = -4;
+	pixel_y = -1
+	},
+/obj/machinery/camera/autoname/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"khi" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/machinery/newscaster/directional/south,
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"lwm" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/trimline/purple/arrow_ccw{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"mkF" = (
+/obj/structure/railing{
+	layer = 3.4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/north{
+	pixel_x = -6;
+	pixel_y = 28
+	},
+/obj/effect/turf_decal/siding/wideplating/dark,
+/turf/template_noop,
+/area/template_noop)
+"neE" = (
+/obj/effect/turf_decal/tile/purple/half{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"otb" = (
+/obj/effect/turf_decal/box,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"pdH" = (
+/obj/structure/railing{
+	layer = 3.4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"pkx" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 4
+	},
+/obj/machinery/rnd/production/circuit_imprinter,
+/turf/template_noop,
+/area/template_noop)
+"rGi" = (
+/obj/structure/railing/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"rNH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 6
+	},
+/turf/template_noop,
+/area/template_noop)
+"soY" = (
+/obj/machinery/recharge_station,
+/obj/effect/turf_decal/tile/purple/half{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/turf/template_noop,
+/area/template_noop)
+"thR" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 4
+	},
+/obj/machinery/rnd/production/techfab,
+/turf/template_noop,
+/area/template_noop)
+"tYt" = (
+/obj/structure/railing/corner,
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"udP" = (
+/obj/machinery/mecha_part_fabricator{
+	dir = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"uJM" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"vHL" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/trimline/purple/arrow_ccw{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/safety_eye_protection/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"wQw" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"xdE" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8;
+	layer = 2.5
+	},
+/obj/machinery/computer/rdconsole{
+	dir = 1;
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/trimline/purple/arrow_ccw{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"ykW" = (
+/obj/effect/turf_decal/tile/purple/half{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+soY
+neE
+ykW
+"}
+(2,1,1) = {"
+tYt
+uJM
+khi
+"}
+(3,1,1) = {"
+mkF
+otb
+udP
+"}
+(4,1,1) = {"
+dwT
+bVQ
+jVR
+"}
+(5,1,1) = {"
+pdH
+otb
+udP
+"}
+(6,1,1) = {"
+rGi
+fRx
+vHL
+"}
+(7,1,1) = {"
+rNH
+lwm
+xdE
+"}
+(8,1,1) = {"
+pkx
+wQw
+thR
+"}

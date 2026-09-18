@@ -1,0 +1,81 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/squab",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/squab/bridge",
+      "Name": "Bridge",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/command_quarters",
+      "Name": "Command Quarters",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/captain_quarters",
+      "Name": "Captain Quarters",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/lab_storage",
+      "Name": "Lab Storage",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/laboratory",
+      "Name": "Laboratory",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/science_hall",
+      "Name": "Science Hall",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/cargo_hall",
+      "Name": "Cargo Hall",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/cargobay",
+      "Name": "Cargobay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/cargo_entrance",
+      "Name": "Cargo Entrance",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/office",
+      "Name": "Office",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/dormitory",
+      "Name": "Dormitory",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/bathroom",
+      "Name": "Bathroom",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/cryogenics",
+      "Name": "Cryogenics",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/central_hallway",
+      "Name": "Central Hallway",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/squab/engineering",
+      "Name": "Engineering",
+      "IconState": "engie"
+    }
+  ]
+}

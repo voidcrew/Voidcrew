@@ -1,0 +1,328 @@
+{
+  "Rosters": {
+    "module/director_s_quarters_basic": [
+      {
+        "ID": "job_4",
+        "Name": "Science Director",
+        "Outfit": "/datum/outfit/job/rd",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/medical_director": [
+      {
+        "ID": "job_5",
+        "Name": "Medical Director",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_5",
+        "BaseOutfit": "/datum/outfit/job/cmo",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "head": "/obj/item/clothing/head/beret/medical/cmo",
+          "suit": "/obj/item/clothing/suit/hooded/wintercoat/medical/cmo"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/medical_lab": [
+      {
+        "ID": "job_2",
+        "Name": "Medical Researcher",
+        "Outfit": "/datum/outfit/job/chemist",
+        "BaseOutfit": "",
+        "Category": "Medical",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/nanite_lab": [
+      {
+        "ID": "job_3",
+        "Name": "Nanite Researcher",
+        "Outfit": "/datum/outfit/job/scientist",
+        "BaseOutfit": "",
+        "Category": "Science",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/security_director": [
+      {
+        "ID": "job_6",
+        "Name": "Security Director",
+        "Outfit": "/datum/outfit/job/hos",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/security_gear_room": [
+      {
+        "ID": "job_12",
+        "Name": "Security Officer",
+        "Outfit": "/datum/outfit/job/security",
+        "BaseOutfit": "",
+        "Category": "Security",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/squab_gear_room_basic": [
+      {
+        "ID": "job_11",
+        "Name": "Shaft Miner",
+        "Outfit": "/datum/outfit/job/miner",
+        "BaseOutfit": "",
+        "Category": "Cargo",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "module/squab_lab_basic": [
+      {
+        "ID": "job_1",
+        "Name": "Scientist",
+        "Outfit": "/datum/outfit/job/scientist",
+        "BaseOutfit": "",
+        "Category": "Science",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "ship": [],
+    "theme/cheap_frigate": [
+      {
+        "ID": "job_13",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_13",
+        "BaseOutfit": "/datum/outfit/job/quartermaster",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "back": "/obj/item/storage/backpack/satchel/leather",
+          "head": "/obj/item/clothing/head/soft",
+          "suit": ""
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_14",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_15",
+        "Name": "Security Detail",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_15",
+        "BaseOutfit": "/datum/outfit/job/security",
+        "Category": "Security",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "head": "/obj/item/clothing/head/beret/sec",
+          "uniform": "/obj/item/clothing/under/rank/security/officer/grey"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_16",
+        "Name": "Repair Technician",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_16",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "accessory": "/obj/item/clothing/accessory/armband/cargo",
+          "back": "/obj/item/storage/backpack/satchel/eng",
+          "head": "/obj/item/clothing/head/utility/hardhat/welding/dblue",
+          "suit": "/obj/item/clothing/suit/hazardvest",
+          "uniform": "/obj/item/clothing/under/rank/security/detective/disco"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/nanotrasen_frigate": [
+      {
+        "ID": "job_7",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_7",
+        "BaseOutfit": "/datum/outfit/job/quartermaster",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "back": "/obj/item/storage/backpack/satchel/leather",
+          "head": "/obj/item/clothing/head/soft",
+          "suit": ""
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_8",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_9",
+        "Name": "Security Detail",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_9",
+        "BaseOutfit": "/datum/outfit/job/security",
+        "Category": "Security",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "head": "/obj/item/clothing/head/beret/sec",
+          "uniform": "/obj/item/clothing/under/rank/security/officer/grey"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_10",
+        "Name": "Repair Technician",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_10",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "accessory": "/obj/item/clothing/accessory/armband/cargo",
+          "back": "/obj/item/storage/backpack/satchel/eng",
+          "head": "/obj/item/clothing/head/utility/hardhat/welding/dblue",
+          "suit": "/obj/item/clothing/suit/hazardvest",
+          "uniform": "/obj/item/clothing/under/rank/security/detective/disco"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/the_patrolboat": [
+      {
+        "ID": "job_17",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_17",
+        "BaseOutfit": "/datum/outfit/job/captain",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "head": "/obj/item/clothing/head/hats/caphat/parade",
+          "suit": "/obj/item/clothing/suit/armor/vest/capcarapace/captains_formal"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_18",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_19",
+        "Name": "Security Detail",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_19",
+        "BaseOutfit": "/datum/outfit/job/security",
+        "Category": "Security",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "head": "/obj/item/clothing/head/beret/sec",
+          "uniform": "/obj/item/clothing/under/rank/security/officer/grey"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_20",
+        "Name": "Repair Technician",
+        "Outfit": "/datum/outfit/job/workshop_squab_job_20",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "accessory": "/obj/item/clothing/accessory/armband/cargo",
+          "back": "/obj/item/storage/backpack/satchel/eng",
+          "head": "/obj/item/clothing/head/utility/hardhat/welding/dblue",
+          "suit": "/obj/item/clothing/suit/hazardvest",
+          "uniform": "/obj/item/clothing/under/rank/security/detective/disco"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ]
+  }
+}

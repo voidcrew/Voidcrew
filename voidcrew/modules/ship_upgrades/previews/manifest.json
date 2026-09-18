@@ -492,6 +492,90 @@
    },
    "src_md5": "f9c0406dac6267d3f0b450e7fd30e604"
   },
+  "squab_a": {
+   "png": "ship_squab_a.png",
+   "width": 36,
+   "height": 20,
+   "slots": {
+    "squab_gear_room": [
+     18,
+     16
+    ],
+    "director_s_quarters": [
+     19,
+     7
+    ],
+    "squab_lab": [
+     23,
+     3
+    ],
+    "lab_storage": [
+     23,
+     7
+    ],
+    "squab_mech_bay": [
+     23,
+     14
+    ]
+   },
+   "src_md5": "0a96d291d8b9bb5100fae75138868db3"
+  },
+  "squab_b": {
+   "png": "ship_squab_b.png",
+   "width": 36,
+   "height": 20,
+   "slots": {
+    "squab_gear_room": [
+     18,
+     16
+    ],
+    "director_s_quarters": [
+     19,
+     7
+    ],
+    "squab_lab": [
+     23,
+     3
+    ],
+    "lab_storage": [
+     23,
+     7
+    ],
+    "squab_mech_bay": [
+     23,
+     14
+    ]
+   },
+   "src_md5": "8981f82623dd1e8628a467bd71f1ad33"
+  },
+  "squab_c": {
+   "png": "ship_squab_c.png",
+   "width": 36,
+   "height": 20,
+   "slots": {
+    "squab_gear_room": [
+     18,
+     16
+    ],
+    "director_s_quarters": [
+     19,
+     7
+    ],
+    "squab_lab": [
+     23,
+     3
+    ],
+    "lab_storage": [
+     23,
+     7
+    ],
+    "squab_mech_bay": [
+     23,
+     14
+    ]
+   },
+   "src_md5": "75696506d4281ec34207f0b935eb362d"
+  },
   "test_modular": {
    "png": "ship_test_modular.png",
    "width": 8,
@@ -3021,6 +3105,422 @@
      ],
      "png": "scarab_scarab_cargo_med_syndicate.png",
      "src_md5": "66e8ff01f98b321a659511fbb302edcd"
+    }
+   }
+  },
+  "squab/robotics_lab.dmm": {
+   "width": 8,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_robotics_lab.png",
+   "src_md5": "b02b2ecd3b3870259c3c9dc3cdb25fc1",
+   "themes": {
+    "cheap_frigate": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_robotics_lab_cheap_frigate.png",
+     "src_md5": "933cc0475ebd11adc86b6141dd2f50de"
+    },
+    "the_patrolboat": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_robotics_lab_the_patrolboat.png",
+     "src_md5": "e327fe27c6762512ae17c2b630bcad41"
+    }
+   }
+  },
+  "squab/medical_lab.dmm": {
+   "width": 8,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_medical_lab.png",
+   "src_md5": "ac13f1375b9a9d23e739ceb7b433feef",
+   "themes": {
+    "cheap_frigate": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_medical_lab_cheap_frigate.png",
+     "src_md5": "0024373d6373d0c9d4e96e95ae7e05ac"
+    },
+    "the_patrolboat": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_medical_lab_the_patrolboat.png",
+     "src_md5": "8e60cb5c4540ba81c014ce40edbcbf94"
+    }
+   }
+  },
+  "squab/nanite_lab.dmm": {
+   "width": 8,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_nanite_lab.png",
+   "src_md5": "f432eed5076de17fdf88c9b8038a2154",
+   "themes": {
+    "cheap_frigate": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_nanite_lab_cheap_frigate.png",
+     "src_md5": "db725c85a5df498ad7b4662cb25238b5"
+    },
+    "the_patrolboat": {
+     "width": 8,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_nanite_lab_the_patrolboat.png",
+     "src_md5": "956b899a2ccbe0187caed97264947782"
+    }
+   }
+  },
+  "squab/mecha_ripley.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_mecha_ripley.png",
+   "src_md5": "0753432f9811ef06545d6683bfd46c7e",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mecha_ripley_cheap_frigate.png",
+     "src_md5": "92efd790bfb9e0dc13f27a4f7eeda16b"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mecha_ripley_the_patrolboat.png",
+     "src_md5": "f8072e2aaaa7df5446480e04c77f7864"
+    }
+   }
+  },
+  "squab/mecha_paddy.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_mecha_paddy.png",
+   "src_md5": "78b9a10b636701dc3e1355d2b22f021b",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mecha_paddy_cheap_frigate.png",
+     "src_md5": "a8e38ab9fb6fb2f0225ad74ed893ed79"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mecha_paddy_the_patrolboat.png",
+     "src_md5": "a1b4ed3d81f0ee45d2e6d3f58b8eba8b"
+    }
+   }
+  },
+  "squab/extra_gear_bay.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_extra_gear_bay.png",
+   "src_md5": "15284b8818710c70a4cfe4329e7ff3c2",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_extra_gear_bay_cheap_frigate.png",
+     "src_md5": "7a17ba3e62875c96a4f44e10caf3eae6"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_extra_gear_bay_the_patrolboat.png",
+     "src_md5": "6d227ba50ab135fbbe3becdd654b1aa0"
+    }
+   }
+  },
+  "squab/ai_core.dmm": {
+   "width": 3,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_ai_core.png",
+   "src_md5": "41579cacf587992bab95f693c30aa971",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 1,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_ai_core_cheap_frigate.png",
+     "src_md5": "b241afc039604d5d60e1d5d7381637e5"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 1,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_ai_core_the_patrolboat.png",
+     "src_md5": "edc53f41d4a5761022668ee79015d648"
+    }
+   }
+  },
+  "squab/plumbing_storage.dmm": {
+   "width": 3,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_plumbing_storage.png",
+   "src_md5": "0a024269416b6a5d3a4f19345c11d43e",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 1,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_plumbing_storage_cheap_frigate.png",
+     "src_md5": "5a90af7644b6e6ff25675c203aa12587"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 1,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_plumbing_storage_the_patrolboat.png",
+     "src_md5": "bd71a6edf83153968931731cba2b9e1b"
+    }
+   }
+  },
+  "squab/science_director.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_science_director.png",
+   "src_md5": "2278880fcce97b042f12d1948c94e3d6",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_science_director_cheap_frigate.png",
+     "src_md5": "45c0c91ba3d38a9af80b79b54c5d5205"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_science_director_the_patrolboat.png",
+     "src_md5": "8275271d005431914936c480bacf7413"
+    }
+   }
+  },
+  "squab/medical_director.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_medical_director.png",
+   "src_md5": "8ebbf057d0b00972e860282584584dbd",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_medical_director_cheap_frigate.png",
+     "src_md5": "5a2d9d267fc29ec638ce256d727dfaa5"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_medical_director_the_patrolboat.png",
+     "src_md5": "74eefabe051050d0ed34bd9ff426992b"
+    }
+   }
+  },
+  "squab/security_director.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_security_director.png",
+   "src_md5": "a54ea9e2fbe15b05b5219d33bbadd24b",
+   "themes": {
+    "cheap_frigate": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_security_director_cheap_frigate.png",
+     "src_md5": "26516c9a41beed6d561e17af7fb2622f"
+    },
+    "the_patrolboat": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_security_director_the_patrolboat.png",
+     "src_md5": "766b99f8557f35b9c88d3171d154f700"
+    }
+   }
+  },
+  "squab/mining_gear.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_mining_gear.png",
+   "src_md5": "b213ca47b883a9f51cfb3b3a040bb047",
+   "themes": {
+    "cheap_frigate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mining_gear_cheap_frigate.png",
+     "src_md5": "28b846891380d79a3fe213e3afbcc633"
+    },
+    "the_patrolboat": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_mining_gear_the_patrolboat.png",
+     "src_md5": "7929ea0290c4f796121f959a5ee11837"
+    }
+   }
+  },
+  "squab/security_gear_room.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "squab_security_gear_room.png",
+   "src_md5": "842d5bf425eb1af4715d5c7fb5001aee",
+   "themes": {
+    "cheap_frigate": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_security_gear_room_cheap_frigate.png",
+     "src_md5": "238afbbd67fb29618fcd22d94290d29a"
+    },
+    "the_patrolboat": {
+     "width": 4,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "squab_security_gear_room_the_patrolboat.png",
+     "src_md5": "c82ac4ebf7c1f9c8d4dc36769b1fcbe5"
     }
    }
   },

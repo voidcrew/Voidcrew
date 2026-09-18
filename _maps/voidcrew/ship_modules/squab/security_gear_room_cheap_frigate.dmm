@@ -1,0 +1,107 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"csD" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/turf_decal/siding/white{
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"cHB" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"eOe" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"ffq" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/machinery/suit_storage_unit/security,
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"hYM" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/white{
+	dir = 6
+	},
+/obj/item/gun/energy/disabler/smg,
+/turf/template_noop,
+/area/template_noop)
+"jJi" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/security,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"jQp" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/security,
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"jTO" = (
+/obj/effect/turf_decal/siding/white,
+/obj/structure/extinguisher_cabinet/directional/south{
+	pixel_x = -6;
+	pixel_y = -28
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"oRY" = (
+/obj/effect/turf_decal/siding/white,
+/turf/template_noop,
+/area/template_noop)
+"qSo" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+ffq
+cHB
+csD
+"}
+(2,1,1) = {"
+ffq
+eOe
+jTO
+"}
+(3,1,1) = {"
+jQp
+eOe
+oRY
+"}
+(4,1,1) = {"
+jJi
+qSo
+hYM
+"}

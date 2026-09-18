@@ -1,0 +1,79 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"biB" = (
+/obj/structure/bed,
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 6
+	},
+/obj/machinery/button/door{
+	dir = 1;
+	id = "squab_sdlock";
+	name = "Director's Shutters Control";
+	pixel_y = -22;
+	pixel_x = -8
+	},
+/obj/item/bedsheet/cmo,
+/turf/template_noop,
+/area/template_noop)
+"fJg" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/cmo,
+/turf/template_noop,
+/area/template_noop)
+"kvz" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"mdt" = (
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 5
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/obj/item/defibrillator/compact/combat/loaded/nanotrasen,
+/turf/template_noop,
+/area/template_noop)
+"nSY" = (
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 9
+	},
+/turf/template_noop,
+/area/template_noop)
+"rUe" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/modular_map_connector,
+/obj/structure/closet/secure_closet/chief_medical{
+	name = "medical director's locker"
+	},
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+fJg
+rUe
+"}
+(2,1,1) = {"
+nSY
+kvz
+"}
+(3,1,1) = {"
+mdt
+biB
+"}

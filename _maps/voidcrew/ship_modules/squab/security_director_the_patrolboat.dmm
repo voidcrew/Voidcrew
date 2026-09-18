@@ -1,0 +1,93 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dih" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/hos,
+/turf/template_noop,
+/area/template_noop)
+"lIG" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/modular_map_connector,
+/obj/structure/closet/secure_closet{
+	icon_state = "hos";
+	name = "security director's locker"
+	},
+/obj/item/computer_disk/command/hos,
+/obj/item/radio/headset/heads/hos,
+/obj/item/radio/headset/heads/hos/alt,
+/obj/item/storage/bag/garment/hos,
+/obj/item/storage/lockbox/medal/sec,
+/obj/item/megaphone/sec,
+/obj/item/holosign_creator/security,
+/obj/item/storage/lockbox/loyalty,
+/obj/item/storage/box/flashbangs,
+/obj/item/shield/riot/tele,
+/obj/item/storage/belt/security/full,
+/obj/item/storage/photo_album/hos,
+/turf/template_noop,
+/area/template_noop)
+"oOl" = (
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 9
+	},
+/turf/template_noop,
+/area/template_noop)
+"sxw" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"tnA" = (
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 5
+	},
+/obj/structure/displaycase/noalert{
+	start_showpiece_type = /obj/item/gun/energy/e_gun/hos
+	},
+/turf/template_noop,
+/area/template_noop)
+"wUp" = (
+/obj/structure/bed,
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 6
+	},
+/obj/machinery/button/door{
+	dir = 1;
+	id = "squab_sdlock";
+	name = "Director's Shutters Control";
+	pixel_y = -22;
+	pixel_x = -8
+	},
+/obj/item/bedsheet/hos,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+dih
+lIG
+"}
+(2,1,1) = {"
+oOl
+sxw
+"}
+(3,1,1) = {"
+tnA
+wUp
+"}

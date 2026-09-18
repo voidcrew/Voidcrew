@@ -1,0 +1,73 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ape" = (
+/obj/machinery/mech_bay_recharge_port{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark,
+/turf/template_noop,
+/area/template_noop)
+"cuV" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/turf_decal/siding/dark,
+/obj/vehicle/sealed/mecha/ripley,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"eDq" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
+/obj/item/weldingtool/largetank{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/stack/cable_coil,
+/turf/template_noop,
+/area/template_noop)
+"eSr" = (
+/obj/structure/closet/crate/radiation{
+	name = "exosuit equipment crate"
+	},
+/obj/item/mecha_parts/mecha_equipment/generator,
+/obj/item/mecha_parts/mecha_equipment/mining_scanner,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/mecha_parts/mecha_equipment/drill/diamonddrill,
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
+/turf/template_noop,
+/area/template_noop)
+"jmY" = (
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"rEY" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+eSr
+jmY
+"}
+(2,1,1) = {"
+rEY
+cuV
+"}
+(3,1,1) = {"
+eDq
+ape
+"}

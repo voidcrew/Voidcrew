@@ -1,0 +1,107 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"chi" = (
+/obj/effect/turf_decal/siding/white,
+/turf/template_noop,
+/area/template_noop)
+"eOo" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"giW" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/turf_decal/siding/white{
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"jaA" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"nMG" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/security,
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"ttv" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"uaB" = (
+/obj/effect/turf_decal/siding/white,
+/obj/structure/extinguisher_cabinet/directional/south{
+	pixel_x = -6;
+	pixel_y = -28
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"upD" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/security,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"uPL" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/machinery/suit_storage_unit/security,
+/obj/effect/turf_decal/siding/red,
+/turf/template_noop,
+/area/template_noop)
+"xry" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/white{
+	dir = 6
+	},
+/obj/item/gun/energy/disabler/smg,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+uPL
+jaA
+giW
+"}
+(2,1,1) = {"
+uPL
+ttv
+uaB
+"}
+(3,1,1) = {"
+nMG
+ttv
+chi
+"}
+(4,1,1) = {"
+upD
+eOo
+xry
+"}

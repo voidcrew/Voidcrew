@@ -1,0 +1,52 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"icl" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/modular_map_connector,
+/obj/item/ai_module/core/full/robocop{
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/obj/item/ai_module/core/full/yesman{
+	pixel_x = 0;
+	pixel_y = 1
+	},
+/obj/item/ai_module/core/full/corp{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mpY" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"nBi" = (
+/obj/item/mmi/posibrain,
+/obj/item/circuitboard/aicore,
+/obj/item/stack/sheet/rglass,
+/obj/item/radio/intercom/directional/south,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/ai_core,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+icl
+"}
+(2,1,1) = {"
+mpY
+"}
+(3,1,1) = {"
+nBi
+"}

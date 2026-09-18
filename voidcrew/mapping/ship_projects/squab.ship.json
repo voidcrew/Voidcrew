@@ -1,0 +1,178 @@
+{
+  "Version": 1,
+  "ID": "squab",
+  "Description": "A commonly seen Nanotrasen frigate, usually manufactured with some sort of dual cargo-sci department. The hull itself is highly modular and well equipped, although rather slow due to it's poor thrust-to-mass ratio. Nontheless the Squab-Class continues to maintain Nanotrasen's interests in the region, while providing fairly good conditions to its employees.",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/squab",
+    "Name": "Squab-class Multipurpose Frigate",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "squab",
+    "Slots": [
+				"squab_lab",
+				"squab_mech_bay",
+				"lab_storage",
+				"director_s_quarters",
+				"squab_gear_room"
+    ],
+    "Themes": [
+      {
+        "ID": "nanotrasen_frigate",
+        "Name": "Nanotrasen Frigate",
+        "Suffix": "squab",
+        "Slots": [
+					"squab_lab",
+					"squab_mech_bay",
+					"lab_storage",
+					"director_s_quarters",
+					"squab_gear_room"
+        ],
+        "Default": true
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "squab_lab_basic",
+        "Name": "Robotics Lab",
+        "Slot": "squab_lab",
+        "File": "squab/robotics_lab.dmm",
+        "Description": "Squab's classic Lab designed for field research and robotics: Two fabricators and a basic lathe setup to keep you going.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "medical_lab",
+        "Name": "Medical Lab",
+        "Slot": "squab_lab",
+        "File": "squab/medical_lab.dmm",
+        "Description": "A chemistry lab with some spare medical supplies designed for pharmaceutical research.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "nanite_lab",
+        "Name": "Nanite Lab",
+        "Slot": "squab_lab",
+        "File": "squab/nanite_lab.dmm",
+        "Description": "A nanite research compartment for quick access to nanite technology and research.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "squab_mech_bay_basic",
+        "Name": "Mecha Ripley",
+        "Slot": "squab_mech_bay",
+        "File": "squab/mecha_ripley.dmm",
+        "Description": "Squab's basic mecha setup: A mining ripley with some spare repair tool, a recharging station and a crate full of mining equipment.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "mecha_paddy",
+        "Name": "Mecha Paddy",
+        "Slot": "squab_mech_bay",
+        "File": "squab/mecha_paddy.dmm",
+        "Description": "A security upgrade for your vessel: A high-speed, low-drag Paddy mecha to keep your assistants in check.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "extra_gear_bay",
+        "Name": "Extra gear bay",
+        "Slot": "squab_mech_bay",
+        "File": "squab/extra_gear_bay.dmm",
+        "Description": "A small section of the cargobay that includes some extra mining gear for your adventures.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "lab_storage_basic",
+        "Name": "AI core",
+        "Slot": "lab_storage",
+        "File": "squab/ai_core.dmm",
+        "Description": "Squab's default AI core setup designed for the robotics lab.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "plumbing_storage",
+        "Name": "Plumbing storage",
+        "Slot": "lab_storage",
+        "File": "squab/plumbing_storage.dmm",
+        "Description": "A basic storage compartment for medical plumbing gear.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "director_s_quarters_basic",
+        "Name": "Science Director",
+        "Slot": "director_s_quarters",
+        "File": "squab/science_director.dmm",
+        "Description": "A bedroom for the science director with a research modsuit and a filled locker. An experimental prototype resides on the table.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "medical_director",
+        "Name": "Medical Director",
+        "Slot": "director_s_quarters",
+        "File": "squab/medical_director.dmm",
+        "Description": "Medical Director's quarters containing a modsuit, a compact defibrillator and a filled locker for medical research.",
+        "Themes": [
+          "nanotrasen_frigate"
+        ],
+        "Default": false
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": true,
+  "Cost": 0,
+  "PartCosts": {
+    "module/extra_gear_bay": {
+      "misc": 1,
+      "trade": 1
+    },
+    "module/mecha_paddy": {
+      "combat": 2,
+      "misc": 1
+    },
+    "module/medical_director": {
+      "misc": 2,
+      "science": 1
+    },
+    "module/medical_lab": {
+      "misc": 3,
+      "science": 2,
+      "trade": 1
+    },
+    "module/nanite_lab": {
+      "misc": 2,
+      "science": 3,
+      "trade": 2
+    },
+    "module/plumbing_storage": {
+      "misc": 1,
+      "science": 1
+    }
+  },
+  "PortDirection": 2
+}
