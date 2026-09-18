@@ -285,7 +285,7 @@
 	// test are the only ones on their level whatever else the round is already holding.
 	// Order matters: add_new_zlevel() sleeps, so the level is made BEFORE the zone exists
 	// and no other claimant can be handed a slot of it behind our back.
-	var/datum/space_level/planet_level = SSmapping.add_new_zlevel("Map packing test", list())
+	var/datum/space_level/planet_level = SSmapping.add_new_zlevel("Map packing test", list(), mint_reason = "unit test voidcrew_map_packing")
 	var/datum/map_zone/planet_zone = SSovermap.create_map_zone("Map packing test")
 	planet_zone.add_space_level(planet_level)
 
@@ -950,3 +950,111 @@
 	TEST_FAIL("effective_z_ceiling([pop]) returned [got], expected [expected] (base [CONFIG_GET(number/max_z_levels)], \
 		start [CONFIG_GET(number/max_z_levels_pop_scale_start)], per [CONFIG_GET(number/max_z_levels_pop_scale_per)], \
 		floor [CONFIG_GET(number/max_z_levels_pop_floor)]): [why].")
+
+/**
+ * # A flat slot is exactly what two berths need, and nothing more
+ *
+ * The owner's rule for empty space and crash sites: big enough for two ships, and that is
+ * it. This pins the arithmetic behind MAP_SLOT_SIDE so nobody widens it by accident, then
+ * builds a real empty-space encounter and a real crash site through spawn_dynamic_encounter()
+ * and measures where their berths actually landed.
+ *
+ * Both berths sit side by side along the slot's bottom edge:
+ *
+ *   padding + LONG + padding + LONG + padding = 3 + 56 + 3 + 56 + 3 = 121
+ *
+ * plus one turf of border each side = 123 = MAP_SLOT_SIDE. The slot is square rather than
+ * 123 x 47 because ship-to-ship docking (position_dock_across_from) berths the second hull
+ * exit-to-exit against the first in whichever direction that ship's airlock faces, and two
+ * maximum hulls stacked that way span LONG + 1 + LONG = 113 along either axis. 123 is the
+ * smallest side that satisfies both; the 2x2 lattice then gives four sites per z-level.
+ *
+ * Literals, not defines: see the note at the top of this file.
+ */
+/datum/unit_test/voidcrew_flat_slot_two_berths
+
+/datum/unit_test/voidcrew_flat_slot_two_berths/Run()
+	var/berth_long = 56 // RESERVE_DOCK_MAX_SIZE_LONG
+	var/berth_short = 40 // RESERVE_DOCK_MAX_SIZE_SHORT
+	var/padding = 3 // RESERVE_DOCK_DEFAULT_PADDING
+	var/slot_side = 123 // MAP_SLOT_SIDE (= PLANET_MIN_SIZE)
+	var/flat_class = "flat" // MAP_TENANT_CLASS_FLAT
+
+	var/two_berths_wide = (padding * 3) + (berth_long * 2) + 2
+	if(slot_side != two_berths_wide)
+		TEST_FAIL("MAP_SLOT_SIDE is [slot_side] but two side-by-side berths need exactly [two_berths_wide] \
+			(3 x [padding] padding + 2 x [berth_long] berths + 2 border). A flat site must be sized for two ships and nothing else.")
+	var/exit_to_exit_span = (berth_long * 2) + 1
+	if(slot_side < exit_to_exit_span)
+		TEST_FAIL("MAP_SLOT_SIDE [slot_side] cannot hold two maximum hulls berthed exit-to-exit ([exit_to_exit_span] turfs)")
+
+	for(var/site_type in list(/datum/overmap/planet/empty, /datum/overmap/planet/crashed_ship))
+		var/list/values = SSovermap.spawn_dynamic_encounter(site_type, FALSE)
+		if(length(values) < 4 || !values[1] || !values[2] || !values[3] || !values[4])
+			TEST_FAIL("spawn_dynamic_encounter([site_type]) did not build a site with two berths and a footprint")
+			continue
+		var/datum/map_zone/zone = values[1]
+		var/obj/docking_port/stationary/primary = values[2]
+		var/obj/docking_port/stationary/secondary = values[3]
+		var/datum/map_footprint/footprint = values[4]
+
+		if(footprint.tenant_class != flat_class)
+			TEST_FAIL("[site_type] was dealt a '[footprint.tenant_class]' slot, expected '[flat_class]' - it would take more than a quarter of a z-level")
+		if(footprint.get_width() != slot_side || footprint.get_height() != slot_side)
+			TEST_FAIL("[site_type] footprint is [footprint.get_width()]x[footprint.get_height()], expected [slot_side]x[slot_side]")
+
+		// Where the berths actually are, in absolute coordinates.
+		var/list/primary_rect = rect_of(primary)
+		var/list/secondary_rect = rect_of(secondary)
+		var/band_low_y = footprint.low_y + padding + 1
+		var/band_high_y = band_low_y + berth_short - 1
+		var/expected_low_x = footprint.low_x + padding + 1
+		var/expected_high_x = expected_low_x + berth_long + padding + berth_long - 1
+		if(primary_rect[2] != band_low_y || primary_rect[4] != band_high_y || secondary_rect[2] != band_low_y || secondary_rect[4] != band_high_y)
+			TEST_FAIL("[site_type] berths are not on the slot's berth band y [band_low_y]..[band_high_y]: primary y [primary_rect[2]]..[primary_rect[4]], secondary y [secondary_rect[2]]..[secondary_rect[4]]")
+		if(primary_rect[1] != expected_low_x || secondary_rect[3] != expected_high_x)
+			TEST_FAIL("[site_type] berth pair spans x [primary_rect[1]]..[secondary_rect[3]], expected [expected_low_x]..[expected_high_x] inside footprint [footprint.describe()]")
+		if(secondary_rect[1] - primary_rect[3] - 1 != padding)
+			TEST_FAIL("[site_type] berths are [secondary_rect[1] - primary_rect[3] - 1] turfs apart, expected [padding]")
+		if(primary_rect[3] >= secondary_rect[1])
+			TEST_FAIL("[site_type] berths overlap: primary x [primary_rect[1]]..[primary_rect[3]], secondary x [secondary_rect[1]]..[secondary_rect[3]]")
+		for(var/list/rect in list(primary_rect, secondary_rect))
+			if(rect[1] < footprint.low_x || rect[3] > footprint.high_x || rect[2] < footprint.low_y || rect[4] > footprint.high_y)
+				TEST_FAIL("[site_type] berth ([rect[1]],[rect[2]])-([rect[3]],[rect[4]]) leaves footprint [footprint.describe()]")
+
+		zone.clear_to_uninitialized_space(footprint)
+		qdel(primary, force = TRUE)
+		qdel(secondary, force = TRUE)
+		zone.release_slot(footprint)
+
+/// Absolute list(low_x, low_y, high_x, high_y) of the ground a stationary port claims.
+/datum/unit_test/voidcrew_flat_slot_two_berths/proc/rect_of(obj/docking_port/stationary/port)
+	var/list/coords = port.return_coords()
+	return list(min(coords[1], coords[3]), min(coords[2], coords[4]), max(coords[1], coords[3]), max(coords[2], coords[4]))
+
+/**
+ * # No roundstart space levels
+ *
+ * Upstream mints seven "Ruin Area" levels and one "Empty Area" level at boot. This fork
+ * never uses them (voidcrew/edits/map_config.dm has the list of what used to), and they
+ * were eight of the ten z-levels round 79 booted with. Two checks: the datum defaults -
+ * which are what production runs on, config/maps.txt naming no default map - ask for
+ * none, and the live world has exactly as many as the map config it actually loaded
+ * asked for.
+ */
+/datum/unit_test/voidcrew_roundstart_space_levels
+
+/datum/unit_test/voidcrew_roundstart_space_levels/Run()
+	var/datum/map_config/defaults = new
+	if(defaults.space_ruin_levels != 0 || defaults.space_empty_levels != 0)
+		TEST_FAIL("/datum/map_config defaults to [defaults.space_ruin_levels] space ruin level(s) and [defaults.space_empty_levels] empty level(s). \
+			Production runs on the defaulted config, so every one of these is a permanent 255x255 turf plane nothing uses.")
+	qdel(defaults)
+
+	var/expected = SSmapping.current_map.space_ruin_levels + SSmapping.current_map.space_empty_levels
+	var/found = 0
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		if(findtext(level.name, "Ruin Area") == 1 || findtext(level.name, "Empty Area") == 1)
+			found++
+	if(found != expected)
+		TEST_FAIL("The world carries [found] roundstart space level(s) but the loaded map config asked for [expected]")

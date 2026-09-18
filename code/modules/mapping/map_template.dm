@@ -123,7 +123,7 @@
 	var/x = round((world.maxx - width) * 0.5) + 1
 	var/y = round((world.maxy - height) * 0.5) + 1
 
-	var/datum/space_level/level = SSmapping.add_new_zlevel(name, secret ? ZTRAITS_AWAY_SECRET : ZTRAITS_AWAY, contain_turfs = FALSE)
+	var/datum/space_level/level = SSmapping.add_new_zlevel(name, secret ? ZTRAITS_AWAY_SECRET : ZTRAITS_AWAY, contain_turfs = FALSE, mint_reason = "map template '[name]' ([width]x[height]) loaded onto a level of its own (load_new_z)")
 	var/datum/parsed_map/parsed = load_map(
 		file(mappath),
 		x,

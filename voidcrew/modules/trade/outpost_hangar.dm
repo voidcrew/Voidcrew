@@ -340,7 +340,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 		log_mapping("OUTPOST BERTH: hangar template has no dimensions, cannot allocate.")
 		return null
 
-	var/datum/turf_reservation/hangar_reservation = SSmapping.request_turf_block_reservation(hangar_template.width, hangar_template.height, 1)
+	var/datum/turf_reservation/hangar_reservation = SSmapping.request_turf_block_reservation(hangar_template.width, hangar_template.height, 1, requester = "outpost hangar berth for '[ship.name]' at '[name]'")
 	if(!hangar_reservation)
 		return null
 

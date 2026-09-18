@@ -231,6 +231,7 @@
 		template.height + SHUTTLE_TRANSIT_BORDER * 2,
 		1,
 		reservation_type = /datum/turf_reservation/transit,
+		requester = "cargo shuttle transit",
 	)
 
 	if(!reservation)
