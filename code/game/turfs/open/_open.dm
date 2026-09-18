@@ -338,7 +338,8 @@
 	. = air.temperature
 
 /turf/open/TakeTemperature(temp)
-	air.temperature += temp
+	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	our_air.temperature += temp
 	air_update_turf(FALSE, FALSE)
 
 /turf/open/proc/freeze_turf()

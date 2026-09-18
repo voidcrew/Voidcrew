@@ -148,8 +148,8 @@
 		if(pressure_affected)
 			//Atmosphere affects sound
 			var/pressure_factor = 1
-			var/datum/gas_mixture/hearer_env = turf_loc.return_air()
-			var/datum/gas_mixture/source_env = turf_source.return_air()
+			var/datum/gas_mixture/hearer_env = turf_loc.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
+			var/datum/gas_mixture/source_env = turf_source.return_air_readonly()
 
 			if(hearer_env && source_env)
 				var/pressure = min(hearer_env.return_pressure(), source_env.return_pressure())

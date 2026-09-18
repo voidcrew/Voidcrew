@@ -188,7 +188,10 @@
 		reference = location.air // Our color and volume will depend on the turf's gasmix
 	//Active mode
 	else
-		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/location.air.volume)
+		// VOIDCREW EDIT: return_air() so a turf still on the shared planetary mix takes a
+		// private one; what we remove here has to be missing when assume_air() puts it back.
+		var/datum/gas_mixture/location_air = location.return_air()
+		var/datum/gas_mixture/affected = location_air.remove_ratio(volume/location_air.volume)
 		if(affected) //in case volume is 0
 			reference = affected // Our color and volume will depend on this small sparked gasmix
 			affected.temperature = temperature

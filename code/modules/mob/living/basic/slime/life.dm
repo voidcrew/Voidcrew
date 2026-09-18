@@ -18,7 +18,7 @@
 
 ///Handles if a slime's environment would cause it to enter stasis. Ignores TRAIT_STASIS
 /mob/living/basic/slime/proc/handle_slime_stasis(seconds_per_tick)
-	var/datum/gas_mixture/environment = loc.return_air()
+	var/datum/gas_mixture/environment = loc.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
 
 	var/bz_percentage = 0
 

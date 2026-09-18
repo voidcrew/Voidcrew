@@ -367,6 +367,7 @@
 #include "voidcrew_overmap_management.dm"
 #include "voidcrew_planet_cleanup.dm"
 #include "voidcrew_planet_definitions.dm"
+#include "voidcrew_planet_shared_air.dm"
 #include "voidcrew_plumbing_shuttle_move.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_mining_input.dm"

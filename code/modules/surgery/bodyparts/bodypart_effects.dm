@@ -157,7 +157,7 @@
 			REMOVE_TRAIT(owner, TRAIT_IGNORE_FIRE_PROTECTION, type)
 		return
 
-	var/datum/gas_mixture/environment = owner.loc.return_air()
+	var/datum/gas_mixture/environment = owner.loc.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
 	if (!environment?.total_moles())
 		if (!owner.on_fire)
 			REMOVE_TRAIT(owner, TRAIT_IGNORE_FIRE_PROTECTION, type)

@@ -140,7 +140,7 @@
 	var/obj/effect/hotspot/hotspot = (locate(/obj/effect/hotspot) in exposed_turf)
 	if(hotspot && !isspaceturf(exposed_turf))
 		if(exposed_turf.air)
-			var/datum/gas_mixture/air = exposed_turf.air
+			var/datum/gas_mixture/air = exposed_turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 			air.temperature = max(min(air.temperature-(cool_temp*1000), air.temperature/cool_temp),TCMB)
 			air.react(src)
 			qdel(hotspot)

@@ -263,7 +263,7 @@
 		return
 
 	QDEL_NULL(hotspot)
-	var/datum/gas_mixture/air = location.air
+	var/datum/gas_mixture/air = location.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 	var/list/gases = air.gases
 	if (gases[/datum/gas/plasma])
 		var/scrub_amt = min(30, gases[/datum/gas/plasma][MOLES]) //Absorb some plasma
@@ -446,7 +446,7 @@
 	location.ClearWet()
 	location.temperature = T20C
 	if(location.air)
-		var/datum/gas_mixture/air = location.air
+		var/datum/gas_mixture/air = location.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		air.temperature = T20C
 		for(var/obj/effect/hotspot/fire in location)
 			qdel(fire)
