@@ -1,0 +1,5 @@
+author: "hyperjll (tgstation #84356 / #89062)"
+delete-after: true
+changes:
+  - balance: "Engineered viruses can hold eight symptoms instead of six."
+  - bugfix: "Beneficial viruses no longer cure themselves over time. They still end if you deliberately dump one, and spaceacillin still fights them."
