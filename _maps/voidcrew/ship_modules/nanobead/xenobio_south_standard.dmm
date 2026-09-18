@@ -1,0 +1,299 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bwx" = (
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_edge,
+/area/template_noop)
+"cMx" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/mob/living/basic/slime,
+/obj/machinery/door/window/brigdoor/left/directional/east{
+	name = "Containment Pen #1";
+	req_access = list("xenobiology")
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"eMU" = (
+/obj/structure/closet/crate/science,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/machinery/firealarm/directional/north{
+	pixel_w = -31;
+	pixel_z = 0
+	},
+/turf/open/floor/iron/white/smooth_corner,
+/area/template_noop)
+"fjI" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/mob/living/basic/slime,
+/obj/machinery/door/window/brigdoor/right/directional/east{
+	name = "Containment Pen #2";
+	req_access = list("xenobiology")
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"gqm" = (
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/white/smooth_edge{
+	dir = 8
+	},
+/area/template_noop)
+"hrp" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 10
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 8
+	},
+/turf/open/floor/iron/white/smooth_corner{
+	dir = 4
+	},
+/area/template_noop)
+"izf" = (
+/obj/structure/table/glass,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/obj/item/storage/box/beakers/big{
+	pixel_w = -3;
+	pixel_z = 9
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_w = 9;
+	pixel_z = 3
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/template_noop)
+"iJP" = (
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple,
+/turf/open/floor/iron/white/smooth_edge{
+	dir = 8
+	},
+/area/template_noop)
+"jdY" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/engine,
+/area/template_noop)
+"kfh" = (
+/obj/machinery/monkey_recycler,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/light_switch/directional/east,
+/turf/open/floor/iron/white/smooth_corner{
+	dir = 8
+	},
+/area/template_noop)
+"kuc" = (
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/white/smooth_edge{
+	dir = 1
+	},
+/area/template_noop)
+"mwj" = (
+/obj/structure/table/glass,
+/obj/item/storage/box/monkeycubes{
+	pixel_w = -4;
+	pixel_z = 7
+	},
+/obj/item/storage/box/monkeycubes{
+	pixel_w = 7;
+	pixel_z = 2
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_edge{
+	dir = 4
+	},
+/area/template_noop)
+"nhA" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"nUW" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/engine,
+/area/template_noop)
+"onY" = (
+/obj/structure/table/glass,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/machinery/processor/slime,
+/obj/machinery/light/directional/east,
+/obj/machinery/camera/autoname/directional/east{
+	c_tag = "Xenobiology Lab"
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white/smooth_edge{
+	dir = 4
+	},
+/area/template_noop)
+"rqv" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"txw" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"uWG" = (
+/obj/machinery/computer/camera_advanced/xenobio{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/white/smooth_corner{
+	dir = 1
+	},
+/area/template_noop)
+"vxZ" = (
+/obj/structure/table/glass,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/reagentgrinder{
+	pixel_w = -1;
+	pixel_z = 12
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/template_noop)
+"vYk" = (
+/obj/item/kirbyplants/organic/plant21,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/mid_joiner{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/template_noop)
+
+(1,1,1) = {"
+jdY
+cMx
+fjI
+nUW
+rqv
+"}
+(2,1,1) = {"
+eMU
+gqm
+iJP
+hrp
+vYk
+"}
+(3,1,1) = {"
+kuc
+txw
+nhA
+bwx
+izf
+"}
+(4,1,1) = {"
+kfh
+onY
+mwj
+uWG
+vxZ
+"}

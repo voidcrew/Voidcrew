@@ -1,0 +1,90 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"hiD" = (
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"hQw" = (
+/obj/machinery/light_switch/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"iCu" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"klH" = (
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"mZT" = (
+/obj/machinery/firealarm/directional/south,
+/obj/modular_map_connector,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"nbm" = (
+/turf/template_noop,
+/area/template_noop)
+"njX" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/camera/autoname/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"ooH" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"pbP" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"qtE" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/template_noop,
+/area/template_noop)
+"qMM" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"wLC" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+nbm
+nbm
+nbm
+njX
+mZT
+"}
+(2,1,1) = {"
+ooH
+nbm
+nbm
+qMM
+nbm
+"}
+(3,1,1) = {"
+hiD
+qtE
+wLC
+iCu
+iCu
+"}
+(4,1,1) = {"
+nbm
+klH
+nbm
+pbP
+hQw
+"}

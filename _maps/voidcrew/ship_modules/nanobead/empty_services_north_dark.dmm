@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aib" = (
+/obj/machinery/camera/autoname/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"arv" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/template_noop,
+/area/template_noop)
+"asE" = (
+/turf/template_noop,
+/area/template_noop)
+"cqh" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"jWt" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"kDg" = (
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"lUR" = (
+/obj/machinery/light/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"mTt" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"spp" = (
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/light/small/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"uxi" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"wns" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"woc" = (
+/obj/machinery/light_switch/directional/west,
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"wSF" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"xBy" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+asE
+cqh
+lUR
+asE
+asE
+woc
+"}
+(2,1,1) = {"
+asE
+uxi
+arv
+wns
+xBy
+xBy
+"}
+(3,1,1) = {"
+spp
+asE
+asE
+asE
+wSF
+asE
+"}
+(4,1,1) = {"
+asE
+asE
+asE
+asE
+wSF
+kDg
+"}
+(5,1,1) = {"
+asE
+asE
+asE
+asE
+jWt
+mTt
+"}
+(6,1,1) = {"
+asE
+asE
+asE
+aib
+asE
+asE
+"}

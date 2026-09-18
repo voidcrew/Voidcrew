@@ -1,0 +1,435 @@
+{
+  "Version": 1,
+  "ID": "ship_nanobead",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/ship_nanobead",
+    "Name": "NanoBead",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "nanobead",
+    "Slots": [
+      "Biomedical_North",
+      "Services_North",
+      "Biomedical_South",
+      "Services_South"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Light",
+        "Suffix": "nanobead",
+        "Slots": [
+          "Biomedical_North",
+          "Services_North",
+          "Biomedical_South",
+          "Services_South"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "dark",
+        "Name": "Dark",
+        "Suffix": "nanobead_dark",
+        "Slots": [
+          "Biomedical_North",
+          "Services_North",
+          "Biomedical_South",
+          "Services_South"
+        ],
+        "Default": false
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "med_sci_north_basic",
+        "Name": "Empty Biomedical North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/empty_biomedical_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "xenobio",
+        "Name": "Xenobio North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/xenobio_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "nanites",
+        "Name": "Nanites North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/nanites_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "robotics",
+        "Name": "Robotics North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/robotics_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "chemistry",
+        "Name": "Chemistry North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/chemistry_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cryo",
+        "Name": "Cryo Cells North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/cryo_cells_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "sleeper_bay",
+        "Name": "Sleeper Bay North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/sleeper_bay_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "surgery",
+        "Name": "Surgery North",
+        "Slot": "Biomedical_North",
+        "File": "nanobead/surgery_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "services_north_basic",
+        "Name": "Empty Services North",
+        "Slot": "Services_North",
+        "File": "nanobead/empty_services_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "bitrunning",
+        "Name": "Bitrunning North",
+        "Slot": "Services_North",
+        "File": "nanobead/bitrunning_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "dining",
+        "Name": "Dining North",
+        "Slot": "Services_North",
+        "File": "nanobead/dining_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "botany",
+        "Name": "Botany North",
+        "Slot": "Services_North",
+        "File": "nanobead/botany_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "mining",
+        "Name": "Mining North",
+        "Slot": "Services_North",
+        "File": "nanobead/mining_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cargo",
+        "Name": "Cargo North",
+        "Slot": "Services_North",
+        "File": "nanobead/cargo_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "security",
+        "Name": "Security North",
+        "Slot": "Services_North",
+        "File": "nanobead/security_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "eva",
+        "Name": "Eva North",
+        "Slot": "Services_North",
+        "File": "nanobead/eva_north.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "biomedical_south_basic",
+        "Name": "Empty Biomedical South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/empty_biomedical_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "xenobio_south",
+        "Name": "Xenobio South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/xenobio_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "nanites_south",
+        "Name": "Nanites South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/nanites_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "robotics_south",
+        "Name": "Robotics South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/robotics_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "chemistry_south",
+        "Name": "Chemistry South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/chemistry_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cryo_cells_south",
+        "Name": "Cryo Cells South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/cryo_cells_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "sleeper_bay_south",
+        "Name": "Sleeper Bay South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/sleeper_bay_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "surgery_south",
+        "Name": "Surgery South",
+        "Slot": "Biomedical_South",
+        "File": "nanobead/surgery_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "services_south_basic",
+        "Name": "Empty Services South",
+        "Slot": "Services_South",
+        "File": "nanobead/empty_services_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "bitrunning_south",
+        "Name": "Bitrunning South",
+        "Slot": "Services_South",
+        "File": "nanobead/bitrunning_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "dining_south",
+        "Name": "Dining South",
+        "Slot": "Services_South",
+        "File": "nanobead/dining_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "botany_south",
+        "Name": "Botany South",
+        "Slot": "Services_South",
+        "File": "nanobead/botany_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "mining_south",
+        "Name": "Mining South",
+        "Slot": "Services_South",
+        "File": "nanobead/mining_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cargo_south",
+        "Name": "Cargo South",
+        "Slot": "Services_South",
+        "File": "nanobead/cargo_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "security_south",
+        "Name": "Security South",
+        "Slot": "Services_South",
+        "File": "nanobead/security_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "eva_south",
+        "Name": "Eva South",
+        "Slot": "Services_South",
+        "File": "nanobead/eva_south.dmm",
+        "Themes": [
+          "standard",
+          "dark"
+        ],
+        "Default": false
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "FileID": "nanobead",
+  "PartCosts": {
+    "module/bitrunning": {},
+    "module/bitrunning_south": {},
+    "module/botany": {},
+    "module/botany_south": {},
+    "module/cargo": {},
+    "module/cargo_south": {},
+    "module/chemistry": {},
+    "module/chemistry_south": {},
+    "module/cryo": {},
+    "module/cryo_cells_south": {},
+    "module/dining": {},
+    "module/dining_south": {},
+    "module/eva": {},
+    "module/eva_south": {},
+    "module/mining": {},
+    "module/mining_south": {},
+    "module/nanites": {},
+    "module/nanites_south": {},
+    "module/robotics": {},
+    "module/robotics_south": {},
+    "module/security": {},
+    "module/security_south": {},
+    "module/sleeper_bay": {},
+    "module/sleeper_bay_south": {},
+    "module/surgery": {},
+    "module/surgery_south": {},
+    "module/xenobio": {},
+    "module/xenobio_south": {},
+    "ship": {},
+    "theme/dark": {}
+  },
+  "PortDirection": 2
+}

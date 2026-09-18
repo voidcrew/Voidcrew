@@ -1,0 +1,95 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"awW" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"bsn" = (
+/turf/template_noop,
+/area/template_noop)
+"dwm" = (
+/obj/machinery/firealarm/directional/north,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"eXQ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"gjX" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"hjt" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"iCE" = (
+/obj/machinery/light_switch/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"lwh" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"nRx" = (
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"pCF" = (
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"ryk" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"wzP" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/camera/autoname/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"yhP" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+dwm
+wzP
+bsn
+bsn
+yhP
+"}
+(2,1,1) = {"
+bsn
+gjX
+bsn
+bsn
+awW
+"}
+(3,1,1) = {"
+ryk
+ryk
+lwh
+eXQ
+pCF
+"}
+(4,1,1) = {"
+iCE
+hjt
+bsn
+nRx
+bsn
+"}

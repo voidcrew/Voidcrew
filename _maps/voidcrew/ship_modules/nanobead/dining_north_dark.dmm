@@ -1,0 +1,283 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"alG" = (
+/obj/structure/table,
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_w = -10;
+	pixel_z = 9
+	},
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_w = -10;
+	pixel_z = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"aut" = (
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"bvn" = (
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"cyu" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"dlF" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"drK" = (
+/obj/machinery/vending/dinnerware,
+/obj/effect/turf_decal/siding/wood/end{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"eMy" = (
+/turf/template_noop,
+/area/template_noop)
+"fob" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/fancy/donut_box,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"foy" = (
+/obj/item/kirbyplants/organic/plant21,
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"gFb" = (
+/obj/machinery/griddle,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"gHp" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"hdG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"hyL" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"jqe" = (
+/obj/structure/chair,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"lnX" = (
+/obj/structure/table/reinforced,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"mTr" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"nfa" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"qta" = (
+/obj/structure/table/reinforced,
+/obj/structure/sink/kitchen/directional/north,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"qWx" = (
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/structure/cable,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"rAU" = (
+/obj/structure/closet/secure_closet/freezer/fridge{
+	locked = 0
+	},
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/reagent_containers/cup/beaker/large,
+/obj/item/book/manual/chef_recipes,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"sFN" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"usj" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/condiment/enzyme{
+	pixel_w = -5;
+	pixel_z = 10
+	},
+/obj/item/kitchen/rollingpin{
+	pixel_w = 2;
+	pixel_z = 3
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"uLN" = (
+/obj/machinery/smartfridge/food,
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/machinery/light_switch/directional/west,
+/obj/modular_map_connector,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"uSA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/processor,
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"vkS" = (
+/obj/machinery/oven/range,
+/obj/machinery/camera/autoname/directional/east,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"vPk" = (
+/obj/structure/table/reinforced,
+/obj/machinery/reagentgrinder{
+	pixel_w = -6;
+	pixel_z = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 9
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"xdB" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/large,
+/area/template_noop)
+"ylx" = (
+/obj/structure/table/reinforced,
+/obj/machinery/microwave,
+/obj/effect/turf_decal/siding/thinplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+
+(1,1,1) = {"
+foy
+jqe
+alG
+dlF
+xdB
+uLN
+"}
+(2,1,1) = {"
+aut
+mTr
+qWx
+nfa
+gHp
+cyu
+"}
+(3,1,1) = {"
+drK
+vPk
+sFN
+fob
+lnX
+usj
+"}
+(4,1,1) = {"
+eMy
+ylx
+bvn
+bvn
+hdG
+qta
+"}
+(5,1,1) = {"
+eMy
+eMy
+rAU
+bvn
+hyL
+uSA
+"}
+(6,1,1) = {"
+eMy
+eMy
+eMy
+vkS
+gFb
+eMy
+"}

@@ -1,0 +1,125 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aGb" = (
+/obj/machinery/light/small/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"dGD" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"eRT" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fJU" = (
+/obj/machinery/airalarm/directional/north,
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"ixX" = (
+/obj/machinery/camera/autoname/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"iZe" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"kom" = (
+/obj/machinery/light_switch/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"llC" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mxU" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"nIP" = (
+/obj/machinery/light/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"qns" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"rgu" = (
+/turf/template_noop,
+/area/template_noop)
+"rja" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"uWX" = (
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"vYN" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+kom
+rgu
+rgu
+nIP
+eRT
+mxU
+"}
+(2,1,1) = {"
+vYN
+vYN
+dGD
+llC
+iZe
+rgu
+"}
+(3,1,1) = {"
+rgu
+rja
+rgu
+rgu
+rgu
+aGb
+"}
+(4,1,1) = {"
+uWX
+rja
+rgu
+rgu
+rgu
+rgu
+"}
+(5,1,1) = {"
+fJU
+qns
+rgu
+rgu
+rgu
+rgu
+"}
+(6,1,1) = {"
+rgu
+rgu
+ixX
+rgu
+rgu
+rgu
+"}

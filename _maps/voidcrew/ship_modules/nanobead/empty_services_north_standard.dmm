@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cuV" = (
+/obj/machinery/camera/autoname/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"dJP" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"fct" = (
+/obj/machinery/light_switch/directional/west,
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"geI" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"gJQ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"jmE" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/template_noop,
+/area/template_noop)
+"jOp" = (
+/obj/machinery/light/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"nCU" = (
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"tkC" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"tUd" = (
+/turf/template_noop,
+/area/template_noop)
+"tVb" = (
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/light/small/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"vzK" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"wLz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"xOX" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+tUd
+geI
+jOp
+tUd
+tUd
+fct
+"}
+(2,1,1) = {"
+tUd
+tkC
+jmE
+xOX
+wLz
+wLz
+"}
+(3,1,1) = {"
+tVb
+tUd
+tUd
+tUd
+vzK
+tUd
+"}
+(4,1,1) = {"
+tUd
+tUd
+tUd
+tUd
+vzK
+nCU
+"}
+(5,1,1) = {"
+tUd
+tUd
+tUd
+tUd
+gJQ
+dJP
+"}
+(6,1,1) = {"
+tUd
+tUd
+tUd
+cuV
+tUd
+tUd
+"}

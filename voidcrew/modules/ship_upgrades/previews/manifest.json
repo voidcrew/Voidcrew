@@ -401,6 +401,54 @@
    },
    "src_md5": "3e5781e14bb25e01cd34b5f1c31cba45"
   },
+  "nanobead": {
+   "png": "ship_nanobead.png",
+   "width": 22,
+   "height": 19,
+   "slots": {
+    "Biomedical_South": [
+     8,
+     3
+    ],
+    "Biomedical_North": [
+     8,
+     13
+    ],
+    "Services_South": [
+     13,
+     2
+    ],
+    "Services_North": [
+     13,
+     13
+    ]
+   },
+   "src_md5": "289a757c3108960b030dce46415a255f"
+  },
+  "nanobead_dark": {
+   "png": "ship_nanobead_dark.png",
+   "width": 22,
+   "height": 19,
+   "slots": {
+    "Biomedical_South": [
+     8,
+     3
+    ],
+    "Biomedical_North": [
+     8,
+     13
+    ],
+    "Services_South": [
+     13,
+     2
+    ],
+    "Services_North": [
+     13,
+     13
+    ]
+   },
+   "src_md5": "38b5cd262e808b14b3c3fc0e47d26e31"
+  },
   "pill": {
    "png": "ship_pill.png",
    "width": 4,
@@ -1983,6 +2031,966 @@
      ],
      "png": "kilo_kilo_hold_vault_saloon.png",
      "src_md5": "a1d13a7ae08536648e098af69aaab49f"
+    }
+   }
+  },
+  "nanobead/empty_biomedical_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_biomedical_north_dark.png",
+     "src_md5": "7c6c2d3f46bfdc48d3933e105ba9023e"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_biomedical_north_standard.png",
+     "src_md5": "9c4afee920c47343466d90057a1e9ea5"
+    }
+   }
+  },
+  "nanobead/xenobio_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_xenobio_north_dark.png",
+     "src_md5": "13169ac3cd3f3549f9693b6657bd29b9"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_xenobio_north_standard.png",
+     "src_md5": "874d3b61b017d06e2c6949ad0934b62c"
+    }
+   }
+  },
+  "nanobead/nanites_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_nanites_north_dark.png",
+     "src_md5": "d140270eabb45b8d80b1145101162e52"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_nanites_north_standard.png",
+     "src_md5": "b1b2a4eb341a15e11f6fa9192d0916d7"
+    }
+   }
+  },
+  "nanobead/robotics_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_robotics_north_dark.png",
+     "src_md5": "45b8b18df400cc3722a2f2e45db4da5b"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_robotics_north_standard.png",
+     "src_md5": "0da806f027da47bfb097de799d9ac62f"
+    }
+   }
+  },
+  "nanobead/chemistry_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_chemistry_north_dark.png",
+     "src_md5": "80ac52a0f83c03083be343626da975f0"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_chemistry_north_standard.png",
+     "src_md5": "3b05a451660585fbc4a7b4aa81f52c96"
+    }
+   }
+  },
+  "nanobead/cryo_cells_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cryo_cells_north_dark.png",
+     "src_md5": "5242d8d9ec3d23bcfa5d21b51f4908ef"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cryo_cells_north_standard.png",
+     "src_md5": "6c45c966e52470318e1818c5568cfbbd"
+    }
+   }
+  },
+  "nanobead/sleeper_bay_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_sleeper_bay_north_dark.png",
+     "src_md5": "2625f60ae03f494fe0ce020b1aa1949c"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_sleeper_bay_north_standard.png",
+     "src_md5": "e77ff103fb6867d1af2c14f4fb31a6cf"
+    }
+   }
+  },
+  "nanobead/surgery_north.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_surgery_north_dark.png",
+     "src_md5": "b28392c1a85b7c736a9f1b3eb9adc498"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_surgery_north_standard.png",
+     "src_md5": "ad9827cd023e2c6e695a621a0c66d687"
+    }
+   }
+  },
+  "nanobead/empty_services_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_services_north_dark.png",
+     "src_md5": "33e93943d89dc9b957d360d792a6f497"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_services_north_standard.png",
+     "src_md5": "8d401b0e7a0ec79fd66721b4de973e37"
+    }
+   }
+  },
+  "nanobead/bitrunning_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_bitrunning_north_dark.png",
+     "src_md5": "d42b90e9d2429847e92ab4f4717a2320"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_bitrunning_north_standard.png",
+     "src_md5": "919456daaab0f9d16c0dcfe22ff68df4"
+    }
+   }
+  },
+  "nanobead/dining_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_dining_north_dark.png",
+     "src_md5": "104d79b09ed342f92e784c437d625019"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_dining_north_standard.png",
+     "src_md5": "a015a7926a929ff9915993b9c9d6c33f"
+    }
+   }
+  },
+  "nanobead/botany_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_botany_north_dark.png",
+     "src_md5": "e8efdb46ab5a3416fdf843a14f955a37"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_botany_north_standard.png",
+     "src_md5": "6ba771eb7bc8f30454d415f7e2ec7c1b"
+    }
+   }
+  },
+  "nanobead/mining_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_mining_north_dark.png",
+     "src_md5": "dd80f0f30dc5647669e8f58fa129a253"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_mining_north_standard.png",
+     "src_md5": "c2399bbf523b2e3c0a3b0f4b5ef725a3"
+    }
+   }
+  },
+  "nanobead/cargo_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cargo_north_dark.png",
+     "src_md5": "58f899508befdf72e9cf1df83507c6a3"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cargo_north_standard.png",
+     "src_md5": "22fc0817bb0d126aa643c47ada015e54"
+    }
+   }
+  },
+  "nanobead/security_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_security_north_dark.png",
+     "src_md5": "a7e5849a7eab5392a9724a726cdfcb60"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_security_north_standard.png",
+     "src_md5": "722bc688f697de407621a33a63c99c51"
+    }
+   }
+  },
+  "nanobead/eva_north.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_eva_north_dark.png",
+     "src_md5": "adb32e55a7cc668b22904bfcc5bab4db"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_eva_north_standard.png",
+     "src_md5": "21712edd06d77fd08865191f93bff0a5"
+    }
+   }
+  },
+  "nanobead/empty_biomedical_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_biomedical_south_dark.png",
+     "src_md5": "1eaaee157f2033a749b5707c3850c360"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_biomedical_south_standard.png",
+     "src_md5": "ba44c1095b53e50b94b1b9e678e0d9bd"
+    }
+   }
+  },
+  "nanobead/xenobio_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_xenobio_south_dark.png",
+     "src_md5": "8c7a8f870af8f0b11ba8969dfa021827"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_xenobio_south_standard.png",
+     "src_md5": "a8388e061e2787d2764e3422bb2ca637"
+    }
+   }
+  },
+  "nanobead/nanites_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_nanites_south_dark.png",
+     "src_md5": "d99db7940911a034f325166ce2bd206e"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_nanites_south_standard.png",
+     "src_md5": "b76a7ad14c1937550fa19e7e8fee1654"
+    }
+   }
+  },
+  "nanobead/robotics_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_robotics_south_dark.png",
+     "src_md5": "1cf589f950792129af54ad5d4207bda7"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_robotics_south_standard.png",
+     "src_md5": "f89e1f2af256b5a8cb2e83757c4e3437"
+    }
+   }
+  },
+  "nanobead/chemistry_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_chemistry_south_dark.png",
+     "src_md5": "8c511dbde441dd482b83c60247c63440"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_chemistry_south_standard.png",
+     "src_md5": "c2c27b841ce5246b2c093831cce4382f"
+    }
+   }
+  },
+  "nanobead/cryo_cells_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cryo_cells_south_dark.png",
+     "src_md5": "1dc932743c2a20bb3d750968cfda0236"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cryo_cells_south_standard.png",
+     "src_md5": "b65587676411370b7600649c3c60b4bb"
+    }
+   }
+  },
+  "nanobead/sleeper_bay_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_sleeper_bay_south_dark.png",
+     "src_md5": "4818822cbd72026ee92425d30c2a1586"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_sleeper_bay_south_standard.png",
+     "src_md5": "154c5af9226785770e5b670b096d3d1e"
+    }
+   }
+  },
+  "nanobead/surgery_south.dmm": {
+   "width": 4,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_surgery_south_dark.png",
+     "src_md5": "3766c0fca41e79957f4c15366fbb5dec"
+    },
+    "standard": {
+     "width": 4,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_surgery_south_standard.png",
+     "src_md5": "a298637aa7aaf46ca08f2cd7cbbfb469"
+    }
+   }
+  },
+  "nanobead/empty_services_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_services_south_dark.png",
+     "src_md5": "60a6c924692307b269a0decf5be42c3b"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_empty_services_south_standard.png",
+     "src_md5": "5345cdc15077fa078407703d87c8b985"
+    }
+   }
+  },
+  "nanobead/bitrunning_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_bitrunning_south_dark.png",
+     "src_md5": "51b98a2a787021a40895fea4c7e113c5"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_bitrunning_south_standard.png",
+     "src_md5": "e8217d5e8f97ba3e3487e1dbe754bce4"
+    }
+   }
+  },
+  "nanobead/dining_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_dining_south_dark.png",
+     "src_md5": "481b57a25eec1711972f77bc0f3a80e1"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_dining_south_standard.png",
+     "src_md5": "0c1a53f95597f295852824f43255416f"
+    }
+   }
+  },
+  "nanobead/botany_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_botany_south_dark.png",
+     "src_md5": "b33245f8e5821802e3a88cb273b1ca79"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_botany_south_standard.png",
+     "src_md5": "2877e8796eb94004c5ef9884110ab81d"
+    }
+   }
+  },
+  "nanobead/mining_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_mining_south_dark.png",
+     "src_md5": "5ec388e6d92ff402cb8cfe315c6f2dfa"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_mining_south_standard.png",
+     "src_md5": "f7cc463b6ed9938c347a3318d6fac4f3"
+    }
+   }
+  },
+  "nanobead/cargo_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cargo_south_dark.png",
+     "src_md5": "fda75ef762c4bab709b20fe3ad2a30b6"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_cargo_south_standard.png",
+     "src_md5": "cb91254ee8391767877f479a175654b1"
+    }
+   }
+  },
+  "nanobead/security_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_security_south_dark.png",
+     "src_md5": "0383209eb703a6311c8e3383248b0173"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_security_south_standard.png",
+     "src_md5": "da91050437b58e381f6328c38563eb6f"
+    }
+   }
+  },
+  "nanobead/eva_south.dmm": {
+   "width": 6,
+   "height": 6,
+   "connector": [
+    1,
+    1
+   ],
+   "themes": {
+    "dark": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_eva_south_dark.png",
+     "src_md5": "2fa68516b550fd2d13e40335fb9a6b63"
+    },
+    "standard": {
+     "width": 6,
+     "height": 6,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "nanobead_eva_south_standard.png",
+     "src_md5": "de5efb43345b77e934af3a8dfc859c1a"
     }
    }
   },

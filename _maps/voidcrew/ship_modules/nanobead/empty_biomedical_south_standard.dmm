@@ -1,0 +1,95 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aQB" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"ffT" = (
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"hLK" = (
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"jfF" = (
+/obj/machinery/light_switch/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"lSo" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"nDH" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/camera/autoname/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"pYC" = (
+/turf/template_noop,
+/area/template_noop)
+"rrV" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"rIr" = (
+/obj/machinery/firealarm/directional/north,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"rQN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"skb" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"unt" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"vuM" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+rIr
+nDH
+pYC
+pYC
+aQB
+"}
+(2,1,1) = {"
+pYC
+unt
+pYC
+pYC
+rrV
+"}
+(3,1,1) = {"
+vuM
+vuM
+lSo
+rQN
+ffT
+"}
+(4,1,1) = {"
+jfF
+skb
+pYC
+hLK
+pYC
+"}

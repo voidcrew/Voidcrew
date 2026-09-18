@@ -1,0 +1,125 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"csv" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/template_noop)
+"eDZ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"eHQ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"gxt" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"ikD" = (
+/turf/template_noop,
+/area/template_noop)
+"mJp" = (
+/obj/machinery/light/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"mWU" = (
+/obj/machinery/airalarm/directional/north,
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/structure/closet/crate/cardboard,
+/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
+/obj/item/tank/internals/oxygen,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"pUV" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"qKi" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"sEy" = (
+/obj/machinery/light/small/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"tsm" = (
+/obj/machinery/light_switch/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"tPx" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"tWE" = (
+/obj/machinery/light/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"uBn" = (
+/obj/machinery/camera/autoname/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"vtj" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+tsm
+ikD
+ikD
+tWE
+tPx
+pUV
+"}
+(2,1,1) = {"
+eDZ
+eDZ
+csv
+qKi
+gxt
+ikD
+"}
+(3,1,1) = {"
+ikD
+vtj
+ikD
+ikD
+ikD
+sEy
+"}
+(4,1,1) = {"
+mJp
+vtj
+ikD
+ikD
+ikD
+ikD
+"}
+(5,1,1) = {"
+mWU
+eHQ
+ikD
+ikD
+ikD
+ikD
+"}
+(6,1,1) = {"
+ikD
+ikD
+uBn
+ikD
+ikD
+ikD
+"}

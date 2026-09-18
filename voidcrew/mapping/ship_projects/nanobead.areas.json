@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/ship_nanobead",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/bridge",
+      "Name": "Bridge",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/biomedical_north",
+      "Name": "Biomedical North",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/biomedical_south",
+      "Name": "Biomedical South",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/services_north",
+      "Name": "Services North",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/services_south",
+      "Name": "Services South",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/hall",
+      "Name": "Hall",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/ship_nanobead/maint",
+      "Name": "Maint",
+      "IconState": "engie"
+    }
+  ]
+}
