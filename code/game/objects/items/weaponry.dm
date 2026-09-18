@@ -1000,6 +1000,8 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 /obj/item/melee/baseball_bat/Destroy(force)
 	for(var/target in thrown_datums)
 		var/datum/thrownthing/throw_datum = thrown_datums[target]
+		if(QDELETED(throw_datum)) // superseded by a later throw; its callback is already gone
+			continue
 		throw_datum.callback.Invoke()
 	thrown_datums.Cut()
 	return ..()

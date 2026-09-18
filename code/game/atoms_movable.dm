@@ -1374,6 +1374,16 @@
 
 	. = TRUE // No failure conditions past this point.
 
+	// End any throw still in flight before its replacement exists, so the old datum's Destroy()
+	// can never touch the new one. Overwriting `throwing` used to orphan the old datum: its
+	// COMSIG_QDELETING registration on src kept it (plus its callback and turf refs) alive until
+	// src itself was deleted. qdel rather than finalize(): finalize would run throw_impact,
+	// newtonian_move and the callback in the middle of throw_at, none of which ever happened
+	// for a superseded throw before either.
+	var/was_throwing = !isnull(throwing)
+	if(was_throwing)
+		QDEL_NULL(throwing)
+
 	var/target_zone
 	if(QDELETED(thrower))
 		thrower = null //Let's not pass a qdeleting reference if any.
@@ -1406,7 +1416,7 @@
 
 	if(pulledby)
 		pulledby.stop_pulling()
-	if (quickstart && (throwing || SSthrowing.state == SS_RUNNING)) //Avoid stack overflow edgecases.
+	if (quickstart && (was_throwing || SSthrowing.state == SS_RUNNING)) //Avoid stack overflow edgecases.
 		quickstart = FALSE
 	throwing = thrown_thing
 	if(spin)

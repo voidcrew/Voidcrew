@@ -69,6 +69,8 @@ SUBSYSTEM_DEF(time_track)
 			"gc_queue_total",
 			"gc_totaldels",
 			"gc_totalgcs",
+			"thrown_alive",
+			"throwing_queue",
 			// VOIDCREW EDIT ADDITION END
 			"air_turf_cost",
 			"air_eg_cost",
@@ -156,6 +158,8 @@ SUBSYSTEM_DEF(time_track)
 			gc_queue_depth(),
 			SSgarbage.totaldels,
 			SSgarbage.totalgcs,
+			GLOB.thrownthing_alive,
+			length(SSthrowing.processing),
 			// VOIDCREW EDIT ADDITION END
 			SSair.cost_turfs,
 			SSair.cost_groups,
