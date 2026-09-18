@@ -177,9 +177,9 @@
 /// so crews always have somewhere to mine in space (was MIN_OVERMAP_ASTEROID_SIGNALS, pointed
 /// at ruin signals, before mining moved to field events)
 #define MIN_OVERMAP_ASTEROID_FIELDS 18
-/// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
-#define ASTEROID_ORE_AMOUNT_MIN 2
-#define ASTEROID_ORE_AMOUNT_MAX 5
+/// Ore stack size bounds for seeded asteroid deposits. One. You get one. Say thank you.
+#define ASTEROID_ORE_AMOUNT_MIN 1
+#define ASTEROID_ORE_AMOUNT_MAX 1
 /// DEPRECATED, kept for reference only. A landable meteor storm used to size its own turf
 /// reservation as this plus a maximum-size berth on all four sides (166x134), which no
 /// reservation z-level could ever share - so every field minted a permanent 255x255 level.
@@ -220,10 +220,9 @@
 /// same technique /datum/map_generator/cave_generator/asteroid uses for its single field.
 #define EVENT_FIELD_BLOB_RADIUS_MIN 5
 #define EVENT_FIELD_BLOB_RADIUS_MAX 9
-/// Target fraction of a hazard field's rock turfs that should bear ore after seeding - denser
-/// than the old lone asteroid signal's ratio (~20%) since reaching this rock means flying
-/// through live meteor traffic first (see ship_damage.dm apply_meteor_damage)
-#define EVENT_FIELD_ORE_TARGET_RATIO 0.3
+/// Target fraction of a hazard field's rock turfs that should bear ore after seeding. Flying
+/// through live meteor traffic is its own reward. Bring a book (see ship_damage.dm apply_meteor_damage)
+#define EVENT_FIELD_ORE_TARGET_RATIO 0.01
 
 // Overmap parallax themes - what a crew sees out the windows while their ship sits
 // over (or inside) an overmap object. Themes are applied by the context-parallax

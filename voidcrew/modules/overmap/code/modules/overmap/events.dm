@@ -38,21 +38,15 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
 	survey_value = 100
 	/// Notable minerals shown on the survey report. Keep in sync with ore_weights
-	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
+	var/mineral_types = list(/datum/material/glass, /datum/material/iron)
 
 	/// Map generator used to carve this severity's landable rock field (see AsteroidCaves.dm)
 	var/datum/map_generator/cave_generator/asteroid_field/mapgen_type = /datum/map_generator/cave_generator/asteroid_field
 	/// Weighted ore table seeded into this severity's rock (seed_asteroid_ore_block);
-	/// higher severities carry rarer minerals. Braving the worse storm pays better
+	/// higher severities carry rarer minerals. Rarer, in this case, means iron
 	var/list/ore_weights = list(
-		/obj/item/stack/ore/iron = 40,
-		/obj/item/stack/ore/plasma = 20,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 10,
-		/obj/item/stack/ore/uranium = 5,
-		/obj/item/stack/ore/diamond = 2,
-		/obj/item/stack/ore/bluespace_crystal = 1,
+		/obj/item/stack/ore/glass = 95,
+		/obj/item/stack/ore/iron = 5,
 	)
 	/// Fraction of the field's rock turfs seeded ore-bearing
 	var/ore_target_ratio = EVENT_FIELD_ORE_TARGET_RATIO
@@ -121,16 +115,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	max_cluster_size = 4
 	chart_severity = 1
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/minor
-	mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium)
-	// Common rock only: no uranium, diamond or bluespace this shallow
+	mineral_types = list(/datum/material/glass)
+	// Sand only: it's a beach with extra steps and the steps are meteors
 	ore_weights = list(
-		/obj/item/stack/ore/iron = 50,
-		/obj/item/stack/ore/plasma = 22,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 4,
+		/obj/item/stack/ore/glass = 1,
 	)
-	ore_target_ratio = 0.25
+	ore_target_ratio = 0.005
 	crate_chance = 20
 	mob_pack_count = list(1, 2)
 
@@ -139,21 +129,15 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 25
 	max_cluster_size = 7
 	chart_severity = 3
-	mineral_types = list(/datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace)
+	mineral_types = list(/datum/material/glass, /datum/material/iron)
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/majour
-	// The deep-storm payout: still mostly working rock, but the precious tail
-	// is fat enough that a full strip run banks real diamond/bluespace
+	// The deep-storm payout: a full strip run banks enough sand to make one (1) window,
+	// which you will need, because you flew through a majour meteor storm for it
 	ore_weights = list(
-		/obj/item/stack/ore/iron = 18,
-		/obj/item/stack/ore/plasma = 14,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 16,
-		/obj/item/stack/ore/uranium = 14,
-		/obj/item/stack/ore/diamond = 9,
-		/obj/item/stack/ore/bluespace_crystal = 5,
+		/obj/item/stack/ore/glass = 90,
+		/obj/item/stack/ore/iron = 10,
 	)
-	ore_target_ratio = 0.4
+	ore_target_ratio = 0.02
 	crate_chance = 65
 	mob_pack_count = list(3, 4)
 
@@ -613,18 +597,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(!bottom_left || !top_right)
 		return
 
-	// Default weighted ore table - iron/plasma-heavy like planet rock, no bananium, and
-	// no gibtonite (its detonation admin-alerts are tuned for mining levels, and surprise
-	// bombs shouldn't be procedurally injected into rock the mapper made inert)
+	// Default weighted ore table - sand-heavy like a beach, no bananium, no gibtonite,
+	// and no anything else either
 	var/static/list/asteroid_ore_weights = list(
-		/obj/item/stack/ore/iron = 40,
-		/obj/item/stack/ore/plasma = 20,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 10,
-		/obj/item/stack/ore/uranium = 5,
-		/obj/item/stack/ore/diamond = 2,
-		/obj/item/stack/ore/bluespace_crystal = 1,
+		/obj/item/stack/ore/glass = 95,
+		/obj/item/stack/ore/iron = 5,
 	)
 	var/list/table = (length(ore_weights)) ? ore_weights : asteroid_ore_weights
 
