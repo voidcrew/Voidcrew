@@ -1,0 +1,137 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cRv" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"dwQ" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"dOv" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"gKa" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/computer/crew,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"ixv" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"jlZ" = (
+/turf/template_noop,
+/area/template_noop)
+"kjX" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"kpv" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"kHO" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"kOc" = (
+/obj/machinery/recharger{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/mechanical,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"njK" = (
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"onI" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"pJp" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/communications{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"ujT" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"wCS" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"xnv" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+jlZ
+jlZ
+jlZ
+kHO
+jlZ
+jlZ
+onI
+"}
+(2,1,1) = {"
+kpv
+njK
+njK
+kHO
+njK
+njK
+xnv
+"}
+(3,1,1) = {"
+gKa
+ujT
+ixv
+dwQ
+njK
+njK
+wCS
+"}
+(4,1,1) = {"
+jlZ
+cRv
+kjX
+dOv
+pJp
+kOc
+jlZ
+"}

@@ -1,0 +1,173 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bAM" = (
+/obj/machinery/grill,
+/turf/template_noop,
+/area/template_noop)
+"bJH" = (
+/obj/modular_map_connector,
+/obj/structure/closet/secure_closet/freezer/fridge/all_access,
+/obj/item/food/bun,
+/obj/item/food/bun,
+/obj/item/food/bun,
+/obj/item/food/meat/slab/pig,
+/obj/item/food/meat/slab/pig,
+/obj/item/food/meat/slab/pig,
+/obj/item/food/meat/slab/grassfed,
+/obj/item/food/meat/slab/grassfed,
+/obj/item/food/meat/slab/grassfed,
+/turf/template_noop,
+/area/template_noop)
+"cQT" = (
+/turf/open/floor/iron/kitchen/small,
+/area/template_noop)
+"dUC" = (
+/obj/machinery/griddle,
+/turf/template_noop,
+/area/template_noop)
+"dZD" = (
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"gMF" = (
+/obj/structure/table/rolling,
+/obj/item/reagent_containers/condiment/hotsauce{
+	pixel_x = -5;
+	pixel_y = 13
+	},
+/obj/item/reagent_containers/condiment/bbqsauce{
+	pixel_x = 4;
+	pixel_y = 13
+	},
+/obj/item/knife/butcher,
+/obj/item/kitchen/rollingpin{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/item/clothing/suit/apron/chef,
+/turf/open/floor/iron/kitchen/small,
+/area/template_noop)
+"gWN" = (
+/obj/structure/flora/ausbushes/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"jPb" = (
+/obj/machinery/smartfridge/food,
+/turf/template_noop,
+/area/template_noop)
+"nmy" = (
+/turf/template_noop,
+/area/template_noop)
+"pIO" = (
+/obj/structure/flora/ausbushes/grassybush,
+/turf/open/floor/grass,
+/area/template_noop)
+"snZ" = (
+/turf/open/floor/asphalt,
+/area/template_noop)
+"tdP" = (
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/obj/structure/flora/ausbushes/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"tUh" = (
+/obj/structure/chair/plastic{
+	dir = 4
+	},
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"tZJ" = (
+/obj/machinery/restaurant_portal/restaurant,
+/obj/item/holosign_creator/robot_seat/restaurant,
+/turf/open/floor/asphalt,
+/area/template_noop)
+"uSH" = (
+/obj/machinery/suit_storage_unit,
+/turf/open/floor/asphalt,
+/area/template_noop)
+"wTu" = (
+/obj/structure/table/rolling,
+/obj/structure/fluff/beach_umbrella,
+/turf/open/floor/grass,
+/area/template_noop)
+"xnU" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/asphalt,
+/area/template_noop)
+"xNN" = (
+/obj/machinery/oven/range,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+nmy
+nmy
+bJH
+"}
+(2,1,1) = {"
+nmy
+bAM
+cQT
+"}
+(3,1,1) = {"
+nmy
+dUC
+cQT
+"}
+(4,1,1) = {"
+nmy
+xNN
+gMF
+"}
+(5,1,1) = {"
+nmy
+nmy
+nmy
+"}
+(6,1,1) = {"
+xnU
+uSH
+nmy
+"}
+(7,1,1) = {"
+snZ
+snZ
+nmy
+"}
+(8,1,1) = {"
+snZ
+snZ
+nmy
+"}
+(9,1,1) = {"
+tZJ
+uSH
+nmy
+"}
+(10,1,1) = {"
+nmy
+nmy
+nmy
+"}
+(11,1,1) = {"
+nmy
+tUh
+gWN
+"}
+(12,1,1) = {"
+nmy
+wTu
+pIO
+"}
+(13,1,1) = {"
+nmy
+tdP
+dZD
+"}
+(14,1,1) = {"
+nmy
+nmy
+jPb
+"}

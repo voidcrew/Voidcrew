@@ -1,0 +1,149 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"atF" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"aVf" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"due" = (
+/obj/structure/closet/crate,
+/obj/item/storage/bag/trash,
+/obj/structure/closet/crate/secure/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"fgh" = (
+/turf/template_noop,
+/area/template_noop)
+"gor" = (
+/obj/structure/closet/crate,
+/obj/structure/closet/crate/secure/syndicate,
+/obj/item/vending_refill/donksoft,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"kzu" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/engineering/vending_restock,
+/obj/structure/closet/crate/secure/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"luo" = (
+/obj/structure/dresser,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"lDW" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"mbq" = (
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"mfl" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"oGe" = (
+/obj/item/circuitboard/machine/vending,
+/obj/item/screwdriver,
+/obj/structure/frame/machine/secured,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"qFK" = (
+/obj/structure/chair/office,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"qZt" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"rVB" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"xcW" = (
+/obj/structure/closet/crate,
+/obj/structure/closet/crate/secure/weapon,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"yaJ" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+
+(1,1,1) = {"
+oGe
+fgh
+qZt
+"}
+(2,1,1) = {"
+mfl
+gor
+fgh
+"}
+(3,1,1) = {"
+mfl
+due
+fgh
+"}
+(4,1,1) = {"
+mfl
+kzu
+fgh
+"}
+(5,1,1) = {"
+fgh
+fgh
+fgh
+"}
+(6,1,1) = {"
+mbq
+yaJ
+yaJ
+"}
+(7,1,1) = {"
+mbq
+mbq
+aVf
+"}
+(8,1,1) = {"
+mbq
+mbq
+luo
+"}
+(9,1,1) = {"
+mbq
+rVB
+atF
+"}
+(10,1,1) = {"
+fgh
+fgh
+fgh
+"}
+(11,1,1) = {"
+mfl
+xcW
+fgh
+"}
+(12,1,1) = {"
+mfl
+xcW
+fgh
+"}
+(13,1,1) = {"
+qFK
+xcW
+fgh
+"}
+(14,1,1) = {"
+lDW
+fgh
+fgh
+"}

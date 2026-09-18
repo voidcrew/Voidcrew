@@ -1,0 +1,159 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aMt" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"ciJ" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"eJl" = (
+/obj/structure/chair/comfy/brown,
+/obj/item/trash/boritos/red,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"eLC" = (
+/obj/structure/table/wood/fancy/black,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/structure/table/wood/fancy/red,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"fMH" = (
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"guZ" = (
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"hgj" = (
+/obj/effect/spawner/random/bedsheet,
+/obj/structure/bed,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"hCZ" = (
+/obj/structure/table/wood/fancy/red,
+/obj/machinery/chem_dispenser/drinks/beer{
+	dir = 8
+	},
+/obj/item/storage/box/drinkingglasses,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"iZM" = (
+/obj/machinery/computer/slot_machine,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"mXi" = (
+/obj/machinery/vending/snack/green,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"ogQ" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"ooM" = (
+/turf/template_noop,
+/area/template_noop)
+"owt" = (
+/obj/structure/table/wood/fancy/black,
+/obj/structure/table/wood/fancy/red,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"oYp" = (
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"uDV" = (
+/obj/machinery/computer/arcade{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"vpq" = (
+/obj/structure/closet/crate/bin,
+/obj/item/storage/bag/trash/filled,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"xPN" = (
+/obj/structure/closet/secure_closet/bar/lavaland_bartender_clothes,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"xRY" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/circuit/red,
+/area/template_noop)
+
+(1,1,1) = {"
+mXi
+ooM
+ciJ
+"}
+(2,1,1) = {"
+ogQ
+iZM
+ooM
+"}
+(3,1,1) = {"
+eJl
+uDV
+ooM
+"}
+(4,1,1) = {"
+ogQ
+iZM
+ooM
+"}
+(5,1,1) = {"
+ooM
+ooM
+ooM
+"}
+(6,1,1) = {"
+guZ
+hgj
+hgj
+"}
+(7,1,1) = {"
+guZ
+fMH
+fMH
+"}
+(8,1,1) = {"
+guZ
+fMH
+vpq
+"}
+(9,1,1) = {"
+guZ
+xRY
+aMt
+"}
+(10,1,1) = {"
+ooM
+ooM
+ooM
+"}
+(11,1,1) = {"
+oYp
+oYp
+ooM
+"}
+(12,1,1) = {"
+eLC
+owt
+ooM
+"}
+(13,1,1) = {"
+fMH
+xPN
+ooM
+"}
+(14,1,1) = {"
+hCZ
+ooM
+ooM
+"}

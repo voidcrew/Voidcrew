@@ -1,0 +1,190 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aCn" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aTI" = (
+/obj/structure/platform/iron,
+/obj/structure/platform/plastitanium,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"bSL" = (
+/obj/structure/platform/iron,
+/obj/vehicle/sealed/mecha/ripley/paddy/preset,
+/obj/structure/platform/plastitanium,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"erz" = (
+/obj/structure/platform/iron,
+/obj/structure/platform/plastitanium,
+/obj/structure/mecha_wreckage/ripley,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"fez" = (
+/obj/structure/platform/iron,
+/obj/structure/platform/plastitanium,
+/obj/structure/ore_box,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"hOr" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"kJm" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/structure/table/reinforced/plasmarglass,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"kQt" = (
+/obj/structure/platform/iron,
+/obj/structure/platform/plastitanium,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"ndi" = (
+/obj/structure/platform/iron,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/cryo,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/inferno{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/obj/structure/platform/plastitanium,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"pcC" = (
+/obj/structure/table/reinforced,
+/obj/item/inducer{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"sgT" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_west"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"tjn" = (
+/obj/machinery/suit_storage_unit/security,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"wnC" = (
+/turf/template_noop,
+/area/template_noop)
+"wwy" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"xBl" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/machinery/recharger{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+wnC
+wnC
+kJm
+"}
+(2,1,1) = {"
+wnC
+fez
+sgT
+"}
+(3,1,1) = {"
+wnC
+erz
+sgT
+"}
+(4,1,1) = {"
+wnC
+aTI
+sgT
+"}
+(5,1,1) = {"
+wnC
+wnC
+wnC
+"}
+(6,1,1) = {"
+wwy
+tjn
+wnC
+"}
+(7,1,1) = {"
+aCn
+aCn
+aCn
+"}
+(8,1,1) = {"
+aCn
+aCn
+aCn
+"}
+(9,1,1) = {"
+xBl
+tjn
+wnC
+"}
+(10,1,1) = {"
+wnC
+wnC
+wnC
+"}
+(11,1,1) = {"
+wnC
+ndi
+hOr
+"}
+(12,1,1) = {"
+wnC
+bSL
+hOr
+"}
+(13,1,1) = {"
+wnC
+kQt
+hOr
+"}
+(14,1,1) = {"
+wnC
+wnC
+pcC
+"}

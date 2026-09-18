@@ -1,0 +1,118 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"drI" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"jJY" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/wood,
+/area/template_noop)
+"mDC" = (
+/mob/living/basic/pet/fox/renault,
+/obj/structure/bed/dogbed/renault,
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"qNH" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = /obj/item/katana
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"rbk" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/wood,
+/area/template_noop)
+"rfX" = (
+/obj/structure/table/wood,
+/obj/machinery/recharger,
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/mechanical,
+/turf/open/floor/wood,
+/area/template_noop)
+"rBy" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+"rDl" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"sxf" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/template_noop)
+"vbd" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"vji" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"vmU" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/carpet/blue,
+/area/template_noop)
+"voR" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"wca" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"yjK" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+yjK
+yjK
+yjK
+voR
+yjK
+yjK
+wca
+"}
+(2,1,1) = {"
+jJY
+voR
+voR
+voR
+voR
+voR
+rBy
+"}
+(3,1,1) = {"
+rbk
+voR
+vji
+drI
+mDC
+voR
+sxf
+"}
+(4,1,1) = {"
+yjK
+qNH
+vmU
+vbd
+rDl
+rfX
+yjK
+"}

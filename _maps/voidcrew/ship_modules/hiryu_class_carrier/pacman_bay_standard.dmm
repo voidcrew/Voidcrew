@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dZu" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"jXa" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/autolathe,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = -7;
+	pixel_y = 0
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 7;
+	pixel_y = 0
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"lDS" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"pAW" = (
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"qWt" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"rkZ" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"rOf" = (
+/turf/template_noop,
+/area/template_noop)
+"rPi" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"tWa" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+rOf
+lDS
+lDS
+lDS
+lDS
+lDS
+dZu
+"}
+(2,1,1) = {"
+lDS
+lDS
+lDS
+lDS
+lDS
+lDS
+lDS
+"}
+(3,1,1) = {"
+rOf
+rOf
+rOf
+lDS
+rOf
+rOf
+rOf
+"}
+(4,1,1) = {"
+rOf
+rOf
+rkZ
+lDS
+qWt
+rOf
+rOf
+"}
+(5,1,1) = {"
+rOf
+rOf
+rkZ
+lDS
+jXa
+rOf
+rOf
+"}
+(6,1,1) = {"
+rOf
+rOf
+lDS
+lDS
+pAW
+rOf
+rOf
+"}
+(7,1,1) = {"
+rOf
+rOf
+rkZ
+lDS
+rPi
+rOf
+rOf
+"}
+(8,1,1) = {"
+rOf
+rOf
+rkZ
+lDS
+tWa
+rOf
+rOf
+"}

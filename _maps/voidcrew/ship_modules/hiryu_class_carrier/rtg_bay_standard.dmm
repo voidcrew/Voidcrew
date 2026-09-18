@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"akq" = (
+/turf/template_noop,
+/area/template_noop)
+"fZt" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"gMb" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"jiP" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"ksF" = (
+/obj/machinery/power/rtg/advanced,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"laD" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"pFe" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"tcZ" = (
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"xXk" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/autolathe,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = -7;
+	pixel_y = 0
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 7;
+	pixel_y = 0
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+akq
+laD
+laD
+laD
+laD
+laD
+jiP
+"}
+(2,1,1) = {"
+laD
+laD
+laD
+laD
+laD
+laD
+laD
+"}
+(3,1,1) = {"
+akq
+akq
+akq
+laD
+akq
+akq
+akq
+"}
+(4,1,1) = {"
+akq
+akq
+ksF
+laD
+fZt
+akq
+akq
+"}
+(5,1,1) = {"
+akq
+akq
+ksF
+laD
+xXk
+akq
+akq
+"}
+(6,1,1) = {"
+akq
+akq
+laD
+laD
+tcZ
+akq
+akq
+"}
+(7,1,1) = {"
+akq
+akq
+ksF
+laD
+gMb
+akq
+akq
+"}
+(8,1,1) = {"
+akq
+akq
+ksF
+laD
+pFe
+akq
+akq
+"}

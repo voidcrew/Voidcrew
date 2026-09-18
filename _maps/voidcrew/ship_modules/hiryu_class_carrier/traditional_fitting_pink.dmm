@@ -1,0 +1,146 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aqt" = (
+/obj/item/pillow,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"gmT" = (
+/obj/structure/dresser,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"gGg" = (
+/turf/template_noop,
+/area/template_noop)
+"hAQ" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"hMz" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"iKU" = (
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"kAa" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"lhc" = (
+/obj/structure/closet/crate/bin,
+/obj/item/storage/bag/trash/filled,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"ltu" = (
+/obj/structure/platform/bamboo,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"mbd" = (
+/obj/structure/platform/bamboo,
+/obj/item/reagent_containers/cup/glass/mug/coco{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"oPQ" = (
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"qmS" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double,
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"qIV" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami/purple,
+/area/template_noop)
+"sMr" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"uSm" = (
+/obj/machinery/vending/snack/green,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"ydz" = (
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+
+(1,1,1) = {"
+uSm
+gGg
+kAa
+"}
+(2,1,1) = {"
+ydz
+aqt
+gGg
+"}
+(3,1,1) = {"
+iKU
+mbd
+gGg
+"}
+(4,1,1) = {"
+ydz
+aqt
+gGg
+"}
+(5,1,1) = {"
+gGg
+gGg
+gGg
+"}
+(6,1,1) = {"
+ydz
+lhc
+hAQ
+"}
+(7,1,1) = {"
+ydz
+oPQ
+qIV
+"}
+(8,1,1) = {"
+ydz
+oPQ
+qmS
+"}
+(9,1,1) = {"
+ydz
+hMz
+gmT
+"}
+(10,1,1) = {"
+gGg
+gGg
+gGg
+"}
+(11,1,1) = {"
+ydz
+aqt
+gGg
+"}
+(12,1,1) = {"
+iKU
+ltu
+gGg
+"}
+(13,1,1) = {"
+ydz
+aqt
+gGg
+"}
+(14,1,1) = {"
+sMr
+gGg
+gGg
+"}

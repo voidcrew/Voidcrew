@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"buH" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"bUj" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"cjN" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"gQm" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"iqa" = (
+/obj/structure/table/wood,
+/obj/machinery/recharger,
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/mechanical,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"kuP" = (
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"nCs" = (
+/mob/living/basic/pet/cat/runtime,
+/obj/structure/bed/dogbed/runtime,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"nXX" = (
+/turf/template_noop,
+/area/template_noop)
+"rIk" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"ssU" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"sJk" = (
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"ueZ" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"uhQ" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/dresser,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"vTp" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"wyx" = (
+/obj/modular_map_connector,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"xfu" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = /obj/item/katana
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+
+(1,1,1) = {"
+sJk
+nXX
+nXX
+kuP
+nXX
+nXX
+wyx
+"}
+(2,1,1) = {"
+gQm
+kuP
+kuP
+kuP
+kuP
+kuP
+rIk
+"}
+(3,1,1) = {"
+bUj
+kuP
+cjN
+ueZ
+nCs
+kuP
+uhQ
+"}
+(4,1,1) = {"
+nXX
+xfu
+vTp
+ssU
+buH
+iqa
+nXX
+"}
