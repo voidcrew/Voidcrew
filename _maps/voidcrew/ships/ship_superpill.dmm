@@ -1,0 +1,163 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cnW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"dJS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"fzq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light,
+/obj/machinery/computer/cryopod{
+	pixel_y = -40
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"gGk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/west,
+/obj/structure/window/spawner/directional/south,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"hdb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"hjN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_root/ship_upgrade{
+	key = "engine"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"ibp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/window/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/cryopod,
+/obj/item/circuitboard/machine/autolathe,
+/obj/item/stack/cable_coil/thirty,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stack/sheet/iron/ten,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/storage/box/rndboards/all,
+/obj/item/circuitboard/machine/mission_pad,
+/obj/item/circuitboard/computer/mission_board,
+/obj/item/circuitboard/computer/voidcrew_cargo,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"iud" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"iIx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"kzE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/south,
+/obj/structure/window/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"neV" = (
+/turf/template_noop,
+/area/template_noop)
+"otT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/helm{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"rKJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/door/window{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/obj/effect/decal/cleanable/dirt,
+/obj/docking_port/mobile/voidcrew/superpill,
+/obj/docking_port/mobile/voidcrew/superpill,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+"tzU" = (
+/turf/closed/wall,
+/area/shuttle/voidcrew/superpill/engine)
+"xzD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/spawner/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/superpill/engine)
+
+(1,1,1) = {"
+neV
+neV
+neV
+neV
+neV
+neV
+"}
+(2,1,1) = {"
+hdb
+iIx
+rKJ
+xzD
+gGk
+hjN
+"}
+(3,1,1) = {"
+cnW
+cnW
+iud
+fzq
+tzU
+cnW
+"}
+(4,1,1) = {"
+cnW
+dJS
+ibp
+otT
+kzE
+cnW
+"}
+(5,1,1) = {"
+neV
+neV
+neV
+neV
+neV
+neV
+"}

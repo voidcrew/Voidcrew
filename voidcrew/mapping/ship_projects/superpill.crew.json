@@ -1,0 +1,68 @@
+{
+  "Rosters": {
+    "ship": [],
+    "theme/climate_destroyer_supreme": [
+      {
+        "ID": "job_3",
+        "Name": "Chief Engineer",
+        "Outfit": "/datum/outfit/job/workshop_superpill_job_3",
+        "BaseOutfit": "/datum/outfit/job/ce",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "gloves": "/obj/item/clothing/gloves/chief_engineer",
+          "head": "/obj/item/clothing/head/utility/hardhat/welding/white",
+          "shoes": "/obj/item/clothing/shoes/magboots/advance"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_4",
+        "Name": "Engineer",
+        "Outfit": "/datum/outfit/job/workshop_superpill_job_4",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": {
+          "gloves": "/obj/item/clothing/gloves/color/yellow",
+          "head": "/obj/item/clothing/head/utility/hardhat/welding"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/standard": [
+      {
+        "ID": "job_1",
+        "Name": "Head Assistant",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_2",
+        "Name": "Assistant",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ]
+  }
+}
