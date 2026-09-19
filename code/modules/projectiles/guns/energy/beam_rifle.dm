@@ -50,6 +50,7 @@
 	range = 150
 	jitter = 20 SECONDS
 	hitscan = TRUE
+	ricochets_max = 0
 	tracer_type = /obj/effect/projectile/tracer/tracer/beam_rifle
 
 /obj/projectile/beam/event_horizon/on_hit(atom/target, blocked, pierce_hit)
