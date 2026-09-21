@@ -19,3 +19,10 @@
 
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt
 	var/obj/effect/abstract/jaunt_exit/start_point_anchor
+
+/obj/effect/abstract/jaunt_exit
+	name = "jaunt return reference"
+	icon = null
+	invisibility = INVISIBILITY_ABSTRACT
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE

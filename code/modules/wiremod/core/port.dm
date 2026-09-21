@@ -130,8 +130,6 @@
 //The chemistry components move a *quantity* of reagent down a wire rather than a
 //readable value, so fanning one output into two inputs would silently duplicate the
 //payload. Capping the fan-out at one makes that impossible to wire up in the first place.
-/datum/port/output/singular
-	max_inputs = 1
 //VOIDCREW EDIT END
 
 /**

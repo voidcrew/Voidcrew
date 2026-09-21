@@ -6,3 +6,6 @@
 	/// How many input ports may read from this output at once. Unlimited by default,
 	/// which is the historic behaviour and what every stock component still gets.
 	var/max_inputs = INFINITY
+
+/datum/port/output/singular
+	max_inputs = 1

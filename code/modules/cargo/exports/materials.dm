@@ -175,10 +175,6 @@
 // VOIDCREW EDIT: plasma trades on the materials market here (see basemats.dm).
 // Direct plasma is matched by the earlier datum. Blocks must obey its same
 // ceiling, including a fixed quote captured before prices or balance changed.
-/datum/export/material/market/plasma
-	message = "cm3 of plasma"
-	material_id = /datum/material/plasma
-
 /datum/export/material/market/iron
 	message = "cm3 of iron"
 	material_id = /datum/material/iron

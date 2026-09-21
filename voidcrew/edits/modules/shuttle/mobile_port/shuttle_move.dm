@@ -73,3 +73,5 @@
 		for(var/obj/structure/cable/cut_cable in oldT)
 			cut_cable.propagate_if_no_network()
 	restore_plumbing_after_aborted_move(old_turfs)
+
+/obj/docking_port/mobile/var/list/move_powernet_verdicts

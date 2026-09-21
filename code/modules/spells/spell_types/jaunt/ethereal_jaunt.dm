@@ -22,13 +22,6 @@
 	var/list/exit_point_list
 
 /// An invisible location reference, carried by ordinary shuttle movement and rotation.
-/obj/effect/abstract/jaunt_exit
-	name = "jaunt return reference"
-	icon = null
-	invisibility = INVISIBILITY_ABSTRACT
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	anchored = TRUE
-
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/enter_jaunt(mob/living/jaunter, turf/loc_override)
 	. = ..()
 	if(!.)

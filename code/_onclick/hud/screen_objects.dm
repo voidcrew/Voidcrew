@@ -133,14 +133,6 @@
 	navigator.navigate()
 
 /// Shortcut to the same personal skill report provided by the View Skills verb.
-// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
-/atom/movable/screen/skills
-	name = "view skills and experience"
-	icon = 'icons/hud/screen_midnight.dmi'
-	icon_state = "skills"
-	mouse_over_pointer = MOUSE_HAND_POINTER
-
-// VOIDCREW EDIT END
 /atom/movable/screen/craft
 	name = "crafting menu"
 	icon = 'icons/hud/screen_midnight.dmi'

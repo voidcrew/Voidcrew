@@ -6769,6 +6769,8 @@
 #include "voidcrew\datums\ruins\space.dm"
 #include "voidcrew\datums\ruins\wasteland.dm"
 #include "voidcrew\datums\votes\transfer_vote.dm"
+#include "voidcrew\edits\modules\research\designs\machine_designs.dm"
+#include "voidcrew\edits\modules\research\designs\comp_board_designs.dm"
 #include "voidcrew\edits\modules\wiremod\dcs_components\component_add_port.dm"
 #include "voidcrew\edits\modules\wiremod\core\port.dm"
 #include "voidcrew\edits\modules\mob\mob_defines.dm"

@@ -20,3 +20,7 @@
 			material_value = min(material_value, block.export_value)
 	return (apply_elastic ? cost : init_cost) * max(0, material_value)
 // VOIDCREW EDIT END
+
+/datum/export/material/market/plasma
+	message = "cm3 of plasma"
+	material_id = /datum/material/plasma

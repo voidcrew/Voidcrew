@@ -126,8 +126,6 @@
 /// Voidcrew: powernet -> TRUE/FALSE verdicts from powernet_leaves_hull(), valid for one
 /// preflight_check() pass only. Null outside a move.
 // VOIDCREW EDIT END
-/obj/docking_port/mobile/var/list/move_powernet_verdicts
-
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, list/underlying_areas, rotation)
 	for(var/i in 1 to length(old_turfs))
 		CHECK_TICK
