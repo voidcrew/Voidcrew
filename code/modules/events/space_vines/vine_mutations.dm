@@ -239,7 +239,7 @@
 /datum/spacevine_mutation/oxy_eater/process_mutation(obj/structure/spacevine/holder)
 	var/turf/open/floor/turf = holder.loc
 	if(istype(turf))
-		var/datum/gas_mixture/gas_mix = turf.air
+		var/datum/gas_mixture/gas_mix = turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(!gas_mix.gases[/datum/gas/oxygen])
 			return
 		gas_mix.gases[/datum/gas/oxygen][MOLES] = max(gas_mix.gases[/datum/gas/oxygen][MOLES] - GAS_MUTATION_REMOVAL_MULTIPLIER * holder.growth_stage, 0)
@@ -254,7 +254,7 @@
 /datum/spacevine_mutation/nitro_eater/process_mutation(obj/structure/spacevine/holder)
 	var/turf/open/floor/turf = holder.loc
 	if(istype(turf))
-		var/datum/gas_mixture/gas_mix = turf.air
+		var/datum/gas_mixture/gas_mix = turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(!gas_mix.gases[/datum/gas/nitrogen])
 			return
 		gas_mix.gases[/datum/gas/nitrogen][MOLES] = max(gas_mix.gases[/datum/gas/nitrogen][MOLES] - GAS_MUTATION_REMOVAL_MULTIPLIER * holder.growth_stage, 0)
@@ -269,7 +269,7 @@
 /datum/spacevine_mutation/carbondioxide_eater/process_mutation(obj/structure/spacevine/holder)
 	var/turf/open/floor/turf = holder.loc
 	if(istype(turf))
-		var/datum/gas_mixture/gas_mix = turf.air
+		var/datum/gas_mixture/gas_mix = turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(!gas_mix.gases[/datum/gas/carbon_dioxide])
 			return
 		gas_mix.gases[/datum/gas/carbon_dioxide][MOLES] = max(gas_mix.gases[/datum/gas/carbon_dioxide][MOLES] - GAS_MUTATION_REMOVAL_MULTIPLIER * holder.growth_stage, 0)
@@ -284,7 +284,7 @@
 /datum/spacevine_mutation/plasma_eater/process_mutation(obj/structure/spacevine/holder)
 	var/turf/open/floor/turf = holder.loc
 	if(istype(turf))
-		var/datum/gas_mixture/gas_mix = turf.air
+		var/datum/gas_mixture/gas_mix = turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(!gas_mix.gases[/datum/gas/plasma])
 			return
 		gas_mix.gases[/datum/gas/plasma][MOLES] = max(gas_mix.gases[/datum/gas/plasma][MOLES] - GAS_MUTATION_REMOVAL_MULTIPLIER * holder.growth_stage, 0)

@@ -239,6 +239,7 @@
 
 	var/datum/gas_mixture/turf_mixture = SSair.parse_gas_string(text, /datum/gas_mixture/turf)
 
-	air.merge(turf_mixture)
+	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	our_air.merge(turf_mixture)
 	archive()
 	SSair.add_to_active(src)

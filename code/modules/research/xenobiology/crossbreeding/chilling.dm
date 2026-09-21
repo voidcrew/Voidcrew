@@ -110,7 +110,7 @@ Chilling extracts:
 		return
 	var/filtered = FALSE
 	for(var/turf/open/T in A.get_turfs_from_all_zlevels())
-		var/datum/gas_mixture/G = T.air
+		var/datum/gas_mixture/G = T.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(istype(G))
 			G.assert_gas(/datum/gas/plasma)
 			G.gases[/datum/gas/plasma][MOLES] = 0

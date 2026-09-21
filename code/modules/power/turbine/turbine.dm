@@ -373,7 +373,7 @@
 		return FALSE
 
 	//eject gases and update turf if any was ejected
-	var/datum/gas_mixture/ejected_gases = machine_gasmix.pump_gas_to(output_turf.air, machine_gasmix.return_pressure())
+	var/datum/gas_mixture/ejected_gases = machine_gasmix.pump_gas_to(output_turf.return_air(), machine_gasmix.return_pressure()) // VOIDCREW EDIT: return_air() leaves the shared planetary mix
 	if(ejected_gases)
 		output_turf.air_update_turf(TRUE)
 		output_turf.update_visuals()

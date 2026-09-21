@@ -59,7 +59,12 @@
 /turf/open/Initialize(mapload)
 	prepare_planet_atmosphere() // VOIDCREW: authored atmosphere precedes air creation.
 	if(!blocks_air)
-		air = create_gas_mixture()
+		// VOIDCREW EDIT: a planetary turf starts on the shared mix for its gas string and only
+		// takes a private mixture on its first write. See voidcrew/edits/planetary_shared_air.dm.
+		if(planetary_atmos)
+			air = planetary_shared_air()
+		if(!air)
+			air = create_gas_mixture()
 		if(planetary_atmos)
 			if(!SSair.planetary[initial_gas_mix])
 				var/datum/gas_mixture/immutable/planetary/mix = new
@@ -92,7 +97,8 @@
 /turf/open/assume_air(datum/gas_mixture/giver) //use this for machines to adjust air
 	if(!giver)
 		return FALSE
-	air.merge(giver)
+	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	our_air.merge(giver)
 	update_visuals()
 	air_update_turf(FALSE, FALSE)
 	return TRUE
@@ -106,11 +112,13 @@
 
 /turf/open/proc/copy_air_with_tile(turf/open/target_turf)
 	if(istype(target_turf))
-		air.copy_from(target_turf.air)
+		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		our_air.copy_from(target_turf.air)
 
 /turf/open/proc/copy_air(datum/gas_mixture/copy)
 	if(copy)
-		air.copy_from(copy)
+		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		our_air.copy_from(copy)
 
 /turf/return_air()
 	RETURN_TYPE(/datum/gas_mixture)
@@ -119,10 +127,15 @@
 
 /turf/open/return_air()
 	RETURN_TYPE(/datum/gas_mixture)
+	// VOIDCREW EDIT: callers write to what they get here (canisters, vents, breathing, fire),
+	// so a turf still on the shared planetary mix takes its private copy now. Readers that
+	// must not trigger that use return_air_readonly().
+	if(planetary_atmos)
+		return materialize_planet_air()
 	return air
 
 /turf/open/return_analyzable_air()
-	return return_air()
+	return air // VOIDCREW EDIT: was return_air(); analyzers only read, keep the shared planetary mix
 
 /turf/should_atmos_process(datum/gas_mixture/air, exposed_temperature)
 	return (exposed_temperature >= heat_capacity || to_be_destroyed)
@@ -319,6 +332,12 @@
 
 		//air sharing
 		if(should_share_air)
+			// VOIDCREW EDIT: share() writes both mixes. Either turf may still be on the shared
+			// planetary mix; give it a private one first (no-op otherwise).
+			if(planetary_atmos)
+				our_air = materialize_planet_air()
+			if(enemy_tile.planetary_atmos)
+				enemy_air = enemy_tile.materialize_planet_air()
 			var/difference = our_air.share(enemy_air, our_share_coeff, 1 / (LAZYLEN(enemy_tile.atmos_adjacent_turfs) + 1))
 			if(difference)
 				if(difference > 0)
@@ -336,6 +355,7 @@
 		// archive ourself again so we don't accidentally share more gas than we currently have
 		LINDA_CYCLE_ARCHIVE(src)
 		if(our_air.compare(planetary_mix, ARCHIVE))
+			our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix, share() writes us
 			if(!our_excited_group)
 				var/datum/excited_group/new_group = new
 				new_group.add_turf(src)
@@ -347,6 +367,9 @@
 			planetary_mix.garbage_collect()
 			PLANET_SHARE_CHECK
 
+	// VOIDCREW EDIT: a 100% share into space writes us; leave the shared planetary mix first.
+	if(planetary_atmos && share_end)
+		our_air = materialize_planet_air()
 	for(var/turf/open/enemy_tile as anything in share_end)
 		var/datum/gas_mixture/enemy_mix = enemy_tile.air
 		archive()
@@ -611,7 +634,9 @@ Then we space some of our heat, and think about if we should stop conducting.
 
 	if(!other.blocks_air) //Both tiles are open
 		var/turf/open/open_other = other
-		open_other.air.temperature_share(air, WINDOW_HEAT_TRANSFER_COEFFICIENT)
+		// VOIDCREW EDIT: temperature_share() writes both mixes; neither may stay on the shared planetary mix.
+		var/datum/gas_mixture/other_air = open_other.materialize_planet_air()
+		other_air.temperature_share(materialize_planet_air(), WINDOW_HEAT_TRANSFER_COEFFICIENT)
 	else //Open but neighbor is solid
 		temperature_share_open_to_solid(other)
 	SSair.add_to_active(src)
@@ -649,7 +674,8 @@ Then we space some of our heat, and think about if we should stop conducting.
 /turf/open/finish_superconduction()
 	//Conduct with air on my tile if I have it
 	if(..((blocks_air ? temperature : air.temperature)) != FALSE && !blocks_air)
-		temperature = air.temperature_share(null, thermal_conductivity, temperature, heat_capacity)
+		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		temperature = our_air.temperature_share(null, thermal_conductivity, temperature, heat_capacity)
 
 ///Should we attempt to superconduct?
 /turf/proc/consider_superconductivity(starting)
@@ -685,7 +711,8 @@ Then we space some of our heat, and think about if we should stop conducting.
 	temperature -= heat / heat_capacity
 
 /turf/open/proc/temperature_share_open_to_solid(turf/sharer)
-	sharer.temperature = air.temperature_share(null, sharer.thermal_conductivity, sharer.temperature, sharer.heat_capacity)
+	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	sharer.temperature = our_air.temperature_share(null, sharer.thermal_conductivity, sharer.temperature, sharer.heat_capacity)
 
 /turf/proc/share_temperature_mutual_solid(turf/sharer, conduction_coefficient) //This is all just heat sharing, don't get freaked out
 	var/delta_temperature = sharer.temperature_archived - temperature_archived

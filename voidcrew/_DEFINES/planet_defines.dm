@@ -177,3 +177,19 @@
 /// SITE_CAPACITY_RETRY_DELAY-paced). Long enough not to nag, short enough that a
 /// minutes-long hold is distinguishable from a hang.
 #define SITE_CAPACITY_RENOTIFY_INTERVAL (3 MINUTES)
+
+/**
+ * Planetary turfs start on one shared, read-only gas mixture per gas string instead of
+ * each owning a /datum/gas_mixture/turf, and only take a private copy the first time
+ * something writes to their air. See voidcrew/edits/planetary_shared_air.dm.
+ *
+ * Round 79 (2026-09-16, ~40 players, 6 h): /datum/gas_mixture/turf went 11,103 ->
+ * 106,347, one per generated planet/asteroid turf, on a 32-bit DreamDaemon that ended the
+ * round at 95% of its 4 GB address space. Almost none of those turfs ever have their air
+ * changed, and planetary_atmos turfs revert toward initial_gas_mix anyway.
+ *
+ * Comment out to fall back to a private mixture per turf. Nothing else has to change:
+ * every write path calls materialize_planet_air(), which is a no-op once no turf holds
+ * the shared mix.
+ */
+#define PLANETARY_ATMOS_SHARED_MIX

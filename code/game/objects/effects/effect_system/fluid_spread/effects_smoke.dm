@@ -290,7 +290,7 @@
 		return
 
 	if(chilly.air)
-		var/datum/gas_mixture/air = chilly.air
+		var/datum/gas_mixture/air = chilly.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
 		if(!distcheck || get_dist(location, chilly) < blast) // Otherwise we'll get silliness like people using Nanofrost to kill people through walls with cold air
 			air.temperature = temperature
 

@@ -69,6 +69,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 	return FALSE
 
 /// Generate a brand new armor datum with the modifiers given, if ARMOR_ALL is specified only that modifier is used
+// VOIDCREW EDIT START - PR #409: Preserve existing protections when upgrading armor.
 /datum/armor/proc/generate_new_with_modifiers(list/modifiers)
 	var/datum/armor/new_armor = new
 
@@ -81,6 +82,8 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			new_armor.vars[mod] = vars[mod] + modifier_all
 		return new_armor
 
+	for(var/rating in all_keys)
+		new_armor.vars[rating] = vars[rating]
 	for(var/modifier in modifiers)
 		if(modifier in all_keys)
 			new_armor.vars[modifier] = vars[modifier] + modifiers[modifier]
@@ -88,10 +91,12 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			stack_trace("Attempt to call generate_new_with_modifiers with illegal modifier '[modifier]'! Ignoring it")
 	return new_armor
 
+// VOIDCREW EDIT END
 /datum/armor/immune/generate_new_with_modifiers(list/modifiers)
 	return src
 
 /// Generate a brand new armor datum with the multiplier given, if ARMOR_ALL is specified only that modifer is used
+// VOIDCREW EDIT START - PR #409: Preserve existing protections when upgrading armor.
 /datum/armor/proc/generate_new_with_multipliers(list/multipliers)
 	var/datum/armor/new_armor = new
 
@@ -104,6 +109,8 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			new_armor.vars[multiplier] = vars[multiplier] * multiplier_all
 		return new_armor
 
+	for(var/rating in all_keys)
+		new_armor.vars[rating] = vars[rating]
 	for(var/multiplier in multipliers)
 		if(multiplier in all_keys)
 			new_armor.vars[multiplier] = vars[multiplier] * multipliers[multiplier]
@@ -111,6 +118,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			stack_trace("Attempt to call generate_new_with_multipliers with illegal multiplier '[multiplier]'! Ignoring it")
 	return new_armor
 
+// VOIDCREW EDIT END
 /datum/armor/immune/generate_new_with_multipliers(list/multipliers)
 	return src
 

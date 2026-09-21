@@ -1,5 +1,6 @@
 // Included by the upstream test harness inside its UNIT_TESTS/SPACEMAN_DMM guard.
 // BEGIN_INCLUDE
+#include "armor_partial_modifiers.dm"
 #include "atmos_component_pipeline.dm"
 #include "drift_vectors.dm"
 #include "gas_connector_lifecycle.dm"
@@ -28,6 +29,7 @@
 #include "voidcrew_cargo_docking.dm"
 #include "voidcrew_cargo_load_queue.dm"
 #include "voidcrew_colosseum.dm"
+#include "voidcrew_combat_camera_breaches.dm"
 #include "voidcrew_construction_automation.dm"
 #include "voidcrew_construction_refunds.dm"
 #include "voidcrew_cordon_teleport.dm"
@@ -72,6 +74,7 @@
 #include "voidcrew_pandora_links.dm"
 #include "voidcrew_planet_cleanup.dm"
 #include "voidcrew_planet_definitions.dm"
+#include "voidcrew_planet_shared_air.dm"
 #include "voidcrew_planetary_factions.dm"
 #include "voidcrew_player_outpost.dm"
 #include "voidcrew_plumbing_shuttle_move.dm"

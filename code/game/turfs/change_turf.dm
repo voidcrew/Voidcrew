@@ -43,7 +43,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/datum/component/wet_floor/new_wet_floor_component = copy_to_turf.AddComponent(/datum/component/wet_floor)
 		new_wet_floor_component.InheritComponent(slip)
 	if (copy_air)
-		copy_to_turf.air.copy_from(air)
+		copy_to_turf.return_air().copy_from(air) // VOIDCREW EDIT: return_air() leaves the shared planetary mix before the write
 
 //wrapper for ChangeTurf()s that you want to prevent/affect without overriding ChangeTurf() itself
 /turf/proc/TerraformTurf(path, new_baseturf, flags)
@@ -269,13 +269,18 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if ((flags & CHANGETURF_INHERIT_AIR) && ispath(path, /turf/open))
 		var/datum/gas_mixture/stashed_air = new()
 		stashed_air.copy_from(air)
+		var/datum/gas_mixture/old_air = air // VOIDCREW EDIT: shared planetary mix, see below
 		var/stashed_state = excited
 		var/datum/excited_group/stashed_group = excited_group
 		. = ..() //If path == type this will return us, don't bank on making a new type
 		if (!.) // changeturf failed or didn't do anything
 			return
 		var/turf/open/new_turf = .
-		new_turf.air.copy_from(stashed_air)
+		// VOIDCREW EDIT: a new planetary turf that came up on the very same shared mix we had
+		// already holds this air; anything else takes a private mixture before the write.
+		if(new_turf.air != old_air)
+			var/datum/gas_mixture/new_air = new_turf.materialize_planet_air()
+			new_air.copy_from(stashed_air)
 		new_turf.excited = stashed_state
 		new_turf.excited_group = stashed_group
 		#ifdef VISUALIZE_ACTIVE_TURFS
@@ -332,10 +337,26 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(blocks_air || !turf_count) //if there weren't any open turfs, no need to update.
 		return
 
-	var/datum/gas_mixture/total = new//Holders to assimilate air from nearby turfs
-	var/list/total_gases = total.gases
 	//Stolen blatently from self_breakdown
 	var/list/turf_list = atmos_adjacent_turfs + src
+
+	// VOIDCREW EDIT: turfs still on the shared planetary mix. When every turf here is on the
+	// SAME shared mix the average is that mix and there is nothing to write; otherwise each
+	// of them needs a private mixture before the copy_from() below.
+	if(has_shared_planet_air())
+		var/all_same_shared = TRUE
+		for(var/turf/open/turf in atmos_adjacent_turfs)
+			if(turf.air != air)
+				all_same_shared = FALSE
+				break
+		if(all_same_shared)
+			return
+	for(var/turf/open/turf in turf_list)
+		turf.materialize_planet_air()
+	// END VOIDCREW EDIT
+
+	var/datum/gas_mixture/total = new//Holders to assimilate air from nearby turfs
+	var/list/total_gases = total.gases
 	var/turflen = turf_list.len
 	var/energy = 0
 	var/heat_cap = 0

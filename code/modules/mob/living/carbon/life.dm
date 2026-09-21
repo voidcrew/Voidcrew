@@ -78,7 +78,7 @@
 
 	var/datum/gas_mixture/environment
 	if(loc)
-		environment = loc.return_air()
+		environment = loc.return_air_readonly() // VOIDCREW EDIT: only read for its mole count; the breath itself goes through remove_air()
 
 	var/datum/gas_mixture/breath
 

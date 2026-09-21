@@ -1,0 +1,28 @@
+/datum/unit_test/voidcrew_combat_camera_breaches/Run()
+	var/turf/interior = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/edge = get_step(interior, WEST)
+	var/turf/outside = get_step(edge, WEST)
+	var/outside_type = outside.type
+	var/list/outside_baseturfs = outside.baseturfs
+	var/edge_type = edge.type
+	var/list/edge_baseturfs = edge.baseturfs
+	var/mob/eye/camera/remote/ship_combat/eye = allocate(/mob/eye/camera/remote/ship_combat)
+	outside.ChangeTurf(/turf/open/space)
+	edge.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(eye.is_exterior_turf(edge), "The outer wall disappeared from the hull outline")
+	TEST_ASSERT(!eye.is_exterior_turf(interior), "An intact hull wall exposed the interior")
+	edge.ChangeTurf(edge_type, edge_baseturfs)
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, edge)
+	TEST_ASSERT(!eye.is_exterior_turf(interior), "An intact airlock exposed the interior")
+	door.take_damage(10000, BURN, LASER)
+	TEST_ASSERT(QDELETED(door), "The laser damage did not destroy the test airlock")
+	TEST_ASSERT(isfloorturf(edge), "Breaking the airlock removed its floor")
+	TEST_ASSERT(eye.is_exterior_turf(interior), "An airlock breach with intact flooring did not reveal nearby tiles")
+	TEST_ASSERT(!eye.is_exterior_turf(get_step(interior, EAST)), "A floor breach exposed tiles beyond the camera range")
+	var/obj/structure/window/reinforced/fulltile/window = allocate(/obj/structure/window/reinforced/fulltile, edge)
+	allocate(/obj/structure/grille, edge)
+	TEST_ASSERT(!eye.is_exterior_turf(interior), "An intact replacement window exposed the interior")
+	window.take_damage(10000, BURN, LASER)
+	TEST_ASSERT(QDELETED(window), "The laser damage did not destroy the test window")
+	TEST_ASSERT(eye.is_exterior_turf(interior), "A window breach with intact flooring did not reveal nearby tiles")
+	outside.ChangeTurf(outside_type, outside_baseturfs)

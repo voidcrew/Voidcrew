@@ -252,7 +252,7 @@
 	. = FALSE
 	if(!istype(turf_to_check))
 		return
-	var/datum/gas_mixture/environment = turf_to_check.return_air()
+	var/datum/gas_mixture/environment = turf_to_check.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
 	if(!istype(environment))
 		return
 	var/pressure = environment.return_pressure()

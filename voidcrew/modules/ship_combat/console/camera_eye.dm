@@ -63,11 +63,20 @@
 		static_image.loc = target_turf
 		interior_static_images += static_image
 
-/// Checks if a turf is visible (within COMBAT_CAMERA_VISIBILITY_RANGE tiles of space)
-/// When range is 0, only turfs directly adjacent to space are visible
-/// When range is 1+, turfs within that many tiles of space are also visible
+/// Show the hull outline and the tiles immediately behind an open hull breach.
 /mob/eye/camera/remote/ship_combat/proc/is_exterior_turf(turf/T)
-	return is_near_space(T, COMBAT_CAMERA_VISIBILITY_RANGE)
+	var/static/list/open_framework = list(/obj/structure/door_assembly, /obj/structure/grille, /obj/structure/girder)
+	if(is_near_space(T, COMBAT_CAMERA_VISIBILITY_RANGE))
+		return TRUE
+	// Lasers can destroy a door or window without removing the floor beneath it.
+	// That open edge reveals nearby tiles just as a space hole does.
+	for(var/turf/open/floor/breach in RANGE_TURFS(COMBAT_CAMERA_VISIBILITY_RANGE, T))
+		if(breach.is_blocked_turf(exclude_mobs = TRUE, ignore_atoms = open_framework, type_list = TRUE))
+			continue
+		for(var/direction in GLOB.cardinals)
+			if(isspaceturf(get_step(breach, direction)))
+				return TRUE
+	return FALSE
 
 /// Checks if a turf is within 'range' tiles of any space turf
 /mob/eye/camera/remote/ship_combat/proc/is_near_space(turf/T, range = 0)

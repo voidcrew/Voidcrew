@@ -54,7 +54,7 @@
 			return
 
 		// Handle temperature/pressure differences between body and environment
-		var/datum/gas_mixture/environment = loc.return_air()
+		var/datum/gas_mixture/environment = loc.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
 		if(environment)
 			handle_environment(environment, seconds_per_tick, times_fired)
 

@@ -80,7 +80,7 @@
 	if(living_mob.stat == DEAD)
 		return
 	var/atom/location = living_mob.loc
-	var/datum/gas_mixture/environment = location.return_air()
+	var/datum/gas_mixture/environment = location.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
 	var/areatemp = living_mob.get_temperature(environment)
 	if(!ISINRANGE(areatemp, min_body_temp, max_body_temp))
 		stack_trace("[living_mob] loaded on in a loc with unsafe temperature at \[[location.x], [location.y], [location.z]\] (area : [get_area(location)]): [areatemp]K. Acceptable Range: [min_body_temp]K - [max_body_temp]K,")

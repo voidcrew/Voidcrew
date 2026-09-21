@@ -6857,6 +6857,7 @@
 #include "voidcrew\edits\keybindings.dm"
 #include "voidcrew\edits\lighting.dm"
 #include "voidcrew\edits\map_config.dm"
+#include "voidcrew\edits\planetary_shared_air.dm"
 #include "voidcrew\edits\preferences.dm"
 #include "voidcrew\edits\ship_access.dm"
 #include "voidcrew\edits\turf.dm"
