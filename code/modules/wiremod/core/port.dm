@@ -124,11 +124,6 @@
  */
 /datum/port/output
 	//VOIDCREW EDIT ADDITION: singular outputs, for the chemistry circuits.
-	/// How many input ports are currently reading from this output.
-	var/connected_inputs = 0
-	/// How many input ports may read from this output at once. Unlimited by default,
-	/// which is the historic behaviour and what every stock component still gets.
-	var/max_inputs = INFINITY
 	//VOIDCREW EDIT END
 
 //VOIDCREW EDIT ADDITION: an output only one input may connect to.

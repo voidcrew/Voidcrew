@@ -22,6 +22,7 @@
 /// Assuming there is nothing in the way, the chance will determine what the chance is to get irradiated from half of max_range.
 /// Example: If chance is equal to 30%, and max_range is equal to 8,
 /// then the chance for a thing to get irradiated is 30% if they are 4 turfs away from the pulse source.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /proc/radiation_pulse(
 	atom/source,
 	max_range,
@@ -48,6 +49,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /datum/radiation_pulse_information
 	var/datum/weakref/source_ref
 	var/max_range

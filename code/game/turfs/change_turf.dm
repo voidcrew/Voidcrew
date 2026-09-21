@@ -302,6 +302,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	else //In effect, I want closed turfs to make their tile active when sheered, but we need to queue it since they have no adjacent turfs
 		CALCULATE_ADJACENT_TURFS(src, (ispath(oldType, /turf/closed) && isopenturf(src) ? MAKE_ACTIVE : NORMAL_TURF))
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/open/AfterChange(flags, oldType)
 	// A closed turf holds no gas at all, so the mix we just rolled off our initial_gas_mix is
 	// invented out of nothing, and CHANGETURF_INHERIT_AIR has nothing to inherit from either.
@@ -325,6 +326,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	Assimilate_Air()
 
 //////Assimilate Air//////
+// VOIDCREW EDIT END
 /turf/open/proc/Assimilate_Air()
 	var/turf_count = LAZYLEN(atmos_adjacent_turfs)
 	if(blocks_air || !turf_count) //if there weren't any open turfs, no need to update.

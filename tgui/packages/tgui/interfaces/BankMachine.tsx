@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Outpost treasury transfers and transaction history.
 import { useState } from 'react';
 
 import {
@@ -99,3 +100,4 @@ export const BankMachine = (props) => {
     </Window>
   );
 };
+// VOIDCREW EDIT END

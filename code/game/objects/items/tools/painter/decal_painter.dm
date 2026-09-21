@@ -37,6 +37,7 @@
  * Arguments:
  * * target - The turf being painted to
 */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/airlock_painter/decal/proc/paint_floor(turf/open/floor/target)
 	var/list/decal_data = get_decal_data()
 
@@ -50,10 +51,7 @@
 		_cleanable = FALSE, \
 	)
 
-/// An immutable description of the current paint selection for remote construction jobs.
-/obj/item/airlock_painter/decal/proc/get_decal_data()
-	return current_category.get_decal_info(state = selected_decal_icon_state, color = selected_color, dir = selected_dir)
-
+// VOIDCREW EDIT END
 /obj/item/airlock_painter/decal/proc/set_category(datum/paintable_decal_category/category)
 	current_category = category
 	selected_color = category.possible_colors?[category.possible_colors[1]]

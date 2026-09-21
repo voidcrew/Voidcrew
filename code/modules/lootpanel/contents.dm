@@ -42,6 +42,7 @@
 
 
 /// For: Resetting to empty. Ignores the searchable qdel event
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lootpanel/proc/reset_contents()
 	// VOIDCREW EDIT: removing mid-walk skipped every other index, leaving half the
 	// search objects registered and listed across populate_contents() calls
@@ -54,3 +55,4 @@
 		UnregisterSignal(index, COMSIG_QDELETING)
 		qdel(index)
 	contents.Cut()
+// VOIDCREW EDIT END

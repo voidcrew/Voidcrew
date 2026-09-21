@@ -55,6 +55,7 @@
 	SIGNAL_HANDLER
 	change_the_track()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/area_sound_manager/proc/change_the_track(skip_start = FALSE)
 	var/time_remaining = 0
 
@@ -80,6 +81,7 @@
 	timerid = null
 	our_loop.start()
 
+// VOIDCREW EDIT END
 /datum/component/area_sound_manager/proc/start_looping_sound()
 	timerid = null
 	if(our_loop)

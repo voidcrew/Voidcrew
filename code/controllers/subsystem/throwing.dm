@@ -111,6 +111,7 @@ SUBSYSTEM_DEF(throwing)
 	src.callback = callback
 	src.target_zone = target_zone
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/thrownthing/Destroy()
 	SSthrowing.processing -= thrownthing
 	// Throws can finish during map loading, before the subsystem has started its first run.
@@ -124,6 +125,7 @@ SUBSYSTEM_DEF(throwing)
 	return ..()
 
 ///Defines the datum behavior on the thrownthing's qdeletion event.
+// VOIDCREW EDIT END
 /datum/thrownthing/proc/on_thrownthing_qdel(atom/movable/source, force)
 	SIGNAL_HANDLER
 

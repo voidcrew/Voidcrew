@@ -77,6 +77,7 @@
 
 
 /// Locates any turfs with forges on them, returns a random one
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/quantum_server/proc/get_random_nearby_forge()
 	var/list/nearby_forges = list()
 
@@ -92,6 +93,7 @@
 
 
 /// Gets a random available domain given the current points.
+// VOIDCREW EDIT END
 /obj/machinery/quantum_server/proc/get_random_domain_id()
 	if(points < 1)
 		return

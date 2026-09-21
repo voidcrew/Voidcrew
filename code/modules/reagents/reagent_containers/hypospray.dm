@@ -141,10 +141,12 @@
 		reagents.flags = NONE
 		update_appearance()
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
 	if(user.can_perform_action(src, FORBID_TELEKINESIS_REACH|ALLOW_RESTING|ALLOW_SOFT_CRIT))
 		inject(user, user)
 
+// VOIDCREW EDIT END
 /obj/item/reagent_containers/hypospray/medipen/update_icon_state()
 	icon_state = "[base_icon_state][(reagents.total_volume > 0) ? null : 0]"
 	return ..()

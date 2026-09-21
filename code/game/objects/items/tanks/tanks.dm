@@ -70,6 +70,7 @@
 	fire = 80
 	acid = 30
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/tank/dropped(mob/living/user, silent)
 	. = ..()
 	// Close open air tank if its current user got sent to the shadowrealm.
@@ -81,6 +82,8 @@
 		breathing_mob.cutoff_internals("tank dropped by [user], now in [loc] ([loc?.type])")
 
 /// Closes the tank if given to another mob while open.
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/tank/equipped(mob/living/user, slot, initial)
 	. = ..()
 	// Close open air tank if it was equipped by a mob other than the current user.
@@ -88,6 +91,7 @@
 		breathing_mob.cutoff_internals("tank equipped to slot [slot] by [user || "NULL USER"]")
 
 /// Called by carbons after they connect the tank to their breathing apparatus.
+// VOIDCREW EDIT END
 /obj/item/tank/proc/after_internals_opened(mob/living/carbon/carbon_target)
 	breathing_mob = carbon_target
 	playsound(loc, 'sound/items/internals/internals_on.ogg', 15, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)

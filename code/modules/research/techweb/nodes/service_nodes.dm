@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/techweb_node/office_equip
 	id = TECHWEB_NODE_OFFICE_EQUIP
 	starting_node = TRUE
@@ -39,6 +40,7 @@
 		"photocopier",
 	)
 
+// VOIDCREW EDIT END
 /datum/techweb_node/sanitation
 	id = TECHWEB_NODE_SANITATION
 	display_name = "Advanced Sanitation Technology"

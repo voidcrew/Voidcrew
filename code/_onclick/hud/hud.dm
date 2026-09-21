@@ -187,12 +187,14 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		var/datum/plane_master_group/group = master_groups[group_key]
 		group.build_planes_offset(src, current_plane_offset)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/hud/proc/should_use_scale()
 	// A hud can outlive its mob (and plane groups can be rebuilt while detached), and this
 	// runs at the very top of build_planes_offset() - runtiming here skips the whole
 	// offset rebuild, which is how clients end up rendering to planes that have no master.
 	return should_sight_scale(mymob?.sight)
 
+// VOIDCREW EDIT END
 /datum/hud/proc/should_sight_scale(sight_flags)
 	return (sight_flags & (SEE_TURFS | SEE_OBJS)) != SEE_TURFS
 
@@ -216,50 +218,6 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		group.build_planes_offset(src, new_offset)
 
 // VOIDCREW EDIT ADDITION BEGIN - the health doll has to be re-sent on a z change (issue #126)
-/**
- * Takes the health doll off the client's screen and puts it straight back, so the client
- * re-establishes the doll's visual contents.
- *
- * The doll draws each limb as a separate screen object in its own vis_contents
- * (/atom/movable/screen/healthdoll/human/update_body_zones in screen_objects.dm), because
- * upstream wants per-limb outline filters it can animate. On a z change - which here is
- * every single dock and undock - the BYOND client drops those children and never gets
- * them back. This is a known client-side bug class, not a DM one: BYOND id:2303806
- * ("Visual contents were not taken into account by the client-side garbage collector...
- * The objects still exist, just aren't visible unless you change an appearance var to
- * bring them back into the view") and id:2359025 ("visual contents no longer showed up
- * after changing Z levels"). Server side the limbs stay alive with correct icon_states
- * throughout - there are no runtimes for them in any round log, and nothing in DM touches
- * the doll on a z change.
- *
- * vis_contents is not part of an atom's appearance, and the doll has no icon_state and no
- * overlays of its own, so its appearance never changes for its entire life and the client
- * is never told about it a second time. That leaves a limb's own icon_state as the only
- * thing that can bring it back, which is exactly what players reported ("get damage on
- * that limb and heal it to fix it") and why the limbs surviving a dock were always the
- * ones that had taken or healed damage since.
- *
- * Re-adding the doll to client.screen re-sends it and its children. This is the same
- * treatment the parallax backdrop already gets by accident: it is the only other screen
- * object built on vis_contents, and update_parallax_pref() above tears its holder off the
- * screen and adds it back (remove_parallax/create_parallax in parallax.dm) on every z
- * change, which is why parallax does not rot the way the doll did.
- *
- * Do not "simplify" this into update_appearance() or update_body_zones(). The first
- * changes nothing about the doll's appearance so nothing is sent; the second rebuilds six
- * screen objects to repair a link that was never broken server side.
- */
-/datum/hud/proc/resend_healthdoll()
-	var/client/our_client = mymob?.client
-	if(isnull(our_client) || isnull(healthdoll))
-		return
-	// Hud hidden with F12? The doll is deliberately off the screen, leave it off.
-	if(!(healthdoll in our_client.screen))
-		return
-	our_client.screen -= healthdoll
-	our_client.screen += healthdoll
-// VOIDCREW EDIT ADDITION END
-
 /datum/hud/Destroy()
 	if(mymob.hud_used == src)
 		mymob.hud_used = null

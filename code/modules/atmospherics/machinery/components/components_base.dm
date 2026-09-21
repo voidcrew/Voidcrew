@@ -195,6 +195,7 @@
 		return list(nodes[parents.Find(reference)])
 	return ..()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
 	var/port_index = nodes.Find(target_component)
 	var/datum/pipeline/previous_parent = parents[port_index]
@@ -212,9 +213,11 @@
 		if(custom_reconcilation)
 			previous_parent.require_custom_reconcilation -= src
 
+// VOIDCREW EDIT END
 /obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument
 	return parents[nodes.Find(target_component)]
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/atmospherics/components/replace_pipenet(datum/pipeline/Old, datum/pipeline/New)
 	var/first_port = parents.Find(Old)
 	if(!first_port)
@@ -230,6 +233,7 @@
  * Called in most atmos processes and gas handling situations, update the parents pipelines of the devices connected to the source component
  * This way gases won't get stuck
  */
+// VOIDCREW EDIT END
 /obj/machinery/atmospherics/components/proc/update_parents()
 	if(!SSair.initialized)
 		return

@@ -62,6 +62,7 @@
 
 	dispatch(turfs, register)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/map_template/shuttle/proc/dispatch(list/turfs, register=TRUE)
 	while(TRUE)
 		var/found = FALSE
@@ -99,6 +100,7 @@
 		place.insert_baseturf(3, /turf/baseturf_skipover/shuttle)
 
 //Whatever special stuff you want
+// VOIDCREW EDIT END
 /datum/map_template/shuttle/post_load(obj/docking_port/mobile/M)
 	if(movement_force)
 		M.movement_force = movement_force.Copy()

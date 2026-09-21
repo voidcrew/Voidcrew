@@ -1396,6 +1396,7 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/design/board/quantum_server
 	name = "Quantum Server Board"
 	desc = "The circuit board for a quantum server."
@@ -1406,6 +1407,7 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
 
+// VOIDCREW EDIT END
 /datum/design/board/netpod
 	name = "Netpod Board"
 	desc = "The circuit board for a netpod."

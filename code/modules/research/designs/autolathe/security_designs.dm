@@ -198,6 +198,7 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/design/c10mm
 	name = "Ammo Box (10mm) (Lethal)"
 	id = "c10mm"
@@ -210,6 +211,8 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/design/c45
 	name = "Ammo Box (.45) (Lethal)"
 	id = "c45"
@@ -222,6 +225,8 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/design/c9mm
 	name = "Ammo Box (9mm) (Lethal)"
 	id = "c9mm"
@@ -234,6 +239,7 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
+// VOIDCREW EDIT END
 /datum/design/telescreen_interrogation
 	name = "Interrogation Telescreen"
 	id = "telescreen_interrogation"

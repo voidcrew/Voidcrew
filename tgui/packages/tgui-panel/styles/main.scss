@@ -25,7 +25,7 @@
 @include meta.load-css('./components/Notifications.scss');
 @include meta.load-css('./components/UnreadCount.scss');
 // VOIDCREW EDIT ADDITION - AUTOTRANSLATE
-@include meta.load-css('./components/Translation.scss');
+@include meta.load-css('../../voidcrew_tgui/styles/chat/Translation.scss');
 
 // Layouts
 @include meta.load-css('~tgui/styles/layouts/Layout.scss');

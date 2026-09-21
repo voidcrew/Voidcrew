@@ -17,6 +17,7 @@
 
 	begin_orbit(orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/orbiter/RegisterWithParent()
 	var/atom/target = parent
 
@@ -28,12 +29,14 @@
 	// Transfer temporarily clears parent; moving an orbiter before reattachment fires its stop signal at null.
 	move_react(target)
 
+// VOIDCREW EDIT END
 /datum/component/orbiter/UnregisterFromParent()
 	UnregisterSignal(parent, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE)
 	var/atom/target = parent
 	target.orbiters = null
 	QDEL_NULL(tracker)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/orbiter/Destroy()
 	var/atom/master = parent
 	if(master?.orbiters == src)
@@ -43,6 +46,8 @@
 	orbiter_list = null
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/orbiter/InheritComponent(datum/component/orbiter/newcomp, original, atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 	if(!newcomp)
 		begin_orbit(arglist(args.Copy(3)))
@@ -60,10 +65,13 @@
 	// A transfer into an existing orbit merges here instead of registering a new component.
 	move_react(parent)
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/orbiter/PostTransfer(datum/new_parent)
 	if(!isatom(new_parent) || isarea(new_parent) || !get_turf(new_parent))
 		return COMPONENT_INCOMPATIBLE
 
+// VOIDCREW EDIT END
 /datum/component/orbiter/proc/begin_orbit(atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 	if(orbiter.orbiting)
 		if(orbiter.orbiting == src)

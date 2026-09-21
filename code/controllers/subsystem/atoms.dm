@@ -41,6 +41,7 @@ SUBSYSTEM_DEF(atoms)
 
 	return SS_INIT_SUCCESS
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms, list/atoms_to_return)
 	if(initialized == INITIALIZATION_INSSATOMS)
 		return
@@ -83,6 +84,7 @@ SUBSYSTEM_DEF(atoms)
 	#endif
 
 /// Actually creates the list of atoms. Exists solely so a runtime in the creation logic doesn't cause initialized to totally break
+// VOIDCREW EDIT END
 /datum/controller/subsystem/atoms/proc/CreateAtoms(list/atoms, list/atoms_to_return = null, mapload_source = null)
 	if (atoms_to_return)
 		LAZYINITLIST(created_atoms)

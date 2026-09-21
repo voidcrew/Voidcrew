@@ -6,6 +6,7 @@
  *
  * Has a lot of the creature game world logic, such as health etc
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob
 	density = TRUE
 	layer = MOB_LAYER
@@ -46,9 +47,6 @@
 	/// This is what actually gets applied to the mob, it's modified by things like glasses
 	var/list/lighting_color_cutoffs = null
 	var/datum/mind/mind
-	/// Whether this mob has ever been assigned as a mind's current body.
-	/// This remains TRUE after the mind leaves so formerly player-controlled bodies can still be identified.
-	var/ever_had_mind = FALSE
 	var/static/next_mob_id = 0
 
 	/// List of movement speed modifiers applying to this mob
@@ -218,3 +216,4 @@
 
 	/// A ref of the area we're taking our ambient loop from.
 	var/area/ambience_tracked_area
+// VOIDCREW EDIT END

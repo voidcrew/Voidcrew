@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Regression coverage for pooled browser window reuse.
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { act, type PropsWithChildren } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -92,3 +93,4 @@ describe('pooled window reuse', () => {
     expect(recallGeometry).not.toHaveBeenCalled();
   });
 });
+// VOIDCREW EDIT END

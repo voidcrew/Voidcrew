@@ -1,0 +1,7 @@
+@use 'sass:meta';
+
+@include meta.load-css('./interfaces/ChromeCradle.scss');
+@include meta.load-css('./interfaces/HelmComputer.scss');
+@include meta.load-css('./interfaces/MissionBoard.scss');
+@include meta.load-css('./interfaces/OutpostManagement.scss');
+@include meta.load-css('./interfaces/ShipCombatConsole.scss');

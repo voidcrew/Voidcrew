@@ -53,6 +53,7 @@
 	var/static/list/death_loot = list(/obj/item/organ/monster_core/regenerative_core/legion)
 	return death_loot
 
+// VOIDCREW EDIT START - PR #424: Avoid Legion cleanup runtime after controller destruction.
 /mob/living/basic/mining/legion/Exited(atom/movable/gone, direction)
 	. = ..()
 	if (gone != stored_mob)
@@ -64,6 +65,7 @@
 	stored_mob.add_mood_event("legion_core", /datum/mood_event/healsbadman/long_term) // This will still probably mostly be gone before you are alive
 	stored_mob = null
 
+// VOIDCREW EDIT END
 /mob/living/basic/mining/legion/death(gibbed)
 	if (isnull(stored_mob))
 		new corpse_type(loc)

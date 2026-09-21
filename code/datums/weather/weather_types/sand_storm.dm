@@ -1,4 +1,5 @@
 //Darude sandstorm starts playing
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/sand_storm
 	name = "severe sandstorm"
 	desc = "A severe dust storm that engulfs an area, dealing intense damage to the unprotected."
@@ -24,9 +25,9 @@
 
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER)
 
-	var/list/weak_sounds = list()
-	var/list/strong_sounds = list()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/sand_storm/telegraph()
 	for(var/area/impacted_area as anything in impacted_areas)
 		weak_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
@@ -34,21 +35,21 @@
 	GLOB.sand_storm_sounds += weak_sounds
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/sand_storm/start()
 	GLOB.sand_storm_sounds -= weak_sounds
 	GLOB.sand_storm_sounds += strong_sounds
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/sand_storm/wind_down()
 	GLOB.sand_storm_sounds -= strong_sounds
 	GLOB.sand_storm_sounds += weak_sounds
 	return ..()
 
-/datum/weather/sand_storm/end()
-	GLOB.sand_storm_sounds -= weak_sounds
-	GLOB.sand_storm_sounds -= strong_sounds
-	return ..()
-
+// VOIDCREW EDIT END
 /datum/weather/sand_storm/weather_act_mob(mob/living/victim)
 	victim.adjustBruteLoss(5, required_bodytype = BODYTYPE_ORGANIC)
 	return ..()
