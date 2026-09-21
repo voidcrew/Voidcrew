@@ -318,7 +318,10 @@ function CheckoutTab(props) {
                 tooltipPosition="top-start"
                 onClick={() => act('express')}
               >
-                Express: {total_cost * express_cost_multiplier}{' '}
+                {/* VOIDCREW EDIT START - mandatory express orders use the ordinary order label. */}
+                {forced_express ? 'Order' : 'Express'}:{' '}
+                {total_cost * express_cost_multiplier}{' '}
+                {/* VOIDCREW EDIT END */}
                 <CreditIcon credit_type={credit_type} color="black" />
               </Button>
             </Stack.Item>

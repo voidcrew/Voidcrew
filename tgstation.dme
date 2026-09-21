@@ -6868,6 +6868,7 @@
 #include "voidcrew\mapping\shuttles\syndicate\geneva.dm"
 #include "voidcrew\mapping\shuttles\syndicate\hyena.dm"
 #include "voidcrew\mapping\spawners\nanites.dm"
+#include "voidcrew\modules\mining\ore_redemption.dm"
 #include "voidcrew\modules\admin\feature_testing.dm"
 #include "voidcrew\modules\admin\overmap_management.dm"
 #include "voidcrew\modules\antag_ruins\antag_ruin.dm"
