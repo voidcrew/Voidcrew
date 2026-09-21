@@ -997,13 +997,17 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 		var/whack_speed = (prob(60) ? 1 : 4)
 		target.throw_at(throw_target, rand(1, 2), whack_speed, user, gentle = TRUE) // sorry friends, 7 speed batting caused wounds to absolutely delete whoever you knocked your target into (and said target)
 
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /obj/item/melee/baseball_bat/Destroy(force)
 	for(var/target in thrown_datums)
 		var/datum/thrownthing/throw_datum = thrown_datums[target]
+		if(QDELETED(throw_datum)) // superseded by a later throw; its callback is already gone
+			continue
 		throw_datum.callback.Invoke()
 	thrown_datums.Cut()
 	return ..()
 
+// VOIDCREW EDIT END
 /obj/item/melee/baseball_bat/pre_attack(atom/movable/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf)

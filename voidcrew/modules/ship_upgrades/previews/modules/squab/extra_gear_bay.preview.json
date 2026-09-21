@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/extra_gear_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "squab_extra_gear_bay.png",
+   "src_md5": "15284b8818710c70a4cfe4329e7ff3c2",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_extra_gear_bay_cheap_frigate.png",
+     "src_md5": "7a17ba3e62875c96a4f44e10caf3eae6",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_extra_gear_bay_the_patrolboat.png",
+     "src_md5": "6d227ba50ab135fbbe3becdd654b1aa0",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

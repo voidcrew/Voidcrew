@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_south_gym.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_south_gym.png",
+   "src_md5": "4e6a480284107a2407c51f837056ccdd",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_gym_hearth.png",
+     "src_md5": "7e209a5bd0bacb23a18f8038adf05d57",
+     "width": 11
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_gym_springs.png",
+     "src_md5": "4668f60276acbd35c7f0add8df920395",
+     "width": 11
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_gym_verdant.png",
+     "src_md5": "1f49fdfed851fc8eb1e7bbf4784dfa07",
+     "width": 11
+    }
+   },
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

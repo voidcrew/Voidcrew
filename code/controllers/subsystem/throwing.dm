@@ -11,11 +11,14 @@ SUBSYSTEM_DEF(throwing)
 	var/list/currentrun
 	var/list/processing = list()
 
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/controller/subsystem/throwing/stat_entry(msg)
-	msg = "P:[length(processing)]"
+	msg = "P:[length(processing)] A:[GLOB.thrownthing_alive]"
 	return ..()
 
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/controller/subsystem/throwing/fire(resumed = 0)
 	if (!resumed)
 		src.currentrun = processing.Copy()
@@ -28,7 +31,9 @@ SUBSYSTEM_DEF(throwing)
 		var/datum/thrownthing/TT = currentrun[AM]
 		currentrun.len--
 		if (QDELETED(AM) || QDELETED(TT))
-			processing -= AM
+			// A deleted throw only drops its own queue entry; the atom may already be flying on a newer one.
+			if (QDELETED(AM) || processing[AM] == TT)
+				processing -= AM
 			if (MC_TICK_CHECK)
 				return
 			continue
@@ -40,6 +45,7 @@ SUBSYSTEM_DEF(throwing)
 
 	currentrun = null
 
+// VOIDCREW EDIT END
 /datum/thrownthing
 	///Defines the atom that has been thrown (Objects and Mobs, mostly.)
 	var/atom/movable/thrownthing
@@ -92,8 +98,10 @@ SUBSYSTEM_DEF(throwing)
 	/// If our thrownthing has been blocked
 	var/blocked = FALSE
 
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/thrownthing/New(thrownthing, target, init_dir, maxrange, speed, thrower, diagonals_first, force, gentle, callback, target_zone)
 	. = ..()
+	GLOB.thrownthing_alive++
 	src.thrownthing = thrownthing
 	RegisterSignal(thrownthing, COMSIG_QDELETING, PROC_REF(on_thrownthing_qdel))
 	src.starting_turf = get_turf(thrownthing)
@@ -111,13 +119,20 @@ SUBSYSTEM_DEF(throwing)
 	src.callback = callback
 	src.target_zone = target_zone
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/thrownthing/Destroy()
-	SSthrowing.processing -= thrownthing
-	// Throws can finish during map loading, before the subsystem has started its first run.
-	if(SSthrowing.currentrun)
-		SSthrowing.currentrun -= thrownthing
-	thrownthing.throwing = null
+	GLOB.thrownthing_alive--
+	// Only release what still belongs to this throw. A newer throw_at() on the same atom
+	// may own the queue entries and the atom's `throwing` by the time a superseded datum dies.
+	if(thrownthing)
+		if(SSthrowing.processing[thrownthing] == src)
+			SSthrowing.processing -= thrownthing
+		// Throws can finish during map loading, before the subsystem has started its first run.
+		if(SSthrowing.currentrun && SSthrowing.currentrun[thrownthing] == src)
+			SSthrowing.currentrun -= thrownthing
+		if(thrownthing.throwing == src)
+			thrownthing.throwing = null
 	thrownthing = null
 	thrower = null
 	initial_target = null
@@ -137,10 +152,17 @@ SUBSYSTEM_DEF(throwing)
 	if(isnull(.))
 		thrower = null
 
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/thrownthing/proc/tick()
 	var/atom/movable/AM = thrownthing
 	if (!isturf(AM.loc) || !AM.throwing)
 		finalize()
+		return
+
+	if (AM.throwing != src)
+		// A newer throw owns the atom. Never drive it with these stale parameters; the
+		// superseded callback was never going to fire, so drop the datum without landing it.
+		qdel(src)
 		return
 
 	if(paused)
@@ -188,8 +210,11 @@ SUBSYSTEM_DEF(throwing)
 			return
 
 		if(!AM.Move(step, get_dir(AM, step), DELAY_TO_GLIDE_SIZE(1 / speed))) // we hit something during our move...
-			if(AM.throwing) // ...but finalize() wasn't called on Bump() because of a higher level definition that doesn't always call parent.
+			if(AM.throwing == src) // ...but finalize() wasn't called on Bump() because of a higher level definition that doesn't always call parent.
 				finalize()
+			return
+
+		if (QDELETED(src) || AM.throwing != src) // a Moved handler ended this throw or started a new one; stop driving the atom
 			return
 
 		dist_travelled++
@@ -202,12 +227,15 @@ SUBSYSTEM_DEF(throwing)
 			finalize()
 			return
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/thrownthing/proc/finalize(hit = FALSE, target=null)
 	set waitfor = FALSE
 	//done throwing, either because it hit something or it finished moving
 	if(!thrownthing)
 		return
-	thrownthing.throwing = null
+	if(thrownthing.throwing == src)
+		thrownthing.throwing = null
 	var/drift_force = speed
 	if (isitem(thrownthing))
 		var/obj/item/thrownitem = thrownthing
@@ -254,3 +282,4 @@ SUBSYSTEM_DEF(throwing)
 
 #undef MAX_THROWING_DIST
 #undef MAX_TICKS_TO_MAKE_UP
+// VOIDCREW EDIT END

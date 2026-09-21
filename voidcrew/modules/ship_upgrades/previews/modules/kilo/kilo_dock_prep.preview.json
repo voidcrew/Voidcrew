@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_dock_prep.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "kilo_kilo_dock_prep.png",
+   "src_md5": "9839c13e2929961b493e136c1c42ccfd",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "kilo_kilo_dock_prep_clean.png",
+     "src_md5": "2c68d23b4f4b975607261dc6634a5452",
+     "width": 3
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "kilo_kilo_dock_prep_pink.png",
+     "src_md5": "8ee54cf843e1687d41b0af6e67bbda4c",
+     "width": 3
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "kilo_kilo_dock_prep_saloon.png",
+     "src_md5": "08f6402dc709eb0a775e3139ee80ecdd",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

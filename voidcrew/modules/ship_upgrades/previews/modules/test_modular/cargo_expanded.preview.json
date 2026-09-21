@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "test_modular/cargo_expanded.dmm": {
+   "connector": [
+    2,
+    2
+   ],
+   "height": 3,
+   "png": "test_modular_cargo_expanded.png",
+   "src_md5": "3c69ef83c36a761dc05ff760d99448aa",
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/xenobio_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_xenobio_north_dark.png",
+     "src_md5": "13169ac3cd3f3549f9693b6657bd29b9",
+     "width": 4
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_xenobio_north_standard.png",
+     "src_md5": "874d3b61b017d06e2c6949ad0934b62c",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

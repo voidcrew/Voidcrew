@@ -687,7 +687,6 @@
 	hook = /obj/item/fishing_hook/rescue
 	show_in_wiki = FALSE
 
-// VOIDCREW EDIT START: the rod is what people actually hold and examine, so repeat the rescue rules here
 /obj/item/fishing_rod/bone
 	name = "bone fishing rod"
 	desc = "A humble rod, made with whatever happened to be on hand."

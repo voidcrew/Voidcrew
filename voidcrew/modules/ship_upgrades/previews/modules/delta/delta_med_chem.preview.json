@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_med_chem.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "delta_delta_med_chem.png",
+   "src_md5": "be69212aee40679f56071c7b9605e734",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_chem_cult.png",
+     "src_md5": "da22c7bec0edfd699d292364c10c98ec",
+     "width": 6
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_chem_lightship.png",
+     "src_md5": "bda365d4a3371cb943bad0d0f1938140",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_chem_syndicate.png",
+     "src_md5": "e3756358de811ae0e19c528325099018",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

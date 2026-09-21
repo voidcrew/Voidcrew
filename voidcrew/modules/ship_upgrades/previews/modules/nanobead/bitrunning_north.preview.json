@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/bitrunning_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_bitrunning_north_dark.png",
+     "src_md5": "7cee1a65f975994a8b508c3bd19d63e2",
+     "width": 6
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_bitrunning_north_standard.png",
+     "src_md5": "919456daaab0f9d16c0dcfe22ff68df4",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

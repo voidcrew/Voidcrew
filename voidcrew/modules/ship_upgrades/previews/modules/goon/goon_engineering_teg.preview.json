@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_engineering_teg.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_engineering_teg.png",
+   "src_md5": "09e80bc3297e4b9504aadafa044cbc09",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_teg_slumber.png",
+     "src_md5": "d94257a0f54ce7ca3198de1e51fab3f5",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_teg_syndicate.png",
+     "src_md5": "78fafcbf7b0b886f0cd177c02c01b647",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_teg_void.png",
+     "src_md5": "949431ce21108def088be4bc2c174734",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

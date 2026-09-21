@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/security_director.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "squab_security_director.png",
+   "src_md5": "a54ea9e2fbe15b05b5219d33bbadd24b",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_security_director_cheap_frigate.png",
+     "src_md5": "26516c9a41beed6d561e17af7fb2622f",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_security_director_the_patrolboat.png",
+     "src_md5": "766b99f8557f35b9c88d3171d154f700",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

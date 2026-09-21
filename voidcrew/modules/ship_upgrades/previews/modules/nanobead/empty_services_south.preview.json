@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/empty_services_south.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_empty_services_south_dark.png",
+     "src_md5": "60a6c924692307b269a0decf5be42c3b",
+     "width": 6
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_empty_services_south_standard.png",
+     "src_md5": "5345cdc15077fa078407703d87c8b985",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

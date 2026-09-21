@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/eva_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_eva_north_dark.png",
+     "src_md5": "adb32e55a7cc668b22904bfcc5bab4db",
+     "width": 6
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_eva_north_standard.png",
+     "src_md5": "21712edd06d77fd08865191f93bff0a5",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_mining_prospector.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_mining_prospector.png",
+   "src_md5": "6d7c22c64f8f02a3f13e9c4c30520e05",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_prospector_slumber.png",
+     "src_md5": "b349ad3610c4e7fee8f4866cf9b1ac66",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_prospector_syndicate.png",
+     "src_md5": "e395c50d89598f59ebb5a3d68094ba04",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_prospector_void.png",
+     "src_md5": "45d031a463d8f75295f456caa5d4a45f",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

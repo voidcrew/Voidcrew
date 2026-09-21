@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/cryo_cells_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_cryo_cells_north_dark.png",
+     "src_md5": "5242d8d9ec3d23bcfa5d21b51f4908ef",
+     "width": 4
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_cryo_cells_north_standard.png",
+     "src_md5": "6c45c966e52470318e1818c5568cfbbd",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

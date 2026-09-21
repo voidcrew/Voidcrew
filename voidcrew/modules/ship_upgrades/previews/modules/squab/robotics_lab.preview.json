@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/robotics_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "squab_robotics_lab.png",
+   "src_md5": "b02b2ecd3b3870259c3c9dc3cdb25fc1",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "squab_robotics_lab_cheap_frigate.png",
+     "src_md5": "933cc0475ebd11adc86b6141dd2f50de",
+     "width": 8
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "squab_robotics_lab_the_patrolboat.png",
+     "src_md5": "e327fe27c6762512ae17c2b630bcad41",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

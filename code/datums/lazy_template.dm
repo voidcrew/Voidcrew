@@ -65,6 +65,7 @@
 		height,
 		parsed_template.parsed_bounds[MAP_MAXZ],
 		reservation_type = turf_reservation_type,
+		requester = "lazy template '[key]'", // VOIDCREW EDIT: z-mint attribution
 	)
 	if(!reservation)
 		CRASH("Failed to reserve a block for lazy template: '[key]'")

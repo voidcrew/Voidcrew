@@ -249,7 +249,6 @@
 	if(gone == installed_part)
 		installed_part = null
 
-// VOIDCREW EDIT ADDITION START - turbines survive shuttle moves assembled.
 /obj/machinery/power/turbine/item_interaction(mob/living/user, obj/item/turbine_parts/object, list/modifiers)
 	. = NONE
 	if(!istype(object, part_path))

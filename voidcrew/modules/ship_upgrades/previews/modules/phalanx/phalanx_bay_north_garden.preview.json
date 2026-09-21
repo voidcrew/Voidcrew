@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_north_garden.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_north_garden.png",
+   "src_md5": "5e66fb3bb039fff56fb09fb4b20c4f6f",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_garden_hearth.png",
+     "src_md5": "7be6e6a6056a1569dd86fdd9c1982a95",
+     "width": 11
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_garden_springs.png",
+     "src_md5": "1f5f8d1da8b614dac6d0dd238d155789",
+     "width": 11
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_garden_verdant.png",
+     "src_md5": "e720c0302474798fbbbbab7b60381f86",
+     "width": 11
+    }
+   },
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

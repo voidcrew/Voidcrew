@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_dorms_bunkhouse.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "delta_delta_dorms_bunkhouse.png",
+   "src_md5": "99b86d129be87cdb1bf1ec3473ec8fe8",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_bunkhouse_cult.png",
+     "src_md5": "21a1025f9ac9c1d0e0b5a659a9310862",
+     "width": 6
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_bunkhouse_lightship.png",
+     "src_md5": "aef0a3e4ffddbd6dd95967b8eec903b1",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_bunkhouse_syndicate.png",
+     "src_md5": "11532856af4eb24a2ccd294d5a6d2101",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

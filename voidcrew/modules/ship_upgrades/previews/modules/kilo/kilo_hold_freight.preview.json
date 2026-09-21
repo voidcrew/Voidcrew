@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_hold_freight.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "kilo_kilo_hold_freight.png",
+   "src_md5": "6a2c34338cc9728b58495cc7b075194b",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_freight_clean.png",
+     "src_md5": "ce88425fff95c5bbd77415f9478a973e",
+     "width": 3
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_freight_pink.png",
+     "src_md5": "e3cf1dc307431b6b87613fb2e21496ac",
+     "width": 3
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_freight_saloon.png",
+     "src_md5": "370329780286d9d6d57b9224478ac69c",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

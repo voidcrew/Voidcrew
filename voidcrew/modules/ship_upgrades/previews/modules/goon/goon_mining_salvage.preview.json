@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_mining_salvage.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_mining_salvage.png",
+   "src_md5": "11e5dd22f78d15485fa769e291a7b719",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_salvage_slumber.png",
+     "src_md5": "ac67d52d422fa20df599fe44b63792cb",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_salvage_syndicate.png",
+     "src_md5": "28c8a12836dd64dd92818f5a4ca9cb96",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_salvage_void.png",
+     "src_md5": "f9369e23f9f2c79852c53ba32c8c1111",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

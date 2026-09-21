@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_cockpit_standard.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_cockpit_standard.png",
+   "src_md5": "3a393899d602082e969a45a184d10eaf",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_cockpit_standard_slumber.png",
+     "src_md5": "927a77bef3bc6d80e4a02ae8c5bd9cff",
+     "width": 2
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_cockpit_standard_syndicate.png",
+     "src_md5": "a5ba2dae26fbd0287bb378a6477bff1a",
+     "width": 2
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_cockpit_standard_void.png",
+     "src_md5": "b8fec657c00c59ea613de538bfaf25e5",
+     "width": 2
+    }
+   },
+   "width": 2
+  }
+ },
+ "tile_px": 32
+}

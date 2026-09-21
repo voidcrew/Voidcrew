@@ -26,17 +26,19 @@
  *
  * The budget this default comes from, on the packed allocator:
  *
- *   roundstart space/ruin/empty levels + station   ~10
- *   planets (four to a level, ~3 concurrent)         1-2
- *   packed encounters (four to a level, ~8 live)     2-3
+ *   roundstart (overmap + first transit level)       2
+ *   planets (four to a level, ~16 concurrent)        4
+ *   packed encounters (four to a level, ~20 live)    5
  *   oversized SOLO ruins                             1-2
- *   reservations / transit                           2-3
+ *   reservations / transit (ships + hangar berths)   3-4
  *   colosseum, isolated ruins, headroom              2
  *                                                   ----
- *                                                  18-22
+ *                                                  17-19
  *
- * 24 leaves headroom over that and is ~1,180 MB of committed turf plane, roughly a third
- * of the wall. A config entry rather than a define so a host with more memory (or less)
+ * The concurrency figures are round 79's (2026-09-16, ~40 players, 6 h), which reached 24
+ * with the eight roundstart "Ruin Area"/"Empty Area" levels this fork no longer mints
+ * (voidcrew/edits/map_config.dm) - the same round replays at 16. 24 leaves headroom over
+ * that and is ~1,180 MB of committed turf plane, roughly a third of the wall. A config entry rather than a define so a host with more memory (or less)
  * can move it without a recompile. 0 disables the ceiling entirely.
  *
  * This number is the CONFIGURED ceiling, not the one enforced at any given moment. Every

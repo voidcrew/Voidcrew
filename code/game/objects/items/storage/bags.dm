@@ -111,7 +111,6 @@
 	COOLDOWN_DECLARE(ore_bag_full_warning_cooldown)
 	// VOIDCREW EDIT ADDITION END
 
-// VOIDCREW EDIT ADDITION START - tell the miner how much room is left before they lose ore
 /obj/item/storage/bag/ore/equipped(mob/user)
 	. = ..()
 	if(listeningTo == user)

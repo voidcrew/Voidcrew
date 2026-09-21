@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/security_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_security_north_dark.png",
+     "src_md5": "37d4dd3fd797d8a79fd5ff2780014f63",
+     "width": 6
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_security_north_standard.png",
+     "src_md5": "530d699b9735ea5d7039499377a79e96",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

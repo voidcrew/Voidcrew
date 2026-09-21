@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/sleeper_bay_south.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_sleeper_bay_south_dark.png",
+     "src_md5": "4818822cbd72026ee92425d30c2a1586",
+     "width": 4
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_sleeper_bay_south_standard.png",
+     "src_md5": "154c5af9226785770e5b670b096d3d1e",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

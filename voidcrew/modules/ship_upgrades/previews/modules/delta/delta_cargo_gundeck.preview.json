@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cargo_gundeck.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cargo_gundeck.png",
+   "src_md5": "43dcd176bb75c2bfe51b292ec072d87f",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_gundeck_cult.png",
+     "src_md5": "e10fa2b6ac3041e551fe3312baef0b32",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_gundeck_lightship.png",
+     "src_md5": "d40ab03d71fe932484c6d9c7c2586ec0",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_gundeck_syndicate.png",
+     "src_md5": "c8696c250e69cfaf5ea433b9737d7fbc",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

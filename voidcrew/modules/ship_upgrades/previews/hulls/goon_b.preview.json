@@ -1,0 +1,34 @@
+{
+ "hulls": {
+  "goon_b": {
+   "height": 11,
+   "png": "ship_goon_b.png",
+   "slots": {
+    "goon_cockpit": [
+     17,
+     5
+    ],
+    "goon_engineering": [
+     4,
+     3
+    ],
+    "goon_lounge": [
+     11,
+     3
+    ],
+    "goon_mining": [
+     11,
+     7
+    ],
+    "goon_port": [
+     2,
+     7
+    ]
+   },
+   "src_md5": "a56193cb054474fc6d7d887d8963fc9c",
+   "width": 19
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

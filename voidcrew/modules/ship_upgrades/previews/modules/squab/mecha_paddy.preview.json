@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/mecha_paddy.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "squab_mecha_paddy.png",
+   "src_md5": "78b9a10b636701dc3e1355d2b22f021b",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_mecha_paddy_cheap_frigate.png",
+     "src_md5": "a8e38ab9fb6fb2f0225ad74ed893ed79",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_mecha_paddy_the_patrolboat.png",
+     "src_md5": "a1b4ed3d81f0ee45d2e6d3f58b8eba8b",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

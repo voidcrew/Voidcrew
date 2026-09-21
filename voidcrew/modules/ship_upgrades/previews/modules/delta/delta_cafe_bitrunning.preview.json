@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cafe_bitrunning.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cafe_bitrunning.png",
+   "src_md5": "26f9e2273b6de0a3bfff1ac1a0cd7080",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_bitrunning_cult.png",
+     "src_md5": "a603d40992dc1af9c83939efeb7435af",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_bitrunning_lightship.png",
+     "src_md5": "ff4d704d4b8be96cc98aac027e00c163",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_bitrunning_syndicate.png",
+     "src_md5": "39ad00aabdf96003cc6d11d099e36889",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

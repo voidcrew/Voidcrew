@@ -6,4 +6,3 @@
 	. = 0
 	for(var/list/queue in SSgarbage.queues)
 		. += length(queue)
-// VOIDCREW EDIT ADDITION END

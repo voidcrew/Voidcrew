@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_hold_eva.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "kilo_kilo_hold_eva.png",
+   "src_md5": "5b7bfb939100fdc20c2816027e1c0ceb",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_eva_clean.png",
+     "src_md5": "db90ea285cdcf3dcbfff194f268dfe4e",
+     "width": 3
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_eva_pink.png",
+     "src_md5": "de9b77cc02021d5ae1f691794f893193",
+     "width": 3
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_eva_saloon.png",
+     "src_md5": "2551cd0ba4cab24968533bcae18a5238",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

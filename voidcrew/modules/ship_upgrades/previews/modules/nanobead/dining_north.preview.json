@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/dining_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_dining_north_dark.png",
+     "src_md5": "104d79b09ed342f92e784c437d625019",
+     "width": 6
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "nanobead_dining_north_standard.png",
+     "src_md5": "a015a7926a929ff9915993b9c9d6c33f",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

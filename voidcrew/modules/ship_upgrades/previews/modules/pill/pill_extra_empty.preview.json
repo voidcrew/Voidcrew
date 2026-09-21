@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "pill/pill_extra_empty.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "png": "pill_pill_extra_empty.png",
+   "src_md5": "09a695689a9a3003388d057d88c38e87",
+   "width": 1
+  }
+ },
+ "tile_px": 32
+}

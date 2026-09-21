@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_medical_ward.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_medical_ward.png",
+   "src_md5": "9abce81745015206d927e5dd61f95c33",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_ward_hearth.png",
+     "src_md5": "3ec454b3b8e3601ba73d2fecdaa7e6ea",
+     "width": 10
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_ward_springs.png",
+     "src_md5": "ee771c313098ff5fdd54814371a042be",
+     "width": 10
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_ward_verdant.png",
+     "src_md5": "12311ab58c2325724f56f2f69eb9469e",
+     "width": 10
+    }
+   },
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

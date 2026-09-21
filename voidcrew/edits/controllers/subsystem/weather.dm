@@ -161,7 +161,6 @@
 	if(!length(possible_weather))
 		return null
 	return register_level_weather_site(level.z_value, possible_weather, zone_band, site_id)
-// VOIDCREW EDIT ADDITION END
 
 /// Stops random weather scheduling for a z-level and ends every storm scheduled on it.
 /datum/controller/subsystem/weather/proc/unregister_z_level(z)
@@ -220,7 +219,6 @@
 		site.active_weather = null
 	if(length(site.weather_types))
 		eligible_sites |= site
-// VOIDCREW EDIT ADDITION END
 
 /// Returns TRUE while any weather stage still occupies a z-level.
 /// VOIDCREW EDIT: no longer gates random scheduling - fire() asks the site whether ITS storm

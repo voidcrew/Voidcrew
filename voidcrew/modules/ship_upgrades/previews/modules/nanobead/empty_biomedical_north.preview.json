@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanobead/empty_biomedical_north.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "dark": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_empty_biomedical_north_dark.png",
+     "src_md5": "7c6c2d3f46bfdc48d3933e105ba9023e",
+     "width": 4
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "nanobead_empty_biomedical_north_standard.png",
+     "src_md5": "9c4afee920c47343466d90057a1e9ea5",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

@@ -25,7 +25,6 @@
 	//repropagate in /obj/structure/cable/lateShuttleMove); rebind to whatever is there now
 	disconnect_from_network()
 	connect_to_network()
-// VOIDCREW EDIT ADDITION END
 
 /obj/machinery/power/turbine
 	///TRUE while a shuttle move is relocating us; Moved() skips its teardown so the assembly arrives intact (VOIDCREW EDIT ADDITION)

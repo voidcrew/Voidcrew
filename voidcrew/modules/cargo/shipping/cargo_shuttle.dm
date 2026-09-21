@@ -231,6 +231,7 @@
 		template.height + SHUTTLE_TRANSIT_BORDER * 2,
 		1,
 		reservation_type = /datum/turf_reservation/transit,
+		requester = "cargo shuttle transit",
 	)
 
 	if(!reservation)
@@ -654,7 +655,7 @@
 
 	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
 		for(var/turf/T in shuttle_area)
-			for(var/mob/living/L in T)
+			for(var/mob/living/L as anything in T.get_all_contents_type(/mob/living))
 				if(L.stat != DEAD)
 					return TRUE
 	return FALSE
@@ -669,6 +670,13 @@
 	stall_deadline = world.time + CARGO_SHUTTLE_STALL_GRACE
 
 	if(state != CARGO_SHUTTLE_DEPARTING)
+		return FALSE
+
+	// Boarding during warmup must be checked before any cargo is sold or deleted.
+	if(has_living_mobs())
+		state = CARGO_SHUTTLE_DOCKED
+		stall_deadline = 0
+		linked_console?.say("Departure cancelled: living organisms detected aboard.")
 		return FALSE
 
 	// Release the reserve dock first

@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "scarab/scarab_cargo_med.dmm": {
+   "connector": [
+    4,
+    2
+   ],
+   "height": 6,
+   "themes": {
+    "medical": {
+     "connector": [
+      4,
+      2
+     ],
+     "height": 6,
+     "png": "scarab_scarab_cargo_med_medical.png",
+     "src_md5": "48e836a81c42fb2caf15c2c2c3eef718",
+     "width": 7
+    },
+    "mining": {
+     "connector": [
+      4,
+      2
+     ],
+     "height": 6,
+     "png": "scarab_scarab_cargo_med_mining.png",
+     "src_md5": "1410bbaf7bbfcd9e53d21ca1a6f5be44",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      4,
+      2
+     ],
+     "height": 6,
+     "png": "scarab_scarab_cargo_med_syndicate.png",
+     "src_md5": "66e8ff01f98b321a659511fbb302edcd",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "scarab/scarab_engineering_teg.dmm": {
+   "connector": [
+    3,
+    4
+   ],
+   "height": 6,
+   "themes": {
+    "medical": {
+     "connector": [
+      3,
+      4
+     ],
+     "height": 6,
+     "png": "scarab_scarab_engineering_teg_medical.png",
+     "src_md5": "7ed19ad9895179aac0719bf3f0319ed6",
+     "width": 8
+    },
+    "mining": {
+     "connector": [
+      3,
+      4
+     ],
+     "height": 6,
+     "png": "scarab_scarab_engineering_teg_mining.png",
+     "src_md5": "48fe94a480bbb3594abc9cbea578db9f",
+     "width": 8
+    },
+    "syndicate": {
+     "connector": [
+      3,
+      4
+     ],
+     "height": 6,
+     "png": "scarab_scarab_engineering_teg_syndicate.png",
+     "src_md5": "bfe6a7a282d2c8bf494fb60a7f9e6d23",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

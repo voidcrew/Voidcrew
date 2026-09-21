@@ -52,7 +52,7 @@
 
 /obj/structure/overmap/event/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	. = ..()
-	if(!istype(src, /obj/structure/overmap/event/nebula))
+	if(src in SSovermap.autopilot_hazards)
 		SSovermap.autopilot_blocked_tiles = null
 
 /obj/structure/overmap/event/Destroy()

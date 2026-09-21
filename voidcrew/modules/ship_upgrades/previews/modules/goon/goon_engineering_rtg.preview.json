@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_engineering_rtg.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_engineering_rtg.png",
+   "src_md5": "f8eda9c50eaae3652d46cbd3c8807dee",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_rtg_slumber.png",
+     "src_md5": "c54ff2f888e4888b16fa194004eb7346",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_rtg_syndicate.png",
+     "src_md5": "67059e0a50f86582a0e91df4bde5759e",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_rtg_void.png",
+     "src_md5": "bbfedbe60885347753675745077458eb",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "scarab/scarab_med_chem.dmm": {
+   "connector": [
+    2,
+    3
+   ],
+   "height": 4,
+   "themes": {
+    "medical": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_chem_medical.png",
+     "src_md5": "807d9345f4fb5c82cd0b8cdbfdeed6c8",
+     "width": 3
+    },
+    "mining": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_chem_mining.png",
+     "src_md5": "501476358b379ecf3aca9bf266bf3df1",
+     "width": 3
+    },
+    "syndicate": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_chem_syndicate.png",
+     "src_md5": "a965ee6f5c2b6e9779e0dc65d423d954",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

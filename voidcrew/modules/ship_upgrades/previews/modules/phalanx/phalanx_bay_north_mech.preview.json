@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_north_mech.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_north_mech.png",
+   "src_md5": "579092051ff5628938039a0ecb731162",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_mech_hearth.png",
+     "src_md5": "6d41c51dbdf5c289c8a0b67ec6cda7b3",
+     "width": 11
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_mech_springs.png",
+     "src_md5": "d758e73d05b0ea9d1a7ba3eed315e772",
+     "width": 11
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_north_mech_verdant.png",
+     "src_md5": "2142c93889488115136c9548bc580c99",
+     "width": 11
+    }
+   },
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

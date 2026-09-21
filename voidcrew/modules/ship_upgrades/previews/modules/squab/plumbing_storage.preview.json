@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/plumbing_storage.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "png": "squab_plumbing_storage.png",
+   "src_md5": "0a024269416b6a5d3a4f19345c11d43e",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "squab_plumbing_storage_cheap_frigate.png",
+     "src_md5": "5a90af7644b6e6ff25675c203aa12587",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "squab_plumbing_storage_the_patrolboat.png",
+     "src_md5": "bd71a6edf83153968931731cba2b9e1b",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

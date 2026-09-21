@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "test_modular/cargo_basic.dmm": {
+   "connector": [
+    2,
+    2
+   ],
+   "height": 3,
+   "png": "test_modular_cargo_basic.png",
+   "src_md5": "d509f64ee6f93aecf785fbc7047bd9d2",
+   "themes": {
+    "pirate": {
+     "connector": [
+      2,
+      2
+     ],
+     "height": 3,
+     "png": "test_modular_cargo_basic_pirate.png",
+     "src_md5": "9681b7de4efb2946e93720e20263889d",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

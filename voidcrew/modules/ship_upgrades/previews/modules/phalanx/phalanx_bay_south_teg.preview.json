@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_south_teg.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_south_teg.png",
+   "src_md5": "9e5553804b3aee1ffd2a4b5853f548be",
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

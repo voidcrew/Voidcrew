@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "pill/pill_extra_weapons.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "png": "pill_pill_extra_weapons.png",
+   "src_md5": "3f99ca091844c107a7dc4c24ef2d94cd",
+   "width": 1
+  }
+ },
+ "tile_px": 32
+}

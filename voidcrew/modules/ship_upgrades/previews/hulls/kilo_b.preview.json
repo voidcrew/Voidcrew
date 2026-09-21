@@ -1,0 +1,26 @@
+{
+ "hulls": {
+  "kilo_b": {
+   "height": 13,
+   "png": "ship_kilo_b.png",
+   "slots": {
+    "kilo_dock": [
+     5,
+     10
+    ],
+    "kilo_hold": [
+     12,
+     7
+    ],
+    "kilo_service": [
+     9,
+     2
+    ]
+   },
+   "src_md5": "00d98af180647014875aa298ae5a2210",
+   "width": 24
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

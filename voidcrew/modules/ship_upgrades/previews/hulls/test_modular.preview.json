@@ -1,0 +1,22 @@
+{
+ "hulls": {
+  "test_modular": {
+   "height": 9,
+   "png": "ship_test_modular.png",
+   "slots": {
+    "cargobay": [
+     3,
+     7
+    ],
+    "engineroom": [
+     3,
+     3
+    ]
+   },
+   "src_md5": "b162e40d325bb3c051ccf409bb2a7427",
+   "width": 8
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

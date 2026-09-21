@@ -141,7 +141,10 @@
 		var/datum/map_template/shuttle/ship = new ertemplate.ert_template
 		var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
 		var/y = rand(TRANSITIONEDGE, world.maxy - TRANSITIONEDGE - ship.height)
-		var/z = SSmapping.empty_space.z_value
+		// VOIDCREW EDIT: this fork mints no roundstart empty-space level (see
+		// voidcrew/edits/map_config.dm), so empty_space is null and the CRASH below is
+		// the honest answer rather than a null-index runtime.
+		var/z = SSmapping.empty_space?.z_value
 		var/turf/located_turf = locate(x, y, z)
 		if(!located_turf)
 			CRASH("ERT shuttle found no place to load in")

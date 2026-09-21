@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/ai_core.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "png": "squab_ai_core.png",
+   "src_md5": "41579cacf587992bab95f693c30aa971",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "squab_ai_core_cheap_frigate.png",
+     "src_md5": "b241afc039604d5d60e1d5d7381637e5",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "squab_ai_core_the_patrolboat.png",
+     "src_md5": "edc53f41d4a5761022668ee79015d648",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_dorms_cabins.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "delta_delta_dorms_cabins.png",
+   "src_md5": "0273b57f09b53311152bc7bb2a234dff",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_cabins_cult.png",
+     "src_md5": "c596a482d7731e2219d8768d94582899",
+     "width": 6
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_cabins_lightship.png",
+     "src_md5": "67241b27329540bb34c717a01aac3ede",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_dorms_cabins_syndicate.png",
+     "src_md5": "a705a7e8135168bdda1057240179b676",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

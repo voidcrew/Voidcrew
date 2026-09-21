@@ -256,7 +256,7 @@
 	if(!GLOB.outpost_hangar_template)
 		GLOB.outpost_hangar_template = new
 	var/datum/map_template/outpost_hangar/template = GLOB.outpost_hangar_template
-	var/datum/turf_reservation/reservation = SSmapping.request_turf_block_reservation(template.width, template.height, 1)
+	var/datum/turf_reservation/reservation = SSmapping.request_turf_block_reservation(template.width, template.height, 1, requester = "player outpost '[name]' freight berth")
 	if(!reservation)
 		return FALSE
 	var/datum/outpost_berth/berth = new(src, OUTPOST_MAX_BERTHS + 1, null)

@@ -83,7 +83,6 @@
 	UnregisterSignal(src, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
 	return ..()
 
-// VOIDCREW EDIT ADDITION START - water is RCD-buildable, like every other hazardous open turf.
 /turf/open/water/jungle
 
 /turf/open/water/no_planet_atmos

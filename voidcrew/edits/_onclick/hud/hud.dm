@@ -109,4 +109,3 @@
 		return
 	our_client.screen -= healthdoll
 	our_client.screen += healthdoll
-// VOIDCREW EDIT ADDITION END

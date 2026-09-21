@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_port_brig.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_port_brig.png",
+   "src_md5": "7ac01a992e590e0d52b7349635ddf126",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_brig_slumber.png",
+     "src_md5": "ae7b60ff33f495ee9cb89c8aabe32eaf",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_brig_syndicate.png",
+     "src_md5": "65d018c3319e5c491cab305bda724910",
+     "width": 6
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_brig_void.png",
+     "src_md5": "dfd630632034fa8bc9c2d1eb917ff7f2",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

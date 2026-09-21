@@ -22,4 +22,3 @@
 		place_on_top(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 		return TRUE
 	return FALSE
-// VOIDCREW EDIT ADDITION END

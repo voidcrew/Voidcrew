@@ -7,4 +7,3 @@
 	if(length(GLOB.station_turfs) && !map_region_for_turf(src))
 		GLOB.station_turfs -= src
 	return ..()
-// VOIDCREW EDIT END

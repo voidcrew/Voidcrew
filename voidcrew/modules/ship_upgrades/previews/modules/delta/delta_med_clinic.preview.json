@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_med_clinic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "delta_delta_med_clinic.png",
+   "src_md5": "9197ce0e5dd6e1556540f60ea9661b64",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_clinic_cult.png",
+     "src_md5": "f75198dcf4264a54bdde7751f7818f90",
+     "width": 6
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_clinic_lightship.png",
+     "src_md5": "1acf51c0b1477ca221d88a2fca4d1ae3",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "delta_delta_med_clinic_syndicate.png",
+     "src_md5": "9530bdf0afcec1a69e8cb5a271b6b83f",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_service_surgery.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "kilo_kilo_service_surgery.png",
+   "src_md5": "fcc730f948d7d27e0c2fd159d6d09f0d",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_surgery_clean.png",
+     "src_md5": "589ff13259b7a9e177f8db419be5b661",
+     "width": 4
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_surgery_pink.png",
+     "src_md5": "1e41f61fef8131a72568dbd7b47b24f9",
+     "width": 4
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_surgery_saloon.png",
+     "src_md5": "9324484de4201f779d2f8bb0340fb4ba",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

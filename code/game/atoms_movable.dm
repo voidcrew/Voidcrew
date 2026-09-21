@@ -1333,6 +1333,7 @@
 	return throw_at(target, range, speed, thrower, spin, diagonals_first, callback, force, gentle)
 
 ///If this returns FALSE then callback will not be called.
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /atom/movable/proc/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force = MOVE_FORCE_STRONG, gentle = FALSE, quickstart = TRUE, throw_datum_typepath = /datum/thrownthing)
 	. = FALSE
 
@@ -1374,6 +1375,16 @@
 
 	. = TRUE // No failure conditions past this point.
 
+	// End any throw still in flight before its replacement exists, so the old datum's Destroy()
+	// can never touch the new one. Overwriting `throwing` used to orphan the old datum: its
+	// COMSIG_QDELETING registration on src kept it (plus its callback and turf refs) alive until
+	// src itself was deleted. qdel rather than finalize(): finalize would run throw_impact,
+	// newtonian_move and the callback in the middle of throw_at, none of which ever happened
+	// for a superseded throw before either.
+	var/was_throwing = !isnull(throwing)
+	if(was_throwing)
+		QDEL_NULL(throwing)
+
 	var/target_zone
 	if(QDELETED(thrower))
 		thrower = null //Let's not pass a qdeleting reference if any.
@@ -1406,7 +1417,7 @@
 
 	if(pulledby)
 		pulledby.stop_pulling()
-	if (quickstart && (throwing || SSthrowing.state == SS_RUNNING)) //Avoid stack overflow edgecases.
+	if (quickstart && (was_throwing || SSthrowing.state == SS_RUNNING)) //Avoid stack overflow edgecases.
 		quickstart = FALSE
 	throwing = thrown_thing
 	if(spin)
@@ -1419,6 +1430,7 @@
 	if (quickstart)
 		thrown_thing.tick()
 
+// VOIDCREW EDIT END
 /atom/movable/proc/handle_buckled_mob_movement(newloc, direct, glide_size_override)
 	for(var/mob/living/buckled_mob as anything in buckled_mobs)
 		if(!buckled_mob.Move(newloc, direct, glide_size_override)) //If a mob buckled to us can't make the same move as us

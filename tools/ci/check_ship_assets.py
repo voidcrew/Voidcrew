@@ -179,6 +179,33 @@ def registered_maps(root):
     return expected
 
 
+def preview_metadata(directory):
+    """Load the same flat and nested metadata files as the game's asset loader."""
+    paths = list(directory.glob("*.preview.json"))
+    for group in ("hulls", "modules"):
+        paths.extend((directory / group).rglob("*.preview.json"))
+    if not paths:
+        raise ValueError("No ship preview metadata found. Regenerate previews with Voidworks 0.5.32 or newer.")
+    manifest = {"hulls": {}, "modules": {}}
+    for path in sorted(paths):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(document, dict) or document.get("tile_px") != 32:
+            raise ValueError(f"Invalid ship preview metadata: {path}")
+        count = 0
+        for group in manifest:
+            entries = document.get(group)
+            if not isinstance(entries, dict):
+                raise ValueError(f"Invalid preview group in {path}")
+            for key, entry in entries.items():
+                if not isinstance(entry, dict) or key in manifest[group]:
+                    raise ValueError(f"Invalid or duplicate ship preview {key!r} in {path}")
+                manifest[group][key] = entry
+                count += 1
+        if count != 1:
+            raise ValueError(f"Expected one hull or module in {path}")
+    return manifest
+
+
 def preview_names(manifest):
     """Match the hull/module/theme entries consumed by ship_preview_assets.dm."""
     names = set()
@@ -209,13 +236,13 @@ def check_assets(root):
             if relative not in expected and relative not in LEGACY_MAPS:
                 problems.append((relative, "Map has no included ship/module registration. Remove the obsolete map or register it in DM (including its theme)."))
 
-    manifest = json.loads((root / PREVIEWS / "manifest.json").read_text(encoding="utf-8"))
+    manifest = preview_metadata(root / PREVIEWS)
     referenced = preview_names(manifest)
     actual = {path.relative_to(root / PREVIEWS).as_posix() for path in (root / PREVIEWS).rglob("*.png")}
     for name in sorted(actual - referenced):
-        problems.append((PREVIEWS / name, "Preview is not referenced by manifest.json. Remove the obsolete PNG or regenerate the previews."))
+        problems.append((PREVIEWS / name, "Preview is not referenced by preview metadata. Remove the obsolete PNG or regenerate the previews."))
     for name in sorted(referenced - actual):
-        problems.append((PREVIEWS / name, "Manifest references a missing preview PNG. Regenerate and commit the previews."))
+        problems.append((PREVIEWS / name, "Preview metadata references a missing PNG. Regenerate and commit the previews."))
     return problems
 
 

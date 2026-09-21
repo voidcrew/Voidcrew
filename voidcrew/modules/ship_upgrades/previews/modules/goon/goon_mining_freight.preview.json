@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_mining_freight.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_mining_freight.png",
+   "src_md5": "e2ac6452ba3d3d88db2366287770d7c9",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_freight_slumber.png",
+     "src_md5": "3b4f59300943763bafb4be94f578b11a",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_freight_syndicate.png",
+     "src_md5": "fb4f0790b52e1f8acc0eee449905186d",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_mining_freight_void.png",
+     "src_md5": "eefdff7ce174276a37f99c11e73798fd",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

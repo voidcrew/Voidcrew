@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "test_modular/engine_advanced.dmm": {
+   "connector": [
+    2,
+    2
+   ],
+   "height": 3,
+   "png": "test_modular_engine_advanced.png",
+   "src_md5": "826b53cc70a57d98f8b71faef71165e2",
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

@@ -83,7 +83,6 @@
 	user.emote("scream")
 	return TRUE
 
-// VOIDCREW EDIT START - BAL-4: the one-pulse absorb.
 /obj/item/organ/heart/cybernetic/anomalock/proc/on_emp_act(datum/source, severity, protection) // VOIDCREW EDIT - BAL-4: real signal-handler signature (severity used to receive the source atom)
 	SIGNAL_HANDLER
 	add_lightning_overlay(10 SECONDS)
@@ -101,7 +100,6 @@
 /obj/item/organ/heart/cybernetic/anomalock/proc/clear_lightning_overlay()
 	drop_lightning_overlay(owner) // VOIDCREW EDIT - BAL-4: was a bare owner.cut_overlay(), which runtimes on a heart that left the body before this timer came due
 
-// VOIDCREW EDIT START - BAL-4: one teardown for the arc effect, used by the
 /obj/item/organ/heart/cybernetic/anomalock/attack_self(mob/user, modifiers)
 	. = ..()
 	if(.)

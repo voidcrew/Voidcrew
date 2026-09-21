@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_engineering_pacman.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_engineering_pacman.png",
+   "src_md5": "4c0b78d54032ce3728e5cf30592c4c22",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_pacman_slumber.png",
+     "src_md5": "d11819eb71a08090fd6e623dcdcc64cc",
+     "width": 4
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_pacman_syndicate.png",
+     "src_md5": "61a42dfd2acc9a51c406376faaf2a5df",
+     "width": 4
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_engineering_pacman_void.png",
+     "src_md5": "342f215454f52e5ebfec47b7fa7151f9",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

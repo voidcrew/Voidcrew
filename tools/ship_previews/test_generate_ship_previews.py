@@ -68,7 +68,12 @@ class ModuleDiscoveryTests(unittest.TestCase):
                     patch.object(previews, "render", side_effect=render), \
                     contextlib.redirect_stdout(io.StringIO()):
                 previews.main()
-            manifest = json.loads((output / "manifest.json").read_text())
+            manifest = {"hulls": {}, "modules": {}}
+            for path in output.rglob("*.preview.json"):
+                document = json.loads(path.read_text())
+                for group in manifest:
+                    manifest[group].update(document[group])
+            self.assertFalse((output / "manifest.json").exists())
             self.assertCountEqual(rendered, names)
             engineering = manifest["modules"]["bogatyr/workshop/engineering_basic.dmm"]
             self.assertEqual(engineering["connector"], [1, 1])
@@ -77,6 +82,46 @@ class ModuleDiscoveryTests(unittest.TestCase):
             self.assertNotIn("png", surgery)
             self.assertEqual(set(surgery["themes"]), {"nightclub", "trashed"})
             self.assertEqual(len(list(output.glob("*.png"))), 5)
+
+
+class MetadataTests(unittest.TestCase):
+    def test_independent_edits_do_not_change_other_metadata(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            manifest = {"tile_px": 32, "hulls": {
+                "alpha": {"png": "alpha.png", "src_md5": "old"},
+                "beta": {"png": "beta.png", "src_md5": "same"},
+            }, "modules": {"alpha/room.dmm": {"themes": {"blue": {"png": "room_blue.png"}}}}}
+            (output / "manifest.json").write_text(json.dumps(manifest))
+            previews.write_preview_metadata(manifest, output)
+            before = {p.relative_to(output).as_posix(): (p.read_bytes(), p.stat().st_mtime_ns) for p in output.rglob("*.preview.json")}
+            manifest["hulls"]["alpha"]["src_md5"] = "new"
+            previews.write_preview_metadata(manifest, output)
+            changed = {p.relative_to(output).as_posix() for p in output.rglob("*.preview.json") if before[p.relative_to(output).as_posix()] != (p.read_bytes(), p.stat().st_mtime_ns)}
+            self.assertEqual(changed, {"hulls/alpha.preview.json"})
+            self.assertIn("modules/alpha/room.preview.json", before)
+            del manifest["hulls"]["alpha"]
+            previews.write_preview_metadata(manifest, output)
+            self.assertFalse((output / "hulls/alpha.preview.json").exists())
+            self.assertFalse((output / "manifest.json").exists())
+
+    def test_nested_module_paths_and_flat_migration(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            keys = ["a/b.dmm", "a_b.dmm", "other/workshop/b.dmm"]
+            manifest = {"tile_px": 32, "hulls": {}, "modules": {key: {} for key in keys}}
+            (output / "module.a%2Fb.dmm.preview.json").write_text("old metadata")
+            previews.write_preview_metadata(manifest, output)
+            self.assertEqual({p.relative_to(output).as_posix() for p in output.rglob("*.preview.json")}, {
+                "modules/a/b.preview.json", "modules/a_b.preview.json", "modules/other/workshop/b.preview.json"})
+
+    def test_unsafe_keys_cannot_escape_metadata_directory(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            for key in ("../outside.dmm", "/outside.dmm", "C:/outside.dmm", "a/../../outside.dmm", "a\\outside.dmm"):
+                with self.subTest(key=key), self.assertRaises(ValueError):
+                    previews.write_preview_metadata({"tile_px": 32, "hulls": {}, "modules": {key: {}}}, output)
+            self.assertFalse(list(output.iterdir()))
 
 
 def map_with_window(window_path):

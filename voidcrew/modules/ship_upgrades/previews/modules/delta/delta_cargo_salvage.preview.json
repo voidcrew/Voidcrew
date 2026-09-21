@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cargo_salvage.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cargo_salvage.png",
+   "src_md5": "0b14657fa61321127bfaf110a0329d87",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_salvage_cult.png",
+     "src_md5": "bdf5d2f688ac785f4e7da0a83f43da94",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_salvage_lightship.png",
+     "src_md5": "9d735253ba3b10b2e92d1c927041bbcb",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_salvage_syndicate.png",
+     "src_md5": "ffc029c18248c9d44644565e0879ef45",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

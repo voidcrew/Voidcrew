@@ -13,4 +13,3 @@
 	else
 		. += span_notice("It has room for [free_slots] more stack\s of ore.")
 	. += span_notice("Click an ore redemption machine or an ore box with it to empty it out.")
-	// VOIDCREW EDIT ADDITION END

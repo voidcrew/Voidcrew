@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_lab_xenobio.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_lab_xenobio.png",
+   "src_md5": "aaf473857d0e3d441192ffad55a5f2fd",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_xenobio_hearth.png",
+     "src_md5": "00e2b217aca4ec60f8f2478bae682d61",
+     "width": 10
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_xenobio_springs.png",
+     "src_md5": "5363b3cec9612aac47af8ac188100ecd",
+     "width": 10
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_xenobio_verdant.png",
+     "src_md5": "fb9c61ea41dce0b7ac8922dbf5436f0d",
+     "width": 10
+    }
+   },
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

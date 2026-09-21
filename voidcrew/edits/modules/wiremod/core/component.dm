@@ -11,4 +11,3 @@
 //(Name keeps the upstream monkestation typo so ported components match.)
 /obj/item/circuit_component/proc/check_power_modifictions()
 	return energy_usage_per_input
-//VOIDCREW EDIT END

@@ -210,13 +210,7 @@
 		// gives 5 seconds for a load of ores to be sucked up by the ORM before it sends out request console notifications. This should be enough time for most deposits that people make
 		console_notify_timer = addtimer(CALLBACK(src, PROC_REF(send_console_message)), 5 SECONDS)
 
-// VOIDCREW EDIT ADDITION START - satchel emptying and deposit feedback.
-// Rounds 14/15 (round 4, two crews): the ORM only ate bare ore stacks and ore boxes off
-// its input tile, so a mining satchel pressed against the machine or dropped on the tile
-// did nothing ("it won't empty"), and when ore did go in it became silo materials and
-// machine-held mining points with no message at all ("did it just fucking steal my ore?").
-// Every deposit path now runs through smelt_ore(), which speaks one summary of what was
-// stored and where it went.
+
 
 /obj/machinery/mineral/ore_redemption/default_unfasten_wrench(mob/user, obj/item/I)
 	. = ..()

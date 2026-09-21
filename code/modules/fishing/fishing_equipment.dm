@@ -262,7 +262,6 @@
 	wiki_desc = "A hook used to rescue bodies whom have fallen into chasms. \
 		You won't catch fish with it, nor it can't be used for fishing outside of chasms, though it can still be used to reel in people and items from unreachable locations.."
 
-// VOIDCREW EDIT START: make chasm rescue rules readable on the tool itself
 /obj/item/fishing_hook/rescue/can_be_hooked(atom/target)
 	return ..() || isliving(target)
 

@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/mecha_ripley.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "squab_mecha_ripley.png",
+   "src_md5": "0753432f9811ef06545d6683bfd46c7e",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_mecha_ripley_cheap_frigate.png",
+     "src_md5": "92efd790bfb9e0dc13f27a4f7eeda16b",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_mecha_ripley_the_patrolboat.png",
+     "src_md5": "f8072e2aaaa7df5446480e04c77f7864",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

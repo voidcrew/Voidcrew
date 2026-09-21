@@ -1,0 +1,34 @@
+{
+ "hulls": {
+  "squab_b": {
+   "height": 20,
+   "png": "ship_squab_b.png",
+   "slots": {
+    "director_s_quarters": [
+     19,
+     7
+    ],
+    "lab_storage": [
+     23,
+     7
+    ],
+    "squab_gear_room": [
+     18,
+     16
+    ],
+    "squab_lab": [
+     23,
+     3
+    ],
+    "squab_mech_bay": [
+     23,
+     14
+    ]
+   },
+   "src_md5": "8981f82623dd1e8628a467bd71f1ad33",
+   "width": 36
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

@@ -3,7 +3,7 @@
 
 Scans hull DMMs for /obj/modular_map_root/ship_upgrade slot markers and module
 DMMs for their /obj/modular_map_connector anchor, renders everything to PNG via
-dmm-tools, and writes a manifest.json describing the compositing geometry.
+dmm-tools, and writes one metadata file per hull or module.
 
 dmm-tools' icon-smoothing pass implements the pre-2020 corner system, so
 anything using modern bitmask smoothing (walls, carpets, tables) renders as
@@ -19,7 +19,8 @@ nothing. We repair that here:
     is translucent so the grille stays visible)
 
 Outputs (commit these):
-    voidcrew/modules/ship_upgrades/previews/manifest.json
+    voidcrew/modules/ship_upgrades/previews/hulls/*.preview.json
+    voidcrew/modules/ship_upgrades/previews/modules/**/*.preview.json
     voidcrew/modules/ship_upgrades/previews/*.png
 
 Run from the repo root after editing modular hulls or modules:
@@ -517,6 +518,71 @@ def module_geometry(dmm: Dmm) -> dict:
     return {"width": dmm.width, "height": dmm.height, "connector": [cx, cy]}
 
 
+def metadata_path(output: Path, group: str, key: str) -> Path:
+    if group == "modules":
+        if not key.endswith(".dmm"):
+            raise ValueError(f"Expected a module map filename: {key}")
+        key = key.removesuffix(".dmm")
+    parts = key.split("/")
+    if any(not part or part in (".", "..") or part != part.strip()
+           or part.endswith(".") or any(c in part for c in '<>:"\\|?*\0')
+           or any(ord(c) < 32 for c in part) for part in parts):
+        raise ValueError(f"Invalid preview metadata key: {key}")
+    path = output / group / (key + ".preview.json")
+    for parent in (path, *path.parents):
+        if parent == output:
+            break
+        if parent.is_symlink() or getattr(parent, "is_junction", lambda: False)():
+            raise ValueError(f"Preview metadata must not contain links: {parent}")
+    return path
+
+
+def preview_metadata_files(output: Path):
+    yield from output.glob("*.preview.json")
+
+    def collect(folder):
+        if folder.is_symlink() or getattr(folder, "is_junction", lambda: False)():
+            raise ValueError(f"Preview metadata must not contain links: {folder}")
+        if not folder.exists():
+            return
+        for path in folder.iterdir():
+            if path.is_dir() or path.is_symlink():
+                yield from collect(path)
+            elif path.name.endswith(".preview.json"):
+                yield path
+
+    for group in ("hulls", "modules"):
+        yield from collect(output / group)
+
+
+def write_preview_metadata(manifest: dict, output: Path) -> None:
+    """Keep unrelated hull/module changes in separate, deterministic files."""
+    files = {}
+    for group in ("hulls", "modules"):
+        for key, entry in manifest[group].items():
+            path = metadata_path(output, group, key)
+            document = {"tile_px": manifest["tile_px"], "hulls": {}, "modules": {}}
+            document[group][key] = entry
+            files[path] = (json.dumps(document, indent=1, sort_keys=True) + "\n").encode("utf-8")
+    if not files:
+        raise RuntimeError("No ship preview metadata generated")
+    output.mkdir(parents=True, exist_ok=True)
+    previous = list(preview_metadata_files(output))
+    for path, data in files.items():
+        if path.exists() and path.read_bytes() == data:
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as temporary:
+            temporary.write(data)
+        os.replace(temporary.name, path)
+    # This namespace belongs to the generator. Retire deleted/renamed entries
+    # and the old combined index only after all current entries were written.
+    for path in previous:
+        if path not in files:
+            path.unlink()
+    (output / "manifest.json").unlink(missing_ok=True)
+
+
 def main() -> None:
     dmm_tools = find_dmm_tools()
     tmp_dir = Path(tempfile.mkdtemp(prefix="ship_previews_"))
@@ -598,10 +664,9 @@ def main() -> None:
         print(f"module {rel_file}: {entry['width']}x{entry['height']}"
               + (f", themed: {list(themes)}" if themes else ""))
 
-    manifest_path = OUTPUT_DIR / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=1) + "\n", encoding="utf-8")
+    write_preview_metadata(manifest, OUTPUT_DIR)
     shutil.rmtree(tmp_dir, ignore_errors=True)
-    print(f"\nwrote {manifest_path.relative_to(REPO_ROOT)} "
+    print(f"\nwrote preview metadata in {OUTPUT_DIR.relative_to(REPO_ROOT)} "
           f"({len(manifest['hulls'])} hulls, {len(manifest['modules'])} modules)")
 
 

@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "delta_c": {
+   "height": 17,
+   "png": "ship_delta_c.png",
+   "slots": {
+    "delta_cafe": [
+     20,
+     12
+    ],
+    "delta_cargo": [
+     20,
+     2
+    ],
+    "delta_dorms": [
+     9,
+     14
+    ],
+    "delta_med": [
+     9,
+     2
+    ]
+   },
+   "src_md5": "f866b76df60aa0acaf7d08c0ed911fa3",
+   "width": 28
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

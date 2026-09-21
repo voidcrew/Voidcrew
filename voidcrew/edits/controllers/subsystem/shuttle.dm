@@ -80,6 +80,7 @@
 		loading_template.height,
 		1,
 		reservation_type = /datum/turf_reservation/transit,
+		requester = "shuttle template preview '[loading_template.name]'", // VOIDCREW EDIT: z-mint attribution
 	)
 	if(!preview_reservation)
 		// VOIDCREW EDIT: a null here is usually request_turf_block_reservation() refusing

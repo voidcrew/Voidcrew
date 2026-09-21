@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "scarab/scarab_common_cryo.dmm": {
+   "connector": [
+    4,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "medical": {
+     "connector": [
+      4,
+      1
+     ],
+     "height": 6,
+     "png": "scarab_scarab_common_cryo_medical.png",
+     "src_md5": "a99b5f0c628299abc4f478999ad23dd4",
+     "width": 8
+    },
+    "mining": {
+     "connector": [
+      4,
+      1
+     ],
+     "height": 6,
+     "png": "scarab_scarab_common_cryo_mining.png",
+     "src_md5": "9f8571c11a162ad3db6839c1829e9bfa",
+     "width": 8
+    },
+    "syndicate": {
+     "connector": [
+      4,
+      1
+     ],
+     "height": 6,
+     "png": "scarab_scarab_common_cryo_syndicate.png",
+     "src_md5": "b966dba73b22ba3ffeb893432041dec5",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

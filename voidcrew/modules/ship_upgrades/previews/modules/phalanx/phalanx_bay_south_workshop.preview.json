@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_south_workshop.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_south_workshop.png",
+   "src_md5": "d84ca3274a853d94fd081e40f7908052",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_workshop_hearth.png",
+     "src_md5": "820ccc5cdfb50adcac816e7b385b4054",
+     "width": 11
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_workshop_springs.png",
+     "src_md5": "2fb19ad29a590aa531e19e57d729e61b",
+     "width": 11
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_workshop_verdant.png",
+     "src_md5": "c85d8add0ed5a942d17a6881988ef31d",
+     "width": 11
+    }
+   },
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

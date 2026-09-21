@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_lab_chem.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_lab_chem.png",
+   "src_md5": "cf01e3251e94d232ca2d1d899a72c38e",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_chem_hearth.png",
+     "src_md5": "b48a930d8076c9c1d110eab377835508",
+     "width": 10
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_chem_springs.png",
+     "src_md5": "a99a38a5848c9d1315709afd7df8a79d",
+     "width": 10
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_chem_verdant.png",
+     "src_md5": "97d12f3a08c1bfb3bb9ba7960666f065",
+     "width": 10
+    }
+   },
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

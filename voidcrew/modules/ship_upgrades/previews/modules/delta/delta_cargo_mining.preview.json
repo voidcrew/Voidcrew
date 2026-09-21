@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cargo_mining.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cargo_mining.png",
+   "src_md5": "21417b84f11dd2403c282d526f380500",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_mining_cult.png",
+     "src_md5": "206834107600b6bcbbe6140a70e75c6b",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_mining_lightship.png",
+     "src_md5": "562cd42034656c99f5855731657716fe",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cargo_mining_syndicate.png",
+     "src_md5": "f61e8aa0b1164ad1a28d89d9b2d32365",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

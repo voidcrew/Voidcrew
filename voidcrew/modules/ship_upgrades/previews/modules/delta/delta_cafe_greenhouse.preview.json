@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cafe_greenhouse.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cafe_greenhouse.png",
+   "src_md5": "67956ff6d0b71f4624e0404705db317e",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_greenhouse_cult.png",
+     "src_md5": "f8e7963ba52513a493a5b086efdb96e3",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_greenhouse_lightship.png",
+     "src_md5": "e500bf6638519f68b581c207bfbccd51",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_greenhouse_syndicate.png",
+     "src_md5": "bfe191264a9c4082b810e4e2960baed4",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

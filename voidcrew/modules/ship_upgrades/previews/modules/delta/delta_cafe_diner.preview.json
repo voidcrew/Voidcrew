@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "delta/delta_cafe_diner.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "delta_delta_cafe_diner.png",
+   "src_md5": "291870951900a202a667ad6a395bf36f",
+   "themes": {
+    "cult": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_diner_cult.png",
+     "src_md5": "53511578c099dc2fc8951433648f2517",
+     "width": 7
+    },
+    "lightship": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_diner_lightship.png",
+     "src_md5": "3708050e51a37f26af4e47d22dee00bf",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "delta_delta_cafe_diner_syndicate.png",
+     "src_md5": "a4df7587a5da340d22ddd31cb574d5b2",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

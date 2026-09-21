@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_port_infirmary.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_port_infirmary.png",
+   "src_md5": "23dce5c75fee74acb0c981697d16d009",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_infirmary_slumber.png",
+     "src_md5": "543bdc31e295564534a88f46fd831344",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_infirmary_syndicate.png",
+     "src_md5": "1338a83ac50e48c3807f8740a680a69d",
+     "width": 6
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_infirmary_void.png",
+     "src_md5": "6cfb75c6d66e39f91539d7ffbd605c7e",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

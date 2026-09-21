@@ -25,8 +25,8 @@
 		return
 	balloon_alert(owner, "flux capacitors recharged")
 	playsound(owner, 'sound/items/eshield_recharge.ogg', 40)
-// VOIDCREW EDIT END
 
+// BAL-4: one teardown for the arc effect, used by the
 // expiry timer and by removal (which has to pass the old bearer by hand,
 // `owner` is already null there). The pending timer is deliberately left to
 // run rather than deltimer'd, these are not TIMER_STOPPABLE so their id is
@@ -37,7 +37,6 @@
 		return
 	bearer?.cut_overlay(lightning_overlay)
 	lightning_overlay = null
-// VOIDCREW EDIT END
 
 /obj/item/organ/heart/cybernetic/anomalock
 	/// How long the flux capacitors take to recharge after eating a pulse.

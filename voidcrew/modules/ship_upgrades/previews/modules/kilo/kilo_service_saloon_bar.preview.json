@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_service_saloon_bar.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "kilo_kilo_service_saloon_bar.png",
+   "src_md5": "63a23e07e3f19de873f3e3388133d6d7",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_saloon_bar_clean.png",
+     "src_md5": "6f3211c8ad293d2193765ec40e5ecde8",
+     "width": 4
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_saloon_bar_pink.png",
+     "src_md5": "09f206bb9cccd986a91c4d903c9904ca",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

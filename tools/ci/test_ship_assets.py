@@ -59,7 +59,13 @@ class ShipAssetsTest(unittest.TestCase):
         return path
 
     def save_manifest(self):
-        self.write(PREVIEWS / "manifest.json", json.dumps(self.manifest))
+        for path in (self.root / PREVIEWS).rglob("*.preview.json"):
+            path.unlink()
+        for group, entries in self.manifest.items():
+            for key, entry in entries.items():
+                document = {"tile_px": 32, "hulls": {}, "modules": {}}
+                document[group][key] = entry
+                self.write(PREVIEWS / group / (key.removesuffix(".dmm") + ".preview.json"), json.dumps(document))
 
     def append_source(self, source):
         path = self.root / "voidcrew/ships.dm"
@@ -78,7 +84,7 @@ class ShipAssetsTest(unittest.TestCase):
         problems = dict(check_assets(self.root))
         self.assertEqual(set(problems), {old, png})
         self.assertIn("register", problems[old])
-        self.assertIn("manifest.json", problems[png])
+        self.assertIn("preview metadata", problems[png])
 
     def test_commented_or_proc_local_registrations_do_not_keep_old_maps(self):
         self.append_source('''
@@ -204,7 +210,7 @@ Documentation can contain https://example.com and unmatched "quotes.
         self.assertIn("::error file=_maps/voidcrew/ships/ship_old.dmm::", output.getvalue())
 
     def test_missing_or_malformed_inputs_fail(self):
-        for path, text in (("tgstation.dme", '#include "missing.dm"'), (PREVIEWS / "manifest.json", "{}")):
+        for path, text in (("tgstation.dme", '#include "missing.dm"'), (PREVIEWS / "hulls/test.preview.json", "{}")):
             with self.subTest(path=path):
                 target = self.root / path
                 original = target.read_text()
@@ -212,6 +218,41 @@ Documentation can contain https://example.com and unmatched "quotes.
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(main(["--root", str(self.root)]), 1)
                 self.write(path, original)
+
+    def test_legacy_flat_metadata_files_still_pass(self):
+        for index, path in enumerate((self.root / PREVIEWS).rglob("*.preview.json")):
+            path.rename(self.root / PREVIEWS / f"legacy{index}.preview.json")
+        self.assertEqual(check_assets(self.root), [])
+
+    def test_duplicate_metadata_is_rejected(self):
+        source = self.root / PREVIEWS / "hulls/test.preview.json"
+        self.write(PREVIEWS / "duplicate.preview.json", source.read_text())
+        with self.assertRaisesRegex(ValueError, "duplicate ship preview"):
+            check_assets(self.root)
+
+    def test_combined_manifest_cannot_replace_split_metadata(self):
+        for path in (self.root / PREVIEWS).rglob("*.preview.json"):
+            path.unlink()
+        self.write(PREVIEWS / "manifest.json", json.dumps(self.manifest))
+        with self.assertRaisesRegex(ValueError, "Regenerate previews"):
+            check_assets(self.root)
+
+    def test_metadata_outside_reserved_directories_is_ignored(self):
+        self.write(PREVIEWS / "backups/old.preview.json", "invalid backup")
+        self.assertEqual(check_assets(self.root), [])
+
+    def test_invalid_metadata_size_count_and_entry_are_rejected(self):
+        path = PREVIEWS / "hulls/test.preview.json"
+        for document in (
+            {"tile_px": 16, "hulls": {"test": {}}, "modules": {}},
+            {"tile_px": 32, "hulls": {}, "modules": {}},
+            {"tile_px": 32, "hulls": {"test": {}, "other": {}}, "modules": {}},
+            {"tile_px": 32, "hulls": {"test": []}, "modules": {}},
+        ):
+            with self.subTest(document=document):
+                self.write(path, json.dumps(document))
+                with self.assertRaises(ValueError):
+                    check_assets(self.root)
 
 
 if __name__ == "__main__":

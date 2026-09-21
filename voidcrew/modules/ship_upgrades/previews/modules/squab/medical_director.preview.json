@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/medical_director.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 2,
+   "png": "squab_medical_director.png",
+   "src_md5": "8ebbf057d0b00972e860282584584dbd",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_medical_director_cheap_frigate.png",
+     "src_md5": "5a2d9d267fc29ec638ce256d727dfaa5",
+     "width": 3
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 2,
+     "png": "squab_medical_director_the_patrolboat.png",
+     "src_md5": "74eefabe051050d0ed34bd9ff426992b",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

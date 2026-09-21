@@ -363,7 +363,7 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 		return FALSE
 
 	var/pad = VESTIGE_ASCENSION_ARENA_PADDING
-	reservation = SSmapping.request_turf_block_reservation(template.width + (pad * 2), template.height + (pad * 2), 1)
+	reservation = SSmapping.request_turf_block_reservation(template.width + (pad * 2), template.height + (pad * 2), 1, requester = "vestige ascension arena '[template.name]'")
 	if(!reservation)
 		return FALSE
 

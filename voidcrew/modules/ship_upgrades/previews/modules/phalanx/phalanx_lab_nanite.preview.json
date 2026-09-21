@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_lab_nanite.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_lab_nanite.png",
+   "src_md5": "bad65e080170bf2bb2ebebf884c811f2",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_nanite_hearth.png",
+     "src_md5": "1c4405da32b6e35acaa886481ca82bc2",
+     "width": 10
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_nanite_springs.png",
+     "src_md5": "f3bf1aa107ac6c7731223c749efab7e6",
+     "width": 10
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_lab_nanite_verdant.png",
+     "src_md5": "00c10cdefb808977d30b960009e042a9",
+     "width": 10
+    }
+   },
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

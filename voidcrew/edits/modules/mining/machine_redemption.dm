@@ -1,5 +1,13 @@
 // Voidcrew extensions to code/modules/mining/machine_redemption.dm.
 
+// satchel emptying and deposit feedback.
+// Rounds 14/15 (round 4, two crews): the ORM only ate bare ore stacks and ore boxes off
+// its input tile, so a mining satchel pressed against the machine or dropped on the tile
+// did nothing ("it won't empty"), and when ore did go in it became silo materials and
+// machine-held mining points with no message at all ("did it just fucking steal my ore?").
+// Every deposit path now runs through smelt_ore(), which speaks one summary of what was
+// stored and where it went.
+
 /// Inserts one ore stack into the silo/local storage and logs it toward the next spoken
 /// deposit summary. Returns the insert result (<= 0 means rejected, same contract as
 /// remote_materials insert_item()).
@@ -73,7 +81,6 @@
 	if(!console_notify_timer)
 		console_notify_timer = addtimer(CALLBACK(src, PROC_REF(send_console_message)), 5 SECONDS)
 	return ITEM_INTERACT_SUCCESS
-// VOIDCREW EDIT ADDITION END
 
 /obj/machinery/mineral/ore_redemption
 	/// Sheets deposited since the last spoken summary, keyed by ore name

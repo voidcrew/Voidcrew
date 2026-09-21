@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_service_hydroponics.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "kilo_kilo_service_hydroponics.png",
+   "src_md5": "7c134d7bb17023010b362b1dd15da402",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_hydroponics_clean.png",
+     "src_md5": "b6029dddadd425c5a36a871739c94f5b",
+     "width": 4
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_hydroponics_pink.png",
+     "src_md5": "c268ac5f3977de70ee60fe663bb6a763",
+     "width": 4
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "kilo_kilo_service_hydroponics_saloon.png",
+     "src_md5": "01a01b914bb2ada3c52445f736006bfd",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

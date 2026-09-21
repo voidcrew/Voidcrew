@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_bay_south_freight.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_bay_south_freight.png",
+   "src_md5": "7d436ed3d99421f3ea594e7c1a0a7cc0",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_freight_hearth.png",
+     "src_md5": "4c2311f3de243a09018ef8d871161d8c",
+     "width": 11
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_freight_springs.png",
+     "src_md5": "0cc2da9bda37a907362b31663c8c1872",
+     "width": 11
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_bay_south_freight_verdant.png",
+     "src_md5": "fb01a8fb74e9659300c72c3e3c3df5ac",
+     "width": 11
+    }
+   },
+   "width": 11
+  }
+ },
+ "tile_px": 32
+}

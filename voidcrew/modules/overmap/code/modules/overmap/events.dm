@@ -797,6 +797,10 @@ GLOBAL_LIST_EMPTY(nebula_events)
 		gas_type = pick_weight(table)
 	name = "[LOWER_TEXT(get_gas_name())] nebula"
 	color = initial(gas_type.primary_color)
+	// Random clouds only know their gas after the parent has initialized.
+	if((GLOB.nebula_gas_radioactivity[gas_type] || 0) > 0)
+		SSovermap.autopilot_hazards |= src
+		SSovermap.autopilot_blocked_tiles = null
 
 /obj/structure/overmap/event/nebula/Destroy()
 	GLOB.nebula_events -= src

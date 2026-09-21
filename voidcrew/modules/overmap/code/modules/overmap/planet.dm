@@ -411,7 +411,7 @@
 		worldgen_end(build_probe, "z-ceiling")
 		return FALSE
 	else
-		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits)
+		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits, mint_reason = "planet '[display_name || name]' claimed [footprint.describe()] of a fresh zone - [SSovermap.describe_zone_occupancy(zone)]")
 		zone.add_space_level(surface_level)
 	footprint.attach_level(surface_level)
 

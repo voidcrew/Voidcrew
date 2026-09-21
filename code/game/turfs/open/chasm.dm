@@ -17,7 +17,6 @@
 	. = ..()
 	apply_components(mapload)
 
-// VOIDCREW EDIT START: spell out how chasm recovery works, so it stops being folklore
 /// Lets people walk into chasms.
 /turf/open/chasm/CanAllowThrough(atom/movable/mover, border_dir)
 	. = ..()

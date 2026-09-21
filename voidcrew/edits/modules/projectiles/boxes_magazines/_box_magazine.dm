@@ -31,7 +31,6 @@
 		var/list/material_comp = material.return_composition(intrinsic_materials[mat], flags)
 		for(var/comp_mat in material_comp)
 			.[comp_mat] += material_comp[comp_mat]
-//VOIDCREW EDIT ADDITION END
 
 /obj/item/ammo_box
 	var/list/intrinsic_materials

@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "squab/nanite_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "squab_nanite_lab.png",
+   "src_md5": "f432eed5076de17fdf88c9b8038a2154",
+   "themes": {
+    "cheap_frigate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "squab_nanite_lab_cheap_frigate.png",
+     "src_md5": "db725c85a5df498ad7b4662cb25238b5",
+     "width": 8
+    },
+    "the_patrolboat": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "squab_nanite_lab_the_patrolboat.png",
+     "src_md5": "956b899a2ccbe0187caed97264947782",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

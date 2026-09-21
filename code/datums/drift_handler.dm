@@ -176,12 +176,14 @@
 	delayed = TRUE
 
 /// If we're pulling something and stop, we want it to continue at our rate and such
+// VOIDCREW EDIT START - PR #419: Correct space drift stabilization and momentum transfer.
 /datum/drift_handler/proc/stopped_pulling(datum/source, atom/movable/was_pulling)
 	SIGNAL_HANDLER
 	// This does mean it falls very slightly behind, but otherwise they'll potentially run into us
 	var/next_move_in = drifting_loop.timer - world.time + world.tick_lag
-	was_pulling.newtonian_move(angle2dir(drifting_loop.angle), start_delay = next_move_in, drift_force = drift_force, controlled_cap = drift_force)
+	was_pulling.newtonian_move(drifting_loop.angle, start_delay = next_move_in, drift_force = drift_force, controlled_cap = drift_force)
 
+// VOIDCREW EDIT END
 /datum/drift_handler/proc/glide_to_halt(glide_for)
 	if(!ismob(parent))
 		qdel(src)
@@ -231,6 +233,7 @@
 /datum/drift_handler/proc/get_loop_delay(atom/movable/movable)
 	return (DEFAULT_INERTIA_SPEED / ((1 - INERTIA_SPEED_COEF) + drift_force * INERTIA_SPEED_COEF)) * movable.inertia_move_multiplier
 
+// VOIDCREW EDIT START - PR #419: Correct space drift stabilization and momentum transfer.
 /datum/drift_handler/proc/stabilize_drift(target_angle, target_force, stabilization_force)
 	/// We aren't drifting
 	if (isnull(drifting_loop))
@@ -250,11 +253,14 @@
 	var/applied_force = sqrt(force_x * force_x + force_y * force_y)
 	var/force_projection = max(0, cos(target_angle - force_angle)) * applied_force
 	force_x -= min(force_projection, drift_projection) * sin(target_angle)
-	force_x -= min(force_projection, drift_projection) * cos(target_angle)
+	force_y -= min(force_projection, drift_projection) * cos(target_angle)
+	force_angle = delta_to_angle(force_x, force_y)
 	applied_force = min(sqrt(force_x * force_x + force_y * force_y), stabilization_force)
 	parent.newtonian_move(force_angle, instant = TRUE, drift_force = applied_force)
 
 /// Removes all force in a certain direction
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #419: Correct space drift stabilization and momentum transfer.
 /datum/drift_handler/proc/remove_angle_force(target_angle)
 	/// We aren't drifting
 	if (isnull(drifting_loop))
@@ -262,4 +268,5 @@
 
 	var/projected_force = max(0, cos(target_angle - drifting_loop.angle)) * drift_force
 	if (projected_force > 0)
-		parent.newtonian_move(REVERSE_ANGLE(target_angle), projected_force)
+		parent.newtonian_move(REVERSE_ANGLE(target_angle), drift_force = projected_force)
+// VOIDCREW EDIT END

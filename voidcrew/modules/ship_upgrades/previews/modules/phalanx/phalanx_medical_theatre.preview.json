@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "phalanx/phalanx_medical_theatre.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "phalanx_phalanx_medical_theatre.png",
+   "src_md5": "f1c5b1e40f871ad0384c74ea3a565a9e",
+   "themes": {
+    "hearth": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_theatre_hearth.png",
+     "src_md5": "c807fee6f37f9fe440753e564e2031ec",
+     "width": 10
+    },
+    "springs": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_theatre_springs.png",
+     "src_md5": "b01da2908e1d0792a8d305c9ad4bd5c3",
+     "width": 10
+    },
+    "verdant": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "phalanx_phalanx_medical_theatre_verdant.png",
+     "src_md5": "e371b68d69598cb4ca8a0f79271ccccc",
+     "width": 10
+    }
+   },
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

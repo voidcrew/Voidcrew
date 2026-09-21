@@ -152,7 +152,6 @@ SUBSYSTEM_DEF(weather)
 	// VOIDCREW EDIT REPLACEMENT END
 	return SS_INIT_SUCCESS
 
-// VOIDCREW EDIT ADDITION START - weather site registry.
 /datum/controller/subsystem/weather/proc/update_z_level(datum/space_level/level)
 	// VOIDCREW EDIT REPLACEMENT START - drives the level-wide site instead of the "[z]" maps.
 	var/z = level.z_value
@@ -193,6 +192,7 @@ SUBSYSTEM_DEF(weather)
 /// VOIDCREW EDIT: kept for z-level-minded callers; addresses the level's own site.
 /datum/controller/subsystem/weather/proc/make_eligible(z)
 	make_site_eligible(get_level_weather_site(z))
+// VOIDCREW EDIT ADDITION END
 
 ///Returns an active storm by its type
 /datum/controller/subsystem/weather/proc/get_weather_by_type(type)

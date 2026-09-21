@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "scarab/scarab_med_surgery.dmm": {
+   "connector": [
+    2,
+    3
+   ],
+   "height": 4,
+   "themes": {
+    "medical": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_surgery_medical.png",
+     "src_md5": "2e7c0d24c26a47e9ce0f577651830c85",
+     "width": 3
+    },
+    "mining": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_surgery_mining.png",
+     "src_md5": "0e688ba900825165229b2a1c98470b11",
+     "width": 3
+    },
+    "syndicate": {
+     "connector": [
+      2,
+      3
+     ],
+     "height": 4,
+     "png": "scarab_scarab_med_surgery_syndicate.png",
+     "src_md5": "569605d20ff52f97672f2815ca9c3531",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

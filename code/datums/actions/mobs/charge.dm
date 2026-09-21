@@ -21,7 +21,6 @@
 	/// List of charging mobs
 	var/list/charging = list()
 
-// VOIDCREW EDIT BEGIN - removal can happen before a moving body's packet is deleted.
 /datum/action/cooldown/mob_cooldown/charge/Activate(atom/target_atom)
 	// VOIDCREW EDIT BEGIN - remember exactly which actions this invocation disabled.
 	if(charge_activator || QDELETED(owner))
@@ -138,7 +137,6 @@
 		charger = move_loop_source.moving
 	finish_charge(charger)
 
-// VOIDCREW EDIT BEGIN - cleanup is idempotent, including loop deletion during body removal.
 /datum/action/cooldown/mob_cooldown/charge/update_status_on_signal(mob/source, new_stat, old_stat)
 	. = ..()
 	if(new_stat == DEAD)

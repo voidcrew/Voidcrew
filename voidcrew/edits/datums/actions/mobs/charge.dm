@@ -22,7 +22,6 @@
 	charge_disabled_actions.Cut()
 	// A cancelled wind-up must not leave the inherited melee lock on its new owner.
 	next_melee_use_time = min(next_melee_use_time, world.time)
-// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/proc/finish_charge(atom/movable/charger, notify_owner = TRUE)
 	if(!charger || !(charger in charging))
@@ -40,7 +39,6 @@
 	actively_moving = FALSE
 	if(notify_owner && !QDELETED(owner))
 		SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
-// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge
 	/// Charger -> its own move loop; never stop unrelated higher-priority movement.

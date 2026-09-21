@@ -1,6 +1,7 @@
 // Included by the upstream test harness inside its UNIT_TESTS/SPACEMAN_DMM guard.
 // BEGIN_INCLUDE
 #include "atmos_component_pipeline.dm"
+#include "drift_vectors.dm"
 #include "gas_connector_lifecycle.dm"
 #include "glass_floor_baseturfs.dm"
 #include "late_initialization_reentry.dm"
@@ -9,9 +10,11 @@
 #include "pipeline_reconciliation.dm"
 #include "reagent_holder_teardown.dm"
 #include "shuttle_cling_lifecycle.dm"
+#include "shuttle_cling_rethrow.dm"
 #include "shuttle_load_ownership.dm"
 #include "soft_crit.dm"
 #include "throw_cleanup.dm"
+#include "throw_rethrow.dm"
 #include "voidcrew_ammo_box_materials.dm"
 #include "voidcrew_assault_pod.dm"
 #include "voidcrew_autopilot_course.dm"

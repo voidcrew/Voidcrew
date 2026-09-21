@@ -6,4 +6,3 @@
  */
 /obj/item/integrated_circuit/proc/is_component_blacklisted(obj/item/circuit_component/to_check)
 	return FALSE
-//VOIDCREW EDIT END

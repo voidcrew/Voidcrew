@@ -1,0 +1,13 @@
+{
+ "hulls": {
+  "pill_black": {
+   "height": 1,
+   "png": "ship_pill_black.png",
+   "slots": {},
+   "src_md5": "4ef3c6301ad2b84f27693d5c1f5ff714",
+   "width": 3
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "goon/goon_port_chemlab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "goon_goon_port_chemlab.png",
+   "src_md5": "7dd7e22484556ae492b6336c0a04883d",
+   "themes": {
+    "slumber": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_chemlab_slumber.png",
+     "src_md5": "5065d24011cc656103dbbad6b7d1b4b3",
+     "width": 6
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_chemlab_syndicate.png",
+     "src_md5": "6bbaee169ae68ee645aa34b1c631b246",
+     "width": 6
+    },
+    "void": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "goon_goon_port_chemlab_void.png",
+     "src_md5": "4753c6c1f9c878c6510823a1a39f59ba",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

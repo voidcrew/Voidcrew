@@ -125,10 +125,16 @@
 	return FALSE
 
 ///Launch the atom very hard, away from hyperspace
+// VOIDCREW EDIT START - PR #405: Stop orphaning thrownthing datums on re-throw.
 /datum/component/shuttle_cling/proc/launch_very_hard(atom/movable/byebye)
+	// Every tile of the throw fires COMSIG_MOVABLE_MOVED back into update_state(). The throw already
+	// carries the drift direction for 200 tiles, so a fresh throw per step only replaces it.
+	if(byebye.throwing)
+		return
 	byebye.safe_throw_at(get_edge_target_turf(byebye, direction), 200, 1, spin = TRUE, force = MOVE_FORCE_EXTREMELY_STRONG)
 
 ///Check if we arent just being blocked, and if we are give us some diagonal push so we cant just infinitely cling to the front
+// VOIDCREW EDIT END
 /datum/component/shuttle_cling/proc/update_drift_direction(atom/movable/clinger)
 	var/turf/potential_blocker = get_step(clinger, direction)
 	//We are not being blocked, so just give us cardinal drift

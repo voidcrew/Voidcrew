@@ -1,0 +1,48 @@
+{
+ "hulls": {},
+ "modules": {
+  "kilo/kilo_hold_vault.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "kilo_kilo_hold_vault.png",
+   "src_md5": "8f0a154eeefcd96a5cc8b4b2a739f6d9",
+   "themes": {
+    "clean": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_vault_clean.png",
+     "src_md5": "8008caa21a0612ef18ef50ae72d4d02b",
+     "width": 3
+    },
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_vault_pink.png",
+     "src_md5": "9070f1f3282958e28c3fd02ba104e509",
+     "width": 3
+    },
+    "saloon": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "kilo_kilo_hold_vault_saloon.png",
+     "src_md5": "a1d13a7ae08536648e098af69aaab49f",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

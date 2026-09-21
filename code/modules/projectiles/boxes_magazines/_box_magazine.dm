@@ -49,7 +49,6 @@
 		top_off(starting=TRUE)
 	update_icon_state()
 
-//VOIDCREW EDIT ADDITION BEGIN
 /obj/item/ammo_box/Destroy(force)
 	for (var/obj/item/ammo_casing/casing as anything in stored_ammo)
 		if (!ispath(casing))

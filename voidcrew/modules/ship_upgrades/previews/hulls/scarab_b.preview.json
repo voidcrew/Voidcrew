@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "scarab_b": {
+   "height": 20,
+   "png": "ship_scarab_b.png",
+   "slots": {
+    "scarab_cargo": [
+     11,
+     13
+    ],
+    "scarab_common": [
+     19,
+     10
+    ],
+    "scarab_engineering": [
+     11,
+     6
+    ],
+    "scarab_med": [
+     23,
+     7
+    ]
+   },
+   "src_md5": "363697945e0f5d6c93f4238c0d4a0916",
+   "width": 33
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

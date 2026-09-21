@@ -681,6 +681,7 @@ SUBSYSTEM_DEF(shuttle)
 		z_size = 1, //if this is changed the turf uncontain code below has to be updated to support multiple zs
 		reservation_type = /datum/turf_reservation/transit,
 		turf_type_override = transit_path,
+		requester = "transit for [M.name] ([M.width]x[M.height] hull)", // VOIDCREW EDIT: z-mint attribution
 	)
 
 	if(!istype(proposal))

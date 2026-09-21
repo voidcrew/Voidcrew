@@ -21,7 +21,10 @@
 
 /// Generates a real, honest to god new z level. Will create the actual space, and also generate a datum that holds info about the new plot of land
 /// Accepts the name, traits list, datum type, and if we should manage the turfs we create
-/datum/controller/subsystem/mapping/proc/add_new_zlevel(name, traits = list(), z_type = /datum/space_level, contain_turfs = TRUE)
+/// VOIDCREW EDIT: `mint_reason` is a one-line statement of who is asking and why (the
+/// site, the requested block size, the state of the pool). It is logged once per mint by
+/// report_z_mint() so a round's logs attribute every permanent level to a caller.
+/datum/controller/subsystem/mapping/proc/add_new_zlevel(name, traits = list(), z_type = /datum/space_level, contain_turfs = TRUE, mint_reason = null)
 	UNTIL(!adding_new_zlevel)
 	adding_new_zlevel = TRUE
 	var/new_z = z_list.len + 1
@@ -37,7 +40,7 @@
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEW_Z, S)
 	// VOIDCREW EDIT: this proc enforces nothing, so a caller that skips the capacity gate
 	// mints permanent memory silently. See report_z_mint() in voidcrew/mapping/_mapping.dm.
-	report_z_mint(name)
+	report_z_mint(name, mint_reason)
 	return S
 
 /// Returns the /datum/space_level associated with the given z level.
