@@ -1,4 +1,5 @@
 // Included by the upstream test harness inside its UNIT_TESTS/SPACEMAN_DMM guard.
+// BEGIN_INCLUDE
 #include "atmos_component_pipeline.dm"
 #include "gas_connector_lifecycle.dm"
 #include "glass_floor_baseturfs.dm"
@@ -117,3 +118,4 @@
 #include "voidcrew_windoor_survey.dm"
 #include "voidcrew_zone_logging.dm"
 #include "weather_mob_targeting.dm"
+// END_INCLUDE

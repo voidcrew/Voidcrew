@@ -115,7 +115,8 @@ if $grep '^\t+ [^ *]' $code_files; then
 fi;
 
 section "unit tests"
-unit_test_files="code/modules/unit_tests/**/**.dm"
+# VOIDCREW EDIT: keep relocated fork tests covered by the same checks.
+unit_test_files="code/modules/unit_tests/**/**.dm voidcrew/modules/unit_tests/**/**.dm"
 part "mob/living/carbon/human usage"
 if $grep 'allocate\(/mob/living/carbon/human[,\)]' $unit_test_files ||
 	$grep 'new /mob/living/carbon/human\s?\(' $unit_test_files ||
