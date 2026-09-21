@@ -1247,6 +1247,9 @@
 		qdel(src)
 		return FALSE
 
+	if(ismecha(firer)) // VOIDCREW EDIT: Fixes mech projectiles rubberbanding behind the mech
+		ignore_target(firer)
+
 	free_hitscan_forceMove = TRUE
 	forceMove(source_loc)
 	starting = source_loc
