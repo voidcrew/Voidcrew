@@ -59,14 +59,13 @@
 
 /// Try to create a new mob
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/spawner/proc/try_spawn_mob()
 	if(!length(spawn_types))
 		return
 	if(!COOLDOWN_FINISHED(src, spawn_delay))
 		return
 
-	// VOIDCREW EDIT: don't spawn where nobody is standing.
+	// VOIDCREW EDIT START - don't spawn where nobody is standing.
 	// Spawned mobs die unattended out there (vacuum, weather, each other) and
 	// validate_references() frees the slot the instant one is DEAD, so a bone pit or
 	// monster den on a loaded-but-unvisited level emits a fresh corpse every spawn_time
@@ -154,7 +153,6 @@
 
 
 /// Remove weakrefs to atoms which have been killed or deleted without us picking it up somehow
-// VOIDCREW EDIT END
 // VOIDCREW EDIT END
 /datum/component/spawner/proc/validate_references()
 	for (var/datum/weakref/weak_thing as anything in spawned_things)
