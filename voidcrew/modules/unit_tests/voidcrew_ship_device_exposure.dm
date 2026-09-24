@@ -3,17 +3,21 @@
  *
  * ship_device_exposed_to_space() (voidcrew/_HELPERS/ship_exposure.dm) is the rule:
  * at least one of the four straight lines out of the device's tile has to leave the
- * ship's footprint without crossing a tile the ship owns or a shut door. These cases
- * pin down the three exploits it closes (blast door over a turret, turret sealed in
- * a space pocket, thruster inside the hull) and the two things it must not break
- * (a device on the hull edge, a landed ship with rock against its hull).
+ * ship's footprint without crossing anything solid the ship owns (a wall, a shut
+ * door, a window, a machine). These cases pin down the three exploits it closes
+ * (blast door over a turret, turret walled into a space pocket, thruster buried
+ * inside the hull) and what it must not break (a device on the hull edge, a thruster
+ * behind open exterior plating, a landed ship with rock against its hull).
  *
  * The fixture is the 5x5 test room: a throwaway /area/shuttle painted over some of
- * its tiles, and a bare mobile port whose footprint is exactly the room.
+ * its tiles, walls raised on some of them, and a bare mobile port whose footprint is
+ * exactly the room. Room coordinates run 1-5 from the bottom left.
  */
 /datum/unit_test/voidcrew_ship_device_exposure
 	var/area/shuttle/hull_area
 	var/list/original_areas
+	/// turf -> list(original type, original baseturfs), for every wall we raised
+	var/list/raised_walls
 	var/obj/docking_port/mobile/port
 
 /datum/unit_test/voidcrew_ship_device_exposure/Run()
@@ -23,6 +27,7 @@
 
 	hull_area = new
 	original_areas = list()
+	raised_walls = list()
 	port = new /obj/docking_port/mobile(bottom_left)
 	port.dir = NORTH
 	port.dwidth = 0
@@ -35,6 +40,7 @@
 
 	run_cases()
 
+	clear_walls()
 	for(var/turf/tile as anything in original_areas)
 		tile.change_area(hull_area, original_areas[tile])
 	original_areas.Cut()
@@ -45,65 +51,77 @@
 	hull_area = null
 
 /datum/unit_test/voidcrew_ship_device_exposure/proc/run_cases()
-	// The ship owns the west three columns; columns 4 and 5 are open space inside the footprint.
-	set_hull(1, 3, 1, 5)
-	var/turf/edge = room_tile(3, 3)
-	var/turf/inside = room_tile(2, 3)
+	var/turf/middle = room_tile(3, 3)
 
-	var/obj/machinery/ship_combat/laser_turret/turret = allocate(/obj/machinery/ship_combat/laser_turret, edge)
-	TEST_ASSERT(ship_device_exposed_to_space(turret, port), "a turret on the hull edge, with open space east of it, counted as blocked")
-	TEST_ASSERT(!ship_device_exposed_to_space(allocate(/obj/item/wrench, inside), port), "a device inside the hull counted as exposed")
+	// The whole room is ship. The middle tile has hull walls west, north and south, and
+	// open ship plating east of it out to the edge of the footprint.
+	set_hull(1, 5, 1, 5)
+	raise_wall(2, 3)
+	raise_wall(3, 2)
+	raise_wall(3, 4)
+
+	var/obj/machinery/ship_combat/laser_turret/turret = allocate(/obj/machinery/ship_combat/laser_turret, middle)
+	TEST_ASSERT(ship_device_exposed_to_space(turret, port), "a turret with open ship plating between it and space counted as blocked")
 
 	// Blast door over the turret: shut blocks, open does not.
-	var/obj/machinery/door/poddoor/shutter = allocate(/obj/machinery/door/poddoor, edge)
+	var/obj/machinery/door/poddoor/shutter = allocate(/obj/machinery/door/poddoor, middle)
 	TEST_ASSERT(shutter.density, "the test blast door did not start shut")
 	TEST_ASSERT(!ship_device_exposed_to_space(turret, port), "a shut blast door over the turret did not block it")
 	TEST_ASSERT(ship_device_exposed_to_space(turret, port, ignore_doors = TRUE), "ignore_doors still counted the blast door over the turret")
 	qdel(shutter)
-	var/obj/machinery/door/poddoor/preopen/open_shutter = allocate(/obj/machinery/door/poddoor/preopen, edge)
+	var/obj/machinery/door/poddoor/preopen/open_shutter = allocate(/obj/machinery/door/poddoor/preopen, middle)
 	TEST_ASSERT(!open_shutter.density, "the preopen blast door started shut")
 	TEST_ASSERT(ship_device_exposed_to_space(turret, port), "an open blast door over the turret blocked it")
 	qdel(open_shutter)
 
-	// A shut door out in the open, on the turret's only clear line, blocks that line.
+	// A shut blast door the ship owns, on the turret's only line out, blocks it.
 	var/obj/machinery/door/poddoor/outer_shutter = allocate(/obj/machinery/door/poddoor, room_tile(4, 3))
 	TEST_ASSERT(!ship_device_exposed_to_space(turret, port), "a shut blast door on the turret's only line to space did not block it")
+	TEST_ASSERT(ship_device_exposed_to_space(turret, port, ignore_doors = TRUE), "ignore_doors still counted the blast door in front of the turret")
 	qdel(outer_shutter)
 
-	// Landed: rock the ship does not own, right against the hull, blocks nothing.
+	// Thrusters, wired through update_engine(): one behind open exterior plating passes,
+	// the same one with a hull wall in front of it is buried and pushes nothing.
+	var/obj/machinery/power/shuttle_engine/ship/void/engine = allocate(/obj/machinery/power/shuttle_engine/ship/void, middle)
+	engine.connect_to_shuttle(port = port)
+	engine.update_engine()
+	TEST_ASSERT(engine.thruster_active && !engine.exhaust_blocked, "a thruster behind open exterior plating was marked blocked")
+
+	raise_wall(5, 3)
+	engine.exhaust_recheck_at = 0
+	engine.update_engine()
+	TEST_ASSERT(!engine.thruster_active && engine.exhaust_blocked, "a thruster walled in on all four sides still produces thrust")
+	TEST_ASSERT(engine in port.engine_list, "a blocked thruster was unregistered instead of kept on the ship")
+	var/reason = engine.link_refusal_reason(port)
+	TEST_ASSERT(findtext(reason, "exhaust"), "the engine report gave '[reason]' for a buried thruster")
+	TEST_ASSERT(!ship_device_exposed_to_space(turret, port), "a turret walled in on all four sides counted as exposed")
+
+	// Cutting the wall away brings it back once the cache is refreshed.
+	clear_wall(5, 3)
+	engine.exhaust_recheck_at = 0
+	engine.update_engine()
+	TEST_ASSERT(engine.thruster_active && !engine.exhaust_blocked, "a thruster did not recover after the wall in front of it was removed")
+	qdel(engine)
+
+	// Space pocket: the middle tile is not the ship's, but the ship's walls close it in.
+	raise_wall(4, 3)
+	set_hull(1, 5, 1, 5, list(middle))
+	TEST_ASSERT(get_area(middle) != hull_area, "the pocket tile was painted into the hull")
+	TEST_ASSERT(!ship_device_exposed_to_space(turret, port), "a turret walled into a space pocket inside the hull counted as exposed")
+	TEST_ASSERT(!ship_device_exposed_to_space(turret, port, ignore_doors = TRUE), "a turret walled into a space pocket counted as exposed with doors ignored")
+	clear_wall(4, 3)
+
+	// Landed: the ship owns only the west three columns. Rock and a shut door the ship
+	// does not own, right against the hull, block nothing.
+	set_hull(1, 3, 1, 5)
+	raise_wall(4, 3)
 	var/turf/rock_tile = room_tile(4, 3)
-	var/rock_original_type = rock_tile.type
-	var/list/rock_original_baseturfs = rock_tile.baseturfs
-	rock_tile.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(get_area(rock_tile) != hull_area, "the rock tile was painted into the hull")
 	TEST_ASSERT(ship_device_exposed_to_space(turret, port), "rock the ship does not own blocked a turret on the hull edge")
-	rock_tile.ChangeTurf(rock_original_type, rock_original_baseturfs)
-
-	// Thrusters: the same rule, wired through update_engine().
-	var/obj/machinery/power/shuttle_engine/ship/void/edge_engine = allocate(/obj/machinery/power/shuttle_engine/ship/void, edge)
-	var/obj/machinery/power/shuttle_engine/ship/void/buried_engine = allocate(/obj/machinery/power/shuttle_engine/ship/void, inside)
-	edge_engine.connect_to_shuttle(port = port)
-	buried_engine.connect_to_shuttle(port = port)
-	edge_engine.update_engine()
-	buried_engine.update_engine()
-	TEST_ASSERT(edge_engine.thruster_active && !edge_engine.exhaust_blocked, "a thruster on the hull edge was marked blocked")
-	TEST_ASSERT(!buried_engine.thruster_active && buried_engine.exhaust_blocked, "a thruster inside the hull still produces thrust")
-	TEST_ASSERT(buried_engine in port.engine_list, "a blocked thruster was unregistered instead of kept on the ship")
-	var/reason = buried_engine.link_refusal_reason(port)
-	TEST_ASSERT(findtext(reason, "exhaust"), "the engine report gave '[reason]' for a thruster inside the hull")
-
-	// Cutting the hull away in front of it brings it back once the cache is refreshed.
-	set_hull(1, 1, 1, 5)
-	buried_engine.exhaust_recheck_at = 0
-	buried_engine.update_engine()
-	TEST_ASSERT(buried_engine.thruster_active && !buried_engine.exhaust_blocked, "a thruster did not recover after the hull in front of it was removed")
-	qdel(edge_engine)
-	qdel(buried_engine)
-
-	// Space pocket: the ship owns everything but the middle tile, and the turret sits in it.
-	set_hull(1, 5, 1, 5, list(room_tile(3, 3)))
-	TEST_ASSERT(get_area(edge) != hull_area, "the pocket tile was painted into the hull")
-	TEST_ASSERT(!ship_device_exposed_to_space(turret, port), "a turret sealed in a space pocket inside the hull counted as exposed")
-	TEST_ASSERT(!ship_device_exposed_to_space(turret, port, ignore_doors = TRUE), "a turret sealed in a space pocket counted as exposed with doors ignored")
+	clear_wall(4, 3)
+	var/obj/machinery/door/poddoor/foreign_shutter = allocate(/obj/machinery/door/poddoor, rock_tile)
+	TEST_ASSERT(ship_device_exposed_to_space(turret, port), "a shut door the ship does not own blocked a turret on the hull edge")
+	qdel(foreign_shutter)
 
 	// No ship at all: nothing can block it.
 	TEST_ASSERT(ship_device_exposed_to_space(turret, null), "a device on no ship counted as blocked")
@@ -127,6 +145,29 @@
 				tile.change_area(hull_area, original_areas[tile])
 				original_areas -= tile
 
+/// Turns a room tile into a wall, remembering what it was.
+/datum/unit_test/voidcrew_ship_device_exposure/proc/raise_wall(x, y)
+	var/turf/tile = room_tile(x, y)
+	if(!raised_walls[tile])
+		raised_walls[tile] = list(tile.type, tile.baseturfs)
+	tile.ChangeTurf(/turf/closed/wall)
+
+/// Puts a raised wall back to the floor it was.
+/datum/unit_test/voidcrew_ship_device_exposure/proc/clear_wall(x, y)
+	var/turf/tile = room_tile(x, y)
+	var/list/original = raised_walls[tile]
+	if(!original)
+		return
+	raised_walls -= tile
+	tile.ChangeTurf(original[1], original[2])
+
+/// Puts every raised wall back.
+/datum/unit_test/voidcrew_ship_device_exposure/proc/clear_walls()
+	for(var/turf/tile as anything in raised_walls.Copy())
+		var/list/original = raised_walls[tile]
+		raised_walls -= tile
+		tile.ChangeTurf(original[1], original[2])
+
 /**
  * # Every mapped weapon and thruster on the fleet can reach open space
  *
@@ -134,7 +175,8 @@
  * every theme, with default modules and each single-module substitution, plus every
  * NPC ship hull, assembled from the shipped `.dmm` files. A tile is the ship's when
  * its area is an /area/shuttle, which is what the mobile port registers into
- * shuttle_areas, and the footprint is the whole map.
+ * shuttle_areas, and the footprint is the whole map. A ship tile blocks when it holds
+ * a closed turf or a dense object, as in ship_exposure_tile_solid().
  *
  * Thrusters must be clear with every door as mapped. Weapon mounts are judged with
  * doors open: a blast door over a gun is a legitimate design, the crew just has to
@@ -225,7 +267,7 @@
 			if(x < 1 || y < 1 || x > ship.width || y > ship.height)
 				break
 			var/list/atoms = ship.tiles[(y - 1) * ship.width + x]
-			if(vc_test_tile_ship_owned(atoms) || (!ignore_doors && vc_test_tile_has_closed_door(atoms)))
+			if(vc_test_tile_ship_owned(atoms) && vc_test_tile_solid(atoms, ignore_doors))
 				blocked = TRUE
 				break
 		if(!blocked)
@@ -238,6 +280,28 @@
 		return FALSE
 	var/area_entry = atoms[length(atoms)]
 	return vc_test_entry_is(area_entry, /area/shuttle) && !vc_test_entry_is(area_entry, /area/shuttle/transit)
+
+/// Whether a mapped tile loads with a wall or a dense object on it. Shut doors are skipped with ignore_doors.
+/proc/vc_test_tile_solid(list/atoms, ignore_doors = FALSE)
+	for(var/entry in atoms)
+		var/resolved = vc_test_entry_type(entry)
+		if(!resolved)
+			continue
+		if(ispath(resolved, /turf))
+			if(ispath(resolved, /turf/closed))
+				return TRUE
+			continue
+		if(!ispath(resolved, /obj))
+			continue
+		// Window and grille spawners are not dense themselves but load as dense structures.
+		if(ispath(resolved, /obj/effect/spawner/structure))
+			return TRUE
+		if(ignore_doors && ispath(resolved, /obj/machinery/door))
+			continue
+		var/obj/probe = resolved
+		if(vc_test_entry_boolean(entry, "density", initial(probe.density)))
+			return TRUE
+	return FALSE
 
 /// Whether a mapped tile holds a door that loads shut.
 /proc/vc_test_tile_has_closed_door(list/atoms)

@@ -6,15 +6,15 @@
  * which a sealed space pocket inside the hull, or a blast door over the mount,
  * both satisfied. This asks the real question instead: can at least one of the
  * four straight lines out of the device's tile leave the ship's footprint without
- * crossing anything the ship owns?
+ * crossing anything solid the ship owns?
  *
  * All four directions count, because mapped dirs on thrusters and mounts are not
  * reliable, and firing is abstract anyway.
  *
- * A ray tile blocks when:
- * * its area is one of the ship's `shuttle_areas` (any deck, wall or window the
- *   ship owns, open or closed), or
- * * it holds a closed door (a blast door or airlock that is shut).
+ * A ray tile blocks when its area is one of the ship's `shuttle_areas` and it holds
+ * something dense: a wall, or a dense object such as a shut door or blast door, a
+ * window, a grille or a machine. Open deck, plating and catwalks the ship owns do
+ * not block, so a thruster can sit behind an exterior plating strip.
  *
  * Terrain the ship does not own - planet rock, asteroids, an outpost, another ship
  * docked alongside - never blocks, so a landed or docked ship keeps its weapons
@@ -55,14 +55,23 @@
 			// Off the map edge, or past the ship's footprint: nothing further out is ours.
 			if(!tile || tile.x < min_x || tile.x > max_x || tile.y < min_y || tile.y > max_y)
 				break
-			if(owned_areas?[tile.loc])
-				blocked = TRUE
-				break
-			if(!ignore_doors && ship_exposure_closed_door(tile))
+			if(owned_areas?[tile.loc] && ship_exposure_tile_solid(tile, ignore_doors))
 				blocked = TRUE
 				break
 		if(!blocked)
 			return TRUE
+	return FALSE
+
+/// Whether this tile has a wall on it, or a dense object. Shut doors are skipped with ignore_doors.
+/proc/ship_exposure_tile_solid(turf/tile, ignore_doors = FALSE)
+	if(tile.density)
+		return TRUE
+	for(var/obj/thing in tile)
+		if(!thing.density)
+			continue
+		if(ignore_doors && istype(thing, /obj/machinery/door))
+			continue
+		return TRUE
 	return FALSE
 
 /// A shut door on this tile, blast doors included.
