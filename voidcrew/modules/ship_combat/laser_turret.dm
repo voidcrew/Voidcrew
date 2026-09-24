@@ -142,7 +142,7 @@
 	if(can_fire())
 		. += span_notice("Status: READY")
 	else if(!is_on_exterior())
-		. += span_warning("Status: NOT ON EXTERIOR - Must be adjacent to outside of ship!")
+		. += span_warning("Status: BLOCKED - it needs a clear path out to open space.")
 	else if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		. += span_warning("Recharging: [round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1)]s remaining")
 	else if(!cell || cell.charge < get_power_per_shot())

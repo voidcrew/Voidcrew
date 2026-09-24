@@ -56,7 +56,7 @@
 	else
 		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
 	if(!is_on_exterior())
-		. += span_warning("NOT ON EXTERIOR - Must be adjacent to outside of ship to fire!")
+		. += span_warning("Its firing line is blocked. It needs a clear path out to open space.")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
@@ -303,8 +303,9 @@
 	if(linked_console_ref?.resolve())
 		return
 
-	// Only auto-link if on exterior of ship
-	if(!is_on_exterior())
+	// Only auto-link if placed on the exterior of the ship. A blast door that
+	// happens to be shut right now does not change where the launcher sits.
+	if(!is_on_exterior(ignore_doors = TRUE))
 		return
 
 	// Find what ship we're on by checking areas

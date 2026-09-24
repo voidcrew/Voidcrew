@@ -166,6 +166,7 @@ type Engine = {
   fuel: number;
   maxFuel: number;
   enabled: BooleanLike;
+  blocked: BooleanLike;
   ref: string;
 };
 
@@ -1458,14 +1459,16 @@ const FuelStack = () => {
               <span
                 className="Helm__engineFuel"
                 style={{
-                  color: !engine.enabled
-                    ? '#3a474b'
-                    : percent < 40
-                      ? '#d9a230'
-                      : '#f2a341',
+                  color: engine.blocked
+                    ? '#cf4a38'
+                    : !engine.enabled
+                      ? '#3a474b'
+                      : percent < 40
+                        ? '#d9a230'
+                        : '#f2a341',
                 }}
               >
-                {percent}%
+                {engine.blocked ? 'Blocked' : `${percent}%`}
               </span>
             </div>
           );

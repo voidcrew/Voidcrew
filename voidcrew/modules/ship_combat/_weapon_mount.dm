@@ -6,57 +6,53 @@
 // be copy-pasted per machine.
 
 /obj/machinery/ship_combat
-	/// Cached exterior check result (mounts don't move while anchored)
+	/// Cached result of the last exposure check.
 	var/cached_exterior_check
-	/// Whether the exterior cache is valid
-	var/exterior_cache_valid = FALSE
+	/// world.time until which cached_exterior_check is trusted. 0 forces a recheck.
+	var/exterior_cache_until = 0
 	/// Whether this mount can be bolted into a hull wall by dragging it onto one.
 	var/wall_mountable = FALSE
 	/// How long bolting into a wall takes.
 	var/wall_mount_time = 5 SECONDS
 
-/// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
-/// Weapons must be on the exterior to fire - they need line of sight to space/outside
-/// Result is cached while anchored since mounts don't move
-/obj/machinery/ship_combat/proc/is_on_exterior()
-	// Return cached result if valid (only valid while anchored)
-	if(exterior_cache_valid && anchored)
+/**
+ * Whether this mount has a clear line out to open space, and so may fire.
+ *
+ * See ship_device_exposed_to_space(): at least one straight line out of the mount's
+ * tile has to leave the ship's footprint without crossing anything the ship owns or a
+ * shut door. The answer is cached for SHIP_EXPOSURE_RECHECK_TIME, because the console
+ * UI and NPC gunners ask every tick, and kept as-is while the hull is mid-move, when
+ * its geometry cannot be trusted.
+ *
+ * Arguments:
+ * * ignore_doors - judge the mount's position only, as if every door were open. Not cached.
+ */
+/obj/machinery/ship_combat/proc/is_on_exterior(ignore_doors = FALSE)
+	var/obj/docking_port/mobile/port = get_exposure_port()
+	if(ignore_doors)
+		return ship_device_exposed_to_space(src, port, ignore_doors = TRUE)
+	if(!isnull(cached_exterior_check) && world.time < exterior_cache_until)
 		return cached_exterior_check
+	var/obj/docking_port/mobile/voidcrew/voidcrew_port = port
+	if(!isnull(cached_exterior_check) && istype(voidcrew_port) && voidcrew_port.move_in_flight())
+		return cached_exterior_check
+	cached_exterior_check = ship_device_exposed_to_space(src, port)
+	exterior_cache_until = world.time + SHIP_EXPOSURE_RECHECK_TIME
+	return cached_exterior_check
 
-	var/turf/our_turf = get_turf(src)
-	if(!our_turf)
-		return FALSE
-
-	// Get the shuttle areas for our ship
+/// The docking port of the ship whose areas this mount sits in, if any.
+/obj/machinery/ship_combat/proc/get_exposure_port()
 	var/area/our_area = get_area(src)
-	var/list/shuttle_areas
-	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-		if(!S.shuttle)
-			continue
-		if(our_area in S.shuttle.shuttle_areas)
-			shuttle_areas = S.shuttle.shuttle_areas
-			break
-
-	// Check all adjacent tiles (including diagonals)
-	var/result = FALSE
-	for(var/turf/T in range(1, our_turf))
-		if(T == our_turf)
-			continue
-		var/area/tile_area = get_area(T)
-		// If adjacent tile is not in shuttle areas, we're on exterior
-		if(!tile_area || !(tile_area in shuttle_areas))
-			result = TRUE
-			break
-
-	// Cache the result
-	cached_exterior_check = result
-	exterior_cache_valid = TRUE
-
-	return result
+	if(!our_area)
+		return null
+	for(var/obj/structure/overmap/ship/ship in SSovermap.simulated_ships)
+		if(ship.shuttle?.shuttle_areas?[our_area])
+			return ship.shuttle
+	return null
 
 /// Invalidates the exterior check cache (call when the mount is moved/anchored)
 /obj/machinery/ship_combat/proc/invalidate_exterior_cache()
-	exterior_cache_valid = FALSE
+	exterior_cache_until = 0
 
 // ========== WALL MOUNTING ==========
 // Weapon mounts have to sit on the exterior, which on most hulls means giving up a

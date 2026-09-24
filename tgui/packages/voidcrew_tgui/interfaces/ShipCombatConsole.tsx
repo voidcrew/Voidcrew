@@ -2233,7 +2233,7 @@ const SystemsTab = () => {
               <span className="Tac__sysBody">
                 {dead ? (
                   <span style={{ color: C_CRIT }}>
-                    {!launcher.on_exterior ? 'Not on exterior' : 'Disabled'}
+                    {!launcher.on_exterior ? 'Blocked' : 'Disabled'}
                   </span>
                 ) : launcher.loaded ? (
                   <>
@@ -2280,7 +2280,7 @@ const SystemsTab = () => {
               <span className="Tac__sysBody">
                 {dead ? (
                   <span style={{ color: C_CRIT }}>
-                    {!tube.on_exterior ? 'Not on exterior' : 'Disabled'}
+                    {!tube.on_exterior ? 'Blocked' : 'Disabled'}
                   </span>
                 ) : tube.loaded ? (
                   <>
@@ -2333,7 +2333,7 @@ const SystemsTab = () => {
                   </span>
                 </>
               ) : (
-                <span style={{ color: C_CRIT }}>Not on exterior</span>
+                <span style={{ color: C_CRIT }}>Blocked</span>
               )}
             </span>
             <span className="Tac__sysState">
@@ -2434,7 +2434,7 @@ const SystemsTab = () => {
 
 /**
  * One slot glyph per launcher: filled = loaded and ready, barred = loaded but
- * safed, hollow = empty, struck = disabled or not on the exterior. The pip
+ * safed, hollow = empty, struck = disabled or blocked. The pip
  * strip is the count made legible, 3/4 says how many, the pips say which.
  *
  * There is no cycling state: tubes have no fire cooldown in DM (can_fire is
@@ -2452,7 +2452,7 @@ const TubePip = (props: { launcher: Launcher }) => {
         ? 'ready'
         : 'safed';
   const title = dead
-    ? `${launcher.id}, ${!launcher.on_exterior ? 'not on exterior' : 'disabled'}`
+    ? `${launcher.id}, ${!launcher.on_exterior ? 'blocked' : 'disabled'}`
     : !launcher.loaded
       ? `${launcher.id}, empty`
       : launcher.ready

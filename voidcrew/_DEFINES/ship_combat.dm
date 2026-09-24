@@ -374,3 +374,7 @@
 #define EW_LASER_EFFICIENCY_MULT 0.20
 /// Servo: -15% warmup time per tier
 #define EW_SERVO_WARMUP_MULT 0.15
+
+/// How long a weapon mount or thruster trusts its last "clear line to space" check.
+/// See ship_device_exposed_to_space().
+#define SHIP_EXPOSURE_RECHECK_TIME (3 SECONDS)

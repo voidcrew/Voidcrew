@@ -6713,6 +6713,7 @@
 #include "voidcrew\_HELPERS\debug_atmos.dm"
 #include "voidcrew\_HELPERS\docking.dm"
 #include "voidcrew\_HELPERS\hostile_creatures.dm"
+#include "voidcrew\_HELPERS\ship_exposure.dm"
 #include "voidcrew\_HELPERS\ships.dm"
 #include "voidcrew\_HELPERS\stock_parts.dm"
 #include "voidcrew\_strings\star_names.dm"

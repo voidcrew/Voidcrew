@@ -599,6 +599,7 @@
 				fuel = 0,
 				maxFuel = 100,
 				enabled = E.enabled,
+				blocked = E.exhaust_blocked,
 				ref = REF(E)
 			)
 		else
@@ -607,6 +608,7 @@
 				fuel = E.return_fuel() || 0,
 				maxFuel = E.return_fuel_cap() || 100,
 				enabled = E.enabled,
+				blocked = E.exhaust_blocked,
 				ref = REF(E)
 			)
 		data["engineInfo"] += list(engine_data)
