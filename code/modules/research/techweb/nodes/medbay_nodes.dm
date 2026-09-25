@@ -66,6 +66,7 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
 	announce_channels = list(RADIO_CHANNEL_MEDICAL)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/techweb_node/medbay_equip_adv
 	id = TECHWEB_NODE_MEDBAY_EQUIP_ADV
 	display_name = "Advanced Medbay Equipment"
@@ -86,6 +87,7 @@
 	required_experiments = list(/datum/experiment/scanning/reagent/haloperidol)
 	announce_channels = list(RADIO_CHANNEL_MEDICAL)
 
+// VOIDCREW EDIT END
 /datum/techweb_node/cryostasis
 	id = TECHWEB_NODE_CRYOSTASIS
 	display_name = "Cryostasis"

@@ -238,6 +238,7 @@
 /obj/machinery/ore_silo/ui_static_data(mob/user)
 	return materials.ui_static_data()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/ore_silo/ui_data(mob/user)
 	var/list/data = list()
 
@@ -282,6 +283,8 @@
 
 	return data
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/ore_silo/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
@@ -353,6 +356,7 @@
  * * target_user_data - Data in the form rendered from ID_DATA(target), passed into the ore silo logs by whatever the target did such
  * 	 as removing/adding sheets, printing items, etc
  */
+// VOIDCREW EDIT END
 /obj/machinery/ore_silo/proc/attempt_ban_toggle(mob/living/user, list/target_user_data)
 	if(!istype(user) || !istype(target_user_data))
 		CRASH("Bad arguments passed to [callee]")

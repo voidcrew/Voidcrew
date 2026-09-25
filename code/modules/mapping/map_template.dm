@@ -147,6 +147,7 @@
 	return level
 
 // VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/map_template/proc/load(turf/T, centered = FALSE)
 	if(centered)
 		T = locate(T.x - round(width/2) , T.y - round(height/2) , T.z)
@@ -208,6 +209,7 @@
 	worldgen_end(probe)
 	return bounds
 
+// VOIDCREW EDIT END
 /datum/map_template/proc/generate_ceiling(affected_turfs)
 	for (var/turf/turf in affected_turfs)
 		var/turf/ceiling = get_step_multiz(turf, UP)

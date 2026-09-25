@@ -295,14 +295,6 @@ GLOBAL_LIST_EMPTY_TYPED(integrated_circuits, /obj/item/integrated_circuit)
 //without core having to know the module's type paths. Default is "everything allowed",
 //which is the historic behaviour for every stock board.
 /**
- * Whether this circuit board refuses to hold the given component at all.
- * Checked before anything else in add_component(), so it also blocks remote printing.
- */
-/obj/item/integrated_circuit/proc/is_component_blacklisted(obj/item/circuit_component/to_check)
-	return FALSE
-//VOIDCREW EDIT END
-
-/**
  * Adds a component to the circuitboard through a manual action.
  */
 /obj/item/integrated_circuit/proc/add_component_manually(obj/item/circuit_component/to_add, mob/living/user)

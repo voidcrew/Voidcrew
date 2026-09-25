@@ -133,16 +133,6 @@
 	navigator.navigate()
 
 /// Shortcut to the same personal skill report provided by the View Skills verb.
-/atom/movable/screen/skills
-	name = "view skills and experience"
-	icon = 'icons/hud/screen_midnight.dmi'
-	icon_state = "skills"
-	mouse_over_pointer = MOUSE_HAND_POINTER
-
-/atom/movable/screen/skills/Click()
-	usr.view_skills()
-	return TRUE
-
 /atom/movable/screen/craft
 	name = "crafting menu"
 	icon = 'icons/hud/screen_midnight.dmi'
@@ -190,6 +180,7 @@
 	var/image/object_overlay
 	plane = HUD_PLANE
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/inventory/Click(location, control, params)
 	// At this point in client Click() code we have passed the 1/10 sec check and little else
 	// We don't even know if it's a middle click
@@ -210,6 +201,7 @@
 		usr.update_held_items()
 	return TRUE
 
+// VOIDCREW EDIT END
 /atom/movable/screen/inventory/MouseEntered(location, control, params)
 	. = ..()
 	add_overlays()
@@ -278,6 +270,7 @@
 	if(held_index == hud.mymob.active_hand_index)
 		. += IS_LEFT_INDEX(held_index) ? "lhandactive" : "rhandactive"
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/inventory/hand/Click(location, control, params)
 	// At this point in client Click() code we have passed the 1/10 sec check and little else
 	// We don't even know if it's a middle click
@@ -299,6 +292,7 @@
 		user.swap_hand(held_index)
 	return TRUE
 
+// VOIDCREW EDIT END
 /atom/movable/screen/close
 	name = "close"
 	plane = ABOVE_HUD_PLANE
@@ -523,6 +517,7 @@
 	. = ..()
 	master_ref = WEAKREF(new_master)
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/storage/Click(location, control, params)
 	var/datum/storage/storage_master = master_ref?.resolve()
 	if(!istype(storage_master))
@@ -541,6 +536,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /atom/movable/screen/storage/cell
 
 /atom/movable/screen/storage/cell/mouse_drop_receive(atom/target, mob/living/user, params)
@@ -646,12 +642,14 @@
 	anchored = TRUE
 	plane = ABOVE_HUD_PLANE
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/zone_sel/MouseExited(location, control, params)
 	. = ..()
 	if(!isobserver(usr) && hovering)
 		vis_contents -= hover_overlays_cache[hovering]
 		hovering = null
 
+// VOIDCREW EDIT END
 /atom/movable/screen/zone_sel/proc/get_zone_at(icon_x, icon_y)
 	switch(icon_y)
 		if(1 to 9) //Legs
@@ -803,6 +801,7 @@
 	update_body_zones()
 	update_appearance()
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/healthdoll/human/update_body_zones()
 	vis_contents.Cut()
 	QDEL_LIST_ASSOC_VAL(limbs)
@@ -816,11 +815,13 @@
 		// why viscontents? why not overlays? - because i want to animate filters
 		vis_contents += limb
 
+// VOIDCREW EDIT END
 /atom/movable/screen/healthdoll/human/Destroy()
 	QDEL_LIST_ASSOC_VAL(limbs)
 	vis_contents.Cut()
 	return ..()
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/healthdoll/human/update_icon_state()
 	. = ..()
 	var/mob/living/carbon/human/owner = hud?.mymob
@@ -878,6 +879,7 @@
 				limbs[lost_zone].remove_filter("wound_outline")
 
 // Basically just holds an icon we can put a filter on
+// VOIDCREW EDIT END
 /atom/movable/screen/healthdoll_limb
 	screen_loc = ui_living_healthdoll
 	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE

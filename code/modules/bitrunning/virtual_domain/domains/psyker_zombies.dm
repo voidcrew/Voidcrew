@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lazy_template/virtual_domain/psyker_zombies
 	name = "Infected Domain"
 	// Was COST_MEDIUM, which made this the only domain in the roster paying net +3
@@ -14,3 +15,4 @@
 	key = "psyker_zombies"
 	map_name = "psyker_zombies"
 	reward_points = BITRUNNER_REWARD_HIGH
+// VOIDCREW EDIT END

@@ -64,6 +64,7 @@
 	for(var/id in unlock_ids)
 		unlock_ids[id] = TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/techweb_node/Destroy()
 	// Temporary instances (for example design-source validation) may share an
 	// id with the canonical node. They do not own that registry entry.
@@ -71,6 +72,7 @@
 		SSresearch.techweb_nodes -= id
 	return ..()
 
+// VOIDCREW EDIT END
 /datum/techweb_node/proc/on_design_deletion(datum/design/D)
 	prune_design_id(D.id)
 

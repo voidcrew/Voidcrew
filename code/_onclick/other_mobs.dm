@@ -33,6 +33,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/UnarmedAttack(atom/attack_target, proximity_flag, list/modifiers)
 	// The sole reason for this signal needing to exist is making FotNS incompatible with Hulk.
 	// Note that it is send before [proc/can_unarmed_attack] is called, keep this in mind.
@@ -62,6 +63,7 @@
 			SEND_SIGNAL(src, COMSIG_LIVING_AFTER_UNARMED_ATTACK, attack_target, modifiers, max(0, health_before - living_target.health), max(0, living_target.getStaminaLoss() - stamina_before))
 	return TRUE
 
+// VOIDCREW EDIT END
 /mob/living/carbon/human/UnarmedAttack(atom/attack_target, proximity_flag, list/modifiers)
 	// Humans can always check themself regardless of having their hands blocked or w/e
 	if(src == attack_target && !combat_mode && HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))

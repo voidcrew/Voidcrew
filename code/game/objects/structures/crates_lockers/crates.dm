@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/closet/crate
 	name = "crate"
 	desc = "A rectangular steel crate."
@@ -27,8 +28,6 @@
 	var/crate_climb_time = 2 SECONDS
 	/// The reference of the manifest paper attached to the cargo crate.
 	var/datum/weakref/manifest
-	/// Actual ship order payment. Kept independently of removable paperwork for recycling caps.
-	var/cargo_paid_cost
 	/// Where the Icons for lids are located.
 	var/lid_icon = 'icons/obj/storage/crates.dmi'
 	/// Icon state to use for lid to display when opened. Leave undefined if there isn't one.
@@ -40,6 +39,7 @@
 	var/weld_w = 0
 	var/weld_z = 0
 
+// VOIDCREW EDIT END
 /obj/structure/closet/crate/Initialize(mapload)
 	AddElement(/datum/element/climbable, climb_time = crate_climb_time, climb_stun = 0) //add element in closed state before parent init opens it(if it does)
 	if(elevation)

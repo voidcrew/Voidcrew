@@ -338,6 +338,7 @@
 	///Sprite visible when the ushanka flaps are folded down.
 	var/downsprite = "ushankadown"
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/clothing/head/costume/ushanka/attack_self(mob/user)
 	if(earflaps)
 		icon_state = upsprite
@@ -347,6 +348,8 @@
 		to_chat(user, span_notice("You lower the ear flaps on the ushanka."))
 	earflaps = !earflaps
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/clothing/head/costume/ushanka/polar
 	name = "bear hunter's ushanka"
 	desc = "Handcrafted in Siberia from real polar bears."
@@ -355,6 +358,7 @@
 	upsprite = "ushankaup_polar"
 	downsprite = "ushankadown_polar"
 
+// VOIDCREW EDIT END
 /obj/item/clothing/head/costume/nightcap/blue
 	name = "blue nightcap"
 	desc = "A blue nightcap for all the dreamers and snoozers out there."

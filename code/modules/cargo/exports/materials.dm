@@ -33,19 +33,14 @@
 // Materials. Static materials exist as parent types, while materials subject to the stock market have a fluid cost as determined by material/market types
 // If you're adding a new material to the stock market, make sure its export type is added here.
 
-/// Fuel has one resale ceiling, whether shipped loose or through a stock block.
-/proc/plasma_export_bid()
-	return max(0, min(SSstock_market.materials_prices[/datum/material/plasma], 10))
-
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/material/plasma
 	cost = 10
 	k_elasticity = 0
 	material_id = /datum/material/plasma
 	message = "cm3 of plasma"
 
-/datum/export/material/plasma/get_cost(obj/exported_obj, apply_elastic = TRUE)
-	return round(plasma_export_bid() * get_amount(exported_obj))
-
+// VOIDCREW EDIT END
 /datum/export/material/bananium
 	cost = CARGO_CRATE_VALUE * 2
 	material_id = /datum/material/bananium
@@ -180,24 +175,6 @@
 // VOIDCREW EDIT: plasma trades on the materials market here (see basemats.dm).
 // Direct plasma is matched by the earlier datum. Blocks must obey its same
 // ceiling, including a fixed quote captured before prices or balance changed.
-/datum/export/material/market/plasma
-	message = "cm3 of plasma"
-	material_id = /datum/material/plasma
-
-/datum/export/material/market/plasma/get_cost(obj/exported_obj, apply_elastic = TRUE)
-	var/amount = get_amount(exported_obj)
-	if(amount <= 0)
-		return 0
-	var/material_value = plasma_export_bid() * amount
-	if(istype(exported_obj, /obj/item/stock_block))
-		var/obj/item/stock_block/block = exported_obj
-		if(block.export_mat != material_id)
-			return 0
-		if(!block.fluid)
-			material_value = min(material_value, block.export_value)
-	return (apply_elastic ? cost : init_cost) * max(0, material_value)
-// VOIDCREW EDIT END
-
 /datum/export/material/market/iron
 	message = "cm3 of iron"
 	material_id = /datum/material/iron

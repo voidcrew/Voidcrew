@@ -1,5 +1,7 @@
 ///How many research points you gain from dissecting a Human.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 #define BASE_HUMAN_REWARD 100
+// VOIDCREW EDIT END
 
 /datum/surgery/advanced/experimental_dissection
 	name = "Experimental Dissection"
@@ -87,6 +89,7 @@
 	return TRUE
 
 ///Calculates how many research points dissecting 'target' is worth.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/surgery_step/experimental_dissection/proc/check_value(mob/living/target)
 	var/cost = base_value
 
@@ -120,6 +123,7 @@
 
 #undef BASE_HUMAN_REWARD
 
+// VOIDCREW EDIT END
 /obj/item/research_notes
 	name = "research notes"
 	desc = "Valuable scientific data. Use it in an ancient research server to turn it in."
@@ -133,6 +137,7 @@
 	///if it ws merged with different origins to apply a bonus
 	var/mixed = FALSE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/research_notes/Initialize(mapload, value, origin_type)
 	. = ..()
 	// Explicitly check for null, not truthiness: a passed-in 0 must mean "worthless", not "use the default".
@@ -142,6 +147,7 @@
 		src.origin_type = origin_type
 	change_vol()
 
+// VOIDCREW EDIT END
 /obj/item/research_notes/examine(mob/user)
 	. = ..()
 	. += span_notice("It is worth [value] research points.")

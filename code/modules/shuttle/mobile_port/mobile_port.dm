@@ -92,6 +92,7 @@
 	highlight("#0f0")
 #endif
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/docking_port/mobile/Destroy(force)
 	unregister()
 	QDEL_NULL(announcement_controller)
@@ -104,6 +105,7 @@
 	remove_ripples()
 	return ..()
 
+// VOIDCREW EDIT END
 #define WORLDMAXX_CUTOFF (world.maxx + 1)
 #define WORLDMAXY_CUTOFF (world.maxx + 1)
 /**

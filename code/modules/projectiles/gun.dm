@@ -477,6 +477,7 @@
 	return TRUE
 
 ///returns true if the gun successfully fires
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /obj/item/gun/proc/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	var/base_bonus_spread = 0
 	if(user)
@@ -546,6 +547,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/gun/proc/reset_fire_cd()
 	fire_cd = FALSE
 

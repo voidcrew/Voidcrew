@@ -16,6 +16,7 @@
 			return FALSE
 	return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/reagent/reaction_agent/acidic_buffer
 	name = "Strong Acidic Buffer"
 	description = "An industrial acidic buffer, used to lower the pH of a solution."
@@ -27,6 +28,7 @@
 	glass_price = DRINK_PRICE_HIGH
 
 //Consumes self on addition and shifts ph
+// VOIDCREW EDIT END
 /datum/reagent/reaction_agent/acidic_buffer/intercept_reagents_transfer(datum/reagents/target, amount, copy_only)
 	. = ..()
 	if(!.)
@@ -48,6 +50,7 @@
 		volume -= amount
 		holder.update_total()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/reagent/reaction_agent/basic_buffer
 	name = "Strong Basic Buffer"
 	description = "An industrial alkaline buffer, used to raise the pH of a solution."
@@ -58,6 +61,7 @@
 	fallback_icon_state = "base_buffer_fallback"
 	glass_price = DRINK_PRICE_HIGH
 
+// VOIDCREW EDIT END
 /datum/reagent/reaction_agent/basic_buffer/intercept_reagents_transfer(datum/reagents/target, amount, copy_only)
 	. = ..()
 	if(!.)

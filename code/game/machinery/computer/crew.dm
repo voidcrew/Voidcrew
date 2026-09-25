@@ -54,6 +54,7 @@
 	))
 
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/circuit_component/medical_console_data/input_received(datum/port/input/port)
 
 	if(!attached_console || !GLOB.crewmonitor)
@@ -75,6 +76,7 @@
 
 	records.set_output(new_table)
 
+// VOIDCREW EDIT END
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
 
@@ -84,11 +86,10 @@
 
 GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/crewmonitor
 	/// List of user -> UI source
 	var/list/ui_sources = list()
-	/// Cache of data generated per sensor scope, used for serving the data within SENSOR_UPDATE_PERIOD of the last update
-	var/list/data_by_scope = list()
 	/// Cache of last update time for each sensor scope
 	var/list/last_update = list()
 	/// Map of job to ID for sorting purposes
@@ -161,6 +162,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		JOB_ASSISTANT = 999,
 	)
 
+// VOIDCREW EDIT END
 /datum/crewmonitor/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
@@ -189,6 +191,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
  * Voidcrew: takes the device doing the asking rather than a z-level, because a level
  * cannot scope this here - see voidcrew/edits/machinery/crew_monitor.dm.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/crewmonitor/proc/update_data(atom/source)
 	var/turf/source_turf = get_turf(source)
 	var/z = source_turf?.z
@@ -298,6 +301,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 
 	return results
 
+// VOIDCREW EDIT END
 /datum/crewmonitor/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)

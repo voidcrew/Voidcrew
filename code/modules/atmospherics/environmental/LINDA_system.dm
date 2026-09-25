@@ -120,6 +120,7 @@
 	src.atmos_adjacent_turfs = atmos_adjacent_turfs
 	SEND_SIGNAL(src, COMSIG_TURF_CALCULATED_ADJACENT_ATMOS)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/proc/immediate_calculate_adjacent_turfs()
 	LAZYINITLIST(src.atmos_adjacent_turfs)
 	var/list/atmos_adjacent_turfs = src.atmos_adjacent_turfs
@@ -161,6 +162,7 @@
  * alldir includes adjacent diagonal tiles that can share
  * air with both of the related adjacent cardinal tiles
 **/
+// VOIDCREW EDIT END
 /turf/proc/get_atmos_adjacent_turfs(alldir = 0)
 	var/adjacent_turfs
 	if (atmos_adjacent_turfs)

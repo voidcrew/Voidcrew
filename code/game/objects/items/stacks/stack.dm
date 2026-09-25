@@ -625,6 +625,7 @@
  * - [check][/obj/item/stack]: The stack to check for mergeability.
  * - [inhand][boolean]: Whether or not the stack to check should act like it's in a mob's hand.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/proc/can_merge(obj/item/stack/check, inhand = FALSE)
 	// We don't only use istype here, since that will match subtypes, and stack things that shouldn't stack
 	if(!istype(check, merge_type) || check.merge_type != merge_type)
@@ -652,6 +653,7 @@
  *
  * As a result, this proc can leave behind a 0 amount stack.
  */
+// VOIDCREW EDIT END
 /obj/item/stack/proc/merge_without_del(obj/item/stack/target_stack, limit)
 	// Cover edge cases where multiple stacks are being merged together and haven't been deleted properly.
 	// Also cover edge case where a stack is being merged into itself, which is supposedly possible.
@@ -724,6 +726,7 @@
  * Arguments:
  * - amount: The number of units to split from this stack.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/proc/split_stack(amount)
 	if(!use(amount, TRUE, FALSE))
 		return null
@@ -741,6 +744,7 @@
  * * [user][/mob] - Mob performing the split, non-nullable
  * * amount - Number of units to split from this stack
  */
+// VOIDCREW EDIT END
 /obj/item/stack/proc/split_n_take(mob/user, amount)
 	if(!user)
 		return null

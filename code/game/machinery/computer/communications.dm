@@ -7,6 +7,7 @@
 #define STATE_MESSAGES "messages"
 
 // The communications computer
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications
 	name = "communications console"
 	desc = "A console used for high-priority announcements and emergencies."
@@ -58,6 +59,7 @@
 	///when was emergency access last toggled
 	var/last_toggled
 
+// VOIDCREW EDIT END
 /obj/machinery/computer/communications/syndicate
 	icon_screen = "commsyndie"
 	circuit = /obj/item/circuitboard/computer/communications/syndicate
@@ -78,6 +80,7 @@
 /obj/machinery/computer/communications/syndicate/authenticated_as_silicon_or_captain(mob/user)
 	return FALSE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/Initialize(mapload)
 	. = ..()
 	// All maps should have at least 1 comms console
@@ -86,6 +89,7 @@
 	GLOB.shuttle_caller_list += src
 
 /// Are we NOT a silicon, AND we're logged in as the captain?
+// VOIDCREW EDIT END
 /obj/machinery/computer/communications/proc/authenticated_as_non_silicon_captain(mob/user)
 	if (HAS_SILICON_ACCESS(user))
 		return FALSE
@@ -135,6 +139,7 @@
 	playsound(src, 'sound/machines/terminal/terminal_alert.ogg', 50, FALSE)
 	return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/ui_state)
 	var/static/list/approved_states = list(STATE_BUYING_SHUTTLE, STATE_CHANGING_STATUS, STATE_MAIN, STATE_MESSAGES)
 
@@ -436,6 +441,7 @@
 			SSjob.safe_code_timer_id = addtimer(CALLBACK(SSjob, TYPE_PROC_REF(/datum/controller/subsystem/job, send_spare_id_safe_code), pod_location), 120 SECONDS, TIMER_UNIQUE | TIMER_STOPPABLE)
 			minor_announce("Due to staff shortages, your crew has been approved for delivery of access codes to secure the Captain's Spare ID. Delivery via drop pod at [get_area(pod_location)]. ETA 120 seconds.", players = get_communication_players())
 
+// VOIDCREW EDIT END
 /obj/machinery/computer/communications/proc/emergency_access_cooldown(mob/user)
 	if(toggle_uses == toggle_max_uses) //you have used up free uses already, do it one more time and start a cooldown
 		to_chat(user, span_warning("This was your last free use without cooldown, you will not be able to use this again for [DisplayTimeText(EMERGENCY_ACCESS_COOLDOWN)]."))
@@ -454,6 +460,7 @@
 	last_toggled = world.time
 	return FALSE //if we are not in cooldown, allow using the button
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/proc/send_cross_comms_message(mob/user, destination, message)
 	send_cross_comms_message_timer = null
 
@@ -473,6 +480,8 @@
 	deadchat_broadcast(" has sent an outgoing message to the other station(s).</span>", "<span class='bold'>[user.real_name]", user, message_type = DEADCHAT_ANNOUNCEMENT)
 	GLOB.communications_controller.soft_filtering = FALSE // set it to false at the end of the proc to ensure that everything prior reads as intended
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/ui_data(mob/user)
 	var/list/data = list(
 		"authenticated" = FALSE,
@@ -604,6 +613,7 @@
 
 	return data
 
+// VOIDCREW EDIT END
 /obj/machinery/computer/communications/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -703,6 +713,7 @@
 
 	return length(CONFIG_GET(keyed_list/cross_server)) > 0
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/proc/make_announcement(mob/living/user)
 	var/is_ai = HAS_SILICON_ACCESS(user)
 	var/datum/communciations_controller/controller = get_announcement_controller()
@@ -732,6 +743,7 @@
 	controller.make_announcement(user, is_ai, input, syndicate || (obj_flags & EMAGGED), players)
 	deadchat_broadcast(" made a priority announcement from [span_name("[get_area_name(user, TRUE)]")].", span_name("[user.real_name]"), user, message_type=DEADCHAT_ANNOUNCEMENT)
 
+// VOIDCREW EDIT END
 /obj/machinery/computer/communications/proc/get_communication_players()
 	return voidcrew_announcement_players(src)
 
@@ -821,6 +833,7 @@
  *
  * hacker - the mob that caused the hack
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/computer/communications/proc/hack_console(mob/living/hacker)
 	// All hack results we'll choose from.
 	var/list/hack_options = list(HACK_SLEEPER)
@@ -875,6 +888,7 @@
 #undef MIN_GHOSTS_FOR_FUGITIVES
 #undef MAX_PERCENT_GHOSTS_FOR_SLEEPER
 
+// VOIDCREW EDIT END
 /datum/comm_message
 	var/title
 	var/content

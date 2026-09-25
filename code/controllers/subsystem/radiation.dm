@@ -8,6 +8,7 @@ SUBSYSTEM_DEF(radiation)
 	/// Do not interact with this directly, use `radiation_pulse` instead.
 	var/list/datum/radiation_pulse_information/processing = list()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/radiation/fire(resumed)
 	while (processing.len)
 		var/datum/radiation_pulse_information/pulse_information = processing[1]
@@ -27,6 +28,7 @@ SUBSYSTEM_DEF(radiation)
 
 		processing.Cut(1, 2)
 
+// VOIDCREW EDIT END
 /datum/controller/subsystem/radiation/stat_entry(msg)
 	msg = "Pulses:[processing.len]"
 	return ..()

@@ -122,6 +122,7 @@
  * If auto_change_zone is set to FALSE, it'll give the user a chance to pick a new zone to heal
  * If continuous is set to true, it will play the continuous sound for healing
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/medical/proc/try_heal(mob/living/patient, mob/living/user, healed_zone, silent = FALSE, auto_change_zone = TRUE, continuous = FALSE)
 	if(heal_begin_sound && !continuous)
 		playsound(patient, heal_begin_sound, 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
@@ -212,6 +213,7 @@
 	if(heal_end_sound)
 		playsound(patient, heal_end_sound, 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 
+// VOIDCREW EDIT END
 /obj/item/stack/medical/proc/try_heal_auto_change_zone(mob/living/carbon/patient, mob/living/user, preferred_target, last_zone)
 	PRIVATE_PROC(TRUE)
 

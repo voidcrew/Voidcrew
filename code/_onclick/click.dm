@@ -20,6 +20,7 @@
 /mob/proc/changeNext_move(num)
 	next_move = world.time + ((num+next_move_adjust)*next_move_modifier)
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/living/changeNext_move(num)
 	var/mod = next_move_modifier
 	var/adj = next_move_adjust
@@ -40,6 +41,7 @@
  *
  * Note that this proc can be overridden, and is in the case of screen objects.
  */
+// VOIDCREW EDIT END
 /atom/Click(location, control, params)
 	if(flags_1 & INITIALIZED_1)
 		SEND_SIGNAL(src, COMSIG_CLICK, location, control, params, usr)
@@ -66,6 +68,7 @@
  * * [obj/item/proc/afterattack] (atom,user,adjacent,params) - used both ranged and adjacent
  * * [mob/proc/RangedAttack] (atom,modifiers) - used only ranged, only used for tk and laser eyes but could be changed
  */
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/proc/ClickOn( atom/A, params )
 	if(world.time <= next_click)
 		return
@@ -180,6 +183,7 @@
 				RangedAttack(A, modifiers)
 
 /// Is the atom obscured by a PREVENT_CLICK_UNDER_1 object above it
+// VOIDCREW EDIT END
 /atom/proc/IsObscured()
 	SHOULD_BE_PURE(TRUE)
 	if(!isturf(loc)) //This only makes sense for things directly on turfs for now

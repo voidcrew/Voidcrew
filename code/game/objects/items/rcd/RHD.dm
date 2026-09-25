@@ -68,12 +68,14 @@
 	return !blueprint_changed
 
 ///used for examining the RCD and for its UI
+// VOIDCREW EDIT START - PR #283: Allow RCD silo access outside ships and across z-levels.
 /obj/item/construction/proc/get_silo_iron()
 	if(silo_link && silo_mats.mat_container && silo_mats.check_z_level() && !silo_mats.on_hold())
 		return silo_mats.mat_container.get_material_amount(/datum/material/iron) / SILO_USE_AMOUNT
 	return 0
 
 ///returns local matter units available. overridden by rcd borg to return power units available
+// VOIDCREW EDIT END
 /obj/item/construction/proc/get_matter(mob/user)
 	return matter
 
@@ -180,6 +182,7 @@
 		if(ratio > 0)
 			. += "[icon_state]_charge[ratio]"
 
+// VOIDCREW EDIT START - PR #283: Allow RCD silo access outside ships and across z-levels.
 /obj/item/construction/proc/useResource(amount, mob/user)
 	if(!silo_mats || !silo_link)
 		if(matter < amount)
@@ -204,6 +207,7 @@
 		silo_mats.use_materials(list(/datum/material/iron = SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "consume", user_data = ID_DATA(user))
 		return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/construction/ui_static_data(mob/user)
 	. = list()
 

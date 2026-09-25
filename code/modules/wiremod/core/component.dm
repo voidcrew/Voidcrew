@@ -221,26 +221,13 @@
  * Arguments:
  * * output_port - The output port to remove.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/circuit_component/proc/remove_output_port(datum/port/output/output_port)
 	output_ports -= output_port
 	qdel(output_port)
 	if(parent)
 		SStgui.update_uis(parent)
 	return null //explicitly set the port to null if used like this: `port = remove_output_port(port)`
-
-//VOIDCREW EDIT ADDITION: hook for components that need to clear transient port values
-//once a trigger has finished, so a chemical payload isn't re-sent on the next pulse.
-/obj/item/circuit_component/proc/after_work_call()
-	return
-
-//VOIDCREW EDIT ADDITION: lets a component vary its own power draw per trigger instead of
-//always paying the flat energy_usage_per_input. The chemistry synthesiser uses this to
-//charge more when it has to fabricate matter without precursor feedstock.
-//(Name keeps the upstream monkestation typo so ported components match.)
-/obj/item/circuit_component/proc/check_power_modifictions()
-	return energy_usage_per_input
-//VOIDCREW EDIT END
-
 
 /**
  * Called whenever an input is received from one of the ports.
@@ -250,6 +237,7 @@
  * * port - Can be null. The port that sent the input
  * * return_values - Only defined if the component is receiving an input due to instant execution. Contains the values to be returned once execution has stopped.
  */
+// VOIDCREW EDIT END
 /obj/item/circuit_component/proc/trigger_component(datum/port/input/port, list/return_values)
 	SHOULD_NOT_SLEEP(TRUE)
 	pre_input_received(port)

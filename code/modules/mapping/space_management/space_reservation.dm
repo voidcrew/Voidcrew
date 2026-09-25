@@ -4,7 +4,9 @@
 /// Above this many turfs, reservation teardown in Release() spreads itself over
 /// multiple ticks instead of running atomically. Small reservations keep the
 /// historical no-sleep behavior, so qdel() from tick-sensitive contexts stays safe.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 #define RESERVATION_RELEASE_YIELD_THRESHOLD 2500
+// VOIDCREW EDIT END
 
 /datum/turf_reservation
 	/// All turfs that we've reserved
@@ -44,24 +46,7 @@
 	turf_type = /turf/open/space/transit
 	pre_cordon_distance = 7
 
-/// Returns TRUE if the given turf falls inside this reservation's bounds.
-/// Cheap bounds check against the per-z corners rather than a search of
-/// reserved_turfs, which can run to thousands of entries.
-/datum/turf_reservation/proc/contains_turf(turf/checked)
-	if(isnull(checked))
-		return FALSE
-
-	for(var/z_idx in 1 to length(bottom_left_turfs))
-		var/turf/bottom_left = bottom_left_turfs[z_idx]
-		var/turf/top_right = top_right_turfs[z_idx]
-		if(checked.z != bottom_left.z)
-			continue
-
-		return (checked.x >= bottom_left.x && checked.x <= top_right.x) \
-			&& (checked.y >= bottom_left.y && checked.y <= top_right.y)
-
-	return FALSE
-
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/Release()
 	// VOIDCREW EDIT: the release set is rebuilt from the corners we recorded at claim time
 	// instead of trusting `reserved_turfs` to still list everything _reserve_area() took.
@@ -142,6 +127,7 @@
 	INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, reserve_turfs), release_turfs)
 
 /// Attempts to calaculate and store a list of turfs around the reservation for cordoning. Returns whether a valid cordon was calculated
+// VOIDCREW EDIT END
 /datum/turf_reservation/proc/calculate_cordon_turfs(turf/bottom_left, turf/top_right)
 	if(bottom_left.x < 2 || bottom_left.y < 2 || top_right.x > (world.maxx - 2) || top_right.y > (world.maxy - 2))
 		return FALSE // no space for a cordon here
@@ -163,6 +149,7 @@
 	return TRUE
 
 /// Actually generates the cordon around the reservation, and marking the cordon turfs as reserved
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/generate_cordon()
 	for(var/turf/cordon_turf as anything in cordon_turfs)
 		var/area/misc/cordon/cordon_area = GLOB.areas_by_type[/area/misc/cordon] || new
@@ -188,6 +175,7 @@
 		make_repel(pre_cordon_turf)
 
 ///Register signals in the cordon "danger zone" to do something with whoever trespasses
+// VOIDCREW EDIT END
 /datum/turf_reservation/proc/make_repel(turf/pre_cordon_turf)
 	SHOULD_CALL_PARENT(TRUE)
 	//Okay so hear me out. If we place a special turf IN the reserved area, it will be overwritten, so we can't do that
@@ -230,6 +218,7 @@
 	turf_type_is_baseturf = FALSE
 
 /// Internal proc which handles reserving the area for the reservation.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/_reserve_area(width, height, zlevel)
 	src.width = width
 	src.height = height
@@ -309,6 +298,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /datum/turf_reservation/proc/reserve(width, height, z_size, z_reservation)
 	src.z_size = z_size
 	var/failed_reservation = FALSE
@@ -325,6 +315,7 @@
 	return TRUE
 
 /// Calculates the effective bounds information for the given turf. Returns a list of the information, or null if not applicable.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/calculate_turf_bounds_information(turf/target)
 	// Bounded by the corner lists rather than z_size, same as contains_turf(): a
 	// half-built or already-released reservation still has its z_size set.
@@ -356,6 +347,8 @@
 	return null
 
 /// Gets the turf below the given target. Returns null if there is no turf below the target
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/get_turf_below(turf/target)
 	var/list/bounds_info = calculate_turf_bounds_information(target)
 	if(isnull(bounds_info))
@@ -372,6 +365,8 @@
 	return locate(bottom_left.x + offset_x, bottom_left.y + offset_y, bottom_left.z)
 
 /// Gets the turf above the given target. Returns null if there is no turf above the target
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/turf_reservation/proc/get_turf_above(turf/target)
 	var/list/bounds_info = calculate_turf_bounds_information(target)
 	if(isnull(bounds_info))
@@ -389,6 +384,7 @@
 
 #undef RESERVATION_RELEASE_YIELD_THRESHOLD
 
+// VOIDCREW EDIT END
 /datum/turf_reservation/New()
 	LAZYADD(SSmapping.turf_reservations, src)
 

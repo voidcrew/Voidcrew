@@ -937,6 +937,7 @@ SUBSYSTEM_DEF(job)
  * * debug_prefix - Logging prefix for the job_debug log entries. For example, GRJ during give_random_job or DO during divide_occupations.
  * * add_job_to_log - If TRUE, appends the job type to the log entry. If FALSE, does not. Set to FALSE when check is part of iterating over players for a specific job, set to TRUE when check is part of iterating over jobs for a specific player and you don't want extra log entry spam.
  */
+// VOIDCREW EDIT START - PR #425: Support cyborg and AI ship crew.
 /datum/controller/subsystem/job/proc/check_job_eligibility(mob/dead/new_player/player, datum/job/possible_job, debug_prefix = "", add_job_to_log = FALSE)
 	if(!player.mind)
 		job_debug("[debug_prefix]: Player has no mind, Player: [player][add_job_to_log ? ", Job: [possible_job]" : ""]")
@@ -986,6 +987,7 @@ SUBSYSTEM_DEF(job)
  * * head_jobs - a list of head jobs that qualify the requirement
  *
 */
+// VOIDCREW EDIT END
 /datum/controller/subsystem/job/proc/has_minimum_jobs(crew_threshold, list/jobs = list(), list/head_jobs = list())
 	var/employees = 0
 	for(var/datum/record/crew/target in GLOB.manifest.general)

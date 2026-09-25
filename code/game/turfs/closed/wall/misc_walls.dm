@@ -58,12 +58,14 @@
 	. = ..()
 	AddElement(/datum/element/rust/heretic)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/wall/r_wall/rust
 	//SDMM supports colors, this is simply for easier mapping
 	//and should be removed on initialize
 	color = MAP_SWITCH(null, COLOR_ORANGE_BROWN)
 	base_decon_state = "rusty_wall"
 
+// VOIDCREW EDIT END
 /turf/closed/wall/r_wall/rust/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/rust)

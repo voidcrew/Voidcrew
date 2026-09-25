@@ -109,31 +109,13 @@
  * reads. Overridden in voidcrew/edits/materials_market.dm.
  */
 
-/// The order list this market files into. Null means it has nowhere to file an order.
-/// `announce_refusal` is TRUE only on the path that is actually placing one, so the override
-/// can say why it is refusing without spamming that message from every ui_data() tick.
-/obj/machinery/materials_market/proc/get_order_list(announce_refusal = FALSE)
-	return SSshuttle.shopping_list
-
-/// Whether `id_card` may spend a budget here instead of their own money.
-/obj/machinery/materials_market/proc/can_order_on_budget(obj/item/card/id/id_card)
-	return (ACCESS_CARGO in id_card?.GetAccess())
-
-/// Whether an order placed with `id_card` comes out of the buyer's own pocket, which means a
-/// 1.1x surcharge and a crate only their ID can open.
-/obj/machinery/materials_market/proc/ordering_privately(obj/item/card/id/id_card)
-	return ordering_private || !can_order_on_budget(id_card)
-
-/// The account an order placed here is quoted against, and billed to when it is not private.
-/obj/machinery/materials_market/proc/market_account(obj/item/card/id/id_card, is_ordering_private)
-	return is_ordering_private ? id_card?.registered_account : SSeconomy.get_dep_account(ACCOUNT_CAR)
-
 /**
  * Find the order purchased either privately or by cargo budget
  * Arguments
  * * [user][mob] - the user who placed this order
  * * is_ordering_private - is the player ordering privatly. If FALSE it means they are using cargo budget
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/proc/find_order(mob/user, is_ordering_private)
 	for(var/datum/supply_order/order in get_order_list())
 		// Must be a Galactic Materials Market order and payed by the null account(if ordered via cargo budget) or by correct user for private purchase
@@ -144,6 +126,7 @@
 			return order
 	return null
 
+// VOIDCREW EDIT END
 /obj/machinery/materials_market/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!anchored)
@@ -156,6 +139,7 @@
 	. = list()
 	.["CARGO_CRATE_VALUE"] = CARGO_CRATE_VALUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/ui_data(mob/user)
 	. = list()
 
@@ -259,6 +243,8 @@
 	.["canOrderCargo"] = can_buy_via_budget
 	.["updateTime"] = SSstock_market.next_fire - world.time
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/ui_act(action, params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
@@ -389,6 +375,7 @@
 				qdel(current_order)
 				return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/stock_block
 	name = "stock block"
 	desc = "A block of stock. It's worth a certain amount of money, based on a sale on the materials market. Ship it on the cargo shuttle to claim your money."
@@ -421,6 +408,7 @@
 	icon_state = "stock_block_fluid"
 	update_appearance(UPDATE_ICON_STATE)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stock_block/proc/update_value()
 	if(!SSstock_market.materials_prices[export_mat])
 		return
@@ -432,3 +420,4 @@
 
 #undef MAX_STACK_LIMIT
 #undef GALATIC_MATERIAL_ORDER
+// VOIDCREW EDIT END

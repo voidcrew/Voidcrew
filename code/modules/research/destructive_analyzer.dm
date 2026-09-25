@@ -197,6 +197,7 @@
  * Args:
  * id - The techweb ID node that we're meant to unlock if applicable.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/rnd/destructive_analyzer/proc/user_try_decon_id(id)
 	if(QDELETED(loaded_item) || QDELETED(stored_research) || busy || !is_operational || panel_open || disabled)
 		return FALSE
@@ -225,3 +226,4 @@
 
 #undef DESTRUCTIVE_ANALYZER_DESTROY_POINTS
 #undef DESTRUCTIVE_ANALYZER_POWER_USAGE
+// VOIDCREW EDIT END

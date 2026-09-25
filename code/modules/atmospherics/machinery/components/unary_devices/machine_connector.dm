@@ -92,6 +92,7 @@
 /**
  * Called when the machine has been destroyed
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/gas_machine_connector/proc/destroy_connected_machine()
 	SIGNAL_HANDLER
 
@@ -106,6 +107,7 @@
 /**
  * Handles the disconnection from the pipe network
  */
+// VOIDCREW EDIT END
 /datum/gas_machine_connector/proc/disconnect_connector()
 	var/obj/machinery/atmospherics/node = gas_connector.nodes[1]
 	if(node)
