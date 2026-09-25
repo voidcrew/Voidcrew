@@ -360,7 +360,7 @@
 		log_mapping("SSovermap: contested cache template missing, event disabled this round")
 		return
 
-	// Mid-to-dangerous space: the prize should never sit in the safe outer ring.
+	// Mid-to-dangerous space: the prize should never sit in the safe inner ring.
 	var/turf/spawn_turf = get_unused_overmap_square_in_zone_band(pick(ZONE_YELLOW, ZONE_RED))
 	if(!spawn_turf)
 		spawn_turf = get_unused_overmap_square()

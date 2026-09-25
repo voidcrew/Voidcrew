@@ -34,7 +34,7 @@ Some contracts also fail if the thing they are about is destroyed. Recovery-fami
 
 ## Pay and zones
 
-Every contract that points somewhere on the overmap is priced by the zone band its target sits in. Deeper is worth more: a contract in the contested middle band pays roughly 1.7× the outer-ring rate, and one in the lawless deep pays about 2.6×. Contracts in the deep also add an extra trade voucher on top of whatever they already paid.
+Every contract that points somewhere on the overmap is priced by the zone band its target sits in. Farther out is worth more: a contract in the contested middle band pays roughly 1.7× the inner-ring rate, and one in the lawless deep pays about 2.6×. Contracts in the deep also add an extra trade voucher on top of whatever they already paid.
 
 The board labels each offer Easy, Medium, or Hard, and that label is just the zone band restated. A "hard" contract is not a harder puzzle. It is the same job somewhere that will shoot at you.
 

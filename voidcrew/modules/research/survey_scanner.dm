@@ -143,6 +143,17 @@
 		eject_cell(user)
 		return
 
+	toggle_scanning()
+
+// Silicon clicks go to interact()/ui_interact(), which this machine doesn't have, so
+// AIs and cyborgs could never switch it on.
+/obj/machinery/survey_scanner/attack_ai(mob/user)
+	toggle_scanning()
+
+/obj/machinery/survey_scanner/attack_robot(mob/user)
+	attack_ai(user)
+
+/obj/machinery/survey_scanner/proc/toggle_scanning()
 	if(!is_operational)
 		return
 
@@ -333,12 +344,12 @@
  * Design
  */
 /datum/design/board/survey_scanner
-	name = "Survey Scaner Machine Board"
+	name = "Survey Scanner Machine Board"
 	desc = "The Machine Circuit board for a Survey scanner which allows research generation through power."
 	id = "surveyscanner"
 	build_path = /obj/item/circuitboard/machine/survey_scanner
 	category = list(
-		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_RESEARCH,
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_RESEARCH,
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
 

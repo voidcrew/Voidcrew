@@ -56,8 +56,7 @@
 		// from, not a program anyone can print.
 		/datum/design/nanites,
 		// Voidcrew: defective nanite programs are what working programs decay into,
-		// and the heart-stopper is contraband. All of them are reached through nanite
-		// program disks (voidcrew/modules/nanites/code/items/items.dm) rather than
+		// and the heart-stopper is contraband. None of them are reached through
 		// research, which is how the nanite nodes have always been laid out.
 		/datum/design/nanites/glitch,
 		/datum/design/nanites/necrotic,

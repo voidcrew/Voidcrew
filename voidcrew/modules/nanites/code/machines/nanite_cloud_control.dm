@@ -1,6 +1,6 @@
 /obj/machinery/computer/nanite_cloud_controller
-	name = "nanite cloud controller"
-	desc = "Stores and controls nanite cloud backups. Cloud networks are local to the ship this console is aboard: nanites can only join one by having their cloud ID set in a nanite chamber on the same ship, and cloud IDs on other ships are separate networks even if the numbers match."
+	name = "nanite programmer"
+	desc = "Downloads nanite programs from the techweb servers, edits them, and stores and controls nanite cloud backups. Cloud networks are local to the ship this console is aboard: nanites can only join one by having their cloud ID set in a nanite chamber on the same ship, and cloud IDs on other ships are separate networks even if the numbers match."
 	icon = 'voidcrew/modules/nanites/icons/research.dmi'
 	icon_state = "nanite_cloud_controller"
 	circuit = /obj/item/circuitboard/computer/nanite_cloud_controller
@@ -13,9 +13,18 @@
 	var/current_view = 0 //0 is the main menu, any other number is the page of the backup with that ID
 	var/new_backup_id = 1
 	var/datum/techweb/linked_techweb
+	var/detail_view = TRUE //Whether the program list shows program descriptions
+	var/datum/nanite_program/current_program //The program being edited, downloaded from research and uploaded to cloud backups
+
+	COOLDOWN_DECLARE(nanite_programmer)
+
+/obj/machinery/computer/nanite_cloud_controller/Initialize(mapload)
+	. = ..()
+	become_hearing_sensitive()
 
 /obj/machinery/computer/nanite_cloud_controller/Destroy()
 	eject()
+	QDEL_NULL(current_program)
 	QDEL_LIST(cloud_backups) //rip backups
 	unsync_research_servers()
 	return ..()
@@ -24,6 +33,8 @@
 	if(linked_techweb)
 		linked_techweb.connected_machines -= src
 		linked_techweb = null
+		if(!QDELETED(src))
+			update_static_data_for_all_viewers()
 
 /obj/machinery/computer/nanite_cloud_controller/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
@@ -37,6 +48,7 @@
 	unsync_research_servers()
 	linked_techweb = tool.buffer
 	linked_techweb.connected_machines |= src
+	update_static_data_for_all_viewers()
 	say("Linked to Server!")
 	return TRUE
 
@@ -115,43 +127,38 @@
 		ui.open()
 
 /obj/machinery/computer/nanite_cloud_controller/ui_data()
-	validate_research_site(linked_techweb)
 	var/list/data = list()
+	data["has_techweb"] = validate_research_site(linked_techweb)
+	data["has_disk"] = istype(disk)
+	data["has_program"] = istype(current_program)
+	if(current_program)
+		data["name"] = current_program.name
+		data["desc"] = current_program.desc
+		data["use_rate"] = current_program.use_rate
+		data["can_trigger"] = current_program.can_trigger
+		data["trigger_cost"] = current_program.trigger_cost
+		data["trigger_cooldown"] = current_program.trigger_cooldown / 10
 
-	if(disk)
-		data["has_disk"] = TRUE
-		var/list/disk_data = list()
-		var/datum/nanite_program/P = disk.program
-		if(P)
-			data["has_program"] = TRUE
-			disk_data["name"] = P.name
-			disk_data["desc"] = P.desc
-			disk_data["use_rate"] = P.use_rate
-			disk_data["can_trigger"] = P.can_trigger
-			disk_data["trigger_cost"] = P.trigger_cost
-			disk_data["trigger_cooldown"] = P.trigger_cooldown / 10
+		data["activated"] = current_program.activated
+		data["activation_code"] = current_program.activation_code
+		data["deactivation_code"] = current_program.deactivation_code
+		data["kill_code"] = current_program.kill_code
+		data["trigger_code"] = current_program.trigger_code
+		data["timer_restart"] = current_program.timer_restart / 10
+		data["timer_shutdown"] = current_program.timer_shutdown / 10
+		data["timer_trigger"] = current_program.timer_trigger / 10
+		data["timer_trigger_delay"] = current_program.timer_trigger_delay / 10
 
-			disk_data["activated"] = P.activated
-			disk_data["activation_code"] = P.activation_code
-			disk_data["deactivation_code"] = P.deactivation_code
-			disk_data["kill_code"] = P.kill_code
-			disk_data["trigger_code"] = P.trigger_code
-			disk_data["timer_restart"] = P.timer_restart / 10
-			disk_data["timer_shutdown"] = P.timer_shutdown / 10
-			disk_data["timer_trigger"] = P.timer_trigger / 10
-			disk_data["timer_trigger_delay"] = P.timer_trigger_delay / 10
+		var/list/extra_settings = current_program.get_extra_settings_frontend()
+		data["extra_settings"] = extra_settings
+		if(LAZYLEN(extra_settings))
+			data["has_extra_settings"] = TRUE
+		if(istype(current_program, /datum/nanite_program/sensor))
+			var/datum/nanite_program/sensor/sensor = current_program
+			if(sensor.can_rule)
+				data["can_rule"] = TRUE
 
-			var/list/extra_settings = P.get_extra_settings_frontend()
-			disk_data["extra_settings"] = extra_settings
-			if(LAZYLEN(extra_settings))
-				disk_data["has_extra_settings"] = TRUE
-			if(istype(P, /datum/nanite_program/sensor))
-				var/datum/nanite_program/sensor/sensor = P
-				if(sensor.can_rule)
-					disk_data["can_rule"] = TRUE
-		data["disk"] = disk_data
-	else
-		data["has_disk"] = FALSE
+	data["detail_view"] = detail_view
 
 	data["new_backup_id"] = new_backup_id
 
@@ -216,6 +223,31 @@
 		data["cloud_backups"] = backup_list
 	return data
 
+/obj/machinery/computer/nanite_cloud_controller/ui_static_data(mob/user)
+	var/list/data = list()
+	if(!validate_research_site(linked_techweb))
+		data["programs"] = null
+		return data
+
+	data["programs"] = list()
+	for(var/i in linked_techweb.researched_designs)
+		var/datum/design/nanites/D = SSresearch.techweb_design_by_id(i)
+		if(!(D.build_type & NANITE_PROGRAM))
+			continue
+		var/cat_name = D.category[1] //just put them in the first category fuck it
+		if(isnull(data["programs"][cat_name]))
+			data["programs"][cat_name] = list()
+		var/list/program_design = list()
+		program_design["id"] = D.id
+		program_design["name"] = D.name
+		program_design["desc"] = D.desc
+		data["programs"][cat_name] += list(program_design)
+
+	if(!length(data["programs"]))
+		data["programs"] = null
+
+	return data
+
 /obj/machinery/computer/nanite_cloud_controller/ui_act(action, params)
 	. = ..()
 	if(.)
@@ -248,13 +280,13 @@
 				log_game("[key_name(usr)] deleted the nanite cloud backup #[current_view]")
 			. = TRUE
 		if("upload_program")
-			if(disk && disk.program)
+			if(current_program)
 				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 				if(backup)
 					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 50, FALSE)
 					var/datum/component/nanites/nanites = backup.nanites
-					nanites.add_program(null, disk.program.copy())
-					log_game("[key_name(usr)] uploaded program [disk.program.name] to cloud #[current_view]")
+					nanites.add_program(null, current_program.copy())
+					log_game("[key_name(usr)] uploaded program [current_program.name] to cloud #[current_view]")
 			. = TRUE
 		if("remove_program")
 			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
@@ -268,8 +300,8 @@
 				qdel(P)
 			. = TRUE
 		if("add_rule")
-			if(disk && disk.program && istype(disk.program, /datum/nanite_program/sensor))
-				var/datum/nanite_program/sensor/rule_template = disk.program
+			if(istype(current_program, /datum/nanite_program/sensor))
+				var/datum/nanite_program/sensor/rule_template = current_program
 				if(!rule_template.can_rule)
 					return
 				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
@@ -309,6 +341,124 @@
 				P.all_rules_required = !P.all_rules_required
 				log_game("[key_name(usr)] edited rule logic for program [P.name] into [P.all_rules_required ? "All" : "Any"] in cloud #[current_view]")
 				. = TRUE
+		if("store_backup")
+			if(disk)
+				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
+				if(backup)
+					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 25, FALSE)
+					QDEL_LIST(disk.backup)
+					var/datum/component/nanites/nanites = backup.nanites
+					for(var/datum/nanite_program/program as anything in nanites.programs)
+						disk.backup += program.copy()
+			. = TRUE
+		if("load_backup")
+			if(disk)
+				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
+				if(backup)
+					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 25, FALSE)
+					var/datum/component/nanites/nanites = backup.nanites
+					QDEL_LIST(nanites.programs)
+					for(var/datum/nanite_program/program as anything in disk.backup)
+						nanites.add_program(null, program.copy())
+					log_game("[key_name(usr)] loaded a disk backup into cloud #[current_view]")
+			. = TRUE
+		if("download")
+			if(!validate_research_site(linked_techweb))
+				return
+			var/datum/design/nanites/downloaded = linked_techweb.isDesignResearchedID(params["program_id"]) //check if it's a valid design
+			if(!istype(downloaded))
+				return
+			if(current_program)
+				qdel(current_program)
+			current_program = new downloaded.program_type
+			playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 25, FALSE)
+			. = TRUE
+		if("refresh")
+			update_static_data(usr)
+			. = TRUE
+		if("toggle_details")
+			detail_view = !detail_view
+			. = TRUE
+		else
+			if(isnull(params["program_id"]))
+				if(current_program)
+					return edit_program(current_program, action, params)
+				return
+			//Inline edits of a program stored in the open cloud backup
+			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
+			if(!backup)
+				return
+			var/datum/nanite_program/P = get_ui_program(backup.nanites, params["program_id"], usr)
+			if(P && edit_program(P, action, params))
+				log_game("[key_name(usr)] edited program [P.name] in cloud #[current_view] ([action]: [json_encode(params)])")
+				return TRUE
+
+///Handles the UI actions that edit the settings of a program, either the current program or one stored in a cloud backup.
+/obj/machinery/computer/nanite_cloud_controller/proc/edit_program(datum/nanite_program/program, action, params)
+	switch(action)
+		if("toggle_active")
+			playsound(src, "terminal_type", 25, FALSE)
+			program.activated = !program.activated //we don't use the activation procs since we aren't in a mob
+			. = TRUE
+		if("set_code")
+			var/new_code = text2num(params["code"])
+			playsound(src, "terminal_type", 25, FALSE)
+			var/target_code = params["target_code"]
+			switch(target_code)
+				if("activation")
+					program.activation_code = clamp(round(new_code, 1),0,9999)
+				if("deactivation")
+					program.deactivation_code = clamp(round(new_code, 1),0,9999)
+				if("kill")
+					program.kill_code = clamp(round(new_code, 1),0,9999)
+				if("trigger")
+					program.trigger_code = clamp(round(new_code, 1),0,9999)
+			. = TRUE
+		if("set_extra_setting")
+			if(!program.extra_settings[params["target_setting"]])
+				return
+			program.set_extra_setting(params["target_setting"], params["value"])
+			playsound(src, "terminal_type", 25, FALSE)
+			. = TRUE
+		if("set_restart_timer")
+			var/timer = text2num(params["delay"])
+			if(!isnull(timer))
+				playsound(src, "terminal_type", 25, FALSE)
+				timer = clamp(round(timer, 1), 0, 3600)
+				timer *= 10 //convert to deciseconds
+				program.timer_restart = timer
+			. = TRUE
+		if("set_shutdown_timer")
+			var/timer = text2num(params["delay"])
+			if(!isnull(timer))
+				playsound(src, "terminal_type", 25, FALSE)
+				timer = clamp(round(timer, 1), 0, 3600)
+				timer *= 10 //convert to deciseconds
+				program.timer_shutdown = timer
+			. = TRUE
+		if("set_trigger_timer")
+			var/timer = text2num(params["delay"])
+			if(!isnull(timer))
+				playsound(src, "terminal_type", 25, FALSE)
+				timer = clamp(round(timer, 1), 0, 3600)
+				timer *= 10 //convert to deciseconds
+				program.timer_trigger = timer
+			. = TRUE
+		if("set_timer_trigger_delay")
+			var/timer = text2num(params["delay"])
+			if(!isnull(timer))
+				playsound(src, "terminal_type", 25, FALSE)
+				timer = clamp(round(timer, 1), 0, 3600)
+				timer *= 10 //convert to deciseconds
+				program.timer_trigger_delay = timer
+			. = TRUE
+
+/obj/machinery/computer/nanite_cloud_controller/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, list/message_mods = list(), message_range = 0)
+	. = ..()
+	var/static/regex/when = regex("(?:^\\W*when|when\\W*$)", "i") //starts or ends with when
+	if(findtext(raw_message, when) && !istype(speaker, /obj/machinery/computer/nanite_cloud_controller) && COOLDOWN_FINISHED(src, nanite_programmer))
+		say("When you code it!!")
+		COOLDOWN_START(src, nanite_programmer, 5 SECONDS)
 
 /datum/nanite_cloud_backup
 	var/cloud_id = 0

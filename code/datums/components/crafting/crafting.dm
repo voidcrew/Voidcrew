@@ -120,7 +120,7 @@
 	if(!isturf(a.loc))
 		return
 
-	for(var/atom/movable/AM in range(radius_range, a))
+	for(var/atom/movable/AM in expand_slime_extract_piles(range(radius_range, a))) // VOIDCREW EDIT: floor piles remain crafting ingredients.
 		if((AM.flags_1 & HOLOGRAM_1) || (blacklist && (AM.type in blacklist)))
 			continue
 		if(isitem(AM))
@@ -710,7 +710,7 @@
 /datum/component/personal_crafting/machine/get_environment(atom/crafter, list/blacklist = null, radius_range = 1)
 	. = list()
 	var/turf/crafter_loc = get_turf(crafter)
-	for(var/atom/movable/content as anything in crafter_loc.contents)
+	for(var/atom/movable/content as anything in expand_slime_extract_piles(crafter_loc.contents)) // VOIDCREW EDIT: automated crafting can use piled extracts.
 		if((content.flags_1 & HOLOGRAM_1) || (blacklist && (content.type in blacklist)))
 			continue
 		if(isitem(content))

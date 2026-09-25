@@ -4,7 +4,7 @@
 	build_path = /obj/machinery/computer/nanite_chamber_control
 
 /obj/item/circuitboard/computer/nanite_cloud_controller
-	name = "Nanite Cloud Control (Computer Board)"
+	name = "Nanite Programmer (Computer Board)"
 	greyscale_colors = CIRCUIT_COLOR_SCIENCE
 	build_path = /obj/machinery/computer/nanite_cloud_controller
 
@@ -16,23 +16,6 @@
 		/obj/item/stock_parts/scanning_module = 2,
 		/obj/item/stock_parts/micro_laser = 2,
 		/obj/item/stock_parts/servo = 1)
-
-/obj/item/circuitboard/machine/nanite_program_hub
-	name = "Nanite Program Hub (Machine Board)"
-	build_path = /obj/machinery/nanite_program_hub
-	greyscale_colors = CIRCUIT_COLOR_SCIENCE
-	req_components = list(
-		/obj/item/stock_parts/matter_bin = 1,
-		/obj/item/stock_parts/servo = 1)
-
-/obj/item/circuitboard/machine/nanite_programmer
-	name = "Nanite Programmer (Machine Board)"
-	build_path = /obj/machinery/nanite_programmer
-	greyscale_colors = CIRCUIT_COLOR_SCIENCE
-	req_components = list(
-		/obj/item/stock_parts/servo = 2,
-		/obj/item/stock_parts/micro_laser = 2,
-		/obj/item/stock_parts/scanning_module = 1)
 
 /obj/item/circuitboard/machine/public_nanite_chamber
 	name = "Public Nanite Chamber (Machine Board)"

@@ -21,7 +21,7 @@ Your crew's ship must be stationary on an empty overmap tile, away from planets,
 Both include a bank terminal, cargo console, empty ore silo, resident cryopod, management and construction consoles, and a hangar elevator. A charged SMES and portable generator provide starting power. Keep the generator fuelled or build another power supply.
 
 !!! warning "Where you plant it is permanent"
-    Zone rules lock in at founding. An outpost founded in the patrolled outer ring is protected from ship weapons. One founded in contested or lawless space is raidable. You cannot move it later.
+    Zone rules lock in at founding. An outpost founded in the patrolled inner ring is protected from ship weapons. One founded in contested or lawless space is raidable. You cannot move it later.
 
 ## Managing and building
 

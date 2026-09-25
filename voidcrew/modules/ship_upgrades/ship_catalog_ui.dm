@@ -20,6 +20,11 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 /proc/ensure_ship_catalog_initialized()
 	if(GLOB.ship_catalog_initialized)
 		return
+	// Players can open the catalog from the lobby while the server is still starting up.
+	// SSmapping hasn't loaded the shuttle templates yet, and latching now would leave the
+	// catalog empty all round: no hulls for sale and no free or roundstart hulls either.
+	if(!SSmapping.initialized)
+		return
 	GLOB.ship_catalog_initialized = TRUE
 
 	// Build ship catalog from all voidcrew shuttle templates

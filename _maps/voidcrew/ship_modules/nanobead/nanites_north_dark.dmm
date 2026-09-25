@@ -250,7 +250,6 @@
 /obj/structure/extinguisher_cabinet/directional/west,
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
-/obj/machinery/nanite_program_hub,
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /turf/open/floor/iron/dark/smooth_large,
 /area/template_noop)
@@ -271,7 +270,6 @@
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
-/obj/machinery/nanite_programmer,
 /obj/effect/turf_decal/siding/thinplating_new/dark,
 /turf/open/floor/iron/dark/smooth_large,
 /area/template_noop)

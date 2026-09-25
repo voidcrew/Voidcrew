@@ -17,7 +17,7 @@ The interior loads when the first ship arrives and is torn down once everyone le
 
 ## Loot caches
 
-Ruins carry abandoned caches: sealed crates whose contents are rolled from the zone the ruin is sitting in. A cache in the safe outer ring holds modest pickings; the same crate type deep in lawless space holds the good stuff. Some ruins carry a rare variant, which draws from the top of that zone's table.
+Ruins carry abandoned caches: sealed crates whose contents are rolled from the zone the ruin is sitting in. A cache in the safe inner ring holds modest pickings; the same crate type deep in lawless space holds the good stuff. Some ruins carry a rare variant, which draws from the top of that zone's table.
 
 Two things worth knowing:
 

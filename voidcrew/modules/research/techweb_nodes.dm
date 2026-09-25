@@ -144,8 +144,6 @@
 		"nanite_chamber",
 		"public_nanite_chamber",
 		"nanite_chamber_control",
-		"nanite_programmer",
-		"nanite_program_hub",
 		"nanite_cloud_control",
 		"relay_nanites",
 		"monitoring_nanites",

@@ -555,11 +555,36 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /obj/item/construction/rcd/internal/ship/proc/can_build_floor(turf/target)
 	return isspaceturf(target) || ship_console?.can_build_over_hangar(target)
 
+/**
+ * Explicit floor builds also lay a titanium or plastitanium deck over bare ship plating.
+ * Without this the Floor Type picker only ever applied to new hull: "Floors only" did
+ * nothing on existing plating, and Auto raised a wall there instead.
+ */
+/obj/item/construction/rcd/internal/ship/proc/can_refloor(turf/target, floor_path = get_selected_floor_path())
+	if(floor_path == /turf/open/floor/plating || !istype(target, /turf/open/floor/plating) || istype(target, floor_path))
+		return FALSE
+	if(target.resistance_flags & INDESTRUCTIBLE)
+		return FALSE
+	return ship_console?.is_in_shuttle_area(target)
+
+/**
+ * What a floor build costs on this tile. A titanium or plastitanium floor over space or
+ * hangar deck is laid on new plating, and that plating is charged at the Plating price.
+ * Deconstructing the plating refunds iron, so laying it for free was an iron farm.
+ */
+/obj/item/construction/rcd/internal/ship/proc/floor_build_materials(turf/target, floor_path)
+	var/list/materials = get_selected_floor_materials().Copy()
+	if(floor_path != /turf/open/floor/plating && can_build_floor(target))
+		var/list/plating_materials = floor_types["Plating"]["materials"]
+		for(var/material in plating_materials)
+			materials[material] += plating_materials[material]
+	return materials
+
 /// Build a floor of the selected type at the target turf
 /obj/item/construction/rcd/internal/ship/proc/build_floor(turf/target, mob/user)
 	var/floor_path = get_selected_floor_path()
-	var/list/materials = get_selected_floor_materials()
-	if(!can_build_floor(target) || !check_materials(materials, user))
+	var/list/materials = floor_build_materials(target, floor_path)
+	if(!(can_build_floor(target) || can_refloor(target, floor_path)) || !check_materials(materials, user))
 		return FALSE
 
 	var/build_time = SHIP_RCD_FLOOR_BUILD_DELAY * get_build_speed_mod()
@@ -573,19 +598,23 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		return FALSE
 
 	// Double check materials after delay
-	if(!can_build_floor(target) || !use_materials(materials, user))
+	materials = floor_build_materials(target, floor_path)
+	if(!(can_build_floor(target) || can_refloor(target, floor_path)) || !use_materials(materials, user))
 		qdel(rcd_effect)
 		return FALSE
 
-	var/turf/new_floor
+	var/turf/new_floor = target
 	if(isspaceturf(target))
-		new_floor = target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
-	else
+		new_floor = target.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+	else if(ship_console?.can_build_over_hangar(target))
 		// Keep the hangar deck below the ship's plating so undocking exposes it again.
 		// In a breached shuttle area, place_on_top() also restores the shuttle marker.
 		new_floor = target.place_on_top(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
-		if(floor_path != /turf/open/floor/plating)
-			new_floor = new_floor.place_on_top(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	// Titanium and plastitanium decks are tiles laid on plating, as they are anywhere else.
+	// Changing space straight into the finished floor left nothing under the tile, so a
+	// crowbar pried it up into open space and holed the hull.
+	if(floor_path != /turf/open/floor/plating)
+		new_floor = new_floor.place_on_top(floor_path, flags = CHANGETURF_INHERIT_AIR)
 	restamp_hull_marker(new_floor)
 	rcd_effect.end_animation()
 	return TRUE
@@ -974,6 +1003,8 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	var/theme
 	/// Bitflags for console upgrades (RTD, RPD, RLD, etc.)
 	var/console_upgrades = NONE
+	/// Consumed disks to return when the console is dismantled with tools.
+	var/list/installed_upgrade_types = list()
 	/// Internal RTD for tiling (created when upgrade installed)
 	var/obj/item/construction/rtd/internal/internal_rtd
 	/// Internal RPD for piping (created when upgrade installed)
@@ -1028,6 +1059,14 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	QDEL_NULL(internal_painter)
 	tray_connection_images.Cut()
 	return ..()
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/on_deconstruction(disassembled)
+	. = ..()
+	if(!disassembled)
+		return
+	for(var/upgrade_type in installed_upgrade_types)
+		new upgrade_type(drop_location())
+	installed_upgrade_types.Cut()
 
 // ============================================
 // Build Speed Upgrades
@@ -1217,7 +1256,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 				if(!internal_rld.silo_mats)
 					internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
 				link_internal_device(internal_rld, internal_rld.silo_mats, linked_silo)
+		var/upgrade_type = tool.type
 		if(internal_rcd.install_upgrade(tool, user))
+			installed_upgrade_types += upgrade_type
 			balloon_alert(user, "upgrade installed")
 		return ITEM_INTERACT_SUCCESS
 
@@ -1227,7 +1268,11 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 			balloon_alert(user, "no RPD installed!")
 			return ITEM_INTERACT_FAILURE
 		// Use the RPD's own upgrade handling
-		return internal_rpd.interact_with_atom(tool, user)
+		var/upgrade_type = tool.type
+		. = internal_rpd.interact_with_atom(tool, user)
+		if(QDELETED(tool))
+			installed_upgrade_types += upgrade_type
+		return
 
 	// Handle ship construction console upgrades (RTD, RPD, RLD)
 	if(istype(tool, /obj/item/ship_construction_upgrade))
@@ -1281,6 +1326,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 
 		playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
 		balloon_alert(user, "upgrade installed")
+		installed_upgrade_types += upgrade_disk.type
 		qdel(upgrade_disk)
 
 		// Refresh actions to add new upgrade actions

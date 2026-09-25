@@ -1,8 +1,8 @@
 /**
  * # Overmap Zones Subsystem
  *
- * Manages overmap zones, their rotation, and provides lookup functions.
- * Zones rotate in a clock-like pattern, with danger radiating from the center (sun).
+ * Manages static overmap zones and provides lookup functions.
+ * Danger increases outward from the safe inner ring around the sun.
  */
 SUBSYSTEM_DEF(overmap_zones)
 	name = "Overmap Zones"
@@ -94,32 +94,12 @@ SUBSYSTEM_DEF(overmap_zones)
  * Calculates which zone type a turf should belong to based on distance from center
  *
  * The zone system uses concentric rings radiating from the sun:
- * - Inner ring = Red (dangerous, near sun)
+ * - Inner ring = Green (safe, starting area)
  * - Middle ring = Yellow (caution)
- * - Outer ring = Green (safe, edge of map)
+ * - Outer ring = Red (dangerous, edge of map)
  */
 /datum/controller/subsystem/overmap_zones/proc/calculate_zone_for_turf(turf/T)
-	if(!T)
-		return ZONE_GREEN
-
-	// Calculate offset from center (sun)
-	var/dx = T.x - center_x
-	var/dy = T.y - center_y
-
-	// Distance-based concentric rings (roughly equal thirds)
-	var/distance = sqrt(dx * dx + dy * dy)
-	var/normalized = distance / max_radius
-
-	// Inner ring (Red) - dangerous, close to sun
-	if(normalized < 0.33)
-		return ZONE_RED
-
-	// Middle ring (Yellow) - caution zone
-	if(normalized < 0.66)
-		return ZONE_YELLOW
-
-	// Outer ring (Green) - safe, edge of map
-	return ZONE_GREEN
+	return SSovermap.get_zone_band_for_turf(T)
 
 /**
  * Returns the zone datum for a given zone type

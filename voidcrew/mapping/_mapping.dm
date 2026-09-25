@@ -244,8 +244,8 @@
  * SSovermap.setup_planets() then places the planet on an overmap tile inside
  * that band, keeping the pre-generated content honest.
  *
- * Dynamic planets draw from the same pool when setup_planets() places them, so
- * the two supply models can't both crowd into the same ring.
+ * Dynamic planets account for these placements when balancing the remaining
+ * contacts by zone area in SSovermap.setup_planets().
  *
  * Bands are dealt from a reshuffled set of all three, so every round gets at
  * least one planet per band while the ordering stays random.

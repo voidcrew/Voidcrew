@@ -1,0 +1,11 @@
+/datum/unit_test/voidcrew_puzzle_containment/Run()
+	var/turf/tile = run_loc_floor_bottom_left
+	var/obj/structure/puzzle_element/pillar = allocate(/obj/structure/puzzle_element, tile)
+	var/obj/structure/closet/crate/box = allocate(/obj/structure/closet/crate, tile)
+	var/obj/item/screwdriver/tool = allocate(/obj/item/screwdriver, tile)
+	box.open()
+	TEST_ASSERT(!box.insertion_allowed(pillar), "Crates accepted a sliding puzzle piece")
+	TEST_ASSERT(box.close(), "Crate could not close over the puzzle tile")
+	TEST_ASSERT_EQUAL(pillar.loc, tile, "Closing a crate swallowed the puzzle piece")
+	TEST_ASSERT_EQUAL(tool.loc, box, "The containment guard blocked ordinary loot")
+	TEST_ASSERT(!pillar.anchored, "Protecting puzzle pieces prevented normal puzzle movement")

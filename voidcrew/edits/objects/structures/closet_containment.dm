@@ -64,3 +64,8 @@
 /mob/living/proc/block_containment_mousedrop(atom/over, mob/user)
 	SIGNAL_HANDLER
 	return COMPONENT_CANCEL_MOUSEDROP_ONTO
+
+// Puzzle pieces must stay on their grid even when a loot crate closes over them.
+/obj/structure/puzzle_element/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)

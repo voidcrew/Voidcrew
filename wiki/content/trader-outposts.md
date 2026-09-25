@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Outer ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, sundries. Credits only. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, sundries. Credits only. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 
@@ -73,7 +73,7 @@ Quartermain, and only Quartermain, has **rental stash lockers**. Swipe an ID, pa
 
 Every outpost stocks its own selection of charts. Check the destination's band before buying: a chart sold at Halcyon can still send you into the lawless deep.
 
-**Star charts** reveal every contact in a whole zone band at once: 1200 credits for the outer ring, 2400 for the contested band, 2 vouchers for the lawless deep.
+**Star charts** reveal every contact in a whole zone band at once: 1200 credits for the neutral ring, 2400 for the contested band, 2 vouchers for the lawless deep.
 
 **Word on the lanes** costs 1500 credits anywhere. The trader marks one uncharted signal on your helm and names the band it sits in.
 

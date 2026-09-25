@@ -235,6 +235,71 @@
 	TEST_ASSERT_EQUAL(zone.used_slot_count(), slots_before - 1, "Planet teardown did not release its map slot")
 	TEST_ASSERT(!QDELETED(neighbour) && !QDELETED(neighbour_mob), "Planet teardown cleared the neighbouring encounter")
 
+// VOIDCREW EDIT ADDITION START: duct salvage must not survive encounter teardown.
+/datum/unit_test/voidcrew_planet_cleanup_ducts
+	var/site_type = /obj/structure/overmap/planet
+	var/obj/structure/overmap/planet/site
+	var/list/original_turfs = list()
+
+/datum/unit_test/voidcrew_planet_cleanup_ducts/Destroy()
+	if(!QDELETED(site))
+		if(site.mapzone)
+			site.remove_mapzone(throttled = FALSE)
+	for(var/turf/tile as anything in original_turfs)
+		var/list/original = original_turfs[tile]
+		tile = tile.ChangeTurf(original[1], original[2])
+		tile.change_area(get_area(tile), original[3])
+	return ..()
+
+/datum/unit_test/voidcrew_planet_cleanup_ducts/Run()
+	var/turf/first_turf = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	var/turf/second_turf = get_step(first_turf, EAST)
+	var/turf/neighbour_turf = get_step(second_turf, EAST)
+	for(var/turf/tile as anything in list(first_turf, second_turf))
+		original_turfs[tile] = list(tile.type, islist(tile.baseturfs) ? tile.baseturfs.Copy() : tile.baseturfs, get_area(tile))
+	var/datum/map_zone/zone = allocate(/datum/map_zone)
+	zone.z_levels = list(reservation)
+	var/datum/map_footprint/footprint = zone.claim_slot()
+	var/datum/map_footprint/neighbour = zone.claim_slot()
+	TEST_ASSERT(footprint && neighbour, "Could not claim the cleanup and neighbouring slots")
+	footprint.set_rect(first_turf.x, first_turf.y, 2, 1)
+	neighbour.set_rect(neighbour_turf.x, neighbour_turf.y, 1, 1)
+	site = allocate(site_type)
+	site.mapzone = zone
+	site.footprint = footprint
+	var/obj/machinery/duct/first_duct = allocate(/obj/machinery/duct, first_turf)
+	var/obj/machinery/duct/second_duct = allocate(/obj/machinery/duct, second_turf)
+	var/obj/machinery/duct/neighbour_duct = allocate(/obj/machinery/duct, neighbour_turf)
+	var/obj/item/stack/ducts/neighbour_stack = allocate(/obj/item/stack/ducts, neighbour_turf)
+	var/datum/ductnet/network = first_duct.duct
+	TEST_ASSERT(network && second_duct.duct == network, "The cleanup fixture must contain connected ducts")
+	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, first_turf)
+	watcher.forceMove(first_turf)
+
+	site.remove_mapzone(throttled = FALSE)
+	TEST_ASSERT(QDELETED(first_duct) && QDELETED(second_duct), "Encounter teardown left installed ducts behind")
+	TEST_ASSERT(QDELETED(network), "Encounter teardown retained the old duct network")
+	for(var/turf/tile as anything in original_turfs)
+		TEST_ASSERT_NULL(locate(/obj/item/stack/ducts) in tile, "Encounter teardown left duct salvage on [tile]")
+	TEST_ASSERT(!QDELETED(watcher), "Duct cleanup deleted an observer")
+	TEST_ASSERT(!QDELETED(neighbour_duct) && neighbour_duct.loc == neighbour_turf, "Duct cleanup crossed into the neighbouring encounter")
+	TEST_ASSERT(!QDELETED(neighbour_stack), "Duct cleanup deleted the neighbour's loose ducts")
+	TEST_ASSERT(QDELETED(footprint) && !QDELETED(neighbour), "Duct cleanup did not release only its own slot")
+
+	// Normal dismantling must still return a usable duct with its selected colour and layer.
+	neighbour_duct.duct_color = COLOR_RED
+	neighbour_duct.duct_layer = SECOND_DUCT_LAYER
+	qdel(neighbour_stack)
+	neighbour_duct.set_anchored(FALSE)
+	var/obj/item/stack/ducts/salvage = locate() in neighbour_turf
+	TEST_ASSERT_NOTNULL(salvage, "Normal duct dismantling stopped returning salvage")
+	TEST_ASSERT_EQUAL(salvage.duct_color, GLOB.pipe_color_name[COLOR_RED], "Dismantling lost the duct colour")
+	TEST_ASSERT_EQUAL(salvage.duct_layer, GLOB.plumbing_layer_names["[SECOND_DUCT_LAYER]"], "Dismantling lost the duct layer")
+
+/datum/unit_test/voidcrew_planet_cleanup_ducts/empty
+	site_type = /obj/structure/overmap/planet/empty
+// VOIDCREW EDIT ADDITION END
+
 /// A surface charted from orbit is on a clock too - a longer one, until somebody lands.
 /datum/unit_test/voidcrew_planet_cleanup_unvisited
 	var/obj/structure/overmap/planet/site

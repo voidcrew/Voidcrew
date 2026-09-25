@@ -21,8 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - channel: general-coding
-            webhook_secret: DISCORD_PR_GENERAL_CODING_WEBHOOK_URL
           - channel: github
             webhook_secret: DISCORD_PR_GITHUB_WEBHOOK_URL
     steps:

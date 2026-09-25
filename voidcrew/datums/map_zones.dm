@@ -762,6 +762,10 @@
 		for(var/datum/thing in (turf.contents - turf.lighting_object))
 			if(istype(thing, /mob/dead))
 				continue // Match empty() below: preserve observers, including newly released SSD players.
+			// Duct Destroy() otherwise spawns salvage outside this contents snapshot.
+			if(istype(thing, /obj/machinery/duct))
+				var/obj/machinery/duct/duct = thing
+				duct.drop_on_wrench = null
 			qdel(thing)
 			// DO NOT CHECK_TICK HERE. IT CAN CAUSE ITEMS TO GET LEFT BEHIND
 			// THIS IS REALLY IMPORTANT FOR CONSISTENCY. SORRY ABOUT THE LAG SPIKE
@@ -860,6 +864,10 @@
 				continue
 			if(ignored_atoms[AM.type])
 				continue
+			// The raw turf swap below cannot sweep up salvage spawned during Destroy().
+			if(istype(AM, /obj/machinery/duct))
+				var/obj/machinery/duct/duct = AM
+				duct.drop_on_wrench = null
 			qdel(AM)
 
 	// Whole level (cordon included) only for the last tenant out - see clear_reservation()

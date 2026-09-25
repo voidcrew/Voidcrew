@@ -139,8 +139,8 @@
 /datum/ship_upgrade_module/phalanx/lab_nanite
 	id = "phalanx_lab_nanite"
 	name = "Nanite Lab"
-	desc = "The suite the class is named for: nanite chamber and control, cloud \
-		controller, program hub and programmer, purple deck and all."
+	desc = "The suite the class is named for: nanite chamber and control, nanite \
+		programmer, purple deck and all."
 	slot = "phalanx_lab"
 	map_file = "phalanx/phalanx_lab_nanite.dmm"
 	is_default = TRUE

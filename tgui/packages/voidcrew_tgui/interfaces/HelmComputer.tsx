@@ -1702,9 +1702,9 @@ const bandOf = (
   ringMiddle: number,
 ) => {
   const normalized = Math.hypot(tileX - centre, tileY - centre) / maxRadius;
-  if (normalized < ringInner) return 2;
+  if (normalized < ringInner) return 0;
   if (normalized < ringMiddle) return 1;
-  return 0;
+  return 2;
 };
 
 type DriftTile = { x: number; y: number; step: number };
@@ -2248,9 +2248,9 @@ const Chart = () => {
   const centre = chart?.centre ?? Math.round((size + 1) / 2);
   const maxRadius = (size - 1) / 2;
   const rings: [number, string][] = [
-    [maxRadius, '#59b871'],
+    [maxRadius, '#cf4a38'],
     [(chart?.ringMiddle ?? 0.66) * maxRadius, '#d9a230'],
-    [(chart?.ringInner ?? 0.33) * maxRadius, '#cf4a38'],
+    [(chart?.ringInner ?? 0.33) * maxRadius, '#59b871'],
   ];
 
   const vector = DIR_VECTOR[burnDirection];

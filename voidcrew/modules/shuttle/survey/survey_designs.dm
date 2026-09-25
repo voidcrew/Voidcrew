@@ -16,7 +16,7 @@
 	id = "survey_console_board"
 	build_path = /obj/item/circuitboard/computer/survey_shuttle_docker
 	category = list(
-		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_COMPUTER_RESEARCH
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_RESEARCH
 	)
 
 // Allows shuttle docking

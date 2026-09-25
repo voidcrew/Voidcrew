@@ -183,7 +183,6 @@
 	},
 /area/template_noop)
 "pSN" = (
-/obj/machinery/nanite_programmer,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
@@ -282,7 +281,6 @@
 	},
 /area/template_noop)
 "xEg" = (
-/obj/machinery/nanite_program_hub,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},

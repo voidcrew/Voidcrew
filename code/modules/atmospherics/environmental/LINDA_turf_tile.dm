@@ -407,7 +407,7 @@
 
 /turf/open/proc/high_pressure_movements()
 	var/atom/movable/moving_atom
-	for(var/thing in src)
+	for(var/thing in expand_slime_extract_piles(contents)) // VOIDCREW EDIT: piles must not anchor their cores against decompression.
 		moving_atom = thing
 		if (!moving_atom.anchored && !moving_atom.pulledby && moving_atom.last_high_pressure_movement_air_cycle < SSair.times_fired)
 			moving_atom.experience_pressure_difference(pressure_difference, pressure_direction)

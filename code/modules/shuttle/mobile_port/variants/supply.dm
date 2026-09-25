@@ -292,7 +292,7 @@ GLOBAL_LIST_INIT(blacklisted_cargo_types, typecacheof(list(
 	for(var/area/shuttle/shuttle_area as anything in shuttle_areas)
 		for (var/list/zlevel_turfs as anything in shuttle_area.get_zlevel_turf_lists())
 			for(var/turf/shuttle_turf as anything in zlevel_turfs)
-				for(var/atom/movable/exporting_atom in shuttle_turf)
+				for(var/atom/movable/exporting_atom in expand_slime_extract_piles(shuttle_turf.contents)) // VOIDCREW EDIT: sell the extracts, not their anchored floor pile.
 					if(iseyemob(exporting_atom))
 						continue
 					if(exporting_atom.anchored)

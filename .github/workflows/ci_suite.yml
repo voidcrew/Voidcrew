@@ -38,6 +38,12 @@ jobs:
       - name: Validate ship research servers
         run: python -m tools.ci.check_ship_research_servers --github
 
+      - name: Test ship preview freshness check
+        run: python -m unittest tools.ci.test_ship_previews
+
+      - name: Check ship previews match their maps
+        run: python -m tools.ci.check_ship_previews --github
+
       - name: Setup Bun
         uses: ./.github/actions/setup_bun
 

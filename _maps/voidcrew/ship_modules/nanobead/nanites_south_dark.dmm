@@ -28,7 +28,6 @@
 	},
 /area/template_noop)
 "byU" = (
-/obj/machinery/nanite_program_hub,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
@@ -158,7 +157,6 @@
 /turf/template_noop,
 /area/template_noop)
 "jmu" = (
-/obj/machinery/nanite_programmer,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
