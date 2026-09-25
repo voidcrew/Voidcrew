@@ -776,7 +776,7 @@ ADMIN_VERB(spawn_contested_cache_now, R_ADMIN|R_DEBUG, "Overmap: Spawn Contested
 	if(!template)
 		to_chat(user, span_warning("The contested cache map template is not registered."))
 		return
-	// Same placement rule as the natural scheduler: never in the safe outer ring
+	// Same placement rule as the natural scheduler: never in the safe inner ring
 	var/turf/spawn_turf = SSovermap.get_unused_overmap_square_in_zone_band(pick(ZONE_YELLOW, ZONE_RED))
 	if(!spawn_turf)
 		spawn_turf = SSovermap.get_unused_overmap_square()

@@ -68,7 +68,7 @@ GLOBAL_DATUM_INIT(orientation_briefing, /datum/orientation_briefing, new)
 		list(
 			"name" = ZONE_NAME_GREEN,
 			"color" = ZONE_COLOR_GREEN,
-			"summary" = "The outer ring, where every ship starts. Weapons will not fire and nobody can board you.",
+			"summary" = "The inner ring, where every ship starts. Weapons will not fire and nobody can board you.",
 			"rules" = list(
 				"No ship weapons, no boarding, no interdiction",
 				"Nothing out here damages your ship or attacks your crew",
@@ -89,7 +89,7 @@ GLOBAL_DATUM_INIT(orientation_briefing, /datum/orientation_briefing, new)
 		list(
 			"name" = ZONE_NAME_RED,
 			"color" = ZONE_COLOR_RED,
-			"summary" = "The inner ring. Nothing is off limits. Your hull can be shot at, and the ships out here are equipped for it.",
+			"summary" = "The outer ring. Nothing is off limits. Your hull can be shot at, and the ships out here are equipped for it.",
 			"rules" = list(
 				"Ship weapons are live: you can be shot",
 				"PLAYERS CAN KILL YOU FOR NOTHING",

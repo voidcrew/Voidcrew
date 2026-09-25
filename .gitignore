@@ -269,6 +269,8 @@ rust_g64.dll
 
 # Local scratch, never committed
 /_bench_previews/
+# Voidworks preview staging folders, left behind if generation is interrupted
+.voidworks-previews-*/
 /vc/
 /unit_test_run.dme
 wiki/deploy.local.ps1

@@ -442,7 +442,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /**
  * Places The Verdigris on an unused overmap square and starts its status
  * beacon. Mid-to-dangerous space by preference: a raid boss has no business
- * parked in the safe outer ring. Shared by the scheduler and the admin verb.
+ * parked in the safe inner ring. Shared by the scheduler and the admin verb.
  * Returns the site, or null if it could not be placed.
  */
 /proc/surface_lich_lair()

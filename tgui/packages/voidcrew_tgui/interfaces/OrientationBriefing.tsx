@@ -102,7 +102,7 @@ const WelcomeTab = () => {
       </Stack>
       <Box color="label">
         You crew a ship on an overmap. Take contracts, mine, trade and explore;
-        fly further in for better pay and worse odds. The other two tabs cover
+        fly further out for better pay and worse odds. The other two tabs cover
         where you are allowed to go and how to arm the ship.
       </Box>
     </Section>
@@ -137,14 +137,14 @@ const ZonesTab = () => {
         </Box>
       ))}
       <NoticeBox mt={2}>
-        The Deeper in you need to be ready for anything: meteors, radiation storms on
-        planets, hostile crews and worse.
+        Farther out, be ready for meteors, radiation storms on planets, hostile
+        crews and worse.
       </NoticeBox>
     </Section>
   );
 };
 
-/** Why a new crew should not simply fly inward, and what fixes that. */
+/** Why a new crew should not simply fly outward, and what fixes that. */
 const CombatTab = () => {
   const { data } = useBackend<Data>();
   const { research_path, combat_researched, ship_name } = data;
@@ -171,7 +171,7 @@ const CombatTab = () => {
         <NoticeBox danger mt={2}>
           {ship_name ?? 'Your ship'} has no Shuttle Warfare Systems research yet:
           no shields, nothing to shoot back with. Take contracts in the middle
-          ring, earn research points, and stay out of the inner ring until you
+          ring, earn research points, and stay out of the outer ring until you
           are equipped.
         </NoticeBox>
       )}

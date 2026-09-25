@@ -658,7 +658,7 @@
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
 "gG" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
-/obj/structure/window/reinforced/plasma/spawner,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
 "gH" = (
@@ -3338,6 +3338,14 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
+"ME" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/b)
 "MF" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/door/window/left/directional/east,
@@ -4479,7 +4487,7 @@ HP
 dJ
 SB
 SB
-gG
+ME
 HP
 iU
 wk
@@ -4508,10 +4516,10 @@ vF
 Op
 Op
 fr
-Op
+Pt
 Pt
 oM
-Op
+Pt
 fr
 Op
 Op

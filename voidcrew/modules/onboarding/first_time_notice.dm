@@ -72,7 +72,7 @@ GLOBAL_LIST_EMPTY(first_time_notice_pending)
 
 	var/message = {"Looks like this is your first time on this server.
 
-Quick version: this is a /tg/station fork where small crews fly ships around a galaxy map. The outer band of the galaxy is completely safe - nothing out there can attack your ship or your crew, including other players.
+Quick version: this is a /tg/station fork where small crews fly ships around a galaxy map. Every ship starts in the inner ring around the star, which is completely safe - nothing there can attack your ship or your crew, including other players. The farther out you fly, the more dangerous it gets.
 
 One setting worth picking before you play: melee controls. The default is tg-style Combat Mode - press F (or 4) in game to raise or drop your guard. If you prefer the classic Help/Disarm/Grab/Harm intents from other SS13 servers, pick Classic Intents below and use the 1-4 keys to switch intent. You can change this any time under Game Preferences (the "Use Intent System" toggle)."}
 

@@ -7,7 +7,7 @@
 "ab" = (
 /obj/item/trash/semki,
 /obj/item/trash/boritos,
-/obj/item/circuitboard/machine/nanite_programmer,
+/obj/item/circuitboard/computer/nanite_cloud_controller,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/trashcart,
 /obj/structure/cable,
@@ -2640,7 +2640,6 @@
 /obj/machinery/flasher{
 	pixel_y = 23
 	},
-/obj/item/circuitboard/machine/nanite_program_hub,
 /obj/machinery/light{
 	dir = 1
 	},

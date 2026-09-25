@@ -158,7 +158,10 @@
 		return FALSE
 	if(job.kind == "floor")
 		var/obj/item/construction/rcd/internal/ship/rcd = internal_rcd
-		return rcd.can_build_floor(target)
+		if(rcd.can_build_floor(target))
+			return TRUE
+		var/list/floor_info = rcd.floor_types[job.floor_type]
+		return floor_info && rcd.can_refloor(target, floor_info["path"])
 	if(target.resistance_flags & INDESTRUCTIBLE)
 		return FALSE
 	if(job.kind == "tile")

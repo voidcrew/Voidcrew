@@ -6,7 +6,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "d" = (
-/obj/effect/mob_spawn/ghost_role/human/skeleton,
+/obj/effect/mob_spawn/ghost_role/human/skeleton/jungle,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "e" = (

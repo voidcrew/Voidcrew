@@ -2993,7 +2993,7 @@
 /area/shuttle/voidcrew/phalanx/kitchen/c)
 "LE" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
-/obj/structure/window/reinforced/plasma/spawner,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/c)
 "LG" = (
@@ -3114,6 +3114,12 @@
 "Og" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Ok" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant1,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
 "Oq" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -3782,6 +3788,14 @@
 /obj/structure/table/wood/poker,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/dorms/c)
+"VB" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
 "VE" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/structure/displaycase/captain,
@@ -4234,7 +4248,7 @@ ZF
 ze
 mm
 mm
-LE
+VB
 ZF
 ST
 KX
@@ -4263,10 +4277,10 @@ cd
 ZQ
 ZQ
 JO
-bS
+Ok
 Kv
 Jh
-ZQ
+Kv
 JO
 ZQ
 ZQ

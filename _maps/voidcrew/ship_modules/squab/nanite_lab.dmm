@@ -113,7 +113,6 @@
 /turf/open/floor/iron,
 /area/template_noop)
 "lim" = (
-/obj/machinery/nanite_programmer,
 /turf/template_noop,
 /area/template_noop)
 "mwl" = (
@@ -195,7 +194,6 @@
 /turf/open/floor/iron,
 /area/template_noop)
 "vRn" = (
-/obj/machinery/nanite_program_hub,
 /turf/template_noop,
 /area/template_noop)
 "vVP" = (

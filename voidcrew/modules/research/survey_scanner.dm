@@ -143,6 +143,17 @@
 		eject_cell(user)
 		return
 
+	toggle_scanning()
+
+// Silicon clicks go to interact()/ui_interact(), which this machine doesn't have, so
+// AIs and cyborgs could never switch it on.
+/obj/machinery/survey_scanner/attack_ai(mob/user)
+	toggle_scanning()
+
+/obj/machinery/survey_scanner/attack_robot(mob/user)
+	attack_ai(user)
+
+/obj/machinery/survey_scanner/proc/toggle_scanning()
 	if(!is_operational)
 		return
 

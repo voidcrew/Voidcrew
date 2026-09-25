@@ -67,7 +67,8 @@
 	var/building_plating = (ship_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
 
 	// Space and bare hangar deck need ship flooring before walls can be built.
-	if(rcd_mode == RCD_TURF && building_plating && ship_rcd.can_build_floor(target_turf) && ship_console.turf_build_mode != "wall")
+	var/floor_target = ship_rcd.can_build_floor(target_turf) || (ship_console.turf_build_mode == "floor" && ship_rcd.can_refloor(target_turf))
+	if(rcd_mode == RCD_TURF && building_plating && floor_target && ship_console.turf_build_mode != "wall")
 		if(!ship_rcd.build_floor(target_turf, owner))
 			return
 		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
@@ -88,6 +89,7 @@
 
 	// An explicit intent must not fall through to the RCD's floor/wall toggle.
 	if(rcd_mode == RCD_TURF && building_plating && ship_console.turf_build_mode != "auto")
+		remote_eye.balloon_alert(owner, "can't build that here!")
 		return
 
 	// Hull windows: grille and window in one action, paid for out of the silo by recipe

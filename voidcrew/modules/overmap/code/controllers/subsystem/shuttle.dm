@@ -103,7 +103,7 @@
 	var/datum/worldgen_probe/probe = worldgen_begin("ship", "[template_instance.name] theme=[selected_theme?.id || "default"]")
 
 	// Create ship and set template directly as a workaround for Initialize arg passing
-	// Ships spawn in the green zone (outer ring) for safety
+	// Ships spawn in the green zone (inner ring) for safety
 	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
 	var/obj/structure/overmap/ship/ship_to_spawn = new(spawn_loc)
 

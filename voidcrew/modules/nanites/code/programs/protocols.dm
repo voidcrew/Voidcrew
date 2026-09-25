@@ -26,7 +26,7 @@
 	var/max_efficiency = 1000 //Goes up to 2 bonus regen per tick after 16 minutes and 40 seconds
 
 /datum/nanite_program/protocol/factory/on_process()
-	if(!activated || !check_conditions())
+	if(!activated || force_disabled || !check_conditions())
 		factory_efficiency = max(0, factory_efficiency - 5)
 	..()
 

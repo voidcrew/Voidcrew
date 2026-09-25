@@ -183,7 +183,7 @@ The upgrades to the survey console are gated on what you have already surveyed a
 | Superior | 10,000 | 3 planets, 3 electric storms, 3 EMP storms | Wider survey view, structures visible, survey data disks; 1.5× payouts |
 | Elite | 20,000 | 5 planets, 2 asteroid fields, **1 star** | Widest view, lifeforms visible; 2× payouts |
 
-That star is the one at the dead centre of the map, so the elite tier means a run into the [lawless ring](overmap.md) and a minute of holding perfectly still once you are there.
+That star is the one at the dead centre of the map, inside the safe [inner ring](overmap.md). Park on it and hold perfectly still for a minute.
 
 ### Transporters
 

@@ -7,7 +7,7 @@
 	sensor_category = "Hazards"
 
 	/// Chance, per neighbouring tile, that a cluster of this event grows onto it.
-	/// Decays with every step out from the seed - see SSovermap.grow_event_cluster()
+	/// Decays with every step out from the seed - see /datum/overmap_layout/proc/grow_cluster()
 	var/spread_chance = 0
 	/// Most tiles one cluster of this event may cover, the seed tile included. Storms are
 	/// kept small enough to fly around; a nebula is the one thing allowed to be a bank.
@@ -712,7 +712,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * Every nebula carries a harvestable gas: hold still inside one with a nebula
  * ram scoop mounted (see modules/shuttle/engine/gas_harvest.dm) and it feeds
  * the ship's pipenet. Which gas is rolled from the tile's zone band at spawn.
- * The safe outer ring is plasma fuel stops and inert wisps, the deep bands
+ * The safe inner ring is plasma fuel stops and inert wisps, the deep bands
  * carry tritium and the exotics no cargo console sells. Scooping is loud:
  * it blocks and breaks nebula concealment (see ship.dm notify_scoop_activity()),
  * so the fuel stop is also the ambush spot.

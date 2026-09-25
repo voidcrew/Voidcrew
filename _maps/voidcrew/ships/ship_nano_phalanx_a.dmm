@@ -1454,7 +1454,7 @@
 /area/shuttle/voidcrew/phalanx/engineering/a)
 "wb" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
-/obj/structure/window/reinforced/plasma/spawner,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/a)
 "wk" = (
@@ -1519,6 +1519,14 @@
 "xp" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/dorms/a)
+"xE" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/a)
 "xG" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/south,
@@ -3728,7 +3736,7 @@ EH
 ek
 Cu
 Cu
-wb
+xE
 EH
 zy
 wB
@@ -3757,10 +3765,10 @@ Vn
 kz
 kz
 BV
-kz
+vX
 vX
 mF
-kz
+vX
 BV
 kz
 kz

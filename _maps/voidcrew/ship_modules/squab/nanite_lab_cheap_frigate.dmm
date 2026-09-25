@@ -37,7 +37,6 @@
 /turf/open/floor/iron,
 /area/template_noop)
 "cTn" = (
-/obj/machinery/nanite_program_hub,
 /turf/template_noop,
 /area/template_noop)
 "cVc" = (
@@ -86,7 +85,6 @@
 /turf/template_noop,
 /area/template_noop)
 "iAB" = (
-/obj/machinery/nanite_programmer,
 /turf/template_noop,
 /area/template_noop)
 "ljd" = (
