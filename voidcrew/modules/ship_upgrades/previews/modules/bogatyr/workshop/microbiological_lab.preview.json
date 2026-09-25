@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/microbiological_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "bogatyr_workshop_microbiological_lab.png",
+   "src_md5": "0ec6274787a390b02deafed0e58bf2e7",
+   "themes": {
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "bogatyr_workshop_microbiological_lab_nightclub.png",
+     "src_md5": "7379194b08d51428d8892c1d2fe720cc",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,78 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aPp" = (
+/obj/structure/table,
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"aUw" = (
+/obj/structure/table,
+/obj/item/toy/plush/moth{
+	name = "emotional support moth plushie"
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"ceN" = (
+/obj/structure/table,
+/obj/item/storage/medkit/toxin{
+	pixel_y = 8
+	},
+/obj/item/storage/medkit/o2{
+	pixel_y = -1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"dwx" = (
+/obj/structure/table,
+/obj/item/storage/medkit/regular,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"lku" = (
+/obj/structure/sign/poster/random,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"lwS" = (
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"qCe" = (
+/obj/structure/bed,
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"qST" = (
+/obj/structure/bed,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"vue" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"xQR" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"yeA" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+aUw
+yeA
+yeA
+yeA
+dwx
+"}
+(2,1,1) = {"
+lwS
+yeA
+vue
+yeA
+ceN
+"}
+(3,1,1) = {"
+xQR
+qCe
+aPp
+qST
+lku
+"}

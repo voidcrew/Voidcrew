@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/enhanced_engineering_module.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "png": "bogatyr_workshop_enhanced_engineering_module.png",
+   "src_md5": "b2f673ad130ac51fafa1e4436305237d",
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

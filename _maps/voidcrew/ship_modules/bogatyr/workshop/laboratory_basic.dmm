@@ -1,0 +1,108 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cTy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/frame/machine,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"jCh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table_frame,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"mud" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"oPz" = (
+/obj/effect/decal/cleanable/blood/innards,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qov" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"rfb" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"tmy" = (
+/mob/living/basic/blankbody{
+	health = 200;
+	name = "Chief Science Officer"
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"tIz" = (
+/obj/structure/closet/crate/science,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/effect/decal/cleanable/blood,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ujt" = (
+/obj/effect/decal/cleanable/blood/gibs/core,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"upL" = (
+/obj/structure/frame/computer,
+/obj/effect/decal/cleanable/blood/gibs/down,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"vYI" = (
+/obj/effect/decal/cleanable/blood/gibs/up,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wpZ" = (
+/obj/machinery/light/broken{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wTN" = (
+/obj/item/clothing/suit/toggle/labcoat/science,
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ycs" = (
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+vYI
+upL
+mud
+"}
+(2,1,1) = {"
+cTy
+wTN
+rfb
+"}
+(3,1,1) = {"
+wpZ
+qov
+ycs
+"}
+(4,1,1) = {"
+ujt
+tmy
+cTy
+"}
+(5,1,1) = {"
+jCh
+oPz
+tIz
+"}

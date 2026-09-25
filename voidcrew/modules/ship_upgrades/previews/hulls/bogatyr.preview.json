@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "bogatyr": {
+   "height": 20,
+   "png": "ship_bogatyr.png",
+   "slots": {
+    "engineering": [
+     9,
+     1
+    ],
+    "eva_bay": [
+     2,
+     5
+    ],
+    "laboratory": [
+     10,
+     16
+    ],
+    "medical_bay": [
+     14,
+     8
+    ]
+   },
+   "src_md5": "5614cc7edb4942bfebbac44d46a2fe08",
+   "width": 17
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

@@ -1,0 +1,119 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aZc" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"gCj" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/stripes/corner,
+/turf/open/floor/engine,
+/area/template_noop)
+"huX" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"kpE" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"oed" = (
+/obj/structure/table,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"qpH" = (
+/obj/structure/closet/crate/miningcar,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe/drill,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/gps/mining,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"qQx" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"rjp" = (
+/obj/structure/closet/crate/radiation{
+	name = "fuel crate"
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 20
+	},
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"sML" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"vFz" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"vGz" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"yjw" = (
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+
+(1,1,1) = {"
+gCj
+kpE
+kpE
+vFz
+"}
+(2,1,1) = {"
+sML
+yjw
+yjw
+aZc
+"}
+(3,1,1) = {"
+yjw
+yjw
+yjw
+yjw
+"}
+(4,1,1) = {"
+rjp
+yjw
+yjw
+oed
+"}
+(5,1,1) = {"
+qpH
+yjw
+yjw
+oed
+"}
+(6,1,1) = {"
+yjw
+yjw
+yjw
+yjw
+"}
+(7,1,1) = {"
+vGz
+vGz
+huX
+qQx
+"}

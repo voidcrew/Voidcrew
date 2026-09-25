@@ -1,0 +1,64 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"eHS" = (
+/obj/machinery/vending/medical{
+	all_products_free = 1
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"fsm" = (
+/obj/machinery/computer/operating,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"fIT" = (
+/turf/template_noop,
+/area/template_noop)
+"hdG" = (
+/obj/modular_map_connector,
+/obj/machinery/computer/crew{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"hek" = (
+/obj/structure/closet/crate/medical,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"lMs" = (
+/obj/structure/closet/secure_closet/medical3,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"slk" = (
+/obj/machinery/suit_storage_unit/medical,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"sRm" = (
+/obj/item/surgery_tray/full,
+/obj/structure/table/optable,
+/obj/machinery/defibrillator_mount/directional/north,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"umi" = (
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+
+(1,1,1) = {"
+fsm
+umi
+umi
+umi
+hdG
+"}
+(2,1,1) = {"
+sRm
+umi
+umi
+umi
+slk
+"}
+(3,1,1) = {"
+fIT
+eHS
+lMs
+hek
+fIT
+"}

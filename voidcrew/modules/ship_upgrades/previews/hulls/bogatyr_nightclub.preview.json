@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "bogatyr_nightclub": {
+   "height": 20,
+   "png": "ship_bogatyr_nightclub.png",
+   "slots": {
+    "engineering": [
+     9,
+     1
+    ],
+    "eva_bay": [
+     2,
+     5
+    ],
+    "laboratory": [
+     10,
+     16
+    ],
+    "medical_bay": [
+     14,
+     8
+    ]
+   },
+   "src_md5": "90a4d033246cf782c01397870ff94433",
+   "width": 17
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

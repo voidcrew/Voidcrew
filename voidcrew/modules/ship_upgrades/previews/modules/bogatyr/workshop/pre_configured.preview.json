@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/pre_configured.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "bogatyr_workshop_pre_configured.png",
+   "src_md5": "1ce4aafd6c4532f3068bc685d54e454e",
+   "themes": {
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "bogatyr_workshop_pre_configured_nightclub.png",
+     "src_md5": "ae4b521a3f88ee626519704233d7875d",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

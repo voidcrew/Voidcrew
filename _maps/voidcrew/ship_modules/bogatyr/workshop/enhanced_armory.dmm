@@ -1,0 +1,242 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"chn" = (
+/obj/structure/sign/poster/official/twelve_gauge,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"dAL" = (
+/obj/machinery/suit_storage_unit/security,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dQO" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = -7
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 1
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"eMt" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/power/smes,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"gJF" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"gVK" = (
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hpu" = (
+/obj/structure/sign/poster/contraband/syndicate_recruitment{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"hGA" = (
+/obj/machinery/door/airlock/vault{
+	name = "Armory"
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"iRc" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"kZr" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mxD" = (
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -1
+	},
+/obj/item/clothing/under/rank/engineering/engineer,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/clothing/head/utility/welding,
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mzF" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/airlock/vault{
+	name = "Armory"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mSL" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/structure/rack,
+/obj/item/ammo_box/c9mm{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/smgm45,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pom" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"prD" = (
+/obj/structure/window/reinforced/spawner,
+/obj/structure/cable,
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pzi" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pDR" = (
+/obj/structure/rack,
+/obj/item/knife/hunting{
+	pixel_y = 7
+	},
+/obj/item/knife/hunting{
+	pixel_y = -1
+	},
+/obj/item/knife/hunting{
+	pixel_y = -9
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qrj" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/window/reinforced/spawner,
+/obj/structure/cable,
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/obj/machinery/power/rtg/advanced,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qtb" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sge" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"usR" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 1
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/template_noop)
+"uwU" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vBA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vIw" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+iRc
+chn
+iRc
+hpu
+iRc
+iRc
+mzF
+qrj
+usR
+"}
+(2,1,1) = {"
+iRc
+dQO
+pDR
+kZr
+sge
+mSL
+pzi
+mxD
+gJF
+"}
+(3,1,1) = {"
+hGA
+qtb
+uwU
+vBA
+pzi
+pzi
+pzi
+prD
+gJF
+"}
+(4,1,1) = {"
+iRc
+dAL
+dAL
+dAL
+gVK
+pom
+pzi
+eMt
+gJF
+"}
+(5,1,1) = {"
+iRc
+iRc
+iRc
+iRc
+iRc
+iRc
+iRc
+iRc
+vIw
+"}

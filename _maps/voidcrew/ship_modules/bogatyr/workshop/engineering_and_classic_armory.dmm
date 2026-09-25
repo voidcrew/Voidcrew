@@ -1,0 +1,257 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bfw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/template_noop)
+"dYU" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/obj/machinery/door/window{
+	dir = 1
+	},
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/plating,
+/area/template_noop)
+"exA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/plating,
+/area/template_noop)
+"ePt" = (
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -1
+	},
+/obj/item/clothing/under/rank/engineering/engineer,
+/obj/item/clothing/gloves/color/yellow,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/obj/item/clothing/head/utility/welding,
+/turf/open/floor/plating,
+/area/template_noop)
+"eYo" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"gCW" = (
+/turf/template_noop,
+/area/template_noop)
+"gNL" = (
+/obj/structure/sign/poster/official/twelve_gauge,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"gWB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"hzf" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/melee/chainofcommand,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"icz" = (
+/obj/machinery/door/airlock/vault{
+	name = "Armory"
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"imp" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"jzz" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"jNA" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 1
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/template_noop)
+"jOk" = (
+/obj/structure/rack,
+/obj/item/knife/hunting{
+	pixel_y = -1
+	},
+/obj/item/knife/hunting{
+	pixel_y = 7
+	},
+/obj/item/knife/hunting{
+	pixel_y = -9
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kLp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"kZu" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 8
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = -7
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"lxr" = (
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"lJI" = (
+/obj/structure/sign/poster/contraband/syndicate_recruitment{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"oOM" = (
+/obj/structure/sign/poster/random,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"pmE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"shR" = (
+/obj/structure/rack,
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ssG" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	name = "\improper TOZ-1"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sTI" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"tKL" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/suit_storage_unit/security,
+/obj/machinery/light/small,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"uLE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"wKM" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -7;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+imp
+gNL
+imp
+lJI
+imp
+imp
+bfw
+kLp
+jNA
+"}
+(2,1,1) = {"
+imp
+ssG
+wKM
+jOk
+imp
+lxr
+gWB
+dYU
+eYo
+"}
+(3,1,1) = {"
+icz
+uLE
+jzz
+tKL
+oOM
+exA
+pmE
+dYU
+eYo
+"}
+(4,1,1) = {"
+imp
+shR
+kZu
+hzf
+imp
+sTI
+ePt
+dYU
+eYo
+"}
+(5,1,1) = {"
+imp
+imp
+imp
+imp
+imp
+imp
+imp
+imp
+gCW
+"}

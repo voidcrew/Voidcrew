@@ -1,0 +1,869 @@
+{
+  "Rosters": {
+    "module/engineering_basic": [
+      {
+        "ID": "job_8",
+        "Name": "Engines Guy",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_8",
+        "BaseOutfit": "/datum/outfit/job/engineer/syndicate",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": {},
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/enhanced_armory": [
+      {
+        "ID": "job_4",
+        "Name": "Engineer",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_4",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "uniform": "/obj/item/clothing/under/syndicate/camo"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      },
+      {
+        "ID": "job_29",
+        "Name": "Enforcer",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_29",
+        "BaseOutfit": "/datum/outfit/job/security/corporate",
+        "Category": "Security",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch",
+          "head": "/obj/item/clothing/head/costume/ushanka",
+          "suit_store": "",
+          "uniform": "/obj/item/clothing/under/syndicate/camo"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/enhanced_engineering_module": [
+      {
+        "ID": "job_33",
+        "Name": "Engineer",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_33",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "uniform": "/obj/item/clothing/under/syndicate/camo"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      },
+      {
+        "ID": "job_34",
+        "Name": "Enforcer",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_34",
+        "BaseOutfit": "/datum/outfit/job/security/corporate",
+        "Category": "Security",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch",
+          "head": "/obj/item/clothing/head/costume/ushanka",
+          "suit_store": "",
+          "uniform": "/obj/item/clothing/under/syndicate/camo"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/eva_bay_basic": [
+      {
+        "ID": "job_5",
+        "Name": "Guy Given a Pickaxe",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_5",
+        "BaseOutfit": "/datum/outfit/job/miner/equipped",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": {
+          "r_pocket": ""
+        },
+        "Backpack": {
+          "/obj/item/knife/combat/survival": 1
+        },
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/laboratory_basic": [
+      {
+        "ID": "",
+        "Name": "Lab Specialist",
+        "Outfit": "/datum/outfit/job/scientist",
+        "BaseOutfit": "",
+        "Category": "Science",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/medical_bay_basic": [
+      {
+        "ID": "",
+        "Name": "New job",
+        "Outfit": "/datum/outfit/job/doctor",
+        "BaseOutfit": "",
+        "Category": "Medical",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/microbiological_lab": [
+      {
+        "ID": "job_2",
+        "Name": "Plauge Master",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_2",
+        "BaseOutfit": "/datum/outfit/centcom/ert/marine/medic",
+        "Category": "Medical",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "ears": "/obj/item/radio/headset",
+          "gloves": "/obj/item/clothing/gloves/latex/nitrile",
+          "head": "",
+          "id": "/obj/item/card/id/advanced",
+          "suit": "",
+          "suit_store": ""
+        },
+        "Backpack": {
+          "/obj/item/storage/medkit/regular": 1
+        },
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/mining_bay": [
+      {
+        "ID": "",
+        "Name": "Specialized Miner",
+        "Outfit": "/datum/outfit/job/miner/equipped",
+        "BaseOutfit": "",
+        "Category": "Cargo",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/pre_configured": [
+      {
+        "ID": "",
+        "Name": "Scientist",
+        "Outfit": "/datum/outfit/job/scientist",
+        "BaseOutfit": "",
+        "Category": "Science",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "module/surgical_suite": [
+      {
+        "ID": "",
+        "Name": "Real Doctor",
+        "Outfit": "/datum/outfit/job/doctor",
+        "BaseOutfit": "",
+        "Category": "Medical",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "theme/freshen_up": [
+      {
+        "ID": "",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/captain",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      },
+      {
+        "ID": "",
+        "Name": "Pomoshchnik",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 4,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "theme/nightclub": [
+      {
+        "ID": "job_10",
+        "Name": "The DJ",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_10",
+        "BaseOutfit": "/datum/outfit/job/captain",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "belt": "/obj/item/modular_computer/pda/clear",
+          "glasses": "/obj/item/clothing/glasses/sunglasses/reagent",
+          "gloves": "/obj/item/clothing/gloves/combat",
+          "id": "/obj/item/card/id/advanced/rainbow",
+          "neck": "/obj/item/bedsheet/cosmos",
+          "shoes": "/obj/item/clothing/shoes/wheelys"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      },
+      {
+        "ID": "job_15",
+        "Name": "Clubber",
+        "Outfit": "/datum/outfit/job/workshop_bogatyr_job_15",
+        "BaseOutfit": "/datum/outfit/job/assistant",
+        "Category": "Assistant",
+        "Slots": 20,
+        "Officer": false,
+        "Equipment": {
+          "belt": "/obj/item/modular_computer/pda/clear",
+          "glasses": "/obj/item/clothing/glasses/sunglasses/gar/orange",
+          "head": "/obj/item/clothing/head/wig/random",
+          "id": "/obj/item/card/id/advanced/rainbow",
+          "mask": "/obj/item/cigarette/rollie/cannabis",
+          "neck": "/obj/item/bedsheet/cosmos",
+          "shoes": "/obj/item/clothing/shoes/sneakers/random",
+          "suit_store": "/obj/item/reagent_containers/cup/soda_cans/random",
+          "uniform": "/obj/item/clothing/under/color/random"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ],
+    "theme/trashed": [
+      {
+        "ID": "",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/captain",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      },
+      {
+        "ID": "",
+        "Name": "Pomoshchnik",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 4,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": {}
+      }
+    ]
+  },
+  "ModuleThemes": {
+    "engineering_basic": {
+      "freshen_up": [
+        {
+          "ID": "job_11",
+          "Name": "Engineer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_11",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        },
+        {
+          "ID": "job_12",
+          "Name": "Enforcer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_12",
+          "BaseOutfit": "/datum/outfit/job/security/corporate",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch",
+            "head": "/obj/item/clothing/head/costume/ushanka",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_13",
+          "Name": "Lights and Sounds Guy",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_13",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "/obj/item/modular_computer/pda/clear",
+            "glasses": "/obj/item/clothing/glasses/sunglasses/gar",
+            "id": "/obj/item/card/id/advanced/rainbow",
+            "mask": "/obj/item/cigarette/rollie/cannabis",
+            "neck": "/obj/item/bedsheet/cosmos",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        },
+        {
+          "ID": "job_14",
+          "Name": "The Bouncer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_14",
+          "BaseOutfit": "/datum/outfit/job/security/corporate",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "/obj/item/modular_computer/pda/clear",
+            "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch",
+            "head": "/obj/item/clothing/head/costume/ushanka",
+            "id": "/obj/item/card/id/advanced/rainbow",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_1",
+          "Name": "Engineer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_1",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        },
+        {
+          "ID": "job_3",
+          "Name": "Enforcer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_3",
+          "BaseOutfit": "/datum/outfit/job/security/corporate",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch",
+            "head": "/obj/item/clothing/head/costume/ushanka",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "enhanced_engineering_module": {
+      "freshen_up": [
+        {
+          "ID": "job_37",
+          "Name": "Engineer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_37",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": {
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_36",
+          "Name": "Engineer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_36",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": {
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_35",
+          "Name": "Engineer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_35",
+          "BaseOutfit": "/datum/outfit/job/engineer",
+          "Category": "Engineering",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": {
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "eva_bay_basic": {
+      "freshen_up": [
+        {
+          "ID": "job_23",
+          "Name": "Guy Given a Pickaxe",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_23",
+          "BaseOutfit": "/datum/outfit/job/miner/equipped",
+          "Category": "Cargo",
+          "Slots": 3,
+          "Officer": false,
+          "Equipment": {
+            "r_pocket": ""
+          },
+          "Backpack": {
+            "/obj/item/knife/combat/survival": 1
+          },
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_24",
+          "Name": "Guy Given a Pickaxe",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_24",
+          "BaseOutfit": "/datum/outfit/job/miner/equipped",
+          "Category": "Cargo",
+          "Slots": 3,
+          "Officer": false,
+          "Equipment": {
+            "r_pocket": ""
+          },
+          "Backpack": {
+            "/obj/item/knife/combat/survival": 1
+          },
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_22",
+          "Name": "Guy Given a Pickaxe",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_22",
+          "BaseOutfit": "/datum/outfit/job/miner/equipped",
+          "Category": "Cargo",
+          "Slots": 3,
+          "Officer": false,
+          "Equipment": {
+            "r_pocket": ""
+          },
+          "Backpack": {
+            "/obj/item/knife/combat/survival": 1
+          },
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "laboratory_basic": {
+      "freshen_up": [
+        {
+          "ID": "job_25",
+          "Name": "Lab Specialist",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_25",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_26",
+          "Name": "Lab Specialist",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_26",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_6",
+          "Name": "Lab Specialist",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_6",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "medical_bay_basic": {
+      "freshen_up": [
+        {
+          "ID": "job_27",
+          "Name": "Street Doctor",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_27",
+          "BaseOutfit": "/datum/outfit/job/doctor",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "l_hand": "",
+            "suit": "",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_28",
+          "Name": "Street Doctor",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_28",
+          "BaseOutfit": "/datum/outfit/job/doctor",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "l_hand": "",
+            "suit": "",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_9",
+          "Name": "Street Doctor",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_9",
+          "BaseOutfit": "/datum/outfit/job/doctor",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "l_hand": "",
+            "suit": "",
+            "suit_store": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "microbiological_lab": {
+      "freshen_up": [
+        {
+          "ID": "job_18",
+          "Name": "Plauge Master",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_18",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_19",
+          "Name": "Plauge Master",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_19",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_16",
+          "Name": "Plauge Master",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_16",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "mining_bay": {
+      "freshen_up": [
+        {
+          "ID": "",
+          "Name": "Radioactive Liquidator",
+          "Outfit": "/datum/outfit/job/miner/equipped",
+          "BaseOutfit": "",
+          "Category": "Cargo",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "",
+          "Name": "Specialized Drug Smuggler",
+          "Outfit": "/datum/outfit/job/miner/equipped",
+          "BaseOutfit": "",
+          "Category": "Cargo",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "",
+          "Name": "Radioactive Liquidator",
+          "Outfit": "/datum/outfit/job/miner/equipped",
+          "BaseOutfit": "",
+          "Category": "Cargo",
+          "Slots": 2,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "pre_configured": {
+      "freshen_up": [
+        {
+          "ID": "job_31",
+          "Name": "Professional Researcher",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_31",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_32",
+          "Name": "Professional Researcher",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_32",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_7",
+          "Name": "Professional Researcher",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_7",
+          "BaseOutfit": "/datum/outfit/job/scientist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/science/robotics",
+            "uniform": "/obj/item/clothing/under/syndicate/camo"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    },
+    "surgical_suite": {
+      "freshen_up": [
+        {
+          "ID": "job_20",
+          "Name": "Surgical Officer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_20",
+          "BaseOutfit": "/datum/outfit/job/paramedic/syndicate/gorlex",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "",
+            "suit_store": ""
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "nightclub": [
+        {
+          "ID": "job_21",
+          "Name": "O.D Watch",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_21",
+          "BaseOutfit": "/datum/outfit/job/paramedic/syndicate/gorlex",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "",
+            "suit_store": ""
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ],
+      "trashed": [
+        {
+          "ID": "job_17",
+          "Name": "Surgical Officer",
+          "Outfit": "/datum/outfit/job/workshop_bogatyr_job_17",
+          "BaseOutfit": "/datum/outfit/job/paramedic/syndicate/gorlex",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "",
+            "suit_store": ""
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": {}
+        }
+      ]
+    }
+  }
+}

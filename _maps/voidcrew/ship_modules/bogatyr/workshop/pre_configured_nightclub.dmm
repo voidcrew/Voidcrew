@@ -1,0 +1,81 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ayv" = (
+/obj/machinery/computer/rdconsole,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"bsA" = (
+/obj/machinery/rnd/production/circuit_imprinter,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"gGf" = (
+/obj/item/computer_disk/ship_disk,
+/obj/structure/frame/machine/secured,
+/obj/item/screwdriver,
+/obj/item/stock_parts/scanning_module,
+/obj/item/multitool,
+/obj/item/circuitboard/machine/rdserver/ship,
+/obj/item/stack/cable_coil/five,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"hzv" = (
+/obj/machinery/rnd/production/protolathe,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"hQX" = (
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"lEz" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"mJo" = (
+/obj/structure/table,
+/obj/item/experi_scanner,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"nCe" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"szy" = (
+/obj/structure/closet/crate/science,
+/obj/item/stack/sheet/iron{
+	amount = 15
+	},
+/obj/item/stack/sheet/glass{
+	amount = 30
+	},
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"xSJ" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/fishing,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+bsA
+hQX
+lEz
+"}
+(2,1,1) = {"
+ayv
+hQX
+hQX
+"}
+(3,1,1) = {"
+hzv
+hQX
+mJo
+"}
+(4,1,1) = {"
+gGf
+hQX
+nCe
+"}
+(5,1,1) = {"
+szy
+hQX
+xSJ
+"}

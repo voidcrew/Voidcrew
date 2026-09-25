@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/enhanced_armory.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "png": "bogatyr_workshop_enhanced_armory.png",
+   "src_md5": "6dcedb2f190924038d93988adf08be3d",
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

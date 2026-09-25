@@ -1,0 +1,64 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"fHt" = (
+/turf/template_noop,
+/area/template_noop)
+"fPe" = (
+/obj/structure/closet/crate/medical,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"khk" = (
+/obj/modular_map_connector,
+/obj/machinery/computer/crew{
+	dir = 1
+	},
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"mmT" = (
+/obj/machinery/suit_storage_unit/medical,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"nFn" = (
+/obj/structure/closet/secure_closet/medical3,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"tPp" = (
+/obj/item/surgery_tray/full,
+/obj/structure/table/optable,
+/obj/machinery/defibrillator_mount/directional/north,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"uuz" = (
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"vXI" = (
+/obj/machinery/computer/operating,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"wIO" = (
+/obj/machinery/vending/medical{
+	all_products_free = 1
+	},
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+
+(1,1,1) = {"
+vXI
+uuz
+uuz
+uuz
+khk
+"}
+(2,1,1) = {"
+tPp
+uuz
+uuz
+uuz
+mmT
+"}
+(3,1,1) = {"
+fHt
+wIO
+nFn
+fPe
+fHt
+"}

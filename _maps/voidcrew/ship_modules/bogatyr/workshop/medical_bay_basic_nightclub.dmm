@@ -1,0 +1,80 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cnt" = (
+/obj/structure/bed,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"cBn" = (
+/obj/structure/bed,
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"dbh" = (
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"dsC" = (
+/obj/structure/sign/poster/random,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"ieo" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"kQi" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"ltb" = (
+/obj/structure/table,
+/obj/item/storage/medkit/regular,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"lUG" = (
+/obj/structure/table,
+/obj/item/toy/plush/moth{
+	name = "emotional support moth plushie"
+	},
+/obj/item/storage/pill_bottle/happy,
+/obj/item/storage/pill_bottle/lsd,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"qrb" = (
+/obj/structure/table,
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"qVm" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"wrk" = (
+/obj/structure/table,
+/obj/item/storage/medkit/toxin{
+	pixel_y = 8
+	},
+/obj/item/storage/medkit/o2{
+	pixel_y = -1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+lUG
+ieo
+ieo
+ieo
+ltb
+"}
+(2,1,1) = {"
+dbh
+ieo
+qVm
+ieo
+wrk
+"}
+(3,1,1) = {"
+kQi
+cBn
+qrb
+cnt
+dsC
+"}
