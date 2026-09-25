@@ -13,3 +13,5 @@ Increase `voidworks_api` by one when a change here breaks what Voidworks reads o
 - planet and ruin definitions that the Planet and Ruin Workshops edit
 
 Release a Voidworks version that understands the new number at the same time, so mappers are not left without a working editor.
+
+CI posts a warning (never a failure) on PRs that change the files declaring what Voidworks reads, listed in `tools/ci/check_voidworks_compat.py`, without touching `compatibility.json`. Most such changes are compatible; the warning only asks you to check.

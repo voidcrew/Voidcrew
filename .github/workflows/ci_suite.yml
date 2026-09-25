@@ -26,6 +26,16 @@ jobs:
       - name: Install map parser dependency
         run: python -m pip install bidict==0.22.0
 
+      - name: Test Voidworks compatibility reminder
+        run: python -m unittest tools.ci.test_voidworks_compat
+
+      - name: Remind about Voidworks compatibility
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename' | python -m tools.ci.check_voidworks_compat --github
+
       - name: Test ship asset validation
         run: python -m unittest tools.ci.test_ship_assets
 
