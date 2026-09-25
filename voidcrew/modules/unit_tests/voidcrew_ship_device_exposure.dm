@@ -168,6 +168,75 @@
 		raised_walls -= tile
 		tile.ChangeTurf(original[1], original[2])
 
+/// Count owner lookups so repeated UI/firing queries cannot quietly become fleet scans again.
+/obj/machinery/ship_combat/laser_turret/exposure_cache_test
+	var/exposure_lookups = 0
+
+/obj/machinery/ship_combat/laser_turret/exposure_cache_test/get_exposure_port()
+	exposure_lookups++
+	return ..()
+
+/datum/unit_test/voidcrew_ship_device_exposure/cache/run_cases()
+	set_hull(1, 3, 1, 5)
+	var/obj/machinery/ship_combat/laser_turret/exposure_cache_test/turret = allocate(/obj/machinery/ship_combat/laser_turret/exposure_cache_test, room_tile(3, 3))
+	turret.connect_to_shuttle(FALSE, port)
+	TEST_ASSERT(turret.is_on_exterior(), "the initial exposure check failed")
+	TEST_ASSERT_EQUAL(turret.exposure_lookups, 1, "initial exposure must look up the port once")
+	var/deadline = turret.exterior_cache_until
+	TEST_ASSERT(deadline > world.time && deadline <= world.time + 30, "cache age must stay within three seconds")
+
+	// Model 70 viewers asking readiness and status several times in the same update.
+	for(var/query in 1 to 210)
+		TEST_ASSERT(turret.is_on_exterior(), "a cached exposed result changed")
+	TEST_ASSERT_EQUAL(turret.exposure_lookups, 1, "cache hits must not look up the ship")
+	TEST_ASSERT_EQUAL(turret.exterior_cache_until, deadline, "viewers must not postpone rechecks")
+
+	var/obj/machinery/door/poddoor/shutter = allocate(/obj/machinery/door/poddoor, get_turf(turret))
+	turret.exterior_cache_until = world.time
+	TEST_ASSERT(!turret.is_on_exterior(), "an expired exposure result ignored a closed door")
+	TEST_ASSERT_EQUAL(turret.exposure_lookups, 2, "expiry must perform one new lookup")
+	for(var/query in 1 to 210)
+		TEST_ASSERT(!turret.is_on_exterior(), "a cached blocked result changed")
+	TEST_ASSERT_EQUAL(turret.exposure_lookups, 2, "blocked results must also skip ship lookups")
+	TEST_ASSERT(turret.is_on_exterior(TRUE), "auto-link placement must bypass the door-aware cache")
+	TEST_ASSERT(!turret.is_on_exterior(), "auto-link placement poisoned the firing cache")
+	qdel(shutter)
+	turret.invalidate_exterior_cache()
+	TEST_ASSERT(turret.is_on_exterior(), "invalidating the cache did not restore a cleared weapon")
+
+	// The bare fixture port is not in simulated_ships: this can only succeed by
+	// reusing the validated weakref, even when the exposure result has expired.
+	TEST_ASSERT_EQUAL(turret.get_exposure_port(), port, "the owning port was not cached")
+	turret.forceMove(room_tile(5, 3))
+	TEST_ASSERT_NULL(turret.get_exposure_port(), "a weapon moved off the hull retained its old owner")
+	TEST_ASSERT_NULL(turret.exposure_port_ref, "an invalid owner weakref was retained")
+	turret.forceMove(room_tile(3, 3))
+	turret.connect_to_shuttle(FALSE, port)
+	TEST_ASSERT_EQUAL(turret.exterior_cache_until, 0, "ship connection must invalidate exposure")
+	TEST_ASSERT_EQUAL(turret.get_exposure_port(), port, "ship connection did not restore the owner")
+
+	var/obj/machinery/power/shuttle_engine/ship/void/engine = allocate(/obj/machinery/power/shuttle_engine/ship/void, room_tile(2, 3))
+	engine.connect_to_shuttle(FALSE, port)
+	engine.exhaust_recheck_phase = turret.exterior_recheck_phase
+	engine.update_engine()
+	turret.is_on_exterior()
+	TEST_ASSERT_EQUAL(engine.exhaust_recheck_at, turret.exterior_cache_until, "engines and weapons must use the same phase schedule")
+	qdel(engine)
+	qdel(port, force = TRUE)
+	port = null
+	TEST_ASSERT_NULL(turret.get_exposure_port(), "a deleted port was returned from the cache")
+	TEST_ASSERT_NULL(turret.exposure_port_ref, "a deleted port's weakref was retained")
+
+/datum/unit_test/voidcrew_ship_exposure_recheck_phases/Run()
+	var/list/deadlines = list()
+	// Fork defines compile after tests: 30 is SHIP_EXPOSURE_RECHECK_TIME in deciseconds.
+	for(var/phase in 0 to 29)
+		var/deadline = ship_exposure_next_recheck(phase)
+		TEST_ASSERT(deadline > world.time && deadline <= world.time + 30, "a phase exceeded the maximum cache age")
+		TEST_ASSERT(!(deadline in deadlines), "different phases must not all expire together")
+		deadlines += deadline
+		TEST_ASSERT_EQUAL(ship_exposure_next_recheck(phase), deadline, "a device's phase must remain stable across queries")
+
 /**
  * # Every mapped weapon and thruster on the fleet can reach open space
  *

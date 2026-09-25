@@ -62,6 +62,8 @@
 	var/exhaust_blocked = FALSE
 	///world.time until which exhaust_blocked is trusted. 0 forces a recheck.
 	var/exhaust_recheck_at = 0
+	/// Stable phase within the exposure recheck cycle, chosen on first use.
+	var/exhaust_recheck_phase
 
 	///Icon when the machine is screwdrivered open, takes priority over the other two
 	var/icon_state_open = "burst_plasma_open"
@@ -133,7 +135,9 @@
 	if(istype(voidcrew_port) && voidcrew_port.move_in_flight())
 		return !exhaust_blocked
 	exhaust_blocked = !ship_device_exposed_to_space(src, port)
-	exhaust_recheck_at = world.time + SHIP_EXPOSURE_RECHECK_TIME
+	if(isnull(exhaust_recheck_phase))
+		exhaust_recheck_phase = rand(0, SHIP_EXPOSURE_RECHECK_TIME - 1)
+	exhaust_recheck_at = ship_exposure_next_recheck(exhaust_recheck_phase)
 	return !exhaust_blocked
 
 /obj/machinery/power/shuttle_engine/ship/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)

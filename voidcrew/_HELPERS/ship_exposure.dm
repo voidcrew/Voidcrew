@@ -1,3 +1,10 @@
+/// Next deadline on a device's stable phase of the recheck cycle.
+/// Initial checks still run immediately; later checks spread across the cycle instead
+/// of every device queried by the same UI or burn expiring together. Never extends
+/// the cache beyond SHIP_EXPOSURE_RECHECK_TIME, including after a late query.
+/proc/ship_exposure_next_recheck(phase)
+	return world.time + SHIP_EXPOSURE_RECHECK_TIME - ((world.time + phase) % SHIP_EXPOSURE_RECHECK_TIME)
+
 /**
  * Whether a ship device (weapon mount, thruster) has a clear line out to open space.
  *
