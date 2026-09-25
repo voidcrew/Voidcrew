@@ -321,7 +321,7 @@
 	TEST_ASSERT(lathe.multitool_act(steward, tool), "Home protolathe could not link its local disk")
 	var/datum/design/design = SSresearch.techweb_design_by_id("cable_coil")
 	local_server.stored_research.add_design_by_id(design.id)
-	lathe.update_designs()
+	UNLINT(lathe.update_designs())
 	TEST_ASSERT(design in lathe.cached_designs, "Home fabrication did not receive local designs")
 	var/obj/machinery/ore_silo/silo
 	for(var/turf/floor in home.outpost_area)

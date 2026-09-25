@@ -77,10 +77,10 @@
 	trial.shard.attack_self(user, list())
 	TEST_ASSERT(trial.revealed && !trial.echo.invisibility, "The second actual bearing must reveal the echo.")
 	user.forceMove(get_step(trial.echo, NORTH))
-	TEST_ASSERT(trial.echo.base_item_interaction(user, trial.shard, list()) & ITEM_INTERACT_SUCCESS, "Touching the echo with the held shard must finish its real recovery channel.")
+	TEST_ASSERT(trial.echo.vc_test_base_item_interaction(user, trial.shard, list()) & ITEM_INTERACT_SUCCESS, "Touching the echo with the held shard must finish its real recovery channel.")
 	TEST_ASSERT(trial.recovered, "The recovery channel must put the echo in the shard.")
 	user.forceMove(center)
-	TEST_ASSERT(trial.home_beacon.base_item_interaction(user, trial.shard, list()) & ITEM_INTERACT_SUCCESS, "Returning the recovered shard must deliver it.")
+	TEST_ASSERT(trial.home_beacon.vc_test_base_item_interaction(user, trial.shard, list()) & ITEM_INTERACT_SUCCESS, "Returning the recovered shard must deliver it.")
 	TEST_ASSERT(/datum/vestige_trial/long_dark in user.mind.completed_vestige_trials, "Two bearings, recovery and delivery must complete Long Dark.")
 	TEST_ASSERT(QDELETED(trial), "Completing the exterior route must reclaim its trial and loans.")
 
@@ -88,15 +88,15 @@
 	TEST_ASSERT(route_region && user, "The exterior route needs an allocated EVA fixture.")
 	var/datum/vestige_trial/other_side/trial = prepare(/datum/vestige_trial/other_side)
 	TEST_ASSERT(!trial.card.void_side(center), "The cabin must begin pressurized.")
-	TEST_ASSERT(pane.base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual three-second inside press must leave a reflection.")
+	TEST_ASSERT(pane.vc_test_base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual three-second inside press must leave a reflection.")
 	TEST_ASSERT_EQUAL(trial.phase, 1, "Only the completed first press may begin the exterior leg.")
 	var/turf/outside = trial.outside_turf()
 	TEST_ASSERT(isspaceturf(outside), "The marked full-tile pane must identify its vacuum face.")
 	user.forceMove(outside)
-	TEST_ASSERT(pane.base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual exterior press must collect the reply.")
+	TEST_ASSERT(pane.vc_test_base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual exterior press must collect the reply.")
 	TEST_ASSERT_EQUAL(trial.phase, 2, "The second completed press must require a return inside.")
 	user.forceMove(center)
-	TEST_ASSERT(pane.base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual final inside press must deliver the reply.")
+	TEST_ASSERT(pane.vc_test_base_item_interaction(user, trial.card, list()) & ITEM_INTERACT_SUCCESS, "The actual final inside press must deliver the reply.")
 	TEST_ASSERT(/datum/vestige_trial/other_side in user.mind.completed_vestige_trials, "All three timed presses against one intact pressure seal must complete Other Side.")
 	TEST_ASSERT(!QDELETED(pane) && pane.density, "The player's real window must survive the trial cleanup.")
 
@@ -119,7 +119,7 @@
 		var/turf/recoil = get_step(user, REVERSE_DIR(direction))
 		// Make only the one-second input throttle due; the real cable interaction earns movement and drift changes.
 		trial.tether.next_pull = world.time
-		TEST_ASSERT(cargo.base_ranged_item_interaction(user, trial.tether, list()) & ITEM_INTERACT_SUCCESS, "Each real cardinal cable pull must succeed.")
+		TEST_ASSERT(cargo.vc_test_base_ranged_item_interaction(user, trial.tether, list()) & ITEM_INTERACT_SUCCESS, "Each real cardinal cable pull must succeed.")
 		TEST_ASSERT_EQUAL(get_turf(user), recoil, "The actual pull must recoil the EVA user one tile toward the cargo.")
 		if(pull < 4)
 			TEST_ASSERT_EQUAL(get_turf(cargo), destination, "The real cargo Move must follow the cable by one tile.")
@@ -129,7 +129,7 @@
 	trial.keepsake.attack_hand(user, list())
 	TEST_ASSERT(user.is_holding(trial.keepsake), "The stabilized keepsake must be collectible through ordinary pickup.")
 	user.forceMove(home)
-	TEST_ASSERT(trial.cradle.base_item_interaction(user, trial.keepsake, list()) & ITEM_INTERACT_SUCCESS, "The held keepsake must deliver to its actual launch cradle.")
+	TEST_ASSERT(trial.cradle.vc_test_base_item_interaction(user, trial.keepsake, list()) & ITEM_INTERACT_SUCCESS, "The held keepsake must deliver to its actual launch cradle.")
 	TEST_ASSERT(/datum/vestige_trial/little_moon in user.mind.completed_vestige_trials, "Launch, four real pulls, pickup and delivery must complete Little Moon.")
 
 /** Copy both randomized roles using storage custody and actual actor approaches. */
@@ -151,7 +151,7 @@
 				original = loan
 				break
 		TEST_ASSERT(original, "The issued kit must contain an ordinary original for each requested role.")
-		TEST_ASSERT(original.base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The held skin must copy the requested original through actual item dispatch.")
+		TEST_ASSERT(original.vc_test_base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The held skin must copy the requested original through actual item dispatch.")
 		TEST_ASSERT(bag.atom_storage.attempt_insert(original, user, messages = FALSE), "Ordinary backpack storage must hide the copied original.")
 		for(var/beat in 1 to 8)
 			trial.next_action = world.time

@@ -182,8 +182,8 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /// Same contract as the parent's, minus its mapzone requirement: an empty-space
 /// encounter that never got as far as allocating one still needs cleaning up.
 /// preserve_level is handled by unload_level() itself, which has to stop the retries.
-/obj/structure/overmap/planet/empty/can_release_interior()
-	return isnull(get_interior_release_blocker())
+/obj/structure/overmap/planet/empty/can_release_interior(ignore_ssd_grace)
+	return isnull(get_interior_release_blocker(ignore_ssd_grace))
 
 /obj/structure/overmap/planet/empty/get_interior_release_blocker(ignore_ssd_grace = FALSE)
 	// Don't unload if any ships are still docked here
@@ -271,7 +271,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
  * Both the cargo console's up-front refusal and the arrival itself ask this, so the
  * button's enabled state and what actually happens after the warmup cannot disagree.
  * An encounter only has two reserve docks and ship-to-ship docking claims BOTH of them
- * (dock_ships_directly() in ship.dm), so any crew docked to another ship has nowhere to
+ * (dock_ships_directly() in ship/ship_to_ship.dm), so any crew docked to another ship has nowhere to
  * put a cargo shuttle - which used to be discoverable only after the full 30-second
  * warmup had been spent building and then destroying one.
  *

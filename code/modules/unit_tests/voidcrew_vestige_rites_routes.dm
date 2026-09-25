@@ -99,7 +99,7 @@
 	var/datum/vestige_trial/offering/offering = prepare(/datum/vestige_trial/offering)
 	var/obj/item/vestige_chalk/chalk = loan(/obj/item/vestige_chalk)
 	TEST_ASSERT(hold(chalk), "The supplicant must take the chalk from the supplied satchel.")
-	TEST_ASSERT(center.base_item_interaction(user, chalk, list()) & ITEM_INTERACT_SUCCESS, "The actual eight-second chalk channel must scribe a rune.")
+	TEST_ASSERT(center.vc_test_base_item_interaction(user, chalk, list()) & ITEM_INTERACT_SUCCESS, "The actual eight-second chalk channel must scribe a rune.")
 	var/obj/structure/vestige_rune/rune = locate() in center
 	TEST_ASSERT(rune && offering.rune_scribed, "The actual chalk must create the rite's rune.")
 	var/list/candles = list()
@@ -115,7 +115,7 @@
 	TEST_ASSERT(hold(lighter), "The supplicant must take the supplied lighter.")
 	user.execute_mode()
 	for(var/obj/item/flashlight/flare/candle/candle as anything in candles)
-		TEST_ASSERT(candle.base_item_interaction(user, lighter, list()) & ITEM_INTERACT_SUCCESS, "The actual lit lighter must ignite each grounded candle.")
+		TEST_ASSERT(candle.vc_test_base_item_interaction(user, lighter, list()) & ITEM_INTERACT_SUCCESS, "The actual lit lighter must ignite each grounded candle.")
 		TEST_ASSERT(candle.light_on, "Each ritual candle must actually be burning.")
 	var/mob/living/basic/carp/corpse = allocate(/mob/living/basic/carp, center)
 	corpse.death()
@@ -155,7 +155,7 @@
 	for(var/index in 1 to 3)
 		var/mob/living/basic/carp/corpse = allocate(/mob/living/basic/carp, get_step(center, NORTH))
 		corpse.death()
-		TEST_ASSERT(corpse.base_item_interaction(user, lantern, list()) & ITEM_INTERACT_SUCCESS, "The actual three-second lantern channel must collect each distinct substantial corpse's breath.")
+		TEST_ASSERT(corpse.vc_test_base_item_interaction(user, lantern, list()) & ITEM_INTERACT_SUCCESS, "The actual three-second lantern channel must collect each distinct substantial corpse's breath.")
 	TEST_ASSERT(/datum/vestige_trial/last_breath in user.mind.completed_vestige_trials, "Three actual distinct corpse channels must complete Last Breath.")
 
 /datum/unit_test/vestige_rites_route/sitters_rounds/Run()
@@ -166,7 +166,7 @@
 	var/mob/living/carbon/human/vestige_patient/patient = sitter.patient
 	TEST_ASSERT(patient && sitter.cot, "Actual cloth activation must deploy the injured patient and cot on pressurized floor.")
 	TEST_ASSERT(sitter.cot.user_buckle_mob(patient, user), "The normal player buckle path must put the patient on the cot.")
-	patient.base_item_interaction(user, cloth, list())
+	patient.vc_test_base_item_interaction(user, cloth, list())
 	TEST_ASSERT(patient.comforted, "The real cloth channel must settle the patient's shaking.")
 	var/obj/item/healthanalyzer/scanner = loan(/obj/item/healthanalyzer)
 	TEST_ASSERT(hold(scanner), "The caregiver must select the supplied health analyzer.")
@@ -187,7 +187,7 @@
 			user.zone_selected = hurt_limb.body_zone
 			var/amount_before = dressing.get_amount()
 			var/injury_before = hurt_limb.brute_dam + hurt_limb.burn_dam
-			TEST_ASSERT(patient.base_item_interaction(user, dressing, list()) & ITEM_INTERACT_SUCCESS, "The real dressing interaction must start ordinary treatment on the selected injured limb.")
+			TEST_ASSERT(patient.vc_test_base_item_interaction(user, dressing, list()) & ITEM_INTERACT_SUCCESS, "The real dressing interaction must start ordinary treatment on the selected injured limb.")
 			for(var/tick in 1 to 200)
 				if(!DOING_INTERACTION_WITH_TARGET(user, patient))
 					break
@@ -196,7 +196,7 @@
 			TEST_ASSERT(hurt_limb.brute_dam + hurt_limb.burn_dam < injury_before, "Each supplied dressing must actually heal its selected injury.")
 	TEST_ASSERT(patient.getBruteLoss() + patient.getFireLoss() <= 10, "Actual dressing application must heal the patient's injuries into the discharge window.")
 	TEST_ASSERT(hold(cloth), "The caregiver must return to the actual cloth for discharge.")
-	patient.base_item_interaction(user, cloth, list())
+	patient.vc_test_base_item_interaction(user, cloth, list())
 	TEST_ASSERT(/datum/vestige_trial/sitters_rounds in user.mind.completed_vestige_trials, "Actual buckling, comfort, diagnosis, treatment and discharge must complete Sitter's Rounds.")
 
 /datum/unit_test/vestige_rites_route/rite_of_toll/Run()
@@ -207,7 +207,7 @@
 			break
 		var/obj/item/tool = casket.pressure >= casket.tension ? loan(/obj/item/wrench) : loan(/obj/item/screwdriver)
 		TEST_ASSERT(hold(tool), "The supplicant must hold the supplied tool appropriate to the displayed force.")
-		TEST_ASSERT(casket.base_item_interaction(user, tool, list()) & ITEM_INTERACT_SUCCESS, "The real two-second tool channel must work the lock.")
+		TEST_ASSERT(casket.vc_test_base_item_interaction(user, tool, list()) & ITEM_INTERACT_SUCCESS, "The real two-second tool channel must work the lock.")
 	TEST_ASSERT(!casket.pressure && !casket.tension && !casket.strain, "The supplied wrench and screwdriver must balance the real random lock without casing damage.")
 	var/obj/item/payment = casket.last_tool?.resolve()
 	TEST_ASSERT(user.is_holding(payment), "The actual final tool must remain available as the toll.")
@@ -224,7 +224,7 @@
 	var/mob/living/basic/carp/corpse = allocate(/mob/living/basic/carp, center)
 	corpse.death()
 	TEST_ASSERT(hold(vigil.candle), "The mourner must select the actual wake-candle.")
-	corpse.base_item_interaction(user, vigil.candle, list())
+	corpse.vc_test_base_item_interaction(user, vigil.candle, list())
 	TEST_ASSERT(vigil.watched == corpse && length(vigil.rifts) == 3, "The actual candle input must open all three mourning rifts.")
 	var/turf/retreat
 	var/best_clearance = -1
@@ -247,7 +247,7 @@
 	var/turf/body_before_closures = get_turf(corpse)
 	for(var/obj/structure/vestige_mourning_rift/rift as anything in rifts)
 		TEST_ASSERT(walk_straight(get_turf(rift)), "The mourner must physically carry the candle to each rift.")
-		TEST_ASSERT(rift.base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "Each actual three-second candle channel must close its rift while the others keep processing.")
+		TEST_ASSERT(rift.vc_test_base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "Each actual three-second candle channel must close its rift while the others keep processing.")
 	TEST_ASSERT(get_turf(corpse) != body_before_closures, "The remaining rifts must really pull during the timed closures.")
 	TEST_ASSERT(!QDELETED(corpse), "Successful vigil completion must preserve the borrowed remains.")
 	TEST_ASSERT(/datum/vestige_trial/true_vigil in user.mind.completed_vestige_trials, "Actual pulling and three live timed rift closures must complete True Vigil.")
@@ -259,7 +259,7 @@
 	var/mob/living/basic/carp/corpse = allocate(/mob/living/basic/carp, center)
 	corpse.death()
 	TEST_ASSERT(hold(vigil.candle), "The mourner must hold the wake-candle.")
-	corpse.base_item_interaction(user, vigil.candle, list())
+	corpse.vc_test_base_item_interaction(user, vigil.candle, list())
 	TEST_ASSERT_EQUAL(length(vigil.rifts), 3, "The actual candle must start the transit fixture.")
 	STOP_PROCESSING(SSobj, vigil)
 	var/other_z = center.z == 1 ? 2 : 1
@@ -272,7 +272,7 @@
 	TEST_ASSERT(vigil.watched == corpse && length(vigil.rifts) == 3, "Relocating the body and every rift together must retain the complete vigil.")
 	var/obj/structure/vestige_mourning_rift/first = vigil.rifts[1]
 	user.forceMove(get_turf(first))
-	TEST_ASSERT(first.base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "The carried candle must still close a rift after complete group transit.")
+	TEST_ASSERT(first.vc_test_base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "The carried candle must still close a rift after complete group transit.")
 	TEST_ASSERT_EQUAL(vigil.closed_rifts, 1, "A same-level complete relocated field must preserve its normal progress.")
 
 /// Off-level remains cannot be pulled or certify a closure; bringing them back resumes the same vigil.
@@ -282,7 +282,7 @@
 	var/mob/living/basic/carp/corpse = allocate(/mob/living/basic/carp, center)
 	corpse.death()
 	TEST_ASSERT(hold(vigil.candle), "The mourner must hold the wake-candle.")
-	corpse.base_item_interaction(user, vigil.candle, list())
+	corpse.vc_test_base_item_interaction(user, vigil.candle, list())
 	TEST_ASSERT_EQUAL(length(vigil.rifts), 3, "The actual candle must start the split-z fixture.")
 	STOP_PROCESSING(SSobj, vigil)
 	var/obj/structure/vestige_mourning_rift/first = vigil.rifts[1]
@@ -303,7 +303,7 @@
 	TEST_ASSERT(seat.user_buckle_mob(user, user), "The mourner must be able to sit beside the rift for the controlled channels.")
 	TEST_ASSERT(seat.anchored && user.buckled == seat && user.is_holding(vigil.candle), "The real channel fixture must retain its anchored seat and held candle.")
 	TEST_ASSERT_EQUAL(user.has_gravity(), 1, "The mourner's channel must begin on the fixture's grounded floor.")
-	var/candle_result = first.base_item_interaction(user, vigil.candle, list())
+	var/candle_result = first.vc_test_base_item_interaction(user, vigil.candle, list())
 	TEST_ASSERT(!(candle_result & ITEM_INTERACT_SUCCESS), "A candle certified remains on another level despite native get_dist=[distance_after_split].")
 	TEST_ASSERT_EQUAL(vigil.closed_rifts, 0, "An off-level body must not provide closure credit.")
 	vigil.process(0.2)
@@ -314,12 +314,12 @@
 		rift.next_pull = world.time + 10 SECONDS // Isolate a mid-channel separation from ordinary tug timing.
 	addtimer(CALLBACK(corpse, TYPE_PROC_REF(/atom/movable, forceMove), displaced_floor), 1 SECONDS)
 	var/channel_started = world.time
-	candle_result = first.base_item_interaction(user, vigil.candle, list())
+	candle_result = first.vc_test_base_item_interaction(user, vigil.candle, list())
 	TEST_ASSERT(world.time >= channel_started + 3 SECONDS, "The split regression must reach the real channel's final validation, not fail from unrelated movement.")
 	TEST_ASSERT(corpse.z != first.z && !(candle_result & ITEM_INTERACT_SUCCESS), "A body that changed levels during the candle channel still certified a closure.")
 	TEST_ASSERT_EQUAL(vigil.closed_rifts, 0, "A mid-channel separation awarded closure credit.")
 	corpse.forceMove(center)
-	TEST_ASSERT(first.base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "Returning the remains must let the same physical candle close the original rift.")
+	TEST_ASSERT(first.vc_test_base_item_interaction(user, vigil.candle, list()) & ITEM_INTERACT_SUCCESS, "Returning the remains must let the same physical candle close the original rift.")
 	TEST_ASSERT(vigil.watched == corpse && vigil.closed_rifts == 1 && length(vigil.rifts) == 2, "Reunion must resume the existing vigil without an invented reset or lost progress.")
 
 /datum/unit_test/vestige_rites_route/singed_hand/Run()
@@ -344,10 +344,10 @@
 	var/list/miscasts = lesson.manifestations.Copy()
 	for(var/index in 1 to 3)
 		var/obj/structure/vestige_miscast/miscast = miscasts[index]
-		miscast.base_ranged_item_interaction(user, geode, list())
+		miscast.vc_test_base_ranged_item_interaction(user, geode, list())
 		TEST_ASSERT(QDELETED(miscast), "Actual ranged geode input must capture each spent manifestation.")
 		if(index == 2 || index == 3)
-			lesson.focus.base_item_interaction(user, geode, list())
+			lesson.focus.vc_test_base_item_interaction(user, geode, list())
 			if(index == 2)
 				TEST_ASSERT_EQUAL(lesson.resolved, 2, "The actual well must empty the two-slot geode before the third catch.")
 	TEST_ASSERT(/datum/vestige_trial/singed_hand in user.mind.completed_vestige_trials, "Actual flares, dodge, ranged captures and two well visits must complete Singed Hand.")
@@ -384,7 +384,7 @@
 			TEST_ASSERT_EQUAL(get_turf(user), aligned, "The waiting speaker must remain aligned in the sealed fixture: [word_state].")
 			TEST_ASSERT_EQUAL(pressure_pushes - pressure_before_wait, 0, "Equal-pressure air behind real walls must not push the waiting speaker: [word_state].")
 			var/turf/expected = get_step(miscast, push_direction)
-			TEST_ASSERT(miscast.base_item_interaction(user, primer, list()) & ITEM_INTERACT_SUCCESS, "The actual ready spoken word must repel the manifestation: [word_state], destination [expected], blocked [expected?.is_blocked_turf(exclude_mobs = TRUE)].")
+			TEST_ASSERT(miscast.vc_test_base_item_interaction(user, primer, list()) & ITEM_INTERACT_SUCCESS, "The actual ready spoken word must repel the manifestation: [word_state], destination [expected], blocked [expected?.is_blocked_turf(exclude_mobs = TRUE)].")
 			if(!QDELETED(miscast))
 				TEST_ASSERT_EQUAL(get_turf(miscast), expected, "The real word must move exactly one cardinal tile away from the speaker.")
 		TEST_ASSERT(QDELETED(miscast), "A sequence of legal spoken pushes must deliver the manifestation into the brazier.")
@@ -447,7 +447,7 @@
 	TEST_ASSERT(!isnull(puzzle_solution), "The actual scrambled inscription must admit a legal sliding solution.")
 	for(var/number in puzzle_solution)
 		var/obj/structure/vestige_silent_glyph/glyph = puzzle.syllables[number]
-		TEST_ASSERT(glyph.base_item_interaction(user, phial, list()) & ITEM_INTERACT_SUCCESS, "Every computed slide must succeed through actual adjacent phial dispatch.")
+		TEST_ASSERT(glyph.vc_test_base_item_interaction(user, phial, list()) & ITEM_INTERACT_SUCCESS, "Every computed slide must succeed through actual adjacent phial dispatch.")
 	TEST_ASSERT(/datum/vestige_trial/swallowed_word in user.mind.completed_vestige_trials, "Restoring the actual randomized inscription through legal item inputs must complete Swallowed Word.")
 
 /// The existing stack-menu callback stands in for choosing "wall girders (anchored)".
@@ -486,7 +486,7 @@
 	TEST_ASSERT(hold(chrism), "The supplicant must take the actual corroding chrism.")
 	for(var/anointing in 1 to 2)
 		var/turf/wall = locate(center.x + 1, center.y, center.z)
-		TEST_ASSERT(wall.base_item_interaction(user, chrism, list()) & ITEM_INTERACT_SUCCESS, "Each actual two-second anointing must rust the ordinary wall.")
+		TEST_ASSERT(wall.vc_test_base_item_interaction(user, chrism, list()) & ITEM_INTERACT_SUCCESS, "Each actual two-second anointing must rust the ordinary wall.")
 	TEST_ASSERT(rust.opened && rust.guardian && isopenturf(get_turf(rust.passage)), "The second real anointing must open the marked breach and release its guardian.")
 	var/turf/breach = get_turf(rust.passage)
 	// ChangeTurf carries existing gravity signals through construction and dissolution.
@@ -519,11 +519,11 @@
 	door.req_access = list(ACCESS_ENGINEERING) // The fixture is a real door which denies this unequipped human's ID.
 	var/obj/item/vestige_quill/quill = loan(/obj/item/vestige_quill)
 	TEST_ASSERT(hold(quill), "The scrivener must hold the actual supplied quill.")
-	TEST_ASSERT(door.base_item_interaction(user, quill, list()) & ITEM_INTERACT_SUCCESS, "The real five-second first reading must register the access-restricted threshold.")
+	TEST_ASSERT(door.vc_test_base_item_interaction(user, quill, list()) & ITEM_INTERACT_SUCCESS, "The real five-second first reading must register the access-restricted threshold.")
 	TEST_ASSERT_EQUAL(transcription.threshold, door, "The actual quill reading must choose this threshold.")
 	var/obj/item/screwdriver/screwdriver = loan(/obj/item/screwdriver)
 	TEST_ASSERT(hold(screwdriver), "The scrivener must retrieve the screwdriver from the supplied toolbox.")
-	TEST_ASSERT(door.base_item_interaction(user, screwdriver, list()) & ITEM_INTERACT_SUCCESS, "The actual screwdriver must open the engineering panel.")
+	TEST_ASSERT(door.vc_test_base_item_interaction(user, screwdriver, list()) & ITEM_INTERACT_SUCCESS, "The actual screwdriver must open the engineering panel.")
 	TEST_ASSERT(door.panel_open, "The real panel must be open before the wires can be operated.")
 	var/obj/item/wirecutters/cutters = loan(/obj/item/wirecutters)
 	TEST_ASSERT(hold(cutters), "The scrivener must retrieve the supplied wirecutters.")
@@ -535,7 +535,7 @@
 	TEST_ASSERT(!door.hasPower(), "Cutting the real main and backup wires must disable both door supplies.")
 	var/obj/item/crowbar/crowbar = loan(/obj/item/crowbar)
 	TEST_ASSERT(hold(crowbar), "The scrivener must retrieve the supplied crowbar.")
-	TEST_ASSERT(door.base_item_interaction(user, crowbar, list()) & ITEM_INTERACT_SUCCESS, "The actual crowbar tool dispatch must pry the disabled door.")
+	TEST_ASSERT(door.vc_test_base_item_interaction(user, crowbar, list()) & ITEM_INTERACT_SUCCESS, "The actual crowbar tool dispatch must pry the disabled door.")
 	for(var/tick in 1 to 30)
 		if(!door.density && !door.operating)
 			break
@@ -544,12 +544,12 @@
 	TEST_ASSERT(user.Move(get_turf(door), EAST), "The scrivener must actually step through the open threshold.")
 	TEST_ASSERT(user.Move(get_step(door, EAST), EAST), "The scrivener must emerge on the opposite side.")
 	TEST_ASSERT(transcription.crossed, "Only the actual movement across the threshold must certify the crossing.")
-	TEST_ASSERT(door.base_item_interaction(user, crowbar, list()) & ITEM_INTERACT_SUCCESS, "The same actual crowbar must close the disabled airlock.")
+	TEST_ASSERT(door.vc_test_base_item_interaction(user, crowbar, list()) & ITEM_INTERACT_SUCCESS, "The same actual crowbar must close the disabled airlock.")
 	for(var/tick in 1 to 30)
 		if(door.density && !door.operating)
 			break
 		sleep(1)
 	TEST_ASSERT(door.density && !door.allowed(user), "The threshold must again stand closed and deny this player's ID.")
 	TEST_ASSERT(hold(quill), "The scrivener must return to the quill after shutting the door.")
-	TEST_ASSERT(door.base_item_interaction(user, quill, list()) & ITEM_INTERACT_SUCCESS, "The real opposite-side five-second reading must transcribe the restored refusal.")
+	TEST_ASSERT(door.vc_test_base_item_interaction(user, quill, list()) & ITEM_INTERACT_SUCCESS, "The real opposite-side five-second reading must transcribe the restored refusal.")
 	TEST_ASSERT(/datum/vestige_trial/rite_of_transcription in user.mind.completed_vestige_trials, "Actual quill readings, panel work, wire cutting, manual prying, crossing and closing must complete Transcription.")

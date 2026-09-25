@@ -622,7 +622,7 @@ GLOBAL_VAR_INIT(ghost_round_active, FALSE)
 /**
  * FAMILY 2 shim: site_has_living_players().
  *
- * Production predicate (voidcrew/modules/overmap/code/modules/overmap/ship.dm:1435): resolve
+ * Production predicate (voidcrew/modules/overmap/code/ship/lifecycle.dm): resolve
  * the site's z values and XY rectangle from the site's own map footprint (every site kind
  * answers with one now, via get_interior_footprint()) - then look for a member of
  * GLOB.player_list that is living, not dead, and standing inside it.
@@ -677,7 +677,7 @@ GLOBAL_VAR_INIT(ghost_round_active, FALSE)
 	var/max_x = 0
 	var/max_y = 0
 	var/bounded = FALSE
-	// Branch ladder lifted verbatim from the parent (ship.dm:1445-1460) so the shim cannot
+	// Branch ladder lifted verbatim from the parent (ship/lifecycle.dm) so the shim cannot
 	// drift from it. Every site with an interior now answers with a map footprint - space
 	// ruins and asteroid fields moved off private turf reservations onto the slot lattice
 	// with everything else, so there is no reservation branch left to write here. A planet
@@ -705,12 +705,12 @@ GLOBAL_VAR_INIT(ghost_round_active, FALSE)
 /**
  * FAMILY 2 shim: despawn_derelict()'s "anybody aboard" refusal.
  *
- * Production predicate (ship.dm:1292): any member of GLOB.player_list that isliving() and
+ * Production predicate (ship/lifecycle.dm): any member of GLOB.player_list that isliving() and
  * is_aboard(). Deliberately MORE generous than get_event_crew - dead bodies count too, because
  * a corpse with a player behind it may be mid-rescue.
  *
  * Two things go wrong without this shim, and the second is worse than the first. A hull with
- * crew aboard would despawn; and the terminal loop of the production body (ship.dm:1347-1355)
+ * crew aboard would despawn; and the terminal loop of the production body (ship/lifecycle.dm)
  * walks every turf of the hull and ghostize()s then qdel()s every living mob it finds, on the
  * reasoning that nothing with a player behind it could have got that far. Seventy sim crew
  * would be deleted mid-round by the code whose guard was supposed to stop it.

@@ -9,7 +9,7 @@
  * neighbour's shielder would end up covering us.
  *
  * So the ship pulls rather than the nebula pushing: a hull standing in a tritium cloud asks
- * its own areas what shielding is aboard (get_nebula_shielding_level(), ship_damage.dm).
+ * its own areas what shielding is aboard (get_nebula_shielding_level(), ship/damage.dm).
  * Everything the machine itself does - the panel/broken/powered gate, the power it draws
  * per block, the tritium it vents while working - is upstream's and is kept as is.
  */

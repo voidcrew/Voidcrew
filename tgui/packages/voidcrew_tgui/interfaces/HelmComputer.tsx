@@ -19,7 +19,6 @@
  * coasts holding it. See the key handler in Faceplate.
  */
 import {
-  createContext,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -34,13 +33,15 @@ import type { BooleanLike } from 'tgui-core/react';
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
+import { isChartTile, wrappedDelta } from '../utils/HelmMapGeometry';
+import { Chart } from './Helm/Chart';
 import {
-  type CourseSegment,
-  clampCameraAxis,
-  isChartTile,
-  visibleCourseSegments,
-  wrappedDelta,
-} from '../utils/HelmMapGeometry';
+  ChartFocus,
+  DockMenuControl,
+  MENU_SIZE,
+  MenuControl,
+  Selection,
+} from './Helm/hooks';
 
 // ---------------------------------------------------------------- geometry
 
@@ -607,34 +608,11 @@ const useTravelClock = () => {
 };
 
 /**
- * The selected contact, shared so the chart and the drawer highlight each other:
- * clicking a mark on the map scrolls it into focus in the list, and vice versa.
- */
-const Selection = createContext<{
-  selected: string | null;
-  select: (key: string) => void;
-}>({ selected: null, select: () => {} });
-
-/**
  * A request to bring an overmap tile into view. `nonce` is what makes a second
  * click on the same contact a fresh request. The coordinates alone are
  * identical, so the chart would never see the request change.
  */
 type FocusRequest = { x: number; y: number; nonce: number };
-
-/**
- * Picking a contact out of the register aims the chart at it.
- *
- * The camera lives inside Chart, because pan and zoom are the things that own
- * it, so the register can't move it directly: it posts a tile here and the
- * chart decides what to do about it. That indirection is what lets the chart
- * ignore a request for a mark that is already on screen, the common case, and
- * one where moving the camera would detach it from the ship for no gain.
- */
-const ChartFocus = createContext<{
-  request: FocusRequest | null;
-  focusOn: (x: number, y: number) => void;
-}>({ request: null, focusOn: () => {} });
 
 /**
  * Where the right-click action menu is pinned and what it was opened on. `key`
@@ -647,42 +625,6 @@ type MenuState = {
   left: number;
   top: number;
 };
-
-/**
- * Approximate menu box, used only to keep it inside the console. Tracks the
- * max-width and the text sizes of .Helm__menu in the stylesheet.
- */
-const MENU_SIZE = { w: 260, h: 210 };
-
-/**
- * The right-click action menu, opened from either the chart or the contact
- * drawer and rendered once at the console root.
- *
- * At the root rather than inside the panel it was opened from, because every
- * panel well is `overflow: hidden`: a menu owned by the chart gets clipped at
- * the chart's edge, and the drawer is under 300px wide, too narrow to read one
- * in at all. Anchored on the console it can open at the cursor wherever the
- * cursor is.
- */
-const MenuControl = createContext<
-  (
-    event: React.MouseEvent,
-    key: string | null,
-    tile: { x: number; y: number },
-  ) => void
->(() => {});
-
-/**
- * Where the Dock button's option picker is pinned. A separate context from
- * MenuControl above because its contents come straight from `dockOptions`
- * rather than from a selected contact, but it needs the same
- * rendered-at-the-root treatment, for the same reason: the OPS panel is
- * `overflow: hidden` and only 152px tall, nowhere near enough to hold a list
- * of options without clipping it.
- */
-const DockMenuControl = createContext<(event: React.MouseEvent) => void>(
-  () => {},
-);
 
 // ---------------------------------------------------------------- root
 
@@ -951,27 +893,27 @@ const Faceplate = () => {
             <AlertStrip />
           </Panel>
 
-          <Panel rect={GEOMETRY.HULL} label="Hull" aux="integrity">
+          <Panel rect={GEOMETRY.HULL} label="Hull integrity">
             <HullGauge />
           </Panel>
-          <Panel rect={GEOMETRY.FUEL} label="Fuel" aux="drive mass">
+          <Panel rect={GEOMETRY.FUEL} label="Fuel">
             <FuelStack />
           </Panel>
-          <Panel rect={GEOMETRY.DRIVE} label="Drive" aux="thrust">
+          <Panel rect={GEOMETRY.DRIVE} label="Drive">
             <DriveGauge />
           </Panel>
-          <Panel rect={GEOMETRY.SENSOR} label="Sensors" aux="array">
+          <Panel rect={GEOMETRY.SENSOR} label="Sensors">
             <SensorDial />
           </Panel>
 
-          <Panel rect={GEOMETRY.CHART} label="Navigation chart">
+          <Panel rect={GEOMETRY.CHART}>
             <Chart />
           </Panel>
           <Panel rect={GEOMETRY.DRAWER} label="Contacts">
             <Drawer />
           </Panel>
 
-          <Panel rect={GEOMETRY.THROT} label="Throttle" aux="cruise">
+          <Panel rect={GEOMETRY.THROT} label="Throttle">
             <Throttle />
           </Panel>
           <Panel
@@ -1044,20 +986,18 @@ const Faceplate = () => {
 const Panel = (props: {
   rect: Rect;
   label?: string;
-  aux?: string;
   /** Right-aligned control in the caption bar. The label row is the only
    * chrome a well owns, so a panel-scoped switch lives there or nowhere. */
   action?: React.ReactNode;
   children;
 }) => {
-  const { rect, label, aux, action, children } = props;
+  const { rect, label, action, children } = props;
   return (
     <div className="Helm__panel" style={panelStyle(rect)}>
       <div className={`Helm__well ${label ? 'Helm__well--labelled' : ''}`}>
         {!!label && (
           <div className="Helm__wellLabel">
             {label}
-            {!!aux && <span className="Helm__wellAux">/ {aux}</span>}
             {action}
           </div>
         )}
@@ -1169,9 +1109,7 @@ const Ident = () => {
             type="button"
             ref={textRef}
             className="Helm__shipName"
-            style={
-              { '--helm-name-scale': scale } as React.CSSProperties
-            }
+            style={{ '--helm-name-scale': scale } as React.CSSProperties}
             disabled={locked}
             title={locked ? shipInfo.name : `${shipInfo.name}, rename vessel`}
             onClick={() => setEditing(true)}
@@ -1179,14 +1117,11 @@ const Ident = () => {
             {shipInfo.name}
           </button>
         )}
+        <span className="Helm__shipClass">
+          {shipInfo.class}
+          {!!shipInfo.mass && ` · ${shipInfo.mass}t`}
+        </span>
       </div>
-      <span className="Helm__shipClass">
-        {shipInfo.class}
-        {!!shipInfo.mass && ` · ${shipInfo.mass}t`}
-      </span>
-      <span className="Helm__shipPos">
-        {String(x).padStart(2, '0')} / {String(y).padStart(2, '0')}
-      </span>
     </div>
   );
 };
@@ -1842,1354 +1777,6 @@ const useDrift = (contacts: Contact[]): Drift | null => {
   };
 };
 
-const AUTOPILOT_ZONES: {
-  key: keyof AutopilotPrefs;
-  label: string;
-  colour: string;
-}[] = [
-  { key: 'allowNeutral', label: 'Neutral Zone', colour: '#59b871' },
-  { key: 'allowContested', label: 'Contested Zone', colour: '#d9a230' },
-  { key: 'allowLawless', label: 'Lawless Zone', colour: '#cf4a38' },
-];
-
-const AutopilotZones = () => {
-  const { act, data } = useBackend<Data>();
-  const locked = useLocked();
-  const prefs = data.autopilot?.prefs;
-  if (!prefs) return null;
-  return (
-    <div className="Helm__zoneControls">
-      <div className="Helm__zoneTitle">AUTOPILOT ZONES / HAZARDS AVOIDED</div>
-      <div className="Helm__zoneButtons">
-        {AUTOPILOT_ZONES.map(({ key, label, colour }) => (
-          <button
-            key={key}
-            type="button"
-            className="Helm__zoneButton"
-            style={{ borderTopColor: colour }}
-            aria-pressed={!!prefs[key]}
-            disabled={locked}
-            title={`${prefs[key] ? 'Block' : 'Allow'} autopilot entry into the ${label}`}
-            onClick={() =>
-              act('autopilot_pref', { key, value: prefs[key] ? 0 : 1 })
-            }
-          >
-            <span>{label}</span>
-            <span className="Helm__zoneState">
-              <span
-                className={`Helm__zoneLight ${prefs[key] ? 'Helm--allowed' : 'Helm--blocked'}`}
-              />
-              {prefs[key] ? 'Allowed' : 'Blocked'}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const Chart = () => {
-  const { act, data } = useBackend<Data>();
-  const {
-    x,
-    y,
-    chart,
-    sensorRange,
-    transmissions = [],
-    burnDirection,
-    driftDirection,
-    speed,
-    heading,
-    eta,
-    moveIntervalMs,
-    state,
-    autopilot,
-  } = data;
-
-  const viewRange = chart?.viewRange ?? 4;
-  const waypoints = useContacts();
-  const drift = useDrift(waypoints);
-  const { selected, select } = useContext(Selection);
-  const locked = useLocked();
-
-  // Hover fills the readout below the chart; right-click pins the shared action
-  // menu at the cursor. The menu carries both the contact under the cursor (if
-  // there was one) and the tile it was over, because plotting a course is an
-  // action on the position rather than on any mark.
-  const [hovered, setHovered] = useState<string | null>(null);
-  const openActionMenu = useContext(MenuControl);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const cameraRef = useRef<SVGGElement>(null);
-
-  const byKey = (key: string | null) =>
-    key ? waypoints.find((contact) => contactKey(contact) === key) : undefined;
-  const hoveredContact = byKey(hovered);
-
-  const size = chart?.size ?? 51;
-  const extent = size * UNIT;
-  const toX = (tileX: number) => tileX * UNIT - UNIT / 2;
-  const toY = (tileY: number) => (size + 1 - tileY) * UNIT - UNIT / 2;
-
-  // Barrier crossings and jumps cut to the new position on the single chart.
-  // Ordinary tile movement still glides between server updates.
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
-  const previous = lastPos.current;
-  const dx = previous ? x - previous.x : 0;
-  const dy = previous ? y - previous.y : 0;
-  const teleported = !previous || Math.hypot(dx, dy) > 2.5;
-  useEffect(() => {
-    lastPos.current = { x, y };
-  });
-
-  const [span, setSpan] = useState(13);
-  const maxSpan = size;
-  const zoomSpan = clamp(span, ZOOM_MIN_SPAN, maxSpan);
-  const scale = extent / (zoomSpan * UNIT);
-
-  // Contact glyphs sit in a group that counter-scales against the camera zoom
-  // (see ContactMark/TransmissionPulse/DestinationMark below), which is what
-  // keeps a mark legible at any zoom instead of shrinking to a dot at max
-  // zoom-in. Left uncorrected, though, that counter-scale is exact, 1/scale
-  // exactly cancels the camera's scale(${scale}), so a glyph is the IDENTICAL
-  // screen size zoomed all the way out as zoomed all the way in. At the
-  // zoomed-out end that reads as clutter: dozens of full-size glyphs packed
-  // into the same screen space that one tile's worth occupies up close.
-  // markScale blends the counter-scale toward the raw camera scale as the
-  // view widens, so glyphs still shrink somewhat with distance like everything
-  // else on the chart, while staying at their fully-compensated, always-legible
-  // size once zoomed in past the midpoint.
-  const zoomBlend = clamp(
-    (zoomSpan - ZOOM_MIN_SPAN) / (maxSpan - ZOOM_MIN_SPAN),
-    0,
-    1,
-  );
-  const MARK_ZOOM_OUT_FLOOR = 0.4;
-  const markScale = scale / (1 - zoomBlend * (1 - MARK_ZOOM_OUT_FLOOR));
-
-  // React attaches wheel handlers passively at the root, so preventDefault from
-  // an onWheel prop is ignored and the BYOND window scrolls instead of zooming.
-  // The listener has to be bound natively to be non-passive.
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const onWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      const step = event.deltaY > 0 ? ZOOM_WHEEL_STEP : 1 / ZOOM_WHEEL_STEP;
-      setSpan((current) => clamp(current * step, ZOOM_MIN_SPAN, maxSpan));
-    };
-    viewport.addEventListener('wheel', onWheel, { passive: false });
-    return () => viewport.removeEventListener('wheel', onWheel);
-  }, [maxSpan]);
-
-  // The square SVG is sliced to fit the well; its shorter axis shows fewer
-  // tiles. Measure both axes so camera bounds stay correct after resizing.
-  const [aspect, setAspect] = useState(1);
-  useLayoutEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const measure = () => {
-      const { width, height } = viewport.getBoundingClientRect();
-      if (width > 0 && height > 0) setAspect(width / height);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(viewport);
-    return () => observer.disconnect();
-  }, []);
-  const boundX = (value: number) =>
-    clampCameraAxis(value, zoomSpan * UNIT * Math.min(1, aspect), extent);
-  const boundY = (value: number) =>
-    clampCameraAxis(value, zoomSpan * UNIT * Math.min(1, 1 / aspect), extent);
-  const lastView = useRef({ zoomSpan, aspect });
-  const viewChanged =
-    lastView.current.zoomSpan !== zoomSpan || lastView.current.aspect !== aspect;
-  useEffect(() => {
-    lastView.current = { zoomSpan, aspect };
-  }, [zoomSpan, aspect]);
-
-  // Dragging the chart parks the camera on a map position instead of on the ship,
-  // which is the whole point of looking around: the sector holds still and the
-  // ship flies across it. Recentre re-attaches.
-  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
-  const focusX = boundX(anchor ? anchor.x : toX(x));
-  const focusY = boundY(anchor ? anchor.y : toY(y));
-
-  /**
-   * Bring a contact picked in the register onto the chart.
-   *
-   * Anchoring on it is the same thing a drag does, so the Recentre button
-   * appears and says how to get back to the ship. A contact that is already on
-   * screen is left alone: the mark highlights, the camera keeps following the
-   * hull, and nothing lurches under a crew that could see the thing all along.
-   *
-   * Whether it is on screen is measured through the camera's own on-screen
-   * matrix rather than worked back out of the zoom span. The chart is a square
-   * viewBox sliced into a well half again as wide as it is tall, so the tiles
-   * visible per axis differ and the slice crops the top and bottom, the matrix
-   * already accounts for both, and for whatever the window has been resized to.
-   */
-  const { request: focusRequest } = useContext(ChartFocus);
-  const [panEase, setPanEase] = useState(false);
-  const servedFocus = useRef(0);
-  const easeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stopPanEase = () => {
-    if (easeTimer.current) clearTimeout(easeTimer.current);
-    easeTimer.current = null;
-    setPanEase(false);
-  };
-
-  useEffect(() => {
-    if (!focusRequest || focusRequest.nonce === servedFocus.current) return;
-    servedFocus.current = focusRequest.nonce;
-
-    const target = {
-      x: toX(focusRequest.x),
-      y: toY(focusRequest.y),
-    };
-    const camera = cameraRef.current;
-    const viewport = viewportRef.current;
-    const svg = camera?.ownerSVGElement;
-    const matrix = camera?.getScreenCTM();
-
-    if (camera && svg && viewport && matrix) {
-      const box = viewport.getBoundingClientRect();
-      const point = svg.createSVGPoint();
-      point.x = target.x;
-      point.y = target.y;
-      const screen = point.matrixTransform(matrix);
-      const inset = Math.min(box.width, box.height) * FOCUS_INSET;
-      if (
-        screen.x >= box.left + inset &&
-        screen.x <= box.right - inset &&
-        screen.y >= box.top + inset &&
-        screen.y <= box.bottom - inset
-      ) {
-        return;
-      }
-    }
-
-    setAnchor({ x: boundX(target.x), y: boundY(target.y) });
-    setPanEase(true);
-    if (easeTimer.current) clearTimeout(easeTimer.current);
-    easeTimer.current = setTimeout(() => {
-      easeTimer.current = null;
-      setPanEase(false);
-    }, FOCUS_PAN_MS);
-  }, [focusRequest]);
-
-  // A console closed mid-pan would otherwise set state on a dead component.
-  useEffect(
-    () => () => {
-      if (easeTimer.current) clearTimeout(easeTimer.current);
-    },
-    [],
-  );
-
-  // An anchored camera doesn't move on its own, so there is nothing to glide and
-  // a transition would only smear the drag a frame behind the cursor. The
-  // exception is the pan onto a selected contact, which is the one time the
-  // anchor itself moves and wants to be seen moving.
-  // New zoom/size bounds apply immediately; gliding from the old bounds would
-  // temporarily expose space outside the chart. Barrier crossings also snap.
-  const glide = teleported || viewChanged
-    ? 'none'
-    : panEase
-      ? `transform ${FOCUS_PAN_MS}ms ease-out`
-      : anchor || !moveIntervalMs || state !== 'flying'
-        ? 'none'
-        : `transform ${moveIntervalMs}ms linear`;
-
-  // Zoom and follow are split across two groups on purpose: the follow pan glides
-  // over the move interval, but the zoom must land immediately. Sharing one
-  // transform would stretch a wheel notch out over a slow ship's whole tile
-  // crossing, which reads as the console lagging.
-  const zoomTransform = `translate(${extent / 2}px, ${extent / 2}px) scale(${scale})`;
-  const followTransform = `translate(${-focusX}px, ${-focusY}px)`;
-
-  /** The overmap tile under a mouse event, via the chart's own current matrix. */
-  const rawTileFromEvent = (event: React.MouseEvent) => {
-    const camera = cameraRef.current;
-    const svg = camera?.ownerSVGElement;
-    if (!camera || !svg) return null;
-    const matrix = camera.getScreenCTM();
-    if (!matrix) return null;
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const local = point.matrixTransform(matrix.inverse());
-    return {
-      x: Math.round((local.x + UNIT / 2) / UNIT),
-      y: Math.round(size + 1 - (local.y + UNIT / 2) / UNIT),
-    };
-  };
-
-  /** Barriers and space outside the chart are not selectable destinations. */
-  const tileFromEvent = (event: React.MouseEvent) => {
-    const tile = rawTileFromEvent(event);
-    return tile && isChartTile(tile.x, tile.y, size) ? tile : null;
-  };
-
-  /** Read the chart coordinate under the pointer. */
-  const [cursorTile, setCursorTile] = useState<{ x: number; y: number } | null>(
-    null,
-  );
-  const trackCursor = (event: React.PointerEvent) => {
-    const onChart = tileFromEvent(event);
-    // Same tile, same object: a pointermove that hasn't crossed a tile boundary
-    // must not re-render the chart, and the cursor crosses plenty of pixels per
-    // tile at any zoom.
-    setCursorTile((current) =>
-      current && onChart && current.x === onChart.x && current.y === onChart.y
-        ? current
-        : onChart,
-    );
-  };
-
-  /**
-   * Drag-to-pan, on either the left or the middle button.
-   *
-   * Nothing happens until the pointer has travelled PAN_THRESHOLD, so a plain
-   * left click still selects the contact under it, only a real drag is treated
-   * as a pan. The pixel delta is divided by the camera's own on-screen matrix
-   * rather than by a scale we recompute, so panning tracks the cursor exactly at
-   * any zoom.
-   */
-  const panState = useRef<{
-    pointerId: number;
-    /** Where the press landed, for the click-vs-drag threshold. */
-    startX: number;
-    startY: number;
-    /** Where the last move landed. Deltas are incremental from here, not from
-     *  the press, so zooming mid-drag can't make the map jump. */
-    lastX: number;
-    lastY: number;
-    moved: boolean;
-  } | null>(null);
-  // Set for the duration of one click after a drag, so the mouseup that ends a
-  // pan doesn't also select whatever the cursor happens to be resting on.
-  const didPan = useRef(false);
-
-  const startPan = (event: React.PointerEvent) => {
-    if (event.button !== 0 && event.button !== 1) return;
-    // The zoom slider and the cancel button live inside the viewport; dragging
-    // those is not dragging the chart.
-    if ((event.target as Element)?.closest?.('.Helm__zoomRow, button, input')) {
-      return;
-    }
-    if (!cameraRef.current) return;
-    // Middle-drag is autoscroll in a browser; the BYOND client is one.
-    if (event.button === 1) event.preventDefault();
-    // A hand on the chart outranks a pan the console started on its own: left
-    // running, the transition would drag the map a quarter-second behind the
-    // cursor for the rest of the ease.
-    stopPanEase();
-    panState.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      lastX: event.clientX,
-      lastY: event.clientY,
-      moved: false,
-    };
-  };
-
-  const movePan = (event: React.PointerEvent) => {
-    const pan = panState.current;
-    if (!pan || pan.pointerId !== event.pointerId) return;
-    if (!pan.moved) {
-      const travelled = Math.hypot(
-        event.clientX - pan.startX,
-        event.clientY - pan.startY,
-      );
-      if (travelled < PAN_THRESHOLD) return;
-      pan.moved = true;
-      didPan.current = true;
-      event.currentTarget.setPointerCapture(pan.pointerId);
-    }
-
-    // Read live rather than caching: the group's horizontal scale is pixels per
-    // chart unit, and dividing the pixel delta by it is what makes the map track
-    // the cursor exactly 1:1 at any zoom.
-    const pixelsPerUnit = cameraRef.current?.getScreenCTM()?.a || 1;
-    const dx = (event.clientX - pan.lastX) / pixelsPerUnit;
-    const dy = (event.clientY - pan.lastY) / pixelsPerUnit;
-    pan.lastX = event.clientX;
-    pan.lastY = event.clientY;
-
-    // Functional form on purpose: several pointermove events can land before a
-    // re-render, and each has to build on the last one's offset rather than on
-    // the focus this render closed over.
-    setAnchor((current) => ({
-      x: boundX(boundX(current?.x ?? focusX) - dx),
-      y: boundY(boundY(current?.y ?? focusY) - dy),
-    }));
-  };
-
-  const endPan = (event: React.PointerEvent) => {
-    const pan = panState.current;
-    if (!pan || pan.pointerId !== event.pointerId) return;
-    if (pan.moved && event.currentTarget.hasPointerCapture(pan.pointerId)) {
-      event.currentTarget.releasePointerCapture(pan.pointerId);
-    }
-    panState.current = null;
-  };
-
-  const openMenu = (event: React.MouseEvent, key: string | null) => {
-    const contact = byKey(key);
-    // A contact's own coordinates beat the cursor's: clicking the edge of a glyph
-    // shouldn't plot a course to the tile next door.
-    const tile = contact
-      ? { x: contact.x, y: contact.y }
-      : tileFromEvent(event);
-    if (!tile) return;
-    openActionMenu(event, key, tile);
-  };
-
-  const centre = chart?.centre ?? Math.round((size + 1) / 2);
-  const maxRadius = (size - 1) / 2;
-  const rings: [number, string][] = [
-    [maxRadius, '#cf4a38'],
-    [(chart?.ringMiddle ?? 0.66) * maxRadius, '#d9a230'],
-    [(chart?.ringInner ?? 0.33) * maxRadius, '#59b871'],
-  ];
-
-  const vector = DIR_VECTOR[burnDirection];
-  // The nose follows the burn while the engines are lit and the direction of
-  // travel once they are cold. Off `burnDirection` alone, a coasting or braking
-  // ship's token swung back to due north and sat there pointing the wrong way
-  // for the whole crossing. Read straight off the dir rather than off the drift
-  // projection, which is deliberately absent under braking.
-  const nose = vector ?? DIR_VECTOR[driftDirection];
-  const heeling = nose ? (Math.atan2(nose[0], nose[1]) * 180) / Math.PI : 0;
-
-  const cameraTileX = (focusX + UNIT / 2) / UNIT;
-  const cameraTileY = size + 1 - (focusY + UNIT / 2) / UNIT;
-  // Keep distant remembered contacts out of the SVG. The margin covers glyphs
-  // and camera gliding.
-  const onScreen = (tileX: number, tileY: number) =>
-    Math.abs(tileX - cameraTileX) <= zoomSpan / 2 + 4 &&
-    Math.abs(tileY - cameraTileY) <= zoomSpan / 2 + 4;
-  const course = autopilot?.engaged ? (autopilot.path ?? []) : [];
-  // Uncontrolled drift extrapolation is misleading while autopilot owns steering.
-  const showDrift = !!drift && !autopilot?.engaged;
-  const courseSegments = visibleCourseSegments(
-    [x, y],
-    course,
-    [cameraTileX, cameraTileY],
-    zoomSpan / 2 + 1,
-  );
-
-  const gridLines: number[] = [];
-  for (let i = 0; i <= size; i += 5) gridLines.push(i);
-
-  // The overmap moves in whole tiles, so the projection marks are tile-shaped,
-  // and a tile-shaped mark on a five-tile grid reads as an arbitrary rectangle
-  // floating in open space. The fine grid is the lattice it sits on. Only drawn
-  // once zoomed in far enough for the lines to be distinguishable from each
-  // other, since at full zoom-out fifty-one of them per axis is a flat wash.
-  const fineGrid: number[] = [];
-  if (zoomSpan <= TILE_DETAIL_SPAN) {
-    for (let i = 0; i <= size; i++) fineGrid.push(i);
-  }
-
-  return (
-    <div
-      className={`Helm__viewport ${anchor ? 'Helm--panned' : ''}`}
-      ref={viewportRef}
-      // Right-clicking bare chart opens the position menu rather than handing the
-      // client's own context menu to a player mid-manoeuvre.
-      onContextMenu={(event) => openMenu(event, null)}
-      onPointerDown={startPan}
-      onPointerMove={(event) => {
-        movePan(event);
-        trackCursor(event);
-      }}
-      onPointerUp={endPan}
-      onPointerCancel={endPan}
-      // The readout is about where the cursor is; with the cursor gone there is
-      // nothing to report, and a stale coordinate reads as a live one.
-      onPointerLeave={() => setCursorTile(null)}
-      // Swallowed in the capture phase so the click that ends a drag never
-      // reaches a contact underneath it.
-      onClickCapture={(event) => {
-        if (!didPan.current) return;
-        didPan.current = false;
-        event.stopPropagation();
-      }}
-      // Closing the menu is the console root's job, the click bubbles to it.
-      onDoubleClick={() => setAnchor(null)}
-    >
-      <svg
-        viewBox={`0 0 ${extent} ${extent}`}
-        preserveAspectRatio="xMidYMid slice"
-        role="img"
-        aria-label="Overmap navigation chart"
-      >
-        <defs>
-          <clipPath id="helm-sector-clip">
-            <rect
-              x={UNIT}
-              y={UNIT}
-              width={(size - 2) * UNIT}
-              height={(size - 2) * UNIT}
-            />
-          </clipPath>
-          <radialGradient id="helm-sunglow">
-            <stop offset="0%" stopColor="#f2a341" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#f2a341" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        <g style={{ ...SVG_ORIGIN, transform: zoomTransform }}>
-          <g
-            className="Helm__camera"
-            ref={cameraRef}
-            style={{
-              ...SVG_ORIGIN,
-              transform: followTransform,
-              transition: glide,
-            }}
-          >
-            <rect
-              width={extent}
-              height={extent}
-              fill="#74c8dd"
-              fillOpacity={0.04}
-              pointerEvents="none"
-            />
-            <rect
-              x={UNIT}
-              y={UNIT}
-              width={(size - 2) * UNIT}
-              height={(size - 2) * UNIT}
-              fill="#081013"
-              stroke="#74c8dd"
-              strokeOpacity={0.4}
-              strokeDasharray="5 4"
-              vectorEffect="non-scaling-stroke"
-              pointerEvents="none"
-            />
-            <g clipPath="url(#helm-sector-clip)">
-              <g pointerEvents="none">
-                {rings.map(([radius, colour]) => (
-                  <g key={colour}>
-                    <circle
-                      cx={toX(centre)}
-                      cy={toY(centre)}
-                      r={radius * UNIT}
-                      fill={colour}
-                      fillOpacity={0.06}
-                    />
-                    <circle
-                      cx={toX(centre)}
-                      cy={toY(centre)}
-                      r={radius * UNIT}
-                      fill="none"
-                      stroke={colour}
-                      strokeOpacity={0.3}
-                      strokeDasharray="5 4"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </g>
-                ))}
-
-                <g stroke="#74c8dd" strokeOpacity={0.028} strokeWidth={0.4}>
-                  {fineGrid.map((i) => (
-                    <line
-                      key={`fv${i}`}
-                      x1={i * UNIT}
-                      y1={0}
-                      x2={i * UNIT}
-                      y2={extent}
-                    />
-                  ))}
-                  {fineGrid.map((i) => (
-                    <line
-                      key={`fh${i}`}
-                      x1={0}
-                      y1={i * UNIT}
-                      x2={extent}
-                      y2={i * UNIT}
-                    />
-                  ))}
-                </g>
-
-                <g stroke="#74c8dd" strokeOpacity={0.055} strokeWidth={0.6}>
-                  {gridLines.map((i) => (
-                    <line
-                      key={`v${i}`}
-                      x1={i * UNIT}
-                      y1={0}
-                      x2={i * UNIT}
-                      y2={extent}
-                    />
-                  ))}
-                  {gridLines.map((i) => (
-                    <line
-                      key={`h${i}`}
-                      x1={0}
-                      y1={i * UNIT}
-                      x2={extent}
-                      y2={i * UNIT}
-                    />
-                  ))}
-                </g>
-
-                <circle
-                  cx={toX(centre)}
-                  cy={toY(centre)}
-                  r={60}
-                  fill="url(#helm-sunglow)"
-                />
-                <circle
-                  cx={toX(centre)}
-                  cy={toY(centre)}
-                  r={7}
-                  fill="#f2a341"
-                />
-              </g>
-              <AutopilotRoute
-                segments={courseSegments}
-                steps={course.length}
-                toX={toX}
-                toY={toY}
-                scale={markScale}
-              />
-
-              {/* Amber marks the ship's current drift through visible space. */}
-              {showDrift && !!drift && (
-                <DriftTrack
-                  drift={drift}
-                  from={[x, y]}
-                  toX={toX}
-                  toY={toY}
-                  scale={markScale}
-                  span={zoomSpan}
-                />
-              )}
-              {/*
-            Hails, under the contact marks so a pulse never swallows a click.
-            The ring expands and fades in CSS; a transmission that has aged out
-            simply stops arriving in the live set and the mark disappears.
-          */}
-              {!!autopilot?.engaged &&
-                autopilot.destX !== undefined &&
-                autopilot.destY !== undefined && (
-                  <DestinationMark
-                    cx={toX(autopilot.destX)}
-                    cy={toY(autopilot.destY)}
-                    scale={markScale}
-                  />
-                )}
-              {transmissions
-                .filter((hail) => hail.live)
-                .map((hail, index) => (
-                  <TransmissionPulse
-                    key={`${hail.x}-${hail.y}-${hail.age}-${index}`}
-                    hail={hail}
-                    cx={toX(hail.x)}
-                    cy={toY(hail.y)}
-                    scale={markScale}
-                  />
-                ))}
-
-              {waypoints
-                .filter((contact) => onScreen(contact.x, contact.y))
-                .map((contact) => {
-                  const key = contactKey(contact);
-                  return (
-                    <ContactMark
-                      key={key}
-                      contact={contact}
-                      cx={toX(contact.x)}
-                      cy={toY(contact.y)}
-                      scale={markScale}
-                      inRange={!!contact.live}
-                      selected={selected === key}
-                      onSelect={() => select(key)}
-                      onHover={(entered) =>
-                        setHovered((current) =>
-                          entered ? key : current === key ? null : current,
-                        )
-                      }
-                      onMenu={(event) => openMenu(event, key)}
-                    />
-                  );
-                })}
-              {/*
-            Deaf to the mouse. The view ring below is a filled disc four tiles
-            across drawn on top of every mark inside it, so while it took hits it
-            silently swallowed hover and right-click for every contact the ship
-            was closest to, the ones the crew most wants to inspect.
-          */}
-              <g
-                className="Helm__shipToken"
-                pointerEvents="none"
-                style={{
-                  ...SVG_ORIGIN,
-                  transform: `translate(${toX(x)}px, ${toY(y)}px)`,
-                  transition: glide,
-                }}
-              >
-                {/*
-              Two rings, and the gap between them is the radar tree made visible.
-              Solid inner: what the crew can see, free and fixed. Dashed outer:
-              how far a scan reaches, everything charted came from this band.
-              At base radar they sit on top of each other, which is the honest
-              picture of a ship that has researched nothing.
-            */}
-                <circle
-                  r={viewRange * UNIT}
-                  fill="#74c8dd"
-                  fillOpacity={0.05}
-                  stroke="#74c8dd"
-                  strokeOpacity={0.34}
-                  vectorEffect="non-scaling-stroke"
-                />
-                {sensorRange > viewRange && (
-                  <circle
-                    r={sensorRange * UNIT}
-                    fill="none"
-                    stroke="#74c8dd"
-                    strokeOpacity={0.22}
-                    strokeDasharray="3 4"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                )}
-                <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-                  <circle r={12} fill="#f2a341" fillOpacity={0.1} />
-                  {!!vector && !!speed && (
-                    <line
-                      x1={0}
-                      y1={0}
-                      x2={
-                        (vector[0] / Math.hypot(...vector)) * (14 + speed * 9)
-                      }
-                      y2={
-                        (-vector[1] / Math.hypot(...vector)) * (14 + speed * 9)
-                      }
-                      stroke="#f2a341"
-                      strokeWidth={1.6}
-                      strokeDasharray="4 3"
-                      strokeOpacity={0.85}
-                    />
-                  )}
-                  <path
-                    d="M0,-7 L5,6 L0,3 L-5,6 Z"
-                    fill="#f2a341"
-                    transform={`rotate(${heeling})`}
-                  />
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </svg>
-
-      <div className="Helm__hud Helm--tl">
-        <div className="Helm__hudLine">
-          <span className="Helm__hudKey">HDG</span>{' '}
-          {burnDirection === BURN_STOP
-            ? 'BRAKING'
-            : burnDirection !== BURN_NONE
-              ? heading
-              : drift
-                ? // Cold engines and a moving ship is a course, not a stop, and
-                  // this line called it HOLDING either way.
-                  `DRIFT ${bearingOf(drift.vector[0], drift.vector[1])}`
-                : 'HOLDING'}
-        </div>
-        <div className="Helm__hudLine">
-          <span className="Helm__hudKey">POS</span> {String(x).padStart(2, '0')}{' '}
-          / {String(y).padStart(2, '0')}
-        </div>
-        {!!cursorTile && (
-          <div className="Helm__hudLine Helm--cursor">
-            <span className="Helm__hudKey">CUR</span>{' '}
-            {String(cursorTile.x).padStart(2, '0')} /{' '}
-            {String(cursorTile.y).padStart(2, '0')}
-          </div>
-        )}
-        {showDrift && !!drift && (
-          // Where the ship ends up on the velocity it already has, engines or
-          // no engines. The track on the chart says which way; this says where.
-          <div className="Helm__hudLine Helm--drift">
-            <span className="Helm__hudKey">ENDS</span>{' '}
-            {String(drift.end.x).padStart(2, '0')} /{' '}
-            {String(drift.end.y).padStart(2, '0')} · {clockOf(drift.endMs)}
-          </div>
-        )}
-        {showDrift && !!drift?.intercept && (
-          <div
-            className={`Helm__hudLine ${
-              drift.intercept.contact.kind === 'hazard'
-                ? 'Helm--driftHazard'
-                : 'Helm--drift'
-            }`}
-          >
-            <span className="Helm__hudKey">PATH</span>{' '}
-            {drift.intercept.contact.name.toUpperCase()} ·{' '}
-            {clockOf(drift.intercept.ms)}
-          </div>
-        )}
-      </div>
-      <div className="Helm__hud Helm--tr">
-        <div className="Helm__hudBig">{speed?.toFixed(1) ?? '0.0'}</div>
-        {/*
-          `eta` is the movement timer's own clock, the next TILE, not the next
-          anywhere. Calling it ETA next to a chart full of destinations invited
-          exactly one reading, and it is the wrong one: it never counts toward a
-          contact, and at a steady coast it cycles the same figure forever. The
-          arrival clocks live on the contacts themselves (see useTravelClock).
-        */}
-        <div className="Helm__hudLine">
-          <span className="Helm__hudKey">SPM · TILE</span> {eta || '-'}
-        </div>
-      </div>
-      {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
-
-      <div className="Helm__hud Helm--bl">
-        <AutopilotZones />
-        <div className="Helm__hudLine" style={{ color: '#3d6a76' }}>
-          <span className="Helm__hudKey">SENSOR</span> {sensorRange} TILES
-        </div>
-        {!!autopilot?.engaged && (
-          <div className="Helm__course">
-            <span className="Helm__courseLabel">
-              AUTO · {autopilot.label ?? 'plotted position'}
-            </span>
-            {course.length > 0 && (
-              <span
-                className="Helm__courseDist"
-                title="The green line and arrows show the remaining autopilot route"
-              >
-                Route: {course.length} tiles
-              </span>
-            )}
-            {!!autopilot.dockOnArrival && (
-              <span className="Helm__courseDist">Dock on arrival</span>
-            )}
-            <button
-              type="button"
-              className="Helm__btn"
-              disabled={locked}
-              title="Stand the autopilot down and take manual control"
-              onClick={() => act('autopilot_cancel')}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-        {!autopilot?.engaged && (
-          <div className="Helm__course">
-            <span className="Helm__courseStatus" style={{ marginTop: 0 }}>
-              {autopilot?.status
-                ? `AUTOPILOT OFF · ${autopilot.status}`
-                : 'AUTOPILOT'}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="Helm__zoomRow">
-        {/*
-          Only offered once the camera is actually off the ship. A permanent
-          re-centre button on a chart that is already centred is a dead control.
-        */}
-        {!!anchor && (
-          <button
-            type="button"
-            className="Helm__btn Helm__recentre"
-            title="Snap the chart back onto the ship (or double-click the chart)"
-            onClick={() => setAnchor(null)}
-          >
-            Recentre
-          </button>
-        )}
-        <span className="Helm__zoomLabel">{Math.round(zoomSpan)} tiles</span>
-        <input
-          type="range"
-          className="Helm__zoomSlider"
-          aria-label="Chart zoom"
-          min={0}
-          max={100}
-          step={1}
-          value={Math.round(
-            (Math.log(zoomSpan / ZOOM_MIN_SPAN) /
-              Math.log(maxSpan / ZOOM_MIN_SPAN)) *
-              100,
-          )}
-          onChange={(event) =>
-            setSpan(
-              ZOOM_MIN_SPAN *
-                (maxSpan / ZOOM_MIN_SPAN) **
-                  (Number(event.currentTarget.value) / 100),
-            )
-          }
-        />
-      </div>
-    </div>
-  );
-};
-
-/**
- * The drift track: the tiles the ship crosses from here on the velocity it
- * already has, and a ghost of it at the end of the horizon.
- *
- * The projection ends at the chart's looping barriers.
- */
-const DriftTrack = (props: {
-  drift: Drift;
-  from: [number, number];
-  toX: (tile: number) => number;
-  toY: (tile: number) => number;
-  scale: number;
-  span: number;
-}) => {
-  const { drift, from, toX, toY, scale, span } = props;
-  const { tiles, end, intercept, hold } = drift;
-  // A crossing one step away leaves no tiles to draw, but the hold still has to
-  // be marked, that case is precisely the one the crew most needs to see.
-  if (!tiles.length && !hold) return null;
-
-  const segments = [[
-    `${toX(from[0])},${toY(from[1])}`,
-    ...tiles.map((tile) => `${toX(tile.x)},${toY(tile.y)}`),
-  ]];
-
-  const heeling =
-    (Math.atan2(drift.vector[0], drift.vector[1]) * 180) / Math.PI;
-  const hazard = intercept?.contact.kind === 'hazard';
-
-  const detailed = span <= TILE_DETAIL_SPAN;
-
-  return (
-    <g className="Helm__drift" pointerEvents="none">
-      {/*
-        The thread between the cells. It carries the whole reading when the tiles
-        are too small to mark individually, and drops back to a hint once they
-        aren't, at that zoom the cells say everything it does, and a dashed line
-        run through the middle of each of them only fights their clocks.
-      */}
-      {segments.map((segment) => (
-        <polyline
-          key={segment[0]}
-          points={segment.join(' ')}
-          fill="none"
-          stroke="#f2a341"
-          strokeWidth={1.2}
-          strokeOpacity={detailed ? 0.18 : 0.42}
-          strokeDasharray="3 6"
-          vectorEffect="non-scaling-stroke"
-        />
-      ))}
-
-      {/*
-        One cell per tile the ship crosses.
-
-        Drawn in map space at tile size rather than counter-scaled like the
-        glyphs: a mark that means "this tile" has to be the size of the tile at
-        every zoom, or it stops being an answer to which tile. Zoomed in far
-        enough for the cell to hold it, each one is labelled with the clock the
-        ship reaches it at, the per-tile version of the single endpoint ETA the
-        HUD line carries.
-
-        The track fades along its length. The near tiles are the ones a crew
-        still has time to steer on, and the middle of a minute-long projection
-        is the part most likely to be wrong by the time it arrives. The last
-        tile is exempt: it is the answer to where the ship ends up, which is the
-        question the whole track exists to answer, and fading it hardest for
-        being furthest away buries exactly that.
-      */}
-      {tiles.map((tile) => {
-        const struck = intercept?.step === tile.step;
-        const colour = struck && hazard ? '#cf4a38' : '#f2a341';
-        const fade =
-          tile.step === end.step
-            ? 1
-            : 1 - (0.5 * (tile.step - 1)) / Math.max(tiles.length - 1, 1);
-        return (
-          <g key={`cell-${tile.x}-${tile.y}-${tile.step}`}>
-            <rect
-              x={toX(tile.x) - UNIT / 2 + DRIFT_INSET}
-              y={toY(tile.y) - UNIT / 2 + DRIFT_INSET}
-              width={UNIT - DRIFT_INSET * 2}
-              height={UNIT - DRIFT_INSET * 2}
-              rx={0.7}
-              fill={colour}
-              fillOpacity={(struck ? 0.22 : 0.08) * fade}
-              stroke={colour}
-              strokeOpacity={(struck ? 0.95 : 0.5) * fade}
-              strokeWidth={struck ? 1.4 : 1}
-              vectorEffect="non-scaling-stroke"
-            />
-            {/*
-              Along the bottom edge rather than through the middle: a contact
-              glyph sits at the centre of its tile, and the tile the crew most
-              wants the clock for is the one with something on it.
-            */}
-            {!!detailed && (
-              <text
-                x={toX(tile.x)}
-                y={toY(tile.y) + UNIT / 2 - DRIFT_INSET - 0.5}
-                textAnchor="middle"
-                fill={colour}
-                fillOpacity={0.8 * fade}
-                fontSize={UNIT * 0.28}
-                fontFamily="ui-monospace, monospace"
-              >
-                {clockOf(tile.step * drift.stepMs)}
-              </text>
-            )}
-          </g>
-        );
-      })}
-
-      {/*
-        The zone line the track stops at. Drawn as a barred cell on the far side
-        rather than as another step: the ship does not go there on the velocity
-        it has, it stops short and spends ZONE_TRANSITION_TIME sitting still
-        first. Without this the projection just ended in open space for no
-        visible reason.
-      */}
-      {!!hold && (
-        <g>
-          <rect
-            x={toX(hold.x) - UNIT / 2 + DRIFT_INSET}
-            y={toY(hold.y) - UNIT / 2 + DRIFT_INSET}
-            width={UNIT - DRIFT_INSET * 2}
-            height={UNIT - DRIFT_INSET * 2}
-            rx={0.7}
-            fill="none"
-            stroke="#74c8dd"
-            strokeOpacity={0.65}
-            strokeWidth={1.1}
-            strokeDasharray="2 2"
-            vectorEffect="non-scaling-stroke"
-          />
-          {!!detailed && (
-            <text
-              x={toX(hold.x)}
-              y={toY(hold.y) + UNIT / 2 - DRIFT_INSET - 0.5}
-              textAnchor="middle"
-              fill="#74c8dd"
-              fillOpacity={0.85}
-              fontSize={UNIT * 0.26}
-              fontFamily="ui-monospace, monospace"
-            >
-              +{ZONE_TRANSITION_MS / 1000}s
-            </text>
-          )}
-        </g>
-      )}
-
-      {!!intercept && (
-        <g
-          transform={`translate(${toX(intercept.contact.x)},${toY(intercept.contact.y)})`}
-        >
-          <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-            <circle
-              r={11}
-              fill="none"
-              stroke={hazard ? '#cf4a38' : '#f2a341'}
-              strokeWidth={1.2}
-              strokeOpacity={hazard ? 0.9 : 0.5}
-              strokeDasharray="4 3"
-            />
-          </g>
-        </g>
-      )}
-
-      {/*
-        The ghost: the hull's own silhouette, hollow, where it ends up. Skipped
-        when the crossing is the very next step, since "where it ends up" is the
-        tile it is already on and the ghost would sit on top of the real token.
-      */}
-      {!!tiles.length && (
-      <g transform={`translate(${toX(end.x)},${toY(end.y)})`}>
-        <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-          <path
-            d="M0,-7 L5,6 L0,3 L-5,6 Z"
-            fill="none"
-            stroke="#f2a341"
-            strokeWidth={1.2}
-            strokeOpacity={0.55}
-            transform={`rotate(${heeling})`}
-          />
-          {/*
-            Zoomed out past the per-tile clocks, the ghost carries the endpoint
-            one on its own. Otherwise the whole projection loses its timing at
-            exactly the zoom where the crew is looking furthest ahead.
-          */}
-          {span > TILE_DETAIL_SPAN && (
-            <text
-              y={17}
-              textAnchor="middle"
-              fill="#f2a341"
-              fillOpacity={0.6}
-              fontSize={9}
-              fontFamily="ui-monospace, monospace"
-            >
-              {clockOf(drift.endMs)}
-            </text>
-          )}
-        </g>
-      </g>
-      )}
-    </g>
-  );
-};
-
-/** Exact remaining steps, with arrows pointing toward the selected destination. */
-const AutopilotRoute = (props: {
-  segments: CourseSegment[];
-  steps: number;
-  toX: (tile: number) => number;
-  toY: (tile: number) => number;
-  scale: number;
-}) => {
-  const { segments, steps, toX, toY, scale } = props;
-  if (!segments.length) return null;
-  const line = segments
-    .map(({ from, to }) => `M${toX(from[0])},${toY(from[1])} L${toX(to[0])},${toY(to[1])}`)
-    .join(' ');
-  // Space arrows from the destination so consuming a step does not shift them.
-  const arrowSize = Math.min(UNIT * 0.28, 4 / scale);
-  const arrows = segments
-    .filter(({ step }) => (steps - step - 1) % 3 === 0)
-    .map(({ from, to }) => {
-      const dx = toX(to[0]) - toX(from[0]);
-      const dy = toY(to[1]) - toY(from[1]);
-      const length = Math.hypot(dx, dy);
-      const ux = (dx / length) * arrowSize;
-      const uy = (dy / length) * arrowSize;
-      const cx = (toX(from[0]) + toX(to[0])) / 2;
-      const cy = (toY(from[1]) + toY(to[1])) / 2;
-      return `M${cx - ux + uy * 0.7},${cy - uy - ux * 0.7} L${cx + ux},${cy + uy} L${cx - ux - uy * 0.7},${cy - uy + ux * 0.7}`;
-    })
-    .join(' ');
-  return (
-    <g pointerEvents="none" fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d={line} stroke="#081619" strokeWidth={4.5} vectorEffect="non-scaling-stroke" />
-      <path d={line} stroke="#59b871" strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
-      <path d={arrows} stroke="#b8f5c6" strokeWidth={1.8} vectorEffect="non-scaling-stroke" />
-    </g>
-  );
-};
-
-/** The selected destination shares the planned course's green colour. */
-const DestinationMark = ({ cx, cy, scale }: { cx: number; cy: number; scale: number }) => (
-  <g className="Helm__plot" pointerEvents="none" transform={`translate(${cx},${cy})`}>
-    <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-      <circle className="Helm__plotTarget" r={9} fill="none" stroke="#59b871" strokeWidth={1.4} />
-      <path d="M-4,0 H4 M0,-4 V4" stroke="#59b871" strokeWidth={1.2} />
-    </g>
-  </g>
-);
-
-const ContactMark = (props: {
-  contact: Contact;
-  cx: number;
-  cy: number;
-  scale: number;
-  inRange: boolean;
-  selected: boolean;
-  onSelect: () => void;
-  onHover: (entered: boolean) => void;
-  onMenu: (event: React.MouseEvent) => void;
-}) => {
-  const { contact, cx, cy, scale, inRange, selected, onSelect, onHover, onMenu } =
-    props;
-  const unknown = contact.kind === 'ship' && !contact.identified;
-  const colour = contactColour(contact);
-  // Nebulas and storms spread across whole banks of tiles, so labelling every
-  // one buries the chart in repeated names. They read as a field from the
-  // glyphs alone; the name comes back on click, and the drawer always has it.
-  const labelled =
-    selected || (contact.kind !== 'nebula' && contact.kind !== 'hazard');
-
-  return (
-    <g
-      className={`Helm__contact ${selected ? 'Helm--selected' : ''}`}
-      transform={`translate(${cx},${cy})`}
-      opacity={inRange ? 1 : 0.5}
-      onClick={onSelect}
-      onContextMenu={onMenu}
-      onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
-    >
-      <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-        {/*
-          A beacon is the one mark on the chart that moves on its own. Two rings
-          out of phase, the same idiom a hail pulse uses, drawn under the hit area
-          so it never eats a click. The tooltip carries whatever the crew over
-          there typed, which is not necessarily true - see ship_distress.dm.
-        */}
-        {!!contact.sos && (
-          <>
-            <title>
-              {contact.sosMessage
-                ? `Distress beacon: "${contact.sosMessage}"`
-                : 'Distress beacon'}
-            </title>
-            <circle
-              className="Helm__pulse"
-              r={10}
-              fill="none"
-              stroke={colour}
-              strokeWidth={1.6}
-              pointerEvents="none"
-            />
-            <circle
-              className="Helm__pulse Helm__pulse--trail"
-              r={10}
-              fill="none"
-              stroke={colour}
-              strokeWidth={1.2}
-              pointerEvents="none"
-            />
-          </>
-        )}
-        {/*
-          Invisible hit area. The glyphs are 5-6 units across at chart scale,
-          which is a punishing target with a mouse, this gives every contact a
-          consistent grab radius without changing how it looks.
-        */}
-        <circle r={11} fill="transparent" />
-        <circle className="Helm__halo" r={11} fill={colour} fillOpacity={0.5} />
-        {unknown ? (
-          <UnknownGlyph colour={colour} />
-        ) : (
-          <ContactGlyph
-            kind={contact.kind}
-            variant={contact.variant}
-            severity={contact.severity}
-            colour={colour}
-          />
-        )}
-        {!!labelled && (
-          // Sits inside the counter-scale group, so this is a constant size on
-          // screen at every zoom. One SVG unit is only ~1.3 screen pixels here,
-          // which is why the old 5.2 rendered at about six pixels.
-          <text
-            y={15}
-            textAnchor="middle"
-            fill={colour}
-            fontSize={10}
-            fontFamily="ui-monospace, monospace"
-          >
-            {contact.name.toUpperCase()}
-          </text>
-        )}
-      </g>
-    </g>
-  );
-};
-
-/**
- * A hail going out or coming in: a ring that expands and fades from the sender's
- * tile, with the message beneath it. Our own transmissions read amber like the
- * rest of the ship's own state; anyone else's read ice, same as every other
- * outside-world contact.
- */
-const TransmissionPulse = (props: {
-  hail: Transmission;
-  cx: number;
-  cy: number;
-  scale: number;
-}) => {
-  const { hail, cx, cy, scale } = props;
-  const colour = hail.own ? '#f2a341' : '#74c8dd';
-
-  return (
-    <g transform={`translate(${cx},${cy})`} style={{ pointerEvents: 'none' }}>
-      <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
-        <circle
-          className="Helm__pulse"
-          r={9}
-          fill="none"
-          stroke={colour}
-          strokeWidth={1.4}
-        />
-        <circle
-          className="Helm__pulse Helm__pulse--trail"
-          r={9}
-          fill="none"
-          stroke={colour}
-          strokeWidth={1}
-        />
-        <text
-          className="Helm__hailText"
-          y={-16}
-          textAnchor="middle"
-          fill={colour}
-          fontSize={8.5}
-          fontFamily="ui-monospace, monospace"
-        >
-          {hail.message.length > 46
-            ? `${hail.message.slice(0, 45)}…`
-            : hail.message}
-        </text>
-      </g>
-    </g>
-  );
-};
-
-/**
- * Everything the helm knows about the contact under the cursor. Sits bottom-right
- * of the chart rather than following the mouse: a callout chasing the cursor
- * across a chart the crew is trying to read is worse than one they can learn the
- * position of.
- */
-const ContactReadout = (props: { contact: Contact }) => {
-  const { contact } = props;
-  const travelClock = useTravelClock();
-  const unknown = contact.kind === 'ship' && !contact.identified;
-  const eta = travelClock(contact.x, contact.y);
-
-  return (
-    <div className="Helm__readout">
-      <div className={`Helm__readoutName ${unknown ? 'Helm--unknown' : ''}`}>
-        {contact.name}
-      </div>
-      <div className="Helm__readoutMeta">
-        {contact.category} · {String(contact.x).padStart(2, '0')} /{' '}
-        {String(contact.y).padStart(2, '0')}
-      </div>
-      <div className="Helm__readoutMeta">
-        {contact.dist > 0
-          ? `${contact.dist} tiles ${contact.bearing}`
-          : 'This position'}
-        {/*
-          The trip at the speed the ship is already making, so a crew reading the
-          callout before they commit to a heading knows what it costs. Tiles
-          alone can't say: the same four tiles is twenty seconds or two minutes
-          depending on what the hull is carrying.
-        */}
-        {!!eta && ` · ${eta} out`}
-        {contact.integrity != null && ` · hull ${contact.integrity}%`}
-        {!!contact.hostile && ' · HOSTILE'}
-      </div>
-      {!!contact.hazard && (
-        <div className="Helm__readoutHazard">{contact.hazard}</div>
-      )}
-      {/*
-        Verbatim, and flagged as their words rather than the console's. The helm
-        knows a beacon is lit and knows nothing at all about whether it is honest.
-      */}
-      {!!contact.sos && (
-        <div className="Helm__readoutSos">
-          Distress beacon
-          {contact.sosMessage ? `: "${contact.sosMessage}"` : ''}
-        </div>
-      )}
-      <div className="Helm__readoutHint">
-        {unknown ? 'Right-click to identify' : 'Right-click to set course'}
-      </div>
-    </div>
-  );
-};
-
 /**
  * Contextual actions for a contact, opened by right-click on its mark on the
  * chart or on its row in the contact drawer. The two are the same list seen two
@@ -3208,7 +1795,8 @@ const ContactMenu = (props: {
 }) => {
   const { contact, tile, left, top, onClose } = props;
   const { act, data } = useBackend<Data>();
-  const { scanCooldown, state, autopilot, x, y, shipDisabled, canThrust } = data;
+  const { scanCooldown, state, autopilot, x, y, shipDisabled, canThrust } =
+    data;
   const locked = useLocked();
 
   const unknown = contact?.kind === 'ship' && !contact.identified;
@@ -3318,7 +1906,8 @@ const ContactMenu = (props: {
       }}
     >
       <div className="Helm__menuHead">
-        {contact?.name ?? `${String(tile.x).padStart(2, '0')} / ${String(tile.y).padStart(2, '0')}`}
+        {contact?.name ??
+          `${String(tile.x).padStart(2, '0')} / ${String(tile.y).padStart(2, '0')}`}
       </div>
       {items.length === 0 ? (
         <div className="Helm__menuEmpty">No actions available</div>
@@ -3475,8 +2064,16 @@ const ContactGlyph = (props: {
         return (
           <>
             <circle cx={-3.2} r={1.5} fill={colour} />
-            <path d="M-1.6,-2.8 A3.2 3.2 0 0 1 -1.6,2.8" {...line} strokeWidth={1.4} />
-            <path d="M0,-4.6 A5.6 5.6 0 0 1 0,4.6" {...line} strokeWidth={1.4} />
+            <path
+              d="M-1.6,-2.8 A3.2 3.2 0 0 1 -1.6,2.8"
+              {...line}
+              strokeWidth={1.4}
+            />
+            <path
+              d="M0,-4.6 A5.6 5.6 0 0 1 0,4.6"
+              {...line}
+              strokeWidth={1.4}
+            />
           </>
         );
       }
@@ -3523,14 +2120,25 @@ const ContactGlyph = (props: {
       }
       return (
         <>
-          <rect x={-4} y={-4} width={8} height={8} {...line} strokeWidth={1.7} />
+          <rect
+            x={-4}
+            y={-4}
+            width={8}
+            height={8}
+            {...line}
+            strokeWidth={1.7}
+          />
           <rect x={-1.4} y={-1.4} width={2.8} height={2.8} fill={colour} />
         </>
       );
 
     case 'ship':
       return (
-        <path d="M0,-5.5 L4,4.5 L0,2 L-4,4.5 Z" fill={colour} fillOpacity={0.9} />
+        <path
+          d="M0,-5.5 L4,4.5 L0,2 L-4,4.5 Z"
+          fill={colour}
+          fillOpacity={0.9}
+        />
       );
 
     case 'distress':
@@ -3595,7 +2203,13 @@ const ContactGlyph = (props: {
       );
 
     case 'mission':
-      return <path d="M0,-5.2 L5.2,0 L0,5.2 L-5.2,0 Z" fill={colour} fillOpacity={0.9} />;
+      return (
+        <path
+          d="M0,-5.2 L5.2,0 L0,5.2 L-5.2,0 Z"
+          fill={colour}
+          fillOpacity={0.9}
+        />
+      );
 
     case 'rumor':
       // Same diamond as a mission, hollow: a lead, not an assignment. Hollow
@@ -3606,7 +2220,10 @@ const ContactGlyph = (props: {
     case 'event':
       return (
         <>
-          <path d="M0,-5.4 L4.7,-2.7 L4.7,2.7 L0,5.4 L-4.7,2.7 L-4.7,-2.7 Z" {...line} />
+          <path
+            d="M0,-5.4 L4.7,-2.7 L4.7,2.7 L0,5.4 L-4.7,2.7 L-4.7,-2.7 Z"
+            {...line}
+          />
           <circle r={1.4} fill={colour} />
         </>
       );
@@ -3640,7 +2257,10 @@ const HazardGlyph = (props: {
       // reads as a field.
       return (
         <>
-          <path d="M-4.8,-2.4 L-2.2,-4.2 L-0.8,-1.8 L-3.2,-0.4 Z" fill={colour} />
+          <path
+            d="M-4.8,-2.4 L-2.2,-4.2 L-0.8,-1.8 L-3.2,-0.4 Z"
+            fill={colour}
+          />
           <path d="M1.4,-4.4 L4.6,-3.2 L4,-0.4 L1,-1.4 Z" fill={colour} />
           <path d="M-2.6,1.4 L0.6,0.8 L1.4,3.8 L-1.6,4.4 Z" fill={colour} />
           <circle cx={3.6} cy={3.2} r={1.2} fill={colour} />
@@ -3660,7 +2280,12 @@ const HazardGlyph = (props: {
         </>
       );
     case 'electrical':
-      return <path d="M1.6,-6 L-3.4,0.4 L-0.2,0.4 L-1.6,6 L3.4,-0.4 L0.2,-0.4 Z" fill={colour} />;
+      return (
+        <path
+          d="M1.6,-6 L-3.4,0.4 L-0.2,0.4 L-1.6,6 L3.4,-0.4 L0.2,-0.4 Z"
+          fill={colour}
+        />
+      );
     default:
       // Something is out there and the sensors won't say what.
       return (
@@ -3683,7 +2308,9 @@ const Drawer = () => {
   const [tab, setTab] = useState<Tab>('Contacts');
   // Only hails still pulsing on the chart count as unread-ish; an old log is not
   // something to keep nagging about.
-  const freshHails = transmissions.filter((hail) => hail.live && !hail.own).length;
+  const freshHails = transmissions.filter(
+    (hail) => hail.live && !hail.own,
+  ).length;
 
   return (
     <div className="Helm__drawerWrap">
@@ -3946,7 +2573,9 @@ const AtLocation = () => {
         <div key={object.ref} className="Helm__card">
           <div className="Helm__cardName">{object.name}</div>
           <div className="Helm__cardMeta">
-            {object.integrity ? `Integrity ${object.integrity}%` : 'Sharing tile'}
+            {object.integrity
+              ? `Integrity ${object.integrity}%`
+              : 'Sharing tile'}
           </div>
           {!!object.hazard && (
             <div className="Helm__cardDesc">{object.hazard}</div>
@@ -4167,7 +2796,10 @@ const Throttle = () => {
     if (!track) return;
     const rect = track.getBoundingClientRect();
     const value = Math.round(
-      Math.min(100, Math.max(1, (1 - (clientY - rect.top) / rect.height) * 100)),
+      Math.min(
+        100,
+        Math.max(1, (1 - (clientY - rect.top) / rect.height) * 100),
+      ),
     );
     setDragValue(value);
     send(value, force);
@@ -4594,7 +3226,9 @@ const OpsRow = () => {
         state={dockWarmup ? 'armed' : undefined}
         title={dockReason()}
         onClick={(event) =>
-          multipleDockOptions ? openDockPicker(event) : runDock(primaryDockOption)
+          multipleDockOptions
+            ? openDockPicker(event)
+            : runDock(primaryDockOption)
         }
       />
       <OpsButton
@@ -4617,7 +3251,9 @@ const OpsRow = () => {
               !!nebulaHideWarmup ||
               !!zone_transitioning
         }
-        state={hiddenInNebula ? 'active' : nebulaHideWarmup ? 'armed' : undefined}
+        state={
+          hiddenInNebula ? 'active' : nebulaHideWarmup ? 'armed' : undefined
+        }
         title={
           hiddenInNebula
             ? 'Break concealment and become visible again'

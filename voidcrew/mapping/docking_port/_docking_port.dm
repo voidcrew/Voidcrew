@@ -201,7 +201,7 @@ GLOBAL_LIST_EMPTY(ship_site_occupancy)
  *
  * That budget is what gates check_transit_zone(). Exhaust it and a ship can never
  * enter transit again - which on the overmap reads as an undock that leaves the hull
- * parked at the dock it just "left" (see complete_dock() in ship.dm).
+ * parked at the dock it just "left" (see complete_dock() in ship/docking.dm).
  */
 /proc/release_assigned_transit(obj/docking_port/mobile/shuttle)
 	if(!shuttle)

@@ -9,7 +9,7 @@
  * - Damage = turfs being destroyed (explosions, meteors, etc.)
  * - Repair = turfs being rebuilt (construction)
  *
- * Mass tracking is event-driven via signals (see setup_mass_tracking in ship.dm):
+ * Mass tracking is event-driven via signals (see setup_mass_tracking in mass.dm):
  * - COMSIG_TURF_CHANGE: tracks turf type changes (wall->floor, floor->space)
  * - COMSIG_TURF_REMOVED_FROM_SHUTTLE: tracks turfs removed from shuttle
  * - COMSIG_SHUTTLE_EXPANDED: tracks new turfs added via expansion
@@ -485,7 +485,7 @@
 
 	// A plotted course routes around storms, so ending up inside one means the
 	// route was planned before we could see it. Hand the ship back rather than
-	// fly deeper in. Nebulas are not a threat and don't count (ship_autopilot.dm).
+	// fly deeper in. Nebulas are not a threat and don't count (autopilot.dm).
 	if(!istype(hazard, /obj/structure/overmap/event/nebula))
 		interrupt_autopilot("[hazard.name] ahead")
 

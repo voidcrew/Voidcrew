@@ -238,13 +238,16 @@
 	)
 	ai_traits = PASSIVE_AI_FLAGS
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk/outpost_loiterer
+	idle_behavior = /datum/idle_behavior/outpost_loiterer
 
-/// Loiterers never wander out of the sanctuary area (or out an airlock)
-/datum/idle_behavior/idle_random_walk/outpost_loiterer
-	walk_chance = 10
+/// Loiterers never wander out of the sanctuary area (or out an airlock).
+/// Not an idle_random_walk subtype: calling that parent would take its own unrestricted step first.
+/datum/idle_behavior/outpost_loiterer
+	///Chance that the mob random walks per second
+	var/walk_chance = 10
 
-/datum/idle_behavior/idle_random_walk/outpost_loiterer/perform_idle_behavior(seconds_per_tick, datum/ai_controller/controller)
+/datum/idle_behavior/outpost_loiterer/perform_idle_behavior(seconds_per_tick, datum/ai_controller/controller)
+	. = ..()
 	var/mob/living/living_pawn = controller.pawn
 	if(LAZYLEN(living_pawn.do_afters))
 		return FALSE

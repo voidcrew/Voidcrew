@@ -117,7 +117,9 @@ GLOBAL_LIST_EMPTY(player_outposts)
 			berth.release(force = TRUE)
 	berths = null
 	remove_docks()
-	remove_mapzone()
+	// remove_mapzone() runs the worldgen teardown sweep, which yields (CHECK_TICK/
+	// sleep) to avoid blowing a tick. Destroy() must not sleep, so defer it.
+	INVOKE_ASYNC(src, PROC_REF(remove_mapzone))
 	return ..()
 
 /obj/structure/overmap/dynamic/player_outpost/proc/remove_docks()

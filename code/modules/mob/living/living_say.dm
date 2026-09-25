@@ -110,6 +110,12 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	datum/saymode/saymode,
 	list/message_mods = list(),
 )
+	// VOIDCREW EDIT ADDITION START - speech is fire-and-forget: say() can prompt (custom emote input, soft word
+	// filter) and can wait on the ban cache, but no caller consumes its return or
+	// needs it to finish before continuing. Non-blocking here keeps callers such
+	// as Life() and signal handlers from inheriting a sleep they cannot afford.
+	set waitfor = FALSE
+	// VOIDCREW EDIT ADDITION END
 	if(sanitize)
 		message = trim(copytext_char(sanitize(message), 1, MAX_MESSAGE_LEN))
 	if(!message || message == "")
@@ -124,13 +130,21 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	if(!message)
 		return
 
+	// VOIDCREW EDIT START - the dispatch is async on purpose: dynamic_invoke_verb() reaches the base
+	// /datum/admin_verb/proc/__avd_do_verb, whose child verbs may block (input,
+	// alerts, tgui prompts). say() runs from SHOULD_NOT_SLEEP contexts all over
+	// the codebase, so a synchronous call here made the whole graph look
+	// sleeping to dreamchecker (thousands of must_not_sleep errors). Neither
+	// cmd_admin_say nor dsay sleeps or returns a value, so deferring by a tick
+	// is behaviorally identical.
 	if(message_mods[RADIO_EXTENSION] == MODE_ADMIN)
-		SSadmin_verbs.dynamic_invoke_verb(client, /datum/admin_verb/cmd_admin_say, message)
+		INVOKE_ASYNC(SSadmin_verbs, TYPE_PROC_REF(/datum/controller/subsystem/admin_verbs, dynamic_invoke_verb), client, /datum/admin_verb/cmd_admin_say, message)
 		return
 
 	if(message_mods[RADIO_EXTENSION] == MODE_DEADMIN)
-		SSadmin_verbs.dynamic_invoke_verb(client, /datum/admin_verb/dsay, message)
+		INVOKE_ASYNC(SSadmin_verbs, TYPE_PROC_REF(/datum/controller/subsystem/admin_verbs, dynamic_invoke_verb), client, /datum/admin_verb/dsay, message)
 		return
+	// VOIDCREW EDIT END
 
 	// dead is the only state you can never emote
 	if(stat != DEAD && check_emote(original_message, forced))

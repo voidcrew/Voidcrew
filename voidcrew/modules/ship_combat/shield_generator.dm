@@ -973,6 +973,10 @@
 
 /// Spawns shield walls on all boundary turfs with correct directions
 /obj/machinery/ship_combat/shield_generator/proc/spawn_shield_walls()
+	// The boundary scan yields (CHECK_TICK) on large hulls. Nothing consumes this
+	// proc's return and its callers are signal handlers/movement callbacks, so it
+	// is fire-and-forget rather than blocking them.
+	set waitfor = FALSE
 	destroy_shield_walls()
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(!ship?.shuttle?.shuttle_areas)

@@ -109,7 +109,7 @@
 	var/datum/vestige_trial/snatched_meal/trial = prepare(/datum/vestige_trial/snatched_meal)
 	TEST_ASSERT(trial.actor && trial.pantry && trial.course, "The actual invitation must summon the guarded meal and porter.")
 	var/turf/lure = locate(center.x + 3, center.y, center.z)
-	TEST_ASSERT(lure.base_ranged_item_interaction(user, trial.maw, list()) & ITEM_INTERACT_SUCCESS, "The held maw must spit its real scent onto the nearest legal lure tile.")
+	TEST_ASSERT(lure.vc_test_base_ranged_item_interaction(user, trial.maw, list()) & ITEM_INTERACT_SUCCESS, "The held maw must spit its real scent onto the nearest legal lure tile.")
 	TEST_ASSERT(trial.decoy && !trial.decoy_ready, "Spitting must consume the one scent bolus.")
 	for(var/beat in 1 to 12)
 		trial.next_action = world.time
@@ -117,7 +117,7 @@
 		if(trial.investigate_until > world.time)
 			break
 	TEST_ASSERT(trial.investigate_until > world.time && get_turf(trial.actor) == lure, "The actual porter must walk all the way to the lure and begin investigating.")
-	TEST_ASSERT(trial.pantry.base_item_interaction(user, trial.maw, list()) & ITEM_INTERACT_SUCCESS, "The real theft channel must remove the guarded course.")
+	TEST_ASSERT(trial.pantry.vc_test_base_item_interaction(user, trial.maw, list()) & ITEM_INTERACT_SUCCESS, "The real theft channel must remove the guarded course.")
 	TEST_ASSERT_EQUAL(trial.course.loc, trial.maw, "The stolen meal must be physically inside the held maw.")
 	var/turf/escape = locate(center.x - 6, center.y, center.z)
 	TEST_ASSERT(walk_route_to(escape), "The laden keeper must walk around the opaque screen to the getaway tile.")
@@ -134,7 +134,7 @@
 /datum/unit_test/vestige_morph_route/understudy/Run()
 	var/datum/vestige_trial/understudy/trial = prepare(/datum/vestige_trial/understudy)
 	TEST_ASSERT(trial.actor && trial.input && trial.left_dock && trial.right_dock, "The actual invitation must deploy the seven-tile balance dock.")
-	TEST_ASSERT(trial.actor.base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The first skin interaction must begin the custodian's real demonstration.")
+	TEST_ASSERT(trial.actor.vc_test_base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The first skin interaction must begin the custodian's real demonstration.")
 	TEST_ASSERT(walk_route_to(get_step(center, NORTH)), "The observer must leave the center lane clear for the custodian.")
 	for(var/beat in 1 to 64)
 		trial.next_action = world.time
@@ -145,7 +145,7 @@
 	TEST_ASSERT_EQUAL(trial.dock_load(trial.left_dock), 2 * trial.amber_share, "The physical amber load must express the randomly selected demonstration rule.")
 	TEST_ASSERT_EQUAL(trial.dock_load(trial.right_dock), 2 * trial.violet_share, "The physical violet load must express the same demonstration rule.")
 	TEST_ASSERT(walk_route_to(get_step(trial.actor, NORTH)), "The observer must walk back to the actual custodian to study it.")
-	TEST_ASSERT(trial.actor.base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The second skin interaction must finish its real identity-study channel.")
+	TEST_ASSERT(trial.actor.vc_test_base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The second skin interaction must finish its real identity-study channel.")
 	TEST_ASSERT(trial.production && trial.has_identity(user), "Borrowing the custodian must issue the actual new shipment.")
 	var/list/shipment = trial.parcels.Copy()
 	TEST_ASSERT_EQUAL(length(shipment), 4, "The production shipment must contain four physical parcels.")
@@ -172,8 +172,8 @@
 		TEST_ASSERT(user.is_holding(parcel) && user.is_holding(trial.skin), "The parcel and skin must fit together in the keeper's ordinary hands.")
 		var/obj/structure/vestige_morph_station/destination = solution & (1 << (index - 1)) ? trial.left_dock : trial.right_dock
 		TEST_ASSERT(walk_route_to(get_turf(destination)), "The borrowed custodian must carry the parcel to its chosen receiving tray.")
-		TEST_ASSERT(destination.base_item_interaction(user, parcel, list()) & ITEM_INTERACT_SUCCESS, "The real receiving-tray interaction must accept the held marked parcel.")
+		TEST_ASSERT(destination.vc_test_base_item_interaction(user, parcel, list()) & ITEM_INTERACT_SUCCESS, "The real receiving-tray interaction must accept the held marked parcel.")
 		TEST_ASSERT_EQUAL(parcel.loc, destination, "The credited load must physically reside inside its receiving tray.")
 	TEST_ASSERT(walk_route_to(center), "The borrowed custodian must return to the central release.")
-	TEST_ASSERT(trial.input.base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The held skin must operate the actual release.")
+	TEST_ASSERT(trial.input.vc_test_base_item_interaction(user, trial.skin, list()) & ITEM_INTERACT_SUCCESS, "The held skin must operate the actual release.")
 	TEST_ASSERT(/datum/vestige_trial/understudy in user.mind.completed_vestige_trials, "Observation, borrowed identity and all real parcel deliveries must complete the Understudy.")

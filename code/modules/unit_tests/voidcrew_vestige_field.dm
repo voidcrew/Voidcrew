@@ -180,7 +180,7 @@
 		sleep(3 SECONDS)
 		trial.manual.process(0.2)
 		TEST_ASSERT_EQUAL(trial.phase, 3, "Evading the real sweep must expose recovery.")
-		TEST_ASSERT(trial.actor.base_item_interaction(user, trial.incense, list()) & ITEM_INTERACT_SUCCESS, "Touching the instructor with the held incense must counter.")
+		TEST_ASSERT(trial.actor.vc_test_base_item_interaction(user, trial.incense, list()) & ITEM_INTERACT_SUCCESS, "Touching the instructor with the held incense must counter.")
 		if(exchange < 3)
 			TEST_ASSERT_EQUAL(trial.counters, exchange, "Only the actual counter may advance the lesson.")
 	TEST_ASSERT(/datum/vestige_trial/stillness in user.mind.completed_vestige_trials, "Three actual exchanges must complete Stillness.")
@@ -239,7 +239,7 @@
 			continue
 		var/obj/structure/vestige_field_node/lamp = lamps[index]
 		TEST_ASSERT(walk_route_to(get_turf(lamp)), "The solver must physically reach each selected lamp.")
-		TEST_ASSERT(lamp.base_item_interaction(user, trial.censer, list()) & ITEM_INTERACT_SUCCESS, "The held censer must toggle through actual item dispatch.")
+		TEST_ASSERT(lamp.vc_test_base_item_interaction(user, trial.censer, list()) & ITEM_INTERACT_SUCCESS, "The held censer must toggle through actual item dispatch.")
 	TEST_ASSERT(/datum/vestige_trial/snuffed_flame in user.mind.completed_vestige_trials, "Solving the live lamp circuit must complete Snuffed Flame.")
 
 /datum/unit_test/vestige_field_route/unseen_hand/Run()
@@ -259,7 +259,7 @@
 	TEST_ASSERT_EQUAL(length(trial.silenced), 2, "Both actual bell interactions must be required.")
 	TEST_ASSERT(walk_route_to(spot(2, 3), TRUE), "The student must reach the back of the northeast corner patrol.")
 	user.swap_hand(user.get_held_index_of_item(trial.seal))
-	TEST_ASSERT(trial.actor.base_item_interaction(user, trial.seal, list()) & ITEM_INTERACT_SUCCESS, "The actual held seal must finish its rear channel during the corner pause.")
+	TEST_ASSERT(trial.actor.vc_test_base_item_interaction(user, trial.seal, list()) & ITEM_INTERACT_SUCCESS, "The actual held seal must finish its rear channel during the corner pause.")
 	TEST_ASSERT(trial.marked, "The real seal channel must mark the sentry.")
 	TEST_ASSERT(walk_route_to(spot(4, 4), TRUE), "The marked student must first escape the patrol.")
 	patrol_beats(13)
@@ -277,12 +277,12 @@
 	var/obj/structure/vestige_field_node/focus = trial.field_nodes[6]
 	user.swap_hand(user.get_held_index_of_item(trial.eye))
 	TEST_ASSERT(walk_route_to(get_turf(northwest_lamp), TRUE), "The observer must reach the first lamp behind the watchman.")
-	TEST_ASSERT(northwest_lamp.base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The held eye must extinguish the actual lamp.")
+	TEST_ASSERT(northwest_lamp.vc_test_base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The held eye must extinguish the actual lamp.")
 	TEST_ASSERT(walk_route_to(spot(2, 2), TRUE), "The observer must move away before the watchman investigates.")
 	patrol_beats(3)
 	TEST_ASSERT_EQUAL(trial.repair_target, northwest_lamp, "The watchman's own search must select the extinguished lamp.")
 	TEST_ASSERT_EQUAL(get_turf(trial.actor), get_turf(northwest_lamp), "The watchman must physically reach the lamp before repairs.")
-	TEST_ASSERT(trial.actor.base_ranged_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The first rear haunting must use the real ranged channel.")
+	TEST_ASSERT(trial.actor.vc_test_base_ranged_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The first rear haunting must use the real ranged channel.")
 	TEST_ASSERT_EQUAL(length(trial.haunted_corners), 1, "The actual first repair haunting must count once.")
 	TEST_ASSERT(walk_route_to(spot(4, -4), TRUE), "The observer must escape the search for their previous position.")
 	for(var/beat in 1 to 5)
@@ -290,12 +290,12 @@
 		trial.manual.process(1)
 	TEST_ASSERT(world.time >= trial.search_until, "The actual first five-second search must expire.")
 	TEST_ASSERT(walk_route_to(get_turf(southeast_lamp), TRUE), "The observer must safely approach a different lamp.")
-	TEST_ASSERT(southeast_lamp.base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The second real lamp must be extinguished through the eye.")
+	TEST_ASSERT(southeast_lamp.vc_test_base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The second real lamp must be extinguished through the eye.")
 	TEST_ASSERT(walk_route_to(spot(-2, 2), TRUE), "The observer must get behind the second repair approach.")
 	patrol_beats(5)
 	TEST_ASSERT_EQUAL(trial.repair_target, southeast_lamp, "The watchman's own search must select the second lamp.")
 	TEST_ASSERT_EQUAL(get_turf(trial.actor), get_turf(southeast_lamp), "The watchman must physically walk to the second repair.")
-	TEST_ASSERT(trial.actor.base_ranged_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The second rear haunting must use a new real repair channel.")
+	TEST_ASSERT(trial.actor.vc_test_base_ranged_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The second rear haunting must use a new real repair channel.")
 	TEST_ASSERT_EQUAL(length(trial.haunted_corners), 2, "Two distinct real repairs must supply both hauntings.")
 	TEST_ASSERT(walk_route_to(spot(4, 4), TRUE), "The observer must escape the second search.")
 	for(var/beat in 1 to 5)
@@ -306,7 +306,7 @@
 			break
 		patrol_beats(1)
 	TEST_ASSERT_EQUAL(get_turf(user), center, "The observer must return to the center during a real scanning opening.")
-	TEST_ASSERT(focus.base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The real eye input must finish the encounter after both searches.")
+	TEST_ASSERT(focus.vc_test_base_item_interaction(user, trial.eye, list()) & ITEM_INTERACT_SUCCESS, "The real eye input must finish the encounter after both searches.")
 	TEST_ASSERT(/datum/vestige_trial/the_watched in user.mind.completed_vestige_trials, "Two complete lamp-repair-search routes must complete the Watched.")
 
 /// Solve the visible five-phase beam schedule with cardinal walks and safe waits.
@@ -346,7 +346,7 @@
 	user.swap_hand(user.get_held_index_of_item(trial.glass))
 	var/obj/structure/vestige_field_node/first_refuge = trial.refuges[1]
 	TEST_ASSERT(walk_route_to(get_turf(first_refuge)), "The carrier must walk onto the first refuge.")
-	TEST_ASSERT(first_refuge.base_item_interaction(user, trial.glass, list()) & ITEM_INTERACT_SUCCESS, "The actual glass input must charge at refuge one.")
+	TEST_ASSERT(first_refuge.vc_test_base_item_interaction(user, trial.glass, list()) & ITEM_INTERACT_SUCCESS, "The actual glass input must charge at refuge one.")
 	TEST_ASSERT_EQUAL(trial.route_index, 1, "The first real refuge must start the route.")
 	for(var/transfer in 2 to 4)
 		var/obj/structure/vestige_field_node/refuge = trial.refuges[trial.refuge_route[transfer]]
@@ -361,7 +361,7 @@
 				TEST_ASSERT(user.Move(destination, get_dir(user, destination)), "Each planned step must execute normal physical movement.")
 			TEST_ASSERT_EQUAL(trial.beam_step % 5, state[2], "Actual movement and waits must follow the visible beam schedule.")
 			TEST_ASSERT_EQUAL(trial.charge, 1, "Every actual move and wait must preserve the held glass's charge.")
-		TEST_ASSERT(refuge.base_item_interaction(user, trial.glass, list()) & ITEM_INTERACT_SUCCESS, "The held glass must transfer through the actual next-refuge input.")
+		TEST_ASSERT(refuge.vc_test_base_item_interaction(user, trial.glass, list()) & ITEM_INTERACT_SUCCESS, "The held glass must transfer through the actual next-refuge input.")
 		if(transfer < 4)
 			TEST_ASSERT_EQUAL(trial.route_index, transfer, "Only reaching and touching the actual refuge may advance the route.")
 	TEST_ASSERT(/datum/vestige_trial/long_night in user.mind.completed_vestige_trials, "The complete charged 1-3-2-4 journey must finish Long Night.")
@@ -385,7 +385,7 @@
 	trial.repair_target = lamp
 	trial.repair_until = world.time + 20 SECONDS
 	TEST_ASSERT(trial.can_haunt(user), "A two-tile rear approach during repairs must be eligible.")
-	var/result = trial.actor.base_ranged_item_interaction(user, trial.eye, list())
+	var/result = trial.actor.vc_test_base_ranged_item_interaction(user, trial.eye, list())
 	TEST_ASSERT(result & ITEM_INTERACT_SUCCESS, "A real ranged item dispatch must reach the haunting interaction.")
 	TEST_ASSERT_EQUAL(length(trial.haunted_corners), 1, "The ranged channel must credit its repair corner.")
 	TEST_ASSERT(trial.search_until > world.time, "A successful haunting must provoke a search, not leave a farmable stationary target.")
@@ -735,10 +735,10 @@
 	center = center.ChangeTurf(/turf/open/space)
 	var/obj/structure/vestige_field_node/blocker = allocate(/obj/structure/vestige_field_node, center)
 	blocker.density = TRUE
-	var/blocked_result = trial.cargo.base_ranged_item_interaction(user, trial.tether, list())
+	var/blocked_result = trial.cargo.vc_test_base_ranged_item_interaction(user, trial.tether, list())
 	var/blocked_drift = trial.cargo.drift_x
 	qdel(blocker)
-	var/result = trial.cargo.base_ranged_item_interaction(user, trial.tether, list())
+	var/result = trial.cargo.vc_test_base_ranged_item_interaction(user, trial.tether, list())
 	var/drift_after = trial.cargo.drift_x
 	var/moved = get_turf(trial.cargo) == center
 	center.ChangeTurf(original_type)

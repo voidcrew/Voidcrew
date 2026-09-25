@@ -4,7 +4,7 @@ voidcrew TODO:
 
 Performance Note:
 	Ship mass/integrity is now tracked via event-driven delta updates instead of polling.
-	See setup_mass_tracking() in ship.dm for details.
+	See setup_mass_tracking() in ship/mass.dm for details.
 */
 
 #define MAX_OVERMAP_PLACEMENT_ATTEMPTS 40
@@ -97,7 +97,7 @@ SUBSYSTEM_DEF(overmap)
 
 /**
  * Called every tick (1 second) - cleanup only
- * Ship integrity is now tracked via event-driven delta updates (see ship.dm setup_mass_tracking)
+ * Ship integrity is now tracked via event-driven delta updates (see ship/mass.dm setup_mass_tracking)
  * This polling loop has been removed for ~750x performance improvement
  */
 /datum/controller/subsystem/overmap/fire(resumed)

@@ -91,7 +91,7 @@
 	console_ambience = new(src, get_console_ambience_sounds())
 	console_ambience.start()
 
-/obj/machinery/computer/camera_advanced/ship_combat/LateInitialize()
+/obj/machinery/computer/camera_advanced/ship_combat/post_machine_initialize()
 	. = ..()
 	attempt_ship_connection()
 

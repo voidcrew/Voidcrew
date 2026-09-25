@@ -57,7 +57,7 @@
 			for(var/scan in (index + 1) to min(index + FLEET_BEACON_LOOP_LOOKAHEAD, length(lines)))
 				if(!findtext(lines[scan], "add_waypoint("))
 					continue
-				TEST_FAIL("[file_path]:[scan] pushes a waypoint inside a loop over SSovermap.simulated_ships. That charts the fleet as it stands right now and never again, so every ship built later (a mid-round hull requisition, a commissioned vessel, a respawn) comes up blind to this site. Set fleet_waypoint_name and call broadcast_fleet_waypoint() instead (voidcrew/modules/overmap/code/modules/overmap/ship_waypoints.dm).")
+				TEST_FAIL("[file_path]:[scan] pushes a waypoint inside a loop over SSovermap.simulated_ships. That charts the fleet as it stands right now and never again, so every ship built later (a mid-round hull requisition, a commissioned vessel, a respawn) comes up blind to this site. Set fleet_waypoint_name and call broadcast_fleet_waypoint() instead (voidcrew/modules/overmap/code/ship/waypoints.dm).")
 				break
 
 	TEST_ASSERT(broadcasters >= 3, "only [broadcasters] file(s) call broadcast_fleet_waypoint(), expected at least the Verdigris, the Colosseum and the contested cache. A scan that matches nothing passes vacuously.")

@@ -1,0 +1,145 @@
+/**
+ * HelmPlane - shared zoom/pan map plane (interfaces/common/HelmPlane.tsx).
+ *
+ * Only the plane chrome lives here: stage, nodes, controls and minimap. Map
+ * art and node contents are drawn by consumers with their own inline styles.
+ */
+.HelmPlane {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &__Stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  &__Map {
+    position: relative;
+  }
+
+  &__Inner {
+    position: absolute;
+  }
+
+  &__Background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &__Node {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    z-index: 2;
+
+    &--selected {
+      z-index: 3;
+    }
+
+    &--direction {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+
+      svg {
+        overflow: visible;
+      }
+
+      polygon {
+        fill: rgba(89, 184, 113, 0.75);
+        mask-image: linear-gradient(to top, transparent 0%, black 25%);
+      }
+    }
+
+    &--tooltipAnchor {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    &--tooltip {
+      margin-bottom: 4px;
+      padding: 2px 6px;
+      white-space: nowrap;
+      font-size: 11px;
+      color: hsl(0, 0%, 100%);
+      background-color: hsla(0, 0%, 0%, 0.75);
+      border-radius: 3px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms;
+    }
+
+    // Always-on labels (e.g. vessel names) skip the hover gate.
+    &--tooltipAlways {
+      opacity: 1;
+    }
+
+    &:hover .HelmPlane__Node--tooltip {
+      opacity: 1;
+    }
+  }
+
+  &__Minimap {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 5;
+
+    .rzpp-mini-map {
+      overflow: hidden;
+      border: 1px solid hsla(0, 0%, 100%, 0.25);
+      border-radius: 4px;
+      background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
+    .rzpp-minimap-preview {
+      border: 1px solid hsla(0, 0%, 100%, 0.4) !important;
+      box-shadow: hsla(0, 0%, 0%, 0.5) 0 0 0 9999px !important;
+    }
+  }
+
+  &__Controls {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 6;
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+
+    &--center {
+      position: relative;
+      overflow: hidden;
+      height: 1.6em;
+    }
+
+    &--extra {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    &--main {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    &--fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      background-color: rgba(89, 184, 113, 0.33);
+      z-index: -1;
+      transition: width 120ms;
+    }
+  }
+}

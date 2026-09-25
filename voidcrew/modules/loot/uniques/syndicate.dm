@@ -241,7 +241,18 @@
 /obj/item/clothing/gloves/courier/proc/try_snatch(mob/living/user, mob/living/target, obj/item/relevant_item)
 	if(!target.temporarilyRemoveItemFromInventory(relevant_item))
 		return FALSE
-	user.put_in_hands(relevant_item)
+	return_to_hand(user, relevant_item)
+	return TRUE
+
+/// Hands an item back without put_in_hands()'s stack-merge branch, which can
+/// chain into start_pulling() -> do_after(). try_plant()/try_snatch() run from
+/// the COMSIG_TRY_STRIP signal handler, which must not sleep.
+/obj/item/clothing/gloves/courier/proc/return_to_hand(mob/living/user, obj/item/relevant_item)
+	if(user.put_in_active_hand(relevant_item))
+		return TRUE
+	if(user.put_in_inactive_hand(relevant_item))
+		return TRUE
+	relevant_item.forceMove(get_turf(user))
 	return TRUE
 
 /// Which pocket, if either, is empty on the target. Null if both are full.
@@ -259,7 +270,7 @@
 	if(!user.temporarilyRemoveItemFromInventory(relevant_item))
 		return FALSE
 	if(!target.equip_to_slot_if_possible(relevant_item, free_slot, qdel_on_fail = FALSE, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
-		user.put_in_hands(relevant_item) // couldn't fit it, give it back
+		return_to_hand(user, relevant_item) // couldn't fit it, give it back
 		return FALSE
 	return TRUE
 

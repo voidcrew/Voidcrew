@@ -226,11 +226,11 @@
 	message = capitalize(message)
 
 	if(message_mods[RADIO_EXTENSION] == MODE_ADMIN)
-		SSadmin_verbs.dynamic_invoke_verb(client, /datum/admin_verb/cmd_admin_say, message)
+		INVOKE_ASYNC(SSadmin_verbs, TYPE_PROC_REF(/datum/controller/subsystem/admin_verbs, dynamic_invoke_verb), client, /datum/admin_verb/cmd_admin_say, message) // VOIDCREW EDIT: async, admin verbs may block
 		return
 
 	if(message_mods[RADIO_EXTENSION] == MODE_DEADMIN)
-		SSadmin_verbs.dynamic_invoke_verb(client, /datum/admin_verb/dsay, message)
+		INVOKE_ASYNC(SSadmin_verbs, TYPE_PROC_REF(/datum/controller/subsystem/admin_verbs, dynamic_invoke_verb), client, /datum/admin_verb/dsay, message) // VOIDCREW EDIT: async, admin verbs may block
 		return
 
 	if(check_emote(message, forced))

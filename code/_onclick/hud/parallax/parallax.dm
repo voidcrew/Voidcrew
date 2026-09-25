@@ -24,7 +24,7 @@
 		// every crew saw it. It isn't tiled by update_o(), so the in-transit scroll loop made it
 		// visibly race down the screen and snap back every loop. Voidcrew shows planet backdrops
 		// contextually instead (see "context-aware overmap parallax" in
-		// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm).
+		// voidcrew/modules/overmap/code/_overmap.dm).
 		// VOIDCREW EDIT ORIGINAL: C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/planet(null, src)
 		if(SSparallax.random_layer)
 			C.parallax_layers_cached += new SSparallax.random_layer.type(null, src, FALSE, SSparallax.random_layer)

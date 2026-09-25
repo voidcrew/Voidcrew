@@ -63,6 +63,11 @@
 	return FALSE
 
 /datum/turf_reservation/proc/Release()
+	// VOIDCREW EDIT ADDITION START - draining a large reservation yields (CHECK_TICK) to keep a tick from
+	// blowing out, but that must not block callers such as Destroy(). Nobody
+	// uses the return, so the drain runs fire-and-forget instead.
+	set waitfor = FALSE
+	// VOIDCREW EDIT ADDITION END
 	// VOIDCREW EDIT: the release set is rebuilt from the corners we recorded at claim time
 	// instead of trusting `reserved_turfs` to still list everything _reserve_area() took.
 	//

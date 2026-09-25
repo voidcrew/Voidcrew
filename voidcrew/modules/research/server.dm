@@ -103,7 +103,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	if(!our_turf)
 		return
 	// get_voidcrew_ship_for_turf() is the multi-z-aware "which ship is this inside" test
-	// (voidcrew/modules/overmap/code/modules/overmap/_overmap.dm). Servers standing somewhere that
+	// (voidcrew/modules/overmap/code/_overmap.dm). Servers standing somewhere that
 	// isn't a ship - an outpost, a ruin - fall back to plain z matching, which is what the
 	// self-link in CONNECT_TO_RND_SERVER_ROUNDSTART uses.
 	for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)

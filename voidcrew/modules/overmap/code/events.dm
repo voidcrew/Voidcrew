@@ -160,7 +160,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /**
  * === Landable asteroid fields (meteor storm hazard) ===
  *
- * Flying through a meteor storm already damages the ship (see ship_damage.dm
+ * Flying through a meteor storm already damages the ship (see ship/damage.dm
  * apply_meteor_damage()). This lets a ship dock INSIDE the storm's own hazard
  * tile and mine the rock that's causing the damage - braving live meteor traffic
  * is the toll for a denser payout than sitting at an undefended signal.
@@ -714,7 +714,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * the ship's pipenet. Which gas is rolled from the tile's zone band at spawn.
  * The safe inner ring is plasma fuel stops and inert wisps, the deep bands
  * carry tritium and the exotics no cargo console sells. Scooping is loud:
- * it blocks and breaks nebula concealment (see ship.dm notify_scoop_activity()),
+ * it blocks and breaks nebula concealment (see ship/stealth.dm notify_scoop_activity()),
  * so the fuel stop is also the ambush spot.
  */
 
@@ -761,7 +761,7 @@ GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
  * Tritium is the only one of the eight that is actually radioactive, so it is the only
  * entry - a plasma or nitrogen bank is unpleasant to breathe and nothing more. The number
  * is what a radioactive nebula shielder aboard subtracts from (shielding_strength 4, so one
- * working unit covers any of these); see apply_nebula_radiation() in ship_damage.dm.
+ * working unit covers any of these); see apply_nebula_radiation() in ship/damage.dm.
  */
 GLOBAL_LIST_INIT(nebula_gas_radioactivity, list(
 	/datum/gas/tritium = 2,

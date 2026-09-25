@@ -407,7 +407,7 @@
 		data["waypoints"] += list(entry)
 	data["dismissedContacts"] = current_ship.get_dismissed_contacts()
 	// Hails heard by this ship. Newest last, as the log stores them; `live` marks
-	// the ones still young enough to pulse on the chart (see ship_transmissions.dm).
+	// the ones still young enough to pulse on the chart (see ship/transmissions.dm).
 	data["transmissions"] = list()
 	for(var/datum/overmap_transmission/transmission as anything in current_ship.comms_log)
 		var/obj/structure/overmap/ship/sender = transmission.sender_ref?.resolve()
@@ -422,7 +422,7 @@
 		))
 
 	// Our own distress beacon. The state of everyone else's rides the contact
-	// snapshot above; this is the switch on this console (see ship_distress.dm).
+	// snapshot above; this is the switch on this console (see ship/distress.dm).
 	data["distress"] = list(
 		"active" = current_ship.distress_active,
 		"message" = current_ship.distress_message,
@@ -641,7 +641,7 @@
 		"ringInner" = ZONE_INNER_RING_RATIO,
 		"ringMiddle" = ZONE_MIDDLE_RING_RATIO,
 		// The free sight radius, drawn as the solid inner ring. Fixed forever.
-		// Research moves the sensor ring, never this one (see ship_sensors.dm).
+		// Research moves the sensor ring, never this one (see ship/sensors.dm).
 		"viewRange" = SHIP_VIEW_RANGE,
 	)
 
@@ -656,7 +656,7 @@
 /**
  * What the Dock button would call `object` if offered as an option, or null if it
  * isn't dockable at all. Ships get their own wording (see describe_dock_target()
- * in ship_sensors.dm) since docking with one is still a request/accept handshake
+ * in ship/sensors.dm) since docking with one is still a request/accept handshake
  * rather than an instant dock; everything else opts in by overriding
  * get_dock_description() (see _overmap.dm).
  */
@@ -726,7 +726,7 @@
  *
  * Lighting one opens a text prompt prefilled with a plain mayday, which the crew
  * can rewrite to say anything at all before it goes out - nothing verifies it,
- * and that is the whole design (see ship_distress.dm). Shutting one down takes no
+ * and that is the whole design (see ship/distress.dm). Shutting one down takes no
  * prompt at all: getting off the air has to be one press.
  *
  * No rank check anywhere. Anyone who can work this console can raise or drop the
@@ -771,7 +771,7 @@
 	playsound(src, 'sound/machines/terminal/terminal_alert.ogg', 50)
 	current_ship.push_helm_frame()
 
-/obj/machinery/computer/helm/LateInitialize()
+/obj/machinery/computer/helm/post_machine_initialize()
 	. = ..()
 	attempt_ship_connection()
 
@@ -1212,7 +1212,7 @@
 				if("autopilot_cancel")
 					if(!current_ship.autopilot_engaged)
 						return
-					current_ship.disengage_autopilot("stood down at the helm")
+					current_ship.disengage_autopilot("manual cancel")
 					return
 				if("change_burn_percentage")
 					var/new_percentage = clamp(text2num(params["percentage"]), 1, 100)
@@ -1341,7 +1341,7 @@
 			// used to fall off the end of this switch in total silence. A console that
 			// eats every button without a word is indistinguishable from a broken one -
 			// and until complete_dock() learned to give up (abort_stalled_dock() in
-			// ship.dm) a stalled move really could pin the ship here for good.
+			// ship/docking.dm) a stalled move really could pin the ship here for good.
 			if(action in list("dock", "undock", "change_heading", "set_course", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "bluespace_jump", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
 				say("Manoeuvring systems busy: [current_ship.get_state_readout()]. Stand by.")
 				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)

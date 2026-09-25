@@ -240,7 +240,7 @@
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
 		// Signal for NPC mass recalculation - missiles destroy turfs via explosion
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_EXPLOSIVE_DAMAGE, impact_loc)
-		// Being shot ends any plotted course (see ship_autopilot.dm). Missiles also
+		// Being shot ends any plotted course (see ship/autopilot.dm). Missiles also
 		// hit outposts and ruins, which have no autopilot to interrupt.
 		var/obj/structure/overmap/ship/hit_vessel = target_ship
 		if(istype(hit_vessel))

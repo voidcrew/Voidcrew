@@ -189,3 +189,19 @@
 	if(!extension_at)
 		return "[base_file]_[theme_id].dmm"
 	return "[copytext(base_file, 1, extension_at)]_[theme_id].dmm"
+
+/**
+ * Public shims for the protected item-interaction entry points.
+ *
+ * /atom/proc/base_item_interaction() and its ranged sibling are PROTECTED_PROC,
+ * so a unit test (a /datum) cannot call them directly without tripping
+ * dreamchecker. These wrappers live on /atom, so the protected call is made from
+ * the same type, and the tests get a public, behaviour-identical entry point.
+ * They exist purely so the conformance tests can drive the real interaction
+ * chain synchronously and assert on its ITEM_INTERACT_* return value.
+ */
+/atom/proc/vc_test_base_item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	return base_item_interaction(user, tool, modifiers)
+
+/atom/proc/vc_test_base_ranged_item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	return base_ranged_item_interaction(user, tool, modifiers)

@@ -124,7 +124,7 @@
 	user.put_in_hands(chalk)
 	site = get_step(center, EAST)
 	RegisterSignal(user, COMSIG_DO_AFTER_BEGAN, PROC_REF(on_scribing_began))
-	var/result = site.base_item_interaction(user, chalk, list())
+	var/result = site.vc_test_base_item_interaction(user, chalk, list())
 	TEST_ASSERT(competing_rune, "The real chalk interaction must reach its actual scribing channel.")
 	TEST_ASSERT(result & ITEM_INTERACT_BLOCKING, "A rune created during the channel must prevent a second overlapping rune.")
 	TEST_ASSERT(!trial.rune_scribed, "Losing the scribing race must not claim another player's completed rune.")

@@ -320,7 +320,7 @@ GLOBAL_LIST_EMPTY(overmap_objects)
 // /datum/hud/proc/update_overmap_parallax below, triggered from:
 // - update_parallax()'s z-change branch (boarding/leaving encounters, ghosting,
 //   login, teleports) - VOIDCREW EDIT in parallax.dm
-// - /obj/structure/overmap/ship/proc/update_crew_parallax_context (ship.dm), poked
+// - /obj/structure/overmap/ship/proc/update_crew_parallax_context (ship/movement.dm), poked
 //   from the ship token's Moved() (overmap tile crossings, dock/undock completion)
 
 /obj/structure/overmap

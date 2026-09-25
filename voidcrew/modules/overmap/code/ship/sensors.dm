@@ -38,7 +38,7 @@
  *
  * The one thing that ignores both rings is a **distress beacon**: a hull with its
  * beacon lit draws on every other ship's chart at any distance, whatever their
- * radar tier (see ship_distress.dm). That is deliberate and it is the only
+ * radar tier (see distress.dm). That is deliberate and it is the only
  * exception - it is a broadcast the hull is making about itself, not something
  * anybody's sensors found.
  *
@@ -674,7 +674,7 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	// whole galaxy, which is exactly what makes answering one a decision rather
 	// than a formality. Concealment does not stop it either - the beacon repeats
 	// the hull's own coordinates on Wideband, so hiding while broadcasting them
-	// would be the console arguing with the radio. See ship_distress.dm.
+	// would be the console arguing with the radio. See distress.dm.
 	for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
 		if(other == src || !other.distress_active)
 			continue

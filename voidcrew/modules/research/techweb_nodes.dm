@@ -615,7 +615,7 @@
 // Radar array: the ship's overmap sensor suite. A dedicated ladder separate
 // from the survey console: each tier widens the active-scan radius, and the
 // upper tiers add ruin identification and live player-ship tracking. Read by
-// the ship's sensor procs in ship_sensors.dm; the nodes unlock no designs.
+// the ship's sensor procs in ship/sensors.dm; the nodes unlock no designs.
 /datum/techweb_node/radar_array
 	id = TECHWEB_NODE_RADAR_ARRAY
 	display_name = "Radar Array"
