@@ -248,7 +248,8 @@
 	return locate(clamp(spawn_x, 1, world.maxx), clamp(spawn_y, 1, world.maxy), target.z)
 
 /// Finds the best approach direction for a missile to reach a target
-/// Prioritizes clear paths (through hull breaches), then picks the shortest among them
+/// Prioritizes clear paths (ones a missile would fly down without hitting anything,
+/// such as a hull breach), then picks the shortest among them
 /// If no clear paths exist, falls back to the shortest path overall
 /// Returns a direction constant (NORTH, SOUTH, EAST, WEST)
 /obj/machinery/ship_combat/proc/find_clear_approach_direction(turf/target, min_x, max_x, min_y, max_y, spawn_dist)
@@ -277,7 +278,7 @@
 
 		direction_distances["[check_dir]"] = get_dist(spawn_turf, target)
 
-		// Check if path from spawn to target is clear (no dense walls blocking)
+		// Check whether a missile from here would actually reach the target
 		if(check_path_clear(spawn_turf, target))
 			clear_directions += check_dir
 
@@ -302,33 +303,128 @@
 			best_dir = text2num(dir_key)
 	return best_dir
 
-/// Checks if there's a clear line-of-sight path between two turfs
-/// Returns TRUE if the path is clear (no dense walls), FALSE otherwise
+/**
+ * Checks whether a missile launched from start would fly all the way to end.
+ *
+ * Walks the tiles the missile's move loop actually steps through and applies the
+ * same passage rules that stop it in flight. Anything the missile would detonate on
+ * blocks the line, windows and grilles included. Border objects (railings,
+ * directional windows, windoors) block only when the missile crosses their blocking
+ * edge. Other missiles and shield walls get their own passage rules, so missiles in
+ * flight never block and a raised shield always does. Mobs are ignored: they move,
+ * and this is decided once at launch.
+ *
+ * Returns TRUE if the missile reaches end, FALSE otherwise.
+ */
 /obj/machinery/ship_combat/proc/check_path_clear(turf/start, turf/end)
-	if(!start || !end)
+	if(!start || !end || start.z != end.z)
+		return FALSE
+	if(start == end)
+		return TRUE
+
+	var/list/flight_path = get_missile_flight_path(start, end)
+	if(!length(flight_path) || flight_path[length(flight_path)] != end)
+		return FALSE // The flight line never lands on the target tile
+
+	// A real missile to ask the passage procs about, standing where the real one will
+	// spawn. It carries the same pass flags and hyperspace traits, and other missiles
+	// already let it through. It has no target, so it never moves or detonates.
+	var/obj/effect/ship_missile/probe = new(start)
+	. = TRUE
+	var/turf/current = start
+	for(var/turf/next as anything in flight_path)
+		if(missile_step_blocked(probe, current, next, end))
+			. = FALSE
+			break
+		current = next
+	qdel(probe)
+
+/**
+ * Returns the tiles a missile flying from start toward end moves through, in order,
+ * not including start. The last entry is end if the missile gets there.
+ *
+ * This mirrors /datum/move_loop/has_target/move_towards (a non-homing loop, which is
+ * what missiles use): the slope is fixed at launch and each step advances the
+ * tickers exactly as move() does, quirks included, so the line matches the flight
+ * rather than get_line().
+ */
+/obj/machinery/ship_combat/proc/get_missile_flight_path(turf/start, turf/end)
+	. = list()
+	if(!start || !end || start.z != end.z || start == end)
+		return
+
+	// update_slope()
+	var/delta_x = end.x - start.x
+	var/delta_y = end.y - start.y
+	var/x_sign = (delta_x > 0) ? 1 : -1
+	var/y_sign = (delta_y > 0) ? 1 : -1
+	delta_x = abs(delta_x)
+	delta_y = abs(delta_y)
+	var/x_rate = 1
+	var/y_rate = 1
+	if(delta_x >= delta_y)
+		y_rate = delta_y / delta_x
+	else
+		x_rate = delta_x / delta_y
+
+	// move(), once per tick. The major axis advances every step, so max(dx, dy) steps
+	// is as far as the line can go before it passes the target.
+	var/x_ticker = 0
+	var/y_ticker = 0
+	var/turf/current = start
+	for(var/step_number in 1 to max(delta_x, delta_y))
+		if(x_rate)
+			x_ticker = FLOOR(x_ticker + x_rate, x_rate)
+		if(y_rate)
+			y_ticker = FLOOR(y_ticker + y_rate, y_rate)
+		var/turf/next = locate(current.x + round(x_ticker) * x_sign, current.y + round(y_ticker) * y_sign, current.z)
+		if(x_ticker >= 1)
+			x_ticker = MODULUS(x_ticker, 1)
+		if(y_ticker >= 1)
+			y_ticker = MODULUS(x_ticker, 1) // Sic: move() takes the y remainder from x_ticker
+		if(!next || next == current)
+			return
+		. += next
+		if(next == end)
+			return
+		current = next
+
+/**
+ * Whether a missile moving from current to next would be stopped on the way.
+ *
+ * Follows what Move() checks, without calling Exit()/Enter() themselves because those
+ * Bump() whatever blocks them. Leaving current, only border objects on current can
+ * stop the missile, and they are asked with the travel direction. Entering next, the
+ * turf and everything on it are asked with the direction the missile comes from, as
+ * turf/Enter() and Cross() do. Being stopped while entering the target tile still
+ * detonates the missile on that tile, so that doesn't count as blocked.
+ */
+/obj/machinery/ship_combat/proc/missile_step_blocked(obj/effect/ship_missile/probe, turf/current, turf/next, turf/end)
+	var/step_dir = get_dir(current, next)
+	if(step_dir & (step_dir - 1))
+		// Move() splits a diagonal into its vertical half, then its horizontal half.
+		var/turf/corner = get_step(current, step_dir & (NORTH|SOUTH))
+		if(missile_step_blocked(probe, current, corner, end))
+			return TRUE
+		if(corner == end)
+			return FALSE // Moved() detonates it on the target before the second half
+		return missile_step_blocked(probe, corner, next, end)
+
+	for(var/obj/border in current)
+		if(border == probe || !(border.flags_1 & ON_BORDER_1))
+			continue
+		if(!border.CanPass(probe, step_dir))
+			return TRUE
+
+	if(next == end)
 		return FALSE
 
-	// Get all turfs in the line from start to end
-	var/list/path_turfs = get_line(start, end)
-
-	for(var/turf/T in path_turfs)
-		// Skip the start and end turfs
-		if(T == start || T == end)
+	var/from_dir = REVERSE_DIR(step_dir)
+	if(!next.CanPass(probe, from_dir))
+		return TRUE
+	for(var/atom/movable/thing as anything in next)
+		if(thing == probe || isliving(thing))
 			continue
-
-		// Check if this turf itself is dense (like a wall turf)
-		if(T.density)
-			return FALSE
-
-		// Check for dense objects on this turf (walls, airlocks, etc)
-		for(var/obj/O in T)
-			// Skip objects that missiles can pass through
-			if(!O.density)
-				continue
-			// Windows and grilles can be broken through - consider them passable
-			if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
-				continue
-			// Dense object blocks the path
-			return FALSE
-
-	return TRUE
+		if(!thing.CanPass(probe, from_dir))
+			return TRUE
+	return FALSE
