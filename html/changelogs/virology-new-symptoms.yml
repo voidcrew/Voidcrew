@@ -1,0 +1,7 @@
+author: "hyperjll (tgstation #84356 / #89062)"
+delete-after: true
+changes:
+  - rscadd: "Six new advanced disease symptoms: Bluespace Manifestation, Beneficial DNA Activator, Nutritional Healing, Muscular Dexterity, Insomnia, and Anemia."
+  - balance: "Regenerative Coma now puts you under a couple of seconds after you actually go into crit, rather than at a raw damage threshold while you are still on your feet. With its stabilization threshold it also keeps you out of hard crit."
+  - bugfix: "Curing a host who was in a regenerative coma now actually wakes them up."
+  - bugfix: "Buffs and immunities from Muscular Dexterity and Insomnia are now removed when the virus is cured instead of lingering forever."

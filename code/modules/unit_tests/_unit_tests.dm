@@ -436,6 +436,10 @@
 #include "voidcrew_vestige_routes.dm"
 #include "voidcrew_vestige_status.dm"
 #include "voidcrew_vestige_visuals.dm"
+#include "../../../voidcrew/modules/unit_tests/voidcrew_virology_counterplay.dm" // VOIDCREW EDIT ADDITION
+#include "../../../voidcrew/modules/unit_tests/voidcrew_virology_stock.dm" // VOIDCREW EDIT ADDITION
+#include "../../../voidcrew/modules/unit_tests/voidcrew_virology_symptoms.dm" // VOIDCREW EDIT ADDITION
+#include "../../../voidcrew/modules/unit_tests/voidcrew_virology_tiers.dm" // VOIDCREW EDIT ADDITION
 #include "voidcrew_wall_break_atmos.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_zone_logging.dm"

@@ -1,0 +1,5 @@
+author: "hyperjll (tgstation #84356 / #89062)"
+delete-after: true
+changes:
+  - balance: "The virology smartfridge is properly stocked: the whole virus food ladder, ten isolated-symptom bottles, and three experimental diseases."
+  - rscadd: "Isolated-symptom bottles hand out a random symptom, so a doctor can roll for parts without walking the entire chemistry chain first."

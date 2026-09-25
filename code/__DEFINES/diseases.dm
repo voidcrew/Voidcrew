@@ -1,5 +1,16 @@
 #define DISEASE_LIMIT 1
-#define VIRUS_SYMPTOM_LIMIT 6
+// VOIDCREW EDIT: 6 -> 8. Virology rework ported from tgstation #84356 / #89062 (hyperjll).
+// Symptoms are spread over twelve levels, so six slots left most of the ladder unreachable: a
+// crew that wanted a healing virus PLUS the transmission and stealth to spread it ran out of
+// slots before the build was coherent.
+// The things that read this constant and were audited for the new ceiling:
+//   - AddSymptom() (advance.dm) DELETES A RANDOM EXISTING SYMPTOM when the list is full.
+//     At six that happened constantly and silently; at eight it is headroom, not a trap.
+//   - Refresh() scales properties["severity"] by symptoms.len / VIRUS_SYMPTOM_LIMIT, so a
+//     six-symptom virus now reads slightly less severe to scanners (1.0 -> 0.75). Intended:
+//     the ceiling is a creativity budget, not a threat escalator.
+//   - /datum/disease/advance/random and the abductor viral gland both derive from this.
+#define VIRUS_SYMPTOM_LIMIT 8
 
 //Visibility Flags
 #define HIDDEN_SCANNER (1<<0)
@@ -55,7 +66,18 @@ DEFINE_BITFIELD(spread_flags, list(
 
 //Severity Guaranteed Cycles or how long before a disease can potentially self-cure
 /// Positive diseases should not self-cure by themselves, but if they do, they cure fast
-#define DISEASE_CYCLES_POSITIVE 15
+// VOIDCREW EDIT: 15 -> INFINITY (INFINITY is 1e31, see code/__DEFINES/maths.dm). Same port.
+// stage_act() accrues recovery_prob as peaked_cycles / (cycles_to_beat / DISEASE_RECOVERY_SCALING)
+// and DISEASE_RECOVERY_CONSTANT is 0, so 15 was the whole involuntary self-cure driver: a
+// beneficial virus that took twenty minutes to engineer could evaporate because its host got
+// hungry, or because they took spaceacillin (any slowdown != 1 forfeits the well-fed early
+// return in stage_act()). With cycles_to_beat at 1e31 that accrual term is ~1e-28.
+//
+// Deliberately NOT touched: the satiety, mood, sleeping and slowdown terms further down
+// stage_act() still work, so a crew can still choose to dump a beneficial virus on purpose
+// (starve, then sleep it off in a dark room with a bedsheet) and spaceacillin still fights it.
+// What is gone is losing it by accident.
+#define DISEASE_CYCLES_POSITIVE INFINITY
 /// Roughly 6 minutes for a harmless virus
 #define DISEASE_CYCLES_NONTHREAT 180
 /// Roughly 5 minutes for a disruptive nuisance virus

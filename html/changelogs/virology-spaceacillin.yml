@@ -1,0 +1,6 @@
+author: "hyperjll (tgstation #84356 / #89062)"
+delete-after: true
+changes:
+  - balance: "Spaceacillin can now cure whatever illness you are carrying, given time. It also trickles off toxin damage while it works."
+  - rscadd: "Every survival box now contains a 10u spaceacillin pill."
+  - rscadd: "A spaceacillin pill is available from the chemistry fridge."

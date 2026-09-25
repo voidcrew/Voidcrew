@@ -1,0 +1,5 @@
+author: "hyperjll (tgstation #84356 / #89062)"
+delete-after: true
+changes:
+  - balance: "The disease cure ladder now runs to twelve tiers instead of eleven, with each tier's reagents sorted by rarity."
+  - balance: "Every virus food now evolves a virus by exactly one tier. No more reagents that could land you anywhere in a two-tier band."

@@ -33,6 +33,22 @@
 	var/mutable = TRUE //set to FALSE to prevent most in-game methods of altering the disease via virology
 	var/oldres //To prevent setting new cures unless resistance changes.
 
+	// VOIDCREW EDIT REPLACEMENT START - twelve-tier cure ladder ported from tgstation #84356 /
+	// #89062 (hyperjll). Upstream stops at eleven tiers, and the tiers above what a six-symptom
+	// virus could actually reach were decoration. This adds tier 12 so the ported level-12
+	// symptoms have somewhere to live, and re-sorts every tier's pool by rarity so each tier is a
+	// distinct chemistry problem instead of a pile of one-dispenser-click chemicals.
+	//
+	// This is an IN-PLACE edit rather than a file under voidcrew/edits/ because advance_cures is
+	// a static var: BYOND rejects re-declaring it from a later-included file ("duplicate
+	// definition of advance_cures"), unlike an instance var, which the voidcrew/edits/ symptom
+	// tiers override with a bare assignment.
+	//
+	// This list is read by Refresh()/generate_cure() here and by
+	// code/modules/events/disease_outbreak.dm. Deviation from the ported PR: it shipped
+	// /datum/reagent/pentaerythritol in BOTH tier 10 and tier 12, contradicting its own "no
+	// overlap between reagents" claim; the tier-12 copy is dropped, restoring upstream's
+	// placement of it in tier 10. Re-sync by hand if upstream ever retunes this.
 	///Lists of cures and how hard we expect them to be to cure. Sentient diseases will pick two from 6+
 	var/static/list/advance_cures = list(
 		list( // level 1
@@ -41,68 +57,95 @@
 			/datum/reagent/iodine,
 			/datum/reagent/iron,
 			/datum/reagent/silver,
-		),
-		list( // level 2
-			/datum/reagent/consumable/ethanol,
-			/datum/reagent/acetone,
 			/datum/reagent/bromine,
 			/datum/reagent/lithium,
 			/datum/reagent/potassium,
 			/datum/reagent/silicon,
+			/datum/reagent/consumable/sugar,
+			/datum/reagent/consumable/ethanol,
+		),
+		list( // level 2
+			/datum/reagent/fuel/oil,
+			/datum/reagent/ammonia,
+			/datum/reagent/hydrogen_peroxide,
+			/datum/reagent/cryostylane,
+			/datum/reagent/medicine/mannitol,
+			/datum/reagent/medicine/synaptizine,
 		),
 		list( // level 3
+			/datum/reagent/consumable/nutriment/vitamin,
+			/datum/reagent/acetone,
+			/datum/reagent/phenol,
+			/datum/reagent/ash,
+			/datum/reagent/saltpetre,
 			/datum/reagent/consumable/milk,
 			/datum/reagent/consumable/orangejuice,
 			/datum/reagent/consumable/salt,
-			/datum/reagent/consumable/sugar,
 			/datum/reagent/consumable/tomatojuice,
 		),
-		list( //level 4
-			/datum/reagent/fuel/oil,
+		list( // level 4
 			/datum/reagent/medicine/c2/multiver,
 			/datum/reagent/medicine/epinephrine,
 			/datum/reagent/medicine/haloperidol,
 			/datum/reagent/medicine/mine_salve,
 			/datum/reagent/medicine/salglu_solution,
 		),
-		list( //level 5
+		list( // level 5
 			/datum/reagent/drug/space_drugs,
-			/datum/reagent/medicine/mannitol,
-			/datum/reagent/medicine/synaptizine,
 			/datum/reagent/cryptobiolin,
+			/datum/reagent/medicine/coagulant,
+			/datum/reagent/medicine/ammoniated_mercury,
+			/datum/reagent/medicine/neurine,
+			/datum/reagent/toxin/heparin,
 		),
 		list( // level 6
 			/datum/reagent/medicine/antihol,
 			/datum/reagent/medicine/inacusiate,
 			/datum/reagent/medicine/oculine,
-			/datum/reagent/phenol,
+			/datum/reagent/toxin/chloralhydrate,
+			/datum/reagent/medicine/cryoxadone,
 		),
 		list( // level 7
 			/datum/reagent/medicine/higadrite,
 			/datum/reagent/medicine/leporazine,
 			/datum/reagent/toxin/mindbreaker,
 			/datum/reagent/acetaldehyde,
+			/datum/reagent/acetone_oxide,
 		),
 		list( // level 8
 			/datum/reagent/drug/happiness,
 			/datum/reagent/medicine/ephedrine,
 			/datum/reagent/pax,
+			/datum/reagent/teslium,
 		),
 		list( // level 9
 			/datum/reagent/medicine/sal_acid,
-			/datum/reagent/toxin/chloralhydrate,
+			/datum/reagent/medicine/oxandrolone,
 			/datum/reagent/toxin/lipolicide,
+			/datum/reagent/medicine/atropine,
+			/datum/reagent/toxin/cyanide,
 		),
 		list( // level 10
 			/datum/reagent/drug/aranesp,
 			/datum/reagent/medicine/diphenhydramine,
 			/datum/reagent/pentaerythritol,
+			/datum/reagent/medicine/salbutamol,
+			/datum/reagent/medicine/pen_acid,
 		),
-		list( //level 11
+		list( // level 11
 			/datum/reagent/medicine/c2/tirimol,
 			/datum/reagent/medicine/modafinil,
+			/datum/reagent/drug/krokodil,
+			/datum/reagent/drug/methamphetamine,
+			/datum/reagent/inverse/cryostylane,
+		),
+		list( // level 12
+			/datum/reagent/medicine/rezadone,
+			/datum/reagent/inverse/libitoil,
+			/datum/reagent/inverse/aiuri,
 		),
 	)
+	// VOIDCREW EDIT REPLACEMENT END
 
 /*
 
