@@ -1,0 +1,116 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cdy" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"dao" = (
+/obj/machinery/mecha_part_fabricator,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"dne" = (
+/obj/effect/spawner/surgery_tray/full/morgue/deployed,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"eSa" = (
+/obj/structure/table/reinforced,
+/obj/item/mmi{
+	pixel_x = 0;
+	pixel_y = 7
+	},
+/obj/item/mmi,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"fHM" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/assembly/flash,
+/obj/item/assembly/flash,
+/obj/item/assembly/prox_sensor,
+/obj/item/storage/medkit,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"llD" = (
+/obj/modular_map_connector,
+/obj/structure/sign/departments/science/directional/east,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"niz" = (
+/turf/template_noop,
+/area/template_noop)
+"pDh" = (
+/obj/structure/table/optable,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"pFr" = (
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qxT" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"sMp" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/head/utility/welding{
+	pixel_x = -4;
+	pixel_y = 10
+	},
+/obj/item/clothing/glasses/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/belt/utility/full/inducer{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"xzm" = (
+/obj/structure/frame/machine/secured,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+pFr
+pFr
+llD
+"}
+(2,1,1) = {"
+niz
+pFr
+niz
+"}
+(3,1,1) = {"
+eSa
+pFr
+dne
+"}
+(4,1,1) = {"
+xzm
+pFr
+pDh
+"}
+(5,1,1) = {"
+qxT
+pFr
+cdy
+"}
+(6,1,1) = {"
+xzm
+pFr
+sMp
+"}
+(7,1,1) = {"
+dao
+pFr
+fHM
+"}

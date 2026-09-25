@@ -1,0 +1,182 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aeD" = (
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"asf" = (
+/turf/template_noop,
+/area/template_noop)
+"auU" = (
+/mob/living/basic/slime,
+/obj/machinery/camera/autoname/directional/east,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"bpn" = (
+/obj/machinery/reagentgrinder,
+/obj/structure/table/reinforced,
+/obj/item/storage/box/syringes{
+	pixel_x = -5
+	},
+/obj/item/storage/box/beakers{
+	pixel_x = 7
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"clf" = (
+/mob/living/basic/slime,
+/obj/machinery/camera/autoname/directional/west,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"eLR" = (
+/obj/machinery/processor/slime,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"fVS" = (
+/obj/structure/bed,
+/obj/item/bedsheet/purple,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"hWs" = (
+/obj/machinery/monkey_recycler,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"ioD" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"kcM" = (
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"kLe" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"npO" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"qYZ" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"sgU" = (
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"tVY" = (
+/obj/machinery/smartfridge/extract,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"uvC" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"vyd" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/sign/warning/cold_temp/directional/west,
+/turf/open/floor/iron/freezer/airless,
+/area/template_noop)
+"wsY" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"wJq" = (
+/obj/structure/closet/l3closet/scientist,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/item/storage/bag/trash,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"xwN" = (
+/obj/machinery/computer/camera_advanced/xenobio{
+	dir = 8
+	},
+/obj/item/storage/box/monkeycubes,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/template_noop)
+"xAb" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"yfU" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+
+(1,1,1) = {"
+tVY
+asf
+qYZ
+"}
+(2,1,1) = {"
+eLR
+vyd
+asf
+"}
+(3,1,1) = {"
+xAb
+kLe
+asf
+"}
+(4,1,1) = {"
+uvC
+auU
+asf
+"}
+(5,1,1) = {"
+asf
+asf
+asf
+"}
+(6,1,1) = {"
+aeD
+fVS
+fVS
+"}
+(7,1,1) = {"
+aeD
+kcM
+hWs
+"}
+(8,1,1) = {"
+aeD
+kcM
+wsY
+"}
+(9,1,1) = {"
+aeD
+npO
+wJq
+"}
+(10,1,1) = {"
+asf
+asf
+asf
+"}
+(11,1,1) = {"
+uvC
+clf
+asf
+"}
+(12,1,1) = {"
+ioD
+yfU
+asf
+"}
+(13,1,1) = {"
+sgU
+bpn
+asf
+"}
+(14,1,1) = {"
+xwN
+asf
+asf
+"}

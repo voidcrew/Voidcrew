@@ -8,7 +8,7 @@
    ],
    "height": 3,
    "png": "squab_robotics_lab.png",
-   "src_md5": "b02b2ecd3b3870259c3c9dc3cdb25fc1",
+   "src_md5": "48620c68ea9bc0629676428c43b4591a",
    "themes": {
     "cheap_frigate": {
      "connector": [
@@ -17,7 +17,7 @@
      ],
      "height": 3,
      "png": "squab_robotics_lab_cheap_frigate.png",
-     "src_md5": "933cc0475ebd11adc86b6141dd2f50de",
+     "src_md5": "a0bbf3046798de7eb601da70c27d1777",
      "width": 8
     },
     "the_patrolboat": {
@@ -27,7 +27,7 @@
      ],
      "height": 3,
      "png": "squab_robotics_lab_the_patrolboat.png",
-     "src_md5": "e327fe27c6762512ae17c2b630bcad41",
+     "src_md5": "59f394a4009366fd4edadd712810e40e",
      "width": 8
     }
    },

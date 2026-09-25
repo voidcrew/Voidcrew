@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"hKW" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"jsT" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"jSC" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"nsR" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"oEV" = (
+/turf/template_noop,
+/area/template_noop)
+"pFW" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/autolathe,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = -7;
+	pixel_y = 0
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 7;
+	pixel_y = 0
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"rOJ" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"sht" = (
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"vIM" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+oEV
+nsR
+nsR
+nsR
+nsR
+nsR
+jSC
+"}
+(2,1,1) = {"
+nsR
+nsR
+nsR
+nsR
+nsR
+nsR
+nsR
+"}
+(3,1,1) = {"
+oEV
+oEV
+oEV
+nsR
+oEV
+oEV
+oEV
+"}
+(4,1,1) = {"
+oEV
+oEV
+hKW
+nsR
+jsT
+oEV
+oEV
+"}
+(5,1,1) = {"
+oEV
+oEV
+hKW
+nsR
+pFW
+oEV
+oEV
+"}
+(6,1,1) = {"
+oEV
+oEV
+hKW
+nsR
+nsR
+oEV
+oEV
+"}
+(7,1,1) = {"
+oEV
+oEV
+nsR
+nsR
+vIM
+oEV
+oEV
+"}
+(8,1,1) = {"
+oEV
+oEV
+sht
+nsR
+rOJ
+oEV
+oEV
+"}

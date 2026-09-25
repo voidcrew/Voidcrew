@@ -1,0 +1,635 @@
+{
+  "Rosters": {
+    "ship": [
+      {
+        "ID": "job_1",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/captain",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_4",
+        "Name": "Ship Engineer",
+        "Outfit": "/datum/outfit/job/engineer",
+        "BaseOutfit": "",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_6",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/pink": [
+      {
+        "ID": "job_28",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_28",
+        "BaseOutfit": "/datum/outfit/job/captain",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "back": "/obj/item/storage/backpack/captain",
+          "head": "/obj/item/clothing/head/caphat/beret",
+          "neck": "/obj/item/clothing/neck/scarf/pink",
+          "suit": "/obj/item/clothing/suit/armor/vest",
+          "uniform": "/obj/item/clothing/under/suit/black_really"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_29",
+        "Name": "Ship Engineer",
+        "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_29",
+        "BaseOutfit": "/datum/outfit/job/engineer",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "/obj/item/clothing/glasses/welding/up",
+          "head": "/obj/item/clothing/head/beret/engi",
+          "neck": "/obj/item/clothing/neck/scarf/pink",
+          "suit": "/obj/item/clothing/suit/hooded/wintercoat/engineering",
+          "uniform": "/obj/item/clothing/under/rank/engineering/engineer/hazard"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_30",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_30",
+        "BaseOutfit": "/datum/outfit/job/assistant",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "",
+          "head": "",
+          "neck": "",
+          "shoes": "/obj/item/clothing/shoes/laceup",
+          "uniform": "/obj/item/clothing/under/costume/seifuku"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/standard": [
+      {
+        "ID": "job_22",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/captain",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_23",
+        "Name": "Ship Engineer",
+        "Outfit": "/datum/outfit/job/engineer",
+        "BaseOutfit": "",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_24",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
+    "theme/syndicate": [
+      {
+        "ID": "job_25",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_25",
+        "BaseOutfit": "/datum/outfit/job/captain/syndicate",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "l_pocket": "",
+          "r_pocket": "",
+          "suit_store": ""
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_26",
+        "Name": "Ship Engineer",
+        "Outfit": "/datum/outfit/job/engineer/syndicate",
+        "BaseOutfit": "",
+        "Category": "Engineering",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_27",
+        "Name": "Deckhand",
+        "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_27",
+        "BaseOutfit": "/datum/outfit/job/assistant/syndicate",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": {
+          "back": "",
+          "belt": "",
+          "glasses": "",
+          "suit": "",
+          "suit_store": "",
+          "uniform": "/obj/item/clothing/under/syndicate"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ]
+  },
+  "ModuleThemes": {
+    "gaming_room": {
+      "pink": [
+        {
+          "ID": "job_20",
+          "Name": "Barmaid",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_20",
+          "BaseOutfit": "/datum/outfit/job/bartender",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "accessory": "",
+            "head": "/obj/item/clothing/head/costume/maid_headband",
+            "neck": "",
+            "suit_store": "/obj/item/gun/ballistic/shotgun/doublebarrel",
+            "uniform": "/obj/item/clothing/under/costume/maid"
+          },
+          "Backpack": {
+            "/obj/item/storage/box/lethalshot": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_12",
+          "Name": "Bartender",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_12",
+          "BaseOutfit": "/datum/outfit/job/bartender",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "accessory": "",
+            "suit_store": "/obj/item/gun/ballistic/shotgun/doublebarrel"
+          },
+          "Backpack": {
+            "/obj/item/storage/box/lethalshot": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_14",
+          "Name": "Bartender",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_14",
+          "BaseOutfit": "/datum/outfit/job/bartender",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "accessory": "",
+            "suit_store": "/obj/item/gun/ballistic/shotgun/doublebarrel",
+            "uniform": "/obj/item/clothing/under/syndicate"
+          },
+          "Backpack": {
+            "/obj/item/storage/box/lethalshot": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    },
+    "grill": {
+      "pink": [
+        {
+          "ID": "job_21",
+          "Name": "Maid",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_21",
+          "BaseOutfit": "/datum/outfit/job/cook",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "accessory": "/obj/item/clothing/accessory/maidapron",
+            "glasses": "",
+            "head": "/obj/item/clothing/head/costume/maid_headband",
+            "l_hand": "",
+            "l_pocket": "",
+            "mask": "",
+            "r_hand": "",
+            "shoes": "/obj/item/clothing/shoes/laceup",
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/costume/maid"
+          },
+          "Backpack": {
+            "/obj/item/knife/combat": 1,
+            "/obj/item/sharpener": 1,
+            "/obj/item/storage/box/ingredients/carnivore": 3
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_9",
+          "Name": "Cook",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_9",
+          "BaseOutfit": "/datum/outfit/job/cook",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "glasses": "/obj/item/clothing/glasses/sunglasses",
+            "head": "",
+            "l_hand": "/obj/item/kitchen/tongs",
+            "l_pocket": "",
+            "mask": "",
+            "r_hand": "/obj/item/reagent_containers/cup/soda_cans/beer",
+            "shoes": "/obj/item/clothing/shoes/cookflops",
+            "suit": "/obj/item/clothing/suit/apron/chef",
+            "uniform": "/obj/item/clothing/under/rank/civilian/cookjorts"
+          },
+          "Backpack": {
+            "/obj/item/knife/kitchen": 1,
+            "/obj/item/sharpener": 1,
+            "/obj/item/storage/box/ingredients/carnivore": 3
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_15",
+          "Name": "Cook",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_15",
+          "BaseOutfit": "/datum/outfit/job/cook",
+          "Category": "Service",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "glasses": "/obj/item/clothing/glasses/sunglasses",
+            "head": "",
+            "l_hand": "/obj/item/kitchen/tongs",
+            "l_pocket": "",
+            "mask": "",
+            "r_hand": "/obj/item/reagent_containers/cup/soda_cans/beer",
+            "shoes": "/obj/item/clothing/shoes/cookflops",
+            "suit": "/obj/item/clothing/suit/apron/chef",
+            "uniform": "/obj/item/clothing/under/rank/civilian/cookjorts"
+          },
+          "Backpack": {
+            "/obj/item/knife/kitchen": 1,
+            "/obj/item/sharpener": 1,
+            "/obj/item/storage/box/ingredients/carnivore": 3
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    },
+    "medbay_basic": {
+      "pink": [
+        {
+          "ID": "job_16",
+          "Name": "Medical Doctor",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_16",
+          "BaseOutfit": "/datum/outfit/job/doctor",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "head": "/obj/item/clothing/head/beret/medical",
+            "neck": "/obj/item/clothing/neck/scarf/pink",
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/rank/medical/scrubs/purple"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_10",
+          "Name": "Medical Doctor",
+          "Outfit": "/datum/outfit/job/doctor",
+          "BaseOutfit": "",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_2",
+          "Name": "Medical Doctor",
+          "Outfit": "/datum/outfit/job/doctor/syndicate",
+          "BaseOutfit": "",
+          "Category": "Medical",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    },
+    "port_hall_basic": {
+      "pink": [
+        {
+          "ID": "job_17",
+          "Name": "Mining Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_17",
+          "BaseOutfit": "/datum/outfit/job/miner",
+          "Category": "Cargo",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "",
+            "l_pocket": "/obj/item/modular_computer/pda/shaftminer",
+            "shoes": "/obj/item/clothing/shoes/combat",
+            "suit": "",
+            "uniform": "/obj/item/clothing/under/costume/mech_suit"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/flashlight/seclite": 1,
+            "/obj/item/knife/combat/survival": 1,
+            "/obj/item/t_scanner/adv_mining_scanner/lesser": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_7",
+          "Name": "Mining Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_7",
+          "BaseOutfit": "/datum/outfit/job/miner",
+          "Category": "Cargo",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "/obj/item/clothing/glasses/sunglasses/gar/orange",
+            "l_pocket": "/obj/item/modular_computer/pda/shaftminer",
+            "shoes": "/obj/item/clothing/shoes/sandal",
+            "suit": "/obj/item/clothing/suit/hooded/cloak/goliath",
+            "uniform": "/obj/item/clothing/under/pants/track"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/flashlight/seclite": 1,
+            "/obj/item/knife/combat/survival": 1,
+            "/obj/item/t_scanner/adv_mining_scanner/lesser": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_3",
+          "Name": "Mining Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_3",
+          "BaseOutfit": "/datum/outfit/job/miner",
+          "Category": "Cargo",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "/obj/item/clothing/glasses/sunglasses/gar/orange",
+            "l_pocket": "/obj/item/modular_computer/pda/shaftminer",
+            "shoes": "/obj/item/clothing/shoes/sandal",
+            "suit": "/obj/item/clothing/suit/hooded/cloak/goliath",
+            "uniform": "/obj/item/clothing/under/pants/track"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/flashlight/seclite": 1,
+            "/obj/item/knife/combat/survival": 1,
+            "/obj/item/t_scanner/adv_mining_scanner/lesser": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    },
+    "robotics_lab": {
+      "pink": [
+        {
+          "ID": "job_19",
+          "Name": "Roboticist",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_19",
+          "BaseOutfit": "/datum/outfit/job/roboticist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "head": "/obj/item/clothing/head/beret/science",
+            "neck": "/obj/item/clothing/neck/scarf/pink",
+            "suit": "/obj/item/clothing/suit/jacket/leather_trenchcoat"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_11",
+          "Name": "Roboticist",
+          "Outfit": "/datum/outfit/job/roboticist",
+          "BaseOutfit": "",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": null,
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_13",
+          "Name": "Roboticist",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_13",
+          "BaseOutfit": "/datum/outfit/job/roboticist",
+          "Category": "Science",
+          "Slots": 1,
+          "Officer": false,
+          "Equipment": {
+            "suit": "/obj/item/clothing/suit/jacket/leather_trenchcoat",
+            "uniform": "/obj/item/clothing/under/syndicate"
+          },
+          "Backpack": null,
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    },
+    "security_hangar": {
+      "pink": [
+        {
+          "ID": "job_18",
+          "Name": "Combat Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_18",
+          "BaseOutfit": "/datum/outfit/job/security",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": true,
+          "Equipment": {
+            "accessory": "/obj/item/clothing/accessory/medal/silver/security",
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "",
+            "head": "/obj/item/clothing/head/beret/sec",
+            "l_hand": "",
+            "neck": "",
+            "r_pocket": "/obj/item/modular_computer/pda/security",
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/security",
+            "uniform": "/obj/item/clothing/under/costume/mech_suit"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "standard": [
+        {
+          "ID": "job_8",
+          "Name": "Combat Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_8",
+          "BaseOutfit": "/datum/outfit/job/security",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": true,
+          "Equipment": {
+            "accessory": "/obj/item/clothing/accessory/medal/silver/security",
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/gars",
+            "head": "/obj/item/clothing/head/beret/sec",
+            "l_hand": "",
+            "neck": "",
+            "r_pocket": "/obj/item/modular_computer/pda/security",
+            "suit": "/obj/item/clothing/suit/hooded/wintercoat/security",
+            "uniform": "/obj/item/clothing/under/rank/security/officer/grey"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ],
+      "syndicate": [
+        {
+          "ID": "job_5",
+          "Name": "Combat Exosuit Pilot",
+          "Outfit": "/datum/outfit/job/workshop_hiryu_class_carrier_job_5",
+          "BaseOutfit": "/datum/outfit/job/security",
+          "Category": "Security",
+          "Slots": 1,
+          "Officer": true,
+          "Equipment": {
+            "accessory": "/obj/item/clothing/accessory/medal/silver/security",
+            "belt": "/obj/item/storage/belt/utility/full/inducer",
+            "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses/gars",
+            "gloves": "/obj/item/clothing/gloves/combat",
+            "head": "/obj/item/clothing/head/hats/hos/beret/syndicate",
+            "l_hand": "",
+            "neck": "",
+            "r_pocket": "/obj/item/modular_computer/pda/security",
+            "shoes": "/obj/item/clothing/shoes/combat",
+            "suit": "/obj/item/clothing/suit/armor/hos/trenchcoat",
+            "uniform": "/obj/item/clothing/under/syndicate"
+          },
+          "Backpack": {
+            "/obj/item/clothing/head/utility/welding": 1,
+            "/obj/item/weldingtool/hugetank": 1
+          },
+          "Belt": null,
+          "Extra": null
+        }
+      ]
+    }
+  }
+}

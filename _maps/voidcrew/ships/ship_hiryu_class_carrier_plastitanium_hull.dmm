@@ -1,0 +1,1353 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"amM" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"axV" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"aEK" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"aTm" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"bhz" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"bji" = (
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"bHt" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/floor,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"bTa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"ckh" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".....####...../.###.####.###./##############";
+	key = "Exosuit_hangar"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"dip" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"dlO" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"dPd" = (
+/obj/structure/cable,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"ebW" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"eJe" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"ePi" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"faX" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/machinery/atmospherics/components/tank/air{
+	initialize_directions = 1;
+	dir = 1;
+	piping_layer = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"fmY" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/yellow/filled,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"fvm" = (
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"fzN" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"fXj" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"gjG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/departments/engineering/directional/west,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"gAx" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/holopad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"gQO" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/modular_map_root/ship_upgrade{
+	footprint = "#.#####/#######/#.#####";
+	key = "medbay"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"hiW" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"hps" = (
+/obj/machinery/firealarm/directional/east,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"hqb" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"hsS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"hWa" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"hYu" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = "##############/.###.####.###./.....####.....";
+	key = "Cryogenics"
+	},
+/obj/machinery/porta_turret/ship_defense{
+	dir = 10
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"hYR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"ikJ" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"ikX" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"iyf" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 5
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"iCn" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"iIj" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"iKu" = (
+/obj/docking_port/mobile/voidcrew/hiryu_class_carrier{
+	dir = 2
+	},
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"iXe" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"jnJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"kcY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"kif" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"ksJ" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"ktz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/trimline/blue/filled/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"lwS" = (
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"lEY" = (
+/obj/machinery/cryopod,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/flashlight/lantern/syndicate,
+/obj/item/crowbar/large/emergency,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"lZv" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"mxp" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"mDg" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 9
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"mIy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"mJc" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"mKg" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 6
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"mRk" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"mXf" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"mYf" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"mYy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"naa" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"nbv" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"ngX" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"npz" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"nrh" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"nPp" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/blue/filled/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"nUT" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"nYs" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"oIw" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"oLV" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"oRK" = (
+/obj/machinery/porta_turret/ship_defense,
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"pfa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/trimline/blue/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"puo" = (
+/obj/machinery/firealarm/directional/west,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"pGU" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"pIO" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/warning{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"pLw" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"pZT" = (
+/obj/machinery/airalarm/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"qbi" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"qpM" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".#....../##....../##.#####/########/##.#####/##....../.#......";
+	key = "engineering"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"qvR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"qwI" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"qBV" = (
+/obj/structure/cable,
+/obj/machinery/firealarm/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"qGV" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"qKm" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"qPP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"rut" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"rPv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"rSb" = (
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"rTZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"rVz" = (
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"rWn" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"rXV" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/dark_blue/filled,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"seW" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"skb" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/blue/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"srS" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/east,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"syR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"sBR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"sSy" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"sTo" = (
+/obj/machinery/firealarm/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"tgd" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"tjv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"tnK" = (
+/turf/template_noop,
+/area/template_noop)
+"tDc" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/east,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"tHb" = (
+/obj/machinery/light/floor,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"tOt" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"ujX" = (
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".##./.###/.###/####/.###/.###/.##.";
+	key = "helm"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"uzT" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"uEc" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"uHP" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"uQB" = (
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"uZc" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"vGy" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"vOT" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"vTB" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"whz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"wiS" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"wso" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"wHW" = (
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"wMJ" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+"xqK" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"xvo" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"xxV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering)
+"xUP" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
+"xWE" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/survival_pod/glass,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"yhY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hiryu_class_carrier)
+
+(1,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(2,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(3,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(4,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(5,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+mRk
+naa
+bhz
+naa
+mRk
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(6,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+fzN
+fzN
+faX
+eJe
+syR
+xvo
+rSb
+fzN
+fzN
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(7,1,1) = {"
+tnK
+tnK
+tnK
+dlO
+xUP
+aTm
+iIj
+lZv
+bHt
+lZv
+lwS
+qpM
+aTm
+dlO
+tnK
+tnK
+tnK
+tnK
+"}
+(8,1,1) = {"
+tnK
+tnK
+tnK
+dlO
+tDc
+tHb
+dip
+uZc
+kcY
+bTa
+pZT
+tHb
+srS
+dlO
+tnK
+tnK
+tnK
+tnK
+"}
+(9,1,1) = {"
+tnK
+tnK
+tnK
+dlO
+dlO
+rVz
+ikX
+kif
+rTZ
+kif
+ikX
+rVz
+dlO
+dlO
+tnK
+tnK
+tnK
+tnK
+"}
+(10,1,1) = {"
+tnK
+tnK
+mDg
+wMJ
+ckh
+nrh
+kif
+wiS
+mIy
+dPd
+kif
+nrh
+ksJ
+dlO
+hYu
+tnK
+tnK
+tnK
+"}
+(11,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+nrh
+kif
+hqb
+oIw
+hqb
+kif
+nrh
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(12,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+fmY
+iXe
+hqb
+uzT
+xqK
+iXe
+fmY
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(13,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+qGV
+kif
+xqK
+hYR
+xqK
+kif
+qGV
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(14,1,1) = {"
+tnK
+vGy
+dlO
+dlO
+wMJ
+axV
+kif
+xqK
+sBR
+xqK
+kif
+tgd
+wMJ
+wMJ
+dlO
+oRK
+tnK
+tnK
+"}
+(15,1,1) = {"
+tnK
+dlO
+ksJ
+nUT
+pLw
+aEK
+wHW
+kif
+xxV
+kif
+wso
+aEK
+pLw
+puo
+ksJ
+dlO
+tnK
+tnK
+"}
+(16,1,1) = {"
+tnK
+bji
+ksJ
+npz
+ngX
+mXf
+yhY
+ePi
+mYy
+gjG
+rPv
+mXf
+hiW
+oLV
+ksJ
+pLw
+tnK
+tnK
+"}
+(17,1,1) = {"
+tnK
+iKu
+ksJ
+hWa
+uHP
+sSy
+ktz
+whz
+jnJ
+gQO
+pfa
+vTB
+fXj
+qbi
+ksJ
+pLw
+tnK
+tnK
+"}
+(18,1,1) = {"
+tnK
+dlO
+ksJ
+hps
+pLw
+vOT
+nPp
+mJc
+tjv
+mJc
+skb
+aEK
+pLw
+lEY
+ksJ
+dlO
+tnK
+tnK
+"}
+(19,1,1) = {"
+tnK
+vGy
+dlO
+dlO
+wMJ
+nYs
+mJc
+qwI
+uEc
+qwI
+mJc
+qKm
+wMJ
+wMJ
+dlO
+oRK
+tnK
+tnK
+"}
+(20,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+pIO
+mJc
+qwI
+pGU
+qwI
+mJc
+pIO
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(21,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+rXV
+seW
+qwI
+hsS
+qwI
+seW
+rXV
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(22,1,1) = {"
+tnK
+tnK
+dlO
+ksJ
+ksJ
+nrh
+mJc
+qwI
+qPP
+qwI
+mJc
+nrh
+ksJ
+ksJ
+pLw
+tnK
+tnK
+tnK
+"}
+(23,1,1) = {"
+tnK
+tnK
+iyf
+wMJ
+ksJ
+nrh
+mJc
+amM
+uEc
+fvm
+mJc
+nrh
+ksJ
+dlO
+mKg
+tnK
+tnK
+tnK
+"}
+(24,1,1) = {"
+tnK
+tnK
+tnK
+dlO
+dlO
+xWE
+mxp
+mJc
+qvR
+mJc
+mxp
+ujX
+dlO
+dlO
+tnK
+tnK
+tnK
+tnK
+"}
+(25,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+rut
+mYf
+rWn
+qBV
+gAx
+sTo
+uQB
+mYf
+rut
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(26,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+rut
+ebW
+ebW
+ebW
+tOt
+nbv
+nbv
+nbv
+rut
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(27,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+iCn
+iCn
+ebW
+ebW
+ebW
+ebW
+ebW
+iCn
+iCn
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(28,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+ikJ
+iCn
+rut
+rut
+rut
+iCn
+ikJ
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(29,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(30,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(31,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}
+(32,1,1) = {"
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+tnK
+"}

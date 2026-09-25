@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "hiryu_class_carrier/medbay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_medbay_basic_pink.png",
+     "src_md5": "f33b5304f6e3b97ed4469201cbe0f0c5",
+     "width": 7
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_medbay_basic_standard.png",
+     "src_md5": "127651ed0119c4c7566ae6749fcf4469",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_medbay_basic_syndicate.png",
+     "src_md5": "5a410779f6830a8fdcdf8a6ed4301f27",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}
