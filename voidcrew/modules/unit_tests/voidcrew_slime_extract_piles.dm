@@ -464,3 +464,41 @@
 	floor.pressure_direction = old_direction
 	for(var/obj/item/slime_extract/core as anything in cores)
 		TEST_ASSERT_EQUAL(get_turf(core), get_step(floor, EAST), "A piled core was protected from decompression")
+
+/// Ordinary airflow too weak to move a core must leave the pile intact.
+/datum/unit_test/voidcrew_slime_extract_piles_light_airflow/Run()
+	var/turf/open/floor = run_loc_floor_bottom_left
+	for(var/index in 1 to 3)
+		allocate(/obj/item/slime_extract/grey, floor)
+	sleep(1 SECONDS)
+	var/obj/structure/slime_extract_pile/pile = locate() in floor
+	TEST_ASSERT_NOTNULL(pile, "No pile formed for the airflow check")
+	var/old_pressure = floor.pressure_difference
+	var/old_direction = floor.pressure_direction
+	floor.pressure_difference = 1
+	floor.pressure_direction = EAST
+	for(var/obj/item/slime_extract/core in pile.contents)
+		core.last_high_pressure_movement_air_cycle = SSair.times_fired - 1
+	floor.high_pressure_movements()
+	floor.pressure_difference = old_pressure
+	floor.pressure_direction = old_direction
+	sleep(1 SECONDS)
+	TEST_ASSERT(!QDELETED(pile), "A light breeze broke up the pile")
+	TEST_ASSERT_EQUAL(length(pile.contents), 3, "A light breeze pulled cores out of the pile")
+
+/// A broom moves piled cores, and they pile again where they land.
+/datum/unit_test/voidcrew_slime_extract_piles_broom/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/turf/target = get_step(floor, EAST)
+	for(var/index in 1 to 3)
+		allocate(/obj/item/slime_extract/grey, floor)
+	sleep(1 SECONDS)
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/slime_extract_pile) in floor, "No pile formed for the broom check")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, floor)
+	var/obj/item/pushbroom/broom = allocate(/obj/item/pushbroom)
+	do_sweep(broom, user, floor, EAST)
+	sleep(1 SECONDS)
+	TEST_ASSERT_NULL(locate(/obj/structure/slime_extract_pile) in floor, "The broom left the pile behind")
+	var/obj/structure/slime_extract_pile/moved_pile = locate() in target
+	TEST_ASSERT_NOTNULL(moved_pile, "Swept cores did not pile again")
+	TEST_ASSERT_EQUAL(length(moved_pile.contents), 3, "Swept pile lost cores")
