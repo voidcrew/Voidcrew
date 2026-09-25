@@ -6802,6 +6802,7 @@
 #include "voidcrew\edits\objects\items\kinetic_accelerator_modkits.dm"
 #include "voidcrew\edits\objects\structures\closet_containment.dm"
 #include "voidcrew\edits\objects\structures\movable_fixtures.dm"
+#include "voidcrew\edits\objects\structures\spacevine_cap.dm"
 #include "voidcrew\edits\objects\structures\lavaland\necropolis_tendril.dm"
 #include "voidcrew\edits\subsystem\dynamic.dm"
 #include "voidcrew\edits\subsystem\economy.dm"
