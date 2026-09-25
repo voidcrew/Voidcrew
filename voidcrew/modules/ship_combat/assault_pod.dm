@@ -376,7 +376,7 @@
 	else
 		. += span_warning("Empty. Drag a drop pod onto the tube to load it.")
 	if(!is_on_exterior())
-		. += span_warning("NOT ON EXTERIOR - must be against the outside of the hull to launch!")
+		. += span_warning("Its launch path is blocked. It needs a clear path out to open space.")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
@@ -657,7 +657,8 @@
 		return
 	if(linked_console_ref?.resolve())
 		return
-	if(!is_on_exterior())
+	// Where the tube sits, not whether a blast door happens to be shut right now.
+	if(!is_on_exterior(ignore_doors = TRUE))
 		return
 
 	var/area/our_area = get_area(src)

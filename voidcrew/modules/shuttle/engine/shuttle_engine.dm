@@ -58,6 +58,12 @@
 	var/thruster_active = FALSE
 	///One-shot latch so refresh_engines() logs an area/bounds mismatch once per episode, not every helm UI tick.
 	var/logged_area_mismatch = FALSE
+	///Whether the last exposure check found no clear line from this thruster out to open space.
+	var/exhaust_blocked = FALSE
+	///world.time until which exhaust_blocked is trusted. 0 forces a recheck.
+	var/exhaust_recheck_at = 0
+	/// Stable phase within the exposure recheck cycle, chosen on first use.
+	var/exhaust_recheck_phase
 
 	///Icon when the machine is screwdrivered open, takes priority over the other two
 	var/icon_state_open = "burst_plasma_open"
@@ -105,8 +111,42 @@
   * All functions should return if the parent function returns false.
   */
 /obj/machinery/power/shuttle_engine/ship/proc/update_engine()
-	thruster_active = !panel_open
+	thruster_active = !panel_open && exhaust_clear()
 	return thruster_active
+
+/**
+ * Whether this thruster has a clear line out to open space. A thruster buried inside
+ * the hull, or behind a shut blast door, produces no thrust (see
+ * ship_device_exposed_to_space()). It stays registered, so opening the door or cutting
+ * the wall away brings it straight back.
+ *
+ * burn_engines() and every helm tick land here through update_engine(), so the rays
+ * are cast at most once per SHIP_EXPOSURE_RECHECK_TIME, and never while the hull is
+ * mid-move, when its footprint cannot be trusted.
+ */
+/obj/machinery/power/shuttle_engine/ship/proc/exhaust_clear()
+	var/obj/docking_port/mobile/port = connected_ship_ref?.resolve()
+	if(!port)
+		exhaust_blocked = FALSE
+		return TRUE
+	if(world.time < exhaust_recheck_at)
+		return !exhaust_blocked
+	var/obj/docking_port/mobile/voidcrew/voidcrew_port = port
+	if(istype(voidcrew_port) && voidcrew_port.move_in_flight())
+		return !exhaust_blocked
+	exhaust_blocked = !ship_device_exposed_to_space(src, port)
+	if(isnull(exhaust_recheck_phase))
+		exhaust_recheck_phase = rand(0, SHIP_EXPOSURE_RECHECK_TIME - 1)
+	exhaust_recheck_at = ship_exposure_next_recheck(exhaust_recheck_phase)
+	return !exhaust_blocked
+
+/obj/machinery/power/shuttle_engine/ship/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
+	. = ..()
+	exhaust_recheck_at = 0
+
+/obj/machinery/power/shuttle_engine/ship/set_anchored(anchorvalue)
+	. = ..()
+	exhaust_recheck_at = 0
 
 /**
   * Updates the engine's icon and engine state.
@@ -144,6 +184,8 @@
 			count until a hull survey claims it.")
 	if(!enabled)
 		. += span_warning("It has been switched off by hand. Click it to switch it back on.")
+	if(port && exhaust_blocked)
+		. += span_warning("Its exhaust is blocked. It needs a clear path out to open space.")
 
 /**
  * Why this thruster is missing from the helm, or registered but producing nothing - one
@@ -166,6 +208,8 @@
 		return "its maintenance panel is open."
 	if(!enabled)
 		return "switched off by hand. Click it in person to switch it back on."
+	if(exhaust_blocked)
+		return "exhaust blocked. It needs a clear path out to open space, with no hull or shut door in the way."
 	return thrust_refusal_reason()
 
 /**

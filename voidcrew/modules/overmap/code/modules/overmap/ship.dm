@@ -870,7 +870,8 @@
 		else
 			E.logged_area_mismatch = FALSE
 		E.update_engine()
-		if(E.enabled)
+		// A thruster with no clear line to space pushes nothing (see exhaust_clear()).
+		if(E.enabled && !E.exhaust_blocked)
 			calculated_thrust += E.engine_power
 	for(var/obj/machinery/power/shuttle_engine/ship/E as anything in dropped)
 		shuttle.engine_list -= E
