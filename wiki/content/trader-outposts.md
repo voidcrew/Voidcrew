@@ -23,6 +23,8 @@ Fly to the outpost and dock like anywhere else. Every ship that arrives gets its
 
 Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. There is a panel in the concourse for going back.
 
+A berth is locked to its own crew. Only your crew can send the elevator down to your berth, and anyone standing in the alcove with you rides along as your guest. If the crew member who pressed the button steps out before the car leaves, it stays put. Anyone can ride back up to the concourse, and once a ship is abandoned its berth is open to everyone.
+
 !!! tip "The elevator is the only way between floors"
     Berths are separate bays, not rooms down a corridor. If you walk out of your ship looking for a door to the shop, you will not find one. Get in the alcove.
 

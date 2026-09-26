@@ -69,7 +69,7 @@ Ship docking has separate controls:
 - **By request:** approve requests in Outpost Management. A ship still waiting in your sector begins docking when cleared. It needs new clearance after leaving.
 - **Lockdown:** only the owner's crew ships may enter. Existing visitors can leave.
 
-Banning a ship overrides docking clearance. Use the hangar elevator to travel between the habitat and occupied visitor berths.
+Banning a ship overrides docking clearance. Visitor berths work as they do at [trader outposts](trader-outposts.md): only the visiting ship's crew can take the hangar elevator down to one. The owner gets no exception.
 
 ## Advertising
 
