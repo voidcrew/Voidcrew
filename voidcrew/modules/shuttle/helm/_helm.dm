@@ -1016,13 +1016,14 @@
 			var/datum/rumor_chart/chart = locate(params["chart"]) in current_ship.pending_rumors
 			if(!chart)
 				return
-			var/obj/structure/overmap/space_ruin/ruin = current_ship.reveal_pending_rumor(chart)
-			if(!ruin)
+			var/reveal_noun = chart.reveal_noun
+			var/obj/structure/overmap/site = current_ship.reveal_pending_rumor(chart)
+			if(!site)
 				say("ERROR: Unable to pin down the rumor's coordinates. Retry shortly.")
 				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 				return
-			var/list/coords = ruin.get_relative_overmap_coords()
-			say("Rumor decrypted: rare signal located at ([coords[1]], [coords[2]]). Charted under Rumors.")
+			var/list/coords = site.get_relative_overmap_coords()
+			say("Rumor decrypted: [reveal_noun] located at ([coords[1]], [coords[2]]). Charted under Rumors.")
 			playsound(src, 'sound/machines/ping.ogg', 40)
 			return
 		if("reload_ship")

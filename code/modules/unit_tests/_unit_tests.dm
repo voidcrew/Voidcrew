@@ -333,6 +333,7 @@
 #include "verify_config_tags.dm"
 #include "verify_emoji_names.dm"
 #include "voidcrew_ammo_box_materials.dm"
+#include "voidcrew_anomaly_trade.dm"
 #include "voidcrew_assault_pod.dm"
 #include "voidcrew_autopilot_course.dm"
 #include "voidcrew_autotranslate_morph.dm"

@@ -10,6 +10,9 @@
  * - CORE: the sku_types list, stocked every round.
  * - ROTATING: a few picks rolled from rotating_pool each round, limited supply.
  * - RARE: 1-2 showcase picks rolled from rare_pool, single unit each.
+ * - Weighted rotations (/datum/shop_rotation): small dedicated shelves with a
+ *   weighted pool of their own. Every sold-out slot swaps for a different pick
+ *   on convoy restock, so scarce goods never refill in place.
  * One credit-priced SKU per round also goes on special (discount_pct).
  *
  * Vouchers are deliberately the only road to the best stock ("the currency
@@ -68,6 +71,10 @@
 	var/list/chart_pool = list()
 	/// How many chart picks land on the shelf per round
 	var/chart_picks = 3
+	/// /datum/shop_rotation typepaths: dedicated weighted shelves (see below)
+	var/list/rotations = list()
+	/// Live rotation instances, one per entry in `rotations`
+	var/list/datum/shop_rotation/live_rotations = list()
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
 	/// Buyback typepaths: what this trader buys from players (see shop_buyback.dm)
@@ -106,6 +113,11 @@
 	// Each outpost deals its own chart shelf. Separate purchases reveal fresh sites.
 	for(var/sku_type in deal_chart_picks())
 		add_sku(sku_type, SHELF_ROTATING)
+	for(var/rotation_type in rotations)
+		var/datum/shop_rotation/rotation = new rotation_type
+		live_rotations += rotation
+		for(var/sku_type in rotation.deal(rotation.slots))
+			add_rotation_sku(rotation, sku_type)
 	roll_special()
 	for(var/buyback_type in buyback_types)
 		buybacks += new buyback_type
@@ -113,6 +125,7 @@
 /datum/outpost_shop/Destroy()
 	QDEL_LIST(skus)
 	QDEL_LIST(buybacks)
+	QDEL_LIST(live_rotations)
 	outpost = null
 	trader_npc = null
 	return ..()
@@ -163,6 +176,42 @@
 	skus += sku
 
 /**
+ * Puts a SKU dealt by `rotation` on the rotating shelf and tags it, so the
+ * convoy swaps it through the rotation rather than the ordinary rotating pool.
+ */
+/datum/outpost_shop/proc/add_rotation_sku(datum/shop_rotation/rotation, sku_type)
+	add_sku(sku_type, SHELF_ROTATING)
+	var/datum/shop_sku/sku = skus[length(skus)]
+	sku.rotation = rotation
+	return sku
+
+/**
+ * Every sold-out rotation slot is replaced with a different weighted pick from
+ * the same rotation. Nothing refills in place: the shelf only ever shows what
+ * the convoy happened to bring.
+ */
+/datum/outpost_shop/proc/restock_rotations()
+	for(var/datum/shop_rotation/rotation as anything in live_rotations)
+		var/list/sold_out = list()
+		var/list/on_shelf = list()
+		for(var/datum/shop_sku/sku as anything in skus)
+			if(sku.rotation != rotation)
+				continue
+			on_shelf += sku.type
+			if(sku.stock <= 0)
+				sold_out += sku
+		for(var/datum/shop_sku/gone as anything in sold_out)
+			skus -= gone
+			qdel(gone)
+			// The sold type and everything still on the shelf are held back, so
+			// a slot always turns over into something different
+			var/replacement = rotation.pick_one(on_shelf)
+			if(!replacement)
+				continue
+			on_shelf += replacement
+			add_rotation_sku(rotation, replacement)
+
+/**
  * Puts one random credit-priced SKU on special for the round (15-30% off).
  */
 /datum/outpost_shop/proc/roll_special()
@@ -172,6 +221,8 @@
 		// cheapest it gets at Trusted, and specials stack on the max() in
 		// get_credit_price
 		if(sku.shelf == SHELF_FAVOR)
+			continue
+		if(sku.fixed_price)
 			continue
 		if(sku.price_credits > 0 && !sku.discount_pct)
 			eligible += sku
@@ -200,7 +251,7 @@
 	// a sold tip for an unrelated good. Named tips replenish separately above.
 	var/list/depleted = list()
 	for(var/datum/shop_sku/sku as anything in skus)
-		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && sku.stock <= 0)
+		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && !sku.rotation && sku.stock <= 0)
 			depleted += sku
 	if(length(depleted))
 		var/datum/shop_sku/gone = pick(depleted)
@@ -210,6 +261,9 @@
 		skus -= gone
 		qdel(gone)
 		add_sku(length(unstocked) ? pick(unstocked) : pick(rotating_pool), SHELF_ROTATING)
+
+	// Weighted rotations turn their sold-out slots over
+	restock_rotations()
 
 	// Yesterday's special is over; roll a new one
 	for(var/datum/shop_sku/sku as anything in skus)
@@ -283,6 +337,9 @@
 		// Favor uniques are earned standing at the counter, never rolled into a
 		// contract's pay bundle, that would leak the back room past its gate
 		if(sku.shelf == SHELF_FAVOR)
+			continue
+		// Scarce stock (anomaly cores) is sold over the counter only
+		if(!sku.contract_reward)
 			continue
 		var/worth = get_sku_value(sku)
 		if(worth <= 0)
@@ -422,6 +479,12 @@
 	var/icon_state_override
 	/// Cached base64 icon for the UI, computed once per instance
 	var/cached_icon
+	/// The weighted rotation that dealt this SKU, if any (see /datum/shop_rotation)
+	var/datum/shop_rotation/rotation
+	/// Ignores specials and crew favor discounts: the price on the tag is the price
+	var/fixed_price = FALSE
+	/// Whether outpost contracts may pay this out as part of a reward bundle
+	var/contract_reward = TRUE
 
 /datum/shop_sku/New()
 	..()
@@ -435,6 +498,7 @@
 
 /datum/shop_sku/Destroy()
 	shop = null
+	rotation = null
 	return ..()
 
 /**
@@ -444,7 +508,7 @@
  * Without a buyer (catalog/static contexts) only the authored special shows.
  */
 /datum/shop_sku/proc/get_credit_price(mob/living/user)
-	if(price_credits <= 0)
+	if(price_credits <= 0 || fixed_price)
 		return price_credits
 	var/pct = discount_pct
 	if(user && shop)
@@ -674,6 +738,49 @@
 		if(team.ship)
 			return team.ship
 	return null
+
+/**
+ * # Shop rotation
+ *
+ * A small dedicated shelf with its own weighted pool, for stock that should be
+ * scarce and changing rather than always on hand. `slots` distinct picks go up
+ * when the shop opens, each with whatever stock its SKU rolls (keep those at
+ * 1 for one-off goods). On every convoy restock each sold-out slot swaps for a
+ * different weighted pick (see /datum/outpost_shop/proc/restock_rotations).
+ *
+ * Kept apart from rotating_pool so a shop's ordinary rotating shelf is never
+ * diluted by it. A shop lists rotation typepaths in its `rotations` var.
+ */
+/datum/shop_rotation
+	/// SKU typepath -> weight. Higher weight turns up more often.
+	var/list/pool = list()
+	/// How many picks sit on the shelf at once
+	var/slots = 2
+
+/**
+ * Up to `count` distinct weighted picks from the pool.
+ */
+/datum/shop_rotation/proc/deal(count)
+	var/list/picked = list()
+	for(var/_ in 1 to count)
+		var/choice = pick_one(picked)
+		if(!choice)
+			break
+		picked += choice
+	return picked
+
+/**
+ * One weighted pick, skipping anything in `exclude`. Null when nothing is left.
+ */
+/datum/shop_rotation/proc/pick_one(list/exclude)
+	var/list/candidates = list()
+	for(var/sku_type in pool)
+		if(exclude && (sku_type in exclude))
+			continue
+		candidates[sku_type] = max(1, pool[sku_type])
+	if(!length(candidates))
+		return null
+	return pick_weight(candidates)
 
 // The rumor SKU and every other chart line now live in shop_catalog_charts.dm,
 // keeping this file to machinery as its header describes.
