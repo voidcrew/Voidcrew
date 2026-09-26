@@ -264,6 +264,8 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	var/obj/effect/vestige_trial_marker/return_marker
 	/// The ship they came in on, as a fallback destination when that turf is gone
 	var/datum/weakref/home_ship_ref
+	/// Overmap zone they entered from. The way home never lands them in another one.
+	var/origin_zone
 	/// Timer id of the hard time limit
 	var/deadline_timer
 	/// TRUE once the boss is dead. The arena is safe and the exit is open
@@ -617,17 +619,24 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 	var/turf/origin = get_turf(user)
 	if(origin)
 		return_marker = new(origin)
+	origin_zone = get_teleport_zone_type(origin)
 	home_ship_ref = WEAKREF(get_ship_from_atom(user) || get_crew_ship(user))
 
 /// Return only to safe ground outside this reservation; recycled turf addresses prove nothing.
 /datum/vestige_ascension_run/proc/send_home(mob/living/user)
-	var/turf/destination = QDELETED(return_marker) ? null : get_turf(return_marker)
+	var/turf/marker_turf = QDELETED(return_marker) ? null : get_turf(return_marker)
+	var/turf/destination = marker_turf
 	if(!safe_return_turf(destination))
 		destination = find_home_ship_turf()
 	if(!safe_return_turf(destination))
 		destination = find_return_fallback()
 	if(!safe_return_turf(destination))
 		return FALSE
+	// The fallbacks never cross an overmap zone: rough ground where they left beats a free escape.
+	if(!isnull(origin_zone) && get_teleport_zone_type(destination) != origin_zone)
+		destination = marker_turf
+		if(QDELETED(destination) || reservation?.contains_turf(destination))
+			return FALSE
 	user.forceMove(destination)
 	if(QDELETED(user) || in_arena(user) || get_turf(user) != destination)
 		return FALSE

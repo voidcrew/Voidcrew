@@ -112,6 +112,13 @@
 /datum/action/cooldown/spell/summonitem/proc/try_recall_item(mob/living/caster)
 	var/obj/item_to_retrieve = marked_item
 
+	// VOIDCREW EDIT ADDITION START: nothing is recalled across an overmap zone boundary; the
+	// whole container comes along, people included (voidcrew/modules/overmap, zone_teleport.dm)
+	if(teleport_crosses_zone(item_to_retrieve, caster))
+		to_chat(caster, span_warning("Bluespace disruption along the zone boundary breaks your link to [item_to_retrieve]."))
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	if(item_to_retrieve.loc)
 		// I don't want to know how someone could put something
 		// inside itself but these are wizards so let's be safe

@@ -282,6 +282,13 @@
 	var/obj/machinery/mission_pad/creator_pad = get_creator_pad()
 	var/turf/dest_turf = creator_pad ? get_turf(creator_pad) : null
 
+	// People folded into a bag or held as a mob never ride a pad into another zone. Refused
+	// before anything moves or anyone is paid.
+	if(dest_turf && teleport_crosses_zone(sender_pad, dest_turf))
+		for(var/obj/item/item in items_on_pad)
+			if(atom_carries_living_mob(item))
+				return "zone boundary blocks passengers"
+
 	// Transfer items
 	var/sent_count = 0
 	for(var/obj/item/item in items_on_pad)

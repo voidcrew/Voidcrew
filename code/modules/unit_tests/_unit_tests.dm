@@ -441,6 +441,7 @@
 #include "voidcrew_wall_break_atmos.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_zone_logging.dm"
+#include "../../../voidcrew/modules/unit_tests/voidcrew_zone_teleport.dm" // VOIDCREW EDIT ADDITION
 #include "washing.dm"
 #include "weather_mob_targeting.dm"
 #include "weird_food.dm"
