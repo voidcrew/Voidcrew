@@ -21,10 +21,16 @@
 	selfcharge = TRUE
 	self_charge_amount = STANDARD_ENERGY_GUN_SELF_CHARGE_RATE * 10
 
-// VOIDCREW EDIT REMOVAL: scope component and "must be scoped" check. It fires on screen
-// only; see voidcrew/edits/objects/items/event_horizon_rifle.dm.
+/obj/item/gun/energy/event_horizon/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/scope, range_modifier = 4)
 
 /obj/item/gun/energy/event_horizon/process_fire(atom/target, mob/living/user, message, params, zone_override, bonus_spread)
+
+	if(!HAS_TRAIT(user, TRAIT_USER_SCOPED))
+		balloon_alert(user, "must be scoped!")
+		return
+
 	. = ..()
 	message_admins("[ADMIN_LOOKUPFLW(user)] has fired an anti-existential beam at [ADMIN_VERBOSEJMP(user)].")
 

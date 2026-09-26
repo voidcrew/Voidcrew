@@ -1,6 +1,6 @@
 // Event Horizon rifle rebalance. It is a rare loot find rather than a research print:
-// three shots that never recharge, a minute between shots, on-screen range only, and a
-// reality tear that eats the room but not the people in it.
+// three shots that never recharge and 20 seconds between shots. Whoever it hits dies but is
+// not gibbed, and the reality tear eats the room but only throws people around.
 
 /datum/techweb_node/unregulated_bluespace
 	design_ids = list(
@@ -10,8 +10,10 @@
 /obj/item/gun/energy/event_horizon
 	selfcharge = FALSE
 	can_charge = FALSE
+	// Emitters and turrets would fire it on their own power, skipping the shot limit and cooldown.
+	gun_flags = TURRET_INCOMPATIBLE
 	/// Time between shots.
-	var/shot_cooldown_time = 1 MINUTES
+	var/shot_cooldown_time = 20 SECONDS
 	COOLDOWN_DECLARE(shot_cooldown)
 
 /obj/item/gun/energy/event_horizon/get_cell(atom/movable/interface, mob/user)
@@ -33,8 +35,13 @@
 /obj/item/ammo_casing/energy/event_horizon
 	e_cost = LASER_SHOTS(3, STANDARD_CELL_CHARGE)
 
-/obj/projectile/beam/event_horizon
-	range = 9
+/// Whoever the beam hits is burned to death, not gibbed, so the body stays behind.
+/obj/projectile/beam/event_horizon/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(. != BULLET_ACT_HIT || !isliving(target))
+		return
+	var/mob/living/victim = target
+	victim.adjustFireLoss(200)
 
 /obj/reality_tear/temporary/start_disaster()
 	. = ..()
