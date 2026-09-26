@@ -194,13 +194,24 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	if(arrival_watchdog)
 		deltimer(arrival_watchdog)
 		arrival_watchdog = null
-	ship.ship_notify("Docked at [outpost.name], Hangar Berth [berth_number]. Follow the painted arrows to the hangar's south wall; the airlock there leads to the elevator, which connects to the concourse and the other berths.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("Docked at [outpost.name], Hangar Berth [berth_number]. Follow the painted arrows to the hangar's south wall; the airlock there leads to the elevator up to the concourse. Only your crew can take the elevator down to this berth.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /datum/outpost_berth/proc/on_ship_deleted(datum/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_QDELETING))
 	ship = null
 	release(force = TRUE)
+
+/**
+ * Whether the elevator may bring this mob down to the berth. A standard berth takes
+ * only its own ship's crew, until the ship is abandoned and anyone may claim it.
+ * Whoever rides down with a crew member comes along as their guest (see
+ * /obj/machinery/outpost_elevator/proc/complete_ride).
+ */
+/datum/outpost_berth/proc/allows_entry(mob/visitor)
+	if(!ship || ship.abandoned)
+		return TRUE
+	return !!(ship.ship_team && (ship.ship_team in visitor?.mind?.ship_teams))
 
 /// Arrival watchdog: the dock attempt can silently die (state reset, target
 /// lost) with no cancel signal, which would leak the berth forever.
@@ -384,6 +395,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/elevator,
 	if(!berth || !length(berth.alcove_turfs))
 		return null
 	return berth.alcove_turfs
+
+/// Resolves a floor id to its berth, or null for the concourse and floors that don't currently exist.
+/obj/structure/overmap/proc/get_floor_berth(floor_id)
+	if(floor_id < 1 || floor_id > length(berths))
+		return null
+	return berths[floor_id]
 
 /// Pushes fresh data to every elevator panel UI (floor list changed).
 /obj/structure/overmap/proc/refresh_elevator_uis()

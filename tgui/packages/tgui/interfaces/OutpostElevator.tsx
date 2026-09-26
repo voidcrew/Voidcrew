@@ -16,6 +16,7 @@ type Floor = {
   name: string;
   occupied: BooleanLike;
   your_ship: BooleanLike;
+  locked: BooleanLike;
 };
 
 type Data = {
@@ -53,16 +54,28 @@ export const OutpostElevator = (props) => {
                       fontSize="14px"
                       bold
                       textAlign="left"
-                      icon={floor.your_ship ? 'star' : 'circle'}
+                      icon={
+                        floor.your_ship
+                          ? 'star'
+                          : floor.locked
+                            ? 'lock'
+                            : 'circle'
+                      }
                       color={floor.your_ship ? 'good' : 'default'}
                       selected={floor.id === current_floor}
-                      disabled={!floor.occupied || floor.id === current_floor}
+                      disabled={
+                        !floor.occupied ||
+                        !!floor.locked ||
+                        floor.id === current_floor
+                      }
                       tooltip={
                         floor.id === current_floor
                           ? 'You are here.'
-                          : floor.occupied
-                            ? undefined
-                            : 'Nothing is docked at this berth.'
+                          : !floor.occupied
+                            ? 'Nothing is docked at this berth.'
+                            : floor.locked
+                              ? 'Crew only.'
+                              : undefined
                       }
                       onClick={() => act('goto', { id: floor.id })}
                     >
