@@ -7224,6 +7224,7 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_datum.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_logging.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_screentip.dm"
+#include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_teleport.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\zones\zone_weather.dm"
 #include "voidcrew\modules\paperwork\faxes.dm"
 #include "voidcrew\modules\player_outposts\outpost_adverts.dm"

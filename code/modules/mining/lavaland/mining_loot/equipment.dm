@@ -86,7 +86,7 @@
 
 /obj/item/warp_cube/attack_self(mob/user)
 	var/turf/current_location = get_turf(user)
-	if(!linked || isnull(get_turf(linked)) || !check_teleport_valid(src, current_location))
+	if(!linked || isnull(get_turf(linked)) || !check_teleport_valid(src, current_location) || teleport_crosses_zone(user, linked)) // VOIDCREW EDIT: zone check (voidcrew/modules/overmap, zone_teleport.dm)
 		to_chat(user, span_warning("[src] fizzles uselessly."))
 		return
 	if(teleporting)

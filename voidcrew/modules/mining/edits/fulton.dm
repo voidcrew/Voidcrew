@@ -144,4 +144,9 @@
 		balloon_alert(user, "beacon locked!")
 		return ITEM_INTERACT_BLOCKING
 
+	// Fultons are a raw forceMove, so they need the zone rule of their own (zone_teleport.dm)
+	if(beacon && teleport_crosses_zone(interacting_with, beacon))
+		balloon_alert(user, "beacon past the zone boundary!")
+		return ITEM_INTERACT_BLOCKING
+
 	return ..()

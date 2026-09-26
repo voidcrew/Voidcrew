@@ -88,6 +88,11 @@
 		if(ui_user)
 			to_chat(ui_user, span_warning("Linked pad is not responding to ping. Teleport aborted."))
 		return
+	// Refused before the one-shot is spent, so the crew can fly over and try again
+	if(teleport_crosses_zone(src, linked_pad))
+		if(ui_user)
+			to_chat(ui_user, span_warning("Bluespace disruption along the zone boundary blocks the link to the pad. Teleport aborted."))
+		return
 	teleport_used = TRUE
 
 	sparks()
