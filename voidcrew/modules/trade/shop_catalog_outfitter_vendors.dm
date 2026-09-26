@@ -13,6 +13,12 @@
  * - Boffin's tier-2 parts and cells offer immediate upgrades while a crew is
  *   still assembling or researching its fabrication equipment. Cargo remains
  *   cheaper in bulk, and a working laboratory rewards making parts aboard ship.
+ * - Boffin is the only store that sells raw anomaly cores (cargo no longer
+ *   carries them) and anomaly charts. Both sit on small weighted rotations of
+ *   two slots, one unit each. A sold slot turns over to a different type at
+ *   the next convoy. Both take the normal favor discounts and specials. The
+ *   400 cr core buyback is far below any core's price, so buying to resell
+ *   loses money.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
  *   slime extracts, and raw exotics out of the ground. No circuit boards.
  *   Anything a lathe spits out is a money loop waiting to happen.
@@ -50,6 +56,7 @@
 		"Gadgetry",
 		"Ship Retrofit",
 		"Power & Optics",
+		"Anomalies",
 		"Job Packs",
 	)
 	sku_types = list(
@@ -83,6 +90,10 @@
 	rare_pool = list(
 		/datum/shop_sku/skunk/rare/deluxe_parts,
 		/datum/shop_sku/skunk/rare/hyper_cell,
+	)
+	rotations = list(
+		/datum/shop_rotation/skunk_cores,
+		/datum/shop_rotation/skunk_anomaly_charts,
 	)
 	buyback_types = list(
 		/datum/shop_buyback/skunk/anomaly_core,
@@ -258,6 +269,81 @@
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/hyper
 	price_credits = 1200
+
+// ===== ANOMALIES =====
+// Raw cores still need the refinery and a bomb. Rarer types turn up less often
+// and cost more. The charts for the same types live in anomaly_charts.dm.
+
+/datum/shop_rotation/skunk_cores
+	slots = 2
+	pool = list(
+		/datum/shop_sku/skunk/anomaly_core/flux = 6,
+		/datum/shop_sku/skunk/anomaly_core/grav = 6,
+		/datum/shop_sku/skunk/anomaly_core/hallucination = 6,
+		/datum/shop_sku/skunk/anomaly_core/pyro = 6,
+		/datum/shop_sku/skunk/anomaly_core/bioscrambler = 3,
+		/datum/shop_sku/skunk/anomaly_core/ectoplasm = 3,
+		/datum/shop_sku/skunk/anomaly_core/dimensional = 3,
+		/datum/shop_sku/skunk/anomaly_core/bluespace = 1,
+		/datum/shop_sku/skunk/anomaly_core/vortex = 1,
+	)
+
+/datum/shop_rotation/skunk_anomaly_charts
+	slots = 2
+	pool = list(
+		/datum/shop_sku/anomaly_chart/flux = 6,
+		/datum/shop_sku/anomaly_chart/grav = 6,
+		/datum/shop_sku/anomaly_chart/hallucination = 6,
+		/datum/shop_sku/anomaly_chart/pyro = 6,
+		/datum/shop_sku/anomaly_chart/bioscrambler = 3,
+		/datum/shop_sku/anomaly_chart/ectoplasm = 3,
+		/datum/shop_sku/anomaly_chart/dimensional = 3,
+		/datum/shop_sku/anomaly_chart/bluespace = 1,
+		/datum/shop_sku/anomaly_chart/vortex = 1,
+	)
+
+/// Raw cores: normal favor discounts and specials apply; contracts never pay them out
+/datum/shop_sku/skunk/anomaly_core
+	category = "Anomalies"
+	stock_min = 1
+	stock_max = 1
+	contract_reward = FALSE
+
+/datum/shop_sku/skunk/anomaly_core/flux
+	item_path = /obj/item/raw_anomaly_core/flux
+	price_credits = 25000
+
+/datum/shop_sku/skunk/anomaly_core/grav
+	item_path = /obj/item/raw_anomaly_core/grav
+	price_credits = 25000
+
+/datum/shop_sku/skunk/anomaly_core/hallucination
+	item_path = /obj/item/raw_anomaly_core/hallucination
+	price_credits = 25000
+
+/datum/shop_sku/skunk/anomaly_core/pyro
+	item_path = /obj/item/raw_anomaly_core/pyro
+	price_credits = 25000
+
+/datum/shop_sku/skunk/anomaly_core/bioscrambler
+	item_path = /obj/item/raw_anomaly_core/bioscrambler
+	price_credits = 30000
+
+/datum/shop_sku/skunk/anomaly_core/ectoplasm
+	item_path = /obj/item/raw_anomaly_core/ectoplasm
+	price_credits = 30000
+
+/datum/shop_sku/skunk/anomaly_core/dimensional
+	item_path = /obj/item/raw_anomaly_core/dimensional
+	price_credits = 30000
+
+/datum/shop_sku/skunk/anomaly_core/bluespace
+	item_path = /obj/item/raw_anomaly_core/bluespace
+	price_credits = 35000
+
+/datum/shop_sku/skunk/anomaly_core/vortex
+	item_path = /obj/item/raw_anomaly_core/vortex
+	price_credits = 35000
 
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.

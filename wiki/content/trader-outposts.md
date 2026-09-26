@@ -45,7 +45,7 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 | Halcyon | The Potting Shed | Fern | Seeds, growing supplies, the botany starter pack |
 | Halcyon | Pike's Bait & Tackle | Pike | Rods, bait and tackle, beside an indoor pond |
 | Halcyon | The Chowder Pot | Roux | The diner. Hot meals in tiers, galley staples, buys home cooking |
-| Quartermain | The Skunkworks | Boffin | Research and fabrication gear, robotics and xenobiology starter packs |
+| Quartermain | The Skunkworks | Boffin | Research and fabrication gear, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
 | Quartermain | The Fitting Bay | Wick | Civilian through advanced MODsuits |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
@@ -95,6 +95,18 @@ Sold ruin charts restock with supply convoys. Buying another gives you another f
 | Nullstack Arcade, a bitrunning parlour that printed its own hostiles | Deep | 4000 cr + 3 vouchers |
 
 More on what is inside them is on [Ruins](ruins.md).
+
+### Anomaly cores and charts
+
+Boffin at the Skunkworks is the only place that sells **raw anomaly cores**. Cargo does not carry them. He has two on the shelf at a time, one of each. When one sells, the next convoy brings a different type. Rare types turn up less often. Raw cores still need the refinery and a bomb. Standing discounts and specials apply to cores and charts as usual (the better of the two, never both).
+
+Boffin also sells **anomaly charts** the same way. A chart names one anomaly. It uploads to your helm sealed, like a ruin chart, and the reveal marks either a derelict or a planet in the named band. The anomaly only forms once **your own ship** docks there. Another crew that gets there first finds nothing. Neutralize it for its core. If the site vanishes before you arrive, the chart goes back on your helm sealed and you can reveal it again. The chart is lost if your ship is.
+
+| Anomalies | Raw core | Chart | Chart band |
+|---|---|---|---|
+| Flux, gravitational, hallucination, pyroclastic | 25000 cr | 12500 cr | Contested |
+| Bioscrambler, ectoplasm, dimensional | 30000 cr | 15000 cr | Contested |
+| Bluespace, vortex | 35000 cr | 17500 cr | Lawless |
 
 ## Trader contracts
 
