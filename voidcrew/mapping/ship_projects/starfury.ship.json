@@ -1,0 +1,27 @@
+{
+  "Version": 1,
+  "ID": "starfury",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/starfury",
+    "Name": "Starfury",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "starfury",
+    "Slots": null,
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Standard",
+        "Suffix": "starfury",
+        "Slots": null,
+        "Default": true
+      }
+    ],
+    "Modules": null
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PortDirection": 2
+}

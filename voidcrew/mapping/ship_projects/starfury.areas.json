@@ -1,0 +1,81 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/starfury",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/fore_compartments",
+      "Name": "Fore Compartments",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/medical_bay",
+      "Name": "Medical Bay",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/surgery",
+      "Name": "Surgery",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/cargo_dock",
+      "Name": "Cargo Dock",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/recreation_area",
+      "Name": "Recreation Area",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/armory",
+      "Name": "Armory",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/holding_cells",
+      "Name": "Holding Cells",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/captains_quarters",
+      "Name": "Captains Quarters",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/power_storage",
+      "Name": "Power Storage",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/aft_compartment",
+      "Name": "Aft Compartment",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/engineering_storage",
+      "Name": "Engineering Storage",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/central_engineering",
+      "Name": "Central Engineering",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/emitter_room",
+      "Name": "Emitter Room",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/engine_core",
+      "Name": "Engine Core",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/central_compartment",
+      "Name": "Central Compartment",
+      "IconState": "station"
+    }
+  ]
+}
