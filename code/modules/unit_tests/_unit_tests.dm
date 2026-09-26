@@ -161,6 +161,7 @@
 #include "ensure_subtree_operational_datum.dm"
 #include "ethereal_revival.dm"
 #include "explosion_action.dm"
+#include "../../../voidcrew/modules/unit_tests/fingers.dm" // VOIDCREW EDIT ADDITION
 #include "firedoor_regions.dm"
 #include "fish_unit_tests.dm"
 #include "focus_only_tests.dm"
@@ -201,6 +202,7 @@
 #include "late_initialization_reentry.dm"
 #include "leash.dm"
 #include "lesserform.dm"
+#include "../../../voidcrew/modules/unit_tests/limb_rig.dm" // VOIDCREW EDIT ADDITION
 #include "limbsanity.dm"
 #include "ling_decap.dm"
 #include "liver.dm"
