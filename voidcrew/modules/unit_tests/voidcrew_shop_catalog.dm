@@ -24,6 +24,9 @@
 			continue
 		shops_checked++
 		var/list/every_sku = shop.sku_types + shop.rotating_pool + shop.rare_pool + shop.chart_pool
+		for(var/datum/shop_rotation/rotation as anything in shop.live_rotations)
+			for(var/sku_type in rotation.pool)
+				every_sku += sku_type
 		for(var/datum/shop_sku/sku_type as anything in every_sku)
 			if(!ispath(sku_type, /datum/shop_sku))
 				TEST_FAIL("[shop_type] lists [sku_type], which is not a /datum/shop_sku")

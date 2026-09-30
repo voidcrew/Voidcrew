@@ -397,7 +397,7 @@
 	var/mob_chance_mult = 1
 	var/mob_upgrade_prob = 0
 	var/spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_GREEN
-	var/anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_GREEN
+	var/anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_GREEN
 	// Megafauna are apex content and stay out of the shallow end entirely - a green-zone
 	// planet is where a crew takes its first landing.
 	var/megafauna_allowed = FALSE
@@ -418,13 +418,13 @@
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_YELLOW
-			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_YELLOW
+			anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_YELLOW
 			megafauna_allowed = TRUE
 		if(ZONE_RED)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_RED
-			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_RED
+			anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_RED
 			megafauna_allowed = TRUE
 
 	// Structure spawners and megafauna are placed after the pass, not during it. Both are
@@ -562,6 +562,8 @@
 
 	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
 	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
+	// One anomaly at most, and only on a successful roll: they are a rare find
+	var/anomaly_budget = prob(anomaly_chance) ? 1 : 0
 	var/anomalies_placed = place_budgeted_anomalies(turfs, anomaly_budget)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \

@@ -25,6 +25,7 @@
 #include "voidcrew_ambient_recruiters.dm"
 #include "voidcrew_ambient_strays.dm"
 #include "voidcrew_ammo_box_materials.dm"
+#include "voidcrew_anomaly_trade.dm"
 #include "voidcrew_assault_pod.dm"
 #include "voidcrew_autopilot_course.dm"
 #include "voidcrew_autotranslate_morph.dm"
