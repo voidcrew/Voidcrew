@@ -75,6 +75,7 @@ ADMIN_VERB(fax_panel, R_ADMIN, "Fax Panel", "View and respond to faxes sent to C
 
 	return data
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/fax_panel_interface/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
 		return
@@ -136,3 +137,4 @@ ADMIN_VERB(fax_panel, R_ADMIN, "Fax Panel", "View and respond to faxes sent to C
 		if("createPaper")
 			var/obj/item/paper/our_paper = fax_paper.copy(/obj/item/paper, ui.user.loc)
 			our_paper.name = fax_paper.name
+// VOIDCREW EDIT END

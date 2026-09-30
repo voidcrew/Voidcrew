@@ -291,7 +291,6 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	// VOIDCREW EDIT ADDITION - whether this layer joins the shuttle-transit scroll loop.
 	// Only layers update_o() tiles at a 480px period can loop seamlessly; untiled
 	// backdrops (the station planet, voidcrew overmap_backdrop layers) must opt out
-	var/scroll_loops = TRUE
 	appearance_flags = APPEARANCE_UI | KEEP_TOGETHER
 	blend_mode = BLEND_ADD
 	plane = PLANE_SPACE_PARALLAX

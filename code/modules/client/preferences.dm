@@ -132,6 +132,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		save_preferences()
 	save_character() //let's save this new random character so it doesn't keep generating new ones.
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preferences/ui_interact(mob/user, datum/tgui/ui)
 	// There used to be code here that readded the preview view if you "rejoined"
 	// I'm making the assumption that ui close will be called whenever a user logs out, or loses a window
@@ -155,6 +156,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		// can still land here.
 		character_preview_view?.display_to(user, ui.window)
 
+// VOIDCREW EDIT END
 /datum/preferences/ui_state(mob/user)
 	return GLOB.always_state
 
@@ -179,6 +181,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	return data
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preferences/ui_static_data(mob/user)
 	var/list/data = list()
 
@@ -198,6 +201,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	return data
 
+// VOIDCREW EDIT END
 /datum/preferences/ui_assets(mob/user)
 	var/list/assets = list(
 		get_asset_datum(/datum/asset/spritesheet_batched/preferences),
@@ -300,6 +304,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		ui_interact(usr)
 		return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preferences/proc/create_character_preview_view(mob/user)
 	var/atom/movable/screen/map_view/char_preview/preview = new(null, src)
 	character_preview_view = preview
@@ -331,18 +336,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	character_preview_view = preview
 	return preview
 
-/**
- * Returns the character preview, rebuilding it if it went missing.
- *
- * Callers reach this from inside get_payload(), where a runtime costs the whole half of
- * the payload it is building. See create_character_preview_view() for how the view gets
- * destroyed mid-flight.
- */
-/datum/preferences/proc/get_character_preview_view(mob/user)
-	if(isnull(character_preview_view))
-		create_character_preview_view(user)
-	return character_preview_view
-
+// VOIDCREW EDIT END
 /datum/preferences/proc/compile_character_preferences(mob/user)
 	var/list/preferences = list()
 

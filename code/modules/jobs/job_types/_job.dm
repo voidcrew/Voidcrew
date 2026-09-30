@@ -504,6 +504,7 @@
 
 
 /// Spawns the mob to be played as, taking into account preferences and the desired spawn point.
+// VOIDCREW EDIT START - PR #425: Support cyborg and AI ship crew.
 /datum/job/proc/get_spawn_mob(client/player_client, atom/spawn_point)
 	var/mob/living/spawn_instance
 	if(ispath(spawn_type, /mob/living/silicon/ai))
@@ -520,6 +521,7 @@
 
 
 /// Applies the preference options to the spawning mob, taking the job into account. Assumes the client has the proper mind.
+// VOIDCREW EDIT END
 /mob/living/proc/apply_prefs_job(client/player_client, datum/job/job)
 
 

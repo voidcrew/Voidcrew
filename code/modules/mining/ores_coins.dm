@@ -43,6 +43,7 @@
 	if(stack_overlays)
 		. += stack_overlays
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/ore/welder_act(mob/living/user, obj/item/I)
 	..()
 	if(!refined_type)
@@ -54,6 +55,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/stack/ore/fire_act(exposed_temperature, exposed_volume)
 	. = ..()
 	if(isnull(refined_type))
@@ -157,10 +159,12 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	spreadChance = 8
 	merge_type = /obj/item/stack/ore/plasma
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/ore/plasma/welder_act(mob/living/user, obj/item/I)
 	to_chat(user, span_warning("You can't hit a high enough temperature to smelt [src] properly! It needs an ore redemption machine."))
 	return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/stack/ore/silver
 	name = "silver ore"
 	icon_state = "silver"

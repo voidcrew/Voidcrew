@@ -684,6 +684,7 @@ GLOBAL_LIST_EMPTY(map_model_default)
 		return tgm_build_cache(no_changeturf, bad_paths)
 	return dmm_build_cache(no_changeturf, bad_paths)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/parsed_map/proc/tgm_build_cache(no_changeturf, bad_paths=null)
 	if(modelCache && !bad_paths)
 		return modelCache
@@ -812,6 +813,7 @@ GLOBAL_LIST_EMPTY(map_model_default)
 /// Builds key caches for general formats
 /// Slower then the proc above, tho it could still be optimized slightly. it's just not a priority
 /// Since we don't run DMM maps, ever.
+// VOIDCREW EDIT END
 /datum/parsed_map/proc/dmm_build_cache(no_changeturf, bad_paths=null)
 	if(modelCache && !bad_paths)
 		return modelCache

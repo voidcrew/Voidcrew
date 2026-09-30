@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lazy_template/virtual_domain/bubblegum
 	name = "Blood-Soaked Lair"
 	cost = BITRUNNER_COST_APEX_BOSS
@@ -12,3 +13,4 @@
 	key = "bubblegum"
 	map_name = "bubblegum"
 	reward_points = BITRUNNER_REWARD_HIGH
+// VOIDCREW EDIT END

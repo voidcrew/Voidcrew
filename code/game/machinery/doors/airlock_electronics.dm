@@ -61,6 +61,7 @@
 	data["regions"] = regions
 	return data
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/electronics/airlock/ui_data()
 	var/list/data = list()
 	// Never hand tgui a null here. AccessConfig destructures `selectedList = []`, which
@@ -83,6 +84,7 @@
 	return data
 
 ///shared by rcd & airlock electronics
+// VOIDCREW EDIT END
 /obj/item/electronics/airlock/proc/do_action(action, params)
 	switch(action)
 		if("clear_all")

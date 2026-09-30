@@ -197,6 +197,7 @@
 	add_filter("emissives", 1, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(EMISSIVE_RENDER_TARGET, offset), flags = MASK_INVERSE))
 	set_light_cutoff(10)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/rendering_plate/lighting/show_to(mob/mymob)
 	. = ..()
 	if(!.)
@@ -228,6 +229,8 @@
 	offset_change(hud?.current_plane_offset || 0)
 	set_light_cutoff(mymob.lighting_cutoff, mymob.lighting_color_cutoffs)
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/rendering_plate/lighting/hide_from(mob/oldmob)
 	. = ..()
 	if(istype(oldmob))
@@ -237,6 +240,7 @@
 	if(hud)
 		UnregisterSignal(hud, COMSIG_HUD_OFFSET_CHANGED, PROC_REF(on_offset_change))
 
+// VOIDCREW EDIT END
 /atom/movable/screen/plane_master/rendering_plate/lighting/proc/on_offset_change(datum/source, old_offset, new_offset)
 	SIGNAL_HANDLER
 	offset_change(new_offset)
@@ -283,6 +287,7 @@
 	blend_mode = BLEND_MULTIPLY
 	render_relay_planes = list(RENDER_PLANE_GAME)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/rendering_plate/light_mask/show_to(mob/mymob)
 	. = ..()
 	if(!.)
@@ -294,6 +299,8 @@
 	RegisterSignal(mymob, COMSIG_MOB_SIGHT_CHANGE, PROC_REF(handle_sight), override = TRUE)
 	handle_sight(mymob, mymob.sight, NONE)
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/rendering_plate/light_mask/hide_from(mob/oldmob)
 	. = ..()
 	var/atom/movable/screen/plane_master/emissive = home.get_plane(GET_NEW_PLANE(RENDER_PLANE_EMISSIVE, offset))
@@ -302,6 +309,7 @@
 	if(istype(oldmob))
 		UnregisterSignal(oldmob, COMSIG_MOB_SIGHT_CHANGE)
 
+// VOIDCREW EDIT END
 /atom/movable/screen/plane_master/rendering_plate/light_mask/proc/handle_sight(datum/source, new_sight, old_sight)
 	// If we can see something that shows "through" blackness, and we can't see turfs, disable our draw to the game plane
 	// And instead mask JUST the overlay lighting plane, since that will look fuckin wrong

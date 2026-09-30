@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Remove station-only nuclear-code requests from ship communications.
 import { useState } from 'react';
 import { Box, Button, Flex, Modal, Section } from 'tgui-core/components';
 import { capitalize } from 'tgui-core/string';
@@ -301,3 +302,4 @@ export function PageMain(props) {
     </Box>
   );
 }
+// VOIDCREW EDIT END

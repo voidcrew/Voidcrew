@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lazy_template/virtual_domain/blood_drunk_miner
 	name = "Sanguine Excavation"
 	cost = BITRUNNER_COST_BOSS
@@ -12,3 +13,4 @@
 	key = "blood_drunk_miner"
 	map_name = "blood_drunk_miner"
 	reward_points = BITRUNNER_REWARD_MEDIUM
+// VOIDCREW EDIT END

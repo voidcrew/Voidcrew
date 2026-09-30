@@ -211,12 +211,6 @@
 		return
 	ores += ore
 
-// VOIDCREW EDIT: keep the bookkeeping list honest however ore leaves - dumped,
-// stolen out by hand, or deleted (qdel nullspaces contents through Exited)
-/obj/item/mod/module/orebag/Exited(atom/movable/gone, direction)
-	. = ..()
-	ores -= gone
-
 /obj/item/mod/module/orebag/on_use()
 	// VOIDCREW EDIT: iterate a copy - Exited() now prunes ores on each forceMove,
 	// and the old explicit `ores -= ore` mid-walk skipped every other stack anyway

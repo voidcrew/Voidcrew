@@ -30,6 +30,7 @@
 	if(SSshuttle.initialized)
 		return INITIALIZE_HINT_LATELOAD
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/docking_port/stationary/LateInitialize()
 	// Ports late-initialize independently. The subsystem skips ports without a template
 	// and action_load() serializes every real load across its yielding operations.
@@ -39,6 +40,7 @@
 	highlight("#f00")
 #endif
 
+// VOIDCREW EDIT END
 /obj/docking_port/stationary/Destroy(force)
 	if(force)
 		unregister()

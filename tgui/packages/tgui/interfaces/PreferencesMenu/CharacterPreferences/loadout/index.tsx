@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Voidcrew loadout store integration.
 import { Fragment, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import { CharacterPreview } from 'tgui/interfaces/common/CharacterPreview';
@@ -330,3 +331,4 @@ function LoadoutPreviewSection() {
     </Section>
   );
 }
+// VOIDCREW EDIT END

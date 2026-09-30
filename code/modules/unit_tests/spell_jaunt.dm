@@ -21,12 +21,15 @@
 	TEST_ASSERT_EQUAL(jaunter.loc, jaunt_turf, "Jaunter failed to exit jaunt on exiting [walk].")
 
 /// A nearby pool across a ruin boundary must not invoke the random jaunt ejection fallback.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/blood_jaunt_destinations
 	var/turf/pool_turf
 	var/area/original_area
 	var/area/overmap_encounter/planet_ruin/ruin_area
 	var/original_turf_flags
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/blood_jaunt_destinations/Destroy()
 	if(pool_turf)
 		pool_turf.turf_flags = original_turf_flags
@@ -34,6 +37,8 @@
 	QDEL_NULL(ruin_area)
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/blood_jaunt_destinations/Run()
 	var/mob/living/carbon/human/jaunter = allocate(/mob/living/carbon/human/consistent)
 	var/datum/action/cooldown/spell/jaunt/bloodcrawl/crawl = allocate(/datum/action/cooldown/spell/jaunt/bloodcrawl)
@@ -83,5 +88,8 @@
 	TEST_ASSERT_EQUAL(jaunter.loc, pool_turf, "Blood Crawl did not surface at the chosen pool")
 	TEST_ASSERT(!HAS_TRAIT(jaunter, TRAIT_MAGICALLY_PHASED), "Blood Crawl left the caster phased after a successful exit")
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/blood_jaunt_destinations/proc/ward_destination()
 	ruin_area.area_flags |= NOTELEPORT
+// VOIDCREW EDIT END

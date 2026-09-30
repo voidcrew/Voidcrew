@@ -64,12 +64,14 @@
 // Common materials.
 // For base materials, see materials.dm
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/stack/plasteel
 	cost = CARGO_CRATE_VALUE * 0.1
 	message = "of plasteel"
 	export_types = list(/obj/item/stack/sheet/plasteel)
 
 // 1 glass + 0.5 iron, cost is rounded up.
+// VOIDCREW EDIT END
 /datum/export/stack/rglass
 	cost = CARGO_CRATE_VALUE * 0.02
 	message = "of reinforced glass"

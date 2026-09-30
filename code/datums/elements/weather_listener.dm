@@ -35,6 +35,7 @@
 	. = ..()
 	UnregisterSignal(source, list(COMSIG_MOVABLE_Z_CHANGED, COMSIG_MOB_LOGOUT))
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/element/weather_listener/proc/handle_z_level_change(datum/source, turf/old_loc, turf/new_loc)
 	SIGNAL_HANDLER
 	var/list/fitting_z_levels = SSmapping.levels_by_trait(weather_trait)
@@ -48,6 +49,7 @@
 	)
 	our_comp.RegisterSignals(SSdcs, sound_change_signals, TYPE_PROC_REF(/datum/component/area_sound_manager, handle_change))
 
+// VOIDCREW EDIT END
 /datum/element/weather_listener/proc/handle_logout(datum/source)
 	SIGNAL_HANDLER
 	source.RemoveElement(/datum/element/weather_listener, weather_type, weather_trait, playlist)

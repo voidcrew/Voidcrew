@@ -64,6 +64,7 @@
 
 
 /// Scans over the inbound created_atoms from lazy templates
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/quantum_server/proc/on_template_loaded(datum/lazy_template/source, list/created_atoms)
 	SIGNAL_HANDLER
 
@@ -110,6 +111,7 @@
 
 
 /// Handles when cybercops are summoned into the area or ghosts click a ghost role spawner
+// VOIDCREW EDIT END
 /obj/machinery/quantum_server/proc/on_threat_created(datum/source, mob/living/threat)
 	SIGNAL_HANDLER
 

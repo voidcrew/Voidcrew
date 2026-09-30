@@ -23,6 +23,7 @@ GLOBAL_PROTECT(##log_var_name);\
 #define DONT_START_LOG FALSE
 
 /// Populated by log declaration macros to set log file names and start messages
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /world/proc/_initialize_log_files(temp_log_override = null)
 	// Needs to be here to avoid compiler warnings
 	SHOULD_CALL_PARENT(TRUE)
@@ -44,6 +45,7 @@ DECLARE_LOG_NAMED(test_log, "tests", START_LOG)
 
 
 /// Picture logging
+// VOIDCREW EDIT END
 GLOBAL_VAR(picture_log_directory)
 GLOBAL_PROTECT(picture_log_directory)
 

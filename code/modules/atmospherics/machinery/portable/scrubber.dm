@@ -193,6 +193,7 @@
 	on = FALSE
 	return ..()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/portable_atmospherics/scrubber/huge
 	name = "huge air scrubber"
 	icon_state = "hugescrubber"
@@ -207,6 +208,7 @@
 	var/movable = FALSE
 	use_overlays = FALSE
 
+// VOIDCREW EDIT END
 /obj/machinery/portable_atmospherics/scrubber/huge/movable
 	movable = TRUE
 

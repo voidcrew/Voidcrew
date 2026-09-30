@@ -153,8 +153,6 @@
 	var/next_keysend_reset = 0
 	///REALTIMEOFDAY at which this client's accumulated flood strikes are forgiven
 	var/next_keysend_trip_reset = 0
-	///Over-threshold seconds racked up inside the strike window; enough of them autokicks
-	var/keysend_strikes = 0
 	// VOIDCREW EDIT END
 	///custom movement keys for this client
 	var/list/movement_keys = list()

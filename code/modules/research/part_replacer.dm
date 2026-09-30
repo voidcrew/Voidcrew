@@ -52,6 +52,7 @@
 
 ///Bluespace RPED. Allows exchanging parts from a distance & through cameras
 /obj/item/storage/part_replacer/bluespace
+	// VOIDCREW EDIT: inherit the compact storage sprite; the obsolete storage_wide.dmi override was removed.
 	name = "bluespace rapid part exchange device"
 	desc = "A version of the RPED that allows for replacement of parts and scanning from a distance, along with higher capacity for parts."
 	icon_state = "BS_RPED"

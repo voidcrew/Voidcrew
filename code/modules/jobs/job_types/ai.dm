@@ -23,6 +23,7 @@
 	config_tag = "AI"
 
 
+// VOIDCREW EDIT START - PR #425: Support cyborg and AI ship crew.
 /datum/job/ai/after_spawn(mob/living/spawned, client/player_client)
 	. = ..()
 	//we may have been created after our borg
@@ -36,6 +37,7 @@
 	ai_spawn.log_current_laws()
 
 
+// VOIDCREW EDIT END
 /datum/job/ai/get_roundstart_spawn_point()
 	return get_latejoin_spawn_point()
 

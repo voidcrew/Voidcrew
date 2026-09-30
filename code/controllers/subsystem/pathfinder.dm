@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(pathfinder)
 
 // This is another one of those subsystems (hey lighting) in which one "Run" means fully processing a queue
 // We'll use a copy for this just to be nice to people reading the mc panel
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/pathfinder/fire(resumed)
 	if(!resumed)
 		// wait is 0.5, so this subsystem fires roughly seventeen times a second for the whole
@@ -66,6 +67,7 @@ SUBSYSTEM_DEF(pathfinder)
 		currentmaps.len--
 
 /// Initiates a pathfind. Returns true if we're good, FALSE if something's failed
+// VOIDCREW EDIT END
 /datum/controller/subsystem/pathfinder/proc/pathfind(atom/movable/requester, atom/end, max_distance = 30, mintargetdist, access = list(), simulated_only = TRUE, turf/exclude, skip_first = TRUE, diagonal_handling = DIAGONAL_REMOVE_CLUNKY, list/datum/callback/on_finish)
 	var/datum/pathfind/jps/path = new()
 	path.setup(requester, access, max_distance, simulated_only, exclude, on_finish, end, mintargetdist, skip_first, diagonal_handling)

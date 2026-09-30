@@ -97,16 +97,20 @@
 // Both of these run inside get_payload(), where a runtime costs the whole half of the
 // payload being built - see /datum/preferences/create_character_preview_view() for how
 // the preview can be destroyed while the menu is still opening.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preference_middleware/loadout/get_ui_data(mob/user)
 	var/list/data = list()
 	data["job_clothes"] = preferences.get_character_preview_view(user)?.show_job_clothes
 	return data
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preference_middleware/loadout/get_ui_static_data(mob/user)
 	var/list/data = list()
 	data["loadout_preview_view"] = preferences.get_character_preview_view(user)?.assigned_map
 	return data
 
+// VOIDCREW EDIT END
 /datum/preference_middleware/loadout/get_constant_data()
 	var/list/data = list()
 	var/list/loadout_tabs = list()

@@ -10,6 +10,7 @@
 	var/rotation = 0
 	var/paint_colour = COLOR_WHITE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/effect/decal/cleanable/crayon/Initialize(mapload, main, type, e_name, graf_rot, alt_icon = null, desc_override = null)
 	. = ..()
 	if(isclosedturf(loc) && loc.density)
@@ -38,6 +39,7 @@
 	add_atom_colour(paint_colour, FIXED_COLOUR_PRIORITY)
 	RegisterSignal(src, COMSIG_OBJ_PAINTED, PROC_REF(on_painted))
 
+// VOIDCREW EDIT END
 /obj/effect/decal/cleanable/crayon/NeverShouldHaveComeHere(turf/here_turf)
 	return isgroundlessturf(here_turf)
 

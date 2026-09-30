@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Voidcrew ship credit siphon controls.
 import { useBackend } from '../backend';
 import { Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
@@ -169,3 +170,4 @@ export const ShipSiphon = (props) => {
     </Window>
   );
 };
+// VOIDCREW EDIT END

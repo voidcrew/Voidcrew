@@ -15,6 +15,7 @@
  *
  */
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather
 	/// name of weather
 	var/name = "space wind"
@@ -61,8 +62,6 @@
 	var/area_type = /area/space
 	/// Areas to be affected by the weather, calculated when the weather begins
 	var/list/impacted_areas = list()
-	/// Assoc mirror of impacted_areas (area = TRUE), for cheap membership checks in the per-mob hot path
-	var/list/impacted_areas_lookup = list()
 	/// A weighted list of areas impacted by weather, where weights reflect the total turf count in each area.
 	var/list/impacted_areas_weighted = list()
 	/// The total number of turfs impacted by weather across all z-levels and areas.
@@ -73,12 +72,6 @@
 	var/list/protected_areas = list()
 	/// The list of z-levels that this weather is actively affecting
 	var/impacted_z_levels
-	// VOIDCREW EDIT ADDITION START - site scoping. See voidcrew/datums/weather_site.dm
-	/// The /datum/weather_site that scheduled this storm, if it came from one.
-	var/datum/weather_site/weather_site
-	/// Area INSTANCES this storm is confined to. Null means the z-wide get_areas(area_type) sweep.
-	var/list/scoped_areas
-	// VOIDCREW EDIT ADDITION END
 	/// A weighted list of z-levels impacted by weather, where weights reflect the total turf count on each level
 	var/list/impacted_z_levels_weighted = list()
 
@@ -106,10 +99,6 @@
 	/// The chance, per tick, a turf will have weather effects applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this low near 0.01 (results in 1 in 100 affected turfs having weather reagents applied per tick)
 	var/turf_weather_chance = 0.01
-	/// If TRUE, weather_act_turf() only tops up open reagent containers (and waters hydroponics trays when
-	/// the reagent is water) instead of running full reagent exposure + washing on every struck turf.
-	/// Planet-scale weathers pick hundreds of turfs per second. Full exposure at that rate eats whole ticks.
-	var/turf_act_containers_only = FALSE
 	/// The chance, per tick, a turf will have a thunder strike applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this really low near 0.001 (results in 1 in 1000 affected turfs having thunder strikes applied per tick)
 	var/turf_thunder_chance = THUNDER_CHANCE_AVERAGE // does nothing without the WEATHER_THUNDER weather_flag
@@ -148,6 +137,7 @@
 	/// The actual atom that holds our reagents that is held in nullspace
 	var/obj/effect/abstract/weather_reagent_holder
 
+// VOIDCREW EDIT END
 /datum/weather/New(z_levels, list/weather_data, datum/weather_site/site) // VOIDCREW EDIT - optional scheduling site
 	..()
 
@@ -247,6 +237,7 @@
 		send_alert(telegraph_message, telegraph_sound, telegraph_sound_vol)
 	addtimer(CALLBACK(src, PROC_REF(start)), telegraph_duration)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/setup_weather_areas()
 	var/list/affectareas = list()
 	// VOIDCREW EDIT ADDITION START - a site-launched storm already knows its area instances, so
@@ -292,36 +283,8 @@
 			impacted_areas_weighted[z_string][affected_area] = total_turfs
 			total_impacted_turfs += total_turfs
 
-/**
- * VOIDCREW EDIT ADDITION - diagnostic for issue #196 (a lava planet's ash storm painting
- * an ocean planet). Changes nothing about the storm.
- *
- * get_areas() matches by area TYPE, and every packed planet's surface and caves share
- * area_type = /area/overmap_encounter/planetoid - so on a z-level carrying more than one
- * map tenant this sweep can only over-reach, and a storm that takes it paints, telegraphs
- * and burns on all four planets rather than on the one it belongs to. In a live round
- * every planet is packed, so that is the whole of the reported symptom.
- *
- * Nothing in the tree is supposed to reach here on a shared level: scheduled planet storms
- * carry an area-scoped site, and a site-scoped storm with no areas yet is held out of the
- * scheduler entirely (SSweather.fire -> awaiting_owned_areas). An audit of every
- * run_weather() caller, the site registry lifecycle, and three days of prod admin.log
- * found no route that does. So rather than guess at a cause, name the offender in the
- * runtime log the next time it happens - the stack trace is the caller.
- */
-/datum/weather/proc/log_packed_level_area_sweep()
-	if(!islist(impacted_z_levels))
-		return
-	for(var/z in impacted_z_levels)
-		if(!isnum(z) || z < 1 || z > length(SSmapping.z_list))
-			continue
-		var/datum/space_level/level = SSmapping.z_list[z]
-		if(length(level?.footprints) <= 1)
-			continue
-		stack_trace("weather [type] fell back to the z-wide get_areas([area_type]) sweep on packed z[z] ([length(level.footprints)] tenants) - it will impact every tenant on that level. Site: [weather_site?.id || "none"]")
-		return
-
 /// Selects a turf impacted by weather, if available, otherwise returns null
+// VOIDCREW EDIT END
 /datum/weather/proc/pick_turf()
 	var/z_string = pick_weight_recursive(impacted_z_levels_weighted)
 	var/area/selected_area = pick_weight_recursive(impacted_areas_weighted[z_string])
@@ -334,6 +297,7 @@
 		return pick(available_turfs)
 	return
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/setup_weather_turfs()
 	if(!(weather_flags & (WEATHER_TURFS|WEATHER_THUNDER)))
 		return
@@ -354,6 +318,7 @@
  * Begins dealing effects from weather to mobs in the area
  *
  */
+// VOIDCREW EDIT END
 /datum/weather/proc/start()
 	if(stage >= MAIN_STAGE)
 		return
@@ -456,6 +421,7 @@
 /**
  * Returns TRUE if the living mob can be affected by the weather
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/can_weather_act_mob(mob/living/mob_to_check)
 	// Preserve effects on abandoned player bodies while excluding ordinary fauna.
 	if(!mob_to_check.mind && !mob_to_check.ever_had_mind)
@@ -482,6 +448,7 @@
 /**
  * Returns TRUE if the atom should protect itself or its contents from weather
  */
+// VOIDCREW EDIT END
 /datum/weather/proc/recursive_weather_protection_check(atom/to_check)
 	return HAS_TRAIT(to_check, TRAIT_WEATHER_IMMUNE) || (immunity_type && HAS_TRAIT(to_check, immunity_type))
 
@@ -529,6 +496,7 @@
 /**
  * Affects the turf with whatever the weather does
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/weather_act_turf(turf/open/weather_turf)
 	if(!weather_reagent || !weather_reagent_holder)
 		return
@@ -569,6 +537,8 @@
 /**
  * Affects the turf with thunder
  */
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/thunder_act_turf(turf/open/weather_turf)
 	var/obj/effect/temp_visual/thunderbolt/thunder = new(weather_turf)
 	thunder.flash_lighting_fx(6, 2, duration = thunder.duration)
@@ -601,6 +571,7 @@
 /**
  * Updates the overlays on impacted areas
  */
+// VOIDCREW EDIT END
 /datum/weather/proc/update_areas()
 	var/list/new_overlay_cache = generate_overlay_cache()
 	for(var/area/impacted as anything in impacted_areas)

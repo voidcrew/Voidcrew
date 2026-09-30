@@ -534,6 +534,7 @@ BLIND     // can't see anything
 	GLOB.female_clothing_icons[index] = female_clothing_icon
 
 /// Proc that adjusts the clothing item, used by things like breathing masks, welding helmets, welding goggles etc.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/clothing/proc/adjust_visor(mob/living/user)
 	if(!can_use(user))
 		return FALSE
@@ -565,6 +566,7 @@ BLIND     // can't see anything
 		carbon_user.cutoff_internals("visor adjusted on [type], up=[up]")
 	return TRUE
 
+// VOIDCREW EDIT END
 /obj/item/clothing/proc/visor_toggling() //handles all the actual toggling of flags
 	up = !up
 	SEND_SIGNAL(src, COMSIG_CLOTHING_VISOR_TOGGLE, up)

@@ -124,6 +124,7 @@ other types of metals and chemistry for reagents).
 	///The bepis node we have the design id's of
 	var/datum/techweb_node/bepis_node
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/disk/design_disk/bepis/Initialize(mapload)
 	. = ..()
 	refill_experimental_technology_deck()
@@ -137,6 +138,7 @@ other types of metals and chemistry for reagents).
 		blueprints += new_entry
 
 ///Unhide and research our node so we show up in the R&D console.
+// VOIDCREW EDIT END
 /obj/item/disk/design_disk/bepis/on_upload(datum/techweb/stored_research, atom/research_source)
 	stored_research.hidden_nodes -= bepis_node.id
 	stored_research.research_node(bepis_node, force = TRUE, auto_adjust_cost = FALSE, research_source = research_source)
@@ -150,6 +152,7 @@ other types of metals and chemistry for reagents).
 	name = "Reformatted technology disk"
 	desc = "A disk containing a new, completed tech from the B.E.P.I.S. Upload the disk to an R&D Console to redeem the tech."
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/disk/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
 	if(. == INITIALIZE_HINT_QDEL)
@@ -159,12 +162,4 @@ other types of metals and chemistry for reagents).
 	// Bitrunning checks this pool BEFORE making a disk. Refill at exhaustion,
 	// rather than waiting for an Initialize() that the caller would never reach.
 	refill_experimental_technology_deck()
-
-/// Rebuild the finite experimental deck only when its current cycle is exhausted.
-/proc/refill_experimental_technology_deck()
-	if(length(SSresearch.techweb_nodes_experimental))
-		return
-	for(var/node_id in SSresearch.techweb_nodes)
-		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
-		if(node.experimental)
-			SSresearch.techweb_nodes_experimental[node_id] = TRUE
+// VOIDCREW EDIT END

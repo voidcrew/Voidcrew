@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm
 	name = "rain"
 	desc = "Heavy thunderstorms rain down below, drenching anyone caught in it."
@@ -29,10 +30,9 @@
 	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
-	var/list/start_sounds = list()
-	var/list/middle_sounds = list()
-	var/list/ending_sounds = list()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/telegraph()
 	for(var/area/impacted_area as anything in impacted_areas)
 		start_sounds[impacted_area] = /datum/looping_sound/rain/start
@@ -41,22 +41,29 @@
 	GLOB.rain_storm_sounds += start_sounds
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/start()
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds += middle_sounds
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/wind_down()
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds += ending_sounds
 	return ..()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/end()
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds -= ending_sounds
 	return ..()
 
+// VOIDCREW EDIT END
 /datum/weather/rain_storm/blood
 	whitelist_weather_reagents = list(/datum/reagent/blood)
 	probability = 0 // admeme event
@@ -67,6 +74,7 @@
 	whitelist_weather_reagents = list(/datum/reagent/toxin/plasma)
 	probability = 0 // maybe for icebox maps one day?
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/deep_fried
 	weather_temperature = 455 // just hot enough to apply the fried effect
 	whitelist_weather_reagents = list(/datum/reagent/consumable/nutriment/fat/oil)
@@ -74,6 +82,7 @@
 	turf_act_containers_only = FALSE // admeme event on station z-levels, wants the full frying splash
 	probability = 0 // admeme event
 
+// VOIDCREW EDIT END
 /datum/weather/rain_storm/acid
 	desc = "The planet's thunderstorms are by nature acidic, and will incinerate anyone standing beneath them without protection."
 
@@ -96,6 +105,7 @@
 	)
 	probability = 0
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/wizard
 	name = "magical rain"
 	desc = "A magical thunderstorm rains down below, drenching anyone caught in it with mysterious rain."
@@ -123,6 +133,7 @@
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_INDOORS | WEATHER_BAROMETER)
 	turf_act_containers_only = FALSE // wizard event on the station z, the chaotic reagent splashing is the whole point
 
+// VOIDCREW EDIT END
 /datum/weather/rain_storm/wizard/New(z_levels, list/weather_data)
 	if(length(GLOB.wizard_rain_reagents)) // the wizard event has already been run once and setup the whitelist
 		whitelist_weather_reagents = GLOB.wizard_rain_reagents

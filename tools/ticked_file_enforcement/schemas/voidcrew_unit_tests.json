@@ -1,0 +1,7 @@
+{
+	"file": "voidcrew/modules/unit_tests/_unit_tests.dm",
+	"scannable_directory": "voidcrew/modules/unit_tests/",
+	"subdirectories": false,
+	"excluded_files": [],
+	"forbidden_includes": []
+}
