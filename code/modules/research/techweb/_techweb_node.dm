@@ -67,8 +67,10 @@
 /datum/techweb_node/Destroy()
 	// Temporary instances (for example design-source validation) may share an
 	// id with the canonical node. They do not own that registry entry.
+	// VOIDCREW EDIT START: research only unregisters the canonical techweb node.
 	if(SSresearch.techweb_nodes[id] == src)
 		SSresearch.techweb_nodes -= id
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/techweb_node/proc/on_design_deletion(datum/design/D)

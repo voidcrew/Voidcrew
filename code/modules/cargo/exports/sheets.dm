@@ -65,7 +65,7 @@
 // For base materials, see materials.dm
 
 /datum/export/stack/plasteel
-	cost = CARGO_CRATE_VALUE * 0.1
+	cost = CARGO_CRATE_VALUE * 0.1 // VOIDCREW EDIT: cargo keeps plasteel salvage below its shipment price.
 	message = "of plasteel"
 	export_types = list(/obj/item/stack/sheet/plasteel)
 

@@ -198,7 +198,7 @@
  * id - The techweb ID node that we're meant to unlock if applicable.
  */
 /obj/machinery/rnd/destructive_analyzer/proc/user_try_decon_id(id)
-	if(QDELETED(loaded_item) || QDELETED(stored_research) || busy || !is_operational || panel_open || disabled)
+	if(QDELETED(loaded_item) || QDELETED(stored_research) || busy || !is_operational || panel_open || disabled) // VOIDCREW EDIT: research validates item-authorized discoveries and analyzer state.
 		return FALSE
 	if(isnull(id))
 		return FALSE
@@ -211,10 +211,12 @@
 
 	// The UI's buttons are suggestions, not authority: a forged id must never
 	// let an ordinary item reveal an unrelated field or consume the item.
+	// VOIDCREW EDIT START: research validates item-authorized discoveries and analyzer state.
 	var/list/unlockable_nodes = techweb_item_unlock_check(loaded_item)
 	if(!(id in unlockable_nodes) || !stored_research.hidden_nodes[id])
 		return FALSE
 	var/datum/techweb_node/node_to_discover = SSresearch.techweb_nodes[id]
+	// VOIDCREW EDIT END
 	if(!istype(node_to_discover))
 		return FALSE
 	if(!destroy_item())

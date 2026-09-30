@@ -45,6 +45,7 @@ export type CommsConsoleData = {
   canMakeAnnouncement: BooleanLike;
   canMessageAssociates: BooleanLike;
   canRecallShuttles: BooleanLike;
+  // VOIDCREW EDIT REMOVAL: comms omits the station nuclear-code request field.
   canRequestSafeCode: BooleanLike;
   canSendToSectors: BooleanLike;
   canSetAlertLevel: string;

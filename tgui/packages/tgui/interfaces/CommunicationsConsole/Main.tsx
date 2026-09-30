@@ -16,6 +16,7 @@ export function PageMain(props) {
     canMakeAnnouncement,
     canMessageAssociates,
     canRecallShuttles,
+    // VOIDCREW EDIT REMOVAL: comms omits station self-destruct requests and coerces UI flags.
     canSendToSectors,
     canSetAlertLevel,
     canToggleEmergencyAccess,
@@ -34,6 +35,7 @@ export function PageMain(props) {
   const [callingShuttle, setCallingShuttle] = useState(false);
   const [messagingAssociates, setMessagingAssociates] = useState(false);
   const [messagingSector, setMessagingSector] = useState('');
+// VOIDCREW EDIT REMOVAL: comms omits station self-destruct requests and coerces UI flags.
 
   const [newAlertLevel, setNewAlertLevel] = useState('');
   const showAlertLevelConfirm = newAlertLevel && newAlertLevel !== alertLevel;
@@ -176,6 +178,7 @@ export function PageMain(props) {
             </Button>
           )}
 
+          {/* VOIDCREW EDIT REMOVAL: comms omits station self-destruct requests and coerces UI flags. */}
           {!!emagged && !syndicate && (
             <Button icon="undo" onClick={() => act('restoreBackupRoutingData')}>
               Restore Backup Routing Data
@@ -184,6 +187,7 @@ export function PageMain(props) {
         </Flex>
       </Section>
 
+      {/* VOIDCREW EDIT START: comms omits station self-destruct requests and coerces UI flags. */}
       {!!canMessageAssociates && !!messagingAssociates && (
         <MessageModal
           label={`Message to transmit to ${
@@ -201,6 +205,7 @@ export function PageMain(props) {
           }}
         />
       )}
+      {/* VOIDCREW EDIT END */}
 
       {!!callingShuttle && (
         <MessageModal
@@ -218,6 +223,7 @@ export function PageMain(props) {
         />
       )}
 
+      {/* VOIDCREW EDIT: comms omits station self-destruct requests and coerces UI flags. */}
       {!!canSetAlertLevel && !!showAlertLevelConfirm && (
         <Modal>
           <Flex direction="column" textAlign="center" width="300px">
@@ -281,6 +287,7 @@ export function PageMain(props) {
         </Section>
       )}
 
+      {/* VOIDCREW EDIT: comms omits station self-destruct requests and coerces UI flags. */}
       {!!canSendToSectors && sectors.length > 0 && !!messagingSector && (
         <MessageModal
           label="Message to send to allied station"

@@ -146,11 +146,11 @@
 				playsound(computer, SFX_TERMINAL_TYPE, 25, FALSE)
 
 			var/obj/machinery/camera/selected_camera = locate(params["camera"]) in GLOB.cameranet.cameras
-			if(can_view_camera(selected_camera))
+			if(can_view_camera(selected_camera)) // VOIDCREW EDIT: comms revokes cameras outside the tablet ship network.
 				camera_ref = WEAKREF(selected_camera)
 			else
 				camera_ref = null
-				update_active_camera_screen()
+				update_active_camera_screen() // VOIDCREW EDIT: comms revokes cameras outside the tablet ship network.
 				return TRUE
 			if(!spying)
 				selected_camera.on_start_watching(src)
@@ -162,7 +162,7 @@
 
 		if("start_tracking")
 			if(!internal_tracker)
-				internal_tracker = new /datum/trackable/secureye(src)
+				internal_tracker = new /datum/trackable/secureye(src) // VOIDCREW EDIT: comms revokes cameras outside the tablet ship network.
 				RegisterSignal(internal_tracker, COMSIG_TRACKABLE_TRACKING_TARGET, PROC_REF(on_track_target))
 			internal_tracker.track_input(usr)
 			return TRUE
@@ -173,8 +173,10 @@
 	if(!target_camerachunk)
 		CRASH("[src] was able to track [target] through /datum/trackable, but was not on a visible turf to cameras.")
 	for(var/obj/machinery/camera/cameras as anything in target_camerachunk.cameras["[target.z]"])
+		// VOIDCREW EDIT START: comms revokes cameras outside the tablet ship network.
 		if(!can_view_camera(cameras))
 			continue
+		// VOIDCREW EDIT END
 		var/found_target = locate(target) in cameras.can_see()
 		if(!found_target)
 			continue
@@ -209,15 +211,17 @@
 /datum/computer_file/program/secureye/proc/update_active_camera_screen()
 	var/obj/machinery/camera/active_camera = camera_ref?.resolve()
 	// VOIDCREW: moving the tablet or changing networks revokes an old camera view.
+	// VOIDCREW EDIT START: comms revokes cameras outside the tablet ship network.
 	if(active_camera && !can_view_camera(active_camera))
 		if(!spying)
 			active_camera.on_stop_watching(src)
 		camera_ref = null
 		active_camera = null
 		last_camera_turf = null
+	// VOIDCREW EDIT END
 	// Show static if can't use the camera
 	if(!active_camera?.can_use())
-		last_camera_turf = null
+		last_camera_turf = null // VOIDCREW EDIT: comms revokes cameras outside the tablet ship network.
 		cam_screen.show_camera_static()
 		return
 

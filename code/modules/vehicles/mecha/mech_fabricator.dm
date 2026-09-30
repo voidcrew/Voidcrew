@@ -20,7 +20,7 @@
 	/// The current design datum that the machine is building.
 	var/datum/design/being_built
 	/// Materials paid for the current job, retained even if parts change mid-print.
-	var/list/being_built_materials
+	var/list/being_built_materials // VOIDCREW EDIT: research retains paid fabrication materials and permits local designs without a disk.
 
 	/// World time when the build will finish.
 	var/build_finish = 0
@@ -266,6 +266,7 @@
 			say("Not enough resources. Processing stopped.")
 		return FALSE
 
+	// VOIDCREW EDIT START: research retains paid fabrication materials and permits local designs without a disk.
 	var/list/materials_before = materials.materials.Copy()
 	if(!rmat.use_materials(D.materials, component_coeff, 1, "built", "[D.name]", user_data))
 		return FALSE
@@ -274,6 +275,7 @@
 		var/consumed = materials_before[material] - materials.materials[material]
 		if(consumed > 0)
 			being_built_materials[material] = consumed
+	// VOIDCREW EDIT END
 	being_built = D
 	build_finish = world.time + get_construction_time_w_coeff(initial(D.construction_time))
 	build_start = world.time
@@ -318,8 +320,10 @@
  */
 /obj/machinery/mecha_part_fabricator/proc/dispense_built_part(datum/design/dispensed_design)
 	var/obj/item/built_part = new dispensed_design.build_path(src)
+	// VOIDCREW EDIT START: research retains paid fabrication materials and permits local designs without a disk.
 	apply_fabrication_materials(built_part, being_built_materials)
 	being_built_materials = null
+	// VOIDCREW EDIT END
 	SSblackbox.record_feedback("nested tally", "lathe_printed_items", 1, list("[type]", "[built_part.type]"))
 
 	being_built = null
@@ -338,42 +342,7 @@
 
 	return TRUE
 
-/**
- * Allocate only the paid material to the printed item and its contents.
- * Unlike split_materials_uniformly(), omit shares below one unit: material
- * initialization rounds every present entry up to at least one, which can
- * multiply a small ingredient across a package with many nested objects.
- */
-/obj/machinery/mecha_part_fabricator/proc/apply_fabrication_materials(obj/item/product, list/paid_materials)
-	PRIVATE_PROC(TRUE)
-
-	// Ammunition is otherwise created lazily, after the material allocation.
-	for(var/obj/item/ammo_box/box as anything in product.get_all_contents_type(/obj/item/ammo_box))
-		box.ammo_list()
-	var/list/items = product.get_all_contents_type(/obj/item)
-	var/list/weights = list()
-	for(var/material in paid_materials)
-		for(var/obj/item/item as anything in items)
-			weights[material] += item.custom_materials?[material] || 1
-	for(var/obj/item/item as anything in items)
-		var/list/item_materials = list()
-		for(var/material in paid_materials)
-			var/weight = item.custom_materials?[material] || 1
-			var/share = round(paid_materials[material] * weight / weights[material])
-			// Stack splits and merges must also preserve the per-unit budget.
-			if(isstack(item))
-				var/obj/item/stack/stack = item
-				share = round(share / stack.amount) * stack.amount
-			if(share > 0)
-				item_materials[material] = share
-		item.set_custom_materials(item_materials)
-		if(isstack(item) && !length(item_materials))
-			var/obj/item/stack/stack = item
-			stack.mats_per_unit = null
-		// Ammo boxes read their intrinsic material map when recycled.
-		if(istype(item, /obj/item/ammo_box))
-			var/obj/item/ammo_box/box = item
-			box.intrinsic_materials = item.custom_materials
+// VOIDCREW EDIT: research allocates only the paid fabrication materials; implementation in voidcrew/modules/research/fabrication_materials.dm.
 
 /**
  * Adds a datum design to the build queue.
@@ -506,10 +475,11 @@
 				if(!istext(design_id))
 					continue
 
-				var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
+				var/datum/design/design = SSresearch.techweb_design_by_id(design_id) // VOIDCREW EDIT: research retains paid fabrication materials and permits local designs without a disk.
 				// VOIDCREW EDIT: independent local designs still work with the server disk removed.
 				if(!((stored_research && stored_research.researched_designs.Find(design_id)) || (design in illegal_local_designs)))
 					continue
+// VOIDCREW EDIT REMOVAL: research retains paid fabrication materials and permits local designs without a disk.
 
 				if(!(design.build_type & MECHFAB) || design.id != design_id)
 					continue

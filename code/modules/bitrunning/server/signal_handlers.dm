@@ -74,11 +74,13 @@
 			// ismegafauna() also covers /mob/living/basic/boss, which has no
 			// make_virtual_megafauna() - calling it on one is a runtime.
 			if(ismegafauna(creature))
+				// VOIDCREW EDIT START: research limits virtual megafauna conversion to supported mobs.
 				if(istype(creature, /mob/living/simple_animal/hostile/megafauna))
 					var/mob/living/simple_animal/hostile/megafauna/boss = creature
 					boss.make_virtual_megafauna()
 				else
 					stack_trace("bitrunning: [creature.type] has no virtual megafauna nerf, it keeps full loot inside the domain")
+				// VOIDCREW EDIT END
 				continue
 
 			mutation_candidate_refs.Add(WEAKREF(creature))

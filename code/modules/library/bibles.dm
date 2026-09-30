@@ -46,6 +46,7 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 	"bible",
 	"koran",
 	"scrapbook",
+	// VOIDCREW EDIT START: clothing uses existing bible inhand states.
 	"bible",
 	"bible",
 	"bible",
@@ -54,13 +55,14 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 	"bible",
 	"bible",
 	"bible",
+	// VOIDCREW EDIT END
 	"kingyellow",
 	"ithaqua",
 	"scientology",
 	"melted",
 	"necronomicon",
 	"kingyellow",
-	"bible",
+	"bible", // VOIDCREW EDIT: clothing uses existing bible inhand states.
 	"kojiki",
 ))
 

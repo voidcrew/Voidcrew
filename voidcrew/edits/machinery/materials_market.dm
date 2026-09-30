@@ -1,5 +1,33 @@
 /**
- * VOIDCREW EDIT: the Galactic Materials Market, aboard a ship.
+ * Voidcrew: four seams so a market that is not bolted to a station's cargo
+ * department can still work. Nothing in this fork ever ships SSshuttle.shopping_list -
+ * deliveries run off the per-ship cargo console's own cart (voidcrew/modules/cargo/shipping)
+ * - and there is no ACCOUNT_CAR budget and no crew member holding ACCESS_CARGO, so an order
+ * placed here used to be quoted against the wrong account and then filed into a list nothing
+ * reads. Defaults precede the ship-specific overrides below.
+ */
+
+/// The order list this market files into. Null means it has nowhere to file an order.
+/// `announce_refusal` is TRUE only on the path that is actually placing one, so the override
+/// can say why it is refusing without spamming that message from every ui_data() tick.
+/obj/machinery/materials_market/proc/get_order_list(announce_refusal = FALSE)
+	return SSshuttle.shopping_list
+
+/// Whether `id_card` may spend a budget here instead of their own money.
+/obj/machinery/materials_market/proc/can_order_on_budget(obj/item/card/id/id_card)
+	return (ACCESS_CARGO in id_card?.GetAccess())
+
+/// Whether an order placed with `id_card` comes out of the buyer's own pocket, which means a
+/// 1.1x surcharge and a crate only their ID can open.
+/obj/machinery/materials_market/proc/ordering_privately(obj/item/card/id/id_card)
+	return ordering_private || !can_order_on_budget(id_card)
+
+/// The account an order placed here is quoted against, and billed to when it is not private.
+/obj/machinery/materials_market/proc/market_account(obj/item/card/id/id_card, is_ordering_private)
+	return is_ordering_private ? id_card?.registered_account : SSeconomy.get_dep_account(ACCOUNT_CAR)
+
+/**
+ * Voidcrew: the Galactic Materials Market, aboard a ship.
  *
  * The stock machine is a fixture of a station cargo department: it quotes against
  * ACCOUNT_CAR or the buyer's own ID, gates the budget on ACCESS_CARGO, and files its

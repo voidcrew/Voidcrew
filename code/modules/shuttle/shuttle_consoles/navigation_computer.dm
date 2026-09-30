@@ -3,6 +3,7 @@
 	desc = "Used to designate a precise transit location for a spacecraft."
 	jump_action = null
 	should_supress_view_changes = FALSE
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 	// Docking cameras should only interact with their current z-level.
 	move_up_action = null
@@ -24,16 +25,18 @@
 	var/x_offset = 0
 	///y offset for where the camera eye will spawn. Starts from the shuttle's docking port
 	var/y_offset = 0
-	var/list/whitelist_turfs = list(/turf/open/space, /turf/open/floor/plating, /turf/open/lava, /turf/open/openspace)
+	var/list/whitelist_turfs = list(/turf/open/space, /turf/open/floor/plating, /turf/open/lava, /turf/open/openspace) // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	var/see_hidden = FALSE
 	var/designate_time = 0
 	var/turf/designating_target_loc
 	var/jammed = FALSE
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/Initialize(mapload)
 	. = ..()
 	actions += new /datum/action/innate/shuttledocker_rotate(src)
 	actions += new /datum/action/innate/shuttledocker_place(src)
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 	set_init_ports()
 
@@ -58,6 +61,7 @@
 		my_port = null
 	else
 		QDEL_NULL(my_port)
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 /// "Initializes" any default port ids we have, done so add_jumpable_port can be a proper setter
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/set_init_ports()
@@ -110,34 +114,7 @@
 				SET_PLANE(I, ABOVE_GAME_PLANE, shuttle_turf)
 				I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 				the_eye.placement_images[I] = list(x_off, y_off)
-
-// Commenting out do to overwriting this in 'voidcrew\modules\shuttle\survey\survey_computer.dm'
-
-// /obj/machinery/computer/camera_advanced/shuttle_docker/give_eye_control(mob/user)
-// 	..()
-// 	if(!QDELETED(user) && user.client)
-// 		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
-// 		var/list/to_add = list()
-// 		to_add += the_eye.placement_images
-// 		to_add += the_eye.placed_images
-// 		if(!see_hidden)
-// 			to_add += SSshuttle.hidden_shuttle_turf_images
-
-// 		user.client.images += to_add
-// 		user.client.view_size.setTo(view_range)
-
-// /obj/machinery/computer/camera_advanced/shuttle_docker/remove_eye_control(mob/living/user)
-// 	..()
-// 	if(!QDELETED(user) && user.client)
-// 		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
-// 		var/list/to_remove = list()
-// 		to_remove += the_eye.placement_images
-// 		to_remove += the_eye.placed_images
-// 		if(!see_hidden)
-// 			to_remove += SSshuttle.hidden_shuttle_turf_images
-
-// 		user.client.images -= to_remove
-// 		user.client.view_size.resetToDefault()
+// VOIDCREW EDIT REMOVAL: shuttle survey owns eye-control images in voidcrew/modules/shuttle/survey/survey_computer.dm.
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/placeLandingSpot()
 	if(designating_target_loc || !current_user)
@@ -212,7 +189,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/rotateLandingSpot()
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
-	var/list/image_cache = the_eye.placement_images
+	var/list/image_cache = the_eye.placement_images // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	the_eye.setDir(turn(the_eye.dir, -90))
 	for(var/i in 1 to image_cache.len)
 		var/image/pic = image_cache[i]
@@ -221,6 +198,7 @@
 		coords[1] = coords[2]
 		coords[2] = -Tmp
 		pic.loc = locate(the_eye.x + coords[1], the_eye.y + coords[2], the_eye.z)
+	// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	var/Tmp = x_offset
 	x_offset = y_offset
 	y_offset = -Tmp
@@ -253,12 +231,13 @@
 			else
 				I.icon_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/checkLandingTurf(turf/T, list/overlappers)
 	// Too close to the map edge is never allowed
 	if(!T || T.x <= 10 || T.y <= 10 || T.x >= world.maxx - 10 || T.y >= world.maxy - 10)
 		return SHUTTLE_DOCKER_BLOCKED
-	// VOIDCREW EDIT ADDITION: no designating a pad inside a live bitrunning domain. The
+	// VOIDCREW EDIT ADDITION START: shuttle - no designating a pad inside a live bitrunning domain. The
 	// reservation floor is plain /area/space, so the allow_shuttle_docking check further
 	// down happily clears it, and a shuttle is a door into VR that runs both ways.
 	if(SSbitrunning.is_domain_turf(T))
@@ -314,8 +293,10 @@
 	use_visibility = FALSE
 	var/list/image/placement_images = list()
 	var/list/image/placed_images = list()
+// VOIDCREW EDIT REMOVAL: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 /mob/eye/camera/remote/shuttle_docker/setLoc(turf/destination, force_update = FALSE)
+	// VOIDCREW EDIT START: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	var/obj/machinery/origin = origin_ref?.resolve()
 	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = null
 	if(istype(origin, /obj/machinery/computer/camera_advanced/shuttle_docker))
@@ -326,22 +307,11 @@
 	// the survey console's override for the one that bounds itself.
 	if(console && !console.eye_may_enter(destination))
 		return
+	// VOIDCREW EDIT END
 	. = ..()
-	console?.checkLandingSpot()
+	console?.checkLandingSpot() // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
-/**
- * Whether this console's camera eye may be moved onto `destination`.
- *
- * A hook rather than a blanket restriction on the eye type: every shuttle-docker console in
- * the game shares /mob/eye/camera/remote/shuttle_docker, and upstream navigation, syndicate,
- * whiteship and caravan consoles are all supposed to be able to scroll wherever their z_lock
- * allows. Only the voidcrew survey console has co-tenants to be kept out of.
- *
- * Counterpart of /mob/eye/camera/remote/transporter/setLoc(), which does the same job for the
- * transporter's targeting scanner (voidcrew/modules/transporter/transporter_console.dm).
- */
-/obj/machinery/computer/camera_advanced/shuttle_docker/proc/eye_may_enter(turf/destination)
-	return TRUE
+// VOIDCREW EDIT: shuttle provides a survey camera containment hook; implementation in voidcrew/modules/shuttle/survey/eye_boundary_hook.dm.
 
 /mob/eye/camera/remote/shuttle_docker/update_remote_sight(mob/living/user)
 	user.set_sight(BLIND|SEE_TURFS)
@@ -359,7 +329,7 @@
 	if(QDELETED(owner) || !isliving(owner))
 		return
 	var/mob/eye/camera/remote/remote_eye = owner.remote_control
-	var/obj/machinery/computer/camera_advanced/shuttle_docker/origin = remote_eye.origin_ref?.resolve()
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/origin = remote_eye.origin_ref?.resolve() // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	origin.rotateLandingSpot()
 
 /datum/action/innate/shuttledocker_place
@@ -371,7 +341,7 @@
 	if(QDELETED(owner) || !isliving(owner))
 		return
 	var/mob/eye/camera/remote/remote_eye = owner.remote_control
-	var/obj/machinery/computer/camera_advanced/shuttle_docker/origin = remote_eye.origin_ref?.resolve()
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/origin = remote_eye.origin_ref?.resolve() // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 	origin.placeLandingSpot(owner)
 
 /datum/action/innate/camera_jump/shuttle_docker
@@ -382,11 +352,11 @@
 	if(QDELETED(owner) || !isliving(owner))
 		return
 	var/mob/eye/camera/remote/remote_eye = owner.remote_control
-	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = remote_eye.origin_ref?.resolve()
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = remote_eye.origin_ref?.resolve() // VOIDCREW EDIT: shuttle uses survey-owned navigation images and enforces encounter camera boundaries.
 
 	playsound(console, 'sound/machines/terminal/terminal_prompt_deny.ogg', 25, FALSE)
 
-	// VOIDCREW EDIT ADDITION: packed-level containment for the destination list.
+	// VOIDCREW EDIT ADDITION START: shuttle - packed-level containment for the destination list.
 	// locked_traits is (ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY) and a lattice encounter
 	// level carries none of them, so a berth or a nav beacon sitting inside a CO-TENANT's
 	// slot became a "Jump to Location" destination. Deliberately narrowed to the SAME-Z case:
@@ -402,7 +372,7 @@
 		var/obj/docking_port/stationary/S = V
 		if(console.z_lock.len && !(S.z in console.z_lock))
 			continue
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START: shuttle scopes this effect to its encounter site.
 		var/turf/port_turf = get_turf(S)
 		if(port_turf && console_turf && port_turf.z == console_turf.z && map_region_excludes_turf(console_region, port_turf))
 			continue
@@ -417,7 +387,7 @@
 		var/obj/machinery/spaceship_navigation_beacon/nav_beacon = V
 		if(!nav_beacon.z || SSmapping.level_has_any_trait(nav_beacon.z, console.locked_traits))
 			break
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START: shuttle scopes this effect to its encounter site.
 		var/turf/beacon_turf = get_turf(nav_beacon)
 		if(beacon_turf && console_turf && beacon_turf.z == console_turf.z && map_region_excludes_turf(console_region, beacon_turf))
 			continue

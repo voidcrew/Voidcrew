@@ -25,7 +25,7 @@
 	/// If the machine shows an approximate number of its contents on its sprite
 	var/visible_contents = TRUE
 	/// Whether the sprite has a separate glass overlay layer
-	var/has_glass_overlay = TRUE
+	var/has_glass_overlay = TRUE // VOIDCREW EDIT: research disk storage omits the separate glass overlay.
 	/// Is this smartfridge going to have a glowing screen? (Drying Racks are not)
 	var/has_emissive = TRUE
 	/// Whether the smartfridge is welded down to the floor disabling unwrenching
@@ -246,8 +246,10 @@
 				content_level += "-3"
 		. += mutable_appearance(icon, content_level)
 
+	// VOIDCREW EDIT START: research disk storage omits the separate glass overlay.
 	if(has_glass_overlay)
 		. += mutable_appearance(icon, "[base_icon_state]-glass[(machine_stat & BROKEN) ? "-broken" : ""]")
+	// VOIDCREW EDIT END
 	if(has_emissive && powered() && !(machine_stat & BROKEN))
 		. += mutable_appearance(icon, "[base_icon_state]-powered")
 		. += emissive_appearance(icon, "[base_icon_state]-light-mask", src, alpha = src.alpha)
@@ -805,7 +807,7 @@
 	pass_flags = PASSTABLE
 	can_atmos_pass = ATMOS_PASS_YES
 	visible_contents = FALSE
-	has_glass_overlay = FALSE
+	has_glass_overlay = FALSE // VOIDCREW EDIT: research disk storage omits the separate glass overlay.
 	has_emissive = FALSE
 	base_build_path = /obj/machinery/smartfridge/disks
 

@@ -12,7 +12,7 @@
 	var/port_type = PORT_TYPE_ANY
 	/// Whether we are adding output ports or not
 	var/is_output = FALSE
-	//VOIDCREW EDIT ADDITION: whether the output ports we add are /datum/port/output/singular.
+	//VOIDCREW EDIT ADDITION START: circuits - whether the output ports we add are /datum/port/output/singular.
 	//Only meaningful alongside is_output. See /datum/port/output/singular for why.
 	var/is_singular = FALSE
 	//VOIDCREW EDIT END

@@ -94,6 +94,7 @@
 		brute_healed += round((target.getBruteLoss() * brute_multiplier),0.1)
 		burn_healed += round((target.getFireLoss() * burn_multiplier),0.1)
 		dead_patient = FALSE
+	// VOIDCREW EDIT REMOVAL: surgery permits treatment through clothing.
 	target.heal_bodypart_damage(brute_healed,burn_healed)
 
 	user_msg += get_progress(user, target, brute_healed, burn_healed)

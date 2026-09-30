@@ -63,10 +63,12 @@ export function ItemDisplay(props: DisplayProps) {
       <ImageButton
         imageSize={scale * 32}
         color={active ? 'green' : 'default'}
+        // VOIDCREW EDIT START: preferences keeps loadout styling aligned with the preview controls.
         style={{
           textTransform: 'capitalize',
           zIndex: '1',
         }}
+        // VOIDCREW EDIT END
         tooltip={item.name}
         tooltipPosition={'bottom'}
         dmIcon={item.icon}

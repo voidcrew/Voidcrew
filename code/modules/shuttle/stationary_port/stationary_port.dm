@@ -33,7 +33,7 @@
 /obj/docking_port/stationary/LateInitialize()
 	// Ports late-initialize independently. The subsystem skips ports without a template
 	// and action_load() serializes every real load across its yielding operations.
-	INVOKE_ASYNC(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, setup_shuttle_late), src)
+	INVOKE_ASYNC(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, setup_shuttle_late), src) // VOIDCREW EDIT: shuttle serializes independent late port template loads.
 
 #ifdef TESTING
 	highlight("#f00")

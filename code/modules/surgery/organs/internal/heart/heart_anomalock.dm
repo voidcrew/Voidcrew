@@ -121,7 +121,7 @@
 
 /obj/item/organ/heart/cybernetic/anomalock/proc/add_lightning_overlay(time_to_last = 10 SECONDS)
 	if(!owner) // VOIDCREW EDIT - BAL-4: nothing to draw the arc on, and arming the timer anyway is what used to runtime later
-		return
+		return // VOIDCREW EDIT: cyberware skips lightning overlays without an organ owner.
 	if(lightning_overlay)
 		lightning_timer = addtimer(CALLBACK(src, PROC_REF(clear_lightning_overlay)), time_to_last, (TIMER_UNIQUE|TIMER_OVERRIDE))
 		return
