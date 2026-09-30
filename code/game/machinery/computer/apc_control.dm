@@ -102,7 +102,7 @@
 */
 
 /obj/machinery/computer/apc_control/proc/check_apc(obj/machinery/power/apc/checked_apc)
-	// VOIDCREW EDIT ADDITION: packed-level containment, and a live is_on_station.
+	// VOIDCREW EDIT ADDITION START: packed-level containment, and a live is_on_station. - overmap: contain observers and effects within their packed encounter
 	// Both branches of the upstream expression are wrong once sites share a z-level:
 	//   * is_on_station FALSE -> bare z equality lists and REMOTELY OPERATES every APC on
 	//     the packed z, i.e. all three co-tenants' sites plus any hull docked at them;

@@ -37,8 +37,10 @@
 	SIGNAL_HANDLER
 
 	// The async initialization callback can outlive the move or turf replacement.
+	// VOIDCREW EDIT START - hyperspace integration: honor movement exemptions and reject stale asynchronous entries (voidcrew/edits/hyperspace_overboard.dm)
 	if(QDELETED(enterer) || enterer.loc != src || !istype(src, /turf/open/space/transit))
 		return
+	// VOIDCREW EDIT END
 
 	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
 	// does not take hold. The tiles are still vacuum and you still get around by pushing off
@@ -69,7 +71,7 @@
 
 	var/turf/location = gone.loc
 	// VOIDCREW: crossing into a normal-space breach respects the same exemption as the soft cordon.
-	if(istype(location, /turf/open/space) && !istype(location, src.type) && !HAS_TRAIT(gone, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT))
+	if(istype(location, /turf/open/space) && !istype(location, src.type) && !HAS_TRAIT(gone, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT)) // VOIDCREW EDIT: hyperspace integration: honor movement exemptions and reject stale asynchronous entries (voidcrew/edits/hyperspace_overboard.dm)
 		dump_in_space(gone) //launch them into game space, away from transitspace
 
 ///Get rid of all our contents, called when our reservation is released (which in our case means the shuttle arrived)

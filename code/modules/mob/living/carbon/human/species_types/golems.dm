@@ -16,7 +16,7 @@
 		TRAIT_NO_UNDERWEAR,
 		TRAIT_PIERCEIMMUNE,
 		TRAIT_RADIMMUNE,
-		// VOIDCREW EDIT ADDITION: upstream hangs the mineral-buff trait solely on
+		// VOIDCREW EDIT ADDITION START: upstream hangs the mineral-buff trait solely on - self_surgery: retain mineral metabolism when a golem receives another brain
 		// /obj/item/organ/brain/golem, so a golem body carrying anyone else's brain eats
 		// minerals (TRAIT_ROCK_EATER, from the golem stomach) and gets nothing back. This
 		// fork ships self-surgery, so brain-swapping into a golem shell is routine, and the

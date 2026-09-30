@@ -315,7 +315,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		if(!HAS_TRAIT(src, TRAIT_CORPSELOCKED)) //corpse-locked have to confirm with the alert below
 			ghostize(TRUE)
 			return TRUE
-	var/response = tgui_alert(usr, "Are you sure you want to ghost? You won't be able to re-enter your body! [get_respawn_notice()]", "Confirm Ghost Observe", list("Ghost", "Stay in Body"))
+	var/response = tgui_alert(usr, "Are you sure you want to ghost? You won't be able to re-enter your body! [get_respawn_notice()]", "Confirm Ghost Observe", list("Ghost", "Stay in Body")) // VOIDCREW EDIT: ghost respawn and interaction integration (voidcrew/edits/mobs/ghost_respawn.dm): preserve respawn notices and validate clicked loot tiles
 	if(response != "Ghost")
 		return FALSE//didn't want to ghost after-all
 	ghostize(FALSE) // FALSE parameter is so we can never re-enter our body. U ded.
@@ -935,11 +935,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	// things buried under other atoms instead of only whatever is on top.
 	// Deliberately skips COMSIG_CLICK_ALT and click_alt() - ghosts look, they don't act.
 	if(SEND_SIGNAL(src, COMSIG_MOB_ALTCLICKON, target) & COMSIG_MOB_CANCEL_CLICKON)
+	// VOIDCREW EDIT START - ghost respawn and interaction integration (voidcrew/edits/mobs/ghost_respawn.dm): preserve respawn notices and validate clicked loot tiles
 		return
 	var/turf/tile = get_turf(target)
 	if(isnull(tile) || isnull(client))
 		return
 	client.loot_panel.open(tile)
+	// VOIDCREW EDIT END
 
 /mob/dead/observer/AltClickSecondaryOn(atom/target)
 	if(client && check_rights_for(client, R_DEBUG))

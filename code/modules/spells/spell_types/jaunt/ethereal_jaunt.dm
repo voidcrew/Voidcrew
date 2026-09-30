@@ -20,25 +20,7 @@
 	var/obj/effect/jaunt_out_type = /obj/effect/temp_visual/wizard/out
 	/// VOIDCREW EDIT: physical exit references travel with the deck during shuttle movement.
 	var/list/exit_point_list
-	var/obj/effect/abstract/jaunt_exit/start_point_anchor
 
-// VOIDCREW EDIT: reclaim reference effects even when the action loses its owner first.
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/Destroy()
-	clear_exit_points()
-	return ..()
-
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/clear_exit_points()
-	QDEL_NULL(start_point_anchor)
-	QDEL_LIST(exit_point_list)
-	exit_point_list = null
-
-/// An invisible location reference, carried by ordinary shuttle movement and rotation.
-/obj/effect/abstract/jaunt_exit
-	name = "jaunt return reference"
-	icon = null
-	invisibility = INVISIBILITY_ABSTRACT
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	anchored = TRUE
 
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/enter_jaunt(mob/living/jaunter, turf/loc_override)
 	. = ..()
@@ -72,10 +54,10 @@
 
 	// VOIDCREW EDIT: keep the starting floor attached to its moving ship.
 	clear_exit_points()
-	start_point_anchor = new(get_turf(holder))
+	start_point_anchor = new(get_turf(holder)) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	LAZYINITLIST(exit_point_list)
 	RegisterSignal(holder, COMSIG_MOVABLE_MOVED, PROC_REF(update_exit_point), target)
-	addtimer(CALLBACK(src, PROC_REF(stop_jaunt), cast_on, holder, start_point_anchor), jaunt_duration)
+	addtimer(CALLBACK(src, PROC_REF(stop_jaunt), cast_on, holder, start_point_anchor), jaunt_duration) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 
 /**
  * The stopping of the jaunt.
@@ -86,7 +68,7 @@
  * - immediately, if jaunt_in_time >= 2.5 seconds
  * - 2.5 seconds - jaunt_in_time seconds otherwise
  */
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/stop_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, atom/start_point)
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/stop_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, atom/start_point) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
 
@@ -100,26 +82,30 @@
 	var/turf/found_exit
 	// VOIDCREW EDIT: resolve each exit where its original deck tile is now.
 	for(var/obj/effect/abstract/jaunt_exit/exit_anchor as anything in exit_point_list)
+		// VOIDCREW EDIT START - jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 		var/turf/possible_exit = get_turf(exit_anchor)
 		if(!possible_exit || possible_exit.is_blocked_turf_ignore_climbable())
+		// VOIDCREW EDIT END
 			continue
 		found_exit = possible_exit
 		break
 
 	// No valid exit was found
 	if(!found_exit)
-		var/turf/start_turf = get_turf(start_point) || get_turf(holder)
+		var/turf/start_turf = get_turf(start_point) || get_turf(holder) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 		// It's possible no exit was found, because we literally didn't even move
-		if(get_turf(cast_on) != start_turf)
+		if(get_turf(cast_on) != start_turf) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 			to_chat(cast_on, span_danger("Unable to find an unobstructed space, you find yourself ripped back to where you started."))
 		// Either way, default to where we started
-		found_exit = start_turf
+		found_exit = start_turf // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 
-	clear_exit_points()
+	clear_exit_points() // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	holder.forceMove(found_exit)
 	// Movement callbacks may eject, transform, or remove the caster's action.
+	// VOIDCREW EDIT START - jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(QDELETED(src) || QDELETED(cast_on) || QDELETED(holder) || cast_on.loc != holder || holder.jaunter != cast_on)
 		return
+	// VOIDCREW EDIT END
 	// VOIDCREW EDIT: synchronous movement callbacks can relocate the entire deck.
 	found_exit = get_turf(holder)
 	do_steam_effects(found_exit)
@@ -143,9 +129,11 @@
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/do_jaunt_in(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
+	// VOIDCREW EDIT START - jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(cast_on.loc != holder || holder.jaunter != cast_on)
 		qdel(holder)
 		return
+	// VOIDCREW EDIT END
 
 	// VOIDCREW EDIT: the return animation follows its holder through ship transit.
 	final_point = get_turf(holder)
@@ -168,9 +156,11 @@
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/end_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
+	// VOIDCREW EDIT START - jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(cast_on.loc != holder || holder.jaunter != cast_on)
 		qdel(holder)
 		return
+	// VOIDCREW EDIT END
 
 	ADD_TRAIT(cast_on, TRAIT_NO_TRANSFORM, REF(src))
 	exit_jaunt(cast_on)
@@ -180,17 +170,10 @@
 
 	// VOIDCREW EDIT: check the floor we actually emerged on, never the old deck.
 	final_point = get_turf(cast_on)
-	if(final_point?.density)
+	if(final_point?.density) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 		var/list/aside_turfs = get_adjacent_open_turfs(final_point)
 		if(length(aside_turfs))
 			cast_on.forceMove(pick(aside_turfs))
-
-/// Removal, body changes and forced ejection can end the return animation early.
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/on_jaunt_exited(obj/effect/dummy/phased_mob/jaunt, mob/living/unjaunter)
-	UnregisterSignal(jaunt, COMSIG_MOVABLE_MOVED)
-	clear_exit_points()
-	REMOVE_TRAIT(unjaunter, TRAIT_IMMOBILIZED, REF(src))
-	return ..()
 
 /**
  * Updates the exit point of the jaunt
@@ -208,9 +191,9 @@
 		return
 	// VOIDCREW EDIT: retain the same bounded history using movable references.
 	var/obj/effect/abstract/jaunt_exit/exit_anchor = new(location)
-	exit_point_list.Insert(1, exit_anchor)
+	exit_point_list.Insert(1, exit_anchor) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(length(exit_point_list) >= 5)
-		qdel(exit_point_list[5])
+		qdel(exit_point_list[5]) // VOIDCREW EDIT: jaunt destination integration: carry return anchors with moving decks and stop interrupted returns (voidcrew/edits/spells/jaunt_destinations.dm)
 		exit_point_list.Cut(5)
 
 /// Does some steam effects from the jaunt at passed loc.

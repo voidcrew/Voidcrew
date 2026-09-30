@@ -22,7 +22,7 @@ GLOBAL_VAR_INIT(starlight_power, default_starlight_power())
 	GLOB.base_starlight_color = star_color
 	set_starlight(star_color, range, power)
 
-/proc/set_starlight(star_color = null, range = null, power = null, list/restrict_z = null)
+/proc/set_starlight(star_color = null, range = null, power = null, list/restrict_z = null) // VOIDCREW EDIT: overmap lighting: limit per-turf starlight sweeps to selected levels (voidcrew/edits/lighting.dm)
 	if(isnull(star_color))
 		star_color = GLOB.starlight_color
 	var/old_star_color = GLOB.starlight_color
@@ -33,8 +33,10 @@ GLOBAL_VAR_INIT(starlight_power, default_starlight_power())
 	// overlay objects and the signal below always update, so unswept z-levels
 	// light correctly the next time anything relights them.
 	for(var/turf/open/space/spess as anything in GLOB.starlight)
+		// VOIDCREW EDIT START - overmap lighting: limit per-turf starlight sweeps to selected levels (voidcrew/edits/lighting.dm)
 		if(restrict_z && !(spess.z in restrict_z))
 			continue
+		// VOIDCREW EDIT END
 		spess.set_light(l_range = range, l_power = power, l_color = star_color)
 
 	if(star_color == old_star_color)
@@ -139,6 +141,7 @@ GLOBAL_LIST_EMPTY(starlight)
 	return attack_hand(user, modifiers)
 
 /turf/open/space/proc/CanBuildHere()
+	// VOIDCREW EDIT REMOVAL - shuttle construction: allow building on transition space aboard ships
 	return TRUE
 
 /turf/open/space/handle_slip()

@@ -69,7 +69,7 @@
 			if(get_dist(listening_ghost, turf_source) <= audible_distance)
 				listeners += listening_ghost
 
-	// VOIDCREW EDIT ADDITION: packed-level containment.
+	// VOIDCREW EDIT ADDITION START: packed-level containment. - overmap: contain observers and effects within their packed encounter
 	// ignore_walls defaults to TRUE, so the default sound path in the whole game is
 	// get_hearers_in_range() - the one hearer helper with no opacity filter and no LOS
 	// raycast. At vol 100 that reaches 14 tiles, and two tenants of a packed z-level are
@@ -149,7 +149,7 @@
 			//Atmosphere affects sound
 			var/pressure_factor = 1
 			var/datum/gas_mixture/hearer_env = turf_loc.return_air_readonly() // VOIDCREW EDIT: read only; must not materialize a planetary turf's air
-			var/datum/gas_mixture/source_env = turf_source.return_air_readonly()
+			var/datum/gas_mixture/source_env = turf_source.return_air_readonly() // VOIDCREW EDIT: planetary shared air: observations must not materialize planetary gas (voidcrew/edits/planetary_shared_air.dm)
 
 			if(hearer_env && source_env)
 				var/pressure = min(hearer_env.return_pressure(), source_env.return_pressure())

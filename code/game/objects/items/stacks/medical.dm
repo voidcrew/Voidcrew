@@ -182,8 +182,10 @@
 	if(!use(1) || !repeating || amount <= 0)
 		var/atom/alert_loc = QDELETED(src) ? user : src
 		alert_loc.balloon_alert(user, repeating ? "all used up!" : "treated [parse_zone(healed_zone)]")
+		// VOIDCREW EDIT START - Voidcrew medical integration: silent treatments must not pass a null healing sound (voidcrew/edits)
 		if(heal_end_sound)
 			playsound(patient, heal_end_sound, 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+		// VOIDCREW EDIT END
 		return
 	if(heal_continuous_sound && (continuous || !silent))
 		playsound(patient, heal_continuous_sound, 75, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)

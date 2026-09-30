@@ -195,7 +195,7 @@
 	SHOULD_NOT_OVERRIDE(TRUE)
 
 	// VOIDCREW: capture destruction before the fixture's configuration is discarded.
-	record_ship_fixture_damage(src, disassembled)
+	record_ship_fixture_damage(src, disassembled) // VOIDCREW EDIT: ship_repairs: distinguish damaged fixtures from deliberate dismantling
 
 	//allow objects to deconstruct themselves
 	handle_deconstruct(disassembled)

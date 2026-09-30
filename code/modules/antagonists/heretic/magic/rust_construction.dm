@@ -80,7 +80,7 @@
 	// but I guess a fading filter will have to do for now as walls have 0 depth (currently)
 	// damn though with 3/4ths walls this'll look sick just imagine it
 	new_wall.add_filter("rust_wall", 2, list("type" = "outline", "color" = "#85be299c", "size" = 2))
-	// VOIDCREW EDIT: The constructed wall outlives the action. Capture this cast's
+	// VOIDCREW EDIT START: The constructed wall outlives the action. Capture this cast's - Voidcrew rust spell integration: expire only the filter owned by this cast (voidcrew/edits/spells)
 	// parameter list, which survives unrelated filter rebuilds but not replacement.
 	var/list/owned_filter = new_wall.filter_data["rust_wall"]
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(fade_rust_wall_filter), new_wall, owned_filter, filter_duration * (9/20)), filter_duration * 0.5)
@@ -123,20 +123,4 @@
 	if(!message_shown)
 		new_wall.visible_message(span_warning("\A [new_wall] [rises_message]!"))
 
-// VOIDCREW EDIT: Independent cosmetic expiry must not affect a later cast on this turf.
-/proc/fade_rust_wall_filter(turf/closed/wall, list/owned_filter, fade_duration)
-	if(QDELETED(wall) || LAZYACCESS(wall.filter_data, "rust_wall") != owned_filter)
-		return
-
-	var/rust_filter = wall.get_filter("rust_wall")
-	if(!rust_filter)
-		return
-
-	animate(rust_filter, alpha = 0, time = fade_duration)
-
-/proc/remove_rust_wall_filter(turf/closed/wall, list/owned_filter)
-	if(QDELETED(wall) || LAZYACCESS(wall.filter_data, "rust_wall") != owned_filter)
-		return
-
-	wall.remove_filter("rust_wall")
-// END VOIDCREW EDIT
+// VOIDCREW EDIT REMOVAL - rust spell: cosmetic expiry runs independently of the action (voidcrew/edits/spells/rust_filters.dm).

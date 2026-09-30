@@ -9,18 +9,7 @@
 	icon_state = "health"
 	mind_control_uses = 3
 	mind_control_duration = 3000
-	// VOIDCREW ADD: delayed healing belongs to one continuous implantation.
-	var/healing_generation = 0
 
-// VOIDCREW ADD START
-/obj/item/organ/heart/gland/heal/on_mob_remove(mob/living/carbon/gland_owner, special, movement_flags)
-	healing_generation++
-	return ..()
-
-/// Removal invalidates pending work even if this gland returns to the same body.
-/obj/item/organ/heart/gland/heal/proc/can_finish_healing(mob/living/carbon/recipient, generation)
-	return !QDELETED(src) && !QDELETED(recipient) && owner == recipient && active && generation == healing_generation && ownerCheck()
-// VOIDCREW ADD END
 
 /obj/item/organ/heart/gland/heal/activate()
 	if(!(owner.mob_biotypes & MOB_ORGANIC))
@@ -163,9 +152,9 @@
 	new_stomach.Insert(owner)
 
 /obj/item/organ/heart/gland/heal/proc/replace_eyes(obj/item/organ/eyes/eyes)
-	// VOIDCREW ADD: capture the recipient before organ-removal callbacks can change it.
+	// VOIDCREW EDIT ADDITION: capture the recipient before organ-removal callbacks can change it.
 	var/mob/living/carbon/recipient = owner
-	var/generation = healing_generation
+	var/generation = healing_generation // VOIDCREW EDIT: healing gland integration: pending regrowth belongs to one continuous implantation (voidcrew/edits/mobs/healing_gland.dm)
 	if(eyes)
 		owner.visible_message(span_warning("[owner]'s [eyes.name] fall out of their sockets!"), span_userdanger("Your [eyes.name] fall out of their sockets!"))
 		playsound(owner, 'sound/effects/splat.ogg', 50, TRUE)
@@ -177,10 +166,10 @@
 	addtimer(CALLBACK(src, PROC_REF(finish_replace_eyes), recipient, generation), rand(10 SECONDS, 20 SECONDS)) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/finish_replace_eyes(mob/living/carbon/recipient, generation) // VOIDCREW EDIT
-	// VOIDCREW ADD START
+	// VOIDCREW EDIT ADDITION START
 	if(!can_finish_healing(recipient, generation))
 		return
-	// VOIDCREW ADD END
+	// VOIDCREW EDIT ADDITION END
 	var/eye_type = /obj/item/organ/eyes
 	if(recipient.dna.species && recipient.dna.species.mutanteyes) // VOIDCREW EDIT
 		eye_type = recipient.dna.species.mutanteyes // VOIDCREW EDIT
@@ -189,9 +178,9 @@
 	recipient.visible_message(span_warning("A pair of new eyes suddenly inflates into [recipient]'s eye sockets!"), span_userdanger("A pair of new eyes suddenly inflates into your eye sockets!")) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/replace_limb(body_zone, obj/item/bodypart/limb)
-	// VOIDCREW ADD: limb-removal callbacks must not redirect the pending regrowth.
+	// VOIDCREW EDIT ADDITION: limb-removal callbacks must not redirect the pending regrowth.
 	var/mob/living/carbon/recipient = owner
-	var/generation = healing_generation
+	var/generation = healing_generation // VOIDCREW EDIT: healing gland integration: pending regrowth belongs to one continuous implantation (voidcrew/edits/mobs/healing_gland.dm)
 	if(limb)
 		owner.visible_message(span_warning("[owner]'s [limb.plaintext_zone] suddenly detaches from [owner.p_their()] body!"), span_userdanger("Your [limb.plaintext_zone] suddenly detaches from your body!"))
 		playsound(owner, SFX_DESECRATION, 50, TRUE, -1)
@@ -202,10 +191,10 @@
 	addtimer(CALLBACK(src, PROC_REF(finish_replace_limb), body_zone, recipient, generation), rand(15 SECONDS, 30 SECONDS)) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/finish_replace_limb(body_zone, mob/living/carbon/recipient, generation) // VOIDCREW EDIT
-	// VOIDCREW ADD START
+	// VOIDCREW EDIT ADDITION START
 	if(!can_finish_healing(recipient, generation))
 		return
-	// VOIDCREW ADD END
+	// VOIDCREW EDIT ADDITION END
 	recipient.visible_message(span_warning("With a loud snap, [recipient]'s [parse_zone(body_zone)] rapidly grows back from [recipient.p_their()] body!"), // VOIDCREW EDIT
 	span_userdanger("With a loud snap, your [parse_zone(body_zone)] rapidly grows back from your body!"),
 	span_warning("Your hear a loud snap."))
@@ -217,10 +206,10 @@
 	keep_replacing_blood(owner, healing_generation) // VOIDCREW EDIT
 
 /obj/item/organ/heart/gland/heal/proc/keep_replacing_blood(mob/living/carbon/recipient, generation) // VOIDCREW EDIT
-	// VOIDCREW ADD START
+	// VOIDCREW EDIT ADDITION START
 	if(!can_finish_healing(recipient, generation))
 		return
-	// VOIDCREW ADD END
+	// VOIDCREW EDIT ADDITION END
 	var/keep_going = FALSE
 	// VOIDCREW EDIT START
 	recipient.vomit(vomit_flags = (MOB_VOMIT_BLOOD | MOB_VOMIT_FORCE), lost_nutrition = 0, distance = 3)

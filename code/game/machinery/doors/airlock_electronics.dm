@@ -72,8 +72,10 @@
 	// this keeps any future one from costing a player their tgui window. Repairing the
 	// var rather than just the payload also keeps do_action()'s `accesses += access`
 	// from turning a null into a bare number.
+	// VOIDCREW EDIT START - ship access integration: preserve empty electronics access lists for AccessConfig (voidcrew/edits/ship_access.dm)
 	if(isnull(accesses))
 		accesses = list()
+	// VOIDCREW EDIT END
 	data["accesses"] = accesses
 	data["oneAccess"] = one_access
 	data["unres_direction"] = unres_sides

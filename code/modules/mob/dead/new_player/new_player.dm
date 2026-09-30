@@ -74,7 +74,7 @@
 	if(SSlag_switch.measures[DISABLE_DEAD_KEYLOOP])
 		less_input_message = " - Notice: Observer freelook is currently disabled."
 	// Don't convert this to tgui please, it's way too important
-	var/this_is_like_playing_right = alert(usr, "Are you sure you wish to observe? [get_respawn_notice()][less_input_message]", "Observe", "Yes", "No")
+	var/this_is_like_playing_right = alert(usr, "Are you sure you wish to observe? [get_respawn_notice()][less_input_message]", "Observe", "Yes", "No") // VOIDCREW EDIT: ghost respawn integration: display the applicable respawn notice (voidcrew/edits/mobs/ghost_respawn.dm)
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Yes")
 		ready = PLAYER_NOT_READY
 		return FALSE
@@ -245,7 +245,7 @@
 	if(humanc && arrivals && !arrivals.power_environ) //arrivals depowered
 		humanc.put_in_hands(new /obj/item/crowbar/large/emergency(get_turf(humanc))) //if hands full then just drops on the floor
 	log_manifest(character.mind.key, character.mind, character, latejoin = TRUE)
-	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, character.mind.assigned_role.title)
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, character.mind.assigned_role.title) // VOIDCREW EDIT: ship crew spawning: validate arrival and announce only after equipment and manifest setup (voidcrew/edits/mobs/new_player.dm)
 
 /mob/dead/new_player/proc/AddEmploymentContract(mob/living/carbon/human/employee)
 	//TODO:  figure out a way to exclude wizards/nukeops/demons from this.
@@ -255,14 +255,16 @@
 			employmentCabinet.addFile(employee)
 
 /// Creates, assigns and returns the new_character to spawn as. Assumes a valid mind.assigned_role exists.
-/mob/dead/new_player/proc/create_character(atom/destination, datum/callback/validate_arrival)
+/mob/dead/new_player/proc/create_character(atom/destination, datum/callback/validate_arrival) // VOIDCREW EDIT: ship crew spawning: validate arrival and announce only after equipment and manifest setup (voidcrew/edits/mobs/new_player.dm)
 	spawning = TRUE
 
 	mind.active = FALSE //we wish to transfer the key manually
 	var/mob/living/spawning_mob = mind.assigned_role.get_spawn_mob(client, destination)
+	// VOIDCREW EDIT START - ship crew spawning: validate arrival and announce only after equipment and manifest setup (voidcrew/edits/mobs/new_player.dm)
 	if(QDELETED(src) || !HAS_CONNECTED_PLAYER(src) || (validate_arrival && !validate_arrival.Invoke(spawning_mob)))
 		qdel(spawning_mob)
 		return // Disconnected or destination refused after appearance checks.
+	// VOIDCREW EDIT END
 
 	if(!isAI(spawning_mob)) // Unfortunately there's still snowflake AI code out there.
 		// transfer_to sets mind to null
@@ -286,6 +288,7 @@
 	var/area/joined_area = get_area(new_character.loc)
 	if(joined_area)
 		joined_area.on_joining_game(new_character)
+	// VOIDCREW EDIT REMOVAL - ship crew spawning: validate arrival and announce only after equipment and manifest setup (voidcrew/edits/mobs/new_player.dm)
 	// The spawn caller announces the arrival after equipment and manifest setup.
 	new_character = null
 	qdel(src)

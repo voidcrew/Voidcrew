@@ -20,7 +20,7 @@
 		name = e_name
 	if(desc_override)
 		desc = "[desc_override]"
-	else if(desc == initial(desc))
+	else if(desc == initial(desc)) // VOIDCREW EDIT: ship_upgrades: preserve descriptions supplied by mapped decals
 		// Preserve descriptions supplied by maps before initialization.
 		desc = "A [name] vandalizing the station."
 	if(alt_icon)

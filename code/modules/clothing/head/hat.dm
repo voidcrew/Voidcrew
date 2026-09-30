@@ -325,9 +325,11 @@
 	name = "ushanka"
 	desc = "Perfect for winter in Siberia, da?"
 	icon_state = "ushankadown"
+	// VOIDCREW EDIT START - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	inhand_icon_state = "ushanka"
 	lefthand_file = 'voidcrew/icons/mob/inhands/clothing/ushanka_lefthand.dmi'
 	righthand_file = 'voidcrew/icons/mob/inhands/clothing/ushanka_righthand.dmi'
+	// VOIDCREW EDIT END
 	flags_inv = HIDEEARS|HIDEHAIR
 	cold_protection = HEAD
 	min_cold_protection_temperature = FIRE_HELM_MIN_TEMP_PROTECT
@@ -341,9 +343,11 @@
 /obj/item/clothing/head/costume/ushanka/attack_self(mob/user)
 	if(earflaps)
 		icon_state = upsprite
+		// VOIDCREW EDIT REMOVAL - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 		to_chat(user, span_notice("You raise the ear flaps on the ushanka."))
 	else
 		icon_state = downsprite
+		// VOIDCREW EDIT REMOVAL - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 		to_chat(user, span_notice("You lower the ear flaps on the ushanka."))
 	earflaps = !earflaps
 
@@ -351,7 +355,7 @@
 	name = "bear hunter's ushanka"
 	desc = "Handcrafted in Siberia from real polar bears."
 	icon_state = "ushankadown_polar"
-	inhand_icon_state = "ushanka_polar"
+	inhand_icon_state = "ushanka_polar" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	upsprite = "ushankaup_polar"
 	downsprite = "ushankadown_polar"
 

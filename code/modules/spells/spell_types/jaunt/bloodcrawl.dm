@@ -52,18 +52,9 @@
 /// Returns a nearby blood decal, or null if there aren't any
 /datum/action/cooldown/spell/jaunt/bloodcrawl/proc/find_nearby_blood(turf/origin)
 	for(var/obj/effect/decal/cleanable/blood_nearby in range(blood_radius, origin))
-		if(is_valid_blood_destination(origin, blood_nearby))
+		if(is_valid_blood_destination(origin, blood_nearby)) // VOIDCREW EDIT: jaunt destination integration: validate teleport permission before and after the wind-up (voidcrew/edits/spells/jaunt_destinations.dm)
 			return blood_nearby
 	return null
-
-/// Blood pools can be across an area boundary, beyond the holder's phased movement checks.
-/datum/action/cooldown/spell/jaunt/bloodcrawl/proc/is_valid_blood_destination(atom/origin, obj/effect/decal/cleanable/blood)
-	if(QDELETED(blood) || !blood.can_bloodcrawl_in())
-		return FALSE
-	var/turf/destination = get_turf(blood)
-	if(!destination || (destination.turf_flags & NOJAUNT) || SSmapping.level_trait(destination.z, ZTRAIT_NOPHASE))
-		return FALSE
-	return check_teleport_valid(origin, destination, TELEPORT_CHANNEL_MAGIC)
 
 /**
  * Attempts to enter or exit the passed blood pool.
@@ -84,8 +75,10 @@
  * If forced is TRUE, it will override enter_blood_time.
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/proc/try_enter_jaunt(obj/effect/decal/cleanable/blood, mob/living/jaunter, forced = FALSE)
+	// VOIDCREW EDIT START - jaunt destination integration: validate teleport permission before and after the wind-up (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(!is_valid_blood_destination(jaunter, blood))
 		return FALSE
+	// VOIDCREW EDIT END
 	if(!forced)
 		if(enter_blood_time > 0 SECONDS)
 			blood.visible_message(span_warning("[jaunter] starts to sink into [blood]!"))
@@ -93,8 +86,10 @@
 				return FALSE
 
 	// The pool or its teleport permissions may have changed during the wind-up.
+	// VOIDCREW EDIT START - jaunt destination integration: validate teleport permission before and after the wind-up (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(!is_valid_blood_destination(jaunter, blood))
 		return FALSE
+	// VOIDCREW EDIT END
 
 	// The actual turf we enter
 	var/turf/jaunt_turf = get_turf(blood)
@@ -129,8 +124,10 @@
  * If forced is TRUE, it will override exit_blood_time, and if we're currently consuming someone.
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/proc/try_exit_jaunt(obj/effect/decal/cleanable/blood, mob/living/jaunter, forced = FALSE)
+	// VOIDCREW EDIT START - jaunt destination integration: validate teleport permission before and after the wind-up (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(!is_valid_blood_destination(jaunter, blood))
 		return FALSE
+	// VOIDCREW EDIT END
 	if(!forced)
 		if(HAS_TRAIT(jaunter, TRAIT_NO_TRANSFORM))
 			to_chat(jaunter, span_warning("You cannot exit yet!!"))
@@ -142,8 +139,10 @@
 				return FALSE
 
 	// Moving into a NOTELEPORT area makes eject_jaunter scatter us across the z-level.
+	// VOIDCREW EDIT START - jaunt destination integration: validate teleport permission before and after the wind-up (voidcrew/edits/spells/jaunt_destinations.dm)
 	if(!is_valid_blood_destination(jaunter, blood))
 		return FALSE
+	// VOIDCREW EDIT END
 	if(!exit_jaunt(jaunter, get_turf(blood)))
 		return FALSE
 

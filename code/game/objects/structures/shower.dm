@@ -10,7 +10,7 @@
 #define SHOWER_EXPOSURE_MULTIPLIER 2 // Showers effectively double exposed reagents
 /// How long we run in TIMED mode
 #define SHOWER_TIMED_LENGTH (15 SECONDS)
-// VOIDCREW EDIT: reserve a dry shower must rebuild before it auto-resumes.
+// VOIDCREW EDIT START: reserve a dry shower must rebuild before it auto-resumes. - Voidcrew shower integration: refill to a working reserve before automatic restart (voidcrew/edits)
 // Without it, a shower left switched on re-fires the moment it recollects one
 // spray's worth (5u) and dumps it the same tick, so it never visibly recovers.
 // 50u = 10 seconds of spray. Invented/unplaytested value.
@@ -326,7 +326,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 		// Don't turn back on.
 		if(mode != SHOWER_MODE_FOREVER)
 			intended_on = FALSE
-	// VOIDCREW EDIT: an off-but-wanted-on shower waits for a working reserve
+	// VOIDCREW EDIT START: an off-but-wanted-on shower waits for a working reserve - Voidcrew shower integration: refill to a working reserve before automatic restart (voidcrew/edits)
 	// (SHOWER_RESTART_VOLUME) instead of firing one spray per refill cycle.
 	// Deliberate clicks (interact) still start it at one spray's worth.
 	else if(!(intended_on && !actually_on && reagents.total_volume < SHOWER_RESTART_VOLUME))

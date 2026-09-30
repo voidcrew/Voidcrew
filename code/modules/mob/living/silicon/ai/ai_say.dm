@@ -149,14 +149,14 @@
 
 	var/list/players = list()
 	var/turf/ai_turf = get_turf(src)
-	// VOIDCREW EDIT ADDITION: is_valid_z_level() is bare z equality, and a packed z-level
+	// VOIDCREW EDIT ADDITION START: is_valid_z_level() is bare z equality, and a packed z-level - overmap: contain observers and effects within their packed encounter
 	// carries up to four unrelated crews. A ship AI announcing while docked at an encounter
 	// was heard in full, text and VOX, by every co-tenant. Resolved once, outside the loop.
 	var/datum/ai_region = map_region_for_turf(ai_turf)
 	// VOIDCREW EDIT END
 	for(var/mob/player_mob as anything in GLOB.player_list)
 		var/turf/player_turf = get_turf(player_mob)
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START - overmap: contain observers and effects within their packed encounter
 		if(map_region_excludes_turf(ai_region, player_turf))
 			continue
 		// VOIDCREW EDIT END
@@ -178,7 +178,7 @@
 
 	// If there is no single listener, broadcast to everyone in the same z level
 		if(!only_listener)
-			// VOIDCREW EDIT ADDITION: same packed-level containment as the announcement
+			// VOIDCREW EDIT ADDITION START: same packed-level containment as the announcement - overmap: contain observers and effects within their packed encounter
 			// text above - see /mob/living/silicon/ai/proc/announcement().
 			var/datum/ai_region = map_region_for_turf(ai_turf)
 			// VOIDCREW EDIT END
@@ -191,7 +191,7 @@
 				var/turf/player_turf = get_turf(player_mob)
 				if(!is_valid_z_level(ai_turf, player_turf))
 					continue
-				// VOIDCREW EDIT ADDITION
+				// VOIDCREW EDIT ADDITION START - overmap: contain observers and effects within their packed encounter
 				if(map_region_excludes_turf(ai_region, player_turf))
 					continue
 				// VOIDCREW EDIT END

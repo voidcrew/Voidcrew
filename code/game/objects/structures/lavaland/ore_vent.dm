@@ -410,10 +410,12 @@
 	// empty if SSore_generation's roundstart round-robin ran out of pool before it got to
 	// this one (it breaks on stallbreaker), so roll a breakdown rather than produce a dud.
 	if(!length(mineral_breakdown) && !unique_vent)
+	// VOIDCREW EDIT START - overmap: mid-round planet vents need a mineral breakdown before producing boulders
 		generate_mineral_breakdown()
 		generate_description()
 	if(!length(mineral_breakdown))
 		return
+	// VOIDCREW EDIT END
 
 	//produce the boulder
 	var/obj/item/boulder/new_rock

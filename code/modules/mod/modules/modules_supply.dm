@@ -87,7 +87,7 @@
 	// inside the deactivated module (and pinned by this list if later deleted)
 	for(var/atom/movable/crate in stored_crates)
 		crate.forceMove(drop_location())
-	stored_crates.Cut()
+	stored_crates.Cut() // VOIDCREW EDIT: Voidcrew MOD storage lifecycle: keep crate and ore lists coherent while contents leave (voidcrew/edits/objects/items/mod_storage_lifecycle.dm)
 
 /obj/item/mod/module/clamp/proc/check_crate_pickup(atom/movable/target)
 	if(length(stored_crates) >= max_crates)
@@ -208,20 +208,15 @@
 	// the dead stack pinned it in this round-long list forever - one hard delete per
 	// pickup once the bag held a full stack of that ore (round 4: ~380 of them, 170 s).
 	if(QDELETED(ore))
-		return
+		return // VOIDCREW EDIT: Voidcrew MOD storage lifecycle: keep crate and ore lists coherent while contents leave (voidcrew/edits/objects/items/mod_storage_lifecycle.dm)
 	ores += ore
-
-// VOIDCREW EDIT: keep the bookkeeping list honest however ore leaves - dumped,
-// stolen out by hand, or deleted (qdel nullspaces contents through Exited)
-/obj/item/mod/module/orebag/Exited(atom/movable/gone, direction)
-	. = ..()
-	ores -= gone
 
 /obj/item/mod/module/orebag/on_use()
 	// VOIDCREW EDIT: iterate a copy - Exited() now prunes ores on each forceMove,
 	// and the old explicit `ores -= ore` mid-walk skipped every other stack anyway
 	for(var/obj/item/ore in ores.Copy())
 		ore.forceMove(drop_location())
+	// VOIDCREW EDIT REMOVAL - Voidcrew MOD storage lifecycle: keep crate and ore lists coherent while contents leave (voidcrew/edits/objects/items/mod_storage_lifecycle.dm)
 	drain_power(use_energy_cost)
 
 /obj/item/mod/module/hydraulic

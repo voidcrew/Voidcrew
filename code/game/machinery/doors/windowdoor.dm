@@ -41,10 +41,13 @@
 
 /obj/machinery/door/window/Initialize(mapload, set_dir, unres_sides)
 	// The parent publishes atmos adjacency, which must use the edge we actually seal.
+	// VOIDCREW EDIT START - ship access and atmos integration: initialize the sealing edge before adjacency and preserve empty access lists (voidcrew/edits/ship_access.dm)
 	if(set_dir)
 		setDir(set_dir)
+	// VOIDCREW EDIT END
 	. = ..()
 	flags_1 &= ~PREVENT_CLICK_UNDER_1
+	// VOIDCREW EDIT REMOVAL - ship access and atmos integration: initialize the sealing edge before adjacency and preserve empty access lists (voidcrew/edits/ship_access.dm)
 	if(LAZYLEN(req_access))
 		icon_state = "[icon_state]"
 		base_state = icon_state
@@ -443,10 +446,10 @@
 		// no access at all has both lists null, and copying that null onto the
 		// electronics blue-screens tgui when they are opened (AirlockElectronics.tsx
 		// defaults `accesses` for undefined, not for null).
-		if(length(req_one_access))
+		if(length(req_one_access)) // VOIDCREW EDIT: ship access and atmos integration: initialize the sealing edge before adjacency and preserve empty access lists (voidcrew/edits/ship_access.dm)
 			dropped_electronics.one_access = 1
 			dropped_electronics.accesses = req_one_access
-		else if(length(req_access))
+		else if(length(req_access)) // VOIDCREW EDIT: ship access and atmos integration: initialize the sealing edge before adjacency and preserve empty access lists (voidcrew/edits/ship_access.dm)
 			dropped_electronics.accesses = req_access
 	else
 		dropped_electronics = electronics
