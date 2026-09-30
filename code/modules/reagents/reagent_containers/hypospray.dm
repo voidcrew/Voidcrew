@@ -142,7 +142,7 @@
 		update_appearance()
 
 /obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
-	if(user.can_perform_action(src, FORBID_TELEKINESIS_REACH|ALLOW_RESTING|ALLOW_SOFT_CRIT))
+	if(user.can_perform_action(src, FORBID_TELEKINESIS_REACH|ALLOW_RESTING|ALLOW_SOFT_CRIT)) // VOIDCREW EDIT: soft crit interaction: permit selected actions while retaining other incapacitation checks (voidcrew/edits/mobs/softcrit_interaction.dm)
 		inject(user, user)
 
 /obj/item/reagent_containers/hypospray/medipen/update_icon_state()

@@ -69,7 +69,7 @@
 
 ///used for examining the RCD and for its UI
 /obj/item/construction/proc/get_silo_iron()
-	if(silo_link && silo_mats.mat_container && silo_mats.check_z_level() && !silo_mats.on_hold())
+	if(silo_link && silo_mats.mat_container && silo_mats.check_z_level() && !silo_mats.on_hold()) // VOIDCREW EDIT: ship material silo integration: check the linked silo scope before reading or spending resources (voidcrew/edits/machinery/materials_market.dm)
 		return silo_mats.mat_container.get_material_amount(/datum/material/iron) / SILO_USE_AMOUNT
 	return 0
 
@@ -193,8 +193,10 @@
 		if(!silo_mats.mat_container)
 			if(user)
 				balloon_alert(user, "no silo detected!")
+		// VOIDCREW EDIT START - ship material silo integration: check the linked silo scope before reading or spending resources (voidcrew/edits/machinery/materials_market.dm)
 			return FALSE
 		if(!silo_mats.can_use_resource(user_data = ID_DATA(user)))
+		// VOIDCREW EDIT END
 			return FALSE
 
 		if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SILO_USE_AMOUNT))

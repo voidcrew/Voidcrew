@@ -111,10 +111,10 @@
 	if(action == "switch_camera")
 		active_camera?.on_stop_watching(src)
 		var/obj/machinery/camera/selected_camera = locate(params["camera"]) in GLOB.cameranet.cameras
-		active_camera = can_view_camera(selected_camera) ? selected_camera : null
+		active_camera = can_view_camera(selected_camera) ? selected_camera : null // VOIDCREW EDIT: ship camera integration: validate camera access and clear stale views (voidcrew/edits/machinery/camera.dm)
 
 		if(isnull(active_camera))
-			update_active_camera_screen()
+			update_active_camera_screen() // VOIDCREW EDIT: ship camera integration: validate camera access and clear stale views (voidcrew/edits/machinery/camera.dm)
 			return TRUE
 
 		active_camera.on_start_watching(src)
@@ -124,13 +124,15 @@
 
 /obj/machinery/computer/security/proc/update_active_camera_screen()
 	// VOIDCREW: a stale/forged reference must not bypass the local camera network.
+	// VOIDCREW EDIT START - ship camera integration: validate camera access and clear stale views (voidcrew/edits/machinery/camera.dm)
 	if(active_camera && !can_view_camera(active_camera))
 		active_camera.on_stop_watching(src)
 		active_camera = null
 		last_camera_turf = null
+	// VOIDCREW EDIT END
 	// Show static if can't use the camera
 	if(!active_camera?.can_use())
-		last_camera_turf = null
+		last_camera_turf = null // VOIDCREW EDIT: ship camera integration: validate camera access and clear stale views (voidcrew/edits/machinery/camera.dm)
 		cam_screen.show_camera_static()
 		return
 

@@ -18,7 +18,7 @@
 
 /datum/reagent/reaction_agent/acidic_buffer
 	name = "Strong Acidic Buffer"
-	description = "An industrial acidic buffer, used to lower the pH of a solution."
+	description = "An industrial acidic buffer, used to lower the pH of a solution." // VOIDCREW EDIT: Voidcrew chemistry: describe industrial buffers without self-consumption instructions (voidcrew/modules/chemistry)
 	color = "#fbc314"
 	ph = 0
 	inverse_chem = null
@@ -50,7 +50,7 @@
 
 /datum/reagent/reaction_agent/basic_buffer
 	name = "Strong Basic Buffer"
-	description = "An industrial alkaline buffer, used to raise the pH of a solution."
+	description = "An industrial alkaline buffer, used to raise the pH of a solution." // VOIDCREW EDIT: Voidcrew chemistry: describe industrial buffers without self-consumption instructions (voidcrew/modules/chemistry)
 	color = "#3853a4"
 	ph = 14
 	inverse_chem = null

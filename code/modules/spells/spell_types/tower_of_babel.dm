@@ -36,7 +36,7 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	// carbon_list, not player_list: player_list only holds mobs with a client attached, and a
 	// dead player who ghosted leaves their cursed body clientless. Miss the body here and they
 	// revive still babbling, with the cure already destroyed.
-	for(var/mob/living/carbon/target in GLOB.carbon_list)
+	for(var/mob/living/carbon/target in GLOB.carbon_list) // VOIDCREW EDIT: Voidcrew spell cleanup: cure clientless and mindless cursed bodies (voidcrew/edits/spells)
 		cure_curse_of_babel(target)
 
 /datum/tower_of_babel/proc/handle_new_player(datum/source, mob/living/new_crewmember, rank)
@@ -65,8 +65,9 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	// A body whose mind left mid-curse (respawn, borging, mind swap) has no mind to carry
 	// the babel trait but still holds the permanent status effect. Cure it unconditionally;
 	// the minded early-out below only protects people who were never cursed by this source.
-	if(to_cure.mind && !HAS_TRAIT_FROM(to_cure.mind, TRAIT_TOWER_OF_BABEL, TRAUMA_TRAIT))
+	if(to_cure.mind && !HAS_TRAIT_FROM(to_cure.mind, TRAIT_TOWER_OF_BABEL, TRAUMA_TRAIT)) // VOIDCREW EDIT: Voidcrew spell cleanup: cure clientless and mindless cursed bodies (voidcrew/edits/spells)
 		return
+	// VOIDCREW EDIT REMOVAL - Voidcrew spell cleanup: cure clientless and mindless cursed bodies (voidcrew/edits/spells)
 	to_cure.remove_status_effect(/datum/status_effect/tower_of_babel/magical)
 
 /client/proc/tower_of_babel()

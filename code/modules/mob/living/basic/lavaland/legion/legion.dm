@@ -59,7 +59,7 @@
 		return
 	UnregisterSignal(stored_mob, COMSIG_LIVING_REVIVE)
 	// Direct deletion destroys our controller before deleting the contained corpse.
-	ai_controller?.clear_blackboard_key(BB_LEGION_CORPSE)
+	ai_controller?.clear_blackboard_key(BB_LEGION_CORPSE) // VOIDCREW EDIT: Voidcrew legion lifecycle integration: tolerate the controller being deleted before its stored corpse (voidcrew/edits/mobs/legion_reach.dm)
 	stored_mob.remove_status_effect(/datum/status_effect/grouped/stasis, STASIS_LEGION_EATEN)
 	stored_mob.add_mood_event("legion_core", /datum/mood_event/healsbadman/long_term) // This will still probably mostly be gone before you are alive
 	stored_mob = null

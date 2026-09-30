@@ -22,7 +22,7 @@
 /// Pooled across the crew rather than handed out per person: a full ship would otherwise
 /// strip every use out of a chest on its own, while a two-man crew could never spend more
 /// than a fraction of them.
-#define TREASURE_CHEST_CREW_SPINS 6
+#define TREASURE_CHEST_CREW_SPINS 6 // VOIDCREW EDIT: overmap treasure chests: pool fishing chest spins by crew rather than by individual opener
 
 GLOBAL_LIST_INIT(mystery_box_guns, list(
 	/obj/item/gun/energy/recharge/ebow/large,
@@ -292,7 +292,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 	grant_extra_mag = FALSE
 	anchored = FALSE
 	/// Weakref of a crew - their ship, or the opener's own mind when they crew for none - to the spins that crew has already taken out of this chest.
-	var/list/spins_by_crew
+	var/list/spins_by_crew // VOIDCREW EDIT: overmap treasure chests: pool fishing chest spins by crew rather than by individual opener
 
 /obj/structure/mystery_box/handle_deconstruct(disassembled)
 	new /obj/item/stack/sheet/mineral/wood(drop_location(), 2)
@@ -301,6 +301,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 /obj/structure/mystery_box/fishing/generate_valid_types()
 	valid_types = GLOB.mystery_fishing
 
+// VOIDCREW EDIT START - overmap treasure chests: pool fishing chest spins by crew rather than by individual opener
 /obj/structure/mystery_box/fishing/Destroy()
 	spins_by_crew = null
 	return ..()
@@ -322,16 +323,21 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 		. += span_warning("It has nothing left for your crew.")
 		return
 	. += span_notice("It has [spins_left] spin[spins_left == 1 ? "" : "s"] left for your crew.")
+// VOIDCREW EDIT END
 
 /obj/structure/mystery_box/fishing/activate(mob/living/user)
+	// VOIDCREW EDIT START - overmap treasure chests: pool fishing chest spins by crew rather than by individual opener
 	var/datum/weakref/pool = get_spin_pool(user)
 	if(pool && LAZYACCESS(spins_by_crew, pool) >= TREASURE_CHEST_CREW_SPINS)
 		to_chat(user, span_warning("[src] refuses to open for your crew anymore. Perhaps you should hand it off to another one..."))
+	// VOIDCREW EDIT END
 		return
+	// VOIDCREW EDIT START - overmap treasure chests: pool fishing chest spins by crew rather than by individual opener
 	. = ..()
 	if(pool)
 		LAZYINITLIST(spins_by_crew)
 		spins_by_crew[pool] += 1
+	// VOIDCREW EDIT END
 
 /// This represents the item that comes out of the box and is constantly changing before the box finishes deciding. Can probably be just an /atom or /movable.
 /obj/effect/abstract/mystery_box_item
@@ -416,4 +422,4 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 #undef MBOX_DURATION_PRESENTING
 #undef MBOX_DURATION_EXPIRING
 #undef MBOX_DURATION_STANDBY
-#undef TREASURE_CHEST_CREW_SPINS
+#undef TREASURE_CHEST_CREW_SPINS // VOIDCREW EDIT: overmap treasure chests: pool fishing chest spins by crew rather than by individual opener

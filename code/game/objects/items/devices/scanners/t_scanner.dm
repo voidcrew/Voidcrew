@@ -51,13 +51,15 @@
  * doing the looking, or the sweep lands around the operator sat at the console instead of
  * around the camera they are actually watching.
  */
-/proc/t_ray_scan(mob/viewer, flick_time = 8, distance = 3, atom/centre)
+/proc/t_ray_scan(mob/viewer, flick_time = 8, distance = 3, atom/centre) // VOIDCREW EDIT: shuttle construction: scan around the remote drone while retaining the handheld default
 	if(!ismob(viewer) || !viewer.client)
 		return
+	// VOIDCREW EDIT START - shuttle construction: scan around the remote drone while retaining the handheld default
 	if(isnull(centre))
 		centre = viewer
+	// VOIDCREW EDIT END
 	var/list/t_ray_images = list()
-	for(var/obj/O in orange(distance, centre) )
+	for(var/obj/O in orange(distance, centre) ) // VOIDCREW EDIT: shuttle construction: scan around the remote drone while retaining the handheld default
 		if(HAS_TRAIT(O, TRAIT_T_RAY_VISIBLE))
 			var/image/I = new(loc = get_turf(O))
 			var/mutable_appearance/MA = new(O)

@@ -20,8 +20,10 @@
 
 /obj/singularity/dark_matter/Initialize(mapload, starting_energy)
 	. = ..()
+	// VOIDCREW EDIT START - trade outpost protection: stop suppressed or protected hazards before further effects
 	if(. == INITIALIZE_HINT_QDEL) // VOIDCREW
 		return
+	// VOIDCREW EDIT END
 	COOLDOWN_START(src, initial_explosion_immunity, 5 SECONDS)
 	var/datum/component/singularity/resolved_singularity = singularity_component.resolve()
 	resolved_singularity.chance_to_move_to_target = 100

@@ -105,7 +105,7 @@
 		return FALSE
 
 	//To prevent reactions outside of the pH window from starting.
-	//VOIDCREW EDIT: only recipes that opt in with REACTION_USES_PURITY are gated on pH.
+	//VOIDCREW EDIT START: only recipes that opt in with REACTION_USES_PURITY are gated on pH. - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 	if((reaction.reaction_flags & REACTION_USES_PURITY) && (holder.ph < (reaction.optimal_ph_min - reaction.determin_ph_range) || holder.ph > (reaction.optimal_ph_max + reaction.determin_ph_range)))
 		return FALSE
 	//VOIDCREW EDIT END
@@ -269,7 +269,7 @@
 
 	//Begin checks
 	//Calculate DeltapH (Deviation of pH from optimal)
-	//VOIDCREW EDIT: pH only drives purity for recipes that opt in with REACTION_USES_PURITY.
+	//VOIDCREW EDIT START: pH only drives purity for recipes that opt in with REACTION_USES_PURITY. - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 	//Everything else reacts at full purity whatever the mixture's pH happens to be, so a
 	//recipe's optimal band doesn't have to contain neutral for the recipe to be usable.
 	if(!(reaction.reaction_flags & REACTION_USES_PURITY))
@@ -348,13 +348,14 @@
 
 	//Calculate how much product to make and how much reactant to remove factors..
 	var/required_amount
+	// VOIDCREW EDIT REMOVAL - Voidcrew chemistry: reset pH adjustment within each reagent loop (voidcrew/modules/chemistry)
 	for(var/datum/reagent/requirement as anything in reaction.required_reagents)
 		required_amount = reaction.required_reagents[requirement]
 		if(!holder.remove_reagent(requirement, delta_chem_factor * required_amount))
 			to_delete = TRUE
 			return
 		//Apply pH changes
-		var/pH_adjust
+		var/pH_adjust // VOIDCREW EDIT: Voidcrew chemistry: reset pH adjustment within each reagent loop (voidcrew/modules/chemistry)
 		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
 			pH_adjust = ((delta_chem_factor * required_amount) / target_vol) * (reaction.H_ion_release * h_ion_mod)
 		else //Default adds pH independant of volume
@@ -371,7 +372,7 @@
 			return
 
 		//Apply pH changes
-		var/pH_adjust
+		var/pH_adjust // VOIDCREW EDIT: Voidcrew chemistry: reset pH adjustment within each reagent loop (voidcrew/modules/chemistry)
 		if(reaction.reaction_flags & REACTION_PH_VOL_CONSTANT)
 			pH_adjust = (step_add / target_vol) * (reaction.H_ion_release * h_ion_mod)
 		else

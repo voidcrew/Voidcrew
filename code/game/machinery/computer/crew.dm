@@ -60,7 +60,7 @@
 		return
 
 	var/list/new_table = list()
-	for(var/list/player_record as anything in GLOB.crewmonitor.update_data(attached_console))
+	for(var/list/player_record as anything in GLOB.crewmonitor.update_data(attached_console)) // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 		var/list/entry = list()
 		entry["name"] = player_record["name"]
 		entry["job"] = player_record["assignment"]
@@ -88,7 +88,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 	/// List of user -> UI source
 	var/list/ui_sources = list()
 	/// Cache of data generated per sensor scope, used for serving the data within SENSOR_UPDATE_PERIOD of the last update
-	var/list/data_by_scope = list()
+	var/list/data_by_scope = list() // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 	/// Cache of last update time for each sensor scope
 	var/list/last_update = list()
 	/// Map of job to ID for sorting purposes
@@ -176,10 +176,11 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 	return host_ref?.resolve()
 
 /datum/crewmonitor/ui_data(mob/user)
+	// VOIDCREW EDIT REMOVAL - crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 	// Voidcrew: the scope comes from the device that opened the UI - the console, the
 	// handheld, the silicon - not from a bare z-level. voidcrew/edits/machinery/crew_monitor.dm
 	. = list(
-		"sensors" = update_data(ui_host(user) || user),
+		"sensors" = update_data(ui_host(user) || user), // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 		"link_allowed" = HAS_AI_ACCESS(user),
 	)
 
@@ -189,6 +190,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
  * Voidcrew: takes the device doing the asking rather than a z-level, because a level
  * cannot scope this here - see voidcrew/edits/machinery/crew_monitor.dm.
  */
+// VOIDCREW EDIT START - crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 /datum/crewmonitor/proc/update_data(atom/source)
 	var/turf/source_turf = get_turf(source)
 	var/z = source_turf?.z
@@ -197,6 +199,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 
 	if(data_by_scope[cache_key] && last_update[cache_key] && world.time <= last_update[cache_key] + SENSORS_UPDATE_PERIOD)
 		return data_by_scope[cache_key]
+// VOIDCREW EDIT END
 
 	var/list/results = list()
 	for(var/tracked_mob in GLOB.suit_sensors_list)
@@ -217,7 +220,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		// Voidcrew: the target has to be aboard our hull, or off-hull in the same place we
 		// are - never just "on a station level", since every ship interior is one.
 		// voidcrew/edits/machinery/crew_monitor.dm
-		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z, source_turf))
+		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z, source_turf)) // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 			continue
 
 		var/mob/living/carbon/human/tracked_human = tracked_living_mob
@@ -293,8 +296,10 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		results[++results.len] = entry
 
 	// Cache result
+	// VOIDCREW EDIT START - crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 	data_by_scope[cache_key] = results
 	last_update[cache_key] = world.time
+	// VOIDCREW EDIT END
 
 	return results
 

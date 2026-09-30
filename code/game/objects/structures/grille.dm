@@ -113,13 +113,13 @@
 			//checks if its a valid build direction
 			//not user.dir: a remotely driven RCD builds where its drone is looking, not where
 			//the body credited with the build happens to be pointing (see rcd_build_dir())
-			var/build_dir = the_rcd.rcd_build_dir(user)
+			var/build_dir = the_rcd.rcd_build_dir(user) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/objects/items/construction_hooks.dm)
 			if(!initial(window_path.fulltile))
-				if(!valid_build_direction(loc, build_dir, is_fulltile = FALSE))
+				if(!valid_build_direction(loc, build_dir, is_fulltile = FALSE)) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/objects/items/construction_hooks.dm)
 					balloon_alert(user, "window already here!")
 					return FALSE
 
-			var/obj/structure/window/WD = new window_path(T, build_dir)
+			var/obj/structure/window/WD = new window_path(T, build_dir) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/objects/items/construction_hooks.dm)
 			WD.set_anchored(TRUE)
 			return TRUE
 	return FALSE

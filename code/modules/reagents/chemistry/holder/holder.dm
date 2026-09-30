@@ -204,7 +204,7 @@
 /datum/reagents/proc/add_reagent_list(list/list_reagents, list/data = null, added_purity = null, temperature = DEFAULT_REAGENT_TEMPERATURE)
 	for(var/r_id in list_reagents)
 		var/amt = list_reagents[r_id]
-		add_reagent(r_id, amt, data, reagtemp = temperature, added_purity = added_purity)
+		add_reagent(r_id, amt, data, reagtemp = temperature, added_purity = added_purity) // VOIDCREW EDIT: circuits chemistry integration: preserve supplied reagent temperature (voidcrew/modules/circuits)
 
 /**
  * Removes a specific reagent. can supress reactions if needed
@@ -585,8 +585,9 @@
 	var/list/deleted_reagents = list()
 	var/chem_index = 1
 	var/num_reagents = length(cached_reagents)
-	var/reagent_volume = 0
+	var/reagent_volume = 0 // VOIDCREW EDIT: circuits chemistry integration: preserve supplied reagent temperature (voidcrew/modules/circuits)
 	var/total_ph = 0
+	// VOIDCREW EDIT REMOVAL - circuits chemistry integration: preserve supplied reagent temperature (voidcrew/modules/circuits)
 	. = 0
 
 	//responsible for removing reagents and computing total ph & volume

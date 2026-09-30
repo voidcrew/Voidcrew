@@ -6,7 +6,7 @@
 
 /// Reference mass for fuel consumption scaling. Ships at this mass use base fuel amounts.
 /// Ships heavier than this use proportionally more fuel per burn.
-#define REFERENCE_SHIP_MASS 100
+#define REFERENCE_SHIP_MASS 100 // VOIDCREW EDIT: shuttle: retain the reference ship mass used by fuel consumption scaling
 
 /obj/machinery/power/shuttle_engine
 	name = "engine"
@@ -41,7 +41,7 @@
 // 30% armour = 21) needs ~24 swings per engine, where the same axe disables a laser
 // turret in 5. Bullet/laser stay at 10 so ship guns remain the fast way to kill engines.
 /datum/armor/power_shuttle_engine
-	melee = 30
+	melee = 30 // VOIDCREW EDIT: shuttle: retain the reference ship mass used by fuel consumption scaling
 	bullet = 10
 	laser = 10
 	fire = 50

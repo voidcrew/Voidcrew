@@ -96,7 +96,7 @@
 		// VOIDCREW EDIT: the barometer reads the weather site standing under it, not the
 		// z-level - several places can share a level and each hold its own storm cooldown.
 		var/next_hit = SSweather.next_hit_timeleft_for_turf(T)
-		var/fixed = isnull(next_hit) ? -1 : next_hit
+		var/fixed = isnull(next_hit) ? -1 : next_hit // VOIDCREW EDIT: overmap weather: read the barometer cooldown for this encounter
 		if(fixed < 0)
 			to_chat(user, span_warning("[src]'s barometer function was unable to trace any weather patterns."))
 		else

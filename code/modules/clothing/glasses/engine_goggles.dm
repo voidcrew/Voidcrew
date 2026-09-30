@@ -182,12 +182,14 @@
  * case. A remote operator - the ship construction console's drone pilot - has to pass the
  * camera, or the readout appears around them at the console rather than around the drone.
  */
-/proc/atmos_thermal(mob/viewer, range = 5, duration = 10, atom/centre)
+/proc/atmos_thermal(mob/viewer, range = 5, duration = 10, atom/centre) // VOIDCREW EDIT: shuttle construction: scan around the remote drone while retaining the handheld default
 	if(!ismob(viewer) || !viewer.client)
 		return
+	// VOIDCREW EDIT START - shuttle construction: scan around the remote drone while retaining the handheld default
 	if(isnull(centre))
 		centre = viewer
 	for(var/turf/open in view(range, centre))
+	// VOIDCREW EDIT END
 		if(open.blocks_air)
 			continue
 		var/datum/gas_mixture/environment = open.return_air()

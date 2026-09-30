@@ -6,9 +6,11 @@
 	name = "hard hat"
 	desc = "A piece of headgear used in dangerous working conditions to protect the head. Comes with a built-in flashlight."
 	icon_state = "hardhat0_yellow"
+	// VOIDCREW EDIT START - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	inhand_icon_state = "hardhat_yellow"
 	lefthand_file = 'voidcrew/icons/mob/inhands/clothing/hardhat_lefthand.dmi'
 	righthand_file = 'voidcrew/icons/mob/inhands/clothing/hardhat_righthand.dmi'
+	// VOIDCREW EDIT END
 	armor_type = /datum/armor/utility_hardhat
 	flags_inv = 0
 	hair_mask = /datum/hair_mask/standard_hat_middle
@@ -53,11 +55,13 @@
 	update_appearance()
 
 /obj/item/clothing/head/utility/hardhat/update_icon_state()
+	// VOIDCREW EDIT START - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	icon_state = "hardhat[on]_[hat_type]"
 	if(hat_type == "cakehat" || hat_type == "energycake")
 		inhand_icon_state = icon_state
 	else
 		inhand_icon_state = "hardhat_[hat_type]"
+	// VOIDCREW EDIT END
 	return ..()
 
 /obj/item/clothing/head/utility/hardhat/proc/turn_on(mob/user)
@@ -77,13 +81,13 @@
 
 /obj/item/clothing/head/utility/hardhat/orange
 	icon_state = "hardhat0_orange"
-	inhand_icon_state = "hardhat_orange"
+	inhand_icon_state = "hardhat_orange" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "orange"
 	dog_fashion = null
 
 /obj/item/clothing/head/utility/hardhat/red
 	icon_state = "hardhat0_red"
-	inhand_icon_state = "hardhat_red"
+	inhand_icon_state = "hardhat_red" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "red"
 	dog_fashion = null
 	name = "firefighter helmet"
@@ -97,7 +101,7 @@
 	name = "workplace-ready firefighter helmet"
 	desc = "By applying state of the art lighting technology to a fire helmet, and using photo-chemical hardening methods, this hardhat will protect you from robust workplace hazards."
 	icon_state = "hardhat0_purple"
-	inhand_icon_state = "hardhat_purple"
+	inhand_icon_state = "hardhat_purple" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	light_range = 5
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT*2, /datum/material/glass =HALF_SHEET_MATERIAL_AMOUNT, /datum/material/plastic = SHEET_MATERIAL_AMOUNT*1.5, /datum/material/silver = SMALL_MATERIAL_AMOUNT*5)
@@ -105,7 +109,7 @@
 
 /obj/item/clothing/head/utility/hardhat/white
 	icon_state = "hardhat0_white"
-	inhand_icon_state = "hardhat_white"
+	inhand_icon_state = "hardhat_white" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "white"
 	clothing_flags = STOPSPRESSUREDAMAGE | STACKABLE_HELMET_EXEMPT
 	heat_protection = HEAD
@@ -116,7 +120,7 @@
 
 /obj/item/clothing/head/utility/hardhat/dblue
 	icon_state = "hardhat0_dblue"
-	inhand_icon_state = "hardhat_dblue"
+	inhand_icon_state = "hardhat_dblue" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "dblue"
 	dog_fashion = null
 
@@ -174,13 +178,13 @@
 
 /obj/item/clothing/head/utility/hardhat/welding/orange
 	icon_state = "hardhat0_orange"
-	inhand_icon_state = "hardhat_orange"
+	inhand_icon_state = "hardhat_orange" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "orange"
 
 /obj/item/clothing/head/utility/hardhat/welding/white
 	desc = "A piece of headgear used in dangerous working conditions to protect the head. Comes with a built-in flashlight AND welding shield!" //This bulb is not smaller
 	icon_state = "hardhat0_white"
-	inhand_icon_state = "hardhat_white"
+	inhand_icon_state = "hardhat_white" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	light_range = 4 //Boss always takes the best stuff
 	hat_type = "white"
 	clothing_flags = STOPSPRESSUREDAMAGE | STACKABLE_HELMET_EXEMPT
@@ -200,12 +204,12 @@
 
 /obj/item/clothing/head/utility/hardhat/welding/dblue
 	icon_state = "hardhat0_dblue"
-	inhand_icon_state = "hardhat_dblue"
+	inhand_icon_state = "hardhat_dblue" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "dblue"
 
 /obj/item/clothing/head/utility/hardhat/welding/atmos
 	icon_state = "hardhat0_atmos"
-	inhand_icon_state = "hardhat_atmos"
+	inhand_icon_state = "hardhat_atmos" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "atmos"
 	dog_fashion = null
 	name = "atmospheric firefighter helmet"
@@ -234,7 +238,7 @@
 	icon = 'icons/obj/clothing/head/costume.dmi'
 	worn_icon = 'icons/mob/clothing/head/costume.dmi'
 	icon_state = "hardhat0_pumpkin"
-	inhand_icon_state = "hardhat_pumpkin"
+	inhand_icon_state = "hardhat_pumpkin" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "pumpkin"
 	clothing_flags = SNUG_FIT | STACKABLE_HELMET_EXEMPT
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
@@ -284,7 +288,7 @@
 	name = "carved blumpkin"
 	desc = "A very blue jack o' lantern! Believed to ward off vengeful chemists."
 	icon_state = "hardhat0_blumpkin"
-	inhand_icon_state = "hardhat_blumpkin"
+	inhand_icon_state = "hardhat_blumpkin" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "blumpkin"
 	light_color = "#76ff8e"
 	dog_fashion = /datum/dog_fashion/head/blumpkin/unlit
@@ -303,7 +307,7 @@
 	icon = 'icons/obj/clothing/head/costume.dmi'
 	worn_icon = 'icons/mob/clothing/head/costume.dmi'
 	icon_state = "hardhat0_reindeer"
-	inhand_icon_state = "hardhat_reindeer"
+	inhand_icon_state = "hardhat_reindeer" // VOIDCREW EDIT: Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	hat_type = "reindeer"
 	flags_inv = 0
 	hair_mask = ""

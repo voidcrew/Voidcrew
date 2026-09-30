@@ -618,7 +618,7 @@ GLOBAL_LIST_EMPTY(roundstart_station_closets)
 		if(length(req_one_access))
 			electronics.one_access = TRUE
 			electronics.accesses = req_one_access
-		else if(length(req_access))
+		else if(length(req_access)) // VOIDCREW EDIT: ship access integration: preserve empty electronics access lists for AccessConfig (voidcrew/edits/ship_access.dm)
 			electronics.accesses = req_access
 	if(card_reader_installed)
 		new /obj/item/stock_parts/card_reader(drop_location())
@@ -777,7 +777,7 @@ GLOBAL_LIST_EMPTY(roundstart_station_closets)
 		if(length(req_one_access))
 			airlock_electronics.one_access = TRUE
 			airlock_electronics.accesses = req_one_access
-		else if(length(req_access))
+		else if(length(req_access)) // VOIDCREW EDIT: ship access integration: preserve empty electronics access lists for AccessConfig (voidcrew/edits/ship_access.dm)
 			airlock_electronics.accesses = req_access
 
 		req_access = list()

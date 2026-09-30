@@ -64,10 +64,12 @@
 	airlock_electronics.name = "Access Control"
 	airlock_electronics.holder = src
 
+	// VOIDCREW EDIT START - shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 	var/list/designs = get_rcd_designs()
 	root_category = designs[1]
 	design_category = designs[root_category][1]
 	var/list/design = designs[root_category][design_category][1]
+	// VOIDCREW EDIT END
 
 	rcd_design_path = design["[RCD_DESIGN_PATH]"]
 	design_title = initial(rcd_design_path.name)
@@ -230,23 +232,6 @@
 	return ..()
 
 /**
- * Which way a directional build placed by this RCD should face.
- *
- * Directional windows, windoors, chairs, tables, racks and beds all take their facing from
- * whoever is building them, and for a handheld RCD that is simply the user's own dir. It is
- * not for an RCD driven remotely: the voidcrew ship construction console's drone is several
- * rooms away from the body holding the "user" role, so every directional structure it built
- * came out facing wherever the operator's body happened to be pointing at the console
- * (issue #224). Overriding this lets such an RCD name the thing that is actually doing the
- * building, without every rcd_act() implementation needing to know it exists.
- *
- * Arguments
- * * [mob][user]- the mob credited with the build
- */
-/obj/item/construction/rcd/proc/rcd_build_dir(mob/user)
-	return user?.dir
-
-/**
  * actual proc to create the structure
  *
  * Arguments
@@ -301,7 +286,7 @@
 	var/obj/effect/constructing_effect/rcd_effect = new(get_turf(target), delay, rcd_results["[RCD_DESIGN_MODE]"], construction_upgrades)
 
 	//resource & structure placement sanity checks before & after delay along with beam effects
-	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user))
+	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 		qdel(rcd_effect)
 		return FALSE
 	var/beam
@@ -315,46 +300,20 @@
 		return FALSE
 	if (QDELETED(rcd_effect))
 		return FALSE
-	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user))
+	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 		qdel(rcd_effect)
 		return FALSE
 
-	if(!use_rcd_resources(rcd_results, user))
+	if(!use_rcd_resources(rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 		qdel(rcd_effect)
 		return FALSE
 	activate()
-	if(!apply_rcd_action(target, user, rcd_results))
+	if(!apply_rcd_action(target, user, rcd_results)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 		qdel(rcd_effect)
 		return FALSE
 	playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
 	rcd_effect.end_animation()
 	return TRUE
-
-/**
- * The design tree this RCD offers, in the GLOB.rcd_designs shape.
- *
- * Read instead of GLOB.rcd_designs directly so a subtype can offer blueprints the handheld
- * RCD does not: the voidcrew ship construction console builds hull-grade windows that no
- * engineer should be able to print out of a pocket device.
- */
-/obj/item/construction/rcd/proc/get_rcd_designs()
-	return GLOB.rcd_designs
-
-/// Resource checks use the captured action, which may differ from the current UI selection after a delay.
-/obj/item/construction/rcd/proc/check_rcd_resources(list/rcd_results, mob/user)
-	return checkResource(rcd_results["cost"], user)
-
-/obj/item/construction/rcd/proc/use_rcd_resources(list/rcd_results, mob/user)
-	return useResource(rcd_results["cost"], user)
-
-/// Applies a validated, paid-for action. Subtypes can handle successful resource recovery here.
-/obj/item/construction/rcd/proc/apply_rcd_action(atom/target, mob/user, list/rcd_results)
-	var/turf/location = get_turf(target)
-	. = target.rcd_act(user, src, rcd_results)
-	// VOIDCREW: a successful deliberate removal supersedes an old repair order.
-	if(. && rcd_results["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
-		var/obj/machinery/computer/camera_advanced/base_construction/ship/controller = SSship_repairs.area_controllers[get_area(location)]
-		controller?.forget_repair_record(controller.repair_coordinate_key(location))
 
 /obj/item/construction/rcd/ui_assets(mob/user)
 	return list(
@@ -377,15 +336,17 @@
 	for(var/key in electronics_data)
 		data[key] = electronics_data[key]
 
-	var/list/design_tree = get_rcd_designs()
+	var/list/design_tree = get_rcd_designs() // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 	data["root_categories"] = list()
-	for(var/category in design_tree)
+	for(var/category in design_tree) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 		data["root_categories"] += category
 	data["selected_root"] = root_category
 
 	data["categories"] = list()
+	// VOIDCREW EDIT START - shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 	for(var/sub_category as anything in design_tree[root_category])
 		var/list/target_category = design_tree[root_category][sub_category]
+	// VOIDCREW EDIT END
 		if(!length(target_category))
 			continue
 
@@ -426,7 +387,7 @@
 	switch(action)
 		if("root_category")
 			var/new_root = params["root_category"]
-			if(get_rcd_designs()[new_root] != null) //is a valid category
+			if(get_rcd_designs()[new_root] != null) //is a valid category // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 				root_category = new_root
 				update_static_data_for_all_viewers()
 
@@ -434,7 +395,7 @@
 			//read and validate params from UI
 			var/category_name = params["category"]
 			var/index = params["index"]
-			var/list/root = get_rcd_designs()[root_category]
+			var/list/root = get_rcd_designs()[root_category] // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/objects/items/construction_hooks.dm)
 			if(root == null) //not a valid root
 				return TRUE
 			var/list/category = root[category_name]

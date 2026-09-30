@@ -56,7 +56,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		if(null)
 			return
 		if(/turf/baseturf_bottom)
-			// VOIDCREW EDIT: kept in lockstep with the copy in voidcrew/edits/turf.dm, which
+			// VOIDCREW EDIT START: kept in lockstep with the copy in voidcrew/edits/turf.dm, which - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 			// is the body that actually runs (it is the outermost link of the duplicate-
 			// definition chain and never calls ..()). The map FOOTPRINT under the turf is
 			// asked before the z-level: a level holds up to four planets of different biomes
@@ -166,7 +166,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
-			// VOIDCREW EDIT: kept in lockstep with the copy in voidcrew/edits/turf.dm, which is
+			// VOIDCREW EDIT START: kept in lockstep with the copy in voidcrew/edits/turf.dm, which is - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 			// the body that actually runs (it is the outermost link of the duplicate-definition
 			// chain and never calls ..()). Two rules composed here:
 			// 1. The AREA gate that SSlighting.create_all_lighting_objects() and
@@ -234,7 +234,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, src))
 			space_tile.enable_starlight()
 
-	// VOIDCREW EDIT: ambient bleed, the same three cases the starlight branches above
+	// VOIDCREW EDIT START: ambient bleed, the same three cases the starlight branches above - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 	// handle, generalised from "space turf" to "turf in an area that lights it wholesale".
 	// Our own capability can have flipped (we became or stopped being a cordon or a space
 	// tile), and we can have started or stopped being something for the base-lit ground
@@ -279,8 +279,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// VOIDCREW EDIT: a new planetary turf that came up on the very same shared mix we had
 		// already holds this air; anything else takes a private mixture before the write.
 		if(new_turf.air != old_air)
+			// VOIDCREW EDIT START - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 			var/datum/gas_mixture/new_air = new_turf.materialize_planet_air()
 			new_air.copy_from(stashed_air)
+			// VOIDCREW EDIT END
 		new_turf.excited = stashed_state
 		new_turf.excited_group = stashed_group
 		#ifdef VISUALIZE_ACTIVE_TURFS
@@ -315,11 +317,14 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	// survives - which is how dismantling a wall dumps a full tile of breathable air into
 	// whatever the wall was sealing. Build the adjacency now and throw the invented gas away,
 	// so we take a share of what our neighbours actually have instead.
+	// VOIDCREW EDIT START - planetary atmos integration: assimilate surrounding gas after opening a closed turf (voidcrew/edits/planetary_shared_air.dm)
 	var/sheered_from_closed = ispath(oldType, /turf/closed) && !blocks_air && !planetary_atmos && !(flags & CHANGETURF_IGNORE_AIR)
 	if(sheered_from_closed)
 		flags |= CHANGETURF_RECALC_ADJACENT
 	..(flags, oldType)
+	// VOIDCREW EDIT END
 	RemoveLattice()
+	// VOIDCREW EDIT START - planetary atmos integration: assimilate surrounding gas after opening a closed turf (voidcrew/edits/planetary_shared_air.dm)
 	if(sheered_from_closed)
 		// Temperature is deliberately left alone. An emptied turf mix still carries
 		// HEAT_CAPACITY_VACUUM into Assimilate_Air's average, and TCMB there would
@@ -328,6 +333,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	else if(flags & (CHANGETURF_IGNORE_AIR | CHANGETURF_INHERIT_AIR))
 		return
 	Assimilate_Air()
+	// VOIDCREW EDIT END
 
 //////Assimilate Air//////
 /turf/open/proc/Assimilate_Air()
@@ -336,9 +342,9 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		return
 
 	//Stolen blatently from self_breakdown
-	var/list/turf_list = atmos_adjacent_turfs + src
+	var/list/turf_list = atmos_adjacent_turfs + src // VOIDCREW EDIT: planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 
-	// VOIDCREW EDIT: turfs still on the shared planetary mix. When every turf here is on the
+	// VOIDCREW EDIT START: turfs still on the shared planetary mix. When every turf here is on the - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 	// SAME shared mix the average is that mix and there is nothing to write; otherwise each
 	// of them needs a private mixture before the copy_from() below.
 	if(has_shared_planet_air())
@@ -355,6 +361,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	var/datum/gas_mixture/total = new//Holders to assimilate air from nearby turfs
 	var/list/total_gases = total.gases
+	// VOIDCREW EDIT REMOVAL - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 	var/turflen = turf_list.len
 	var/energy = 0
 	var/heat_cap = 0

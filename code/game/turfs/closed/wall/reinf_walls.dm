@@ -172,7 +172,7 @@
 					if(!istype(src, /turf/closed/wall/r_wall) || d_state != SHEATH)
 						return TRUE
 					to_chat(user, span_notice("You pry off the outer sheath."))
-					dismantle_wall(disassembled = TRUE)
+					dismantle_wall(disassembled = TRUE) // VOIDCREW EDIT: ship_repairs: distinguish damaged fixtures from deliberate dismantling
 				return TRUE
 
 			if(W.tool_behaviour == TOOL_WELDER)

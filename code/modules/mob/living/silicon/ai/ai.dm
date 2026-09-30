@@ -23,7 +23,7 @@
 
 	create_eye()
 
-	if((target_ai.mind && target_ai.mind.active) || SSticker.current_state == GAME_STATE_SETTING_UP || target_ai.mind?.assigned_role?.ship_role == "ai")
+	if((target_ai.mind && target_ai.mind.active) || SSticker.current_state == GAME_STATE_SETTING_UP || target_ai.mind?.assigned_role?.ship_role == "ai") // VOIDCREW EDIT: ship silicon crew: retain the assigned crew AI relationship (voidcrew/edits/machinery/silicon_ship_systems.dm)
 		target_ai.mind.transfer_to(src)
 		if(is_antag())
 			to_chat(src, span_userdanger("You have been installed as an AI! "))
@@ -286,7 +286,7 @@
 	if (!is_valid_z_level(ai_turf, target_turf))
 		return FALSE
 
-	// VOIDCREW EDIT ADDITION: packed-level containment. can_see() in
+	// VOIDCREW EDIT ADDITION START: packed-level containment. can_see() in - overmap: contain observers and effects within their packed encounter
 	// voidcrew/edits/machinery/silicon_ship_systems.dm scopes an AI that is aboard a HULL;
 	// an AI with no hull scope (an outpost core, a ruin, an admin spawn) falls through to
 	// cameranet.checkTurfVis(), and a co-tenant ruin with its own mapped cameras is lit for
@@ -569,7 +569,7 @@
 
 	var/mob/living/silicon/ai/U = usr
 
-	// VOIDCREW EDIT ADDITION: packed-level containment, resolved once outside the loop.
+	// VOIDCREW EDIT ADDITION START: packed-level containment, resolved once outside the loop. - overmap: contain observers and effects within their packed encounter
 	// Lattice encounter levels and planet levels both publish ZTRAIT_MINING, and in this
 	// fork is_station_level() means "any z with a hull on it", so both clauses below admit a
 	// co-tenant's cameras. The eye is already refused entry by silicon_ship_systems.dm, but
@@ -583,7 +583,7 @@
 		var/list/tempnetwork = C.network
 		if(!camera_turf || !(is_station_level(camera_turf.z) || is_mining_level(camera_turf.z) || (CAMERANET_NETWORK_SS13 in tempnetwork)))
 			continue
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START - overmap: contain observers and effects within their packed encounter
 		if(map_region_excludes_turf(ai_region, camera_turf))
 			continue
 		// VOIDCREW EDIT END
