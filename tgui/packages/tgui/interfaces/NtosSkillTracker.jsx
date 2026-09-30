@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Use readable fallbacks for unavailable skill percentages.
 import {
   AnimatedNumber,
   BlockQuote,
@@ -92,3 +93,4 @@ export const NtosSkillTracker = (props) => {
     </NtosWindow>
   );
 };
+// VOIDCREW EDIT END

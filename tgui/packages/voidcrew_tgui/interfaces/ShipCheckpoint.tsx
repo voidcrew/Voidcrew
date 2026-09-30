@@ -11,13 +11,13 @@ import {
   Tabs,
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
+import { useBackend } from '../backend';
+import { Window } from '../layouts';
 import {
   type PreviewData,
   ShipPreview,
   type UpgradeSlot,
-} from '../../tgui/interfaces/ShipUpgradeSelector';
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+} from './ShipUpgradeSelector';
 
 type ShopTheme = {
   id: string;

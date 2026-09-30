@@ -29,6 +29,7 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 
 		curse_of_babel(target)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/tower_of_babel/Destroy(force)
 	. = ..()
 	UnregisterSignal(SSdcs, COMSIG_GLOB_CREWMEMBER_JOINED)
@@ -39,6 +40,7 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	for(var/mob/living/carbon/target in GLOB.carbon_list)
 		cure_curse_of_babel(target)
 
+// VOIDCREW EDIT END
 /datum/tower_of_babel/proc/handle_new_player(datum/source, mob/living/new_crewmember, rank)
 	SIGNAL_HANDLER
 
@@ -59,6 +61,7 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 	return TRUE
 
 /// Mainly so admin triggered tower of babel can be undone
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /proc/cure_curse_of_babel(mob/living/carbon/to_cure)
 	if(!iscarbon(to_cure))
 		return
@@ -69,6 +72,7 @@ GLOBAL_DATUM(tower_of_babel, /datum/tower_of_babel)
 		return
 	to_cure.remove_status_effect(/datum/status_effect/tower_of_babel/magical)
 
+// VOIDCREW EDIT END
 /client/proc/tower_of_babel()
 	if(!SSticker.HasRoundStarted())
 		tgui_alert(usr,"The game hasn't started yet!")

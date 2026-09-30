@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Use a readable fallback for missing reaction temperatures.
 import {
   AnimatedNumber,
   Box,
@@ -358,3 +359,4 @@ export const ChemHeater = (props) => {
     </Window>
   );
 };
+// VOIDCREW EDIT END

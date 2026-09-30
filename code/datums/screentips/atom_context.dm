@@ -2,6 +2,7 @@
 /// This will run `add_context()` when the atom is hovered over by an item for context.
 /// `add_context()` will *not* be called unless this is run.
 /// This is not necessary for Type-B interactions, as you can just apply the flag and register to the signal yourself.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/proc/register_context()
 	flags_1 |= HAS_CONTEXTUAL_SCREENTIPS_1
 	// override = TRUE because turfs keep their signal registrations when they are
@@ -20,6 +21,7 @@
 /// that map to the action as text.
 /// If you mutate the list in this signal, you must return CONTEXTUAL_SCREENTIP_SET.
 /// `source` can, in all cases, be replaced with `src`, and only exists because this proc directly connects to a signal.
+// VOIDCREW EDIT END
 /atom/proc/add_context(
 	atom/source,
 	list/context,

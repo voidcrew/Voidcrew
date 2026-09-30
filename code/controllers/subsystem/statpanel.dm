@@ -17,6 +17,7 @@ SUBSYSTEM_DEF(statpanels)
 	///how many full runs this subsystem has completed. used for variable rate refreshes.
 	var/num_fires = 0
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
 		num_fires++
@@ -120,6 +121,7 @@ SUBSYSTEM_DEF(statpanels)
  * 4- a list with "same_line" as the first entry, which will automatically put it on the line above it,
  * with the second/third entry matching #3 (text & url), allowing you to have 2 clickable links on one line.
  */
+// VOIDCREW EDIT END
 /datum/controller/subsystem/statpanels/proc/set_status_tab(client/target)
 	if(!global_data)//statbrowser hasnt fired yet and we were called from immediate_send_stat_data()
 		return

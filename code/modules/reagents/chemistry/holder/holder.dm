@@ -580,6 +580,7 @@
 	handle_reactions()
 
 /// Updates [/datum/reagents/var/total_volume]
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/reagents/proc/update_total()
 	var/list/cached_reagents = reagent_list
 	var/list/deleted_reagents = list()
@@ -640,6 +641,7 @@
  * Arguments
  * [current_reagent][datum/reagent] - the reagent(not typepath) to copy data from
  */
+// VOIDCREW EDIT END
 /datum/reagents/proc/copy_data(datum/reagent/current_reagent)
 	if(!current_reagent || !current_reagent.data)
 		return null

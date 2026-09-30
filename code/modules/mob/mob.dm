@@ -453,21 +453,6 @@
 	return NONE
 
 /**
- * Allows item interactions in soft crit without ignoring other incapacitation sources.
- * Adapted from MonkeStation: dwasint's original crit item use and action slowdown,
- * https://github.com/Monkestation/Monkestation2.0/commit/232ff2ce43dafbb9a8501a618088addd4431e97f
- * https://github.com/Monkestation/Monkestation2.0/commit/0254a94c43bc36c6d88252caa3dc98789649ab9d
- * with SirNightKnight's source-aware checks (PR #8791) and Xander3359's hard-crit restriction (PR #8709).
- * https://github.com/Monkestation/Monkestation2.0/pull/8791
- * https://github.com/Monkestation/Monkestation2.0/pull/8709
- */
-/mob/proc/incapacitated_except_softcrit(ignore_flags = NONE)
-	// Check sources live: adding a stun while STAT_TRAIT is present does not emit another trait-gain signal.
-	if(stat == SOFT_CRIT && HAS_TRAIT_FROM_ONLY(src, TRAIT_INCAPACITATED, STAT_TRAIT))
-		ignore_flags |= TRADITIONAL_INCAPACITATED
-	return INCAPACITATED_IGNORING(src, ignore_flags)
-
-/**
  * This proc is called whenever someone clicks an inventory ui slot.
  *
  * Mostly tries to put the item into the slot if possible, or call attack hand
@@ -767,6 +752,7 @@
 	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode)))
 
 ///proc version to finish /mob/verb/mode() execution. used in case the proc needs to be queued for the tick after its first called
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/proc/execute_mode()
 	if(ismecha(loc))
 		return
@@ -791,6 +777,8 @@
  *
  * Only works if flag/allow_respawn is allowed in config
  */
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/verb/abandon_mob()
 	set name = "Respawn"
 	set category = "OOC"
@@ -837,6 +825,7 @@
 	M.PossessByPlayer(key)
 
 /// Checks if the mob can respawn yet according to the respawn delay
+// VOIDCREW EDIT END
 /mob/proc/check_respawn_delay(override_delay = 0)
 	if(!override_delay && !CONFIG_GET(number/respawn_delay))
 		return TRUE

@@ -132,6 +132,7 @@
 	data["cameras"] = GLOB.cameranet.get_available_cameras_data(network)
 	return data
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/computer_file/program/secureye/ui_act(action, params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
@@ -167,6 +168,8 @@
 			internal_tracker.track_input(usr)
 			return TRUE
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/computer_file/program/secureye/proc/on_track_target(datum/trackable/source, mob/living/target)
 	SIGNAL_HANDLER
 	var/datum/camerachunk/target_camerachunk = GLOB.cameranet.getTurfVis(get_turf(target))
@@ -185,6 +188,7 @@
 		update_active_camera_screen()
 		return
 
+// VOIDCREW EDIT END
 /datum/computer_file/program/secureye/ui_close(mob/user)
 	. = ..()
 	//don't track anyone while we're shutting off.

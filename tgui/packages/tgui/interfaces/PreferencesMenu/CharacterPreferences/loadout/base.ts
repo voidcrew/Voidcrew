@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Voidcrew loadout store data.
 import type { BooleanLike } from 'tgui-core/react';
 
 import type { PreferencesMenuData } from '../../types';
@@ -51,3 +52,4 @@ export type LoadoutCategory = {
 export type LoadoutManagerData = PreferencesMenuData & {
   job_clothes: BooleanLike;
 };
+// VOIDCREW EDIT END

@@ -216,6 +216,7 @@
  *
  * * path - the design path to check for
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/rnd/production/proc/build_efficiency(path)
 	PRIVATE_PROC(TRUE)
 	SHOULD_BE_PURE(TRUE)
@@ -228,6 +229,7 @@
 	else
 		return efficiency_coeff
 
+// VOIDCREW EDIT END
 /obj/machinery/rnd/production/ui_assets(mob/user)
 	return list(
 		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials),

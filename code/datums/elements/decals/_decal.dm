@@ -60,6 +60,7 @@
 
 
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/element/decal/Attach(atom/target, _icon, _icon_state, _dir, _plane=FLOAT_PLANE, _layer=FLOAT_LAYER, _alpha=255, _color, _smoothing, _cleanable=FALSE, _description, mutable_appearance/_pic)
 	. = ..()
 	if(!isatom(target))
@@ -102,6 +103,7 @@
  * all args are fed into creating an image, they are byond vars for images you'll recognize in the byond docs
  * (except source, source is the object whose appearance we're copying.)
  */
+// VOIDCREW EDIT END
 /datum/element/decal/proc/generate_appearance(_icon, _icon_state, _dir, _plane, _layer, _color, _alpha, _smoothing, source)
 	if(!_icon || !_icon_state)
 		return FALSE
@@ -113,6 +115,7 @@
 	pic.alpha = _alpha
 	return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/element/decal/Detach(atom/source)
 	UnregisterSignal(source, list(COMSIG_ATOM_DIR_CHANGE, COMSIG_COMPONENT_CLEAN_ACT, COMSIG_ATOM_EXAMINE, COMSIG_ATOM_UPDATE_OVERLAYS, COMSIG_TURF_ON_SHUTTLE_MOVE, COMSIG_ATOM_SMOOTHED_ICON, COMSIG_ATOM_DECALS_ROTATING))
 	UnregisterSignal(source, COMSIG_ATOM_GET_DECALS)
@@ -125,6 +128,7 @@
 	SEND_SIGNAL(source, COMSIG_TURF_DECAL_DETACHED, description, cleanable, directional, pic)
 	return ..()
 
+// VOIDCREW EDIT END
 /datum/element/decal/proc/late_update_icon(atom/source)
 	SIGNAL_HANDLER
 
@@ -137,11 +141,6 @@
 	SIGNAL_HANDLER
 
 	overlay_list += pic
-
-/datum/element/decal/proc/collect_decals(atom/source, list/decals)
-	SIGNAL_HANDLER
-
-	decals += src
 
 /datum/element/decal/proc/clean_react(datum/source, clean_types)
 	SIGNAL_HANDLER

@@ -24,9 +24,6 @@
 	// re-resolved if the parent ever moves (structures do not, but components ride mobs and
 	// items too). Null means "this level is not shared", which is the common case and the
 	// one that keeps the plain z-level gate.
-	var/datum/map_footprint/cached_footprint
-	/// The turf cached_footprint was resolved from, so a moved parent invalidates it.
-	var/turf/cached_footprint_turf
 	// VOIDCREW EDIT ADDITION END
 	COOLDOWN_DECLARE(spawn_delay)
 
@@ -50,18 +47,6 @@
 	RegisterSignal(parent, COMSIG_VENT_WAVE_CONCLUDED, PROC_REF(stop_spawning))
 	START_PROCESSING((spawn_time < 2 SECONDS ? SSfastprocess : SSprocessing), src)
 
-// VOIDCREW EDIT: break the parent <-> spawn_callback reference cycle.
-// /obj/structure/spawner passes spawn_callback = CALLBACK(src, PROC_REF(on_mob_spawn)),
-// and the callback datum's obj var keeps the parent alive: parent -> components ->
-// this component -> spawn_callback -> parent never soft-GCs, so every component-based
-// spawner hard-deletes - a multi-minute reference search each under REFERENCE_TRACKING.
-/datum/component/spawner/Destroy()
-	spawn_callback = null
-	spawned_things = null
-	cached_footprint = null
-	cached_footprint_turf = null
-	return ..()
-
 /datum/component/spawner/process()
 	try_spawn_mob()
 
@@ -73,13 +58,14 @@
 	spawned_things = list()
 
 /// Try to create a new mob
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/spawner/proc/try_spawn_mob()
 	if(!length(spawn_types))
 		return
 	if(!COOLDOWN_FINISHED(src, spawn_delay))
 		return
 
-	// VOIDCREW EDIT: don't spawn where nobody is standing.
+	// VOIDCREW EDIT START - don't spawn where nobody is standing.
 	// Spawned mobs die unattended out there (vacuum, weather, each other) and
 	// validate_references() frees the slot the instant one is DEAD, so a bone pit or
 	// monster den on a loaded-but-unvisited level emits a fresh corpse every spawn_time
@@ -167,6 +153,7 @@
 
 
 /// Remove weakrefs to atoms which have been killed or deleted without us picking it up somehow
+// VOIDCREW EDIT END
 /datum/component/spawner/proc/validate_references()
 	for (var/datum/weakref/weak_thing as anything in spawned_things)
 		var/atom/previously_spawned = weak_thing?.resolve()

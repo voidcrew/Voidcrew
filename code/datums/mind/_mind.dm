@@ -148,6 +148,7 @@
 	return ..()
 
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/mind/proc/set_current(mob/new_current)
 	if(new_current && QDELETED(new_current))
 		CRASH("Tried to set a mind's current var to a qdeleted mob, what the fuck")
@@ -158,6 +159,7 @@
 		current.ever_had_mind = TRUE
 		RegisterSignal(src, COMSIG_QDELETING, PROC_REF(clear_current))
 
+// VOIDCREW EDIT END
 /datum/mind/proc/clear_current(datum/source)
 	SIGNAL_HANDLER
 	set_current(null)

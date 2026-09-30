@@ -19,27 +19,6 @@
 	var/update = TRUE
 	///Is this pipeline being reconstructed?
 	var/building = FALSE
-	/// VOIDCREW ADDITION: consecutive orphan sweeps this pipeline has been found with no
-	/// live members on. Reset the moment it has any. See SSair.reap_orphan_pipelines().
-	var/orphan_strikes = 0
-
-/**
- * VOIDCREW ADDITION: TRUE if anything real is still attached to this pipeline.
- *
- * Not the same question as `length(members)`. When a machine is hard deleted its entries
- * in these lists are nulled in place rather than removed, so a pipeline that has lost
- * everything still reads as length 1 with a null inside. `as anything` is deliberate for
- * exactly that reason - a typed loop would silently filter the nulls out and hide the
- * distinction we are trying to measure.
- */
-/datum/pipeline/proc/has_live_members()
-	for(var/obj/machinery/atmospherics/member as anything in members)
-		if(!isnull(member) && !QDELETED(member))
-			return TRUE
-	for(var/obj/machinery/atmospherics/machine as anything in other_atmos_machines)
-		if(!isnull(machine) && !QDELETED(machine))
-			return TRUE
-	return FALSE
 
 /datum/pipeline/New()
 	other_airs = list()
@@ -210,6 +189,7 @@
 			members += reference_pipe
 			air.volume += reference_pipe.volume
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/pipeline/proc/merge(datum/pipeline/parent_pipeline)
 	if(parent_pipeline == src)
 		return
@@ -236,6 +216,7 @@
 	update = TRUE
 	qdel(parent_pipeline)
 
+// VOIDCREW EDIT END
 /obj/machinery/atmospherics/proc/add_member(obj/machinery/atmospherics/considered_device)
 	return
 
@@ -285,6 +266,7 @@
 		stack_trace("[src] has one or more null gas mixtures, which may cause bugs. Null mixtures will not be considered in reconcile_air().")
 
 /// Called when the pipenet needs to update and mix together all the air mixes
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/pipeline/proc/reconcile_air()
 	var/list/datum/gas_mixture/gas_mixture_list = list()
 	var/list/datum/pipeline/pipeline_list = list()
@@ -359,6 +341,7 @@
  * Used to create and/or get the gas visual overlay created using the given icon file.
  * The color is automatically kept up to date and expected to be used as a vis_contents object.
  */
+// VOIDCREW EDIT END
 /datum/pipeline/proc/GetGasVisual(icon/icon_file)
 	if(gas_visuals[icon_file])
 		return gas_visuals[icon_file]

@@ -32,8 +32,11 @@
 	TEST_ASSERT_EQUAL(table.patient, replacement_human, "Operating table failed to find a replacement patient.")
 
 /// Occupants can move between adjacent tables, while floor entry and buckling keep their normal restrictions.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/operating_table_movement
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/unit_test/operating_table_movement/Run()
 	var/turf/first_site = get_step(run_loc_floor_bottom_left, EAST)
 	var/turf/second_site = get_step(first_site, EAST)
@@ -70,3 +73,4 @@
 	qdel(first_table)
 	TEST_ASSERT(!HAS_TRAIT(human, TRAIT_ON_CLIMBABLE), "Removing the occupied table must remove its table-walking permission.")
 	TEST_ASSERT(!human.Move(second_site, EAST), "A removed table must not allow walking onto a remaining adjacent table.")
+// VOIDCREW EDIT END

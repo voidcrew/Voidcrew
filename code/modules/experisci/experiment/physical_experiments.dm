@@ -26,6 +26,7 @@
 	if(istype(proj, /obj/projectile/beam/emitter))
 		finish_experiment(linked_experiment_handler)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/experiment/physical/meat_wall_explosion/finish_experiment(datum/component/experiment_handler/experiment_handler)
 	. = ..()
 	if(!.)
@@ -36,6 +37,7 @@
 	new /obj/effect/gibspawner/generic(new_turf)
 	new /obj/item/food/meat/steak/plain(new_turf)
 
+// VOIDCREW EDIT END
 /datum/experiment/physical/arcade_winner
 	name = "Playtesting Experiences"
 	description = "How do they make these arcade games so fun? Let's play one and win it to find out."

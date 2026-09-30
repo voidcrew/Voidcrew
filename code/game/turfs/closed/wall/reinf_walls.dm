@@ -45,6 +45,7 @@
 /turf/closed/wall/r_wall/hulk_recoil(obj/item/bodypart/arm, mob/living/carbon/human/hulkman, damage = 41)
 	return ..()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/wall/r_wall/try_decon(obj/item/W, mob/user, turf/T)
 	//DECONSTRUCTION
 	switch(d_state)
@@ -188,6 +189,7 @@
 				return TRUE
 	return FALSE
 
+// VOIDCREW EDIT END
 /turf/closed/wall/r_wall/update_icon(updates=ALL)
 	. = ..()
 	if(d_state != INTACT)

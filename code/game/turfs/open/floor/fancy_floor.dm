@@ -505,6 +505,7 @@
 	/// The alpha used for the emissive decal.
 	var/emissive_alpha = 150
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/open/floor/carpet/neon/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/decal, neon_icon || icon, neon_icon_state || base_icon_state, dir, null, null, alpha, neon_color, smoothing_junction)
@@ -514,6 +515,7 @@
 	// emissive_appearance() remaps floor plane layers into the FLOOR_EMISSIVE band for this exact reason.
 	AddElement(/datum/element/decal, neon_icon || icon, neon_icon_state || base_icon_state, dir, EMISSIVE_PLANE, FLOOR_EMISSIVE_START_LAYER, emissive_alpha, GLOB.emissive_color, smoothing_junction)
 
+// VOIDCREW EDIT END
 /turf/open/floor/carpet/neon/simple
 	name = "simple neon carpet"
 	icon = 'icons/turf/floors/carpet_neon_base.dmi'

@@ -35,9 +35,6 @@ GLOBAL_REAL(logger, /datum/log_holder)
 	var/initialized = FALSE
 	var/shutdown = FALSE
 
-	/// VOIDCREW ADDITION: world.time until which Log() skips the structured path and writes
-	/// flat world.log lines instead. Set by logging_failed().
-	var/structured_logging_broken_until = 0
 
 GENERAL_PROTECT_DATUM(/datum/log_holder)
 
@@ -372,6 +369,7 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 	SEND_TEXT(world.log, "  STRUCTURED LOGGING FAILED ([failure]) - flat world.log lines for the next [LOG_HOLDER_FAILURE_BACKOFF / 10] seconds.")
 
 /// Recursively converts an associative list of datums into their jsonified(list) form
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/log_holder/proc/recursive_jsonify(list/data_list, list/semvers)
 	if(isnull(data_list))
 		return null
@@ -412,3 +410,4 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 	return jsonified_list
 
 #undef LOG_HOLDER_FAILURE_BACKOFF
+// VOIDCREW EDIT END

@@ -160,8 +160,13 @@
 	var/list/routes = list()
 	if(!footprint_bounds || !installed_area)
 		return routes
+	var/list/door_turfs = list()
+	for(var/datum/weakref/door_ref as anything in doors)
+		var/turf/door_turf = get_turf(door_ref.resolve())
+		if(door_turf)
+			door_turfs[door_turf] = TRUE
 	for(var/turf/edge as anything in room_turfs())
-		if(edge.loc != installed_area || isclosedturf(edge))
+		if(door_turfs[edge] || edge.loc != installed_area || isclosedturf(edge))
 			continue
 		for(var/direction in GLOB.cardinals)
 			var/turf/beyond = get_step(edge, direction)

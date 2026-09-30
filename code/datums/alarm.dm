@@ -100,10 +100,6 @@
 	var/list/allowed_z_levels
 	///List of allowed areas. if this is null it's ignored
 	var/list/allowed_areas
-	/// VOIDCREW EDIT ADDITION: weakref to the atom whose map region scopes a z-scoped
-	/// listener, or null for "z granularity only" (the upstream behaviour). Set by
-	/// /datum/station_alert/New(); see the comment there.
-	var/datum/weakref/region_anchor_ref
 
 	///List of alarm type -> list of area name -> list(area, ref to area's cameras, list(sources))
 	var/list/alarms = list()

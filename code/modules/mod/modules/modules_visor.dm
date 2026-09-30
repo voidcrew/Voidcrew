@@ -91,10 +91,14 @@
 	incompatible_modules = list(/obj/item/mod/module/night, /obj/item/mod/module/visor/night)
 	required_slots = list(ITEM_SLOT_HEAD|ITEM_SLOT_EYES|ITEM_SLOT_MASK)
 
+// VOIDCREW EDIT START - PR #415: Restore built-in MOD night vision.
 /obj/item/mod/module/night/on_activation()
 	ADD_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src))
 	mod.wearer.update_sight()
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #415: Restore built-in MOD night vision.
 /obj/item/mod/module/night/on_deactivation(display_message = TRUE, deleting = FALSE)
 	REMOVE_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src))
 	mod.wearer.update_sight()
+// VOIDCREW EDIT END
