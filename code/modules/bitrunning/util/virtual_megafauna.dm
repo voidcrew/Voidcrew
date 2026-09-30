@@ -10,9 +10,11 @@
 	// well after it, so the component is already attached by the time we get here. Left
 	// alone, every megafauna domain broadcasts a lavaland signal out of the turf
 	// reservation to anyone holding a GPS.
+	// VOIDCREW EDIT START: research removes real-world GPS signals from virtual bosses.
 	var/datum/component/gps/beacon = GetComponent(/datum/component/gps)
 	if(beacon)
 		qdel(beacon)
+	// VOIDCREW EDIT END
 
 	loot.Cut()
 	loot += /obj/structure/closet/crate/secure/bitrunning/encrypted

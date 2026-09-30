@@ -21,7 +21,9 @@ for (const key of requireFeature.keys()) {
 }
 
 // Import voidcrew features
+// VOIDCREW EDIT START: preferences registers modular Voidcrew feature controls.
 import * as voidcrewFeatures from 'voidcrew_tgui/preferences/features';
 for (const [featureKey, feature] of Object.entries(voidcrewFeatures)) {
   features[featureKey] = feature as Feature<unknown>;
 }
+// VOIDCREW EDIT END

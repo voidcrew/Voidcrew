@@ -61,9 +61,11 @@
 	///Boolean on whether the manifest can be cancelled through cargo consoles.
 	var/can_be_cancelled = TRUE
 	/// Actual ship-account payment, also used by its manifest. Null until settled.
+	// VOIDCREW EDIT START: cargo tracks the settled ship payment on crates and manifests.
 	var/ship_paid_cost
 	/// Last refusal from ship settlement, for delivery feedback.
 	var/ship_settlement_error
+	// VOIDCREW EDIT END
 
 /datum/supply_order/New(
 	datum/supply_pack/pack,
@@ -106,28 +108,7 @@
 		cost *= 1.1
 	return round(cost)
 
-/// Settle a ship order atomically before generating any goods or changing market stock.
-/datum/supply_order/proc/settle_ship_order(datum/bank_account/account)
-	ship_settlement_error = null
-	if(!account || !isnull(ship_paid_cost))
-		ship_settlement_error = "No paying account, or order already paid."
-		return FALSE
-	var/datum/supply_pack/custom/minerals/material_order = astype(pack)
-	if(material_order)
-		ship_settlement_error = material_order.ship_order_error()
-		if(ship_settlement_error)
-			return FALSE
-	var/price = get_final_cost()
-	if(!isnum(price) || price < 0)
-		ship_settlement_error = "Invalid order price."
-		return FALSE
-	// adjust_money(0) reports failure, although a fully discounted order is valid.
-	if(price > 0 && !account.adjust_money(-price))
-		ship_settlement_error = "Insufficient credits; order remains in the cart."
-		return FALSE
-	ship_paid_cost = price
-	material_order?.commit_ship_order()
-	return TRUE
+// VOIDCREW EDIT: cargo settles ship orders before goods are generated; implementation in voidcrew/modules/cargo/ship_order_settlement.dm.
 
 /datum/supply_order/proc/generateRequisition(turf/T)
 	var/obj/item/paper/requisition/requisition_paper = new(T)
@@ -167,7 +148,7 @@
 		manifest_text += "Item: [packname]<br/>"
 	manifest_text += "Contents: <br/>"
 	manifest_text += "<ul>"
-	var/container_contents = list() // Associative list with the format (item_name = nº of occurrences, ...)
+	var/container_contents = list() // Associative list with the format (item_name = nÂº of occurrences, ...)
 	for(var/obj/item/stuff in container.contents - manifest_paper)
 		if(isstack(stuff))
 			var/obj/item/stack/thing = stuff
@@ -221,8 +202,10 @@
 			ADD_TRAIT(item_within, TRAIT_CONTRABAND, INNATE_TRAIT)
 	if(department_destination)
 		crate.AddElement(/datum/element/deliver_first, department_destination, pack.cost)
+	// VOIDCREW EDIT START: cargo tracks the settled ship payment on crates and manifests.
 	crate.cargo_paid_cost = ship_paid_cost
 	generateManifest(crate, account_holder, pack, isnull(ship_paid_cost) ? pack.cost : ship_paid_cost)
+	// VOIDCREW EDIT END
 	return crate
 
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents, misc_cost)
@@ -249,7 +232,7 @@
 /datum/supply_order/disposable/materials/get_final_cost()
 	// The material quote is captured when ordered. It is not an ordinary pack
 	// price, and must not receive a station-trait modifier or a coupon a second time.
-	return round(pack.cost) + CARGO_CRATE_VALUE
+	return round(pack.cost) + CARGO_CRATE_VALUE // VOIDCREW EDIT: cargo tracks the settled ship payment on crates and manifests.
 
 #undef MANIFEST_ERROR_CHANCE
 #undef MANIFEST_ERROR_NAME

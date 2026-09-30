@@ -244,7 +244,7 @@
 	data["materials"] =  materials.ui_data()
 
 	data["machines"] = list()
-	// VOIDCREW EDIT: a connection whose machine died (or hard-deleted to a null entry)
+	// VOIDCREW EDIT START: research - a connection whose machine died (or hard-deleted to a null entry)
 	// must not crash the whole window. Pruned from the real list, not skipped in the
 	// data, because ui_act's hold/remove actions index into ore_connected_machines -
 	// a display list that skips entries would point those buttons at the wrong machine.
@@ -278,7 +278,7 @@
 			)
 		)
 	data["banned_users"] = banned_users
-	data["id_required"] = ID_required
+	data["id_required"] = ID_required // VOIDCREW EDIT: research prunes dead silo links and matches the UI data contract.
 
 	return data
 
@@ -343,7 +343,7 @@
 
 		if("toggle_restrict")
 			attempt_toggle_restrict(usr)
-			return TRUE
+			return TRUE // VOIDCREW EDIT: research prunes dead silo links and matches the UI data contract.
 /**
  * Called from the ore silo's UI, when someone attempts to (un)ban a user from using the ore silo.
  * The person doing the banning should have at least QM access. Unless this is emagged. Not modifiable by silicons unless emagged.

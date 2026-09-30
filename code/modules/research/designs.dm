@@ -126,9 +126,11 @@ other types of metals and chemistry for reagents).
 
 /obj/item/disk/design_disk/bepis/Initialize(mapload)
 	. = ..()
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	refill_experimental_technology_deck()
 	if(!length(SSresearch.techweb_nodes_experimental))
 		return INITIALIZE_HINT_QDEL
+	// VOIDCREW EDIT END
 	var/bepis_id = pick(SSresearch.techweb_nodes_experimental)
 	bepis_node = (SSresearch.techweb_node_by_id(bepis_id))
 
@@ -152,19 +154,16 @@ other types of metals and chemistry for reagents).
 
 /obj/item/disk/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	if(. == INITIALIZE_HINT_QDEL)
 		return
+	// VOIDCREW EDIT END
 	SSresearch.techweb_nodes_experimental -= bepis_node.id
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	log_research("[bepis_node.display_name] drawn from the experimental technology deck.")
 	// Bitrunning checks this pool BEFORE making a disk. Refill at exhaustion,
 	// rather than waiting for an Initialize() that the caller would never reach.
 	refill_experimental_technology_deck()
+	// VOIDCREW EDIT END
 
-/// Rebuild the finite experimental deck only when its current cycle is exhausted.
-/proc/refill_experimental_technology_deck()
-	if(length(SSresearch.techweb_nodes_experimental))
-		return
-	for(var/node_id in SSresearch.techweb_nodes)
-		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
-		if(node.experimental)
-			SSresearch.techweb_nodes_experimental[node_id] = TRUE
+// VOIDCREW EDIT: research refills the experimental technology deck at exhaustion; implementation in voidcrew/modules/research/experimental_technology_deck.dm.

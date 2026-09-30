@@ -193,9 +193,11 @@
 	if(istype(target, /obj/structure/ore_box))
 		var/obj/structure/ore_box/box = target
 		for(var/obj/item/stack/ore/ore_item in box.contents)
+			// VOIDCREW EDIT START: mining unloads ore satchels through the ore intake.
 			ore_list += ore_item
 	else if(istype(target, /obj/item/storage/bag/ore)) // VOIDCREW EDIT ADDITION - a mining satchel dropped on the input side empties like an ore box instead of sitting there
 		for(var/obj/item/stack/ore/ore_item in target.contents)
+			// VOIDCREW EDIT END
 			ore_list += ore_item
 	else if(istype(target, /obj/item/stack/ore))
 		ore_list += target

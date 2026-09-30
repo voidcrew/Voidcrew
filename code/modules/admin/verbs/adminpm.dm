@@ -791,9 +791,11 @@ ADMIN_VERB(cmd_admin_pm_panel, R_NONE, "Admin PM", "Show a list of clients to PM
 		type = MESSAGE_TYPE_ADMINPM,
 		html = fieldset_block(
 			span_adminhelp("Administrator private message"),
+			// VOIDCREW EDIT START: autotranslate displays the translated administrator message.
 			"<span class='[span_class]'>Admin PM from-<b>[reply_to]</b></span>\n\n\
 			<span class='[span_class]'>[display_message]</span>\n\n\
 			<i class='adminsay'>Click on the administrator's name to reply.</i>",
+			// VOIDCREW EDIT END
 			"boxed_message red_box"),
 		confidential = TRUE
 	)

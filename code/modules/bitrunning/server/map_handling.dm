@@ -83,19 +83,20 @@
 
 /// Initializes a new domain if the given key is valid and the user has enough points
 /obj/machinery/quantum_server/proc/load_domain(map_key)
-	var/datum/lazy_template/virtual_domain/target_domain
+	var/datum/lazy_template/virtual_domain/target_domain // VOIDCREW EDIT: research locks each virtual domain to one server.
 	for(var/datum/lazy_template/virtual_domain/available in SSbitrunning.all_domains)
 		if(map_key == available.key && points >= available.cost)
-			target_domain = available
+			target_domain = available // VOIDCREW EDIT: research locks each virtual domain to one server.
 			break
 
-	if(!target_domain)
+	if(!target_domain) // VOIDCREW EDIT: research locks each virtual domain to one server.
 		return FALSE
 
 	// Domain datums are one instance for the whole fleet, and their reservation
 	// list and loot counters go with them. A second server booting the same key
 	// would read the first one's reservation, match no landmarks at all and take
 	// itself offline for the round, so one holder per domain at a time.
+	// VOIDCREW EDIT START: research locks each virtual domain to one server.
 	if(!SSbitrunning.claim_domain(map_key, src))
 		balloon_alert_to_viewers("domain in use!")
 		say("[target_domain.name] is already running on another server. Pick a different domain.")
@@ -103,6 +104,7 @@
 		return FALSE
 
 	generated_domain = target_domain
+	// VOIDCREW EDIT END
 
 	if(generated_domain.mission_min_candidates && (!COOLDOWN_FINISHED(src, polling_cooldown)))
 		say("Advanced NPC algorithms resetting, please wait [DisplayTimeText(polling_cooldown)] or load a different domain.")
@@ -143,11 +145,13 @@
 	// GLOB.landmarks_list is global, but a fleet can have a server on every
 	// ship. Two of them cold booting at once would consume each other's
 	// landmarks, so only claim the ones inside our own reservation.
-	var/datum/turf_reservation/our_reservation = LAZYACCESS(generated_domain.reservations, 1)
+	var/datum/turf_reservation/our_reservation = LAZYACCESS(generated_domain.reservations, 1) // VOIDCREW EDIT: research claims landmarks from the server reservation and tolerates missing exits.
 
 	for(var/obj/effect/landmark/bitrunning/thing in GLOB.landmarks_list)
+		// VOIDCREW EDIT START: research claims landmarks from the server reservation and tolerates missing exits.
 		if(our_reservation && !our_reservation.contains_turf(get_turf(thing)))
 			continue
+		// VOIDCREW EDIT END
 
 		if(istype(thing, /obj/effect/landmark/bitrunning/hololadder_spawn))
 			exit_turfs += get_turf(thing)
@@ -192,11 +196,15 @@
 	// Logged rather than thrown: an unwound cold_boot_map never restores is_ready,
 	// which leaves the server dark for the rest of the round.
 	if(!length(exit_turfs))
+		// VOIDCREW EDIT START: research claims landmarks from the server reservation and tolerates missing exits.
 		stack_trace("Failed to find exit turfs on generated domain.")
 		return FALSE
+		// VOIDCREW EDIT END
 	if(!length(goal_turfs))
+		// VOIDCREW EDIT START: research claims landmarks from the server reservation and tolerates missing exits.
 		stack_trace("Failed to find send turfs on generated domain.")
 		return FALSE
+		// VOIDCREW EDIT END
 	if(!attempt_spawn_cache(cache_turfs))
 		return FALSE
 
@@ -239,6 +247,7 @@
 
 	// A boot that failed before a domain was picked still lands here, so nothing
 	// below may assume there is one.
+	// VOIDCREW EDIT START: research clears spent reservations before releasing virtual-domain ownership.
 	if(generated_domain)
 		// Drop the reservation from the domain before releasing it. lazy_load() appends to
 		// this list and nothing else ever removes from it, so leaving spent entries behind
@@ -253,6 +262,7 @@
 
 		generated_domain.secondary_loot_generated = 0
 		SSbitrunning.release_domain(generated_domain.key, src)
+	// VOIDCREW EDIT END
 
 	var/list/creatures = spawned_threat_refs + mutation_candidate_refs
 	for(var/datum/weakref/creature_ref as anything in creatures)
@@ -262,6 +272,7 @@
 
 		qdel(creature)
 
+	// VOIDCREW EDIT REMOVAL: research clears spent reservations before releasing virtual-domain ownership.
 	avatar_connection_refs.Cut()
 	exit_turfs = list()
 	generated_domain = null

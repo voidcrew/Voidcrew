@@ -223,7 +223,7 @@
 	// Stack outputs retain their per-unit materials instead of receiving the
 	// nonstack salvage adjustment in do_make_item(). Discounting them creates
 	// material when cable, ducts or rods are fed back into a material container.
-	if(ispath(path, /obj/item/stack))
+	if(ispath(path, /obj/item/stack)) // VOIDCREW EDIT: research preserves stack material costs to prevent recycling gain.
 		return 1
 	else
 		return efficiency_coeff

@@ -33,18 +33,15 @@
 // Materials. Static materials exist as parent types, while materials subject to the stock market have a fluid cost as determined by material/market types
 // If you're adding a new material to the stock market, make sure its export type is added here.
 
-/// Fuel has one resale ceiling, whether shipped loose or through a stock block.
-/proc/plasma_export_bid()
-	return max(0, min(SSstock_market.materials_prices[/datum/material/plasma], 10))
+// VOIDCREW EDIT: cargo shares the plasma resale ceiling with stock blocks; implementation in voidcrew/modules/cargo/export_values.dm.
 
 /datum/export/material/plasma
-	cost = 10
+	cost = 10 // VOIDCREW EDIT: cargo caps plasma resale across loose and market exports.
 	k_elasticity = 0
 	material_id = /datum/material/plasma
 	message = "cm3 of plasma"
 
-/datum/export/material/plasma/get_cost(obj/exported_obj, apply_elastic = TRUE)
-	return round(plasma_export_bid() * get_amount(exported_obj))
+// VOIDCREW EDIT: cargo applies the plasma resale ceiling to loose material; implementation in voidcrew/modules/cargo/export_values.dm.
 
 /datum/export/material/bananium
 	cost = CARGO_CRATE_VALUE * 2
@@ -177,7 +174,7 @@
 		/obj/item/stock_block,
 	) //For whatever reason, bluespace crystals are not a mineral
 
-// VOIDCREW EDIT: plasma trades on the materials market here (see basemats.dm).
+// VOIDCREW EDIT START: cargo - plasma trades on the materials market here (see basemats.dm).
 // Direct plasma is matched by the earlier datum. Blocks must obey its same
 // ceiling, including a fixed quote captured before prices or balance changed.
 /datum/export/material/market/plasma

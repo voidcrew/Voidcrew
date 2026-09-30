@@ -102,6 +102,7 @@ export const Window = (props: Props) => {
         logger.log('unmounting');
       };
     }
+  // VOIDCREW EDIT: preferences refreshes reopened native windows and coerces boolean UI flags.
   }, [isReadyToRender, width, height, scale, suspended, config.window.key]);
 
   const dispatch = globalStore.dispatch;
@@ -131,8 +132,10 @@ export const Window = (props: Props) => {
       </TitleBar>
       <div className={classes(['Window__rest', debugLayout && 'debug-layout'])}>
         {!suspended && children}
+        {/* VOIDCREW EDIT: preferences refreshes reopened native windows and coerces boolean UI flags. */}
         {!!showDimmer && <div className="Window__dimmer" />}
       </div>
+      {/* VOIDCREW EDIT: preferences refreshes reopened native windows and coerces boolean UI flags. */}
       {!!fancy && (
         <>
           <div

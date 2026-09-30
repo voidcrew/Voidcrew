@@ -24,7 +24,7 @@
 		return FALSE
 	/// If the server is down, don't use power or attempt to send data
 	// Voidcrew: see ntnet_send.dm - ships are their own NTNet node.
-	return ntnet_reachable_from(get_circuit_turf(parent))
+	return ntnet_reachable_from(get_circuit_turf(parent)) // VOIDCREW EDIT: circuits uses the ship-local NTNet node.
 
 /obj/item/circuit_component/list_literal/ntnet_send/input_received(datum/port/input/port)
 	. = ..()

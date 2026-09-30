@@ -307,6 +307,7 @@ export const ChemHeater = (props) => {
                       format={(value) => `${toFixed(value)} K`}
                     />
                   )) ||
+                    // VOIDCREW EDIT: chemistry uses a client-compatible fallback glyph.
                     '-'}
                 </Box>
               </Table.Cell>

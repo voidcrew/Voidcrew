@@ -97,7 +97,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 /datum/preferences/New(client/parent)
 	src.parent = parent
 	// Voidcrew has no antagonist preferences page, so offer all roles by default.
-	be_special = assoc_to_keys(get_all_antag_flags())
+	be_special = assoc_to_keys(get_all_antag_flags()) // VOIDCREW EDIT: preferences enables available antagonist roles without an antagonist preference page.
 
 	for (var/middleware_type in subtypesof(/datum/preference_middleware))
 		middleware += new middleware_type(src)
@@ -146,14 +146,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		// If the preview could not survive being built, the menu was closed again while
 		// we were building it. Opening on a dead preview produces a permanently blank
 		// window (see create_character_preview_view); doing nothing costs one click.
+		// VOIDCREW EDIT START: preferences recovers character previews lost while the UI sleeps.
 		if(isnull(create_character_preview_view(user)))
 			return
+		// VOIDCREW EDIT END
 		ui = new(user, src, "PreferencesMenu")
 		ui.set_autoupdate(FALSE)
 		ui.open()
 		// open() sends the preference spritesheets, which sleeps too, so the same race
 		// can still land here.
-		character_preview_view?.display_to(user, ui.window)
+		character_preview_view?.display_to(user, ui.window) // VOIDCREW EDIT: preferences recovers character previews lost while the UI sleeps.
 
 /datum/preferences/ui_state(mob/user)
 	return GLOB.always_state
@@ -187,7 +189,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// Rebuild rather than deref: a runtime here silently drops the entire static half of
 	// the payload, and data["window"] two lines down is what PreferencesMenu routes on -
 	// without it the interface throws and the player is left with a blank dark window.
-	data["character_preview_view"] = get_character_preview_view(user)?.assigned_map
+	data["character_preview_view"] = get_character_preview_view(user)?.assigned_map // VOIDCREW EDIT: preferences recovers character previews lost while the UI sleeps.
 	data["overflow_role"] = SSjob.get_job_type(SSjob.overflow_role).title
 	data["window"] = current_window
 
@@ -301,10 +303,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return TRUE
 
 /datum/preferences/proc/create_character_preview_view(mob/user)
+	// VOIDCREW EDIT START: preferences recovers character previews lost while the UI sleeps.
 	var/atom/movable/screen/map_view/char_preview/preview = new(null, src)
 	character_preview_view = preview
 	preview.generate_view("character_preview_[REF(preview)]")
 	preview.update_body()
+	// VOIDCREW EDIT END
 
 	// update_body() sleeps. Anything that runs ui_close() while it does - closing an
 	// already open preferences window is enough - hits QDEL_NULL(character_preview_view)
@@ -319,6 +323,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	//
 	// Report the loss honestly instead, so the caller can back out rather than open a
 	// menu that can never render.
+	// VOIDCREW EDIT START: preferences recovers character previews lost while the UI sleeps.
 	if(QDELETED(preview))
 		return null
 
@@ -330,18 +335,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	character_preview_view = preview
 	return preview
+	// VOIDCREW EDIT END
 
-/**
- * Returns the character preview, rebuilding it if it went missing.
- *
- * Callers reach this from inside get_payload(), where a runtime costs the whole half of
- * the payload it is building. See create_character_preview_view() for how the view gets
- * destroyed mid-flight.
- */
-/datum/preferences/proc/get_character_preview_view(mob/user)
-	if(isnull(character_preview_view))
-		create_character_preview_view(user)
-	return character_preview_view
+// VOIDCREW EDIT: preferences rebuilds character previews lost during UI opening; implementation in voidcrew/modules/preferences/character_preview_recovery.dm.
 
 /datum/preferences/proc/compile_character_preferences(mob/user)
 	var/list/preferences = list()

@@ -227,6 +227,7 @@
 #include "mob_spawn.dm"
 #include "modify_fantasy_variable.dm"
 #include "modsuit.dm"
+#include "../../../voidcrew/modules/unit_tests/mod_night_vision_traits.dm" // VOIDCREW EDIT: keep extracted fork cases beside their upstream test definitions.
 #include "modular_map_loader.dm"
 #include "monkey_business.dm"
 #include "mouse_bite_cable.dm"
@@ -238,6 +239,7 @@
 #include "nuke_cinematic.dm"
 #include "omnitools.dm"
 #include "operating_table.dm"
+#include "../../../voidcrew/modules/unit_tests/operating_table_movement.dm" // VOIDCREW EDIT: keep extracted fork cases beside their upstream test definitions.
 #include "orderable_items.dm"
 #include "organ_bodypart_shuffle.dm"
 #include "organs.dm"
@@ -297,6 +299,7 @@
 #include "species_whitelists.dm"
 #include "spell_invocations.dm"
 #include "spell_jaunt.dm"
+#include "../../../voidcrew/modules/unit_tests/blood_jaunt_destinations.dm" // VOIDCREW EDIT: keep extracted fork cases beside their upstream test definitions.
 #include "spell_mindswap.dm"
 #include "spell_names.dm"
 #include "spell_shapeshift.dm"

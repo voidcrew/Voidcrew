@@ -34,7 +34,7 @@
 	var/turf/user_turf = get_turf(computer.ui_host())
 	if(!user_turf)
 		return
-	// VOIDCREW EDIT ADDITION: packed-level containment. Two of the three clauses below fire
+	// VOIDCREW EDIT ADDITION START: overmap - packed-level containment. Two of the three clauses below fire
 	// on a lattice encounter level (ZTRAIT_MINING is published by every one of them, and
 	// is_station_level() means "any z with a hull on it" here), so a co-tenant's supermatter
 	// appeared on the CIMS. Resolved once, outside the loop.
@@ -44,7 +44,7 @@
 		//Exclude Syndicate owned, Delaminating, not within coverage, not on a tile.
 		if (!sm.include_in_cims || !isturf(sm.loc) || !(is_station_level(sm.z) || is_mining_level(sm.z) || sm.z == user_turf.z))
 			continue
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START: overmap scopes this effect to its encounter site.
 		if(map_region_excludes_turf(console_region, get_turf(sm)))
 			continue
 		// VOIDCREW EDIT END

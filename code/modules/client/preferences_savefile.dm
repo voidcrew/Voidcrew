@@ -13,7 +13,7 @@
 /// You do not need to raise this if you are adding new values that have sane defaults.
 /// Only raise this value when changing the meaning/format/name/layout of an existing value
 /// where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX 50
+#define SAVEFILE_VERSION_MAX 50 // VOIDCREW EDIT: preferences migrates existing accounts to the available ship-role defaults.
 
 #define IS_DATA_OBSOLETE(version) (version == SAVE_DATA_OBSOLETE)
 #define SHOULD_UPDATE_DATA(version) (version >= SAVE_DATA_NO_ERROR && version < SAVEFILE_VERSION_MAX)
@@ -107,9 +107,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if (current_version < 44)
 		update_tts_blip_prefs()
 
+	// VOIDCREW EDIT START: preferences migrates existing accounts to the available ship-role defaults.
 	if(current_version < 50)
 		// Apply Voidcrew's all-role default to existing accounts as well.
 		be_special = assoc_to_keys(get_all_antag_flags())
+	// VOIDCREW EDIT END
 
 /datum/preferences/proc/update_character(current_version, list/save_data)
 	if (current_version < 41)

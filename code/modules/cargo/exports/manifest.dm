@@ -3,15 +3,13 @@
 // Approved manifest.
 // At most20 credits or10% of payment: cheap goodies and flash coupons cannot subsidize themselves.
 /datum/export/manifest_correct
-	cost = CARGO_CRATE_VALUE * 0.1
+	cost = CARGO_CRATE_VALUE * 0.1 // VOIDCREW EDIT: cargo caps manifest resale against shipment payment.
 	k_elasticity = 0
 	unit_name = "approved manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 	scannable = FALSE
 
-/datum/export/manifest_correct/get_cost(obj/O, apply_elastic = TRUE)
-	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest = O
-	return max(0, min(..(), FLOOR(manifest.order_cost * 0.1, 1)))
+// VOIDCREW EDIT: cargo caps manifest refunds against the paid order; implementation in voidcrew/modules/cargo/export_values.dm.
 
 /datum/export/manifest_correct/applies_to(obj/O)
 	if(!..())

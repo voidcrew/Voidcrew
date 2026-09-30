@@ -392,6 +392,7 @@ export function PreferenceList(props: PreferenceListProps) {
                 tooltip={feature.description}
                 // The character preview is a native BYOND map control, which always
                 // paints over the browser - a centered tooltip spills left under it.
+                // VOIDCREW EDIT: preferences keeps feature tooltips clear of the native character preview.
                 tooltipPosition="bottom-start"
                 verticalAlign="middle"
               >

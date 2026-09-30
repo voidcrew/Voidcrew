@@ -46,6 +46,7 @@
 	// VOIDCREW EDIT: removing mid-walk skipped every other index, leaving half the
 	// search objects registered and listed across populate_contents() calls
 	for(var/datum/search_object/index as anything in contents)
+		// VOIDCREW EDIT REMOVAL: storage clears lootpanel contents after their handlers are detached.
 		to_image -= index
 
 		if(QDELETED(index))
@@ -53,4 +54,4 @@
 
 		UnregisterSignal(index, COMSIG_QDELETING)
 		qdel(index)
-	contents.Cut()
+	contents.Cut() // VOIDCREW EDIT: storage clears lootpanel contents after their handlers are detached.

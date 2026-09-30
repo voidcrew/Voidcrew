@@ -66,12 +66,14 @@
 	// free ship-to-ship or orbit-to-surface link. Locating through get_circuit_turf() also fixes
 	// circuits in unremovable shells (bots, drones), which sit in nullspace and were previously
 	// unreachable by NFC at any distance.
+	// VOIDCREW EDIT START: circuits permits hull-wide NFC while retaining off-ship range limits.
 	var/turf/our_turf = get_circuit_turf(parent)
 	var/turf/sender_turf = get_circuit_turf(sender)
 	if(isnull(our_turf) || isnull(sender_turf))
 		return
 
 	if(!on_same_ship_network(sender_turf, our_turf) && get_dist(sender_turf, our_turf) >= 10)
+	// VOIDCREW EDIT END
 		return
 
 	if(data["enc_key"] != enc_key.value)

@@ -228,19 +228,7 @@
 		SStgui.update_uis(parent)
 	return null //explicitly set the port to null if used like this: `port = remove_output_port(port)`
 
-//VOIDCREW EDIT ADDITION: hook for components that need to clear transient port values
-//once a trigger has finished, so a chemical payload isn't re-sent on the next pulse.
-/obj/item/circuit_component/proc/after_work_call()
-	return
-
-//VOIDCREW EDIT ADDITION: lets a component vary its own power draw per trigger instead of
-//always paying the flat energy_usage_per_input. The chemistry synthesiser uses this to
-//charge more when it has to fabricate matter without precursor feedstock.
-//(Name keeps the upstream monkestation typo so ported components match.)
-/obj/item/circuit_component/proc/check_power_modifictions()
-	return energy_usage_per_input
-//VOIDCREW EDIT END
-
+// VOIDCREW EDIT: circuits provides chemistry trigger cleanup and power hooks; implementation in voidcrew/modules/circuits/component_hooks.dm.
 
 /**
  * Called whenever an input is received from one of the ports.
@@ -454,4 +442,4 @@
 /obj/item/circuit_component/proc/send_ntnet_data(datum/port/input/port, key, signal_type = COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
 	// Voidcrew: the sender rides along so receivers can scope the broadcast to one ship.
 	// See on_same_ship_network() in voidcrew/modules/circuits/ntnet_ship_scope.dm.
-	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src)))
+	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src))) // VOIDCREW EDIT: circuits includes the sender in ship-scoped NTNet broadcasts.

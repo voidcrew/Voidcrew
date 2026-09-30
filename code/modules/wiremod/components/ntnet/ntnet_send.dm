@@ -34,7 +34,7 @@
 	/// If the server is down, don't use power or attempt to send data
 	// Voidcrew: this fork loads no station and maps no relays, so a bare
 	// find_functional_ntnet_relay() is always FALSE. Ships are their own NTNet node.
-	return ntnet_reachable_from(get_circuit_turf(parent))
+	return ntnet_reachable_from(get_circuit_turf(parent)) // VOIDCREW EDIT: circuits uses the ship-local NTNet node.
 
 /obj/item/circuit_component/ntnet_send/pre_input_received(datum/port/input/port)
 	if(port == list_options)

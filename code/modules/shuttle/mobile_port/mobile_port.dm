@@ -94,7 +94,7 @@
 
 /obj/docking_port/mobile/Destroy(force)
 	unregister()
-	QDEL_NULL(announcement_controller)
+	QDEL_NULL(announcement_controller) // VOIDCREW EDIT: shuttle measures only its own hull ground and cleans departure resources.
 	destination = null
 	previous = null
 	if(!QDELETED(assigned_transit))
@@ -147,6 +147,7 @@
 		// hull out onto - is kept, so this can never shrink a rectangle around real hull.
 		// A hull with no region of its own still discards turfs sitting inside somebody
 		// else's, which is the stranded-at-a-ruin case seen from deep space.
+		// VOIDCREW EDIT START: shuttle measures only its own hull ground and cleans departure resources.
 		var/turf/own_ground = get_turf(src)
 		var/datum/own_region = own_ground ? map_region_for_turf(own_ground) : null
 		var/region_filtered = !isnull(own_ground)
@@ -166,11 +167,13 @@
 						var/datum/turf_region = map_region_for_turf(turf)
 						if(turf_region && turf_region != own_region)
 							continue
+		// VOIDCREW EDIT END
 					min_x = min(turf.x, min_x)
 					max_x = max(turf.x, max_x)
 					min_y = min(turf.y, min_y)
 					max_y = max(turf.y, max_y)
 				CHECK_TICK
+			// VOIDCREW EDIT START: shuttle measures only its own hull ground and cleans departure resources.
 			if(max_x != -1 || !region_filtered)
 				break
 			// Containment threw away every turf we have. That means our own tile is not
@@ -182,6 +185,7 @@
 			min_y = WORLDMAXY_CUTOFF
 			max_x = -1
 			max_y = -1
+			// VOIDCREW EDIT END
 
 		if(min_x == WORLDMAXX_CUTOFF || max_x == -1)
 			CRASH("Failed to locate shuttle boundaries when iterating through shuttle areas, somehow.")
@@ -431,7 +435,7 @@
 		// deleted hull's rect on open space otherwise stays initialized and starlit for
 		// the rest of the round. See /turf/proc/return_to_uninitialized_space().
 		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
-			oldT.return_to_uninitialized_space()
+			oldT.return_to_uninitialized_space() // VOIDCREW EDIT: shuttle measures only its own hull ground and cleans departure resources.
 
 	qdel(src, force=TRUE)
 
@@ -745,7 +749,7 @@
 
 	if(!distant_source)
 		return
-	// VOIDCREW EDIT ADDITION: packed-level containment. long_range is range * 2.5 where
+	// VOIDCREW EDIT ADDITION START: shuttle - packed-level containment. long_range is range * 2.5 where
 	// range is engine_coeff * max(width, height), so a ~40-wide hull reaches ~100 tiles
 	// against the 6 that separate two tenants of a packed level - a co-tenant crew hears a
 	// full hyperspace departure from a ship they cannot see. Resolved once, outside the
@@ -753,7 +757,7 @@
 	var/datum/source_region = map_region_for_turf(get_turf(distant_source))
 	// VOIDCREW EDIT END
 	for(var/mob/zlevel_mobs as anything in SSmobs.clients_by_zlevel[z])
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START: shuttle scopes this effect to its encounter site.
 		if(map_region_excludes_turf(source_region, get_turf(zlevel_mobs)))
 			continue
 		// VOIDCREW EDIT END

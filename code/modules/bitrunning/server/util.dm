@@ -85,8 +85,10 @@
 
 	// A ship can map or build a server without a forge in range. Callers already
 	// handle a null forge; pick() on an empty list would runtime before they got it.
+	// VOIDCREW EDIT START: research tolerates ship servers without a nearby forge.
 	if(!length(nearby_forges))
 		return null
+	// VOIDCREW EDIT END
 
 	return pick(nearby_forges)
 

@@ -1,8 +1,6 @@
 GLOBAL_REAL(logger, /datum/log_holder)
 
-/// VOIDCREW ADDITION: how long the structured log path stays parked after it throws.
-/// Short - one unlucky file write should not blind the round's logs for long.
-#define LOG_HOLDER_FAILURE_BACKOFF (5 SECONDS)
+// VOIDCREW EDIT: metrics sets a backoff for failed structured logging; implementation in voidcrew/modules/metrics/structured_logging_fallback.dm.
 
 /**
  * Main datum to manage logging actions
@@ -35,7 +33,7 @@ GLOBAL_REAL(logger, /datum/log_holder)
 	var/initialized = FALSE
 	var/shutdown = FALSE
 
-	/// VOIDCREW ADDITION: world.time until which Log() skips the structured path and writes
+	/// VOIDCREW EDIT ADDITION: world.time until which Log() skips the structured path and writes
 	/// flat world.log lines instead. Set by logging_failed().
 	var/structured_logging_broken_until = 0
 
@@ -310,10 +308,10 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 		waiting_log_calls += list(list(category, message, data))
 		return
 
-	// VOIDCREW ADDITION: the logger recently threw, so don't go back through the structured
+	// VOIDCREW EDIT ADDITION: the logger recently threw, so don't go back through the structured
 	// path yet - get the line out flat instead of losing it. See logging_failed().
 	if(world.time < structured_logging_broken_until)
-		SEND_TEXT(world.log, "\[LOG FALLBACK]\[[category]] [message]")
+		SEND_TEXT(world.log, "\[LOG FALLBACK]\[[category]] [message]") // VOIDCREW EDIT: metrics falls back to world logging when structured writes fail.
 		return
 
 	// VOIDCREW EDIT: the category lookups are two plain assoc-list reads, and in round-7
@@ -327,6 +325,7 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 	// Narrow on purpose: recursive_jsonify() below stays outside, because it raises
 	// stack_trace()s as part of normal operation and swallowing those would hide real bugs.
 	var/category_disabled = FALSE
+	// VOIDCREW EDIT START: metrics falls back to world logging when structured writes fail.
 	var/datum/log_category/log_category
 	try
 		if(disabled_categories[category])
@@ -339,6 +338,7 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 
 	if(category_disabled)
 		return
+	// VOIDCREW EDIT END
 
 	if(!log_category)
 		Log(LOG_CATEGORY_INTERNAL_CATEGORY_NOT_FOUND, message, data)
@@ -349,27 +349,15 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 		semver_store = list()
 		data = recursive_jsonify(data, semver_store)
 
+	// VOIDCREW EDIT START: metrics falls back to world logging when structured writes fail.
 	try
 		log_category.create_entry(message, data, semver_store)
 	catch(var/exception/write_failure)
 		logging_failed(category, message, write_failure)
 
-/**
- * VOIDCREW ADDITION: last resort for when the structured logger itself throws.
- *
- * Writes the line flat to world.log and parks the structured path for a few seconds, so a
- * world whose list allocator is failing produces one line per log call instead of a
- * BYOND-default stack dump per log call. Touches no lists and calls nothing that logs -
- * this proc has to work in the state where nothing else does.
- *
- * The message body does go to world.log here, secret categories included. That is a
- * deliberate trade: world.log is host-side only, and the alternative is losing the record
- * of whatever was happening at the moment the server stopped being able to write records.
- */
-/datum/log_holder/proc/logging_failed(category, message, failure)
-	structured_logging_broken_until = world.time + LOG_HOLDER_FAILURE_BACKOFF
-	SEND_TEXT(world.log, "\[LOG FALLBACK]\[[category]] [message]")
-	SEND_TEXT(world.log, "  STRUCTURED LOGGING FAILED ([failure]) - flat world.log lines for the next [LOG_HOLDER_FAILURE_BACKOFF / 10] seconds.")
+	// VOIDCREW EDIT END
+
+// VOIDCREW EDIT: metrics writes a flat fallback when structured logging fails; implementation in voidcrew/modules/metrics/structured_logging_fallback.dm.
 
 /// Recursively converts an associative list of datums into their jsonified(list) form
 /datum/log_holder/proc/recursive_jsonify(list/data_list, list/semvers)
@@ -411,4 +399,4 @@ ADMIN_VERB(log_viewer_new, R_ADMIN|R_DEBUG, "View Round Logs", "View the rounds 
 
 	return jsonified_list
 
-#undef LOG_HOLDER_FAILURE_BACKOFF
+// VOIDCREW EDIT: metrics scopes the structured logging backoff define; implementation in voidcrew/modules/metrics/structured_logging_fallback.dm.
