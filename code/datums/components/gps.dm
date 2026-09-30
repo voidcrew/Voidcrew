@@ -162,9 +162,11 @@ GLOBAL_LIST_EMPTY(GPS_list)
 // signals by overmap locality (voidcrew/edits/gps.dm). Default: upstream behavior.
 /// Whether a signal at pos should be listed for a unit located at curr.
 /datum/component/gps/item/proc/is_signal_visible(turf/curr, turf/pos)
+	// VOIDCREW EDIT START: Expose GPS visibility for overmap-local filtering in voidcrew/edits/gps.dm.
 	if(global_mode)
 		return TRUE
 	return pos.z == curr.z
+	// VOIDCREW EDIT END
 
 /datum/component/gps/item/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

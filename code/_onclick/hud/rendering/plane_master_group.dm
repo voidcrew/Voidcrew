@@ -95,6 +95,7 @@
 /// Actually generate our plane masters, in some offset range (where offset is the z layers to render to, because each "layer" in a multiz stack gets its own plane master cube)
 /// Returns the list of plane masters we just built, so callers that run after we already have a hud can show them
 /datum/plane_master_group/proc/build_plane_masters(starting_offset, ending_offset)
+	// VOIDCREW EDIT: Return new plane masters so the HUD can show and offset planes after a live map load.
 	var/list/atom/movable/screen/plane_master/built = list()
 	for(var/atom/movable/screen/plane_master/mytype as anything in get_plane_types())
 		for(var/plane_offset in starting_offset to ending_offset)
@@ -103,8 +104,10 @@
 			var/atom/movable/screen/plane_master/instance = new mytype(null, null, src, plane_offset)
 			plane_masters["[instance.plane]"] = instance
 			prep_plane_instance(instance)
+			// VOIDCREW EDIT START: Return new plane masters so the HUD can show and offset planes after a live map load.
 			built += instance
 	return built
+			// VOIDCREW EDIT END
 
 /// Similarly, exists so subtypes can do unique behavior to planes on creation
 /datum/plane_master_group/proc/prep_plane_instance(atom/movable/screen/plane_master/instance)

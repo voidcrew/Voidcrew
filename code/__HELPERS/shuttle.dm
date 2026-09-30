@@ -346,7 +346,7 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 		var/list/area_turfs = checked_area.get_turfs_by_zlevel(z)
 		if(!checked_area.allow_shuttle_docking)
 			. |= INTERSECTS_NON_WHITELISTED_AREA
-		// VOIDCREW EDIT ADDITION: a virtual domain's reservation floor is plain
+		// VOIDCREW EDIT ADDITION START: a virtual domain's reservation floor is plain
 		// /area/space, which whitelists docking. Without this a bitrunner frames up a
 		// shuttle inside VR and flies it - and everything they looted - back to the ship.
 		else if(SSbitrunning.is_domain_turf(checked_turf))
@@ -502,10 +502,12 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 	shuttle.underlying_areas_by_turf += underlying_areas
 	SEND_SIGNAL(shuttle, COMSIG_SHUTTLE_EXPANDED, turfs)
 	if(bounds_need_recalculation)
+		// VOIDCREW EDIT: Release the transit reservation before recalculating changed hull bounds (voidcrew/modules/shuttle).
 		release_assigned_transit(shuttle) //VOID EDIT - was QDEL_NULL, which leaks the reservation
 		shuttle.calculate_docking_port_information()
 	shuttle.initiate_docking(shuttle.get_docked(), force = TRUE)
 
+	// VOIDCREW EDIT REMOVAL: Keep routine player hull expansions in the shuttle log without per-expansion admin announcements (voidcrew/modules/shuttle).
 	log_shuttle("[key_name(user)] expanded [shuttle] at [get_area(user)].")
 
 /proc/clear_empty_shuttle_turfs(obj/docking_port/mobile/shuttle)
@@ -561,5 +563,6 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 	if(docking_port_needs_relocated)
 		shuttle.forceMove(pick(shuttle.underlying_areas_by_turf))
 	if(bounds_need_recalculation)
+		// VOIDCREW EDIT: Release the transit reservation before recalculating changed hull bounds (voidcrew/modules/shuttle).
 		release_assigned_transit(shuttle) //VOID EDIT - was QDEL_NULL, which leaks the reservation
 		shuttle.calculate_docking_port_information()

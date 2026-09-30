@@ -155,6 +155,7 @@
 		UnregisterSignal(src, COMSIG_QDELETING)
 	current = new_current
 	if(current)
+		// VOIDCREW EDIT: Remember former player bodies so site weather keeps affecting abandoned crew.
 		current.ever_had_mind = TRUE
 		RegisterSignal(src, COMSIG_QDELETING, PROC_REF(clear_current))
 

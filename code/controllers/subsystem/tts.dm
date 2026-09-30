@@ -83,6 +83,7 @@ SUBSYSTEM_DEF(tts)
 	var/datum/http_response/response_pitch = request_pitch.into_response()
 	if(response_pitch.errored || response_pitch.status_code != 200)
 		if(response_pitch.errored)
+			// VOIDCREW EDIT: Report the pitch request failure from its own response, rather than the completed TTS response.
 			stack_trace(response_pitch.error)
 		pitch_enabled = FALSE
 	rustg_file_write(json_encode(available_speakers), "data/cached_tts_voices.json")

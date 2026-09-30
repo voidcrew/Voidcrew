@@ -39,9 +39,11 @@
 		// base_click_alt() is a dead end for ghosts: can_perform_action() is always false for them,
 		// so alt clicking as a ghost did nothing at all.
 		if(LAZYACCESS(modifiers, RIGHT_CLICK))
+			// VOIDCREW EDIT START: Dispatch observer alt clicks to the loot and admin tagging handlers in voidcrew/edits/_onclick.
 			AltClickSecondaryOn(A)
 		else
 			AltClickOn(A)
+			// VOIDCREW EDIT END
 		return
 	if(LAZYACCESS(modifiers, CTRL_CLICK))
 		CtrlClickOn(A)

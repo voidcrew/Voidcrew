@@ -32,11 +32,14 @@
 	if(!SSradiation.can_fire)
 		return
 
+	// VOIDCREW EDIT START: Skip radiation sources that cannot resolve a weak reference during deletion.
 	var/datum/weakref/source_ref = WEAKREF(source)
 	if(isnull(source_ref)) // null or mid-qdel source: WEAKREF() returns null and the pulse could never resolve
 		return
+	// VOIDCREW EDIT END
 
 	var/datum/radiation_pulse_information/pulse_information = new
+	// VOIDCREW EDIT: Skip radiation sources that cannot resolve a weak reference during deletion.
 	pulse_information.source_ref = source_ref
 	pulse_information.max_range = max_range
 	pulse_information.threshold = threshold

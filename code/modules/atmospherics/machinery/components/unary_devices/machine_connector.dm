@@ -97,8 +97,10 @@
 
 	// The internal connector can be deleted first during map cleanup. Its own
 	// destruction disconnects the pipes, and connector_deleted has cleared this reference.
+	// VOIDCREW EDIT START: Tolerate an internal connector already removed during site teardown.
 	if(gas_connector)
 		disconnect_connector()
+	// VOIDCREW EDIT END
 	SSair.stop_processing_machine(connected_machine)
 	unregister_from_machine()
 	qdel(src)

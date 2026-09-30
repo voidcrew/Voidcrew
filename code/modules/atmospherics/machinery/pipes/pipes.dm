@@ -113,6 +113,7 @@
 	// but SSair.networks points at them), so each stale entry was a permanent
 	// GC-blocking ref: round 4 spent ~275 s hard-deleting pipes pinned this way.
 	if(old_pipenet && old_pipenet != new_pipenet)
+		// VOIDCREW EDIT: Remove pipes from their previous network when rebuilding live site pipelines.
 		old_pipenet.members -= src
 
 	parent = new_pipenet

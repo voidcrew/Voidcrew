@@ -34,11 +34,13 @@ SUBSYSTEM_DEF(area_contents)
 		var/area/test = currentrun[length(currentrun)]
 		// A destroyed area has both bookkeeping lists nulled, so there is nothing to mark and
 		// marking it would only pin the corpse until the next drain.
+		// VOIDCREW EDIT START: Discard destroyed areas from deferred turf bookkeeping during site teardown.
 		if(!QDELETED(test))
 			for (var/area_zlevel in 1 to length(test.turfs_to_uncontain_by_zlevel))
 				if(length(test.turfs_to_uncontain_by_zlevel[area_zlevel]) > ALLOWED_LOOSE_TURFS)
 					marked_for_clearing |= test
 					break
+		// VOIDCREW EDIT END
 		currentrun.len--
 		if(MC_TICK_CHECK)
 			return
@@ -49,11 +51,13 @@ SUBSYSTEM_DEF(area_contents)
 		// Marked during the scan, died before the drain reached it. /area/Destroy() nulls
 		// turfs_to_uncontain_by_zlevel, so every length() below would read 0 anyway - drop it
 		// rather than leaving a dead area sitting at the end of the list.
+		// VOIDCREW EDIT START: Discard destroyed areas from deferred turf bookkeeping during site teardown.
 		if(QDELETED(clear) || isnull(clear.turfs_to_uncontain_by_zlevel))
 			marked_for_clearing.len--
 			if(MC_TICK_CHECK)
 				return
 			continue
+		// VOIDCREW EDIT END
 
 		for (var/area_zlevel in 1 to length(clear.turfs_to_uncontain_by_zlevel))
 			if (!length(clear.turfs_to_uncontain_by_zlevel[area_zlevel]))

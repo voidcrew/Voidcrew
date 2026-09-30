@@ -102,23 +102,6 @@
 	closed_turf_types = expand_weights(weighted_closed_turf_types)
 
 
-/**
- * VOIDCREW EDIT: reports how long a generation pass took.
- *
- * Upstream only ever runs these generators at mapload, so shouting the timings at
- * `world` reached nobody but the lobby. Here they also run MID-ROUND (asteroid
- * fields, planet builds, mapgen-bearing encounters), so every player on every ship
- * got a bold "Asteroid Field Generator terrain generation finished in 4.2s!" each
- * time somebody, anybody, docked a rock field. Keep the lobby behaviour as-is;
- * once the round is running it is admin-only. The log line is unconditional.
- */
-/datum/map_generator/cave_generator/proc/announce_generation_time(message)
-	if(SSticker?.HasRoundStarted())
-		to_chat(GLOB.admins, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	else
-		to_chat(world, span_boldannounce("[message]"), MESSAGE_TYPE_DEBUG)
-	log_world(message)
-
 /datum/map_generator/cave_generator/generate_terrain(list/turfs, area/generate_in)
 	. = ..()
 	if(!(generate_in.area_flags & CAVES_ALLOWED))
@@ -153,6 +136,7 @@
 		// thousands of tiles of lit space, so this grows per churn cycle. Same guard
 		// place_cordon_turf() carries (voidcrew/datums/map_zones.dm).
 		if(isspaceturf(gen_turf) && gen_turf.light_on)
+			// VOIDCREW EDIT START: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 			GLOB.starlight -= gen_turf
 		// VOIDCREW EDIT: and its third. ChangeTurf carries the old turf's four
 		// /datum/lighting_corner refs across its qdel()/new() pair; a raw swap gets the
@@ -175,6 +159,7 @@
 		new_turf = new new_turf(gen_turf)
 		if(SSlighting.initialized)
 			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+			// VOIDCREW EDIT END
 
 		if(gen_turf.turf_flags & NO_RUINS)
 			new_turf.turf_flags |= NO_RUINS
@@ -187,6 +172,7 @@
 		// every cycle, forever. Open turfs need this too: requires_activation defaults to
 		// false, so Initialize() does not queue them and their atmos graph stays empty.
 		if(SSair.initialized)
+			// VOIDCREW EDIT START: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
 		// VOIDCREW EDIT: same mid-round reality as above - thousands of turfs with no
@@ -195,6 +181,7 @@
 		SSovermap.worldgen_yield()
 
 	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
+			// VOIDCREW EDIT END
 
 
 /**
@@ -267,6 +254,7 @@
 			// thousands of tiles of lit space, so this grows per churn cycle. Same guard
 			// place_cordon_turf() carries (voidcrew/datums/map_zones.dm).
 			if(isspaceturf(gen_turf) && gen_turf.light_on)
+				// VOIDCREW EDIT START: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 				GLOB.starlight -= gen_turf
 			// VOIDCREW EDIT: same corner carry as generate_terrain() above - see
 			// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
@@ -285,12 +273,14 @@
 			var/turf/new_turf = new new_turf_type(gen_turf)
 			if(SSlighting.initialized)
 				new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+				// VOIDCREW EDIT END
 
 			if(gen_turf.turf_flags & NO_RUINS)
 				new_turf.turf_flags |= NO_RUINS
 
 			// VOIDCREW EDIT: same mid-round adjacency scrub as generate_terrain() above
 			if(SSair.initialized && isclosedturf(new_turf))
+				// VOIDCREW EDIT: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 				CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
 		CHECK_TICK
@@ -302,6 +292,7 @@
 
 		generated_turfs_per_biome[biome] = generated_turfs
 
+	// VOIDCREW EDIT: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 	announce_generation_time("[name] terrain generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
@@ -395,6 +386,7 @@
 		// builds run this under the worldgen queue and must share its budget
 		SSovermap.worldgen_yield()
 
+	// VOIDCREW EDIT: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 
@@ -416,6 +408,7 @@
 
 	// No sense in doing anything here if nothing is allowed anyway.
 	if(!flora_allowed && !features_allowed && !fauna_allowed)
+		// VOIDCREW EDIT: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 		announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 		return
 
@@ -425,6 +418,7 @@
 
 		CHECK_TICK
 
+	// VOIDCREW EDIT: Support safe mid-round terrain swaps and budgeted generation (voidcrew/edits/turf.dm; voidcrew/modules/overmap).
 	announce_generation_time("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 

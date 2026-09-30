@@ -64,11 +64,13 @@
 	using = new /atom/movable/screen/navigate(null, src)
 	using.icon = ui_style
 	using.screen_loc = ui_human_navigate
+	// VOIDCREW EDIT START: Install the skill-report HUD shortcut defined in voidcrew/edits/_onclick/hud/screen_extensions.dm.
 	static_inventory += using
 
 	using = new /atom/movable/screen/skills(null, src)
 	using.icon = ui_style
 	using.screen_loc = ui_human_skills
+	// VOIDCREW EDIT END
 	static_inventory += using
 
 	using = new /atom/movable/screen/area_creator(null, src)
@@ -388,7 +390,6 @@
 			screenmob.client.screen -= H.wear_neck
 		if(H.head)
 			screenmob.client.screen -= H.head
-
 
 
 /datum/hud/human/persistent_inventory_update(mob/viewer)

@@ -17,6 +17,7 @@
 
 /datum/storage/bag_of_holding/proc/recursive_insertion(obj/item/to_insert, mob/living/user)
 	// VOIDCREW: Check the bag's current location, including after the dialog.
+	// VOIDCREW EDIT START: Check the receiving bag location before and after the nesting dialog (voidcrew/modules/trade/bag_rift_protection.dm).
 	if(!can_create_rift(user))
 		return
 	var/safety = tgui_alert(user, "Doing this will have extremely dire consequences for the station and its crew. Be sure you know what you're doing.", "Put in [to_insert.name]?", list("Proceed", "Abort"))
@@ -29,6 +30,7 @@
 		|| !can_insert(to_insert, user) \
 		|| !can_create_rift(user) \
 	)
+	// VOIDCREW EDIT END
 		return
 
 	var/turf/rift_loc = get_turf(parent)
@@ -46,12 +48,3 @@
 	tear.start_disaster()
 	qdel(to_insert)
 	qdel(parent)
-
-/// The receiving bag can be on the other side of an area boundary from its user.
-/datum/storage/bag_of_holding/proc/can_create_rift(mob/user)
-	var/area/bag_area = get_area(parent)
-	if(!bag_area || (bag_area.area_flags & NO_BOH) || is_trader_outpost_protected(parent))
-		if(user)
-			to_chat(user, span_warning("Bluespace interference prevents the bags from nesting here."))
-		return FALSE
-	return TRUE

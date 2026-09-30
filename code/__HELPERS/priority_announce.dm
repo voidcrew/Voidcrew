@@ -63,8 +63,10 @@
 				header += SUBHEADER_ANNOUNCEMENT_TITLE(title)
 		if(ANNOUNCEMENT_TYPE_CAPTAIN)
 			header = MAJOR_ANNOUNCEMENT_TITLE("Captain's Announcement")
+			// VOIDCREW EDIT START: Keep ship security announcements scoped to their recipient crew (voidcrew/modules/comms/communications_console.dm).
 			if(players == GLOB.player_list)
 				GLOB.news_network.submit_article(text, "Captain's Announcement", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
+			// VOIDCREW EDIT END
 		if(ANNOUNCEMENT_TYPE_SYNDICATE)
 			header = MAJOR_ANNOUNCEMENT_TITLE("Syndicate Captain's Announcement")
 		else
@@ -147,6 +149,7 @@
 	dispatch_announcement_to_players(finalized_announcement, players, custom_sound, should_play_sound)
 
 /// Sends an announcement about the level changing to players. Uses the passed in datum and the subsystem's previous security level to generate the message.
+// VOIDCREW EDIT: Keep ship security announcements scoped to their recipient crew (voidcrew/modules/comms/communications_console.dm).
 /proc/level_announce(datum/security_level/selected_level, previous_level_number, list/players = GLOB.player_list)
 	var/current_level_number = selected_level.number_level
 	var/current_level_name = selected_level.name
@@ -169,6 +172,7 @@
 
 	var/finalized_announcement = CHAT_ALERT_COLORED_SPAN(current_level_color, jointext(level_announcement_strings, ""))
 
+	// VOIDCREW EDIT: Keep ship security announcements scoped to their recipient crew (voidcrew/modules/comms/communications_console.dm).
 	dispatch_announcement_to_players(finalized_announcement, players, current_level_sound)
 
 /// Proc that just generates a custom header based on variables fed into `priority_announce()`

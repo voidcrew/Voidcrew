@@ -777,9 +777,11 @@ GLOBAL_LIST_EMPTY(map_model_default)
 			if(!ispath(atom_def, /atom)) // Skip the item if the path does not exist.  Fix your crap, mappers!
 				// Attributes were appended before resolving this path. Remove their slot too,
 				// or every later atom receives the preceding atom's mapped variables.
+				// VOIDCREW EDIT START: Keep map attribute slots aligned and instantiate repeated planetary ruin areas separately (voidcrew/modules/overmap).
 				members_attributes.len--
 				if(bad_paths)
 					LAZYOR(bad_paths[path_to_init], model_key)
+				// VOIDCREW EDIT END
 				continue
 			// Index is already incremented either way, just gotta set the path and all
 			members += atom_def
@@ -933,9 +935,11 @@ GLOBAL_LIST_EMPTY(map_model_default)
 			if(instance_ruin_area)
 				area_instance = new_planet_ruin_area(area_type)
 			// VOIDCREW EDIT ADDITION END
+			// VOIDCREW EDIT START: Keep map attribute slots aligned and instantiate repeated planetary ruin areas separately (voidcrew/modules/overmap).
 			else
 				// If this parsed map doesn't have that area already, we check the global cache
 				area_instance = GLOB.areas_by_type[area_type]
+			// VOIDCREW EDIT END
 			// If the global list DOESN'T have this area it's either not a unique area, or it just hasn't been created yet
 			if (!area_instance)
 				area_instance = new area_type(null)

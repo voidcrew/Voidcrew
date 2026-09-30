@@ -33,9 +33,11 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
  * and both numbers are shown in the viewer.
  */
 /// Full copies retained per error signature (file + line).
+// VOIDCREW EDIT START: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 #define ERROR_CACHE_MAX_PER_SOURCE 50
 /// Ceiling on the flat all-errors list, across every source.
 #define ERROR_CACHE_MAX_ENTRIES 5000
+// VOIDCREW EDIT END
 
 // Common vars and procs are kept at the error_viewer level
 /datum/error_viewer
@@ -121,6 +123,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	if (!error_source)
 		error_source = new(e)
 		error_sources[erroruid] = error_source
+	// VOIDCREW EDIT: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 	error_source.total_errors++
 
 	// VOIDCREW EDIT: retain a bounded number of full copies per signature. Skip-count
@@ -128,6 +131,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	// window, they are what tells you how big a flood actually was, and dropping them
 	// would leave the viewer claiming a source went quiet when it did the opposite.
 	if(length(error_source.errors) >= ERROR_CACHE_MAX_PER_SOURCE && !skip_count)
+		// VOIDCREW EDIT START: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 		error_source.dropped_errors++
 	else
 		var/datum/error_viewer/error_entry/error_entry = new(e, desclines, skip_count)
@@ -135,6 +139,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 		errors += error_entry
 		error_source.errors += error_entry
 		trim_to_cap()
+		// VOIDCREW EDIT END
 
 	if (skip_count)
 		return // Skip notifying admins about skipped errors.
@@ -159,6 +164,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
  * keeps the entry - and the /exception and description text hanging off it - alive, which
  * is the entire thing this is here to stop.
  */
+// VOIDCREW EDIT START: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 /datum/error_viewer/error_cache/proc/trim_to_cap()
 	var/overflow = length(errors) - ERROR_CACHE_MAX_ENTRIES
 	if(overflow <= 0)
@@ -169,14 +175,11 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 		if(source)
 			source.errors -= oldest
 	errors.Cut(1, overflow + 1)
+// VOIDCREW EDIT END
 
 /datum/error_viewer/error_source
 	var/list/errors = list()
 	var/next_message_at = 0
-	/// VOIDCREW ADDITION: every runtime this source has produced, retained or not.
-	var/total_errors = 0
-	/// VOIDCREW ADDITION: how many of those were counted but not kept as a full entry.
-	var/dropped_errors = 0
 
 /datum/error_viewer/error_source/New(exception/e)
 	if (!istype(e))
@@ -191,8 +194,10 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 
 	var/html = build_header(back_to)
 	// VOIDCREW ADDITION: say so when the list below is a sample rather than the whole story.
+	// VOIDCREW EDIT START: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 	if(dropped_errors)
 		html += "<b>[total_errors]</b> runtimes from this source; <b>[dropped_errors]</b> were counted but not retained (cap is [ERROR_CACHE_MAX_PER_SOURCE] per source).<br><br>"
+	// VOIDCREW EDIT END
 	for (var/datum/error_viewer/error_entry/error_entry in errors)
 		html += "[error_entry.make_link(null, src)]<br>"
 
@@ -246,5 +251,7 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 /datum/error_viewer/error_entry/make_link(linktext, datum/error_viewer/back_to, linear)
 	return is_skip_count ? name : ..()
 
+// VOIDCREW EDIT START: Bound retained runtime entries while keeping source totals (voidcrew/edits/error_handler/cache_retention.dm).
 #undef ERROR_CACHE_MAX_PER_SOURCE
 #undef ERROR_CACHE_MAX_ENTRIES
+// VOIDCREW EDIT END

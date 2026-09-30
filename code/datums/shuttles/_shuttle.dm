@@ -82,6 +82,7 @@
 		// its dimensions and shuttle_areas stay empty - linkup() then walks no areas at
 		// all and every machine that binds through connect_to_shuttle() (cryopod spawn
 		// points, airlock ids, cameras) is silently left unbound.
+		// VOIDCREW EDIT START: Initialize mapped hull ports before baseturf filtering so all ship machines can bind.
 		for(var/obj/docking_port/mobile/port in place)
 			port.calculate_docking_port_information(src)
 			// initTemplateBounds explicitly ignores the shuttle's docking port, to ensure that it calculates the bounds of the shuttle correctly
@@ -89,6 +90,7 @@
 			SSatoms.InitializeAtoms(list(port))
 			if(register)
 				port.register()
+		// VOIDCREW EDIT END
 
 		if(isspaceturf(place)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.
 			continue
@@ -98,6 +100,7 @@
 
 		place.insert_baseturf(3, /turf/baseturf_skipover/shuttle)
 
+// VOIDCREW EDIT REMOVAL: Docking-port initialization now runs before the baseturf skip above so shallow hull tiles still bind.
 //Whatever special stuff you want
 /datum/map_template/shuttle/post_load(obj/docking_port/mobile/M)
 	if(movement_force)

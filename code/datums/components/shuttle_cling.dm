@@ -34,31 +34,14 @@
 		return COMPONENT_INCOMPATIBLE
 
 	// A deferred transit callback may arrive after the movable has left hyperspace.
+	// VOIDCREW EDIT START: Ignore delayed shuttle-cling callbacks after transit or component deletion (voidcrew/edits/components/shuttle_cling_lifecycle.dm).
 	if(!is_on_hyperspace(parent))
 		return COMPONENT_REDUNDANT
+	// VOIDCREW EDIT END
 
 	src.direction = direction
 
-/datum/component/shuttle_cling/RegisterWithParent()
-	. = ..()
-	// Drift may immediately move the parent off transit and delete this component.
-	// Start it only after _JoinParent(), so removal can safely unregister us.
-	ADD_TRAIT(parent, TRAIT_HYPERSPACED, REF(src))
-
-	RegisterSignals(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_UNBUCKLE, COMSIG_ATOM_NO_LONGER_PULLED), PROC_REF(update_state))
-	RegisterSignal(parent, SIGNAL_REMOVETRAIT(TRAIT_FREE_HYPERSPACE_MOVEMENT), PROC_REF(initialize_loop))
-	RegisterSignal(parent, SIGNAL_ADDTRAIT(TRAIT_FREE_HYPERSPACE_MOVEMENT), PROC_REF(clear_loop))
-
-	//Items have this cool thing where they're first put on the floor if you grab them from storage, and then into your hand, which isn't caught by movement signals that well
-	if(isitem(parent))
-		RegisterSignal(parent, COMSIG_ITEM_PICKUP, PROC_REF(do_remove))
-
-	if(!HAS_TRAIT(parent, TRAIT_FREE_HYPERSPACE_MOVEMENT))
-		initialize_loop()
-	if(QDELETED(src))
-		return
-
-	update_state(parent) //otherwise we'll get moved 1 tile before we can correct ourselves, which isnt super bad but just looks jank
+// VOIDCREW EDIT REMOVAL: Ignore delayed shuttle-cling callbacks after transit or component deletion (voidcrew/edits/components/shuttle_cling_lifecycle.dm).
 
 /datum/component/shuttle_cling/proc/initialize_loop()
 	hyperloop = GLOB.move_manager.move(moving = parent, direction = direction, delay = not_clinging_move_delay, subsystem = SShyperspace_drift, priority = MOVEMENT_ABOVE_SPACE_PRIORITY, flags = MOVEMENT_LOOP_NO_DIR_UPDATE|MOVEMENT_LOOP_OUTSIDE_CONTROL)

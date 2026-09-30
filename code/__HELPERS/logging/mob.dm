@@ -17,8 +17,10 @@
 		return
 
 	// VOIDCREW: keep the actual ship/zone visible in both individual and disk logs.
+	// VOIDCREW EDIT START: Record the attacker ship and overmap zone in combat logs (voidcrew/modules/admin).
 	if(message_type == LOG_ATTACK || message_type == LOG_VICTIM)
 		message += " \[Location: [overmap_zone_log_context(src)]\]"
+	// VOIDCREW EDIT END
 
 	// Cannot use the list as a map if the key is a number, so we stringify it (thank you BYOND)
 	var/smessage_type = num2text(message_type, MAX_BITFLAG_DIGITS)

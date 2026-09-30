@@ -200,7 +200,7 @@
 	for(var/turf/T as anything in RANGE_TURFS(precision,center))
 		if(T.is_transition_turf())
 			continue // Avoid picking these.
-		// VOIDCREW EDIT ADDITION: never offer the world border as a landing spot. Upstream
+		// VOIDCREW EDIT ADDITION START: never offer the world border as a landing spot. Upstream
 		// only ever reaches cordon through /area/misc/cordon, which the NOTELEPORT test
 		// below catches; packed lattice levels paint their band with a raw turf swap that
 		// leaves the AREA alone (place_cordon_turf() in voidcrew/datums/map_zones.dm), so
@@ -236,7 +236,7 @@
 	if(HAS_TRAIT(teleported_atom, TRAIT_NO_TELEPORT))
 		return FALSE
 
-	// VOIDCREW EDIT ADDITION: never land anybody inside the world border.
+	// VOIDCREW EDIT ADDITION START: never land anybody inside the world border.
 	//
 	// /turf/cordon is dense, opaque, airless and indestructible - ScrapeAway() returns
 	// itself, Melt() no-ops, explosions and acid do nothing - so a mob that arrives inside
@@ -272,7 +272,7 @@
 		&& SSmapping.get_reservation_from_turf(destination_turf) != SSmapping.get_reservation_from_turf(get_turf(original_destination)))
 		return FALSE
 
-	// VOIDCREW EDIT ADDITION: the same containment, on the slot lattice.
+	// VOIDCREW EDIT ADDITION START: the same containment, on the slot lattice.
 	// The reserved-level test above was the ONLY thing keeping an imprecise teleport inside
 	// the site it aimed at, and it only ever worked because ruins and asteroid fields lived
 	// on ZTRAIT_RESERVED levels. Packed sites do not - lattice levels are minted
@@ -303,7 +303,7 @@
 	if(((origin_area.area_flags & LOCAL_TELEPORT) || (destination_area.area_flags & LOCAL_TELEPORT)) && destination_area != origin_area)
 		return FALSE
 
-	// VOIDCREW EDIT ADDITION: bitrunning containment. The LOCAL_TELEPORT check above
+	// VOIDCREW EDIT ADDITION START: bitrunning containment. The LOCAL_TELEPORT check above
 	// only covers tiles a domain template painted an area onto - the untouched floor of
 	// the reservation is plain /area/space, which has no such flag. A quantum pad built
 	// on one of those tiles teleports real loot out of VR and past the byteforge, which

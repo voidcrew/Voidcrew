@@ -224,9 +224,11 @@
 	// transfer ran straight into "Cannot read null.prefs" here. The prefs datum is also
 	// per-client, and /datum/preferences/ui_status() closes the menu unless
 	// user.client == parent, so reading it off any other client's mob is wrong anyway.
+	// VOIDCREW EDIT START: Resolve preferences from the clicking client safely across logout and mob transfer.
 	var/datum/preferences/preferences = usr.client?.prefs
 	if(!preferences)
 		return
+	// VOIDCREW EDIT END
 	preferences.current_window = PREFERENCE_TAB_CHARACTER_PREFERENCES
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)
@@ -419,9 +421,11 @@
 		return
 
 	// Same as the Character Setup button above: the clicking client's own prefs.
+	// VOIDCREW EDIT START: Resolve preferences from the clicking client safely across logout and mob transfer.
 	var/datum/preferences/preferences = usr.client?.prefs
 	if(!preferences)
 		return
+	// VOIDCREW EDIT END
 	preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)
@@ -759,8 +763,10 @@
 	var/new_maptext
 	var/round_started = SSticker.HasRoundStarted()
 	if(round_started)
+		// VOIDCREW EDIT START: Show fleet player count without a station map name in the lobby HUD.
 		new_maptext = "<span style='text-align: center; vertical-align: middle'>[LAZYLEN(GLOB.clients)] player\s online<br /> \
 			[ROUND_TIME()] in<br />"
+		// VOIDCREW EDIT END
 		var/datum/station_trait/overflow_job_bureaucracy/overflow = locate() in SSstation.station_traits
 		if(overflow)
 			new_maptext += "[overflow.chosen_job_name] overflow"
