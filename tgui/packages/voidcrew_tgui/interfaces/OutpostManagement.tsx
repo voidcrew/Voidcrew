@@ -1,9 +1,9 @@
 import { type ReactNode, useState } from 'react';
 import { Button, Dropdown, Icon, Input, TextArea } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
-import { resolveAsset } from '../assets';
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { resolveAsset } from '../../tgui/assets';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 
 // Matches the existing 1200 x 760 console plate, including its inset borders.
 const FRAME = { width: 1200, height: 760 };

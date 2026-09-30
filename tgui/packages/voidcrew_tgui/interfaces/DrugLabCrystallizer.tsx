@@ -23,8 +23,8 @@ import {
 import type { KeyEvent } from 'tgui-core/events';
 import { KEY_A, KEY_D, KEY_LEFT, KEY_RIGHT } from 'tgui-core/keycodes';
 
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 import {
   type DrugLabCrystallizerData,
   DrugLabStage,

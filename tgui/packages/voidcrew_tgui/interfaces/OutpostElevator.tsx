@@ -8,8 +8,8 @@ import {
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 
 type Floor = {
   id: number;

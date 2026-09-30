@@ -8,7 +8,7 @@ import type { PreferencesMenuData } from '../types';
 import { LoadoutPage } from './loadout';
 import { MainPage } from './MainPage';
 import { QuirksPage } from './QuirksPage';
-import { ShipCategoriesPage } from './ShipCategoriesPage';
+import { ShipCategoriesPage } from '../../../../voidcrew_tgui/interfaces/PreferencesMenu/CharacterPreferences/ShipCategoriesPage';
 import { SpeciesPage } from './SpeciesPage';
 
 enum Page {

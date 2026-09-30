@@ -17,9 +17,9 @@ import {
   Tooltip,
 } from 'tgui-core/components';
 
-import { resolveAsset } from '../assets';
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { resolveAsset } from '../../tgui/assets';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 
 type PartsInventory = {
   combat: number;

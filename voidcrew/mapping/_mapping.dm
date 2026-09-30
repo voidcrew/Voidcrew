@@ -331,7 +331,7 @@
 			if(registration.ruin_type)
 				lower_traits[registration.ruin_type] = TRUE
 				upper_traits[registration.ruin_type] = TRUE
-			LoadGroup(FailedZs, "Planet [planet_name] [i]", "map_files/voidcrew", "[planet_name].dmm", list(lower_traits, upper_traits))
+			LoadGroup(FailedZs, "Planet [planet_name] [i]", "voidcrew/planets", "[planet_name].dmm", list(lower_traits, upper_traits))
 			z_count += 2
 			planets["[planet_name] [i]"] = list("type" = overmap_type, "z" = z_count, "zone_band" = next_planet_zone_band())
 		qdel(environment)

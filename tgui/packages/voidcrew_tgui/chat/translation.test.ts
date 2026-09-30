@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
 
-mock.module('./renderer', () => ({
+mock.module('../../tgui-panel/chat/renderer', () => ({
   chatRenderer: {
     events: { on: () => {} },
     messages: [],

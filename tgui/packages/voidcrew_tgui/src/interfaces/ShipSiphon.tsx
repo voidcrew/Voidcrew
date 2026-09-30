@@ -1,6 +1,6 @@
-import { useBackend } from '../backend';
-import { Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { Button, LabeledList, NoticeBox, ProgressBar, Section } from 'tgui-core/components';
+import { Window } from 'tgui/layouts';
 
 type SiphonData = {
   active: boolean;

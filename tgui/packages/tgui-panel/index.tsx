@@ -24,7 +24,7 @@ import { chatMiddleware, chatReducer } from './chat';
 // and its watchdog at module scope, and nothing else imports it - without
 // this line the bundler tree-shakes the whole feature out and translations
 // silently never apply.
-import './chat/translation';
+import '../voidcrew_tgui/chat/translation';
 // VOIDCREW EDIT ADDITION END
 import { gameMiddleware, gameReducer } from './game';
 import { Panel } from './Panel';

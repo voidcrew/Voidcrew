@@ -10,8 +10,8 @@ import {
 } from 'tgui-core/components';
 import { toFixed } from 'tgui-core/math';
 
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 
 const TIERS = {
   1: { name: 'Green', color: 'good' },

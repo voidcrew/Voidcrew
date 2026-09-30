@@ -14,25 +14,25 @@ Object.assign(globalThis, {
   IS_REACT_ACT_ENVIRONMENT: true,
   Byond: { windowId: 'tgui-window-2', winset },
 });
-mock.module('../backend', () => ({
+mock.module('../../tgui/backend', () => ({
   useBackend: () => backend,
   globalStore: { dispatch: () => {} },
   backendSuspendStart: () => ({}),
 }));
-mock.module('../debug', () => ({ useDebug: () => ({}) }));
-mock.module('../logging', () => ({ createLogger: () => ({ log: () => {} }) }));
-mock.module('../drag', () => ({
+mock.module('../../tgui/debug', () => ({ useDebug: () => ({}) }));
+mock.module('../../tgui/logging', () => ({ createLogger: () => ({ log: () => {} }) }));
+mock.module('../../tgui/drag', () => ({
   dragStartHandler: () => {},
   resizeStartHandler: () => {},
   recallWindowGeometry: recallGeometry,
   setWindowKey,
 }));
-mock.module('./Layout', () => ({
+mock.module('../../tgui/layouts/Layout', () => ({
   Layout: ({ children }: PropsWithChildren) => <div>{children}</div>,
 }));
-mock.module('./TitleBar', () => ({ TitleBar: () => null }));
+mock.module('../../tgui/layouts/TitleBar', () => ({ TitleBar: () => null }));
 
-const { Window } = await import('./Window');
+const { Window } = await import('../../tgui/layouts/Window');
 let root: Root;
 let container: HTMLDivElement;
 

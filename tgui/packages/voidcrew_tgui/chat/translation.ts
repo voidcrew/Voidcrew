@@ -16,8 +16,8 @@
  */
 
 import { createLogger } from 'tgui/logging';
-import { chatRenderer } from './renderer';
-import { highlightNode, linkifyNode } from './replaceInTextNode';
+import { chatRenderer } from '../../tgui-panel/chat/renderer';
+import { highlightNode, linkifyNode } from '../../tgui-panel/chat/replaceInTextNode';
 
 const logger = createLogger('translation');
 

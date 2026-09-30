@@ -12,9 +12,9 @@ import {
 import type { BooleanLike } from 'tgui-core/react';
 import { createSearch } from 'tgui-core/string';
 
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
-import { getLayoutState, LAYOUT, LayoutToggle } from './common/LayoutToggle';
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
+import { getLayoutState, LAYOUT, LayoutToggle } from '../../tgui/interfaces/common/LayoutToggle';
 
 type VaultItem = {
   name: string;
