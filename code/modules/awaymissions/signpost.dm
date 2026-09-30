@@ -18,6 +18,12 @@
 	if(tgui_alert(usr,question,name,list("Yes","No")) == "Yes" && Adjacent(user))
 		var/turf/T = get_destination_turf(user)
 
+		// VOIDCREW EDIT ADDITION START: no way home across an overmap zone boundary (voidcrew/modules/overmap, zone_teleport.dm)
+		if(T && teleport_crosses_zone(user, T))
+			to_chat(user, span_warning("Nothing happens. The way home is past the zone boundary."))
+			return
+		// VOIDCREW EDIT ADDITION END
+
 		if(T)
 			var/atom/movable/AM = user.pulling
 			if(AM)

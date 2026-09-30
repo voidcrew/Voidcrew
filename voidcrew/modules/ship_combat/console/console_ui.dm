@@ -177,47 +177,10 @@
 					"distance" = distance,
 					"dx" = rel_x,
 					"dy" = rel_y,
-					"is_outpost" = FALSE,
 					"speed" = known ? round(S.get_speed(), 0.1) : 0,  // Speed in spM (spaces per minute) - same as helm
 					"zone_type" = target_zone_type,
 					"zone_name" = target_zone_name,
 					"same_zone" = can_target,
-				))
-			// Raidable player outposts in range are valid siege targets
-			for(var/obj/structure/overmap/dynamic/player_outpost/outpost as anything in GLOB.player_outposts)
-				if(!outpost.raidable)
-					continue
-				var/turf/outpost_turf = get_turf(outpost)
-				if(!outpost_turf || outpost_turf.z != our_turf.z)
-					continue
-				var/distance = get_dist(our_turf, outpost_turf)
-				if(distance > COMBAT_TARGETING_RANGE)
-					continue
-				var/target_zone_type = null
-				var/target_zone_name = "Unknown"
-				if(SSovermap_zones?.initialized)
-					var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(outpost_turf)
-					if(target_zone)
-						target_zone_type = target_zone.zone_type
-						target_zone_name = target_zone.name
-				nearby_ships += list(list(
-					"name" = outpost.name,
-					// An outpost is a fixture, not a vessel. It doesn't move, it can't
-					// be mistaken for anything else, and the helm never anonymised one.
-					"identified" = TRUE,
-					"ref" = REF(outpost),
-					"shields" = 0,
-					"shields_max" = 0,
-					"integrity" = 100,
-					"integrity_max" = 100,
-					"distance" = distance,
-					"dx" = outpost_turf.x - our_turf.x,
-					"dy" = outpost_turf.y - our_turf.y,
-					"is_outpost" = TRUE,
-					"speed" = 0,
-					"zone_type" = target_zone_type,
-					"zone_name" = target_zone_name,
-					"same_zone" = (our_zone_type != ZONE_GREEN),
 				))
 	data["nearby_ships"] = nearby_ships
 
@@ -231,10 +194,10 @@
 			linked_launchers -= ref
 			continue
 		total_count++
-		var/is_ready = launcher.can_fire(target_ship)
+		var/is_ready = launcher.can_fire()
 		if(is_ready)
 			ready_count++
-		launchers += list(launcher.get_status(target_ship))
+		launchers += list(launcher.get_status())
 	data["launchers"] = launchers
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
@@ -249,9 +212,9 @@
 			linked_pod_tubes -= ref
 			continue
 		pods_total_count++
-		if(tube.can_fire(target_ship))
+		if(tube.can_fire())
 			pods_ready_count++
-		pod_tubes += list(tube.get_status(target_ship))
+		pod_tubes += list(tube.get_status())
 	data["pod_tubes"] = pod_tubes
 	data["pod_tubes_ready"] = pods_ready_count
 	data["pod_tubes_total"] = pods_total_count
@@ -430,7 +393,7 @@
 		data["siphon_target_name"] = siphon_status["target_name"]
 		// What the locked target is actually carrying - the panel greys the button
 		// out on an empty hull instead of letting the siphon spin up and bounce.
-		// Outposts and other non-ship targets hold no account, so they read zero.
+		// Only ships hold an account; anything else reads zero.
 		var/obj/structure/overmap/ship/siphon_target = target_ship
 		data["siphon_target_credits"] = istype(siphon_target) ? (siphon_target.ship_account?.account_balance || 0) : 0
 	else
@@ -461,8 +424,6 @@
 			if(!target_ref)
 				return FALSE
 			var/obj/structure/overmap/new_target = locate(target_ref) in SSovermap.simulated_ships
-			if(!new_target)
-				new_target = locate(target_ref) in GLOB.player_outposts
 			if(!new_target || new_target == current_ship)
 				return FALSE
 			set_target_ship(new_target, ui.user)

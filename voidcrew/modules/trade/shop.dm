@@ -626,6 +626,7 @@
 	else
 		stock--
 	dispense(user, vendor)
+	metric_shop_purchase(src, user, credit_price, price_vouchers)
 	return TRUE
 
 /**
@@ -725,6 +726,7 @@
 	else
 		stock--
 	dispense(user, vendor)
+	metric_shop_purchase(src, user)
 	return TRUE
 
 /**

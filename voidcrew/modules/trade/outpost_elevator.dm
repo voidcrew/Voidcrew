@@ -13,6 +13,10 @@
  * The floor list marks which floor the viewer's own ship is on, computed live
  * from user.mind.ship_teams, so crew swaps update it with no extra plumbing,
  * and a mind on several crews gets several starred floors.
+ *
+ * Standard berths are crew-only (/datum/outpost_berth/proc/allows_entry): only
+ * the berthed ship's crew can send the car there, and they must still be in it
+ * when it leaves. Anyone riding with them comes along as a guest.
  */
 /obj/machinery/outpost_elevator
 	name = "hangar elevator panel"
@@ -81,7 +85,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 /obj/machinery/outpost_elevator/examine(mob/user)
 	. = ..()
 	var/floor_id = get_current_floor()
-	if(floor_id > 0)
+	if(istype(berth, /datum/outpost_berth/ship_bay))
+		var/datum/outpost_berth/ship_bay/bay = berth
+		. += span_notice("The floor indicator reads: SHIP BAY [bay.bay_number].")
+	else if(floor_id > 0)
 		. += span_notice("The floor indicator reads: BERTH [floor_id].")
 	else if(floor_id == 0)
 		. += span_notice("The floor indicator reads: CONCOURSE.")
@@ -106,7 +113,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 			"occupied" = length(outpost.lobby_alcove_turfs) > 0,
 			"your_ship" = FALSE,
 		))
-		for(var/i in 1 to OUTPOST_MAX_BERTHS)
+		for(var/i in 1 to outpost.berth_capacity())
 			// berths stays null on hosts that haven't berthed a ship yet
 			var/datum/outpost_berth/slot = LAZYACCESS(outpost.berths, i)
 			var/is_yours = FALSE
@@ -117,10 +124,19 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 				"name" = slot ? "Berth [i]: [slot.ship ? slot.ship.name : "reserved"]" : "Berth [i]: vacant",
 				"occupied" = !!slot,
 				"your_ship" = is_yours,
+				"locked" = !!(slot && !slot.allows_entry(user)),
 			))
 		var/obj/structure/overmap/dynamic/player_outpost/home = astype(outpost)
-		if(home?.freight_berth)
-			floors += list(list("id" = OUTPOST_MAX_BERTHS + 1, "name" = "Freight Receiving", "occupied" = TRUE, "your_ship" = FALSE))
+		if(home?.ship_bay_installed)
+			for(var/i in 1 to length(home.bay_berths))
+				var/datum/outpost_berth/ship_bay/bay = home.bay_berths[i]
+				floors += list(list(
+					// Negative IDs are display-only vacancies, never visit destinations.
+					"id" = bay ? bay.berth_number : -i - 1,
+					"name" = "Ship Bay [i]: [bay ? (bay.ship?.name || bay.status_text()) : "preparing"]",
+					"occupied" = bay && length(bay.alcove_turfs) > 0,
+					"your_ship" = !!(bay?.ship?.ship_team in user?.mind?.ship_teams),
+				))
 	data["floors"] = floors
 	return data
 
@@ -144,17 +160,28 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(!(get_turf(ui.user) in own_alcove))
 		balloon_alert(ui.user, "step into the elevator first!")
 		return TRUE
+	if(!may_ride_to(floor_id, ui.user))
+		balloon_alert(ui.user, "crew only!")
+		return TRUE
 	moving = TRUE
 	playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
-	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
+	move_timer = addtimer(CALLBACK(src, PROC_REF(complete_ride), floor_id, WEAKREF(ui.user)), OUTPOST_ELEVATOR_TRAVEL_TIME, TIMER_STOPPABLE)
 	SStgui.update_uis(src)
 	return TRUE
+
+/// Whether this rider may send the car to the floor. Only a standard berth's own crew may go down to it.
+/obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
+	return !destination_berth || destination_berth.allows_entry(rider)
 
 /**
  * The actual "ride": re-validates the destination (a berth can be torn down
  * during the travel delay), then moves the alcove's contents tile-for-tile.
+ *
+ * The rider who sent the car must still be in it and awake. Otherwise a stranger
+ * could step in after a crew member pressed the button and ride down alone.
  */
-/obj/machinery/outpost_elevator/proc/complete_ride(floor_id)
+/obj/machinery/outpost_elevator/proc/complete_ride(floor_id, datum/weakref/rider_ref)
 	move_timer = null
 	moving = FALSE
 	if(QDELETED(src) || !outpost)
@@ -166,6 +193,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 	if(!destination)
 		playsound(src, 'sound/machines/buzz/buzz-two.ogg', 50, TRUE)
 		say("Destination no longer available.")
+		SStgui.update_uis(src)
+		return
+	var/mob/living/rider = rider_ref?.resolve()
+	if(!istype(rider) || rider.stat != CONSCIOUS || !(get_turf(rider) in own_alcove))
+		rider = null
+	if(!may_ride_to(floor_id, rider))
+		playsound(src, 'sound/machines/buzz/buzz-two.ogg', 50, TRUE)
+		say("Berth [floor_id] is crew only.")
 		SStgui.update_uis(src)
 		return
 	for(var/i in 1 to length(own_alcove))

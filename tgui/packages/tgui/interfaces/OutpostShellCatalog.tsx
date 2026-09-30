@@ -10,6 +10,7 @@ import {
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
+import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
@@ -17,6 +18,7 @@ type Shell = {
   id: string;
   name: string;
   description: string;
+  preview: string | null;
 };
 
 type Data = {
@@ -43,13 +45,13 @@ export const OutpostShellCatalog = (props) => {
   const canFound = !denial && outpostName.trim().length > 0 && !!selectedShell;
 
   return (
-    <Window title="Colonial Registry: Land Claim" width={460} height={520}>
+    <Window title="Colonial Registry: Land Claim" width={560} height={560}>
       <Window.Content scrollable>
         {denial ? (
           <NoticeBox danger>{denial}</NoticeBox>
         ) : (
           <NoticeBox success={!!isProtected}>
-            {zone_name} ? {isProtected ? 'Patrolled' : 'Unpatrolled'}
+            {zone_name} · {isProtected ? 'Patrolled' : 'Unpatrolled'}
           </NoticeBox>
         )}
         <Section title="Outpost Name">
@@ -61,27 +63,33 @@ export const OutpostShellCatalog = (props) => {
             onChange={setOutpostName}
           />
         </Section>
-        <Section title="Starting Shell">
-          {shells.map((shell) => (
-            <Section key={shell.id}>
-              <Stack align="center">
-                <Stack.Item grow>
-                  <Box bold>{shell.name}</Box>
-                  <Box color="label" fontSize="0.9em">
+        <Section title="Habitat">
+          <Stack>
+            {shells.map((shell) => (
+              <Stack.Item key={shell.id} grow basis={0}>
+                <Button
+                  fluid
+                  selected={selectedShell === shell.id}
+                  onClick={() => setSelectedShell(shell.id)}
+                  style={{ whiteSpace: 'normal', padding: '6px' }}
+                >
+                  {!!shell.preview && (
+                    <img
+                      src={resolveAsset(shell.preview)}
+                      alt={shell.name}
+                      style={{ width: '100%' }}
+                    />
+                  )}
+                  <Box bold mt={0.5}>
+                    {shell.name}
+                  </Box>
+                  <Box fontSize="0.9em" opacity={0.8}>
                     {shell.description}
                   </Box>
-                </Stack.Item>
-                <Stack.Item>
-                  <Button.Checkbox
-                    checked={selectedShell === shell.id}
-                    onClick={() => setSelectedShell(shell.id)}
-                  >
-                    Select
-                  </Button.Checkbox>
-                </Stack.Item>
-              </Stack>
-            </Section>
-          ))}
+                </Button>
+              </Stack.Item>
+            ))}
+          </Stack>
         </Section>
         <Section>
           <Button

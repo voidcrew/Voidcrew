@@ -22,6 +22,10 @@
 
 /// RCD links work across ship boundaries and z levels; machines stay on their own service site.
 /datum/component/remote_materials/check_z_level(obj/silo_to_check = silo)
+	var/atom/device = parent
+	if(istype(device) && istype(device.loc, /obj/machinery/computer/camera_advanced/base_construction/ship/bay))
+		var/obj/machinery/computer/camera_advanced/base_construction/ship/bay/console = device.loc
+		return console.can_link_silo(silo_to_check)
 	if(istype(parent, /obj/item/construction/rcd))
 		var/turf/device_turf = get_turf(parent)
 		var/turf/silo_turf = get_turf(silo_to_check)

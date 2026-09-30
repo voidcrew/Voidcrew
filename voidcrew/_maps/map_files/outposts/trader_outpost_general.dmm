@@ -1,4 +1,14 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "ab" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
@@ -52,6 +62,13 @@
 /obj/item/radio/intercom/directional/south,
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
+"ah" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "ai" = (
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
@@ -61,6 +78,16 @@
 /area/voidcrew/trader_outpost)
 "ak" = (
 /turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/trader_outpost)
+"al" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "am" = (
 /obj/structure/chair/sofa/corp/left,
@@ -74,6 +101,17 @@
 	dir = 4
 	},
 /obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"an" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/south{
+	pixel_w = 0;
+	pixel_z = 3
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "ao" = (
@@ -96,6 +134,10 @@
 /obj/item/kirbyplants/organic/plant22,
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"aq" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "ar" = (
 /obj/effect/turf_decal/siding/wideplating_new/light{
 	color = "#5d341f";
@@ -106,6 +148,13 @@
 "as" = (
 /turf/template_noop,
 /area/template_noop)
+"at" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "au" = (
 /obj/structure/chair/stool/directional/north,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
@@ -118,7 +167,16 @@
 /obj/effect/turf_decal/trimline/neutral/filled/mid_joiner{
 	dir = 8
 	},
-/mob/living/basic/outpost_loiterer/mechanic,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"av" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "aw" = (
@@ -133,6 +191,13 @@
 	dir = 1
 	},
 /turf/open/indestructible,
+/area/voidcrew/trader_outpost)
+"ax" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "ay" = (
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -156,6 +221,16 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"aA" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "aB" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -164,6 +239,15 @@
 	dir = 1
 	},
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aC" = (
+/obj/effect/turf_decal/siding/wideplating_new/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating_new/corner,
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/light/floor,
+/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "aD" = (
 /obj/structure/table/reinforced,
@@ -205,6 +289,28 @@
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"aI" = (
+/obj/effect/turf_decal/siding/wideplating_new/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/light/floor,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
+"aJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/light/floor,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
 "aK" = (
 /obj/effect/turf_decal/siding/wideplating_new/corner{
 	dir = 1
@@ -213,6 +319,15 @@
 	dir = 1
 	},
 /turf/open/indestructible,
+/area/voidcrew/trader_outpost)
+"aL" = (
+/obj/effect/turf_decal/siding/wideplating_new/corner,
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/light/floor,
+/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "aN" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -489,7 +604,6 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
 	},
-/mob/living/basic/outpost_loiterer/mechanic,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "cs" = (
@@ -1543,7 +1657,6 @@
 /obj/effect/turf_decal/trimline/neutral/filled/mid_joiner{
 	dir = 1
 	},
-/mob/living/basic/outpost_loiterer/mechanic,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "nx" = (
@@ -1724,7 +1837,6 @@
 /area/voidcrew/trader_outpost)
 "qw" = (
 /obj/structure/flora/bush/ferny/style_random,
-/mob/living/basic/outpost_loiterer/mechanic,
 /turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
 "qy" = (
@@ -1773,10 +1885,6 @@
 /obj/structure/flora/bush/sparsegrass/style_random,
 /obj/machinery/light/floor,
 /turf/open/floor/grass,
-/area/voidcrew/trader_outpost)
-"rb" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/turf/open/indestructible/light,
 /area/voidcrew/trader_outpost)
 "re" = (
 /obj/structure/railing/unbreakable{
@@ -2371,14 +2479,6 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"wQ" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/machinery/outpost_elevator/directional/south{
-	pixel_w = 0;
-	pixel_z = 3
-	},
-/turf/open/indestructible/light,
-/area/voidcrew/trader_outpost)
 "wU" = (
 /obj/structure/beebox/premade,
 /turf/open/misc/dirt/station,
@@ -2390,7 +2490,7 @@
 /turf/open/indestructible/grass,
 /area/voidcrew/trader_outpost)
 "xf" = (
-/obj/structure/beebox,
+/obj/structure/beebox/premade,
 /turf/open/misc/dirt/station,
 /area/voidcrew/trader_outpost)
 "xh" = (
@@ -2568,16 +2668,6 @@
 	},
 /obj/machinery/light/directional/east,
 /turf/open/indestructible/white/smooth_large,
-/area/voidcrew/trader_outpost)
-"yP" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/thinplating_new/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
 "yU" = (
 /obj/structure/flora/bush/large/style_random,
@@ -2886,14 +2976,6 @@
 /obj/structure/table,
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
-"Bz" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/thinplating_new/corner,
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost)
 "BA" = (
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 1
@@ -2930,6 +3012,22 @@
 	},
 /obj/effect/turf_decal/tile/neutral/anticorner/contrasted,
 /obj/structure/table,
+/turf/open/indestructible,
+/area/voidcrew/trader_outpost)
+"BW" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 8
+	},
+/obj/structure/bounty_wanted_board/directional/north,
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "BX" = (
@@ -3921,16 +4019,6 @@
 /obj/effect/turf_decal/tile/neutral/full,
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
-"Me" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating_new/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost)
 "Mm" = (
 /obj/structure/chair{
 	dir = 4
@@ -4147,11 +4235,6 @@
 	dir = 4
 	},
 /turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
-"Ol" = (
-/obj/structure/flora/bush/sparsegrass/style_random,
-/obj/effect/zone_mobs/bug,
-/turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
 "Oq" = (
 /obj/structure/flora/rock/pile/style_3,
@@ -4445,10 +4528,6 @@
 	},
 /obj/structure/flora/bush/flowers_yw/style_random,
 /turf/open/indestructible/grass,
-/area/voidcrew/trader_outpost)
-"Rh" = (
-/obj/effect/zone_mobs/bug,
-/turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
 "Ri" = (
 /turf/open/misc/dirt/station,
@@ -5070,14 +5149,6 @@
 /obj/structure/curtain/bounty,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
-"WU" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner,
-/obj/effect/turf_decal/siding/thinplating_new/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral/full,
-/turf/open/indestructible/large,
-/area/voidcrew/trader_outpost)
 "WW" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 8
@@ -5139,7 +5210,6 @@
 	pixel_z = 8
 	},
 /obj/machinery/light/floor,
-/mob/living/basic/outpost_loiterer/mechanic,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "XM" = (
@@ -5246,11 +5316,6 @@
 	},
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner,
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"YM" = (
-/obj/structure/flora/bush/fullgrass/style_random,
-/obj/effect/zone_mobs/bug,
-/turf/open/floor/grass,
 /area/voidcrew/trader_outpost)
 "YP" = (
 /obj/structure/flora/rock/pile/style_3,
@@ -5677,7 +5742,7 @@ TD
 Ya
 TD
 nT
-YM
+fF
 TD
 Ri
 Uv
@@ -6001,7 +6066,7 @@ ul
 nU
 Ya
 Uv
-Ol
+Ya
 Br
 nT
 NF
@@ -6013,7 +6078,7 @@ Ya
 dc
 Uv
 Ya
-Rh
+Uv
 kA
 Uv
 nU
@@ -7721,11 +7786,11 @@ aZ
 aY
 aY
 lf
-Bz
+aC
 ad
 ad
 ad
-Me
+aJ
 dp
 WP
 aY
@@ -7788,9 +7853,9 @@ aY
 aY
 GQ
 Vv
-rb
-rb
-rb
+al
+ah
+aa
 zB
 eK
 ac
@@ -7854,9 +7919,9 @@ Or
 kE
 Aa
 Vv
-rb
-rb
-wQ
+at
+aq
+an
 Uo
 dk
 kE
@@ -7920,9 +7985,9 @@ aY
 aY
 GQ
 Vv
-rb
-rb
-rb
+aA
+ax
+av
 zB
 eK
 WP
@@ -7985,11 +8050,11 @@ aZ
 aY
 aY
 aQ
-yP
+aI
 ib
 ib
 ib
-WU
+aL
 Md
 ac
 aY
@@ -8514,7 +8579,7 @@ ul
 ak
 ak
 ak
-wf
+BW
 Wo
 ab
 ak

@@ -27,7 +27,8 @@
 
 	. = ..()
 
-	if (prob(1))
+	// VOIDCREW EDIT CHANGE - a ship bought at an outpost shipyard arrives with every closet its map places
+	if (prob(1) && !SSshuttle.loading_order)
 		return INITIALIZE_HINT_QDEL
 
 /obj/structure/closet/emcloset/PopulateContents()

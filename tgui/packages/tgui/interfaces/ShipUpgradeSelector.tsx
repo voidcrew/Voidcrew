@@ -64,7 +64,7 @@ type PurchaseTarget = {
   part_cost?: Partial<PartsInventory>;
 };
 
-type UpgradeModule = {
+export type UpgradeModule = {
   id: string;
   name: string;
   desc: string;
@@ -72,7 +72,7 @@ type UpgradeModule = {
   is_default: boolean;
 };
 
-type UpgradeSlot = {
+export type UpgradeSlot = {
   key: string;
   display_name: string;
   modules: UpgradeModule[];
@@ -96,13 +96,13 @@ type HullPreview = {
   slots: Record<string, [number, number]>;
 };
 
-type PreviewData = {
+export type PreviewData = {
   tile_px: number;
   hulls: Record<string, HullPreview>;
   modules: Record<string, ModulePreview>;
 };
 
-type HoverModule = {
+export type HoverModule = {
   slot: string;
   moduleId: string;
 };
@@ -1102,12 +1102,15 @@ const PartsStrip = (props: { parts: PartsInventory }) => (
   </Stack>
 );
 
+/** How far the ship preview zooms in, relative to fitting the window. */
+const PREVIEW_MAX_ZOOM = 8;
+
 /**
  * Composited top-down map preview: hull image with the effective module for
  * each upgrade slot overlaid at its slot marker position, exactly as the
  * modular map loader will place it in-game.
  */
-const ShipPreview = (props: {
+export const ShipPreview = (props: {
   preview: PreviewData;
   themeKey: string;
   slots: UpgradeSlot[];
@@ -1133,6 +1136,67 @@ const ShipPreview = (props: {
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
+  }, []);
+
+  // Wheel zooms around the cursor, dragging pans, double-click resets.
+  const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const dragRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    setView({ zoom: 1, x: 0, y: 0 });
+  }, [hull?.width, hull?.height]);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) {
+      return;
+    }
+    // React's wheel listener is passive, so the page would scroll too.
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const bounds = element.getBoundingClientRect();
+      const px = event.clientX - bounds.left;
+      const py = event.clientY - bounds.top;
+      const current = viewRef.current;
+      const zoom = Math.min(
+        PREVIEW_MAX_ZOOM,
+        Math.max(1, current.zoom * (event.deltaY < 0 ? 1.2 : 1 / 1.2)),
+      );
+      if (zoom === 1) {
+        setView({ zoom: 1, x: 0, y: 0 });
+        return;
+      }
+      // Keep the point under the cursor where it is.
+      const cx = (px - current.x) / current.zoom;
+      const cy = (py - current.y) / current.zoom;
+      setView({ zoom, x: px - cx * zoom, y: py - cy * zoom });
+    };
+    element.addEventListener('wheel', onWheel, { passive: false });
+    return () => element.removeEventListener('wheel', onWheel);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (event: MouseEvent) => {
+      const drag = dragRef.current;
+      if (!drag) {
+        return;
+      }
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      dragRef.current = { x: event.clientX, y: event.clientY };
+      setView((current) => ({ ...current, x: current.x + dx, y: current.y + dy }));
+    };
+    const onUp = () => {
+      dragRef.current = null;
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
   }, []);
 
   const scale = hull
@@ -1213,11 +1277,19 @@ const ShipPreview = (props: {
   return (
     <div
       ref={containerRef}
+      onMouseDown={(event) => {
+        if (event.button === 0 && view.zoom > 1) {
+          event.preventDefault();
+          dragRef.current = { x: event.clientX, y: event.clientY };
+        }
+      }}
+      onDoubleClick={() => setView({ zoom: 1, x: 0, y: 0 })}
       style={{
         position: 'relative',
         width: '100%',
         height: '100%',
         overflow: 'hidden',
+        cursor: view.zoom > 1 ? 'grab' : 'zoom-in',
       }}
     >
       {/*
@@ -1234,6 +1306,8 @@ const ShipPreview = (props: {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`,
+          transformOrigin: '0 0',
         }}
       >
         {!hull && (
@@ -1269,6 +1343,22 @@ const ShipPreview = (props: {
           </div>
         )}
       </div>
+      {view.zoom > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            right: '6px',
+            bottom: '6px',
+            padding: '0 6px',
+            fontSize: '11px',
+            color: 'rgba(255, 255, 255, 0.75)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            pointerEvents: 'none',
+          }}
+        >
+          {Math.round(view.zoom * 100)}% - double-click to reset
+        </div>
+      )}
     </div>
   );
 };

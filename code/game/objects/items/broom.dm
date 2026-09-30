@@ -87,13 +87,14 @@
 
 	var/list/items_to_sweep = list()
 	var/i = 1
-	for (var/obj/item/garbage in current_item_loc.contents)
+	for (var/obj/item/garbage in expand_slime_extract_piles(current_item_loc.contents)) // VOIDCREW EDIT: slime_extract_piles - sweep the cores inside floor piles
 		if(garbage.anchored)
 			continue
 		items_to_sweep += garbage
 		i++
 		if(i > BROOM_PUSH_LIMIT)
 			break
+	release_swept_slime_extracts(items_to_sweep) // VOIDCREW EDIT: slime_extract_piles - put them on the floor before they move
 
 	SEND_SIGNAL(new_item_loc, COMSIG_TURF_RECEIVE_SWEEPED_ITEMS, broomer, user, items_to_sweep)
 

@@ -1,0 +1,544 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ew" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"eW" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"gq" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"gO" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 3
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"gR" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"hP" = (
+/turf/template_noop,
+/area/template_noop)
+"ic" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"jd" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 3
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"kl" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/table,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"md" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"mI" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"nE" = (
+/obj/structure/table/reinforced/prison_hatch,
+/obj/machinery/door/window/outpost_prison_yard/directional/north,
+/obj/machinery/door/window/brigdoor/outpost_prison_staff/directional/south,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"oR" = (
+/obj/machinery/washing_machine,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"qz" = (
+/obj/effect/turf_decal/lunar_sand,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ru" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"tq" = (
+/obj/structure/sink/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ut" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"uZ" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/orange{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"xF" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"xJ" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"zb" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/weather/dirt{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"zu" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"Ba" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/outpost_kessler_vent,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"Bi" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"BM" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/prison_extension)
+"Cw" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Dj" = (
+/obj/structure/sign/poster/official/work_for_a_future/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Ej" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"EK" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"EP" = (
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Gb" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"GG" = (
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"GK" = (
+/obj/structure/table,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"GM" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Hp" = (
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"Ku" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"LI" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"LM" = (
+/obj/structure/outpost_kessler_vent,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"NB" = (
+/obj/structure/sign/poster/contraband/space_cola/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"NY" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/lunar_sand,
+/obj/machinery/light/warm/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Pf" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/closet,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"Pg" = (
+/obj/structure/noticeboard/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Pj" = (
+/obj/effect/landmark/outpost_upgrade_snap/left{
+	seam_openings = list(3,8,10)
+	},
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"Pk" = (
+/obj/structure/bookcase/random/outpost_prison,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/prison_extension)
+"Pr" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"Pu" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/lunar_sand,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"SW" = (
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"Us" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"UI" = (
+/obj/structure/toilet{
+	dir = 2
+	},
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"Wd" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"Ww" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Xq" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"Yz" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"YQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+
+(1,1,1) = {"
+Hp
+Hp
+Hp
+Hp
+Hp
+Hp
+Wd
+Hp
+Wd
+Hp
+Hp
+Hp
+Hp
+Hp
+Hp
+Pj
+"}
+(2,1,1) = {"
+Hp
+UI
+LM
+gR
+Hp
+jd
+Ba
+Yz
+eW
+EP
+Hp
+oR
+Yz
+EP
+EP
+Hp
+"}
+(3,1,1) = {"
+Wd
+EP
+qz
+EP
+gO
+zb
+EP
+GG
+qz
+EP
+Hp
+Pf
+EP
+EP
+EP
+Hp
+"}
+(4,1,1) = {"
+Hp
+uZ
+EP
+tq
+Wd
+gq
+EP
+EP
+EP
+qz
+Hp
+GG
+ew
+EP
+EP
+Hp
+"}
+(5,1,1) = {"
+Hp
+Hp
+Hp
+Hp
+Hp
+NY
+EP
+EP
+EP
+xF
+Hp
+NB
+EP
+EK
+YQ
+Hp
+"}
+(6,1,1) = {"
+Hp
+UI
+LM
+gR
+Hp
+Cw
+EP
+qz
+EP
+EP
+Wd
+EP
+mI
+ew
+EP
+Hp
+"}
+(7,1,1) = {"
+Wd
+EP
+qz
+EP
+xJ
+gq
+zu
+kl
+Bi
+Ej
+nE
+Ww
+EP
+EP
+EP
+Wd
+"}
+(8,1,1) = {"
+Hp
+uZ
+EP
+tq
+Wd
+Pu
+zu
+md
+Ku
+EP
+Wd
+EP
+ew
+EK
+EP
+Hp
+"}
+(9,1,1) = {"
+Hp
+Hp
+Hp
+Hp
+Hp
+LI
+ru
+GK
+Bi
+Xq
+Hp
+Pg
+EP
+EP
+ic
+Hp
+"}
+(10,1,1) = {"
+Hp
+UI
+LM
+gR
+Hp
+GM
+EP
+EP
+EP
+BM
+Hp
+EP
+YQ
+EP
+SW
+Hp
+"}
+(11,1,1) = {"
+Wd
+EP
+qz
+EP
+ut
+zb
+qz
+EP
+EP
+Pk
+Hp
+Dj
+EP
+ew
+Pr
+Hp
+"}
+(12,1,1) = {"
+Hp
+uZ
+EP
+tq
+Wd
+gq
+EP
+Us
+EP
+Pk
+Hp
+Gb
+Us
+EP
+GG
+Hp
+"}
+(13,1,1) = {"
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+hP
+"}

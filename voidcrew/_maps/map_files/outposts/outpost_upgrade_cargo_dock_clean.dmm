@@ -1,0 +1,753 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ab" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/structure/sign/warning/no_smoking/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ac" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"ad" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost/cargo_dock)
+"ae" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"af" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ag" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"ah" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/sign/warning/docking/directional/east,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ai" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aj" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ak" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"al" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"am" = (
+/turf/open/floor/light,
+/area/voidcrew/player_outpost/cargo_dock)
+"an" = (
+/obj/item/kirbyplants/organic/plant22,
+/obj/structure/sign/clock/directional/east,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ao" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ap" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aq" = (
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 8
+	},
+/obj/structure/noticeboard/directional/east,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"ar" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"as" = (
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"at" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"au" = (
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"av" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aw" = (
+/obj/structure/filingcabinet/chestdrawer,
+/obj/structure/sign/calendar/directional/south,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"ax" = (
+/obj/structure/filingcabinet/chestdrawer,
+/obj/structure/sign/clock/directional/south,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"ay" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"az" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aA" = (
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aB" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"aC" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/structure/sign/warning/docking/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aD" = (
+/obj/structure/noticeboard/directional/west,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"aE" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aF" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aG" = (
+/obj/docking_port/stationary/outpost_cargo_dock,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aH" = (
+/turf/closed/wall,
+/area/voidcrew/player_outpost/cargo_dock)
+"aI" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aJ" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aK" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"aL" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/sign/departments/cargo/directional/west,
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aM" = (
+/obj/effect/turf_decal/tile/brown/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 2
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aN" = (
+/obj/effect/turf_decal/tile/brown/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aO" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"aP" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Dock Office"
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/cargo_dock)
+"aQ" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 8
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aR" = (
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 8
+	},
+/obj/item/radio/intercom/directional/east,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aS" = (
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost/cargo_dock)
+"aT" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aU" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aV" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost/cargo_dock)
+"aW" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aX" = (
+/obj/effect/turf_decal/arrows{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aY" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"aZ" = (
+/obj/structure/table,
+/obj/item/flashlight/lamp{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/folder/yellow{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost/cargo_dock)
+"bO" = (
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"fY" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost/cargo_dock)
+"gJ" = (
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"Ef" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 4
+	},
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"EE" = (
+/obj/effect/turf_decal/arrows{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"Fw" = (
+/obj/structure/sign/departments/cargo,
+/turf/closed/wall,
+/area/voidcrew/player_outpost/cargo_dock)
+"Mz" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Dock"
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/cargo_dock)
+"QP" = (
+/obj/structure/sign/poster/official/random/directional/south,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+"XM" = (
+/obj/item/kirbyplants/organic/plant21,
+/obj/effect/turf_decal/tile/brown/anticorner/contrasted{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/cargo_dock)
+
+(1,1,1) = {"
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+"}
+(2,1,1) = {"
+aH
+aM
+aF
+az
+aF
+ao
+aF
+az
+aF
+aL
+aT
+aZ
+aD
+aO
+aw
+aH
+"}
+(3,1,1) = {"
+aH
+ab
+am
+aA
+aA
+aA
+aA
+aA
+am
+aj
+aT
+ak
+aK
+au
+ax
+aH
+"}
+(4,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+aj
+aP
+au
+au
+au
+aB
+aH
+"}
+(5,1,1) = {"
+aH
+ai
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+aj
+aH
+aT
+aT
+aT
+aH
+aH
+"}
+(6,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+aj
+av
+aE
+af
+ar
+ad
+aH
+"}
+(7,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+ap
+ag
+ae
+as
+as
+aV
+aH
+"}
+(8,1,1) = {"
+aH
+aC
+aA
+aS
+aS
+aS
+aS
+aS
+aG
+ap
+aY
+aY
+aY
+aY
+aQ
+Fw
+"}
+(9,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+ap
+aX
+aX
+aX
+aX
+EE
+Mz
+"}
+(10,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+ap
+al
+al
+al
+al
+Ef
+aH
+"}
+(11,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+ap
+av
+aE
+as
+as
+fY
+aH
+"}
+(12,1,1) = {"
+aH
+ai
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+aj
+ac
+aJ
+as
+as
+bO
+aH
+"}
+(13,1,1) = {"
+aH
+aa
+aA
+aS
+aS
+aS
+aS
+aS
+aA
+aj
+ac
+aJ
+as
+as
+gJ
+aH
+"}
+(14,1,1) = {"
+aH
+aU
+am
+aA
+aA
+aA
+aA
+aA
+am
+aj
+ag
+ae
+as
+as
+QP
+aH
+"}
+(15,1,1) = {"
+aH
+aN
+at
+aW
+at
+aI
+at
+aW
+at
+ah
+an
+ay
+aq
+aR
+XM
+aH
+"}
+(16,1,1) = {"
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+"}

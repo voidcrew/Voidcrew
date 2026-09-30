@@ -156,6 +156,7 @@
 		return select_ship()
 
 	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
+	ship_metric_purchased(target, src)
 
 	// Hulls spawn open; the captain locks theirs from Ship Management if they want one.
 	// The buyer is cleared anyway so a password set before they seat themselves (or
@@ -203,6 +204,7 @@
 
 	SSblackbox.record_feedback("tally", "ship_requisitioned", 1, target.source_template?.name || "[target.type]")
 	log_shuttle("[key_name(src)] requisitioned a free hull: [target.name]")
+	ship_metric_purchased(target, src, requisition = TRUE)
 
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
 		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))

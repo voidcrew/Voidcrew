@@ -1,0 +1,763 @@
+{
+	"lines": {
+		"guard_near": {
+			"any": [
+				"Evening, {staff}.",
+				"Hey, {staff}.",
+				"Here comes {staff}.",
+				"Morning, {staff}. Anything happening?",
+				"{staff}. How's the shift?"
+			],
+			"chatty": [
+				"Hey, {staff}! Did you catch the game earlier?",
+				"{staff}, you ever get a day off?",
+				"Morning, {staff}. You look tired. Long night?"
+			],
+			"grumpy": [
+				"Oh, great. {staff}.",
+				"What do you want, {staff}?",
+				"Keep walking, {staff}."
+			],
+			"nervous": [
+				"Hi, {staff}. I'm not doing anything.",
+				"Oh. {staff}. Everything okay?"
+			],
+			"cheerful": [
+				"Hey, {staff}! Good to see you.",
+				"Morning, {staff}! Nice day for it."
+			],
+			"quiet": [
+				"{staff}.",
+				"Mm. Evening, {staff}."
+			]
+		},
+		"guard_batoned": {
+			"any": [
+				"Easy with that thing!",
+				"Was that really necessary?",
+				"Ouch. Glad that wasn't me.",
+				"Hey, go easy on them!"
+			],
+			"chatty": [
+				"Whoa, {staff}! You didn't have to do that!",
+				"Did everyone see that? Somebody saw that, right?"
+			],
+			"grumpy": [
+				"Typical. Hit first, ask later.",
+				"Yeah, real brave, {staff}."
+			],
+			"nervous": [
+				"Oh no. Oh no no no.",
+				"I'm staying right over here."
+			],
+			"cheerful": [
+				"Okay, okay, everybody calm down.",
+				"Let's all just take a breath."
+			],
+			"quiet": [
+				"Huh.",
+				"Should've stayed out of it."
+			]
+		}
+	},
+	"guard_lines": {
+		"arrival": {
+			"any": [
+				"Reporting for duty.",
+				"Right. Where do you want me?",
+				"On shift. What did I miss?"
+			],
+			"by_the_book": [
+				"On duty. I'll start with the count.",
+				"Reporting in. Logbook first, then rounds."
+			],
+			"easygoing": [
+				"Hey, all. Don't get up.",
+				"Made it. Anyone save me a drink?"
+			],
+			"tired": [
+				"Here. Mostly.",
+				"Another shift. Okay. Okay."
+			],
+			"hard_nosed": [
+				"Right. Nobody gets cute today.",
+				"On shift. Let's keep it quiet."
+			],
+			"soft_hearted": [
+				"Hi, everyone. Everybody doing alright?",
+				"Morning. Does anyone need anything?"
+			]
+		},
+		"post": {
+			"any": [
+				"All quiet from here.",
+				"Door's covered.",
+				"Keeping an eye on things."
+			],
+			"by_the_book": [
+				"Post manned. Nothing to report.",
+				"Door secure. Yard in view."
+			],
+			"easygoing": [
+				"Could be worse. Could be raining.",
+				"Nice view of the yard from here."
+			],
+			"tired": [
+				"I'm just going to lean here a minute.",
+				"How long is this shift again?"
+			],
+			"hard_nosed": [
+				"I see you over there.",
+				"Nobody's getting past this door."
+			],
+			"soft_hearted": [
+				"Yard looks peaceful today.",
+				"Hope they're all eating alright."
+			]
+		},
+		"rounds_start": {
+			"any": [
+				"Rounds.",
+				"Doing the count.",
+				"Walking the block."
+			],
+			"by_the_book": [
+				"Starting rounds. Stay where I can see you.",
+				"Count time. Cell by cell."
+			],
+			"easygoing": [
+				"Time for a stroll.",
+				"Rounds, folks. Carry on."
+			],
+			"tired": [
+				"Rounds. Again.",
+				"Right, the count. Let's get it over with."
+			],
+			"hard_nosed": [
+				"Count! Nobody moves.",
+				"Rounds. Stay out of my way."
+			],
+			"soft_hearted": [
+				"Just checking in on everyone.",
+				"Rounds. Shout if you need something."
+			]
+		},
+		"rounds_clear": {
+			"any": [
+				"Count's clear.",
+				"All present.",
+				"Count's good."
+			],
+			"by_the_book": [
+				"Count complete. All accounted for.",
+				"Rounds done. Nothing out of place."
+			],
+			"easygoing": [
+				"Everyone's where they should be. Nice.",
+				"Count's clear. Back to my spot."
+			],
+			"tired": [
+				"Count's clear. Finally.",
+				"All there. Good. Sitting down now."
+			],
+			"hard_nosed": [
+				"Count's clear. Keep it that way.",
+				"Everyone present. Nobody try anything."
+			],
+			"soft_hearted": [
+				"Everyone's here and doing okay. Good.",
+				"Count's clear. They're holding up alright."
+			]
+		},
+		"yard_comment": {
+			"any": [
+				"Nice shot.",
+				"Keep your elbows down.",
+				"That was a foul and you know it."
+			],
+			"by_the_book": [
+				"No hanging on the rim.",
+				"Keep the game clean out there."
+			],
+			"easygoing": [
+				"Ooh, nearly!",
+				"Put some arc on it!"
+			],
+			"tired": [
+				"Somebody's got energy.",
+				"Where do they get the legs for this?"
+			],
+			"hard_nosed": [
+				"That's a travel.",
+				"Play nice or the ball goes in the office."
+			],
+			"soft_hearted": [
+				"Good hustle out there!",
+				"Great shot! Keep it up."
+			]
+		},
+		"coffee": {
+			"any": [
+				"Water break.",
+				"Ah. That's better.",
+				"Who keeps leaving the cups out?"
+			],
+			"by_the_book": [
+				"Two minutes, then back on post.",
+				"Water's cold. Good."
+			],
+			"easygoing": [
+				"Best part of the shift.",
+				"Anyone want a cup? No? More for me."
+			],
+			"tired": [
+				"I need about six more of these.",
+				"This is the only thing keeping me upright."
+			],
+			"hard_nosed": [
+				"Don't touch my cup.",
+				"This water tastes like the pipes."
+			],
+			"soft_hearted": [
+				"Anyone thirsty? There's plenty.",
+				"Just a quick drink, then I'm back."
+			]
+		},
+		"check_on": {
+			"any": [
+				"You alright?",
+				"Everything okay here?",
+				"Doing alright?"
+			],
+			"by_the_book": [
+				"Checking in. Anything to report?",
+				"All in order here?"
+			],
+			"soft_hearted": [
+				"How are you holding up?",
+				"You look a bit down. Anything I can do?"
+			],
+			"hard_nosed": [
+				"You good? Good.",
+				"Nothing to say? Fine."
+			]
+		},
+		"check_on_hungry": {
+			"any": [
+				"Food's coming.",
+				"The hatch should be stocked soon.",
+				"I'll chase up some food."
+			],
+			"by_the_book": [
+				"Rations are on the list. Sit tight.",
+				"I'll put in for another round of rations."
+			],
+			"soft_hearted": [
+				"Hang in there, I'll find you something to eat.",
+				"I know. I'll get someone to fill the hatch."
+			],
+			"hard_nosed": [
+				"You'll eat when it comes.",
+				"Hatch gets filled when it gets filled."
+			]
+		},
+		"check_on_dirty": {
+			"any": [
+				"I'll see about a clean suit.",
+				"Laundry's on its way.",
+				"Clean uniforms are coming."
+			],
+			"by_the_book": [
+				"Clean uniform request noted.",
+				"I'll get a fresh suit on the hatch."
+			],
+			"soft_hearted": [
+				"Let's get you out of that. I'll ask for a clean one.",
+				"That needs a wash. I'll sort it."
+			],
+			"easygoing": [
+				"Rough week for that jumpsuit, huh?",
+				"I'll nag somebody about laundry."
+			]
+		},
+		"check_on_hurt": {
+			"any": [
+				"Stay put. I'll get someone to patch you up.",
+				"That looks bad. I'll call it in.",
+				"Keep pressure on it. Help's coming."
+			],
+			"by_the_book": [
+				"Injury noted. I'll get a medic over.",
+				"Don't move that. I'll report it."
+			],
+			"soft_hearted": [
+				"Oh, that looks sore. I'll get help.",
+				"Easy now. Someone will patch that up."
+			],
+			"tired": [
+				"Yeah, that's not great. I'll tell someone.",
+				"Hang on. I'll ask about a dressing."
+			]
+		},
+		"report_hatch": {
+			"any": [
+				"Hatch is empty and {count} of them are waiting, {boss}.",
+				"{boss}, the hatch is out. {count} waiting on it."
+			],
+			"by_the_book": [
+				"Supply report, {boss}: hatch empty, {count} waiting.",
+				"The hatch needs stocking, {boss}. {count} in line."
+			],
+			"easygoing": [
+				"Hatch ran dry, {boss}. {count} hungry faces out there.",
+				"Heads up, {boss}. Hatch is empty, {count} waiting."
+			],
+			"soft_hearted": [
+				"{boss}, {count} of them are waiting at an empty hatch.",
+				"Could we fill the hatch, {boss}? {count} are waiting."
+			]
+		},
+		"report_restless": {
+			"any": [
+				"Yard's unhappy, {boss}: {cause}.",
+				"Heads up, {boss}. Complaints: {cause}."
+			],
+			"by_the_book": [
+				"Report, {boss}: {cause}.",
+				"For the log, {boss}: {cause}."
+			],
+			"hard_nosed": [
+				"They're grumbling, {boss}: {cause}.",
+				"Yard's getting mouthy, {boss}. Complaints: {cause}."
+			],
+			"tired": [
+				"Something's up, {boss}. Complaints: {cause}.",
+				"They're on about it again, {boss}: {cause}."
+			]
+		},
+		"report_hurt": {
+			"any": [
+				"{prisoner} is hurt, {boss}. Could use a dressing.",
+				"{boss}, {prisoner} needs patching up."
+			],
+			"by_the_book": [
+				"Injury report, {boss}: {prisoner} needs a dressing.",
+				"{prisoner} is injured, {boss}. Bruise packs are in the kit."
+			],
+			"soft_hearted": [
+				"{boss}, poor {prisoner} is hurt. Can we help?",
+				"{prisoner} is in a bad way, {boss}."
+			]
+		},
+		"report_dark": {
+			"any": [
+				"Light's out in cell {cell}, {boss}.",
+				"Cell {cell} is dark, {boss}."
+			],
+			"by_the_book": [
+				"Maintenance, {boss}: cell {cell} has no light.",
+				"Cell {cell} needs a bulb, {boss}."
+			],
+			"easygoing": [
+				"Cell {cell} is pitch black, {boss}. Spare bulb?",
+				"Somebody's sitting in the dark in cell {cell}, {boss}."
+			]
+		},
+		"report_all_good": {
+			"any": [
+				"All quiet, {boss}.",
+				"Nothing to report, {boss}.",
+				"Yard's fine, {boss}."
+			],
+			"by_the_book": [
+				"All in order, {boss}.",
+				"No incidents, {boss}."
+			],
+			"easygoing": [
+				"Quiet one today, {boss}.",
+				"All good out here, {boss}."
+			],
+			"tired": [
+				"Quiet. Thankfully, {boss}.",
+				"Nothing happening, {boss}. Which I like."
+			]
+		},
+		"greet_owner": {
+			"any": [
+				"Boss.",
+				"Hey, boss.",
+				"Evening, boss."
+			],
+			"by_the_book": [
+				"Boss. All in order.",
+				"Good to see you, boss."
+			],
+			"easygoing": [
+				"Hey, boss! How's it going?",
+				"Boss! Come to check on us?"
+			],
+			"tired": [
+				"Oh. Hey, boss.",
+				"Boss. Still standing."
+			]
+		},
+		"greet_member": {
+			"any": [
+				"Hey, {boss}.",
+				"Evening, {boss}.",
+				"{boss}."
+			],
+			"easygoing": [
+				"Hey, {boss}! Good to see you.",
+				"{boss}! How are things?"
+			],
+			"hard_nosed": [
+				"{boss}.",
+				"Watch yourself in the yard, {boss}."
+			],
+			"soft_hearted": [
+				"Hi, {boss}. Doing okay?",
+				"Oh, hi, {boss}."
+			]
+		},
+		"spat_stop": {
+			"any": [
+				"Hey! Knock it off, you two.",
+				"That's enough. Both of you.",
+				"Take it down a notch."
+			],
+			"by_the_book": [
+				"Language. Both of you, separate.",
+				"That's a warning. Walk away."
+			],
+			"hard_nosed": [
+				"Shut it. Both of you.",
+				"You want to keep talking? Try me."
+			],
+			"soft_hearted": [
+				"Come on, you two. Not worth it.",
+				"Hey, easy. Let's cool off."
+			]
+		},
+		"argue_stop": {
+			"any": [
+				"Break it up. Now.",
+				"Step back from each other.",
+				"Whatever this is, it's over."
+			],
+			"by_the_book": [
+				"Separate. That's an order.",
+				"Both of you, step apart."
+			],
+			"hard_nosed": [
+				"Back off or you're both on the floor.",
+				"Apart. Now. I won't ask twice."
+			],
+			"soft_hearted": [
+				"Hey, hey. Talk it out, don't swing it out.",
+				"Come on. Nobody needs to get hurt."
+			]
+		},
+		"fight_stop": {
+			"any": [
+				"Break it up!",
+				"That's enough!",
+				"Stop fighting! Now!"
+			],
+			"by_the_book": [
+				"Stop! Stun baton!",
+				"Separate or you'll be stunned!"
+			],
+			"hard_nosed": [
+				"On the ground!",
+				"You asked for it!"
+			],
+			"soft_hearted": [
+				"Stop it, both of you! Please!",
+				"Enough! I don't want to do this!"
+			]
+		},
+		"threat_stop": {
+			"any": [
+				"Back off. Now.",
+				"Hands down. Walk away.",
+				"Don't even think about it."
+			],
+			"by_the_book": [
+				"Step back. Final warning.",
+				"Hands where I can see them."
+			],
+			"hard_nosed": [
+				"Go on. Try it.",
+				"Back. Off."
+			],
+			"soft_hearted": [
+				"Hey. Let's not do this.",
+				"Easy. Walk away and it's forgotten."
+			]
+		},
+		"climb_stop": {
+			"any": [
+				"Get down off that!",
+				"Off the counter!",
+				"Not happening. Down."
+			],
+			"by_the_book": [
+				"Down from the hatch. Now.",
+				"That counter is off limits. Down."
+			],
+			"hard_nosed": [
+				"Down, or I bring you down.",
+				"Nice try. Down."
+			],
+			"easygoing": [
+				"Whoa, whoa. Nope. Back down you go.",
+				"Come on, you know better than that."
+			]
+		},
+		"riot_call": {
+			"any": [
+				"Riot in the yard!",
+				"Here we go. Everyone back!",
+				"They're kicking off!"
+			],
+			"by_the_book": [
+				"Riot! Securing the staff door!",
+				"Disturbance in the yard! Falling in!"
+			],
+			"hard_nosed": [
+				"Alright. Come on, then.",
+				"Big mistake, all of you."
+			],
+			"tired": [
+				"Oh, you've got to be kidding me.",
+				"Of course. Of course they are."
+			]
+		},
+		"riot_hold": {
+			"any": [
+				"Holding the staff door. Need a hand down here.",
+				"Riot in the yard. We've got the door.",
+				"We're on the staff door. Send help."
+			],
+			"by_the_book": [
+				"Riot under way. Holding the office door.",
+				"Staff door held. Requesting backup."
+			],
+			"hard_nosed": [
+				"Riot. We've got the door. Hurry up.",
+				"Holding the door. Bring a baton."
+			]
+		},
+		"follow_member": {
+			"any": [
+				"I've got your back, {boss}.",
+				"Stay close, {boss}.",
+				"Right behind you, {boss}."
+			],
+			"by_the_book": [
+				"Covering you, {boss}.",
+				"On your flank, {boss}."
+			],
+			"hard_nosed": [
+				"Stick with me, {boss}.",
+				"Let them come, {boss}."
+			],
+			"soft_hearted": [
+				"Careful, {boss}! I'm with you.",
+				"Don't worry, {boss}. I've got you."
+			]
+		},
+		"fallback": {
+			"any": [
+				"I'm hurt. Falling back!",
+				"Pulling back to the office!",
+				"Need a breather. Falling back!"
+			],
+			"by_the_book": [
+				"Injured. Falling back to the office.",
+				"Withdrawing. I'm hit."
+			],
+			"hard_nosed": [
+				"This isn't over. Falling back.",
+				"Fine. Office. Now."
+			],
+			"tired": [
+				"Nope. I'm done. Office.",
+				"I'm too old for this. Falling back."
+			]
+		},
+		"loose_call": {
+			"any": [
+				"Prisoner loose in {place}!",
+				"We've got a runner in {place}!",
+				"One's out! {place}!"
+			],
+			"by_the_book": [
+				"Escape! Prisoner in {place}!",
+				"Prisoner out of the block, last seen in {place}!"
+			],
+			"hard_nosed": [
+				"Runner in {place}. Somebody grab them!",
+				"{place}! Don't let them get away!"
+			]
+		},
+		"loose_nearly": {
+			"any": [
+				"We're about to lose {prisoner}! {place}!",
+				"Someone stop {prisoner}, they're nearly gone! {place}!",
+				"{place}! We're about to lose {prisoner}!",
+				"Don't let {prisoner} get away! Last seen in {place}!"
+			],
+			"by_the_book": [
+				"All staff, {prisoner} about to get away! Last seen in {place}!",
+				"Runner nearly clear! Stop {prisoner}, last seen in {place}!"
+			],
+			"hard_nosed": [
+				"We're losing {prisoner}. {place}, somebody move!",
+				"{place}, now, or we lose {prisoner}!"
+			],
+			"tired": [
+				"Pretty sure we're about to lose {prisoner}. Somewhere around {place}.",
+				"Someone should really go get {prisoner}. {place}, last I saw."
+			]
+		},
+		"creature_flee": {
+			"any": [
+				"Not my job. I'm staying in the office.",
+				"Whatever that is, I'm not touching it.",
+				"I'll be in the office. Behind the door."
+			],
+			"by_the_book": [
+				"Science is not my department. Office.",
+				"Experiment under way. Keeping clear."
+			],
+			"tired": [
+				"Nope. Not today.",
+				"I didn't sign up for that."
+			]
+		},
+		"downed": {
+			"any": [
+				"Ugh. I'm down.",
+				"Man down.",
+				"Can't... I'm out."
+			],
+			"by_the_book": [
+				"Officer down. Calling it in.",
+				"I'm down. Requesting pickup."
+			],
+			"hard_nosed": [
+				"Lucky shot.",
+				"You'll pay for that."
+			],
+			"tired": [
+				"Nope. Lying down now.",
+				"That's it. I'm done."
+			]
+		},
+		"recalled": {
+			"any": [
+				"Called back. See you in a bit.",
+				"Heading back to base.",
+				"They're pulling me back. Back soon."
+			],
+			"by_the_book": [
+				"Recalled. Returning shortly.",
+				"Out of bounds. Reporting back."
+			],
+			"easygoing": [
+				"Guess I wandered off. Back soon!",
+				"Oops. Be right back."
+			]
+		},
+		"unpaid": {
+			"any": [
+				"No pay, no guard. I'm off.",
+				"Wages or nothing. I'm done.",
+				"I don't work for free."
+			],
+			"by_the_book": [
+				"Two missed wages. I'm resigning.",
+				"The contract says paid. I'm leaving."
+			],
+			"hard_nosed": [
+				"Pay me or find someone else.",
+				"Nobody stiffs me twice."
+			],
+			"tired": [
+				"Unpaid and exhausted. Bye.",
+				"Not even getting paid for this. I'm out."
+			]
+		},
+		"dismissed": {
+			"any": [
+				"Right. Turning in my baton.",
+				"Understood. I'll clear out.",
+				"Fair enough. So long."
+			],
+			"by_the_book": [
+				"Understood. Handing over my post.",
+				"Dismissed. Signing out."
+			],
+			"easygoing": [
+				"Oh well. It was fun. See you.",
+				"No hard feelings. Take care."
+			],
+			"soft_hearted": [
+				"Oh. Okay. Look after them for me.",
+				"Alright. Be good to them."
+			]
+		},
+		"attacked_by_player": {
+			"any": [
+				"Hey. Don't.",
+				"Watch it.",
+				"Do that again and we'll have words."
+			],
+			"by_the_book": [
+				"Assaulting an officer. Noted.",
+				"That's going in my report."
+			],
+			"hard_nosed": [
+				"You really want to do this?",
+				"Careful."
+			],
+			"easygoing": [
+				"Ow! What was that for?",
+				"Hey, I'm on your side."
+			]
+		}
+	},
+	"guard_personalities": ["by_the_book", "easygoing", "tired", "hard_nosed", "soft_hearted"],
+	"guard_conversations": [
+		{
+			"opener": "You see the game last night, {other}?",
+			"replies": ["Missed it. Double shift.", "Don't talk to me about it.", "Best game all season."]
+		},
+		{
+			"opener": "How long have you got left today, {other}?",
+			"replies": ["Too long.", "Couple more hours.", "I stopped counting."]
+		},
+		{
+			"opener": "They're quiet today, {other}.",
+			"replies": ["Don't jinx it.", "Enjoy it while it lasts.", "Too quiet, if you ask me."]
+		},
+		{
+			"opener": "You bring lunch, {other}?",
+			"replies": ["Ration bar. Same as them.", "Forgot it again.", "Leftovers. Want half?"]
+		},
+		{
+			"opener": "Heard they're sending more in soon, {other}.",
+			"replies": ["More paperwork, then.", "Where are we putting them?", "Great. Just great."]
+		},
+		{
+			"opener": "My knees are killing me, {other}.",
+			"replies": ["Try standing on this floor all day.", "Sit down, then.", "Mine too."]
+		},
+		{
+			"opener": "You ever think about a desk job, {other}?",
+			"replies": ["Every single day.", "Too boring.", "This is a desk job. With extra steps."]
+		}
+	]
+}

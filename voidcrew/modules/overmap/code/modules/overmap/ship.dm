@@ -209,8 +209,9 @@
 	var/list/datum/mission/active_missions = list()
 	/// Maximum number of active missions (captain can adjust)
 	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
-	/// World time of the last manual mission refresh (rate-limited)
-	var/last_mission_refresh = 0
+	/// World time of the last manual mission refresh (rate-limited). Starts a whole cooldown back, so a
+	/// ship that never refreshed can, rather than waiting out the first minutes after the server boots.
+	var/last_mission_refresh = -MISSION_REFRESH_COOLDOWN
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
@@ -870,7 +871,8 @@
 		else
 			E.logged_area_mismatch = FALSE
 		E.update_engine()
-		if(E.enabled)
+		// A thruster with no clear line to space pushes nothing (see exhaust_clear()).
+		if(E.enabled && !E.exhaust_blocked)
 			calculated_thrust += E.engine_power
 	for(var/obj/machinery/power/shuttle_engine/ship/E as anything in dropped)
 		shuttle.engine_list -= E
@@ -1059,6 +1061,7 @@
 /obj/structure/overmap/ship/proc/abandon_ship(crash = TRUE)
 	if(abandoned)
 		return // Already abandoned
+	ship_metric_abandoned(src)
 
 	abandoned = TRUE
 	abandoned_at = world.time // starts the derelict-despawn clock (SSovermap.sweep_derelicts)
@@ -1379,10 +1382,14 @@
  * * claimer - The mob claiming the ship
  */
 /obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer)
+	if(retired_by_checkpoint || checkpoint_rebuilding)
+		to_chat(claimer, span_warning("This ship is retired or being rebuilt from a checkpoint."))
+		return FALSE
 	if(!abandoned)
 		return FALSE
 	if(!claimer?.mind)
 		return FALSE
+	ship_metric_claimed_abandoned(src, claimer)
 
 	// Reset abandoned state, stopping the derelict-despawn clock
 	abandoned = FALSE
@@ -1538,6 +1545,7 @@
 /// Otherwise its unexpected-deletion stack trace aborts callers inside try/catch,
 /// leaving a hull-less overmap ship behind that continues to pin its landing site.
 /obj/structure/overmap/ship/proc/detach_shuttle()
+	ship_metric_removed(src) // the last moment the hull still has its metrics id
 	var/obj/docking_port/mobile/voidcrew/owned_shuttle = shuttle
 	shuttle = null
 	if(owned_shuttle?.current_ship == src)
@@ -1772,8 +1780,8 @@
 	return TRUE
 
 /**
- * Minimalist ship notification - sends a styled chat message to all crew members.
- * Much less intrusive than ship_notify/priority_announce.
+ * Minimalist ship notification - sends a styled chat message to the crew members who
+ * are with the ship (see crewmate_near_ship()). Much less intrusive than priority_announce.
  *
  * Arguments:
  * * message - The notification message
@@ -1781,8 +1789,10 @@
  * * alert_level - SHIP_NOTIFY_NOTICE (blue), SHIP_NOTIFY_WARNING (orange), or SHIP_NOTIFY_DANGER (red)
  * * sound_file - Optional sound to play. If null, no sound is played.
  * * volume - Volume of the sound (0-100). Defaults to 100.
+ * * anywhere - Reach the whole crew wherever they are. For news relayed from somewhere
+ *   other than the ship, such as the crew's own outpost.
  */
-/obj/structure/overmap/ship/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
+/obj/structure/overmap/ship/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100, anywhere = FALSE)
 	var/formatted
 	switch(alert_level)
 		if(SHIP_NOTIFY_DANGER)
@@ -1796,6 +1806,8 @@
 		var/mob/crewmate = shipmate.current
 		if(!crewmate)
 			continue
+		if(!anywhere && !crewmate_near_ship(crewmate))
+			continue
 		to_chat(crewmate, formatted)
 		if(sound_file)
 			var/pref_volume = crewmate.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_ship_ambience_volume)
@@ -1804,6 +1816,38 @@
 			var/sound/S = sound(sound_file)
 			S.volume = volume * (pref_volume / 100)
 			SEND_SOUND(crewmate, S)
+
+/**
+ * Whether a crewmate is with the ship, for its alerts: aboard it, or off it at the same
+ * place it is (the planet or ruin it is docked at, a spacewalk beside it, the ship it is
+ * docked with).
+ *
+ * The z-level alone is not enough. Ships share levels (docked together, parked at one
+ * planet, sitting in transit) and a packed level holds several unrelated sites, so a
+ * crewmate on a stranger's deck or at the encounter next door would still hear the
+ * docking chimes. Same scoping as the crew monitor (voidcrew/edits/machinery/crew_monitor.dm).
+ */
+/obj/structure/overmap/ship/proc/crewmate_near_ship(mob/crewmate)
+	var/turf/hull_turf = get_turf(shuttle)
+	if(!hull_turf)
+		return TRUE // No hull on the map to be near, so nobody can be away from it.
+	var/turf/crew_turf = get_turf(crewmate)
+	if(!crew_turf || crew_turf.z != hull_turf.z)
+		return FALSE
+	if(shuttle.is_in_shuttle_bounds(crew_turf))
+		return TRUE
+	// On another hull: only the one we are docked with (a boarding party) counts.
+	var/obj/docking_port/mobile/voidcrew/their_hull = voidcrew_crew_sensor_hull(crew_turf)
+	if(their_hull)
+		var/obj/structure/overmap/ship/their_ship = their_hull.current_ship
+		return !isnull(their_ship) && (docked == their_ship || their_ship.docked == src)
+	// Off every hull on our level: it has to be our site. Ground that resolves to no
+	// site (a hull built out past its footprint) gets the benefit of the doubt.
+	var/datum/our_site = map_region_for_turf(hull_turf)
+	var/datum/their_site = map_region_for_turf(crew_turf)
+	if(isnull(our_site) || isnull(their_site))
+		return TRUE
+	return our_site == their_site
 
 // ===== COMBAT TARGET API (see /obj/structure/overmap base hooks) =====
 
@@ -1863,12 +1907,15 @@
   * * user - Mob that started the action
   * * object - Overmap object to act on
   */
-/obj/structure/overmap/ship/proc/overmap_object_act(mob/user, obj/structure/overmap/object, obj/structure/overmap/ship/optional_partner)
+/obj/structure/overmap/ship/proc/overmap_object_act(mob/user, obj/structure/overmap/object, obj/structure/overmap/ship/optional_partner, dock_variant)
 	if(!is_still() || state != OVERMAP_SHIP_FLYING)
 		to_chat(user, "<span class='warning'>Ship must be still to interact!</span>")
 		return
 
-	INVOKE_ASYNC(object, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src, optional_partner)
+	if(istype(object, /obj/structure/overmap/dynamic/player_outpost))
+		INVOKE_ASYNC(object, TYPE_PROC_REF(/obj/structure/overmap/dynamic/player_outpost, ship_act), user, src, optional_partner, dock_variant)
+	else
+		INVOKE_ASYNC(object, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src, optional_partner)
 
 // ===== INTERDICTION PROCS =====
 
@@ -2594,6 +2641,8 @@
 				// Start undock cooldown
 				COOLDOWN_START(src, undock_cooldown, UNDOCK_COOLDOWN_TIME)
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+				if(crash_dock_pending) // finish_crash_land() is waiting for this dock
+					on_crash_dock_complete()
 				// The counterpart to the "complete_dock UNDOCKING" line further down, whose
 				// absence is why a round-4 strand could not be diagnosed from the logs at all:
 				// 168 undock lines and not one for docking. The attempt count is the useful

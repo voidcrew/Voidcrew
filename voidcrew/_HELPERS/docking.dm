@@ -1,11 +1,8 @@
 /**
- * Alters the position and orientation of a stationary docking port so any mobile
- * port small enough can dock within its bounds.
- *
- * Shared by planets, space ruins and trader outposts (was copy-pasted per type).
- * Callers are responsible for checking the shuttle actually fits afterwards.
+ * The direction adjust_reserve_dock_to_shuttle() turns a reserve dock to face for this shuttle.
+ * The docked hull takes this dir, so it decides which way the hull lies on the ground.
  */
-/proc/adjust_reserve_dock_to_shuttle(obj/docking_port/stationary/dock_to_adjust, obj/docking_port/mobile/shuttle)
+/proc/reserve_dock_facing_for(obj/docking_port/mobile/shuttle)
 	// the shuttle's dimensions where "true height" measures distance from the shuttle's fore to its aft
 	var/shuttle_true_height = shuttle.height
 	var/shuttle_true_width = shuttle.width
@@ -13,8 +10,27 @@
 	if(EWCOMPONENT(shuttle.port_direction))
 		shuttle_true_height = shuttle.width
 		shuttle_true_width = shuttle.height
+	return angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH)+dir2angle(shuttle.port_direction)+180)
+
+/**
+ * The ground a shuttle covers once docked on a reserve dock, as list(x extent, y extent).
+ * A docked hull's width runs along x when it faces north or south and along y otherwise.
+ */
+/proc/reserve_dock_ground_size(obj/docking_port/mobile/shuttle)
+	if(NSCOMPONENT(reserve_dock_facing_for(shuttle)))
+		return list(shuttle.width, shuttle.height)
+	return list(shuttle.height, shuttle.width)
+
+/**
+ * Alters the position and orientation of a stationary docking port so any mobile
+ * port small enough can dock within its bounds.
+ *
+ * Shared by planets, space ruins and trader outposts (was copy-pasted per type).
+ * Callers are responsible for checking the shuttle actually fits afterwards.
+ */
+/proc/adjust_reserve_dock_to_shuttle(obj/docking_port/stationary/dock_to_adjust, obj/docking_port/mobile/shuttle)
 	// the dir the stationary port should be facing (note that it points inwards)
-	var/final_facing_dir = angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH)+dir2angle(shuttle.port_direction)+180)
+	var/final_facing_dir = reserve_dock_facing_for(shuttle)
 	var/list/old_corners = dock_to_adjust.return_coords() // coords for "bottom left" / "top right" of dock's covered area, rotated by dock's current dir
 	var/list/new_dock_location // TBD coords of the new location
 	if(final_facing_dir == dock_to_adjust.dir)
@@ -147,6 +163,11 @@
 			port.dwidth -= shift_x
 			port.dheight -= shift_y
 
+/obj/docking_port/stationary
+	/// The ground this berth keeps its rectangle inside, list(low_x, low_y, high_x, high_y) on its
+	/// own z, when the map region it stands in is bigger than the berth (outpost_hangar.dm)
+	var/list/site_rect
+
 /**
  * Pulls a reserve berth's projected rectangle back inside the site that owns it.
  *
@@ -163,6 +184,9 @@
  * been dragged to: a berth already pulled across the gutter would otherwise be "clamped" to the
  * neighbour it just landed in. Same shape as the fit test in position_dock_across_from().
  *
+ * A berth that knows its own ground (site_rect) is kept inside that instead: on a player
+ * outpost's level every berth and the ship bay resolve to the one outpost-wide region.
+ *
  * Returns TRUE if it had to move anything.
  */
 /proc/clamp_reserve_dock_to_site(obj/docking_port/stationary/dock)
@@ -171,14 +195,16 @@
 	var/turf/here = get_turf(dock)
 	if(!here)
 		return FALSE
-	var/datum/site
-	if(dock.reserve_home_z)
-		site = map_region_for_turf(locate(dock.reserve_home_x, dock.reserve_home_y, dock.reserve_home_z))
-	if(isnull(site))
-		site = map_region_for_turf(here)
-	// No region at all - a mapped berth, a roundstart level - means there is nothing to be
-	// outside of, and the berth keeps the behaviour it had before packing.
-	var/list/site_rect = map_region_rect(site, here.z)
+	var/list/site_rect = dock.site_rect
+	if(!site_rect)
+		var/datum/site
+		if(dock.reserve_home_z)
+			site = map_region_for_turf(locate(dock.reserve_home_x, dock.reserve_home_y, dock.reserve_home_z))
+		if(isnull(site))
+			site = map_region_for_turf(here)
+		// No region at all - a mapped berth, a roundstart level - means there is nothing to be
+		// outside of, and the berth keeps the behaviour it had before packing.
+		site_rect = map_region_rect(site, here.z)
 	if(!site_rect)
 		return FALSE
 

@@ -70,11 +70,8 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_north)
 "aWy" = (
-/obj/structure/table/reinforced,
+/obj/machinery/computer/voidcrew_cargo,
 /obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/item/storage/fancy/donut_box{
-	pixel_z = 6
-	},
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/ship_nanobead/bridge)
 "bdL" = (
@@ -950,7 +947,7 @@
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "wCN" = (
 /obj/structure/grille,
-/turf/template_noop,
+/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "wRL" = (
 /obj/machinery/light/directional/north,

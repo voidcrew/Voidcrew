@@ -1,13 +1,16 @@
 /**
  * Bounty Subsystem
  *
- * Manages global bounties for pirate ships. Bounties are created when
- * pirates spawn and tracked until completed or failed.
+ * Manages global bounties for pirate ships. Only some pirate ships carry one
+ * at a time (PIRATE_BOUNTY_SHARE); the rest are just a threat. A bounty nobody
+ * hunts comes down after a while and its ship rests, and new ones go up on
+ * other ships, so the bounties move around the map over the round.
  */
 SUBSYSTEM_DEF(bounty)
 	name = "Bounty"
 	init_order = INIT_ORDER_OVERMAP + 3  // After NPC ships spawn
-	flags = SS_NO_FIRE  // No periodic firing - event-driven
+	wait = 30 SECONDS
+	flags = SS_BACKGROUND
 	runlevels = RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/npc_ships,  // Pirates must exist before we create bounties
@@ -22,24 +25,85 @@ SUBSYSTEM_DEF(bounty)
 	/// Whether initial bounties have been generated
 	var/bounties_initialized = FALSE
 
+	/// Weakref of a pirate ship -> world.time it may carry a bounty again (its last one ran out)
+	var/list/pirate_bounty_rest = list()
+
+	/// world.time the next new pirate bounty may go up
+	var/next_pirate_bounty_at = 0
+
 /datum/controller/subsystem/bounty/Initialize()
 	// SSnpc_ships is a dependency, so pirates are already spawned
-	// Generate bounties for all existing pirates
 	generate_initial_bounties()
 	bounties_initialized = TRUE
 	return SS_INIT_SUCCESS
 
+/datum/controller/subsystem/bounty/fire(resumed)
+	rotate_pirate_bounties()
+
 /**
- * Generates bounties for all currently active pirates.
- * Called to create bounties for any pirates that already exist.
+ * Puts bounties on a random share of the pirates that exist at roundstart
+ * (PIRATE_BOUNTY_SHARE); the rest are just a threat.
  */
 /datum/controller/subsystem/bounty/proc/generate_initial_bounties()
 	var/count = 0
-	for(var/obj/structure/overmap/ship/npc/ship in SSnpc_ships.active_ships)
-		if(create_bounty_for_ship(ship))
-			count++
+	while(post_pirate_bounty())
+		count++
 
-	log_world("SSbounty: Generated [count] bounties for existing pirates")
+	log_world("SSbounty: Generated [count] bounties for [length(SSnpc_ships.active_ships)] pirates")
+
+/**
+ * Bounties nobody is hunting come down once their time is up, and their ships
+ * rest. Then a new one goes up on another pirate ship while fewer than the
+ * share carry one: at once when none is up, else every PIRATE_BOUNTY_POST_GAP.
+ */
+/datum/controller/subsystem/bounty/proc/rotate_pirate_bounties()
+	for(var/datum/pirate_bounty/bounty as anything in get_all_bounties())
+		if(bounty.expires_at && world.time >= bounty.expires_at && !bounty.get_hunter_count())
+			bounty.expire()
+	for(var/datum/weakref/ship_ref as anything in pirate_bounty_rest)
+		if(!ship_ref?.resolve() || world.time >= pirate_bounty_rest[ship_ref])
+			pirate_bounty_rest -= ship_ref
+	if(world.time < next_pirate_bounty_at && length(get_all_bounties()))
+		return
+	if(post_pirate_bounty())
+		next_pirate_bounty_at = world.time + PIRATE_BOUNTY_POST_GAP
+
+/// Whether `ship` is a pirate ship still out there with its crew: not taken, not abandoned, not wiped
+/datum/controller/subsystem/bounty/proc/pirate_ship_crewed(obj/structure/overmap/ship/npc/ship)
+	if(QDELETED(ship) || ship.player_controlled || ship.abandoned)
+		return FALSE
+	return length(ship.tracked_crew) > 0
+
+/// How many pirate ships may carry a bounty now: PIRATE_BOUNTY_SHARE of the crewed ones, at least one
+/datum/controller/subsystem/bounty/proc/pirate_bounty_cap()
+	var/crewed = 0
+	for(var/obj/structure/overmap/ship/npc/ship as anything in SSnpc_ships.active_ships)
+		if(pirate_ship_crewed(ship))
+			crewed++
+	if(!crewed)
+		return 0
+	return max(1, round(crewed * PIRATE_BOUNTY_SHARE))
+
+/// Whether a new bounty may go on `ship`: crewed, none on it now, and not resting after one ran out
+/datum/controller/subsystem/bounty/proc/pirate_bounty_eligible(obj/structure/overmap/ship/npc/ship)
+	if(!pirate_ship_crewed(ship) || get_bounty_for_ship(ship))
+		return FALSE
+	var/rest_until = pirate_bounty_rest[WEAKREF(ship)]
+	return !rest_until || world.time >= rest_until
+
+/// Puts a bounty on a random pirate ship without one, if fewer than the cap carry one. Returns it, or null.
+/datum/controller/subsystem/bounty/proc/post_pirate_bounty()
+	if(length(get_all_bounties()) >= pirate_bounty_cap())
+		return null
+	var/list/candidates = list()
+	for(var/obj/structure/overmap/ship/npc/ship as anything in SSnpc_ships.active_ships)
+		if(pirate_bounty_eligible(ship))
+			candidates += ship
+	while(length(candidates))
+		var/datum/pirate_bounty/bounty = create_bounty_for_ship(pick_n_take(candidates))
+		if(bounty)
+			return bounty
+	return null
 
 /**
  * Creates a bounty for a specific pirate ship.
@@ -66,6 +130,7 @@ SUBSYSTEM_DEF(bounty)
 	if(QDELETED(new_bounty))
 		return null
 
+	new_bounty.expires_at = world.time + rand(PIRATE_BOUNTY_LIFETIME_MIN, PIRATE_BOUNTY_LIFETIME_MAX)
 	active_bounties += new_bounty
 	log_world("SSbounty: Created bounty for [ship.name] worth [new_bounty.reward] credits")
 
@@ -157,16 +222,11 @@ SUBSYSTEM_DEF(bounty)
 	active_bounties -= bounty
 
 /**
- * Called by SSnpc_ships when a new pirate spawns.
- * Creates a bounty for the new ship after a short delay.
+ * Called by SSnpc_ships when a new pirate spawns. A new pirate gets no bounty of
+ * its own: it joins the ships the rotation picks from (rotate_pirate_bounties()).
  */
 /datum/controller/subsystem/bounty/proc/on_pirate_spawned(obj/structure/overmap/ship/npc/ship)
-	// During SSbounty initialization, bounties are created via generate_initial_bounties()
-	if(!bounties_initialized)
-		return
-
-	// For replacement pirates spawned after init, create bounty with delay for ship to fully load
-	addtimer(CALLBACK(src, PROC_REF(create_bounty_for_ship), ship), 2 SECONDS)
+	return
 
 // ========== UI DATA HELPERS ==========
 

@@ -143,6 +143,7 @@
 	if(!vault)
 		return
 	new /obj/item/holochip(vault, kills * 150)
+	metric_colosseum_bounty(vault, kills * 150, kills)
 	for(var/i in 1 to round(kills / 3))
 		var/static/list/bonus_part_weights = list(
 			/obj/item/ship_parts/combat = 55,

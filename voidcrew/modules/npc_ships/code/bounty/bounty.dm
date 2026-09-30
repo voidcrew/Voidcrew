@@ -1,9 +1,10 @@
 /**
  * Bounty - Global competitive bounty for pirate ships
  *
- * Bounties are created for each active pirate ship and can be claimed
- * by multiple player ships simultaneously. First ship to turn in the
- * captain's key wins the bounty reward.
+ * SSbounty puts bounties on a share of the pirate ships at a time, and they
+ * can be claimed by multiple player ships simultaneously. First ship to turn
+ * in the captain's key wins the bounty reward. One nobody is hunting comes
+ * down once expires_at passes (expire()).
  *
  * Bounties fail when:
  * - The captain's key is destroyed (gibbed, spaced, etc.)
@@ -53,6 +54,9 @@
 	/// Whether this is a heavy-threat bounty (determines loot quality)
 	var/is_heavy_bounty = FALSE
 
+	/// world.time it comes down if nobody is hunting it (set by SSbounty; 0 = never)
+	var/expires_at = 0
+
 /datum/pirate_bounty/New(obj/structure/overmap/ship/npc/target_ship, obj/item/ship_key/captain_key)
 	. = ..()
 	if(!target_ship || !captain_key)
@@ -77,6 +81,7 @@
 
 	// Register for ship destruction signal
 	RegisterSignal(target_ship, COMSIG_SHIP_DESTROYED, PROC_REF(on_ship_destroyed))
+	npc_metric_bounty_posted(src)
 
 /datum/pirate_bounty/Destroy()
 	// Remove from global tracking first (prevents memory leak)
@@ -176,6 +181,7 @@
 		return FALSE
 
 	claiming_ships += WEAKREF(ship)
+	npc_metric_bounty_accepted(src, ship)
 	return TRUE
 
 /**
@@ -367,6 +373,7 @@
 
 	if(winner)
 		winner.ship_notify("BOUNTY COMPLETE: [name] - [reward_text] awarded!", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	npc_metric_bounty_paid(src, winner, winner ? actual_reward : 0, item_rewards)
 
 	// Notify other claimants of failure
 	for(var/datum/weakref/ref in claiming_ships)
@@ -465,6 +472,7 @@
 	failed = TRUE
 	failure_reason = reason
 	clear_tracking_waypoints()
+	npc_metric_bounty_failed(src, reason)
 
 	// Notify all claimants
 	for(var/datum/weakref/ref in claiming_ships)
@@ -474,6 +482,17 @@
 
 	// Remove from global tracker
 	SSbounty?.remove_bounty(src)
+
+/**
+ * Nobody took it up in time: it comes down quietly, and its ship carries no
+ * new bounty for PIRATE_BOUNTY_REST, so the next one goes up somewhere else.
+ */
+/datum/pirate_bounty/proc/expire()
+	var/obj/structure/overmap/ship/npc/ship = get_target_ship()
+	fail("The bounty was withdrawn.")
+	if(ship && SSbounty)
+		SSbounty.pirate_bounty_rest[WEAKREF(ship)] = world.time + PIRATE_BOUNTY_REST
+	qdel(src)
 
 // ========== SIGNAL HANDLERS ==========
 

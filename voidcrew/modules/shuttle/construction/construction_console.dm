@@ -6,7 +6,8 @@
  * within shuttle areas and one tile adjacent (for expansion).
  *
  * Features:
- * - Remote construction drone control
+ * - Remote construction drone control: the operator clicks tiles within the drone's reach
+ *   (left to build, right to remove) and picks the tool in the console's Tools tab
  * - RCD building within shuttle and adjacent tiles
  * - Automatic shuttle expansion when building adjacent
  * - Automatic shuttle shrinking when deconstructing
@@ -182,7 +183,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Create a callback that checks if the drone moved
 	var/datum/callback/drone_check = CALLBACK(src, PROC_REF(check_drone_stationary), drone, drone_start_turf)
 
-	return do_after(user, delay, target, extra_checks = drone_check)
+	// interaction_key: with clicks, jobs started on different tiles would otherwise run in
+	// parallel, because do_after keys on the target by default. One key, one job at a time.
+	return do_after(user, delay, target, extra_checks = drone_check, interaction_key = DOAFTER_SOURCE_SHIP_CONSTRUCTION)
 
 /// Callback to check if drone is still on the same turf
 /obj/item/construction/rcd/internal/ship/proc/check_drone_stationary(mob/eye/camera/remote/drone, turf/start_turf)
@@ -216,8 +219,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Use SILICON_OVERRIDE to bypass account check for ship construction
 	var/list/user_data = ID_DATA(user)
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	silo_mats.use_materials(list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "ship construction", user_data = user_data)
-	return TRUE
+	if(!amount)
+		return silo_mats.can_use_resource(user_data = user_data)
+	return silo_mats.use_materials(list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "ship construction", user_data = user_data) > 0
 
 /// Override to bypass account check when checking resources
 /obj/item/construction/rcd/internal/ship/checkResource(amount, mob/user)
@@ -768,8 +772,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Use SILICON_OVERRIDE to bypass account check
 	var/list/user_data = ID_DATA(user)
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	silo_mats.use_materials(materials, action = "build", name = "ship tiling", user_data = user_data)
-	return TRUE
+	return silo_mats.use_materials(materials, action = "build", name = "ship tiling", user_data = user_data) > 0
 
 // ============================================
 // Ship Internal RPD - bypasses proximity checks
@@ -902,8 +905,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Use SILICON_OVERRIDE to bypass account check
 	var/list/user_data = ID_DATA(user)
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	silo_mats.use_materials(materials, action = "build", name = "ship lighting", user_data = user_data)
-	return TRUE
+	return silo_mats.use_materials(materials, action = "build", name = "ship lighting", user_data = user_data) > 0
 
 /// Check materials for wall light
 /obj/item/construction/rld/internal/proc/check_wall_light_materials(mob/user)
@@ -929,57 +931,6 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /obj/item/construction/rld/internal/proc/use_glow_stick_materials(mob/user)
 	return use_silo_materials(SHIP_RLD_GLOW_STICK_IRON, SHIP_RLD_GLOW_STICK_GLASS, user)
 
-/// Override attack_self to show radial menu on the drone location (without Deconstruct option)
-/obj/item/construction/rld/internal/attack_self(mob/user)
-	// Play the parent sound effects
-	playsound(loc, 'sound/effects/pop.ogg', 50, FALSE)
-	if(prob(20))
-		spark_system.start()
-
-	// Build filtered options (exclude Deconstruct - we have a separate action for that)
-	var/list/ship_options = list()
-	for(var/option in display_options)
-		if(option == "Deconstruct")
-			continue
-		ship_options[option] = display_options[option]
-
-	if((construction_upgrades & RCD_UPGRADE_SILO_LINK) && ship_options["Silo Link"] == null)
-		ship_options["Silo Link"] = icon(icon = 'icons/obj/machines/ore_silo.dmi', icon_state = "silo")
-
-	// Show radial menu on the drone location with no proximity requirement
-	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
-	var/atom/menu_anchor = drone ? drone : src
-	var/choice = show_radial_menu(user, menu_anchor, ship_options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = FALSE, tooltips = TRUE)
-	if(!check_menu(user))
-		return
-	if(!choice)
-		return
-
-	// RLD mode values: 1 = GLOW_MODE, 2 = LIGHT_MODE
-	switch(choice)
-		if("Light Fixture")
-			mode = 2 // LIGHT_MODE
-			to_chat(user, span_notice("You change RLD's mode to 'Permanent Light Construction'."))
-		if("Glow Stick")
-			mode = 1 // GLOW_MODE
-			to_chat(user, span_notice("You change RLD's mode to 'Light Launcher'."))
-		if("Color Pick")
-			var/new_choice = input(user,"","Choose Color",color_choice) as color
-			if(new_choice == null)
-				return
-
-			var/list/new_rgb = rgb2num(new_choice)
-			for(var/option in original_options)
-				if(option == "Color Pick" || option == "Deconstruct" || option == "Silo Link")
-					continue
-				var/icon/the_icon = icon(original_options[option])
-				the_icon.SetIntensity(new_rgb[1]/255, new_rgb[2]/255, new_rgb[3]/255)
-				display_options[option] = the_icon
-
-			color_choice = new_choice
-		else
-			toggle_silo(user)
-
 /obj/machinery/computer/camera_advanced/base_construction/ship
 	name = "ship construction console"
 	desc = "A console for managing ship construction and modifications. Control a remote drone to build and modify your ship."
@@ -990,6 +941,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	light_color = LIGHT_COLOR_CYAN
 	// Ships don't use camera networks - the drone doesn't need visibility checks
 	networks = list()
+	// Ships and outposts are single z-levels, and the HUD is down to two buttons
+	move_up_action = null
+	move_down_action = null
 
 	/// The ship we are connected to
 	var/obj/structure/overmap/ship/current_ship
@@ -1016,6 +970,14 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	var/tray_mode = SHIP_TRAY_MODE_OFF
 	/// Pipe connection images for T-ray pipe mode
 	var/list/tray_connection_images = list()
+	/// The drone tool a click uses (SHIP_DRONE_TOOL_*), picked in the Tools tab
+	var/selected_tool = SHIP_DRONE_TOOL_RCD
+	/// What the Lights tool builds (SHIP_DRONE_LIGHT_*)
+	var/light_build_type = SHIP_DRONE_LIGHT_TUBE
+	/// Which wall a tube or bulb hangs on. NONE picks the wall nearest the click.
+	var/light_build_dir = NONE
+	/// Client images outlining the drone's reach, shown to the operator
+	var/list/reach_images
 	/// Rate limit on the "new sections have no air" warning - a room is many tiles,
 	/// and the builder only needs telling once per build session, not per tile
 	COOLDOWN_DECLARE(airless_warning_cooldown)
@@ -1058,6 +1020,9 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	QDEL_NULL(internal_rld)
 	QDEL_NULL(internal_painter)
 	tray_connection_images.Cut()
+	// Before the parent: its remove_eye_control() runs after our list would be gone, and a
+	// client still holding images parented to the drone keeps the drone alive.
+	hide_drone_reach(current_user)
 	return ..()
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/on_deconstruction(disassembled)
@@ -1162,8 +1127,19 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// sweep above: shown to the operator, centred on the drone.
 	atmos_thermal(current_user, 5, 10, eyeobj)
 
+/// Route the operator's clicks to the drone tools and outline the drone's reach
+/obj/machinery/computer/camera_advanced/base_construction/ship/give_eye_control(mob/user)
+	. = ..()
+	if(current_user == user)
+		user.click_intercept = src
+		show_drone_reach(user)
+
 /// Close all configuration UIs when exiting camera mode
 /obj/machinery/computer/camera_advanced/base_construction/ship/remove_eye_control(mob/living/user)
+	// The parent returns early for a user with no client, so let go of the clicks first
+	if(user?.click_intercept == src)
+		user.click_intercept = null
+	hide_drone_reach(user)
 	// Close any open configuration UIs for internal devices
 	if(internal_rcd)
 		SStgui.close_uis(internal_rcd)
@@ -1329,8 +1305,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		installed_upgrade_types += upgrade_disk.type
 		qdel(upgrade_disk)
 
-		// Refresh actions to add new upgrade actions
-		refresh_actions()
+		SStgui.update_uis(src)
 		return ITEM_INTERACT_SUCCESS
 
 	return ..()
@@ -1341,13 +1316,17 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 /// forever even though the console next to it is drawing from the silo fine. Anything that creates
 /// or relinks a device goes through here.
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/link_internal_device(obj/item/device, datum/component/remote_materials/mats, obj/machinery/ore_silo/silo)
-	if(isnull(device) || isnull(mats) || QDELETED(silo) || !same_service_site(src, silo))
+	if(isnull(device) || isnull(mats) || QDELETED(silo) || !can_link_silo(silo))
 		return FALSE
 	if(mats.silo == silo)
 		return TRUE
 	mats.disconnect()
 	silo.connect_receptacle(mats, device)
 	return TRUE
+
+/// Shore-side consoles can authorize the current visiting ship separately.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_link_silo(obj/machinery/ore_silo/silo)
+	return same_service_site(src, silo)
 
 /// The silo the console's RCD is currently drawing from, if any.
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_linked_silo()
@@ -1363,7 +1342,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 			balloon_alert(user, "silo link unavailable")
 			return ITEM_INTERACT_SUCCESS
 		var/obj/machinery/ore_silo/silo = M.buffer
-		if(!same_service_site(src, silo))
+		if(!can_link_silo(silo))
 			balloon_alert(user, "silo belongs to another site")
 			return TRUE
 		// Don't bail out when the RCD is already on this silo - relinking is how a player repairs
@@ -1419,59 +1398,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 		placed_camera.c_tag = "[format_text(camera_area?.name || "Unknown")] Camera"
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
-	// Core RCD actions
-	actions += new /datum/action/innate/construction/ship/configure_mode(src)
-	actions += new /datum/action/innate/construction/ship/build(src)
-	actions += new /datum/action/innate/construction/ship/deconstruct(src)
-	actions += new /datum/action/innate/construction/ship/camera_build(src)
-	// RTD actions (added if upgrade is installed)
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_DECAL)
-		actions += new /datum/action/innate/construction/ship/decal_configure(src)
-		actions += new /datum/action/innate/construction/ship/decal_paint(src)
-		actions += new /datum/action/innate/construction/ship/decal_remove(src)
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
-		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
-		actions += new /datum/action/innate/construction/ship/rtd_build(src)
-		actions += new /datum/action/innate/construction/ship/rtd_deconstruct(src)
-	// RPD actions (added if upgrade is installed)
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RPD)
-		actions += new /datum/action/innate/construction/ship/rpd_configure(src)
-		actions += new /datum/action/innate/construction/ship/rpd_build(src)
-		actions += new /datum/action/innate/construction/ship/rpd_destroy(src)
-	// RLD actions (added if upgrade is installed)
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RLD)
-		actions += new /datum/action/innate/construction/ship/rld_color(src)
-		actions += new /datum/action/innate/construction/ship/rld_build(src)
-		actions += new /datum/action/innate/construction/ship/rld_remove(src)
-	// T-ray scanner action (added if upgrade is installed)
-	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY)
-		actions += new /datum/action/innate/construction/ship/tray_toggle(src)
-
-/// Refreshes the actions list (called when upgrades are installed)
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/refresh_actions()
-	// Remove old construction actions from the current user if any (but not the off_action)
-	if(current_user)
-		for(var/datum/action/innate/construction/action in actions)
-			action.Remove(current_user)
-
-	// Preserve the off_action (camera exit button)
-	var/datum/action/innate/camera_off/preserved_off_action
-	for(var/datum/action/innate/camera_off/off_act in actions)
-		preserved_off_action = off_act
-		actions -= off_act
-		break
-
-	// Clear construction actions and repopulate
-	QDEL_LIST(actions)
-	populate_actions_list()
-
-	// Re-add the off_action at the beginning
-	if(preserved_off_action)
-		actions.Insert(1, preserved_off_action)
-
-	// Re-grant actions to current user if in construction mode
-	if(current_user)
-		GrantActions(current_user)
+	actions += new /datum/action/innate/construction/ship/open_console(src)
 
 /// Override to show UI instead of immediately entering construction mode
 /// We skip the camera_advanced parent's attack_hand which would enter camera mode
@@ -1660,15 +1587,41 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	if(!port)
 		return FALSE
 	var/area/deck_area = get_area(target)
-	if(is_in_shuttle_area(target))
+	var/inside_hull = is_in_shuttle_area(target)
+	if(inside_hull)
 		// A breach exposes the deck without immediately relinquishing the ship's area.
 		deck_area = port.underlying_areas_by_turf[target]
 	if(!istype(deck_area, /area/voidcrew/outpost_hangar))
+		return FALSE
+	// Standard berths are sized to the ship: breaches in its own footprint may be floored
+	// again, but only a ship bay has room to extend the hull.
+	if(!inside_hull && istype(deck_area, /area/voidcrew/outpost_hangar/berth) && !on_berth_pad(target))
 		return FALSE
 	for(var/obj/fixture in target)
 		if(HAS_TRAIT(fixture, TRAIT_OUTPOST_PROPERTY))
 			return FALSE
 	return TRUE
+
+/**
+ * Whether a turf lies on the ground the ship's current berth was built for. Deck the
+ * hull lost (a breach handed back to the hangar) stays repairable; anything past it is
+ * extension, which a standard berth has no room for.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/on_berth_pad(turf/target)
+	var/obj/docking_port/stationary/berth_dock = get_docking_port()?.get_docked()
+	if(!berth_dock || !target || berth_dock.z != target.z)
+		return FALSE
+	var/list/coords = berth_dock.return_coords()
+	return target.x >= min(coords[1], coords[3]) && target.x <= max(coords[1], coords[3]) \
+		&& target.y >= min(coords[2], coords[4]) && target.y <= max(coords[2], coords[4])
+
+/// Why the hull cannot grow onto this turf, when the reason is standard berth parking.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_expansion_denial(turf/target)
+	if(!target || is_in_shuttle_area(target))
+		return null
+	if(istype(get_area(target), /area/voidcrew/outpost_hangar/berth) && !on_berth_pad(target))
+		return OUTPOST_BERTH_CONSTRUCTION_DENIAL
+	return null
 
 /**
  * Checks if the drone can move to a destination turf
@@ -2169,6 +2122,18 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	// Check if user is in construction mode (controlling drone)
 	data["isInConstructionMode"] = (eyeobj && user.remote_control == eyeobj)
 
+	// Tools tab
+	data["selectedTool"] = selected_tool
+	data["rtdInstalled"] = !!internal_rtd
+	data["rpdInstalled"] = !!internal_rpd
+	data["rldInstalled"] = !!internal_rld
+	data["decalInstalled"] = !!internal_painter
+	data["scannerInstalled"] = !!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY)
+	data["lightType"] = light_build_type
+	data["lightDir"] = light_build_dir ? dir2text(light_build_dir) : "auto"
+	data["lightColor"] = internal_rld?.color_choice || "#ffffff"
+	data["scannerMode"] = tray_mode
+
 	// Theme preference
 	data["theme"] = theme
 	data += construction_controls_data(user)
@@ -2180,6 +2145,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	var/list/data = list()
 
 	data["shipName"] = current_ship ? current_ship.display_name : null
+	data["isOutpost"] = FALSE
 
 	return data
 
@@ -2192,7 +2158,7 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 	if(!is_crew_member(usr))
 		say("ERROR: Access denied. Crew authorization required.")
 		return
-	if(construction_control_act(action, params, usr) || repair_control_act(action, params, usr))
+	if(construction_control_act(action, params, usr) || repair_control_act(action, params, usr) || drone_tool_act(action, params, usr))
 		return TRUE
 
 	switch(action)
@@ -2221,3 +2187,175 @@ GLOBAL_LIST_INIT(ship_rcd_hull_designs, list(
 			return TRUE
 
 	return FALSE
+
+// ============================================
+// Drone Clicks and Tools
+// ============================================
+
+/// Whether user is the operator currently flying this console's drone.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_drone_operator(mob/user)
+	return user == current_user && !QDELETED(eyeobj) && user.remote_control == eyeobj
+
+/// Whether the tool is installed on this console. The RCD and the camera mount are always there.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_tool_available(tool)
+	switch(tool)
+		if(SHIP_DRONE_TOOL_RCD, SHIP_DRONE_TOOL_CAMERA)
+			return TRUE
+		if(SHIP_DRONE_TOOL_TILE)
+			return !!internal_rtd
+		if(SHIP_DRONE_TOOL_PIPE)
+			return !!internal_rpd
+		if(SHIP_DRONE_TOOL_LIGHT)
+			return !!internal_rld
+		if(SHIP_DRONE_TOOL_DECAL)
+			return !!internal_painter
+	return FALSE
+
+/// Called by name from /mob/proc/check_click_intercept while the operator is flying the drone.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/InterceptClickOn(mob/user, params, atom/target)
+	if(user != current_user || QDELETED(eyeobj) || user.remote_control != eyeobj)
+		if(user.click_intercept == src)
+			user.click_intercept = null
+		return FALSE
+	var/list/modifiers = params2list(params)
+	// Examine, pulling, alt and middle clicks keep their usual meaning.
+	if(LAZYACCESS(modifiers, SHIFT_CLICK) || LAZYACCESS(modifiers, CTRL_CLICK) || LAZYACCESS(modifiers, ALT_CLICK) || LAZYACCESS(modifiers, MIDDLE_CLICK))
+		return FALSE
+	// Only things out on the map. HUD buttons and the operator's own inventory click as normal.
+	if(!isturf(target) && !isturf(target.loc))
+		return FALSE
+	use_drone_tool(user, target, LAZYACCESS(modifiers, RIGHT_CLICK), modifiers)
+	return TRUE
+
+/// Where on its tile the operator clicked, as list(x, y) in pixels from the tile's bottom left, or null
+/// when the click carried no position. Objects draw offset from their tile (wall fixtures especially).
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_click_point(atom/clicked, list/modifiers)
+	var/icon_x = text2num(LAZYACCESS(modifiers, ICON_X))
+	var/icon_y = text2num(LAZYACCESS(modifiers, ICON_Y))
+	if(isnull(icon_x) || isnull(icon_y))
+		return null
+	if(!isturf(clicked))
+		icon_x += clicked.pixel_x
+		icon_y += clicked.pixel_y
+	return list(icon_x, icon_y)
+
+/// Uses the selected tool on the clicked tile, or its removal when secondary.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/use_drone_tool(mob/user, atom/clicked, secondary = FALSE, list/modifiers)
+	var/turf/target = get_turf(clicked)
+	if(!target || user.next_move > world.time)
+		return FALSE
+	if(target.z != eyeobj.z || get_dist(eyeobj, target) > SHIP_CONSTRUCTION_DRONE_REACH)
+		target.balloon_alert(user, "out of reach!")
+		return FALSE
+	if(DOING_INTERACTION(user, DOAFTER_SOURCE_SHIP_CONSTRUCTION))
+		drone_alert(user, "busy!")
+		return FALSE
+	if(!drone_tool_available(selected_tool))
+		selected_tool = SHIP_DRONE_TOOL_RCD
+	var/list/click_point = drone_click_point(clicked, modifiers)
+	switch(selected_tool)
+		if(SHIP_DRONE_TOOL_RCD)
+			return secondary ? drone_deconstruct(user, target, clicked) : drone_rcd_build(user, target)
+		if(SHIP_DRONE_TOOL_CAMERA)
+			return secondary ? drone_remove_camera(user, target, clicked) : drone_place_camera(user, target, click_point)
+		if(SHIP_DRONE_TOOL_TILE)
+			return secondary ? drone_remove_tile(user, target) : drone_place_tile(user, target)
+		if(SHIP_DRONE_TOOL_PIPE)
+			return secondary ? drone_remove_pipe(user, target) : drone_place_pipe(user, target)
+		if(SHIP_DRONE_TOOL_LIGHT)
+			return secondary ? drone_remove_light(user, target, clicked) : drone_place_light(user, target, click_point)
+		if(SHIP_DRONE_TOOL_DECAL)
+			return secondary ? drone_remove_decal(user, target) : drone_paint_decal(user, target)
+	return FALSE
+
+/// Tools tab acts. Only the drone's operator may change its tools.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_tool_act(action, list/params, mob/user)
+	switch(action)
+		if("select_tool")
+			if(!is_drone_operator(user))
+				return TRUE
+			var/tool = params["tool"]
+			if(drone_tool_available(tool))
+				selected_tool = tool
+				playsound(src, SFX_TOOL_SWITCH, 20, TRUE)
+			return TRUE
+		if("configure_tool")
+			if(!is_drone_operator(user))
+				return TRUE
+			switch(params["tool"])
+				if(SHIP_DRONE_TOOL_RCD)
+					internal_rcd.owner = src
+					internal_rcd.ui_interact(user)
+				if(SHIP_DRONE_TOOL_TILE)
+					internal_rtd?.ui_interact(user)
+				if(SHIP_DRONE_TOOL_PIPE)
+					internal_rpd?.ui_interact(user)
+				if(SHIP_DRONE_TOOL_DECAL)
+					internal_painter?.ui_interact(user)
+			return TRUE
+		if("light_type")
+			if(!is_drone_operator(user))
+				return TRUE
+			var/new_type = params["type"]
+			if(new_type in list(SHIP_DRONE_LIGHT_TUBE, SHIP_DRONE_LIGHT_BULB, SHIP_DRONE_LIGHT_FLOOR, SHIP_DRONE_LIGHT_GLOW))
+				light_build_type = new_type
+			return TRUE
+		if("light_dir")
+			if(!is_drone_operator(user))
+				return TRUE
+			var/new_dir = params["dir"]
+			if(new_dir == "auto")
+				light_build_dir = NONE
+			else if(new_dir in list("north", "south", "east", "west"))
+				light_build_dir = text2dir(new_dir)
+			return TRUE
+		if("light_color")
+			if(!is_drone_operator(user) || !internal_rld)
+				return TRUE
+			var/new_color = input(user, "Choose light color", "Light Color", internal_rld.color_choice) as color|null
+			if(new_color == null || !is_drone_operator(user) || !internal_rld)
+				return TRUE
+			internal_rld.color_choice = new_color
+			return TRUE
+		if("scanner_mode")
+			if(!is_drone_operator(user))
+				return TRUE
+			if(!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY))
+				return TRUE
+			var/mode = params["mode"]
+			if(!(mode in list(SHIP_TRAY_MODE_OFF, SHIP_TRAY_MODE_TRAY, SHIP_TRAY_MODE_PIPE, SHIP_TRAY_MODE_THERMAL)))
+				return TRUE
+			tray_mode = mode
+			if(tray_mode == SHIP_TRAY_MODE_OFF)
+				tray_connection_images.Cut()
+			return TRUE
+	return FALSE
+
+/// Outlines the drone's reach for the operator: four thin lines forming the 7x7 border, parented to the drone so they follow it.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_drone_reach(mob/user)
+	hide_drone_reach(user)
+	if(!user?.client || QDELETED(eyeobj))
+		return
+	var/span = SHIP_CONSTRUCTION_DRONE_REACH * 2 + 1
+	var/edge = (SHIP_CONSTRUCTION_DRONE_REACH + 0.5) * ICON_SIZE_ALL - 1
+	reach_images = list()
+	for(var/side in GLOB.cardinals)
+		var/image/line = image('icons/effects/alphacolors.dmi', eyeobj, "white")
+		line.color = LIGHT_COLOR_CYAN
+		line.alpha = 110
+		// Without this, clicks on the border tiles would land on the drone instead.
+		line.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		line.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | PIXEL_SCALE
+		line.layer = NAVIGATION_EYE_LAYER
+		SET_PLANE_EXPLICIT(line, ABOVE_LIGHTING_PLANE, eyeobj)
+		if(side & (NORTH|SOUTH))
+			line.transform = matrix(span, 0, 0, 0, 2 / ICON_SIZE_Y, side == NORTH ? edge : -edge)
+		else
+			line.transform = matrix(2 / ICON_SIZE_X, 0, side == EAST ? edge : -edge, 0, span, 0)
+		reach_images += line
+	user.client.images += reach_images
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/hide_drone_reach(mob/user)
+	if(length(reach_images) && user?.client)
+		user.client.images -= reach_images
+	reach_images = null

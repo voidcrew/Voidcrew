@@ -7,7 +7,7 @@
 	sight = SEE_TURFS | SEE_OBJS // See turfs and objects, not mobs
 	/// Reference to our console
 	var/obj/machinery/computer/camera_advanced/ship_combat/console
-	/// The target (ship or raidable outpost) we're allowed to view
+	/// The target we're allowed to view
 	var/obj/structure/overmap/target_ship
 	/// Static images applied to interior turfs (non-edge turfs)
 	var/list/image/interior_static_images

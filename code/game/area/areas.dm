@@ -424,7 +424,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		return
 	if(!areas_in_z["[z]"])
 		areas_in_z["[z]"] = list()
-	areas_in_z["[z]"] += src
+	areas_in_z["[z]"] |= src // VOIDCREW EDIT: was +=. A template load registers its areas and each new one registers again in Initialize(); Destroy() removes one entry, so the duplicate kept every reaped template area (player_outposts) from being collected.
 
 /**
  * Destroy an area and clean it up

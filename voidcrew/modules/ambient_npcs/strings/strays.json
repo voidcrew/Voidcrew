@@ -1,0 +1,230 @@
+{
+	"_owner": "PC (strays): stranded people, lifeboats, convicts, deckhands.",
+	"stranded": {
+		"idle": [
+			"Eleven days. I've been counting on the rocks.",
+			"Come on. Somebody. Anybody.",
+			"Keep it burning. Somebody will see it.",
+			"I'm talking to myself again.",
+			"Rations for four more days. Three, if I'm honest."
+		],
+		"greet": [
+			"Hey! Over here! Please tell me that's a ship.",
+			"Hey! Hey! Over here!",
+			"You're real. Tell me you're real."
+		],
+		"talk": [
+			"My pod came down over the ridge. Nobody else got out.",
+			"I can cook, I can weld, I can keep quiet. Take me with you?",
+			"I'm not asking for a free ride. I'll work.",
+			"Eleven days. I've been counting on the rocks."
+		],
+		"accepted": [
+			"Thank you. Thank you. Lead the way.",
+			"There's nothing here I want to take. Let's go."
+		],
+		"refused": [
+			"Right. I'll keep the fire going, then.",
+			"Sure. Come back, maybe."
+		],
+		"aboard": [
+			"Real walls. I forgot what walls looked like.",
+			"It smells like people in here. I missed that."
+		],
+		"fire": [
+			"Don't you go out on me.",
+			"Last of the dry stuff."
+		],
+		"flare": [
+			"Still burning. Good.",
+			"Come on, look down here."
+		],
+		"lost": [
+			"Hey! Wait up!",
+			"Where'd you go?"
+		],
+		"storm": [
+			"Weather's turning! Keep your head down!",
+			"Here it comes again!"
+		],
+		"attacked": [
+			"What are you doing?!",
+			"I thought you were here to help!"
+		]
+	},
+	"lifeboat": {
+		"idle": [
+			"Air's at a third. I've been breathing slow.",
+			"Two of us launched. I don't want to talk about it.",
+			"Come on, beacon. Keep calling."
+		],
+		"greet": [
+			"I saw your lights and nearly cried.",
+			"Oh, thank god. Oh, thank god.",
+			"You came. You actually came."
+		],
+		"talk": [
+			"Is it far? Your ship. Is it far?",
+			"I'll sleep in a closet. I don't care.",
+			"Air's at a third. I've been breathing slow.",
+			"Please. I'll do whatever you need."
+		],
+		"accepted": [
+			"Okay. Okay. I'm right behind you.",
+			"Don't go too fast out there."
+		],
+		"refused": [
+			"Oh. Okay. I'll leave the beacon on.",
+			"Right. I'll just wait, then."
+		],
+		"aboard": [
+			"Gravity. Real air. Thank you.",
+			"I'm never getting in one of those things again."
+		],
+		"canister": [
+			"Still a third. Still a third.",
+			"Come on, hold."
+		],
+		"light": [
+			"Stay on. Please stay on."
+		],
+		"window": [
+			"Nothing out there. Nothing for days."
+		],
+		"lost": [
+			"Wait! Don't leave me out here!"
+		],
+		"attacked": [
+			"No! Please!",
+			"I thought you were a rescue!"
+		],
+		"mayday": [
+			"Mayday, mayday. Lifeboat off the freighter Halvard. One aboard, air running low. Anyone hearing this, please come.",
+			"Mayday. This is a lifeboat, one aboard. Our ship is gone. I can't hold out much longer. Please respond.",
+			"Mayday, mayday. Anyone out there. One survivor in a lifeboat, beacon on. Please come."
+		]
+	},
+	"convict": {
+		"sighted": [
+			"Don't shoot! I'm not armed. I'm really not.",
+			"Don't shoot! Please!"
+		],
+		"talk": [
+			"They said it was a transfer. The transport never got there.",
+			"Six years for a crate of cigarettes. Six.",
+			"You're not with them, are you? Tell me you're not with them."
+		],
+		"plea": [
+			"I can work. Take me anywhere that isn't back.",
+			"You need hands? I've got two. Just don't take me back."
+		],
+		"accepted": [
+			"Anywhere but back. Let's go.",
+			"You won't regret it. Probably."
+		],
+		"refused": [
+			"Figured.",
+			"Yeah. Nobody wants a con."
+		],
+		"camp": [
+			"Six years for a crate of cigarettes. Six.",
+			"Nobody's coming for me. Good.",
+			"Wonder if they're still looking."
+		],
+		"cornered": [
+			"Stay back! I mean it!",
+			"Back off! I'm not going back!"
+		],
+		"cuffed": [
+			"Figures.",
+			"Yeah. Figures."
+		],
+		"aboard": [
+			"Nice ship. Nobody's shooting at me. Nicer ship."
+		],
+		"lost": [
+			"Hey! Where'd you go?"
+		],
+		"attacked": [
+			"Hey! I thought we had a deal!"
+		]
+	},
+	"deckhand": {
+		"idle": [
+			"Still can't believe you stopped for me.",
+			"Where are we headed, anyway?",
+			"I keep waiting for the floor to fall out.",
+			"Anything need cleaning? I can clean."
+		],
+		"talk": [
+			"Need a hand with anything?",
+			"I'm keeping out of the way. Mostly.",
+			"Thanks again. Really."
+		],
+		"crew": [
+			"{other}, you need anything?",
+			"Morning, {other}. Or whatever it is.",
+			"{other}, where are we off to next?",
+			"You look tired, {other}."
+		],
+		"wash": [
+			"Hot water. Unbelievable."
+		],
+		"window": [
+			"Doesn't look so bad from in here."
+		],
+		"follow": [
+			"Right behind you.",
+			"Lead on."
+		],
+		"wait": [
+			"I'll be here.",
+			"Sure, I'll wait."
+		],
+		"dismissed": [
+			"This is my stop, then. Thanks for everything.",
+			"Thanks for the lift. I mean it."
+		],
+		"lost": [
+			"I'll wait here, then."
+		],
+		"attacked": [
+			"Hey! What did I do?",
+			"Stop! I'm on your side!"
+		],
+		"chat": [
+			"How'd they find you?",
+			"You sleep all right?",
+			"What did you do, before all this?"
+		],
+		"reply": [
+			"Long story.",
+			"Better than the last place.",
+			"Don't ask."
+		],
+		"conversations": [
+			{
+				"opener": "How'd they find you?",
+				"replies": [
+					"Sat by a fire for eleven days.",
+					"Beacon. Took them long enough."
+				]
+			},
+			{
+				"opener": "You get a bunk yet?",
+				"replies": [
+					"Took the one nearest the door.",
+					"Floor's fine. Floor's great."
+				]
+			}
+		]
+	},
+	"any": {
+		"attacked": [
+			"Hey! Stop!"
+		],
+		"storm": [
+			"Weather's coming in!"
+		]
+	}
+}

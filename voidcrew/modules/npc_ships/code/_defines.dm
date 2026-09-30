@@ -286,3 +286,16 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 // Room exploration constants
 #define EXPLORATION_MAX_LOCKERS 3                                 // Cap locker targets per room
 #define EXPLORATION_MIN_ROOM_SIZE 4                               // Skip exploration for rooms smaller than this
+
+// ========== PIRATE BOUNTIES ==========
+// Only some pirate ships carry a bounty at a time; the rest are just a threat. Bounties come and go.
+
+/// The share of crewed pirate ships with a bounty on them (always at least one)
+#define PIRATE_BOUNTY_SHARE 0.5
+/// How long a bounty stays up while nobody hunts it
+#define PIRATE_BOUNTY_LIFETIME_MIN (30 MINUTES)
+#define PIRATE_BOUNTY_LIFETIME_MAX (50 MINUTES)
+/// A ship whose bounty ran out carries no new one for this long, so the bounties move around
+#define PIRATE_BOUNTY_REST (20 MINUTES)
+/// Between two new bounties once the round is running
+#define PIRATE_BOUNTY_POST_GAP (3 MINUTES)

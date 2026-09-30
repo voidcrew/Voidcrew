@@ -27,6 +27,7 @@
 	// Group orders by pack name for cleaner history
 	var/list/order_counts = list()
 	var/list/order_costs = list()
+	var/list/order_metrics = list()
 
 	// Iterate a copy: paid orders leave checkout_list inside the loop.
 	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
@@ -39,6 +40,7 @@
 			unpaid++
 			continue
 		var/price = spawning_order.ship_paid_cost
+		metric_note_cargo_order(order_metrics, spawning_order, price)
 
 		SSeconomy.track_purchase(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
 		value += price
@@ -81,6 +83,7 @@
 	// Record purchases in history
 	for(var/pack_name in order_counts)
 		cargo_shuttle.record_transaction("buy", pack_name, order_counts[pack_name], order_costs[pack_name])
+	metric_cargo_orders(order_metrics, bank_account_holder.synced_bank_account, src)
 
 	if(unpaid)
 		var/obj/structure/overmap/ship/paying_ship = get_ship_from_atom(src)
@@ -104,6 +107,7 @@
 		setupExports()
 
 	var/datum/export_report/ex = new
+	metric_watch_exports(ex)
 
 	// Get all turfs in the cargo bay
 	var/list/cargo_turfs = cargo_shuttle.get_cargo_bay_turfs()
@@ -136,6 +140,7 @@
 		var/export_name = exports.unit_name || "items"
 		cargo_shuttle.record_transaction("sell", export_name, ex.total_amount[exports], ex.total_value[exports])
 
+	metric_cargo_exports(ex, bank_account_holder.synced_bank_account, src)
 	var/total_profit = bank_account_holder.synced_bank_account.account_balance - presale_points
 
 	// Announce exports to the ship

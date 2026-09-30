@@ -163,6 +163,10 @@
 	for(var/obj/item/bodybag/bluespace/B in src)
 		to_chat(the_folder, span_warning("You can't recursively fold bluespace body bags!") )
 		return
+	// VOIDCREW EDIT ADDITION START - a living bounty criminal can't be folded away and carried as an item (voidcrew/modules/bounties/bounty_turn_in.dm)
+	if(bounty_blocks_bag_fold(src, the_folder))
+		return
+	// VOIDCREW EDIT ADDITION END
 	return TRUE
 
 /obj/structure/closet/body_bag/bluespace/perform_fold(mob/living/carbon/human/the_folder)

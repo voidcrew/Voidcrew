@@ -277,7 +277,7 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 			add_spawn_option(initial(definition.name), initial(definition.surface_area) ? "Planets" : "Encounters", path, initial(definition.desc))
 	for(var/id in SSmapping.space_ruins_templates)
 		var/datum/map_template/ruin/space/template = SSmapping.space_ruins_templates[id]
-		if(istype(template, /datum/map_template/ruin/space/lich_lair) || istype(template, /datum/map_template/ruin/space/contested_cache))
+		if(istype(template, /datum/map_template/ruin/space/lich_lair) || istype(template, /datum/map_template/ruin/space/contested_cache) || istype(template, /datum/map_template/ruin/space/bounty_lair)) // BOUNTY: lairs are posted by the board (Post Bounty Lair)
 			continue // These event sites have dedicated admin spawn verbs.
 		add_spawn_option(template.name, "Space ruins", template)
 	for(var/obj/structure/overmap/event/path as anything in subtypesof(/obj/structure/overmap/event))
@@ -453,8 +453,9 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 
 /obj/structure/overmap/dynamic/player_outpost/admin_ports()
 	. = ..()
-	if(freight_berth?.dock)
-		.["Freight berth"] = freight_berth.dock
+	var/obj/docking_port/stationary/cargo_pad = cargo_dock_port()
+	if(cargo_pad)
+		.["Cargo dock"] = cargo_pad
 
 /obj/structure/overmap/ship/admin_ports()
 	. = ..()
@@ -539,7 +540,7 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 			locations[player] = "Concourse"
 			continue
 		for(var/datum/outpost_berth/berth as anything in berths)
-			if(!QDELETED(berth) && berth.reservation?.contains_turf(location))
+			if(!QDELETED(berth) && berth.contains_turf(location))
 				locations[player] = "Hangar [berth.berth_number]"
 				break
 	return locations

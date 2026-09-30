@@ -21,6 +21,10 @@
 	var/pickup_restriction_ckeys = list()
 	/// Pickup restriction cooldown
 	COOLDOWN_DECLARE(pickup_cooldown)
+	// VOIDCREW EDIT ADDITION START - a quieter ball for the outpost prison's yard (voidcrew/modules/player_outposts/outpost_prison_fixtures.dm)
+	/// Volume of its bounce
+	var/bounce_volume = 75
+	// VOIDCREW EDIT ADDITION END
 
 /obj/item/toy/basketball/Initialize(mapload)
 	. = ..()
@@ -84,7 +88,7 @@
 	SIGNAL_HANDLER
 
 	if(steps > step_delay)
-		playsound(src, 'sound/items/basketball_bounce.ogg', 75, FALSE)
+		playsound(src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 		steps = 0
 	else
 		steps++
@@ -93,7 +97,7 @@
 	SIGNAL_HANDLER
 
 	for(var/i in 1 to 6)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/basketball_bounce.ogg', 75, FALSE), 0.25 SECONDS * i)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE), 0.25 SECONDS * i) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon/, adjustStaminaLoss), STAMINA_COST_SPINNING), 1.5 SECONDS)
 
 /// Used to calculate our disarm chance based on stamina, direction, and spinning
@@ -114,7 +118,7 @@
 	if(!prob(disarm_chance))
 		return // the disarm failed
 
-	playsound(src, 'sound/items/basketball_bounce.ogg', 75, FALSE)
+	playsound(src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 	var/blocking_dir_bonus = check_target_facings(stealer, baller)
 
 	switch(blocking_dir_bonus)
@@ -153,7 +157,7 @@
 	if(!iscarbon(target) || user.combat_mode)
 		return ..()
 
-	playsound(src, 'sound/items/basketball_bounce.ogg', 75, FALSE)
+	playsound(src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 	target.put_in_hands(src)
 
 /obj/item/toy/basketball/attack_self(mob/living/user)
@@ -170,7 +174,7 @@
 
 	last_use = world.time
 	user.swap_hand(user.get_held_index_of_item(src))
-	playsound(src, 'sound/items/basketball_bounce.ogg', 75, FALSE)
+	playsound(src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 
 /obj/item/toy/basketball/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	return interact_with_atom(interacting_with, user, modifiers)
@@ -205,7 +209,7 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/item/toy/basketball/throw_impact(mob/living/carbon/target, datum/thrownthing/throwingdatum)
-	playsound(src, 'sound/items/basketball_bounce.ogg', 75, FALSE)
+	playsound(src, 'sound/items/basketball_bounce.ogg', bounce_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 75
 
 	if(!istype(target))
 		return ..()

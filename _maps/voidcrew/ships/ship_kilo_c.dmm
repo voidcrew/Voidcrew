@@ -125,6 +125,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/dorms/c)
+"fg" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
 "fN" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -317,6 +326,24 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/dorms/c)
+"mu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/item/toy/plush/slimeplushie,
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
 "mU" = (
 /obj/effect/turf_decal/trimline/neutral/warning,
 /obj/machinery/door/airlock/command{
@@ -741,21 +768,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
-"Bp" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/storage/toolbox/emergency,
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/item/circuitboard/machine/ore_redemption,
-/obj/item/toy/plush/slimeplushie,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/iron/dollhouse,
-/area/shuttle/voidcrew/kilo/cargo/c)
 "BI" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -875,18 +887,6 @@
 	},
 /turf/open/floor/iron/dollhouse,
 /area/shuttle/voidcrew/kilo/bridge/c)
-"Fs" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/iron/dollhouse,
-/area/shuttle/voidcrew/kilo/cargo/c)
 "FT" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_dock"
@@ -1546,8 +1546,8 @@ oa
 oa
 oa
 oa
-Fs
-Bp
+fg
+mu
 DM
 zV
 CQ

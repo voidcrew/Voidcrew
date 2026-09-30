@@ -1,0 +1,5253 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ab" = (
+/turf/template_noop,
+/area/template_noop)
+"ac" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"ad" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/door/airlock/public/glass{
+	name = "West Gate"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ae" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/door/airlock/public/glass{
+	name = "East Gate"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"af" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"ag" = (
+/obj/effect/turf_decal/tile/green/fourcorners,
+/obj/machinery/door/airlock/public/glass{
+	name = "Mess"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ah" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ai" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ak" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"al" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"am" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"ao" = (
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"ap" = (
+/obj/structure/chair/comfy/teal{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"aq" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"ar" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 6
+	},
+/obj/structure/sign/departments/restaurant/directional/west,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"at" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"au" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"av" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aw" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/door/airlock/freezer{
+	name = "Washroom"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ax" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/machinery/door/airlock/command/glass{
+	name = "Operations"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ay" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"az" = (
+/obj/structure/table/glass,
+/obj/item/newspaper{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"aB" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"aC" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"aD" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aE" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/door/airlock/public/glass{
+	name = "Quarters"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aF" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aG" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"aH" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant22,
+/obj/machinery/newscaster/directional/south,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aI" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aJ" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aK" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/item/radio/intercom/directional/west,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aM" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 2
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aN" = (
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aO" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"aP" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 2"
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"aQ" = (
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/door/airlock/wood/glass{
+	name = "Reading Room"
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"aR" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 1"
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"aS" = (
+/turf/closed/wall/mineral/titanium/nodiagonal/habitat,
+/area/voidcrew/player_outpost)
+"aT" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"aV" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/curtain,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"aW" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aY" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"aZ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"bf" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"bn" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"bv" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"bD" = (
+/obj/structure/closet/crate,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"bL" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"bN" = (
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"bT" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/chair/sofa/corp/left{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"cw" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/machinery/digital_clock/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"cQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"dd" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"dh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"dp" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"dZ" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"eg" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/obj/item/folder/yellow{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"eo" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"ev" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"eJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/structure/closet/cabinet,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"eL" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"eM" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 2;
+	pixel_y = 10
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"eZ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"fd" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"fo" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"fx" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 8
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"fz" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/structure/sink/directional/south,
+/obj/structure/mirror/directional/north,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"fV" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"gd" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ge" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"gm" = (
+/obj/structure/chair/office{
+	dir = 2
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"gx" = (
+/obj/structure/toilet{
+	dir = 1
+	},
+/obj/structure/window/reinforced/tinted/frosted/spawner/directional/east,
+/obj/structure/curtain,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"gz" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 9
+	},
+/obj/structure/sink/directional/south,
+/obj/structure/mirror/directional/north,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"gM" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/noticeboard/directional/east{
+	name = "rota"
+	},
+/obj/item/paper{
+	name = "duty rota";
+	default_raw_text = "Morning: ________ Evening: ________"
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"gR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"ha" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"hq" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"hs" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"hy" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"hD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"hN" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"hZ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"io" = (
+/obj/machinery/shower/directional/north,
+/obj/structure/fluff/shower_drain,
+/obj/structure/curtain,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"iq" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ir" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/large/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"iv" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"iz" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"iB" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"iK" = (
+/obj/structure/chair/comfy/beige{
+	dir = 2
+	},
+/turf/open/floor/carpet/green,
+/area/voidcrew/player_outpost)
+"iN" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"iT" = (
+/obj/structure/table/wood/fancy/royalblue,
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"jo" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"jq" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"jr" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"jP" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"jR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"jW" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/folder/white{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"jX" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"ka" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"kf" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"kl" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"ks" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"kt" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"kL" = (
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"kO" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"kU" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"lh" = (
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"ll" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"ls" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"ly" = (
+/obj/structure/table/glass,
+/obj/item/folder/blue{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"lH" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"lN" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"lQ" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/structure/noticeboard/directional/north{
+	name = "work orders"
+	},
+/obj/item/paper{
+	name = "work order";
+	default_raw_text = "Cracked floor tile by the silo. Low priority."
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"lR" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"lT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet{
+	name = "spares locker"
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"ml" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"mu" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"mx" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/green,
+/area/voidcrew/player_outpost)
+"mE" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"mH" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/sunny/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"mI" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"mQ" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 5
+	},
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"mZ" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"na" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"nm" = (
+/turf/open/floor/carpet/green,
+/area/voidcrew/player_outpost)
+"nz" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"nB" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/structure/bookcase,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"nX" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"oe" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/carpet/green,
+/area/voidcrew/player_outpost)
+"os" = (
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"ow" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"oB" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"oC" = (
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"oD" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"oH" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"oI" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"oK" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/sunny/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"oL" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"oU" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"ph" = (
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"pi" = (
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"pw" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"px" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 9
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"pJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"pL" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = 2;
+	pixel_y = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"qB" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/folder/white{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/pen/blue{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"qE" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"qG" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"qQ" = (
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"qR" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"qZ" = (
+/obj/structure/table/wood,
+/obj/item/clipboard{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"rj" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet{
+	name = "tool locker"
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"rl" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/structure/closet{
+	name = "pantry"
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"ru" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"rx" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"rB" = (
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"rH" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"rI" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"rL" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 9
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"sc" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/west,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"sf" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"sj" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"sk" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/item/folder/blue{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"sm" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"so" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"sB" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"sF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"sL" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"sM" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"sV" = (
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"sZ" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"tg" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/machinery/newscaster/directional/south,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"tn" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/filingcabinet,
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"tp" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"tE" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"tR" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"tY" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ue" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/machinery/newscaster/directional/south,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"uf" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/table,
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"uh" = (
+/obj/structure/closet/crate/freezer{
+	name = "cold store"
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"uo" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "West Gate"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"ur" = (
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"ux" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"uK" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"uR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/machinery/light/small/directional/north,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"uW" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/sign/clock/directional/north,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"vj" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"vo" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/large/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"vp" = (
+/obj/structure/chair/office{
+	dir = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"vw" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 10
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"vA" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/paper{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"vI" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"vK" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"vO" = (
+/obj/structure/table/glass,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"vP" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/chair/comfy/teal{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"vS" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"wt" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"wy" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"wE" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"wQ" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "East Gate"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"wR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"xn" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet{
+	name = "suit locker"
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"xu" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"xM" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/paper{
+	name = "menu";
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"xR" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant22,
+/obj/structure/noticeboard/directional/south{
+	name = "notices"
+	},
+/obj/item/paper{
+	name = "lost and found";
+	default_raw_text = "One glove, left hand, grey. Ask at Operations."
+	},
+/obj/item/paper{
+	name = "garden rota";
+	default_raw_text = "Atrium beds: watered on even days."
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"xV" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"xZ" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant22,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"ye" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"yf" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"yi" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"ym" = (
+/obj/effect/turf_decal/bot,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"yr" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"yA" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"yF" = (
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"yJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"yO" = (
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"yU" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"yY" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/sunny/style_random,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"ze" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"zi" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"zA" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"zU" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"zW" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant21,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Ak" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"An" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Ao" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"As" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"AB" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "West Gate"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"AK" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Bb" = (
+/obj/structure/table/glass,
+/obj/item/paper{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Bo" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Bv" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Ce" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 9
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Cp" = (
+/obj/structure/sign/warning/electric_shock/directional/west,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Cy" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 4
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"CD" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 0;
+	pixel_y = 8
+	},
+/turf/open/floor/carpet/green,
+/area/voidcrew/player_outpost)
+"CF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"CQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/noticeboard/directional/south{
+	name = "residents"
+	},
+/obj/item/paper{
+	name = "quiet hours";
+	default_raw_text = "Quiet hours after the evening meal. Thank you."
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"CV" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Da" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"De" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Dq" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/bookcase,
+/obj/structure/sign/calendar/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Dx" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"DD" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"DG" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"DK" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"DS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/clipboard{
+	name = "EVA log";
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"DV" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Eb" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"Ec" = (
+/obj/structure/sink/kitchen/directional/south,
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"Eg" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"En" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/machinery/newscaster/directional/south,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Ep" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Eu" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ev" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Ey" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"EF" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant21,
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"EG" = (
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant10,
+/obj/structure/sign/departments/engineering/directional/west,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"EL" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"EU" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Fv" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"FR" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery,
+/obj/machinery/ore_silo,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"FT" = (
+/turf/open/floor/carpet/blue,
+/area/voidcrew/player_outpost)
+"FW" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Gn" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Go" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Gq" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Gr" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet{
+	name = "suit locker"
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Gv" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"Gw" = (
+/obj/structure/table,
+/obj/machinery/microwave{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"GT" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"GW" = (
+/obj/effect/landmark/player_outpost_arrival,
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"Hi" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Hq" = (
+/obj/structure/table/glass,
+/obj/item/newspaper{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Hx" = (
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 2
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Hz" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"HA" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"HU" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/kitchen,
+/area/voidcrew/player_outpost)
+"Ig" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Ij" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Iq" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -2;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"IE" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 5
+	},
+/obj/structure/table/glass,
+/obj/item/folder/blue{
+	name = "visitor leaflets";
+	pixel_x = 1;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"IG" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"IS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/noticeboard/directional/south{
+	name = "arrivals"
+	},
+/obj/item/paper{
+	name = "welcome";
+	default_raw_text = "Welcome aboard. Please wipe your boots."
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Jb" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Jc" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Jq" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/structure/closet/cabinet,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"JC" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"JG" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"JJ" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"JK" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Ka" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Kg" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Ki" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"Kk" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Ks" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Kt" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Kv" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/sign/warning/vacuum/external/directional/east,
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"KA" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 8
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"KD" = (
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 5
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"KF" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"KH" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/sign/clock/directional/south,
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"KI" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"KL" = (
+/obj/structure/table/glass,
+/obj/item/folder/blue{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/folder/white{
+	pixel_x = 4;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"KQ" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"KS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"KY" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 6
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Lh" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/large/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Lk" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 6
+	},
+/obj/item/kirbyplants/fern,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Lu" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/bookcase,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Lw" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"LD" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"LP" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"LW" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Mb" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"Mk" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/carpet/blue,
+/area/voidcrew/player_outpost)
+"Ml" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Mv" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Mz" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"MB" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 6
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"MI" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "East Gate"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/small,
+/area/voidcrew/player_outpost)
+"MP" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/item/radio/intercom/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"MS" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Nd" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/sign/departments/restroom/directional/south,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Nk" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/item/kirbyplants/fern,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Nl" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"NF" = (
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"NH" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"NV" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/machinery/computer/security/telescreen/entertainment/directional/north,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"NZ" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Ol" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/item/kirbyplants/organic/plant10,
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Oq" = (
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 2
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Os" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Ow" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Ox" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"OB" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"OH" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"OL" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"OO" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"OV" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 6
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"OZ" = (
+/obj/effect/turf_decal/tile/green/opposingcorners{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Pi" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Pw" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"PM" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"PQ" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"PT" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"PY" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Qb" = (
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Qg" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Qk" = (
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Qm" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Qq" = (
+/obj/structure/chair/comfy/teal{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"Qr" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/chair/sofa/corp{
+	dir = 8
+	},
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"QR" = (
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 5
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Rh" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Ri" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ru" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 4
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/east,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"RG" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 6
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"RJ" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"RS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/computer/bank_machine{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"RZ" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Sl" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Sz" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"SB" = (
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 6
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"SG" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet{
+	name = "parts locker"
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"SO" = (
+/obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 9
+	},
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"SW" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"SY" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/bookcase,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Ta" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Tz" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/bookcase,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"TY" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/machinery/digital_clock/directional/east,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Ua" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"Uc" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Ud" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"Ug" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Us" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Uy" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"UL" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"UM" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 6
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"Vc" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/flowers_br/style_random,
+/obj/structure/railing{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"Vf" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"Vu" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -2;
+	pixel_y = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"VA" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"VJ" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"VO" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/item/kirbyplants/organic/plant10,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"VR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"VW" = (
+/obj/structure/table/glass,
+/obj/item/clipboard{
+	pixel_x = 0;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"We" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Wj" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Wt" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/closet{
+	name = "resident locker"
+	},
+/turf/open/floor/wood/tile,
+/area/voidcrew/player_outpost)
+"WN" = (
+/obj/structure/sign/warning/no_smoking/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Xa" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Xd" = (
+/obj/structure/closet/crate/large,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Xk" = (
+/obj/machinery/shower/directional/north,
+/obj/structure/fluff/shower_drain,
+/obj/structure/window/reinforced/tinted/frosted/spawner/directional/west,
+/obj/structure/window/reinforced/tinted/frosted/spawner/directional/east,
+/obj/structure/curtain,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Xy" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Xz" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"XA" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/computer/player_outpost_management{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"XJ" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/leavy/style_random,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"XK" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"XS" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 2
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Yb" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"Yd" = (
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"Yl" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Yu" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/voidcrew/player_outpost)
+"Yv" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/sunny/style_random,
+/turf/open/floor/grass,
+/area/voidcrew/player_outpost)
+"YH" = (
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 9
+	},
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"YK" = (
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"YZ" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/obj/machinery/door/airlock/engineering/glass{
+	name = "Engineering"
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Zd" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"Zh" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 2
+	},
+/obj/machinery/digital_clock/directional/east,
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+"Zo" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 2
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Zv" = (
+/obj/structure/chair/sofa/bench/tram{
+	dir = 2
+	},
+/turf/open/floor/iron/large,
+/area/voidcrew/player_outpost)
+"ZA" = (
+/obj/structure/table/glass,
+/obj/item/flashlight/lamp{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ZF" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/flashlight/lamp{
+	pixel_x = 4;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/voidcrew/player_outpost)
+"ZG" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"ZR" = (
+/obj/structure/table/glass,
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/royalblue,
+/area/voidcrew/player_outpost)
+"ZX" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 2
+	},
+/turf/open/floor/iron/white/smooth_large,
+/area/voidcrew/player_outpost)
+
+(1,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+aS
+aS
+aS
+aS
+aV
+aV
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+AB
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(2,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+uh
+ur
+HU
+YH
+LP
+XK
+YK
+SW
+bL
+yU
+aS
+aS
+aS
+uR
+aS
+aS
+aS
+rL
+Pw
+hy
+Cp
+sL
+JG
+kf
+WN
+aS
+"}
+(3,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+Gw
+ur
+xM
+Lw
+kl
+Ox
+Mz
+kl
+kl
+UM
+aS
+aS
+aS
+eo
+aS
+aS
+aS
+rj
+Qk
+wR
+ph
+ym
+mI
+ph
+ph
+aS
+"}
+(4,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+Ec
+ur
+uf
+Lw
+kl
+zU
+zU
+kl
+kU
+zA
+aS
+aS
+aS
+uo
+aS
+aS
+aS
+SG
+Qk
+wR
+ph
+OH
+ph
+ph
+Ig
+aS
+"}
+(5,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+eM
+ur
+iz
+Lw
+kl
+kl
+kl
+kl
+kU
+mH
+aS
+NF
+ru
+oC
+Ua
+Jb
+aS
+lQ
+Qk
+wR
+Nl
+Zd
+Nl
+Nl
+eZ
+aS
+"}
+(6,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+rl
+jX
+Eb
+sZ
+kl
+kl
+kl
+kl
+kU
+xV
+aS
+xn
+lh
+bN
+Ta
+DS
+aS
+Ow
+Qk
+Qk
+Qk
+Uy
+Qk
+Qk
+vj
+aS
+"}
+(7,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+px
+LP
+LP
+kl
+kl
+ka
+nz
+lR
+kU
+oH
+aS
+xn
+lh
+bN
+Ta
+VJ
+aS
+FR
+Qk
+Qk
+Qb
+tE
+Fv
+Qk
+We
+aS
+"}
+(8,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+sZ
+ka
+OZ
+lR
+kl
+ka
+pw
+lR
+kU
+Go
+aS
+Gr
+lh
+bN
+Ta
+Pi
+aS
+iv
+Qk
+Qk
+JJ
+Xd
+rI
+Qk
+Sz
+aS
+"}
+(9,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+NV
+ka
+DG
+lR
+kl
+kl
+kl
+kl
+kU
+mQ
+aS
+Ep
+lh
+bN
+Ta
+KH
+aS
+FW
+Qk
+Qk
+JJ
+jq
+rI
+vp
+ZF
+aS
+"}
+(10,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+sZ
+kl
+kl
+kl
+kl
+kl
+kl
+kl
+kl
+vw
+aS
+Ep
+lh
+bN
+Ta
+KF
+aS
+Ml
+Qk
+Qk
+JJ
+bD
+rI
+vp
+Eg
+aS
+"}
+(11,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+jo
+ka
+yr
+lR
+kl
+ka
+ll
+lR
+kl
+kU
+aS
+Hz
+lh
+bN
+Ta
+DD
+aS
+FW
+Qk
+Qk
+iB
+NZ
+yf
+Qk
+eg
+aS
+"}
+(12,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+sZ
+ka
+vI
+lR
+kl
+ka
+Ij
+lR
+kl
+En
+aS
+hN
+lh
+bN
+Ta
+JC
+aS
+VA
+Uy
+Uy
+Uy
+Uy
+Qk
+Qk
+yi
+aS
+"}
+(13,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+Mv
+ev
+kl
+Bo
+ev
+TY
+ev
+ev
+kl
+Ao
+aS
+EU
+dZ
+bN
+Qg
+xZ
+aS
+fo
+ye
+jr
+PT
+lT
+ux
+rx
+MB
+aS
+"}
+(14,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+aS
+aS
+aZ
+aS
+ag
+aS
+aZ
+aS
+aZ
+aZ
+ag
+aS
+aS
+aZ
+aS
+ad
+aS
+so
+aS
+YZ
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(15,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+aO
+al
+aG
+ar
+aa
+aK
+aH
+aS
+NH
+RG
+vK
+Ol
+wE
+bv
+hq
+ph
+Zo
+Cy
+sc
+kt
+EG
+aS
+gz
+Qm
+uK
+mZ
+gx
+aS
+"}
+(16,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+ac
+aM
+ak
+ak
+ao
+az
+aT
+aZ
+SO
+bv
+kL
+kL
+kL
+kL
+hq
+ph
+rH
+kL
+kL
+kt
+Yd
+aS
+fz
+qQ
+qQ
+sM
+gx
+aS
+"}
+(17,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+am
+aM
+aN
+aN
+ao
+aB
+aC
+aZ
+vK
+kL
+Oq
+kL
+As
+Yl
+Ey
+Ey
+rH
+kL
+kL
+kt
+Nd
+aS
+Os
+qQ
+qQ
+sM
+qQ
+aS
+"}
+(18,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+KY
+XS
+Jc
+aN
+ao
+ap
+af
+aS
+vK
+kL
+Zv
+As
+RJ
+zA
+IG
+JK
+RJ
+Hi
+kL
+kt
+wt
+aw
+qQ
+qQ
+qQ
+sM
+ze
+aS
+"}
+(19,1,1) = {"
+aS
+aS
+aS
+aS
+aS
+Ce
+aN
+aN
+aN
+aN
+aN
+pi
+aq
+kL
+kL
+Hx
+RZ
+iN
+An
+na
+EL
+qG
+iq
+kL
+xu
+Ug
+aS
+Rh
+qQ
+qQ
+sM
+Xk
+aS
+"}
+(20,1,1) = {"
+aS
+ah
+aY
+au
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+kL
+kL
+kL
+RZ
+Go
+na
+Ka
+oK
+am
+dd
+kL
+xu
+OB
+aS
+Nk
+fx
+KA
+HA
+io
+aS
+"}
+(21,1,1) = {"
+aS
+aW
+aJ
+aI
+ao
+ao
+ao
+ao
+GW
+ao
+ao
+ao
+ao
+kL
+kL
+kL
+RZ
+oH
+vo
+Yv
+fV
+CV
+dd
+kL
+xu
+ue
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(22,1,1) = {"
+aS
+aF
+aD
+av
+ay
+ay
+ay
+ay
+ay
+ay
+ay
+ay
+ay
+kL
+kL
+kL
+RZ
+Sl
+oK
+ir
+Uc
+PQ
+dd
+kL
+xu
+Sl
+aS
+nB
+Tz
+Tz
+Ri
+hD
+aS
+"}
+(23,1,1) = {"
+aS
+aS
+aS
+aS
+aS
+Dx
+aN
+aN
+aN
+aN
+aN
+pi
+at
+kL
+kL
+Oq
+RZ
+Us
+tp
+Uc
+Lh
+RG
+ks
+kL
+xu
+kO
+aS
+Iq
+yO
+nm
+nm
+CD
+aS
+"}
+(24,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+yA
+ZX
+Jc
+aN
+ao
+Qq
+af
+aS
+vK
+kL
+Zv
+ZG
+RJ
+Ak
+lN
+OV
+RJ
+jP
+kL
+kt
+bv
+aQ
+yO
+yO
+nm
+nm
+iK
+aV
+"}
+(25,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+PQ
+aM
+aN
+aN
+ao
+ly
+aT
+aZ
+vK
+kL
+Hx
+kL
+ZG
+sf
+Gn
+Ev
+sB
+kL
+kL
+kt
+Yd
+aS
+VR
+yO
+nm
+nm
+iK
+aV
+"}
+(26,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+ac
+aM
+KQ
+KQ
+ao
+ZR
+aC
+aZ
+QR
+wt
+wt
+wt
+kL
+kL
+hq
+ph
+rH
+kL
+kL
+kt
+Yd
+aS
+Wj
+yO
+mx
+nm
+oe
+aS
+"}
+(27,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+Vc
+Zh
+MS
+XJ
+aa
+De
+xR
+aS
+qR
+yY
+Kt
+Gq
+KD
+wt
+hq
+ph
+vS
+Kk
+Ru
+kt
+SB
+aS
+fd
+Eu
+Qr
+bT
+LW
+aS
+"}
+(28,1,1) = {"
+ab
+ab
+ab
+ab
+aS
+aS
+aS
+aZ
+aS
+ax
+aS
+aZ
+aS
+aZ
+aZ
+aZ
+aZ
+aS
+aZ
+aS
+ae
+aS
+so
+aS
+aE
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(29,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+ml
+lH
+ph
+lH
+vP
+DK
+dp
+KS
+bf
+sj
+aS
+Ce
+AK
+bN
+Ks
+zW
+aS
+CF
+bn
+aS
+wy
+UL
+ow
+UL
+Mb
+aS
+"}
+(30,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+Bv
+ph
+ph
+ph
+ph
+ph
+ph
+Hq
+ph
+DV
+aS
+Kg
+ls
+bN
+KI
+IS
+aS
+dh
+eL
+aS
+Vu
+os
+FT
+FT
+gR
+aS
+"}
+(31,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+Xa
+ph
+ph
+ph
+rB
+ph
+ph
+ph
+ph
+tY
+aS
+ZX
+ls
+bN
+KI
+Xy
+aS
+Gv
+yF
+aR
+os
+os
+FT
+Mk
+hs
+aS
+"}
+(32,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+oL
+ph
+ph
+ph
+KL
+ao
+ao
+mu
+ao
+DV
+aS
+aM
+ls
+bN
+KI
+oB
+aS
+oU
+qE
+aS
+pL
+os
+FT
+FT
+GT
+aS
+"}
+(33,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+XA
+nX
+ph
+ph
+Bb
+ao
+gm
+jW
+PM
+DV
+aS
+LD
+ls
+bN
+KI
+PY
+aS
+Wt
+eL
+aS
+Da
+os
+os
+os
+ha
+aS
+"}
+(34,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+oD
+nX
+ph
+ph
+VW
+ao
+gm
+iT
+PM
+DV
+aS
+aM
+ls
+bN
+KI
+oB
+aS
+Wt
+eL
+aS
+eJ
+Ki
+Yb
+Ki
+hZ
+aS
+"}
+(35,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+qB
+nX
+ph
+ph
+vO
+ao
+gm
+vA
+PM
+gd
+aS
+XS
+ls
+bN
+KI
+Xz
+aS
+CF
+CQ
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(36,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+RS
+ph
+ph
+ph
+ZA
+ao
+gm
+OO
+PM
+DV
+aS
+uW
+ls
+bN
+KI
+sm
+aS
+CF
+eL
+aS
+wy
+UL
+ow
+UL
+Jq
+aS
+"}
+(37,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+mE
+ph
+ph
+ph
+rB
+ao
+ao
+Ud
+ao
+DV
+aS
+IE
+Kv
+sV
+VO
+Lk
+aS
+oI
+tg
+aS
+Vu
+os
+FT
+FT
+pJ
+aS
+"}
+(38,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+tn
+ph
+ph
+ph
+tR
+tR
+ph
+ph
+ph
+Dq
+aS
+aS
+aS
+wQ
+aS
+aS
+aS
+Vf
+yF
+aP
+os
+os
+FT
+Mk
+Yu
+aS
+"}
+(39,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+mE
+ph
+ph
+ph
+sk
+qZ
+ph
+ph
+ph
+Lu
+aS
+aS
+aS
+eo
+aS
+aS
+aS
+cQ
+eL
+aS
+pL
+os
+FT
+FT
+ha
+aS
+"}
+(40,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+EF
+cw
+MP
+SY
+OL
+ge
+ge
+gM
+ge
+zi
+aS
+aS
+aS
+uR
+aS
+aS
+aS
+sF
+yJ
+aS
+jR
+Ki
+Yb
+Ki
+hZ
+aS
+"}
+(41,1,1) = {"
+ab
+ab
+ab
+ab
+ab
+ab
+aS
+aS
+aS
+aS
+aS
+aV
+aV
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+MI
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}

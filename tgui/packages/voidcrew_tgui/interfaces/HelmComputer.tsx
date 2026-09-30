@@ -166,6 +166,7 @@ type Engine = {
   fuel: number;
   maxFuel: number;
   enabled: BooleanLike;
+  blocked: BooleanLike;
   ref: string;
 };
 
@@ -217,12 +218,32 @@ type DockOption = {
   /** REF() of the overmap object to dock with, or null for empty space. */
   ref: string | null;
   isEmpty: BooleanLike;
+  variant?: string;
+  /** Short action label when the contact's name is already displayed. */
+  label?: string;
+  /** Docking fee for this option in credits; 0 or absent when free or exempt. */
+  fee?: number;
+};
+
+/**
+ * An outpost's docking fee waiting for approval. The captain (or, with no live
+ * captain, any crew) approves it here; the ship account pays on arrival.
+ */
+type DockFeeQuote = {
+  outpost: string;
+  ref: string;
+  variant: string;
+  amount: number;
+  /** The ship account's balance. */
+  balance: number;
+  canApprove: BooleanLike;
 };
 
 type Data = {
   isViewer: BooleanLike;
   isNotCrew: BooleanLike;
   isAbandoned: BooleanLike;
+  isRetired: BooleanLike;
   shipInfo: { name: string; class: string; mass: number };
   chart: {
     size: number;
@@ -321,6 +342,7 @@ type Data = {
   nebulaHideRemaining: number;
   canLand: BooleanLike;
   dockOptions: DockOption[];
+  dockFeeQuote?: DockFeeQuote | null;
   autopilot: Autopilot;
   /** This ship's own distress beacon. Everyone else's rides the contact set. */
   distress: {
@@ -1023,6 +1045,7 @@ const Faceplate = () => {
               onClose={() => setMenu(null)}
             />
           )}
+          <DockFeeQuoteCard />
           {!!dockMenu && (
             <DockPickerMenu
               left={dockMenu.left}
@@ -1458,14 +1481,16 @@ const FuelStack = () => {
               <span
                 className="Helm__engineFuel"
                 style={{
-                  color: !engine.enabled
-                    ? '#3a474b'
-                    : percent < 40
-                      ? '#d9a230'
-                      : '#f2a341',
+                  color: engine.blocked
+                    ? '#cf4a38'
+                    : !engine.enabled
+                      ? '#3a474b'
+                      : percent < 40
+                        ? '#d9a230'
+                        : '#f2a341',
                 }}
               >
-                {percent}%
+                {engine.blocked ? 'Blocked' : `${percent}%`}
               </span>
             </div>
           );
@@ -2269,6 +2294,10 @@ const Chart = () => {
   const onScreen = (tileX: number, tileY: number) =>
     Math.abs(tileX - cameraTileX) <= zoomSpan / 2 + 4 &&
     Math.abs(tileY - cameraTileY) <= zoomSpan / 2 + 4;
+  const shownContacts = waypoints.filter((contact) =>
+    onScreen(contact.x, contact.y),
+  );
+  const rows = labelRows(shownContacts, selected);
   const course = autopilot?.engaged ? (autopilot.path ?? []) : [];
   // Uncontrolled drift extrapolation is misleading while autopilot owns steering.
   const showDrift = !!drift && !autopilot?.engaged;
@@ -2493,9 +2522,7 @@ const Chart = () => {
                   />
                 ))}
 
-              {waypoints
-                .filter((contact) => onScreen(contact.x, contact.y))
-                .map((contact) => {
+              {shownContacts.map((contact) => {
                   const key = contactKey(contact);
                   return (
                     <ContactMark
@@ -2504,6 +2531,7 @@ const Chart = () => {
                       cx={toX(contact.x)}
                       cy={toY(contact.y)}
                       scale={markScale}
+                      labelRow={rows.get(key) ?? 0}
                       inRange={!!contact.live}
                       selected={selected === key}
                       onSelect={() => select(key)}
@@ -2987,26 +3015,81 @@ const DestinationMark = ({ cx, cy, scale }: { cx: number; cy: number; scale: num
   </g>
 );
 
+/**
+ * Whether a contact's name is written on the chart. Nebulas and storms spread
+ * across whole banks of tiles, so labelling every one buries the chart in
+ * repeated names. They read as a field from the glyphs alone; the name comes
+ * back on click, and the drawer always has it.
+ */
+const contactLabelled = (contact: Contact, selected: boolean) =>
+  selected || (contact.kind !== 'nebula' && contact.kind !== 'hazard');
+
+/** Kinds that are the place itself; marks pinned on a place (bounties, missions, rumours) list under its name */
+const PLACE_KINDS: ContactKind[] = [
+  'planet',
+  'ruin',
+  'outpost',
+  'ship',
+  'distress',
+];
+
+/**
+ * Which line under its tile each labelled contact's name goes on, by contact
+ * key. Names sharing a tile (a planet and the bounty pinned on it) stack
+ * downward instead of printing over each other; the place keeps the top line.
+ */
+const labelRows = (contacts: Contact[], selectedKey: string | null) => {
+  const perTile = new Map<string, number>();
+  const rows = new Map<string, number>();
+  const placesFirst = [...contacts].sort(
+    (a, b) =>
+      Number(!PLACE_KINDS.includes(a.kind)) -
+      Number(!PLACE_KINDS.includes(b.kind)),
+  );
+  for (const contact of placesFirst) {
+    const key = contactKey(contact);
+    if (!contactLabelled(contact, selectedKey === key)) {
+      continue;
+    }
+    const tile = `${contact.x},${contact.y}`;
+    const row = perTile.get(tile) ?? 0;
+    perTile.set(tile, row + 1);
+    rows.set(key, row);
+  }
+  return rows;
+};
+
+/** Screen units between two stacked names under one tile */
+const LABEL_LINE = 11;
+
 const ContactMark = (props: {
   contact: Contact;
   cx: number;
   cy: number;
   scale: number;
+  /** Which line under the tile its name goes on (labelRows()) */
+  labelRow: number;
   inRange: boolean;
   selected: boolean;
   onSelect: () => void;
   onHover: (entered: boolean) => void;
   onMenu: (event: React.MouseEvent) => void;
 }) => {
-  const { contact, cx, cy, scale, inRange, selected, onSelect, onHover, onMenu } =
-    props;
+  const {
+    contact,
+    cx,
+    cy,
+    scale,
+    labelRow,
+    inRange,
+    selected,
+    onSelect,
+    onHover,
+    onMenu,
+  } = props;
   const unknown = contact.kind === 'ship' && !contact.identified;
   const colour = contactColour(contact);
-  // Nebulas and storms spread across whole banks of tiles, so labelling every
-  // one buries the chart in repeated names. They read as a field from the
-  // glyphs alone; the name comes back on click, and the drawer always has it.
-  const labelled =
-    selected || (contact.kind !== 'nebula' && contact.kind !== 'hazard');
+  const labelled = contactLabelled(contact, selected);
 
   return (
     <g
@@ -3072,7 +3155,7 @@ const ContactMark = (props: {
           // screen at every zoom. One SVG unit is only ~1.3 screen pixels here,
           // which is why the old 5.2 rendered at about six pixels.
           <text
-            y={15}
+            y={15 + labelRow * LABEL_LINE}
             textAnchor="middle"
             fill={colour}
             fontSize={10}
@@ -3237,12 +3320,24 @@ const ContactMenu = (props: {
   }
 
   if (contact?.dist === 0 && contact.target) {
+    const variants = (data.dockOptions ?? []).filter(
+      (option) => option.ref === contact.target && option.variant,
+    );
     items.push({
-      label: 'Interact',
+      label: variants.length ? 'Dock at hangar' : 'Interact',
       hint: 'Shares our position',
       disabled: locked,
       onClick: () => act('act_overmap', { ship_to_act: contact.target }),
     });
+    for (const option of variants) {
+      items.push({
+        label: option.label ?? option.name,
+        hint: feeHint(option.fee) ?? 'Dock for ship construction',
+        disabled: locked || state !== 'flying',
+        onClick: () =>
+          act('dock', { target: option.ref, variant: option.variant }),
+      });
+    }
   }
 
   const blocked =
@@ -3374,18 +3469,91 @@ const DockPickerMenu = (props: {
       ) : (
         options.map((option) => (
           <button
-            key={option.ref ?? 'empty'}
+            key={`${option.ref ?? 'empty'}:${option.variant ?? 'default'}`}
             type="button"
             className="Helm__menuItem"
             onClick={() => {
-              act('dock', option.ref ? { target: option.ref } : {});
+              act('dock', option.ref ? { target: option.ref, variant: option.variant } : {});
               onClose();
             }}
           >
             <span className="Helm__menuLabel">{option.name}</span>
+            {!!feeHint(option.fee) && (
+              <span className="Helm__menuHint">{feeHint(option.fee)}</span>
+            )}
           </button>
         ))
       )}
+    </div>
+  );
+};
+
+/** "N cr" for a priced option, else undefined. */
+const feeHint = (fee?: number | null) =>
+  Number(fee) > 0 ? `${Number(fee)} cr` : undefined;
+
+/**
+ * A pending docking fee, pinned over the foot of the chart so the crew can keep
+ * flying while the captain decides. Approve re-sends the dock request itself.
+ */
+const DockFeeQuoteCard = () => {
+  const { act, data } = useBackend<Data>();
+  const locked = useLocked();
+  const quote = data.dockFeeQuote;
+  if (!quote?.ref) return null;
+  const amount = Number(quote.amount) || 0;
+  const balance = Number(quote.balance) || 0;
+  const short = balance < amount;
+  const approveTitle = !quote.canApprove
+    ? 'Captain only'
+    : short
+      ? 'Ship account short'
+      : undefined;
+  return (
+    <div
+      className="Helm__menu"
+      role="alertdialog"
+      aria-label="Docking fee"
+      style={{
+        left: `${((GEOMETRY.CHART.x + GEOMETRY.CHART.w / 2 - 150) / FRAME.w) * 100}%`,
+        top: `${((GEOMETRY.CHART.y + GEOMETRY.CHART.h - 150) / FRAME.h) * 100}%`,
+        width: `${(300 / FRAME.w) * 100}%`,
+        maxWidth: 'none',
+      }}
+    >
+      <div className="Helm__menuHead">{quote.outpost || 'Outpost'}</div>
+      <div style={{ padding: '0.6cqw 0.7cqw' }}>
+        <div className="Helm__cardName">Docking fee {amount} cr</div>
+        {short ? (
+          <div className="Helm__cardMeta">Ship account short.</div>
+        ) : null}
+        <div className="Helm__overlayActions">
+          <button
+            type="button"
+            className="Helm__btn"
+            disabled={locked || !quote.canApprove}
+            title={approveTitle}
+            onClick={() =>
+              act('approve_dock_fee', {
+                ref: quote.ref,
+                variant: quote.variant,
+                amount,
+              })
+            }
+          >
+            Approve
+          </button>
+          <button
+            type="button"
+            className="Helm__btn"
+            disabled={locked || !quote.canApprove}
+            title={quote.canApprove ? undefined : 'Captain only'}
+            onClick={() => act('decline_dock_fee', { ref: quote.ref })}
+          >
+            Decline
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -3884,6 +4052,7 @@ const ContactList = () => {
                    */}
                   {selected === key && !locked && (
                     <div className="Helm__rowActions">
+                      <DockVariantButtons target={contact.target} />
                       {contact.dist > 0 && (
                         <button
                           type="button"
@@ -3963,12 +4132,41 @@ const AtLocation = () => {
             }
             onClick={() => act('act_overmap', { ship_to_act: object.ref })}
           >
-            Interact
+            {(data.dockOptions ?? []).some(
+              (option) => option.ref === object.ref && option.variant,
+            )
+              ? 'Dock at hangar'
+              : 'Interact'}
           </button>
+          <DockVariantButtons target={object.ref} />
         </div>
       ))}
     </>
   );
+};
+
+/** Keep alternate berths reachable from the contact controls as well as Dock. */
+const DockVariantButtons = (props: { target?: string | null }) => {
+  const { act, data } = useBackend<Data>();
+  const locked = useLocked();
+  return (data.dockOptions ?? [])
+    .filter((option) => option.ref === props.target && option.variant)
+    .map((option) => (
+      <button
+        key={`${option.ref}:${option.variant}`}
+        type="button"
+        className="Helm__btn"
+        disabled={locked || data.state !== 'flying'}
+        title={feeHint(option.fee) ?? 'Dock for ship construction'}
+        onClick={(event) => {
+          event.stopPropagation();
+          act('dock', { target: option.ref, variant: option.variant });
+        }}
+      >
+        {option.label ?? option.name}
+        {Number(option.fee) > 0 ? ` · ${Number(option.fee)} cr` : ''}
+      </button>
+    ));
 };
 
 const Comms = () => {
@@ -4472,7 +4670,7 @@ const OpsRow = () => {
   const primaryDockOption = options[0];
   const dockName = primaryDockOption?.name ?? 'empty space';
   const runDock = (option?: DockOption) =>
-    act('dock', option?.ref ? { target: option.ref } : {});
+    act('dock', option?.ref ? { target: option.ref, variant: option.variant } : {});
 
   const undockDisabled =
     (state !== 'idle' && state !== 'undocking') ||
@@ -4535,9 +4733,11 @@ const OpsRow = () => {
         ? 'Auto-stop and hold position here in empty space'
         : 'Hold position here in empty space';
     }
-    return autoStopping
+    const fee = feeHint(primaryDockOption?.fee);
+    const reason = autoStopping
       ? `Auto-stop and dock with ${dockName}`
       : `Dock with ${dockName}`;
+    return fee ? `${reason} (${fee})` : reason;
   };
 
   return (
@@ -4705,16 +4905,20 @@ const AbandonedOverlay = () => {
   return (
     <div className="Helm__overlay Helm--prompt">
       <div className="Helm__overlayBox">
-        <div className="Helm__overlayTitle">Vessel abandoned</div>
+        <div className="Helm__overlayTitle">
+          {data.isRetired ? 'Hull retired' : 'Vessel abandoned'}
+        </div>
         <div className="Helm__overlayDesc">
-          No command authorization is registered to this ship. Claiming it makes
-          you its commanding officer.
+          {data.isRetired
+            ? 'This hull has been retired or reserved for replacement by its registry.'
+            : 'No command authorization is registered to this ship. Claiming it makes you its commanding officer.'}
         </div>
         <div className="Helm__overlayActions">
           <button
             type="button"
             className="Helm__btn"
             onClick={() => act('claim_abandoned')}
+            disabled={!!data.isRetired}
           >
             Claim this ship
           </button>

@@ -8,29 +8,7 @@
    ],
    "height": 3,
    "png": "squab_security_gear_room.png",
-   "src_md5": "842d5bf425eb1af4715d5c7fb5001aee",
-   "themes": {
-    "cheap_frigate": {
-     "connector": [
-      1,
-      1
-     ],
-     "height": 3,
-     "png": "squab_security_gear_room_cheap_frigate.png",
-     "src_md5": "238afbbd67fb29618fcd22d94290d29a",
-     "width": 4
-    },
-    "the_patrolboat": {
-     "connector": [
-      1,
-      1
-     ],
-     "height": 3,
-     "png": "squab_security_gear_room_the_patrolboat.png",
-     "src_md5": "c82ac4ebf7c1f9c8d4dc36769b1fcbe5",
-     "width": 4
-    }
-   },
+   "src_md5": "ca9ee9e91fa21c223e94678e5cac7c3e",
    "width": 4
   }
  },

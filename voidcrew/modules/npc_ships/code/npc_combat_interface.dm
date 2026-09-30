@@ -508,6 +508,7 @@
 		SEND_SIGNAL(owner_ship, COMSIG_SHIP_WEAPON_FIRED)
 		// Notify our ship
 		owner_ship.ship_notify("Launching [pods_launched] boarding pod[pods_launched > 1 ? "s" : ""]!", "TACTICAL", SHIP_NOTIFY_NOTICE)
+		npc_metric_pods_fired(owner_ship, target_ship, pods_launched)
 
 	return pods_launched > 0
 

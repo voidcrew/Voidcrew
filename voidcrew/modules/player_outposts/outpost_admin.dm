@@ -67,7 +67,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	var/list/people = list()
 	for(var/datum/mind/member as anything in selected.residents)
 		if(!QDELETED(member))
-			people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "steward" = (member in selected.stewards), "treasurer" = (member in selected.treasurers)))
+			people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "steward" = (member in selected.stewards), "treasurer" = (member in selected.treasurers), "pricer" = (member in selected.pricers)))
 	data["selected"] = list(
 		"ref" = REF(selected), "name" = selected.name, "owner" = selected.founder_ckey || "Unowned",
 		"coords" = "[coords[1]], [coords[2]]", "shell" = selected.shell_template?.name || "Unloaded",
@@ -76,7 +76,11 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		"resident_active" = selected.active_resident_count(), "residents" = people,
 		"freight_state" = freight_state,
 		"freight_error" = selected.freight?.last_error, "research_connection" = selected.research_connection_summary(),
+		"ship_bays" = ship_bay_data(selected),
+		"checkpoints" = checkpoint_admin_data(selected),
+		"prison" = prison_admin_data(selected),
 	)
+	market_admin_data(selected, data["selected"])
 	return data
 
 /datum/outpost_manipulator/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -108,7 +112,9 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	return tgui_alert(user, prompt, home.name, list("Confirm", "Cancel")) == "Confirm" && valid_selection(home, user)
 
 /datum/outpost_manipulator/proc/create_outpost(mob/user)
-	var/list/templates = list("Compact Habitat" = /datum/map_template/player_outpost/small, "Waystation Frame" = /datum/map_template/player_outpost/medium)
+	var/list/templates = list()
+	for(var/datum/map_template/player_outpost/shell_type as anything in outpost_selectable_shells())
+		templates[initial(shell_type.name)] = shell_type
 	var/template_choice = tgui_input_list(user, "Habitat", "Create Outpost", templates)
 	if(!authorized(user) || !template_choice)
 		return
@@ -152,11 +158,11 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	if(!QDELETED(src))
 		selected = home
 
-/// Uses the same physical shell, finite bundle and freight receiver loader as a deed.
+/// Uses the same physical shell and finite bundle as a deed.
 /datum/outpost_manipulator/proc/create_home(mob/user, turf/destination, shell_type, outpost_name)
 	if(!authorized(user))
 		return null
-	if(!(shell_type in list(/datum/map_template/player_outpost/small, /datum/map_template/player_outpost/medium)) || !length(outpost_name) || !reject_bad_text(outpost_name, MAX_CHARTER_LEN))
+	if(!(shell_type in outpost_selectable_shells()) || !length(outpost_name) || !reject_bad_text(outpost_name, MAX_CHARTER_LEN))
 		error = "Invalid habitat or name."
 		return null
 	if(!istype(destination, /turf/open/overmap) || SSovermap.jump_mode != BS_JUMP_IDLE)
@@ -172,7 +178,6 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 	home.display_name = outpost_name
 	home.shell_template = new shell_type
 	home.founded_zone = SSovermap.get_zone_band_for_turf(destination)
-	home.raidable = home.founded_zone != ZONE_GREEN
 	home.resident_mode = "closed"
 	if(!home.load_level())
 		qdel(home)
@@ -185,6 +190,18 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 
 /datum/outpost_manipulator/proc/manage_outpost(obj/structure/overmap/dynamic/player_outpost/home, mob/user, action, list/params)
 	if(!valid_selection(home, user))
+		return
+	if(action in list("install_bays", "remove_bays", "bay_jump", "bay_vv", "bay_grant_materials", "bay_revoke_materials", "bay_select_silo"))
+		manage_ship_bays(home, user, action, params)
+		return
+	if(action in list("checkpoint_save", "checkpoint_rebuild_docked", "checkpoint_order_free", "checkpoint_rebuild", "checkpoint_delete", "bay_remove_ship", "rebuild_rush", "rebuild_stop"))
+		manage_checkpoints(home, user, action, params)
+		return
+	if(action in list("playtest_visitor", "service_admin"))
+		manage_market(home, user, action, params)
+		return
+	if(action in GLOB.outpost_admin_prison_actions)
+		manage_prison(home, user, action, params)
 		return
 	switch(action)
 		if("jump", "jump_overmap")
@@ -260,10 +277,11 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 				home.residents -= resident
 				home.stewards -= resident
 				home.treasurers -= resident
+				home.pricers -= resident
 			else
-				if(!(params["role"] in list("steward", "treasurer")))
+				if(!(params["role"] in list("steward", "treasurer", "pricer")))
 					return
-				var/list/roles = params["role"] == "steward" ? home.stewards : home.treasurers
+				var/list/roles = home.delegated_role_list(params["role"])
 				if(resident in roles)
 					roles -= resident
 				else
@@ -306,7 +324,11 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 			return
 	record(user, home, "[action][params["mode"] ? " ([params["mode"]])" : ""]")
 
-/// Never tear a loaded ship, occupied habitat or unfinished map load out from under it.
+/**
+ * Never tear a loaded ship, occupied habitat or unfinished map load out from under it.
+ * Only player bodies (anything with a mind, alive or dead) count as occupants. Mindless mobs,
+ * such as service bots, prisoners and loose animals, are deleted with the outpost.
+ */
 /datum/outpost_manipulator/proc/deletion_denial(obj/structure/overmap/dynamic/player_outpost/home)
 	if(home.loading || home.freight?.load_pending || home.freight?.busy || length(home.arrival_reservations))
 		return "An arrival or map load is in progress."
@@ -315,6 +337,9 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 		if(ship.docked == home)
 			return "Undock visiting ships and cancel their approaches first."
 	for(var/mob/living/occupant as anything in GLOB.mob_living_list)
+		// Prisoners and the prison's other mobs are deleted with the outpost.
+		if(!occupant.mind || is_outpost_prison_mob(occupant))
+			continue
 		if(get_outpost_from_atom(occupant) == home)
 			return "Move living occupants out of the outpost first."
 	return null

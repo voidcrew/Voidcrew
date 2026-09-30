@@ -160,7 +160,7 @@
 
 /datum/component/singularity/proc/consume(datum/source, atom/thing)
 	SIGNAL_HANDLER
-	if(is_trader_outpost_protected(parent) || is_trader_outpost_protected(thing)) // VOIDCREW
+	if(is_trader_outpost_protected(parent) || is_trader_outpost_protected(thing) || singularity_spares(thing)) // VOIDCREW EDIT
 		return
 	if (thing == parent)
 		stack_trace("Singularity tried to consume itself.")
@@ -227,7 +227,7 @@
 				continue
 			if (in_consume_range)
 				consume(src, thing)
-			else
+			else if(!singularity_spares(thing)) // VOIDCREW EDIT - outpost service room fixtures
 				thing.singularity_pull(parent, singularity_size)
 
 		if(TICK_CHECK) //Yes this means the singulo can eat all of its host subsystem's cpu, but like it's the singulo, and it was gonna do that anyway

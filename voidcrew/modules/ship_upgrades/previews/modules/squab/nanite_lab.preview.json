@@ -8,29 +8,7 @@
    ],
    "height": 3,
    "png": "squab_nanite_lab.png",
-   "src_md5": "a0166d357d61b531eb7c8c28373bfb40",
-   "themes": {
-    "cheap_frigate": {
-     "connector": [
-      1,
-      1
-     ],
-     "height": 3,
-     "png": "squab_nanite_lab_cheap_frigate.png",
-     "src_md5": "a789e9452c926713eb0e8a8a737e811c",
-     "width": 8
-    },
-    "the_patrolboat": {
-     "connector": [
-      1,
-      1
-     ],
-     "height": 3,
-     "png": "squab_nanite_lab_the_patrolboat.png",
-     "src_md5": "cee4afca2f9d52875d2d413aa097d0b1",
-     "width": 8
-    }
-   },
+   "src_md5": "89ebe57add41cbe1987a890331b15b63",
    "width": 8
   }
  },

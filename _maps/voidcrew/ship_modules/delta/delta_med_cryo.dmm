@@ -27,6 +27,13 @@
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /turf/open/floor/iron/white,
 /area/template_noop)
+"t" = (
+/obj/machinery/atmospherics/pipe/smart,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
 "u" = (
 /obj/machinery/defibrillator_mount/loaded{
 	dir = 4;
@@ -39,13 +46,6 @@
 /obj/item/healthanalyzer{
 	pixel_x = 4;
 	pixel_y = -4
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"t" = (
-/obj/machinery/atmospherics/pipe/smart,
-/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
-	dir = 8
 	},
 /turf/open/floor/iron/white,
 /area/template_noop)
@@ -62,77 +62,12 @@
 /obj/machinery/atmospherics/pipe/smart,
 /turf/open/floor/iron/white,
 /area/template_noop)
-"w" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"x" = (
-/obj/modular_map_connector,
-/obj/machinery/atmospherics/components/unary/portables_connector{
-	dir = 1
-	},
-/obj/machinery/portable_atmospherics/canister/oxygen,
-/obj/machinery/light/small/directional/west,
-/turf/open/floor/iron/white,
-/area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
 /area/template_noop)
-"z" = (
-/obj/machinery/defibrillator_mount/loaded{
-	dir = 4;
-	pixel_x = 28
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"B" = (
-/obj/effect/turf_decal/tile/blue/fourcorners,
-/obj/structure/table/glass,
-/obj/item/storage/medkit/regular{
-	pixel_y = 5
-	},
-/obj/item/healthanalyzer{
-	pixel_x = 4;
-	pixel_y = -4
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
 "C" = (
 /obj/machinery/atmospherics/pipe/smart,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"E" = (
-/obj/structure/table/glass,
-/obj/item/reagent_containers/cup/beaker/cryoxadone{
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/cup/beaker/cryoxadone{
-	pixel_x = 4;
-	pixel_y = 6
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"H" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/cryo_cell{
-	dir = 2
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"J" = (
-/turf/open/floor/iron/white,
-/area/template_noop)
-"K" = (
-/obj/structure/table/glass,
-/obj/item/storage/medkit/regular{
-	pixel_y = 5
-	},
-/obj/item/healthanalyzer{
-	pixel_x = 4;
-	pixel_y = -4
-	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "N" = (
@@ -143,19 +78,6 @@
 "P" = (
 /obj/machinery/iv_drip,
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/iron/white,
-/area/template_noop)
-"T" = (
-/obj/effect/turf_decal/tile/blue/fourcorners,
-/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/template_noop)
-"W" = (
-/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on{
-	dir = 1
-	},
 /turf/open/floor/iron/white,
 /area/template_noop)
 "Y" = (

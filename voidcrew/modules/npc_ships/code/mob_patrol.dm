@@ -1253,6 +1253,13 @@
  * that aren't their current patrol target.
  */
 /datum/ai_planning_subtree/handle_blocking_door
+	/// Whether dense furniture and machines in the direction of travel are smashed too, not only doors.
+	/// The outpost breakout subtype (outpost_patrol.dm) walks around them instead.
+	var/smash_obstacles = TRUE
+
+/// Doors left alone even when they are in the way. Ships leave none; see the outpost breakout subtype.
+/datum/ai_planning_subtree/handle_blocking_door/proc/ignores_door(datum/ai_controller/controller, obj/machinery/door/door)
+	return FALSE
 
 /datum/ai_planning_subtree/handle_blocking_door/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/pawn = controller.pawn
@@ -1324,6 +1331,9 @@
 			if(findtext(blocking_door.name, "external"))
 				continue
 
+			if(ignores_door(controller, blocking_door))
+				continue
+
 			// Found a blocking door that isn't our target - handle it
 			var/door_ref = REF(blocking_door)
 
@@ -1389,6 +1399,8 @@
 			return SUBTREE_RETURN_FINISH_PLANNING
 
 		// Check for other dense structures/machinery blocking the path (e.g. deployables, missile launchers)
+		if(!smash_obstacles)
+			continue
 		for(var/obj/blocking_obj in adj)
 			if(!blocking_obj.density)
 				continue

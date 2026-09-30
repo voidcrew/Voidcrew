@@ -54,10 +54,16 @@
 		mark_extract_modified()
 
 /obj/item/slime_extract/experience_pressure_difference(pressure_difference, direction, pressure_resistance_prob_delta = 0)
-	if(istype(loc, /obj/structure/slime_extract_pile))
-		var/obj/structure/slime_extract_pile/pile = loc
-		pile.take_extract(get_turf(pile), src)
-	return ..()
+	if(!istype(loc, /obj/structure/slime_extract_pile))
+		return ..()
+	// Airflow nudges the tile almost every tick. Only a core the push actually moves may leave the pile.
+	var/obj/structure/slime_extract_pile/pile = loc
+	var/turf/floor = get_turf(pile)
+	if(!pile.take_extract(floor, src))
+		return ..()
+	. = ..()
+	if(loc == floor)
+		pile.add_extract(src)
 
 /obj/item/slime_extract/bluespace/is_stackable_extract()
 	return ..() && !teleport_ready && !teleport_x && !teleport_y && !teleport_z
@@ -113,6 +119,9 @@
 		extract_type = core_type
 	icon = initial(extract_type.icon)
 	icon_state = initial(extract_type.icon_state)
+	// Piles of different colours often share a tile. Spread them so one does not hide another.
+	pixel_x = rand(-6, 6)
+	pixel_y = rand(-6, 6)
 	name = "[initial(extract_type.name)] pile"
 	update_appearance()
 	queue_pile_update()
@@ -253,6 +262,12 @@
 			SSexplosions.med_mov_atom += contents
 		if(EXPLODE_LIGHT)
 			SSexplosions.low_mov_atom += contents
+
+/// Brooms sweep piled cores like loose ones. They re-pile wherever they land.
+/proc/release_swept_slime_extracts(list/items)
+	for(var/obj/item/slime_extract/core in items)
+		if(istype(core.loc, /obj/structure/slime_extract_pile))
+			core.forceMove(core.loc.loc)
 
 /// Floor item searches see the actual stock, without opening unrelated containers or rendering the cores.
 /proc/expand_slime_extract_piles(list/atoms)

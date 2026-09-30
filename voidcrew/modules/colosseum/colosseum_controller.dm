@@ -739,6 +739,7 @@
 		var/voucher_share = round(vouchers / shares) + (i <= (vouchers % shares) ? 1 : 0)
 		if(voucher_share)
 			new /obj/item/stack/trade_voucher(cases[i], voucher_share)
+	metric_colosseum_prizes(src, contestant_count, parts, credits, vouchers)
 
 /**
  * Claim window over: the vault unlocks for everyone and the dead are laid out

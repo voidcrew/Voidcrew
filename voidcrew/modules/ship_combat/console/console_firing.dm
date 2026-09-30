@@ -10,26 +10,12 @@
  * If zone rules are what's stopping the shot, tell the gunner so instead of
  * leaving them with a generic "not ready" (or nothing at all). Returns TRUE
  * when the zone blocks fire and a message was sent.
- *
- * honor_siege_exception: missiles and pods may still fire at a raidable player
- * outpost outside the red zone; when that exception applies the zone isn't the
- * blocker, so stay quiet and let the normal fallback message run. Lasers have
- * no such exception and pass FALSE.
  */
-/obj/machinery/computer/camera_advanced/ship_combat/proc/explain_zone_weapons_lock(mob/user, honor_siege_exception = TRUE)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/explain_zone_weapons_lock(mob/user)
 	if(!user)
 		return FALSE
 	if(SSovermap_zones.weapons_allowed_at(src))
 		return FALSE
-	if(honor_siege_exception)
-		for(var/datum/weakref/ref in linked_launchers)
-			var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
-			if(launcher?.is_siege_shot_allowed(target_ship))
-				return FALSE
-		for(var/datum/weakref/ref in linked_pod_tubes)
-			var/obj/machinery/ship_combat/pod_launcher/tube = ref.resolve()
-			if(tube?.is_siege_shot_allowed(target_ship))
-				return FALSE
 	var/zone_name = "this zone"
 	if(current_ship)
 		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(get_turf(current_ship))
@@ -75,7 +61,7 @@
 			continue
 
 		// Keep firing from this launcher until it's empty
-		while(launcher.can_fire(target_ship))
+		while(launcher.can_fire())
 			// Get spawn offset for this missile
 			var/list/offset = stagger_offsets[offset_index]
 
@@ -117,7 +103,7 @@
 		if(!launcher)
 			linked_launchers -= ref
 			continue
-		if(!launcher.can_fire(target_ship))
+		if(!launcher.can_fire())
 			continue
 		// Filter by selected missile type if set
 		if(selected_missile_type && launcher.loaded_missile)
@@ -200,7 +186,7 @@
 		if(!tube)
 			linked_pod_tubes -= ref
 			continue
-		if(!tube.can_fire(target_ship))
+		if(!tube.can_fire())
 			continue
 		return tube
 	return null
@@ -210,14 +196,6 @@
 	var/obj/structure/overmap/ship/target_vessel = target_ship
 	if(istype(target_vessel))
 		return target_vessel.shield_health > 0
-	// A raidable player outpost holds a shield envelope of its own, and it kills a
-	// boarding party the same way a ship shield does - try_outpost_shield_intercept()
-	// routes straight into shield_impact(), which gibs everyone aboard. This check
-	// only knew about ships, so a pod launched at a shielded outpost got no warning.
-	var/obj/structure/overmap/dynamic/player_outpost/outpost = target_ship
-	if(istype(outpost))
-		var/obj/machinery/outpost_shield_generator/generator = outpost.get_shield_generator()
-		return generator && generator.charge > 0
 	return FALSE
 
 /// Fire one ready laser turret at the current target location
@@ -232,10 +210,10 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
-	// Lasers remain ship-to-ship only; sieging outposts is missile work
+	// Lasers only track ships
 	if(!istype(target_ship, /obj/structure/overmap/ship))
 		if(user)
-			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets. Use missiles."))
+			to_chat(user, span_warning("Lasers only track ships."))
 		return FALSE
 
 	for(var/datum/weakref/ref in linked_turrets)
@@ -248,7 +226,7 @@
 		if(turret.fire(target_turf, target_ship, current_ship, user, approach_direction = selected_approach_direction))
 			return TRUE
 
-	if(user && !explain_zone_weapons_lock(user, honor_siege_exception = FALSE))
+	if(user && !explain_zone_weapons_lock(user))
 		to_chat(user, span_warning("No laser turrets ready to fire!"))
 	return FALSE
 
@@ -265,10 +243,10 @@
 			to_chat(user, span_warning("No target selected!"))
 		return 0
 
-	// Lasers remain ship-to-ship only; sieging outposts is missile work
+	// Lasers only track ships
 	if(!istype(target_ship, /obj/structure/overmap/ship))
 		if(user)
-			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets. Use missiles."))
+			to_chat(user, span_warning("Lasers only track ships."))
 		return 0
 
 	// Collect all ready turrets and calculate combined damage
@@ -285,7 +263,7 @@
 		combined_damage += turret.get_effective_damage()
 
 	if(!length(ready_turrets))
-		if(user && !explain_zone_weapons_lock(user, honor_siege_exception = FALSE))
+		if(user && !explain_zone_weapons_lock(user))
 			to_chat(user, span_warning("No laser turrets ready to fire!"))
 		return 0
 

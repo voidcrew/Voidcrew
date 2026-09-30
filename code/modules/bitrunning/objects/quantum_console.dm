@@ -2,7 +2,7 @@
 	name = "quantum console"
 
 	circuit = /obj/item/circuitboard/computer/quantum_console
-	icon_keyboard = "mining"
+	icon_keyboard = "mining_key" // VOIDCREW EDIT - was "mining", a screen state with no "_off" keyboard state, so an unpowered console runtimed
 	icon_screen = "bitrunning"
 	req_access = list(ACCESS_MINING)
 	/// The server this console is connected to.

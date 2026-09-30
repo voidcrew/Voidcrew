@@ -13,7 +13,10 @@
 #define TGUI_WINDOW_HARD_LIMIT 9
 
 /// Maximum ping timeout allowed to detect zombie windows
-#define TGUI_PING_TIMEOUT (4 SECONDS)
+// VOIDCREW EDIT CHANGE - was 4 SECONDS. The first window a client opens has to receive the tgui
+// bundle, fonts and spritesheets before it can report ready, which takes longer on slow links
+// and for clients fetching resources on demand (see external_rsc_on_demand_from_build).
+#define TGUI_PING_TIMEOUT (10 SECONDS)
 /// Used for rate-limiting to prevent DoS by excessively refreshing a TGUI window
 #define TGUI_REFRESH_FULL_UPDATE_COOLDOWN (1 SECONDS)
 

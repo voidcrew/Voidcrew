@@ -216,6 +216,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(spent)
 		return
 	spent = TRUE
+	SEND_SIGNAL(src, COMSIG_BOUNTY_LICH_SLAIN, slain) // BOUNTY: his kill bounty drops its trophy at the corpse (bounty_lair.dm)
 
 	if(beacon_timer)
 		deltimer(beacon_timer)
@@ -472,6 +473,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	SSovermap.lich_lair_spawned = TRUE
 	site.set_ruin_template(template)
 	site.start_event()
+	bounty_post_lich(site) // BOUNTY: a kill-only Most Wanted on him (bounty_lair.dm)
 	log_mapping("SSovermap: The Verdigris surfaced on the overmap.")
 	return site
 

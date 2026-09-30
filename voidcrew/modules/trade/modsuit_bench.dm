@@ -674,6 +674,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	playsound(src, 'sound/items/tools/rped.ogg', 40, TRUE)
 	balloon_alert(user, "[upgrade.name] [upgrade.repeatable ? "done" : "fitted"]")
 	user.log_message("bought MOD bench upgrade '[upgrade.id]' for [mod] at [upgrade.get_price_text()]", LOG_GAME)
+	metric_outpost_service("mod_bench_upgrade", user, src, upgrade.price_credits, upgrade.price_vouchers, upgrade.id, list("name" = upgrade.name))
 	return TRUE
 
 // --- UI -----------------------------------------------------------------

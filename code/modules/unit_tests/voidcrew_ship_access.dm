@@ -245,6 +245,53 @@
 	TEST_ASSERT(door.try_safety_unlock(visitor), "disabling the crew lock did not restore visitor entry")
 	TEST_ASSERT(!door.density, "the exterior airlock stayed shut after the crew lock was disabled")
 
+/// A thrown item must not open a crew-locked airlock for someone who is not crew.
+/datum/unit_test/voidcrew_ship_crew_airlock_throws
+	parent_type = /datum/unit_test/voidcrew_ship_crew_airlocks
+
+/datum/unit_test/voidcrew_ship_crew_airlock_throws/Run()
+	var/obj/machinery/door/airlock/instant/door = allocate(/obj/machinery/door/airlock/instant)
+	door.autoclose = FALSE
+	door_turf = get_turf(door)
+	original_area = door_turf.loc
+	ship_area = new
+	door_turf.change_area(original_area, ship_area)
+	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew)
+	ship = allocate(/obj/structure/overmap/ship)
+	ship_area.shuttle_port = port
+	port.current_ship = ship
+	ship.ship_team = new /datum/team/voidcrew()
+	ship.ship_team.ship = ship
+
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(door, EAST))
+	visitor.mind_initialize()
+	var/mob/living/carbon/human/consistent/crewmember = allocate(/mob/living/carbon/human/consistent, get_step(door, EAST))
+	crewmember.mind_initialize()
+	ship.ship_team.add_member(crewmember.mind)
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox, get_step(door, EAST))
+	TEST_ASSERT(toolbox.w_class >= WEIGHT_CLASS_NORMAL, "the test needs an item big enough to open a door")
+
+	// Unlocked hull: a thrown toolbox opens the door, as upstream.
+	toolbox.throwing = new /datum/thrownthing(toolbox, door, WEST, 5, 1, visitor)
+	door.Bumped(toolbox)
+	TEST_ASSERT(!door.density, "a thrown item no longer opens an unlocked ship's airlock")
+	door.close()
+	TEST_ASSERT(door.density, "the airlock did not close again")
+
+	TEST_ASSERT(ship.set_crew_only_airlocks(TRUE), "could not enable crew-only airlocks")
+	door.Bumped(toolbox)
+	TEST_ASSERT(door.density, "an item thrown by a visitor opened a crew-locked airlock")
+	QDEL_NULL(toolbox.throwing)
+	door.Bumped(toolbox)
+	TEST_ASSERT(door.density, "an item nobody threw opened a crew-locked airlock")
+
+	toolbox.throwing = new /datum/thrownthing(toolbox, door, WEST, 5, 1, crewmember)
+	door.Bumped(toolbox)
+	TEST_ASSERT(!door.density, "an item thrown by crew did not open the crew-locked airlock")
+	door.close()
+	QDEL_NULL(toolbox.throwing)
+	ship.ship_team.remove_member(crewmember.mind)
+
 /// Same-type ship jobs must not confer command, prevent acting command, or survive demotion.
 /datum/unit_test/voidcrew_pill_captain_commands/Run()
 	var/datum/map_template/shuttle/voidcrew/pill/template = allocate(/datum/map_template/shuttle/voidcrew/pill)

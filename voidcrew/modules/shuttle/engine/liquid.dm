@@ -26,7 +26,7 @@
 /obj/machinery/power/shuttle_engine/ship/liquid/Initialize(mapload)
 	. = ..()
 	create_reagents(max_reagents, OPENCONTAINER)
-	AddComponent(/datum/component/plumbing/simple_demand)
+	AddComponent(/datum/component/plumbing/simple_demand/thruster)
 	for(var/reagent in fuel_reagents)
 		reagent_amount_holder += fuel_reagents[reagent]
 
@@ -51,3 +51,12 @@
 
 /obj/machinery/power/shuttle_engine/ship/liquid/return_fuel_cap()
 	return reagents.maximum_volume
+
+/**
+ * A thruster's fuel inlet. The plain simple_demand takes from the side the machine faces, and
+ * a thruster faces the way it fires - its only inlet opened into the exhaust, outside the hull,
+ * so no ship could ever duct fuel to one. This takes from the opposite side, the one that
+ * faces into the ship, and still turns with the thruster.
+ */
+/datum/component/plumbing/simple_demand/thruster
+	demand_connects = NORTH

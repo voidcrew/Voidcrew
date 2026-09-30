@@ -1,19 +1,25 @@
 /**
  * # Drug Run
  *
- * "Vex has a formula, a mothballed kitchen, and a buyer. You have a ship and
- * deniability. Three wild ingredients, one quiet cook, one handover."
+ * "The kingpin has a formula, a mothballed kitchen, and a buyer in Vex. You
+ * have a ship and deniability. Three wild ingredients, one quiet cook, one
+ * handover."
  *
  * The contraband arc as a mission: [gather three planet-grown ingredients] ->
  * [cook the batch at a hidden lab the mission spawns for itself] -> [deliver
- * the product to the counter]. The recipe (recipe.dm) rolls the shopping
+ * the product to Vex's counter]. The recipe (recipe.dm) rolls the shopping
  * list from the planets actually flying this round; each ingredient gets a
  * pinned harvest site that field-spawns when its planet loads. The lab is a
  * rare, mission-locked space ruin raised at accept in the zone band the
  * contract rolled, the rumor-chart reveal steps, minus the chart.
  *
- * Phase 5 state: weight stays 0 (the black-market posting wires in later),
- * the cook runs through the lab session's full station chain (lab_session.dm),
+ * Who gives it out: only the kingpin in the Undertow Exchange's lounge
+ * (bounties/bounty_kingpin.dm, /datum/bounty_kingpin_crew/proc/make_job()).
+ * Weight stays 0, so nothing rolls it at random, and no trader board posts
+ * it. He makes it with the black market's shop and puts his alias on it as
+ * the author, so only Vex's counter at the Undertow takes the product, and a
+ * crew that takes it works for him (it can't hunt him or turn him in). The
+ * cook runs through the lab session's full station chain (lab_session.dm),
  * mixer Simon, catalyst rhythm game, crystallizer catch game, with the
  * product printing beside the crystallizer; the customs patrol is a logged
  * roll (Phase 6). Loss policy is FAIL: one planet of each type per round
@@ -21,11 +27,12 @@
  */
 /datum/mission/drug_run
 	name = "Drug Run"
-	weight = 0 // never auto-rolled; posted only by the black-market board (extra_offer_mix)
+	weight = 0 // never auto-rolled; only the kingpin gives it out (bounty_kingpin.dm)
 	mission_limit = 1
 	duration = 60 MINUTES
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL
-	author = "Vex"
+	// The kingpin puts his own alias here when he makes one
+	author = "The kingpin"
 	// Contraband pays like contraband; the compressed zone table below keeps
 	// deep-zone runs from doubling down on an already fat band
 	value_min = 4000
@@ -158,12 +165,12 @@
 		var/datum/overmap/planet/biome = entry["biome"]
 		shopping_list += "[entry["name"]] ([initial(biome.name)])"
 	name = "Drug Run: [recipe.street_name]"
-	desc = "Vex wants a batch of [recipe.street_name] cooked quietly and sold quietly. \
+	// The job reads as the kingpin's: he wants the batch, and Vex's counter buys it
+	desc = "[author || "The kingpin"] wants a batch of [recipe.street_name] cooked quietly and sold quietly. \
 		The formula chip lands on your mission pad when you sign. \
 		Shopping list: [english_list(shopping_list)]. \
 		Cook it at the kitchen: [active ? "an encrypted signal at ([target.target_x], [target.target_y]) in the [target_zone_name]" : "coordinates transmitted on signing, somewhere in the [target_zone_name]"]. \
 		Then hand the finished product to [shop?.outpost ? "Vex at [shop.outpost_name]'s counter; only that outpost accepts this batch" : "an outpost trader"]. No names on anything, no questions from anyone. \
-		Tap a GPS unit on your mission board to upload located harvest-site beacons; the batch itself broadcasts ([gps_tag]) once cooked. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]."
 
 /datum/mission/drug_run/waypoint_label()
@@ -185,7 +192,7 @@
 /datum/mission/drug_run/can_turn_in_at(atom/reward_anchor)
 	if(!istype(reward_anchor, /mob/living/basic/outpost_trader))
 		return FALSE
-	if(!shop?.outpost) // TEMP until black-market offer wiring: any counter fences it
+	if(!shop?.outpost) // made with no shop (an admin's, or no black market): any counter fences it
 		return TRUE
 	var/mob/living/basic/outpost_trader/npc = reward_anchor
 	return npc.outpost == shop.outpost

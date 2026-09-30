@@ -368,6 +368,10 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
  * radar identification is researched; otherwise uses the object's own name.
  */
 /obj/structure/overmap/ship/proc/get_contact_name(obj/structure/overmap/object)
+	// A contact that answers for itself, like a derelict outpost's true name (voidcrew/modules/derelict_outposts)
+	var/identified = object.identified_contact_name(src)
+	if(identified)
+		return identified
 	if(istype(object, /obj/structure/overmap/space_ruin) && can_identify_ruins())
 		var/obj/structure/overmap/space_ruin/ruin = object
 		if(ruin.true_name)

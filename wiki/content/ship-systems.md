@@ -80,3 +80,5 @@ All of it is covered in [Ship Combat](ship-combat.md).
 ## Changing the ship itself
 
 Hull layout is not fixed. Modular hulls are bought with slots you fill with modules, and a **ship construction console** drives a drone that can rebuild, extend and shrink the hull itself. See [Ship Upgrades](ship-upgrades.md).
+
+Deploy the drone from the console and fly it with the movement keys. Pick a tool in the console's **Tools** tab; the drone's **Open Console** button brings the console back up. Click a tile within three tiles of the drone to use the tool there, or right-click to remove with it. Windows, chairs and other directional pieces face the way the drone is facing. Wall cameras and lights hang on the wall nearest where you click, and the Lights tool can also be set to a particular wall. Laying floor tiles over an existing floor replaces it.

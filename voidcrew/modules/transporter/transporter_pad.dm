@@ -228,6 +228,9 @@
 			continue
 		if(GLOB.transporter_mass_blacklist[thing.type])
 			continue
+		// A wanted criminal leaves only by a mission pad: not beamed, and not in a locker or crate either (voidcrew/modules/bounties/bounty_turn_in.dm)
+		if(bounty_blocks_transport(thing))
+			continue
 		if(isliving(thing))
 			var/mob/living/subject = thing
 			// Someone strapped to a bolted chair isn't going anywhere.

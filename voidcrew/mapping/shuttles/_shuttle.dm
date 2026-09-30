@@ -51,6 +51,51 @@
 		if(!(part_class in part_requirements))
 			part_requirements[part_class] = 0
 
+/// How long a hull waits for its upgrade modules to finish reading before initializing anyway.
+#define SHIP_MODULE_READ_TIMEOUT (2 MINUTES)
+
+/**
+ * Initialize the hull only once every upgrade module inside it has been read.
+ *
+ * Module maps leave their atoms for this pass (see /datum/map_template/map_module/ship_upgrade),
+ * so hull and modules initialize together in one pass over the whole ship. Before this the hull
+ * initialized while its modules were still being read, which let hull pipes connect to module
+ * vents and pumps that had not run Initialize() (null nodes, "Nonexistent machinery gasmix"),
+ * let hull walls and tables smooth against module atoms whose smoothing groups were still
+ * unparsed ("bad index"), and let a module's own pass start on hull areas the hull was still
+ * working through ("initialized multiple times").
+ */
+/datum/map_template/shuttle/voidcrew/initTemplateBounds(list/bounds)
+	if(bounds)
+		wait_for_upgrade_modules(block(
+			bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ],
+			bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]
+		))
+	return ..()
+
+/// Sleeps until no /obj/modular_map_root is left on the given turfs. Each marker deletes itself
+/// once its module has been read.
+/datum/map_template/shuttle/voidcrew/proc/wait_for_upgrade_modules(list/turfs)
+	var/give_up_at = world.time + SHIP_MODULE_READ_TIMEOUT
+	while(TRUE)
+		var/obj/modular_map_root/pending
+		for(var/turf/place as anything in turfs)
+			pending = locate() in place
+			if(pending)
+				break
+		if(!pending)
+			return
+		if(world.time > give_up_at)
+			stack_trace("[name] gave up waiting for upgrade module '[pending.key]' at [AREACOORD(pending)]")
+			// The hull initializes without them now, so late modules must initialize themselves
+			for(var/turf/place as anything in turfs)
+				for(var/obj/modular_map_root/ship_upgrade/late in place)
+					late.defer_to_hull = FALSE
+			return
+		sleep(1)
+
+#undef SHIP_MODULE_READ_TIMEOUT
+
 /**
  * Upgrade modules load asynchronously - /obj/modular_map_root fires its map load from an
  * INVOKE_ASYNC while the hull is still being read, so a module's cables can be created after

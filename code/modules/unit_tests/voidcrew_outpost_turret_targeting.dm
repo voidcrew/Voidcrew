@@ -52,7 +52,7 @@
 		/mob/living/basic/pet/cat,
 		/mob/living/basic/carp/pet,
 		/mob/living/basic/outpost_trader,
-		/mob/living/basic/outpost_loiterer,
+		/mob/living/basic/ambient_npc,
 	)
 	for(var/mob_type in bystanders)
 		var/mob/living/bystander = allocate(mob_type)
