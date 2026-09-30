@@ -40,10 +40,10 @@
 #define R_SPAWN (1<<12)
 #define R_AUTOADMIN (1<<13)
 #define R_DBRANKS (1<<14)
-#define R_ECONOMY (1<<15)
 
 #define R_DEFAULT R_AUTOADMIN
 
+// VOIDCREW EDIT: Include the Economy permission in the complete admin permission mask (voidcrew/modules/admin).
 #define R_EVERYTHING (1<<16)-1 //the sum of all other rank permissions, used for +EVERYTHING
 
 #define ADMIN_QUE(user) "(<a href='byond://?_src_=holder;[HrefToken(forceGlobal = TRUE)];adminmoreinfo=[REF(user)]'>?</a>)"

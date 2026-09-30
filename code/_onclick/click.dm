@@ -24,8 +24,10 @@
 	var/mod = next_move_modifier
 	var/adj = next_move_adjust
 	// MonkeStation's crit item usage: actions in soft crit take four times as long.
+	// VOIDCREW EDIT START: Allow slow item actions in soft crit through incapacitated_except_softcrit().
 	if(stat == SOFT_CRIT)
 		mod *= 4
+	// VOIDCREW EDIT END
 	for(var/datum/status_effect/effect as anything in status_effects)
 		mod *= effect.nextmove_modifier()
 		adj += effect.nextmove_adjust()
@@ -107,6 +109,7 @@
 		CtrlClickOn(A)
 		return
 
+	// VOIDCREW EDIT: Allow slow item actions in soft crit through incapacitated_except_softcrit().
 	if(incapacitated_except_softcrit(INCAPABLE_RESTRAINTS|INCAPABLE_STASIS))
 		return
 

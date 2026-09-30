@@ -29,8 +29,10 @@ SUBSYSTEM_DEF(pathfinder)
 		// round whether or not anything asked it for a path. With both queues empty every line
 		// below this is a no-op, but the two list copies (one of them a deep_copy_list) still
 		// get paid ~78k times a round. Bail before allocating anything.
+		// VOIDCREW EDIT START: Avoid copying empty pathfinding queues on every fleet tick.
 		if(!length(active_pathing) && !length(source_to_maps))
 			return
+		// VOIDCREW EDIT END
 		src.currentrun = active_pathing.Copy()
 		src.currentmaps = deep_copy_list(source_to_maps)
 

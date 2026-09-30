@@ -57,14 +57,17 @@
 	#endif
 
 /turf/open/Initialize(mapload)
+	// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 	prepare_planet_atmosphere() // VOIDCREW: authored atmosphere precedes air creation.
 	if(!blocks_air)
 		// VOIDCREW EDIT: a planetary turf starts on the shared mix for its gas string and only
 		// takes a private mixture on its first write. See voidcrew/edits/planetary_shared_air.dm.
 		if(planetary_atmos)
+			// VOIDCREW EDIT START: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 			air = planetary_shared_air()
 		if(!air)
 			air = create_gas_mixture()
+			// VOIDCREW EDIT END
 		if(planetary_atmos)
 			if(!SSair.planetary[initial_gas_mix])
 				var/datum/gas_mixture/immutable/planetary/mix = new
@@ -98,6 +101,7 @@
 	if(!giver)
 		return FALSE
 	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 	our_air.merge(giver)
 	update_visuals()
 	air_update_turf(FALSE, FALSE)
@@ -113,11 +117,13 @@
 /turf/open/proc/copy_air_with_tile(turf/open/target_turf)
 	if(istype(target_turf))
 		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		our_air.copy_from(target_turf.air)
 
 /turf/open/proc/copy_air(datum/gas_mixture/copy)
 	if(copy)
 		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		our_air.copy_from(copy)
 
 /turf/return_air()
@@ -131,6 +137,7 @@
 	// so a turf still on the shared planetary mix takes its private copy now. Readers that
 	// must not trigger that use return_air_readonly().
 	if(planetary_atmos)
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		return materialize_planet_air()
 	return air
 
@@ -335,9 +342,11 @@
 			// VOIDCREW EDIT: share() writes both mixes. Either turf may still be on the shared
 			// planetary mix; give it a private one first (no-op otherwise).
 			if(planetary_atmos)
+				// VOIDCREW EDIT START: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 				our_air = materialize_planet_air()
 			if(enemy_tile.planetary_atmos)
 				enemy_air = enemy_tile.materialize_planet_air()
+				// VOIDCREW EDIT END
 			var/difference = our_air.share(enemy_air, our_share_coeff, 1 / (LAZYLEN(enemy_tile.atmos_adjacent_turfs) + 1))
 			if(difference)
 				if(difference > 0)
@@ -369,6 +378,7 @@
 
 	// VOIDCREW EDIT: a 100% share into space writes us; leave the shared planetary mix first.
 	if(planetary_atmos && share_end)
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		our_air = materialize_planet_air()
 	for(var/turf/open/enemy_tile as anything in share_end)
 		var/datum/gas_mixture/enemy_mix = enemy_tile.air
@@ -636,6 +646,7 @@ Then we space some of our heat, and think about if we should stop conducting.
 		var/turf/open/open_other = other
 		// VOIDCREW EDIT: temperature_share() writes both mixes; neither may stay on the shared planetary mix.
 		var/datum/gas_mixture/other_air = open_other.materialize_planet_air()
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		other_air.temperature_share(materialize_planet_air(), WINDOW_HEAT_TRANSFER_COEFFICIENT)
 	else //Open but neighbor is solid
 		temperature_share_open_to_solid(other)
@@ -675,6 +686,7 @@ Then we space some of our heat, and think about if we should stop conducting.
 	//Conduct with air on my tile if I have it
 	if(..((blocks_air ? temperature : air.temperature)) != FALSE && !blocks_air)
 		var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+		// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 		temperature = our_air.temperature_share(null, thermal_conductivity, temperature, heat_capacity)
 
 ///Should we attempt to superconduct?
@@ -712,6 +724,7 @@ Then we space some of our heat, and think about if we should stop conducting.
 
 /turf/open/proc/temperature_share_open_to_solid(turf/sharer)
 	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	// VOIDCREW EDIT: Prepare planetary atmospheres and materialize private gas before every mutation (voidcrew/edits/planetary_shared_air.dm).
 	sharer.temperature = our_air.temperature_share(null, sharer.thermal_conductivity, sharer.temperature, sharer.heat_capacity)
 
 /turf/proc/share_temperature_mutual_solid(turf/sharer, conduction_coefficient) //This is all just heat sharing, don't get freaked out

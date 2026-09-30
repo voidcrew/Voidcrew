@@ -9,6 +9,7 @@
 /// at which point generate_transit_dock() is not even attempted and any ship that needs a
 /// NEW reservation (one that expanded its hull, or relocated its docking port) can never
 /// enter transit again - it can neither dock nor undock for the rest of the round.
+// VOIDCREW EDIT: Size transit capacity for a fleet while recycling empty docked-ship reservations (voidcrew/modules/shuttle).
 #define MAX_TRANSIT_TILE_COUNT (400 ** 2)
 /// How many turfs to allow before we start freeing up existing "soft reserved" transit docks
 /// If we're under load we want to allow for cycling, but if not we want to preserve already generated docks for use
@@ -17,6 +18,7 @@
 /// berthed, and blocks that linger fragment the reserved levels until the allocator mints a
 /// fresh z (~120 MB, never freed). 40k keeps roughly a dozen hulls' blocks warm; past that,
 /// docked ships hand their ground back and re-request on undock, which is the normal path.
+// VOIDCREW EDIT: Size transit capacity for a fleet while recycling empty docked-ship reservations (voidcrew/modules/shuttle).
 #define SOFT_TRANSIT_RESERVATION_THRESHOLD (200 ** 2)
 //END VOID EDIT
 
@@ -160,13 +162,6 @@ SUBSYSTEM_DEF(shuttle)
 	var/shuttle_loading
 	/// Did the supermatter start a cascade event?
 	var/supermatter_cascade = FALSE
-
-	//VOID EDIT - Modular ship configuration for shuttle manipulator
-	/// Pending upgrade module selections (slot_key -> module_id) for shuttle manipulator
-	var/list/pending_upgrade_selections = list()
-	/// Pending theme selection (theme_id) for shuttle manipulator
-	var/pending_theme_id
-	//END VOID EDIT
 
 	/// List of express consoles that are waiting for pack initialization
 	var/list/obj/machinery/computer/cargo/express/express_consoles = list()
@@ -887,12 +882,14 @@ SUBSYSTEM_DEF(shuttle)
  * * destination_port - The station docking port to send the shuttle to once loaded
  * * replace - Whether to replace the shuttle or create a new one
 */
+// VOIDCREW EDIT START: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 /datum/controller/subsystem/shuttle/proc/action_load(datum/map_template/shuttle/loading_template, obj/docking_port/stationary/destination_port, replace = FALSE, datum/shuttle_template_load/load_owner)
 	return run_template_load(CALLBACK(src, PROC_REF(action_load_impl), loading_template, destination_port, replace), load_owner)
 
 /datum/controller/subsystem/shuttle/proc/action_load_impl(datum/map_template/shuttle/loading_template, obj/docking_port/stationary/destination_port, replace, datum/shuttle_template_load/load_owner)
 	if(destination_port && QDELETED(destination_port))
 		return FALSE
+// VOIDCREW EDIT END
 	// Check for an existing preview
 	if(preview_shuttle && (loading_template != preview_template))
 		preview_shuttle.jumpToNullSpace()
@@ -901,12 +898,14 @@ SUBSYSTEM_DEF(shuttle)
 		QDEL_NULL(preview_reservation)
 
 	if(!preview_shuttle)
+		// VOIDCREW EDIT START: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 		load_template(loading_template, load_owner)
 		// VOIDCREW EDIT: load_template() can now refuse gracefully (no transit
 		// reservation free - see the capacity note in it). Without this bail the null
 		// preview fell through to generate_transit_dock(null) and a CRASH of its own.
 		if(!preview_shuttle)
 			return
+		// VOIDCREW EDIT END
 		preview_template = loading_template
 
 	// get the existing shuttle information, if any
@@ -968,11 +967,13 @@ SUBSYSTEM_DEF(shuttle)
  * Arguments:
  * * loading_template - The shuttle template to load
  */
+// VOIDCREW EDIT START: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 /datum/controller/subsystem/shuttle/proc/load_template(datum/map_template/shuttle/loading_template, datum/shuttle_template_load/load_owner)
 	return run_template_load(CALLBACK(src, PROC_REF(load_template_impl), loading_template), load_owner)
 
 /datum/controller/subsystem/shuttle/proc/load_template_impl(datum/map_template/shuttle/loading_template, datum/shuttle_template_load/load_owner)
 	unload_preview(load_owner)
+// VOIDCREW EDIT END
 	. = FALSE
 	// Load shuttle template to a fresh block reservation.
 	preview_reservation = SSmapping.request_turf_block_reservation(
@@ -990,6 +991,7 @@ SUBSYSTEM_DEF(shuttle)
 		// "there was an error, contact admins" for every buyer who clicked at the wrong
 		// moment. Refuse gracefully instead; callers already handle a missing preview.
 		log_mapping("SSshuttle: load_template refused - no transit reservation for [loading_template.width]x[loading_template.height] '[loading_template.name]'[SSmapping.at_z_level_ceiling() ? " (world.maxz at its ceiling)" : ""]")
+		// VOIDCREW EDIT: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 		return FALSE
 	var/turf/bottom_left = preview_reservation.bottom_left_turfs[1]
 	loading_template.load(bottom_left, centered = FALSE, register = FALSE)
@@ -1029,13 +1031,16 @@ SUBSYSTEM_DEF(shuttle)
 /**
  * Removes the preview_shuttle from the transit Z-level
  */
+// VOIDCREW EDIT START: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 /datum/controller/subsystem/shuttle/proc/unload_preview(datum/shuttle_template_load/load_owner)
 	return run_template_load(CALLBACK(src, PROC_REF(unload_preview_impl)), load_owner)
 
 /datum/controller/subsystem/shuttle/proc/unload_preview_impl(datum/shuttle_template_load/load_owner)
+// VOIDCREW EDIT END
 	if(preview_shuttle)
 		preview_shuttle.jumpToNullSpace()
 	preview_shuttle = null
+	// VOIDCREW EDIT: Serialize preview loads under their owning template transaction (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 	preview_template = null
 	if(preview_reservation)
 		QDEL_NULL(preview_reservation)
@@ -1075,11 +1080,13 @@ SUBSYSTEM_DEF(shuttle)
 		L["description"] = S.description
 		L["admin_notes"] = S.admin_notes
 		//VOID EDIT - Check if this is a modular voidcrew ship
+		// VOIDCREW EDIT START: Integrate serialized live template loads and modular ship selections (voidcrew/modules/ship_upgrades/shuttle_manipulator.dm).
 		L["is_modular"] = FALSE
 		if(istype(S, /datum/map_template/shuttle/voidcrew))
 			var/datum/map_template/shuttle/voidcrew/VC = S
 			if(VC.has_upgrade_slots)
 				L["is_modular"] = TRUE
+		// VOIDCREW EDIT END
 		//END VOID EDIT
 
 		if(selected == S)
@@ -1118,11 +1125,13 @@ SUBSYSTEM_DEF(shuttle)
 		data["shuttles"] += list(L)
 
 	//VOID EDIT - Add modular ship data if selected template is modular
+	// VOIDCREW EDIT START: Integrate serialized live template loads and modular ship selections (voidcrew/modules/ship_upgrades/shuttle_manipulator.dm).
 	data["modular_data"] = null
 	if(selected && istype(selected, /datum/map_template/shuttle/voidcrew))
 		var/datum/map_template/shuttle/voidcrew/VC = selected
 		if(VC.has_upgrade_slots)
 			data["modular_data"] = build_modular_ui_data(VC)
+	// VOIDCREW EDIT END
 	//END VOID EDIT
 
 	return data
@@ -1144,12 +1153,15 @@ SUBSYSTEM_DEF(shuttle)
 				existing_shuttle = getShuttle(S.port_id)
 				selected = S
 				//VOID EDIT - Clear pending modular selections when switching templates
+				// VOIDCREW EDIT START: Integrate serialized live template loads and modular ship selections (voidcrew/modules/ship_upgrades/shuttle_manipulator.dm).
 				pending_upgrade_selections = list()
 				pending_theme_id = null
+				// VOIDCREW EDIT END
 				//END VOID EDIT
 				. = TRUE
 
 		//VOID EDIT - Handlers for modular ship configuration
+		// VOIDCREW EDIT START: Integrate serialized live template loads and modular ship selections (voidcrew/modules/ship_upgrades/shuttle_manipulator.dm).
 		if("select_ship_theme")
 			pending_theme_id = params["theme_id"]
 			// Clear upgrade selections when theme changes (modules may differ per theme)
@@ -1167,6 +1179,7 @@ SUBSYSTEM_DEF(shuttle)
 			pending_upgrade_selections = list()
 			pending_theme_id = null
 			. = TRUE
+		// VOIDCREW EDIT END
 		//END VOID EDIT
 
 		if("jump_to")
@@ -1197,6 +1210,7 @@ SUBSYSTEM_DEF(shuttle)
 					SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "[M.name]")
 					break
 
+		// VOIDCREW EDIT START: The serialized template-load owner now holds the load lock (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 		if("load") //VOID EDIT [
 			if(istype(S, /datum/map_template/shuttle/voidcrew))
 				var/datum/map_template/shuttle/voidcrew/VC = S
@@ -1246,17 +1260,20 @@ SUBSYSTEM_DEF(shuttle)
 						message_admins("[key_name_admin(usr)] loaded [mdp] with the shuttle manipulator.")
 						log_admin("[key_name(usr)] loaded [mdp] with the shuttle manipulator.</span>")
 						SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "[mdp.name]")
+		// VOIDCREW EDIT END
 				//]
 
 		if("preview")
 			//if(preview_shuttle && (loading_template != preview_template))
 			if(S && !shuttle_loading)
 				. = TRUE
+				// VOIDCREW EDIT REMOVAL: The serialized template-load owner now holds the load lock (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 				unload_preview()
 				load_template(S)
 				if(preview_shuttle)
 					preview_template = S
 					user.forceMove(get_turf(preview_shuttle))
+// VOIDCREW EDIT REMOVAL: The serialized template-load owner now holds the load lock (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 
 		if("replace")
 			if(existing_shuttle == backup_shuttle)
@@ -1266,6 +1283,7 @@ SUBSYSTEM_DEF(shuttle)
 					intact for round sanity.")
 			else if(S && !shuttle_loading)
 				. = TRUE
+				// VOIDCREW EDIT REMOVAL: The serialized template-load owner now holds the load lock (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 				// If successful, returns the mobile docking port
 				var/obj/docking_port/mobile/mdp = action_load(S, replace = TRUE)
 				if(mdp)
@@ -1273,6 +1291,7 @@ SUBSYSTEM_DEF(shuttle)
 					message_admins("[key_name_admin(usr)] load/replaced [mdp] with the shuttle manipulator.")
 					log_admin("[key_name(usr)] load/replaced [mdp] with the shuttle manipulator.</span>")
 					SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "[mdp.name]")
+				// VOIDCREW EDIT REMOVAL: The serialized template-load owner now holds the load lock (voidcrew/modules/overmap/code/controllers/subsystem/shuttle.dm).
 				if(emergency == mdp) //you just changed the emergency shuttle, there are events in game + captains that can change your snowflake choice.
 					var/set_purchase = tgui_alert(usr, "Do you want to also disable shuttle purchases/random events that would change the shuttle?", "Butthurt Admin Prevention", list("Yes, disable purchases/events", "No, I want to possibly get owned"))
 					if(set_purchase == "Yes, disable purchases/events")
@@ -1289,99 +1308,6 @@ SUBSYSTEM_DEF(shuttle)
 	return has_purchase_shuttle_access
 
 //VOID EDIT - Helper proc for building modular ship UI data
-/**
- * Build UI data for modular ship configuration in shuttle manipulator
- *
- * Returns a list with:
- * - themes: list of available themes with id, name, desc, is_default, jobs
- * - has_themes: boolean if there are themes to choose from
- * - slots: list of upgrade slots with their available modules
- * - selected_theme: currently selected theme id (from pending_theme_id)
- * - selected_upgrades: currently selected modules (from pending_upgrade_selections)
- */
-/datum/controller/subsystem/shuttle/proc/build_modular_ui_data(datum/map_template/shuttle/voidcrew/template)
-	ensure_ship_upgrades_initialized()
-
-	var/list/data = list()
-
-	// Get themes for this ship
-	var/list/ship_themes = get_themes_for_ship(template.type)
-	var/list/themes_data = list()
-
-	for(var/theme_id in ship_themes)
-		var/datum/ship_theme/theme = ship_themes[theme_id]
-		var/list/theme_info = list()
-		theme_info["id"] = theme.id
-		theme_info["name"] = theme.name
-		theme_info["desc"] = theme.desc
-		theme_info["is_default"] = theme.is_default
-
-		// Include job slots for preview
-		if(theme.job_slots)
-			var/list/jobs = list()
-			for(var/list/job_data in theme.job_slots)
-				jobs += list(list(
-					"name" = job_data["name"],
-					"slots" = job_data["slots"],
-					"officer" = job_data["officer"]
-				))
-			theme_info["jobs"] = jobs
-
-		themes_data += list(theme_info)
-
-	data["themes"] = themes_data
-	data["has_themes"] = length(themes_data) > 0
-
-	// Determine selected theme - use pending selection or find default
-	var/effective_theme_id = pending_theme_id
-	if(!effective_theme_id && length(themes_data))
-		var/datum/ship_theme/default_theme = get_default_theme_for_ship(template.type)
-		if(default_theme)
-			effective_theme_id = default_theme.id
-
-	data["selected_theme"] = effective_theme_id
-
-	// Get upgrade slots - from theme if selected, otherwise from template
-	var/list/upgrade_slot_ids = template.upgrade_slot_ids
-	if(effective_theme_id)
-		var/datum/ship_theme/selected_theme = ship_themes[effective_theme_id]
-		if(selected_theme?.upgrade_slot_ids)
-			upgrade_slot_ids = selected_theme.upgrade_slot_ids
-
-	// Get modules filtered by theme
-	var/list/all_modules = get_modules_for_ship_theme(template.type, effective_theme_id)
-
-	// Organize modules by slot
-	var/list/slots_data = list()
-	for(var/slot_key in upgrade_slot_ids)
-		var/list/slot_info = list()
-		slot_info["key"] = slot_key
-		// Generate display name from slot key (capitalize, replace underscores)
-		slot_info["display_name"] = capitalize(replacetext(slot_key, "_", " "))
-
-		var/list/slot_modules = list()
-		for(var/module_id in all_modules)
-			var/datum/ship_upgrade_module/module = all_modules[module_id]
-			if(module.slot != slot_key)
-				continue
-
-			var/list/module_info = list()
-			module_info["id"] = module.id
-			module_info["name"] = module.name
-			module_info["desc"] = module.desc
-			module_info["is_default"] = module.is_default
-
-			slot_modules += list(module_info)
-
-		slot_info["modules"] = slot_modules
-		slots_data += list(slot_info)
-
-	data["slots"] = slots_data
-
-	// Include current pending selections
-	data["selected_upgrades"] = pending_upgrade_selections.Copy()
-
-	return data
 //END VOID EDIT
 
 #undef MAX_TRANSIT_REQUEST_RETRIES

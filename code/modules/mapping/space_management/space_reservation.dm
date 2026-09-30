@@ -4,6 +4,7 @@
 /// Above this many turfs, reservation teardown in Release() spreads itself over
 /// multiple ticks instead of running atomically. Small reservations keep the
 /// historical no-sleep behavior, so qdel() from tick-sensitive contexts stays safe.
+// VOIDCREW EDIT: Bound long site releases while preserving atomic teardown for small reservations.
 #define RESERVATION_RELEASE_YIELD_THRESHOLD 2500
 
 /datum/turf_reservation
@@ -44,23 +45,6 @@
 	turf_type = /turf/open/space/transit
 	pre_cordon_distance = 7
 
-/// Returns TRUE if the given turf falls inside this reservation's bounds.
-/// Cheap bounds check against the per-z corners rather than a search of
-/// reserved_turfs, which can run to thousands of entries.
-/datum/turf_reservation/proc/contains_turf(turf/checked)
-	if(isnull(checked))
-		return FALSE
-
-	for(var/z_idx in 1 to length(bottom_left_turfs))
-		var/turf/bottom_left = bottom_left_turfs[z_idx]
-		var/turf/top_right = top_right_turfs[z_idx]
-		if(checked.z != bottom_left.z)
-			continue
-
-		return (checked.x >= bottom_left.x && checked.x <= top_right.x) \
-			&& (checked.y >= bottom_left.y && checked.y <= top_right.y)
-
-	return FALSE
 
 /datum/turf_reservation/proc/Release()
 	// VOIDCREW EDIT: the release set is rebuilt from the corners we recorded at claim time
@@ -87,6 +71,7 @@
 	// alone and cannot be reached by anyone else, so block() over them stays the
 	// authoritative answer to "what did we take" no matter who mutates our lists.
 	var/list/released = list()
+	// VOIDCREW EDIT START: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	for(var/z_idx in 1 to min(length(bottom_left_turfs), length(top_right_turfs)))
 		var/turf/bottom_left = bottom_left_turfs[z_idx]
 		var/turf/top_right = top_right_turfs[z_idx]
@@ -102,12 +87,16 @@
 	for(var/turf/cordon_turf as anything in cordon_turfs)
 		if(!isnull(cordon_turf))
 			released[cordon_turf] = TRUE
+	// VOIDCREW EDIT END
 
 	bottom_left_turfs.Cut()
 	top_right_turfs.Cut()
+	// VOIDCREW EDIT REMOVAL: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	reserved_turfs = list()
+	// VOIDCREW EDIT REMOVAL: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	cordon_turfs = list()
 
+	// VOIDCREW EDIT START: Bound long site releases while preserving atomic teardown for small reservations.
 	if(!length(released))
 		return
 
@@ -128,6 +117,7 @@
 	// from qdel(): our turf lists were already emptied above, so a reentrant Release()
 	// during a yield has nothing left to double-process.
 	var/can_yield = length(release_turfs) > RESERVATION_RELEASE_YIELD_THRESHOLD
+	// VOIDCREW EDIT END
 
 	for(var/turf/reserved_turf as anything in release_turfs)
 		SEND_SIGNAL(reserved_turf, COMSIG_TURF_RESERVATION_RELEASED, src)
@@ -135,8 +125,10 @@
 		// immediately disconnect from atmos
 		reserved_turf.blocks_air = TRUE
 		CALCULATE_ADJACENT_TURFS(reserved_turf, KILL_EXCITED)
+		// VOIDCREW EDIT START: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 		if(can_yield)
 			CHECK_TICK
+		// VOIDCREW EDIT END
 
 	// Makes the linter happy, even tho we don't await this
 	INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, reserve_turfs), release_turfs)
@@ -179,8 +171,10 @@
 		// per-turf removal is not; see _reserve_area())
 		cordon_turf.turf_flags &= ~UNUSED_RESERVATION_TURF
 		cordon_turf.empty(/turf/cordon, /turf/cordon)
+		// VOIDCREW EDIT REMOVAL: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 		// still gets linked to us though
 		SSmapping.used_turfs[cordon_turf] = src
+		// VOIDCREW EDIT: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 		CHECK_TICK
 
 	//swap the area with the pre-cordoning area
@@ -253,6 +247,7 @@
 		// the first origin that can ever pass calculate_cordon_turfs() is one in from the
 		// band edge - anchoring there keeps the outermost usable column/row on the grid.
 		if((BL.x - SHUTTLE_TRANSIT_BORDER - 1) % RESERVATION_ORIGIN_STRIDE || (BL.y - SHUTTLE_TRANSIT_BORDER - 1) % RESERVATION_ORIGIN_STRIDE)
+			// VOIDCREW EDIT: Align reservation origins so fleet transit holes can be reused without fragmentation.
 			continue
 		if(BL.x + width > world.maxx || BL.y + height > world.maxy)
 			continue
@@ -285,13 +280,17 @@
 	// of hard freeze for big reservations). The reserve scan above already skips
 	// anything without UNUSED_RESERVATION_TURF, and the unused_turfs lists are assoc
 	// keyed by turf, so handing a turf back later just updates its existing key.
+	// VOIDCREW EDIT START: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	reserved_turfs += final
 	for(var/turf/T as anything in final)
+	// VOIDCREW EDIT END
 		SSmapping.used_turfs[T] = src
 		T.turf_flags = (T.turf_flags | RESERVATION_TURF) & ~UNUSED_RESERVATION_TURF
+	// VOIDCREW EDIT START: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	for(var/turf/cordon_turf as anything in cordon_turfs)
 		cordon_turf.turf_flags &= ~UNUSED_RESERVATION_TURF
 		SSmapping.used_turfs[cordon_turf] = src
+	// VOIDCREW EDIT END
 
 	// Record the corners as part of claiming, not after the conversion below. The
 	// turfs are already flagged RESERVATION_TURF and pointed at us in used_turfs, so
@@ -303,9 +302,11 @@
 
 	// The actual turf conversion is by far the expensive part (a full ChangeTurf per
 	// turf) - now that everything is claimed it can safely spread over multiple ticks
+	// VOIDCREW EDIT START: Keep reservation claims atomic and release large site footprints across ticks (voidcrew/edits/mapping/reservation_bounds.dm).
 	for(var/turf/T as anything in final)
 		T.empty(turf_type, turf_type_is_baseturf ? turf_type : null)
 		CHECK_TICK
+	// VOIDCREW EDIT END
 
 	return TRUE
 
@@ -328,6 +329,7 @@
 /datum/turf_reservation/proc/calculate_turf_bounds_information(turf/target)
 	// Bounded by the corner lists rather than z_size, same as contains_turf(): a
 	// half-built or already-released reservation still has its z_size set.
+	// VOIDCREW EDIT: Bound corner walks by the actual reservation state, including partial builds and released datums.
 	for(var/z_idx in 1 to length(bottom_left_turfs))
 		var/turf/bottom_left = bottom_left_turfs[z_idx]
 		var/turf/top_right = top_right_turfs[z_idx]
@@ -363,6 +365,7 @@
 
 	var/z_idx = bounds_info["z_idx"]
 	// check what z level, if its the max, then there is no turf below
+	// VOIDCREW EDIT: Bound corner walks by the actual reservation state, including partial builds and released datums.
 	if(z_idx >= length(bottom_left_turfs))
 		return null
 
@@ -387,6 +390,7 @@
 	var/turf/bottom_left = bottom_left_turfs[z_idx - 1]
 	return locate(bottom_left.x + offset_x, bottom_left.y + offset_y, bottom_left.z)
 
+// VOIDCREW EDIT: Bound long site releases while preserving atomic teardown for small reservations.
 #undef RESERVATION_RELEASE_YIELD_THRESHOLD
 
 /datum/turf_reservation/New()

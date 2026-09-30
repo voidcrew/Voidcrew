@@ -132,16 +132,6 @@
 	var/mob/living/navigator = usr
 	navigator.navigate()
 
-/// Shortcut to the same personal skill report provided by the View Skills verb.
-/atom/movable/screen/skills
-	name = "view skills and experience"
-	icon = 'icons/hud/screen_midnight.dmi'
-	icon_state = "skills"
-	mouse_over_pointer = MOUSE_HAND_POINTER
-
-/atom/movable/screen/skills/Click()
-	usr.view_skills()
-	return TRUE
 
 /atom/movable/screen/craft
 	name = "crafting menu"
@@ -196,6 +186,7 @@
 	if(world.time <= usr.next_move)
 		return TRUE
 
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(usr.incapacitated_except_softcrit(INCAPABLE_STASIS))
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
@@ -286,6 +277,7 @@
 		return TRUE
 	if(world.time <= user.next_move)
 		return TRUE
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(user.incapacitated_except_softcrit())
 		return TRUE
 	if (ismecha(user.loc)) // stops inventory actions in a mech
@@ -530,6 +522,7 @@
 
 	if(world.time <= usr.next_move)
 		return TRUE
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(usr.incapacitated_except_softcrit())
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
@@ -647,6 +640,7 @@
 	plane = ABOVE_HUD_PLANE
 
 /atom/movable/screen/zone_sel/MouseExited(location, control, params)
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	. = ..()
 	if(!isobserver(usr) && hovering)
 		vis_contents -= hover_overlays_cache[hovering]
@@ -804,9 +798,12 @@
 	update_appearance()
 
 /atom/movable/screen/healthdoll/human/update_body_zones()
+	// VOIDCREW EDIT REMOVAL: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	vis_contents.Cut()
+	// VOIDCREW EDIT START: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	QDEL_LIST_ASSOC_VAL(limbs)
 	limbs ||= list()
+	// VOIDCREW EDIT END
 	var/mob/living/carbon/human/owner = hud.mymob
 	for(var/body_zone in owner.get_all_limbs())
 		var/atom/movable/screen/healthdoll_limb/limb = new(src, null)
@@ -837,8 +834,10 @@
 		var/icon_key = 0
 		var/part_zone = body_part.body_zone
 		// I hate that we "allow" support for more than 2 hands in the codebase
+		// VOIDCREW EDIT START: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 		if(!limbs[part_zone])
 			continue
+		// VOIDCREW EDIT END
 
 		var/list/overridable_key = list(icon_key)
 		if(body_part.bodypart_disabled)

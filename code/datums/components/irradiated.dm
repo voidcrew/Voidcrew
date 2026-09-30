@@ -175,11 +175,13 @@
 	// damage but deals 2 tox per 25 seconds, so an irradiated crewmember outruns
 	// their own liver and the state is effectively permanent without heavy chemical
 	// treatment. Showering is the intended way to come home off a contaminated planet.
+	// VOIDCREW EDIT START: Let washing remove planetary irradiation from crew as well as items.
 	if (ishuman(parent))
 		to_chat(parent, span_nicegreen("The water sluices the contamination off your skin."))
 
 	qdel(src)
 	return COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
+	// VOIDCREW EDIT END
 
 /datum/component/irradiated/proc/on_geiger_counter_scan(datum/source, mob/user, obj/item/geiger_counter/geiger_counter)
 	SIGNAL_HANDLER

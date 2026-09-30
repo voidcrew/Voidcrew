@@ -179,6 +179,7 @@
 		// expected teardown path, not an error - the old CRASH here fired once per
 		// pipeline with components on every hull/zone teardown
 		if(QDESTROYING(reference))
+			// VOIDCREW EDIT: Maintain both sides of component pipeline links during live rebuilds and merges.
 			return
 		qdel(reference)
 
@@ -196,6 +197,7 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/set_pipenet(datum/pipeline/reference, obj/machinery/atmospherics/target_component)
+	// VOIDCREW EDIT START: Maintain both sides of component pipeline links during live rebuilds and merges.
 	var/port_index = nodes.Find(target_component)
 	var/datum/pipeline/previous_parent = parents[port_index]
 	if(previous_parent == reference)
@@ -211,11 +213,13 @@
 		previous_parent.other_atmos_machines -= src
 		if(custom_reconcilation)
 			previous_parent.require_custom_reconcilation -= src
+	// VOIDCREW EDIT END
 
 /obj/machinery/atmospherics/components/return_pipenet(obj/machinery/atmospherics/target_component = nodes[1]) //returns parents[1] if called without argument
 	return parents[nodes.Find(target_component)]
 
 /obj/machinery/atmospherics/components/replace_pipenet(datum/pipeline/Old, datum/pipeline/New)
+	// VOIDCREW EDIT START: Maintain both sides of component pipeline links during live rebuilds and merges.
 	var/first_port = parents.Find(Old)
 	if(!first_port)
 		CRASH("[type] at [COORD(src)] was asked to replace a pipeline it does not belong to.")
@@ -223,6 +227,7 @@
 	for(var/port_index in first_port to length(parents))
 		if(parents[port_index] == Old)
 			parents[port_index] = New
+	// VOIDCREW EDIT END
 
 // Helpers
 

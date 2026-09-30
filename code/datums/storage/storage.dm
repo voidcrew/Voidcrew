@@ -931,6 +931,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
 		show_contents(to_show)
 		return FALSE
 
+	// VOIDCREW EDIT: Allow storage access during soft crit via incapacitated_except_softcrit().
 	if(!isliving(to_show) || !to_show.can_perform_action(parent, ALLOW_RESTING | FORBID_TELEKINESIS_REACH | ALLOW_SOFT_CRIT))
 		return FALSE
 

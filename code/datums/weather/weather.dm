@@ -61,8 +61,6 @@
 	var/area_type = /area/space
 	/// Areas to be affected by the weather, calculated when the weather begins
 	var/list/impacted_areas = list()
-	/// Assoc mirror of impacted_areas (area = TRUE), for cheap membership checks in the per-mob hot path
-	var/list/impacted_areas_lookup = list()
 	/// A weighted list of areas impacted by weather, where weights reflect the total turf count in each area.
 	var/list/impacted_areas_weighted = list()
 	/// The total number of turfs impacted by weather across all z-levels and areas.
@@ -73,12 +71,6 @@
 	var/list/protected_areas = list()
 	/// The list of z-levels that this weather is actively affecting
 	var/impacted_z_levels
-	// VOIDCREW EDIT ADDITION START - site scoping. See voidcrew/datums/weather_site.dm
-	/// The /datum/weather_site that scheduled this storm, if it came from one.
-	var/datum/weather_site/weather_site
-	/// Area INSTANCES this storm is confined to. Null means the z-wide get_areas(area_type) sweep.
-	var/list/scoped_areas
-	// VOIDCREW EDIT ADDITION END
 	/// A weighted list of z-levels impacted by weather, where weights reflect the total turf count on each level
 	var/list/impacted_z_levels_weighted = list()
 
@@ -106,10 +98,6 @@
 	/// The chance, per tick, a turf will have weather effects applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this low near 0.01 (results in 1 in 100 affected turfs having weather reagents applied per tick)
 	var/turf_weather_chance = 0.01
-	/// If TRUE, weather_act_turf() only tops up open reagent containers (and waters hydroponics trays when
-	/// the reagent is water) instead of running full reagent exposure + washing on every struck turf.
-	/// Planet-scale weathers pick hundreds of turfs per second. Full exposure at that rate eats whole ticks.
-	var/turf_act_containers_only = FALSE
 	/// The chance, per tick, a turf will have a thunder strike applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this really low near 0.001 (results in 1 in 1000 affected turfs having thunder strikes applied per tick)
 	var/turf_thunder_chance = THUNDER_CHANCE_AVERAGE // does nothing without the WEATHER_THUNDER weather_flag
@@ -263,6 +251,7 @@
 		candidate_areas = get_areas(area_type)
 		log_packed_level_area_sweep()
 	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/weather/packed_sites.dm).
 	for(var/area/selected_area as anything in candidate_areas)
 		affectareas += selected_area
 	for(var/area/protected_area as anything in protected_areas)
@@ -277,6 +266,7 @@
 				continue
 
 			impacted_areas |= affected_area
+			// VOIDCREW EDIT: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/weather/packed_sites.dm).
 			impacted_areas_lookup[affected_area] = TRUE
 
 			if(!(weather_flags & (WEATHER_THUNDER|WEATHER_TURFS)))
@@ -292,34 +282,6 @@
 			impacted_areas_weighted[z_string][affected_area] = total_turfs
 			total_impacted_turfs += total_turfs
 
-/**
- * VOIDCREW EDIT ADDITION - diagnostic for issue #196 (a lava planet's ash storm painting
- * an ocean planet). Changes nothing about the storm.
- *
- * get_areas() matches by area TYPE, and every packed planet's surface and caves share
- * area_type = /area/overmap_encounter/planetoid - so on a z-level carrying more than one
- * map tenant this sweep can only over-reach, and a storm that takes it paints, telegraphs
- * and burns on all four planets rather than on the one it belongs to. In a live round
- * every planet is packed, so that is the whole of the reported symptom.
- *
- * Nothing in the tree is supposed to reach here on a shared level: scheduled planet storms
- * carry an area-scoped site, and a site-scoped storm with no areas yet is held out of the
- * scheduler entirely (SSweather.fire -> awaiting_owned_areas). An audit of every
- * run_weather() caller, the site registry lifecycle, and three days of prod admin.log
- * found no route that does. So rather than guess at a cause, name the offender in the
- * runtime log the next time it happens - the stack trace is the caller.
- */
-/datum/weather/proc/log_packed_level_area_sweep()
-	if(!islist(impacted_z_levels))
-		return
-	for(var/z in impacted_z_levels)
-		if(!isnum(z) || z < 1 || z > length(SSmapping.z_list))
-			continue
-		var/datum/space_level/level = SSmapping.z_list[z]
-		if(length(level?.footprints) <= 1)
-			continue
-		stack_trace("weather [type] fell back to the z-wide get_areas([area_type]) sweep on packed z[z] ([length(level.footprints)] tenants) - it will impact every tenant on that level. Site: [weather_site?.id || "none"]")
-		return
 
 /// Selects a turf impacted by weather, if available, otherwise returns null
 /datum/weather/proc/pick_turf()
@@ -342,6 +304,7 @@
 
 	if(weather_flags & (WEATHER_TURFS))
 		weather_turfs_per_tick = total_impacted_turfs * turf_weather_chance
+		// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/weather/packed_sites.dm).
 		weather_turfs_per_tick = min(weather_turfs_per_tick, turf_act_containers_only ? MAX_CONTAINER_ONLY_TURFS_PER_TICK : MAX_TURFS_PER_TICK)
 	if(weather_flags & (WEATHER_THUNDER))
 		thunder_turfs_per_tick = total_impacted_turfs * turf_thunder_chance
@@ -431,6 +394,7 @@
 // the checks for if a mob should receive alerts, returns TRUE if can
 /datum/weather/proc/can_get_alert(mob/player)
 	var/turf/mob_turf = get_turf(player)
+	// VOIDCREW EDIT START: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/weather/packed_sites.dm).
 	if(isnull(mob_turf))
 		return FALSE
 	// VOIDCREW EDIT ADDITION START - alerts follow the impacted AREAS, not the whole z-level.
@@ -452,14 +416,17 @@
 		return FALSE
 	// VOIDCREW EDIT ADDITION END
 	return TRUE
+	// VOIDCREW EDIT END
 
 /**
  * Returns TRUE if the living mob can be affected by the weather
  */
 /datum/weather/proc/can_weather_act_mob(mob/living/mob_to_check)
 	// Preserve effects on abandoned player bodies while excluding ordinary fauna.
+	// VOIDCREW EDIT START: Restrict planetary storm damage to current or former player bodies.
 	if(!mob_to_check.mind && !mob_to_check.ever_had_mind)
 		return
+	// VOIDCREW EDIT END
 
 	var/turf/mob_turf = get_turf(mob_to_check)
 
@@ -469,6 +436,7 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
+	// VOIDCREW EDIT: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/weather/packed_sites.dm).
 	if(!impacted_areas_lookup[mob_turf.loc])
 		return
 
@@ -533,6 +501,7 @@
 	if(!weather_reagent || !weather_reagent_holder)
 		return
 
+	// VOIDCREW EDIT START: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/weather/packed_sites.dm).
 	if(turf_act_containers_only)
 		for(var/atom/movable/thing as anything in weather_turf)
 			if(is_reagent_container(thing))
@@ -545,6 +514,7 @@
 				if(!tray.IsObscured())
 					tray.adjust_waterlevel(rand(5, 10))
 		return
+	// VOIDCREW EDIT END
 
 	weather_reagent_holder.reagents.expose(weather_turf, TOUCH, TURF_REAGENT_VOLUME_MULTIPLIER)
 	for(var/atom/thing as anything in weather_turf)
@@ -577,8 +547,10 @@
 		thunder.color = thunder_color
 
 	for(var/mob/living/hit_mob in weather_turf)
+		// VOIDCREW EDIT START: Restrict planetary storm damage to current or former player bodies.
 		if(!can_weather_act_mob(hit_mob))
 			continue
+		// VOIDCREW EDIT END
 		to_chat(hit_mob, span_userdanger("You've been struck by lightning!"))
 		hit_mob.electrocute_act(50, "thunder", flags = SHOCK_TESLA|SHOCK_NOGLOVES)
 
@@ -594,6 +566,7 @@
 		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
 	playsound(weather_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
 	weather_turf.visible_message(span_danger("A thunderbolt strikes [weather_turf]!"))
+	// VOIDCREW EDIT REMOVAL: Apply the existing direct lightning strike without a generic explosion that bypasses mob weather eligibility.
 	// A generic explosion cannot honor can_weather_act_mob() and would queue damage
 	// against ordinary fauna on this and adjacent turfs. The direct strike above and
 	// object burn retain the intended lightning effects without bypassing eligibility.
@@ -607,6 +580,7 @@
 		// VOIDCREW EDIT ADDITION - a hard-deleted area is nulled IN PLACE in this list rather
 		// than removed from it, and `as anything` skips the istype filter that would catch it.
 		if(isnull(impacted))
+			// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/weather/packed_sites.dm).
 			continue
 		if(length(overlay_cache))
 			impacted.overlays -= overlay_cache

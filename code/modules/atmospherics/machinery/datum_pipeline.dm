@@ -21,25 +21,9 @@
 	var/building = FALSE
 	/// VOIDCREW ADDITION: consecutive orphan sweeps this pipeline has been found with no
 	/// live members on. Reset the moment it has any. See SSair.reap_orphan_pipelines().
+	// VOIDCREW EDIT: Detach pipeline ownership safely and remove stale members during site churn (voidcrew/edits/atmospherics/pipeline_cleanup.dm).
 	var/orphan_strikes = 0
 
-/**
- * VOIDCREW ADDITION: TRUE if anything real is still attached to this pipeline.
- *
- * Not the same question as `length(members)`. When a machine is hard deleted its entries
- * in these lists are nulled in place rather than removed, so a pipeline that has lost
- * everything still reads as length 1 with a null inside. `as anything` is deliberate for
- * exactly that reason - a typed loop would silently filter the nulls out and hide the
- * distinction we are trying to measure.
- */
-/datum/pipeline/proc/has_live_members()
-	for(var/obj/machinery/atmospherics/member as anything in members)
-		if(!isnull(member) && !QDELETED(member))
-			return TRUE
-	for(var/obj/machinery/atmospherics/machine as anything in other_atmos_machines)
-		if(!isnull(machine) && !QDELETED(machine))
-			return TRUE
-	return FALSE
 
 /datum/pipeline/New()
 	other_airs = list()
@@ -62,6 +46,7 @@
 	// removes the component from other_atmos_machines) - a for-in over the live list
 	// skips every other entry when the current one is removed. Detach the lists first.
 	var/list/dying_members = members
+	// VOIDCREW EDIT START: Detach pipeline ownership safely and remove stale members during site churn (voidcrew/edits/atmospherics/pipeline_cleanup.dm).
 	members = list()
 	for(var/obj/machinery/atmospherics/pipe/considered_pipe in dying_members)
 		// Only sever pipes that are still ours: a pipe already rebuilt into a LIVE
@@ -70,9 +55,11 @@
 		// leaving the live pipeline holding a pipe that no longer pointed back.
 		if(considered_pipe.parent == src)
 			considered_pipe.replace_pipenet(src, null)
+	// VOIDCREW EDIT END
 		if(QDELETED(considered_pipe))
 			continue
 		SSair.add_to_rebuild_queue(considered_pipe)
+	// VOIDCREW EDIT START: Detach pipeline ownership safely and remove stale members during site churn (voidcrew/edits/atmospherics/pipeline_cleanup.dm).
 	var/list/dying_machines = other_atmos_machines
 	other_atmos_machines = list()
 	for(var/obj/machinery/atmospherics/components/considered_component in dying_machines)
@@ -83,6 +70,7 @@
 	// animate() color filter; qdel'ing them also detaches them from any pipe
 	// vis_contents still showing them
 	QDEL_LIST_ASSOC_VAL(gas_visuals)
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/pipeline/process()
@@ -152,8 +140,10 @@
 				if(item.parent)
 					var/static/pipenetwarnings = 10
 					if(pipenetwarnings > 0)
+						// VOIDCREW EDIT START: Include the area type when diagnosing stacked hull pipes during live site loading.
 						var/area/our_area = get_area(borderline)
 						log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) around [AREACOORD(item)] in [our_area.type].")
+						// VOIDCREW EDIT END
 						pipenetwarnings--
 						if(pipenetwarnings == 0)
 							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
@@ -220,9 +210,11 @@
 	// in both pipelines at once, and concatenating duplicated the shared pipes into
 	// the survivor's members (each duplicate = one permanent GC-blocking ref).
 	var/list/merged_members = parent_pipeline.members
+	// VOIDCREW EDIT START: Detach pipeline ownership safely and remove stale members during site churn (voidcrew/edits/atmospherics/pipeline_cleanup.dm).
 	parent_pipeline.members = list()
 	members |= merged_members
 	for(var/obj/machinery/atmospherics/pipe/reference_pipe in merged_members)
+	// VOIDCREW EDIT END
 		reference_pipe.replace_pipenet(reference_pipe.parent, src)
 	air.merge(parent_pipeline.air)
 	for(var/obj/machinery/atmospherics/components/reference_component in parent_pipeline.other_atmos_machines)
@@ -231,6 +223,7 @@
 			require_custom_reconcilation |= reference_component
 	other_atmos_machines |= parent_pipeline.other_atmos_machines
 	other_airs |= parent_pipeline.other_airs
+	// VOIDCREW EDIT REMOVAL: Detach pipeline ownership safely and remove stale members during site churn (voidcrew/edits/atmospherics/pipeline_cleanup.dm).
 	parent_pipeline.other_atmos_machines.Cut()
 	parent_pipeline.require_custom_reconcilation.Cut()
 	update = TRUE
@@ -302,6 +295,7 @@
 
 	// A network or port being rebuilt can have no mixture yet. As in return_air(),
 	// leave absent volumes out while still reconciling the surviving connections.
+	// VOIDCREW EDIT: Ignore not-yet-created gas mixtures while reconciling rebuilt pipeline ports.
 	list_clear_nulls(gas_mixture_list)
 
 	var/total_thermal_energy = 0

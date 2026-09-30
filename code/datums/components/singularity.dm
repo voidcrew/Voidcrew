@@ -134,8 +134,10 @@
 	))
 
 /datum/component/singularity/process(seconds_per_tick)
+	// VOIDCREW EDIT START: Stop singularity hazards at protected trader outpost boundaries (voidcrew/modules/trade/outpost_security.dm).
 	if(neutralize_trader_outpost_hazard(parent)) // VOIDCREW
 		return PROCESS_KILL
+	// VOIDCREW EDIT END
 	// We want to move and eat once a second, but want to process our turf consume queue the rest of the time
 	time_since_last_eat += seconds_per_tick
 	digest()
@@ -160,8 +162,10 @@
 
 /datum/component/singularity/proc/consume(datum/source, atom/thing)
 	SIGNAL_HANDLER
+	// VOIDCREW EDIT START: Stop singularity hazards at protected trader outpost boundaries (voidcrew/modules/trade/outpost_security.dm).
 	if(is_trader_outpost_protected(parent) || is_trader_outpost_protected(thing)) // VOIDCREW
 		return
+	// VOIDCREW EDIT END
 	if (thing == parent)
 		stack_trace("Singularity tried to consume itself.")
 		return
@@ -209,8 +213,10 @@
 
 	for (cached_index in 1 to length(turfs_to_consume))
 		var/turf/tile = turfs_to_consume[cached_index]
+		// VOIDCREW EDIT START: Stop singularity hazards at protected trader outpost boundaries (voidcrew/modules/trade/outpost_security.dm).
 		if(is_trader_outpost_protected(tile)) // VOIDCREW: also stop pulling across the boundary.
 			continue
+		// VOIDCREW EDIT END
 		var/dist_to_tile = get_dist(tile, parent)
 
 		if(grav_pull < dist_to_tile) //If we've exited the singulo's range already, just skip us
@@ -248,8 +254,10 @@
 
 /datum/component/singularity/proc/moved(datum/source, atom/new_location)
 	SIGNAL_HANDLER
+	// VOIDCREW EDIT START: Stop singularity hazards at protected trader outpost boundaries (voidcrew/modules/trade/outpost_security.dm).
 	if(is_trader_outpost_protected(new_location)) // VOIDCREW: even stage five must respect the boundary.
 		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
+	// VOIDCREW EDIT END
 
 	var/atom/atom_parent = parent
 	var/current_direction = atom_parent.dir
@@ -273,8 +281,10 @@
 
 /datum/component/singularity/proc/can_move(turf/to_move)
 	if (!to_move)
+		// VOIDCREW EDIT START: Stop singularity hazards at protected trader outpost boundaries (voidcrew/modules/trade/outpost_security.dm).
 		return FALSE
 	if(is_trader_outpost_protected(to_move)) // VOIDCREW
+		// VOIDCREW EDIT END
 		return FALSE
 
 	for (var/_thing in to_move)

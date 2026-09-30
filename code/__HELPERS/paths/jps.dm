@@ -124,8 +124,10 @@
 
 	// These were inline list() literals, which meant two list allocations for every single node
 	// popped off the open heap. Statics: same contents, allocated once for the whole round.
+	// VOIDCREW EDIT START: Reuse direction lists in fleet-scale pathfinding instead of allocating lists per node.
 	var/static/list/cardinal_scans = list(EAST, WEST, NORTH, SOUTH)
 	var/static/list/diagonal_scans = list(NORTHEAST, SOUTHEAST, NORTHWEST, SOUTHWEST)
+	// VOIDCREW EDIT END
 
 	while(!open.is_empty() && !path)
 		var/datum/jps_node/current_processed_node = open.pop() //get the lower f_value turf in the open list
@@ -133,9 +135,11 @@
 			continue
 
 		var/turf/current_turf = current_processed_node.tile
+		// VOIDCREW EDIT: Reuse direction lists in fleet-scale pathfinding instead of allocating lists per node.
 		for(var/scan_direction as anything in cardinal_scans)
 			lateral_scan_spec(current_turf, scan_direction, current_processed_node)
 
+		// VOIDCREW EDIT: Reuse direction lists in fleet-scale pathfinding instead of allocating lists per node.
 		for(var/scan_direction as anything in diagonal_scans)
 			diag_scan_spec(current_turf, scan_direction, current_processed_node)
 

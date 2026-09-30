@@ -56,16 +56,19 @@ SUBSYSTEM_DEF(atoms)
 	clear_tracked_initalize(source)
 	SSicon_smooth.free_deferred(source)
 
+	// VOIDCREW EDIT START: Give nested live template loads separate late-initialization queues.
 	while(length(late_loaders))
 		// Late callbacks can load another map. Give that load its own queue so it
 		// cannot repeat or clear the callbacks this invocation is still processing.
 		var/list/current_late_loaders = late_loaders
 		late_loaders = list()
 		for(var/atom/A as anything in current_late_loaders)
+	// VOIDCREW EDIT END
 			//I hate that we need this
 			if(QDELETED(A))
 				continue
 			A.LateInitialize()
+		// VOIDCREW EDIT: Give nested live template loads separate late-initialization queues.
 		testing("Late initialized [length(current_late_loaders)] atoms")
 
 	if (created_atoms)

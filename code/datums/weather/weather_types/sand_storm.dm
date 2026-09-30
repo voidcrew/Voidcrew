@@ -24,30 +24,35 @@
 
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER)
 
+	// VOIDCREW EDIT START: Preserve independent sand storm sounds across sites (voidcrew/edits/weather/sand_storm_sound.dm).
 	var/list/weak_sounds = list()
 	var/list/strong_sounds = list()
+	// VOIDCREW EDIT END
 
 /datum/weather/sand_storm/telegraph()
+	// VOIDCREW EDIT REMOVAL: Preserve independent sand storm sounds across sites (voidcrew/edits/weather/sand_storm_sound.dm).
 	for(var/area/impacted_area as anything in impacted_areas)
+		// VOIDCREW EDIT START: Preserve independent sand storm sounds across sites (voidcrew/edits/weather/sand_storm_sound.dm).
 		weak_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
 		strong_sounds[impacted_area] = /datum/looping_sound/active_outside_ashstorm
 	GLOB.sand_storm_sounds += weak_sounds
+		// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/sand_storm/start()
+	// VOIDCREW EDIT START: Preserve independent sand storm sounds across sites (voidcrew/edits/weather/sand_storm_sound.dm).
 	GLOB.sand_storm_sounds -= weak_sounds
 	GLOB.sand_storm_sounds += strong_sounds
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/sand_storm/wind_down()
+	// VOIDCREW EDIT START: Preserve independent sand storm sounds across sites (voidcrew/edits/weather/sand_storm_sound.dm).
 	GLOB.sand_storm_sounds -= strong_sounds
 	GLOB.sand_storm_sounds += weak_sounds
+	// VOIDCREW EDIT END
 	return ..()
 
-/datum/weather/sand_storm/end()
-	GLOB.sand_storm_sounds -= weak_sounds
-	GLOB.sand_storm_sounds -= strong_sounds
-	return ..()
 
 /datum/weather/sand_storm/weather_act_mob(mob/living/victim)
 	victim.adjustBruteLoss(5, required_bodytype = BODYTYPE_ORGANIC)

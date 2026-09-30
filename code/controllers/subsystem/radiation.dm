@@ -15,6 +15,7 @@ SUBSYSTEM_DEF(radiation)
 		// A null source_ref must be dropped, not runtimed on: a runtime aborts fire()
 		// before the Cut(), so the same entry would wedge the whole queue forever.
 		var/datum/weakref/source_ref = pulse_information.source_ref
+		// VOIDCREW EDIT: Tolerate a radiation source deleted before the pulse resolves its weak reference.
 		var/atom/source = source_ref?.resolve()
 		if (isnull(source))
 			processing.Cut(1, 2)

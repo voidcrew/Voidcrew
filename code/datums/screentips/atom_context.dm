@@ -10,6 +10,7 @@
 	// re-registers over its own leftover entry. It is add_context either way, so the
 	// duplicate warning says nothing and the stack_trace it raises is not free: inside
 	// a try block (map loaders use them) it unwinds the whole load.
+	// VOIDCREW EDIT: Replace retained turf context signals during repeated live template loads.
 	RegisterSignal(src, COMSIG_ATOM_REQUESTING_CONTEXT_FROM_ITEM, PROC_REF(add_context), override = TRUE)
 
 /// Creates a "Type-B" contextual screentip interaction.

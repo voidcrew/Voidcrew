@@ -76,6 +76,7 @@
 	// through to the else below is what REMOVES a pairing an earlier raw turf swap left standing,
 	// and a continue would leave exactly the stale entry we are here to clear.
 	var/turf/open/open_src = src
+	// VOIDCREW EDIT: Avoid null-air adjacency and materialize shared planetary air before writes (voidcrew/edits/planetary_shared_air.dm).
 	var/we_hold_air = !isopenturf(src) || open_src.air
 	// I am essentially inlineing two get_dir_multizs here, because they're way too slow on their own. I'm sorry brother
 	var/list/z_traits = SSmapping.multiz_levels[z]
@@ -105,6 +106,7 @@
 		// (direction & (UP | DOWN)) is just "is this vertical" by the by
 		// VOIDCREW EDIT: `we_hold_air`/`open_neighbour.air` - see the note above the loop.
 		var/turf/open/open_neighbour = current_turf
+		// VOIDCREW EDIT: Avoid null-air adjacency and materialize shared planetary air before writes (voidcrew/edits/planetary_shared_air.dm).
 		if(canpass && we_hold_air && open_neighbour.air && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
 			LAZYINITLIST(current_turf.atmos_adjacent_turfs)
 			atmos_adjacent_turfs[current_turf] = TRUE
@@ -132,6 +134,7 @@
 	// pairing (the else below strips it from BOTH sides), so a `continue` here would be a no-op
 	// against the entry that is actually causing the runtime.
 	var/turf/open/open_src = src
+	// VOIDCREW EDIT: Avoid null-air adjacency and materialize shared planetary air before writes (voidcrew/edits/planetary_shared_air.dm).
 	var/we_hold_air = !isopenturf(src) || open_src.air
 	for(var/direction in GLOB.cardinals_multiz)
 		var/turf/current_turf = get_step_multiz(src, direction)
@@ -140,8 +143,10 @@
 
 		//Can you and me form a deeper relationship, or is this just a passing wind
 		// (direction & (UP | DOWN)) is just "is this vertical" by the by
+		// VOIDCREW EDIT START: Avoid null-air adjacency and materialize shared planetary air before writes (voidcrew/edits/planetary_shared_air.dm).
 		var/turf/open/open_neighbour = current_turf
 		if(canpass && we_hold_air && open_neighbour.air && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
+		// VOIDCREW EDIT END
 			LAZYINITLIST(current_turf.atmos_adjacent_turfs)
 			atmos_adjacent_turfs[current_turf] = TRUE
 			current_turf.atmos_adjacent_turfs[src] = TRUE
@@ -238,6 +243,7 @@
 	var/datum/gas_mixture/turf_mixture = SSair.parse_gas_string(text, /datum/gas_mixture/turf)
 
 	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
+	// VOIDCREW EDIT: Avoid null-air adjacency and materialize shared planetary air before writes (voidcrew/edits/planetary_shared_air.dm).
 	our_air.merge(turf_mixture)
 	archive()
 	SSair.add_to_active(src)

@@ -1,25 +1,3 @@
-/**
- * VOIDCREW EDIT: the rectangle a ruin's CENTRE turf may be sampled from, so that the
- * template AND the margin it always keeps against a map edge land wholly inside `bounds`.
- *
- * `bounds` is an inclusive list(low_x, low_y, high_x, high_y). Returns a rect in the same
- * shape, or NULL when the ruin cannot fit in it however lucky the sampling gets.
- *
- * get_affected_turfs(centre, centered = TRUE) spans
- * [x - round(w/2), x - round(w/2) + w - 1], so a margin of round(w/2) on each side covers
- * the wider (low) half with room to spare on the other; TRANSITIONEDGE +
- * SPACERUIN_MAP_EDGE_PAD on top is the same clearance the unbounded sampler keeps against
- * the world edge, kept here so a ruin never sits flush against the cordon.
- */
-/proc/ruin_placement_sample_rect(width, height, list/bounds)
-	if(length(bounds) < 4)
-		return null
-	var/edge_x = TRANSITIONEDGE + SPACERUIN_MAP_EDGE_PAD + round(width / 2)
-	var/edge_y = TRANSITIONEDGE + SPACERUIN_MAP_EDGE_PAD + round(height / 2)
-	var/list/sample_rect = list(bounds[1] + edge_x, bounds[2] + edge_y, bounds[3] - edge_x, bounds[4] - edge_y)
-	if(sample_rect[1] > sample_rect[3] || sample_rect[2] > sample_rect[4])
-		return null
-	return sample_rect
 
 /**
  * Tries to drop this ruin somewhere on z.
@@ -63,12 +41,14 @@
 		var/height_border = TRANSITIONEDGE + SPACERUIN_MAP_EDGE_PAD + round(height / 2)
 		// VOIDCREW EDIT: sample from the placement rect when one was given, from the whole z otherwise
 		var/turf/central_turf
+		// VOIDCREW EDIT START: Sample ruins inside the tenant bounds and whitelist owned area instances (voidcrew/_HELPERS/ruin_placement.dm).
 		if(forced_turf)
 			central_turf = forced_turf
 		else if(sample_bounds)
 			central_turf = locate(rand(sample_bounds[1], sample_bounds[3]), rand(sample_bounds[2], sample_bounds[4]), z)
 		else
 			central_turf = locate(rand(width_border, world.maxx - width_border), rand(height_border, world.maxy - height_border), z)
+		// VOIDCREW EDIT END
 		var/valid = TRUE
 		var/list/affected_turfs = get_affected_turfs(central_turf,1)
 		var/list/affected_areas = list()
@@ -83,6 +63,7 @@
 
 		// This is faster yes. Only BARELY but it is faster
 		if(length(allowed_area_instances)) // VOIDCREW EDIT: instance whitelist wins over the type one
+			// VOIDCREW EDIT START: Sample ruins inside the tenant bounds and whitelist owned area instances (voidcrew/_HELPERS/ruin_placement.dm).
 			for(var/area/affct_area as anything in affected_areas)
 				if(!allowed_area_instances[affct_area])
 					valid = FALSE
@@ -92,6 +73,7 @@
 				if(!allowed_areas_typecache[affct_area.type])
 					valid = FALSE
 					break
+			// VOIDCREW EDIT END
 
 		if(!valid)
 			continue
@@ -156,10 +138,12 @@
 	var/list/whitelist_typecache = typecacheof(whitelist)
 	// VOIDCREW EDIT: built once here rather than per placement sample
 	var/list/whitelist_instances
+	// VOIDCREW EDIT START: Sample ruins inside the tenant bounds and whitelist owned area instances (voidcrew/_HELPERS/ruin_placement.dm).
 	if(length(area_whitelist_instances))
 		whitelist_instances = list()
 		for(var/area/whitelisted_area as anything in area_whitelist_instances)
 			whitelist_instances[whitelisted_area] = TRUE
+	// VOIDCREW EDIT END
 
 	for(var/zl in z_levels)
 		var/turf/T = locate(1, 1, zl)
@@ -215,7 +199,7 @@
 				break
 		else //Otherwise just pick random one
 			current_pick = pick_weight(ruins_available)
-			// VOIDCREW EDIT: pick_weight() returns null when every remaining candidate has
+			// VOIDCREW EDIT START: pick_weight() returns null when every remaining candidate has
 			// weight 0, and ruins_available is only ever pruned by placement or by going
 			// over budget - a zero-weight entry sits in it forever and keeps the `.len`
 			// test in the while() above true. Unguarded, the next line reads

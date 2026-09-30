@@ -25,36 +25,49 @@
 	probability = 90
 
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 	turf_act_containers_only = TRUE // planet-scale storms strike hundreds of turfs/second, full reagent exposure at that rate eats whole ticks
 	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
+	// VOIDCREW EDIT END
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
+	// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 	var/list/start_sounds = list()
 	var/list/middle_sounds = list()
 	var/list/ending_sounds = list()
+	// VOIDCREW EDIT END
 
 /datum/weather/rain_storm/telegraph()
+	// VOIDCREW EDIT REMOVAL: Limit planetary rain work and preserve independent storm sounds across sites.
 	for(var/area/impacted_area as anything in impacted_areas)
+		// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 		start_sounds[impacted_area] = /datum/looping_sound/rain/start
 		middle_sounds[impacted_area] = /datum/looping_sound/rain/middle
 		ending_sounds[impacted_area] = /datum/looping_sound/rain/end
 	GLOB.rain_storm_sounds += start_sounds
+		// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/rain_storm/start()
+	// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds += middle_sounds
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/rain_storm/wind_down()
+	// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds += ending_sounds
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/rain_storm/end()
+	// VOIDCREW EDIT START: Limit planetary rain work and preserve independent storm sounds across sites.
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds -= ending_sounds
+	// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/rain_storm/blood
@@ -71,6 +84,7 @@
 	weather_temperature = 455 // just hot enough to apply the fried effect
 	whitelist_weather_reagents = list(/datum/reagent/consumable/nutriment/fat/oil)
 	weather_flags = (WEATHER_TURFS | WEATHER_INDOORS)
+	// VOIDCREW EDIT: Limit planetary rain work and preserve independent storm sounds across sites.
 	turf_act_containers_only = FALSE // admeme event on station z-levels, wants the full frying splash
 	probability = 0 // admeme event
 
@@ -121,6 +135,7 @@
 	whitelist_weather_reagents = list()
 	probability = 0 // shouldn't spawn normally
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_INDOORS | WEATHER_BAROMETER)
+	// VOIDCREW EDIT: Limit planetary rain work and preserve independent storm sounds across sites.
 	turf_act_containers_only = FALSE // wizard event on the station z, the chaotic reagent splashing is the whole point
 
 /datum/weather/rain_storm/wizard/New(z_levels, list/weather_data)

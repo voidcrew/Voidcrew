@@ -30,15 +30,20 @@
 	// snowstorms temperature ignores any clothing insulation
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER | WEATHER_TEMPERATURE_BYPASS_CLOTHING)
 
+	// VOIDCREW EDIT: Preserve independent snow storm sounds across sites.
 	var/list/active_sounds = list()
 
 /datum/weather/snow_storm/start()
+	// VOIDCREW EDIT REMOVAL: Preserve independent snow storm sounds across sites.
 	for(var/area/impacted_area as anything in impacted_areas)
+		// VOIDCREW EDIT START: Preserve independent snow storm sounds across sites.
 		active_sounds[impacted_area] = /datum/looping_sound/snowstorm
 	GLOB.snowstorm_sounds += active_sounds
+		// VOIDCREW EDIT END
 	return ..()
 
 /datum/weather/snow_storm/end()
+	// VOIDCREW EDIT: Preserve independent snow storm sounds across sites.
 	GLOB.snowstorm_sounds -= active_sounds
 	return ..()
 

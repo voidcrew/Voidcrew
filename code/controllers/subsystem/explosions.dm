@@ -189,7 +189,6 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	explosion(epicenter, devastation_range = round(range * 0.25), heavy_impact_range = round(range * 0.5), light_impact_range = round(range), flame_range = flame_range*range, flash_range = flash_range*range, adminlog = adminlog, ignorecap = ignorecap, silent = silent, smoke = smoke, explosion_cause = explosion_cause)
 
 
-
 /**
  * Makes a given atom explode.
  *
@@ -301,9 +300,11 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	if(!epicenter)
 		return
 	// VOIDCREW: suppress the blast before smoke, flashes, fire, or chain reactions.
+	// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
 	if(is_trader_outpost_protected(epicenter))
 		log_game("OUTPOST PROTECTION: Suppressed explosion ([devastation_range], [heavy_impact_range], [light_impact_range]) at [AREACOORD(epicenter)]. Cause: [explosion_cause]. Last fingerprints: [key_name(explosion_cause?.fingerprintslast)].")
 		return
+	// VOIDCREW EDIT END
 
 	if(isnull(flame_range))
 		flame_range = light_impact_range
@@ -397,8 +398,10 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	//flash mobs
 	if(flash_range)
 		for(var/mob/living/L in viewers(flash_range, epicenter))
+			// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
 			if(is_trader_outpost_protected(L)) // VOIDCREW
 				continue
+			// VOIDCREW EDIT END
 			L.flash_act()
 
 	var/list/affected_turfs = prepare_explosion_turfs(max_range, epicenter, protect_epicenter, explosion_direction, explosion_arc)
@@ -414,9 +417,11 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	//we presuppose that we'll be iterating away from the epicenter
 	for(var/turf/explode as anything in affected_turfs)
 		// VOIDCREW: outside blasts cannot damage, ignite, or throw outpost contents.
+		// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
 		if(is_trader_outpost_protected(explode))
 			cached_exp_block[explode] = INFINITY
 			continue
+		// VOIDCREW EDIT END
 		var/our_x = explode.x
 		var/our_y = explode.y
 		var/dist = CHEAP_HYPOTENUSE(our_x, our_y, x0, y0)
@@ -541,7 +546,7 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 		else
 			creaking = FALSE
 
-	// VOIDCREW EDIT ADDITION: packed-level containment. Resolved once, outside the loop.
+	// VOIDCREW EDIT ADDITION START: packed-level containment. Resolved once, outside the loop.
 	// The walk below is GLOB.player_list filtered on bare z, and its reach is
 	// heavy_impact_range * 15 + devastation_range * 20 - well over 100 tiles for a large
 	// blast, against the 6 tiles that separate two tenants of a packed level. playsound_local()
@@ -554,7 +559,7 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || listener_turf.z != blast_z)
 			continue
-		// VOIDCREW EDIT ADDITION
+		// VOIDCREW EDIT ADDITION START
 		if(map_region_excludes_turf(blast_region, listener_turf))
 			continue
 		// VOIDCREW EDIT END

@@ -19,15 +19,6 @@
 	var/spawn_distance
 	/// Distance from the spawner to exclude mobs from spawning
 	var/spawn_distance_exclude
-	// VOIDCREW EDIT ADDITION: cached map-tenant footprint for the presence gate in
-	// try_spawn_mob(). Resolved lazily on the first tick that has anyone on our z-level and
-	// re-resolved if the parent ever moves (structures do not, but components ride mobs and
-	// items too). Null means "this level is not shared", which is the common case and the
-	// one that keeps the plain z-level gate.
-	var/datum/map_footprint/cached_footprint
-	/// The turf cached_footprint was resolved from, so a moved parent invalidates it.
-	var/turf/cached_footprint_turf
-	// VOIDCREW EDIT ADDITION END
 	COOLDOWN_DECLARE(spawn_delay)
 
 /datum/component/spawner/Initialize(spawn_types = list(), spawn_time = 30 SECONDS, max_spawned = 5, max_spawn_per_attempt = 1 , faction = list(FACTION_MINING), spawn_text = null, datum/callback/spawn_callback = null, spawn_distance = 1, spawn_distance_exclude = 0, initial_spawn_delay = 0 SECONDS)
@@ -50,17 +41,6 @@
 	RegisterSignal(parent, COMSIG_VENT_WAVE_CONCLUDED, PROC_REF(stop_spawning))
 	START_PROCESSING((spawn_time < 2 SECONDS ? SSfastprocess : SSprocessing), src)
 
-// VOIDCREW EDIT: break the parent <-> spawn_callback reference cycle.
-// /obj/structure/spawner passes spawn_callback = CALLBACK(src, PROC_REF(on_mob_spawn)),
-// and the callback datum's obj var keeps the parent alive: parent -> components ->
-// this component -> spawn_callback -> parent never soft-GCs, so every component-based
-// spawner hard-deletes - a multi-minute reference search each under REFERENCE_TRACKING.
-/datum/component/spawner/Destroy()
-	spawn_callback = null
-	spawned_things = null
-	cached_footprint = null
-	cached_footprint_turf = null
-	return ..()
 
 /datum/component/spawner/process()
 	try_spawn_mob()
@@ -79,7 +59,7 @@
 	if(!COOLDOWN_FINISHED(src, spawn_delay))
 		return
 
-	// VOIDCREW EDIT: don't spawn where nobody is standing.
+	// VOIDCREW EDIT START: don't spawn where nobody is standing.
 	// Spawned mobs die unattended out there (vacuum, weather, each other) and
 	// validate_references() frees the slot the instant one is DEAD, so a bone pit or
 	// monster den on a loaded-but-unvisited level emits a fresh corpse every spawn_time
@@ -153,6 +133,7 @@
 			created_mob.faction = src.faction
 			// The assignment above deliberately replaces the mob's initialized faction list,
 			// so restore any native-planet token it received during Initialize().
+			// VOIDCREW EDIT: Spawn only near players in the same footprint and preserve native planetary factions (voidcrew/edits/components/spawner_lifecycle.dm).
 			inherit_planetary_faction(created_mob)
 			RegisterSignal(created, COMSIG_MOB_STATCHANGE, PROC_REF(mob_stat_changed))
 
@@ -163,7 +144,6 @@
 
 	if (spawn_text)
 		spawner.visible_message(span_danger("A creature [spawn_text] [spawner]."))
-
 
 
 /// Remove weakrefs to atoms which have been killed or deleted without us picking it up somehow
