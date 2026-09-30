@@ -1,0 +1,94 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aPC" = (
+/obj/structure/sign/poster/random,
+/turf/closed/wall/r_wall,
+/area/template_noop)
+"aVW" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"cjk" = (
+/obj/structure/table,
+/obj/item/storage/medkit/regular,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"fsU" = (
+/obj/machinery/chem_dispenser,
+/obj/item/reagent_containers/cup/beaker/large,
+/obj/item/reagent_containers/cup/beaker/large,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"nSx" = (
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"ofg" = (
+/obj/machinery/chem_master,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"oAY" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/light/small/broken{
+	dir = 4;
+	name = "light fixture"
+	},
+/obj/structure/bed,
+/obj/item/radio/intercom/directional/north,
+/obj/item/toy/plush/moth{
+	name = "emotional support moth plushie"
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"pFq" = (
+/obj/structure/table,
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"saP" = (
+/obj/structure/table,
+/obj/item/storage/medkit/toxin{
+	pixel_y = 8
+	},
+/obj/item/storage/medkit/o2{
+	pixel_y = -1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"sra" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"umB" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"uvE" = (
+/turf/closed/wall/r_wall,
+/area/template_noop)
+
+(1,1,1) = {"
+fsU
+umB
+aVW
+aVW
+cjk
+"}
+(2,1,1) = {"
+ofg
+aVW
+nSx
+umB
+saP
+"}
+(3,1,1) = {"
+uvE
+oAY
+pFq
+sra
+aPC
+"}

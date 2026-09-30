@@ -383,6 +383,7 @@
 #include "voidcrew_plumbing_shuttle_move.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_mining_input.dm"
+#include "../../../voidcrew/modules/unit_tests/voidcrew_mining_qol.dm" // VOIDCREW EDIT ADDITION
 #include "voidcrew_mission_gps.dm"
 #include "../../../voidcrew/modules/unit_tests/voidcrew_mission_metrics.dm" // VOIDCREW EDIT ADDITION
 #include "voidcrew_npc_boarding_docking.dm"

@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "hiryu_class_carrier/security_hangar.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_security_hangar_pink.png",
+     "src_md5": "a336129f9c771e00204eec8e16aac85f",
+     "width": 14
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_security_hangar_standard.png",
+     "src_md5": "1634f7eb98baebcfe58725bccd7b79bb",
+     "width": 14
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_security_hangar_syndicate.png",
+     "src_md5": "2b917c6745977a4d0b30e868e3309494",
+     "width": 14
+    }
+   },
+   "width": 14
+  }
+ },
+ "tile_px": 32
+}

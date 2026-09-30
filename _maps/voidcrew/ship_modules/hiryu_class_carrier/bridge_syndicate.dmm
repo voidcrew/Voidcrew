@@ -1,0 +1,142 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ahM" = (
+/turf/template_noop,
+/area/template_noop)
+"jgg" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"kfL" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/communications{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"kos" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"lFD" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/computer/crew,
+/obj/item/folder/syndicate/red,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"mam" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"mWG" = (
+/obj/machinery/recharger{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/syndicate,
+/obj/structure/table/reinforced/plastitaniumglass,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"nFH" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/binoculars,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ozd" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"sms" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"suh" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"tAw" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"urZ" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"uzN" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"vuO" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"xpr" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+
+(1,1,1) = {"
+ahM
+ahM
+ahM
+jgg
+ahM
+ahM
+uzN
+"}
+(2,1,1) = {"
+urZ
+vuO
+vuO
+jgg
+vuO
+vuO
+tAw
+"}
+(3,1,1) = {"
+lFD
+mam
+ozd
+suh
+vuO
+vuO
+nFH
+"}
+(4,1,1) = {"
+ahM
+sms
+kos
+xpr
+kfL
+mWG
+ahM
+"}

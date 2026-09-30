@@ -1,0 +1,198 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aqw" = (
+/obj/structure/platform/titanium,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/clothing/head/utility/welding,
+/obj/item/storage/toolbox/mechanical/old,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"coi" = (
+/obj/vehicle/sealed/mecha/ripley/mining,
+/obj/structure/platform/titanium,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"cQF" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"ewl" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"eQA" = (
+/obj/machinery/mineral/ore_redemption{
+	input_dir = 2;
+	output_dir = 1
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"hCY" = (
+/obj/structure/platform/titanium,
+/obj/structure/mecha_wreckage/ripley/paddy,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"hPu" = (
+/obj/structure/ore_box,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"kNx" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_west"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"nhv" = (
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/structure/platform/titanium,
+/turf/template_noop,
+/area/template_noop)
+"pNJ" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"qqR" = (
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"rLS" = (
+/turf/template_noop,
+/area/template_noop)
+"vFW" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/inducer{
+	pixel_x = -1;
+	pixel_y = 10
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_west"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"vJT" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"xaF" = (
+/obj/structure/platform/titanium,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"xiY" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"xRv" = (
+/obj/structure/platform/titanium,
+/obj/item/screwdriver,
+/obj/item/stack/cable_coil,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/crowbar,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+
+(1,1,1) = {"
+rLS
+rLS
+vFW
+"}
+(2,1,1) = {"
+rLS
+nhv
+kNx
+"}
+(3,1,1) = {"
+rLS
+coi
+kNx
+"}
+(4,1,1) = {"
+rLS
+xaF
+kNx
+"}
+(5,1,1) = {"
+rLS
+rLS
+rLS
+"}
+(6,1,1) = {"
+ewl
+cQF
+rLS
+"}
+(7,1,1) = {"
+qqR
+qqR
+qqR
+"}
+(8,1,1) = {"
+qqR
+qqR
+qqR
+"}
+(9,1,1) = {"
+eQA
+hPu
+rLS
+"}
+(10,1,1) = {"
+rLS
+rLS
+rLS
+"}
+(11,1,1) = {"
+rLS
+xRv
+pNJ
+"}
+(12,1,1) = {"
+rLS
+hCY
+vJT
+"}
+(13,1,1) = {"
+rLS
+aqw
+pNJ
+"}
+(14,1,1) = {"
+rLS
+rLS
+xiY
+"}

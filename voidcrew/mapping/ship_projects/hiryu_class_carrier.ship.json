@@ -1,0 +1,251 @@
+{
+  "Version": 1,
+  "ID": "hiryu_class_carrier",
+  "Description": "A medium-sized vessel capable of a range of applications from the get go thanks to it's modularity.",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/hiryu_class_carrier",
+    "Name": "Hiryu-class Carrier",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "hiryu_class_carrier_titanium_hull",
+    "Slots": [
+      "engineering",
+      "medbay",
+      "Exosuit_hangar",
+      "Cryogenics",
+      "helm"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Titanium Hull",
+        "Suffix": "hiryu_class_carrier_titanium_hull",
+        "Description": "The ship as it was originally produced.",
+        "Slots": [
+          "engineering",
+          "medbay",
+          "Exosuit_hangar",
+          "Cryogenics",
+          "helm"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "syndicate",
+        "Name": "Plastitanium Hull",
+        "Suffix": "hiryu_class_carrier_plastitanium_hull",
+        "Description": "Titanium swapped out for Plastitanium for an edgier look.",
+        "Slots": [
+          "engineering",
+          "medbay",
+          "Exosuit_hangar",
+          "Cryogenics",
+          "helm"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "pink",
+        "Name": "Dollhouse Hull",
+        "Suffix": "hiryu_class_carrier_dollhouse_hull",
+        "Description": "Somebody spilled a can of pink paint everywhere.",
+        "Slots": [
+          "engineering",
+          "medbay",
+          "Exosuit_hangar",
+          "Cryogenics",
+          "helm"
+        ],
+        "Default": false
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "engineering_basic",
+        "Name": "PACMAN bay",
+        "Slot": "engineering",
+        "File": "hiryu_class_carrier/pacman_bay.dmm",
+        "Description": "A set of pre-loaded PACMAN generators to power the ship.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "medbay_basic",
+        "Name": "Medbay",
+        "Slot": "medbay",
+        "File": "hiryu_class_carrier/medbay_basic.dmm",
+        "Description": "A compact but fully capable medbay, complete with medkits, an operating table and a stasis bed. Adds a Medical Doctor to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "port_hall_basic",
+        "Name": "Mining hangar",
+        "Slot": "Exosuit_hangar",
+        "File": "hiryu_class_carrier/mining_hangar.dmm",
+        "Description": "A well maintained Ripley MK1 exosuit fitted with mining gear for your mech pilot. Adds a Mining Exosuit Pilot to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "starboard_hall_basic",
+        "Name": "Traditional fitting",
+        "Slot": "Cryogenics",
+        "File": "hiryu_class_carrier/traditional_fitting.dmm",
+        "Description": "The look the ship is named for.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "helm_basic",
+        "Name": "Captain's quarters",
+        "Slot": "helm",
+        "File": "hiryu_class_carrier/captain_s_quarters.dmm",
+        "Description": "Oh captain, my captain!",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "rtg_bay",
+        "Name": "RTG bay",
+        "Slot": "engineering",
+        "File": "hiryu_class_carrier/rtg_bay.dmm",
+        "Description": "A set of RTGs to power the ship.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "security_hangar",
+        "Name": "Security hangar",
+        "Slot": "Exosuit_hangar",
+        "File": "hiryu_class_carrier/security_hangar.dmm",
+        "Description": "A well maintained Paddy exosuit with additional equipment for your mech pilot. Adds a Combat Exosuit Pilot to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "robotics_lab",
+        "Name": "Robotics lab",
+        "Slot": "medbay",
+        "File": "hiryu_class_carrier/robotics_lab.dmm",
+        "Description": "A partically constructed lab, with a surgical setup and man machine interfaces. Adds a Roboticist to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "gaming_room",
+        "Name": "Bar",
+        "Slot": "Cryogenics",
+        "File": "hiryu_class_carrier/bar.dmm",
+        "Description": "Booze and gambling to keep the crew entertained. Adds a Bartender to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "grill",
+        "Name": "Grill",
+        "Slot": "Exosuit_hangar",
+        "File": "hiryu_class_carrier/grill.dmm",
+        "Description": "Exosuits? Who cares about exosuits. I just wanna grill for god's sake. Adds a Cook to the crew.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cargo_bay",
+        "Name": "Cargo bay",
+        "Slot": "Cryogenics",
+        "File": "hiryu_class_carrier/cargo_bay.dmm",
+        "Description": "Some space for long term storage and a basic cryo room and dorm.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "bridge",
+        "Name": "Bridge",
+        "Slot": "helm",
+        "File": "hiryu_class_carrier/bridge.dmm",
+        "Description": "A simple helm featuring multiple extra consoles and emergency supplies.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "xenobiology_pens",
+        "Name": "Xenobiology pens",
+        "Slot": "Cryogenics",
+        "File": "hiryu_class_carrier/xenobiology_pens.dmm",
+        "Description": "A xenobiology lab for your ship.",
+        "Themes": [
+          "standard",
+          "syndicate",
+          "pink"
+        ],
+        "Default": false
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PartCosts": {
+    "module/bridge": {},
+    "module/cargo_bay": {},
+    "module/gaming_room": {},
+    "module/grill": {},
+    "module/robotics_lab": {},
+    "module/rtg_bay": {},
+    "module/security_hangar": {},
+    "module/xenobiology_pens": {},
+    "ship": {},
+    "theme/pink": {},
+    "theme/syndicate": {}
+  },
+  "PortDirection": 2
+}

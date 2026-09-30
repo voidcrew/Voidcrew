@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "hiryu_class_carrier/xenobiology_pens.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_xenobiology_pens_pink.png",
+     "src_md5": "2bb51afb95cbcc54773faf61291ca4f3",
+     "width": 14
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_xenobiology_pens_standard.png",
+     "src_md5": "1065cb29af4aca2837ba149e48661f10",
+     "width": 14
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_xenobiology_pens_syndicate.png",
+     "src_md5": "58dd738ca7d5a69e47b792f4e7c98501",
+     "width": 14
+    }
+   },
+   "width": 14
+  }
+ },
+ "tile_px": 32
+}
