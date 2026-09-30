@@ -31,7 +31,7 @@
 	/// SHIP_MASS_ANY. That is the safe direction to fail.
 	var/min_ship_mass = SHIP_MASS_ANY
 	/// Zone bands (ZONE_GREEN/ZONE_YELLOW/ZONE_RED) the target ship must be in. Null = any zone.
-	/// Use this to keep dangerous events out of the safe outer ring.
+	/// Use this to keep dangerous events out of the safe inner ring.
 	var/list/allowed_zones = null
 	/// If TRUE the target must be flying free on the overmap, for events that make no sense while landed or docked.
 	var/requires_flying = FALSE

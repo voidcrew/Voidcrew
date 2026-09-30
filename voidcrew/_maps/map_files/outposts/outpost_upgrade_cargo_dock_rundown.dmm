@@ -1,0 +1,1199 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = 5
+	},
+/obj/item/cigbutt{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/paper{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"ab" = (
+/turf/open/floor/plating/reinforced,
+/area/voidcrew/player_outpost/cargo_dock)
+"ac" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ad" = (
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"ae" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1;
+	alpha = 120
+	},
+/obj/machinery/light/floor{
+	bulb_colour = "#FFB050"
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"af" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 70
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ag" = (
+/obj/docking_port/stationary/outpost_cargo_dock,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"ah" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 45
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ai" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 170
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aj" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 150
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 140
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ak" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 160
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "floorscorched1";
+	alpha = 130
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"al" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 8;
+	item_chair = null
+	},
+/obj/item/trash/can{
+	pixel_x = -8;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"am" = (
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "trashbin";
+	name = "trash bin";
+	desc = "A trash bin. Full, as always."
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"an" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"ao" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ap" = (
+/obj/structure/filingcabinet,
+/obj/structure/sign/poster/contraband/random/directional/north,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aq" = (
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/cargo_dock)
+"ar" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"as" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"at" = (
+/obj/structure/sign/departments/cargo,
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/cargo_dock)
+"au" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 160
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 120
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"av" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8;
+	alpha = 100
+	},
+/obj/structure/noticeboard/directional/north{
+	name = "freight board"
+	},
+/obj/item/paper{
+	name = "manifest"
+	},
+/obj/item/paper{
+	name = "manifest"
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"aw" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 70
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ax" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 8;
+	item_chair = null
+	},
+/obj/machinery/light/warm/directional/east,
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"ay" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4;
+	alpha = 120
+	},
+/obj/machinery/light/floor{
+	bulb_colour = "#FFB050"
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"az" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 45
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "floorscorched2";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/structure/sign/warning/hot_temp/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aA" = (
+/obj/structure/sign/warning/docking,
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/cargo_dock)
+"aB" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 120
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/light/floor{
+	bulb_colour = "#FFB050"
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aC" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 110
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aD" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 70
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor1";
+	color = "#2A2622";
+	alpha = 190
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aE" = (
+/obj/structure/fluff/paper/stack{
+	dir = 2
+	},
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aF" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Dock Office"
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aG" = (
+/obj/structure/table,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/item/clipboard{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aH" = (
+/obj/structure/sign/warning/docking,
+/turf/closed/wall,
+/area/voidcrew/player_outpost/cargo_dock)
+"aI" = (
+/obj/structure/sign/warning/no_smoking/directional/east,
+/obj/machinery/digital_clock/directional/south,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"aK" = (
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aL" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aM" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor5";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aN" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 45
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "floorscorched2";
+	alpha = 120
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aO" = (
+/obj/item/kirbyplants/random/dead,
+/obj/structure/noticeboard/directional/north{
+	name = "tally board"
+	},
+/obj/item/paper{
+	name = "tally sheet"
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aP" = (
+/turf/closed/wall,
+/area/voidcrew/player_outpost/cargo_dock)
+"aQ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8;
+	alpha = 140
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"aR" = (
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost/cargo_dock)
+"aS" = (
+/obj/structure/chair/office{
+	dir = 8;
+	item_chair = null
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/cargo_dock)
+"aT" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "danger";
+	paint_colour = "#C9A43A";
+	name = "paint";
+	desc = "A hazard mark in yellow spray paint."
+	},
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/cargo_dock)
+"aU" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aV" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 160
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 140
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aW" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1;
+	alpha = 170
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aX" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4;
+	alpha = 80
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "floorscorched1";
+	alpha = 110
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"aZ" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/cargo_dock)
+"bN" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 110
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"cr" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"de" = (
+/obj/effect/turf_decal/bot{
+	alpha = 80
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"dF" = (
+/obj/structure/barrel,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 120
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"fv" = (
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"fz" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 110
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"ho" = (
+/obj/structure/fluff/big_chain{
+	name = "hoist chain";
+	desc = "A chain hoist hanging from the roof beams."
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor4";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"ir" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"kd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"kW" = (
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "woodenopen";
+	name = "packing crate";
+	desc = "A wooden crate half full of packing straw."
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"mx" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 2;
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"mW" = (
+/obj/structure/sign/poster/contraband/random/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"pm" = (
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crateopen";
+	name = "empty crate";
+	desc = "An empty crate with the lid long gone."
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"pu" = (
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"rB" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor5";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"sn" = (
+/obj/effect/turf_decal/bot{
+	alpha = 70
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crateopen";
+	name = "empty crate";
+	desc = "An empty crate with the lid long gone."
+	},
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"sx" = (
+/obj/structure/barrel,
+/obj/machinery/light/small/broken/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"sB" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"uy" = (
+/obj/structure/cable/outpost,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"xB" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor7";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"yb" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/item/cigbutt{
+	pixel_x = -2;
+	pixel_y = -6
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"yR" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/item/cigbutt{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"zA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Bf" = (
+/obj/structure/barrel,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"BE" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 100
+	},
+/obj/item/paper/crumpled{
+	pixel_x = -5;
+	pixel_y = -4
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"CI" = (
+/obj/effect/turf_decal/bot{
+	alpha = 120
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crate";
+	name = "crate";
+	desc = "A dented crate. It is empty; you can tell from the rattle."
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crateopen";
+	name = "empty crate";
+	desc = "An empty crate with the lid long gone.";
+	pixel_y = 12
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"DP" = (
+/obj/effect/turf_decal/bot{
+	alpha = 80
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crate";
+	name = "crate";
+	desc = "A dented crate. It is empty; you can tell from the rattle."
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crateopen";
+	name = "empty crate";
+	desc = "An empty crate with the lid long gone.";
+	pixel_y = 12
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Ep" = (
+/obj/structure/chair{
+	dir = 8;
+	item_chair = null
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"EL" = (
+/obj/effect/turf_decal/bot{
+	alpha = 110
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "largecrate";
+	name = "large crate";
+	desc = "A large wooden crate, nailed shut and stencilled for somewhere else."
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 110
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Fc" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Dock"
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"GG" = (
+/obj/structure/chair/stool{
+	dir = 2;
+	item_chair = null
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Ho" = (
+/obj/machinery/light/warm/directional/south,
+/obj/item/trash/cheesie{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"HD" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 130
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 110
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"Jn" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/fluff/clockwork/clockgolem_remains{
+	deconstructible = 0;
+	name = "scrap pile";
+	desc = "Bent brackets, a split hinge and half a crate lid."
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"JP" = (
+/obj/effect/turf_decal/bot{
+	alpha = 90
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "largecrate";
+	name = "large crate";
+	desc = "A large wooden crate, nailed shut and stencilled for somewhere else."
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 140
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"JT" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/item/cigbutt{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Ko" = (
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "cardboardopen";
+	name = "cardboard box";
+	desc = "A cardboard box, soft with damp."
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Mi" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Nh" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1;
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"NZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Oz" = (
+/obj/effect/turf_decal/bot{
+	alpha = 100
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 90
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"Pp" = (
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "crate";
+	name = "crate";
+	desc = "A dented crate. It is empty; you can tell from the rattle."
+	},
+/obj/structure/showcase{
+	icon = 'icons/obj/storage/crates.dmi';
+	icon_state = "cardboardopen";
+	name = "cardboard box";
+	desc = "A cardboard box, soft with damp.";
+	pixel_y = 13
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"QW" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "trails_1";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 140
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"RO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"SF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Uk" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 120
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"Vl" = (
+/obj/structure/barrel,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+"XA" = (
+/obj/machinery/light_switch/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/cargo_dock)
+"Zm" = (
+/obj/structure/chair{
+	dir = 4;
+	item_chair = null
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/cargo_dock)
+
+(1,1,1) = {"
+aq
+aq
+aq
+aq
+aT
+aq
+aq
+aq
+aq
+aP
+aP
+aq
+aq
+aq
+"}
+(2,1,1) = {"
+aq
+aB
+au
+aN
+ak
+az
+aX
+aV
+ay
+as
+sx
+Vl
+JP
+aq
+"}
+(3,1,1) = {"
+aq
+ab
+ab
+ab
+ab
+ab
+ab
+ab
+ao
+ac
+Uk
+Mi
+CI
+aq
+"}
+(4,1,1) = {"
+aA
+ab
+ab
+ab
+ab
+ab
+ab
+ab
+ai
+aK
+ho
+kW
+sn
+aP
+"}
+(5,1,1) = {"
+aq
+aR
+aR
+ab
+aR
+aR
+aR
+aR
+ah
+aL
+Ko
+RO
+Bf
+aq
+"}
+(6,1,1) = {"
+aP
+aR
+aR
+aR
+aR
+aR
+aK
+aK
+aW
+JT
+SF
+fv
+kd
+aq
+"}
+(7,1,1) = {"
+aP
+aR
+aR
+aR
+aR
+ad
+aK
+aK
+af
+Nh
+aJ
+an
+fz
+aq
+"}
+(8,1,1) = {"
+aq
+aR
+aK
+aR
+aR
+aR
+aR
+ag
+aw
+bN
+Oz
+rB
+XA
+aq
+"}
+(9,1,1) = {"
+at
+aR
+aR
+aR
+aR
+aR
+aR
+aK
+aC
+an
+QW
+ir
+uy
+Fc
+"}
+(10,1,1) = {"
+aq
+ad
+ad
+aR
+aR
+aR
+aR
+aK
+aM
+HD
+de
+ad
+pu
+aq
+"}
+(11,1,1) = {"
+aq
+ad
+ad
+aR
+ad
+aR
+aR
+aR
+aD
+mx
+xB
+sB
+an
+aq
+"}
+(12,1,1) = {"
+aP
+aR
+aR
+aR
+aR
+aR
+aK
+aK
+ah
+BE
+fv
+cr
+NZ
+aq
+"}
+(13,1,1) = {"
+aZ
+ad
+aR
+aK
+aR
+aR
+aR
+aK
+aj
+EL
+aK
+Zm
+pm
+aP
+"}
+(14,1,1) = {"
+aq
+ad
+ad
+aK
+aK
+aR
+aR
+aR
+aC
+DP
+GG
+yb
+Ho
+aP
+"}
+(15,1,1) = {"
+aq
+aH
+aU
+aU
+aU
+aP
+av
+aQ
+ae
+zA
+aK
+Ep
+dF
+aq
+"}
+(16,1,1) = {"
+aq
+ap
+aa
+aG
+ar
+aF
+an
+an
+aJ
+aK
+SF
+aK
+Vl
+aq
+"}
+(17,1,1) = {"
+aq
+aO
+aE
+aS
+aI
+aP
+al
+ax
+am
+Jn
+Pp
+mW
+yR
+aq
+"}
+(18,1,1) = {"
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aP
+aq
+aq
+"}

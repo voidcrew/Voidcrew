@@ -32,7 +32,7 @@
 
 	/// The target turf we're flying toward
 	var/turf/target_turf
-	/// The overmap target: a ship or a raidable player outpost (for signals/effect scoping)
+	/// The overmap target (for signals/effect scoping)
 	var/obj/structure/overmap/target_ship
 	/// The ship that fired us
 	var/obj/structure/overmap/ship/source_ship
@@ -139,9 +139,6 @@
 	// Check if we've hit the target turf
 	// Shield walls will physically intercept via Bump() if shields are active
 	var/turf/current = get_turf(src)
-	// Player-outpost shields intercept at the envelope's edge (see outpost_shield.dm)
-	if(try_outpost_shield_intercept(current))
-		return
 	if(current == target_turf)
 		impact()
 
@@ -195,13 +192,9 @@
 	if(exploded)
 		return
 
-	// Last-chance outpost shield check for missiles that never crossed the
-	// envelope in Moved() (e.g. spawned inside it), see outpost_shield.dm
-	if(try_outpost_shield_intercept(get_turf(src)))
-		return
-
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
+	ship_metric_missile_hit(src, "hull")
 
 	// Play impact sound - limited to target ship's areas to prevent bleed to other ships in reserved space
 	var/sound_range
@@ -240,8 +233,7 @@
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
 		// Signal for NPC mass recalculation - missiles destroy turfs via explosion
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_EXPLOSIVE_DAMAGE, impact_loc)
-		// Being shot ends any plotted course (see ship_autopilot.dm). Missiles also
-		// hit outposts and ruins, which have no autopilot to interrupt.
+		// Being shot ends any plotted course (see ship_autopilot.dm).
 		var/obj/structure/overmap/ship/hit_vessel = target_ship
 		if(istype(hit_vessel))
 			hit_vessel.interrupt_autopilot("hull damage taken")
@@ -336,12 +328,9 @@
 	if(exploded)
 		return
 
-	// Outpost shields block chemical payloads too (see outpost_shield.dm)
-	if(try_outpost_shield_intercept(get_turf(src)))
-		return
-
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
+	ship_metric_missile_hit(src, "hull")
 
 	// Play impact sound - limited to target ship's areas
 	playsound_ship(impact_loc, impact_sound, 80, TRUE, 10, target_ship)

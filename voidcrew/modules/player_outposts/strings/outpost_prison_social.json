@@ -1,0 +1,830 @@
+{
+	"lines": {
+		"greet_stranger": {
+			"any": [
+				"Don't think I know you.",
+				"New face. You work here?",
+				"Who are you, then?",
+				"Hey. You with the crew?",
+				"You lost, or do you work here?",
+				"You're new. {staff}, is it?"
+			],
+			"chatty": [
+				"Hi! Haven't seen you around. I'm {name}.",
+				"New around here? I can tell you where everything is."
+			],
+			"grumpy": [
+				"Who's this now?",
+				"Another one. Great."
+			],
+			"nervous": [
+				"Um. Who are you?",
+				"Are you new? Nobody told me anything."
+			],
+			"cheerful": [
+				"Hey there! First time down here?",
+				"Oh, a new face. Hi!"
+			],
+			"quiet": [
+				"Who're you?",
+				"Hm. New one."
+			]
+		},
+		"greet_regular": {
+			"any": [
+				"Hey, {staff}.",
+				"Evening, {staff}.",
+				"Morning, {staff}.",
+				"{staff}. How's it going?",
+				"Oh, hey, {staff}.",
+				"Hey. You again."
+			],
+			"chatty": [
+				"{staff}! Got a minute? I've got news.",
+				"Hey {staff}, how's the outpost doing?"
+			],
+			"grumpy": [
+				"{staff}.",
+				"Oh. It's you, {staff}."
+			],
+			"nervous": [
+				"Hi, {staff}. Everything okay?",
+				"Oh, it's you, {staff}. Good."
+			],
+			"cheerful": [
+				"Hey, {staff}! Good to see you.",
+				"{staff}! How's your day going?"
+			],
+			"quiet": [
+				"{staff}.",
+				"Hey."
+			]
+		},
+		"greet_fair": {
+			"any": [
+				"Hey, {staff}! Good to see you.",
+				"{staff}'s here. Morning.",
+				"Evening, {staff}. Thanks for the other day.",
+				"Hey, it's {staff}. Alright, everyone, behave.",
+				"{staff}! You're one of the good ones."
+			],
+			"chatty": [
+				"{staff}! Sit down, I've got a story for you.",
+				"Hey {staff}, you're my favorite. Don't tell the others."
+			],
+			"grumpy": [
+				"{staff}. You're alright, I suppose.",
+				"Oh, {staff}. At least it's you."
+			],
+			"nervous": [
+				"Oh, {staff}. Good. I feel better when you're around.",
+				"Hi, {staff}. Glad it's you on shift."
+			],
+			"cheerful": [
+				"{staff}! Best part of my day.",
+				"Hey, look, it's {staff}! Hi!"
+			],
+			"quiet": [
+				"Hey, {staff}.",
+				"{staff}. Good."
+			]
+		},
+		"greet_hard": {
+			"any": [
+				"Oh. It's {staff}.",
+				"{staff}. Great.",
+				"Here comes {staff}.",
+				"Heads up. {staff}'s here.",
+				"What do you want, {staff}?"
+			],
+			"chatty": [
+				"Oh, {staff}. Try not to hit anyone today, yeah?",
+				"{staff}. Everyone's behaving, so relax."
+			],
+			"grumpy": [
+				"{staff}. Keep your hands to yourself.",
+				"Look who it is. {staff}."
+			],
+			"nervous": [
+				"Oh. H-hi, {staff}.",
+				"{staff}. I'm not doing anything, okay?"
+			],
+			"cheerful": [
+				"Hey, {staff}. Nice and easy today, okay?",
+				"Morning, {staff}. Let's all keep it friendly."
+			],
+			"quiet": [
+				"{staff}.",
+				"Hm. {staff}."
+			]
+		},
+		"greet_brute": {
+			"any": [
+				"Oh, it's you. Keep that baton away from me.",
+				"Everyone stay back. {staff}'s here.",
+				"{staff}. Don't come near me.",
+				"Great. {staff}. Who are you hitting today?",
+				"Watch it, everyone. It's {staff}."
+			],
+			"chatty": [
+				"Hey, everyone, {staff}'s here. Nobody move too fast.",
+				"{staff}. We all know what you did."
+			],
+			"grumpy": [
+				"Get lost, {staff}.",
+				"{staff}. Come closer and see what happens."
+			],
+			"nervous": [
+				"Oh no. {staff}.",
+				"Please don't, {staff}. I didn't do anything."
+			],
+			"cheerful": [
+				"Oh. {staff}. Hi. Everyone's being good, see?",
+				"Easy, {staff}. Nobody wants trouble."
+			],
+			"quiet": [
+				"{staff}.",
+				"Stay back."
+			]
+		},
+		"greet_masked": {
+			"any": [
+				"Who's under there?",
+				"Nice mask. Who are you?",
+				"Can't see your face. Who is that?",
+				"Hey, you in the mask. Who are you?"
+			],
+			"chatty": [
+				"Hey, who's that behind the mask? Come on, tell me.",
+				"Love the mask. Very mysterious."
+			],
+			"grumpy": [
+				"Take that thing off.",
+				"Hiding your face? Figures."
+			],
+			"nervous": [
+				"Why are you wearing that? Who are you?",
+				"I don't like it when I can't see faces."
+			],
+			"cheerful": [
+				"Ooh, a mystery guest!",
+				"Hi, whoever you are!"
+			],
+			"quiet": [
+				"Who's that?",
+				"Hm."
+			]
+		},
+		"wing_word_fair": {
+			"any": [
+				"Heard {staff} runs a fair wing. That true?",
+				"Somebody told me to ask for {staff}.",
+				"They say {staff}'s alright. We'll see.",
+				"Word is {staff} actually feeds people here."
+			],
+			"chatty": [
+				"The guys on the transport said {staff} is decent. Who's {staff}?",
+				"I heard about {staff} two outposts ago. Good things."
+			],
+			"grumpy": [
+				"Somebody said {staff} was fair. I'll believe it when I see it."
+			],
+			"nervous": [
+				"They said {staff} is nice. Is {staff} nice?",
+				"Is it true about {staff}? That they're fair?"
+			],
+			"cheerful": [
+				"Heard this place has {staff}. Lucky me.",
+				"They told me {staff}'s one of the good ones."
+			],
+			"quiet": [
+				"Heard of {staff}.",
+				"{staff}. Heard good things."
+			]
+		},
+		"wing_word_brute": {
+			"any": [
+				"They warned me about {staff}.",
+				"Which one's {staff}? I want to know who to avoid.",
+				"Heard {staff} likes the baton a bit much.",
+				"Word on the transport was to stay clear of {staff}."
+			],
+			"chatty": [
+				"So, the guys on the transport told me about {staff}. Is it true?",
+				"Everybody's got a story about {staff}. None of them good."
+			],
+			"grumpy": [
+				"Heard about {staff}. Let them try it with me.",
+				"{staff}, right? I've heard."
+			],
+			"nervous": [
+				"Is {staff} here? They said {staff} hits people.",
+				"Please tell me {staff} isn't on shift."
+			],
+			"cheerful": [
+				"Heard {staff} can be rough. I'll keep smiling.",
+				"They told me to keep my head down around {staff}."
+			],
+			"quiet": [
+				"Heard about {staff}.",
+				"{staff}. Noted."
+			]
+		},
+		"talk_refuse_brute": {
+			"any": [
+				"Not from you.",
+				"Not you. Anyone but you.",
+				"You don't get to calm me down, {staff}.",
+				"After what you did? No.",
+				"Save it, {staff}."
+			],
+			"chatty": [
+				"Oh, now you want to talk? After the baton? No.",
+				"You hit people, {staff}. Find someone else to chat with."
+			],
+			"grumpy": [
+				"Get your hands away from me, {staff}.",
+				"Not a chance."
+			],
+			"nervous": [
+				"Please just stay away from me.",
+				"No, no. Not you."
+			],
+			"cheerful": [
+				"Sorry. Not from you.",
+				"Maybe send someone else, yeah?"
+			],
+			"quiet": [
+				"No.",
+				"Not you."
+			]
+		},
+		"ask_how_starving": {
+			"any": [
+				"I'm starving. When did anyone last eat in here?",
+				"Honestly? I'm so hungry I can't think.",
+				"Starving. That's how I'm doing.",
+				"Food. Please. Any food."
+			],
+			"chatty": [
+				"How am I doing? My stomach's been talking louder than me all day.",
+				"Starving. I'd eat the mattress if it was softer."
+			],
+			"grumpy": [
+				"How do you think? Nobody's fed me.",
+				"Starving. Thanks for asking. Now do something."
+			],
+			"nervous": [
+				"I feel sick, I'm so hungry. Is there food?",
+				"Did everyone forget about meals?"
+			],
+			"cheerful": [
+				"Honestly, I'd kill for a sandwich right now.",
+				"Starving, but hey, still breathing."
+			],
+			"quiet": [
+				"Hungry. Very.",
+				"Food."
+			]
+		},
+		"ask_how_hungry": {
+			"any": [
+				"Hungry. Is lunch coming?",
+				"Could eat. Any food coming?",
+				"Getting hungry, to be honest.",
+				"Fine, but I could use a meal."
+			],
+			"chatty": [
+				"Hungry! Is there anything on the hatch? I'll take anything.",
+				"My stomach's growling. You hear that?"
+			],
+			"grumpy": [
+				"Hungry. Hatch is empty again.",
+				"Could do with some food. Hint."
+			],
+			"nervous": [
+				"A bit hungry. Is that okay to say?",
+				"Is there food soon? Just asking."
+			],
+			"cheerful": [
+				"Pretty good! Could use a snack, though.",
+				"Hungry, but I'll live."
+			],
+			"quiet": [
+				"Hungry.",
+				"Could eat."
+			]
+		},
+		"ask_how_filthy": {
+			"any": [
+				"Look at me. This jumpsuit's disgusting.",
+				"I stink. I need a clean jumpsuit.",
+				"Filthy. Can I get a fresh uniform?",
+				"Flies are following me around. That's how I'm doing."
+			],
+			"chatty": [
+				"I've worn this thing so long it's got its own smell. Clean one?",
+				"Even the flies are complaining about me."
+			],
+			"grumpy": [
+				"I'm filthy, and you know it.",
+				"This suit's rotting on me. Do something."
+			],
+			"nervous": [
+				"I'm really dirty. Is that going to get me in trouble?",
+				"Could I please get a clean uniform?"
+			],
+			"cheerful": [
+				"Great, apart from the smell. Fresh suit?",
+				"I'm okay! The jumpsuit isn't."
+			],
+			"quiet": [
+				"Filthy.",
+				"Need a clean suit."
+			]
+		},
+		"ask_how_dirty": {
+			"any": [
+				"Could use a clean jumpsuit.",
+				"This uniform's getting grubby.",
+				"Fine, but I need a fresh uniform soon.",
+				"Getting a bit ripe in here."
+			],
+			"chatty": [
+				"Not bad, but this jumpsuit's had better days. Any clean ones?",
+				"I spilled something on this yesterday. Or last week."
+			],
+			"grumpy": [
+				"My suit's dirty. Same as always.",
+				"Could use a clean jumpsuit. Not that anyone listens."
+			],
+			"nervous": [
+				"My uniform's dirty. Sorry.",
+				"Can I get a clean jumpsuit? If it's not a bother."
+			],
+			"cheerful": [
+				"Good! Jumpsuit could use a wash, though.",
+				"Pretty good. Bit grubby, that's all."
+			],
+			"quiet": [
+				"Suit's dirty.",
+				"Need a clean one."
+			]
+		},
+		"ask_how_hurt": {
+			"any": [
+				"I'm hurt. Could someone look at this?",
+				"Not great. I'm banged up.",
+				"Hurts. Got anything for it?",
+				"I need a patch-up, honestly."
+			],
+			"chatty": [
+				"I took a knock and it's still killing me. Got a bandage?",
+				"Bleeding a bit. Is that normal? It doesn't feel normal."
+			],
+			"grumpy": [
+				"I'm hurt. Obviously.",
+				"Still hurting. Nobody's done a thing about it."
+			],
+			"nervous": [
+				"It really hurts. Am I going to be okay?",
+				"Can someone look at this? Please?"
+			],
+			"cheerful": [
+				"Seen better days! Got a bandage?",
+				"Bit sore. I'll be fine with a patch."
+			],
+			"quiet": [
+				"Hurt.",
+				"Could use a bandage."
+			]
+		},
+		"ask_how_locked": {
+			"any": [
+				"How do you think? I've been shut in here for ages.",
+				"Let me out of this cell for a bit.",
+				"I'm going stir crazy in here.",
+				"Locked in all day. That's how I'm doing."
+			],
+			"chatty": [
+				"I've counted every bolt on this door twice. Can I come out?",
+				"Talking to the wall's getting old. Let me out?"
+			],
+			"grumpy": [
+				"Open the door and I'll tell you.",
+				"Locked up in a box. Great, thanks."
+			],
+			"nervous": [
+				"Why am I still locked in? Did I do something?",
+				"Please, can I come out for a bit?"
+			],
+			"cheerful": [
+				"Getting a bit cramped in here! Can I stretch my legs?",
+				"I'm fine, but I'd be finer out there."
+			],
+			"quiet": [
+				"Let me out.",
+				"Door."
+			]
+		},
+		"ask_how_dark_cell": {
+			"any": [
+				"My cell's pitch black. Can you fix the light?",
+				"Can't see a thing in my cell.",
+				"The light in my cell's out.",
+				"It's dark as a cave in my cell."
+			],
+			"chatty": [
+				"My light's dead. I keep walking into the toilet.",
+				"Can someone fix my light? I can't even read."
+			],
+			"grumpy": [
+				"My light's been out forever. Fix it.",
+				"Dark in my cell. Again."
+			],
+			"nervous": [
+				"It's so dark in my cell. I don't like it.",
+				"My light's out. Can you fix it? Please?"
+			],
+			"cheerful": [
+				"Fine! Could use a light in my cell, though.",
+				"My cell's a bit dark. Ghost stories, anyone?"
+			],
+			"quiet": [
+				"My light's out.",
+				"Dark cell."
+			]
+		},
+		"ask_how_dark": {
+			"any": [
+				"It's too dark in here.",
+				"Can someone fix the lights?",
+				"Half the lights are out.",
+				"Hard to see anything in this place."
+			],
+			"chatty": [
+				"Did the lights go out, or did I go blind?",
+				"It's like living in a cupboard in here."
+			],
+			"grumpy": [
+				"It's dark. Fix the lights.",
+				"Who turned the lights off? Turn them back on."
+			],
+			"nervous": [
+				"I don't like how dark it's getting.",
+				"Can we get the lights fixed? Please?"
+			],
+			"cheerful": [
+				"Fine! Bit gloomy, though.",
+				"Could use a few more lights, but I'm okay."
+			],
+			"quiet": [
+				"Dark.",
+				"Lights."
+			]
+		},
+		"ask_how_dirty_floor": {
+			"any": [
+				"This place is filthy.",
+				"Somebody needs to mop.",
+				"The floor's disgusting.",
+				"It's a pigsty in here."
+			],
+			"chatty": [
+				"Have you seen the floor? I stepped in something this morning.",
+				"I'd clean it myself if you gave me a mop."
+			],
+			"grumpy": [
+				"Floor's filthy. Get a mop.",
+				"This place stinks. Clean it."
+			],
+			"nervous": [
+				"It's so dirty in here. Is that safe?",
+				"Can someone clean up? There's stuff everywhere."
+			],
+			"cheerful": [
+				"Good! The floor's seen better days, though.",
+				"Fine. Could use a mop in here."
+			],
+			"quiet": [
+				"Dirty.",
+				"Floor's filthy."
+			]
+		},
+		"ask_how_no_power": {
+			"any": [
+				"Power's out. Nothing works.",
+				"Nothing works in here. No power.",
+				"The power's been off for ages.",
+				"It's cold and nothing's running."
+			],
+			"chatty": [
+				"The power's off and it's really quiet. I don't like quiet.",
+				"Even the water cooler gave up. Power's out."
+			],
+			"grumpy": [
+				"No power. Great place you run.",
+				"Power's out. Fix it."
+			],
+			"nervous": [
+				"Why's the power off? Is something wrong?",
+				"Everything's off. Should I be worried?"
+			],
+			"cheerful": [
+				"Power's out! Bit like camping.",
+				"Fine, except for the power."
+			],
+			"quiet": [
+				"No power.",
+				"Power's out."
+			]
+		},
+		"ask_how_rival": {
+			"any": [
+				"Keep {other} away from me.",
+				"{other}'s been giving me grief.",
+				"Fine, except for {other}.",
+				"There's somebody in here I can't stand."
+			],
+			"chatty": [
+				"Honestly? It's {other}. Always in my face.",
+				"Everything's fine apart from a certain someone."
+			],
+			"grumpy": [
+				"{other}. That's my problem.",
+				"One more word from {other} and I swear.",
+				"Somebody in here's getting on my nerves."
+			],
+			"nervous": [
+				"{other} scares me a bit.",
+				"Someone in here really doesn't like me."
+			],
+			"cheerful": [
+				"Good! Mostly. {other} and I don't get on.",
+				"Pretty good, apart from one grumpy neighbor."
+			],
+			"quiet": [
+				"{other}.",
+				"Somebody here. That's all."
+			]
+		},
+		"ask_how_fine": {
+			"any": [
+				"Not bad, actually.",
+				"Can't complain.",
+				"I'm alright. Thanks for asking.",
+				"Fine. Food's okay, bed's okay.",
+				"Doing alright, all things considered."
+			],
+			"chatty": [
+				"Pretty good! Got a basketball game going later.",
+				"Honestly, better than my last ship. Don't tell anyone."
+			],
+			"grumpy": [
+				"Fine. Don't make it weird.",
+				"It's fine. Leave it at that."
+			],
+			"nervous": [
+				"Okay, I think. Why? Is something wrong?",
+				"I'm fine. I'm fine. Thanks."
+			],
+			"cheerful": [
+				"Great! Thanks for asking!",
+				"Good, really. People are nice here."
+			],
+			"quiet": [
+				"Fine.",
+				"Okay."
+			]
+		},
+		"ask_crime": {
+			"any": [
+				"I'm in for {crime}.",
+				"They got me for {crime}. Don't laugh.",
+				"Got pinched for {crime}. Long story.",
+				"The paperwork says {crime}.",
+				"Me? Oh, {crime}."
+			],
+			"chatty": [
+				"Oh, {crime}. Want the long version? It's a good one.",
+				"They wrote down {crime}, but it was a misunderstanding."
+			],
+			"grumpy": [
+				"I'm in for {crime}. Happy now?",
+				"They got me for {crime}. I'd do it again."
+			],
+			"nervous": [
+				"It was {crime}. Only the once, I swear.",
+				"They say {crime}. I didn't mean it."
+			],
+			"cheerful": [
+				"Oh, {crime}! Not my finest moment.",
+				"I'm in for {crime}. You should've seen it."
+			],
+			"quiet": [
+				"I'm in for {crime}.",
+				"They got me for {crime}."
+			]
+		},
+		"order_comply": {
+			"any": [
+				"Fine. I'm going.",
+				"Alright, alright. Back to my cell.",
+				"Okay. Going.",
+				"Sure. I'll sit down for a bit.",
+				"Yeah, okay."
+			],
+			"chatty": [
+				"Alright, but I was in the middle of something. Going.",
+				"Okay, okay! I'll go sit on my bunk."
+			],
+			"grumpy": [
+				"Fine. But only because I want to.",
+				"Whatever. I'm going."
+			],
+			"nervous": [
+				"Okay! Sorry. Going now.",
+				"Did I do something wrong? Okay, I'm going."
+			],
+			"cheerful": [
+				"Sure thing! Nap time.",
+				"No problem. I'll be on my bunk."
+			],
+			"quiet": [
+				"Okay.",
+				"Going."
+			]
+		},
+		"order_refuse": {
+			"any": [
+				"No.",
+				"Not right now.",
+				"Make me.",
+				"I'm fine where I am.",
+				"No thanks."
+			],
+			"chatty": [
+				"Nah, I'm good out here. Nice try, though.",
+				"Why? I haven't done anything. I'm staying."
+			],
+			"grumpy": [
+				"Not a chance.",
+				"Go sit in a cell yourself."
+			],
+			"nervous": [
+				"Do I have to? I'd rather not.",
+				"Please, I only just got out here."
+			],
+			"cheerful": [
+				"Nah, I'm enjoying the fresh air. Well, the air.",
+				"I'll pass, thanks!"
+			],
+			"quiet": [
+				"No.",
+				"Not now."
+			]
+		},
+		"order_again": {
+			"any": [
+				"Again? I just came out.",
+				"You keep saying that. No.",
+				"Make up your mind.",
+				"Again? Seriously?",
+				"I'm not a yo-yo."
+			],
+			"chatty": [
+				"In, out, in, out. Pick one, would you?",
+				"That's three times now. I'm counting."
+			],
+			"grumpy": [
+				"Tell me one more time. See what happens.",
+				"Enough. I'm not going."
+			],
+			"nervous": [
+				"Why do you keep doing this?",
+				"Again? What did I do?"
+			],
+			"cheerful": [
+				"Ha. No. Nice try, though.",
+				"You really want me in there, huh? No."
+			],
+			"quiet": [
+				"No.",
+				"Enough."
+			]
+		},
+		"sent_to_cell": {
+			"any": [
+				"Sitting in my cell like I was told.",
+				"Happy now? I'm in my cell.",
+				"How long do I have to sit here?",
+				"Nice bunk. Same as it was ten minutes ago."
+			],
+			"chatty": [
+				"So this is what I get for being friendly.",
+				"Hey, can I come out yet? Just checking."
+			],
+			"grumpy": [
+				"Sent to my room like a kid.",
+				"This is stupid."
+			],
+			"nervous": [
+				"Am I in trouble? Nobody said.",
+				"I'll stay here. It's fine."
+			],
+			"cheerful": [
+				"Quiet time. I'll take it.",
+				"Could use a rest anyway."
+			],
+			"quiet": [
+				"Hm.",
+				"Waiting."
+			]
+		},
+		"get_up": {
+			"any": [
+				"Alright, I'm up.",
+				"Okay. Getting up.",
+				"Sure. Go ahead.",
+				"I'm up. What's this about?",
+				"Fine by me."
+			],
+			"chatty": [
+				"Okay, I'm up. Looking for something? I'll stand over here.",
+				"Up I get. Nothing under there but lumps, you know."
+			],
+			"grumpy": [
+				"I was comfortable, you know.",
+				"Fine. Up."
+			],
+			"nervous": [
+				"Okay, okay, I'm up. I didn't do anything.",
+				"Up. Sorry. Is something wrong?"
+			],
+			"cheerful": [
+				"No trouble. I needed to stretch anyway.",
+				"Up and about. Go ahead."
+			],
+			"quiet": [
+				"Mm. Up.",
+				"Alright."
+			]
+		},
+		"woken": {
+			"any": [
+				"Huh? What? I was asleep!",
+				"What time is it? Okay, okay, I'm up.",
+				"Do you mind? I was sleeping.",
+				"Can't a person get some sleep in here?",
+				"Ugh. What now?",
+				"I was having a good dream, too.",
+				"Alright, I'm awake. What do you want?"
+			],
+			"chatty": [
+				"Oh, hey. I was just resting my eyes. Totally awake.",
+				"Was that really necessary? I'm up, I'm up."
+			],
+			"grumpy": [
+				"You woke me up for this? Unbelievable.",
+				"Shake me like that again and see what happens."
+			],
+			"nervous": [
+				"What? What's wrong? Is something happening?",
+				"Okay! Okay, I'm awake! Don't hurt me."
+			],
+			"quiet": [
+				"Mm. Up.",
+				"What."
+			]
+		},
+		"get_up_grumble": {
+			"any": [
+				"I was lying down. Is that a crime now?",
+				"Yeah, yeah. I'm up.",
+				"Can't anyone get some rest in here?",
+				"Every time I lie down, somebody wants something.",
+				"Fine. Up. Happy?"
+			],
+			"chatty": [
+				"Oh sure, take my one comfy spot. Don't mind me.",
+				"You could have asked nicely. I'm up, I'm up."
+			],
+			"grumpy": [
+				"Unbelievable. Go on, tear my bunk apart.",
+				"I'm up. Don't expect me to like it."
+			],
+			"nervous": [
+				"I'm up, I'm up. Please don't make a mess of it.",
+				"Is this about something? I'm up, alright?"
+			],
+			"cheerful": [
+				"Well, that was a short rest.",
+				"Fine. Try not to lose my pillow."
+			],
+			"quiet": [
+				"Tch. Fine.",
+				"Whatever."
+			]
+		}
+	}
+}

@@ -5,11 +5,12 @@
  * outpost deed (see outpost_deed.dm) while the crew's ship sits on an empty
  * overmap tile: the founder picks a shell template, the outpost gets its own
  * z-level (same substrate as empty-space docking, so construction is allowed),
- * and the shell is loaded next to two reserve docks.
+ * and the shell is loaded into the level's build region. Hangar berths, the ship
+ * bay, the shipyard and the ferry pen are fixed zones on the same level
+ * (outpost_level_layout.dm): an outpost never takes more than one z-level.
  *
  * Once founded the outpost is permanent for the round, it never unloads and
- * never moves. Zone rules are locked in at founding: green-zone outposts are
- * protected from ship weapons, yellow/red outposts are raidable.
+ * never moves. Ship weapons never target it.
  *
  * Players may own multiple outposts; each claim has independent services.
  * Nothing about the outpost persists across rounds.
@@ -31,8 +32,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	var/founder_name
 	/// Weakref to the owner's mind, used to recognize the owner's crew ship
 	var/datum/weakref/founder_mind
-	/// Whether ship weapons may target this outpost. Locked in at founding from the zone band.
-	var/raidable = FALSE
 	/// Zone band this outpost was founded in (ZONE_RED/YELLOW/GREEN)
 	var/founded_zone
 	/// Docking policy: OUTPOST_DOCK_MODE_OPEN / _REQUEST / _LOCKDOWN
@@ -51,6 +50,8 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	var/datum/outpost_advert/current_advert
 	/// The shell template instance that was loaded at founding
 	var/datum/map_template/player_outpost/shell_template
+	/// The style every room this outpost builds is drawn in, from its shell (outpost_styles.dm)
+	var/outpost_style = OUTPOST_STYLE_DEFAULT
 	// template_bottom_left (the shell footprint origin) lives on /obj/structure/overmap
 	/// Buildable region on the outpost z-level: list(x1, y1, x2, y2)
 	var/list/build_bounds
@@ -65,9 +66,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	var/area/voidcrew/player_outpost/outpost_area
 	/// Looping timer for the adopt_built_turfs() safety-net sweep
 	var/area_sweep_timer
-	/// Shield generators built on this outpost's z-level, in registration order.
-	/// Only the first operational one holds the shield at any moment (see outpost_shield.dm). Lazy.
-	var/list/shield_generators
 	var/loaded = FALSE
 	var/loading = FALSE
 	COOLDOWN_DECLARE(rename_cooldown)
@@ -78,23 +76,40 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	return "colony"
 
 /obj/structure/overmap/dynamic/player_outpost/contains_site_turf(turf/location)
-	return ..() || freight_berth?.reservation?.contains_turf(location)
+	for(var/datum/outpost_berth/ship_bay/bay as anything in bay_berths)
+		if(bay?.contains_turf(location))
+			return TRUE
+	return ..()
 
 /obj/structure/overmap/dynamic/player_outpost/Initialize(mapload)
 	. = ..()
 	GLOB.player_outposts += src
 
 /obj/structure/overmap/dynamic/player_outpost/Destroy()
+	// remove_mapzone() below wipes the whole level, so the zones let go without wiping their own
+	for(var/key in level_zones)
+		var/datum/outpost_zone/zone = level_zones[key]
+		zone.retired = TRUE
+	var/list/retired_registrations = checkpoints
+	checkpoints = list()
+	QDEL_LIST(retired_registrations)
+	QDEL_LIST_ASSOC_VAL(outpost_upgrades)
 	GLOB.player_outposts -= src
+	for(var/datum/outpost_berth/ship_bay/bay as anything in bay_berths.Copy())
+		if(bay)
+			qdel(bay)
+	bay_berths.Cut()
 	QDEL_NULL(freight)
-	QDEL_NULL(freight_berth)
 	QDEL_LIST(cargo_cart)
+	// Escrowed docking fees are the visiting ship's money, not the outpost's
+	refund_all_dock_fee_holds()
 	QDEL_NULL(treasury)
 	revoke_research_links()
 	deltimer(home_service_timer)
 	QDEL_NULL(current_advert)
 	approved_ships.Cut()
 	pending_dock_requests.Cut()
+	pending_dock_variants.Cut()
 	banned_ships.Cut()
 	if(management_console)
 		management_console.outpost = null
@@ -102,20 +117,18 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	if(construction_console)
 		construction_console.outpost = null
 		construction_console = null
-	for(var/obj/machinery/outpost_shield_generator/generator as anything in shield_generators)
-		generator.outpost = null
-	shield_generators = null
 	template_bottom_left = null
 	arrival_turf = null
 	deltimer(area_sweep_timer)
 	area_sweep_timer = null
 	outpost_area = null
-	// Admin deletion must not leak hangar reservations (berths eject occupants
+	// Admin deletion must not leak hangar ground (berths eject occupants
 	// to the lobby, so release them while the mapzone still exists)
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth)
 			berth.release(force = TRUE)
 	berths = null
+	QDEL_LIST_ASSOC_VAL(level_zones)
 	remove_docks()
 	remove_mapzone()
 	return ..()
@@ -153,12 +166,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 			. += span_notice("Docking by request only.")
 		if(OUTPOST_DOCK_MODE_LOCKDOWN)
 			. += span_warning("Docking clearance revoked for all outside vessels.")
-	if(raidable)
-		. += span_danger("This deep-space claim is outside patrolled space. It can be attacked.")
-		if(get_shield_generator()?.charge > 0)
-			. += span_boldnotice("Sensors show an energy shield up around the claim.")
-	else
-		. += span_notice("Registered in patrolled space. Protected from ship weapons.")
 
 // ===== OWNERSHIP =====
 
@@ -215,11 +222,11 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/proc/notify_owner(message, title = "OUTPOST")
 	var/obj/structure/overmap/ship/owner_ship = get_owner_ship()
 	if(owner_ship)
-		owner_ship.ship_notify("[name]: [message]", title, SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+		owner_ship.ship_notify("[name]: [message]", title, SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30, anywhere = TRUE)
 
-// ===== COMBAT TARGET API (see /obj/structure/overmap base hooks) =====
+// ===== NOTIFICATIONS (see /obj/structure/overmap base hooks) =====
 
-/// Combat notifications reach everyone on the outpost plus the owner's crew ship
+/// Notices reach everyone on the outpost plus the owner's crew ship
 /obj/structure/overmap/dynamic/player_outpost/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
 	var/formatted
 	switch(alert_level)
@@ -229,78 +236,28 @@ GLOBAL_LIST_EMPTY(player_outposts)
 			formatted = span_boldwarning("[name]: [message]")
 		else
 			formatted = span_boldnotice("[name]: [message]")
-	if(mapzone)
-		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs_in(footprint))
-			to_chat(occupant, formatted)
-			if(sound_file && occupant.client)
-				var/sound/S = sound(sound_file)
-				S.volume = volume
-				SEND_SOUND(occupant, S)
-	// The owner hears about it wherever they are
+	// The owner's crew hears about it wherever they are, through their ship
 	var/obj/structure/overmap/ship/owner_ship = get_owner_ship()
-	if(owner_ship && !(mapzone && (owner_ship.docked == src)))
-		owner_ship.ship_notify("[name]: [message]", category, alert_level, sound_file, volume)
+	for(var/mob/living/occupant as anything in announcement_listeners(owner_ship))
+		to_chat(occupant, formatted)
+		if(sound_file && occupant.client)
+			var/sound/S = sound(sound_file)
+			S.volume = volume
+			SEND_SOUND(occupant, S)
+	// Relayed from the outpost, so it reaches them away from the ship too; the listeners above leave them out
+	owner_ship?.ship_notify("[name]: [message]", category, alert_level, sound_file, volume, anywhere = TRUE)
 
-/obj/structure/overmap/dynamic/player_outpost/is_combat_targetable()
-	return raidable
-
-// Null: the outpost owns its whole z-level, so sounds/shakes need no area filter
-/obj/structure/overmap/dynamic/player_outpost/get_combat_target_areas()
-	return null
-
-/obj/structure/overmap/dynamic/player_outpost/get_combat_bounds()
-	return build_bounds
-
-/obj/structure/overmap/dynamic/player_outpost/combat_camera_can_view(turf/T)
-	return is_turf_buildable(T)
-
-/obj/structure/overmap/dynamic/player_outpost/get_combat_camera_turfs()
-	if(!build_bounds || !mapzone)
-		return null
-	var/datum/space_level/zlevel = mapzone.z_levels[1]
-	if(!zlevel)
-		return null
-	return block(
-		locate(build_bounds[1], build_bounds[2], zlevel.z_value),
-		locate(build_bounds[3], build_bounds[4], zlevel.z_value)
-	)
-
-/obj/structure/overmap/dynamic/player_outpost/get_combat_default_turf()
-	return arrival_turf
-
-// ===== SHIELD GENERATORS (see outpost_shield.dm) =====
-
-/// Registers a shield generator built on this outpost's z-level. Idempotent.
-/obj/structure/overmap/dynamic/player_outpost/proc/register_shield_generator(obj/machinery/outpost_shield_generator/generator)
-	LAZYOR(shield_generators, generator)
-
-/// Unregisters a destroyed/deconstructed shield generator
-/obj/structure/overmap/dynamic/player_outpost/proc/unregister_shield_generator(obj/machinery/outpost_shield_generator/generator)
-	LAZYREMOVE(shield_generators, generator)
-
-/**
- * The generator currently holding the shield: the first registered one that is
- * anchored and powered. Only this unit charges and absorbs, extra generators
- * are cold standbys that take over (empty) if it's destroyed or loses power,
- * so stacking generators never multiplies effective shield charge.
- */
-/obj/structure/overmap/dynamic/player_outpost/proc/get_shield_generator()
-	for(var/obj/machinery/outpost_shield_generator/generator as anything in shield_generators)
-		if(generator.is_operational_unit())
-			return generator
-	return null
-
-/**
- * Siege damage interception: while the active generator has charge, the hit is
- * absorbed (charge drains by damage) and the outpost is unharmed. Returns TRUE
- * when absorbed. Depleted, unpowered or absent shields let everything through.
- */
-/obj/structure/overmap/dynamic/player_outpost/proc/try_absorb_siege_damage(damage, turf/impact_loc, obj/structure/overmap/ship/attacker)
-	var/obj/machinery/outpost_shield_generator/generator = get_shield_generator()
-	if(!generator || generator.charge <= 0)
-		return FALSE
-	generator.absorb_hit(damage, impact_loc, attacker)
-	return TRUE
+/// Who on the level hears the outpost's announcements: the habitat, not the berths or the bay.
+/// The owner's crew is left out; their own ship tells them.
+/obj/structure/overmap/dynamic/player_outpost/proc/announcement_listeners(obj/structure/overmap/ship/owner_ship)
+	. = list()
+	if(!mapzone)
+		return
+	var/list/datum/mind/owner_crew = owner_ship?.ship_team?.members
+	for(var/mob/living/occupant as anything in mapzone.get_mind_mobs_in(footprint))
+		if((occupant.mind in owner_crew) || !is_habitat_turf(get_turf(occupant)))
+			continue
+		. += occupant
 
 // ===== FOUNDING =====
 
@@ -327,7 +284,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	display_name = outpost_name
 
 	founded_zone = SSovermap.get_zone_band_for_turf(get_turf(src))
-	raidable = (founded_zone != ZONE_GREEN)
 
 	// Preserve the loader's own recovery boundaries for individual map errors.
 	// A broad catch here unwinds past their cleanup instead of allowing it to run.
@@ -351,8 +307,8 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	return TRUE
 
 /**
- * Allocates the outpost's z-level (empty-space pattern: construction allowed,
- * two reserve docks included) and centers the shell template on the level.
+ * Allocates the outpost's z-level (empty-space pattern: construction allowed), carves its
+ * zones (outpost_level_layout.dm) and centers the shell template in the build region.
  */
 /obj/structure/overmap/dynamic/player_outpost/proc/load_level()
 	if(mapzone || loading)
@@ -363,6 +319,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		log_mapping("PLAYER OUTPOST: Shell template '[shell_template?.name]' has no dimensions, cannot load.")
 		loading = FALSE
 		return FALSE
+	outpost_style = shell_template.outpost_style || OUTPOST_STYLE_DEFAULT
 
 	// MAP_TENANT_CLASS_OUTPOST, never FLAT: an outpost is a long-lived, preserve_level-shaped
 	// tenant that would pin a lattice slot for the whole round, so it gets its own class and
@@ -373,21 +330,20 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		loading = FALSE
 		return FALSE
 	mapzone = dynamic_encounter_values[1]
+	footprint = LAZYACCESS(dynamic_encounter_values, 4)
+	// Ships reach an outpost by hangar elevator only; the encounter's two reserve pads would
+	// sit on the berth and bay zones.
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
-	footprint = LAZYACCESS(dynamic_encounter_values, 4)
+	remove_docks()
 
 	var/datum/space_level/zlevel = mapzone.z_levels[1]
-	// Anchored off the outpost's own footprint - the level rect only happens to agree
-	// while an outpost owns a whole level.
-	var/anchor_low_x = footprint ? footprint.low_x : zlevel.low_x
-	var/anchor_low_y = footprint ? footprint.low_y : zlevel.low_y
-	var/anchor_high_x = footprint ? footprint.high_x : zlevel.high_x
-	var/anchor_high_y = footprint ? footprint.high_y : zlevel.high_y
-	// Center the entire shell within the owned footprint, leaving room to expand on every side.
+	// Berth, bay, shipyard and ferry zones, cordon round them, and build_bounds.
+	carve_level(zlevel)
+	// Center the entire shell within the build region, leaving room to expand on every side.
 	var/turf/bottom_left = locate(
-		anchor_low_x + round((anchor_high_x - anchor_low_x + 1 - shell_template.width) / 2),
-		anchor_low_y + round((anchor_high_y - anchor_low_y + 1 - shell_template.height) / 2),
+		build_bounds[1] + round((build_bounds[3] - build_bounds[1] + 1 - shell_template.width) / 2),
+		build_bounds[2] + round((build_bounds[4] - build_bounds[2] + 1 - shell_template.height) / 2),
 		zlevel.z_value
 	)
 	if(!bottom_left)
@@ -402,9 +358,6 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		return FALSE
 
 	template_bottom_left = bottom_left
-
-	// The claim owns the entire level; every shell gets the same room to build.
-	build_bounds = list(anchor_low_x, anchor_low_y, anchor_high_x, anchor_high_y)
 
 	link_interior_machinery()
 
@@ -469,6 +422,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	if(old_area == outpost_area || !istype(old_area, /area/space))
 		return
 	target.change_area(old_area, outpost_area)
+	queue_room_power_join()
 
 /**
  * Safety-net sweep over the build region: anything constructed by hand (no
@@ -566,8 +520,8 @@ GLOBAL_LIST_EMPTY(player_outposts)
 // ===== DOCKING =====
 
 /**
- * Handles a visiting ship: access control first, then the planet-style
- * two-dock allocation. The level is always loaded (founding loads it).
+ * Handles a visiting ship: access control first, then a hangar berth or the ship
+ * bay on the outpost's own level. The level is always loaded (founding loads it).
  */
 /obj/structure/overmap/dynamic/player_outpost/get_dock_description()
 	// Access control still runs on the actual dock attempt, this only promises the
@@ -579,7 +533,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/has_ambient_gravity()
 	return TRUE
 
-/obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+/obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner, dock_variant)
 	// dock() refuses interdicted ships only after a dock slot below is claimed
 	// and the ship is locked into ACTING - refuse up front instead
 	if(acting.is_interdicted)
@@ -592,9 +546,19 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		to_chat(user, span_warning("The outpost's transponder isn't responding."))
 		return
 
+	if(dock_variant && (dock_variant != OUTPOST_DOCK_VARIANT_BAY || !ship_bay_installed || !has_hangar_elevator()))
+		to_chat(user, span_warning("Ship bay unavailable."))
+		return
 	var/denial = get_docking_denial(acting)
 	if(denial)
+		if(acting in pending_dock_requests)
+			pending_dock_variants[acting] = dock_variant
 		to_chat(user, span_warning(denial))
+		return
+	// The ship bay's docking fee: quoted to the helm until the captain approves it (outpost_dock_fees.dm)
+	var/fee_denial = dock_fee_denial(acting, dock_variant)
+	if(fee_denial)
+		to_chat(user, span_warning(fee_denial))
 		return
 
 	concerned = TRUE
@@ -605,7 +569,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	var/obj/docking_port/stationary/dock_to_use = null
 	var/datum/outpost_berth/berth = null
 	// Port destinations are set by survey consoles
-	if(acting.shuttle.port_destinations)
+	if(acting.shuttle.port_destinations && !dock_variant)
 		dock_to_use = acting.shuttle.port_destinations
 	else
 		var/long_axis = max(acting.shuttle.width, acting.shuttle.height)
@@ -616,55 +580,53 @@ GLOBAL_LIST_EMPTY(player_outposts)
 			to_chat(user, span_warning("Ship is too large to dock at [name]."))
 			return
 
-		if(has_hangar_elevator())
-			// A placed hangar elevator upgrades docking to per-ship berths,
-			// exactly like the trader outposts (see outpost_hangar.dm)
-			berth = allocate_berth(acting)
-			if(!berth)
-				acting.state = prev_state
-				concerned = FALSE
-				to_chat(user, span_notice("[name] traffic control: all hangar berths are occupied. Try again later."))
-				return
-			adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
-			dock_to_use = berth.dock
-		else
-			// Berths do not stay where they were built - see reset_free_reserve_docks_for(). Put
-			// the free ones back before choosing one, or the last visitor's offset is carried into
-			// this placement and compounds on every arrival. Only the padded reserve docks need
-			// this; the hangar-elevator branch above hands out mapped per-ship berths instead.
-			reset_free_reserve_docks_for(reserve_dock, reserve_dock_secondary, first_dock_taken, second_dock_taken)
-			if(reserve_dock && !first_dock_taken && !reserve_dock.get_docked())
-				dock_to_use = reserve_dock
-				first_dock_taken = TRUE
-				acting.dock_index = 1
-			else if(reserve_dock_secondary && !second_dock_taken && !reserve_dock_secondary.get_docked())
-				dock_to_use = reserve_dock_secondary
-				second_dock_taken = TRUE
-				acting.dock_index = 2
-
-			if(!dock_to_use)
-				acting.state = prev_state
-				concerned = FALSE
-				to_chat(user, span_notice("[name] traffic control: all docking pads are occupied."))
-				return
-			adjust_reserve_dock_to_shuttle(dock_to_use, acting.shuttle)
+		// Ships berth in the hangar zones on the outpost's own level, reached by the hangar
+		// elevator; there are no landing pads (see outpost_level_layout.dm)
+		if(!has_hangar_elevator())
+			acting.state = prev_state
+			concerned = FALSE
+			to_chat(user, span_notice("[name] traffic control: the hangar lift is down. No berths available."))
+			return
+		berth = dock_variant == OUTPOST_DOCK_VARIANT_BAY ? allocate_ship_bay(acting) : allocate_berth(acting)
+		if(!berth)
+			acting.state = prev_state
+			concerned = FALSE
+			to_chat(user, span_notice("[name] traffic control: no [dock_variant ? "ship bay" : "hangar"] berth is available. Try again later."))
+			return
+		adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
+		dock_to_use = berth.dock
 
 	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
 		berth?.release(force = TRUE) // nothing has landed yet, safe to free immediately
+		acting.release_berth_flags(src)
 		acting.state = prev_state
 		concerned = FALSE
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		return
+
+	// Escrow the approved docking fee. No yield between this and dock().
+	var/fee_refusal = take_dock_fee(acting, dock_variant)
+	if(fee_refusal)
+		berth?.release(force = TRUE)
+		acting.release_berth_flags(src)
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_warning(fee_refusal))
 		return
 
 	// dock() only returns a string when it refuses; a successful start is announced
 	// to the whole crew by ship_notify()
 	var/dock_result = acting.dock(src, dock_to_use)
 	if(dock_result)
+		refund_dock_fee_hold(acting, "dock refused")
+		berth?.release(force = TRUE)
+		acting.release_berth_flags(src)
+		acting.state = prev_state
 		to_chat(user, span_notice("[dock_result]"))
 	concerned = FALSE
 
 	if(optional_partner)
-		ship_act(user, optional_partner)
+		ship_act(user, optional_partner, dock_variant = dock_variant)
 
 /**
  * Access control. Returns a denial message, or null when the ship may dock.
@@ -697,15 +659,18 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/proc/approve_dock_request(obj/structure/overmap/ship/requester)
 	if(QDELETED(requester) || !(requester in pending_dock_requests))
 		return
+	var/dock_variant = pending_dock_variants[requester]
+	pending_dock_variants -= requester
 	pending_dock_requests -= requester
 	approved_ships[requester] = TRUE
 	requester.ship_notify("[name]: docking clearance granted.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	// Continue the approach they requested, only while still waiting at this site.
 	if(loaded && get_turf(src) && requester.loc == loc && requester.state == OVERMAP_SHIP_FLYING && requester.is_still() && !requester.is_interdicted && !QDELETED(requester.shuttle))
-		requester.overmap_object_act(null, src)
+		requester.overmap_object_act(null, src, dock_variant = dock_variant)
 
 /// Owner denied a pending request
 /obj/structure/overmap/dynamic/player_outpost/proc/deny_dock_request(obj/structure/overmap/ship/requester)
+	pending_dock_variants -= requester
 	pending_dock_requests -= requester
 	requester.ship_notify("[name]: docking clearance denied.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
@@ -714,6 +679,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	for(var/obj/structure/overmap/ship/requester in pending_dock_requests)
 		if(QDELETED(requester) || (world.time - pending_dock_requests[requester]) >= OUTPOST_DOCK_REQUEST_TIMEOUT)
 			pending_dock_requests -= requester
+			pending_dock_variants -= requester
 
 // ===== ABANDON / TRANSFER =====
 
@@ -727,11 +693,14 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		return
 	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
+	// Intake closes and the prisoners are transferred out (outpost_prison_economy.dm).
+	running_prison()?.on_outpost_abandoned()
 	stewards.Cut()
 	treasurers.Cut()
 	resident_mode = "closed"
 	resident_clearance.Cut()
 	revoke_research_links()
+	revoke_bay_materials()
 	freight?.cancel_pending()
 	founder_ckey = null
 	founder_name = null
@@ -739,7 +708,9 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	dock_mode = OUTPOST_DOCK_MODE_OPEN
 	authorized_builder_ckeys.Cut()
 	pending_dock_requests.Cut()
+	pending_dock_variants.Cut()
 	QDEL_NULL(current_advert)
+	reset_market_on_abandon() // VOIDCREW MARKET: pricers, prices, playtest billing, room settings
 
 /**
  * Transfers ownership to another player, or accepts a local claim on an unowned site.
@@ -753,11 +724,25 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	// An owner cannot retain command or spending by delegating authority to themselves
 	// before transferring the deed. Other residents retain their independent grants.
 	revoke_research_links()
+	revoke_bay_materials()
 	var/datum/mind/former_owner = founder_mind?.resolve()
 	stewards -= former_owner
 	treasurers -= former_owner
 	stewards -= user.mind
 	treasurers -= user.mind
+	pricers -= former_owner
+	pricers -= user.mind
+	playtest_visitor_ckey = null
+	stop_all_bay_evictions() // VOIDCREW MARKET: an eviction ordered by the former owner does not outlive the deed
+	if(claiming)
+		// A claimant starts with their own crew, not the previous owner's residents
+		residents.Cut()
+		stewards.Cut()
+		treasurers.Cut()
+		pricers.Cut()
+	else if(former_owner && former_owner != new_owner.mind)
+		// The former owner is not kept on as a member; the new owner can add them back
+		residents -= former_owner
 	authorized_builder_ckeys -= founder_ckey
 	residents |= new_owner.mind
 	resident_clearance[new_owner.ckey] = resident_access_revision

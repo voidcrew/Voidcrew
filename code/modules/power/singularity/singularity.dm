@@ -319,7 +319,7 @@
 	return TRUE
 
 /obj/singularity/proc/consume(atom/thing)
-	if(QDELETED(src) || is_trader_outpost_protected(src) || is_trader_outpost_protected(thing)) // VOIDCREW
+	if(QDELETED(src) || is_trader_outpost_protected(src) || is_trader_outpost_protected(thing) || singularity_spares(thing)) // VOIDCREW EDIT
 		return
 	if(istype(thing, /obj/item/storage/backpack/holding) && !consumed_supermatter && !collapsing)
 		consume_boh(thing)

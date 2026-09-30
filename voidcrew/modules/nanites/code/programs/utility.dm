@@ -281,7 +281,7 @@
 	qdel(button)
 
 /datum/nanite_program/dermal_button/proc/press()
-	if(activated)
+	if(activated && !force_disabled)
 		host_mob.visible_message(
 			span_notice("[host_mob] presses a button on [host_mob.p_their()] forearm."),
 			span_notice("You press the nanite button on your forearm."),

@@ -1,0 +1,47 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/turf/closed/wall,
+/area/voidcrew/player_outpost/snap_test_room)
+"g" = (
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/snap_test_room)
+"h" = (
+/obj/structure/grille,
+/obj/structure/window/reinforced/fulltile,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/snap_test_room)
+"j" = (
+/obj/effect/landmark/outpost_upgrade_snap/left{
+	seam_openings = list(2,3);
+	snap_group = "snap_test"
+	},
+/turf/closed/wall,
+/area/voidcrew/player_outpost/snap_test_room)
+"s" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+f
+h
+f
+j
+"}
+(2,1,1) = {"
+f
+g
+g
+f
+"}
+(3,1,1) = {"
+f
+g
+g
+f
+"}
+(4,1,1) = {"
+s
+s
+s
+s
+"}

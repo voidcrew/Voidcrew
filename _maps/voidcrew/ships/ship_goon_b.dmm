@@ -228,6 +228,11 @@
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
+"pN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
 "qH" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 4
@@ -299,15 +304,6 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
-"wg" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium{
 	color = "#4F4C88"
 	},
@@ -503,22 +499,15 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
-"Mf" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/medbay/b)
 "Mi" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_lounge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"MG" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/b)
@@ -625,6 +614,10 @@
 	color = "#4F4C88"
 	},
 /area/shuttle/voidcrew/goon/commons/b)
+"Rm" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
 "Th" = (
 /obj/machinery/firealarm/directional/west{
 	dir = 4
@@ -689,15 +682,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/b)
-"Yx" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/engineering/b)
 "YL" = (
 /obj/machinery/light/cold/directional/east,
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -807,8 +791,8 @@ aa
 ui
 aa
 by
-Uq
-Yx
+Rm
+sS
 BK
 aX
 IZ
@@ -816,8 +800,8 @@ IZ
 (7,1,1) = {"
 IZ
 BU
-aa
-Mf
+pN
+ui
 Lh
 aX
 Uq
@@ -856,7 +840,7 @@ Dq
 eT
 Ac
 sg
-wg
+rZ
 rZ
 Vj
 rZ
@@ -869,7 +853,7 @@ Dq
 BZ
 Io
 Bh
-Bh
+MG
 yG
 an
 Bh

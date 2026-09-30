@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/medical_bay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "bogatyr_workshop_medical_bay_basic.png",
+   "src_md5": "5524341ccac785b35666be7921731eb7",
+   "themes": {
+    "freshen_up": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "bogatyr_workshop_medical_bay_basic_freshen_up.png",
+     "src_md5": "2f533fd84318e2d023eeffc58e9bbc58",
+     "width": 3
+    },
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "bogatyr_workshop_medical_bay_basic_nightclub.png",
+     "src_md5": "b2e62384eed0836bc2eebac364bd1a2d",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

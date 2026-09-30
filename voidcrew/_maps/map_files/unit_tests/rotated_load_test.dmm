@@ -1,0 +1,33 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"o" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"p" = (
+/turf/open/floor/plating,
+/area/template_noop)
+"s" = (
+/obj/structure/sign/warning/directional/north,
+/turf/open/floor/iron,
+/area/template_noop)
+"w" = (
+/turf/closed/wall,
+/area/template_noop)
+
+(1,1,1) = {"
+d
+p
+"}
+(2,1,1) = {"
+w
+s
+"}
+(3,1,1) = {"
+h
+o
+"}

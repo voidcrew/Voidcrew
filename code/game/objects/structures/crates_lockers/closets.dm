@@ -485,7 +485,7 @@ GLOBAL_LIST_EMPTY(roundstart_station_closets)
 	var/atom/location = drop_location()
 	if(!location)
 		return
-	for(var/atom/movable/AM in location)
+	for(var/atom/movable/AM in expand_slime_extract_piles(location.contents)) // VOIDCREW EDIT: collect piled extracts subject to normal capacity checks.
 		if(AM != src && insert(AM, mapload) == LOCKER_FULL) // limit reached
 			if(mapload) // Yea, it's a mapping issue. Blame mappers.
 				log_mapping("Closet storage capacity of [type] exceeded on mapload at [AREACOORD(src)]")

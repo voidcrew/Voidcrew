@@ -1,0 +1,140 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aQP" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"dZb" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/wood,
+/area/template_noop)
+"fGU" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"loP" = (
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"lqC" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/engineering/vending_restock,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"lVy" = (
+/obj/structure/closet/crate,
+/obj/item/storage/bag/trash,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"mKj" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/wood,
+/area/template_noop)
+"pDs" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"pPE" = (
+/turf/template_noop,
+/area/template_noop)
+"rki" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/template_noop)
+"slQ" = (
+/obj/structure/chair/office,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"tqo" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/wood,
+/area/template_noop)
+"tzR" = (
+/obj/item/circuitboard/machine/vending,
+/obj/item/screwdriver,
+/obj/structure/frame/machine/secured,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"wwY" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"xkF" = (
+/obj/structure/closet/crate,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+
+(1,1,1) = {"
+tzR
+pPE
+aQP
+"}
+(2,1,1) = {"
+loP
+lqC
+pPE
+"}
+(3,1,1) = {"
+loP
+lVy
+pPE
+"}
+(4,1,1) = {"
+loP
+lqC
+pPE
+"}
+(5,1,1) = {"
+pPE
+pPE
+pPE
+"}
+(6,1,1) = {"
+fGU
+mKj
+mKj
+"}
+(7,1,1) = {"
+fGU
+fGU
+dZb
+"}
+(8,1,1) = {"
+fGU
+fGU
+rki
+"}
+(9,1,1) = {"
+fGU
+wwY
+tqo
+"}
+(10,1,1) = {"
+pPE
+pPE
+pPE
+"}
+(11,1,1) = {"
+loP
+xkF
+pPE
+"}
+(12,1,1) = {"
+loP
+xkF
+pPE
+"}
+(13,1,1) = {"
+slQ
+xkF
+pPE
+"}
+(14,1,1) = {"
+pDs
+pPE
+pPE
+"}

@@ -1,0 +1,188 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bny" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_west"
+	},
+/obj/item/inducer/syndicate{
+	pixel_x = 0;
+	pixel_y = 8
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"daJ" = (
+/obj/vehicle/sealed/mecha/ripley/mining,
+/obj/structure/platform/plastitanium,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"dIm" = (
+/obj/structure/platform/plastitanium,
+/obj/structure/mecha_wreckage/ripley/paddy,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"fYu" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"heU" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hqj" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hLn" = (
+/obj/structure/platform/plastitanium,
+/obj/item/screwdriver/nuke,
+/obj/item/stack/cable_coil,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/crowbar/red,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"iLp" = (
+/obj/structure/platform/plastitanium,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/clothing/head/utility/welding,
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"jcq" = (
+/obj/structure/ore_box,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kSh" = (
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/structure/platform/plastitanium,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"qjE" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"tIF" = (
+/obj/structure/platform/plastitanium,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/open/floor/circuit/red,
+/area/template_noop)
+"tKJ" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_west"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"tQB" = (
+/turf/template_noop,
+/area/template_noop)
+"tWj" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"uDi" = (
+/obj/machinery/mineral/ore_redemption{
+	input_dir = 2;
+	output_dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+tQB
+tQB
+bny
+"}
+(2,1,1) = {"
+tQB
+kSh
+tKJ
+"}
+(3,1,1) = {"
+tQB
+daJ
+tKJ
+"}
+(4,1,1) = {"
+tQB
+tIF
+tKJ
+"}
+(5,1,1) = {"
+tQB
+tQB
+tQB
+"}
+(6,1,1) = {"
+hqj
+heU
+tQB
+"}
+(7,1,1) = {"
+tWj
+tWj
+tWj
+"}
+(8,1,1) = {"
+tWj
+tWj
+tWj
+"}
+(9,1,1) = {"
+uDi
+jcq
+tQB
+"}
+(10,1,1) = {"
+tQB
+tQB
+tQB
+"}
+(11,1,1) = {"
+tQB
+hLn
+qjE
+"}
+(12,1,1) = {"
+tQB
+dIm
+qjE
+"}
+(13,1,1) = {"
+tQB
+iLp
+qjE
+"}
+(14,1,1) = {"
+tQB
+tQB
+fYu
+"}

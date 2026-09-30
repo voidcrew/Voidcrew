@@ -1,0 +1,116 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dSn" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/head/utility/welding{
+	pixel_x = -4;
+	pixel_y = 10
+	},
+/obj/item/clothing/glasses/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/belt/utility/full/inducer{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"gsg" = (
+/obj/machinery/mecha_part_fabricator,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"gHM" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"hAi" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"hFw" = (
+/obj/structure/table/optable,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ibl" = (
+/turf/template_noop,
+/area/template_noop)
+"mWV" = (
+/obj/modular_map_connector,
+/obj/structure/sign/departments/science/directional/east,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"rye" = (
+/obj/structure/frame/machine/secured,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"saM" = (
+/obj/structure/table/reinforced,
+/obj/item/mmi{
+	pixel_x = 0;
+	pixel_y = 7
+	},
+/obj/item/mmi,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"tUu" = (
+/obj/effect/spawner/surgery_tray/full/morgue/deployed,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wbc" = (
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wQo" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/assembly/flash,
+/obj/item/assembly/flash,
+/obj/item/assembly/prox_sensor,
+/obj/item/storage/medkit,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+wbc
+wbc
+mWV
+"}
+(2,1,1) = {"
+ibl
+wbc
+ibl
+"}
+(3,1,1) = {"
+saM
+wbc
+tUu
+"}
+(4,1,1) = {"
+rye
+wbc
+hFw
+"}
+(5,1,1) = {"
+gHM
+wbc
+hAi
+"}
+(6,1,1) = {"
+rye
+wbc
+dSn
+"}
+(7,1,1) = {"
+gsg
+wbc
+wQo
+"}

@@ -83,7 +83,7 @@ type NearbyShip = {
   identified: BooleanLike;
   shields: number;
   shields_max: number;
-  /** A real hull percent now, for ships and outposts both. */
+  /** A real hull percent. */
   integrity: number;
   integrity_max: number;
   distance: number;
@@ -95,8 +95,6 @@ type NearbyShip = {
   dx: number;
   /** Overmap tiles, target minus us. North positive. */
   dy: number;
-  /** A raidable player outpost rather than a vessel. */
-  is_outpost: BooleanLike;
 };
 
 type Launcher = {
@@ -1491,23 +1489,12 @@ const ScopeContact = (props: { mark: ScopeMark }) => {
       {/* Invisible hit area, the glyphs are a punishing click target bare. */}
       <circle r={15} fill="transparent" />
 
-      {ship.is_outpost ? (
-        // An outpost holds still and holds ground: a hollow diamond, nothing
-        // like the pointer a vessel gets.
-        <path
-          d="M0,-7 L7,0 L0,7 L-7,0 Z"
-          fill="none"
-          stroke={colour}
-          strokeWidth={1.6}
-        />
-      ) : (
-        <path
-          d="M0,-7 L6,6 L0,2.5 L-6,6 Z"
-          fill="none"
-          stroke={colour}
-          strokeWidth={1.6}
-        />
-      )}
+      <path
+        d="M0,-7 L6,6 L0,2.5 L-6,6 Z"
+        fill="none"
+        stroke={colour}
+        strokeWidth={1.6}
+      />
 
       <text
         y={17}
@@ -1824,21 +1811,12 @@ const ContactsTab = () => {
             >
               <span className="Tac__rowGlyph">
                 <svg viewBox="-8 -8 16 16" aria-hidden="true">
-                  {ship.is_outpost ? (
-                    <path
-                      d="M0,-6 L6,0 L0,6 L-6,0 Z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    />
-                  ) : (
-                    <path
-                      d="M0,-6 L5,5 L0,2 L-5,5 Z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    />
-                  )}
+                  <path
+                    d="M0,-6 L5,5 L0,2 L-5,5 Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  />
                 </svg>
               </span>
               <span className="Tac__rowName">{ship.name}</span>
@@ -2233,7 +2211,7 @@ const SystemsTab = () => {
               <span className="Tac__sysBody">
                 {dead ? (
                   <span style={{ color: C_CRIT }}>
-                    {!launcher.on_exterior ? 'Not on exterior' : 'Disabled'}
+                    {!launcher.on_exterior ? 'Blocked' : 'Disabled'}
                   </span>
                 ) : launcher.loaded ? (
                   <>
@@ -2280,7 +2258,7 @@ const SystemsTab = () => {
               <span className="Tac__sysBody">
                 {dead ? (
                   <span style={{ color: C_CRIT }}>
-                    {!tube.on_exterior ? 'Not on exterior' : 'Disabled'}
+                    {!tube.on_exterior ? 'Blocked' : 'Disabled'}
                   </span>
                 ) : tube.loaded ? (
                   <>
@@ -2333,7 +2311,7 @@ const SystemsTab = () => {
                   </span>
                 </>
               ) : (
-                <span style={{ color: C_CRIT }}>Not on exterior</span>
+                <span style={{ color: C_CRIT }}>Blocked</span>
               )}
             </span>
             <span className="Tac__sysState">
@@ -2434,7 +2412,7 @@ const SystemsTab = () => {
 
 /**
  * One slot glyph per launcher: filled = loaded and ready, barred = loaded but
- * safed, hollow = empty, struck = disabled or not on the exterior. The pip
+ * safed, hollow = empty, struck = disabled or blocked. The pip
  * strip is the count made legible, 3/4 says how many, the pips say which.
  *
  * There is no cycling state: tubes have no fire cooldown in DM (can_fire is
@@ -2452,7 +2430,7 @@ const TubePip = (props: { launcher: Launcher }) => {
         ? 'ready'
         : 'safed';
   const title = dead
-    ? `${launcher.id}, ${!launcher.on_exterior ? 'not on exterior' : 'disabled'}`
+    ? `${launcher.id}, ${!launcher.on_exterior ? 'blocked' : 'disabled'}`
     : !launcher.loaded
       ? `${launcher.id}, empty`
       : launcher.ready

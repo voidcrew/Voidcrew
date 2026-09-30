@@ -1846,14 +1846,6 @@
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/shuttle/voidcrew/osprey/cargo/warehouse)
-"qD" = (
-/obj/machinery/light/small,
-/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/osprey/hallway/port)
 "qK" = (
 /obj/structure/disposalpipe/trunk{
 	dir = 2
@@ -4610,6 +4602,13 @@
 /obj/effect/turf_decal/tile/neutral/opposingcorners,
 /turf/open/floor/iron/showroomfloor,
 /area/shuttle/voidcrew/osprey/service/cafeteria)
+"Tm" = (
+/obj/machinery/light/small,
+/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer2{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/osprey/hallway/port)
 "Tp" = (
 /obj/item/wrench,
 /turf/open/floor/plating,
@@ -5339,7 +5338,7 @@ cC
 SZ
 Eo
 uA
-qD
+Tm
 lW
 EB
 xw

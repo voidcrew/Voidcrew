@@ -713,20 +713,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
-"Bp" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/storage/toolbox/emergency,
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/item/circuitboard/machine/ore_redemption,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/kilo/cargo/d)
 "BI" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -843,18 +829,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/kilo/dorms/d)
-"Fs" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/kilo/cargo/d)
 "FT" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_dock"
@@ -1005,6 +979,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
+"Ow" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
 "OK" = (
 /obj/structure/table,
 /obj/machinery/button/door{
@@ -1045,6 +1028,23 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"PF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/kilo/cargo/d)
 "PU" = (
 /obj/structure/cable,
@@ -1524,8 +1524,8 @@ oa
 oa
 oa
 oa
-Fs
-Bp
+Ow
+PF
 DM
 zV
 CQ

@@ -400,36 +400,109 @@
   "Cost": 0,
   "FileID": "nanobead",
   "PartCosts": {
-    "module/bitrunning": {},
-    "module/bitrunning_south": {},
-    "module/botany": {},
-    "module/botany_south": {},
-    "module/cargo": {},
-    "module/cargo_south": {},
-    "module/chemistry": {},
-    "module/chemistry_south": {},
-    "module/cryo": {},
-    "module/cryo_cells_south": {},
-    "module/dining": {},
-    "module/dining_south": {},
-    "module/eva": {},
-    "module/eva_south": {},
-    "module/mining": {},
-    "module/mining_south": {},
-    "module/nanites": {},
-    "module/nanites_south": {},
-    "module/robotics": {},
-    "module/robotics_south": {},
-    "module/security": {},
-    "module/security_south": {},
-    "module/sleeper_bay": {},
-    "module/sleeper_bay_south": {},
-    "module/surgery": {},
-    "module/surgery_south": {},
-    "module/xenobio": {},
-    "module/xenobio_south": {},
+    "module/bitrunning": {
+      "science": 2,
+      "trade": 2
+    },
+    "module/bitrunning_south": {
+      "science": 2,
+      "trade": 2
+    },
+    "module/botany": {
+      "misc": 2,
+      "science": 2
+    },
+    "module/botany_south": {
+      "misc": 2,
+      "science": 2
+    },
+    "module/cargo": {
+      "misc": 2,
+      "trade": 2
+    },
+    "module/cargo_south": {
+      "misc": 2,
+      "trade": 2
+    },
+    "module/chemistry": {
+      "misc": 2,
+      "science": 2
+    },
+    "module/chemistry_south": {
+      "misc": 2,
+      "science": 2
+    },
+    "module/cryo": {
+      "misc": 4
+    },
+    "module/cryo_cells_south": {
+      "misc": 4
+    },
+    "module/dining": {
+      "misc": 2,
+      "trade": 2
+    },
+    "module/dining_south": {
+      "misc": 2,
+      "trade": 2
+    },
+    "module/eva": {
+      "combat": 2,
+      "trade": 2
+    },
+    "module/eva_south": {
+      "combat": 2,
+      "trade": 2
+    },
+    "module/mining": {
+      "misc": 4
+    },
+    "module/mining_south": {
+      "misc": 4
+    },
+    "module/nanites": {
+      "science": 4
+    },
+    "module/nanites_south": {
+      "science": 4
+    },
+    "module/robotics": {
+      "science": 4
+    },
+    "module/robotics_south": {
+      "science": 4
+    },
+    "module/security": {
+      "combat": 4
+    },
+    "module/security_south": {
+      "combat": 4
+    },
+    "module/sleeper_bay": {
+      "misc": 4
+    },
+    "module/sleeper_bay_south": {
+      "misc": 4
+    },
+    "module/surgery": {
+      "misc": 4
+    },
+    "module/surgery_south": {
+      "misc": 4
+    },
+    "module/xenobio": {
+      "science": 4
+    },
+    "module/xenobio_south": {
+      "science": 4
+    },
     "ship": {},
-    "theme/dark": {}
+    "theme/dark": {
+      "combat": 1,
+      "misc": 1,
+      "science": 1,
+      "trade": 1
+    }
   },
   "PortDirection": 2
 }

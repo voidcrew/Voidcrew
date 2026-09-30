@@ -105,6 +105,8 @@
 			continue
 		if(mission.link_gps_unit(gps_unit))
 			linked++
+	// The last sightings of the criminals this ship hunts (voidcrew/modules/bounties/bounty_placement.dm)
+	linked += bounty_link_gps(ship, gps_unit)
 
 	var/live_beacons = LAZYLEN(gps_unit.linked_mission_signals)
 	if(live_beacons)
@@ -113,7 +115,9 @@
 	else if(linked)
 		balloon_alert(user, "linked - no objective marked yet")
 	else
-		balloon_alert(user, "no beacons to upload!")
+		// A hunt at a trader outpost has no tracker by design: say so rather than sound broken
+		var/why_none = bounty_gps_refusal(ship)
+		balloon_alert(user, why_none ? "[why_none]!" : "no beacons to upload!")
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/computer/mission_board/ui_interact(mob/user, datum/tgui/ui)
@@ -170,16 +174,8 @@
 	data["has_claimed_player_bounty"] = SSbounty?.ship_has_claimed_player_bounty(ship) || FALSE
 	data["ship_balance"] = ship.ship_account?.account_balance || 0
 
-	// Live player-outpost advertisements (see voidcrew/modules/player_outposts/outpost_adverts.dm)
-	data["outpost_adverts"] = list()
-	for(var/datum/outpost_advert/advert as anything in GLOB.outpost_adverts)
-		data["outpost_adverts"] += list(list(
-			"name" = advert.outpost_name,
-			"blurb" = advert.blurb,
-			"x" = advert.coord_x,
-			"y" = advert.coord_y,
-			"remaining_minutes" = CEILING(advert.get_remaining_seconds() / 60, 1),
-		))
+	// Wanted criminals: `wanted`. Mugshots are in ui_static_data(). (voidcrew/modules/bounties/bounty_board.dm)
+	board_add_wanted_data(data, ship, user)
 
 	return data
 
@@ -241,9 +237,15 @@
 				balloon_alert(usr, "wait [round(cooldown_remaining / 10)]s")
 				return TRUE
 			ship.last_mission_refresh = world.time
+			record_mission_board_refreshed(ship, usr) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			SSmissions.force_refresh_ship_missions(ship)
 			balloon_alert(usr, "missions refreshed!")
 			return TRUE
+
+		// ========== WANTED CRIMINALS (voidcrew/modules/bounties/bounty_board.dm) ==========
+
+		if("hunt_wanted", "abandon_wanted", "print_warrant", "turn_in_wanted")
+			return board_wanted_act(action, params, ship, ui.user)
 
 		// ========== BOUNTY ACTIONS ==========
 
@@ -263,6 +265,7 @@
 				return TRUE
 
 			if(bounty.add_claimant(ship))
+				record_pirate_bounty_metric("pirate_bounty_accepted", bounty, ship, usr) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 				balloon_alert(usr, "bounty accepted!")
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 				ship.ship_notify("BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
@@ -277,6 +280,7 @@
 				return TRUE
 
 			if(bounty.remove_claimant(ship))
+				record_pirate_bounty_metric("pirate_bounty_cancelled", bounty, ship, usr) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 				balloon_alert(usr, "bounty cancelled")
 				ship.ship_notify("BOUNTY CANCELLED: [bounty.name]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			else
@@ -348,6 +352,7 @@
 			key.mark_destruction_reason(KEY_DESTROYED_BOUNTY)
 			qdel(key)
 			if(reward > 0)
+				record_pirate_bounty_metric("pirate_bounty_completed", bounty, ship, usr, reward) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 				balloon_alert(usr, "[reward] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
 			else
@@ -402,6 +407,7 @@
 				balloon_alert(usr, "failed to setup bounty!")
 				return TRUE
 
+			record_player_bounty_posted(new_bounty, ship, usr) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			balloon_alert(usr, "bounty created!")
 			playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 			ship.ship_notify("BOUNTY POSTED: [new_bounty.name] - [reward_amount] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

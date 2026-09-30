@@ -1,0 +1,61 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"hUp" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"jGf" = (
+/obj/item/radio/intercom/directional/north,
+/obj/machinery/light/broken{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"jKA" = (
+/obj/structure/table_frame,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"kmB" = (
+/obj/structure/closet/crate/science,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qgT" = (
+/obj/structure/frame/machine,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qkj" = (
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"xsX" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+qkj
+xsX
+hUp
+"}
+(2,1,1) = {"
+qgT
+qkj
+qkj
+"}
+(3,1,1) = {"
+jGf
+qkj
+qkj
+"}
+(4,1,1) = {"
+qkj
+qkj
+qgT
+"}
+(5,1,1) = {"
+jKA
+qkj
+kmB
+"}

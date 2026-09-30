@@ -1,0 +1,4640 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ab" = (
+/turf/template_noop,
+/area/template_noop)
+"ac" = (
+/obj/structure/sign/poster/contraband/barbaro,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ad" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ae" = (
+/obj/machinery/light/warm/dim/directional/west,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"af" = (
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"ag" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"ah" = (
+/obj/structure/sign/poster/contraband/thunderdrome,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ai" = (
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"aj" = (
+/obj/machinery/door/airlock{
+	name = "Staff Only";
+	id_tag = "mafia_club_staff"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"ak" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"al" = (
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"am" = (
+/obj/structure/sign/poster/contraband/red_rum,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"an" = (
+/obj/machinery/door/airlock/wood{
+	name = "Main Floor"
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"ao" = (
+/obj/structure/sign/clock,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ap" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"aq" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Counting Room"
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"ar" = (
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"as" = (
+/obj/structure/sign/poster/contraband/have_a_puff,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"at" = (
+/obj/structure/sign/poster/contraband/waradmiral,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"au" = (
+/obj/structure/sign/poster/contraband/masked_men,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"av" = (
+/obj/machinery/door/poddoor/ert{
+	id = "bounty_lair_gate";
+	name = "Garage Door";
+	desc = "A heavy blast door into the club garage. It only opens from the other side."
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"aw" = (
+/obj/structure/sign/poster/contraband/seabiscuit,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ax" = (
+/obj/structure/sign/gym,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"ay" = (
+/obj/machinery/door/airlock/wood{
+	name = "Back Office"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"az" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aA" = (
+/obj/machinery/door/airlock{
+	name = "Kitchen"
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"aB" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aC" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aD" = (
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"aE" = (
+/obj/structure/sign/poster/contraband/revolver,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aF" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Club Volga"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aG" = (
+/obj/structure/sign/departments/med,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aH" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Club Volga"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aI" = (
+/obj/machinery/door/airlock/wood{
+	name = "VIP Lounge"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"aJ" = (
+/obj/machinery/door/airlock/wood{
+	name = "Casino"
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"aK" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aL" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"aM" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aN" = (
+/obj/structure/sign/poster/contraband/eat,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aO" = (
+/obj/structure/sign/poster/contraband/silver,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aP" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"aQ" = (
+/obj/structure/sign/poster/contraband/andromeda_bitters,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aR" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aS" = (
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aT" = (
+/obj/structure/sign/warning/yes_smoking/circle,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aU" = (
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"aV" = (
+/obj/structure/sign/poster/contraband/pharlap,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aW" = (
+/obj/structure/sign/poster/contraband/jovial,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"aX" = (
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"aY" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cloakroom"
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"aZ" = (
+/obj/structure/sign/poster/contraband/smoke,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"bi" = (
+/obj/structure/table/wood/poker,
+/obj/item/dice/d6{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"bC" = (
+/obj/structure/sign/poster/contraband/pwr_game,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"bP" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"bR" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"bU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"bW" = (
+/obj/machinery/oven/range,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"ca" = (
+/obj/item/weldingtool{
+	pixel_y = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"ch" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"cj" = (
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"cL" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"dc" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"dd" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"do" = (
+/obj/structure/table/wood,
+/obj/item/phone{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"dq" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"du" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/storage/fancy/cigarettes/cigars{
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"dA" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"dD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"dE" = (
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"dU" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"dW" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"en" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 2
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"eE" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/gin{
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"eI" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"eK" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"eQ" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"eU" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"eV" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"fb" = (
+/obj/structure/table/wood/poker,
+/obj/item/storage/dice{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"ff" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"fo" = (
+/obj/effect/landmark/bounty_lair_boss{
+	boss_type = /mob/living/basic/bounty_lair_boss/mafia_mech
+	},
+/obj/effect/turf_decal/box,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"fp" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"fA" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"fK" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"fQ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"gd" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"gh" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"gn" = (
+/obj/machinery/deepfryer,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"gv" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"gL" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"gS" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"gX" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/cigarette/cigar/cohiba{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"gZ" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"hn" = (
+/obj/structure/rack,
+/obj/item/storage/bag/money{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"hq" = (
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"ht" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"hD" = (
+/obj/machinery/computer/security/wooden_tv{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"ih" = (
+/obj/structure/chair/wood/wings{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"io" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"ir" = (
+/obj/structure/table/wood/poker,
+/obj/item/dice/d6{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"iJ" = (
+/obj/machinery/light/warm/dim/directional/west,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"iP" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"ja" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"jg" = (
+/obj/effect/decal/cleanable/glass{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"js" = (
+/obj/structure/table/wood,
+/obj/item/cigarette/cigar{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/item/toy/cards/deck{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"jv" = (
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_y = -2
+	},
+/obj/structure/table/reinforced,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"jG" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/jacket/leather/biker,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"jL" = (
+/obj/machinery/light/warm/dim/directional/south,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"kb" = (
+/obj/item/cigbutt,
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"kd" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"ku" = (
+/turf/open/floor/light/colour_cycle/dancefloor_a,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"kB" = (
+/obj/effect/turf_decal/arrows{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"kI" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"kK" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"kN" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"kU" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"lk" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ff3d9a"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"lm" = (
+/obj/structure/closet/crate/cardboard,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"lx" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/phone{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"ly" = (
+/obj/structure/table/wood,
+/obj/item/stack/spacecash/c50{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/stack/spacecash/c20{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"lE" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"lR" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ffc46b"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"lU" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"lX" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/soup_pot{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"mc" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"mk" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"mn" = (
+/obj/structure/table,
+/obj/item/plate{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/plate{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"mw" = (
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_y = 8
+	},
+/obj/structure/table/reinforced,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"mD" = (
+/obj/structure/rack,
+/obj/item/storage/box/donkpockets{
+	pixel_y = 4
+	},
+/obj/item/food/grown/tomato{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"nq" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"nt" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"nA" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/item/wrench{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"nB" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"nL" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"ol" = (
+/obj/machinery/light/directional/south,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"om" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"oE" = (
+/obj/structure/table,
+/obj/item/knife/kitchen{
+	pixel_y = 2
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"oU" = (
+/obj/structure/chair/wood/wings{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"oX" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/clothing/gloves/color/black{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"ph" = (
+/obj/structure/sign/departments/vault,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club)
+"po" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"pt" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"pA" = (
+/obj/structure/table,
+/obj/item/food/meat/slab{
+	pixel_y = 4
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"pE" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ff3d9a"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"pI" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_y = 4
+	},
+/obj/item/stack/spacecash/c20{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"pJ" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"pL" = (
+/obj/item/cigbutt,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"pV" = (
+/obj/structure/closet/crate/bin,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"pX" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"qn" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"qp" = (
+/obj/item/trash/can,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"qH" = (
+/obj/structure/closet/crate/cardboard,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"qI" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"qP" = (
+/obj/structure/bookcase/random,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"qQ" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"qS" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ffc46b"
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"rd" = (
+/obj/machinery/jukebox/disco/indestructible,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"rn" = (
+/obj/structure/table/wood,
+/obj/machinery/barsign/all_access/mafia_club/directional/north,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/kahlua{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"rt" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck/syndicate{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/cigarette/cigar/cohiba{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"ru" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"ry" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"rz" = (
+/obj/structure/table/wood,
+/obj/item/stack/spacecash/c100{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"rD" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"rH" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"rJ" = (
+/obj/structure/closet/crate/bin,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"rQ" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"rZ" = (
+/obj/item/paper{
+	name = "coat check ticket";
+	default_raw_text = "No. 17. Brown coat. Umbrella."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"sm" = (
+/obj/structure/table,
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"sp" = (
+/obj/machinery/light/directional/north,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"sq" = (
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"sr" = (
+/obj/structure/table/wood,
+/obj/item/stack/spacecash/c50{
+	pixel_y = 4
+	},
+/obj/item/stack/spacecash/c20{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"sA" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/phone{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"sL" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"th" = (
+/turf/open/floor/light/colour_cycle/dancefloor_b,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"tl" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"tG" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"tI" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"tK" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"tP" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"tQ" = (
+/obj/structure/fireplace{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"tX" = (
+/obj/structure/rack,
+/obj/item/clothing/gloves/boxing{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"tZ" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"ub" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"ud" = (
+/obj/structure/closet/cardboard,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"uk" = (
+/obj/machinery/light/directional/east,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"us" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"uA" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"uB" = (
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"uD" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"uF" = (
+/obj/item/cigbutt,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"uJ" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/toggle/lawyer/black,
+/obj/item/clothing/head/fedora,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"vf" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"vi" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "coat check ticket";
+	default_raw_text = "No. 41. Grey overcoat, black hat."
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"vl" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"vB" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"vE" = (
+/obj/structure/closet/crate/bin,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"wg" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"wk" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"wy" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/toggle/lawyer/black,
+/obj/item/clothing/head/fedora,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"wA" = (
+/obj/structure/chair/office{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"wF" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"wH" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"wI" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"wP" = (
+/obj/structure/table/wood,
+/obj/item/storage/bag/money{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/clipboard{
+	pixel_x = 6
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"wR" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"wV" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/storage/box/drinkingglasses,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"xf" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"xh" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"xj" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"xw" = (
+/obj/structure/chair/wood/wings{
+	dir = 2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"xA" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"xE" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"xW" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/bowl{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/kitchen/spoon{
+	pixel_x = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"xY" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ffc46b"
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"ye" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"yf" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/flashlight/lamp/green{
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"yi" = (
+/obj/item/clothing/head/fedora,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"yp" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"yr" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"ys" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"yw" = (
+/obj/structure/table/wood,
+/obj/item/folder/red{
+	pixel_y = 4
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"yx" = (
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"yG" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"yJ" = (
+/obj/machinery/light/small/blacklight/directional/south,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"yZ" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"zj" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"zm" = (
+/obj/structure/table/wood,
+/obj/item/clothing/head/fedora/white{
+	pixel_y = 6
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"zn" = (
+/obj/machinery/roulette{
+	anchored = 1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"zo" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 2
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"zp" = (
+/obj/structure/punching_bag,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"zu" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"zy" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"zJ" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"zQ" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/toy/cards/deck{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"zZ" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Ab" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"Ai" = (
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Aj" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/storage/briefcase{
+	pixel_y = 4
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Ao" = (
+/obj/item/wrench{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/crowbar{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"Ay" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_y = -4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"AF" = (
+/obj/structure/mirror/directional/west,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Bd" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"Bl" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Bn" = (
+/obj/structure/rack,
+/obj/item/storage/box/lights/mixed{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Bt" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"BC" = (
+/obj/item/instrument/guitar{
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"BF" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 1
+	},
+/obj/machinery/light/warm/dim/directional/south,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"BN" = (
+/obj/structure/weightmachine,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Cu" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Cv" = (
+/obj/structure/closet/cardboard,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Cz" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"CT" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Dm" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Dx" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/jacket/leather,
+/obj/item/clothing/neck/scarf/black,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"DB" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"DG" = (
+/obj/structure/table/wood,
+/obj/structure/desk_bell{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"DL" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/ice{
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"DP" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"DV" = (
+/obj/structure/sink/kitchen/directional/east,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"DY" = (
+/obj/structure/rack,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"DZ" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Ed" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Ek" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"El" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/storage/box/drinkingglasses{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Et" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"EC" = (
+/obj/machinery/door/airlock/vault{
+	name = "Vault"
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"ED" = (
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"EY" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"EZ" = (
+/obj/machinery/light/warm/dim/directional/south,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Ff" = (
+/obj/structure/musician/piano,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Fk" = (
+/obj/structure/table/wood,
+/obj/item/cigarette/cigar/havana{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"FG" = (
+/obj/structure/chair/wood/wings{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"FW" = (
+/obj/effect/landmark/bounty_lair_gatekeeper{
+	gatekeeper_type = /mob/living/basic/trooper/russian/mafia/lieutenant
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Gb" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Gc" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Gh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Gs" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"GJ" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"GN" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Hf" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Hz" = (
+/obj/item/cigbutt,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"HF" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/head/costume/ushanka,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"HT" = (
+/obj/structure/table/wood,
+/obj/item/cigarette/cigar{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"HW" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Id" = (
+/obj/structure/chair/comfy/black{
+	dir = 2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Ir" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"It" = (
+/obj/structure/table,
+/obj/item/food/sausage{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"IG" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"IO" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/ice{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"IQ" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	name = "guest list";
+	default_raw_text = "Tables one to six are booked. The VIP lounge is closed for a private party. Nobody goes past the kitchen without Tommy saying so."
+	},
+/obj/item/pen/fountain{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"IS" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"IU" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_y = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"IX" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/glass{
+	dir = 1
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Jm" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"JG" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"JK" = (
+/obj/item/food/grown/citrus/lemon{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/citrus/lemon{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/obj/structure/table/reinforced,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"JM" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"JS" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#ffc46b"
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"JV" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Ka" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Kh" = (
+/obj/structure/rack,
+/obj/item/clothing/head/costume/ushanka{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Ko" = (
+/obj/machinery/light/small/blacklight/directional/west,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Kv" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#ffc46b"
+	},
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"KE" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/lamp{
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"KL" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"La" = (
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Lc" = (
+/obj/structure/closet/crate/bin,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Lk" = (
+/obj/structure/table/wood,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Ls" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"LA" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"LC" = (
+/obj/structure/safe,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"LD" = (
+/obj/machinery/light/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"LT" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"LU" = (
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Mo" = (
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Ms" = (
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Mz" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"MF" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"MQ" = (
+/obj/machinery/light/warm/dim/directional/north,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Nf" = (
+/obj/structure/chair/sofa/middle/maroon{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"Nj" = (
+/obj/structure/reagent_dispensers/beerkeg,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Np" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"NG" = (
+/obj/item/cigbutt,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"NO" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "note";
+	default_raw_text = "Tommy. The garage stays shut until the boss says. If anybody comes through that door, it is your problem first."
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Od" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"OD" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ff3d9a"
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"OV" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/statue/sandstone/venus{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Pa" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"PG" = (
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"PL" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/shaker{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"PN" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#ff3d9a"
+	},
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"PO" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"PQ" = (
+/obj/item/cigbutt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"PU" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/cigarette/cigar{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Qg" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 2
+	},
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Qp" = (
+/obj/structure/sink/kitchen/directional/south,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Qq" = (
+/obj/structure/chair/stool/bar{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Qr" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"QC" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"QE" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"QG" = (
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"QJ" = (
+/obj/machinery/button/door/directional/south{
+	id = "mafia_club_staff";
+	name = "door bolts";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"QW" = (
+/obj/machinery/light/warm/dim/directional/south,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Ra" = (
+/obj/structure/closet/secure_closet/freezer/fridge,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Rc" = (
+/obj/structure/chair/wood/wings{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Re" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Rj" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Ro" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ff3d9a"
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"Rq" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"RL" = (
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"Sh" = (
+/obj/structure/chair/sofa/right/maroon{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Sj" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Sp" = (
+/obj/structure/table,
+/obj/item/food/grown/tomato{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/tomato{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Sw" = (
+/obj/structure/sink/kitchen/directional/south,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"SA" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/beaker{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"SE" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"SK" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/ice{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"SQ" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"SU" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Th" = (
+/obj/structure/table/wood,
+/obj/item/dice/d6{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/dice/d6{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/obj/item/dice/d20{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Ti" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Tm" = (
+/obj/structure/chair/comfy/brown{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"TE" = (
+/obj/item/cigbutt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"TG" = (
+/obj/structure/table,
+/obj/item/kitchen/rollingpin{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"TJ" = (
+/obj/structure/chair/comfy/black{
+	dir = 2
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"TN" = (
+/obj/structure/table/wood,
+/obj/item/folder/yellow{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/stamp{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"TO" = (
+/obj/structure/mop_bucket,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"TP" = (
+/obj/structure/chair/sofa/left/maroon{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Up" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/dice/d6{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Uv" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "ledger";
+	default_raw_text = "Tuesday. Door 1,200. Bar 3,450. Tables 8,900. Tommy took 500 for the garage. Don't touch the rest until the boss counts it."
+	},
+/obj/item/storage/bag/money{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/counting)
+"Uz" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"UT" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	name = "staff notice";
+	default_raw_text = "Staff only. Charge your piece before your shift. The first aid kits are for staff, not for customers."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"UZ" = (
+/obj/structure/chair/comfy/black{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"Ve" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Vf" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Vu" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/garage)
+"Vx" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ff3d9a"
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Vz" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"VD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"VN" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/storage/box/coffeepack,
+/obj/item/storage/box/drinkingglasses{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"VR" = (
+/obj/item/cigbutt,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"VV" = (
+/obj/machinery/light/warm/dim/directional/west,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Wa" = (
+/obj/structure/closet{
+	name = "first aid locker";
+	icon_state = "med";
+	base_icon_state = "med"
+	},
+/obj/item/storage/medkit/regular,
+/obj/item/storage/medkit/regular,
+/obj/item/storage/medkit/brute,
+/obj/item/stack/medical/suture,
+/obj/item/stack/medical/suture,
+/obj/item/stack/medical/mesh,
+/obj/item/stack/medical/mesh,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"Ws" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Wt" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#ffc46b"
+	},
+/obj/structure/chair/wood/wings{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"WG" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"WN" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"WU" = (
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"WX" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"WY" = (
+/obj/structure/chair/comfy/brown{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Xw" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"XC" = (
+/obj/structure/safe,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+"XD" = (
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/ruin/space/has_grav/powered/mafia_club/foyer)
+"XK" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Ye" = (
+/obj/item/toy/cards/deck{
+	pixel_x = 6;
+	pixel_y = -6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered/mafia_club/casino)
+"Yi" = (
+/obj/item/instrument/saxophone{
+	pixel_y = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Yl" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Yt" = (
+/obj/structure/table/wood,
+/obj/item/cigarette/cigar{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"YE" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/vip)
+"Zc" = (
+/obj/effect/zone_mobs/mafia,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"Zj" = (
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/powered/mafia_club/cloakroom)
+"Zl" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"Zn" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"Zs" = (
+/obj/machinery/griddle,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"ZL" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/wood/tile,
+/area/ruin/space/has_grav/powered/mafia_club/bar)
+"ZN" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/kitchen)
+"ZO" = (
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered/mafia_club/staff)
+"ZX" = (
+/obj/effect/landmark/bounty_lair_gatekeeper{
+	gatekeeper_type = /mob/living/basic/trooper/russian/mafia/lieutenant
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered/mafia_club/back_office)
+
+(1,1,1) = {"
+ar
+ar
+ar
+aN
+ar
+ar
+ar
+ar
+ar
+aa
+ar
+ar
+ar
+ar
+ar
+ar
+aa
+ar
+ar
+ar
+ar
+ar
+aQ
+ar
+ar
+ar
+ar
+ar
+ar
+au
+ar
+ar
+ar
+ar
+aa
+ar
+ar
+ar
+ar
+ab
+ab
+ab
+"}
+(2,1,1) = {"
+ar
+Ra
+ai
+DV
+ru
+Lc
+ar
+Zn
+nB
+Wa
+nB
+nB
+ar
+IS
+Vx
+ub
+al
+al
+al
+al
+QG
+al
+Ko
+al
+al
+Gb
+ar
+yr
+ap
+ap
+ap
+xY
+ap
+ap
+Ir
+KE
+lR
+Mo
+ar
+ab
+ab
+ab
+"}
+(3,1,1) = {"
+ar
+pA
+ai
+ai
+JM
+ai
+ar
+nB
+fQ
+nB
+nB
+pV
+ar
+zj
+Ff
+GJ
+al
+al
+al
+al
+al
+rd
+al
+NG
+al
+al
+an
+ap
+ap
+oU
+Jm
+Rc
+ap
+ap
+Mo
+TJ
+rt
+ht
+ar
+ab
+ab
+ab
+"}
+(4,1,1) = {"
+ar
+bW
+ai
+ai
+ai
+mn
+ar
+pJ
+nB
+nB
+nB
+nB
+aG
+zj
+zj
+ub
+al
+NG
+QG
+DP
+ku
+th
+ku
+th
+VD
+al
+ar
+ap
+ap
+oU
+bi
+Rc
+ap
+wg
+Mo
+TJ
+eU
+ht
+ar
+ab
+ab
+ab
+"}
+(5,1,1) = {"
+ar
+Zs
+ai
+TG
+ai
+It
+bC
+UT
+nB
+nB
+nB
+nB
+aj
+zj
+Yi
+ub
+al
+al
+QG
+DP
+th
+ku
+th
+ku
+VD
+yJ
+ar
+ap
+ap
+ap
+ap
+ap
+Hz
+ap
+Mo
+pL
+Mo
+Mo
+ar
+ab
+ab
+ab
+"}
+(6,1,1) = {"
+ar
+gn
+JM
+Sp
+ai
+ai
+ar
+pJ
+nB
+cL
+nB
+QJ
+ar
+Gc
+BC
+ub
+al
+al
+NG
+IX
+ku
+th
+ku
+th
+VD
+Gb
+ar
+JS
+ap
+Qq
+zn
+ap
+ap
+jg
+Mo
+Mo
+Mo
+Ir
+ar
+ab
+ab
+ab
+"}
+(7,1,1) = {"
+ar
+xW
+ai
+oE
+dc
+ai
+ar
+nB
+WN
+ZO
+ZO
+nB
+ar
+al
+al
+al
+al
+QG
+al
+DP
+th
+ku
+th
+ku
+VD
+ja
+ar
+ap
+Ye
+ap
+LU
+ap
+ap
+Hz
+ap
+ap
+ap
+ap
+aa
+ab
+ab
+ab
+"}
+(8,1,1) = {"
+ar
+Qp
+ai
+SA
+ai
+ai
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+fA
+al
+al
+pt
+Ws
+al
+al
+Re
+us
+Re
+Re
+al
+nt
+ar
+WY
+ap
+ap
+ap
+ap
+Od
+oU
+Jm
+Rc
+ap
+ap
+ar
+ab
+ab
+ab
+"}
+(9,1,1) = {"
+ar
+sm
+ai
+ai
+ai
+ai
+uB
+VN
+uB
+mD
+uB
+uB
+ar
+ZL
+al
+al
+JK
+Ws
+NG
+al
+kd
+al
+QG
+NG
+al
+Zl
+ar
+Ay
+ap
+ap
+ap
+wg
+ap
+oU
+fb
+Rc
+Ed
+Wt
+ar
+ab
+ab
+ab
+"}
+(10,1,1) = {"
+ar
+lX
+ai
+ai
+Zc
+JM
+uB
+uB
+uB
+ZN
+uB
+JG
+ar
+rn
+al
+La
+PL
+Ws
+NG
+al
+al
+al
+fp
+Uz
+zu
+al
+ar
+WY
+ap
+oU
+uA
+Rc
+ap
+ap
+ap
+wA
+kb
+Rc
+ar
+ab
+ab
+ab
+"}
+(11,1,1) = {"
+ar
+tI
+ai
+ai
+ai
+ai
+uB
+ZN
+uB
+uB
+uB
+Vf
+ar
+ZL
+al
+XK
+jv
+Ws
+al
+SE
+zu
+al
+ja
+al
+al
+al
+ar
+ap
+Hz
+oU
+Up
+Rc
+ap
+ap
+dE
+ap
+Vz
+Rc
+ar
+ab
+ab
+ab
+"}
+(12,1,1) = {"
+ar
+ai
+gh
+ai
+qp
+ai
+uB
+uB
+ZN
+uB
+uB
+Cv
+ar
+SK
+al
+al
+IU
+Ws
+al
+al
+al
+fp
+Yt
+al
+NG
+jL
+ar
+Kv
+ap
+ap
+ap
+wg
+ap
+Qq
+zn
+ap
+ap
+ap
+aZ
+ab
+ab
+ab
+"}
+(13,1,1) = {"
+ar
+ai
+zQ
+ai
+ai
+ai
+uB
+uB
+PO
+uB
+uB
+gv
+aA
+al
+al
+al
+mw
+Ws
+NG
+al
+ja
+al
+al
+al
+ja
+al
+ar
+DL
+ap
+ap
+ap
+wg
+Hz
+ap
+ap
+ap
+ap
+ap
+ar
+ab
+ab
+ab
+"}
+(14,1,1) = {"
+ar
+ai
+Cz
+ai
+ai
+ai
+ZN
+uB
+uB
+uB
+uB
+uB
+ar
+Sw
+mc
+al
+El
+Ws
+al
+al
+js
+al
+al
+al
+kI
+al
+ar
+Ve
+ap
+ap
+ap
+ap
+ap
+ap
+Hz
+ap
+gZ
+Th
+ar
+ab
+ab
+ab
+"}
+(15,1,1) = {"
+ar
+wH
+ai
+ai
+ai
+ai
+uB
+vl
+TO
+Qr
+lm
+uB
+ar
+Nj
+al
+al
+al
+al
+OD
+Sh
+eK
+zJ
+OD
+Sh
+eK
+zJ
+ar
+yr
+ap
+ap
+ap
+ap
+ap
+qS
+ap
+ap
+ap
+eE
+ar
+ab
+ab
+ab
+"}
+(16,1,1) = {"
+ar
+ar
+ar
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aJ
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ab
+ab
+ab
+"}
+(17,1,1) = {"
+ar
+YE
+Yl
+Yl
+Yl
+Yl
+Yl
+Yl
+Yl
+VV
+Yl
+wI
+ar
+af
+LD
+ca
+af
+uD
+af
+ED
+af
+gS
+af
+af
+LD
+af
+ar
+io
+aL
+aL
+aL
+aL
+aL
+iJ
+aL
+AF
+aL
+io
+ar
+ab
+ab
+ab
+"}
+(18,1,1) = {"
+ar
+qP
+aD
+aD
+aD
+aD
+ih
+aD
+aD
+aD
+aD
+OV
+ar
+af
+af
+af
+af
+Ab
+af
+fo
+af
+MF
+af
+ED
+af
+af
+ar
+en
+Sj
+Sj
+Sj
+Et
+PQ
+QC
+Sj
+vf
+Sj
+Hf
+ar
+ab
+ab
+ab
+"}
+(19,1,1) = {"
+ar
+MQ
+aD
+aD
+aD
+xw
+PU
+aD
+aD
+uF
+aD
+ff
+ar
+sp
+Vu
+af
+af
+yG
+yG
+yG
+yG
+yG
+af
+Vu
+af
+ol
+ar
+zo
+Sj
+EY
+Sj
+oX
+aL
+QC
+Sj
+LT
+Sj
+BF
+ar
+ab
+ab
+ab
+"}
+(20,1,1) = {"
+aV
+dD
+Id
+Dm
+aD
+xw
+ir
+xE
+aD
+aD
+aD
+QW
+ar
+af
+af
+af
+RL
+RL
+af
+af
+af
+RL
+RL
+af
+af
+af
+ar
+Qg
+Sj
+Sj
+Sj
+Et
+aL
+QC
+Sj
+Fk
+Sj
+qn
+aE
+ab
+ab
+ab
+"}
+(21,1,1) = {"
+ar
+po
+aD
+aD
+PG
+aD
+aD
+aD
+aD
+TP
+aD
+ff
+ar
+af
+af
+af
+RL
+RL
+af
+af
+af
+RL
+RL
+af
+af
+af
+ar
+Sj
+Sj
+DB
+VR
+Et
+aL
+QC
+Sj
+Tm
+Sj
+gd
+ar
+ab
+ab
+ab
+"}
+(22,1,1) = {"
+ar
+dD
+aD
+eI
+aD
+uF
+aD
+kK
+aD
+kN
+aD
+ff
+ar
+af
+af
+af
+af
+af
+af
+ED
+af
+af
+af
+af
+ED
+af
+ar
+aL
+dd
+dd
+dd
+aL
+rH
+QC
+Sj
+Sj
+Sj
+Sj
+ar
+ab
+ab
+ab
+"}
+(23,1,1) = {"
+ar
+tQ
+aD
+gX
+aD
+aD
+aD
+du
+Bt
+kN
+aD
+ff
+ar
+sp
+af
+Vu
+af
+af
+af
+kB
+af
+af
+af
+af
+ED
+ol
+ar
+aL
+aL
+Zj
+aL
+PQ
+aL
+aL
+dd
+dd
+dd
+dd
+ar
+ab
+ab
+ab
+"}
+(24,1,1) = {"
+ar
+dD
+aD
+eI
+aD
+wF
+aD
+CT
+aD
+kN
+aD
+ff
+ar
+Ao
+af
+af
+af
+af
+af
+af
+ED
+af
+af
+af
+af
+nA
+ar
+aL
+aL
+aL
+aL
+aL
+aL
+aL
+rD
+Ti
+bR
+aL
+ar
+ab
+ab
+ab
+"}
+(25,1,1) = {"
+ar
+po
+aD
+aD
+aD
+aD
+aD
+aD
+uF
+dU
+aD
+ff
+ar
+af
+af
+af
+RL
+RL
+af
+af
+af
+RL
+RL
+af
+af
+af
+ar
+Lk
+Lk
+zm
+Lk
+Lk
+aL
+PQ
+aL
+aL
+aL
+aL
+ar
+ab
+ab
+ab
+"}
+(26,1,1) = {"
+aw
+dD
+aD
+yf
+eI
+aD
+aD
+zy
+aD
+aD
+aD
+QW
+ar
+af
+af
+af
+RL
+RL
+af
+af
+af
+RL
+RL
+af
+af
+af
+ar
+uJ
+SQ
+yi
+SQ
+vi
+aL
+aL
+aL
+xj
+aL
+EZ
+as
+ab
+ab
+ab
+"}
+(27,1,1) = {"
+ar
+MQ
+aD
+aD
+aD
+aD
+uF
+aD
+aD
+uF
+aD
+ff
+ar
+sp
+af
+ED
+af
+af
+af
+kB
+af
+af
+af
+af
+af
+ol
+ar
+HF
+SQ
+hq
+SQ
+DG
+aL
+vB
+aL
+IG
+aL
+aL
+ar
+ab
+ab
+ab
+"}
+(28,1,1) = {"
+ar
+dD
+cj
+aD
+cj
+aD
+aD
+aD
+aD
+aD
+aD
+OV
+ar
+af
+ED
+af
+af
+ED
+af
+af
+af
+af
+af
+af
+Vu
+af
+ar
+Dx
+SQ
+rZ
+SQ
+Lk
+aL
+aL
+aL
+ye
+PQ
+aL
+ar
+ab
+ab
+ab
+"}
+(29,1,1) = {"
+ar
+wI
+tG
+IO
+Xw
+Bl
+Pa
+lk
+Pa
+Pa
+Pa
+wI
+ar
+af
+af
+uk
+af
+af
+yG
+yG
+yG
+af
+af
+uk
+af
+af
+ar
+jG
+SQ
+SQ
+pE
+aL
+aL
+aL
+aL
+aL
+aL
+io
+ar
+ab
+ab
+ab
+"}
+(30,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aq
+ar
+ar
+ar
+ar
+ar
+ar
+ad
+ar
+av
+av
+av
+ar
+ad
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ao
+ar
+ar
+ar
+aY
+ar
+ar
+ar
+ar
+ab
+ab
+ab
+"}
+(31,1,1) = {"
+ar
+DZ
+aX
+hD
+aX
+yp
+aX
+aX
+aX
+aX
+aX
+aX
+ar
+dW
+aP
+aP
+aP
+xh
+bP
+bP
+bP
+Gs
+Ms
+Ms
+Ms
+tX
+ar
+aB
+aS
+aS
+ae
+aS
+aU
+ag
+ag
+aU
+aS
+aB
+ar
+ab
+ab
+ab
+"}
+(32,1,1) = {"
+ar
+qI
+aX
+ry
+aX
+aX
+aX
+GN
+aX
+aX
+aX
+aX
+ar
+aP
+aP
+aP
+aP
+tP
+Ms
+Ms
+Ms
+Ms
+Ms
+Ms
+BN
+Ms
+ar
+aC
+aS
+aK
+aS
+aS
+aU
+ag
+aR
+aU
+aS
+aM
+ar
+ab
+ab
+ab
+"}
+(33,1,1) = {"
+ar
+SU
+do
+aX
+aX
+aX
+Ls
+rz
+pX
+aX
+aX
+aX
+ar
+JV
+aP
+TE
+aP
+tP
+Ms
+Ms
+Ms
+Ms
+Ms
+Ms
+Ms
+bU
+am
+Nf
+HT
+aS
+aS
+aS
+aU
+ag
+ag
+aU
+aS
+XD
+ar
+ab
+ab
+ab
+"}
+(34,1,1) = {"
+ac
+SU
+aX
+aX
+aX
+aX
+Ls
+sr
+pX
+GN
+aX
+aX
+ar
+JV
+aP
+aP
+aP
+aP
+Mz
+Mz
+Gh
+Ms
+Ms
+Ms
+zp
+QE
+ar
+yZ
+aS
+aB
+ar
+aS
+aU
+ag
+ag
+aU
+aK
+qQ
+ar
+ab
+ab
+ab
+"}
+(35,1,1) = {"
+ar
+lE
+aX
+aX
+xf
+aX
+Ls
+Uv
+wk
+aX
+aX
+aX
+ar
+aP
+FG
+sL
+sL
+sL
+aP
+aP
+tP
+bU
+Cu
+Ms
+Ms
+Ms
+ar
+aB
+aS
+aS
+aS
+aS
+aU
+aR
+ag
+aU
+aS
+aS
+ar
+ab
+ab
+ab
+"}
+(36,1,1) = {"
+ar
+dA
+aX
+aX
+aX
+aX
+Ls
+ly
+pX
+LA
+aX
+tZ
+ar
+Rq
+sL
+sA
+sL
+sL
+aP
+om
+nL
+Ms
+Ms
+Ms
+Ms
+qH
+ar
+aS
+aK
+aS
+aS
+aS
+aU
+ag
+ag
+aU
+aU
+PN
+az
+ar
+ar
+ab
+"}
+(37,1,1) = {"
+ar
+TN
+HW
+aX
+aX
+aX
+Ls
+pI
+pX
+aX
+aX
+aX
+ar
+aP
+UZ
+NO
+sL
+sL
+aP
+aP
+lU
+ys
+Ms
+ZX
+Ms
+Ms
+ar
+rQ
+aS
+aS
+ch
+aS
+aU
+ag
+aR
+ag
+ag
+aR
+aH
+ak
+aF
+ab
+"}
+(38,1,1) = {"
+at
+aX
+aX
+aX
+aX
+aX
+aX
+aX
+aX
+LA
+aX
+ud
+ar
+aP
+FW
+Aj
+sL
+sL
+aP
+WX
+tP
+Ms
+bU
+Ms
+Ms
+Ms
+ar
+aS
+aS
+aS
+aS
+aS
+aU
+ag
+ag
+ag
+aR
+ag
+aH
+ak
+aF
+ab
+"}
+(39,1,1) = {"
+ar
+DZ
+aX
+aX
+aX
+aX
+GN
+aX
+aX
+aX
+aX
+ud
+ar
+eQ
+sL
+sL
+sL
+sL
+aP
+aP
+tP
+Ms
+Ms
+Cu
+Ms
+zZ
+ar
+aS
+aS
+aS
+aK
+aS
+aU
+aU
+aU
+aU
+aU
+PN
+az
+ar
+ar
+ab
+"}
+(40,1,1) = {"
+ar
+ar
+ar
+EC
+ar
+ar
+aX
+aX
+aX
+aX
+aX
+aX
+ar
+xA
+aP
+aP
+aP
+TE
+aP
+aP
+tP
+Ms
+Ms
+Ms
+Ms
+wV
+ar
+aS
+yx
+aS
+aS
+gL
+aS
+aS
+aS
+aS
+aS
+aK
+ar
+ab
+ab
+ab
+"}
+(41,1,1) = {"
+ar
+hn
+Ai
+Ai
+Ai
+ar
+aX
+LA
+aX
+aX
+aX
+aX
+ay
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+tP
+Ms
+Ms
+bU
+Ms
+mk
+ar
+aS
+aS
+aB
+ar
+aS
+aS
+aS
+aS
+lx
+IQ
+aS
+ar
+ab
+ab
+ab
+"}
+(42,1,1) = {"
+ar
+kU
+Ai
+tl
+Ai
+ph
+aX
+Ls
+wP
+aX
+aX
+aX
+ar
+dW
+aP
+aP
+aP
+aP
+aP
+TE
+tP
+Ms
+Ms
+Ms
+Ms
+mk
+ah
+rQ
+aS
+aS
+aS
+aS
+sq
+nq
+aS
+aS
+KL
+aS
+ar
+ab
+ab
+ab
+"}
+(43,1,1) = {"
+ar
+Ai
+iP
+Rj
+Ai
+ar
+aX
+aX
+yw
+pX
+aX
+aX
+ar
+wy
+aP
+aP
+eV
+aP
+aP
+aP
+tP
+bU
+Ms
+Ms
+Ms
+Bn
+ar
+Bd
+aS
+aS
+aS
+aK
+aS
+WU
+aS
+aS
+aS
+vE
+aT
+ab
+ab
+ab
+"}
+(44,1,1) = {"
+ar
+DY
+Ai
+Ai
+LC
+ar
+DZ
+aX
+aX
+Ek
+aX
+rJ
+ar
+XC
+aP
+Ka
+fK
+tK
+aP
+wR
+tP
+Np
+Ms
+Ms
+Ms
+Kh
+ar
+aB
+aS
+WG
+dq
+WG
+gL
+aS
+Ro
+aS
+aS
+aB
+ar
+ab
+ab
+ab
+"}
+(45,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aO
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aW
+ar
+ar
+ar
+ar
+ar
+ar
+ax
+ar
+ar
+ar
+ar
+ar
+ar
+aa
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ab
+ab
+ab
+"}

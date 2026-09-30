@@ -2,7 +2,7 @@
 
 ## Overview
 
-The zone system divides the overmap into concentric rings based on distance from the center (sun). Zones closer to the sun are more dangerous, while the outer edges and spawn area are safe.
+The zone system divides the overmap into concentric rings based on distance from the center (sun). The inner ring around the sun is the safe spawn area, and danger increases toward the edge of the map.
 
 ## Zone Types
 
@@ -17,11 +17,11 @@ The zone system divides the overmap into concentric rings based on distance from
 ## How It Works
 
 ### Zone Layout
-Zones are organized as concentric rings based on distance from the center (sun), roughly equal in size:
+Zones are organized as concentric rings based on distance from the center (sun), in equal steps of radius. The outer ring includes the map corners, so it holds most of the tiles:
 
-1. **Inner Ring** (< 33% of map radius) - Lawless - Dangerous, close to sun
+1. **Inner Ring** (< 33% of map radius) - Neutral - Safe, player ships spawn here
 2. **Middle Ring** (33-66% of map radius) - Contested - Caution zone
-3. **Outer Ring** (> 66% of map radius) - Neutral - Safe, edge of map
+3. **Outer Ring** (>= 66% of map radius) - Lawless - Dangerous, edge of map
 
 ### Visual Feedback
 - Overmap turfs are tinted with zone colors
@@ -136,18 +136,18 @@ The zone system is designed for expansion. Planned integrations:
 
 ## Configuration
 
-Zone thresholds in `zone_controller.dm`:
+Zone thresholds are `ZONE_INNER_RING_RATIO` and `ZONE_MIDDLE_RING_RATIO` in `overmap_zones.dm`. `SSovermap.get_zone_band_for_turf()` applies them, and `calculate_zone_for_turf()` calls it, so initial placement and zone assignment always agree:
 ```dm
-// Inner ring (Lawless) - dangerous, close to sun
-if(normalized < 0.33)
-    return ZONE_RED
+// Inner ring (Neutral) - safe, player ships spawn here
+if(normalized < ZONE_INNER_RING_RATIO)
+    return ZONE_GREEN
 
 // Middle ring (Contested) - caution zone
-if(normalized < 0.66)
+if(normalized < ZONE_MIDDLE_RING_RATIO)
     return ZONE_YELLOW
 
-// Outer ring (Neutral) - safe, edge of map
-return ZONE_GREEN
+// Outer ring (Lawless) - dangerous, edge of map
+return ZONE_RED
 ```
 
 Zone transition time in `overmap_zones.dm`:

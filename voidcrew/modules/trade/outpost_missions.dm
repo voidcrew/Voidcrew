@@ -231,6 +231,7 @@
 			qdel(offer)
 			continue
 		shop_offers += offer
+		tally_mission_offer(offer, null, "contract_offered") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
 /// Whether an offer of the exact given type is currently posted
 /obj/structure/overmap/trader_outpost/proc/has_posted_offer_type(offer_type)

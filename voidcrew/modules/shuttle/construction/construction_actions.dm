@@ -1,60 +1,72 @@
 /**
- * Ship Construction Actions
+ * Ship Construction Drone Tools
  *
- * Construction actions specific to ship construction consoles.
- * These override the standard construction actions to provide ship-specific
- * location validation (shuttle areas + 1 adjacent tile).
+ * The ship console's drone works where the operator clicks: left-click any tile within
+ * SHIP_CONSTRUCTION_DRONE_REACH of the drone to use the tool picked in the console's Tools tab,
+ * right-click for that tool's removal (click handling lives in construction_console.dm).
+ * Every tool is a proc here, taking the target turf and returning TRUE when it did something.
+ * Location validation is ship-specific (shuttle areas + 1 adjacent tile).
+ * The only HUD buttons left are Log out and Open Console.
  */
 
-/// Base ship construction action - overrides location checking for ship building
+/// Base ship construction action - ships can be anywhere, not just on station z-levels
 /datum/action/innate/construction/ship
-	// Ships can be anywhere, not just station z-levels
 	only_station_z = FALSE
 
-/datum/action/innate/construction/ship/check_spot()
-	var/turf/build_target = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+/// Brings the console's window back up without leaving the drone.
+/datum/action/innate/construction/ship/open_console
+	name = "Open Console"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rcd_config"
 
-	if(!ship_console.can_build_at(build_target))
-		to_chat(owner, span_warning("You can only build within the shuttle or on valid adjacent tiles!"))
+/datum/action/innate/construction/ship/open_console/Activate()
+	if(..())
+		return
+	base_console.ui_interact(owner)
+
+/// Balloon alert over the drone, or over the console when no drone is out.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_alert(mob/user, message)
+	var/atom/anchor = eyeobj || src
+	anchor.balloon_alert(user, message)
+
+/// The console always has an RCD; the drone tools lean on it.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_internal_rcd()
+	if(!internal_rcd)
+		CRASH("Ship construction console is missing its internal RCD!")
+
+/// Whether the drone may work on this tile: inside the ship or on a valid adjacent tile, and no blast door.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_can_work_at(mob/user, turf/target)
+	if(!can_build_at(target))
+		target.balloon_alert(user, "can't build there!")
 		return FALSE
 
 	// Check for blast doors - don't allow construction/deconstruction on tiles with blast doors
-	for(var/obj/machinery/door/poddoor/blast_door in build_target)
-		remote_eye.balloon_alert(owner, "blocked by blast door!")
+	for(var/obj/machinery/door/poddoor/blast_door in target)
+		drone_alert(user, "blocked by blast door!")
 		return FALSE
 
 	return TRUE
 
-/// Ship-specific RCD build action
-/datum/action/innate/construction/ship/build
-	name = "RCD Build"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rcd_construct"
+/// Ship-specific RCD build
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_rcd_build(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
 
-/datum/action/innate/construction/ship/build/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-	check_rcd()
-	if(ship_console.queue_enabled || ship_console.build_size > 1)
-		ship_console.queue_construction(target_turf, owner)
-		return
+	user.changeNext_move(CLICK_CD_RANGE)
+	check_internal_rcd()
+	if(queue_enabled || build_size > 1)
+		queue_construction(target, user)
+		return TRUE
 
 	// Store turf state before building to detect if we built something new
-	var/was_in_shuttle = ship_console.is_in_shuttle_area(target_turf)
+	var/was_in_shuttle = is_in_shuttle_area(target)
 
 	// If building outside shuttle, check dimension limits BEFORE building
 	if(!was_in_shuttle)
-		if(!ship_console.check_expansion_dimensions(target_turf, ship_console.get_docking_port()))
-			remote_eye.balloon_alert(owner, "exceeds max dimensions!")
-			return
+		if(!check_expansion_dimensions(target, get_docking_port()))
+			drone_alert(user, "exceeds max dimensions!")
+			return FALSE
 
 	// Check if we should use custom wall/floor building based on current RCD mode
 	var/rcd_mode = ship_rcd.construction_mode
@@ -67,72 +79,74 @@
 	var/building_plating = (ship_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
 
 	// Space and bare hangar deck need ship flooring before walls can be built.
-	if(rcd_mode == RCD_TURF && building_plating && ship_rcd.can_build_floor(target_turf) && ship_console.turf_build_mode != "wall")
-		if(!ship_rcd.build_floor(target_turf, owner))
-			return
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	var/floor_target = ship_rcd.can_build_floor(target) || (turf_build_mode == "floor" && ship_rcd.can_refloor(target))
+	if(rcd_mode == RCD_TURF && building_plating && floor_target && turf_build_mode != "wall")
+		if(!ship_rcd.build_floor(target, user))
+			return FALSE
+		playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 		// Expand shuttle if building outside
 		if(!was_in_shuttle)
-			ship_console.expand_shuttle_to_turf(target_turf, owner)
-		return
+			expand_shuttle_to_turf(target, user)
+		return TRUE
 
 	// Build wall: RCD is in turf mode and target is any open floor (including plating)
-	if(rcd_mode == RCD_TURF && building_plating && istype(target_turf, /turf/open/floor) && ship_console.turf_build_mode != "floor")
-		if(!ship_rcd.build_wall(target_turf, owner))
-			return
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	if(rcd_mode == RCD_TURF && building_plating && istype(target, /turf/open/floor) && turf_build_mode != "floor")
+		if(!ship_rcd.build_wall(target, user))
+			return FALSE
+		playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 		// Expand shuttle if building outside
 		if(!was_in_shuttle)
-			ship_console.expand_shuttle_to_turf(target_turf, owner)
-		return
+			expand_shuttle_to_turf(target, user)
+		return TRUE
 
 	// An explicit intent must not fall through to the RCD's floor/wall toggle.
-	if(rcd_mode == RCD_TURF && building_plating && ship_console.turf_build_mode != "auto")
-		return
+	if(rcd_mode == RCD_TURF && building_plating && turf_build_mode != "auto")
+		drone_alert(user, "can't build that here!")
+		return FALSE
 
 	// Hull windows: grille and window in one action, paid for out of the silo by recipe
 	// rather than as generic RCD matter. Same shortcut the wall and floor pickers get.
 	if(rcd_mode == RCD_WINDOWGRILLE && ship_rcd.is_hull_window(ship_rcd.rcd_design_path))
-		if(!ship_rcd.build_hull_window(target_turf, owner))
-			return
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		if(!ship_rcd.build_hull_window(target, user))
+			return FALSE
+		playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 		// Expand shuttle if building outside
 		if(!was_in_shuttle)
-			ship_console.expand_shuttle_to_turf(target_turf, owner)
-		return
+			expand_shuttle_to_turf(target, user)
+		return TRUE
 
 	// For other build types (catwalks, airlocks, windows, etc.), use standard RCD system
-	var/atom/rcd_target = target_turf
+	var/atom/rcd_target = target
 
 	// Find airlocks and other structures that can be RCD'd
-	for(var/obj/S in target_turf)
-		if(LAZYLEN(S.rcd_vals(owner, base_console.internal_rcd)))
+	for(var/obj/S in target)
+		if(LAZYLEN(S.rcd_vals(user, internal_rcd)))
 			rcd_target = S
 
 	// Check if we have enough resources before attempting to build
-	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
+	var/list/rcd_results = rcd_target.rcd_vals(user, internal_rcd)
 	if(!rcd_results)
 		// Silence here reads as a dead button. A catwalk over an existing floor is the case
 		// that gets clicked - /turf/open/floor/rcd_vals() refuses every RCD_TURF design but
 		// plating - and the player has no other way to learn the blueprint does not apply.
-		remote_eye.balloon_alert(owner, "can't build that here!")
-		return
+		drone_alert(user, "can't build that here!")
+		return FALSE
 	var/cost = rcd_results["cost"]
-	if(!base_console.internal_rcd.checkResource(cost, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
-		return
+	if(!internal_rcd.checkResource(cost, user))
+		drone_alert(user, "not enough resources!")
+		return FALSE
 
 	// Perform the RCD action
-	base_console.internal_rcd.rcd_create(rcd_target, owner)
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	internal_rcd.rcd_create(rcd_target, user)
+	playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 
 	// Expand shuttle if building outside. Re-read the tile: rcd_create() may have replaced
 	// the turf datum under us, and a catwalk leaves it space. A space turf pulled into a
 	// shuttle area never gets the /turf/baseturf_skipover/shuttle stamp (dispatch() skips
 	// space), so it would be silently left behind on the ship's next move.
-	var/turf/built_turf = locate(target_turf.x, target_turf.y, target_turf.z)
+	var/turf/built_turf = locate(target.x, target.y, target.z)
 	if(!was_in_shuttle && built_turf && !isspaceturf(built_turf))
-		ship_console.expand_shuttle_to_turf(built_turf, owner)
+		expand_shuttle_to_turf(built_turf, user)
 	else if(was_in_shuttle && built_turf && rcd_mode == RCD_AIRLOCK)
 		// The overhang warning tells the operator to fit an airlock on the new outermost
 		// plating - and that tile is already hull, so it never reaches
@@ -142,550 +156,537 @@
 		// no other design can produce a door for the port to sit on. door_built skips the
 		// "is this tile past the port's plane" gate, because a seat on another face - which
 		// the port may now turn onto - is by definition not on that plane. (issue #130)
-		ship_console.check_port_after_build(built_turf, owner, door_built = TRUE)
-
-/// Ship-specific RCD deconstruct action
-/datum/action/innate/construction/ship/deconstruct
-	name = "Deconstruct"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rcd_remove"
+		check_port_after_build(built_turf, user, door_built = TRUE)
+	return TRUE
 
 /// Delay to deconstruct an airlock
 #define SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY (5 SECONDS)
 
-/datum/action/innate/construction/ship/deconstruct/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/atom/rcd_target = target_turf
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+/**
+ * Ship-specific RCD deconstruct. `clicked` is what the operator clicked: a wall-mounted camera or
+ * an airlock, or any RCD-able object, is taken in preference to whatever else shares the tile.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_deconstruct(mob/user, turf/target, atom/clicked)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	var/atom/rcd_target = target
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
 
 	// Check for indestructible objects blocking deconstruction (blast doors, r-walls, etc.)
-	for(var/obj/blocker in target_turf)
+	for(var/obj/blocker in target)
 		if(blocker.resistance_flags & INDESTRUCTIBLE)
-			remote_eye.balloon_alert(owner, "blocked by [blocker.name]!")
-			return
+			drone_alert(user, "blocked by [blocker.name]!")
+			return FALSE
 
 	// Also check if the turf itself is indestructible
-	if(target_turf.resistance_flags & INDESTRUCTIBLE)
-		remote_eye.balloon_alert(owner, "can't deconstruct that!")
-		return
+	if(target.resistance_flags & INDESTRUCTIBLE)
+		drone_alert(user, "can't deconstruct that!")
+		return FALSE
 
 	// Cameras and airlocks are removed directly; airlocks retain the console's
 	// existing ability to bypass reinforcement and seals.
-	var/obj/machinery/camera/target_camera = locate() in target_turf
-	var/obj/machinery/door/airlock/target_airlock = locate() in target_turf
+	var/obj/machinery/camera/target_camera
+	var/obj/machinery/door/airlock/target_airlock
+	if(istype(clicked, /obj/machinery/camera) && clicked.loc == target)
+		target_camera = clicked
+	else if(istype(clicked, /obj/machinery/door/airlock) && clicked.loc == target)
+		target_airlock = clicked
+	else
+		target_camera = locate() in target
+		target_airlock = locate() in target
 	var/obj/fixture = target_camera || target_airlock
 	if(fixture)
-		owner.changeNext_move(CLICK_CD_RANGE)
-		check_rcd()
-		if(!ship_rcd.can_refund_materials(owner))
-			return
-		var/decon_time = (target_camera ? SHIP_CAMERA_DECONSTRUCT_DELAY : SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY) * ship_rcd.get_build_speed_mod()
-		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, decon_time, RCD_DECONSTRUCT)
-		if(!ship_rcd.build_delay(owner, decon_time, fixture))
-			qdel(rcd_effect)
-			return
-		if(QDELETED(fixture) || !ship_rcd.can_refund_materials(owner))
-			qdel(rcd_effect)
-			return
-		var/list/materials = ship_rcd.get_deconstruction_materials(fixture)
-		ship_console.forget_repair_record(ship_console.repair_coordinate_key(target_turf))
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
-		rcd_effect.end_animation()
-		qdel(fixture)
-		ship_rcd.refund_materials(materials, owner)
-		ship_console.cleanup_deconstructed_turfs()
-		return
+		return drone_remove_fixture(user, target, fixture)
 
-	owner.changeNext_move(CLICK_CD_RANGE)
-	check_rcd()
+	user.changeNext_move(CLICK_CD_RANGE)
+	check_internal_rcd()
 
 	// Select targets in demolition mode so windows and girders take priority over the floor.
 	var/old_mode = ship_rcd.mode
 	ship_rcd.mode = RCD_DECONSTRUCT
 
-	// Find structures that can be deconstructed
-	for(var/obj/S in target_turf)
-		if(LAZYLEN(S.rcd_vals(owner, base_console.internal_rcd)))
-			rcd_target = S
+	// The clicked object wins when it can be taken apart; otherwise find structures that can be
+	// deconstructed (wall-mounted sprites belong to the tile they stand on, so on a crowded
+	// tile the operator picks by clicking).
+	if(isobj(clicked) && clicked.loc == target && LAZYLEN(clicked.rcd_vals(user, internal_rcd)))
+		rcd_target = clicked
+	else
+		for(var/obj/S in target)
+			if(LAZYLEN(S.rcd_vals(user, internal_rcd)))
+				rcd_target = S
 
 	// Check if we can deconstruct this target
-	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
+	var/list/rcd_results = rcd_target.rcd_vals(user, internal_rcd)
 	if(!rcd_results)
-		base_console.internal_rcd.mode = old_mode
-		remote_eye.balloon_alert(owner, "can't deconstruct that!")
-		return
+		internal_rcd.mode = old_mode
+		drone_alert(user, "can't deconstruct that!")
+		return FALSE
 
-	if(!ship_rcd.can_refund_materials(owner))
+	if(!ship_rcd.can_refund_materials(user))
 		ship_rcd.mode = old_mode
-		return
+		return FALSE
 
 	// Perform the RCD deconstruction
-	base_console.internal_rcd.rcd_create(rcd_target, owner)
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	internal_rcd.rcd_create(rcd_target, user)
+	playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 
 	// Restore original mode
-	base_console.internal_rcd.mode = old_mode
+	internal_rcd.mode = old_mode
 
 	// Clean up any empty shuttle turfs after deconstruction
-	ship_console.cleanup_deconstructed_turfs()
+	cleanup_deconstructed_turfs()
+	return TRUE
 
-/// Ship camera build action - mounts a finished camera on the wall the drone faces
-/datum/action/innate/construction/ship/camera_build
-	name = "Place Camera"
-	button_icon = 'icons/obj/machines/camera.dmi'
-	button_icon_state = "camera"
+/// Takes a camera or airlock down directly and refunds it to the silo.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_fixture(mob/user, turf/target, obj/fixture)
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
+	user.changeNext_move(CLICK_CD_RANGE)
+	check_internal_rcd()
+	if(!ship_rcd.can_refund_materials(user))
+		return FALSE
+	var/decon_time = (istype(fixture, /obj/machinery/camera) ? SHIP_CAMERA_DECONSTRUCT_DELAY : SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY) * ship_rcd.get_build_speed_mod()
+	var/obj/effect/constructing_effect/rcd_effect = new(target, decon_time, RCD_DECONSTRUCT)
+	if(!ship_rcd.build_delay(user, decon_time, fixture))
+		qdel(rcd_effect)
+		return FALSE
+	if(QDELETED(fixture) || !ship_rcd.can_refund_materials(user))
+		qdel(rcd_effect)
+		return FALSE
+	var/list/materials = ship_rcd.get_deconstruction_materials(fixture)
+	forget_repair_record(repair_coordinate_key(target))
+	playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
+	rcd_effect.end_animation()
+	qdel(fixture)
+	ship_rcd.refund_materials(materials, user)
+	cleanup_deconstructed_turfs()
+	return TRUE
 
-/datum/action/innate/construction/ship/camera_build/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+/**
+ * Where a wall fixture goes when the operator clicks `clicked`: list(open turf it stands on, dir of the wall it hangs on), or null.
+ *
+ * click_point is where on the tile the operator clicked, as list(x, y) in pixels from its bottom left (drone_click_point()).
+ * forced_dir, when set, names the wall the fixture hangs on from the fixture's point of view: NORTH means "on the north wall",
+ * like /obj/machinery/light/directional/north.
+ *
+ * A clicked wall is fitted on the open tile beyond one of its faces, facing back at the wall. That face is forced_dir's,
+ * else the one nearest the click point, else (no click position) the one toward the drone - or the drone's own facing if it sits inside that wall.
+ * A clicked open tile hangs the fixture on forced_dir's wall if one is there, else on the wall nearest the click point,
+ * else (no click position) the wall the drone is facing.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_wall_mount(turf/clicked, list/click_point, forced_dir = NONE)
+	if(!clicked)
+		return null
+	if(forced_dir && ISDIAGONALDIR(forced_dir))
+		return null
+	if(isclosedturf(clicked))
+		if(forced_dir)
+			var/turf/beyond = get_step(clicked, REVERSE_DIR(forced_dir))
+			if(isopenturf(beyond) && !isspaceturf(beyond))
+				return list(beyond, forced_dir)
+			return null
+		if(click_point)
+			var/list/open_faces = list()
+			for(var/face in GLOB.cardinals)
+				var/turf/beyond_face = get_step(clicked, face)
+				if(isopenturf(beyond_face) && !isspaceturf(beyond_face))
+					open_faces += face
+			// A click in the middle of a wall is a tie; the face toward the drone wins it.
+			var/nearest_face = nearest_tile_edge(click_point, open_faces, clicked, eyeobj)
+			if(!nearest_face)
+				return null
+			return list(get_step(clicked, nearest_face), REVERSE_DIR(nearest_face))
+		if(!eyeobj)
+			return null
+		var/list/sides
+		if(get_turf(eyeobj) == clicked)
+			sides = list(eyeobj.dir)
+		else
+			var/dx = eyeobj.x - clicked.x
+			var/dy = eyeobj.y - clicked.y
+			var/horizontal = dx > 0 ? EAST : (dx < 0 ? WEST : NONE)
+			var/vertical = dy > 0 ? NORTH : (dy < 0 ? SOUTH : NONE)
+			sides = abs(dx) > abs(dy) ? list(horizontal, vertical) : list(vertical, horizontal)
+			sides -= NONE
+		for(var/side in sides)
+			if(ISDIAGONALDIR(side))
+				continue
+			var/turf/open_turf = get_step(clicked, side)
+			if(isopenturf(open_turf) && !isspaceturf(open_turf))
+				return list(open_turf, REVERSE_DIR(side))
+		return null
+	if(isopenturf(clicked) && !isspaceturf(clicked))
+		if(forced_dir)
+			return isclosedturf(get_step(clicked, forced_dir)) ? list(clicked, forced_dir) : null
+		if(click_point)
+			var/list/walled_sides = list()
+			for(var/wall_side in GLOB.cardinals)
+				if(isclosedturf(get_step(clicked, wall_side)))
+					walled_sides += wall_side
+			var/nearest_wall = nearest_tile_edge(click_point, walled_sides)
+			return nearest_wall ? list(clicked, nearest_wall) : null
+		if(!eyeobj)
+			return null
+		var/wall_dir = eyeobj.dir
+		if(ISDIAGONALDIR(wall_dir) || !isclosedturf(get_step(clicked, wall_dir)))
+			return null
+		return list(clicked, wall_dir)
+	return null
 
-	// The camera goes on the drone's own turf, hung on the wall the drone is facing,
-	// so it watches the room the drone is in (mirrors handheld wallframe placement).
-	if(!istype(target_turf, /turf/open) || isspaceturf(target_turf))
-		remote_eye.balloon_alert(owner, "need open floor!")
-		return
+/// Which of `candidates` (cardinal dirs) is nearest the click point, as list(x, y) pixels from the tile's bottom left, or NONE when there are none.
+/// Ties go to the edge whose neighbouring tile (from `origin`) is nearer `prefer_near`, then to the earlier entry of GLOB.cardinals.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/nearest_tile_edge(list/click_point, list/candidates, turf/origin, atom/prefer_near)
+	var/nearest = NONE
+	var/nearest_distance = INFINITY
+	for(var/edge in GLOB.cardinals)
+		if(!(edge in candidates))
+			continue
+		var/distance
+		switch(edge)
+			if(NORTH)
+				distance = ICON_SIZE_Y - click_point[2]
+			if(SOUTH)
+				distance = click_point[2]
+			if(EAST)
+				distance = ICON_SIZE_X - click_point[1]
+			if(WEST)
+				distance = click_point[1]
+		// Click positions are whole pixels, so a bias under one only ever settles an exact tie.
+		if(origin && prefer_near)
+			distance += get_dist(get_step(origin, edge), prefer_near) / 100
+		if(distance < nearest_distance)
+			nearest = edge
+			nearest_distance = distance
+	return nearest
 
-	var/wall_dir = remote_eye.dir
-	if(ISDIAGONALDIR(wall_dir) || !isclosedturf(get_step(target_turf, wall_dir)))
-		remote_eye.balloon_alert(owner, "face an adjacent wall!")
-		return
+/// Ship camera build - mounts a finished camera on the wall nearest the click
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_place_camera(mob/user, turf/target, list/click_point)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
 
-	if(locate(/obj/machinery/camera) in target_turf)
-		remote_eye.balloon_alert(owner, "camera already here!")
-		return
+	// The camera hangs on a wall like a handheld wallframe would be, so it watches the room
+	// in front of that wall.
+	var/list/mount = drone_wall_mount(target, click_point)
+	if(!mount)
+		drone_alert(user, "no wall to mount on!")
+		return FALSE
+	var/turf/mount_turf = mount[1]
+	var/wall_dir = mount[2]
+	if(!drone_can_work_at(user, mount_turf))
+		return FALSE
 
-	owner.changeNext_move(CLICK_CD_RANGE)
-	check_rcd()
+	if(locate(/obj/machinery/camera) in mount_turf)
+		drone_alert(user, "camera already here!")
+		return FALSE
 
-	var/obj/machinery/camera/placed_camera = ship_rcd.build_camera(target_turf, wall_dir, owner)
+	user.changeNext_move(CLICK_CD_RANGE)
+	check_internal_rcd()
+
+	var/obj/machinery/camera/placed_camera = ship_rcd.build_camera(mount_turf, wall_dir, user)
 	if(!placed_camera)
-		return
+		return FALSE
 
-	ship_console.setup_placed_camera(placed_camera)
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	setup_placed_camera(placed_camera)
+	playsound(mount_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	return TRUE
 
-/// Ship-specific RCD configure action
-/datum/action/innate/construction/ship/configure_mode
-	name = "Configure RCD"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rcd_config"
-
-/datum/action/innate/construction/ship/configure_mode/Activate()
-	if(..())
-		return
-	check_rcd()
-	base_console.internal_rcd.owner = base_console
-	base_console.internal_rcd.ui_interact(owner)
+/// Ship camera removal - takes the clicked camera, or any camera on the tile
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_camera(mob/user, turf/target, atom/clicked)
+	var/obj/machinery/camera/camera
+	if(istype(clicked, /obj/machinery/camera) && clicked.loc == target)
+		camera = clicked
+	else
+		camera = locate() in target
+	if(!camera)
+		drone_alert(user, "no camera here!")
+		return FALSE
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	if(camera.resistance_flags & INDESTRUCTIBLE)
+		drone_alert(user, "can't remove that!")
+		return FALSE
+	return drone_remove_fixture(user, target, camera)
 
 // ============================================
-// RTD (Rapid Tiling Device) Actions
+// RTD (Rapid Tiling Device)
 // ============================================
 
-/// Ship RTD configure action - opens tile selection UI
-/datum/action/innate/construction/ship/rtd_configure
-	name = "Configure Tiles"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rtd_config"
+/// Ship RTD build - places floor tiles
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_place_tile(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
 
-/datum/action/innate/construction/ship/rtd_configure/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	if(!ship_console.internal_rtd)
-		remote_eye.balloon_alert(owner, "no RTD installed!")
-		return
-	// Open the RTD UI directly (bypass attack_self which has proximity checks)
-	ship_console.internal_rtd.ui_interact(owner)
+	if(!internal_rtd)
+		drone_alert(user, "no RTD installed!")
+		return FALSE
 
-/// Ship RTD build action - places floor tiles
-/datum/action/innate/construction/ship/rtd_build
-	name = "Place Tile"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rtd_construct"
+	user.changeNext_move(CLICK_CD_RANGE)
+	return !!decorate_turf(target, user, "tile")
 
-/datum/action/innate/construction/ship/rtd_build/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+/// Whether the tile tool can lift the floor here: any finished floor that isn't plating, proofed or indestructible.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_can_lift_floor(turf/target)
+	if(!istype(target, /turf/open/floor) || istype(target, /turf/open/floor/plating))
+		return FALSE
+	var/turf/open/floor/target_floor = target
+	return !target_floor.rcd_proof && !(target_floor.resistance_flags & INDESTRUCTIBLE)
 
-	if(!ship_console.internal_rtd)
-		remote_eye.balloon_alert(owner, "no RTD installed!")
-		return
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-	ship_console.decorate_turf(target_turf, owner, "tile")
-
-/// Ship RTD deconstruct action - removes floor tiles
-/datum/action/innate/construction/ship/rtd_deconstruct
-	name = "Remove Tile"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rtd_remove"
-
-/datum/action/innate/construction/ship/rtd_deconstruct/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	if(!ship_console.internal_rtd)
-		remote_eye.balloon_alert(owner, "no RTD installed!")
-		return
-
-	// Can't deconstruct plating - that's the RCD's job
-	if(istype(target_turf, /turf/open/floor/plating))
-		remote_eye.balloon_alert(owner, "nothing to remove!")
-		return
-
-	if(!istype(target_turf, /turf/open/floor))
-		remote_eye.balloon_alert(owner, "can't remove that!")
-		return
-	var/turf/open/floor/target_floor = target_turf
-	if(target_floor.rcd_proof || (target_floor.resistance_flags & INDESTRUCTIBLE))
-		remote_eye.balloon_alert(owner, "can't remove that!")
-		return
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
-	if(!ship_rcd.can_refund_materials(owner))
-		return
-	var/list/materials = ship_rcd.get_deconstruction_materials(target_turf)
-
-	owner.changeNext_move(CLICK_CD_RANGE)
+/// Lifts the floor tile to plating and refunds it to the silo. Returns the resulting turf, or null when nothing was lifted.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_lift_floor(turf/target, mob/user)
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
+	if(!ship_rcd.can_refund_materials(user))
+		return null
+	var/list/materials = ship_rcd.get_deconstruction_materials(target)
 
 	// Remove decals
 	var/list/all_decals = list()
-	for(var/obj/effect/decal in target_turf.contents)
+	for(var/obj/effect/decal in target.contents)
 		all_decals += decal
 	for(var/obj/effect/decal in all_decals)
-		target_turf.contents -= decal
+		target.contents -= decal
 		qdel(decal)
 
 	// Change turf to plating
-	var/original_turf_type = target_turf.type
-	var/original_layers = target_turf.count_baseturfs()
+	var/original_turf_type = target.type
+	var/original_layers = target.count_baseturfs()
 	var/turf/new_turf
-	if(target_turf.baseturf_at_depth(1) == /turf/baseturf_bottom)
-		new_turf = target_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+	if(target.baseturf_at_depth(1) == /turf/baseturf_bottom)
+		new_turf = target.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 	else
-		new_turf = target_turf.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+		new_turf = target.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	if(!new_turf || (new_turf.type == original_turf_type && new_turf.count_baseturfs() >= original_layers))
-		return
-	ship_rcd.refund_materials(materials, owner)
+		return null
+	ship_rcd.refund_materials(materials, user)
 
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	playsound(new_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	return new_turf
+
+/// Ship RTD deconstruct - removes floor tiles
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_tile(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+
+	if(!internal_rtd)
+		drone_alert(user, "no RTD installed!")
+		return FALSE
+
+	// Can't deconstruct plating - that's the RCD's job
+	if(istype(target, /turf/open/floor/plating))
+		drone_alert(user, "nothing to remove!")
+		return FALSE
+
+	if(!drone_can_lift_floor(target))
+		drone_alert(user, "can't remove that!")
+		return FALSE
+
+	user.changeNext_move(CLICK_CD_RANGE)
+	return !!drone_lift_floor(target, user)
 
 // ============================================
-// RPD (Rapid Pipe Dispenser) Actions
+// RPD (Rapid Pipe Dispenser)
 // ============================================
 
-/// Ship RPD configure action - opens pipe selection UI
-/datum/action/innate/construction/ship/rpd_configure
-	name = "Configure Pipes"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rpd_config"
+/// Ship RPD build - places pipes
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_place_pipe(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
 
-/datum/action/innate/construction/ship/rpd_configure/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	if(!ship_console.internal_rpd)
-		remote_eye.balloon_alert(owner, "no RPD installed!")
-		return
-	// Open the RPD UI directly (bypass attack_self which has proximity checks)
-	ship_console.internal_rpd.ui_interact(owner)
+	if(!internal_rpd)
+		drone_alert(user, "no RPD installed!")
+		return FALSE
 
-/// Ship RPD build action - places pipes
-/datum/action/innate/construction/ship/rpd_build
-	name = "Place Pipe"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rpd_construct"
+	user.changeNext_move(CLICK_CD_RANGE)
 
-/datum/action/innate/construction/ship/rpd_build/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	if(!ship_console.internal_rpd)
-		remote_eye.balloon_alert(owner, "no RPD installed!")
-		return
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-
-	var/obj/item/pipe_dispenser/internal/rpd = ship_console.internal_rpd
+	var/obj/item/pipe_dispenser/internal/rpd = internal_rpd
 
 	// Use the RPD's interact_with_atom to handle pipe placement
-	rpd.interact_with_atom(target_turf, owner)
+	rpd.interact_with_atom(target, user)
+	return TRUE
 
-/// Ship RPD destroy action - removes pipes
-/datum/action/innate/construction/ship/rpd_destroy
-	name = "Remove Pipe"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rpd_remove"
+/// Ship RPD destroy - removes pipes
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_pipe(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
 
-/datum/action/innate/construction/ship/rpd_destroy/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	if(!internal_rpd)
+		drone_alert(user, "no RPD installed!")
+		return FALSE
 
-	if(!ship_console.internal_rpd)
-		remote_eye.balloon_alert(owner, "no RPD installed!")
-		return
+	user.changeNext_move(CLICK_CD_RANGE)
 
-	owner.changeNext_move(CLICK_CD_RANGE)
-
-	var/obj/item/pipe_dispenser/rpd = ship_console.internal_rpd
+	var/obj/item/pipe_dispenser/rpd = internal_rpd
 
 	// Check for placed/wrenched atmospherics pipes first
-	var/obj/machinery/atmospherics/atmos_pipe = locate() in target_turf
+	var/obj/machinery/atmospherics/atmos_pipe = locate() in target
 	if(atmos_pipe)
 		// Need unwrench upgrade to remove placed pipes
 		if(!(rpd.upgrade_flags & RPD_UPGRADE_UNWRENCH))
-			remote_eye.balloon_alert(owner, "need unwrench upgrade!")
-			return
+			drone_alert(user, "need unwrench upgrade!")
+			return FALSE
 		// Try to unwrench the pipe (converts it to an item)
-		var/result = atmos_pipe.wrench_act(owner, rpd)
+		var/result = atmos_pipe.wrench_act(user, rpd)
 		if(result)
-			playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
-		else
-			remote_eye.balloon_alert(owner, "can't unwrench that!")
-		return
+			playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
+			return TRUE
+		drone_alert(user, "can't unwrench that!")
+		return FALSE
 
 	// Find and destroy unplaced pipe-related objects on this turf
 	// Pipes are free to place and remove, so removal must not generate silo materials.
 	var/destroyed_something = FALSE
-	for(var/obj/item/pipe/P in target_turf)
+	for(var/obj/item/pipe/P in target)
 		qdel(P)
 		destroyed_something = TRUE
 		break
 	if(!destroyed_something)
-		for(var/obj/structure/disposalconstruct/D in target_turf)
+		for(var/obj/structure/disposalconstruct/D in target)
 			qdel(D)
 			destroyed_something = TRUE
 			break
 	if(!destroyed_something)
-		for(var/obj/structure/c_transit_tube/T in target_turf)
+		for(var/obj/structure/c_transit_tube/T in target)
 			qdel(T)
 			destroyed_something = TRUE
 			break
 	if(!destroyed_something)
-		for(var/obj/structure/c_transit_tube_pod/P in target_turf)
+		for(var/obj/structure/c_transit_tube_pod/P in target)
 			qdel(P)
 			destroyed_something = TRUE
 			break
 	if(!destroyed_something)
-		for(var/obj/item/pipe_meter/M in target_turf)
+		for(var/obj/item/pipe_meter/M in target)
 			qdel(M)
 			destroyed_something = TRUE
 			break
 	if(!destroyed_something)
-		for(var/obj/structure/disposalpipe/broken/B in target_turf)
+		for(var/obj/structure/disposalpipe/broken/B in target)
 			qdel(B)
 			destroyed_something = TRUE
 			break
 
 	if(destroyed_something)
-		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
-	else
-		remote_eye.balloon_alert(owner, "nothing to remove!")
+		playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
+		return TRUE
+	drone_alert(user, "nothing to remove!")
+	return FALSE
 
 // ============================================
-// RLD (Rapid Lighting Device) Actions
+// RLD (Rapid Lighting Device)
 // ============================================
 
-/// Ship RLD color picker action - opens color selection directly
-/datum/action/innate/construction/ship/rld_color
-	name = "Light Color"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rld_config"
+/// Ship RLD build - places what the Lights tool is set to build: wall tubes and bulbs, floor lights, glow sticks
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_place_light(mob/user, turf/target, list/click_point)
+	if(!drone_can_work_at(user, target))
+		return FALSE
 
-/datum/action/innate/construction/ship/rld_color/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-	if(!ship_console.internal_rld)
-		remote_eye.balloon_alert(owner, "no RLD installed!")
-		return
+	if(!internal_rld)
+		drone_alert(user, "no RLD installed!")
+		return FALSE
 
-	var/obj/item/construction/rld/rld = ship_console.internal_rld
-	var/new_color = input(owner, "Choose light color", "Light Color", rld.color_choice) as color|null
-	if(new_color == null)
-		return
+	user.changeNext_move(CLICK_CD_RANGE)
 
-	rld.color_choice = new_color
-	remote_eye.balloon_alert(owner, "color set")
+	var/obj/item/construction/rld/internal/rld = internal_rld
 
-/// Ship RLD build action - places lights using drone direction for wall lights
-/datum/action/innate/construction/ship/rld_build
-	name = "Place Light"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rld_construct"
-
-/datum/action/innate/construction/ship/rld_build/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	if(!ship_console.internal_rld)
-		remote_eye.balloon_alert(owner, "no RLD installed!")
-		return
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-
-	var/obj/item/construction/rld/internal/rld = ship_console.internal_rld
-
-	// RLD mode: 1 = GLOW_MODE, 2 = LIGHT_MODE
-	switch(rld.mode)
-		if(1) // GLOW_MODE - throw glowstick
-			if(!rld.check_glow_stick_materials(owner))
-				return
-			if(!rld.use_glow_stick_materials(owner))
-				return
+	switch(light_build_type)
+		if(SHIP_DRONE_LIGHT_GLOW) // throw glowstick
+			if(!rld.check_glow_stick_materials(user))
+				return FALSE
+			if(!rld.use_glow_stick_materials(user))
+				return FALSE
 			// Create and throw glowstick
-			var/obj/item/flashlight/glowstick/new_stick = new(get_turf(remote_eye))
+			var/obj/item/flashlight/glowstick/new_stick = new(get_turf(eyeobj))
 			new_stick.color = rld.color_choice
 			new_stick.set_light_color(new_stick.color)
-			new_stick.throw_at(target_turf, 9, 3, owner)
+			new_stick.throw_at(target, 9, 3, user)
 			new_stick.turn_on()
 			new_stick.update_brightness()
 			rld.activate()
+			return TRUE
 
-		if(2) // LIGHT_MODE - place fixture
-			if(iswallturf(target_turf))
-				// Wall light - use drone's facing direction
-				var/drone_dir = remote_eye.dir
-				var/turf/light_turf = get_step(target_turf, drone_dir)
+		if(SHIP_DRONE_LIGHT_FLOOR)
+			if(!isfloorturf(target))
+				drone_alert(user, "needs a floor!")
+				return FALSE
+			if(locate(/obj/machinery/light/floor) in target)
+				drone_alert(user, "light already there!")
+				return FALSE
 
-				// Check if the target turf is valid for a light
-				if(!light_turf || iswallturf(light_turf) || isspaceturf(light_turf))
-					remote_eye.balloon_alert(owner, "can't place light there!")
-					return
+			if(!rld.check_floor_light_materials(user))
+				return FALSE
+			if(!rld.use_floor_light_materials(user))
+				return FALSE
 
-				// Check for existing light
-				if(locate(/obj/machinery/light) in light_turf)
-					remote_eye.balloon_alert(owner, "light already there!")
-					return
+			var/obj/machinery/light/floor/FL = new(target)
+			FL.color = rld.color_choice
+			FL.set_light_color(rld.color_choice)
+			rld.activate()
+			return TRUE
 
-				if(!rld.check_wall_light_materials(owner))
-					return
-				if(!rld.use_wall_light_materials(owner))
-					return
+		if(SHIP_DRONE_LIGHT_TUBE, SHIP_DRONE_LIGHT_BULB)
+			// Wall light - on the open turf in front of the wall it hangs on
+			var/list/mount = drone_wall_mount(target, click_point, light_build_dir)
+			if(!mount)
+				drone_alert(user, "no wall to mount on!")
+				return FALSE
+			var/turf/mount_turf = mount[1]
+			var/wall_dir = mount[2]
+			if(!drone_can_work_at(user, mount_turf))
+				return FALSE
 
-				// Place wall light on the open turf, facing the wall
-				var/obj/machinery/light/L = new(light_turf)
-				L.setDir(get_dir(light_turf, target_turf))
-				L.color = rld.color_choice
-				L.set_light_color(rld.color_choice)
-				rld.activate()
+			// One wall light to a wall: floor lights and lights on the tile's other walls don't count
+			for(var/obj/machinery/light/existing in mount_turf)
+				if(istype(existing, /obj/machinery/light/floor) || existing.dir != wall_dir)
+					continue
+				drone_alert(user, "light already there!")
+				return FALSE
 
-			else if(isfloorturf(target_turf))
-				// Floor light
-				if(locate(/obj/machinery/light/floor) in target_turf)
-					remote_eye.balloon_alert(owner, "light already there!")
-					return
+			if(!rld.check_wall_light_materials(user))
+				return FALSE
+			if(!rld.use_wall_light_materials(user))
+				return FALSE
 
-				if(!rld.check_floor_light_materials(owner))
-					return
-				if(!rld.use_floor_light_materials(owner))
-					return
+			// Place wall light on the open turf, facing the wall
+			var/light_path = light_build_type == SHIP_DRONE_LIGHT_BULB ? /obj/machinery/light/small : /obj/machinery/light
+			var/obj/machinery/light/new_light = new light_path(mount_turf)
+			new_light.setDir(wall_dir)
+			new_light.color = rld.color_choice
+			new_light.set_light_color(rld.color_choice)
+			rld.activate()
+			return TRUE
 
-				var/obj/machinery/light/floor/FL = new(target_turf)
-				FL.color = rld.color_choice
-				FL.set_light_color(rld.color_choice)
-				rld.activate()
-			else
-				remote_eye.balloon_alert(owner, "can't place light here!")
+	drone_alert(user, "invalid mode!")
+	return FALSE
 
-		else
-			remote_eye.balloon_alert(owner, "invalid mode!")
+/// Ship RLD remove - removes the clicked light, or any light on the tile
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_light(mob/user, turf/target, atom/clicked)
+	if(!drone_can_work_at(user, target))
+		return FALSE
 
-/// Ship RLD remove action - removes lights
-/datum/action/innate/construction/ship/rld_remove
-	name = "Remove Light"
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rld_remove"
+	if(!internal_rld)
+		drone_alert(user, "no RLD installed!")
+		return FALSE
 
-/datum/action/innate/construction/ship/rld_remove/Activate()
-	if(..())
-		return
-	if(!check_spot())
-		return
-	var/turf/target_turf = get_turf(remote_eye)
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	if(!ship_console.internal_rld)
-		remote_eye.balloon_alert(owner, "no RLD installed!")
-		return
-
-	owner.changeNext_move(CLICK_CD_RANGE)
+	user.changeNext_move(CLICK_CD_RANGE)
 
 	// Find a light fixture to remove
-	var/obj/machinery/light/target_light = locate() in target_turf
+	var/obj/machinery/light/target_light
+	if(istype(clicked, /obj/machinery/light) && clicked.loc == target)
+		target_light = clicked
+	else
+		target_light = locate() in target
 	if(!target_light)
-		remote_eye.balloon_alert(owner, "no light here!")
-		return
+		drone_alert(user, "no light here!")
+		return FALSE
 
 	if(target_light.resistance_flags & INDESTRUCTIBLE)
-		remote_eye.balloon_alert(owner, "can't remove that!")
-		return
-	var/obj/item/construction/rcd/internal/ship/ship_rcd = ship_console.internal_rcd
-	if(!ship_rcd.can_refund_materials(owner))
-		return
+		drone_alert(user, "can't remove that!")
+		return FALSE
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = internal_rcd
+	if(!ship_rcd.can_refund_materials(user))
+		return FALSE
 	var/list/materials = ship_rcd.get_deconstruction_materials(target_light)
 
 	// Remove the light
-	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	playsound(target, 'sound/items/deconstruct.ogg', 60, TRUE)
 	qdel(target_light)
-	ship_rcd.refund_materials(materials, owner)
-
-// ============================================
-// T-Ray Scanner Actions
-// ============================================
-
-/// Ship T-ray toggle action - cycles through scanner modes
-/datum/action/innate/construction/ship/tray_toggle
-	name = "Toggle Scanner"
-	button_icon = 'icons/obj/devices/scanner.dmi'
-	button_icon_state = "t-ray0"
-
-/datum/action/innate/construction/ship/tray_toggle/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	// Cycle through modes: off -> t-ray -> pipe -> thermal -> off
-	switch(ship_console.tray_mode)
-		if(SHIP_TRAY_MODE_OFF)
-			ship_console.tray_mode = SHIP_TRAY_MODE_TRAY
-			remote_eye.balloon_alert(owner, "T-ray mode")
-		if(SHIP_TRAY_MODE_TRAY)
-			ship_console.tray_mode = SHIP_TRAY_MODE_PIPE
-			remote_eye.balloon_alert(owner, "pipe connections mode")
-		if(SHIP_TRAY_MODE_PIPE)
-			ship_console.tray_mode = SHIP_TRAY_MODE_THERMAL
-			remote_eye.balloon_alert(owner, "thermal mode")
-		if(SHIP_TRAY_MODE_THERMAL)
-			ship_console.tray_mode = SHIP_TRAY_MODE_OFF
-			ship_console.tray_connection_images.Cut()
-			remote_eye.balloon_alert(owner, "scanner off")
+	ship_rcd.refund_materials(materials, user)
+	return TRUE

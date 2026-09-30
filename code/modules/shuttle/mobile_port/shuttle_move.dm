@@ -10,6 +10,11 @@
 	if(isnull(new_dock))
 		return DOCKING_NULL_DESTINATION
 
+	// VOIDCREW EDIT ADDITION START: also enforce bay ownership on forced template loads.
+	if(!new_dock.allows_ship_bay_docking(src))
+		return DOCKING_BLOCKED
+	// VOIDCREW EDIT ADDITION END
+
 	if(new_dock.get_docked() == src)
 		remove_ripples()
 		return DOCKING_SUCCESS

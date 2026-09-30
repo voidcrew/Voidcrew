@@ -80,6 +80,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		RegisterSignal(source_code_hdd, COMSIG_QDELETING, PROC_REF(on_source_disk_deleted))
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
+		record_source_disk_installed(user) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 		balloon_alert(user, "disk uploaded!")
 		claim_unlinked_experiment_handlers()
 		claim_unlinked_survey_console()
@@ -231,6 +232,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		return
 	victim_web.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = stolen))
 	new /obj/item/research_notes(loc, stolen, "thievery")
+	record_research_stolen(thief, stolen) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	balloon_alert(thief, "siphoned [stolen] points!")
 
 #undef RESEARCH_STOLEN_PER_THEFT

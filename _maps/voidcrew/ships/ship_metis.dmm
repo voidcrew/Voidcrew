@@ -7,7 +7,7 @@
 "ab" = (
 /obj/item/trash/semki,
 /obj/item/trash/boritos,
-/obj/item/circuitboard/machine/nanite_programmer,
+/obj/item/circuitboard/computer/nanite_cloud_controller,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/trashcart,
 /obj/structure/cable,
@@ -127,11 +127,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/hallway/fore)
-"dD" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/sign/warning/electric_shock,
-/turf/closed/wall/mineral/titanium,
-/area/shuttle/voidcrew/metis/science/xenobiology)
 "dG" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/mineral/titanium/tiled/white,
@@ -1580,6 +1575,10 @@
 /obj/item/food/soup/electron,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/hallway/fore)
+"Ff" = (
+/obj/structure/sign/warning/electric_shock,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/metis/science/xenobiology)
 "Fk" = (
 /obj/structure/window/reinforced/spawner,
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -1708,7 +1707,6 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/hallway/fore)
 "HA" = (
-/mob/living/basic/slime,
 /turf/open/floor/circuit/telecomms{
 	name = "coldroom"
 	},
@@ -2640,7 +2638,6 @@
 /obj/machinery/flasher{
 	pixel_y = 23
 	},
-/obj/item/circuitboard/machine/nanite_program_hub,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -2704,6 +2701,7 @@
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/science/xenobiology)
 "Yo" = (
+/mob/living/basic/slime,
 /obj/effect/decal/cleanable/blood/old,
 /obj/item/toy/plush/moth,
 /obj/machinery/camera/autoname{
@@ -2999,7 +2997,7 @@ tv
 hx
 YC
 bS
-dD
+Ff
 EG
 WF
 WF

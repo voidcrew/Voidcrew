@@ -28,7 +28,7 @@
 	requires_flying = TRUE
 	/// Not a green-band event: two in five ticks launch a carp frozen inside a rock, which
 	/// comes through the hull rather than past it. Hostile boarders plus a breach to weld
-	/// is not what the outer ring is for.
+	/// is not what the inner ring is for.
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	/// Carp that get inside have to be fought in a corridor. On a hull with one room the
 	/// first breach puts a carp on top of everybody at once.

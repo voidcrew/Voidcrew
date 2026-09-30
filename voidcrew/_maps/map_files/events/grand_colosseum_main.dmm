@@ -484,6 +484,34 @@
 /obj/effect/spawner/random/food_or_drink/booze,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"bQ" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"bR" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"bS" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
 "bT" = (
 /obj/machinery/status_display/colosseum/directional/north,
 /turf/open/floor/bronze/flat,
@@ -492,6 +520,14 @@
 /obj/machinery/light/warm/directional/west,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
+"bV" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/south,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
 "bW" = (
 /obj/machinery/status_display/colosseum/directional/west,
 /obj/machinery/light/warm/directional/west,
@@ -510,6 +546,10 @@
 	},
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"bZ" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
 "ca" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
@@ -537,6 +577,44 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
+"cd" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ce" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"cf" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"cg" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ch" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
 "cs" = (
 /obj/effect/spawner/random/entertainment/plushie,
 /turf/open/indestructible/rockyground,
@@ -560,9 +638,6 @@
 /obj/item/binoculars,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
-"di" = (
-/turf/open/indestructible/light,
-/area/voidcrew/colosseum/lobby)
 "dp" = (
 /obj/structure/stone_tile/block,
 /obj/structure/statue/gold/hos,
@@ -799,11 +874,6 @@
 	picked_color = "Yellow"
 	},
 /turf/open/indestructible/rockyground,
-/area/voidcrew/colosseum/lobby)
-"kL" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/machinery/outpost_elevator/directional/south,
-/turf/open/indestructible/light,
 /area/voidcrew/colosseum/lobby)
 "lb" = (
 /obj/effect/spawner/random/trash/garbage,
@@ -1123,10 +1193,6 @@
 "uF" = (
 /obj/structure/stone_tile/slab/colosseum,
 /turf/open/indestructible/stone,
-/area/voidcrew/colosseum/lobby)
-"uH" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/turf/open/indestructible/light,
 /area/voidcrew/colosseum/lobby)
 "uI" = (
 /obj/structure/filingcabinet,
@@ -3957,9 +4023,9 @@ ae
 ae
 ae
 ae
-uH
-uH
-uH
+bS
+bR
+bQ
 aU
 "}
 (31,1,1) = {"
@@ -4017,9 +4083,9 @@ ae
 OV
 yQ
 ae
-uH
-uH
-kL
+cd
+bZ
+bV
 aU
 "}
 (32,1,1) = {"
@@ -4077,9 +4143,9 @@ ML
 ua
 gJ
 ae
-uH
-uH
-uH
+cg
+cf
+ce
 aU
 "}
 (33,1,1) = {"
@@ -4137,9 +4203,9 @@ ae
 GA
 ae
 ae
-di
-di
-di
+ch
+ch
+ch
 aU
 "}
 (34,1,1) = {"

@@ -1,0 +1,147 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"amz" = (
+/obj/structure/closet/crate/bin,
+/obj/item/storage/bag/trash/filled,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"aoh" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"aKo" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"aVd" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"aYz" = (
+/obj/structure/platform/bamboo,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"boN" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"dZB" = (
+/obj/item/pillow,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"euP" = (
+/turf/open/floor/wood,
+/area/template_noop)
+"eBq" = (
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"gCs" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/wood,
+/area/template_noop)
+"hdC" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood,
+/area/template_noop)
+"mci" = (
+/obj/machinery/vending/snack/green,
+/turf/open/floor/wood,
+/area/template_noop)
+"pwp" = (
+/turf/template_noop,
+/area/template_noop)
+"rDB" = (
+/obj/structure/dresser,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"tvp" = (
+/obj/structure/platform/bamboo,
+/obj/item/reagent_containers/cup/glass/dry_ramen,
+/turf/open/floor/bamboo/tatami,
+/area/template_noop)
+"tSO" = (
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/wood,
+/area/template_noop)
+"ybd" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+mci
+pwp
+ybd
+"}
+(2,1,1) = {"
+euP
+dZB
+pwp
+"}
+(3,1,1) = {"
+tSO
+tvp
+pwp
+"}
+(4,1,1) = {"
+euP
+dZB
+pwp
+"}
+(5,1,1) = {"
+pwp
+pwp
+pwp
+"}
+(6,1,1) = {"
+euP
+amz
+aVd
+"}
+(7,1,1) = {"
+euP
+eBq
+aKo
+"}
+(8,1,1) = {"
+euP
+eBq
+boN
+"}
+(9,1,1) = {"
+euP
+aoh
+rDB
+"}
+(10,1,1) = {"
+pwp
+pwp
+pwp
+"}
+(11,1,1) = {"
+euP
+dZB
+pwp
+"}
+(12,1,1) = {"
+hdC
+aYz
+pwp
+"}
+(13,1,1) = {"
+euP
+dZB
+pwp
+"}
+(14,1,1) = {"
+gCs
+pwp
+pwp
+"}

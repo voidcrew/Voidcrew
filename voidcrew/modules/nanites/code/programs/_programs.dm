@@ -26,6 +26,8 @@
 
 	///What this can turn into if it glitches.
 	var/list/rogue_types = list(/datum/nanite_program/glitch)
+	///If TRUE, a software error has forced the program off regardless of its activation status. Cleared by the next cloud sync.
+	var/force_disabled = FALSE
 
 	//The following vars are customizable
 	///If FALSE, the program won't process, disables passive effects, can't trigger and doesn't consume nanites
@@ -99,6 +101,8 @@
 	target.deactivation_code = deactivation_code
 	target.kill_code = kill_code
 	target.trigger_code = trigger_code
+
+	target.force_disabled = force_disabled //cloud syncs copy a healthy program over this, which is what clears the error
 
 	target.rules = list()
 	for(var/datum/nanite_rule/rule as anything in rules)
@@ -230,7 +234,7 @@
 		timer_trigger_delay_next = 0
 		return
 
-	if(check_conditions() && consume_nanites(use_rate))
+	if(!force_disabled && check_conditions() && consume_nanites(use_rate))
 		if(!passive_enabled)
 			enable_passive_effect()
 		active_effect()
@@ -267,12 +271,14 @@
 /datum/nanite_program/proc/trigger(delayed = FALSE, comm_message)
 	if(!can_trigger)
 		return
-	if(!activated)
+	if(!activated || force_disabled)
 		return
 	if(timer_trigger_delay && !delayed)
 		timer_trigger_delay_next = world.time + timer_trigger_delay
 		return
 	if(world.time < next_trigger)
+		return
+	if(!check_conditions())
 		return
 	if(!consume_nanites(trigger_cost))
 		return
@@ -322,8 +328,8 @@
 			trigger_code = 0
 			nanites?.notify_host("Your [name] nanite program hits a software error and loses its signal codes.", warning = TRUE)
 		if(3)
-			toggle() //enable/disable
-			nanites?.notify_host("Your [name] nanite program hits a software error and switches [activated ? "on" : "off"].", warning = TRUE)
+			force_disabled = TRUE
+			nanites?.notify_host("Your [name] nanite program hits a software error and shuts down until it is next synced from the cloud.", warning = TRUE)
 		if(4)
 			if(can_trigger)
 				trigger()
@@ -357,7 +363,7 @@
 /datum/nanite_program/protocol/check_conditions()
 	. = ..()
 	for(var/datum/nanite_program/protocol/protocol as anything in nanites.protocols)
-		if(protocol != src && protocol.activated && protocol.protocol_class == protocol_class)
+		if(protocol != src && protocol.activated && !protocol.force_disabled && protocol.protocol_class == protocol_class)
 			return FALSE
 	return TRUE
 

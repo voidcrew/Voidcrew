@@ -40,9 +40,9 @@
 #define ZONE_TRANSITION_TIME (10 SECONDS)
 
 /// Zone distribution ratios (distance from center, as percentage of max radius)
-/// Inner ring: 0% to 33% = closest to sun (most dangerous due to sun + lawless zone)
-/// Middle ring: 33% to 66%
-/// Outer ring: 66% to 100%
+/// Inner ring: 0% to 33% = green (neutral, player ships start here)
+/// Middle ring: 33% to 66% = yellow (contested)
+/// Outer ring: 66% and beyond = red (lawless)
 #define ZONE_INNER_RING_RATIO 0.33
 #define ZONE_MIDDLE_RING_RATIO 0.66
 // Outer is implicitly 1.0

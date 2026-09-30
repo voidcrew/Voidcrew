@@ -4,8 +4,7 @@
 
 /// Plays a sound only to mobs within a specific target's combat areas
 /// This prevents sounds from bleeding across to other ships in reserved space.
-/// Targets without area scoping (player outposts own their whole z-level) fall
-/// back to a normal unfiltered playsound.
+/// Targets without area scoping fall back to a normal unfiltered playsound.
 /proc/playsound_ship(turf/source_turf, sound, volume = 100, vary = TRUE, extrarange = 0, obj/structure/overmap/target_ship)
 	var/list/ship_areas = target_ship?.get_combat_target_areas()
 	if(!source_turf || !ship_areas)

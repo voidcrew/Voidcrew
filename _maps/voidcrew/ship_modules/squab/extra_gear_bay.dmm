@@ -5,6 +5,11 @@
 /obj/effect/turf_decal/siding/brown,
 /turf/template_noop,
 /area/template_noop)
+"emL" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/turf_decal/siding/brown,
+/turf/template_noop,
+/area/template_noop)
 "fFP" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -21,27 +26,11 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"kLn" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/neutral/filled/warning,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/template_noop,
-/area/template_noop)
 "rtq" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
 	},
 /obj/effect/turf_decal/trimline/neutral/filled/warning,
-/turf/template_noop,
-/area/template_noop)
-"uWq" = (
-/obj/effect/decal/cleanable/greenglow,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/brown,
 /turf/template_noop,
 /area/template_noop)
 "wep" = (
@@ -63,8 +52,8 @@ rtq
 eit
 "}
 (2,1,1) = {"
-kLn
-uWq
+rtq
+emL
 "}
 (3,1,1) = {"
 fFP

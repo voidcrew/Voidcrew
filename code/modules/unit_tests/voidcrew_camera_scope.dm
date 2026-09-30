@@ -1,7 +1,7 @@
 /// Forged/stale selections must not bypass the camera list's local network filtering.
 /datum/unit_test/voidcrew_camera_scope/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
 	TEST_ASSERT(home.load_level(), "Camera fixture home failed to load")
 	var/obj/machinery/camera/local_camera = allocate(/obj/machinery/camera, home.arrival_turf)
 	var/obj/machinery/camera/foreign_camera = allocate(/obj/machinery/camera, run_loc_floor_bottom_left)

@@ -1,0 +1,34 @@
+{
+ "hulls": {
+  "hiryu_class_carrier_plastitanium_hull": {
+   "height": 18,
+   "png": "ship_hiryu_class_carrier_plastitanium_hull.png",
+   "slots": {
+    "Cryogenics": [
+     10,
+     4
+    ],
+    "Exosuit_hangar": [
+     10,
+     14
+    ],
+    "engineering": [
+     7,
+     7
+    ],
+    "helm": [
+     24,
+     7
+    ],
+    "medbay": [
+     17,
+     9
+    ]
+   },
+   "src_md5": "c0342803fec313a9247148a41a8bf79d",
+   "width": 32
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

@@ -28,7 +28,6 @@
           "uniform": "/obj/item/clothing/under/syndicate/sniper"
         },
         "Backpack": {
-          "/obj/item/gun/ballistic/revolver": 1,
           "/obj/item/melee/baton/telescopic/gold": 1
         },
         "Belt": null,
@@ -110,7 +109,6 @@
           "uniform": "/obj/item/clothing/under/rank/centcom/commander"
         },
         "Backpack": {
-          "/obj/item/gun/ballistic/revolver": 1,
           "/obj/item/melee/baton/telescopic/gold": 1
         },
         "Belt": null,

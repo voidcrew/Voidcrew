@@ -13,9 +13,9 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | --- | --- |
 | **Overmap** | The galaxy map, a 51-by-51 grid of tiles with a star at the centre, on which your whole ship is one icon. See [The Overmap](overmap.md). |
 | **Zone** | One of three static concentric rings on the overmap that decide what crews may do to each other. Named on the helm readout and colour-tinted on the map. |
-| **Neutral Zone** *(green)* | The outer ring. Ship weapons are disabled and nobody can interdict you. Every ship starts here. Traders call it the neutral ring. |
+| **Neutral Zone** *(green)* | The inner ring, around the star. Ship weapons are disabled and nobody can interdict you. Every ship starts here. Traders call it the neutral ring. |
 | **Contested Zone** *(yellow)* | The middle ring. Ship weapons are still disabled, but you can be interdicted and boarded. Traders call it the contested lanes. |
-| **Lawless Zone** *(red)* | The inner ring, nearest the star. Everything is permitted, and the ore and loot are the best in the galaxy. Traders call it the lawless deep. |
+| **Lawless Zone** *(red)* | The outer ring, out to the edge of the map. Everything is permitted, and the ore and loot are the best in the galaxy. Traders call it the lawless deep. |
 | **Contact** | Anything drawn on the helm's navigation chart: a planet, ruin, storm, outpost or vessel. |
 | **Active scan** | A one-minute-cooldown sensor sweep that charts contacts beyond visual range onto your navigation list. Range grows with radar research. |
 | **Star chart** | A one-use slate bought from traders that charts every contact in one whole zone at once, including storms your own sensors cannot detect. |
@@ -62,7 +62,6 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Neural load** | What each piece of chrome costs against your 20-point capacity. Going over capacity browns every piece out at once. |
 | **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Turrets shoot people who keep starting fights. See [Trader Outposts](trader-outposts.md). |
 | **Player outpost** | A base a crew plants for itself using an outpost deed. See [Player Outposts](player-outposts.md). |
-| **Siege** | Missile fire against a raidable player outpost. The one case where ship weapons work outside the red ring. The yellow ring allows it, green still does not. |
 | **Custom slot** | A saved spawn loadout tied to your account, swapped onto a ship's job at the cryogenic oversight console. The first is free; the second and third are bought with your persistent account credits. |
 
 ## Danger

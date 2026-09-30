@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
-  Collapsible,
+  ColorBox,
   Dropdown,
   LabeledList,
   NoticeBox,
@@ -35,6 +35,12 @@ interface PortData {
 }
 
 interface Data {
+  bay?: {
+    silo: string | null;
+    requested: BooleanLike;
+    available: BooleanLike;
+    outpost_materials: BooleanLike;
+  };
   repairUnlocked: BooleanLike;
   repairEnabled: BooleanLike;
   repairStatus: string;
@@ -70,9 +76,27 @@ interface Data {
   integrity: number;
   overhealth: number;
   theme?: string;
+  selectedTool: ToolId;
+  rtdInstalled: BooleanLike;
+  rpdInstalled: BooleanLike;
+  rldInstalled: BooleanLike;
+  decalInstalled: BooleanLike;
+  scannerInstalled: BooleanLike;
+  lightType: LightType;
+  lightDir: LightDir;
+  lightColor: string;
+  scannerMode: 'off' | 't-ray' | 'pipe' | 'thermal';
+  isOutpost: BooleanLike;
+  elevatorPlanning?: BooleanLike;
 }
 
-type TabType = 'construction' | 'repair' | 'relocation' | 'settings';
+type ToolId = 'rcd' | 'camera' | 'tile' | 'pipe' | 'light' | 'decal';
+
+type LightType = 'tube' | 'bulb' | 'floor' | 'glow';
+
+type LightDir = 'auto' | 'north' | 'east' | 'south' | 'west';
+
+type TabType = 'construction' | 'tools' | 'repair' | 'relocation' | 'settings';
 
 export const ShipConstructionConsole = () => {
   const { act, data } = useBackend<Data>();
@@ -94,9 +118,18 @@ export const ShipConstructionConsole = () => {
     integrity,
     overhealth,
     theme,
+    isOutpost,
   } = data;
 
-  const [activeTab, setActiveTab] = useState<TabType>('construction');
+  const [activeTab, setActiveTab] = useState<TabType>(
+    isOutpost || isInConstructionMode ? 'tools' : 'construction',
+  );
+
+  useEffect(() => {
+    if (isInConstructionMode) {
+      setActiveTab('tools');
+    }
+  }, [isInConstructionMode]);
 
   return (
     <Window
@@ -106,7 +139,44 @@ export const ShipConstructionConsole = () => {
       theme={theme}
     >
       <Window.Content scrollable>
-        <Stack vertical fill>
+        <Stack vertical>
+          {!!data.bay && (
+            <Stack.Item>
+              <Section title="Bay materials">
+                <Box mb={1} style={{ overflowWrap: 'anywhere' }}>
+                  {data.bay.silo || 'No silo connected'}
+                </Box>
+                <Button
+                  selected={!!data.bay.silo && !data.bay.outpost_materials}
+                  disabled={!canOperate || isNotCrew}
+                  onClick={() => act('bay_ship_silo')}
+                >
+                  Use ship silo
+                </Button>
+                <Button
+                  selected={!!data.bay.outpost_materials}
+                  disabled={
+                    !canOperate ||
+                    isNotCrew ||
+                    (!!data.bay.requested && !data.bay.available)
+                  }
+                  onClick={() =>
+                    act(
+                      data.bay?.available
+                        ? 'bay_outpost_silo'
+                        : 'bay_request_silo',
+                    )
+                  }
+                >
+                  {data.bay.available
+                    ? 'Use outpost silo'
+                    : data.bay.requested
+                      ? 'Materials requested'
+                      : 'Request outpost materials'}
+                </Button>
+              </Section>
+            </Stack.Item>
+          )}
           {/* Operation Status Message */}
           {!!lastMessage && (
             <Stack.Item>
@@ -126,24 +196,37 @@ export const ShipConstructionConsole = () => {
           {/* Tab Navigation */}
           <Stack.Item>
             <Tabs>
+              {!isOutpost && (
+                <Tabs.Tab
+                  selected={activeTab === 'construction'}
+                  onClick={() => setActiveTab('construction')}
+                >
+                  Construction
+                </Tabs.Tab>
+              )}
               <Tabs.Tab
-                selected={activeTab === 'construction'}
-                onClick={() => setActiveTab('construction')}
+                selected={activeTab === 'tools'}
+                onClick={() => setActiveTab('tools')}
+                icon="toolbox"
               >
-                Construction
+                Tools
               </Tabs.Tab>
-              <Tabs.Tab
-                selected={activeTab === 'repair'}
-                onClick={() => setActiveTab('repair')}
-              >
-                Repair Drones
-              </Tabs.Tab>
-              <Tabs.Tab
-                selected={activeTab === 'relocation'}
-                onClick={() => setActiveTab('relocation')}
-              >
-                Port Relocation
-              </Tabs.Tab>
+              {!isOutpost && (
+                <Tabs.Tab
+                  selected={activeTab === 'repair'}
+                  onClick={() => setActiveTab('repair')}
+                >
+                  Repair Drones
+                </Tabs.Tab>
+              )}
+              {!isOutpost && (
+                <Tabs.Tab
+                  selected={activeTab === 'relocation'}
+                  onClick={() => setActiveTab('relocation')}
+                >
+                  Port Relocation
+                </Tabs.Tab>
+              )}
               <Tabs.Tab
                 selected={activeTab === 'settings'}
                 onClick={() => setActiveTab('settings')}
@@ -155,7 +238,7 @@ export const ShipConstructionConsole = () => {
           </Stack.Item>
 
           {/* Tab Content */}
-          <Stack.Item grow>
+          <Stack.Item>
             {activeTab === 'construction' && (
               <ConstructionTab
                 canOperate={canOperate}
@@ -171,6 +254,7 @@ export const ShipConstructionConsole = () => {
                 overhealth={overhealth}
               />
             )}
+            {activeTab === 'tools' && <ToolsTab />}
             {activeTab === 'relocation' && (
               <RelocationTab
                 canOperate={canOperate}
@@ -220,7 +304,7 @@ const ConstructionTab = (props: ConstructionTabProps) => {
   } = props;
 
   return (
-    <Stack vertical fill>
+    <Stack vertical>
       {/* Ship Status - Consolidated section */}
       <Stack.Item>
         <Section title="Ship Status">
@@ -302,24 +386,8 @@ const ConstructionTab = (props: ConstructionTabProps) => {
         </Section>
       </Stack.Item>
 
-      {/* Collapsible Help Section */}
       <Stack.Item>
         <ShipConstructionControls />
-      </Stack.Item>
-      <Stack.Item>
-        <Collapsible title="Help" color="label">
-          <Box color="gray" fontSize="12px">
-            <Box mb={0.5}>
-              <b>Build:</b> Construct within ship or 1 tile adjacent to expand
-            </Box>
-            <Box mb={0.5}>
-              <b>Deconstruct:</b> Remove structures to shrink ship
-            </Box>
-            <Box>
-              <b>Controls:</b> Arrow keys to move, action buttons to build
-            </Box>
-          </Box>
-        </Collapsible>
       </Stack.Item>
 
       {!canOperate && (
@@ -327,6 +395,203 @@ const ConstructionTab = (props: ConstructionTabProps) => {
           <NoticeBox>
             Ship must be docked to use construction features.
           </NoticeBox>
+        </Stack.Item>
+      )}
+    </Stack>
+  );
+};
+
+const TOOL_LIST: { id: ToolId; label: string; icon: string }[] = [
+  { id: 'rcd', label: 'RCD', icon: 'hammer' },
+  { id: 'camera', label: 'Cameras', icon: 'video' },
+  { id: 'tile', label: 'Floor tiles', icon: 'border-all' },
+  { id: 'pipe', label: 'Pipes', icon: 'wrench' },
+  { id: 'light', label: 'Lights', icon: 'lightbulb' },
+  { id: 'decal', label: 'Decals', icon: 'spray-can' },
+];
+
+const SCANNER_MODES: { mode: Data['scannerMode']; label: string }[] = [
+  { mode: 'off', label: 'Off' },
+  { mode: 't-ray', label: 'T-ray' },
+  { mode: 'pipe', label: 'Pipes' },
+  { mode: 'thermal', label: 'Thermal' },
+];
+
+const LIGHT_TYPES: { type: LightType; label: string }[] = [
+  { type: 'tube', label: 'Tube' },
+  { type: 'bulb', label: 'Bulb' },
+  { type: 'floor', label: 'Floor' },
+  { type: 'glow', label: 'Glow stick' },
+];
+
+const LIGHT_WALLS: { dir: LightDir; label: string; icon: string }[] = [
+  { dir: 'north', label: 'North', icon: 'arrow-up' },
+  { dir: 'east', label: 'East', icon: 'arrow-right' },
+  { dir: 'south', label: 'South', icon: 'arrow-down' },
+  { dir: 'west', label: 'West', icon: 'arrow-left' },
+];
+
+const ToolsTab = () => {
+  const { act, data } = useBackend<Data>();
+  const {
+    canOperate,
+    isNotCrew,
+    isInConstructionMode,
+    selectedTool,
+    rtdInstalled,
+    rpdInstalled,
+    rldInstalled,
+    decalInstalled,
+    scannerInstalled,
+    lightType,
+    lightDir,
+    lightColor,
+    scannerMode,
+    isOutpost,
+    elevatorPlanning,
+  } = data;
+
+  const installed: Record<ToolId, boolean> = {
+    rcd: true,
+    camera: true,
+    tile: !!rtdInstalled,
+    pipe: !!rpdInstalled,
+    light: !!rldInstalled,
+    decal: !!decalInstalled,
+  };
+  const idle = !isInConstructionMode;
+
+  return (
+    <Stack vertical>
+      {!isInConstructionMode && (
+        <Stack.Item>
+          <Button
+            fluid
+            icon="hammer"
+            disabled={!canOperate || isNotCrew}
+            onClick={() => act('enter_construction_mode')}
+          >
+            Enter Construction Mode
+          </Button>
+        </Stack.Item>
+      )}
+      <Stack.Item>
+        <Section title="Tools">
+          <Stack vertical>
+            {TOOL_LIST.filter((tool) => installed[tool.id]).map((tool) => (
+              <Stack.Item key={tool.id}>
+                <Stack>
+                  <Stack.Item grow>
+                    <Button
+                      fluid
+                      icon={tool.icon}
+                      selected={selectedTool === tool.id}
+                      disabled={idle}
+                      onClick={() => act('select_tool', { tool: tool.id })}
+                    >
+                      {tool.label}
+                    </Button>
+                  </Stack.Item>
+                  {tool.id !== 'light' && tool.id !== 'camera' && (
+                    <Stack.Item>
+                      <Button
+                        icon="cog"
+                        disabled={idle}
+                        onClick={() => act('configure_tool', { tool: tool.id })}
+                      />
+                    </Stack.Item>
+                  )}
+                </Stack>
+              </Stack.Item>
+            ))}
+          </Stack>
+        </Section>
+      </Stack.Item>
+      {selectedTool === 'light' && !!rldInstalled && (
+        <Stack.Item>
+          <Section title="Lights">
+            <LabeledList>
+              <LabeledList.Item label="Type">
+                {LIGHT_TYPES.map((entry) => (
+                  <Button
+                    key={entry.type}
+                    selected={lightType === entry.type}
+                    disabled={idle}
+                    onClick={() => act('light_type', { type: entry.type })}
+                  >
+                    {entry.label}
+                  </Button>
+                ))}
+              </LabeledList.Item>
+              {(lightType === 'tube' || lightType === 'bulb') && (
+                <LabeledList.Item label="Wall">
+                  <Button
+                    selected={lightDir === 'auto'}
+                    disabled={idle}
+                    onClick={() => act('light_dir', { dir: 'auto' })}
+                  >
+                    Auto
+                  </Button>
+                  {LIGHT_WALLS.map((entry) => (
+                    <Button
+                      key={entry.dir}
+                      icon={entry.icon}
+                      tooltip={entry.label}
+                      selected={lightDir === entry.dir}
+                      disabled={idle}
+                      onClick={() => act('light_dir', { dir: entry.dir })}
+                    />
+                  ))}
+                </LabeledList.Item>
+              )}
+              <LabeledList.Item label="Color">
+                <Button disabled={idle} onClick={() => act('light_color')}>
+                  <ColorBox color={lightColor} />
+                </Button>
+              </LabeledList.Item>
+            </LabeledList>
+          </Section>
+        </Stack.Item>
+      )}
+      {!!scannerInstalled && (
+        <Stack.Item>
+          <Section title="Scanner">
+            {SCANNER_MODES.map((entry) => (
+              <Button
+                key={entry.mode}
+                selected={scannerMode === entry.mode}
+                disabled={idle}
+                onClick={() => act('scanner_mode', { mode: entry.mode })}
+              >
+                {entry.label}
+              </Button>
+            ))}
+          </Section>
+        </Stack.Item>
+      )}
+      {!!isOutpost && (
+        <Stack.Item>
+          <Section title="Hangar elevator">
+            <Button
+              selected={!!elevatorPlanning}
+              disabled={idle}
+              onClick={() => act('elevator_plan')}
+            >
+              Blueprint
+            </Button>
+            <Button
+              disabled={idle || !elevatorPlanning}
+              onClick={() => act('elevator_rotate')}
+            >
+              Rotate
+            </Button>
+            <Button.Confirm
+              disabled={idle || !elevatorPlanning}
+              onClick={() => act('elevator_confirm')}
+            >
+              Install
+            </Button.Confirm>
+          </Section>
         </Stack.Item>
       )}
     </Stack>
@@ -349,7 +614,7 @@ const RelocationTab = (props: RelocationTabProps) => {
   const canFixOverhang = portDoors.some((door) => !!door.clearsOverhang);
 
   return (
-    <Stack vertical fill>
+    <Stack vertical>
       {/* Hull built out past the port lands inside whatever the ship berths against */}
       {portOverhang > 0 && (
         <Stack.Item>
@@ -390,8 +655,8 @@ const RelocationTab = (props: RelocationTabProps) => {
       </Stack.Item>
 
       {/* Hull doors the port can be moved to */}
-      <Stack.Item grow>
-        <Section title="Available Hull Doors" fill scrollable>
+      <Stack.Item>
+        <Section title="Available Hull Doors">
           <Table>
             <Table.Row header>
               <Table.Cell>Door</Table.Cell>

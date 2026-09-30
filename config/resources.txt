@@ -6,6 +6,11 @@
 
 # EXTERNAL_RSC_URLS http://your-bucket.s3.your-region.amazonaws.com/external-rsc/instance/tgstation-RSC_MD5.zip
 
+# Clients on this BYOND build or newer are not given the external archive and fetch resources on demand.
+# 516.1677 through at least 516.1688 abort the archive download about half the time and then cannot open
+# browser windows for the rest of the session. Set to 0 to hand the archive to every client.
+# EXTERNAL_RSC_ON_DEMAND_FROM_BUILD 1677
+
 
 ########################
 # Browser Asset Config #

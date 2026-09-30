@@ -1,0 +1,314 @@
+{
+	"_owner": "PA (trader outpost life): janitor, gardener, barback, dock worker, angler; Pike's and Sarge's answers to them. Placeholders: {name}, {other}, {place}.",
+	"janitor": {
+		"idle": [
+			"Mind the floor. It's wet. That's the whole sign.",
+			"Whoever keeps leaving cans on the counter, I know it's you.",
+			"If you're going to fight, do it on the grating. It drains.",
+			"Twenty years. Twenty years of this floor."
+		],
+		"talk": [
+			"Mind your feet.",
+			"You didn't drop anything, did you? Good.",
+			"Busy. Always busy.",
+			"Don't walk on that bit. I mean it."
+		],
+		"work": [
+			"Round and round.",
+			"Nearly done.",
+			"This mop's older than you."
+		],
+		"mess": [
+			"Somebody bled here. Somebody always bleeds here.",
+			"Glass everywhere again. Who throws a glass?",
+			"Who did this? Nobody. It's always nobody."
+		],
+		"remop": [
+			"I just mopped that.",
+			"I was just here. I was just here!"
+		],
+		"sign": [
+			"Wet floor. Go round.",
+			"Sign's out. Walk around it."
+		],
+		"sign_taken": [
+			"Hey. Where's my sign?",
+			"Somebody took my sign. Who takes a sign?"
+		],
+		"attacked": [
+			"Hey! I'm working here!",
+			"Watch it. I've got a mop."
+		],
+		"violence": [
+			"Not on my clean floor!",
+			"Great. More blood."
+		],
+		"chat": [
+			"Seen the state of the diner?",
+			"Nobody cleans up after themselves."
+		],
+		"reply": [
+			"Tell me about it.",
+			"Don't get me started."
+		],
+		"conversations": [
+			{
+				"opener": "Do you know how much gum is under those tables?",
+				"replies": ["I don't want to know.", "More than yesterday."]
+			}
+		]
+	},
+	"mechanic": {
+		"idle": [
+			"Your port thruster sounds wrong. I can hear it from here. Through the hull.",
+			"Barnaby says I can't charge for advice, so: free advice, seal your ship.",
+			"I've been fixing this same compressor for six years. It's a lifestyle.",
+			"You'd be amazed what people leave in the repair bay. Mostly blood.",
+			"Green zone's quiet. Too quiet. No, wait. That's the compressor again."
+		],
+		"work": [
+			"I've been fixing this same compressor for six years. It's a lifestyle.",
+			"Green zone's quiet. Too quiet. No, wait. That's the compressor again."
+		],
+		"talk": [
+			"Your port thruster sounds wrong. I can hear it from here. Through the hull.",
+			"Barnaby says I can't charge for advice, so: free advice, seal your ship."
+		],
+		"attacked": [
+			"Oi! I'm covered in welding fuel, you maniac!",
+			"Swing at the walls if you have to, they're rated for it. I'd rather you didn't swing at me."
+		]
+	},
+	"gardener": {
+		"idle": [
+			"Morning, tomatoes. Don't give me that look.",
+			"Somebody keeps overwatering tray three. It isn't me.",
+			"Watch your step, the bees are working.",
+			"Nothing grows faster when you stare at it. I've checked."
+		],
+		"talk": [
+			"Fern says talk to them. I mostly complain to them.",
+			"Don't touch the leaves. They bruise.",
+			"If you want something green, the Potting Shed's that way."
+		],
+		"water": [
+			"There you go. Drink up.",
+			"You look thirsty. Here.",
+			"Grow, would you? Just a little.",
+			"Good. Don't die on me."
+		],
+		"attacked": [
+			"Mind the plants!",
+			"Hey! Hands off!"
+		],
+		"violence": [
+			"Not near the plants!",
+			"Get down, all of you!"
+		],
+		"chat": [
+			"The bees are in a mood today.",
+			"Fern's got a new seed in. Won't tell me what it is."
+		],
+		"reply": [
+			"Could be the soil.",
+			"Give it a week."
+		],
+		"conversations": [
+			{
+				"opener": "Do plants get lonely, do you think?",
+				"replies": ["Only the tomatoes.", "I think they like the quiet."]
+			}
+		]
+	},
+	"barback": {
+		"idle": [
+			"The boss says smile more. This is me smiling.",
+			"Somebody left a tip. Oh. It's a bottle cap.",
+			"Behind you. Hot tray."
+		],
+		"talk": [
+			"If you're done with that, I'll take it.",
+			"Behind you. Hot tray.",
+			"Can't talk. Glasses."
+		],
+		"glasses": [
+			"If you're done with that, I'll take it.",
+			"Empties. Always empties.",
+			"One, two, three. Where's four?"
+		],
+		"floor_glass": [
+			"Glasses. Glasses. Why is there a glass on the floor?",
+			"Who puts a glass on the floor?"
+		],
+		"escort": [
+			"Up you get. Lift's this way.",
+			"Come on, friend. Time to go.",
+			"On your feet. Your ship's waiting."
+		],
+		"work": [
+			"Wipe it, wipe it again.",
+			"Sticky. Everything's sticky."
+		],
+		"attacked": [
+			"Oi! Mind the tray!",
+			"Hands off, I'm working!"
+		],
+		"violence": [
+			"Not again. Every night.",
+			"Everyone down!"
+		],
+		"chat": [
+			"Busy one tonight.",
+			"You seen who's in the corner?"
+		],
+		"reply": [
+			"Always is.",
+			"Don't look. Just don't."
+		],
+		"conversations": [
+			{
+				"opener": "How many glasses do you think we lose a night?",
+				"replies": ["All of them, eventually.", "Too many."]
+			}
+		]
+	},
+	"dock_worker": {
+		"idle": [
+			"Crate's heavier than the manifest says. They always are.",
+			"Convoy's late. Convoy's always late.",
+			"Break's in five. Break's always in five."
+		],
+		"talk": [
+			"Coming through. Stay off the yellow line.",
+			"Sarge wants these stacked by class. I'm stacking them by weight.",
+			"Not now, I've got a manifest."
+		],
+		"work": [
+			"Up she goes.",
+			"Mind your toes.",
+			"That one's rattling. That's not my problem."
+		],
+		"convoy": [
+			"Convoy's in! Hands on crates!",
+			"Here we go. Lift's full.",
+			"Convoy. On time, for once."
+		],
+		"crate": [
+			"Coming through!",
+			"Heavy one.",
+			"Mind your backs."
+		],
+		"attacked": [
+			"Watch it, I'm carrying!",
+			"Hey! Back off!"
+		],
+		"violence": [
+			"Down! Behind the crates!",
+			"Not in my yard!"
+		],
+		"chat": [
+			"You on nights this week?",
+			"Seen the new manifest? Half of it's wrong."
+		],
+		"reply": [
+			"Every week.",
+			"Only half?"
+		],
+		"conversations": [
+			{
+				"opener": "What do you think is in the sealed ones?",
+				"replies": ["Don't know, don't care.", "Something that isn't ours."]
+			}
+		]
+	},
+	"angler": {
+		"idle": [
+			"Pike says the far corner's fished out. Pike lies.",
+			"The koi are Fern's. We don't talk about the koi.",
+			"If you're fishing here, stand upwind. The bait's strong."
+		],
+		"talk": [
+			"Shh. You'll scare them.",
+			"Small hooks and patience. That's the whole secret.",
+			"Worms work. Everything else is for show.",
+			"Fish the shade. They like the shade."
+		],
+		"fishing": [
+			"Shh. Something's looking at the hook.",
+			"Forty minutes and not a nibble. Best part of my week.",
+			"Got one. Oh. It's a boot. Again.",
+			"That's a keeper. Well. That's a putting-it-back, but still.",
+			"Come on. Come on."
+		],
+		"catch_show": [
+			"Pike! Look at this one.",
+			"Pike. Tell me that's not the biggest one this week.",
+			"Look what the pond gave up."
+		],
+		"release": [
+			"Back you go.",
+			"Go on. Grow a bit.",
+			"See you next week."
+		],
+		"player_catch": [
+			"Nice one!",
+			"That's a good fish. Don't tell Pike where you got it.",
+			"Ha! Well done."
+		],
+		"player_miss": [
+			"They do that.",
+			"Next one. There's always a next one.",
+			"Too quick on the reel. Happens to everyone."
+		],
+		"leave": [
+			"That's me for today.",
+			"Right. Home. The fish'll keep."
+		],
+		"attacked": [
+			"Oi! You'll scare the fish!",
+			"Not near the water!"
+		],
+		"violence": [
+			"Not near the pond!",
+			"Nope. I'm off."
+		],
+		"chat": [
+			"Catch anything?",
+			"Pike's been restocking. You can tell."
+		],
+		"reply": [
+			"A boot.",
+			"Not yet."
+		],
+		"conversations": [
+			{
+				"opener": "Ever wonder where Pike gets the fish?",
+				"replies": ["The water recyclers, he says.", "I try not to."]
+			}
+		]
+	},
+	"pike_catch": {
+		"trader_reply": [
+			"Bigger than that one. You'd never believe me, so I won't bother.",
+			"Seen bigger. Seen smaller, too. Put it back.",
+			"Not bad. Back in the water with it.",
+			"That one's been caught before. Look at the lip."
+		]
+	},
+	"sarge_convoy": {
+		"trader_reply": [
+			"Stack them by class. Not by weight.",
+			"Good. Next time, faster.",
+			"Sign the manifest. Then go and have your coffee."
+		]
+	},
+	"any": {
+		"attacked": [
+			"Hey! Watch it!"
+		],
+		"violence": [
+			"Everyone down!",
+			"Not again."
+		]
+	}
+}

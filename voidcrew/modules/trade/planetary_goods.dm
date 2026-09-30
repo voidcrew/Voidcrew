@@ -114,7 +114,7 @@
  */
 /obj/item/stack/spice_pods
 	name = "wild spice pods"
-	desc = "A cluster of pungent seed pods snipped off a strangler vine deep under the jungle canopy. Every galley cook and perfumer on the outer ring wants them, and nobody has ever coaxed the vine into growing in a tray."
+	desc = "A cluster of pungent seed pods snipped off a strangler vine deep under the jungle canopy. Every galley cook and perfumer on the inner ring wants them, and nobody has ever coaxed the vine into growing in a tray."
 	singular_name = "wild spice pod"
 	icon = 'icons/obj/service/hydroponics/harvest.dmi'
 	icon_state = "vanillapod"

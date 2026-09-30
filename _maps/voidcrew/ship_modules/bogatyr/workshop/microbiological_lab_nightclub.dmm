@@ -1,0 +1,88 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aHb" = (
+/turf/template_noop,
+/area/template_noop)
+"dAJ" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/dropper,
+/obj/item/reagent_containers/cup/beaker/jar,
+/obj/item/reagent_containers/cup/beaker/jar,
+/obj/item/reagent_containers/cup/beaker/jar,
+/obj/item/reagent_containers/cup/beaker/jar,
+/obj/item/reagent_containers/cup/beaker/jar,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"fIU" = (
+/obj/machinery/door/window/brigdoor/right/directional/north{
+	name = "Strictly Non-Petting Animals";
+	req_one_access = list("science","security")
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"gpX" = (
+/obj/machinery/smartfridge/chemistry/virology/preloaded,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"iPO" = (
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"jvu" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"lRA" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"rwE" = (
+/obj/modular_map_connector,
+/obj/item/storage/box/monkeycubes,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"ssv" = (
+/obj/structure/closet/l3closet/virology,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"sWQ" = (
+/obj/machinery/computer/pandemic,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"udg" = (
+/obj/structure/sign/departments/virology/directional/west,
+/obj/machinery/shower/directional/east,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"yei" = (
+/obj/structure/reagent_dispensers/wall/virusfood/directional/north,
+/obj/machinery/chem_dispenser,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+sWQ
+udg
+iPO
+fIU
+rwE
+"}
+(2,1,1) = {"
+yei
+iPO
+iPO
+lRA
+jvu
+"}
+(3,1,1) = {"
+aHb
+ssv
+dAJ
+gpX
+aHb
+"}

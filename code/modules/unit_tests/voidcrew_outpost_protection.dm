@@ -4,6 +4,16 @@
 	var/obj/structure/overmap/trader_outpost/outpost
 	var/turf/protected_turf
 	var/turf/outside_turf
+	/// Bounds-only stand-in for a hangar reservation. It never claimed the live map.
+	var/datum/turf_reservation/hangar_fixture
+
+/datum/unit_test/voidcrew_outpost_protection/Destroy()
+	// Releasing the stand-in would hand its corner, a test floor, to the reservation pool.
+	if(hangar_fixture)
+		hangar_fixture.bottom_left_turfs.Cut()
+		hangar_fixture.top_right_turfs.Cut()
+		hangar_fixture = null
+	return ..()
 
 /datum/unit_test/voidcrew_outpost_protection/New()
 	. = ..()
@@ -27,9 +37,11 @@
 
 	var/datum/outpost_berth/berth = allocate(/datum/outpost_berth, outpost, 1, null)
 	berth.hangar_bottom_left = outside_turf
-	berth.reservation = allocate(/datum/turf_reservation)
-	berth.reservation.width = 1
-	berth.reservation.height = 1
+	// A one-tile hangar: the berth reads its ground from the reservation's corners.
+	hangar_fixture = allocate(/datum/turf_reservation)
+	hangar_fixture.bottom_left_turfs = list(outside_turf)
+	hangar_fixture.top_right_turfs = list(outside_turf)
+	berth.reservation = hangar_fixture
 	outpost.berths[1] = berth
 	TEST_ASSERT(is_trader_outpost_protected(outside_turf), "Docked ship areas inside a trader hangar must be protected")
 	TEST_ASSERT(!is_trader_outpost_protected(get_step(outside_turf, NORTH)), "Hangar protection leaked beyond its reservation")

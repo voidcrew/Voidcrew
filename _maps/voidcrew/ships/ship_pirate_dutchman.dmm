@@ -185,7 +185,7 @@
 /obj/structure/lattice/catwalk,
 /obj/machinery/power/shuttle_engine/ship/electric,
 /obj/structure/cable,
-/turf/template_noop,
+/turf/open/floor/fakespace/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -213,7 +213,7 @@
 /obj/structure/lattice/catwalk,
 /obj/machinery/power/smes/full,
 /obj/structure/cable,
-/turf/template_noop,
+/turf/open/floor/fakespace/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -934,7 +934,7 @@
 "Oe" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable,
-/turf/open/space/basic,
+/turf/open/floor/fakespace/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -1098,11 +1098,6 @@
 	})
 "WB" = (
 /turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"WQ" = (
-/turf/template_noop,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -1319,7 +1314,7 @@ af
 af
 af
 af
-RY
+co
 RY
 Oe
 af
@@ -1373,7 +1368,7 @@ af
 Ze
 af
 af
-co
+RY
 dg
 Oe
 Gt
@@ -1584,12 +1579,12 @@ af
 af
 af
 af
-WQ
-WQ
-WQ
+af
+af
+af
 Qa
-WQ
-co
+af
+RY
 dg
 Oe
 Gt
@@ -1603,7 +1598,7 @@ WR
 Gt
 WR
 WR
-WQ
+af
 "}
 (16,1,1) = {"
 af
@@ -1643,7 +1638,7 @@ af
 af
 af
 af
-RY
+co
 RY
 Oe
 af

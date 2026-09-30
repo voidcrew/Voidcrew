@@ -1,7 +1,7 @@
 /**
  * VOIDCREW EDIT: some NPCs cannot be put in a box.
  *
- * Outpost traders, outpost loiterers and vestige patrons are fixtures of the place they
+ * Outpost traders, ambient outpost NPCs and vestige patrons are fixtures of the place they
  * stand in. They already cancel COMSIG_MOUSEDROP_ONTO (so nothing can be drag-dropped
  * onto a closet, a disposal unit or a bed) and carry move_resist = INFINITY (so nothing
  * shoves or pulls them off their tile), but neither of those sits on the path a container
@@ -49,7 +49,7 @@
  *   bluespace bag's own contents)                          code/datums/storage/storage.dm
  * - a drag-drop onto a crate, bed or disposal unit      -> COMSIG_MOUSEDROP_ONTO
  *
- * The outpost traders, loiterers and vestige patrons wire all three up by hand in their
+ * The outpost traders, ambient outpost NPCs and vestige patrons wire all three up by hand in their
  * own Initialize; this is the same three lines for callers that only need the ban and
  * nothing else around it. override = TRUE so a subtype that re-runs it is not a runtime.
  */

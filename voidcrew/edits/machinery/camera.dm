@@ -93,8 +93,11 @@
 		var/static/list/voidcrew_autonames_in_areas = list()
 		var/area/camera_area = get_area(src)
 		if(camera_area)
-			var/number = voidcrew_autonames_in_areas[camera_area] + 1
-			voidcrew_autonames_in_areas[camera_area] = number
+			// Keyed by REF, not the area: ship and outpost areas are deleted, and a key would
+			// keep every one that ever had a camera from being collected.
+			var/area_key = REF(camera_area)
+			var/number = voidcrew_autonames_in_areas[area_key] + 1
+			voidcrew_autonames_in_areas[area_key] = number
 			c_tag = "[format_text(camera_area.name)] #[number]"
 
 /**

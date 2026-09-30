@@ -89,7 +89,7 @@
 	if(pays_ship_parts)
 		var/turf/reward_turf = get_turf(reward_anchor)
 		if(reward_turf)
-			spawn_ship_part_prize(reward_turf)
+			note_metric_ship_parts(spawn_ship_part_prize(reward_turf)) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			flash_reward_anchor(reward_anchor)
 
 /**

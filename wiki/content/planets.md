@@ -2,10 +2,10 @@
 title: Planets
 category: Exploration
 order: 2
-blurb: The five worlds that appear every round. How to land on one, what will kill you there, and what is worth carrying home.
+blurb: The five kinds of world that appear every round. How to land on one, what will kill you there, and what is worth carrying home.
 ---
 
-Every round puts five planets on the chart: one volcanic, one frozen, one tropical, one oceanic and one apocalyptic. Each is generated fresh at the start of the round, so nobody can memorise a layout, and each is scaled to the part of the galaxy it sits in. Planets are where ore, wild trade goods, planetary ruins and most of the fauna live, and they are the only places you can walk around outdoors without a hull between you and everything else.
+Every round puts thirty planets on the chart, six each of five kinds: volcanic, frozen, tropical, oceanic and apocalyptic. Each is generated fresh, so nobody can memorise a layout, and each is scaled to the part of the galaxy it sits in. Planets are where ore, wild trade goods, planetary ruins and most of the fauna live, and they are the only places you can walk around outdoors without a hull between you and everything else.
 
 ## Finding one and landing
 
@@ -46,7 +46,7 @@ Ash storms and sandstorms both roll a harmless variant sometimes, gentle embers 
 
 ## Dangerous space means a dangerous planet
 
-The five planets are dealt across the galaxy's zone bands, so there is always at least one in the safe ring and at least one out in the lawless deep. A planet's band changes how the same world plays:
+Each kind of world has one planet in the safe inner ring, so a new crew can try every terrain close to home. The rest are spread across the rings by area, which puts most of them out in the lawless ring. A planet's band changes how the same world plays:
 
 - Fauna spawns thicker, and a share of the rolls upgrade to the biome's meaner list: lone animals become nests.
 - Storms come around more often, give less warning before they hit, and last longer.

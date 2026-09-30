@@ -95,15 +95,25 @@
 /datum/unit_test/voidcrew_planet_environment_air
 	var/turf/test_turf
 	var/area/original_area
+	// VOIDCREW EDIT ADDITION - restore the test room's turf, not just its area
+	var/original_type
+	var/list/original_baseturfs
 
 /datum/unit_test/voidcrew_planet_environment_air/Destroy()
 	if(test_turf && original_area)
 		test_turf.change_area(get_area(test_turf), original_area)
+	// VOIDCREW EDIT ADDITION START - the area must be restored first; prepare_planet_atmosphere() reads the turf's area
+	if(test_turf && original_type && test_turf.type != original_type)
+		test_turf.ChangeTurf(original_type, original_baseturfs)
+	// VOIDCREW EDIT ADDITION END
 	return ..()
 
 /datum/unit_test/voidcrew_planet_environment_air/Run()
 	test_turf = run_loc_floor_bottom_left
 	original_area = get_area(test_turf)
+	// VOIDCREW EDIT ADDITION - save the turf's own type/baseturfs before we replace it below
+	original_type = test_turf.type
+	original_baseturfs = test_turf.baseturfs
 	var/area/overmap_encounter/planetoid/lava/surface = new
 	allocated += surface
 	surface.prepare_planet_definition()

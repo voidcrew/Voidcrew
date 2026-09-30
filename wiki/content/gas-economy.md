@@ -22,7 +22,7 @@ Heavier ships burn proportionally more per burn, so a big hull with a small fuel
 
 ## Nebulas
 
-Nebulas are common features on the [overmap](overmap.md), and in Voidcrew every one of them **carries a specific gas**. Which gas depends on how deep the nebula is: the safe outer ring holds plasma, nitrogen and water vapour; the contested band adds tritium and miasma; and the lawless deep is where hypernoblium, pluoxium and nitrium pool.
+Nebulas are common features on the [overmap](overmap.md), and in Voidcrew every one of them **carries a specific gas**. Which gas depends on which ring the nebula is in: the safe inner ring holds plasma, nitrogen and water vapour; the contested band adds tritium and miasma; and the lawless deep is where hypernoblium, pluoxium and nitrium pool.
 
 Your helm names each nebula after its gas and tints it on the chart, so you can pick a tritium cloud out of a bank of them without flying into each one.
 
@@ -80,7 +80,7 @@ All three only pool in deep-band nebulas, and all three scoop slowly, so the pay
 
 - **Build the scoop early.** It is one board, it costs less than three canisters, and it removes your largest recurring expense.
 - **Put the heater in pipe mode.** A heater on a tank has to be hand-fed. A heater on the pipe network refuels itself off the scoop or sublimator while you do something else.
-- **Scoop plasma in green space first.** The outer ring is thick with plasma nebulas, they scoop fast, and nobody is going to jump you there.
+- **Scoop plasma in green space first.** Most nebulas in the inner ring are plasma, they scoop fast, and nobody is going to jump you there.
 - **Don't scoop while running.** If you are being hunted, close the intake and hide. Fuel is replaceable; the ship is not.
 - **Overfill before a deep run.** Filling spare canisters while parked in a safe nebula is far better than discovering you are dry in the lawless deep.
 - **Sell the exotics, burn the common stuff.** Hypernoblium is worth 1200 credits a tank at Vex's counter and does nothing useful in a thruster. Plasma gets you home.

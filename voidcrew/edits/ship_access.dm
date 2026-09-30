@@ -139,6 +139,30 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 		access_bypass = FALSE
 	return ..()
 
+// A thrown item opens a door by the door's own access check (door.dm Bumped()), never
+// through allowed(), and a ship door has no access list to refuse it. Judge the thrower.
+/obj/machinery/door/airlock/Bumped(atom/movable/AM)
+	if(!isitem(AM) || !density || operating || !length(GLOB.crew_locked_ships))
+		return ..()
+	var/obj/item/item = AM
+	// Small items without access never open a door upstream either
+	if((item.w_class >= WEIGHT_CLASS_NORMAL || LAZYLEN(item.GetAccess())) && refuses_thrown_item(item))
+		run_animation(DOOR_DENY_ANIMATION)
+		return
+	return ..()
+
+/// Whether a crew-locked ship's door must stay shut for this item, which was thrown by
+/// someone who is not crew, or by nobody at all.
+/obj/machinery/door/proc/refuses_thrown_item(obj/item/thrown)
+	var/area/shuttle/voidcrew/ship_area = get_area(src)
+	if(!istype(ship_area))
+		return FALSE
+	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
+	if(isnull(ship) || !ship.crew_only_airlocks)
+		return FALSE
+	var/mob/thrower = thrown.throwing?.get_thrower()
+	return isnull(thrower) || !ship.is_ship_crew(thrower)
+
 /obj/machinery/door/window/allowed(mob/user)
 	if(refused_by_ship_crew_lock(user))
 		return FALSE

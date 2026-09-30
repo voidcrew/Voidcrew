@@ -69,20 +69,6 @@
 /obj/machinery/airalarm/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
-"cm" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/greenglow,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/a)
 "cA" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -730,6 +716,17 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"yC" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/greenglow,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "zp" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -939,6 +936,23 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
+"GI" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "Hb" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -1425,20 +1439,6 @@
 /obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
-"Wf" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/storage/toolbox/emergency,
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/item/circuitboard/machine/ore_redemption,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/a)
 "Wm" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/a)
@@ -1701,8 +1701,8 @@ Rm
 Rm
 Rm
 Rm
-cm
-Wf
+yC
+GI
 wi
 wK
 jn

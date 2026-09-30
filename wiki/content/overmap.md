@@ -2,7 +2,7 @@
 title: The Overmap
 category: Exploration
 order: 1
-blurb: The galaxy map your ship flies across. What is out there, how to find it, and why the middle of the map will kill you.
+blurb: The galaxy map your ship flies across. What is out there, how to find it, and why the edge of the map will kill you.
 ---
 
 The overmap is the galaxy: a 51-by-51 grid of tiles with a star burning at the centre, on which your entire ship is a single icon. Every planet, ruin, trader, storm and rival crew occupies one tile of it. Flying is done from the [helm console](piloting.md), and everything you do in a round starts with picking a tile and going there. The single most important thing on this map is not any one destination. It is the three concentric rings of law that decide whether other crews are allowed to shoot you.
@@ -20,8 +20,8 @@ You can also plot a course: right-click a destination and choose **Set course**.
 | Contact | What it is |
 | --- | --- |
 | Planets | Landable worlds: lava, ice, jungle, beach and wasteland. Ore, ruins, weather and fauna. See [Planets](planets.md). |
-| Space ruins | Twelve to twenty-four derelicts, stations and wrecks per round, each a loaded interior with loot and something guarding it. See [Ruins](ruins.md). |
-| Asteroid storms | Landable rock fields, guaranteed at least three per round, and the dependable place to mine in space. Flying *through* one damages the hull. See [Mining](mining.md). |
+| Space ruins | Several dozen derelicts, stations and wrecks per round, spread across the whole chart, each a loaded interior with loot and something guarding it. See [Ruins](ruins.md). |
+| Asteroid storms | Landable rock fields, and the dependable place to mine in space. Every round has plenty of them. Flying *through* one damages the hull. See [Mining](mining.md). |
 | Ion and electrical storms | Hazards. Ion storms EMP random parts of your ship. Electrical storms blow out lights and throw lightning around inside the hull, while quietly topping up your power storage. |
 | Nebulas | Harmless clouds of a specific gas that a ram scoop can harvest, and the only place a ship can hide itself. See [Gas Economy](gas-economy.md). |
 | Trader outposts | Three permanent markets, one in each ring. They broadcast sector-wide, so they are on your chart from the start. See [Trader Outposts](trader-outposts.md). |
@@ -30,6 +30,8 @@ You can also plot a course: right-click a destination and choose **Set course**.
 | Empty space | An empty tile can still be docked into, which is how two ships park next to each other. |
 
 Other things surface on a schedule rather than at roundstart (contested caches, the [Grand Colosseum](colosseum.md) and the lich's lair) and announce themselves on Wideband when they do.
+
+Storms, asteroid fields and nebulas come in scattered patches, not walls. Every round is laid out so that any clear tile can reach any other without flying through a hazard, both across the whole map and inside each zone, and every hazard has a clear tile beside it to approach from. The safe inner ring is about half as crowded with hazards as the other two.
 
 ## Seeing it
 
@@ -47,26 +49,28 @@ The map is divided into three static concentric rings measured from the star. Th
 
 | Ring | Zone | Ship weapons | Interdiction and forced docking |
 | --- | --- | --- | --- |
-| Outer third (map edge) | Neutral Zone | Disabled | Not allowed |
+| Inner third (around the star) | Neutral Zone | Disabled | Not allowed |
 | Middle third | Contested Zone | Disabled | Allowed |
-| Inner third (nearest the star) | Lawless Zone | Allowed | Allowed |
+| Outer third (out to the map edge) | Lawless Zone | Allowed | Allowed |
 
-In plain terms: the outer ring is safe, the middle ring lets someone stop your ship and board it but not shoot it, and the inner ring is open season. The star charts traders sell label the three rings the neutral ring, the contested lanes and the lawless deep.
+In plain terms: the inner ring is safe, the middle ring lets someone stop your ship and board it but not shoot it, and the outer ring is open season. The star charts traders sell label the three rings the neutral ring, the contested lanes and the lawless deep.
 
-You can always tell which one you are in. The helm names the current zone, describes it, and says outright whether weapons and interdiction are permitted here; the overmap tiles themselves are tinted green, yellow and red. Every player ship spawns in the outer ring at roundstart, so if you have not deliberately flown inward, you are safe.
+The rings are equal steps of distance from the star, so they are not equal in size. The outer ring also takes in the corners of the map and covers nearly two thirds of it. The safe ring is the smallest, under a tenth.
+
+You can always tell which one you are in. The helm names the current zone, describes it, and says outright whether weapons and interdiction are permitted here; the overmap tiles themselves are tinted green, yellow and red. Every player ship spawns in the inner ring at roundstart, so if you have not deliberately flown outward, you are safe.
 
 Crossing a boundary is a deliberate act. Thrusting at a tile in a different zone does not move you. It starts a ten-second transition instead, during which your engines are cut and you cannot thrust. The helm announces the zone you are entering and counts down. Pressing Stop cancels it, so you get a free chance to change your mind.
 
 !!! danger "The middle ring is not a soft warning"
     Weapons being disabled in the Contested Zone does not make it safe. Anyone can interdict you there, pin you in place and force a dock, and then the fight happens with guns inside your hull. Boarding is the whole point of that ring.
 
-## Why anyone goes deeper
+## Why anyone flies further out
 
-Everything worth having is closer to the star, because the rings scale rewards as well as danger.
+Everything worth having is farther from the star, because the rings scale rewards as well as danger.
 
-Rock on planets yields half again as much ore in the Contested Zone and double in the Lawless Zone. Planet wildlife spawns thirty percent denser in yellow and sixty percent denser in red, and each spawn has a twenty or forty percent chance of upgrading to the biome's genuinely dangerous list instead of its ordinary one. Weather comes more often, gives less warning and lasts longer the deeper you go. Loot caches roll from a per-ring table and lock in their contents where they spawned, so a cache found in the deep is a better cache.
+Rock on planets yields half again as much ore in the Contested Zone and double in the Lawless Zone. Planet wildlife spawns thirty percent denser in yellow and sixty percent denser in red, and each spawn has a twenty or forty percent chance of upgrading to the biome's genuinely dangerous list instead of its ordinary one. Weather comes more often, gives less warning and lasts longer the farther out you go. Loot caches roll from a per-ring table and lock in their contents where they spawned, so a cache found in the deep is a better cache.
 
-The markets follow the same gradient: the general store sits in the neutral ring, the outfitter in the contested lanes and the black market in the lawless deep, so the best goods are behind the worst neighbourhood. Planets are placed into a specific ring when the round is built and generated to match it, which means a jungle world in the red is a meaningfully harder jungle world.
+The markets follow the same gradient: the general store sits in the neutral ring, the outfitter in the contested lanes and the black market in the lawless deep, so the best goods are behind the worst neighbourhood. Planets are placed into a specific ring when the round is built and generated to match it, which means a jungle world in the red is a meaningfully harder jungle world. The safe ring always gets one planet of each type, so a new crew has every kind of world close to home. The rest of the planets, like the ruins, are spread by area, so most of them are out in the lawless ring.
 
 ## Docking
 

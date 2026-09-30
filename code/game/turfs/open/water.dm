@@ -227,9 +227,11 @@
 
 ///Registers the signals from the immerse element and calls dip_in if the movable has the required trait.
 /turf/open/water/hot_spring/proc/enter_hot_spring(atom/movable/movable)
-	RegisterSignal(movable, SIGNAL_ADDTRAIT(TRAIT_IMMERSED), PROC_REF(dip_in))
+	// VOIDCREW EDIT CHANGE START - a loading ship can init an atom and then enter it on the same spring
+	RegisterSignal(movable, SIGNAL_ADDTRAIT(TRAIT_IMMERSED), PROC_REF(dip_in), override = TRUE)
 	if(isliving(movable)) //so far, exiting a hot spring only has effects on living mobs.
-		RegisterSignal(movable, SIGNAL_REMOVETRAIT(TRAIT_IMMERSED), PROC_REF(dip_out))
+		RegisterSignal(movable, SIGNAL_REMOVETRAIT(TRAIT_IMMERSED), PROC_REF(dip_out), override = TRUE)
+	// VOIDCREW EDIT CHANGE END
 
 	if(HAS_TRAIT(movable, TRAIT_IMMERSED))
 		dip_in(movable)

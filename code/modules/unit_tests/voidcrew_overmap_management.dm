@@ -257,7 +257,7 @@
 	var/list/ports = details["ports"]
 	var/list/port = ports[1]
 	TEST_ASSERT_EQUAL(port["location"], player_details["location"], "The body was not associated with its docking bay")
-	var/turf/outside = get_step(berth.reservation.top_right_turfs[1], EAST)
+	var/turf/outside = get_step(berth.get_top_right(), EAST)
 	player.forceMove(outside)
 	TEST_ASSERT_EQUAL(length(outpost.admin_player_locations()), 0, "A neighbouring turf on the same z-level was counted as occupied")
 	TEST_ASSERT_NULL(outpost.admin_delete_blocker(), "An empty hangar prevented deletion")

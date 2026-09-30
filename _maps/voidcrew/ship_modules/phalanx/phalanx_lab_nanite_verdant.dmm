@@ -81,7 +81,6 @@
 /turf/open/floor/grass,
 /area/template_noop)
 "A" = (
-/obj/machinery/nanite_program_hub,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/template_noop)
 "B" = (
@@ -136,7 +135,6 @@
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/template_noop)
 "T" = (
-/obj/machinery/nanite_programmer,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/template_noop)
 "W" = (

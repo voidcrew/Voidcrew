@@ -1,0 +1,473 @@
+{
+	"_owner": "PA (trader outpost life): customers and drinkers. Sections: customer, drinker, one per trader (order, trader_reply), one per bar (order, barkeep_reply, cutoff, local, stronger). Placeholders: {name}, {other}, {place}.",
+	"customer": {
+		"idle": [
+			"Prices are up again.",
+			"I told the captain twenty minutes. It's been forty.",
+			"Where did I put the list?",
+			"Nice to breathe air that isn't ours for a change.",
+			"I should have brought a bag.",
+			"Is that the same mechanic as last time? Still fixing that thing."
+		],
+		"talk": [
+			"Just looking. Shopping's for people with money.",
+			"You off one of the ships too?",
+			"Don't mind me. I'm waiting on my crew.",
+			"The diner's better than it looks.",
+			"Heard the lanes are rough this week. Watch yourself."
+		],
+		"yield": [
+			"Take your time.",
+			"Go ahead, I'm still deciding.",
+			"After you.",
+			"No rush."
+		],
+		"queue_give_up": [
+			"I'll come back later.",
+			"Forget it.",
+			"Some of us have a ship to catch."
+		],
+		"convoy": [
+			"Oh, the convoy's in.",
+			"Fresh stock. Finally.",
+			"That's the convoy. Good timing for once."
+		],
+		"leave": [
+			"Right. Back to the ship.",
+			"That's me done."
+		],
+		"attacked": [
+			"Hey! What was that for?",
+			"Keep your hands to yourself!",
+			"I'm only here to shop!"
+		],
+		"violence": [
+			"Not in here!",
+			"I'm leaving. I'm leaving.",
+			"Get down!"
+		],
+		"cover": [
+			"Heads down!",
+			"Stay low!"
+		],
+		"chat": [
+			"Found anything good?",
+			"Your crew heading out soon?",
+			"They've got the good oxygen tanks in again.",
+			"Did you see the prices?"
+		],
+		"reply": [
+			"Not much.",
+			"Tomorrow, maybe.",
+			"Could be worse.",
+			"You're telling me."
+		],
+		"conversations": [
+			{
+				"opener": "Is it me or is the lift slower today?",
+				"replies": ["It's always slow.", "It's you."]
+			},
+			{
+				"opener": "How's your ship holding up?",
+				"replies": ["Tape and hope.", "Better than yours, I bet."]
+			},
+			{
+				"opener": "Did you buy anything?",
+				"replies": ["Just looking.", "A bag of something. I'll find out what later."]
+			}
+		]
+	},
+	"barnaby": {
+		"order": [
+			"Two ration packs and whatever's cheapest that floats.",
+			"Flares. The ones that still burn when you drop them.",
+			"What's the least I can pay for a medkit and still feel good about it?",
+			"Do you still buy bear hide? My captain says you do. My captain says a lot of things.",
+			"A tin of beans and a deck of cards. It's going to be a long trip.",
+			"Oxygen tanks. Four. No, five. Our engineer breathes a lot.",
+			"Anything new on the charts for the yellow lanes?"
+		],
+		"trader_reply": [
+			"Sensible choice. Don't tell anyone I said so.",
+			"Pay at the till, dear. The turrets don't take tips.",
+			"Wrapped up and ready. Mind the step on your way out.",
+			"There you are. Bring yourself back in one piece.",
+			"Lovely. I'd have picked the same."
+		]
+	},
+	"roux": {
+		"order": [
+			"Fish and chips, and don't skimp on the chips.",
+			"Is the special still on, or did the chalk fall off again?",
+			"Something hot. I've been on ration bars for nine days.",
+			"Can I get the ramen without whatever that is floating in it?",
+			"Our cook quit. Can I just eat here until we find another one?",
+			"Is there any chowder, or is that just the name on the sign?"
+		],
+		"trader_reply": [
+			"Coming off the pass now. Mind, it's hot.",
+			"Eat slow. It took longer to make than you took to earn it.",
+			"Sit anywhere. I'll shout.",
+			"You'll get what's hot. Everything's hot."
+		]
+	},
+	"fern": {
+		"order": [
+			"Anything that grows in a closet with one lamp?",
+			"My tomato plant died again. I'd like another one to disappoint.",
+			"Something for the bugs. They've taken the whole tray.",
+			"Seeds for something that tastes like fruit. Any fruit.",
+			"Our botanist wants a watering can. The last one got used as a helmet.",
+			"Is the honey from your own bees?"
+		],
+		"trader_reply": [
+			"Talk to it every morning. It won't answer, but it'll notice.",
+			"Wrap that up before the bees see it.",
+			"Low light and forgiveness. Same as last time.",
+			"Water it less than you think. Everyone drowns them."
+		]
+	},
+	"pike": {
+		"order": [
+			"What's biting today?",
+			"I need bait that doesn't smell like the inside of a boot.",
+			"Is that pond actually stocked, or is that a rumour you started?",
+			"My line snapped on something big. I want a thicker one. Out of spite.",
+			"How long did it take you to catch the one on the wall?",
+			"A tin of worms and a box of hooks. The small hooks."
+		],
+		"trader_reply": [
+			"Everything bites if you're patient. Most people aren't.",
+			"Worms in the tin, lures on the peg. Don't mix them up.",
+			"Small hooks, big patience. That's all there is to it.",
+			"Stocked. Mostly. Don't ask about the koi."
+		]
+	},
+	"sarge": {
+		"order": [
+			"I want the vest that stops things. Not the one that looks like it does.",
+			"How many magazines is too many?",
+			"My crew's heading into the yellow. What's the one thing we'll forget?",
+			"Firing pins. I know, I know.",
+			"Do I get a discount if I don't ask any stupid questions?",
+			"Magboots. My last pair walked off without me in them."
+		],
+		"trader_reply": [
+			"Pins. Everyone forgets the pins.",
+			"Buy the helmet. Then buy the other helmet.",
+			"Sign here, don't die, come back for more.",
+			"Next."
+		]
+	},
+	"boffin": {
+		"order": [
+			"Is this core supposed to be humming?",
+			"I'd like a part for a machine I can't pronounce.",
+			"Our scientist sent me with a list. Half of it's in another language.",
+			"Is that slime extract alive? It moved.",
+			"The best power cell you've got. The engineer said the best one. Twice.",
+			"What's the difference between the blue crystal and the other blue crystal?"
+		],
+		"trader_reply": [
+			"Humming is fine. If it starts singing, come back.",
+			"Hold it by the handle. The handle. Thank you.",
+			"Tell your scientist the answer's still no, but here's the part.",
+			"Don't lick it. People always want to lick it."
+		]
+	},
+	"wick": {
+		"order": [
+			"My suit makes a noise when I turn left.",
+			"Can you make this thing lighter? I walk like a fridge.",
+			"I'd like the good chassis. Yes, I know I haven't been measured.",
+			"The seal on the left glove keeps letting go.",
+			"Have you got plating that isn't safety orange?",
+			"A jetpack module. My captain says no. My captain isn't here."
+		],
+		"trader_reply": [
+			"Stand on the mark and lift your arms. Higher.",
+			"That noise is your warranty leaving.",
+			"Bench install's free. Corridor installs cost fingers.",
+			"Hold still. Breathe in. Now don't."
+		]
+	},
+	"vex": {
+		"order": [
+			"I was told to ask for the thing in the grey case.",
+			"Nobody sent me. I came on my own. Completely.",
+			"How much for the pistol that doesn't make a sound?",
+			"One of the sealed crates. What's in it? Right. That's the point.",
+			"You don't know me and I don't know you. Right?",
+			"Smoke grenades. Three. It's for a party."
+		],
+		"trader_reply": [
+			"Never seen you before in my life. Pay up.",
+			"No receipts, no returns, no questions from you either.",
+			"Stock's limited. So is my patience.",
+			"Don't open it here."
+		]
+	},
+	"dram": {
+		"order": [
+			"Whatever's cheapest and wet.",
+			"A bottle of the hooch for the road. Don't tell my captain.",
+			"Has anyone asked for me? No? Good.",
+			"Start a tab. I'll be good for it by Tuesday.",
+			"A meat pie and something to wash it down."
+		],
+		"trader_reply": [
+			"Cash first. Your face isn't a tab.",
+			"That one'll put hair on your hull.",
+			"Here. Don't spill it on my bar.",
+			"Next."
+		]
+	},
+	"sawbones": {
+		"order": [
+			"It's only a little bit shot.",
+			"I'd like the cheapest way to not die today.",
+			"Can you look at this? No, lower. Lower.",
+			"Do you take payment in parts? Not my parts.",
+			"Just stitch it. I'll stop bleeding on the way home.",
+			"Is that a real heart in the fridge? Is it for sale?"
+		],
+		"trader_reply": [
+			"On the table. Don't touch anything shiny.",
+			"You'll live. That'll be extra.",
+			"Walk-ins welcome. Crawl-ins pay the same.",
+			"Press here. Harder. Good. Now pay."
+		]
+	},
+	"splice": {
+		"order": [
+			"How long before I stop feeling the arm?",
+			"I want eyes that see in the dark. And maybe a little further.",
+			"My last ripperdoc left a screw in me. Can you find it?",
+			"Does chrome itch? Mine itches.",
+			"Give me something that makes me faster than whoever's chasing me.",
+			"The blades that fold into the arm. How much?"
+		],
+		"trader_reply": [
+			"Sit. Breathe. You won't want to watch this part.",
+			"It's supposed to itch. That means it's settling in.",
+			"Mirror's over there. Take your time.",
+			"Everyone asks for the blades. Nobody asks what they weigh."
+		]
+	},
+	"drinker": {
+		"talk_0": [
+			"Just got here. Give me a minute.",
+			"First one's always the best."
+		],
+		"talk_1": [
+			"Pull up a stool. It's a good night.",
+			"Buy me the next one and I'll tell you a secret."
+		],
+		"talk_2": [
+			"Have you met my friend? No? Neither have I. Hello!",
+			"I love this place. I love everyone in it.",
+			"I've got a story about a carp. You'll want to sit down."
+		],
+		"talk_3": [
+			"Who are you? You look... you look nice.",
+			"I'm not drunk. I'm stationary.",
+			"The floor keeps moving. Tell it to stop."
+		],
+		"talk_asleep": [
+			"Five more minutes.",
+			"Mmh. Not now.",
+			"Tell the captain I'm sick."
+		],
+		"talk": [
+			"Evening.",
+			"Pull up a stool."
+		],
+		"stage_0": [
+			"Long shift.",
+			"Just the one tonight.",
+			"Right. Where's that drink."
+		],
+		"stage_1": [
+			"This place is alright. I like this place.",
+			"Another one of the... yes. That one.",
+			"Best seat in the house, this.",
+			"Nobody talk to me about work."
+		],
+		"stage_2": [
+			"Who wants to hear about the time I punched a carp?",
+			"I love you all. Not you. I'm still deciding about you.",
+			"Another round! On... somebody!",
+			"You know what? You know what. Never mind."
+		],
+		"stage_3": [
+			"I'm not drunk. I'm stationary.",
+			"Where did the floor go? It was right here.",
+			"Is it hot in here or is it the lamp?",
+			"I'm fine. Is the room fine?"
+		],
+		"sing": [
+			"Oh the void is wide and my ship is small...",
+			"Ninety-nine cans of fuel on the wall, ninety-nine cans of fuel...",
+			"And the carp came up from the deep, deep black..."
+		],
+		"handed": [
+			"For me? You're a saint.",
+			"Oh, don't mind if I do.",
+			"Cheers! To you. To us. To this glass."
+		],
+		"handed_gossip": [
+			"Did you hear? Somebody lost a whole ship out past the yellow line. A whole ship!",
+			"They say the pirates are getting bolder. Everyone knows that. I'm just telling you.",
+			"The convoy was late again. Late! Again!"
+		],
+		"handed_sober": [
+			"Coffee. Fine. Fine.",
+			"Water? Who drinks water?",
+			"Oh. That's not beer."
+		],
+		"handed_empty": [
+			"It's empty.",
+			"There's nothing in that."
+		],
+		"handed_refuse": [
+			"That smells wrong. You drink it.",
+			"No thanks. I've seen what that does."
+		],
+		"wake": [
+			"Where... right. Going.",
+			"What time is it? Never mind. Bed.",
+			"Nobody saw that. Nobody."
+		],
+		"leave": [
+			"That's me. Night.",
+			"Right. Ship. Which way's the ship?"
+		],
+		"attacked": [
+			"Oi! I'm drinking here!",
+			"Watch it!"
+		],
+		"violence": [
+			"Not in the bar!",
+			"Grab the bottles! I mean, get down!"
+		],
+		"cover": [
+			"Under the table!",
+			"Mind the drinks!"
+		],
+		"chat": [
+			"Another?",
+			"How's the ship?"
+		],
+		"reply": [
+			"Cheers.",
+			"Couldn't agree more.",
+			"What? Yes."
+		],
+		"conversations": [
+			{
+				"opener": "You know what the problem with the void is?",
+				"replies": ["It's big.", "Too much of it.", "Tell me."]
+			},
+			{
+				"opener": "I'm going to buy a ship. A big one.",
+				"replies": ["With what?", "Can I be captain?", "Course you are."]
+			},
+			{
+				"opener": "Did I ever tell you about my first captain?",
+				"replies": ["Twice.", "Every time.", "Go on, then."]
+			},
+			{
+				"opener": "This one's on me. Next one's on you.",
+				"replies": ["Deal.", "You said that last time."]
+			}
+		]
+	},
+	"off_duty_pirate": {
+		"idle": [
+			"Everyone's armed in the red zone. That's why it's polite here.",
+			"My captain thinks I'm out resupplying. I am. Slowly.",
+			"The turrets only shoot rude people. Beautiful system. No survivors... I mean, no complaints.",
+			"Shore leave's four days. Two getting here, one drinking, one regretting it.",
+			"You didn't see me here. I'm not here. Nobody's ever here."
+		],
+		"attacked": [
+			"Ha! In the Undertow? Vex would skin you if I were worth skinning.",
+			"Save it for the docks, friend. In here we drink."
+		],
+		"talk": [
+			"Everyone's armed in the red zone. That's why it's polite here.",
+			"My captain thinks I'm out resupplying. I am. Slowly."
+		]
+	},
+	"bar_dregs": {
+		"order": [
+			"Dram, the usual.",
+			"Dram. Something that burns.",
+			"Whiskey. Don't bother wiping the glass."
+		],
+		"barkeep_reply": [
+			"Coming up.",
+			"Sit down before you fall down.",
+			"Here. Don't spill it on my bar."
+		],
+		"cutoff": [
+			"You're done. Go sleep it off.",
+			"That's enough. Sofa's over there.",
+			"No more for you."
+		],
+		"local": [
+			"Don't look at the lounge. Don't ever look at the lounge.",
+			"Best bar in the red. Only bar in the red.",
+			"The man in the lounge bought me a drink once. I'm still paying for it."
+		]
+	},
+	"bar_chowder": {
+		"order": [
+			"Roux, a pint and whatever's in the pot.",
+			"A beer, Roux. And bread. Lots of bread.",
+			"Something cold to wash down the special."
+		],
+		"barkeep_reply": [
+			"Pint's on the pass.",
+			"Sit. It's coming.",
+			"You'll have it when it's poured."
+		],
+		"cutoff": [
+			"Water. Then your ship. Go.",
+			"You're done, love. Sleep it off.",
+			"No more. Eat something."
+		],
+		"local": [
+			"The chowder soaks it right up. That's science.",
+			"Best food on the inner ring. Only food on the inner ring.",
+			"Roux's cooking would bring back the dead."
+		]
+	},
+	"bar_crew_room": {
+		"order": [
+			"Coffee. Coffee first.",
+			"Right. Coffee.",
+			"Come on, machine. Just one cup."
+		],
+		"stronger": [
+			"Right. Something stronger.",
+			"Shift's over. Coffee's over.",
+			"Enough coffee. Where's the good stuff?"
+		],
+		"local": [
+			"Shift's over. Nobody say the word convoy.",
+			"My back's done. It's been done since Tuesday.",
+			"Sarge wants the east yard cleared by morning. Sarge can clear it."
+		]
+	},
+	"any": {
+		"attacked": [
+			"Hey! Watch it!",
+			"What's your problem?"
+		],
+		"violence": [
+			"Get down!",
+			"Not again."
+		]
+	}
+}

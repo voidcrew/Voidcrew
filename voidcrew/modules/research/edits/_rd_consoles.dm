@@ -44,6 +44,7 @@
 	if(istype(attacking_item, /obj/item/research_notes) && validate_research_site(stored_research))
 		var/obj/item/research_notes/research_notes = attacking_item
 		stored_research.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = research_notes.value))
+		record_notes_redeemed(research_notes, user) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 		playsound(src,'sound/machines/synth/synth_yes.ogg', 50, TRUE)
 		qdel(research_notes)
 		return
@@ -67,7 +68,9 @@
 			if(!(user.mind in port.current_ship.ship_team.members))
 				say("ERROR- DOWNLOADING NOT ALLOWED FOR NON-CREW!")
 				return
-	return ..()
+	var/list/metric_nodes_before = metric_tech_disk_before(action, params) // round metrics, voidcrew/modules/metrics/research_metrics.dm
+	. = ..()
+	record_tech_disk_copy(action, metric_nodes_before)
 
 /obj/machinery/computer/rdconsole/ui_data(mob/user)
 	validate_research_site(stored_research)

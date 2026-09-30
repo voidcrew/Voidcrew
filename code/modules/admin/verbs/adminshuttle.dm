@@ -158,12 +158,12 @@ ADMIN_VERB(shuttle_panel, R_ADMIN, "Shuttle Manipulator", "Opens the shuttle man
 		if("Delete Shuttle")
 			if(tgui_alert(user, "Really delete [name || shuttle_id]?", "Delete Shuttle", list("Cancel", "Really!")) != "Really!")
 				return
-			jumpToNullSpace()
+			admin_delete_shuttle() // VOIDCREW EDIT: also remove the overmap ship; see voidcrew/modules/admin/shuttle_deletion.dm.
 
 		if("Into The Sunset (delete & greentext 'escape')")
 			if(tgui_alert(user, "Really delete [name || shuttle_id] and greentext escape objectives?", "Delete Shuttle", list("Cancel", "Really!")) != "Really!")
 				return
-			intoTheSunset()
+			admin_delete_shuttle(escape = TRUE) // VOIDCREW EDIT: retain escape handling while removing overmap ownership.
 
 		else
 			if(options[selection])

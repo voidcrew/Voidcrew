@@ -78,9 +78,12 @@
 		return PROCESS_KILL
 
 	///see if machine has enough to fill, is anchored down and has any inputspot objects to pick from
-	if(reagents.total_volume >= wanted_amount && anchored && length(inputspot.contents))
+	// VOIDCREW EDIT CHANGE START: floor piles expose their individual extracts, including an empty pile awaiting cleanup.
+	var/list/inputs = expand_slime_extract_piles(inputspot.contents)
+	if(reagents.total_volume >= wanted_amount && anchored && length(inputs))
 		use_energy(active_power_usage * seconds_per_tick)
-		var/obj/AM = pick(inputspot.contents)///pick a reagent_container that could be used
+		var/obj/AM = pick(inputs)
+		// VOIDCREW EDIT CHANGE END
 		//allowed containers
 		var/static/list/allowed_containers = list(
 			/obj/item/reagent_containers/cup,

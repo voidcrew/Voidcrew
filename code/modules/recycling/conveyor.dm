@@ -275,6 +275,12 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 /obj/machinery/conveyor/proc/start_conveying(atom/movable/moving)
 	if(QDELETED(moving))
 		return
+	// VOIDCREW EDIT ADDITION START: preserve individual conveyor movement when a belt is built under a pile.
+	if(istype(moving, /obj/structure/slime_extract_pile))
+		var/obj/structure/slime_extract_pile/pile = moving
+		pile.scatter_extracts()
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/datum/move_loop/move/moving_loop = GLOB.move_manager.processing_on(moving, SSconveyors)
 	if(moving_loop)
 		moving_loop.direction = movedir

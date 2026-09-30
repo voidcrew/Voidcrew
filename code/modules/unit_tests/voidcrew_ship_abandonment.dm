@@ -140,10 +140,6 @@
 	ship.docked = home
 	crewmember.forceMove(concourse)
 	TEST_ASSERT(ship.has_active_crew(), "Crew inside a player outpost on another level must protect their ship")
-	home.freight_berth = second_berth
-	crewmember.forceMove(other_concourse)
-	TEST_ASSERT(ship.has_active_crew(), "The player outpost's freight elevator destination must count as part of the site")
-	home.freight_berth = null
 	home.berths = null
 
 	var/obj/structure/overmap/colosseum/venue = allocate(/obj/structure/overmap/colosseum)

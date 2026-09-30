@@ -44,12 +44,12 @@
 	recipient.mind_initialize()
 	var/datum/team/voidcrew/visitors = allocate(/datum/team/voidcrew)
 	visitors.add_member(recipient.mind)
-	var/datum/map_template/player_outpost/invalid_shell = allocate(/datum/map_template/player_outpost/small/refused_founding_fixture)
+	var/datum/map_template/player_outpost/invalid_shell = allocate(/datum/map_template/player_outpost/test_fixture/refused_founding_fixture)
 	var/obj/structure/overmap/dynamic/player_outpost/failed = allocate(/obj/structure/overmap/dynamic/player_outpost)
 	TEST_ASSERT(!failed.found(founder, invalid_shell, "Failed claim"), "A refused shell completed founding")
 	TEST_ASSERT(QDELETED(failed), "Failed founding retained an incomplete claim")
 	TEST_ASSERT_NULL(failed.mapzone, "Failed founding retained its reserved map zone")
-	var/datum/map_template/player_outpost/small/shell = allocate(/datum/map_template/player_outpost/small)
+	var/datum/map_template/player_outpost/test_fixture/shell = allocate(/datum/map_template/player_outpost/test_fixture)
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
 	TEST_ASSERT(home.found(founder, shell, "Retried claim"), "A failed attempt prevented founding a valid home")
 	TEST_ASSERT(home.loaded && home.home_bundle_installed, "Successful founding omitted the purchased home services")
@@ -63,7 +63,7 @@
 	TEST_ASSERT((recipient.mind in visitors.members) && (visitors in recipient.mind.ship_teams), "Founding changed another ship's membership")
 	var/datum/bank_account/account = home.treasury
 	var/obj/structure/overmap/dynamic/player_outpost/second = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	var/datum/map_template/player_outpost/small/second_shell = allocate(/datum/map_template/player_outpost/small)
+	var/datum/map_template/player_outpost/test_fixture/second_shell = allocate(/datum/map_template/player_outpost/test_fixture)
 	TEST_ASSERT(second.found(founder, second_shell, "Second claim"), "Existing ownership prevented founding another home")
 	TEST_ASSERT(home.can_manage(founder) && second.can_manage(founder), "Founding another home removed existing ownership")
 	TEST_ASSERT(home.treasury != second.treasury, "Multiple owned outposts shared a bank account")
@@ -88,7 +88,7 @@
 	TEST_ASSERT(home.is_owner(recipient) && second.is_owner(recipient), "A transfer displaced the recipient's other outpost")
 
 /// Exercise refusal after the claim allocates its map zone, without logging a malformed map.
-/datum/map_template/player_outpost/small/refused_founding_fixture/load(turf/target, centered = FALSE)
+/datum/map_template/player_outpost/test_fixture/refused_founding_fixture/load(turf/target, centered = FALSE)
 	return FALSE
 
 /// Approval resumes the real ship docking path without overriding a departed or busy ship.

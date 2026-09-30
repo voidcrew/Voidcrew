@@ -34,7 +34,7 @@ Some contracts also fail if the thing they are about is destroyed. Recovery-fami
 
 ## Pay and zones
 
-Every contract that points somewhere on the overmap is priced by the zone band its target sits in. Deeper is worth more: a contract in the contested middle band pays roughly 1.7× the outer-ring rate, and one in the lawless deep pays about 2.6×. Contracts in the deep also add an extra trade voucher on top of whatever they already paid.
+Every contract that points somewhere on the overmap is priced by the zone band its target sits in. Farther out is worth more: a contract in the contested middle band pays roughly 1.7× the inner-ring rate, and one in the lawless deep pays about 2.6×. Contracts in the deep also add an extra trade voucher on top of whatever they already paid.
 
 The board labels each offer Easy, Medium, or Hard, and that label is just the zone band restated. A "hard" contract is not a harder puzzle. It is the same job somewhere that will shoot at you.
 
@@ -63,15 +63,19 @@ Not every type is available at once. Several are capped so the galaxy only ever 
 !!! tip "Read the description before you accept"
     Each offer's text names its coordinates, its zone band, its beacon tag, and whether it dispenses equipment. The planet contracts in particular hand you a lure, a crate, or a claim kit at accept, if you launch without collecting it off the pad, you have wasted the run.
 
-## Bounties and broadcasts
+## Bounties
 
-The board carries three things besides contracts. **Pirate bounties** are competitive: a named pirate captain is posted galaxy-wide, several crews can hunt the same one, and it goes to whoever kills them and puts their **ship key** on the mission pad. Paying a fee out of the ship account tracks the target on your chart, deducted from the reward. **Player bounties** let you post a job for other crews yourself, funded from your account and delivered to your pad. **Broadcasts** list any player-founded outpost currently advertising, with coordinates. See [Player Outposts](player-outposts.md).
+Everything the board has on offer sits in one mixed list: contracts, **wanted criminals** to find and bring to your pad, alive for full pay (see [Bounty Hunting](bounty-hunting.md)), **pirate bounties** and jobs other crews have posted. Whatever your crew has taken on moves to the **Active** tab.
+
+**Pirate bounties** are competitive: a named pirate captain is posted galaxy-wide (only some pirates carry one at a time, and they move around), several crews can hunt the same one, and it goes to whoever kills them and puts their **ship key** on the mission pad. Paying a fee out of the ship account tracks the target on your chart, deducted from the reward.
+
+**Player bounties** let you post a job for other crews yourself with **Post Bounty**, funded from your account. A crew that takes it puts what you asked for on their pad and submits it as an offer. You approve or reject each offer from your board, and approving completes the exchange.
 
 Trader outposts also run their own boards, separate from your ship's. You take those by talking to the trader in person, and they pay in **goods off that trader's shelves** rather than money. See [Trader Outposts](trader-outposts.md).
 
 ## Street Chemistry
 
-One contract type is never posted on your ship's board and never rolls at random. **Vex**, the fence at the Undertow Exchange in the lawless deep, is the only person in the galaxy who posts a **Drug Run**, and the only counter that will take the product afterwards. You have to fly out there and ask.
+One contract type is never posted on any board and never rolls at random. The **kingpin**, the crime boss in the lounge at the Undertow Exchange in the lawless deep, is the only person in the galaxy who gives out a **Drug Run**. Fly out there and ask him for work (see [the kingpin](bounty-hunting.md#the-kingpin)). **Vex**, the fence at the Undertow's counter, is the only one who will buy the product. Only one crew can run it at a time, and a crew that takes it can't hunt the kingpin or turn him in for the rest of the round.
 
 The run has three stages and a one-hour clock.
 

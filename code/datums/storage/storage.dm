@@ -524,7 +524,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
 /datum/storage/proc/handle_mass_pickup(mob/user, list/things, atom/thing_loc, list/rejections, datum/progressbar/progress)
 	for(var/obj/item/thing in things)
 		things -= thing
-		if(thing.loc != thing_loc)
+		if(thing.loc != thing_loc && !(istype(thing.loc, /obj/structure/slime_extract_pile) && thing.loc.loc == thing_loc)) // VOIDCREW EDIT: bulk collection can reach piled cores on this turf.
 			continue
 		if(thing.type in rejections) // To limit bag spamming: any given type only complains once
 			continue
@@ -745,7 +745,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
  */
 /datum/storage/proc/collect_on_turf(obj/item/thing, mob/user)
 	var/atom/holder = thing.loc
-	var/list/pick_up = holder.contents.Copy()
+	var/list/pick_up = expand_slime_extract_piles(holder.contents).Copy() // VOIDCREW EDIT: include the actual cores inside floor piles.
 
 	if(collection_mode == COLLECT_SAME)
 		pick_up = typecache_filter_list(pick_up, typecacheof(thing.type))

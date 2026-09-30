@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/enhanced_armory.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "png": "bogatyr_workshop_enhanced_armory.png",
+   "src_md5": "2e7fdf047fa97a763970f0edacc98d09",
+   "themes": {
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "bogatyr_workshop_enhanced_armory_nightclub.png",
+     "src_md5": "88a0cc2272707feb95b38906bc4ff35e",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

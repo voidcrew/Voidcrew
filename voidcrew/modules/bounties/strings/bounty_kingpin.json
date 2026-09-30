@@ -1,0 +1,217 @@
+{
+	"kingpin": {
+		"confront": [
+			"I know why you're here.",
+			"You're not the first crew to come through that door for me.",
+			"Hunters. In my lounge.",
+			"Bold. Stupid, but bold."
+		],
+		"work_offer": [
+			"I need a {job} cooked quiet. Vex takes it at the counter. You in?",
+			"There's a {job} wants cooking. Do it clean and Vex pays you at the counter.",
+			"I've got a {job} that needs making. Vex handles the buying. Interested?"
+		],
+		"work_repeat": [
+			"Same job. A {job}, and Vex takes it at the counter.",
+			"Still a {job} on offer. Yes or no?"
+		],
+		"no_work": [
+			"Nothing for you today.",
+			"Business is slow. Try me later."
+		],
+		"no_work_taken": [
+			"Someone's already cooking for me.",
+			"That job's spoken for."
+		],
+		"no_work_busy": [
+			"Your crew's got enough on its plate.",
+			"Finish the work you've got first."
+		],
+		"no_work_hostile": [
+			"You shot at my people. We're past talking.",
+			"After what you did? No."
+		],
+		"no_work_drifter": [
+			"I hire crews, not drifters.",
+			"Come back when you've got a ship behind you."
+		],
+		"no_work_yet": [
+			"What job? You haven't heard one.",
+			"Ask first. Then we'll see."
+		],
+		"job_taken": [
+			"Good. Don't keep me waiting.",
+			"Smart. Vex will be expecting you.",
+			"Pleasure doing business. My people will remember your faces."
+		],
+		"attacked": [
+			"Take care of this.",
+			"Deal with them.",
+			"Nobody touches my people."
+		],
+		"walk_away": [
+			"Good choice.",
+			"Come back when you're thirsty.",
+			"Mind the step on your way out."
+		],
+		"stand_down": [
+			"They're gone. Clean this up.",
+			"Somebody get the tables back up.",
+			"Back to it. And get me a drink."
+		],
+		"furniture": [
+			"Leave the furniture alone.",
+			"That table stays on its legs.",
+			"Touch my tables again and we'll have a problem."
+		],
+		"greet": [
+			"Evening. Pull up a chair if you're buying.",
+			"You look like you want something.",
+			"Easy. This is my table."
+		],
+		"greet_guest": [
+			"One of ours. Relax, boys.",
+			"Back already? Good. Keep it that way."
+		],
+		"greet_hostile": [
+			"You've got some nerve coming back here.",
+			"Look who it is. Boys."
+		],
+		"idle": [
+			"Tell Vex the numbers are late again.",
+			"Somebody get me a real drink.",
+			"Slow night.",
+			"Who's watching the door?",
+			"This couch needs replacing."
+		],
+		"actions": [
+			"puffs on a cigar.",
+			"taps ash into a glass.",
+			"checks a pocket watch.",
+			"leans back on the sofa."
+		],
+		"reload": [
+			"Keep them busy.",
+			"Cover me."
+		],
+		"hurt": [
+			"You'll pay for that.",
+			"Somebody shoot them!"
+		],
+		"surrender": [
+			"Enough. I'm done. Put the guns down.",
+			"Alright. You win. Take me in.",
+			"Stop. I'll come quietly."
+		],
+		"downed": [
+			"Get... get me out of here.",
+			"Alright. Alright.",
+			"Somebody get a doctor."
+		],
+		"recover": [
+			"Where do you think you're going?",
+			"I'm not finished."
+		],
+		"cuffed": [
+			"My lawyer will have me out by morning.",
+			"You're making a mistake.",
+			"Careful with the suit."
+		],
+		"slipping_cuffs": [
+			"These cuffs are cheap."
+		],
+		"beamed_out": [
+			"You'll regret this."
+		],
+		"accused_rightly": [
+			"I know who I am. Put the paper away and talk to me."
+		]
+	},
+	"goon": {
+		"idle": [
+			"Quiet tonight.",
+			"You see the game last week?",
+			"Boss wants the receipts by six.",
+			"My feet are killing me.",
+			"Don't order the house whiskey. Trust me.",
+			"Who's on the door after this?"
+		],
+		"actions": [
+			"cracks their knuckles.",
+			"checks the door.",
+			"straightens their tie.",
+			"watches the room."
+		],
+		"actions_smoke": [
+			"lights a cigarette.",
+			"takes a drag and blows smoke at the ceiling.",
+			"flicks ash on the floor."
+		],
+		"actions_cards": [
+			"shuffles a deck of cards.",
+			"deals out a hand of solitaire.",
+			"counts a short stack of chips."
+		],
+		"actions_drink": [
+			"sips from a glass.",
+			"swirls the ice in a glass."
+		],
+		"company": [
+			"Boss. Company.",
+			"Heads up, we've got visitors.",
+			"Someone's here to see you, boss."
+		],
+		"draw": [
+			"Here we go.",
+			"Guns out!",
+			"Down! Get down!"
+		],
+		"flee": [
+			"I'm not dying for this. I'm out!",
+			"Forget this!",
+			"He's done. I'm gone!"
+		],
+		"shoved": [
+			"Hands off.",
+			"Back up, pal."
+		]
+	},
+	"hunter": {
+		"here": [
+			"We're here for you."
+		],
+		"work": [
+			"Got any work?"
+		],
+		"take": [
+			"I'll take it."
+		],
+		"walk": [
+			"Never mind. We're leaving."
+		]
+	},
+	"room": {
+		"barkeep_duck": [
+			"Not again!",
+			"Keep it away from the bottles!"
+		]
+	},
+	"record": {
+		"aliases": [
+			"the Accountant",
+			"Mister Sable",
+			"Old Money",
+			"the Landlord",
+			"Uncle",
+			"the Collector"
+		],
+		"crimes": [
+			"running the Undertow's protection racket",
+			"fencing stolen warship parts",
+			"ordering the killing of a customs officer",
+			"running guns to three pirate clans",
+			"laundering ransom money",
+			"extortion of half the docks in the sector"
+		]
+	}
+}

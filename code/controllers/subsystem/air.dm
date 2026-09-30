@@ -131,6 +131,16 @@ SUBSYSTEM_DEF(air)
 
 
 /datum/controller/subsystem/air/fire(resumed = FALSE)
+	// VOIDCREW EDIT ADDITION START - ship and checkpoint loads switch can_fire off so atmos cannot see a
+	// template's machines before setup_template_machinery() has built their pipelines. can_fire
+	// only stops new runs: the MC still resumes a run paused before the load began, or one queued
+	// just before it. That run's next stage copies atmos_machinery afresh, loaded pumps and
+	// heaters with no pipelines included, and its rebuilds expand into pipes whose Initialize has
+	// not set their volume yet. Drop the rest of the run; the next one starts from the top.
+	if(!can_fire)
+		currentpart = SSAIR_PIPENETS
+		return
+	// VOIDCREW EDIT END
 	var/timer = TICK_USAGE_REAL
 
 	//Rebuilds can happen at any time, so this needs to be done outside of the normal system

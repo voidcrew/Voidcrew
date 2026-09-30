@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/surgical_suite.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "png": "bogatyr_workshop_surgical_suite.png",
+   "src_md5": "f9ca095bc3b2194219e6906acdb779ad",
+   "themes": {
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "bogatyr_workshop_surgical_suite_nightclub.png",
+     "src_md5": "7c4c128fa7ce017f7cb08ba51410c795",
+     "width": 3
+    },
+    "trashed": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "bogatyr_workshop_surgical_suite_trashed.png",
+     "src_md5": "f9ca095bc3b2194219e6906acdb779ad",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

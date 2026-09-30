@@ -13,7 +13,7 @@
 	})
 "at" = (
 /obj/structure/barricade/wooden,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -28,7 +28,7 @@
 /obj/item/grenade/c4,
 /obj/item/grenade/c4,
 /obj/item/grenade/c4,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -36,7 +36,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -67,7 +67,7 @@
 	})
 "ev" = (
 /obj/machinery/computer/piratepad_control,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -93,7 +93,7 @@
 	})
 "ga" = (
 /obj/machinery/space_heater,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -117,19 +117,19 @@
 	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/blue;
 	suit_type = /obj/item/clothing/suit/space/syndicate/blue
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "gM" = (
 /obj/structure/flora/lunar_plant/style_2,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "hg" = (
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -181,7 +181,7 @@
 	id = "geodebridge";
 	dir = 4
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -191,7 +191,7 @@
 	requires_power = 0
 	})
 "jx" = (
-/turf/closed/mineral/random/jungle/space_safe,
+/turf/closed/wall/rock/hull,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -208,7 +208,7 @@
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 2
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -221,7 +221,7 @@
 	})
 "ko" = (
 /obj/item/trash/energybar,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -263,7 +263,7 @@
 	})
 "kV" = (
 /obj/item/reagent_containers/cup/beaker/large,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -298,7 +298,7 @@
 	amount = 2
 	},
 /obj/structure/cable,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -395,7 +395,7 @@
 	name = "Window Shutters Control";
 	pixel_y = 30
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -430,7 +430,7 @@
 /obj/structure/closet/crate/miningcar,
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/mining_scanner,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -513,7 +513,7 @@
 /obj/machinery/computer/helm{
 	dir = 8
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -525,7 +525,7 @@
 /obj/item/stack/rods{
 	amount = 5
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -582,14 +582,14 @@
 "xg" = (
 /obj/effect/spawner/structure/window/hollow/survival_pod,
 /obj/structure/barricade/wooden/crude,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "xS" = (
 /obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6/directional/north,
 /obj/item/stack/ore/silver,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -613,7 +613,7 @@
 	})
 "yz" = (
 /obj/structure/flora/lunar_plant/style_3,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -642,13 +642,13 @@
 	},
 /obj/structure/table/wood,
 /obj/machinery/reagentgrinder,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "zZ" = (
 /obj/structure/reagent_dispensers/watertank,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -677,7 +677,7 @@
 /obj/item/climbing_hook/syndicate,
 /obj/item/climbing_hook/syndicate,
 /obj/item/climbing_hook/syndicate,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -714,7 +714,7 @@
 	})
 "Ds" = (
 /obj/machinery/loot_locator,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -747,7 +747,7 @@
 	})
 "DT" = (
 /obj/structure/fluff/minepost,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -788,7 +788,7 @@
 	})
 "Gj" = (
 /obj/machinery/piratepad,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -819,13 +819,13 @@
 	})
 "HJ" = (
 /obj/machinery/shuttle_scrambler/ship_siphon,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "HY" = (
 /obj/effect/spawner/random/trash/mess,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -881,7 +881,7 @@
 	})
 "JK" = (
 /obj/item/stack/sheet/bluespace_crystal,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -910,7 +910,7 @@
 	})
 "KK" = (
 /obj/structure/reagent_dispensers/fueltank,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -970,7 +970,7 @@
 /obj/item/storage/box/syringes,
 /obj/item/storage/medkit/brute,
 /obj/item/storage/medkit/fire,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -987,7 +987,7 @@
 "Oc" = (
 /obj/structure/fluff/minepost,
 /obj/structure/cable,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1033,7 +1033,7 @@
 /obj/item/borg/upgrade/modkit/indoors{
 	pixel_y = -5
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1062,7 +1062,7 @@
 	pixel_y = 9
 	},
 /obj/item/food/energybar,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1071,7 +1071,7 @@
 	dir = 4
 	},
 /obj/machinery/cryopod,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1094,13 +1094,13 @@
 	requires_power = 0
 	})
 "Rp" = (
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
 "Rt" = (
 /obj/structure/cable,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1146,7 +1146,7 @@
 	})
 "Sy" = (
 /obj/structure/chair/wood,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1165,7 +1165,7 @@
 	})
 "TC" = (
 /obj/structure/flora/lunar_plant/style_1,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1186,7 +1186,7 @@
 	})
 "UM" = (
 /obj/effect/spawner/structure/window/hollow/survival_pod,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1195,7 +1195,7 @@
 /obj/structure/table/wood,
 /obj/machinery/microwave,
 /obj/effect/mapping_helpers/airalarm/all_access,
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1215,7 +1215,7 @@
 /obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 1
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1263,7 +1263,7 @@
 /obj/machinery/light/small/blacklight/directional{
 	dir = 8
 	},
-/turf/open/misc/dirt/station,
+/turf/open/floor/fakedirt,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})

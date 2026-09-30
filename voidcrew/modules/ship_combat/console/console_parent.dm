@@ -13,7 +13,7 @@
 
 	/// Our ship reference
 	var/obj/structure/overmap/ship/current_ship
-	/// Currently locked target: an enemy ship or a raidable player outpost
+	/// Currently locked target: an enemy ship
 	var/obj/structure/overmap/target_ship
 	/// Target we're currently acquiring a lock on
 	var/obj/structure/overmap/targeting_ship

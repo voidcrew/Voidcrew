@@ -1,7 +1,7 @@
 /**
  * # Waystation Halcyon: the green-zone general store
  *
- * Sundries, survival kit and honest prices for the safe outer ring. Credits
+ * Sundries, survival kit and honest prices for the safe inner ring. Credits
  * only; the most dangerous thing on the shelf is the chili in the rations.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  */
@@ -23,7 +23,7 @@
 
 /datum/outpost_shop/general
 	outpost_name = "\improper Waystation Halcyon"
-	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
+	outpost_desc = "A sleepy general store and rest stop on the safe inner ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
 	trader_outfit = /datum/outfit/halcyon_barnaby
 	trader_gender = MALE
@@ -155,7 +155,7 @@
 		/datum/shop_buyback/general/pearl_clam,
 		/datum/shop_buyback/general/sea_crystal,
 	)
-	// Waystation restocking: gentle asks for the outer ring
+	// Waystation restocking: gentle asks for the inner ring
 	// Pike's stall makes this the outpost that posts angling requests, and
 	// Roux's diner the one that posts kitchen orders
 	extra_offer_mix = list(

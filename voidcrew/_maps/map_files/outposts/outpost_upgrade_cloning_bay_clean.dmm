@@ -1,0 +1,825 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/item/paper{
+	pixel_x = 3
+	},
+/obj/item/paper{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/structure/noticeboard/directional/east,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ab" = (
+/obj/structure/chair/sofa/corp{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ac" = (
+/turf/closed/indestructible/reinforced/titanium/nodiagonal,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ad" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light/corner{
+	dir = 2
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ae" = (
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"af" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ag" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/sign/departments/medbay/alt/directional/north,
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ah" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ai" = (
+/obj/structure/chair/sofa/corp{
+	dir = 4
+	},
+/obj/machinery/digital_clock/directional/west,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aj" = (
+/obj/structure/chair/comfy/teal{
+	dir = 1
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ak" = (
+/obj/machinery/vending/clothing/outpost,
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"al" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/structure/chair/office/light{
+	dir = 8
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"am" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 4
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"an" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ao" = (
+/obj/effect/turf_decal/trimline/blue/corner{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/corner{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ap" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 2
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aq" = (
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ar" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/toy/cards/deck{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"as" = (
+/obj/structure/mirror/directional/east,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"at" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/help_others/directional/east,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"au" = (
+/obj/structure/chair/sofa/corp{
+	dir = 2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"av" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 2
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aw" = (
+/obj/structure/chair/comfy/teal{
+	dir = 4
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ax" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light/corner{
+	dir = 4
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"ay" = (
+/obj/structure/chair/comfy/teal{
+	dir = 8
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"az" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aA" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 4
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aB" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aC" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aD" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aE" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/folder/blue{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aF" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 9
+	},
+/obj/structure/sign/poster/official/fruit_bowl/directional/west,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aG" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -7;
+	pixel_y = 8
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aH" = (
+/obj/structure/mirror/directional/west,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aI" = (
+/obj/effect/turf_decal/trimline/blue/end{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 4
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aJ" = (
+/obj/machinery/cloning_vat/outpost,
+/obj/machinery/light/cold/directional/north,
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aK" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 1
+	},
+/obj/structure/sign/departments/genetics/directional/north{
+	name = "cloning sign"
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aL" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 8
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aM" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aN" = (
+/obj/structure/chair/sofa/corp{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aO" = (
+/obj/structure/chair/sofa/corp/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/soft_cap_pop_art/directional/west,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aP" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 1
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aQ" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aR" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/cleanliness/directional/east,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aS" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aT" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/newspaper{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aU" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light/corner{
+	dir = 8
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aV" = (
+/obj/effect/turf_decal/trimline/blue/end{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 2
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aW" = (
+/obj/machinery/cloning_vat/outpost,
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aX" = (
+/obj/effect/turf_decal/trimline/blue/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aY" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"aZ" = (
+/obj/effect/turf_decal/trimline/blue/end{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 1
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"bi" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/structure/filingcabinet,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"bE" = (
+/obj/machinery/door/airlock/outpost/service/medical{
+	name = "Cloning Bay"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 2
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"hv" = (
+/obj/structure/flora/bush/lavendergrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"jo" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"jx" = (
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"pZ" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"qv" = (
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"sY" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"uF" = (
+/obj/machinery/door/airlock/outpost/service/medical{
+	name = "Cloning Bay"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 2
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"yY" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/structure/filingcabinet,
+/obj/machinery/light/cold/directional/east,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"Cd" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new/light/corner{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"DH" = (
+/obj/structure/flora/bush/large/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"Ej" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"GN" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 2
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"Hm" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"Nv" = (
+/obj/structure/flora/bush/flowers_pp/style_random,
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+"Zi" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/cloning_bay)
+
+(1,1,1) = {"
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+"}
+(2,1,1) = {"
+ac
+ak
+aH
+an
+aO
+aN
+ai
+aM
+aF
+DH
+ac
+"}
+(3,1,1) = {"
+ac
+ac
+ac
+ag
+au
+aT
+aE
+aj
+ae
+qv
+Zi
+"}
+(4,1,1) = {"
+ac
+aW
+aD
+aB
+au
+ar
+aC
+aj
+ae
+hv
+Zi
+"}
+(5,1,1) = {"
+ac
+aJ
+aD
+aB
+az
+ay
+ay
+ae
+aq
+qv
+Zi
+"}
+(6,1,1) = {"
+ac
+aJ
+aD
+aB
+ad
+am
+am
+am
+ax
+Nv
+ac
+"}
+(7,1,1) = {"
+ac
+aW
+aD
+aB
+av
+aP
+aX
+ah
+pZ
+Ej
+ac
+"}
+(8,1,1) = {"
+ac
+ac
+ac
+aK
+av
+aZ
+ao
+aV
+pZ
+sY
+uF
+"}
+(9,1,1) = {"
+ac
+aW
+aD
+aB
+av
+aA
+aI
+ap
+pZ
+GN
+ac
+"}
+(10,1,1) = {"
+ac
+aJ
+aD
+aB
+aU
+aL
+aL
+aL
+Cd
+jx
+ac
+"}
+(11,1,1) = {"
+ac
+aJ
+aD
+aB
+af
+af
+af
+aY
+Hm
+qv
+Zi
+"}
+(12,1,1) = {"
+ac
+aW
+aD
+aB
+aQ
+aw
+ae
+al
+af
+hv
+Zi
+"}
+(13,1,1) = {"
+ac
+ac
+ac
+ag
+ae
+aG
+ae
+af
+bi
+qv
+Zi
+"}
+(14,1,1) = {"
+ac
+ak
+as
+aS
+at
+ab
+aR
+aa
+yY
+DH
+ac
+"}
+(15,1,1) = {"
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+"}

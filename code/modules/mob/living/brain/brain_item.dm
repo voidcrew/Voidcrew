@@ -339,7 +339,7 @@
 	. = ..()
 	// If we crossed blinking brain damage thresholds either way, update our blinking
 	if ((prev_damage > BRAIN_DAMAGE_ASYNC_BLINKING && damage < BRAIN_DAMAGE_ASYNC_BLINKING) || (prev_damage < BRAIN_DAMAGE_ASYNC_BLINKING && damage > BRAIN_DAMAGE_ASYNC_BLINKING))
-		var/obj/item/organ/eyes/eyes = owner.get_organ_slot(ORGAN_SLOT_EYES)
+		var/obj/item/organ/eyes/eyes = owner?.get_organ_slot(ORGAN_SLOT_EYES) // VOIDCREW EDIT - was owner.; a brain decaying outside a body (a severed head) has no owner
 		eyes?.animate_eyelids(owner)
 
 	// If we're not more injured than before, return without gambling for a trauma

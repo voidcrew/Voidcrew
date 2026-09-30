@@ -373,6 +373,7 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 			focused_tests += test_to_run
 	if(length(focused_tests))
 		tests_to_run = focused_tests
+	tests_to_run = voidcrew_select_unit_tests(tests_to_run) // VOIDCREW EDIT ADDITION - runtime selection for parallel test worlds
 
 	sortTim(tests_to_run, GLOBAL_PROC_REF(cmp_unit_test_priority))
 

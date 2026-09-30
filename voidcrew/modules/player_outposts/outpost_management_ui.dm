@@ -2,19 +2,16 @@
  * A claim-bound management panel accessed through a console or installed Registry uplink.
  */
 
-/datum/asset/simple/outpost_management_plate
-	assets = list(
-		"outpost_management_plate.png" = 'voidcrew/modules/cyberware/icons/chrome_cradle_plate.png',
-	)
-
 /datum/player_outpost_management_ui
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/mob/manager
 	var/datum/weakref/console_ref
 	var/datum/weakref/uplink_ref
 	var/turf/console_turf
-	var/advert_error
+	/// Why the last research invitation was refused, or null. The user is told in chat.
 	var/research_error
+	/// Why the last ship bay action was refused, or null. The user is told in chat.
+	var/ship_bay_error
 
 /datum/player_outpost_management_ui/New(obj/structure/overmap/dynamic/player_outpost/target, mob/user, obj/machinery/computer/player_outpost_management/console, obj/item/organ/cyberimp/cyberware/registry_uplink/uplink)
 	outpost = target
@@ -65,14 +62,14 @@
 	if(QDELETED(console) || get_turf(console) != console_turf || get_outpost_from_atom(console) != outpost)
 		return UI_CLOSE
 	var/physical_status = console.ui_status(user, console.ui_state(user))
-	return min(physical_status, isliving(user) && (outpost.is_current_management_user(user) || outpost.can_claim(user)) ? UI_INTERACTIVE : UI_UPDATE)
+	return min(physical_status, isliving(user) && (outpost.is_current_management_user(user) || outpost.is_current_treasury_user(user) || outpost.is_current_pricing_user(user) || outpost.can_claim(user) || (outpost.ship_bay_installed && user.ckey)) ? UI_INTERACTIVE : UI_UPDATE)
 
 /datum/player_outpost_management_ui/ui_close(mob/user)
 	if(!QDELETED(src))
 		qdel(src)
 
 /datum/player_outpost_management_ui/ui_assets(mob/user)
-	return list(get_asset_datum(/datum/asset/simple/outpost_management_plate))
+	return list(get_asset_datum(/datum/asset/simple/outpost_upgrade_previews))
 
 /datum/player_outpost_management_ui/ui_data(mob/user)
 	var/list/data = list("linked" = !!outpost)
@@ -85,16 +82,27 @@
 	data["is_owner"] = outpost.is_owner(user)
 	data["has_owner"] = !!outpost.founder_ckey
 	data["can_claim"] = !!console_ref && outpost.can_claim(user)
-	data["can_manage"] = outpost.is_current_management_user(user)
+	var/can_manage = outpost.is_current_management_user(user)
+	var/treasury_user = outpost.is_current_treasury_user(user)
+	data["can_manage"] = can_manage
 	data["can_spend"] = outpost.can_spend(user)
-	data["raidable"] = outpost.raidable
+	data["can_set_prices"] = outpost.is_current_pricing_user(user)
+	data["can_select_silo"] = treasury_user
+	// Only the people who run the outpost see its money, roster and research (market_ui_data() trims the rest)
+	data["treasury_balance"] = (can_manage || treasury_user) ? (outpost.treasury?.account_balance || 0) : 0
+	var/obj/machinery/ore_silo/selected_silo = outpost.ship_bay_silo()
+	data["service_silo"] = selected_silo ? REF(selected_silo) : null
+	var/list/silos = list()
+	for(var/obj/machinery/ore_silo/silo as anything in outpost.service_silos())
+		var/area/silo_area = get_area(silo)
+		silos += list(list("ref" = REF(silo), "name" = "[silo.name] ([silo_area.name])"))
+	data["service_silos"] = silos
 	data["dock_mode"] = outpost.dock_mode
 	data["rename_cooldown"] = COOLDOWN_TIMELEFT(outpost, rename_cooldown) / 10
 	data["advert_cost"] = OUTPOST_ADVERT_COST
 	data["advert_cooldown"] = COOLDOWN_TIMELEFT(outpost, advert_cooldown) / 10
 	data["advert_remaining"] = outpost.current_advert ? outpost.current_advert.get_remaining_seconds() : 0
 	data["advert_denial"] = advert_denial(user)
-	data["advert_error"] = advert_error
 
 	var/list/requests = list()
 	for(var/obj/structure/overmap/ship/requester in outpost.pending_dock_requests)
@@ -110,6 +118,29 @@
 		if(!QDELETED(banned_ship))
 			banned += list(list("name" = banned_ship.name, "ref" = REF(banned_ship)))
 	data["banned_ships"] = banned
+	outpost.ensure_home_services()
+	if(can_manage)
+		manager_ui_data(user, data)
+	else
+		data["builders"] = list()
+		data["candidates"] = list()
+		data["resident_mode"] = null
+		data["arrival_available"] = FALSE
+		data["resident_invites"] = list()
+		data["resident_blocked"] = list()
+		data["residents"] = list()
+		data["research_servers"] = list()
+	data["ship_bay_installed"] = outpost.ship_bay_installed
+	data["ship_bay_cost"] = OUTPOST_SHIP_BAY_COST
+	data["ship_bay_denial"] = outpost.ship_bay_install_denial(user)
+	ships_ui_data(user, data, can_manage)
+	data["upgrades"] = upgrade_ui_data(user)
+	data["upgrade_surveying"] = outpost.upgrade_surveying
+	market_ui_data(user, data, can_manage)
+	return data
+
+/// The roster, construction grants and research servers: management only
+/datum/player_outpost_management_ui/proc/manager_ui_data(mob/user, list/data)
 	data["builders"] = outpost.authorized_builder_ckeys.Copy()
 	var/list/candidates = list()
 	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
@@ -118,15 +149,13 @@
 		candidates += list(list("name" = candidate.real_name, "ckey" = candidate.ckey, "ref" = REF(candidate), "is_resident" = (candidate.mind in outpost.residents)))
 	data["candidates"] = candidates
 
-	outpost.ensure_home_services()
 	data["resident_mode"] = outpost.resident_mode
-	data["resident_active"] = outpost.active_resident_count()
 	data["arrival_available"] = !!outpost.available_resident_pod()
 	data["resident_invites"] = outpost.invited_residents.Copy()
 	data["resident_blocked"] = outpost.blocked_residents.Copy()
 	var/list/people = list()
 	for(var/datum/mind/member as anything in outpost.residents)
-		people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers)))
+		people += list(list("ref" = REF(member), "name" = member.name, "is_self" = (member == user.mind), "active" = !!member.current?.client && member.current.stat != DEAD, "steward" = (member in outpost.stewards), "treasurer" = (member in outpost.treasurers), "pricer" = (member in outpost.pricers)))
 	data["residents"] = people
 	var/list/servers = list()
 	var/list/server_options = outpost.research_server_options()
@@ -134,23 +163,79 @@
 		var/obj/machinery/rnd/server/ship/server = server_options[label]
 		servers += list(list("ref" = REF(server), "name" = "[server.name] - [server.source_code_hdd.name]"))
 	data["research_servers"] = servers
-	var/list/ships = list()
-	var/list/ship_options = outpost.research_ship_options()
-	for(var/label in ship_options)
-		var/obj/structure/overmap/ship/ship = ship_options[label]
-		ships += list(list("ref" = REF(ship), "name" = ship.name))
-	data["research_ships"] = ships
-	var/list/connections = list()
-	for(var/datum/outpost_research_link/link as anything in outpost.research_links.Copy())
-		link.reconcile()
-		if(QDELETED(link))
+
+/**
+ * The Ships tab. `ships_here`: one row per ship settled at this outpost (ship bay, hangar berth or
+ * pad), with its research link for managers and, in the ship bay, its materials and eviction.
+ * `research_away`: for managers, every research link no row shows. A link outlives the visit
+ * (outpost_relay.dm), so a ship that left stays connected until someone disconnects it here.
+ */
+/datum/player_outpost_management_ui/proc/ships_ui_data(mob/user, list/data, can_manage)
+	for(var/datum/outpost_berth/ship_bay/bay as anything in outpost.bay_berths)
+		bay?.reconcile_silo()
+	// Ship -> the link its row offers, a connected link before a pending one. The rest go in research_away.
+	var/list/ship_links = list()
+	var/list/away = list()
+	if(can_manage)
+		for(var/datum/outpost_research_link/link as anything in outpost.research_links.Copy())
+			link.reconcile()
+			if(QDELETED(link))
+				continue
+			var/obj/structure/overmap/ship/linked_ship = link.ship_ref.resolve()
+			var/datum/outpost_research_link/shown = ship_links[linked_ship]
+			if(shown && (shown.ship_approved || !link.ship_approved))
+				away += link
+				continue
+			if(shown)
+				away += shown
+			ship_links[linked_ship] = link
+	var/list/rows = list()
+	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
+		if(QDELETED(ship) || ship.docked != outpost || ship.state != OVERMAP_SHIP_IDLE)
 			continue
-		var/obj/structure/overmap/ship/ship = link.ship_ref.resolve()
-		var/obj/machinery/rnd/server/ship/server = link.home_server.resolve()
-		connections += list(list("ref" = REF(link), "ship" = ship.name, "server" = server.name, "status" = link.status_text(), "approved" = link.ship_approved))
-	data["research_connections"] = connections
-	data["research_error"] = research_error
-	return data
+		var/datum/outpost_research_link/link = ship_links[ship]
+		ship_links -= ship
+		var/list/row = list(
+			"ref" = REF(ship),
+			"name" = ship.name,
+			"berth" = ship_berth_label(ship),
+			"crew" = length(ship.ship_team?.members),
+			"research" = research_link_state(link),
+			"research_ref" = link ? REF(link) : null,
+		)
+		// Materials and eviction exist only for the ship bay
+		var/datum/outpost_berth/ship_bay/bay = outpost.ship_bay_of(ship)
+		if(bay)
+			row["bay_ref"] = REF(bay)
+			row["materials"] = bay.approved_silo ? "allowed" : (bay.silo_requested_at ? "requested" : "none")
+			bay_eviction_ui_data(bay, user, row)
+		rows += list(row)
+	data["ships_here"] = rows
+	for(var/linked_ship in ship_links)
+		away += ship_links[linked_ship]
+	var/list/away_rows = list()
+	for(var/datum/outpost_research_link/link as anything in away)
+		var/obj/structure/overmap/ship/linked_ship = link.ship_ref.resolve()
+		away_rows += list(list("ref" = REF(link), "ship" = linked_ship?.name, "research" = research_link_state(link)))
+	data["research_away"] = away_rows
+
+/// "connected", "pending" or "none" for a ships_here or research_away row
+/datum/player_outpost_management_ui/proc/research_link_state(datum/outpost_research_link/link)
+	if(!link)
+		return "none"
+	return link.ship_approved ? "connected" : "pending"
+
+/// The short berth label of a ships_here row
+/datum/player_outpost_management_ui/proc/ship_berth_label(obj/structure/overmap/ship/ship)
+	var/datum/outpost_berth/ship_bay/bay = outpost.ship_bay_of(ship)
+	if(bay)
+		return "Bay [bay.bay_number]"
+	for(var/datum/outpost_berth/berth as anything in outpost.berths)
+		if(berth?.ship == ship)
+			return "Berth [berth.berth_number]"
+	if(ship.dock_index)
+		return "Pad [ship.dock_index]"
+	return "Docked"
 
 /datum/player_outpost_management_ui/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -163,14 +248,39 @@
 		if(console_ref && outpost.can_claim(user))
 			outpost.transfer_ownership(user, user)
 		return TRUE
+	if(action == "select_service_silo")
+		var/obj/machinery/ore_silo/silo = locate(params["ref"]) in outpost.service_silos()
+		outpost.select_service_silo(user, silo)
+		return TRUE
+	// Pricing, room settings and bay eviction actions check their own permissions
+	if(market_action(action, params, user))
+		return TRUE
 	if(!outpost.is_current_management_user(user))
 		return
 	if((action in list("transfer", "abandon", "add_builder", "remove_builder")) && !outpost.is_owner(user))
 		return
 	if(action in list("resident_mode", "resident_password", "invite_resident", "block_resident", "unblock_resident", "reset_resident_access", "add_resident", "remove_resident", "delegate"))
 		return service_action(action, params, user)
+	if(action in list("buy_upgrade", "cancel_upgrade", "open_upgrade_map", "refresh_upgrade_map", "close_upgrade_map", "place_upgrade"))
+		return upgrade_action(action, params, user)
 	. = TRUE
 	switch(action)
+		if("install_ship_bay")
+			ship_bay_error = outpost.install_ship_bay(user)
+			if(ship_bay_error)
+				to_chat(user, span_warning(ship_bay_error))
+		if("approve_bay_silo", "revoke_bay_silo")
+			if(!outpost.can_spend(user))
+				return
+			var/datum/outpost_berth/ship_bay/bay = locate(params["ref"]) in outpost.bay_berths
+			if(!bay)
+				return
+			if(action == "approve_bay_silo")
+				ship_bay_error = bay.approve_silo(user) ? null : "Material request is no longer available."
+				if(ship_bay_error)
+					to_chat(user, span_warning(ship_bay_error))
+			else
+				bay.revoke_silo()
 		if("invite_research")
 			research_error = null
 			var/obj/structure/overmap/ship/ship = locate(params["ship"]) in SSovermap.simulated_ships
@@ -181,6 +291,8 @@
 				research_error = "Research server unavailable"
 			else if(!outpost.propose_research_link(user, server, ship, server.source_code_hdd))
 				research_error = "Invitation refused"
+			if(research_error)
+				to_chat(user, span_warning("[research_error]."))
 		if("revoke_research")
 			research_error = null
 			var/datum/outpost_research_link/link = locate(params["ref"]) in outpost.research_links
@@ -238,7 +350,7 @@
 				return
 			var/datum/mind/original_recipient_mind = recipient.mind
 			var/original_recipient_ckey = recipient.ckey
-			if(!confirm_ownership_action(user, "Transfer ownership of [outpost.name] to [recipient.real_name]? This cannot be undone.", "Transfer Ownership", "Transfer"))
+			if(!confirm_ownership_action(user, "Transfer [outpost.name] to [recipient.real_name]?", "Transfer Ownership", "Transfer"))
 				return
 			if(!ownership_prompt_valid(original_outpost, user, ui) || !original_outpost.is_management_candidate(recipient) || recipient.mind != original_recipient_mind || recipient.ckey != original_recipient_ckey)
 				return
@@ -246,7 +358,7 @@
 				to_chat(user, span_warning("Ownership transfer failed."))
 		if("abandon")
 			var/obj/structure/overmap/dynamic/player_outpost/original_outpost = outpost
-			if(!confirm_ownership_action(user, "Abandon [outpost.name]? Anyone visiting will be able to claim it.", "Abandon Outpost", "Abandon"))
+			if(!confirm_ownership_action(user, "Abandon [outpost.name]?", "Abandon Outpost", "Abandon"))
 				return
 			if(ownership_prompt_valid(original_outpost, user, ui))
 				original_outpost.abandon(user)
@@ -262,29 +374,28 @@
 	if(outpost.current_advert)
 		return "Broadcast already live"
 	if(!outpost.can_spend(user))
-		return "Treasury permission required"
+		return "Not authorized"
 	if(!COOLDOWN_FINISHED(outpost, advert_cooldown))
-		return "Ready in [CEILING(COOLDOWN_TIMELEFT(outpost, advert_cooldown) / 10, 1)]s"
+		return "Transmitter cooling down"
 	if(!outpost.treasury)
-		return "Outpost bank unavailable"
+		return "No bank link"
 	if(!outpost.treasury.has_money(OUTPOST_ADVERT_COST))
 		return "Insufficient outpost funds"
 	return null
 
 /datum/player_outpost_management_ui/proc/buy_advert(mob/living/user)
-	advert_error = null
 	var/denial = advert_denial(user)
 	if(denial)
 		to_chat(user, span_warning("Broadcast rejected: [denial]."))
 		return FALSE
 	var/datum/bank_account/account = outpost.treasury
 	if(!account.adjust_money(-OUTPOST_ADVERT_COST, "Paid to Colonial Registry by [user.ckey] for broadcast: [outpost.name]"))
-		advert_error = "Payment declined"
-		to_chat(user, span_warning("Broadcast rejected: [advert_error]."))
+		to_chat(user, span_warning("Broadcast rejected: Payment declined."))
 		return FALSE
 	COOLDOWN_START(outpost, advert_cooldown, OUTPOST_ADVERT_COOLDOWN)
 	outpost.current_advert = new /datum/outpost_advert(outpost)
 	log_game("PLAYER OUTPOST: [key_name(user)] bought an advertisement for '[outpost.name]'")
+	metric_outpost_advert(outpost, user, OUTPOST_ADVERT_COST)
 	to_chat(user, span_notice("Broadcast live: [outpost.name]."))
 	return TRUE
 
@@ -312,6 +423,8 @@
 				outpost.blocked_residents |= player_key
 				outpost.invited_residents -= player_key
 				outpost.resident_clearance -= player_key
+				// A blocked player's current character stops being a member at once
+				outpost.strip_resident_by_ckey(player_key)
 			else
 				outpost.blocked_residents -= player_key
 		if("add_resident")
@@ -330,8 +443,9 @@
 				outpost.residents -= member
 				outpost.stewards -= member
 				outpost.treasurers -= member
-			else if(outpost.is_owner(user) && (params["role"] in list("steward", "treasurer")))
-				var/list/permissions = params["role"] == "steward" ? outpost.stewards : outpost.treasurers
+				outpost.pricers -= member
+			else if(outpost.is_owner(user) && (params["role"] in list("steward", "treasurer", "pricer")))
+				var/list/permissions = outpost.delegated_role_list(params["role"])
 				if(member in permissions)
 					permissions -= member
 				else

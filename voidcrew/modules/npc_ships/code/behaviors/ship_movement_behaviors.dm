@@ -415,11 +415,11 @@
 	// Get target radius based on zone type
 	var/target_radius
 	switch(spawn_zone.zone_type)
-		if(ZONE_RED)
+		if(ZONE_GREEN)
 			target_radius = max_radius * 0.17
 		if(ZONE_YELLOW)
 			target_radius = max_radius * 0.5
-		if(ZONE_GREEN)
+		if(ZONE_RED)
 			target_radius = max_radius * 0.8
 		else
 			target_radius = 0

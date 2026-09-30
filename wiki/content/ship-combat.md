@@ -19,7 +19,7 @@ Combat rules are set by the [overmap zone](overmap.md) your ship is sitting in.
 
 Both ships are checked. If either of you slips into the Neutral Zone the lock breaks immediately and the attack ends, which makes green space a genuine escape route. The Contested Zone is the interesting middle: you cannot shoot another ship there, but you can pin one in place, force it to dock with you and board it on foot.
 
-There is one exception to the weapons ban. Missiles (never lasers) may be fired outside the Lawless Zone when the locked target is a raidable [player outpost](player-outposts.md), and only if your own ship is not sitting in patrolled green space. Laser targeting cannot resolve station-scale targets at all, so sieging a claim is missile work.
+Ship weapons only ever lock onto other ships, never onto [player outposts](player-outposts.md).
 
 ## The weapons system
 

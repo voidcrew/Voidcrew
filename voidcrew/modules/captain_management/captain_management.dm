@@ -152,7 +152,7 @@
 
 	// Available players to invite (living players in captain's view, not on this ship)
 	data["available_players"] = list()
-	for(var/mob/living/carbon/human/player in view(captain))
+	for(var/mob/living/player in view(captain))
 		if(player == captain)
 			continue
 		if(!player.client)
@@ -311,8 +311,8 @@
 		to_chat(captain, span_warning("Please wait before sending another invite."))
 		return FALSE
 
-	var/mob/living/carbon/human/target_player
-	for(var/mob/living/carbon/human/player in GLOB.player_list)
+	var/mob/living/target_player
+	for(var/mob/living/player in GLOB.player_list)
 		if(player.ckey == ckey && player.client)
 			target_player = player
 			break
@@ -330,7 +330,7 @@
 	INVOKE_ASYNC(src, PROC_REF(process_invite_response), target_player, ckey)
 	return TRUE
 
-/datum/captain_management_ui/proc/process_invite_response(mob/living/carbon/human/player, ckey)
+/datum/captain_management_ui/proc/process_invite_response(mob/living/player, ckey)
 	var/memo_text = ship.memo ? "\n\nShip Memo: [ship.memo]" : ""
 	var/response = tgui_alert(player,
 		"Captain [captain.real_name] has invited you to join the crew of [ship.name].[memo_text]",
@@ -368,6 +368,16 @@
 	// or the captain resets join access.
 	if(ckey)
 		ship.password_cleared_ckeys[ckey] = TRUE
+
+	// Humans can pick up a ship headset. A silicon's radio is built in, so point it at
+	// this ship's channel the way a silicon crew spawn does.
+	if(issilicon(player))
+		var/mob/living/silicon/silicon_player = player
+		silicon_player.radio?.bind_comms_to_ship(ship.shuttle)
+		// An AI riding a shell joins as itself, so its core radio follows too
+		if(iscyborg(player))
+			var/mob/living/silicon/robot/borg = player
+			borg.mainframe?.radio?.bind_comms_to_ship(ship.shuttle)
 
 	to_chat(player, span_notice("You have joined the crew of [ship.name]!"))
 	ship.ship_notify("[player.real_name] has joined the crew.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

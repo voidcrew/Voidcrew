@@ -40,7 +40,7 @@ Fly out, find something worth money, bring it home, spend it, go further out.
 
 In practice that means picking a contact off the helm chart and going to look at it. [Planets](planets.md) have ore, ruins and fauna; [space ruins](ruins.md) have loot and usually something guarding it; [asteroid fields](mining.md) are the reliable mining stop; [trader outposts](trader-outposts.md) buy what you dug up and sell what you cannot make. The [mission board](missions.md) hands out contracts that point you at all of the above and pays for finishing them.
 
-Danger and reward both scale with how close to the star you fly. The safe outer ring is where you start; the deeper rings have better ore yields, nastier wildlife and no rules about shooting each other. [The Overmap](overmap.md) explains the three zones, and it is the first page you should read after this one.
+Danger and reward both scale with how far from the star you fly. The safe inner ring around the star is where you start; the rings farther out have better ore yields, nastier wildlife and no rules about shooting each other. [The Overmap](overmap.md) explains the three zones, and it is the first page you should read after this one.
 
 ## Keeping what you earn
 

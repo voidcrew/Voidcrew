@@ -38,7 +38,7 @@
 		eligible_vents += candidate
 	return eligible_vents
 
-/// A more dangerous clog, kept out of the safe outer ring and scaled down for ships.
+/// A more dangerous clog, kept out of the safe inner ring and scaled down for ships.
 /datum/round_event_control/voidcrew/vent_clog/major
 	name = "Ventilation Clog: Major"
 	typepath = /datum/round_event/voidcrew/vent_clog/major
@@ -408,7 +408,7 @@
  * It does NOT keep its lack of a zone gate. Two entries in the table are a bear and a
  * viscerator, and "surprise, fight a bear" is a fine joke on a crew who have a weapon
  * locker and know where it is. In the green band it lands on people who are still working
- * out the airlocks, and the outer ring is supposed to be the one place nothing hurts them.
+ * out the airlocks, and the inner ring is supposed to be the one place nothing hurts them.
  */
 /datum/round_event_control/voidcrew/vent_clog/strange
 	name = "Ventilation Clog: Strange"

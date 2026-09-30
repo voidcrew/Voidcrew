@@ -216,6 +216,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(spent)
 		return
 	spent = TRUE
+	SEND_SIGNAL(src, COMSIG_BOUNTY_LICH_SLAIN, slain) // BOUNTY: his kill bounty drops its trophy at the corpse (bounty_lair.dm)
 
 	if(beacon_timer)
 		deltimer(beacon_timer)
@@ -442,7 +443,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /**
  * Places The Verdigris on an unused overmap square and starts its status
  * beacon. Mid-to-dangerous space by preference: a raid boss has no business
- * parked in the safe outer ring. Shared by the scheduler and the admin verb.
+ * parked in the safe inner ring. Shared by the scheduler and the admin verb.
  * Returns the site, or null if it could not be placed.
  */
 /proc/surface_lich_lair()
@@ -472,6 +473,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	SSovermap.lich_lair_spawned = TRUE
 	site.set_ruin_template(template)
 	site.start_event()
+	bounty_post_lich(site) // BOUNTY: a kill-only Most Wanted on him (bounty_lair.dm)
 	log_mapping("SSovermap: The Verdigris surfaced on the overmap.")
 	return site
 

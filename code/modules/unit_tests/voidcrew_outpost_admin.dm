@@ -24,16 +24,16 @@
 	var/datum/outpost_manipulator/unit_test/panel = allocate(/datum/outpost_manipulator/unit_test, operator)
 	var/turf/sector = SSovermap.get_unused_overmap_square()
 	TEST_ASSERT_NOTNULL(sector, "No free overmap sector for admin creation")
-	home = panel.create_home(operator, sector, /datum/map_template/player_outpost/small, "Admin Fixture")
+	home = panel.create_home(operator, sector, /datum/map_template/player_outpost/rundown, "Admin Fixture")
 	TEST_ASSERT_NOTNULL(home, "Admin creation did not produce a physical home")
 	allocated += home
 	panel.selected = home
 	TEST_ASSERT(home.loaded && home.home_bundle_installed && home.arrival_turf, "Admin creation skipped the complete purchased-home loader")
-	TEST_ASSERT(home.treasury && home.freight_berth?.dock && length(home.resident_pods), "Admin-created home lacks bank, freight or cryo services")
+	TEST_ASSERT(home.treasury && home.freight && length(home.resident_pods), "Admin-created home lacks bank, freight or cryo services")
 	TEST_ASSERT_NULL(home.founder_ckey, "Unowned admin creation silently assigned an owner")
 	TEST_ASSERT_EQUAL(home.resident_mode, "closed", "Unowned admin creation allowed resident arrivals")
-	TEST_ASSERT_NULL(panel.create_home(operator, sector, /datum/map_template/player_outpost/small, "Duplicate"), "Admin creation accepted an occupied sector")
-	TEST_ASSERT_NULL(panel.create_home(operator, SSovermap.get_unused_overmap_square(), /datum/map_template/player_outpost/nothing, "Bare Claim"), "Admin creation accepted an unsupported shell")
+	TEST_ASSERT_NULL(panel.create_home(operator, sector, /datum/map_template/player_outpost/rundown, "Duplicate"), "Admin creation accepted an occupied sector")
+	TEST_ASSERT_NULL(panel.create_home(operator, SSovermap.get_unused_overmap_square(), /datum/map_template/player_outpost/test_fixture, "Test Habitat"), "Admin creation accepted a shell founders cannot pick")
 
 	// The public override parameter must not be an authorization bypass for players.
 	TEST_ASSERT(!home.transfer_ownership(operator, operator, admin_override = TRUE), "A non-admin used the administrative ownership override")
@@ -80,6 +80,11 @@
 	operator.forceMove(home.arrival_turf)
 	TEST_ASSERT(panel.deletion_denial(home), "Deletion allowed a living occupant")
 	operator.forceMove(run_loc_floor_bottom_left)
+	// Mindless mobs (service bots, animals) are deleted with the outpost and never block it.
+	var/mob/living/basic/mouse/stray = allocate(/mob/living/basic/mouse, home.arrival_turf)
+	TEST_ASSERT_NULL(stray.mind, "The mindless occupant fixture has a mind")
+	TEST_ASSERT_NULL(panel.deletion_denial(home), "A mindless mob on the claim blocked deletion")
+	qdel(stray)
 	TEST_ASSERT_NULL(panel.deletion_denial(home), "An empty idle admin-created home could not be deleted")
 	panel.manage_outpost(home, operator, "delete", list())
 	TEST_ASSERT(QDELETED(home), "Confirmed admin deletion did not remove the empty home")

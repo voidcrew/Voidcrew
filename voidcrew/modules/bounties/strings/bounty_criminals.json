@@ -1,0 +1,683 @@
+{
+	"crimes": {
+		"petty": [
+			"skipping out on docking fees at three outposts",
+			"selling watered-down fuel",
+			"stealing rations from a relief drop",
+			"running a rigged card game",
+			"forging salvage permits",
+			"pickpocketing traders on a concourse",
+			"selling fake medkits",
+			"breaking into a vending machine",
+			"hotwiring a mining drone",
+			"shoplifting from an outfitter",
+			"unlicensed salvage on a claimed wreck",
+			"smuggling cigarettes past customs",
+			"passing bad credit chips",
+			"starting a bar fight and leaving the tab",
+			"stealing a nav beacon off a shuttle",
+			"selling scrap as new parts",
+			"vandalizing a relay beacon",
+			"running an illegal still",
+			"selling bad air canisters"
+		],
+		"wanted": [
+			"running stolen guns between outposts",
+			"robbing a cargo hauler at gunpoint",
+			"hijacking an ore freighter",
+			"smuggling unregistered plasma",
+			"assaulting a customs officer",
+			"kidnapping a trader for ransom",
+			"running a protection racket on a mining colony",
+			"selling crew manifests to pirates",
+			"sabotaging a rival crew's engines",
+			"stealing a medical shipment",
+			"breaking three people out of a holding cell",
+			"burning down a trader's stall",
+			"fencing pirate loot",
+			"blackmailing a quartermaster",
+			"shooting up a cantina",
+			"selling forged ship registrations",
+			"stealing a ship and leaving its crew stranded"
+		],
+		"most_wanted": [
+			"the Corvina Station massacre",
+			"blowing up a refinery with the crew still aboard",
+			"murdering a customs inspector and two guards",
+			"venting the cabins of a passenger liner",
+			"leading a pirate raid that killed eleven people",
+			"poisoning a colony's water supply",
+			"bombing the Kestrel Point relay station",
+			"killing a whole salvage crew over a claim",
+			"selling hostages to slavers",
+			"gunning down a trader convoy",
+			"setting fire to a hospital ship",
+			"murdering a captain and taking the ship",
+			"blowing a hole in an outpost's hull at shift change",
+			"killing three witnesses before a trial",
+			"the Ardent Reach hijacking, with no survivors",
+			"arming a pirate fleet with stolen torpedoes"
+		]
+	},
+	"aliases": {
+		"any": [
+			"Red", "Slim", "Doc", "Sparks", "Tiny", "Lucky", "Patch", "Nails", "Socket", "Brick",
+			"Ace", "Moss", "Duke", "Rook", "Jinx", "Wick", "Sully", "Bolt", "Mags", "Stitch",
+			"Hatch", "Boots", "Chip", "Ledger", "Coil", "Pike", "Dusty", "Vance", "Frost", "Cricket"
+		],
+		"meek": [
+			"Mouse", "Twitch", "Whisper", "Rabbit", "Mole", "Shadow", "Sneaks", "Fidget", "Squeak", "Pockets"
+		],
+		"normal": [
+			"Knuckles", "Slick", "Two-Bit", "Bruiser", "Dice", "Hook", "Razor", "Mouth", "Scrapper", "Jab"
+		],
+		"juggernaut": ["The Wall", "Bulldozer", "Anvil", "Big Sal", "Crusher"],
+		"pyromaniac": ["Matches", "Torch", "Cinders", "Smoky", "Blaze"],
+		"demolitionist": ["Fuse", "Boomer", "Sticks", "Two-Fingers", "Detonator"],
+		"ghost": ["Shade", "Blink", "Needle", "Nobody", "Quiet"],
+		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"]
+	},
+	"features": {
+		"scar": [
+			"across the left cheek",
+			"across the right cheek",
+			"over the left eyebrow",
+			"through the right eyebrow",
+			"on the chin",
+			"across the bridge of the nose",
+			"along the jaw",
+			"on the upper lip",
+			"on the back of the left hand",
+			"on the back of the right hand",
+			"across the right palm",
+			"across the knuckles of the left hand"
+		],
+		"tattoo": [
+			"an anchor on the left forearm",
+			"a snake on the right forearm",
+			"a skull on the side of the neck",
+			"a barcode on the back of the neck",
+			"a star on the left side of the neck",
+			"a ship's name on the right arm",
+			"a spider web on the left elbow",
+			"a compass on the right forearm",
+			"a row of dots on the throat",
+			"a dagger on the left arm",
+			"a planet on the right upper arm",
+			"a crossed-out name on the left forearm"
+		],
+		"limp": [
+			"limps on the left leg",
+			"limps on the right leg",
+			"drags the left foot",
+			"walks stiffly on the right leg"
+		],
+		"missing_ear": [
+			"the left ear is missing",
+			"the right ear is missing",
+			"half the left ear is gone",
+			"the top of the right ear is gone"
+		]
+	},
+	"lines": {
+		"idle_chat": {
+			"any": [
+				"Slow day. Can't complain, though.",
+				"Anyone know when the next freighter's due?",
+				"The coffee here tastes like engine coolant.",
+				"I'm not paying those docking fees. Not a chance.",
+				"Heard the yellow zone's crawling with pirates again.",
+				"My back's killing me.",
+				"Could use a shower and a real bed.",
+				"Somebody owes me forty credits, and I know who."
+			],
+			"meek": [
+				"I'm just keeping my head down.",
+				"Is it getting crowded in here, or is it just me?",
+				"I'll be gone by tomorrow. Probably.",
+				"Did someone just look over here?"
+			],
+			"normal": [
+				"Nobody around here knows how to haggle.",
+				"One more job and I'm set for a month.",
+				"Tell your captain I'm not interested.",
+				"If one more trader shorts me, I'm going to lose it."
+			],
+			"boss": [
+				"Nobody's stupid enough to come looking for me.",
+				"Quiet out here. I like it quiet.",
+				"Anyone who comes looking is going to regret it."
+			]
+		},
+		"bar": {
+			"any": [
+				"Another one of these when you get a second.",
+				"This is the worst drink I've had all week.",
+				"Put it on my tab. I'm good for it.",
+				"Is this glass clean?",
+				"Keep them coming.",
+				"No ice. Never ice."
+			],
+			"meek": [
+				"Just the one. I'm not staying long.",
+				"Mind if I sit in the corner?",
+				"Water's fine. Thanks."
+			],
+			"normal": [
+				"Make it a double.",
+				"Last time I was here, the drinks were cheaper.",
+				"Pour it properly this time."
+			],
+			"boss": [
+				"Leave the bottle.",
+				"Give me the good stuff, not whatever that is.",
+				"I'll drink when I'm finished here."
+			]
+		},
+		"trade_haggle": {
+			"any": [
+				"Fifty? It's worth thirty at most.",
+				"I've seen better prices at a pirate market.",
+				"Throw in the ammo and we've got a deal.",
+				"You're robbing me here.",
+				"Come on. I buy from you every week.",
+				"It's scratched. Knock ten off.",
+				"Forty, and I don't ask where you got it."
+			]
+		},
+		"explore": {
+			"any": [
+				"Nobody's been through here in a while.",
+				"Watch your step. The floor's rotten.",
+				"Somebody left in a hurry.",
+				"There's got to be something worth taking in here.",
+				"Quiet out here.",
+				"Hope the air holds up.",
+				"Tracks. Old ones, though."
+			]
+		},
+		"loot": {
+			"any": [
+				"Let's see what they left behind.",
+				"Empty. Figures.",
+				"Oh, that's worth something.",
+				"Come on, open up.",
+				"Junk, junk, junk.",
+				"Someone beat me to this one.",
+				"This'll sell."
+			]
+		},
+		"camp": {
+			"any": [
+				"Fire's getting low. I'll see to it in a minute.",
+				"Beans again.",
+				"Nobody's finding me out here.",
+				"Should've packed another blanket.",
+				"Wind's picking up.",
+				"Two more days and I'm moving on."
+			]
+		},
+		"noticed": {
+			"any": [
+				"Oh no. Not now.",
+				"Why are you looking at me like that?",
+				"I don't want any trouble.",
+				"Stay away from me.",
+				"Great. Just great.",
+				"Who sent you?"
+			]
+		},
+		"flee": {
+			"any": [
+				"Get away from me!",
+				"Leave me alone!",
+				"You'll never catch me!",
+				"No, no, no!",
+				"Somebody stop them!",
+				"I'm not going back!"
+			]
+		},
+		"winded": {
+			"any": [
+				"I need a second. Just a second.",
+				"Can't... breathe...",
+				"Okay. Okay. Keep going.",
+				"My legs are done.",
+				"Should've quit smoking.",
+				"Just need to catch my breath."
+			]
+		},
+		"hide": {
+			"any": [
+				"Please don't look in here.",
+				"Quiet. Be quiet.",
+				"They'll give up soon.",
+				"Don't breathe.",
+				"Nobody's here. Nobody's here.",
+				"Just walk past. Just walk past."
+			]
+		},
+		"found": {
+			"any": [
+				"Okay, okay! You found me!",
+				"Ah! Don't shoot!",
+				"How did you know I was in here?",
+				"That's not fair!",
+				"Please, just let me go!",
+				"Oh, come on!"
+			]
+		},
+		"cornered": {
+			"any": [
+				"Back off! I'm warning you!",
+				"Don't come any closer!",
+				"I'll shoot, I swear I will!",
+				"You're not leaving me a choice!",
+				"Stay back!",
+				"I mean it! Back off!"
+			]
+		},
+		"draw_gun": {
+			"any": [
+				"I've got a gun! Stay back!",
+				"Don't make me use this!",
+				"I know how to use this!",
+				"One more step!",
+				"Keep your hands where I can see them!",
+				"I will shoot you!"
+			]
+		},
+		"fight_start": {
+			"any": [
+				"You picked the wrong guy.",
+				"Alright. Let's do this.",
+				"You want some? Come and get it.",
+				"Big mistake.",
+				"I was having a nice day.",
+				"You're going to regret that."
+			],
+			"boss": [
+				"You came all this way for this?",
+				"Let's get this over with.",
+				"Bring your friends. You'll need them."
+			]
+		},
+		"hurt": {
+			"any": [
+				"Agh! That hurt!",
+				"Ow! Stop that!",
+				"Hey! What was that for?",
+				"Hey!",
+				"Ow, ow, ow!",
+				"Ugh. Watch it!"
+			],
+			"meek": [
+				"Ow! Stop!",
+				"Please stop hitting me!",
+				"Why are you doing this?"
+			],
+			"normal": [
+				"Ow! You'll pay for that.",
+				"Is that all you've got?",
+				"Ugh. Lucky shot.",
+				"That's going to bruise."
+			],
+			"boss": [
+				"Barely felt it.",
+				"Hit harder.",
+				"That the best you've got?"
+			]
+		},
+		"surrender": {
+			"any": [
+				"Okay! I give up! Don't shoot!",
+				"Alright, alright! I'm done!",
+				"Hands up, see? Hands up!",
+				"Stop! I surrender!",
+				"Fine! You win!",
+				"Don't shoot! I'll come quietly!"
+			]
+		},
+		"downed": {
+			"any": [
+				"I'm done. I'm done.",
+				"Ugh... can't get up.",
+				"Okay. You win this round.",
+				"Someone call a medic.",
+				"That really hurt.",
+				"Just give me a minute."
+			],
+			"meek": [
+				"Please don't kill me.",
+				"I'll do whatever you want. Just stop."
+			],
+			"boss": [
+				"Not finished yet.",
+				"Lucky. That's all that was."
+			]
+		},
+		"recover": {
+			"any": [
+				"Right. Where was I?",
+				"Still here.",
+				"Back on my feet.",
+				"Ugh. My head.",
+				"Okay. Okay. I'm up.",
+				"Where did everyone go?"
+			],
+			"meek": [
+				"I have to get out of here.",
+				"Now's my chance.",
+				"Please, just let me go."
+			],
+			"normal": [
+				"That all you had?",
+				"Okay. Round two.",
+				"Miss me?"
+			],
+			"boss": [
+				"You should have finished it.",
+				"My turn.",
+				"Round two."
+			]
+		},
+		"cuffed": {
+			"any": [
+				"These are too tight.",
+				"Fine. Take me in.",
+				"My lawyer's going to hear about this.",
+				"You've got the wrong guy.",
+				"Watch the wrists!",
+				"I want a real bed in that cell."
+			],
+			"meek": [
+				"Please, I didn't mean it.",
+				"Can I at least call someone?",
+				"All this over {crime}? Really?"
+			],
+			"normal": [
+				"All this over {crime}? Really?",
+				"Fine. You got me.",
+				"I'll be out in a week."
+			],
+			"boss": [
+				"These won't hold me forever.",
+				"Enjoy it while it lasts."
+			]
+		},
+		"slipping_cuffs": {
+			"any": [
+				"Almost got it...",
+				"Come on, come on...",
+				"These are cheap.",
+				"Just a bit more...",
+				"Nobody's watching...",
+				"Got a thumb loose."
+			]
+		},
+		"beamed_out": {
+			"any": [
+				"Where are you sending me?",
+				"Wait, wait!",
+				"I hate teleporters.",
+				"This isn't over!",
+				"At least tell me where I'm going!",
+				"Tell my crew I'm not talking!"
+			],
+			"meek": [
+				"Please, not a cell!",
+				"I'll pay you back, I swear!",
+				"Can't we talk about this?"
+			],
+			"normal": [
+				"Enjoy the money while it lasts.",
+				"I'll be out before you've spent it.",
+				"You got lucky, that's all."
+			],
+			"boss": [
+				"You'll see me again.",
+				"Remember my face.",
+				"No cell holds me for long."
+			]
+		},
+		"accused_wrongly": {
+			"any": [
+				"Not me, pal.",
+				"Wrong person. Look at the picture again.",
+				"I just came here for a drink.",
+				"Here, check my papers.",
+				"Do I look like a criminal to you?",
+				"You've got the wrong person."
+			]
+		},
+		"accused_rightly": {
+			"any": [
+				"How did you find me?",
+				"Damn it.",
+				"This is a mistake.",
+				"Okay. Okay. Let's talk about this.",
+				"Who told you?",
+				"Is this about {crime}? I can explain."
+			],
+			"normal": [
+				"Took you long enough.",
+				"You're making a mistake, friend."
+			],
+			"meek": [
+				"No! Not me! Not me!",
+				"Please, not now!"
+			]
+		},
+		"companion_reply": {
+			"any": [
+				"Yeah, I heard.",
+				"Right behind you.",
+				"Told you this was a bad idea.",
+				"Keep your voice down.",
+				"You owe me for this.",
+				"Sure, boss.",
+				"Whatever you say."
+			]
+		},
+		"juggernaut_intro": {
+			"any": [
+				"You came all this way to get flattened?",
+				"Stand still. This'll be quick.",
+				"Walls won't save you.",
+				"I don't need a gun for you.",
+				"Go ahead. Shoot me.",
+				"You're in my way."
+			]
+		},
+		"juggernaut_ability": {
+			"any": [
+				"Out of my way!",
+				"Coming through!",
+				"Move!",
+				"Here I come!",
+				"Brace yourself!",
+				"Nothing stops me!"
+			]
+		},
+		"juggernaut_exhausted": {
+			"any": [
+				"Still standing. Just about.",
+				"Give me a second.",
+				"You hit harder than you look.",
+				"I'm not done yet.",
+				"Getting tired of this.",
+				"Ugh. My ribs."
+			]
+		},
+		"juggernaut_posse": {
+			"any": [
+				"More of you? Good. More to flatten.",
+				"Line up. I'll take you all at once.",
+				"Bring the whole crew. Won't matter.",
+				"Oh, you brought friends.",
+				"All of you? Fine by me.",
+				"I've flattened bigger crews than this."
+			]
+		},
+		"pyromaniac_intro": {
+			"any": [
+				"Hope you brought an extinguisher.",
+				"Smell that? That's fuel.",
+				"Let's warm this place up.",
+				"I'd step back if I were you.",
+				"You're standing in the fuel, by the way.",
+				"It's cold in here. Let me fix that."
+			]
+		},
+		"pyromaniac_ability": {
+			"any": [
+				"Burn!",
+				"Catch!",
+				"Here, warm up!",
+				"Stay still!",
+				"It's about to get hot in here.",
+				"Light them up!"
+			]
+		},
+		"pyromaniac_exhausted": {
+			"any": [
+				"Running low on fuel...",
+				"Tank's almost dry.",
+				"Come on, light!",
+				"Nozzle's clogged. Great.",
+				"Not now, not now.",
+				"Out of fuel. Just my luck."
+			]
+		},
+		"pyromaniac_posse": {
+			"any": [
+				"More of you? I've got fuel for everyone.",
+				"Go on, bunch up.",
+				"Oh good, a group.",
+				"Stand a bit closer together, would you?",
+				"Plenty of fuel to go around.",
+				"Brought friends? Hope they're not flammable."
+			]
+		},
+		"demolitionist_intro": {
+			"any": [
+				"I've got enough charges for all of you.",
+				"Watch where you step.",
+				"I rigged this place an hour ago.",
+				"Hope you like loud noises.",
+				"You'll want to take cover.",
+				"Every wall in here is wired."
+			]
+		},
+		"demolitionist_ability": {
+			"any": [
+				"Fire in the hole!",
+				"Heads up!",
+				"Duck!",
+				"Catch this!",
+				"Grenade!",
+				"Cover your ears!"
+			]
+		},
+		"demolitionist_exhausted": {
+			"any": [
+				"Last few charges. Better make them count.",
+				"Where'd I put the detonator?",
+				"Out of charges. Great.",
+				"My ears are ringing.",
+				"One left. Just one.",
+				"Should've brought more."
+			]
+		},
+		"demolitionist_posse": {
+			"any": [
+				"More of you? I've got enough charges.",
+				"One grenade, lots of you. Works for me.",
+				"Brought friends? Hope they like loud noises.",
+				"Great. More targets.",
+				"Everyone stay nice and close.",
+				"Bunch up. Go on."
+			]
+		},
+		"ghost_intro": {
+			"any": [
+				"You won't even see me coming.",
+				"Over here. No, over here.",
+				"Look behind you.",
+				"You're slow.",
+				"I've been watching you for a while.",
+				"You walked right past me."
+			]
+		},
+		"ghost_ability": {
+			"any": [
+				"Over here.",
+				"Too slow.",
+				"Missed me.",
+				"Behind you.",
+				"You keep missing.",
+				"Try to keep up."
+			]
+		},
+		"ghost_exhausted": {
+			"any": [
+				"Can't keep this up much longer.",
+				"Cloak's failing.",
+				"I'm slowing down.",
+				"Stop following me!",
+				"Damn thing's out of charge.",
+				"Need to get out of here."
+			]
+		},
+		"ghost_posse": {
+			"any": [
+				"More of you, and you still can't see me.",
+				"Brought friends? They'll miss too.",
+				"All of you, and nobody can hit me.",
+				"You'll just get in each other's way.",
+				"More people to walk past.",
+				"Keep counting. Where am I now?"
+			]
+		},
+		"heavy_intro": {
+			"any": [
+				"Find some cover while you still can.",
+				"I've got a lot of bullets.",
+				"You're in the open. Bad idea.",
+				"Let's see how you handle this.",
+				"Nobody gets past this gun.",
+				"Hope that armor's good."
+			]
+		},
+		"heavy_ability": {
+			"any": [
+				"Suppressing fire!",
+				"Get down!",
+				"Here it comes!",
+				"Stay down!",
+				"Covering fire!",
+				"Keep your heads down!"
+			]
+		},
+		"heavy_exhausted": {
+			"any": [
+				"Need to reload. Give me a minute.",
+				"Barrel's overheating.",
+				"Last belt.",
+				"Jammed! Come on!",
+				"Running dry.",
+				"My arms are shaking."
+			]
+		},
+		"heavy_posse": {
+			"any": [
+				"More of you? I've got the ammo.",
+				"Good. I hate wasting a belt on one.",
+				"Bring everyone. This thing doesn't stop.",
+				"Get in line.",
+				"More targets. Fine.",
+				"Hope you all brought armor."
+			]
+		}
+	}
+}

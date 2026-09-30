@@ -43,9 +43,12 @@
 	if(clean && !length(thing.mergers))
 		thing.mergers = null
 	members -= thing
-	origin = null
-	if(origin == thing && length(members))
-		origin = pick(members)
+	// VOIDCREW EDIT CHANGE START - original cleared origin before comparing it, so any member leaving
+	// left the group with no origin. Its next Refresh() then found nothing, dropped every member
+	// and deleted the group, and a new GetMergeGroup() that deferred to it got no group at all.
+	if(origin == thing)
+		origin = length(members) ? pick(members) : null
+	// VOIDCREW EDIT END
 
 /datum/merger/proc/AddMember(atom/thing, connected_dir) // note that this fires for the origin of the merger as well
 	SEND_SIGNAL(thing, COMSIG_MERGER_ADDING, src)

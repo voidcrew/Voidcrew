@@ -2,7 +2,7 @@
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/survey_archive/Run()
 	save_economy()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
 	home.founder_ckey = "surveyarchivefounder"
 	TEST_ASSERT(home.load_level(), "The survey archive test home could not load")
 	test_ship_tile = home.arrival_turf

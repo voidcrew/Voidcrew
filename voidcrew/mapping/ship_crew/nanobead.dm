@@ -1577,7 +1577,7 @@
 	id = /obj/item/card/id/advanced/gold
 	l_pocket = null
 	accessory = /obj/item/clothing/accessory/medal/gold/captain
-	backpack_contents = list(/obj/item/gun/ballistic/revolver = 1, /obj/item/melee/baton/telescopic/gold = 1)
+	backpack_contents = list(/obj/item/melee/baton/telescopic/gold = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_6/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1593,7 +1593,7 @@
 	id = /obj/item/card/id/advanced/gold
 	l_pocket = null
 	accessory = /obj/item/clothing/accessory/medal/gold/captain
-	backpack_contents = list(/obj/item/gun/ballistic/revolver = 1, /obj/item/melee/baton/telescopic/gold = 1)
+	backpack_contents = list(/obj/item/melee/baton/telescopic/gold = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_7
 	parent_type = /datum/outfit/job/assistant
@@ -1667,7 +1667,7 @@
 	id = /obj/item/card/id/advanced/gold
 	l_pocket = null
 	accessory = /obj/item/clothing/accessory/medal/gold/captain
-	backpack_contents = list(/obj/item/gun/ballistic/revolver = 1, /obj/item/melee/baton/telescopic/gold = 1)
+	backpack_contents = list(/obj/item/melee/baton/telescopic/gold = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_4/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1682,7 +1682,7 @@
 	id = /obj/item/card/id/advanced/gold
 	l_pocket = null
 	accessory = /obj/item/clothing/accessory/medal/gold/captain
-	backpack_contents = list(/obj/item/gun/ballistic/revolver = 1, /obj/item/melee/baton/telescopic/gold = 1)
+	backpack_contents = list(/obj/item/melee/baton/telescopic/gold = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_5
 	parent_type = /datum/outfit/job/assistant

@@ -204,33 +204,42 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
 	. = target.alpha
 
 	transporter_apply_filters(target, 0)
-	var/dissolve = target.get_filter("transporter_dissolve")
-	if(dissolve)
-		animate(dissolve, y = TRANSPORTER_MASK_TRAVEL, time = duration, easing = SINE_EASING)
 	// Not all the way to 0 - the mask is doing the real work, and a little left over
 	// keeps the outline readable right up to the moment they go.
 	animate(target, alpha = 40, time = duration, easing = SINE_EASING)
+	// Parallel, or it waits its turn: BYOND treats a filter animated straight after its
+	// owner (or the owner straight after its filter) as the next step of one sequence,
+	// which only starts once the step before it has finished.
+	var/dissolve = target.get_filter("transporter_dissolve")
+	if(dissolve)
+		animate(dissolve, y = TRANSPORTER_MASK_TRAVEL, time = duration, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /**
  * The other half, run at the far end once the atom has actually arrived. Same
- * filters in reverse: it knits back together from the feet up.
+ * filters in reverse: it knits back together from the feet up over `duration`,
+ * starting hidden under the mask. With `restore`, the beam effects come off at the
+ * end on their own; without it, the caller does that with transporter_restore().
  */
-/proc/transporter_materialise(atom/movable/target, original_alpha = 255)
+/proc/transporter_materialise(atom/movable/target, original_alpha = 255, duration = TRANSPORTER_MATERIALISE_TIME, restore = TRUE)
 	if(QDELETED(target))
 		return
 	// Clear anything the outbound leg left on, so the filters can't stack up.
 	target.remove_filter(list("transporter_dissolve", "transporter_edge", "transporter_rays"))
 	transporter_apply_filters(target, TRANSPORTER_MASK_TRAVEL)
 
+	// The fade and the mask run together (see transporter_dematerialise()). Chained, the
+	// fade only began once the mask had risen, and the restore cut it off at once: the
+	// atom stayed faint for the whole knit, then popped in solid.
+	target.alpha = 40
+	animate(target, alpha = original_alpha, time = duration, easing = SINE_EASING)
 	var/dissolve = target.get_filter("transporter_dissolve")
 	if(dissolve)
-		animate(dissolve, y = 0, time = TRANSPORTER_MATERIALISE_TIME, easing = SINE_EASING)
-	target.alpha = 40
-	animate(target, alpha = original_alpha, time = TRANSPORTER_MATERIALISE_TIME, easing = SINE_EASING)
+		animate(dissolve, y = 0, time = duration, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 	var/obj/effect/abstract/particle_holder/motes = new(target, /particles/transporter_motes)
-	QDEL_IN(motes, TRANSPORTER_MATERIALISE_TIME)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(transporter_restore), target, original_alpha), TRANSPORTER_MATERIALISE_TIME)
+	QDEL_IN(motes, duration)
+	if(restore)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(transporter_restore), target, original_alpha), duration)
 
 /// Strips every beam effect and puts the atom back to the alpha it started with.
 /proc/transporter_restore(atom/movable/target, original_alpha = 255)

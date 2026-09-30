@@ -360,7 +360,7 @@
 	else if(world.time < counter_until)
 		. += span_notice("Tendon ready for [attacker_ref?.resolve()]: [DisplayTimeText(counter_until - world.time)] remains. Move two tiles from the impact before lashing.")
 	else
-		. += span_notice(world.time < brace_ready_at ? "Carapace regrowing: [DisplayTimeText(brace_ready_at - world.time)]." : "Carapace ready.")
+		. += span_notice((world.time < brace_ready_at ? "Carapace regrowing: [DisplayTimeText(brace_ready_at - world.time)]." : "Carapace ready."))
 
 /obj/item/vestige_proboscis/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	var/datum/vestige_trial/faces/trial = get_trial(user)

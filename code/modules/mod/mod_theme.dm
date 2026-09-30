@@ -1349,7 +1349,7 @@
 	activation_step_time = MOD_ACTIVATION_STEP_TIME * 0.5
 	ui_theme = "syndicate"
 	slot_flags = ITEM_SLOT_BELT
-	inbuilt_modules = list(/obj/item/mod/module/infiltrator, /obj/item/mod/module/storage/belt, /obj/item/mod/module/demoralizer, /obj/item/mod/module/hearing_protection, /obj/item/mod/module/night)
+	inbuilt_modules = list(/obj/item/mod/module/infiltrator, /obj/item/mod/module/storage/belt, /obj/item/mod/module/hearing_protection, /obj/item/mod/module/night) // VOIDCREW EDIT: removes the demoralizer
 	allowed_suit_storage = list(
 		/obj/item/restraints/handcuffs,
 		/obj/item/assembly/flash,

@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Outer ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, sundries. Credits only. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, sundries. Credits only. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 
@@ -22,6 +22,8 @@ All three broadcast their positions constantly, so they show up on your helm's c
 Fly to the outpost and dock like anywhere else. Every ship that arrives gets its own private **hangar berth**, up to six at once; if all six are taken, traffic control tells you to come back later. Very large hulls are refused outright.
 
 Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. There is a panel in the concourse for going back.
+
+A berth is locked to its own crew. Only your crew can send the elevator down to your berth, and anyone standing in the alcove with you rides along as your guest. If the crew member who pressed the button steps out before the car leaves, it stays put. Anyone can ride back up to the concourse, and once a ship is abandoned its berth is open to everyone.
 
 !!! tip "The elevator is the only way between floors"
     Berths are separate bays, not rooms down a corridor. If you walk out of your ship looking for a door to the shop, you will not find one. Get in the alcove.
@@ -73,7 +75,7 @@ Quartermain, and only Quartermain, has **rental stash lockers**. Swipe an ID, pa
 
 Every outpost stocks its own selection of charts. Check the destination's band before buying: a chart sold at Halcyon can still send you into the lawless deep.
 
-**Star charts** reveal every contact in a whole zone band at once: 1200 credits for the outer ring, 2400 for the contested band, 2 vouchers for the lawless deep.
+**Star charts** reveal every contact in a whole zone band at once: 1200 credits for the neutral ring, 2400 for the contested band, 2 vouchers for the lawless deep.
 
 **Word on the lanes** costs 1500 credits anywhere. The trader marks one uncharted signal on your helm and names the band it sits in.
 
@@ -128,7 +130,7 @@ Attacking outpost property (or attacking another visitor inside the outpost) ear
 - Every ship your crew belongs to is put under a **trade embargo** for 15 minutes.
 - The outpost's turrets go lethal on you and anyone else aboard your embargoed ship.
 
-The **loiterers** hanging around each concourse, an off-duty pirate at the Undertow, a mechanic at Halcyon, a dockhand at Quartermain. Are the one exception. They are squatters rather than staff, they cannot be hurt anyway, and swinging at one does not count against you.
+The shoppers, drinkers, staff and odd regulars milling around each concourse can be hurt like anyone else, and doing it counts as violence at the outpost. They carry a little cash on them.
 
 !!! danger "The embargo covers your whole crew"
     One person losing their temper bars everybody on the ship, including people who were still shopping. Embargoed crew are shot on sight, not merely refused service.

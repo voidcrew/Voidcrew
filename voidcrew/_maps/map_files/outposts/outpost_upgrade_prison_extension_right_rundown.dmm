@@ -1,0 +1,544 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ab" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"ac" = (
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"ad" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/table,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"ae" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"af" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 3
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ag" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ah" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"ai" = (
+/obj/structure/table/reinforced/prison_hatch,
+/obj/machinery/door/window/outpost_prison_yard/directional/north,
+/obj/machinery/door/window/brigdoor/outpost_prison_staff/directional/south,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aj" = (
+/obj/structure/bookcase/random/outpost_prison,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/prison_extension)
+"ak" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"al" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"am" = (
+/obj/effect/turf_decal/lunar_sand,
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"an" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ao" = (
+/obj/structure/sign/poster/official/work_for_a_future/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ap" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aq" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ar" = (
+/obj/item/cigbutt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"as" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 3
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"at" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"au" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"av" = (
+/obj/structure/sign/poster/contraband/space_cola/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aw" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ax" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/lunar_sand,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"ay" = (
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"az" = (
+/obj/machinery/washing_machine,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aA" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aB" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aC" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/outpost_kessler_vent,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aD" = (
+/obj/effect/landmark/outpost_upgrade_snap/right{
+	seam_openings = list(3,8,10)
+	},
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"aE" = (
+/obj/effect/turf_decal/lunar_sand,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aF" = (
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aG" = (
+/obj/structure/outpost_kessler_vent,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aH" = (
+/obj/structure/noticeboard/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aI" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aJ" = (
+/obj/structure/table,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"aK" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"aL" = (
+/obj/effect/turf_decal/weather/dirt{
+	dir = 2
+	},
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+"aM" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aN" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aO" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"aP" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/weather/dirt{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aQ" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aR" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/effect/turf_decal/lunar_sand,
+/obj/machinery/light/warm/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aS" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aT" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost/prison_extension)
+"aU" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aV" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/structure/closet,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aW" = (
+/obj/structure/sink/directional/east,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aX" = (
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"aY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"aZ" = (
+/turf/template_noop,
+/area/template_noop)
+"gP" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/orange{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost/prison_extension)
+"kV" = (
+/obj/structure/toilet{
+	dir = 2
+	},
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost/prison_extension)
+
+(1,1,1) = {"
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+"}
+(2,1,1) = {"
+ac
+gP
+aF
+aW
+ah
+aM
+aF
+aa
+aF
+aj
+ac
+aI
+aa
+aF
+ay
+ac
+"}
+(3,1,1) = {"
+ah
+aF
+aE
+aF
+aA
+aP
+aE
+aF
+aF
+aj
+ac
+ao
+aF
+aw
+ap
+ac
+"}
+(4,1,1) = {"
+ac
+kV
+aG
+au
+ac
+aN
+aF
+aF
+aF
+aT
+ac
+aF
+aY
+aF
+aX
+ac
+"}
+(5,1,1) = {"
+ac
+ac
+ac
+ac
+ac
+aQ
+ae
+aJ
+aO
+al
+ac
+aH
+aF
+aF
+an
+ac
+"}
+(6,1,1) = {"
+ac
+gP
+aF
+aW
+ah
+ax
+aK
+ab
+am
+aF
+ah
+aF
+aw
+ar
+aF
+ac
+"}
+(7,1,1) = {"
+ah
+aF
+aE
+aF
+aS
+aM
+aK
+ad
+aO
+aB
+ai
+aU
+aF
+aF
+aF
+ah
+"}
+(8,1,1) = {"
+ac
+kV
+aG
+au
+ac
+at
+aF
+aE
+aF
+aF
+ah
+aF
+ak
+aw
+aF
+ac
+"}
+(9,1,1) = {"
+ac
+ac
+ac
+ac
+ac
+aR
+aF
+aF
+aF
+aL
+ac
+av
+aF
+ar
+aY
+ac
+"}
+(10,1,1) = {"
+ac
+gP
+aF
+aW
+ah
+aM
+aF
+aF
+aF
+aE
+ac
+ay
+aw
+aF
+aF
+ac
+"}
+(11,1,1) = {"
+ah
+aF
+aE
+aF
+af
+aP
+aF
+ay
+aE
+aF
+ac
+aV
+aF
+aF
+aF
+ac
+"}
+(12,1,1) = {"
+ac
+kV
+aG
+au
+ac
+as
+aC
+aq
+ag
+aF
+ac
+az
+aq
+aF
+aF
+ac
+"}
+(13,1,1) = {"
+ac
+ac
+ac
+ac
+ac
+ac
+ah
+ac
+ah
+ac
+ac
+ac
+ac
+ac
+ac
+aD
+"}

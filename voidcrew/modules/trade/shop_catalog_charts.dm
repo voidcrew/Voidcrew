@@ -142,6 +142,7 @@
 	var/band = zone_band_name(SSovermap_zones?.get_zone_type(get_turf(target)))
 	ship.add_waypoint("rumor_[REF(target)]", "[shop?.trader_name || "Trader"]'s tip: unknown signal ([band])", coords[1], coords[2], "Rumors")
 	to_chat(user, span_notice("A new mark lands on [ship]'s helm readout: unknown signal at ([coords[1]], [coords[2]]), in the [band]."))
+	metric_shop_purchase(src, user, credit_price, price_vouchers)
 	return TRUE
 
 /**

@@ -5,24 +5,24 @@
    "png": "ship_nanobead_dark.png",
    "slots": {
     "Biomedical_North": [
-     8,
+     9,
      13
     ],
     "Biomedical_South": [
-     8,
+     9,
      3
     ],
     "Services_North": [
-     13,
+     14,
      13
     ],
     "Services_South": [
-     13,
+     14,
      2
     ]
    },
-   "src_md5": "f04cb8a9b2ab1bf13103cb857986c1c6",
-   "width": 22
+   "src_md5": "9abb8bf1933139830496bbc3f53b0cec",
+   "width": 23
   }
  },
  "modules": {},

@@ -80,8 +80,10 @@
 /obj/structure/extinguisher_cabinet/directional/west,
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
-/obj/machinery/nanite_program_hub,
 /obj/effect/turf_decal/siding/thinplating_new/light,
+/obj/machinery/computer/nanite_cloud_controller{
+	dir = 2
+	},
 /turf/open/floor/iron/white/smooth_large,
 /area/template_noop)
 "nrq" = (
@@ -123,10 +125,6 @@
 	pixel_w = 6;
 	pixel_z = 2
 	},
-/obj/item/reagent_containers/dropper{
-	pixel_w = -2;
-	pixel_z = -3
-	},
 /obj/effect/turf_decal/siding/thinplating_new/light{
 	dir = 4
 	},
@@ -149,10 +147,16 @@
 "suq" = (
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
-/obj/machinery/computer/nanite_cloud_controller{
-	dir = 2
-	},
 /obj/effect/turf_decal/siding/thinplating_new/light,
+/obj/structure/table/glass,
+/obj/item/screwdriver{
+	pixel_w = 0;
+	pixel_z = 9
+	},
+/obj/item/stack/cable_coil{
+	pixel_w = -1;
+	pixel_z = 0
+	},
 /turf/open/floor/iron/white/smooth_large,
 /area/template_noop)
 "sWy" = (
@@ -229,8 +233,16 @@
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/mid_joiner,
-/obj/machinery/nanite_programmer,
 /obj/effect/turf_decal/siding/thinplating_new/light,
+/obj/structure/table/glass,
+/obj/item/storage/box/disks_nanite{
+	pixel_w = -4;
+	pixel_z = 9
+	},
+/obj/item/storage/box/disks_nanite{
+	pixel_w = 6;
+	pixel_z = 5
+	},
 /turf/open/floor/iron/white/smooth_large,
 /area/template_noop)
 "wLr" = (
@@ -255,21 +267,17 @@
 	dir = 8
 	},
 /obj/structure/table/glass,
-/obj/item/screwdriver{
-	pixel_w = -3;
-	pixel_z = 9
-	},
-/obj/item/stack/cable_coil{
-	pixel_w = -5;
-	pixel_z = 0
+/obj/item/assembly/timer{
+	pixel_w = -4;
+	pixel_z = 7
 	},
 /obj/item/assembly/timer{
 	pixel_w = 5;
 	pixel_z = 4
 	},
-/obj/item/assembly/timer{
-	pixel_w = 7;
-	pixel_z = -2
+/obj/item/reagent_containers/dropper{
+	pixel_w = -2;
+	pixel_z = -3
 	},
 /turf/open/floor/iron/white/smooth_corner{
 	dir = 4

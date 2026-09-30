@@ -21,6 +21,25 @@
 			return FALSE
 	return TRUE
 
+/**
+ * Gaining a design reveals every hidden node that also grants it, but the parent only drops the
+ * node from hidden_nodes. Its status was last computed while it was hidden, so it never made it
+ * into available_nodes: the console showed it with every prerequisite met and then refused to
+ * research it. Specialist Ammunition shares the WT-550 AP/incendiary magazines with Illegal
+ * Technology and always comes after Exotic Ammunition, so every crew that took it hit this.
+ * Recompute each node the design revealed.
+ */
+/datum/techweb/add_design(datum/design/design, custom = FALSE, list/add_to)
+	var/list/revealed_ids = list()
+	if(istype(design))
+		for(var/node_id in design.unlocked_by)
+			if(hidden_nodes[node_id])
+				revealed_ids += node_id
+	. = ..()
+	for(var/node_id in revealed_ids)
+		if(!hidden_nodes[node_id])
+			update_node_status(SSresearch.techweb_node_by_id(node_id))
+
 /datum/techweb/can_unlock_node(datum/techweb_node/node)
 	return can_afford(node.get_price(src)) && have_experiments_for_node(node) && have_surveys_for_node(node)
 
@@ -37,4 +56,7 @@
 /datum/techweb/research_node(datum/techweb_node/node, force = FALSE, auto_adjust_cost = TRUE, get_that_dosh = TRUE, atom/research_source)
 	if(!force && istype(node) && !have_surveys_for_node(node))
 		return FALSE
-	return ..()
+	var/mob/metric_queued_by = force ? null : metric_node_queued_by(node) // round metrics, voidcrew/modules/metrics/research_metrics.dm
+	. = ..()
+	if(. && !force)
+		record_node_researched(node, research_source, metric_queued_by)

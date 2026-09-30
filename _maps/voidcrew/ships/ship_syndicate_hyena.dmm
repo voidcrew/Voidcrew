@@ -5,14 +5,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
-"aN" = (
-/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer2{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/hallway)
 "bd" = (
 /obj/effect/turf_decal/bot_white,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1980,6 +1972,13 @@
 /obj/structure/window/reinforced/spawner/directional/west,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/dorms)
+"Vl" = (
+/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer2{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hyena/hallway)
 "Vv" = (
 /obj/machinery/light{
 	dir = 4
@@ -2595,7 +2594,7 @@ pr
 "}
 (18,1,1) = {"
 Gm
-aN
+Vl
 Wd
 nS
 tI

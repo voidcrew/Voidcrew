@@ -88,6 +88,13 @@
 	visuals.layer = beam_layer
 	visuals.update_appearance()
 	Draw()
+	// VOIDCREW EDIT ADDITION START - Draw() can sleep at CHECK_TICK before the signals below exist,
+	// so an end deleted meanwhile never ended the beam and the rest of it was drawn onto the ground
+	// that end left (an outpost prison turret's warning line outlived a torn-down claim).
+	if(QDELETED(origin) || QDELETED(target))
+		qdel(src)
+		return
+	// VOIDCREW EDIT ADDITION END
 	RegisterSignals(origin, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(redrawing))
 	RegisterSignals(target, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(redrawing))
 

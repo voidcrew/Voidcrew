@@ -1,0 +1,36 @@
+name: Modularization
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modularization-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  modularization:
+    name: Modularization
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # The default PR checkout is its merge commit; its first parent is
+          # the exact base tree, so unrelated base-branch updates are excluded.
+          fetch-depth: 2
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test modularization checker
+        run: python -m unittest tools.ci.test_modularization
+
+      - name: Check PR modularization
+        run: python -m tools.ci.check_modularization --base HEAD^1 --head HEAD --github

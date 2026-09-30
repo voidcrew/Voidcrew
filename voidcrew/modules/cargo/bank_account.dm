@@ -37,6 +37,7 @@
 	account_balance -= amount
 	if(reason)
 		add_log_to_history(-amount, reason)
+	metric_account_changed(src, -amount, reason, caller)
 	return amount
 
 /**

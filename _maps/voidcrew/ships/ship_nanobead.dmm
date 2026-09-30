@@ -1,4 +1,10 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"acG" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner,
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
 "ahq" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/ship_nanobead/services_north)
@@ -102,17 +108,19 @@
 "bNV" = (
 /obj/machinery/atmospherics/components/tank/air/layer4,
 /obj/structure/extinguisher_cabinet/directional/north,
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 9
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "bTM" = (
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 6
 	},
-/obj/structure/reagent_dispensers/plumbed/fuel,
-/turf/open/floor/iron/textured_large,
+/obj/structure/reagent_dispensers/fueltank/large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "cdG" = (
 /turf/open/floor/plating,
@@ -152,18 +160,20 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/services_south)
 "dfN" = (
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 4
 	},
-/obj/machinery/light/directional/east,
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "djX" = (
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 10
 	},
-/obj/structure/tank_dispenser/oxygen,
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "dlZ" = (
 /obj/machinery/light/directional/south,
@@ -187,34 +197,22 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "dHH" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 5
-	},
 /obj/machinery/power/rtg,
 /obj/structure/cable,
 /obj/machinery/firealarm/directional/east,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "dPd" = (
-/obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Maintenance"
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/duct,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wideplating_new/corner{
+/obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 4
 	},
-/obj/effect/turf_decal/siding/wideplating_new/corner,
-/turf/open/floor/iron/textured_large,
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "dVC" = (
 /turf/closed/wall/mineral/titanium/interior,
@@ -250,24 +248,17 @@
 	dir = 1
 	},
 /area/shuttle/voidcrew/ship_nanobead/hall)
-"egG" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/thinplating_new,
-/obj/item/storage/fancy/donut_box{
-	pixel_z = 6
-	},
-/turf/open/floor/iron/large,
-/area/shuttle/voidcrew/ship_nanobead/bridge)
 "eRX" = (
 /obj/machinery/power/smes/engineering{
 	dir = 4
 	},
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/structure/cable,
-/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+/obj/effect/turf_decal/siding/thinplating_new/end{
 	dir = 8
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "fAJ" = (
 /turf/open/floor/carpet/executive,
@@ -293,9 +284,10 @@
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/ship_nanobead/services_north)
 "fKo" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
-/turf/open/floor/iron/textured_large,
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "gkk" = (
 /obj/machinery/airalarm/directional/south,
@@ -351,6 +343,11 @@
 /obj/structure/extinguisher_cabinet/directional/west,
 /turf/open/floor/iron/corner,
 /area/shuttle/voidcrew/ship_nanobead/hall)
+"gEe" = (
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
 "gYl" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/titanium/glass{
@@ -366,26 +363,33 @@
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 8
-	},
 /obj/machinery/light/directional/west,
 /obj/machinery/power/rtg/advanced,
-/obj/machinery/duct,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
 /obj/machinery/camera/autoname/directional/west,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "hdx" = (
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_south)
+"hBY" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/ducts/fifty,
+/obj/item/construction/plumbing,
+/obj/item/plunger,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
 "hHh" = (
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/voidcrew/ship_nanobead/bridge)
 "ikw" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 9
-	},
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/stack/sheet/glass/fifty,
@@ -393,8 +397,11 @@
 /obj/structure/closet/crate,
 /obj/item/circuitboard/machine/ore_silo,
 /obj/item/circuitboard/machine/autolathe,
-/obj/machinery/duct,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "ivD" = (
 /obj/machinery/door/firedoor,
@@ -413,47 +420,61 @@
 	name = "engine fuel pump"
 	},
 /obj/structure/cable,
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 8
 	},
-/obj/machinery/duct,
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "iVR" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/services_north)
+"iXn" = (
+/obj/effect/turf_decal/siding/thinplating_new,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/storage/toolbox/electrical{
+	pixel_w = -1;
+	pixel_z = 3
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_w = 3;
+	pixel_z = -3
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
 "jHE" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_north)
-"jZi" = (
+"jWd" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 4
+/obj/machinery/duct,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance"
 	},
-/obj/machinery/shower/directional/west,
-/obj/structure/fluff/shower_drain,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
+/obj/machinery/door/firedoor,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "kol" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 5
-	},
 /obj/structure/closet{
 	icon_door = "eng_elec";
 	icon_state = "eng"
 	},
 /obj/item/inducer,
-/obj/item/storage/toolbox/electrical,
 /obj/item/clothing/gloves/color/yellow,
 /obj/item/multitool,
 /obj/item/weldingtool/experimental,
 /obj/item/clothing/head/utility/welding,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "koT" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -475,6 +496,11 @@
 	dir = 4
 	},
 /obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
+"lfN" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "lsX" = (
@@ -509,14 +535,24 @@
 	dir = 1
 	},
 /area/shuttle/voidcrew/ship_nanobead/hall)
-"mqE" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 6
+"lGA" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 4
 	},
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
+"mqE" = (
 /obj/machinery/power/rtg,
 /obj/structure/cable,
 /obj/machinery/airalarm/directional/east,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "mEl" = (
 /obj/machinery/light/directional/south,
@@ -552,9 +588,20 @@
 /obj/machinery/duct,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_north)
+"ndi" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
 "nje" = (
 /obj/structure/grille,
-/turf/template_noop,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/ship_nanobead/maint)
+"njt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "nHe" = (
 /turf/closed/wall/mineral/titanium,
@@ -589,11 +636,10 @@
 /area/shuttle/voidcrew/ship_nanobead/hall)
 "nNg" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
-/turf/open/floor/iron/textured_large,
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "ohd" = (
 /obj/modular_map_root/ship_upgrade{
@@ -625,37 +671,25 @@
 /area/shuttle/voidcrew/ship_nanobead/hall)
 "oBd" = (
 /obj/structure/reagent_dispensers/plumbed,
-/obj/effect/turf_decal/siding/wideplating_new{
+/obj/effect/turf_decal/siding/thinplating_new{
 	dir = 5
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "oNn" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_north)
-"oVp" = (
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 8
-	},
-/obj/machinery/duct,
-/turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/ship_nanobead/maint)
 "oXG" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner{
+/obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 8
 	},
 /obj/machinery/atmospherics/components/binary/pump{
-	name = "engine fuel pump";
-	dir = 1
+	dir = 1;
+	name = "Plasma"
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "pJu" = (
 /obj/machinery/mission_pad,
@@ -695,13 +729,13 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/services_south)
 "qtf" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 4
-	},
 /obj/machinery/shower/directional/west,
 /obj/structure/fluff/shower_drain,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "qtE" = (
 /obj/machinery/computer/cryopod{
@@ -736,21 +770,11 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/ship_nanobead/bridge)
-"rzd" = (
-/obj/machinery/duct,
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 4
-	},
-/obj/machinery/light/directional/east,
-/turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/ship_nanobead/maint)
 "rDn" = (
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 4
-	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "rEk" = (
 /obj/machinery/button/door{
@@ -771,23 +795,40 @@
 /area/shuttle/voidcrew/ship_nanobead/services_north)
 "sXX" = (
 /obj/structure/extinguisher_cabinet/directional/south,
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 10
-	},
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 1
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 10
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
-"tkp" = (
+"tjH" = (
+/obj/structure/cable,
 /obj/machinery/atmospherics/components/binary/volume_pump/on/layer2{
 	dir = 8;
 	name = "Waste To Exhaust"
 	},
-/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/duct,
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
+"tkp" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanobead/maint)
+"tlB" = (
+/obj/machinery/computer/voidcrew_cargo,
+/obj/effect/turf_decal/siding/thinplating_new,
+/turf/open/floor/iron/large,
+/area/shuttle/voidcrew/ship_nanobead/bridge)
 "twf" = (
 /obj/machinery/computer/security{
 	dir = 8
@@ -805,13 +846,14 @@
 	dir = 8
 	},
 /obj/structure/cable,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wideplating_new/corner{
+/obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 1
 	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "tPU" = (
 /turf/open/floor/plating,
@@ -843,21 +885,6 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/iron/edge,
 /area/shuttle/voidcrew/ship_nanobead/hall)
-"ust" = (
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 1
-	},
-/obj/machinery/duct,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
-/turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/ship_nanobead/maint)
 "uFW" = (
 /obj/machinery/computer/helm{
 	dir = 8
@@ -889,32 +916,33 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 6
-	},
 /obj/structure/closet{
 	icon_state = "atmos";
 	icon_door = "atmos"
 	},
 /obj/item/extinguisher/advanced,
-/obj/item/storage/toolbox/mechanical,
 /obj/item/pipe_dispenser,
 /obj/item/tank/internals/emergency_oxygen/engi,
 /obj/item/holosign_creator/atmos,
 /obj/item/clothing/glasses/meson/engine/tray,
 /obj/item/clothing/mask/gas,
-/turf/open/floor/iron/textured_large,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "vkJ" = (
 /obj/structure/cable,
+/obj/effect/turf_decal/siding/thinplating_new/corner,
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/duct,
-/obj/effect/turf_decal/siding/wideplating_new/corner,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
-	dir = 4
-	},
-/turf/open/floor/iron/textured_large,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "vpP" = (
 /obj/machinery/computer/bank_machine,
@@ -953,12 +981,15 @@
 	},
 /area/shuttle/voidcrew/ship_nanobead/hall)
 "wBR" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/duct,
-/obj/effect/turf_decal/siding/wideplating_new/corner{
+/obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 1
 	},
-/turf/open/floor/iron/textured_large,
+/obj/machinery/atmospherics/components/binary/pump/layer4{
+	name = "Air"
+	},
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "wDA" = (
 /turf/closed/wall/mineral/titanium/interior,
@@ -1013,10 +1044,11 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/biomedical_north)
 "xWm" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wideplating_new/corner,
 /obj/structure/cable,
-/turf/open/floor/iron/textured_large,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "yfU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1093,11 +1125,11 @@ kxb
 gmm
 dAf
 ikw
-oVp
+tPn
 iHO
-ust
+tPn
 gZP
-ust
+tPn
 iHO
 tPn
 djX
@@ -1115,11 +1147,11 @@ gmm
 bNV
 wBR
 xWm
-jZi
+nNg
 nNg
 tkp
 fKo
-qtf
+fKo
 rDn
 oXG
 sXX
@@ -1133,8 +1165,29 @@ kxb
 kxb
 kxb
 gmm
+hBY
+gEe
+acG
+qtf
+ndi
+tjH
+lfN
+qtf
+dPd
+njt
+iXn
+gmm
+kxb
+kxb
+kxb
+"}
+(7,1,1) = {"
+kxb
+kxb
+gmm
+gmm
 oBd
-rzd
+lGA
 mqE
 qje
 kol
@@ -1145,32 +1198,32 @@ dHH
 dfN
 bTM
 gmm
-kxb
-kxb
-kxb
-"}
-(7,1,1) = {"
-kxb
-kxb
-nHe
-nHe
-kAU
-kAU
-kAU
-kAU
-qje
-dPd
-qje
-hdx
-hdx
-hdx
-hdx
-mQi
-mQi
+gmm
 kxb
 kxb
 "}
 (8,1,1) = {"
+kxb
+kxb
+nHe
+nHe
+kAU
+kAU
+kAU
+kAU
+qje
+jWd
+qje
+hdx
+hdx
+hdx
+hdx
+mQi
+mQi
+kxb
+kxb
+"}
+(9,1,1) = {"
 kxb
 nHe
 oNn
@@ -1191,7 +1244,7 @@ ohd
 mQi
 kxb
 "}
-(9,1,1) = {"
+(10,1,1) = {"
 kxb
 bIW
 xVJ
@@ -1212,7 +1265,7 @@ ayP
 ana
 kxb
 "}
-(10,1,1) = {"
+(11,1,1) = {"
 kxb
 nHe
 xVJ
@@ -1233,7 +1286,7 @@ ayP
 mQi
 kxb
 "}
-(11,1,1) = {"
+(12,1,1) = {"
 kxb
 bIW
 xVJ
@@ -1254,7 +1307,7 @@ ayP
 ana
 kxb
 "}
-(12,1,1) = {"
+(13,1,1) = {"
 nHe
 nHe
 kAU
@@ -1275,7 +1328,7 @@ hdx
 mQi
 mQi
 "}
-(13,1,1) = {"
+(14,1,1) = {"
 ahq
 tPU
 tPU
@@ -1296,7 +1349,7 @@ cdG
 cTL
 xUz
 "}
-(14,1,1) = {"
+(15,1,1) = {"
 umq
 tPU
 tPU
@@ -1317,7 +1370,7 @@ cdG
 cdG
 bbz
 "}
-(15,1,1) = {"
+(16,1,1) = {"
 ahq
 tPU
 tPU
@@ -1338,7 +1391,7 @@ cdG
 cdG
 xUz
 "}
-(16,1,1) = {"
+(17,1,1) = {"
 ahq
 vQb
 tPU
@@ -1359,7 +1412,7 @@ cdG
 qfP
 xUz
 "}
-(17,1,1) = {"
+(18,1,1) = {"
 kxb
 vQb
 vQb
@@ -1380,7 +1433,7 @@ qfP
 qfP
 kxb
 "}
-(18,1,1) = {"
+(19,1,1) = {"
 kxb
 kxb
 vQb
@@ -1401,7 +1454,7 @@ qfP
 kxb
 kxb
 "}
-(19,1,1) = {"
+(20,1,1) = {"
 kxb
 kxb
 kxb
@@ -1409,7 +1462,7 @@ ahq
 ahq
 ahq
 hHh
-egG
+tlB
 fAJ
 xwZ
 rEk
@@ -1422,7 +1475,7 @@ kxb
 kxb
 kxb
 "}
-(20,1,1) = {"
+(21,1,1) = {"
 kxb
 kxb
 kxb
@@ -1443,7 +1496,7 @@ kxb
 kxb
 kxb
 "}
-(21,1,1) = {"
+(22,1,1) = {"
 kxb
 kxb
 kxb
@@ -1464,7 +1517,7 @@ kxb
 kxb
 kxb
 "}
-(22,1,1) = {"
+(23,1,1) = {"
 kxb
 kxb
 kxb

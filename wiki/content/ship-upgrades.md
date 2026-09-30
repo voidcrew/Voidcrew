@@ -30,7 +30,7 @@ Buying anything asks for confirmation and tells you the cost. Purchases are one-
 
 ## What happens when you launch
 
-Your ship is built to order (hull, theme and the module in each slot) and placed in the safe outer ring of the overmap. You spawn aboard as its captain, so you set its course and manage its crew. It then appears in every other player's join menu with its job list, so people can pick a role and spawn straight in. If you want a crew, launch early and put something useful in the ship's memo. Then read [Piloting](piloting.md), [Ship Systems](ship-systems.md) and [Ship Combat](ship-combat.md).
+Your ship is built to order (hull, theme and the module in each slot) and placed in the safe inner ring of the overmap. You spawn aboard as its captain, so you set its course and manage its crew. It then appears in every other player's join menu with its job list, so people can pick a role and spawn straight in. If you want a crew, launch early and put something useful in the ship's memo. Then read [Piloting](piloting.md), [Ship Systems](ship-systems.md) and [Ship Combat](ship-combat.md).
 
 ## Modular hulls: slots and modules
 

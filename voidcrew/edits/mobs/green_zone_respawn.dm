@@ -7,8 +7,9 @@
  * the player straight back to the lobby.
  *
  * The zone is pinned to the death time so that the waiver only ever covers that one death.
- * Observing from the lobby, or being ghosted in some other way, stamps a fresh time_of_death
- * that no longer matches, and the normal delay applies again.
+ * Dying again, observing from the lobby, or ghosting out of a living body stamps a fresh
+ * time_of_death that no longer matches, and the normal delay applies again. Re-entering the
+ * corpse and ghosting again keeps the original death time (see respawn_timer.dm).
  */
 /datum/persistent_client
 	/// Overmap zone type (ZONE_GREEN/YELLOW/RED) the player's last death happened in, or null
@@ -35,11 +36,13 @@
 	return SSovermap_zones.get_zone_type_anywhere(ship ? get_turf(ship) : checked_turf)
 
 /mob/living/death(gibbed)
+	//death() can ghostize the player itself (lag switch), taking the persistent client with them.
+	var/datum/persistent_client/player = persistent_client
 	. = ..()
-	if(!. || !persistent_client)
+	if(!. || !player)
 		return
-	persistent_client.death_zone_type = get_zone_type_for_player_turf(get_turf(src))
-	persistent_client.death_zone_time = timeofdeath
+	player.death_zone_type = get_zone_type_for_player_turf(get_turf(src))
+	player.death_zone_time = timeofdeath
 
 /mob/check_respawn_delay(override_delay = 0)
 	if(!override_delay && persistent_client?.died_in_green_zone())

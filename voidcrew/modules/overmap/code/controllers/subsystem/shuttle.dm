@@ -1,24 +1,57 @@
 /// The ship currently being loaded, before its mobile port has current_ship assigned.
 /datum/controller/subsystem/shuttle
 	var/obj/structure/overmap/ship/loading_ship
+	/// A shipyard order whose hull is being loaded without a ship record yet. Upgrade slots
+	/// read their module and theme from it when loading_ship is null.
+	var/datum/ship_order/loading_order
 	/// The only operation allowed to mutate the subsystem-wide template preview.
 	var/datum/shuttle_template_load/active_template_load
+	/// Ordinary callers (purchases, NPC ships, freight) currently waiting for the loader.
+	/// Background loads step aside for them.
+	var/template_load_waiters = 0
+	/// Background loads (checkpoint rebuilds) waiting for the loader, first come first served.
+	var/list/background_template_waiters = list()
 
 /// Shared by nested operations belonging to one serialized template load.
 /datum/shuttle_template_load
 	var/obj/structure/overmap/ship/previous_loading_ship
+	var/datum/ship_order/previous_loading_order
 	var/previous_air_can_fire
 
-/// A timeout refuses the waiter without changing the active owner's state.
-/datum/controller/subsystem/shuttle/proc/acquire_template_load(wait_timeout = null)
+/**
+ * A timeout refuses the waiter without changing the active owner's state.
+ *
+ * background: queued behind every ordinary waiter and served in arrival order. Used by work
+ * nobody is standing at a console for, so it can never hold up a purchase by more than the
+ * one load already running.
+ * keep_waiting: checked every tick while waiting; a false result withdraws the request.
+ */
+/datum/controller/subsystem/shuttle/proc/acquire_template_load(wait_timeout = null, background = FALSE, datum/callback/keep_waiting = null)
 	var/deadline = isnum(wait_timeout) ? world.time + max(0, wait_timeout) : null
-	while(shuttle_loading)
-		if(isnum(deadline) && world.time >= deadline)
+	var/list/ticket
+	if(background)
+		ticket = list()
+		background_template_waiters += list(ticket)
+	var/counted = FALSE
+	while(shuttle_loading || (background && (template_load_waiters || background_template_waiters[1] != ticket)))
+		if(!background && !counted)
+			counted = TRUE
+			template_load_waiters++
+		if((isnum(deadline) && world.time >= deadline) || (keep_waiting && !keep_waiting.Invoke()))
+			if(counted)
+				template_load_waiters--
+			if(ticket)
+				background_template_waiters -= list(ticket)
 			return null
 		stoplag(1)
+	if(counted)
+		template_load_waiters--
+	if(ticket)
+		background_template_waiters -= list(ticket)
 
 	var/datum/shuttle_template_load/load_owner = new
 	load_owner.previous_loading_ship = loading_ship
+	load_owner.previous_loading_order = loading_order
 	load_owner.previous_air_can_fire = SSair.can_fire
 	active_template_load = load_owner
 	shuttle_loading = TRUE
@@ -28,16 +61,17 @@
 	if(!load_owner || active_template_load != load_owner)
 		return FALSE
 	loading_ship = load_owner.previous_loading_ship
+	loading_order = load_owner.previous_loading_order
 	SSair.can_fire = load_owner.previous_air_can_fire
 	active_template_load = null
 	shuttle_loading = FALSE
 	return TRUE
 
 /// Own the preview across every yield, including nested ship/template operations.
-/datum/controller/subsystem/shuttle/proc/run_template_load(datum/callback/operation, datum/shuttle_template_load/load_owner, wait_timeout = null)
+/datum/controller/subsystem/shuttle/proc/run_template_load(datum/callback/operation, datum/shuttle_template_load/load_owner, wait_timeout = null, background = FALSE, datum/callback/keep_waiting = null)
 	var/acquired_owner = !load_owner
 	if(acquired_owner)
-		load_owner = acquire_template_load(wait_timeout)
+		load_owner = acquire_template_load(wait_timeout, background, keep_waiting)
 	if(!load_owner)
 		return FALSE
 	if(active_template_load != load_owner)
@@ -80,30 +114,12 @@
 		stack_trace("Failed to instantiate ship template [ship_template_to_spawn].")
 		return FALSE
 
-	// No theme picked but the ship is themed (roundstart list, admin spawn): use the
-	// default theme so the ship gets its job slots and the right base dmm
-	if(!selected_theme && length(template_instance.available_themes))
-		selected_theme = get_default_theme_for_ship(template_instance.type)
-
-	// If a theme is selected, update the template's suffix, mappath, and theme ID for map loading
-	if(selected_theme)
-		template_instance.suffix = selected_theme.template_suffix
-		template_instance.theme = selected_theme.id
-		// Recalculate mappath since suffix changed (mappath is set in New() before we can change suffix)
-		template_instance.mappath = "[template_instance.prefix][template_instance.port_id]_[template_instance.suffix].dmm"
-		// New() measured the DEFAULT suffix's dmm. load_template() sizes the transit
-		// reservation from width/height, and calculate_docking_port_information() takes the
-		// port bounds from width/height/port_x_offset/port_y_offset, so a theme whose map is
-		// a different size - or has its docking port somewhere else - has to re-measure here.
-		if(fexists(template_instance.mappath))
-			template_instance.preload_size(template_instance.mappath)
-		else
-			stack_trace("Ship theme [selected_theme.id] points at a missing map: [template_instance.mappath]")
+	selected_theme = apply_ship_theme(template_instance, selected_theme)
 
 	var/datum/worldgen_probe/probe = worldgen_begin("ship", "[template_instance.name] theme=[selected_theme?.id || "default"]")
 
 	// Create ship and set template directly as a workaround for Initialize arg passing
-	// Ships spawn in the green zone (outer ring) for safety
+	// Ships spawn in the green zone (inner ring) for safety
 	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
 	var/obj/structure/overmap/ship/ship_to_spawn = new(spawn_loc)
 
@@ -164,8 +180,48 @@
 	ship_to_spawn.calculate_mass()
 
 	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
+	ship_metric_spawned(ship_to_spawn, selected_theme)
 
-	// assign landmarks as needed - use shuttle areas or fallback to shuttle location
+	place_ship_landmarks(loaded)
+
+	worldgen_end(probe)
+	return ship_to_spawn
+
+/**
+ * Points a hull template at its theme's map: suffix, theme id, mappath and measured size.
+ * A themed hull with no theme picked (roundstart list, admin spawn) gets its default theme,
+ * so the ship gets its job slots and the right base dmm. Returns the theme applied.
+ * Shared by create_ship() and shipyard orders so both load the same map.
+ */
+/proc/apply_ship_theme(datum/map_template/shuttle/voidcrew/template_instance, datum/ship_theme/selected_theme)
+	if(!selected_theme && length(template_instance.available_themes))
+		selected_theme = get_default_theme_for_ship(template_instance.type)
+	if(!selected_theme)
+		return null
+	template_instance.suffix = selected_theme.template_suffix
+	template_instance.theme = selected_theme.id
+	// Recalculate mappath since suffix changed (mappath is set in New() before we can change suffix)
+	template_instance.mappath = "[template_instance.prefix][template_instance.port_id]_[template_instance.suffix].dmm"
+	// New() measured the DEFAULT suffix's dmm. load_template() sizes the transit
+	// reservation from width/height, and calculate_docking_port_information() takes the
+	// port bounds from width/height/port_x_offset/port_y_offset, so a theme whose map is
+	// a different size - or has its docking port somewhere else - has to re-measure here.
+	if(fexists(template_instance.mappath))
+		template_instance.preload_size(template_instance.mappath)
+	else
+		stack_trace("Ship theme [selected_theme.id] points at a missing map: [template_instance.mappath]")
+	return selected_theme
+
+/// Landmarks every new player ship gets: use shuttle areas or fall back to the port's tile.
+/// Landmarks a ship brings with it: its map's crew spawns and the ones place_ship_landmarks() adds.
+/// A deleted hull takes these with it (see jumpToNullSpace()).
+GLOBAL_LIST_INIT(ship_brought_landmarks, typecacheof(list(
+	/obj/effect/landmark/start,
+	/obj/effect/landmark/observer_start,
+	/obj/effect/landmark/blobstart,
+)))
+
+/proc/place_ship_landmarks(obj/docking_port/mobile/loaded)
 	var/turf/safe_turf
 	if(length(loaded.shuttle_areas))
 		safe_turf = get_safe_random_station_turf(loaded.shuttle_areas)
@@ -182,9 +238,6 @@
 	if(safe_turf)
 		new /obj/effect/landmark/blobstart(safe_turf) // Stationloving component
 		new /obj/effect/landmark/observer_start(safe_turf) // Observer and Unit tests
-
-	worldgen_end(probe)
-	return ship_to_spawn
 
 /client/add_admin_verbs()
 	. = ..()

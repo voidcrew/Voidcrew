@@ -9,7 +9,7 @@
 	upgrade_slot_ids = list("Biomedical_North", "Services_North", "Biomedical_South", "Services_South")
 
 /datum/ship_theme/ship_nanobead_dark
-	part_cost = list()
+	part_cost = list(PART_CLASS_COMBAT = 1, PART_CLASS_SCIENCE = 1, PART_CLASS_TRADE = 1, PART_CLASS_MISC = 1)
 	job_slots = list(list(name = "Commander", officer = TRUE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_6, category = "Command", slots = 1), list(name = "Assistant to the Regional Commander", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_7, category = "Assistant", slots = 1), list(name = "Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_70, category = "Engineering", slots = 1))
 	id = "dark"
 	name = "Dark"
@@ -30,7 +30,7 @@
 	is_default = TRUE
 
 /datum/ship_upgrade_module/ship_nanobead_xenobio
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Xenobiologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_38, category = "Science", slots = 1)), "standard" = list(list(name = "Xenobiologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_2, category = "Science", slots = 1)))
 	job_slots_add = list()
 	id = "xenobio"
@@ -42,7 +42,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_nanites
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Nanotechnologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_40, category = "Science", slots = 1)), "standard" = list(list(name = "Nanotechnologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_3, category = "Science", slots = 1)))
 	job_slots_add = list()
 	id = "nanites"
@@ -54,7 +54,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_robotics
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Roboticist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_41, category = "Science", slots = 1)), "standard" = list(list(name = "Roboticist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_8, category = "Science", slots = 1)))
 	id = "robotics"
 	name = "Robotics North"
@@ -65,7 +65,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_chemistry
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Chemist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_42, category = "Medical", slots = 1)), "standard" = list(list(name = "Chemist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_9, category = "Medical", slots = 1)))
 	id = "chemistry"
 	name = "Chemistry North"
@@ -76,7 +76,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_cryo
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Cryogenicist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_43, category = "Medical", slots = 1)), "standard" = list(list(name = "Cryogenicist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_10, category = "Medical", slots = 1)))
 	id = "cryo"
 	name = "Cryo Cells North"
@@ -87,7 +87,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_sleeper_bay
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Physician", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_44, category = "Medical", slots = 1)), "standard" = list(list(name = "Physician", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_12, category = "Medical", slots = 1)))
 	id = "sleeper_bay"
 	name = "Sleeper Bay North"
@@ -98,7 +98,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_surgery
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Surgeon", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_45, category = "Medical", slots = 1)), "standard" = list(list(name = "Surgeon", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_13, category = "Medical", slots = 1)))
 	id = "surgery"
 	name = "Surgery North"
@@ -119,7 +119,7 @@
 	is_default = TRUE
 
 /datum/ship_upgrade_module/ship_nanobead_bitrunning
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_TRADE = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Bitrunner", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_47, category = "Cargo", slots = 1)), "standard" = list(list(name = "Bitrunner", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_15, category = "Cargo", slots = 1)))
 	id = "bitrunning"
 	name = "Bitrunning North"
@@ -130,7 +130,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_dining
-	part_cost = list()
+	part_cost = list(PART_CLASS_TRADE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Chef", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_48, category = "Service", slots = 1)), "standard" = list(list(name = "Chef", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_16, category = "Service", slots = 1)))
 	id = "dining"
 	name = "Dining North"
@@ -141,7 +141,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_botany
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Botanist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_49, category = "Service", slots = 1)), "standard" = list(list(name = "Botanist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_17, category = "Service", slots = 1)))
 	id = "botany"
 	name = "Botany North"
@@ -152,7 +152,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_mining
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Metallurgist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_50, category = "Cargo", slots = 1)), "standard" = list(list(name = "Metallurgist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_18, category = "Cargo", slots = 1)))
 	id = "mining"
 	name = "Mining North"
@@ -163,7 +163,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_cargo
-	part_cost = list()
+	part_cost = list(PART_CLASS_TRADE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Forklift Operator", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_51, category = "Cargo", slots = 1)), "standard" = list(list(name = "Forklift Operator", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_19, category = "Cargo", slots = 1)))
 	id = "cargo"
 	name = "Cargo North"
@@ -174,7 +174,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_security
-	part_cost = list()
+	part_cost = list(PART_CLASS_COMBAT = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Security Guard", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_52, category = "Security", slots = 1)), "standard" = list(list(name = "Security Guard", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_20, category = "Security", slots = 1)))
 	id = "security"
 	name = "Security North"
@@ -185,7 +185,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_eva
-	part_cost = list()
+	part_cost = list(PART_CLASS_COMBAT = 2, PART_CLASS_TRADE = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Crew", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_54, category = "Assistant", slots = 1)), "standard" = list(list(name = "Crew", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_21, category = "Assistant", slots = 1)))
 	id = "eva"
 	name = "Eva North"
@@ -206,7 +206,7 @@
 	is_default = TRUE
 
 /datum/ship_upgrade_module/ship_nanobead_xenobio_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Xenobiologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_55, category = "Science", slots = 1)), "standard" = list(list(name = "Xenobiologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_23, category = "Science", slots = 1)))
 	id = "xenobio_south"
 	name = "Xenobio South"
@@ -217,7 +217,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_nanites_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Nanotechnologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_56, category = "Science", slots = 1)), "standard" = list(list(name = "Nanotechnologist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_24, category = "Science", slots = 1)))
 	id = "nanites_south"
 	name = "Nanites South"
@@ -228,7 +228,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_robotics_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Roboticist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_57, category = "Science", slots = 1)), "standard" = list(list(name = "Roboticist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_25, category = "Science", slots = 1)))
 	id = "robotics_south"
 	name = "Robotics South"
@@ -239,7 +239,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_chemistry_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Chemist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_58, category = "Medical", slots = 1)), "standard" = list(list(name = "Chemist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_26, category = "Medical", slots = 1)))
 	id = "chemistry_south"
 	name = "Chemistry South"
@@ -250,7 +250,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_cryo_cells_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Cryogenicist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_59, category = "Medical", slots = 1)), "standard" = list(list(name = "Cryogenicist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_27, category = "Medical", slots = 1)))
 	id = "cryo_cells_south"
 	name = "Cryo Cells South"
@@ -261,7 +261,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_sleeper_bay_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Physician", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_60, category = "Medical", slots = 1)), "standard" = list(list(name = "Physician", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_28, category = "Medical", slots = 1)))
 	id = "sleeper_bay_south"
 	name = "Sleeper Bay South"
@@ -272,7 +272,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_surgery_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Surgeon", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_61, category = "Medical", slots = 1)), "standard" = list(list(name = "Surgeon", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_29, category = "Medical", slots = 1)))
 	id = "surgery_south"
 	name = "Surgery South"
@@ -293,7 +293,7 @@
 	is_default = TRUE
 
 /datum/ship_upgrade_module/ship_nanobead_bitrunning_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_TRADE = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Bitrunner", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_63, category = "Cargo", slots = 1)), "standard" = list(list(name = "Bitrunner", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_31, category = "Cargo", slots = 1)))
 	id = "bitrunning_south"
 	name = "Bitrunning South"
@@ -304,7 +304,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_dining_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_TRADE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Chef", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_64, category = "Service", slots = 1)), "standard" = list(list(name = "Chef", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_32, category = "Service", slots = 1)))
 	id = "dining_south"
 	name = "Dining South"
@@ -315,7 +315,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_botany_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_SCIENCE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Botanist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_65, category = "Service", slots = 1)), "standard" = list(list(name = "Botanist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_33, category = "Service", slots = 1)))
 	id = "botany_south"
 	name = "Botany South"
@@ -326,7 +326,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_mining_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_MISC = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Metallurgist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_66, category = "Cargo", slots = 1)), "standard" = list(list(name = "Metallurgist", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_34, category = "Cargo", slots = 1)))
 	id = "mining_south"
 	name = "Mining South"
@@ -337,7 +337,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_cargo_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_TRADE = 2, PART_CLASS_MISC = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Forklift Operator", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_67, category = "Cargo", slots = 1)), "standard" = list(list(name = "Forklift Operator", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_35, category = "Cargo", slots = 1)))
 	id = "cargo_south"
 	name = "Cargo South"
@@ -348,7 +348,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_security_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_COMBAT = 4)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Security Guard", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_68, category = "Security", slots = 1)), "standard" = list(list(name = "Security Guard", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_36, category = "Security", slots = 1)))
 	id = "security_south"
 	name = "Security South"
@@ -359,7 +359,7 @@
 	is_default = FALSE
 
 /datum/ship_upgrade_module/ship_nanobead_eva_south
-	part_cost = list()
+	part_cost = list(PART_CLASS_COMBAT = 2, PART_CLASS_TRADE = 2)
 	job_slots_add_by_theme = list("dark" = list(list(name = "Crew", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_69, category = "Assistant", slots = 1)), "standard" = list(list(name = "Crew", officer = FALSE, outfit = /datum/outfit/job/workshop_ship_nanobead_job_37, category = "Assistant", slots = 1)))
 	id = "eva_south"
 	name = "Eva South"

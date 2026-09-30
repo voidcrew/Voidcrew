@@ -176,17 +176,17 @@
 	var/max_radius = SSovermap_zones.max_radius
 
 	switch(zone.zone_type)
-		if(ZONE_RED)
+		if(ZONE_GREEN)
 			// Inner ring: 0 to 0.33 of max_radius
 			inner_radius = 2  // Don't go too close to center (sun)
-			outer_radius = max_radius * 0.33
+			outer_radius = max_radius * ZONE_INNER_RING_RATIO
 		if(ZONE_YELLOW)
 			// Middle ring: 0.33 to 0.66 of max_radius
-			inner_radius = max_radius * 0.33
-			outer_radius = max_radius * 0.66
-		if(ZONE_GREEN)
+			inner_radius = max_radius * ZONE_INNER_RING_RATIO
+			outer_radius = max_radius * ZONE_MIDDLE_RING_RATIO
+		if(ZONE_RED)
 			// Outer ring: 0.66 to 1.0 of max_radius
-			inner_radius = max_radius * 0.66
+			inner_radius = max_radius * ZONE_MIDDLE_RING_RATIO
 			outer_radius = max_radius * 0.95  // Don't go to very edge
 
 	// Calculate base patrol radius (middle of zone)

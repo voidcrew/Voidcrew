@@ -1,0 +1,87 @@
+{
+	"goon_idle": [
+		"Who's on the door tonight? Not me again.",
+		"The boss wants the count done before midnight.",
+		"Same three songs every night. Every night.",
+		"Did Sasha ever fix the ice machine?",
+		"Keep your hands off the good vodka. That's for the VIP room.",
+		"If anyone asks, I was here all night.",
+		"Kolya owes me forty credits and he knows it.",
+		"The lieutenant says new jackets are coming. I'll believe it when I see it.",
+		"Quiet night. I don't like quiet nights.",
+		"My cousin says there's honest work on the freighters. Honest work. Imagine.",
+		"Somebody tell the kitchen the soup is cold again.",
+		"Stop looking at the cards. Watch the door."
+	],
+	"goon_alert": [
+		"Hey! Get them!",
+		"We have company!",
+		"Guns out, we have guests!",
+		"Who let them in? Get them!",
+		"Sasha, the door! They're here!",
+		"Up, everyone! Up!"
+	],
+	"goon_reload": [
+		"Reloading!",
+		"Cover me, I'm reloading!",
+		"Changing magazines!",
+		"Hold them, I'm empty!"
+	],
+	"goon_hurt": [
+		"Ah! I'm hit!",
+		"They got me!",
+		"I'm bleeding here!",
+		"Somebody shoot them!"
+	],
+	"tommy_alert": [
+		"Nobody goes through this door. Boss's orders.",
+		"You picked the wrong club, friend.",
+		"You got this far. That's where it ends.",
+		"Brute, we have visitors."
+	],
+	"brute_alert": [
+		"Come here. I'll fold you in half.",
+		"You want in? You go through me.",
+		"I was hoping someone would try.",
+		"Good. I was getting bored."
+	],
+	"mech_intro": [
+		"You shot up my club. Now you meet my machine.",
+		"All this way to see me? I'm flattered.",
+		"Nobody walks into my garage and walks out.",
+		"You killed my boys. Let's see you try me."
+	],
+	"mech_posse": [
+		"More of you? Fine. More for the floor.",
+		"Bring your friends. I have rockets for everyone.",
+		"The more the better."
+	],
+	"mech_rockets": [
+		"Stand still.",
+		"Rockets out. Run if you like.",
+		"Say goodbye.",
+		"Here. A present from the family."
+	],
+	"mech_lmg": [
+		"Keep moving. It makes it fun.",
+		"Dance!",
+		"Find some cover, if you can.",
+		"Let's see how fast you are."
+	],
+	"don_eject": [
+		"That was a very expensive machine.",
+		"You broke my car. Now I break you.",
+		"Fine. We do this the old way.",
+		"Do you know what that cost me?"
+	],
+	"don_reload": [
+		"Hold on. Hold on.",
+		"One moment, friend.",
+		"You'll wait."
+	],
+	"don_hurt": [
+		"You'll pay for that.",
+		"My family will find you.",
+		"Not like this. Not in my own club."
+	]
+}

@@ -31,6 +31,7 @@
 		if(extract_uses >= 5 || recurring)
 			to_chat(user, span_warning("You cannot enhance this extract further!"))
 			return ..()
+		mark_extract_modified() // VOIDCREW EDIT: enhanced extracts never join floor piles.
 		if(O.type == /obj/item/slimepotion/enhancer) //Seriously, why is this defined here...?
 			to_chat(user, span_notice("You apply the enhancer to the slime extract. It may now be reused one more time."))
 			extract_uses++
@@ -43,6 +44,7 @@
 /obj/item/slime_extract/Initialize(mapload)
 	. = ..()
 	create_reagents(100, INJECTABLE | DRAWABLE | SEALED_CONTAINER)
+	initialize_extract_piling() // VOIDCREW EDIT: group untouched extracts on the floor.
 
 /**
 * Effect when activated by a Luminescent.

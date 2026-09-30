@@ -1,0 +1,512 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ad" = (
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"ae" = (
+/turf/closed/indestructible/reinforced/titanium/nodiagonal,
+/area/voidcrew/player_outpost/service_room/storage)
+"ai" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"am" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"at" = (
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"ax" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aB" = (
+/obj/item/kirbyplants/organic/plant16,
+/obj/structure/sign/poster/official/random/directional/west,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aG" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/clock/directional/north,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aI" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aJ" = (
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aL" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aP" = (
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"aS" = (
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"aW" = (
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"eG" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"ha" = (
+/obj/structure/table/wood,
+/obj/item/folder/blue{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/clipboard{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"iL" = (
+/obj/item/kirbyplants/organic/plant16,
+/obj/structure/sign/poster/official/random/directional/east,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"lI" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"mw" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"nC" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/pen{
+	pixel_x = -3;
+	pixel_y = 9
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = -1
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"tr" = (
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"yy" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"zd" = (
+/obj/structure/chair/comfy/black{
+	dir = 2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"CL" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_y = 10
+	},
+/obj/item/paper{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"EA" = (
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Fa" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Kd" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"KT" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/departments/vault/directional/north{
+	desc = "A sign marking the deposit vault."
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"OQ" = (
+/obj/machinery/door/airlock/outpost/service/vault{
+	name = "deposit vault"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Pu" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/obj/structure/railing/unbreakable{
+	dir = 8
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/storage)
+"Pw" = (
+/obj/structure/flora/bush/fullgrass/style_random,
+/obj/structure/flora/bush/ferny/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/obj/structure/railing/unbreakable{
+	dir = 4
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/storage)
+"QW" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"RE" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/obj/structure/noticeboard/directional/south,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"SD" = (
+/obj/structure/cable/outpost,
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"SW" = (
+/obj/structure/closet/secure_closet/outpost_storage,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 1
+	},
+/obj/structure/sign/calendar/directional/north,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Vd" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/indestructible/carpet/royalblue,
+/area/voidcrew/player_outpost/service_room/storage)
+"Wd" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Ye" = (
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 5
+	},
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"Yp" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/plaque,
+/turf/open/indestructible/white/smooth_large,
+/area/voidcrew/player_outpost/service_room/storage)
+"YS" = (
+/obj/structure/flora/bush/sparsegrass/style_random,
+/obj/structure/flora/bush/flowers_yw/style_random,
+/obj/structure/railing/unbreakable{
+	dir = 1
+	},
+/turf/open/indestructible/grass,
+/area/voidcrew/player_outpost/service_room/storage)
+
+(1,1,1) = {"
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+"}
+(2,1,1) = {"
+ae
+ae
+ae
+aL
+ae
+aL
+ae
+aL
+ae
+aB
+ae
+"}
+(3,1,1) = {"
+ae
+ai
+aS
+am
+at
+am
+at
+am
+aW
+aI
+ae
+"}
+(4,1,1) = {"
+ae
+aG
+ax
+aJ
+aP
+aP
+aP
+ad
+YS
+QW
+ae
+"}
+(5,1,1) = {"
+ae
+Kd
+ax
+ad
+zd
+nC
+Vd
+ad
+Pw
+lI
+ae
+"}
+(6,1,1) = {"
+ae
+KT
+Yp
+ad
+zd
+CL
+Vd
+aP
+aP
+SD
+OQ
+"}
+(7,1,1) = {"
+ae
+Kd
+ax
+ad
+zd
+ha
+Vd
+ad
+Pu
+Fa
+ae
+"}
+(8,1,1) = {"
+ae
+SW
+ax
+aJ
+aP
+aP
+aP
+ad
+YS
+RE
+ae
+"}
+(9,1,1) = {"
+ae
+mw
+Ye
+eG
+EA
+eG
+EA
+eG
+tr
+Wd
+ae
+"}
+(10,1,1) = {"
+ae
+ae
+ae
+yy
+ae
+yy
+ae
+yy
+ae
+iL
+ae
+"}
+(11,1,1) = {"
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+"}

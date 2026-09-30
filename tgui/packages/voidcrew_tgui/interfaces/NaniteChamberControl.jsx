@@ -141,9 +141,13 @@ export const NaniteChamberControlContent = (props, context) => {
                         <Flex.Item basis="40%">
                           <LabeledList>
                             <LabeledList.Item label="Activation Status">
-                              <Box color={program.activated ? 'good' : 'bad'}>
-                                {program.activated ? 'Active' : 'Inactive'}
-                              </Box>
+                              {program.crashed ? (
+                                <Box color="average">Crashed</Box>
+                              ) : (
+                                <Box color={program.activated ? 'good' : 'bad'}>
+                                  {program.activated ? 'Active' : 'Inactive'}
+                                </Box>
+                              )}
                             </LabeledList.Item>
                             <LabeledList.Item label="Nanites Consumed">
                               {program.use_rate}/s

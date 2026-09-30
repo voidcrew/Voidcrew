@@ -113,13 +113,15 @@
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/Run()
 	save_economy()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
 	home.founder_ckey = "outpostfounder"
 	TEST_ASSERT(home.load_level(), "Purchased home bundle failed to load")
 	TEST_ASSERT(home.home_bundle_installed, "Founding did not install the included services")
 	assert_outpost_cargo_bundle(home)
 	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Purchased home has no resident arrival point")
-	TEST_ASSERT_NOTNULL(home.freight_berth?.panel, "Freight receiver is inaccessible by elevator")
+	TEST_ASSERT_EQUAL(home.freight.availability_error(), "No cargo dock", "Freight was available before a cargo dock was placed")
+	var/cargo_dock = place_test_cargo_dock(home)
+	TEST_ASSERT(istype(cargo_dock, /datum/outpost_upgrade/cargo_dock), "The freight test could not place a cargo dock: [cargo_dock]")
 	var/datum/bank_account/account = home.treasury
 	account.account_balance = 10000
 	home.ensure_home_services()
@@ -161,7 +163,7 @@
 	qdel(second)
 	TEST_ASSERT_EQUAL(length(home.cargo_cart), 1, "Destroyed consoles lost the paid manifest")
 	deltimer(ferry.warmup_timer)
-	TEST_ASSERT(ferry.complete_arrival(), "Physical freight delivery to the hangar failed")
+	TEST_ASSERT(ferry.complete_arrival(), "Physical freight delivery to the cargo dock failed: [ferry.last_error]")
 	TEST_ASSERT_EQUAL(length(home.cargo_cart), 0, "Delivered order remained in the cart")
 	var/delivered = 0
 	for(var/turf/location as anything in ferry.get_cargo_bay_turfs())
@@ -240,10 +242,11 @@
 	// A receiver that disappears after reservation refunds money and finite stock.
 	TEST_ASSERT_NULL(ferry.call_shuttle(), "Retry after cancellation failed")
 	deltimer(ferry.warmup_timer)
-	var/obj/machinery/outpost_elevator/panel = home.freight_berth.panel
-	home.freight_berth.panel = null
+	var/datum/outpost_upgrade/cargo_dock/receiver = cargo_dock
+	var/obj/docking_port/stationary/outpost_cargo_dock/pad = receiver.pad
+	receiver.pad = null
 	TEST_ASSERT(!ferry.complete_arrival(), "Shipment delivered into a missing receiver")
-	home.freight_berth.panel = panel
+	receiver.pad = pad
 	TEST_ASSERT_EQUAL(account.account_balance, after_export, "Receiver failure lost reserved funds")
 	TEST_ASSERT_EQUAL(SSstock_market.materials_quantity[/datum/material/iron], 100, "Receiver failure lost reserved stock")
 	// A physical visiting ship on the claim footprint wins over the home.
@@ -321,7 +324,7 @@
 	TEST_ASSERT(lathe.multitool_act(steward, tool), "Home protolathe could not link its local disk")
 	var/datum/design/design = SSresearch.techweb_design_by_id("cable_coil")
 	local_server.stored_research.add_design_by_id(design.id)
-	lathe.update_designs()
+	call(lathe, TYPE_PROC_REF(/obj/machinery/rnd/production, update_designs))() // protected; same route as do_make_item below
 	TEST_ASSERT(design in lathe.cached_designs, "Home fabrication did not receive local designs")
 	var/obj/machinery/ore_silo/silo
 	for(var/turf/floor in home.outpost_area)
@@ -332,6 +335,8 @@
 	tool.buffer = silo
 	home.construction_console.multitool_act(steward, tool)
 	TEST_ASSERT_EQUAL(home.construction_console.get_linked_silo(), silo, "Construction could not link its physical home silo")
+	// The console saves itself into the buffer for drone linking, so buffer the silo again
+	tool.buffer = silo
 	lathe.materials.OnMultitool(lathe, steward, tool)
 	TEST_ASSERT_EQUAL(lathe.materials.silo, silo, "Protolathe did not connect to actual home stock")
 	var/list/stock_before = list()
@@ -511,6 +516,7 @@
 	test_ship_area = null
 	test_ship_tile = null
 	test_original_area = null
+	settle_test_cargo_dock(home)
 
 /datum/unit_test/voidcrew_outpost_permissions/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
@@ -557,21 +563,6 @@
 	TEST_ASSERT_EQUAL(home.active_resident_count(), 0, "Offline historical membership exhausted active positions")
 	home.founder_ckey = null
 	TEST_ASSERT(!home.can_spend(resident), "Abandoned claim allowed new spending")
-
-/datum/unit_test/voidcrew_outpost_medium_bundle
-	var/template_type = /datum/map_template/player_outpost/medium
-
-/datum/unit_test/voidcrew_outpost_medium_bundle/small
-	template_type = /datum/map_template/player_outpost/small
-
-/datum/unit_test/voidcrew_outpost_medium_bundle/Run()
-	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(template_type)
-	TEST_ASSERT(home.load_level(), "Habitat failed to install its purchased home services")
-	TEST_ASSERT(home.home_bundle_installed, "Habitat omitted the included bundle")
-	assert_outpost_cargo_bundle(home)
-	TEST_ASSERT_NOTNULL(home.available_resident_pod(), "Habitat has no resident arrival point")
-	TEST_ASSERT_EQUAL(home.treasury.account_balance, 0, "A new home received an unpurchased allowance")
 
 /// Material/research checks can run after a buffered endpoint leaves the map.
 /datum/unit_test/voidcrew_service_site_nullspace/Run()
@@ -648,9 +639,11 @@
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/cancel_during_generation/Run()
 	save_economy()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
 	home.founder_ckey = "outpostcancelrace"
 	TEST_ASSERT(home.load_level(), "Cancellation race home failed to load")
+	var/cargo_dock = place_test_cargo_dock(home)
+	TEST_ASSERT(istype(cargo_dock, /datum/outpost_upgrade/cargo_dock), "The cancellation race could not place a cargo dock: [cargo_dock]")
 	var/datum/bank_account/account = home.treasury
 	account.account_balance = 1000
 	var/datum/voidcrew_cargo_shuttle/outpost/ferry = home.freight
@@ -700,14 +693,17 @@
 	TEST_ASSERT(ferry.complete_arrival(), "Old completion damaged the replacement shipment")
 	TEST_ASSERT_EQUAL(account.account_balance, 1000 - replacement_price, "Replacement delivery charged twice")
 	TEST_ASSERT(!QDELETED(replacement_pack.generated_crate), "Replacement delivery lost its paid crate")
+	settle_test_cargo_dock(home)
 
 /// Refunding remaining orders while a later package is generated must leave earlier paid goods accessible.
 /datum/unit_test/voidcrew_launch_cargo_fixture/outpost_home/cancel_during_generation/partial_refund/Run()
 	save_economy()
 	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
-	home.shell_template = allocate(/datum/map_template/player_outpost/small)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
 	home.founder_ckey = "outpostpartialcancel"
 	TEST_ASSERT(home.load_level(), "Partial cancellation home failed to load")
+	var/cargo_dock = place_test_cargo_dock(home)
+	TEST_ASSERT(istype(cargo_dock, /datum/outpost_upgrade/cargo_dock), "The partial cancellation could not place a cargo dock: [cargo_dock]")
 	home.treasury.account_balance = 1000
 	var/datum/voidcrew_cargo_shuttle/outpost/ferry = home.freight
 	var/datum/supply_pack/voidcrew_outpost_cancel_during_generation/paid_pack = new
@@ -726,4 +722,5 @@
 	TEST_ASSERT(ferry.shuttle_port?.is_in_shuttle_bounds(paid_pack.generated_crate), "Paid package is no longer on the accessible freight deck")
 	TEST_ASSERT(QDELETED(cancelled_pack.generated_crate), "Cancellation left an unpaid staged package")
 	TEST_ASSERT(!ferry.busy, "Cancellation left freight processing stuck")
-	TEST_ASSERT_EQUAL(ferry.shuttle_port?.get_docked(), home.freight_berth.dock, "Cancellation removed the delivered goods' physical receiver")
+	TEST_ASSERT_EQUAL(ferry.shuttle_port?.get_docked(), home.cargo_dock_port(), "Cancellation removed the delivered goods' physical receiver")
+	settle_test_cargo_dock(home)

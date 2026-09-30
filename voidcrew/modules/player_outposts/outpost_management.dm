@@ -15,7 +15,7 @@
 
 /obj/machinery/computer/player_outpost_management
 	name = "outpost management console"
-	desc = "Colonial registry terminal for the outpost's owner: naming, docking control, broadcasts and builder authorization."
+	desc = "The outpost's Colonial Registry terminal."
 	icon_screen = "id"
 	icon_keyboard = "id_key"
 	circuit = /obj/item/circuitboard/computer/player_outpost_management

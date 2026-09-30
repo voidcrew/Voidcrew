@@ -397,7 +397,10 @@
 		// Ships are not singletons: look through all areas before creating a test fixture.
 		var/area/protected_area = locate(area_type) in GLOB.areas
 		if(!protected_area)
-			protected_area = allocate(area_type)
+			// Not allocate(), whose `new area_type(test turf)` hands back a deleted
+			// area of the type and moves the test room's turf into it. Made without a loc, it is fresh.
+			protected_area = new area_type
+			allocated += protected_area
 		protected_turf.change_area(get_area(protected_turf), protected_area)
 		var/mob/living/basic/surface_mob = allocate(/mob/living/basic, surface_turf)
 		var/mob/living/carbon/human/consistent/surface_body = allocate(/mob/living/carbon/human/consistent, surface_turf)

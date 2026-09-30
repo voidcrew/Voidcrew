@@ -482,21 +482,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/b)
-"sS" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/storage/toolbox/emergency,
-/obj/machinery/light/warm{
-	dir = 8
-	},
-/obj/item/circuitboard/machine/ore_redemption,
-/obj/machinery/airalarm/directional/west,
-/obj/item/instrument/guitar,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/cargo/b)
 "tY" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -601,6 +586,18 @@
 "xE" = (
 /obj/structure/cable,
 /turf/closed/wall/mineral/wood/nonmetal,
+/area/shuttle/voidcrew/kilo/cargo/b)
+"xR" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/noticeboard/directional/north{
+	name = "bounty board"
+	},
+/turf/open/floor/wood,
 /area/shuttle/voidcrew/kilo/cargo/b)
 "xT" = (
 /obj/effect/turf_decal/stripes{
@@ -1117,6 +1114,24 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/b)
+"NU" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light/warm{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/machinery/airalarm/directional/west,
+/obj/item/instrument/guitar,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/kilo/cargo/b)
 "OQ" = (
 /obj/effect/turf_decal/bot_white,
 /obj/machinery/door/poddoor{
@@ -1440,21 +1455,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/b)
-"Vq" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/structure/noticeboard/directional/north{
-	name = "bounty board"
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/cargo/b)
 "Vy" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/b)
@@ -1646,8 +1646,8 @@ Ar
 Ar
 Ar
 Ar
-Vq
-sS
+xR
+NU
 Ny
 JS
 um

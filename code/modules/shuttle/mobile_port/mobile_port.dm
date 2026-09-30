@@ -288,6 +288,11 @@
 	if(!istype(stationary_dock))
 		return SHUTTLE_NOT_A_DOCKING_PORT
 
+	// VOIDCREW EDIT ADDITION START: permanent outpost bays require a reservation (player_outposts).
+	if(!stationary_dock.allows_ship_bay_docking(src))
+		return SHUTTLE_SOMEONE_ELSE_DOCKED
+	// VOIDCREW EDIT ADDITION END
+
 	if(stationary_dock.override_can_dock_checks)
 		return SHUTTLE_CAN_DOCK
 
@@ -421,6 +426,13 @@
 		if(!oldT || !istype(oldT.loc, area_type))
 			continue
 		oldT.change_area(oldT.loc, underlying_area)
+		// VOIDCREW EDIT ADDITION START - empty() keeps landmarks, so a deleted hull left its crew
+		// spawns wherever it stood: bay pads, berths, reservations handed to the next user.
+		// Only the kinds a ship brings go; the site's own markers stay.
+		for(var/obj/effect/landmark/mark in oldT)
+			if(is_type_in_typecache(mark, GLOB.ship_brought_landmarks))
+				qdel(mark)
+		// VOIDCREW EDIT ADDITION END
 		oldT.empty(FALSE)
 
 		// Here we locate the bottommost shuttle boundary and remove all turfs above it
