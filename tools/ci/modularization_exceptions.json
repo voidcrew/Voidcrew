@@ -77,6 +77,12 @@
     ],
     "reason": "Voidcrew-only file, not in /tg/station; it predates the modular folders, so all of it is fork code."
   },
+  "code/modules/unit_tests/voidcrew_shop_catalog.dm": {
+    "rules": [
+      "markers"
+    ],
+    "reason": "Voidcrew-only file, not in /tg/station; it predates the modular folders, so all of it is fork code."
+  },
   "code/modules/unit_tests/voidcrew_survey_archive.dm": {
     "rules": [
       "markers"
