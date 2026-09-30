@@ -4,11 +4,13 @@ import {
   // VOIDCREW EDIT: ship_upgrades configures modular hull themes and rooms in the admin panel.
   Box,
   Button,
+  // VOIDCREW EDIT REMOVAL: ship_upgrades imports Collapsible in the modular hull configuration component.
   Flex,
   // VOIDCREW EDIT: ship_upgrades configures modular hull themes and rooms in the admin panel.
   Icon,
   LabeledList,
   Section,
+  // VOIDCREW EDIT REMOVAL: ship_upgrades imports Stack in the modular hull configuration component.
   Table,
   Tabs,
 } from 'tgui-core/components';
