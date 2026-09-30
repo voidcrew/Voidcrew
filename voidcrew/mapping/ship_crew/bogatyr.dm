@@ -434,6 +434,7 @@
 /datum/outfit/job/workshop_bogatyr_job_15
 	parent_type = /datum/outfit/job/assistant
 	name = "Bogatyr-class Explorator — Clubber"
+	preload = FALSE
 	uniform = /obj/item/clothing/under/color/random
 	head = /obj/item/clothing/head/wig/random
 	mask = /obj/item/cigarette/rollie/cannabis

@@ -58,8 +58,21 @@
 				TEST_FAIL("[hull.type]'s default theme has a malformed job slot definition")
 				continue
 			seats += job_definition["slots"] || 1
+		// Modules bring crew of their own: count the fewest any roll of each slot adds
+		var/list/modules = get_modules_for_ship_theme(hull.type, theme.id)
+		for(var/slot_id in get_upgrade_slot_ids_for_theme(hull, theme))
+			var/fewest
+			for(var/module_id in modules)
+				var/datum/ship_upgrade_module/module = modules[module_id]
+				if(module.slot != slot_id)
+					continue
+				var/added = 0
+				for(var/list/job_definition as anything in module.crew_for_theme(theme.id))
+					added += job_definition["slots"] || 1
+				fewest = isnull(fewest) ? added : min(fewest, added)
+			seats += fewest || 0
 		if(seats < 4)
-			TEST_FAIL("[hull.type]'s default theme seats only [seats], too small to deal a roundstart crew into")
+			TEST_FAIL("[hull.type]'s default theme seats only [seats] with its fewest-crew modules, too small to deal a roundstart crew into")
 
 	// Pricing shape: exactly one free default theme per hull, everything else priced.
 	for(var/hull_type in GLOB.ship_themes)
