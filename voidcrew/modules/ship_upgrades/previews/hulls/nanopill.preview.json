@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "nanopill": {
+   "height": 12,
+   "png": "ship_nanopill.png",
+   "slots": {
+    "support_compliment": [
+     1,
+     4
+    ]
+   },
+   "src_md5": "ae32e0da508d6fc693aa37e4462823e1",
+   "width": 7
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

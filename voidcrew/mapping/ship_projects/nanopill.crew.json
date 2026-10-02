@@ -1,0 +1,87 @@
+{
+  "Rosters": {
+    "theme/standard": [
+      {
+        "ID": "job_1",
+        "Name": "First Officer",
+        "Outfit": "/datum/outfit/job/workshop_ship_nanopill_job_1",
+        "BaseOutfit": "/datum/outfit/job/captain/corporate",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": {
+          "gloves": "/obj/item/clothing/gloves/captain",
+          "head": "/obj/item/clothing/head/helmet/marine/security",
+          "mask": "/obj/item/clothing/mask/gas/sechailer/swat",
+          "r_pocket": "/obj/item/gun/ballistic/automatic/pistol/m1911",
+          "shoes": "/obj/item/clothing/shoes/jackboots/sec",
+          "suit": "/obj/item/clothing/suit/armor/vest/capcarapace/captains_formal",
+          "suit_store": "/obj/item/gun/ballistic/automatic/ar",
+          "uniform": "/obj/item/clothing/under/rank/security/officer/spacepol"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_2",
+        "Name": "Heavy Infantry",
+        "Outfit": "/datum/outfit/job/workshop_ship_nanopill_job_2",
+        "BaseOutfit": "/datum/outfit/job/security/corporate",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "/obj/item/clothing/glasses/hud/security/sunglasses",
+          "head": "/obj/item/clothing/head/helmet/marine/security",
+          "mask": "/obj/item/clothing/mask/gas/sechailer/swat",
+          "r_pocket": "/obj/item/gun/ballistic/automatic/pistol/m1911",
+          "suit": "/obj/item/clothing/suit/armor/bulletproof",
+          "suit_store": "/obj/item/gun/ballistic/automatic/ar",
+          "uniform": "/obj/item/clothing/under/rank/security/officer/beatcop"
+        },
+        "Backpack": {},
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_3",
+        "Name": "Marine Medic",
+        "Outfit": "/datum/outfit/job/workshop_ship_nanopill_job_3",
+        "BaseOutfit": "/datum/outfit/job/paramedic/syndicate",
+        "Category": "Medical",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "glasses": "/obj/item/clothing/glasses/hud/health/sunglasses",
+          "head": "/obj/item/clothing/head/helmet/marine/medic",
+          "r_hand": "/obj/item/storage/medkit/regular",
+          "suit": "/obj/item/clothing/suit/armor/bulletproof",
+          "suit_store": ""
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_4",
+        "Name": "Marine Engineer",
+        "Outfit": "/datum/outfit/job/workshop_ship_nanopill_job_4",
+        "BaseOutfit": "/datum/outfit/job/engineer/corporate",
+        "Category": "Assistant",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "belt": "/obj/item/storage/belt/utility/full/engi",
+          "gloves": "/obj/item/clothing/gloves/color/yellow",
+          "head": "/obj/item/clothing/head/helmet/marine/engineer",
+          "suit": "/obj/item/clothing/suit/armor/bulletproof",
+          "uniform": "/obj/item/clothing/under/rank/centcom/military/eng"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ]
+  }
+}

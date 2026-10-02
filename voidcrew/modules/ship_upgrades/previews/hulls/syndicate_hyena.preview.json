@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "syndicate_hyena": {
+   "height": 18,
+   "png": "ship_syndicate_hyena.png",
+   "slots": {
+    "salvage_bay": [
+     14,
+     4
+    ]
+   },
+   "src_md5": "a2b6ccf60b11d81a71dbb14cfd9ebbaa",
+   "width": 28
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

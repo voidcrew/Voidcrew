@@ -1,0 +1,31 @@
+{
+  "Version": 2,
+  "ID": "hyena",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/hyena",
+    "Name": "SYN-C Hyena-class Wrecking Tug",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "syndicate_hyena",
+    "Slots": [
+      "salvage_bay"
+    ],
+    "Themes": null,
+    "Modules": [
+      {
+        "ID": "salvage_bay_basic",
+        "Name": "Salvage Bay",
+        "Slot": "salvage_bay",
+        "File": "hyena/workshop/salvage_bay_basic.dmm",
+        "Themes": null,
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 0,
+  "Hidden": false,
+  "Cost": 0,
+  "FileID": "hyena",
+  "PortDirection": 0
+}

@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "ship_courage/aft_compartment_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "ship_courage_aft_compartment_basic_standard.png",
+     "src_md5": "5733744462d3d4430bb32929f59ef55a",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

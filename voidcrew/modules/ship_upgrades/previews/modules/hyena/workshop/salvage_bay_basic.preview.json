@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "hyena/workshop/salvage_bay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "png": "hyena_workshop_salvage_bay_basic.png",
+   "src_md5": "472136ae7f206a0af0e0ffa240ac8efa",
+   "width": 10
+  }
+ },
+ "tile_px": 32
+}

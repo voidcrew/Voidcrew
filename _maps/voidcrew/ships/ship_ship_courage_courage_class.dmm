@@ -1,0 +1,496 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"akQ" = (
+/obj/structure/table/reinforced,
+/obj/item/toy/plush/nukeplushie,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"aKF" = (
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"bbC" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/ammo_box/a357,
+/obj/item/ammo_box/a357,
+/obj/item/ammo_box/a357,
+/obj/item/card/emag,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"bms" = (
+/obj/docking_port/mobile/voidcrew/ship_courage{
+	dir = 2;
+	port_direction = 1;
+	preferred_direction = 1
+	},
+/obj/machinery/door/airlock/hatch{
+	id_tag = "caravansyndicate3_bolt_port";
+	name = "External Airlock";
+	normalspeed = 0;
+	req_access_txt = "150"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"cgS" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/ship_courage)
+"cpx" = (
+/obj/machinery/light/small,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"cyk" = (
+/obj/structure/sign/warning/vacuum{
+	pixel_y = 32
+	},
+/obj/machinery/autolathe/hacked,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"dLX" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/machinery/microwave,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"eJO" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/ship_courage)
+"eJP" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"gDj" = (
+/obj/structure/table/reinforced,
+/obj/item/assembly/flash/handheld,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"hAq" = (
+/obj/machinery/cryopod,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"iMP" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"iXj" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"joE" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"jYi" = (
+/obj/structure/sign/warning/vacuum{
+	pixel_y = -32
+	},
+/obj/machinery/mineral/ore_redemption{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"kNC" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"kPN" = (
+/obj/machinery/door/airlock/hatch{
+	id_tag = "caravansyndicate3_bolt_port";
+	name = "External Airlock";
+	normalspeed = 0;
+	req_access_txt = "150"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"lbJ" = (
+/obj/machinery/light/small,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"lsM" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"lHs" = (
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"mbQ" = (
+/turf/template_noop,
+/area/template_noop)
+"mqz" = (
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"mLE" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/paper_bin,
+/obj/item/folder/syndicate/red,
+/obj/item/pen/red,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"njV" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"nsM" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"ntK" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"nIp" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"qGS" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"qJN" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"srS" = (
+/obj/machinery/suit_storage_unit/syndicate{
+	name = "captain's suit storage unit";
+	storage_type = /obj/item/clothing/shoes/magboots/syndie;
+	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi/elite
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"sBb" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "aft_compartment"
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"tqm" = (
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"trr" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/briefcase,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"tMy" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_courage)
+"ulg" = (
+/obj/machinery/door/airlock/hatch{
+	id_tag = "caravansyndicate3_bolt_starboard";
+	name = "External Airlock";
+	normalspeed = 0;
+	req_access_txt = "150"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"upP" = (
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"uDv" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/ship_courage)
+"uGt" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"uVp" = (
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -26
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+"uVE" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"vip" = (
+/obj/structure/closet/syndicate{
+	anchored = 1
+	},
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/crowbar/red,
+/obj/item/crowbar/red,
+/obj/item/crowbar/red,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/mask/gas/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"vsi" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"vGJ" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/ship_courage)
+"xlU" = (
+/obj/structure/ore_box,
+/obj/item/storage/bag/ore,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/ship_courage)
+"xON" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_courage)
+
+(1,1,1) = {"
+uVE
+mbQ
+eJO
+eJO
+eJO
+mbQ
+sBb
+"}
+(2,1,1) = {"
+cgS
+cgS
+lHs
+uDv
+lHs
+cgS
+cgS
+"}
+(3,1,1) = {"
+cgS
+qJN
+kNC
+qGS
+aKF
+lbJ
+cgS
+"}
+(4,1,1) = {"
+cgS
+uGt
+iMP
+iMP
+iMP
+mqz
+cgS
+"}
+(5,1,1) = {"
+cgS
+nIp
+iMP
+iMP
+iMP
+uVp
+cgS
+"}
+(6,1,1) = {"
+cgS
+hAq
+iMP
+iMP
+iMP
+mqz
+cgS
+"}
+(7,1,1) = {"
+cgS
+ntK
+iXj
+iMP
+iXj
+cpx
+cgS
+"}
+(8,1,1) = {"
+cgS
+cgS
+cgS
+kPN
+cgS
+cgS
+cgS
+"}
+(9,1,1) = {"
+bms
+vGJ
+iMP
+iMP
+iMP
+vGJ
+ulg
+"}
+(10,1,1) = {"
+cgS
+cyk
+vip
+iMP
+xlU
+jYi
+cgS
+"}
+(11,1,1) = {"
+cgS
+cgS
+cgS
+kPN
+cgS
+cgS
+cgS
+"}
+(12,1,1) = {"
+cgS
+lsM
+iMP
+iMP
+iMP
+mLE
+cgS
+"}
+(13,1,1) = {"
+tMy
+upP
+iMP
+iMP
+iMP
+trr
+tMy
+"}
+(14,1,1) = {"
+tMy
+upP
+iMP
+iMP
+iMP
+akQ
+tMy
+"}
+(15,1,1) = {"
+cgS
+xON
+iMP
+iMP
+iMP
+joE
+cgS
+"}
+(16,1,1) = {"
+cgS
+cgS
+cgS
+kPN
+cgS
+cgS
+cgS
+"}
+(17,1,1) = {"
+cgS
+dLX
+iMP
+iMP
+iMP
+bbC
+cgS
+"}
+(18,1,1) = {"
+tMy
+srS
+iMP
+njV
+vsi
+gDj
+tMy
+"}
+(19,1,1) = {"
+tMy
+tMy
+nsM
+tqm
+eJP
+tMy
+tMy
+"}
+(20,1,1) = {"
+mbQ
+tMy
+tMy
+tMy
+tMy
+tMy
+mbQ
+"}

@@ -6,19 +6,12 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
 "bd" = (
-/obj/effect/turf_decal/bot_white,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/closet/crate,
-/obj/item/circuitboard/computer/order_console/mining,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "bl" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/navbeacon{
-	codes_txt = "patrol;next_patrol=crew";
-	location = "cargo"
-	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "bF" = (
@@ -60,17 +53,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/armory)
 "cf" = (
-/obj/structure/table/reinforced,
-/obj/item/toy/figure/syndie{
-	pixel_x = 11;
-	pixel_y = -3
-	},
-/obj/machinery/fax{
-	name = "Hyena Fax Machine";
-	fax_name = "Hyena Fax"
-	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/radio/intercom/directional/east,
+/obj/machinery/computer/bank_machine,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
 "ch" = (
@@ -90,29 +75,9 @@
 	dir = 1
 	},
 /obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = 2
-	},
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = -2
-	},
-/obj/item/ammo_box/c10mm,
-/obj/item/ammo_box/c10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "dc" = (
@@ -143,42 +108,6 @@
 /obj/structure/window/reinforced/spawner/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
-"dA" = (
-/obj/item/food/canned/beans{
-	pixel_x = -5;
-	pixel_y = 3
-	},
-/obj/item/food/canned/beans{
-	pixel_x = 2;
-	pixel_y = 3
-	},
-/obj/item/food/canned/beans{
-	pixel_x = -2
-	},
-/obj/item/reagent_containers/cup/glass/waterbottle/large{
-	pixel_x = 5
-	},
-/obj/item/reagent_containers/cup/glass/waterbottle/large{
-	pixel_x = 1;
-	pixel_y = -3
-	},
-/obj/item/reagent_containers/cup/glass/waterbottle/large{
-	pixel_x = 8;
-	pixel_y = -3
-	},
-/obj/structure/closet/crate{
-	name = "food crate"
-	},
-/obj/item/storage/cans/sixbeer,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/effect/turf_decal/bot_white,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "dF" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/effect/turf_decal/bot_white,
@@ -264,11 +193,6 @@
 /obj/effect/turf_decal/bot_white,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/hallway)
-"fT" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "fW" = (
 /obj/structure/cable,
 /obj/machinery/power/terminal{
@@ -330,19 +254,6 @@
 "hK" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"hP" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"ia" = (
-/obj/effect/turf_decal/arrows{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "ik" = (
 /obj/structure/table/reinforced,
 /obj/item/folder/syndicate,
@@ -360,9 +271,6 @@
 /obj/machinery/light,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
-	},
-/obj/item/stamp/qm{
-	name = "foreman's rubber stamp"
 	},
 /obj/item/radio/intercom/directional/south,
 /turf/open/floor/carpet/red,
@@ -387,13 +295,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"iv" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "ix" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -438,7 +339,6 @@
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
 "jH" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
@@ -499,14 +399,6 @@
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
-"lg" = (
-/obj/effect/turf_decal/stripes{
-	dir = 9
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/splatter/oil,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "lt" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -549,26 +441,6 @@
 	},
 /turf/open/floor/carpet/black,
 /area/shuttle/voidcrew/hyena/bridge)
-"nx" = (
-/obj/machinery/button/door{
-	id = "wreckerarmory";
-	name = "Armory Shutters";
-	pixel_y = 24;
-	req_access = list("armory")
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"nG" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/blood/splatter/oil,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "nL" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/hallway)
@@ -681,14 +553,6 @@
 /obj/item/radio/intercom/directional/east,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
-"pP" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/mineral/ore_redemption{
-	dir = 1;
-	output_dir = 1
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "pT" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -772,9 +636,6 @@
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
 "si" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/arrows{
-	dir = 8
-	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "sx" = (
@@ -787,7 +648,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "sA" = (
-/obj/effect/turf_decal/bot_white,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
@@ -869,16 +729,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
-"tS" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/arrows{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "uf" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/reinforced,
@@ -936,15 +786,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/hyena/dorms/commons)
-"vv" = (
-/obj/structure/closet/crate,
-/obj/item/stack/sheet/glass/fifty,
-/obj/item/stack/sheet/iron/fifty,
-/obj/effect/turf_decal/bot_white,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom/directional/south,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "vG" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 1
@@ -982,10 +823,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/hyena/armory)
-"wP" = (
-/obj/effect/turf_decal/bot_white,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "xd" = (
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
@@ -1102,7 +939,6 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/dorms)
 "zt" = (
-/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "zv" = (
@@ -1195,7 +1031,6 @@
 /obj/structure/sign/poster/contraband/revolver{
 	pixel_y = 32
 	},
-/obj/item/areaeditor/shuttle,
 /obj/item/megaphone/sec{
 	name = "syndicate megaphone";
 	pixel_x = -4;
@@ -1274,11 +1109,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/equipment)
-"Dp" = (
-/obj/effect/turf_decal/bot_white,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Dq" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1299,10 +1129,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/fore)
 "DH" = (
-/obj/effect/turf_decal/bot_white,
-/obj/structure/reagent_dispensers/fueltank,
-/obj/effect/decal/cleanable/blood/oil/slippery,
-/obj/structure/sign/warning/no_smoking/directional/south,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "DO" = (
@@ -1376,14 +1202,12 @@
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
 "FQ" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
+/obj/modular_map_root/ship_upgrade{
+	footprint = ".......###/.......###/.......###/##########/##########/##########/......####/......####/......####";
+	key = "salvage_bay"
 	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/window/reinforced/plasma/spawner/directional/south,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/hyena/bridge/foreman)
 "FU" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
@@ -1412,26 +1236,8 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/port)
 "GA" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/machinery/button/door{
-	dir = 1;
-	id = "wreckercargobay";
-	name = "Cargo Bay Door";
-	pixel_y = -24
-	},
 /obj/machinery/light/floor,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"Hk" = (
-/obj/effect/turf_decal/stripes{
-	dir = 6
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/window/reinforced/plasma/spawner/directional/south,
-/turf/open/floor/engine,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "HT" = (
 /obj/structure/cable,
@@ -1458,10 +1264,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"Ik" = (
-/obj/structure/window/reinforced/spawner/directional/east,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Iz" = (
 /obj/machinery/cryopod{
 	dir = 1
@@ -1481,10 +1283,10 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/hyena/dorms/commons)
 "Jv" = (
-/obj/machinery/modular_computer/console/preset/command{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/mission_board{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
 "JB" = (
@@ -1572,15 +1374,6 @@
 /obj/machinery/space_heater,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"KM" = (
-/obj/effect/turf_decal/stripes{
-	dir = 10
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/window/reinforced/plasma/spawner/directional/south,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "KQ" = (
 /obj/structure/cable,
 /obj/machinery/power/terminal{
@@ -1635,13 +1428,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/equipment)
-"Ln" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Lv" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -1660,6 +1446,7 @@
 /area/shuttle/voidcrew/hyena/equipment)
 "Ma" = (
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mission_pad,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
 "Ml" = (
@@ -1669,14 +1456,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
-"Mp" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Ms" = (
 /obj/structure/bed,
 /obj/item/bedsheet/black,
@@ -1686,18 +1465,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/hyena/dorms)
-"My" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/autolathe,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"MP" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "MR" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1823,20 +1590,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/armory)
-"PT" = (
-/obj/effect/turf_decal/stripes,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"Qy" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/effect/turf_decal/arrows{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Rc" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
@@ -1882,17 +1635,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/hallway)
-"SE" = (
-/obj/effect/decal/cleanable/blood/splatter/oil,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
-"SJ" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/analyzer,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "SP" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/power/smes/engineering{
@@ -1926,14 +1668,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"Tg" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/machinery/light/floor,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Tu" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 8;
@@ -1949,7 +1683,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/bridge)
 "TX" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/airalarm/directional/north,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/cargo_bay)
@@ -2097,7 +1830,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/armory)
 "Wt" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
@@ -2110,10 +1842,11 @@
 	pixel_x = -16;
 	pixel_y = 7
 	},
-/obj/item/stamp/hos{
-	name = "captain's rubber stamp"
-	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/item/toy/figure/syndie{
+	pixel_x = 11;
+	pixel_y = -3
+	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/bridge)
 "WN" = (
@@ -2201,7 +1934,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/door/firedoor,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "YV" = (
@@ -2227,28 +1959,13 @@
 /obj/effect/turf_decal/stripes,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hyena/armory)
-"Zi" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/window/reinforced/plasma/spawner/directional/south,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "Zn" = (
-/obj/effect/turf_decal/bot_white,
-/obj/structure/table,
-/obj/machinery/cell_charger,
 /obj/machinery/firealarm/directional/west{
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 "ZM" = (
-/obj/effect/turf_decal/stripes{
-	dir = 5
-	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/hyena/cargo_bay)
 
@@ -2527,7 +2244,7 @@ zt
 De
 CT
 CT
-CT
+FQ
 CT
 nn
 Og
@@ -2542,7 +2259,7 @@ jI
 kO
 bJ
 jI
-nx
+Fr
 Sh
 Zn
 qN
@@ -2564,7 +2281,7 @@ dG
 bV
 Fr
 Fr
-iv
+Fr
 XG
 Bg
 jY
@@ -2582,9 +2299,9 @@ Wp
 Ax
 wE
 Zg
-iv
-nG
-My
+Fr
+Wt
+DH
 qN
 Ib
 ik
@@ -2604,7 +2321,7 @@ VA
 KT
 Fr
 yw
-pP
+DH
 qN
 Xj
 uf
@@ -2624,7 +2341,7 @@ OX
 jI
 cV
 jH
-Ik
+Sh
 qN
 qN
 qN
@@ -2643,10 +2360,10 @@ jI
 jI
 jI
 TX
-SJ
-Dp
-dA
-Dp
+jH
+DH
+DH
+DH
 DH
 de
 Kb
@@ -2659,15 +2376,15 @@ tw
 Dq
 rd
 XN
-lg
-hP
-KM
-Zi
+ZM
+ZM
+ZM
+DH
 bl
 si
 Wt
-ia
-SE
+Sh
+Sh
 de
 zZ
 de
@@ -2679,15 +2396,15 @@ KA
 WN
 sH
 XN
-Ln
-fT
-PT
-FQ
+ZM
+ZM
+ZM
+DH
 zn
 bd
 sA
-wP
-vv
+DH
+DH
 de
 Ky
 de
@@ -2700,13 +2417,13 @@ aF
 le
 XN
 ZM
-Mp
-Hk
-FQ
-Tg
-Qy
-MP
-tS
+ZM
+ZM
+DH
+GA
+Sh
+Sh
+Sh
 GA
 de
 VD
