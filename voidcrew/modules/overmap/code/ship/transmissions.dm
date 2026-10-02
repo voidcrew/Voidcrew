@@ -13,7 +13,7 @@
  * instead of three seconds of floating text they had to be looking at.
  *
  * Transmitting gives you away: a hail resolves the sender on the receiver's
- * chart the same way a Ships scan would (see [[ship_sensors]]). Radio silence is
+ * chart the same way a Ships scan would (see [[sensors]]). Radio silence is
  * a tactic, and a lurking pirate has a reason not to say hello.
  */
 

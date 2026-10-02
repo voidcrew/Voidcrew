@@ -5,7 +5,7 @@
  * Tier 4: runaway_burn, helm_poltergeist
  *
  * Movement payloads gate in the ship's thrust layer, not the helm UI:
- * - can_thrust() is checked by the player burn loop (ship.dm process()), the
+ * - can_thrust() is checked by the player burn loop (ship/movement.dm), the
  *   autopilot (autopilot_steer) AND every NPC movement behavior
  *   (ship_movement_behaviors.dm), so one chained override locks the drive for
  *   all three control paths.

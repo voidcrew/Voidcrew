@@ -112,5 +112,5 @@
 	hit_human.Paralyze(4 SECONDS)
 	hit_human.emote("scream")
 
-/obj/item/paperplane/throw_at(atom/target, range, speed, mob/thrower, spin=FALSE, diagonals_first = FALSE, datum/callback/callback, gentle, quickstart = TRUE, throw_type_path = /datum/thrownthing)
-	return ..(target, range, speed, thrower, FALSE, diagonals_first, callback, quickstart = quickstart)
+/obj/item/paperplane/throw_at(atom/target, range, speed, mob/thrower, spin=FALSE, diagonals_first = FALSE, datum/callback/callback, force, gentle, quickstart = TRUE, throw_type_path = /datum/thrownthing) // VOIDCREW EDIT: added the parent's `force` argument so ..() forwards the rest in order
+	return ..(target, range, speed, thrower, FALSE, diagonals_first, callback, force, gentle, quickstart = quickstart) // VOIDCREW EDIT: pass force and gentle through

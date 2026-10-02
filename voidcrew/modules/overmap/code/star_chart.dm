@@ -8,7 +8,7 @@
  *
  * Deliberately wider than a scan: this is the only way to learn where the storms
  * and nebulas are without flying into them, since the ship's own sensors can't
- * record either (see chart_zone in ship_sensors.dm).
+ * record either (see chart_zone in ship/sensors.dm).
  */
 /obj/item/disk/star_chart
 	name = "star chart"

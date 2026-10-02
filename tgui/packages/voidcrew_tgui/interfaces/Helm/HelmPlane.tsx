@@ -142,6 +142,8 @@ type HelmPlaneButtonProps = {
   tooltip?: string;
   /** Keep the tooltip visible without hover (e.g. always-on ship labels). */
   tooltipAlways?: boolean;
+  /** Stack labels for contacts sharing a tile, in screen pixels. */
+  tooltipRow?: number;
   onClick?: (event: MouseEvent) => void;
   onContextMenu?: (event: MouseEvent) => void;
   className?: string;
@@ -625,6 +627,7 @@ function HelmPlaneButton(props: HelmPlaneButtonProps) {
     keepScale = false,
     tooltip,
     tooltipAlways = false,
+    tooltipRow = 0,
     onClick,
     onContextMenu,
     className,
@@ -693,6 +696,7 @@ function HelmPlaneButton(props: HelmPlaneButtonProps) {
                 'HelmPlane__Node--tooltip',
                 tooltipAlways && 'HelmPlane__Node--tooltipAlways',
               ])}
+              style={{ transform: `translateY(${-tooltipRow * 20}px)` }}
             >
               {tooltip}
             </div>

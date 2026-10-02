@@ -65,7 +65,7 @@
 	slowdown -= 1.5
 	spinning = FALSE
 
-/obj/item/cult_bastard/can_be_pulled(user)
+/obj/item/cult_bastard/can_be_pulled(user, force)
 	return FALSE
 
 /obj/item/cult_bastard/pickup(mob/living/user)

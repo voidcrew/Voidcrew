@@ -30,6 +30,7 @@
 	ui_interact(user)
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_interact(mob/user, datum/tgui/ui)
+	SHOULD_CALL_PARENT(FALSE)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "ShipCombatConsole")

@@ -13,7 +13,7 @@
  *
  * Scooping is deliberately loud: every harvest tick calls the ship's
  * notify_scoop_activity(), which blocks and breaks nebula concealment
- * (ship.dm), the fuel stop is also the ambush spot.
+ * (ship/stealth.dm), the fuel stop is also the ambush spot.
  */
 
 /// Moles of plasma gas one plasma sheet bakes down into (the open-beaker jank
@@ -55,6 +55,7 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/RefreshParts()
+	. = ..()
 	// Two T1 lasers = x1, two T4 lasers = x4
 	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser) / 2, 1)
 
@@ -102,7 +103,7 @@
 
 	// Pulling a radioactive gas in through the hull doses the crew, unless the ship is
 	// running a radioactive nebula shielder. Self-throttling, so calling it every tick is
-	// fine - see apply_nebula_radiation() in ship_damage.dm.
+	// fine - see apply_nebula_radiation() in ship/damage.dm.
 	ship.apply_nebula_radiation(cloud)
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
@@ -156,6 +157,7 @@
 	set_init_directions()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/RefreshParts()
+	. = ..()
 	efficiency_multiplier = max(total_part_rating(/datum/stock_part/micro_laser), 1)
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/examine(mob/user)

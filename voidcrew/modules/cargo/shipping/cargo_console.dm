@@ -31,7 +31,7 @@
 	//Deferred because the bank machine may not have initialized when we do.
 	return INITIALIZE_HINT_LATELOAD
 
-/obj/machinery/computer/voidcrew_cargo/LateInitialize()
+/obj/machinery/computer/voidcrew_cargo/post_machine_initialize()
 	. = ..()
 	// Consoles built in-round are on an already-registered ship, so this finds the bank
 	// straight away. Map-placed ones aren't - the hull hasn't been registered yet when

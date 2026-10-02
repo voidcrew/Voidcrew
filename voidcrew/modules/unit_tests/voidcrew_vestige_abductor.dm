@@ -345,7 +345,8 @@
 	UnregisterSignal(surgeon, COMSIG_MOB_SURGERY_STEP_SUCCESS)
 
 /datum/unit_test/vestige_abductor_parallel_surgery/proc/on_insertion_began(mob/living/source)
-	SIGNAL_HANDLER
+	// Not a SIGNAL_HANDLER: the test deliberately drives a blocking surgery step
+	// from inside do_after() to prove the operation lock holds. Blocking is the point.
 	UnregisterSignal(source, COMSIG_DO_AFTER_BEGAN)
 	interleaved = TRUE
 	// A clientless surgeon closes the normal selection with null, the same result as Cancel.

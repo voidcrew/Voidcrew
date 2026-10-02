@@ -140,9 +140,16 @@
 #endif // 1 to use the default behaviour;
 								// 2 for preloading absolutely everything;
 
+// VOIDCREW EDIT ADDITION START - FORCE_MAP set from the build command line (the
+// .vscode map-testing tasks) needs a directory too, not only LOWMEMORYMODE's.
+#ifndef FORCE_MAP_DIRECTORY
+#define FORCE_MAP_DIRECTORY "_maps"
+#endif
+// VOIDCREW EDIT ADDITION END
+
 #ifdef LOWMEMORYMODE
 #define FORCE_MAP "runtimestation"
-#define FORCE_MAP_DIRECTORY "_maps"
+// VOIDCREW EDIT: FORCE_MAP_DIRECTORY is defined above
 #endif
 
 //Additional code for the above flags.

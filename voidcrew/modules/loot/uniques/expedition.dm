@@ -29,7 +29,7 @@
  * The tracked atom is the nearest space ruin signal that hasn't been
  * visited yet (GLOB.space_ruin_signals, a global per-ruin flag set the
  * moment any ship docks there, see
- * voidcrew/modules/overmap/code/modules/overmap/space_ruin.dm), measured
+ * voidcrew/modules/overmap/code/space_ruin.dm), measured
  * from the wearer's ship's overmap position
  * (/proc/get_ship_from_atom(), ship.dm), falling back to whatever
  * overmap object currently contains the wearer
@@ -451,7 +451,7 @@
  * touches equipment_speedmod or anything else.
  *
  * Deviation: this fork's planet weather roster
- * (voidcrew/modules/overmap/code/modules/overmap/behaviour/planets.dm) is
+ * (voidcrew/modules/overmap/code/behaviour/planets.dm) is
  * ash_storm (lava) / snow_storm (ice) / sand_storm (wasteland) /
  * rain_storm (beach, jungle), there is no "rad squall" planet weather in
  * this codebase to be immune to (rad_storm exists only as a station-level

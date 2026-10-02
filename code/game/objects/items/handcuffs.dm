@@ -549,7 +549,7 @@
 	///Reference of the mob we will attempt to snare
 	var/datum/weakref/ensnare_mob_ref
 
-/obj/item/restraints/legcuffs/bola/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, gentle = FALSE, quickstart = TRUE, throw_type_path = /datum/thrownthing)
+/obj/item/restraints/legcuffs/bola/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE, throw_type_path = /datum/thrownthing) // VOIDCREW EDIT: added the parent's `force` argument so ..() forwards the rest in order
 	if(!..())
 		return
 	playsound(src.loc,'sound/items/weapons/bolathrow.ogg', 75, TRUE)

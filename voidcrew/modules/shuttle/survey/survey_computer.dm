@@ -506,7 +506,7 @@
 		if(!is_type_in_list(object, blacklisted_types))
 			candidates |= object
 	// Storms within the scan ring, nearest first. Same range()-over-turf sweep
-	// the sensor contact push uses (ship_sensors.dm)
+	// the sensor contact push uses (ship/sensors.dm)
 	var/turf/ship_turf = get_turf(ship_port.current_ship)
 	if(!ship_turf)
 		return candidates

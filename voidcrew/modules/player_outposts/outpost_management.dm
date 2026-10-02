@@ -27,7 +27,7 @@
 
 // Machinery always late-initializes; consoles the shell spawned get linked by
 // link_interior_machinery, hand-rebuilt ones relink to their z-level's outpost here
-/obj/machinery/computer/player_outpost_management/LateInitialize()
+/obj/machinery/computer/player_outpost_management/post_machine_initialize()
 	. = ..()
 	outpost = get_outpost_from_atom(src)
 	if(outpost && !outpost.management_console)
@@ -48,6 +48,7 @@
 		SStgui.update_uis(panel)
 
 /obj/machinery/computer/player_outpost_management/ui_interact(mob/user, datum/tgui/ui)
+	SHOULD_CALL_PARENT(FALSE)
 	outpost = get_outpost_from_atom(src)
 	if(!outpost)
 		balloon_alert(user, "no outpost link")

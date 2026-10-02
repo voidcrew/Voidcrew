@@ -1038,7 +1038,7 @@ SUBSYSTEM_DEF(churn_soak)
 	if(variant != "crash")
 		return
 
-	// The hull kill. enter_integrity_failure() is the proc ship_damage.dm calls when
+	// The hull kill. enter_integrity_failure() is the proc ship/damage.dm calls when
 	// integrity actually reaches zero, so this is the real cascade: latch, stop the ship,
 	// spark, crash_land(), COMSIG_SHIP_DESTROYED.
 	hull.enter_integrity_failure()

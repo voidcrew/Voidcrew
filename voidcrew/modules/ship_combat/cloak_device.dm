@@ -49,7 +49,7 @@
 	. = ..()
 	cloak_sound = new(src, 'voidcrew/sound/machines/cloaking/on.ogg', 7, 7)
 
-/obj/machinery/ship_combat/cloak_device/LateInitialize()
+/obj/machinery/ship_combat/cloak_device/post_machine_initialize()
 	. = ..()
 	// Try to auto-link after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
