@@ -93,6 +93,7 @@
 #include "voidcrew_megafauna_aggro.dm"
 #include "voidcrew_mining_input.dm"
 #include "voidcrew_mining_qol.dm"
+#include "voidcrew_missile_approach.dm"
 #include "voidcrew_mission_gps.dm"
 #include "voidcrew_mission_metrics.dm"
 #include "voidcrew_missions.dm"
