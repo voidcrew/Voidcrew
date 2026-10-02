@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/riot_gear_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "patrol_bee_riot_gear_bay_standard.png",
+     "src_md5": "ed3dfe2138016db17e4535bd42b9e4c2",
+     "width": 4
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "patrol_bee_riot_gear_bay_syndicate_black.png",
+     "src_md5": "67a41e9c0bbcfd577bcb20094522a075",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

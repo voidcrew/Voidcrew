@@ -1,0 +1,94 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cbw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"ler" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed/pod,
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"nkm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/modular_map_connector,
+/obj/item/storage/pill_bottle/multiver{
+	pixel_x = 9;
+	pixel_y = 11
+	},
+/obj/item/storage/medkit/tactical_lite,
+/obj/item/reagent_containers/hypospray/medipen/atropine{
+	pixel_x = 9;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"nJM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/operating,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"qVm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"rUt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/anesthetic{
+	pixel_x = -3
+	},
+/obj/item/clothing/mask/breath/muzzle,
+/obj/item/stack/sticky_tape/surgical,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"tfm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/optable,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"tAI" = (
+/turf/template_noop,
+/area/template_noop)
+"tUX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/structure/table,
+/obj/item/reagent_containers/blood/o_minus{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/blood/universal,
+/obj/effect/spawner/surgery_tray/full{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"ukR" = (
+/obj/machinery/defibrillator_mount/loaded,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+tAI
+nJM
+cbw
+nkm
+"}
+(2,1,1) = {"
+ukR
+tfm
+qVm
+qVm
+"}
+(3,1,1) = {"
+tAI
+tUX
+rUt
+ler
+"}

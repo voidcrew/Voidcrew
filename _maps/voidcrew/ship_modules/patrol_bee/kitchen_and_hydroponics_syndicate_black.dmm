@@ -1,0 +1,193 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aht" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/blue/full,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/reagent_containers/cup/watering_can,
+/obj/item/shovel/spade,
+/obj/item/wirecutters,
+/obj/item/wrench,
+/obj/item/cultivator,
+/obj/item/storage/bag/plants/portaseeder,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"gEu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/blue/full,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"hoK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/blue/full,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"ibh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/door/window/left/directional/west,
+/obj/structure/table,
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -1
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"keg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/button/door/directional/north{
+	id = "cafe_counter"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"mHW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"neU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/green/full,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"ozE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/green/full,
+/obj/machinery/hydroponics/constructable,
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"oYt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"phY" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"sNm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/oven/range,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"txZ" = (
+/obj/machinery/biogenerator,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/effect/turf_decal/tile/blue/full,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"tAR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/decal/cleanable/food/tomato_smudge,
+/obj/item/reagent_containers/cup/glass/bottle/juice/tomatojuice{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"usr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/airlock{
+	name = "Kitchen"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"vkg" = (
+/turf/template_noop,
+/area/template_noop)
+"xpG" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/structure/table,
+/obj/machinery/processor{
+	pixel_y = 16;
+	layer = 3;
+	pixel_x = 7
+	},
+/obj/machinery/reagentgrinder{
+	pixel_x = -9;
+	pixel_y = 18;
+	layer = 4
+	},
+/obj/item/knife/kitchen{
+	pixel_x = -8;
+	layer = 5
+	},
+/obj/item/kitchen/rollingpin{
+	pixel_x = -1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"xNf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/griddle,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+ibh
+xNf
+usr
+vkg
+vkg
+vkg
+phY
+"}
+(2,1,1) = {"
+keg
+mHW
+mHW
+oYt
+gEu
+neU
+aht
+"}
+(3,1,1) = {"
+sNm
+tAR
+xpG
+txZ
+ozE
+hoK
+ozE
+"}

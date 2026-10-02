@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/full_kitchen.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "patrol_bee_full_kitchen_standard.png",
+     "src_md5": "818732a50f8b2c36716485c5df0868a2",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "patrol_bee_full_kitchen_syndicate_black.png",
+     "src_md5": "94f81bce99d831c886be679a2ab3f33a",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

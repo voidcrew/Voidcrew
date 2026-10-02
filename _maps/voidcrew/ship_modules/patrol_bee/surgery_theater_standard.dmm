@@ -1,0 +1,101 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"agE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/modular_map_connector,
+/obj/item/storage/medkit/brute{
+	pixel_x = -6;
+	pixel_y = 1
+	},
+/obj/item/storage/medkit/fire{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/obj/item/storage/pill_bottle/multiver{
+	pixel_x = 9;
+	pixel_y = 11
+	},
+/obj/item/reagent_containers/hypospray/medipen/atropine{
+	pixel_x = 9;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"bru" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/structure/table,
+/obj/item/reagent_containers/blood/o_minus{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/blood/universal,
+/obj/effect/spawner/surgery_tray/full{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"dvi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/anesthetic{
+	pixel_x = -3
+	},
+/obj/item/clothing/mask/breath/muzzle,
+/obj/item/stack/sticky_tape/surgical,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"iQD" = (
+/obj/machinery/defibrillator_mount/loaded,
+/turf/template_noop,
+/area/template_noop)
+"lli" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/operating,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"lBn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed/pod,
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"oxl" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"ptW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/optable,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"qEo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"wpr" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+wpr
+lli
+qEo
+agE
+"}
+(2,1,1) = {"
+iQD
+ptW
+oxl
+oxl
+"}
+(3,1,1) = {"
+wpr
+bru
+dvi
+lBn
+"}

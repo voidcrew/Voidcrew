@@ -1,0 +1,125 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"akd" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"bjV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/security/sec,
+/obj/item/storage/belt/security/full,
+/obj/item/clothing/glasses/hud/security/sunglasses,
+/obj/machinery/vending/wallmed/directional/north,
+/turf/open/floor/iron,
+/area/template_noop)
+"bpd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/structure/closet/secure_closet/personal{
+	name = "Security Closet"
+	},
+/obj/item/restraints/handcuffs/cable,
+/obj/item/restraints/handcuffs/cable,
+/obj/machinery/light/small/directional/north,
+/obj/structure/reagent_dispensers/wall/peppertank/directional/north,
+/obj/item/inspector,
+/obj/item/flashlight/seclite,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/iron,
+/area/template_noop)
+"bXj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"gbE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 11
+	},
+/obj/item/book/manual/wiki/security_space_law{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"gHQ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"hPO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted,
+/turf/open/floor/iron,
+/area/template_noop)
+"jtz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/right/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron,
+/area/template_noop)
+"nIO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted,
+/turf/open/floor/iron,
+/area/template_noop)
+"pyG" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/left/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron,
+/area/template_noop)
+"qhW" = (
+/turf/template_noop,
+/area/template_noop)
+"xyY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+jtz
+bXj
+xyY
+"}
+(2,1,1) = {"
+akd
+bjV
+nIO
+"}
+(3,1,1) = {"
+pyG
+gHQ
+hPO
+"}
+(4,1,1) = {"
+qhW
+bpd
+gbE
+"}

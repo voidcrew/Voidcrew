@@ -1,0 +1,102 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cIv" = (
+/turf/template_noop,
+/area/template_noop)
+"dag" = (
+/obj/machinery/chem_heater/withbuffer,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"fQX" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"gKw" = (
+/obj/machinery/chem_dispenser,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"lvZ" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/dropper{
+	pixel_x = -7;
+	pixel_y = -3
+	},
+/obj/item/grenade/chem_grenade{
+	pixel_x = -9;
+	pixel_y = 14
+	},
+/obj/item/grenade/chem_grenade{
+	pixel_x = -1;
+	pixel_y = 14
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_y = 10
+	},
+/obj/item/clothing/glasses/science{
+	pixel_x = 9;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"nvD" = (
+/obj/modular_map_connector,
+/obj/structure/table/glass,
+/obj/machinery/reagentgrinder{
+	pixel_y = 19;
+	pixel_x = -7
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/mineral/silver{
+	pixel_x = 7;
+	pixel_y = 14
+	},
+/obj/item/stack/sheet/mineral/uranium{
+	pixel_x = 12;
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/mineral/plasma/five,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"sih" = (
+/obj/machinery/chem_master,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"wjo" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"wPT" = (
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+
+(1,1,1) = {"
+cIv
+sih
+fQX
+nvD
+"}
+(2,1,1) = {"
+cIv
+gKw
+wjo
+wPT
+"}
+(3,1,1) = {"
+cIv
+dag
+fQX
+lvZ
+"}

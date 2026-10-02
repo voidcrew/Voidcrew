@@ -1,0 +1,38 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"kcO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/structure/sink/directional/east,
+/obj/item/storage/box/mousetraps{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/restraints/legcuffs/beartrap,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"mXW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister/water_vapor,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"xVe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/mop_bucket/janitorialcart,
+/obj/item/mop,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/storage/bag/trash,
+/obj/machinery/light/small/directional/south,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+
+(1,1,1) = {"
+kcO
+"}
+(2,1,1) = {"
+mXW
+"}
+(3,1,1) = {"
+xVe
+"}

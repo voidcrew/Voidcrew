@@ -1,0 +1,85 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"blh" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/structure/chair/office/light,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"bvq" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced/rglass,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -3;
+	pixel_y = 9
+	},
+/obj/item/multitool/circuit{
+	pixel_x = 10;
+	pixel_y = 2
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"dCp" = (
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"eLc" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"gHE" = (
+/obj/machinery/rnd/destructive_analyzer,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"mXV" = (
+/obj/machinery/rnd/production/protolathe,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"oCj" = (
+/turf/template_noop,
+/area/template_noop)
+"roe" = (
+/obj/structure/table/reinforced/rglass,
+/obj/item/experi_scanner{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/obj/item/stock_parts/capacitor/adv,
+/obj/item/stock_parts/servo/nano{
+	pixel_x = 10;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"tSs" = (
+/obj/machinery/rnd/production/circuit_imprinter,
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+oCj
+tSs
+blh
+bvq
+"}
+(2,1,1) = {"
+oCj
+mXV
+eLc
+dCp
+"}
+(3,1,1) = {"
+oCj
+gHE
+eLc
+roe
+"}

@@ -1,0 +1,135 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bus" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/machinery/byteforge,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"dbm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"eJZ" = (
+/turf/template_noop,
+/area/template_noop)
+"fbW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/quantum_server,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"gRg" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"hpU" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"iZq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/maintenance/two,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"kTt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/netpod,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"ldm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/quantum_console,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"ldM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"lLv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"pHK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/machinery/computer/order_console/bitrunning,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"rNg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/item/trash/chips,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"tmR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"vii" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"vOD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/cup/soda_cans/space_mountain_wind{
+	pixel_x = 8
+	},
+/obj/item/food/chips{
+	pixel_x = -5
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+
+(1,1,1) = {"
+eJZ
+ldm
+vii
+ldM
+pHK
+"}
+(2,1,1) = {"
+eJZ
+fbW
+rNg
+ldM
+bus
+"}
+(3,1,1) = {"
+gRg
+lLv
+tmR
+ldM
+vOD
+"}
+(4,1,1) = {"
+hpU
+iZq
+dbm
+ldM
+kTt
+"}

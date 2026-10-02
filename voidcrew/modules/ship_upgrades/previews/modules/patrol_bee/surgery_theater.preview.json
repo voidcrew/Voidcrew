@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/surgery_theater.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_surgery_theater_standard.png",
+     "src_md5": "e35da90f35ab70aba46248d53555f79e",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_surgery_theater_syndicate_black.png",
+     "src_md5": "28fc3a892410c26ae3aa84e15e997809",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

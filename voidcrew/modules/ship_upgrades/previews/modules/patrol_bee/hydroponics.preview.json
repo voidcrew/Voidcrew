@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/hydroponics.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "patrol_bee_hydroponics_standard.png",
+     "src_md5": "6bcceba52e8343cffcdc6714237fe386",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "patrol_bee_hydroponics_syndicate_black.png",
+     "src_md5": "106cd5be9362cd253e941cf4b67ef748",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

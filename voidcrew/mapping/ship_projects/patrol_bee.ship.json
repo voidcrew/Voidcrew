@@ -1,0 +1,208 @@
+{
+  "Version": 1,
+  "ID": "patrol_bee",
+  "Description": "The NT Patrol Bee is a once-proud Nanotrasen patrol cruiser, forgotten and left to drift in favour of the more mobile Delta-class models. Consists of every module you'd need ranging from cargo ending with service.",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/patrol_bee",
+    "Name": "Patrol Bee",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "patrol_bee_nanotrasen",
+    "Slots": [
+      "Upper_Cargo",
+      "closet",
+      "cleanroom",
+      "service",
+      "security_bay"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "NanoTrasen",
+        "Suffix": "patrol_bee_nanotrasen",
+        "Slots": [
+          "Upper_Cargo",
+          "closet",
+          "cleanroom",
+          "service",
+          "security_bay"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "syndicate_black",
+        "Name": "Syndicate Black",
+        "Suffix": "patrol_bee_syndicate_black",
+        "Slots": [
+          "Upper_Cargo",
+          "closet",
+          "cleanroom",
+          "service",
+          "security_bay"
+        ],
+        "Default": false
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "mining_bay_basic",
+        "Name": "Mining Bay",
+        "Slot": "Upper_Cargo",
+        "File": "patrol_bee/mining_bay_basic.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "bitrunning_den",
+        "Name": "Bitrunning Den",
+        "Slot": "Upper_Cargo",
+        "File": "patrol_bee/bitrunning_den.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cargo_mech_bay",
+        "Name": "Cargo Mech Bay",
+        "Slot": "Upper_Cargo",
+        "File": "patrol_bee/cargo_mech_bay.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "closet_basic",
+        "Name": "Toilet",
+        "Slot": "closet",
+        "File": "patrol_bee/toilet.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "custodial_closet",
+        "Name": "Custodial Closet",
+        "Slot": "closet",
+        "File": "patrol_bee/custodial_closet.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "cleanroom_basic",
+        "Name": "Surgery Theater",
+        "Slot": "cleanroom",
+        "File": "patrol_bee/surgery_theater.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "pharmacy_lab",
+        "Name": "Pharmacy Lab",
+        "Slot": "cleanroom",
+        "File": "patrol_bee/pharmacy_lab.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "research_lab",
+        "Name": "Research Lab",
+        "Slot": "cleanroom",
+        "File": "patrol_bee/research_lab.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "service_basic",
+        "Name": "Full Kitchen",
+        "Slot": "service",
+        "File": "patrol_bee/full_kitchen.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "hydroponics",
+        "Name": "Hydroponics",
+        "Slot": "service",
+        "File": "patrol_bee/hydroponics.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "kitchen_and_hydroponics",
+        "Name": "Kitchen and Hydroponics",
+        "Slot": "service",
+        "File": "patrol_bee/kitchen_and_hydroponics.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "security_bay_basic",
+        "Name": "Patrol Office",
+        "Slot": "security_bay",
+        "File": "patrol_bee/patrol_office.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "riot_gera_bay",
+        "Name": "Riot Gear Bay",
+        "Slot": "security_bay",
+        "File": "patrol_bee/riot_gear_bay.dmm",
+        "Themes": [
+          "standard",
+          "syndicate_black"
+        ],
+        "Default": false
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PartCosts": {
+    "module/bitrunning_den": {},
+    "module/cargo_mech_bay": {},
+    "module/custodial_closet": {},
+    "module/hydroponics": {},
+    "module/kitchen_and_hydroponics": {},
+    "module/pharmacy_lab": {},
+    "module/research_lab": {},
+    "module/riot_gera_bay": {},
+    "ship": {},
+    "theme/syndicate_black": {}
+  },
+  "PortDirection": 2
+}

@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/toilet.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "patrol_bee_toilet_standard.png",
+     "src_md5": "bc3a4e39fa0b2cbeca58695c32fe03d2",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "patrol_bee_toilet_syndicate_black.png",
+     "src_md5": "428ad2e48010fcf3cad2f653c5b9c0fa",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

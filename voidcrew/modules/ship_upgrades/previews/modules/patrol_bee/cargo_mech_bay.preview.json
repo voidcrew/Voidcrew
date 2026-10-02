@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/cargo_mech_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_cargo_mech_bay_standard.png",
+     "src_md5": "75ef54851a743c137acfb5c473a0cd17",
+     "width": 4
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_cargo_mech_bay_syndicate_black.png",
+     "src_md5": "28834c8fee2c4a6f09be63d665593d71",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

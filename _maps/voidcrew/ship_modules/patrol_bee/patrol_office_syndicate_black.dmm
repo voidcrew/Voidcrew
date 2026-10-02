@@ -1,0 +1,127 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"acD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"ckz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/right/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"dRm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/restraints/handcuffs/cable,
+/obj/item/restraints/handcuffs/cable,
+/obj/machinery/light/small/directional/north,
+/obj/structure/reagent_dispensers/wall/peppertank/directional/north,
+/obj/item/inspector,
+/obj/item/flashlight/seclite,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/structure/closet/syndicate,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"eUX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"fPv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/belt/security/full,
+/obj/machinery/vending/wallmed/directional/north,
+/obj/structure/closet/syndicate,
+/obj/item/storage/belt/security/full,
+/obj/item/radio/headset/syndicate/alt,
+/obj/item/radio/headset/syndicate/alt,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/glasses/sunglasses,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"lXH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"nfw" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"nzr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"rec" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"tJo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 11
+	},
+/obj/item/book/manual/wiki/security_space_law{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"wIz" = (
+/turf/template_noop,
+/area/template_noop)
+"xLY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/left/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+ckz
+lXH
+acD
+"}
+(2,1,1) = {"
+nfw
+fPv
+rec
+"}
+(3,1,1) = {"
+xLY
+eUX
+nzr
+"}
+(4,1,1) = {"
+wIz
+dRm
+tJo
+"}
