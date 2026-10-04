@@ -760,15 +760,18 @@
 			"forward_message" = "welded external armor",
 			"backward_message" = "unfastened external armor layer"
 		),
+		// VOIDCREW EDIT CHANGE BEGIN
+		// we reverting back bluespace anomaly core as last step of phazon construction
 		list(
-			"key" = /obj/item/assembly/signaler/anomaly/ectoplasm,
+			"key" = /obj/item/assembly/signaler/anomaly/bluespace,
 			"action" = ITEM_DELETE,
 			"back_key" = TOOL_WELDER,
-			"desc" = "The external armor is welded, and the <b>ectoplasm anomaly core</b> socket is open.",
+			"desc" = "The external armor is welded, and the <b>bluespace anomaly core</b> socket is open.",
 			"icon_state" = "phazon26",
-			"forward_message" = "inserted ectoplasm anomaly core",
+			"forward_message" = "inserted bluespace anomaly core",
 			"backward_message" = "cut off external armor"
 		)
+		// VOIDCREW EDIT CHANGE END
 	)
 
 //SAVANNAH-IVANOV
