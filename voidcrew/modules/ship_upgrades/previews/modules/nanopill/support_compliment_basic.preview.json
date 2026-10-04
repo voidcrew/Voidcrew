@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "nanopill/support_compliment_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "nanopill_support_compliment_basic_standard.png",
+     "src_md5": "725dc2a4cb1c4db2a537e2f963ecc1e9",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

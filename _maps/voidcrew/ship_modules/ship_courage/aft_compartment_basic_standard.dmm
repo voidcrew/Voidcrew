@@ -1,0 +1,144 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cQB" = (
+/obj/effect/turf_decal/box,
+/turf/template_noop,
+/area/template_noop)
+"dxe" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"eXt" = (
+/obj/structure/table/reinforced,
+/turf/template_noop,
+/area/template_noop)
+"eYd" = (
+/turf/template_noop,
+/area/template_noop)
+"gOx" = (
+/obj/structure/curtain,
+/obj/machinery/computer/cryopod{
+	pixel_y = 25
+	},
+/turf/template_noop,
+/area/template_noop)
+"kpC" = (
+/obj/structure/rack,
+/turf/template_noop,
+/area/template_noop)
+"nja" = (
+/obj/machinery/stasis,
+/turf/template_noop,
+/area/template_noop)
+"quL" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/obj/item/defibrillator/compact/combat,
+/obj/item/soap/syndie,
+/turf/template_noop,
+/area/template_noop)
+"sSR" = (
+/obj/machinery/suit_storage_unit/syndicate,
+/turf/template_noop,
+/area/template_noop)
+"vkD" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"wLc" = (
+/obj/machinery/vending/security/marine{
+	all_items_free = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"wWO" = (
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 20
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 20
+	},
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/box/lights/bulbs,
+/obj/item/stack/sheet/mineral/plastitanium{
+	amount = 20
+	},
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+eYd
+eYd
+eYd
+eYd
+eYd
+eYd
+vkD
+"}
+(2,1,1) = {"
+eYd
+eYd
+dxe
+dxe
+wWO
+eYd
+eYd
+"}
+(3,1,1) = {"
+eYd
+eYd
+eYd
+eYd
+eYd
+cQB
+eYd
+"}
+(4,1,1) = {"
+eYd
+eXt
+eYd
+eYd
+eYd
+sSR
+eYd
+"}
+(5,1,1) = {"
+eYd
+eXt
+eYd
+eYd
+eYd
+sSR
+eYd
+"}
+(6,1,1) = {"
+eYd
+gOx
+eYd
+eYd
+eYd
+sSR
+eYd
+"}
+(7,1,1) = {"
+eYd
+wLc
+kpC
+eYd
+nja
+quL
+eYd
+"}
+(8,1,1) = {"
+eYd
+eYd
+eYd
+eYd
+eYd
+eYd
+eYd
+"}

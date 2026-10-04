@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "starfury/supermatter_core.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 13,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 13,
+     "png": "starfury_supermatter_core_standard.png",
+     "src_md5": "fb4ffe90234ba9a206695a19fee77c05",
+     "width": 17
+    }
+   },
+   "width": 17
+  }
+ },
+ "tile_px": 32
+}

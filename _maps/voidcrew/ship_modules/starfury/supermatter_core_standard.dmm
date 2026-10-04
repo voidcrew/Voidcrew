@@ -1,0 +1,1116 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aio" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"aDh" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible/layer1{
+	dir = 5
+	},
+/obj/machinery/light,
+/obj/effect/turf_decal/stripes/end,
+/turf/open/floor/engine,
+/area/template_noop)
+"aIm" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 1;
+	name = "Cooled SM Waste to Ship Waste"
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"aMD" = (
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/engine,
+/area/template_noop)
+"aVr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/engine,
+/area/template_noop)
+"aZw" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/engine,
+/area/template_noop)
+"bmL" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"bud" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/machinery/atmospherics/components/binary/volume_pump,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"bUK" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"bYn" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer2,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer4,
+/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+	dir = 1
+	},
+/turf/open/floor/engine/airless,
+/area/template_noop)
+"cbb" = (
+/obj/machinery/atmospherics/components/binary/temperature_gate{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cmc" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cnL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/machinery/meter,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cyo" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 9
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cGV" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"deg" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer4{
+	dir = 8
+	},
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"dmc" = (
+/obj/machinery/power/emitter/welded{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"dDC" = (
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"dYY" = (
+/obj/machinery/door/poddoor/shutters/radiation/preopen{
+	id = "engine_chamber"
+	},
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/template_noop)
+"enb" = (
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/template_noop)
+"eux" = (
+/turf/open/floor/engine,
+/area/template_noop)
+"eyW" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"fhV" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible{
+	dir = 9
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"fsV" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"fBc" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"fBM" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/engine,
+/area/template_noop)
+"gvD" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/engine,
+/area/template_noop)
+"gCL" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/reflector/box{
+	anchored = 1;
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"gQY" = (
+/turf/template_noop,
+/area/template_noop)
+"hhi" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	name = "SCRAM Pump"
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"hoz" = (
+/obj/machinery/power/emitter/welded{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"hJU" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"hWS" = (
+/obj/structure/cable,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible/layer4{
+	dir = 9
+	},
+/obj/machinery/meter,
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"ioJ" = (
+/obj/machinery/power/supermatter_crystal/engine,
+/turf/open/floor/engine,
+/area/template_noop)
+"iBG" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer2,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer4,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine/plasma,
+/area/template_noop)
+"iEj" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"iVd" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/portable_atmospherics/canister/nitrous_oxide,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/engine,
+/area/template_noop)
+"jCp" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"jGs" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/binary/valve/digital/layer4{
+	dir = 4;
+	name = "bypass valve"
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"kto" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"kNM" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"kPo" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/layer_manifold/green/visible{
+	dir = 4
+	},
+/obj/machinery/meter,
+/turf/open/floor/engine,
+/area/template_noop)
+"kTr" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"kVF" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"kWx" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/visible{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"lfj" = (
+/obj/machinery/power/energy_accumulator/grounding_rod/anchored,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"lmZ" = (
+/obj/machinery/atmospherics/components/trinary/filter/flipped/critical{
+	dir = 8
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"lxR" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"lyO" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible/layer5{
+	dir = 6
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"lzz" = (
+/obj/machinery/atmospherics/components/binary/volume_pump,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"lCA" = (
+/obj/structure/reflector/box{
+	anchored = 1;
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"lHG" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8;
+	name = "Waste Purge Pump"
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"lMi" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"mqF" = (
+/obj/machinery/door/airlock/engineering/glass/critical{
+	id_tag = "starfurybcsupermatter_bolt";
+	name = "Supermatter Chamber";
+	req_access_txt = "150"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/engine,
+/area/template_noop)
+"mzL" = (
+/obj/machinery/light,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/engine,
+/area/template_noop)
+"mEf" = (
+/turf/open/floor/plating,
+/area/template_noop)
+"mLl" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	name = "Exhaust Recovery"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"mTU" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer2,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer4,
+/turf/open/floor/engine/airless,
+/area/template_noop)
+"nan" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer2,
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer4,
+/obj/modular_map_connector,
+/turf/open/floor/engine/airless,
+/area/template_noop)
+"nny" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"nCY" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"nDL" = (
+/obj/machinery/atmospherics/components/binary/pressure_valve{
+	dir = 8;
+	name = "Waste Vent Valve"
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"nJE" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/template_noop)
+"nOV" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"ozI" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/dark/visible{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"pFv" = (
+/obj/machinery/atmospherics/components/trinary/filter/flipped/critical{
+	filter_type = list(/datum/gas/nitrogen);
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"rag" = (
+/obj/structure/cable,
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"rln" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"rwT" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"ryi" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 9
+	},
+/obj/machinery/meter,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"rCJ" = (
+/obj/structure/cable,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"rEc" = (
+/obj/machinery/atmospherics/components/trinary/filter/flipped/critical{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"rGO" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"rPZ" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"smr" = (
+/obj/machinery/power/emitter/welded{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"sRL" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/dark/visible/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible/layer5{
+	dir = 5
+	},
+/obj/machinery/meter,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"sWM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/machinery/meter,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"teC" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 1;
+	name = "Coolant Injector"
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"thx" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 6
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"tqe" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"tyM" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"tGv" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"tOS" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"tQI" = (
+/obj/machinery/power/emitter/welded{
+	dir = 8
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"uoP" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/template_noop)
+"urx" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/obj/machinery/meter,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"uPo" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"uXr" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"vnm" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/engine,
+/area/template_noop)
+"voc" = (
+/obj/machinery/door/airlock/engineering/glass/critical{
+	id_tag = "starfurybcsupermatter_bolt";
+	name = "Supermatter Chamber";
+	rad_insulation = 0.1;
+	req_access_txt = "150"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/structure/fans/tiny,
+/turf/open/floor/engine,
+/area/template_noop)
+"vve" = (
+/obj/machinery/button/door{
+	id = "engine_chamber";
+	name = "Radiation Shutters";
+	pixel_x = 6;
+	pixel_y = 24;
+	req_access_txt = "150"
+	},
+/obj/machinery/button/door{
+	id = "starfurybcsupermatter_bolt";
+	name = "Supermatter Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_x = -6;
+	pixel_y = 24;
+	req_access_txt = "150";
+	specialfunctions = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible/layer4{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"vLR" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"wcS" = (
+/obj/structure/sign/poster/contraband/have_a_puff{
+	desc = "If you can't prevent plasma fires, create them!";
+	pixel_y = 32
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 6
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"wrM" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/cyan/visible,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"wyM" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"wEU" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/green/visible,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"wZL" = (
+/obj/machinery/power/energy_accumulator/grounding_rod/anchored,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"xbb" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"xmq" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"xNq" = (
+/obj/machinery/power/energy_accumulator/tesla_coil/anchored,
+/obj/structure/cable,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+"xSa" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible/layer5,
+/obj/machinery/atmospherics/pipe/bridge_pipe/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner,
+/turf/open/floor/engine,
+/area/template_noop)
+"xSe" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"ycS" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/engineering/glass{
+	name = "Laser Room";
+	req_access_txt = "150"
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/template_noop)
+"yfQ" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/engine,
+/area/template_noop)
+"yjx" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/engine,
+/area/template_noop)
+
+(1,1,1) = {"
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+fBc
+iBG
+iBG
+mTU
+nan
+"}
+(2,1,1) = {"
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+fBc
+iBG
+gQY
+gQY
+mTU
+"}
+(3,1,1) = {"
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+fBc
+mTU
+gQY
+gQY
+iBG
+"}
+(4,1,1) = {"
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+gQY
+thx
+bYn
+mTU
+iBG
+iBG
+"}
+(5,1,1) = {"
+gQY
+gQY
+tGv
+rln
+bmL
+bmL
+bmL
+cGV
+rPZ
+deg
+tyM
+tyM
+deg
+"}
+(6,1,1) = {"
+gQY
+gQY
+vLR
+eyW
+uPo
+enb
+iEj
+lyO
+xSa
+sRL
+kto
+kto
+aDh
+"}
+(7,1,1) = {"
+gQY
+gQY
+dYY
+fBc
+aZw
+vnm
+kPo
+nny
+yjx
+ozI
+fBc
+fBc
+ozI
+"}
+(8,1,1) = {"
+lxR
+yfQ
+nJE
+fBc
+iVd
+hhi
+fhV
+kNM
+aVr
+ycS
+rwT
+rag
+rwT
+"}
+(9,1,1) = {"
+xNq
+lfj
+jCp
+uXr
+fBc
+fBc
+wcS
+pFv
+mzL
+fBc
+rwT
+mEf
+uoP
+"}
+(10,1,1) = {"
+tOS
+tOS
+tOS
+sWM
+mLl
+wEU
+vve
+wyM
+lHG
+tyM
+hoz
+mEf
+dmc
+"}
+(11,1,1) = {"
+eux
+ioJ
+eux
+voc
+eux
+mqF
+jGs
+lmZ
+hJU
+tyM
+lCA
+mEf
+gCL
+"}
+(12,1,1) = {"
+bUK
+bUK
+bUK
+urx
+teC
+wrM
+hWS
+xSe
+nDL
+tyM
+smr
+mEf
+tQI
+"}
+(13,1,1) = {"
+nOV
+wZL
+nCY
+kVF
+fBc
+fBc
+lMi
+rEc
+mzL
+fBc
+rwT
+mEf
+uoP
+"}
+(14,1,1) = {"
+tqe
+dDC
+nJE
+fBc
+gvD
+bud
+xmq
+kNM
+aVr
+ycS
+rwT
+rCJ
+rwT
+"}
+(15,1,1) = {"
+gQY
+gQY
+dYY
+fBc
+fBM
+lzz
+fsV
+kWx
+aMD
+gQY
+gQY
+gQY
+gQY
+"}
+(16,1,1) = {"
+gQY
+gQY
+rGO
+kTr
+cmc
+enb
+enb
+kWx
+aMD
+gQY
+gQY
+gQY
+gQY
+"}
+(17,1,1) = {"
+gQY
+gQY
+aio
+cnL
+aIm
+xbb
+cbb
+ryi
+cyo
+gQY
+gQY
+gQY
+gQY
+"}

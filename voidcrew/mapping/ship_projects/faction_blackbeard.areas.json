@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/faction_blackbeard",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/engineering",
+      "Name": "Engineering",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/medical",
+      "Name": "Medical",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/bridge",
+      "Name": "Bridge",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/equipment",
+      "Name": "Equipment",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/cargo",
+      "Name": "Cargo",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/aft_hallway",
+      "Name": "Aft Hallway",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_blackbeard/fore_hallway",
+      "Name": "Fore Hallway",
+      "IconState": "quart"
+    }
+  ]
+}

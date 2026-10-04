@@ -1,0 +1,46 @@
+{
+  "Version": 1,
+  "ID": "ship_nanopill",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/ship_nanopill",
+    "Name": "NT-C Nanopill",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "nanopill",
+    "Slots": [
+      "support_compliment"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Standard",
+        "Suffix": "nanopill",
+        "Slots": [
+          "support_compliment"
+        ],
+        "Default": true
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "support_compliment_basic",
+        "Name": "Support Compliment",
+        "Slot": "support_compliment",
+        "File": "nanopill/support_compliment_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "FileID": "nanopill",
+  "PartCosts": {
+    "ship": {}
+  },
+  "PortDirection": 2
+}

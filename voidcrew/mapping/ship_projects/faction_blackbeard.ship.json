@@ -1,0 +1,50 @@
+{
+  "Version": 1,
+  "ID": "faction_blackbeard",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/faction_blackbeard",
+    "Name": "SYN-C Blackbeard-class Heavy Boarder",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "faction_blackbeard",
+    "Slots": [
+      "medical_bay"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Standard",
+        "Suffix": "faction_blackbeard",
+        "Slots": [
+          "medical_bay"
+        ],
+        "Default": true
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "medical_bay_basic",
+        "Name": "Medical Bay",
+        "Slot": "medical_bay",
+        "File": "faction_blackbeard/medical_bay_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PartCosts": {
+    "ship": {
+      "combat": 15,
+      "misc": 5,
+      "science": 3,
+      "trade": 5
+    }
+  },
+  "PortDirection": 2
+}

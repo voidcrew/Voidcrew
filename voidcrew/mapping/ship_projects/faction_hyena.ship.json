@@ -1,0 +1,42 @@
+{
+  "Version": 1,
+  "ID": "faction_hyena",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/faction_hyena",
+    "Name": "SYN-C Hyena-class  Wrecking Tug",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "faction_hyena",
+    "Slots": [
+      "common_area"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Standard",
+        "Suffix": "faction_hyena",
+        "Slots": [
+          "common_area"
+        ],
+        "Default": true
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "common_area_basic",
+        "Name": "Common Area",
+        "Slot": "common_area",
+        "File": "faction_hyena/common_area_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PortDirection": 2
+}

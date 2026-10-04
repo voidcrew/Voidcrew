@@ -1,0 +1,308 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aom" = (
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"bsV" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = -32
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"bAb" = (
+/obj/machinery/power/port_gen/pacman,
+/obj/machinery/light,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"ewc" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/machinery/recharger{
+	pixel_x = 11;
+	pixel_y = 10
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"fMq" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"fSY" = (
+/obj/machinery/computer/mission_board,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"gpl" = (
+/obj/machinery/vending/security/marine/solgov,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"gse" = (
+/obj/machinery/computer/bank_machine,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"hZe" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"ilm" = (
+/obj/docking_port/mobile/voidcrew/ship_nanopill{
+	dir = 4;
+	port_direction = 8;
+	preferred_direction = 4
+	},
+/obj/machinery/door/airlock/shuttle/glass,
+/obj/structure/fans/tiny,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"jCd" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanopill)
+"jEk" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/resonator,
+/obj/item/resonator,
+/obj/item/resonator,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/item/tank/internals/emergency_oxygen/double,
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"kzA" = (
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/mineral/plasma/fifty,
+/obj/item/stack/sheet/mineral/plasma/fifty,
+/obj/item/storage/toolbox/mechanical,
+/obj/machinery/light,
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/obj/item/pipe_dispenser,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"kWb" = (
+/obj/machinery/door/airlock/shuttle/glass,
+/obj/structure/fans/tiny,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"nPv" = (
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"oxy" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanopill)
+"oBe" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"pcY" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"puj" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"qBT" = (
+/obj/machinery/mineral/ore_redemption{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/door/window{
+	dir = 4
+	},
+/obj/machinery/door/window{
+	dir = 8
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/ship_nanopill)
+"rqb" = (
+/turf/template_noop,
+/area/template_noop)
+"rTO" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"ubC" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "support_compliment"
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/ship_nanopill)
+"uTA" = (
+/obj/machinery/computer/helm,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"vig" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"vNs" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"wiX" = (
+/obj/structure/window/reinforced,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"xvG" = (
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/ship_nanopill)
+"yeC" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/ship_nanopill)
+"ykg" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/ship_nanopill)
+
+(1,1,1) = {"
+rqb
+rqb
+oxy
+ykg
+ilm
+ykg
+ykg
+jCd
+ubC
+ykg
+rqb
+rqb
+"}
+(2,1,1) = {"
+rqb
+oxy
+oxy
+jEk
+nPv
+bsV
+puj
+nPv
+nPv
+ykg
+ykg
+rqb
+"}
+(3,1,1) = {"
+oxy
+oxy
+fSY
+vNs
+nPv
+nPv
+nPv
+nPv
+nPv
+kzA
+ykg
+ykg
+"}
+(4,1,1) = {"
+oxy
+uTA
+ewc
+nPv
+nPv
+nPv
+nPv
+rTO
+hZe
+xvG
+wiX
+yeC
+"}
+(5,1,1) = {"
+oxy
+oxy
+gse
+nPv
+nPv
+nPv
+nPv
+vig
+aom
+bAb
+ykg
+ykg
+"}
+(6,1,1) = {"
+rqb
+oxy
+oxy
+gpl
+nPv
+nPv
+oBe
+fMq
+pcY
+ykg
+ykg
+rqb
+"}
+(7,1,1) = {"
+rqb
+rqb
+oxy
+ykg
+kWb
+qBT
+ykg
+jCd
+ykg
+ykg
+rqb
+rqb
+"}

@@ -1,0 +1,32 @@
+{
+  "Rosters": {
+    "theme/standard": [
+      {
+        "ID": "job_1",
+        "Name": "Captain",
+        "Outfit": "/datum/outfit/job/captain",
+        "BaseOutfit": "",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": true,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_2",
+        "Name": "Crew",
+        "Outfit": "/datum/outfit/job/assistant",
+        "BaseOutfit": "",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": null,
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ]
+  }
+}

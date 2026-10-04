@@ -1,0 +1,76 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/starfury",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/loading_bay",
+      "Name": "Loading Bay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/surgery",
+      "Name": "Surgery",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/medical_bay",
+      "Name": "Medical Bay",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/armory",
+      "Name": "Armory",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/engineering_storage",
+      "Name": "Engineering Storage",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/engine",
+      "Name": "Engine Room",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/power_storage",
+      "Name": "Power Storage",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/kitchen",
+      "Name": "Kitchen",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/crew_area",
+      "Name": "Crew Area",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/bridge",
+      "Name": "Bow Module",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/central",
+      "Name": "Central Module",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/aft",
+      "Name": "Aft Compartment",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/atmospherics",
+      "Name": "Atmospherics",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/starfury/supermatter",
+      "Name": "Supermatter Core",
+      "IconState": "engie"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "starfury": {
+   "height": 52,
+   "png": "ship_starfury.png",
+   "slots": {
+    "engine_configuration": [
+     8,
+     8
+    ]
+   },
+   "src_md5": "a798bac562065d64ae64c4c6356f9104",
+   "width": 35
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

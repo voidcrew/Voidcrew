@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "faction_blackbeard/medical_bay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "faction_blackbeard_medical_bay_basic_standard.png",
+     "src_md5": "3d7abd3f1c7f9fcd887abf4b872a927c",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

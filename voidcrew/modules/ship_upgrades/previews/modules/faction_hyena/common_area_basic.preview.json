@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "faction_hyena/common_area_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 6,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 6,
+     "png": "faction_hyena_common_area_basic_standard.png",
+     "src_md5": "8b3d76cfdd646c7c285b34ee9bc1ccca",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

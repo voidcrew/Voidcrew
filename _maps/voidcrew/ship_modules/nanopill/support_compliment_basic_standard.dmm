@@ -1,0 +1,75 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"cbS" = (
+/obj/structure/sign/nanotrasen,
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"gRl" = (
+/turf/template_noop,
+/area/template_noop)
+"iYg" = (
+/obj/machinery/suit_storage_unit/ert/security,
+/obj/effect/turf_decal/box/white,
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/turf/template_noop,
+/area/template_noop)
+"jBi" = (
+/obj/structure/sign/nanotrasen,
+/turf/template_noop,
+/area/template_noop)
+"nsZ" = (
+/obj/machinery/suit_storage_unit/ert/security,
+/obj/effect/turf_decal/box/white,
+/turf/template_noop,
+/area/template_noop)
+"opU" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/template_noop,
+/area/template_noop)
+"qKS" = (
+/obj/item/mop,
+/obj/structure/reagent_dispensers/watertank,
+/turf/template_noop,
+/area/template_noop)
+"saa" = (
+/obj/machinery/autolathe,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+gRl
+opU
+cbS
+"}
+(2,1,1) = {"
+iYg
+nsZ
+nsZ
+"}
+(3,1,1) = {"
+gRl
+gRl
+gRl
+"}
+(4,1,1) = {"
+gRl
+gRl
+gRl
+"}
+(5,1,1) = {"
+gRl
+gRl
+gRl
+"}
+(6,1,1) = {"
+qKS
+saa
+gRl
+"}
+(7,1,1) = {"
+gRl
+opU
+jBi
+"}

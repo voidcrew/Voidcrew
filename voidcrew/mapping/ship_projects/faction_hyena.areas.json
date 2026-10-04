@@ -1,0 +1,56 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/faction_hyena",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/port_engines",
+      "Name": "Port Engines",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/starboard_engines",
+      "Name": "Starboard Engines",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/equipment",
+      "Name": "Equipment",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/common_room",
+      "Name": "Common Room",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/armory",
+      "Name": "Armory",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/port_hallway",
+      "Name": "Port Hallway",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/bridge",
+      "Name": "Bridge",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/foremans_office",
+      "Name": "Foremans Office",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/cargo_bay",
+      "Name": "Cargo Bay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/faction_hyena/cryo",
+      "Name": "Cryo",
+      "IconState": "commons"
+    }
+  ]
+}

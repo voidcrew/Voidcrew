@@ -1,0 +1,140 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aOo" = (
+/obj/structure/table/optable,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"esr" = (
+/obj/item/clothing/gloves/latex/nitrile,
+/obj/item/defibrillator/compact/combat/loaded,
+/obj/item/storage/medkit/tactical,
+/obj/item/storage/medkit/o2,
+/obj/item/storage/medkit/toxin,
+/obj/item/storage/medkit/brute,
+/obj/item/storage/medkit/fire,
+/obj/item/storage/medkit,
+/obj/item/stack/medical/gauze/twelve,
+/obj/item/stack/medical/gauze/twelve,
+/obj/item/stack/medical/gauze/twelve,
+/obj/item/mod/control/pre_equipped/traitor,
+/obj/item/storage/belt/medical,
+/obj/structure/closet/syndicate,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/catwalk_floor,
+/area/template_noop)
+"evz" = (
+/obj/machinery/navbeacon{
+	codes_txt = "patrol;next_patrol=dorms";
+	location = "medical"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/catwalk_floor,
+/area/template_noop)
+"fHj" = (
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"fRD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/catwalk_floor,
+/area/template_noop)
+"hLJ" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"iaz" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"kts" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/chair{
+	dir = 4;
+	icon_state = "officechair_dark"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"lIb" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = 32
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"mXP" = (
+/obj/machinery/stasis,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"qMi" = (
+/obj/machinery/ship_combat/interdictor,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ssS" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"sXm" = (
+/obj/machinery/sleeper/syndie{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"ufP" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+ufP
+ufP
+ufP
+ufP
+hLJ
+"}
+(2,1,1) = {"
+ufP
+qMi
+fRD
+mXP
+ufP
+"}
+(3,1,1) = {"
+ufP
+esr
+evz
+sXm
+ufP
+"}
+(4,1,1) = {"
+ufP
+lIb
+kts
+ssS
+ufP
+"}
+(5,1,1) = {"
+ufP
+fHj
+aOo
+iaz
+ufP
+"}
+(6,1,1) = {"
+ufP
+ufP
+ufP
+ufP
+ufP
+"}

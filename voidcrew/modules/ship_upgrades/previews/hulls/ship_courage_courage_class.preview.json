@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "ship_courage_courage_class": {
+   "height": 7,
+   "png": "ship_ship_courage_courage_class.png",
+   "slots": {
+    "aft_compartment": [
+     1,
+     1
+    ]
+   },
+   "src_md5": "4dd867ce88c433816baa136e5808a1c7",
+   "width": 20
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

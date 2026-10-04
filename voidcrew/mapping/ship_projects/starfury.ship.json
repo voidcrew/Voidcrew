@@ -1,0 +1,43 @@
+{
+  "Version": 1,
+  "ID": "starfury",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/starfury",
+    "Name": "SYN-C Star Fury",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "starfury",
+    "Slots": [
+      "engine_configuration"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Standard",
+        "Suffix": "starfury",
+        "Slots": [
+          "engine_configuration"
+        ],
+        "Default": true
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "engine_configuration_basic",
+        "Name": "Supermatter Core",
+        "Slot": "engine_configuration",
+        "File": "starfury/supermatter_core.dmm",
+        "Description": "Looted from a plundered NT Station, this full sized shard is bound to blow up eventually.",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PortDirection": 2
+}

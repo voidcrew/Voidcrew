@@ -1,0 +1,229 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aoY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"bGI" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"ccB" = (
+/obj/modular_map_connector,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"cti" = (
+/obj/structure/weightmachine/weightlifter,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"esX" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/item/food/syndicake,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = -32
+	},
+/obj/machinery/light/small,
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/template_noop)
+"fxK" = (
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"fFP" = (
+/obj/structure/table,
+/obj/machinery/microwave,
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/template_noop)
+"iqV" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Locker Room"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"jja" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"keT" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Break Room"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"kZn" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/sign/poster/contraband/random{
+	pixel_x = 32
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"lWy" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/food/egg_smudge,
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/template_noop)
+"ncq" = (
+/obj/machinery/status_display/shuttle{
+	pixel_x = -32
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/right{
+	dir = 4
+	},
+/obj/effect/landmark/start/assistant,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"neq" = (
+/obj/machinery/nuclearbomb/beer{
+	desc = "An evidently-decommissioned nuclear warhead. Sloppy paint on the casing declares 'VICTORY OVER NANOTRASEN,' followed by a badly-smudged date of 25-something. A drink tap has been drilled directly into the metal.";
+	name = "comemmorative nuclear fission explosive"
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"poJ" = (
+/obj/structure/closet/secure_closet/freezer{
+	anchored = 1;
+	locked = 0;
+	name = "fridge"
+	},
+/obj/item/storage/cans/sixbeer,
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/template_noop)
+"pzz" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"pVi" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"stb" = (
+/obj/structure/cable,
+/obj/structure/chair/sofa/left,
+/obj/effect/landmark/start/assistant,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"sNr" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck/syndicate{
+	pixel_y = 6
+	},
+/obj/item/storage/fancy/cigarettes/cigpack_syndicate{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/item/lighter{
+	pixel_x = -5;
+	pixel_y = -1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"tUk" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/navbeacon{
+	codes_txt = "patrol;next_patrol=bridge";
+	location = "crew"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"vsY" = (
+/obj/structure/chair/sofa/corner{
+	dir = 4
+	},
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/radio/intercom{
+	pixel_y = 22
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"vRv" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"wtp" = (
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+jja
+jja
+jja
+iqV
+pzz
+ccB
+"}
+(2,1,1) = {"
+jja
+vsY
+ncq
+vRv
+lWy
+fFP
+"}
+(3,1,1) = {"
+pzz
+stb
+sNr
+vRv
+wtp
+esX
+"}
+(4,1,1) = {"
+keT
+bGI
+pVi
+tUk
+fxK
+poJ
+"}
+(5,1,1) = {"
+jja
+neq
+cti
+kZn
+aoY
+vRv
+"}
